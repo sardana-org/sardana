@@ -37,8 +37,9 @@ __all__ = ["a2scan", "a3scan", "a4scan", "amultiscan", "aNscan", "ascan",
            "d2scan", "d3scan", "d4scan", "dmultiscan", "dNscan", "dscan",
            "fscan", "mesh", 
            "a2scanc", "a3scanc", "a4scanc", "ascanc",
-           "d2scanc", "d3scanc", "d4scanc", "dNScanc", "dscanc",
+           "d2scanc", "d3scanc", "d4scanc", "dNScanc", "dscanc",           
            "meshc", 
+           "a2scanct", "a3scanct", "a4scanct", "ascanct",  
            "scanhist", "getCallable", "UNCONSTRAINED"]
 
 __docformat__ = 'restructuredtext'
@@ -57,11 +58,13 @@ from sardana.macroserver.msexception import UnknownEnv
 from sardana.macroserver.macro import *
 from sardana.macroserver.scan import *
 from sardana.util.motion import Motor, MotionPath
+from sardana.util.tree import BranchNode, LeafNode, Tree
 
 UNCONSTRAINED="unconstrained"
 
 StepMode = 's'
 ContinuousMode = 'c'
+ContinuousHwTimeMode = 'ct'
 HybridMode = 'h'
 
 def getCallable(repr):
@@ -115,12 +118,28 @@ class aNscan(Hookable):
             self.interv_sizes = ( self.finals - self.starts) / self.nr_interv
             self.name = opts.get('name','a%iscan'%self.N)
             self._gScan = SScan(self, self._stepGenerator, moveables, env, constrains, extrainfodesc)
-        elif mode == ContinuousMode:
-            self.slow_down = scan_length
-            self.nr_waypoints = 2 #aNscans will only have two waypoints (the start and the final positions)
-            self.way_lengths = ( self.finals - self.starts) / (self.nr_waypoints -1)
-            self.name = opts.get('name','a%iscanc'%self.N)
-            self._gScan = CScan(self, self._waypoint_generator, self._period_generator, moveables, env, constrains, extrainfodesc)
+        elif mode in [ContinuousMode, ContinuousHwTimeMode]:
+            if isinstance(endlist[0],list):
+                self.waypoints = self.finals
+            else:
+                self.waypoints = [self.finals]
+            self.nr_waypoints = len(self.waypoints)
+            if mode == ContinuousMode:
+                self.slow_down = scan_length
+                self.nr_waypoints = 2 #aNscans will only have two waypoints (the start and the final positions)
+                self.way_lengths = ( self.finals - self.starts) / (self.nr_waypoints -1)
+                self.name = opts.get('name','a%iscanc'%self.N)
+                self._gScan = CSScan(self, self._waypoint_generator, self._period_generator, moveables, env, constrains, extrainfodesc)
+            elif mode == ContinuousHwTimeMode:
+                self.nr_of_points = scan_length
+                #self.way_lengths = (self.finals - self.starts) /\
+                #                   (self.nr_waypoints -1)
+                self.name = opts.get('name','a%iscanct'%self.N)
+                self._gScan = CTScan(self, self._waypoint_generator_hwtime, 
+                                           moveables, 
+                                           env, 
+                                           constrains, 
+                                           extrainfodesc)
         elif mode == HybridMode:
             self.nr_interv = scan_length
             self.nr_points = self.nr_interv+1
@@ -155,7 +174,51 @@ class aNscan(Hookable):
             step["positions"] = self.starts + point_no * self.way_lengths
             step["waypoint_id"] = point_no
             yield step
-    
+            
+    def _waypoint_generator_hwtime(self):
+        #@todo: remove starts
+        def calculate_positions(moveable_node, start, end):
+            start_positions = []
+            end_positions = []
+            if isinstance(moveable_node, BranchNode):
+                pseudo_node = moveable_node
+                moveable = pseudo_node.data
+                moveable_nodes = moveable_node.children
+                starts = moveable.calcPhysical(start)
+                ends = moveable.calcPhysical(end)
+                for moveable_node, start, end in zip(moveable_nodes, starts,
+                                                        ends):
+                    _start_positions, _end_positions = calculate_positions(
+                                                                moveable_node, 
+                                                                start, end)
+                    start_positions += _start_positions
+                    end_positions += _end_positions
+            else:
+                start_positions = [start]
+                end_positions = [end]
+                
+            return start_positions, end_positions
+                                                        
+        moveables_trees = self._gScan.get_moveables_trees()
+        step = {}
+        step["pre-move-hooks"] = self.getHooks('pre-move')
+        step["post-move-hooks"] = self.getHooks('post-move')
+        step["check_func"] = []
+        step["active_time"] = self.nr_of_points * self.integ_time
+        step["positions"] = []
+        step["start_positions"] = []
+        starts = self.starts
+        for point_no, waypoint in enumerate(self.waypoints):
+            for start, end, moveable_tree in zip(starts, waypoint, 
+                                                 moveables_trees):
+                moveable_root = moveable_tree.root()
+                start_positions, end_positions = calculate_positions(moveable_root, start, end)
+                step["start_positions"] += start_positions
+                step["positions"] += end_positions
+                step["waypoint_id"] = point_no
+                starts = waypoint
+            yield step
+        
     def _period_generator(self):
         step = {}
         step["integ_time"] =  self.integ_time
@@ -202,6 +265,7 @@ class aNscan(Hookable):
 
         elif mode == ContinuousMode:
             total_time = gScan.waypoint_estimation()
+        #@todo: add time estimation for ContinuousHwTimeMode
         return total_time
                         
     def getIntervalEstimation(self):
@@ -1073,3 +1137,140 @@ class meshc(Macro,Hookable):
     @property
     def data(self):
         return self._gScan.data
+    
+class ascanct(aNscan, Macro):
+
+    hints = {'scan' : 'ascanct', 'allowsHooks': ('pre-configuration', 'post-configuration', 'pre-start', 'pre-cleanup', 'post-cleanup') }
+
+    param_def = [["motor", Type.Moveable, None, "Moveable name"],
+                 ["start_pos", Type.Float, None, "Starting position"],
+                 ["end_pos", Type.Float, None, "Ending pos value"],
+                 ["nr_of_points", Type.Integer, None, "Nr of scan points"],
+                 ["integ_time", Type.Float, None, "Integration time"],
+                 ["acq_time", Type.Float, 99, "Acquisition time per trigger. Expressed in percentage of time per trigger (scanTime/nrOfTriggers)"],
+                 ["samp_freq", Type.Float, -1, "Sampling frequency. Default: -1 (means maximum possible)"]]
+
+        #@todo: 
+#        step = {}
+#        step["integ_time"] = 0 #self.integ_time
+#        step["pre-move-hooks"] = [] #self.getHooks('pre-move')
+#        step["post-move-hooks"] = [] #self.getHooks('post-move')
+#        step["pre-acq-hooks"] = [] #self.getHooks('pre-acq')
+#        step["post-acq-hooks"] = [] #self.getHooks('post-acq') + self.getHooks('_NOHINTS_')
+#        step["post-step-hooks"] = [] #self.getHooks('post-step')
+#        
+#        step["check_func"] = []        
+#        step["positions"] = self.ends
+#        step["point_id"] = 0 
+#        yield step
+        
+        
+#        maybe implement generator so it yields for every repetition?
+#        for repeatNr in xrange(self.nrOfRepeats):
+#            step["positions"] = self.ends
+#            step["point_id"] = repeatNr
+#             yield step
+        
+    def prepare(self, motor, start_pos, end_pos, nr_of_points, 
+                integ_time, acq_time, samp_freq, **opts):
+        self._prepare([motor], [start_pos], [end_pos], nr_of_points,
+                      integ_time, mode=ContinuousHwTimeMode, **opts)
+        self.acq_time = acq_time
+        self.samp_freq = samp_freq
+
+
+class a2scanct(aNscan, Macro):
+
+    hints = {'scan' : 'a2scanct', 'allowsHooks': ('pre-configuration', 
+                                                  'post-configuration',
+                                                  'pre-start',
+                                                  'pre-cleanup',
+                                                  'post-cleanup') }
+
+    param_def = [
+           ['motor1',      Type.Moveable,   None, 'Moveable 1 to move'],
+           ['start_pos1',  Type.Float,   None, 'Scan start position 1'],
+           ['final_pos1',  Type.Float,   None, 'Scan final position 1'],
+           ['motor2',      Type.Moveable,   None, 'Moveable 2 to move'],
+           ['start_pos2',  Type.Float,   None, 'Scan start position 2'],
+           ['final_pos2',  Type.Float,   None, 'Scan final position 2'],
+           ["nr_of_points", Type.Integer, None, "Nr of scan points"],
+           ['integ_time', Type.Float,   None, 'Integration time'],
+           ["acq_time", Type.Float, 99, "Acquisition time per trigger. Expressed in percentage of time per trigger (scanTime/nrOfTriggers)"],
+           ["samp_freq", Type.Float, -1, "Sampling frequency. Default: -1 (means maximum possible)"]]
+           
+    def prepare(self, m1, s1, f1, m2, s2, f2, nr_of_points, 
+                integ_time, acq_time, samp_freq, **opts):
+        self._prepare([m1, m2], [s1, s2], [f1, f2], nr_of_points,
+                      integ_time, mode=ContinuousHwTimeMode, **opts)
+        self.acq_time = acq_time
+        self.samp_freq = samp_freq
+        
+        
+        
+class a3scanct(aNscan, Macro):
+
+    hints = {'scan' : 'a2scanct', 'allowsHooks': ('pre-configuration', 
+                                                  'post-configuration',
+                                                  'pre-start',
+                                                  'pre-cleanup',
+                                                  'post-cleanup') }
+
+    param_def = [
+           ['motor1',      Type.Moveable,   None, 'Moveable 1 to move'],
+           ['start_pos1',  Type.Float,   None, 'Scan start position 1'],
+           ['final_pos1',  Type.Float,   None, 'Scan final position 1'],
+           ['motor2',      Type.Moveable,   None, 'Moveable 2 to move'],
+           ['start_pos2',  Type.Float,   None, 'Scan start position 2'],
+           ['final_pos2',  Type.Float,   None, 'Scan final position 2'],
+           ['motor3',      Type.Moveable,   None, 'Moveable 3 to move'],
+           ['start_pos3',  Type.Float,   None, 'Scan start position 3'],
+           ['final_pos3',  Type.Float,   None, 'Scan final position 3'],
+           ["nr_of_points", Type.Integer, None, "Nr of scan points"],
+           ['integ_time', Type.Float,   None, 'Integration time'],
+           ["acq_time", Type.Float, 99, "Acquisition time per trigger. Expressed in percentage of time per trigger (scanTime/nrOfTriggers)"],
+           ["samp_freq", Type.Float, -1, "Sampling frequency. Default: -1 (means maximum possible)"]]
+   
+           
+    def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, nr_of_points, 
+                integ_time, acq_time, samp_freq, **opts):
+        self._prepare([m1, m2, m3], [s1, s2, s3], [f1, f2, f3], nr_of_points,
+                      integ_time, mode=ContinuousHwTimeMode, **opts)
+        self.acq_time = acq_time
+        self.samp_freq = samp_freq
+        
+class a4scanct(aNscan, Macro):
+
+    hints = {'scan' : 'a2scanct', 'allowsHooks': ('pre-configuration', 
+                                                  'post-configuration',
+                                                  'pre-start',
+                                                  'pre-cleanup',
+                                                  'post-cleanup') }
+
+    param_def = [
+           ['motor1',      Type.Moveable,   None, 'Moveable 1 to move'],
+           ['start_pos1',  Type.Float,   None, 'Scan start position 1'],
+           ['final_pos1',  Type.Float,   None, 'Scan final position 1'],
+           ['motor2',      Type.Moveable,   None, 'Moveable 2 to move'],
+           ['start_pos2',  Type.Float,   None, 'Scan start position 2'],
+           ['final_pos2',  Type.Float,   None, 'Scan final position 2'],
+           ['motor3',      Type.Moveable,   None, 'Moveable 3 to move'],
+           ['start_pos3',  Type.Float,   None, 'Scan start position 3'],
+           ['final_pos3',  Type.Float,   None, 'Scan final position 3'],
+           ['motor4',      Type.Moveable,   None, 'Moveable 4 to move'],
+           ['start_pos4',  Type.Float,   None, 'Scan start position 4'],
+           ['final_pos4',  Type.Float,   None, 'Scan final position 4'],
+           ["nr_of_points", Type.Integer, None, "Nr of scan points"],
+           ['integ_time', Type.Float,   None, 'Integration time'],
+           ["acq_time", Type.Float, 99, "Acquisition time per trigger. Expressed in percentage of time per trigger (scanTime/nrOfTriggers)"],
+           ["samp_freq", Type.Float, -1, "Sampling frequency. Default: -1 (means maximum possible)"]]
+   
+           
+    def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, m4, s4, f4, 
+                nr_of_points, integ_time, acq_time, samp_freq, **opts):
+        self._prepare([m1, m2, m3, m4], [s1, s2, s3, s4], [f1, f2, f3, f4],
+                      nr_of_points, integ_time, mode=ContinuousHwTimeMode,
+                      **opts)
+        self.acq_time = acq_time
+        self.samp_freq = samp_freq
+        

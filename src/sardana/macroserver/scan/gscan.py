@@ -27,7 +27,7 @@
 scan"""
 
 __all__ = ["ScanSetupError", "ScanException", "ExtraData", "TangoExtraData",
-           "GScan", "SScan", "CScan", "HScan"]
+           "GScan", "SScan", "CScan", "CSScan", "CTScan", "HScan"]
 
 __docformat__ = 'restructuredtext'
 
@@ -42,6 +42,7 @@ from taurus.core.util import USER_NAME, Logger
 from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
 from taurus.core.tango.sardana.pool import Ready
 
+from sardana.util.tree import BranchNode, LeafNode, Tree
 from sardana.util.motion import Motor as VMotor
 from sardana.util.motion import MotionPath
 from sardana.macroserver.msexception import MacroServerException, UnknownEnv, \
@@ -51,7 +52,9 @@ from scandata import ColumnDesc, MoveableDesc, ScanFactory, ScanDataEnvironment
 from recorder import OutputRecorder, JsonRecorder, SharedMemoryRecorder, \
     FileRecorder
 
-
+from contscan.motion import ExtraMotion #@todo: to be removed
+from contscan.mntgrp import ExtraMntGrp
+from contscan.trigger import ExtraTrigger
 
 class ScanSetupError(Exception): pass
 
@@ -978,66 +981,66 @@ class SScan(GScan):
         
 
 class CScan(GScan):
-    """Continuous scan"""
+    """Continuous scan abstract class. Implements helper methods."""
     
-    def __init__(self, macro, waypointGenerator=None, periodGenerator=None,
-                 moveables=[], env={}, constraints=[], extrainfodesc=[]):
-        GScan.__init__(self, macro, generator=waypointGenerator,
+    def __init__(self, macro, generator=None, moveables=[],
+                 env={}, constraints=[], extrainfodesc=[]):
+        GScan.__init__(self, macro, generator=generator,
                        moveables=moveables, env=env, constraints=constraints,
                        extrainfodesc=extrainfodesc)
-        self._periodGenerator = periodGenerator
         self._current_waypoint_finished = False
         self._all_waypoints_finished = False
         self.motion_event = threading.Event()
         self.motion_end_event = threading.Event()
-
-    def do_backup(self):
-        super(CScan, self).do_backup()
-        self._backup = backup = []
-        for moveable in self.moveables:
-            # first backup all motor parameters
-            motor = moveable.moveable
-            try:
-                velocity = motor.getVelocity()
-                accel_time = motor.getAcceleration()
-                decel_time = motor.getDeceleration()
-                motor_backup = dict(moveable=moveable, velocity=velocity,
-                                    acceleration=accel_time,
-                                    deceleration=decel_time)
-                self.debug("Backup of %s", motor)
-            except AttributeError:
-                motor_backup = None
-            backup.append(motor_backup)
-           
-    def do_restore(self):
-        super(CScan, self).do_restore()
-        # restore changed motors to initial state
-        for motor_backup in self._backup:
-            if motor_backup is None:
-                continue
-            try:
-                motor = motor_backup['moveable'].moveable
-                motor.setVelocity(motor_backup['velocity'])
-                motor.setAcceleration(motor_backup['acceleration'])
-                motor.setDeceleration(motor_backup['deceleration'])
-                self.debug("Restored %s", motor)
-            except:
-                self.macro.warning("Failed to restore %s", motor)
-                self.debug("Details:", exc_info=1)
-
-    def _calculateTotalAcquisitionTime(self):
-        return None
+        data_structures = self.populate_moveables_data_structures(moveables)
+        self._moveables_trees, \
+        physical_moveables_names, \
+        self._physical_moveables = data_structures
+        self._physical_motion = self.macro.getMotion(physical_moveables_names)
         
-    @property
-    def period_generator(self):
-        return self._periodGenerator
+    def populate_moveables_data_structures(self, moveables):
+        
+        def generate_moveable_node(macro, moveable):
+            moveable_node = None
+            physical_moveables_names = []
+            physical_moveables = []
+            moveable_type = moveable.getType()
+            if moveable_type == "PseudoMotor":
+                moveable_node = BranchNode(moveable)    
+                moveables_names = moveable.elements                
+                sub_moveables = [macro.getMoveable(name) \
+                                 for name in moveables_names]
+                for sub_moveable in sub_moveables:
+                    sub_moveable_node, \
+                    _physical_moveables_names, \
+                    _physical_moveables = generate_moveable_node(macro,
+                                                                 sub_moveable)
+                    physical_moveables_names += _physical_moveables_names
+                    physical_moveables += _physical_moveables
+                    moveable_node.addChild(sub_moveable_node)
+            elif moveable_type == "Motor":
+                moveable_node = LeafNode(moveable)
+                moveable_name = moveable.getName()
+                physical_moveables_names.append(moveable_name)
+                physical_moveables.append(moveable)
+            return moveable_node, physical_moveables_names, physical_moveables
+        
+        moveable_trees = []
+        physical_moveables_names = [] 
+        physical_moveables = []
+                
+        for moveable in moveables:
+            moveable_root_node, _physical_moveables_names, _physical_moveables = \
+                      generate_moveable_node(self.macro, moveable.moveable) 
+            moveable_tree = Tree(moveable_root_node)
+            moveable_trees.append(moveable_tree)
+            physical_moveables_names += _physical_moveables_names
+            physical_moveables += _physical_moveables 
+        return moveable_trees, physical_moveables_names, physical_moveables
     
-    @property
-    def period_steps(self):
-        if not hasattr(self, '_period_steps'):
-            self._period_steps = enumerate(self.period_generator())
-        return self._period_steps
-    
+    def get_moveables_trees(self):
+        return self._moveables_trees
+                    
     def on_waypoints_end(self, restore_positions=None):
         """To be called by the waypoint thread to handle the end of waypoints
         (either because no more waypoints or because a macro abort was
@@ -1045,7 +1048,8 @@ class CScan(GScan):
         self.set_all_waypoints_finished(True)
         if restore_positions is not None:
             self.macro.info("Correcting overshoot...")
-            self.motion.move(restore_positions)
+            self._physical_motion.move(restore_positions)
+            #self.motion.move(restore_positions)
         self.motion_end_event.set()        
         self.motion_event.set()
             
@@ -1055,79 +1059,14 @@ class CScan(GScan):
             self._go_through_waypoints()
         except:
             self.macro.error("An error occured moving to waypoints. Aborting...")
-            self.debug("Details:", exc_info=1)
+            self.macro.debug("Details:", exc_info=1)
             self.on_waypoints_end()
 
     def _go_through_waypoints(self):
         """Internal, unprotected method to go through the different waypoints."""
-        macro, motion, waypoints = self.macro, self.motion, self.steps
-        
-        last_positions = None
-        for _, waypoint in waypoints:
-            start_positions = waypoint.get('start_positions')
-            positions = waypoint['positions']
-            if start_positions is None:
-                start_positions = last_positions
-            if start_positions is None:
-                last_positions = positions
-                continue
-            
-            waypoint_info = self.prepare_waypoint(waypoint, start_positions)
-            motion_paths, delta_start, acq_duration = waypoint_info
-            
-            self.acq_duration = acq_duration
-                        
-            #execute pre-move hooks
-            for hook in waypoint.get('pre-move-hooks',[]): 
-                hook()
-    
-            start_pos, final_pos = [] , []
-            for path in motion_paths:
-                start_pos.append(path.initial_user_pos)
-                final_pos.append(path.final_user_pos)
-            
-            if macro.isStopped():
-                self.on_waypoints_end()
-                return
-                       
-            # move to start position
-            
-            motion.move(start_pos)
-            
-            if macro.isStopped():
-                return self.on_waypoints_end()
-            
-            # prepare motor(s) to move with their maximum velocity
-            for path in motion_paths:
-                if not path.apply_correction:
-                    continue
-                vmotor = path.motor
-                motor = path.moveable.moveable
-                motor.setVelocity(vmotor.getMaxVelocity())
-
-            if macro.isStopped():
-                return self.on_waypoints_end()
-                        
-            self.timestamp_to_start = time.time() + delta_start
-            self.motion_event.set()
-            
-            # move to waypoint end position
-            motion.move(final_pos)
-
-            self.motion_event.clear()
-
-            if macro.isStopped():
-                return self.on_waypoints_end()
-            
-            #execute post-move hooks
-            for hook in waypoint.get('post-move-hooks',[]):
-                hook()
-            
-            if start_positions is None:  
-                last_positions = positions
-        
-        self.on_waypoints_end(positions)
-        
+        raise NotImplementedError("_go_through_waypoints must be implemented " +
+                            "in CScan derived classes")
+                
     def waypoint_estimation(self):
         """Internal, unprotected method to go through the different waypoints."""
         motion, waypoints = self.motion, self.generator()
@@ -1184,6 +1123,50 @@ class CScan(GScan):
         total_duration += overshoot_duration
         return total_duration       
     
+    def prepare_waypoint(self, waypoint, start_positions, iterate_only=False):
+        raise NotImplementedError("prepare_waypoint must be implemented in " + 
+                                  "CScan derived classes")
+        
+    
+    
+        
+    def set_all_waypoints_finished(self, v):
+        self._all_waypoints_finished = v
+
+    def do_backup(self):
+        super(CScan, self).do_backup()
+        self._backup = backup = []
+        for moveable in self.moveables:
+            # first backup all motor parameters
+            motor = moveable.moveable
+            try:
+                velocity = motor.getVelocity()
+                accel_time = motor.getAcceleration()
+                decel_time = motor.getDeceleration()
+                motor_backup = dict(moveable=moveable, velocity=velocity,
+                                    acceleration=accel_time,
+                                    deceleration=decel_time)
+                self.debug("Backup of %s", motor)
+            except AttributeError:
+                motor_backup = None
+            backup.append(motor_backup)
+           
+    def do_restore(self):
+        super(CScan, self).do_restore()
+        # restore changed motors to initial state
+        for motor_backup in self._backup:
+            if motor_backup is None:
+                continue
+            try:
+                motor = motor_backup['moveable'].moveable
+                motor.setVelocity(motor_backup['velocity'])
+                motor.setAcceleration(motor_backup['acceleration'])
+                motor.setDeceleration(motor_backup['deceleration'])
+                self.debug("Restored %s", motor)
+            except:
+                self.macro.warning("Failed to restore %s", motor)
+                self.debug("Details:", exc_info=1)
+                
     def get_max_top_velocity(self, motor):
         """Helper method to find the maximum top velocity for the motor.
         If the motor doesn't have a defined range for top velocity,
@@ -1202,7 +1185,33 @@ class CScan(GScan):
                 max_top_vel = self._maxVelDict[motor]
             except AttributeError:
                 pass
-        return max_top_vel        
+        return max_top_vel
+    
+    def get_min_acc_time(self, motor):
+        """Helper method to find the minimum acceleration time for the motor.
+        If the motor doesn't have a defined range for the acceleration time,
+        then use the current acceleration time"""
+        
+        acc_time_obj = motor.getAccelerationObj()
+        min_acc_time, max_acc_time = acc_time_obj.getRange()
+        try:
+            min_acc_time = float(min_acc_time)
+        except ValueError:
+            min_acc_time = motor.getAcceleration()
+        return min_acc_time
+    
+    def get_min_dec_time(self, motor):
+        """Helper method to find the minimum deceleration time for the motor.
+        If the motor doesn't have a defined range for the acceleration time,
+        then use the current acceleration time"""
+        
+        dec_time_obj = motor.getDecelerationObj()
+        min_dec_time, max_dec_time = dec_time_obj.getRange()
+        try:
+            min_dec_time = float(min_dec_time)
+        except ValueError:
+            min_dec_time = motor.getDeceleration()
+        return min_dec_time
  
 #    def set_max_top_velocity(self, motor):
 #        """Helper method to set the maximum top velocity for the motor to 
@@ -1214,8 +1223,32 @@ class CScan(GScan):
 #        except:
 #            pass
 
-    def prepare_waypoint(self, waypoint, start_positions, iterate_only=False):
+                
+class CSScan(CScan):
+    """Continuous scan controlled by software"""
+    
+    def __init__(self, macro, waypointGenerator=None, periodGenerator=None,
+                 moveables=[], env={}, constraints=[], extrainfodesc=[]):
+        CScan.__init__(self, macro, generator=waypointGenerator,
+                       moveables=moveables, env=env, constraints=constraints,
+                       extrainfodesc=extrainfodesc)
+        self._periodGenerator = periodGenerator
+        
 
+    def _calculateTotalAcquisitionTime(self):
+        return None
+        
+    @property
+    def period_generator(self):
+        return self._periodGenerator
+    
+    @property
+    def period_steps(self):
+        if not hasattr(self, '_period_steps'):
+            self._period_steps = enumerate(self.period_generator())
+        return self._period_steps
+    
+    def prepare_waypoint(self, waypoint, start_positions, iterate_only=False):
         slow_down = waypoint.get('slow_down', 1)
         positions = waypoint['positions']
         
@@ -1310,9 +1343,90 @@ class CScan(GScan):
             path.setFinalUserPos(new_final_pos)
         
         return ideal_paths, delta_start, cruise_duration
+
     
-    def set_all_waypoints_finished(self, v):
-        self._all_waypoints_finished = v
+    def go_through_waypoints(self, iterate_only=False):
+        """go through the different waypoints."""
+        try:
+            self._go_through_waypoints()
+        except Exception, e:
+            self.macro.error("An error occured moving to waypoints. Aborting...")
+            self.macro.debug("Details:", exc_info=1)
+            self.on_waypoints_end()
+            raise e
+
+    def _go_through_waypoints(self):
+        """Internal, unprotected method to go through the different waypoints."""
+        macro, motion, waypoints = self.macro, self.motion, self.steps
+        self.macro.debug("_go_through_waypoints() entering...")
+        
+        last_positions = None
+        for _, waypoint in waypoints:
+            self.macro.debug("Waypoint iteration...")
+            start_positions = waypoint.get('start_positions')
+            positions = waypoint['positions']
+            if start_positions is None:
+                start_positions = last_positions
+            if start_positions is None:
+                last_positions = positions
+                continue
+            
+            waypoint_info = self.prepare_waypoint(waypoint, start_positions)
+            motion_paths, delta_start, acq_duration = waypoint_info
+            
+            self.acq_duration = acq_duration
+                        
+            #execute pre-move hooks
+            for hook in waypoint.get('pre-move-hooks',[]): 
+                hook()
+    
+            start_pos, final_pos = [] , []
+            for path in motion_paths:
+                start_pos.append(path.initial_user_pos)
+                final_pos.append(path.final_user_pos)
+            
+            if macro.isStopped():
+                self.on_waypoints_end()
+                return
+                       
+            # move to start position
+            self.macro.debug("Moving to start position: %s" % repr(start_pos))
+            motion.move(start_pos)
+            
+            if macro.isStopped():
+                return self.on_waypoints_end()
+            
+            # prepare motor(s) to move with their maximum velocity
+            for path in motion_paths:
+                if not path.apply_correction:
+                    continue
+                vmotor = path.motor
+                motor = path.moveable.moveable
+                motor.setVelocity(vmotor.getMaxVelocity())
+
+            if macro.isStopped():
+                return self.on_waypoints_end()
+                        
+            self.timestamp_to_start = time.time() + delta_start
+            self.motion_event.set()
+            
+            # move to waypoint end position
+            motion.move(final_pos)
+
+            self.motion_event.clear()
+
+            if macro.isStopped():
+                return self.on_waypoints_end()
+            
+            #execute post-move hooks
+            for hook in waypoint.get('post-move-hooks',[]):
+                hook()
+            
+            if start_positions is None:  
+                last_positions = positions
+        
+        self.on_waypoints_end(positions)
+
     
     def scan_loop(self):
         motion, mg, waypoints = self.motion, self.measurement_group, self.steps
@@ -1461,6 +1575,324 @@ class CScan(GScan):
         
         if not scream:
             yield 100.0   
+
+
+class CTScan(CScan):
+    
+    def __init__(self, macro, generator=None,
+                 moveables=[], env={}, constraints=[], extrainfodesc=[]):
+        CScan.__init__(self, macro, generator=generator,
+                       moveables=moveables, env=env, constraints=constraints,
+                       extrainfodesc=extrainfodesc)
+        #self.extraMotion = ExtraMotion(macro, self.macro.moveable)
+        self.extraMntGrp = ExtraMntGrp(macro)
+        self.extraTrigger = ExtraTrigger(macro)
+            
+        
+    def prepare_waypoint(self, waypoint, start_positions, iterate_only=False):
+
+        positions = waypoint['positions']
+        active_time = waypoint["active_time"]
+        
+        ideal_paths = []
+        
+        max_acc_time, max_dec_time = 0, 0                
+        for moveable, end_position in zip(self._physical_moveables, positions):
+            motor = moveable
+            max_acc_time = max(self.get_min_acc_time(motor), max_acc_time)
+            max_dec_time = max(self.get_min_dec_time(motor), max_dec_time)
+            
+        acc_time = max_acc_time
+        dec_time = max_dec_time
+            
+        for moveable, start_position, end_position in \
+                      zip(self._physical_moveables, start_positions, positions):
+            base_vel = moveable.getBaseRate()        
+            ideal_vmotor = VMotor(accel_time=acc_time,
+                                  decel_time=dec_time,
+                                  min_vel=base_vel)
+            ideal_path = MotionPath(ideal_vmotor, 
+                                    start_position, 
+                                    end_position, 
+                                    active_time)            
+            ideal_path.moveable = moveable
+            ideal_path.apply_correction = True        
+            ideal_paths.append(ideal_path)                                 
+        
+        return ideal_paths, acc_time, active_time
+    
+    def _go_through_waypoints(self):
+        """Internal, unprotected method to go through the different waypoints."""
+        macro, motion, waypoints = self.macro, self._physical_motion, self.steps
+        self.macro.debug("_go_through_waypoints() entering...")
+        
+        last_positions = None
+        for _, waypoint in waypoints:
+            self.macro.debug("Waypoint iteration...")
+            start_positions = waypoint.get('start_positions')
+            positions = waypoint['positions']
+            if start_positions is None:
+                start_positions = last_positions
+            if start_positions is None:
+                last_positions = positions
+                continue
+            
+            waypoint_info = self.prepare_waypoint(waypoint, start_positions)
+            motion_paths, delta_start, acq_duration = waypoint_info
+            
+            self.acq_duration = acq_duration
+                        
+            #execute pre-move hooks
+            for hook in waypoint.get('pre-move-hooks',[]): 
+                hook()
+    
+            start_pos, final_pos = [] , []
+            for path in motion_paths:
+                start_pos.append(path.initial_user_pos)
+                final_pos.append(path.final_user_pos)
+            
+            if macro.isStopped():
+                self.on_waypoints_end()
+                return
+                       
+            # move to start position
+            self.macro.debug("Moving to start position: %s" % repr(start_pos))
+            motion.move(start_pos)
+            
+            if macro.isStopped():
+                return self.on_waypoints_end()
+            
+            # prepare motor(s) to move with their maximum velocity
+            for path in motion_paths:
+                motor = path.moveable
+                motor.setVelocity(path.max_vel)  
+                motor.setAcceleration(path.max_vel_time)
+                motor.setDeceleration(path.min_vel_time)
+                
+            if macro.isStopped():
+                return self.on_waypoints_end()
+                        
+            self.timestamp_to_start = time.time() + delta_start
+            self.motion_event.set()
+            
+            # move to waypoint end position
+            motion.move(final_pos)
+
+            self.motion_event.clear()
+
+            if macro.isStopped():
+                return self.on_waypoints_end()
+            
+            #execute post-move hooks
+            for hook in waypoint.get('post-move-hooks',[]):
+                hook()
+            
+            if start_positions is None:  
+                last_positions = positions
+        
+        self.on_waypoints_end(positions)
+
+
+    def scan_loop(self):        
+        motion, mg, trigger = self.motion, self.extraMntGrp, self.extraTrigger
+        macro = self.macro
+        manager = macro.getManager()
+        scream = False
+        motion_event = self.motion_event
+        startts = self._env['startts']
+        
+        sum_delay = 0
+        sum_integ_time = 0
+        
+        if hasattr(macro, "nr_points"):
+            nr_points = float(macro.nr_points)
+            scream = True
+        else:
+            yield 0.0
+
+        moveables = [ m.moveable for m in self.moveables ]
+        
+        point_nb, step = -1, None
+        data = self.data
+        
+        if hasattr(macro, "pre_scan_hooks"):
+            for hook in macro.pre_scan_hooks:
+                hook()
+        
+        # start move & acquisition as close as possible
+        # from this point on synchronization becomes critical
+        
+        self.go_through_waypoints()
+        
+        
+        if hasattr(macro, "post_scan_hooks"):
+            for hook in macro.post_scan_hooks:
+                hook()
+        
+        
+        env = self._env
+        env['acqtime'] = sum_integ_time
+        env['delaytime'] = sum_delay
+        
+        if not scream:
+            yield 100.0   
+
+    
+#    def scan_loop(self):
+#        self.__mntGrpConfigured = False
+#        self.__triggerConfigured = False
+#        self.__motionConfigured = False
+#        self.__mntGrpStarted = False
+#        self.__triggerStarted = False
+#        self.__motionId = None
+#        
+#        #validation of parameters
+#        for start, end in zip(self.macro.starts, self.macro.ends):
+#            if start == end:
+#                raise Exception("Start and End can not be equal.")
+#
+#        startTimestamp = time.time()
+#        try:
+#            #extra pre configuration
+#            preConfigurationHooks = self.macro.getHooks('pre-configuration')
+#            for hook in preConfigurationHooks:
+#                hook()
+#            self.macro.checkPoint()
+#    
+#            #calculating motion parameters
+#            #@todo: works only with single moveable, extend it for multiple moveables            
+#            preStart, postEnd, accTime, velocities = \
+#                self.extraMotion.calcMotionParameters(self.macro.starts[0], self.macro.ends[0], self.macro.scanTime)
+#    
+#            #configuring trigger lines
+#            oldHighTime, oldLowTime, oldDelay, oldNrOfTriggers = self.extraTrigger.getConfiguration()
+#            self.__triggerConfigured = True
+#            timePerTrigger = self.extraTrigger.configure(delayTime=accTime, scanTime=self.macro.scanTime, nrOfTriggers=self.macro.nrOfTriggers)
+#            self.macro.checkPoint()
+#    
+#            #configuring measurementGroup
+#            self.mntGrpConfiguration = self.extraMntGrp.getConfiguration()
+#            self.__mntGrpConfigured = True
+#            self.extraMntGrp.configure(self.macro.nrOfTriggers, self.macro.acqTime, timePerTrigger)
+#            self.macro.checkPoint()
+#    
+#            #extra pre configuration
+#            postConfigurationHooks = self.macro.getHooks('post-configuration')
+#            for hook in postConfigurationHooks:
+#                hook()
+#            self.macro.checkPoint()
+#    
+#            endTimestamp = time.time()
+#            self.macro.info("Configuration took %s time." % repr(endTimestamp - startTimestamp))
+#    
+#            self.macro.debug("Moving to preStart position: %f" % preStart)
+#            motion = self.macro.getMotion([self.macro.moveable])
+#            motion.move([preStart])
+#            self.macro.checkPoint()
+#    
+#            #extra pre configuration
+#            preStartHooks = self.macro.getHooks('pre-start')
+#            for hook in preStartHooks:
+#                hook()
+#            self.macro.checkPoint()
+#    
+#            self.macro.debug("Starting measurement group")
+#            self.__mntGrpStarted = True
+#            self.extraMntGrp.start()
+#            self.macro.debug("Starting triggers")
+#            self.macro.__triggerStarted = True
+#            self.extraTrigger.start()
+#            self.macro.debug("Configuring motion parameters: accTime: %f; velocities: %s" % (accTime, velocities))
+#            self.do_backup()
+#            self.__motionConfigured = True
+#            self.extraMotion.configure(accTime, velocities)
+#            self.macro.debug("Moving to postEnd position: %f" % postEnd)
+#            self.__motionId = self.extraMotion.startMove(postEnd)
+#            self.macro.debug("Waiting for measurement group to finish")            
+#            while self.extraMntGrp.isMoving():
+#                self.macro.checkPoint()
+#                time.sleep(0.1)
+#                
+#            self.macro.debug("Getting data")                
+#            dataList = self.extraMntGrp.getDataList()
+#            
+#            self.macro.debug("Storing data")
+#            for record in dataList:
+#                self.data.addRecord(record)
+#            yield 100
+#        except Exception, e:
+#            import traceback
+#            self.macro.debug(traceback.format_exc())
+#            self.macro.error(e)
+#            raise e
+#        finally:
+#            self.cleanup()
+
+    def cleanup(self):
+        if self.__motionId != None:
+            self.debug("Waiting for motion to finish")
+            self.extraMotion.waitMove(self.__motionId)
+            #temporary, till solve problem of waitMove
+            while self.extraMotion.isMoving():
+                self.macro.checkPoint()
+                time.sleep(0.1)
+            self.debug("After waiting...")
+
+        startTimestamp = time.time()
+
+        if self.__mntGrpStarted:
+            self.debug("Stopping measurement group")
+            try:
+                self.extraMntGrp.stop()
+            except Exception, e:
+                self.warning("Exception while trying to stop measurement group.")
+                self.debug(e)
+
+        if self.__triggerStarted:
+            self.debug("Stopping triggers")
+            try:
+                self.extraTrigger.stop()
+            except Exception, e:
+                self.warning("Exception while trying to stop trigger.")
+                self.debug(e)
+
+        cleanupHooks = self.macro.getHooks('pre-cleanup')
+        for hook in cleanupHooks:
+            self.debug("Executing pre-cleanup hook")
+            try:
+                hook()
+            except Exception, e:
+                self.warning("Exception while trying to execute a pre-cleanup hook")
+                self.debug(e)
+                
+        if self.__motionConfigured:
+            self.debug("Restoring configuration of moveables")
+            try:
+                self.do_restore()
+            except:
+                self.warning("Exception while trying to restore motion parameters")
+                self.debug(e)
+
+        if self.__mntGrpConfigured:
+            self.debug("Restoring configuration of measurement group")
+            try:
+                self.extraMntGrp.setConfiguration(self.mntGrpConfiguration)
+                #@todo: mntGrp configuration should contain also: nrOfTriggers, acqTime, sampling frequency
+            except:
+                self.warning("Exception while trying to restore measurement group parameters")
+                self.debug(e)
+
+        cleanupHooks = self.macro.getHooks('post-cleanup')
+        for hook in cleanupHooks:
+            self.debug("Executing post-cleanup hook")
+            try:
+                hook()
+            except Exception, e:
+                self.warning("Exception while trying to execute a post-cleanup hook")
+                self.debug(e)
+
+        endTimestamp = time.time()
+        self.info("Cleanup took %s time." % repr(endTimestamp - startTimestamp))
 
 
 class HScan(SScan):
