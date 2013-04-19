@@ -37,6 +37,7 @@ import operator
 import time
 import threading
 
+import PyTango
 import taurus
 from taurus.core.util import USER_NAME, Logger
 from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
@@ -1579,14 +1580,183 @@ class CSScan(CScan):
 
 class CTScan(CScan):
     
+    class ExtraTrigger:
+
+        MIN_HIGH_TIME = 0.0000002
+        MIN_TIME_PER_TRIGGER = 0.000001
+    
+        def __init__(self, macro):
+            self.macro = macro
+            
+            triggerDeviceName = self.macro.getEnv("TriggerDevice")
+            self.master = None
+            self.slaves = []
+            masterName = None
+            slaveNames = []
+            
+            if isinstance(triggerDeviceName, str):
+                masterName = triggerDeviceName
+            elif isinstance(triggerDeviceName, list):
+                masterName = triggerDeviceName[0]
+                slaveNames = triggerDeviceName[1:]
+            
+            for name in slaveNames:
+                slave = PyTango.DeviceProxy(name)
+                self.slaves.append(slave)
+            if masterName != None:
+                self.master = PyTango.DeviceProxy(masterName)        
+    
+        def configure(self, scanTime=None, nrOfTriggers=None, idleState="Low", lowTime=None, highTime=None, delayTime=0):
+            if not None in (scanTime, nrOfTriggers, delayTime, idleState):
+                timePerTrigger = scanTime / nrOfTriggers
+                if timePerTrigger < self.MIN_TIME_PER_TRIGGER:
+                    raise Exception("scanTime is not long enough to manage this amount of triggers")
+                highTime = self.MIN_HIGH_TIME
+                lowTime = timePerTrigger - highTime
+            elif not None in (lowTime, highTime, delayTime, nrOfTriggers, idleState):
+                pass
+            else:
+                raise Exception("Missing parameters.")
+            
+            self.master.write_attribute("InitialDelayTime", delayTime)
+            self.master.write_attribute("HighTime", highTime) # 162.5 ns
+            self.master.write_attribute("LowTime", lowTime) # 2.75 ms
+            self.master.write_attribute("SampPerChan", long(nrOfTriggers))
+            self.master.write_attribute("IdleState", idleState)
+            self.master.write_attribute("SampleTimingType", "Implicit")
+    
+            for slave in self.slaves:
+                slave.write_attribute("HighTime", highTime) # 162.5 ns
+                slave.write_attribute("LowTime", lowTime) # 2.75 ms
+                slave.write_attribute("SampPerChan", long(nrOfTriggers))
+                slave.write_attribute("IdleState", idleState)
+                slave.write_attribute("SampleTimingType", "Implicit")
+                
+            return timePerTrigger
+    
+        def getConfiguration(self):
+            return None, None, None, None
+    
+        def start(self):
+            for slave in self.slaves:
+                self.macro.debug("Staring  %s" % slave.name())
+                slave.Start()
+            if self.master != None:
+                self.master.Start()
+    
+        def stop(self):
+            for slave in self.slaves:
+                self.macro.debug("Stopping  %s" % slave.name())
+                slave.Stop()
+            if self.master != None:
+                self.master.Stop()
+
+    
+    class ExtraMntGrp:
+
+        def __init__(self, macro):
+            self.macro = macro
+            activeMntGrpName = self.macro.getEnv("ActiveMntGrp")
+            self.mntGrp = self.macro.getMeasurementGroup(activeMntGrpName)        
+            self.activeChannels = []
+            self.nrOfTriggers = 0
+            channels = self.mntGrp.getChannels()
+            for channel in channels:
+                channelName = channel["name"]
+                expChannel = self.macro.getExpChannel(channelName)
+                expChannel.getHWObj().set_timeout_millis(120000) #in case of readout of position channels, it can take really long...
+                self.activeChannels.append(expChannel)
+    
+        def isMoving(self):
+            for channel in self.activeChannels:
+                if channel.State() == PyTango.DevState.MOVING:
+                    return True
+            return False
+    
+        def start(self):
+            for channel in self.activeChannels:
+                pool = channel.getPoolObj()
+                ctrlName = channel.getControllerName()
+                axis = channel.getAxis()
+                self.macro.debug("Pre-starting controller: %s, axis: %d", ctrlName, axis)
+                pool.SendToController([ctrlName, 'pre-start %d' % axis])
+    
+            for channel in self.activeChannels:
+                pool = channel.getPoolObj()
+                ctrlName = channel.getControllerName()
+                axis = channel.getAxis()
+                self.macro.debug("Starting controller: %s, axis: %d", ctrlName, axis)
+                pool.SendToController([ctrlName, 'start %d' % axis])
+     
+        def stop(self):
+            for channel in self.activeChannels:
+                pool = channel.getPoolObj()
+                ctrlName = channel.getControllerName()
+                axis = channel.getAxis()
+                self.macro.debug("Pre-stopping controller: %s, axis: %d", ctrlName, axis)
+                pool.SendToController([ctrlName, 'pre-stop %d' % axis])
+    
+            for channel in self.activeChannels:
+                pool = channel.getPoolObj()
+                ctrlName = channel.getControllerName()
+                axis = channel.getAxis()
+                self.macro.debug("Stopping controller: %s, axis: %d", ctrlName, axis)
+                pool.SendToController([ctrlName, 'stop %d' % axis])
+    
+        def getDataList(self):
+            dataList = [ {"point_nb" : i, "timestamp" : 0} for i in xrange(self.nrOfTriggers) ]
+            for channel in self.activeChannels:
+                dataDesc = channel.getFullName()
+                channelData = channel.getAttribute("Data").read().value
+                for i, data in enumerate(channelData):
+                    dataList[i][dataDesc] = data
+            return dataList
+    
+        def setSamplingFrequency(self, freq):
+            for channel in self.activeChannels:
+                channel.getAttribute('SamplingFrequency').write(freq)
+    
+        def setAcquisitionTime(self, acqTime):
+            for channel in self.activeChannels:
+                channel.getAttribute('AcquisitionTime').write(acqTime)
+    
+        def setTriggerMode(self, mode):
+            if mode not in ["soft", "gate"]:
+                raise Exception("Trigger mode must be either soft or gate.")
+            for channel in self.activeChannels:
+                channel.getAttribute('TriggerMode').write(mode)
+    
+        def setNrOfTriggers(self, nrOfTriggers):
+            self.nrOfTriggers = nrOfTriggers
+            for channel in self.activeChannels:
+                channel.getAttribute('NrOfTriggers').write(nrOfTriggers)
+    
+        def configure(self, nrOfTriggers, acqTime, timePerTrigger, sampFreq=-1, triggerMode="gate"):
+            self.macro.debug("acqTime: %s" % acqTime)
+            if timePerTrigger == None:
+                raise Exception("TimePerTrigger attribute must be set")
+            acqTime = timePerTrigger * acqTime / 100.0
+            self.setTriggerMode(triggerMode)
+            self.setNrOfTriggers(nrOfTriggers)
+            self.setSamplingFrequency(sampFreq)
+            self.setAcquisitionTime(acqTime)
+            self.macro.debug("MG: nrOfTriggers: %s, timePerTrigger: %s, acqTime: %s, sampFreq: %s" % (nrOfTriggers,timePerTrigger,acqTime,sampFreq))
+    
+        def getConfiguration(self):
+            return None
+    
+        def setConfiguration(self, configuration):
+            pass
+
+    
     def __init__(self, macro, generator=None,
                  moveables=[], env={}, constraints=[], extrainfodesc=[]):
         CScan.__init__(self, macro, generator=generator,
                        moveables=moveables, env=env, constraints=constraints,
                        extrainfodesc=extrainfodesc)
         #self.extraMotion = ExtraMotion(macro, self.macro.moveable)
-        #self.extraMntGrp = ExtraMntGrp(macro)
-        #self.extraTrigger = ExtraTrigger(macro)
+        self._measurement_group = self.ExtraMntGrp(macro)
+        self.extraTrigger = self.ExtraTrigger(macro)
             
         
     def prepare_waypoint(self, waypoint, start_positions, iterate_only=False):
@@ -1657,7 +1827,56 @@ class CTScan(CScan):
             if macro.isStopped():
                 self.on_waypoints_end()
                 return
-                       
+            ############
+            self.__mntGrpConfigured = False
+            self.__triggerConfigured = False
+            self.__mntGrpStarted = False
+            self.__triggerStarted = False
+            
+            #validation of parameters
+            for start, end in zip(self.macro.starts, self.macro.finals):
+                if start == end:
+                    raise Exception("Start and End can not be equal.")
+
+            startTimestamp = time.time()
+        
+            #extra pre configuration
+            preConfigurationHooks = self.macro.getHooks('pre-configuration')
+            for hook in preConfigurationHooks:
+                hook()
+            self.macro.checkPoint()
+    
+            #calculating motion parameters
+            #@todo: works only with single moveable, extend it for multiple moveables            
+#            preStart, postEnd, accTime, velocities = \
+#                self.extraMotion.calcMotionParameters(self.macro.starts[0], self.macro.ends[0], self.macro.scanTime)
+    
+            #configuring trigger lines
+            oldHighTime, oldLowTime, oldDelay, oldNrOfTriggers = \
+                                        self.extraTrigger.getConfiguration()
+            self.__triggerConfigured = True
+            timePerTrigger = self.extraTrigger.configure(delayTime=delta_start,
+                                           scanTime=acq_duration,
+                                           nrOfTriggers=self.macro.nr_of_points)
+            self.macro.checkPoint()
+    
+            #configuring measurementGroup
+            self.mntGrpConfiguration = self._measurement_group.getConfiguration()
+            self.__mntGrpConfigured = True
+            self._measurement_group.configure(self.macro.nr_of_points, 
+                                       self.macro.acq_time, 
+                                       timePerTrigger)
+            self.macro.checkPoint()
+    
+            #extra pre configuration
+            postConfigurationHooks = self.macro.getHooks('post-configuration')
+            for hook in postConfigurationHooks:
+                hook()
+            self.macro.checkPoint()
+    
+            endTimestamp = time.time()
+            self.macro.info("Configuration took %s time." % repr(endTimestamp - startTimestamp))
+            ############           
             # move to start position
             self.macro.debug("Moving to start position: %s" % repr(start_pos))
             motion.move(start_pos)
@@ -1681,14 +1900,30 @@ class CTScan(CScan):
                 
             if macro.isStopped():
                 return self.on_waypoints_end()
-                        
+            
+            ###########
+            preStartHooks = self.macro.getHooks('pre-start')
+            for hook in preStartHooks:
+                hook()
+            self.macro.checkPoint()
+    
+            self.macro.debug("Starting measurement group")
+            self.__mntGrpStarted = True
+            self._measurement_group.start()            
+            ###########
+            
             self.timestamp_to_start = time.time() + delta_start
+            
+            
             self.motion_event.set()
             
             # move to waypoint end position
             self.macro.debug("Moving to waypoint position: %s" % repr(final_pos))
+            self.macro.debug("Starting triggers")
+            self.__triggerStarted = True
+            self.extraTrigger.start()
             motion.move(final_pos)
-
+                        
             self.motion_event.clear()
 
             if macro.isStopped():
@@ -1697,12 +1932,50 @@ class CTScan(CScan):
             #execute post-move hooks
             for hook in waypoint.get('post-move-hooks',[]):
                 hook()
+                
+            ############    
+            self.macro.debug("Waiting for measurement group to finish")            
+            while self._measurement_group.isMoving():
+                self.macro.checkPoint()
+                time.sleep(0.1)
+                
+            self.macro.debug("Getting data")                
+            data_list = self._measurement_group.getDataList()
+            
+            def populate_ideal_positions():
+                moveables = self.moveables
+                nr_of_points = self.macro.nr_of_points
+                starts = self.macro.starts
+                finals = self.macro.finals
+                positions_records = [{} for i in range(nr_of_points)]
+                
+                for moveable, start, final in zip(moveables, starts, finals):
+                    name = moveable.moveable.getName()
+                    step_size = abs((end-start)/nr_of_points)
+                    for point_nr, position in \
+                         enumerate((i for i in range(start, final, step_size))):
+                        positions_records[point_nr][name] = position    
+                    
+                return positions_records
+            
+            #@todo: decide what to do with moveables
+            position_list = populate_ideal_positions()
+
+            self.macro.debug("Storing data")
+            for data_dict, position_dict in zip(data_list,position_list):
+                data_dict.update(position_dict)
+                self.data.addRecord(data_dict)    
+            ############
             
             if start_positions is None:  
                 last_positions = positions
         
         self.on_waypoints_end(positions)
-
+        
+    def on_waypoints_end(self, restore_positions=None):
+        self.macro.debug("on_waypoints_end() entering...")
+        CScan.on_waypoints_end(self, restore_positions=restore_positions)
+        self.cleanup()
 
     def scan_loop(self):        
         #motion, mg, trigger = self.motion, self.extraMntGrp, self.extraTrigger
@@ -1748,113 +2021,22 @@ class CTScan(CScan):
         if not scream:
             yield 100.0   
 
-    
-#    def scan_loop(self):
-#        self.__mntGrpConfigured = False
-#        self.__triggerConfigured = False
-#        self.__motionConfigured = False
-#        self.__mntGrpStarted = False
-#        self.__triggerStarted = False
-#        self.__motionId = None
-#        
-#        #validation of parameters
-#        for start, end in zip(self.macro.starts, self.macro.ends):
-#            if start == end:
-#                raise Exception("Start and End can not be equal.")
-#
-#        startTimestamp = time.time()
-#        try:
-#            #extra pre configuration
-#            preConfigurationHooks = self.macro.getHooks('pre-configuration')
-#            for hook in preConfigurationHooks:
-#                hook()
-#            self.macro.checkPoint()
-#    
-#            #calculating motion parameters
-#            #@todo: works only with single moveable, extend it for multiple moveables            
-#            preStart, postEnd, accTime, velocities = \
-#                self.extraMotion.calcMotionParameters(self.macro.starts[0], self.macro.ends[0], self.macro.scanTime)
-#    
-#            #configuring trigger lines
-#            oldHighTime, oldLowTime, oldDelay, oldNrOfTriggers = self.extraTrigger.getConfiguration()
-#            self.__triggerConfigured = True
-#            timePerTrigger = self.extraTrigger.configure(delayTime=accTime, scanTime=self.macro.scanTime, nrOfTriggers=self.macro.nrOfTriggers)
-#            self.macro.checkPoint()
-#    
-#            #configuring measurementGroup
-#            self.mntGrpConfiguration = self.extraMntGrp.getConfiguration()
-#            self.__mntGrpConfigured = True
-#            self.extraMntGrp.configure(self.macro.nrOfTriggers, self.macro.acqTime, timePerTrigger)
-#            self.macro.checkPoint()
-#    
-#            #extra pre configuration
-#            postConfigurationHooks = self.macro.getHooks('post-configuration')
-#            for hook in postConfigurationHooks:
-#                hook()
-#            self.macro.checkPoint()
-#    
-#            endTimestamp = time.time()
-#            self.macro.info("Configuration took %s time." % repr(endTimestamp - startTimestamp))
-#    
-#            self.macro.debug("Moving to preStart position: %f" % preStart)
-#            motion = self.macro.getMotion([self.macro.moveable])
-#            motion.move([preStart])
-#            self.macro.checkPoint()
-#    
-#            #extra pre configuration
-#            preStartHooks = self.macro.getHooks('pre-start')
-#            for hook in preStartHooks:
-#                hook()
-#            self.macro.checkPoint()
-#    
-#            self.macro.debug("Starting measurement group")
-#            self.__mntGrpStarted = True
-#            self.extraMntGrp.start()
-#            self.macro.debug("Starting triggers")
-#            self.macro.__triggerStarted = True
-#            self.extraTrigger.start()
-#            self.macro.debug("Configuring motion parameters: accTime: %f; velocities: %s" % (accTime, velocities))
-#            self.do_backup()
-#            self.__motionConfigured = True
-#            self.extraMotion.configure(accTime, velocities)
-#            self.macro.debug("Moving to postEnd position: %f" % postEnd)
-#            self.__motionId = self.extraMotion.startMove(postEnd)
-#            self.macro.debug("Waiting for measurement group to finish")            
-#            while self.extraMntGrp.isMoving():
+    def cleanup(self):
+#        if self.__motionId != None:
+#            self.debug("Waiting for motion to finish")
+#            self.extraMotion.waitMove(self.__motionId)
+#            #temporary, till solve problem of waitMove
+#            while self.extraMotion.isMoving():
 #                self.macro.checkPoint()
 #                time.sleep(0.1)
-#                
-#            self.macro.debug("Getting data")                
-#            dataList = self.extraMntGrp.getDataList()
-#            
-#            self.macro.debug("Storing data")
-#            for record in dataList:
-#                self.data.addRecord(record)
-#            yield 100
-#        except Exception, e:
-#            import traceback
-#            self.macro.debug(traceback.format_exc())
-#            self.macro.error(e)
-#            raise e
-#        finally:
-#            self.cleanup()
-
-    def cleanup(self):
-        if self.__motionId != None:
-            self.debug("Waiting for motion to finish")
-            self.extraMotion.waitMove(self.__motionId)
-            #temporary, till solve problem of waitMove
-            while self.extraMotion.isMoving():
-                self.macro.checkPoint()
-                time.sleep(0.1)
-            self.debug("After waiting...")
+#            self.debug("After waiting...")
 
         startTimestamp = time.time()
 
         if self.__mntGrpStarted:
             self.debug("Stopping measurement group")
             try:
-                self.extraMntGrp.stop()
+                self._measurement_group.stop()
             except Exception, e:
                 self.warning("Exception while trying to stop measurement group.")
                 self.debug(e)
@@ -1876,18 +2058,18 @@ class CTScan(CScan):
                 self.warning("Exception while trying to execute a pre-cleanup hook")
                 self.debug(e)
                 
-        if self.__motionConfigured:
-            self.debug("Restoring configuration of moveables")
-            try:
-                self.do_restore()
-            except:
-                self.warning("Exception while trying to restore motion parameters")
-                self.debug(e)
+#        if self.__motionConfigured:
+#            self.debug("Restoring configuration of moveables")
+#            try:
+#                self.do_restore()
+#            except:
+#                self.warning("Exception while trying to restore motion parameters")
+#                self.debug(e)
 
         if self.__mntGrpConfigured:
             self.debug("Restoring configuration of measurement group")
             try:
-                self.extraMntGrp.setConfiguration(self.mntGrpConfiguration)
+                self._measurement_group.setConfiguration(self.mntGrpConfiguration)
                 #@todo: mntGrp configuration should contain also: nrOfTriggers, acqTime, sampling frequency
             except:
                 self.warning("Exception while trying to restore measurement group parameters")
