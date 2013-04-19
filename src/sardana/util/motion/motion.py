@@ -97,7 +97,7 @@ class MotionPath(object):
         final_pos = final_user_pos * motor.step_per_unit
 
         displacement = abs(final_pos - initial_pos)
-        
+                    
         # in this case active_time forces that the user range
         # correspond to the constant velocity
         # and 
@@ -112,7 +112,7 @@ class MotionPath(object):
             decel_displacement = decel_time * 0.5 * (velocity + base_vel)
             initial_pos -= sign * accel_displacement
             final_pos += sign * decel_displacement
-            displacement = abs(final_pos - initial_pos)
+            displacement = abs(final_pos - initial_pos)            
             self.initial_user_pos = initial_pos
             self.final_user_pos = final_pos
 
@@ -196,7 +196,7 @@ class MotionPath(object):
 
             # time to reach maximum velocity
             if accel == 0 or delta_vel == float('inf'):
-                max_vel_time = 0
+                max_vel_time = 0             
             else:
                 max_vel_time = abs(delta_vel / accel)
     
@@ -223,8 +223,8 @@ class MotionPath(object):
         self.small_motion = small_motion
 
         self.accel = accel
-        self.decel = decel        
-        
+        self.decel = decel
+
         self.displacement_reach_max_vel = displacement_reach_max_vel
         self.displacement_reach_min_vel = displacement_reach_min_vel
         self.max_vel = abs(max_vel) #velocity must be a positive value
@@ -533,8 +533,10 @@ class Motor(BaseMotor):
 
         self.min_vel = vi
 
+        #@todo: consult this solution with others
         if self.max_vel < self.min_vel:
-            self.max_vel = self.min_vel
+            pass
+            #self.max_vel = self.min_vel (original version)
 
         # force recalculation of accelerations
         if self.accel_time >= 0:
@@ -552,9 +554,12 @@ class Motor(BaseMotor):
             raise Exception("Maximum velocity must be > 0")
 
         self.max_vel = vf
-
+        
+        #@todo: consult this solution with others
         if self.min_vel > self.max_vel:
-            self.min_vel = self.max_vel
+            pass
+            #self.min_vel = self.max_vel #accel set to zero (original version)
+            #self.setMinVelocity(0) another solution could be to set it to 0
 
         # force recalculation of accelerations
         if self.accel_time >= 0:
@@ -576,8 +581,8 @@ class Motor(BaseMotor):
             self.accel = (self.max_vel - self.min_vel) / at
         except ZeroDivisionError:
             self.accel = float('inf')
-
         self.__recalculate_acc_constants()
+       
 
     def getAccelerationTime(self):
         return self.accel_time
