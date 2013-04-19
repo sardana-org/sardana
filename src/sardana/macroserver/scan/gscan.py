@@ -52,9 +52,9 @@ from scandata import ColumnDesc, MoveableDesc, ScanFactory, ScanDataEnvironment
 from recorder import OutputRecorder, JsonRecorder, SharedMemoryRecorder, \
     FileRecorder
 
-from contscan.motion import ExtraMotion #@todo: to be removed
-from contscan.mntgrp import ExtraMntGrp
-from contscan.trigger import ExtraTrigger
+#from contscan.motion import ExtraMotion #@todo: to be removed
+#from contscan.mntgrp import ExtraMntGrp
+#from contscan.trigger import ExtraTrigger
 
 class ScanSetupError(Exception): pass
 
@@ -1136,9 +1136,9 @@ class CScan(GScan):
     def do_backup(self):
         super(CScan, self).do_backup()
         self._backup = backup = []
-        for moveable in self.moveables:
+        for moveable in self._physical_moveables:
             # first backup all motor parameters
-            motor = moveable.moveable
+            motor = moveable
             try:
                 velocity = motor.getVelocity()
                 accel_time = motor.getAcceleration()
@@ -1158,7 +1158,7 @@ class CScan(GScan):
             if motor_backup is None:
                 continue
             try:
-                motor = motor_backup['moveable'].moveable
+                motor = motor_backup['moveable']
                 motor.setVelocity(motor_backup['velocity'])
                 motor.setAcceleration(motor_backup['acceleration'])
                 motor.setDeceleration(motor_backup['deceleration'])
@@ -1585,8 +1585,8 @@ class CTScan(CScan):
                        moveables=moveables, env=env, constraints=constraints,
                        extrainfodesc=extrainfodesc)
         #self.extraMotion = ExtraMotion(macro, self.macro.moveable)
-        self.extraMntGrp = ExtraMntGrp(macro)
-        self.extraTrigger = ExtraTrigger(macro)
+        #self.extraMntGrp = ExtraMntGrp(macro)
+        #self.extraTrigger = ExtraTrigger(macro)
             
         
     def prepare_waypoint(self, waypoint, start_positions, iterate_only=False):
@@ -1599,6 +1599,9 @@ class CTScan(CScan):
         max_acc_time, max_dec_time = 0, 0                
         for moveable, end_position in zip(self._physical_moveables, positions):
             motor = moveable
+            self.macro.debug("Motor: %s" % motor.getName())
+            self.macro.debug("AccTime: %f" % self.get_min_acc_time(motor))
+            self.macro.debug("DecTime: %f" % self.get_min_dec_time(motor))
             max_acc_time = max(self.get_min_acc_time(motor), max_acc_time)
             max_dec_time = max(self.get_min_dec_time(motor), max_dec_time)
             
@@ -1665,8 +1668,15 @@ class CTScan(CScan):
             # prepare motor(s) to move with their maximum velocity
             for path in motion_paths:
                 motor = path.moveable
-                motor.setVelocity(path.max_vel)  
-                motor.setAcceleration(path.max_vel_time)
+                self.macro.debug("Motor: %s" % motor.getName())
+                self.macro.debug("Velocity: %f" % path.max_vel)
+                self.macro.debug("AccTime: %f" % path.max_vel_time)
+                self.macro.debug("DecTime: %f" % path.min_vel_time)
+                #@todo: check why we have 0 here
+                #if 0 in [path.max_vel, path.max_vel_time, path.min_vel_time]:
+                #    continue
+                motor.setVelocity(path.max_vel)
+                motor.setAcceleration(path.max_vel_time)                
                 motor.setDeceleration(path.min_vel_time)
                 
             if macro.isStopped():
@@ -1676,6 +1686,7 @@ class CTScan(CScan):
             self.motion_event.set()
             
             # move to waypoint end position
+            self.macro.debug("Moving to waypoint position: %s" % repr(final_pos))
             motion.move(final_pos)
 
             self.motion_event.clear()
@@ -1694,7 +1705,7 @@ class CTScan(CScan):
 
 
     def scan_loop(self):        
-        motion, mg, trigger = self.motion, self.extraMntGrp, self.extraTrigger
+        #motion, mg, trigger = self.motion, self.extraMntGrp, self.extraTrigger
         macro = self.macro
         manager = macro.getManager()
         scream = False
