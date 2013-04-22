@@ -36,6 +36,7 @@ import datetime
 import operator
 import time
 import threading
+import numpy as np
 
 import PyTango
 import taurus
@@ -622,7 +623,6 @@ class GScan(Logger):
         :return: (list<ColumnDesc>) a list of :class:`ColumnDesc`, each including a 
                  "pre_scan_value" attribute with the read value for that attr
         '''
-        import PyTango,numpy
         manager = self.macro.getManager()
         all_elements_info = manager.get_elements_with_interface('Element')
         ret = []
@@ -641,8 +641,8 @@ class GScan(Logger):
                 
                 v = PyTango.AttributeProxy(column.source).read().value #@Fixme: Tango-centric. It should work for any Taurus Attribute
                 column.pre_scan_value = v
-                column.shape = numpy.shape(v)
-                column.dtype = getattr(v, 'dtype', numpy.dtype(type(v))).name
+                column.shape = np.shape(v)
+                column.dtype = getattr(v, 'dtype', np.dtype(type(v))).name
                 ret.append(column)
             except:
                 self.macro.warning('Error taking pre-scan snapshot of %s (%s)',label,src)
@@ -1952,7 +1952,7 @@ class CTScan(CScan):
                 for moveable, start, final in zip(moveables, starts, finals):
                     name = moveable.moveable.getName()
                     step_size = abs((end-start)/nr_of_points)
-                    for point_nr, position in enumerate(xrange(start, \
+                    for point_nr, position in enumerate(np.arange(start, \
                                                             final, step_size)):
                         positions_records[point_nr][name] = position    
                     
