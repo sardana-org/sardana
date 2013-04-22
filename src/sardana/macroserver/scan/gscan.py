@@ -1947,13 +1947,13 @@ class CTScan(CScan):
                 nr_of_points = self.macro.nr_of_points
                 starts = self.macro.starts
                 finals = self.macro.finals
-                positions_records = [{} for i in range(nr_of_points)]
+                positions_records = [{} for i in xrange(nr_of_points)]
                 
                 for moveable, start, final in zip(moveables, starts, finals):
                     name = moveable.moveable.getName()
                     step_size = abs((end-start)/nr_of_points)
-                    for point_nr, position in \
-                         enumerate((i for i in range(start, final, step_size))):
+                    for point_nr, position in enumerate(xrange(start, \
+                                                            final, step_size)):
                         positions_records[point_nr][name] = position    
                     
                 return positions_records
