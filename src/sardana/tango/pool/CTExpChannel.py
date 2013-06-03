@@ -33,9 +33,10 @@ import sys
 import time
 
 from PyTango import DevFailed, DevVoid, DevDouble, DevState, AttrQuality, \
-    Except, READ, SCALAR
+    DevString, Except, READ, SCALAR
 
 from taurus.core.util.log import DebugIt
+from taurus.core.util.codecs import CodecFactory
 
 from sardana import State, SardanaServer
 from sardana.sardanaattribute import SardanaAttribute
@@ -48,6 +49,7 @@ class CTExpChannel(PoolElementDevice):
 
     def __init__(self, dclass, name):
         PoolElementDevice.__init__(self, dclass, name)
+        self.codec = CodecFactory().getCodec('json')
 
     def init(self, name):
         PoolElementDevice.init(self, name)
@@ -134,10 +136,35 @@ class CTExpChannel(PoolElementDevice):
                 state = self.ct.get_state()
                 if state == State.Moving:
                     quality = AttrQuality.ATTR_CHANGING
-                    
+                attr, value = self.prepare_ct_data(value)
+                if attr == None:
+                    return
+
         self.set_attribute(attr, value=value, w_value=w_value,
                            timestamp=timestamp, quality=quality,
                            priority=priority, error=error, synch=False)
+        
+    def prepare_ct_data(self, data):
+        """Prepares value to be passed via communication channel - Tango Events.
+        
+        :param data: any python type e.g. list, float
+        
+        :return: (attr,value) attribute and value 
+        :rtype: :(class:`taurus.TaurusAttribute`, object)"""
+        
+        if isinstance(data,list):
+            if len(data) == 0:
+                return None, None
+            name = 'Data'            
+            _, value = self.codec.encode(('', data))
+        else:
+            name = 'Value'
+            if isinstance(data, float):            
+                value = data
+            else:            
+                value = None
+        attr = self.get_attribute_by_name(name)
+        return attr, value        
 
     def always_executed_hook(self):
         #state = to_tango_state(self.ct.get_state(cache=False))
@@ -217,8 +244,9 @@ class CTExpChannelClass(PoolElementDeviceClass):
     attr_list.update(PoolElementDeviceClass.attr_list)
 
     standard_attr_list = {
-        'Value'     : [ [ DevDouble, SCALAR, READ ],
-                        { 'abs_change' : '1.0', } ],
+            'Value'     : [ [ DevDouble, SCALAR, READ ],
+                            { 'abs_change' : '1.0', } ],
+            'Data' : [ [ DevString, SCALAR, READ ] ] #@TODO: think about DevEncoded
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
     

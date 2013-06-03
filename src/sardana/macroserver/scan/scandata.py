@@ -189,7 +189,8 @@ class RecordEnvironment(dict):
     """  A RecordEnvironment is a set of arbitrary pairs of type
     label/value in the form of a dictionary.
     """
-    __needed = ['title', 'labels']
+    __needed = ['title', 'labels'] #@TODO: it seems that this has changed
+                                   #now labels are separated in moveables and counters 
 
     def isValid(self):
         """ Check valid environment = all needed keys present """
@@ -256,6 +257,21 @@ class RecordList(dict):
 
     def start(self):
         self.recordno = 0
+        ####@TODO: it is necessary only by continuous scan
+        ####       think how to separate this two cases
+        self.columnIndexDict = {}
+        self.labels = []
+        self.refMoveablesLabels = []
+        self.currentIndex = 0
+        
+        for dataDesc in self.getEnvironValue('datadesc'):
+            if isinstance(dataDesc, MoveableDesc):
+                self.refMoveablesLabels.append(dataDesc.name)
+            self.labels.append(dataDesc.name)        
+        
+        for label in self.labels:
+            self.columnIndexDict[label] = 0
+        ####
         self.datahandler.startRecordList(self)
 
     def addRecord(self, record):
@@ -266,7 +282,53 @@ class RecordList(dict):
         self.recordno += 1
 
         self.datahandler.addRecord(self, rc)
-
+        
+    def addData(self, data):
+        """Adds data to the record list
+        
+        :param data: dictionary with two mandatory elements: label - string 
+                     and data - list of values
+        :type data:  dict"""
+        #TODO: re-implement to handle list of data
+        label = data['label']
+        rawData = data['data']
+        rawDataLen = len(rawData)
+        recordsLen = len(self.records)
+        columnIndex = self.columnIndexDict[label]
+        missingRecords = recordsLen - (columnIndex + rawDataLen)
+        
+        #TODO: implement proper handling of timestamps and moveables 
+        if missingRecords < 0:
+            missingRecords = abs(missingRecords)
+            for _ in range(missingRecords):
+                rc = Record({'point_nb' : self.recordno,'timestamp': None})
+                for refMoveableLabel in self.refMoveablesLabels:
+                    rc.data[refMoveableLabel] = None
+                self.records.append(rc)
+                self.recordno += 1
+                
+        for value in rawData:
+            rc = self.records[columnIndex]
+            rc.setRecordNo(columnIndex)
+            rc.data[label] = value
+            if self.isRecordCompleted(self.currentIndex):
+                self.datahandler.addRecord(self, rc)
+                self.currentIndex +=1
+                
+            columnIndex += 1                        
+            self.columnIndexDict[label] = columnIndex
+            
+            
+    def isRecordCompleted(self, recordno):
+        rc = self.records[recordno]
+        for label in self.labels:
+            if not rc.data.has_key(label):
+                print 'Mising label: ', label
+                return False
+            print 'Present label',label
+        rc.completed = 1
+        return True
+                    
     def addRecords(self, records):
         map(self.addRecord, records)
 

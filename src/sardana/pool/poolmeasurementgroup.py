@@ -425,6 +425,9 @@ class PoolMeasurementGroup(PoolGroupElement):
             # skip external channels
             if type(ctrl) is str:
                 continue
+            # telling controller in which acquisition mode it will participate                 
+            ctrl.set_ctrl_par('acquisition_mode', self.acquisition_mode)
+            #@TODO: fix optimization and enable it again
             if ctrl.operator == self and not force and not self._config_dirty:
                 continue
             ctrl.operator = self
@@ -488,6 +491,7 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     def set_acquisition_mode(self, acquisition_mode, propagate=1):
         self._acquisition_mode = acquisition_mode
+        self._config_dirty = True #acquisition mode goes to configuration
         if not propagate:
             return
         self.fire_event(EventType("acquisition_mode", priority=propagate),
@@ -507,9 +511,9 @@ class PoolMeasurementGroup(PoolGroupElement):
             self.load_configuration()
             # start acquisition
             kwargs = dict(head=self, config=self._config, multiple=multiple)
-            if self.acquisition_mode == AcqMode.Timer:
+            if self.acquisition_mode in [AcqMode.Timer, AcqMode.ContTimer]:
                 kwargs["integ_time"] = self._integration_time
-            elif self.acquisition_mode == AcqMode.Monitor:
+            elif self.acquisition_mode in [AcqMode.Monitor, AcqMode.ContMonitor]:
                 kwargs["monitor_count"] = self._monitor_count
             self.acquisition.run(**kwargs)
 

@@ -831,6 +831,8 @@ class CounterTimerController(Controller, Readable, Startable, Stopable, Loadable
     standard_axis_attributes = {
         'Value'       : { 'type' : float,
                           'description' : 'Value', },
+        'Data'       : { 'type' : str,
+                          'description' : 'Data', },
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 

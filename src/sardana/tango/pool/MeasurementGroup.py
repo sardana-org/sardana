@@ -200,6 +200,9 @@ class MeasurementGroup(PoolGroupDevice):
         except:
             raise Exception("Cannot acquire: already involved in an operation")
         self.measurement_group.start_acquisition()
+        
+    def Stop(self):
+        self.measurement_group.stop()
 
     def StartMultiple(self, n):
         try:

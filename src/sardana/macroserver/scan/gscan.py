@@ -40,8 +40,11 @@ import numpy as np
 
 import PyTango
 import taurus
+
 from taurus.core.util import USER_NAME, Logger
+from taurus.core.util.codecs import CodecFactory
 from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
+from taurus.core.tango.sardana import AcqMode
 from taurus.core.tango.sardana.pool import Ready
 
 from sardana.util.tree import BranchNode, LeafNode, Tree
@@ -53,10 +56,6 @@ from sardana.macroserver.msparameter import Type
 from scandata import ColumnDesc, MoveableDesc, ScanFactory, ScanDataEnvironment
 from recorder import OutputRecorder, JsonRecorder, SharedMemoryRecorder, \
     FileRecorder
-
-#from contscan.motion import ExtraMotion #@todo: to be removed
-#from contscan.mntgrp import ExtraMntGrp
-#from contscan.trigger import ExtraTrigger
 
 class ScanSetupError(Exception): pass
 
@@ -1650,14 +1649,37 @@ class CTScan(CScan):
                 slave.Stop()
             if self.master != None:
                 self.master.Stop()
-
-    
+            
     class ExtraMntGrp:
+        
+        class OnDataChangedCb(taurus.core.TaurusListener):
+            
+            count_event = 0
+        
+            def __init__(self, recordList):
+                taurus.core.TaurusListener.__init__(self, 'OnDataChangedCb')
+                self.recordList = recordList
+                self.codec = CodecFactory().getCodec('json')
+                CTScan.ExtraMntGrp.OnDataChangedCb.count_event = 0
+                
+            def eventReceived(self, event_src, event_type, event_value):
+                #@TODO, why it is CHANGE_EVENT????????? understand me!!!!!!!!
+                if event_type == PyTango.EventType.CHANGE_EVENT: 
+                    value = event_value.value
+                    _, data = self.codec.decode(('json', value),
+                                                ensure_ascii=True)
+
+                    channelName = event_src.getParentObj().getFullName()
+                    info = {'label' : channelName, 'data' : data} 
+                    self.recordList.addData(info)
+                    CTScan.ExtraMntGrp.OnDataChangedCb.count_event += 1                
+                    print type(data), data 
 
         def __init__(self, macro):
             self.macro = macro
             activeMntGrpName = self.macro.getEnv("ActiveMntGrp")
-            self.mntGrp = self.macro.getMeasurementGroup(activeMntGrpName)        
+            self.mntGrp = self.macro.getMeasurementGroup(activeMntGrpName)
+            self.dataCb = self.OnDataChangedCb(self.macro.data)        
             self.activeChannels = []
             self.nrOfTriggers = 0
             channels = self.mntGrp.getChannels()
@@ -1674,34 +1696,11 @@ class CTScan(CScan):
             return False
     
         def start(self):
-            for channel in self.activeChannels:
-                pool = channel.getPoolObj()
-                ctrlName = channel.getControllerName()
-                axis = channel.getAxis()
-                self.macro.debug("Pre-starting controller: %s, axis: %d", ctrlName, axis)
-                pool.SendToController([ctrlName, 'pre-start %d' % axis])
-    
-            for channel in self.activeChannels:
-                pool = channel.getPoolObj()
-                ctrlName = channel.getControllerName()
-                axis = channel.getAxis()
-                self.macro.debug("Starting controller: %s, axis: %d", ctrlName, axis)
-                pool.SendToController([ctrlName, 'start %d' % axis])
+            self.mntGrp.start_async_acq_sequence(self.acqTime, self.dataCb)
      
         def stop(self):
-            for channel in self.activeChannels:
-                pool = channel.getPoolObj()
-                ctrlName = channel.getControllerName()
-                axis = channel.getAxis()
-                self.macro.debug("Pre-stopping controller: %s, axis: %d", ctrlName, axis)
-                pool.SendToController([ctrlName, 'pre-stop %d' % axis])
-    
-            for channel in self.activeChannels:
-                pool = channel.getPoolObj()
-                ctrlName = channel.getControllerName()
-                axis = channel.getAxis()
-                self.macro.debug("Stopping controller: %s, axis: %d", ctrlName, axis)
-                pool.SendToController([ctrlName, 'stop %d' % axis])
+            self.mntGrp.removeOnDataChangedListeners(self.dataCb)
+            self.mntGrp.stop()
     
         def getDataList(self):
             dataList = [ {"point_nb" : i, "timestamp" : 0} for i in xrange(self.nrOfTriggers) ]
@@ -1729,17 +1728,20 @@ class CTScan(CScan):
         def setNrOfTriggers(self, nrOfTriggers):
             self.nrOfTriggers = nrOfTriggers
             for channel in self.activeChannels:
+                self.macro.debug("setNrOfTriggers(%d): channel=%s" % (nrOfTriggers,channel.getName()))
                 channel.getAttribute('NrOfTriggers').write(nrOfTriggers)
+                
+        def setDataCb(self, cb):
+            self.dataCb = cb
     
         def configure(self, nrOfTriggers, acqTime, timePerTrigger, sampFreq=-1, triggerMode="gate"):
             self.macro.debug("acqTime: %s" % acqTime)
             if timePerTrigger == None:
                 raise Exception("TimePerTrigger attribute must be set")
-            acqTime = timePerTrigger * acqTime / 100.0
-            self.setTriggerMode(triggerMode)
+            acqTime = timePerTrigger * acqTime / 100.0            
             self.setNrOfTriggers(nrOfTriggers)
             self.setSamplingFrequency(sampFreq)
-            self.setAcquisitionTime(acqTime)
+            self.acqTime = acqTime
             self.macro.debug("MG: nrOfTriggers: %s, timePerTrigger: %s, acqTime: %s, sampFreq: %s" % (nrOfTriggers,timePerTrigger,acqTime,sampFreq))
     
         def getConfiguration(self):
@@ -1754,7 +1756,6 @@ class CTScan(CScan):
         CScan.__init__(self, macro, generator=generator,
                        moveables=moveables, env=env, constraints=constraints,
                        extrainfodesc=extrainfodesc)
-        #self.extraMotion = ExtraMotion(macro, self.macro.moveable)
         self._measurement_group = self.ExtraMntGrp(macro)
         self.extraTrigger = self.ExtraTrigger(macro)
             
@@ -1845,12 +1846,7 @@ class CTScan(CScan):
             for hook in preConfigurationHooks:
                 hook()
             self.macro.checkPoint()
-    
-            #calculating motion parameters
-            #@todo: works only with single moveable, extend it for multiple moveables            
-#            preStart, postEnd, accTime, velocities = \
-#                self.extraMotion.calcMotionParameters(self.macro.starts[0], self.macro.ends[0], self.macro.scanTime)
-    
+        
             #configuring trigger lines
             oldHighTime, oldLowTime, oldDelay, oldNrOfTriggers = \
                                         self.extraTrigger.getConfiguration()
@@ -1863,6 +1859,7 @@ class CTScan(CScan):
             #configuring measurementGroup
             self.mntGrpConfiguration = self._measurement_group.getConfiguration()
             self.__mntGrpConfigured = True
+            self._measurement_group.mntGrp.setAcquisitionMode('ContTimer')
             self._measurement_group.configure(self.macro.nr_of_points, 
                                        self.macro.acq_time, 
                                        timePerTrigger)
@@ -1939,32 +1936,32 @@ class CTScan(CScan):
                 self.macro.checkPoint()
                 time.sleep(0.1)
                 
-            self.macro.debug("Getting data")                
-            data_list = self._measurement_group.getDataList()
-            
-            def populate_ideal_positions():
-                moveables = self.moveables
-                nr_of_points = self.macro.nr_of_points
-                starts = self.macro.starts
-                finals = self.macro.finals
-                positions_records = [{} for i in xrange(nr_of_points)]
-                
-                for moveable, start, final in zip(moveables, starts, finals):
-                    name = moveable.moveable.getName()
-                    step_size = abs((end-start)/nr_of_points)
-                    for point_nr, position in enumerate(np.arange(start, \
-                                                            final, step_size)):
-                        positions_records[point_nr][name] = position    
-                    
-                return positions_records
-            
-            #@todo: decide what to do with moveables
-            position_list = populate_ideal_positions()
-
-            self.macro.debug("Storing data")
-            for data_dict, position_dict in zip(data_list,position_list):
-                data_dict.update(position_dict)
-                self.data.addRecord(data_dict)    
+#            self.macro.debug("Getting data")                
+#            data_list = self._measurement_group.getDataList()
+#            
+#            def populate_ideal_positions():
+#                moveables = self.moveables
+#                nr_of_points = self.macro.nr_of_points
+#                starts = self.macro.starts
+#                finals = self.macro.finals
+#                positions_records = [{} for i in xrange(nr_of_points)]
+#                
+#                for moveable, start, final in zip(moveables, starts, finals):
+#                    name = moveable.moveable.getName()
+#                    step_size = abs((end-start)/nr_of_points)
+#                    for point_nr, position in enumerate(np.arange(start, \
+#                                                            final, step_size)):
+#                        positions_records[point_nr][name] = position    
+#                    
+#                return positions_records
+#            
+#            #@todo: decide what to do with moveables
+#            position_list = populate_ideal_positions()
+#
+#            self.macro.debug("Storing data")
+#            for data_dict, position_dict in zip(data_list,position_list):
+#                data_dict.update(position_dict)
+#                self.data.addRecord(data_dict)    
             ############
             
             if start_positions is None:  
@@ -2022,15 +2019,6 @@ class CTScan(CScan):
             yield 100.0   
 
     def cleanup(self):
-#        if self.__motionId != None:
-#            self.debug("Waiting for motion to finish")
-#            self.extraMotion.waitMove(self.__motionId)
-#            #temporary, till solve problem of waitMove
-#            while self.extraMotion.isMoving():
-#                self.macro.checkPoint()
-#                time.sleep(0.1)
-#            self.debug("After waiting...")
-
         startTimestamp = time.time()
 
         if self.__mntGrpStarted:
@@ -2056,15 +2044,7 @@ class CTScan(CScan):
                 hook()
             except Exception, e:
                 self.warning("Exception while trying to execute a pre-cleanup hook")
-                self.debug(e)
-                
-#        if self.__motionConfigured:
-#            self.debug("Restoring configuration of moveables")
-#            try:
-#                self.do_restore()
-#            except:
-#                self.warning("Exception while trying to restore motion parameters")
-#                self.debug(e)
+                self.debug(e)            
 
         if self.__mntGrpConfigured:
             self.debug("Restoring configuration of measurement group")

@@ -356,13 +356,16 @@ class SardanaDevice(Device_4Impl, Logger):
             if w_value is not None and isinstance(attr, WAttribute):
                 attr.set_write_value(w_value)
             if fire_event:
-                if data_type == ArgType.DevEncoded:
-                    fmt, data = value
-                    args = attr_name, fmt, data, timestamp, quality
-
+                if attr_name == "data":                    
+                    args = attr_name, [], [], value, timestamp, quality
+                    self.push_event(*args) #data attribute requires USER_EVENT
                 else:
-                    args = attr_name, value, timestamp, quality
-                self.push_change_event(*args)
+                    if data_type == ArgType.DevEncoded:
+                        fmt, data = value
+                        args = attr_name, fmt, data, timestamp, quality
+                    else:
+                        args = attr_name, value, timestamp, quality
+                    self.push_change_event(*args)
             else:
                 if data_type == ArgType.DevEncoded:
                     fmt, data = value
