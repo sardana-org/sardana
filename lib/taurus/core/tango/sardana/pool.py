@@ -45,7 +45,7 @@ import traceback
 from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
     DeviceProxy
 
-from taurus import Factory, Device
+from taurus import Factory, Device, Attribute
 from taurus.core.taurusbasetypes import TaurusEventType, TaurusSWDevState, \
     TaurusSerializationMode
 from taurus.core.taurusvalidator import AttributeNameValidator
@@ -57,7 +57,7 @@ from taurus.core.util.event import EventGenerator, AttributeEventWait, \
     AttributeEventIterator
 from taurus.core.tango import TangoDevice, FROM_TANGO_TO_STR_TYPE
 
-from .sardana import BaseSardanaElementContainer, BaseSardanaElement
+from .sardana import BaseSardanaElementContainer, BaseSardanaElement, AcqMode
 from .motion import Moveable, MoveableSource
 
 Ready = Standby = DevState.ON
@@ -1441,7 +1441,39 @@ class MeasurementGroup(PoolElement):
             return
         self._last_integ_time = ctime
         self.getIntegrationTimeObj().write(ctime)
+        
+    def getAcquisitionModeObj(self):
+        return self._getAttrEG('AcquisitionMode')
+    
+    def getAcquisitionMode(self):
+        return self._getAttrValue('AcquisitionMode')
+    
+    def setAcquisitionMode(self, acqMode):
+        self.getAcquisitionModeObj().write(acqMode)
+        
+    def addOnDataChangedListeners(self, listener):
+        '''Adds listener which receives data events. Used in online data 
+        collection while acquiring.'''
+        for channel in self.getChannels():
+            attrName = '%s/%s' % (channel['full_name'], "data")
+            self.addAttrListener(attrName, listener,
+                                 PyTango.EventType.USER_EVENT)        
 
+    def removeOnDataChangedListeners(self, listener):
+        '''Removes listener which receives data events. Used in online data 
+        collection while acquiring.'''
+        for channel in self.getChannels():
+            attrName = '%s/%s' % (channel['full_name'], "data")
+            self.removeAttrListener(attrName, listener)        
+
+    def addAttrListener(self, attrName, listener, event_event):
+        attr = Attribute(attrName)
+        attr.addListener(listener, event_type)
+       
+    def removeAttrListener(self, attrName, listener):
+        attr = Attribute(attrName)    
+        attr.removeListener(listener)
+        
     def _start(self, *args, **kwargs):
         self.Start()
         
@@ -1457,11 +1489,33 @@ class MeasurementGroup(PoolElement):
         ret = self.getStateEG().readValue(), self.getValues()
         self._total_go_time = time.time() - start_time        
         return ret
+    
+    def start_async_acq_sequence(self, *args, **kwargs):
+        '''starts continuous acquisition - a sequence of acquisitions, triggered
+        by external events, could be used e.g. in continuous scans.
+        Expects at least one parameter - integration time per single acquisition.
+        Optionally receives a TaurusListener as a callback for on data changed 
+        events.  
+
+        :param args[0]: (int) integration time per single acquisition
+        :param args[1]: (TaurusListener) listener called on data changed event
+        '''
+        cfg = self.getConfiguration()
+        cfg.prepare()
+        integ_time = args[0]
+        if integ_time is None or integ_time == 0:
+            raise Exception('Integration time must be non zero')
+        self.putIntegrationTime(integ_time)
+        if len(args) > 1:        
+            onDataChangedListener = args[1]
+            self.addOnDataChangedListeners(onDataChangedListener)
+        self.Start()
 
     startCount = PoolElement.start
     waitCount = PoolElement.waitFinish
     count = go
     stopCount = PoolElement.abort
+    stop = PoolElement.stop
 
 
 class IORegister(PoolElement):
