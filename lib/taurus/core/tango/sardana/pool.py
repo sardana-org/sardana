@@ -43,7 +43,7 @@ import operator
 import traceback
 
 from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
-    DeviceProxy
+    DeviceProxy, EventType
 
 from taurus import Factory, Device, Attribute
 from taurus.core.taurusbasetypes import TaurusEventType, TaurusSWDevState, \
@@ -1457,7 +1457,7 @@ class MeasurementGroup(PoolElement):
         for channel in self.getChannels():
             attrName = '%s/%s' % (channel['full_name'], "data")
             self.addAttrListener(attrName, listener,
-                                 PyTango.EventType.USER_EVENT)        
+                                 EventType.USER_EVENT)        
 
     def removeOnDataChangedListeners(self, listener):
         '''Removes listener which receives data events. Used in online data 
@@ -1466,7 +1466,7 @@ class MeasurementGroup(PoolElement):
             attrName = '%s/%s' % (channel['full_name'], "data")
             self.removeAttrListener(attrName, listener)        
 
-    def addAttrListener(self, attrName, listener, event_event):
+    def addAttrListener(self, attrName, listener, event_type):
         attr = Attribute(attrName)
         attr.addListener(listener, event_type)
        
