@@ -1617,6 +1617,8 @@ class CTScan(CScan):
             else:
                 raise Exception("Missing parameters.")
             
+            if self.master.State() != PyTango.DevState.STANDBY:
+                self.master.Stop()
             self.master.write_attribute("InitialDelayTime", delayTime)
             self.master.write_attribute("HighTime", highTime) # 162.5 ns
             self.master.write_attribute("LowTime", lowTime) # 2.75 ms
@@ -1625,6 +1627,8 @@ class CTScan(CScan):
             self.master.write_attribute("SampleTimingType", "Implicit")
     
             for slave in self.slaves:
+                if slave.State() != PyTango.DevState.STANDBY:
+                    slave.Stop()
                 slave.write_attribute("HighTime", highTime) # 162.5 ns
                 slave.write_attribute("LowTime", lowTime) # 2.75 ms
                 slave.write_attribute("SampPerChan", long(nrOfTriggers))
