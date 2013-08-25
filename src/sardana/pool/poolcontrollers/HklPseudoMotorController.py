@@ -39,6 +39,8 @@ __all__ = ["Diffrac6C", "DiffracE6C", "DiffracK6C",
            "Diffrac4C", "DiffracE4C", "DiffracK4C", "Diffrac4CZAXIS",
            "Diffrac2C"]
 
+__docformat__ = 'restructuredtext'
+
 import math
 
 from sardana import State, DataAccess
