@@ -35,6 +35,10 @@ __copyright__ = ("Copyright (c) 2013 PetraIII, "
                  "BP 48 91192 GIF-sur-YVETTE CEDEX")
 __license__ = 'LGPL-3+'
 
+__all__ = ["Diffrac6C", "DiffracE6C", "DiffracK6C",
+           "Diffrac4C", "DiffracE4C", "DiffracK4C", "Diffrac4CZAXIS",
+           "Diffrac2C"]
+
 import math
 
 from sardana import State, DataAccess
