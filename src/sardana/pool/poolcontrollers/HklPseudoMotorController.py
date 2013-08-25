@@ -42,30 +42,19 @@ __all__ = ["Diffrac6C", "DiffracE6C", "DiffracK6C",
 __docformat__ = 'restructuredtext'
 
 import math
+import os
+import time
 
-from sardana import State, DataAccess
-from sardana.pool.controller import PseudoMotorController
-from sardana.pool.controller import Type, Access, Description, DefaultValue
-from sardana.pool.controller import Memorize, NotMemorized, MemorizedNoInit
-from sardana.pool import PoolUtil
-
-ReadOnly = DataAccess.ReadOnly
-ReadWrite = DataAccess.ReadWrite
-
-import math
-import numpy
-import matplotlib
-matplotlib.use('Agg')
-
-import matplotlib.pyplot as plt
-
-from matplotlib.backends.backend_pdf import PdfPages
-from matplotlib import rcParams
 from gi.repository import GLib
 from gi.repository import Hkl
 
-import os
-import time
+from sardana import DataAccess
+from sardana.pool.controller import PseudoMotorController
+from sardana.pool.controller import Type, Access, Description
+from sardana.pool.controller import Memorize, MemorizedNoInit
+
+ReadOnly = DataAccess.ReadOnly
+ReadWrite = DataAccess.ReadWrite
 
 
 class DiffracBasis(PseudoMotorController):
