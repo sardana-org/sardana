@@ -29,7 +29,7 @@ for the Sardana Device Pool"""
 
 __author__ = ("Maria-Teresa Nunez-Pardo-de-Verra <tnunez@mail.desy.de>, "
               "Picca Frédéric-Emmanuel <picca@synchrotron-soleil.fr>")
-__copyright__ = ("Copyright (c) 2013 PetraIII, "
+__copyright__ = ("Copyright (c) 2013 DESY "
                  "Copyright (c) 2013 Synchrotron-Soleil "
                  "L'Orme des Merisiers Saint-Aubin "
                  "BP 48 91192 GIF-sur-YVETTE CEDEX")
