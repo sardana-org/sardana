@@ -325,7 +325,6 @@ def main():
     
     parser = taurus.core.util.argparse.get_taurus_parser()
     parser.usage = "%prog [options] <model>"
-    taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser)
 
     app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser)
     args = app.get_command_line_args()
