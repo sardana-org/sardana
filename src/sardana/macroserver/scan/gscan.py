@@ -1889,6 +1889,11 @@ class CTScan(CScan):
             for path in motion_paths:
                 motor = path.moveable
                 self.macro.debug("Motor: %s" % motor.getName())
+                self.macro.debug('start_user: %f; ' % path._initial_user_pos +
+                                 'end_user: %f; ' %  path._final_user_pos +
+                                 'start: %f; ' % path.initial_pos + 
+                                 'end: %f; ' % path.final_pos +
+                                 'ds: %f' % (path.final_pos - path.initial_pos))
                 self.macro.debug("Velocity: %f" % path.max_vel)
                 self.macro.debug("AccTime: %f" % path.max_vel_time)
                 self.macro.debug("DecTime: %f" % path.min_vel_time)

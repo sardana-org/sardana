@@ -75,7 +75,9 @@ class MotionPath(object):
                        final_user_pos, 
                        active_time=None):
         self.motor = motor
+        self._initial_user_pos = initial_user_pos
         self.initial_user_pos = initial_user_pos
+        self._final_user_pos = final_user_pos
         self.final_user_pos = final_user_pos
         self.active_time = active_time
         self._calculateMotionPath()
@@ -550,8 +552,10 @@ class Motor(BaseMotor):
     def setMaxVelocity(self, vf):
         """ Sets the maximum velocity in ms^-1."""
         vf = float(vf)
-        if vf <= 0:
-            raise Exception("Maximum velocity must be > 0")
+        # jmoldes replaced <= by <, because otherwise failed
+        # (check if this is correct)
+        if vf < 0: 
+            raise Exception("Maximum velocity must be >= 0")
 
         self.max_vel = vf
         
