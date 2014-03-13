@@ -39,6 +39,7 @@ from taurus.qt import Qt
 from taurus.core.util.log import Logger
 from taurus.core.util.singleton import Singleton
 
+import taurus.qt.qtgui.base
 
 def _getWidgetsOfType(widget, widgets, class_or_type_or_tuple):
     
@@ -141,7 +142,7 @@ class TaurusWidgetFactory(Singleton, Logger):
         designer_path = os.environ.get('TAURUSQTDESIGNERPATH')
         if designer_path is None:
             return taurus_ret
-        designer_path = designer_path.split(":")
+        designer_path = designer_path.split(os.path.pathsep)
         for path in designer_path:
             self._addExtraTaurusWidgetsPath(taurus_ret, qt_widgets, path)
     

@@ -37,12 +37,13 @@ __docformat__ = 'restructuredtext'
 
 import copy
 
-import taurus
-from taurus.core.util import Logger
+from taurus.core.taurushelper import getLogLevel
+from taurus.core.util.log import Logger
 
 from sardana import DataAccess
 from sardana.sardanavalue import SardanaValue
-from .pooldefs import ControllerAPI, AcqTriggerType, AcqMode
+from sardana.pool.pooldefs import ControllerAPI, AcqTriggerType, AcqMode
+
 
 #: Constant data type (to be used as a *key* in the definition of
 #: :attr:`~Controller.axis_attributes` or :attr:`~Controller.ctrl_attributes`)
@@ -92,6 +93,7 @@ NotMemorized = "false"
 #: Constant MaxDimSize (to be used as a *key* in the definition of
 #: :attr:`~Controller.axis_attributes` or :attr:`~Controller.ctrl_attributes`)
 MaxDimSize = "maxdimsize"
+
 
 class Controller(object):
     """Base controller class. Do **NOT** inherit from this class directly
@@ -297,7 +299,7 @@ class Controller(object):
     def __init__(self, inst, props, *args, **kwargs):
         self._inst_name = inst
         self._log = Logger("Controller.%s" % inst)
-        self._log.log_obj.setLevel(taurus.getLogLevel())
+        self._log.log_obj.setLevel(getLogLevel())
         self._args = args
         self._kwargs = kwargs
         self._api_version = self._findAPIVersion()
