@@ -26,11 +26,6 @@
 
 __docformat__ = "restructuredtext"
 
-__svn_revision = '$Rev::         $'
-try:
-    __svn_revision = int(__svn_revision[7:14])
-except:
-    __svn_revision = 0
 
 """
 Release data for the taurus project. It contains the following members:
@@ -54,22 +49,24 @@ name = 'sardana'
 #: the new substring. We have to avoid using either dashes or underscores,
 #: because bdist_rpm does not accept dashes (an RPM) convention, and
 #: bdist_deb does not accept underscores (a Debian convention).
-version_info = (1, 2, 0, 'dev', __svn_revision)
+version_info = (1, 3, 1, 'rc', 0)
 version = '.'.join(map(str, version_info[:3]))
-
-#: svn revision number
 revision = str(version_info[4])
 
-description = "Sardana is a generic program for control applications in large and small installations"
+description = "instrument control and data acquisition system"
 
-long_description = """Produce a modular, high performance, robust and generic user environment 
-for control applications in large and small installations. 
-Make Sardana the generic user environment distributed in the TANGO project 
-and the standard basis of collaborations in control."""
-
+long_description = \
+'''Sardana is a Supervision, Control And Data Acquisition (SCADA) system for
+ scientific installations. It is written in Python and based on the TANGO
+ library. The hardware control and data acquisition routines can be
+ accessed via an IPython console and a generic graphical user interface
+ (both of which are easily extensible by the user).'''
+ 
 license = 'LGPL'
 
-authors = {'Tiago'          : ('Tiago Coutinho','tcoutinho@cells.es') }
+authors = {'Tiago'          : ('Tiago Coutinho','tiago.coutinho@esrf.fr'),
+           'Pascual-Izarra' : ('Carlos Pascual-Izarra','cpascual@cells.es'),
+           'Reszela'        : ('Zbigniew Reszela','zreszela@cells.es') }
 
 url = 'http://packages.python.org/sardana'
 

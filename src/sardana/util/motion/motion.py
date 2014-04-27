@@ -32,19 +32,19 @@ __docformat__ = 'restructuredtext'
 import time
 from math import pow, sqrt
 
-            
+
 class MotionPath(object):
     """Active motion path description"""
 
     #: True if motion in positive direction or False otherwise
     positive_displacement = True
-    
-    #: True if motion is not long enough to reach maximum velocity or False 
+
+    #: True if motion is not long enough to reach maximum velocity or False
     #: otherwise
     small_motion = False
 
     #: position where maximum velocity will be reached
-    max_vel_pos  = -1
+    max_vel_pos = -1
 
     #: necessary displacement to reach maximum velocity
     displacement_reach_max_vel = 0
@@ -70,10 +70,20 @@ class MotionPath(object):
     #: time the motion will take
     duration = -1
 
-    def __init__(self, motor, 
-                       initial_user_pos, 
-                       final_user_pos, 
+    def __init__(self, motor,
+                       initial_user_pos,
+                       final_user_pos,
                        active_time=None):
+        """MotionPath constructor - creates and calculates 
+        motion path parameters.
+        :param initial_user_pos: position at which constant vel 
+                                 should be reached
+        :param final_user_pos: position at which deceleration should 
+                               start
+        :param active_time: if passed, will fix the constant velocity 
+                            (abs(final_user_pos - initial_user_pos)/active_time)
+                            otherwise motor constant velocity
+                            will be selected as high as possible"""
         self.motor = motor
         self._initial_user_pos = initial_user_pos
         self.initial_user_pos = initial_user_pos
@@ -89,12 +99,12 @@ class MotionPath(object):
     def setFinalUserPos(self, final_user_pos):
         self.final_user_pos = final_user_pos
         self._calculateMotionPath()
-        
+
     def _calculateMotionPath(self):
         motor = self.motor
         initial_user_pos = self.initial_user_pos
-        final_user_pos = self.final_user_pos        
-    
+        final_user_pos = self.final_user_pos
+
         initial_pos = initial_user_pos * motor.step_per_unit
         final_pos = final_user_pos * motor.step_per_unit
 
@@ -118,13 +128,31 @@ class MotionPath(object):
             self.initial_user_pos = initial_pos
             self.final_user_pos = final_pos
 
+        # in this case active_time forces that the user range
+        # correspond to the constant velocity
+        # and
+        if self.active_time != None:
+            velocity = displacement / self.active_time
+            self.motor.setMaxVelocity(velocity)
+            sign = final_pos > initial_pos and 1 or -1
+            accel_time = motor.getAccelerationTime()
+            decel_time = motor.getDecelerationTime()
+            base_vel = motor.getMinVelocity()
+            accel_displacement = accel_time * 0.5 * (velocity + base_vel)
+            decel_displacement = decel_time * 0.5 * (velocity + base_vel)
+            initial_pos -= sign * accel_displacement
+            final_pos += sign * decel_displacement
+            displacement = abs(final_pos - initial_pos)
+            self.initial_user_pos = initial_pos
+            self.final_user_pos = final_pos
+
         if displacement == 0:
             positive_displacement = False
             small_motion = True
 
             accel = 0
             decel = 0
-            
+
             displacement_reach_max_vel = 0
             displacement_reach_min_vel = 0
             max_vel = 0
@@ -170,7 +198,7 @@ class MotionPath(object):
 
             else:  # Small movement
                 # position where maximum velocity will be reached
-                max_vel_pos  = initial_pos * accel - final_pos * decel
+                max_vel_pos = initial_pos * accel - final_pos * decel
                 max_vel_pos /= accel - decel
 
                 # necessary displacement to reach maximum velocity
@@ -193,7 +221,7 @@ class MotionPath(object):
 
                 # displacement at maximum velocity
                 at_max_vel_displacement = 0.0
-            
+
             delta_vel = abs(max_vel - min_vel)
 
             # time to reach maximum velocity
@@ -201,7 +229,7 @@ class MotionPath(object):
                 max_vel_time = 0             
             else:
                 max_vel_time = abs(delta_vel / accel)
-    
+
             # time to reach minimum velocity
             if decel == 0 or delta_vel == float('inf'):
                 min_vel_time = 0
@@ -220,7 +248,7 @@ class MotionPath(object):
         self.initial_pos = initial_pos
         self.final_pos = final_pos
         self.displacement = displacement
-        
+
         self.positive_displacement = positive_displacement
         self.small_motion = small_motion
 
@@ -229,7 +257,7 @@ class MotionPath(object):
 
         self.displacement_reach_max_vel = displacement_reach_max_vel
         self.displacement_reach_min_vel = displacement_reach_min_vel
-        self.max_vel = abs(max_vel) #velocity must be a positive value
+        self.max_vel = abs(max_vel)  #velocity must be a positive value
         self.min_vel = abs(min_vel)
         self.max_vel_pos = max_vel_pos
         self.at_max_vel_displacement = at_max_vel_displacement
@@ -239,20 +267,20 @@ class MotionPath(object):
         self.duration = duration
 
     def info(self):
-        print "Small movement =",self.small_motion
-        print "length =",self.displacement
-        print "position where maximum velocity will be reached =",self.max_vel_pos
-        print "necessary displacement to reach maximum velocity =",self.displacement_reach_max_vel
-        print "necessary displacement to stop from maximum velocity =",self.displacement_reach_min_vel
-        print "maximum velocity possible =",self.max_vel
-        print "time at top velocity =",self.at_max_vel_time
-        print "displacement at top velocity =",self.at_max_vel_displacement
-        print "time to reach maximum velocity =",self.max_vel_time
-        print "time to reach minimum velocity =",self.min_vel_time
-        print "time the motion will take =",self.duration
+        print "Small movement =", self.small_motion
+        print "length =", self.displacement
+        print "position where maximum velocity will be reached =", self.max_vel_pos
+        print "necessary displacement to reach maximum velocity =", self.displacement_reach_max_vel
+        print "necessary displacement to stop from maximum velocity =", self.displacement_reach_min_vel
+        print "maximum velocity possible =", self.max_vel
+        print "time at top velocity =", self.at_max_vel_time
+        print "displacement at top velocity =", self.at_max_vel_displacement
+        print "time to reach maximum velocity =", self.max_vel_time
+        print "time to reach minimum velocity =", self.min_vel_time
+        print "time the motion will take =", self.duration
         print ""
-        print "For long movements (where top vel is possible), necessary displacement to reach maximum velocity =",self.displacement_reach_max_vel
-        print "For long movements (where top vel is possible), necessary displacement to stop from maximum velocity =",self.displacement_reach_min_vel
+        print "For long movements (where top vel is possible), necessary displacement to reach maximum velocity =", self.displacement_reach_max_vel
+        print "For long movements (where top vel is possible), necessary displacement to stop from maximum velocity =", self.displacement_reach_min_vel
 
 
 class Motion(object):
@@ -260,10 +288,10 @@ class Motion(object):
 
     #: instant this motion started
     start_instant = -1
-    
+
     #: instant when maximum velocity should be reached
     max_vel_instant = -1
-    
+
     #: instant when should start decelerating
     min_vel_instant = -1
 
@@ -277,7 +305,7 @@ class Motion(object):
         max_vel_instant = start_instant + mp.max_vel_time
         min_vel_instant = max_vel_instant + mp.at_max_vel_time
         final_instant = start_instant + mp.duration
-        
+
         self.start_instant = start_instant
         self.max_vel_instant = max_vel_instant
         self.min_vel_instant = min_vel_instant
@@ -300,7 +328,7 @@ class BaseMotor(object):
 
     # base velocity (<units length>/s)
     min_vel = 0
-    
+
     # top velocity (<units length>/s)
     max_vel = float('+inf')
 
@@ -309,10 +337,10 @@ class BaseMotor(object):
 
     # deceleration time (s)
     decel_time = 0
-    
+
     # acceleration (<units length>/s^2)
     accel = float('+inf')
-    
+
     # acceleration (<units length>/s^2)
     decel = float('+inf')
 
@@ -324,22 +352,22 @@ class BaseMotor(object):
 
     #: upper limit switch position
     upper_ls = float('+inf')
-    
+
     #: True if motor is powered or False otherwise
     power = True
-    
+
     #: True if motor is enabled or False otherwise
     enabled = True
-    
+
     #: necessary displacement to reach maximum velocity from minimum velocity
     displacement_reach_max_vel = 0
-    
+
     #: necessary displacement to reach minimum velocity from maximum velocity
     displacement_reach_min_vel = 0
 
     #: internal member describing current motion
     current_motion = None
-    
+
     current_position = float('nan')
 
     def __init__(self):
@@ -364,7 +392,7 @@ class BaseMotor(object):
     def getAccelerationTime(self):
         return self.accel_time
 
-    def setDecelerationTime(self,dt):
+    def setDecelerationTime(self, dt):
         """Sets the time to go from maximum velocity to minimum velocity in seconds"""
         pass
 
@@ -386,7 +414,7 @@ class BaseMotor(object):
         self.step_per_unit = spu
 
     def startMotion(self, initial_user_pos, final_user_pos, start_instant=None):
-        
+
         if not self.power:
             raise Exception("Motor is powered off")
 
@@ -398,10 +426,10 @@ class BaseMotor(object):
 
         if initial_pos == final_pos:
             return
-        
+
         motion = Motion(self, initial_user_pos, final_user_pos, start_instant)
         motion_path = motion.motion_path
-        
+
         self.current_position = motion.initial_pos
         self.current_motion = motion
 
@@ -433,7 +461,7 @@ class BaseMotor(object):
                 self.current_motion = None
                 pos = motion.final_pos
             else:
-                pos  = motion.initial_pos
+                pos = motion.initial_pos
                 if curr_instant > motion.min_vel_instant:
                     if motion.positive_displacement:
                         pos += motion.displacement_reach_max_vel
@@ -442,7 +470,7 @@ class BaseMotor(object):
                         pos -= motion.displacement_reach_max_vel
                         pos -= motion.at_max_vel_displacement
                     dt = curr_instant - motion.min_vel_instant
-                    pos += motion.max_vel * dt + 0.5 * motion.decel * pow(dt,2)
+                    pos += motion.max_vel * dt + 0.5 * motion.decel * pow(dt, 2)
                 elif curr_instant > motion.max_vel_instant:
                     if motion.positive_displacement:
                         pos += motion.displacement_reach_max_vel
@@ -451,8 +479,8 @@ class BaseMotor(object):
                     dt = curr_instant - motion.max_vel_instant
                     pos += motion.max_vel * dt
                 else:
-                    dt  = curr_instant - motion.start_instant
-                    pos += motion.min_vel * dt + 0.5 * motion.accel * pow(dt,2)
+                    dt = curr_instant - motion.start_instant
+                    pos += motion.min_vel * dt + 0.5 * motion.accel * pow(dt, 2)
         else:
             pos = self.current_position
         if pos <= self.lower_ls:
@@ -465,7 +493,7 @@ class BaseMotor(object):
         return pos
 
     def setCurrentUserPosition(self, user_pos):
-        self.setCurrentPosition(user_pos*self.step_per_unit)
+        self.setCurrentPosition(user_pos * self.step_per_unit)
 
     def getCurrentUserPosition(self, curr_instant=None):
         return self.getCurrentPosition(curr_instant=curr_instant) / self.step_per_unit
@@ -515,7 +543,7 @@ class Motor(BaseMotor):
 
     def __init__(self, min_vel=None, max_vel=None, accel_time=None, decel_time=None):
         super(Motor, self).__init__()
-        
+
         if min_vel is not None:
             self.setMinVelocity(min_vel)
         if max_vel is not None:
@@ -524,7 +552,7 @@ class Motor(BaseMotor):
             self.setAccelerationTime(accel_time)
         if decel_time is not None:
             self.setDecelerationTime(decel_time)
-        
+
         self.__recalculate_acc_constants()
 
     def setMinVelocity(self, vi):
@@ -535,7 +563,7 @@ class Motor(BaseMotor):
 
         self.min_vel = vi
 
-        #@todo: consult this solution with others
+        #TODO: consult this solution with others
         if self.max_vel < self.min_vel:
             pass
             #self.max_vel = self.min_vel (original version)
@@ -558,8 +586,8 @@ class Motor(BaseMotor):
             raise Exception("Maximum velocity must be >= 0")
 
         self.max_vel = vf
-        
-        #@todo: consult this solution with others
+
+        #TODO: consult this solution with others
         if self.min_vel > self.max_vel:
             pass
             #self.min_vel = self.max_vel #accel set to zero (original version)
@@ -588,10 +616,11 @@ class Motor(BaseMotor):
         self.__recalculate_acc_constants()
        
 
+
     def getAccelerationTime(self):
         return self.accel_time
 
-    def setDecelerationTime(self,dt):
+    def setDecelerationTime(self, dt):
         """Sets the time to go from maximum velocity to minimum velocity in seconds"""
         dt = float(dt)
         if dt < 0:
@@ -602,7 +631,7 @@ class Motor(BaseMotor):
             self.decel = (self.min_vel - self.max_vel) / dt
         except ZeroDivisionError:
             self.decel = float('inf')
-            
+
         self.__recalculate_acc_constants()
 
     def getDecelerationTime(self):
@@ -640,46 +669,46 @@ class Motor(BaseMotor):
 
     def __recalculate_acc_constants(self):
         """precomputations assuming maximum speed can be reached in a motion"""
-        
+
         if self.accel_time == 0:
             self.displacement_reach_max_vel = 0.0
-        else:    
-            self.displacement_reach_max_vel = 0.5 * self.accel * pow(self.accel_time,2)
+        else:
+            self.displacement_reach_max_vel = 0.5 * self.accel * pow(self.accel_time, 2)
             self.displacement_reach_max_vel += self.min_vel * self.accel_time
 
         if self.decel_time == 0:
             self.displacement_reach_min_vel = 0.0
-        else:    
-            self.displacement_reach_min_vel = 0.5 * self.decel * pow(self.decel_time,2)
+        else:
+            self.displacement_reach_min_vel = 0.5 * self.decel * pow(self.decel_time, 2)
             self.displacement_reach_min_vel += self.max_vel * self.decel_time
 
     @staticmethod
     def fromMotor(motor):
         try:
-            import taurus.core.tango.sardana.pool
-            if isinstance(motor, taurus.core.tango.sardana.pool.PoolElement):
+            import sardana.taurus.core.tango.sardana.pool
+            if isinstance(motor, sardana.taurus.core.tango.sardana.pool.PoolElement):
                 min_vel = motor.getBaseRate()
                 max_vel = motor.getVelocity()
                 accel_time = motor.getAcceleration()
                 decel_time = motor.getDeceleration()
                 return Motor(min_vel=min_vel, max_vel=max_vel,
                              accel_time=accel_time, decel_time=decel_time)
-        except Exception,e :
+        except Exception, e :
             print e
-        return Motor._fromTangoMotor(motor)        
-        
+        return Motor._fromTangoMotor(motor)
+
     @staticmethod
     def _fromTangoMotor(motor):
         import PyTango
         attrs = "base_rate", "velocity", "acceleration", "deceleration"
         attr_values = motor.read_attributes(attrs)
-        v=[]
+        v = []
         for attr_value in attr_values:
             if attr_value.has_failed:
                 raise PyTango.DevFailed(*attr_value.get_err_stack())
             v.append(attr_value.value)
         return Motor(min_vel=v[0], max_vel=v[1], accel_time=v[2], decel_time=v[3])
-        
+
 
 
 class DemoMotor(Motor):

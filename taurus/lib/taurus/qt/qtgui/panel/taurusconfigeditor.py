@@ -31,7 +31,7 @@ __all__ = ["QConfigEditor"]
 
 __docformat__ = 'restructuredtext'
 
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 import cPickle as pickle
 import os
 import tempfile
@@ -322,7 +322,7 @@ class QConfigEditorModel(Qt.QStandardItemModel):
             try: result = pickle.loads(qstate.data())
             except Exception,e: 
                 msg = 'problems loading TaurusConfig: \n%s'%repr(e)
-                Qt.QMessageBox.critical(self, 'Error loading settings', msg)
+                Qt.QMessageBox.critical(None, 'Error loading settings', msg)
         return result
     
     def reloadFile(self):

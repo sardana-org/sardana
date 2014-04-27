@@ -63,7 +63,7 @@ from sardana.util.tree import BranchNode, LeafNode, Tree
 UNCONSTRAINED="unconstrained"
 
 StepMode = 's'
-ContinuousMode = 'c'
+ContinuousMode = 'c' #TODO: change it to be more verbose e.g. ContinuousSwMode
 ContinuousHwTimeMode = 'ct'
 HybridMode = 'h'
 
@@ -109,8 +109,9 @@ class aNscan(Hookable):
         constrains = [getCallable(cns) for cns in opts.get('constrains',[UNCONSTRAINED])]
         extrainfodesc = opts.get('extrainfodesc',[])
 
-        self.pre_scan_hooks = self.getHooks('pre-scan')
-        self.post_scan_hooks = self.getHooks('post-scan')
+        #Hooks are not always set at this point. We will call getHooks later on in the scan_loop
+        #self.pre_scan_hooks = self.getHooks('pre-scan')
+        #self.post_scan_hooks = self.getHooks('post-scan'
           
         if mode == StepMode:
             self.nr_interv = scan_length
@@ -119,12 +120,14 @@ class aNscan(Hookable):
             self.name = opts.get('name','a%iscan'%self.N)
             self._gScan = SScan(self, self._stepGenerator, moveables, env, constrains, extrainfodesc)
         elif mode in [ContinuousMode, ContinuousHwTimeMode]:
+            #TODO: probably not 100% correct, 
+            #      the idea is to allow passing a list of waypoints
             if isinstance(endlist[0],list):
                 self.waypoints = self.finals
             else:
                 self.waypoints = [self.finals]
             self.nr_waypoints = len(self.waypoints)
-            if mode == ContinuousMode:
+            if mode == ContinuousMode: 
                 self.slow_down = scan_length
                 self.nr_waypoints = 2 #aNscans will only have two waypoints (the start and the final positions)
                 self.way_lengths = ( self.finals - self.starts) / (self.nr_waypoints -1)
@@ -132,8 +135,6 @@ class aNscan(Hookable):
                 self._gScan = CSScan(self, self._waypoint_generator, self._period_generator, moveables, env, constrains, extrainfodesc)
             elif mode == ContinuousHwTimeMode:
                 self.nr_of_points = scan_length
-                #self.way_lengths = (self.finals - self.starts) /\
-                #                   (self.nr_waypoints -1)
                 self.name = opts.get('name','a%iscanct'%self.N)
                 self._gScan = CTScan(self, self._waypoint_generator_hwtime, 
                                            moveables, 
@@ -176,8 +177,18 @@ class aNscan(Hookable):
             yield step
             
     def _waypoint_generator_hwtime(self):
-        #@todo: remove starts
+        #TODO: remove starts
         def calculate_positions(moveable_node, start, end):
+            '''Function to calculate starting and ending positions on the physical 
+            motors level. 
+            :param moveable_node: (BaseNode) node representing a moveable. 
+                                  Can be a BranchNode representing a PseudoMotor,
+                                  or a LeafNode representing a PhysicalMotor).
+            :param start: (float) starting position of the moveable
+            :param end: (float) ending position of the moveable
+        
+            :return: (list<(float,float)>) a list of tuples comprising starting
+                     and ending positions. List order is important and preserved.'''
             start_positions = []
             end_positions = []
             if isinstance(moveable_node, BranchNode):
@@ -198,8 +209,10 @@ class aNscan(Hookable):
                 end_positions = [end]
                 
             return start_positions, end_positions
-                                                        
-        moveables_trees = self._gScan.get_moveables_trees()
+        
+        #CScan in its constructor populates a list of data structures - trees. 
+        #Each tree represent one Moveables with its hierarchy of inferior moveables.                                                
+        moveables_trees = self._gScan.get_moveables_trees()  
         step = {}
         step["pre-move-hooks"] = self.getHooks('pre-move')
         step["post-move-hooks"] = self.getHooks('post-move')
@@ -265,7 +278,7 @@ class aNscan(Hookable):
 
         elif mode == ContinuousMode:
             total_time = gScan.waypoint_estimation()
-        #@todo: add time estimation for ContinuousHwTimeMode
+        #TODO: add time estimation for ContinuousHwTimeMode
         return total_time
                         
     def getIntervalEstimation(self):
@@ -617,8 +630,9 @@ class mesh(Macro,Hookable):
         env=opts.get('env',{})
         constrains=[getCallable(cns) for cns in opts.get('constrains',[UNCONSTRAINED])]
     
-        self.pre_scan_hooks = self.getHooks('pre-scan')
-        self.post_scan_hooks = self.getHooks('post-scan')
+        #Hooks are not always set at this point. We will call getHooks later on in the scan_loop
+        #self.pre_scan_hooks = self.getHooks('pre-scan')
+        #self.post_scan_hooks = self.getHooks('post-scan')
 
         self._gScan=SScan(self, generator, moveables, env, constrains)
 
@@ -644,7 +658,7 @@ class mesh(Macro,Hookable):
                 space = m1_space_inv
             for m1pos in space:
                 step["positions"] = numpy.array([m1pos,m2pos])
-                step["point_id"]= point_no  #@TODO: maybe another ID would be better? (e.g. "(A,B)")
+                step["point_id"]= point_no  #TODO: maybe another ID would be better? (e.g. "(A,B)")
                 point_no+=1
                 yield step
     
@@ -734,8 +748,10 @@ class fscan(Macro,Hookable):
         env=opts.get('env',{})
         constrains=[getCallable(cns) for cns in opts.get('constrains',[UNCONSTRAINED])]
         
-        self.pre_scan_hooks = self.getHooks('pre-scan')
-        self.post_scan_hooks = self.getHooks('post-scan')
+        #Hooks are not always set at this point. We will call getHooks later on in the scan_loop
+        #self.pre_scan_hooks = self.getHooks('pre-scan')
+        #self.post_scan_hooks = self.getHooks('post-scan'
+        
         self._gScan=SScan(self, generator, moveables, env, constrains)
         
     def _generator(self):
@@ -1084,8 +1100,9 @@ class meshc(Macro,Hookable):
         constrains=[getCallable(cns) for cns in opts.get('constrains',[UNCONSTRAINED])]
         extrainfodesc = opts.get('extrainfodesc',[])
     
-        self.pre_scan_hooks = self.getHooks('pre-scan')
-        self.post_scan_hooks = self.getHooks('post-scan')
+        #Hooks are not always set at this point. We will call getHooks later on in the scan_loop
+        #self.pre_scan_hooks = self.getHooks('pre-scan')
+        #self.post_scan_hooks = self.getHooks('post-scan'
 
         self._gScan = CScan(self, self._waypoint_generator, self._period_generator, moveables, env, constrains, extrainfodesc)
         self._gScan.frozen_motors = [m2]
@@ -1139,47 +1156,72 @@ class meshc(Macro,Hookable):
         return self._gScan.data
     
 class ascanct(aNscan, Macro):
+    '''Continuous scan controlled by hardware trigger signals. A sequence of 
+    trigger pulses is programmed by time. The scan active time is calculated from
+    nr_of_points * point time. It corresponds to the time while all the involved 
+    in the scan moveables are at the constant velocity. Experimental channels are
+    configured to acquire during acquistion time calculated from acq_time [%] of  
+    the point_time. 
+    Temporary solution used to configure trigger device (pulse train generator): 
+    "TriggerDevices" evironment variable must be set to Ni660X device name 
+    or any other Tango device name implementing:
+    +) following attributes: 
+    - InitialDelayTime [s] - delay time from calling Start to generating first pulse 
+    - HighTime [s] - time interval while signal will maintain its high state
+    - LowTime [s] - time interval while signal will maintain its low state
+    - SampPerChan - nr of pulses to be generated
+    - IdleState - state (high or low) which signal will take after the Start command
+      and which will maintain during the InitialDelayTime.  
+    +) following commands:
+    - Start 
+    - Stop)'''
 
-    hints = {'scan' : 'ascanct', 'allowsHooks': ('pre-configuration', 'post-configuration', 'pre-start', 'pre-cleanup', 'post-cleanup') }
+    hints = {'scan' : 'ascanct', 'allowsHooks': ('pre-configuration', 
+                                                 'post-configuration', 
+                                                 'pre-start', 
+                                                 'pre-cleanup', 
+                                                 'post-cleanup') }
 
-    param_def = [["motor", Type.Moveable, None, "Moveable name"],
-                 ["start_pos", Type.Float, None, "Starting position"],
-                 ["end_pos", Type.Float, None, "Ending pos value"],
-                 ["nr_of_points", Type.Integer, None, "Nr of scan points"],
-                 ["integ_time", Type.Float, None, "Integration time"],
-                 ["acq_time", Type.Float, 99, "Acquisition time per trigger. Expressed in percentage of time per trigger (scanTime/nrOfTriggers)"],
-                 ["samp_freq", Type.Float, -1, "Sampling frequency. Default: -1 (means maximum possible)"]]
+    param_def = [['motor', Type.Moveable, None, 'Moveable name'],
+                 ['start_pos', Type.Float, None, 'Starting position'],
+                 ['end_pos', Type.Float, None, 'Ending pos value'],
+                 ['nr_of_points', Type.Integer, None, 'Nr of scan points'],
+                 ['point_time', Type.Float, None, 'Time interval reserved for ' + 
+                                                   'each scan point [s].'],
+                 ['acq_time', Type.Float, 99, 'Acquisition time per scan point. ' +
+                      'Expressed in percentage of point_time. Default: 99 [%]'],
+                 ['samp_freq', Type.Float, -1, 'Sampling frequency. ' + 
+                                        'Default: -1 (means maximum possible)']]
 
-        #@todo: 
-#        step = {}
-#        step["integ_time"] = 0 #self.integ_time
-#        step["pre-move-hooks"] = [] #self.getHooks('pre-move')
-#        step["post-move-hooks"] = [] #self.getHooks('post-move')
-#        step["pre-acq-hooks"] = [] #self.getHooks('pre-acq')
-#        step["post-acq-hooks"] = [] #self.getHooks('post-acq') + self.getHooks('_NOHINTS_')
-#        step["post-step-hooks"] = [] #self.getHooks('post-step')
-#        
-#        step["check_func"] = []        
-#        step["positions"] = self.ends
-#        step["point_id"] = 0 
-#        yield step
-        
-        
-#        maybe implement generator so it yields for every repetition?
-#        for repeatNr in xrange(self.nrOfRepeats):
-#            step["positions"] = self.ends
-#            step["point_id"] = repeatNr
-#             yield step
         
     def prepare(self, motor, start_pos, end_pos, nr_of_points, 
-                integ_time, acq_time, samp_freq, **opts):
+                point_time, acq_time, samp_freq, **opts):
         self._prepare([motor], [start_pos], [end_pos], nr_of_points,
-                      integ_time, mode=ContinuousHwTimeMode, **opts)
+                      point_time, mode=ContinuousHwTimeMode, **opts)
         self.acq_time = acq_time
         self.samp_freq = samp_freq
 
 
 class a2scanct(aNscan, Macro):
+    '''Continuous scan controlled by hardware trigger signals. A sequence of 
+    trigger pulses is programmed by time. The scan active time is calculated from
+    nr_of_points * point time. It corresponds to the time while all the involved 
+    in the scan moveables are at the constant velocity. Experimental channels are
+    configured to acquire during acquistion time calculated from acq_time [%] of  
+    the point_time. 
+    Temporary solution used to configure trigger device (pulse train generator): 
+    "TriggerDevices" evironment variable must be set to Ni660X device name 
+    or any other Tango device name implementing:
+    +) following attributes: 
+    - InitialDelayTime [s] - delay time from calling Start to generating first pulse 
+    - HighTime [s] - time interval while signal will maintain its high state
+    - LowTime [s] - time interval while signal will maintain its low state
+    - SampPerChan - nr of pulses to be generated
+    - IdleState - state (high or low) which signal will take after the Start command
+      and which will maintain during the InitialDelayTime.  
+    +) following commands:
+    - Start 
+    - Stop)'''
 
     hints = {'scan' : 'a2scanct', 'allowsHooks': ('pre-configuration', 
                                                   'post-configuration',
@@ -1195,21 +1237,42 @@ class a2scanct(aNscan, Macro):
            ['start_pos2',  Type.Float,   None, 'Scan start position 2'],
            ['final_pos2',  Type.Float,   None, 'Scan final position 2'],
            ["nr_of_points", Type.Integer, None, "Nr of scan points"],
-           ['integ_time', Type.Float,   None, 'Integration time'],
-           ["acq_time", Type.Float, 99, "Acquisition time per trigger. Expressed in percentage of time per trigger (scanTime/nrOfTriggers)"],
-           ["samp_freq", Type.Float, -1, "Sampling frequency. Default: -1 (means maximum possible)"]]
+           ['point_time', Type.Float,   None, 'Time interval reserved for ' + 
+                                              'each scan point [s].'],
+           ["acq_time", Type.Float, 99, 'Acquisition time per scan point. ' + 
+                      'Expressed in percentage of point_time. Default: 99 [%]'],
+           ["samp_freq", Type.Float, -1, 'Sampling frequency. ' + 
+                                       'Default: -1 (means maximum possible)']]
            
     def prepare(self, m1, s1, f1, m2, s2, f2, nr_of_points, 
-                integ_time, acq_time, samp_freq, **opts):
+                point_time, acq_time, samp_freq, **opts):
         self._prepare([m1, m2], [s1, s2], [f1, f2], nr_of_points,
-                      integ_time, mode=ContinuousHwTimeMode, **opts)
+                      point_time, mode=ContinuousHwTimeMode, **opts)
         self.acq_time = acq_time
         self.samp_freq = samp_freq
         
         
         
 class a3scanct(aNscan, Macro):
-
+    '''Continuous scan controlled by hardware trigger signals. A sequence of 
+    trigger pulses is programmed by time. The scan active time is calculated from
+    nr_of_points * point time. It corresponds to the time while all the involved 
+    in the scan moveables are at the constant velocity. Experimental channels are
+    configured to acquire during acquistion time calculated from acq_time [%] of  
+    the point_time. 
+    Temporary solution used to configure trigger device (pulse train generator): 
+    "TriggerDevices" evironment variable must be set to Ni660X device name 
+    or any other Tango device name implementing:
+    +) following attributes: 
+    - InitialDelayTime [s] - delay time from calling Start to generating first pulse 
+    - HighTime [s] - time interval while signal will maintain its high state
+    - LowTime [s] - time interval while signal will maintain its low state
+    - SampPerChan - nr of pulses to be generated
+    - IdleState - state (high or low) which signal will take after the Start command
+      and which will maintain during the InitialDelayTime.  
+    +) following commands:
+    - Start 
+    - Stop)'''
     hints = {'scan' : 'a2scanct', 'allowsHooks': ('pre-configuration', 
                                                   'post-configuration',
                                                   'pre-start',
@@ -1227,19 +1290,40 @@ class a3scanct(aNscan, Macro):
            ['start_pos3',  Type.Float,   None, 'Scan start position 3'],
            ['final_pos3',  Type.Float,   None, 'Scan final position 3'],
            ["nr_of_points", Type.Integer, None, "Nr of scan points"],
-           ['integ_time', Type.Float,   None, 'Integration time'],
-           ["acq_time", Type.Float, 99, "Acquisition time per trigger. Expressed in percentage of time per trigger (scanTime/nrOfTriggers)"],
-           ["samp_freq", Type.Float, -1, "Sampling frequency. Default: -1 (means maximum possible)"]]
-   
+           ['point_time', Type.Float,   None, 'Time interval reserved for ' + 
+                                              'each scan point [s].'],
+           ["acq_time", Type.Float, 99, 'Acquisition time per scan point. ' + 
+                      'Expressed in percentage of point_time. Default: 99 [%]'],
+           ["samp_freq", Type.Float, -1, 'Sampling frequency. ' + 
+                                       'Default: -1 (means maximum possible)']]
            
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, nr_of_points, 
-                integ_time, acq_time, samp_freq, **opts):
+                point_time, acq_time, samp_freq, **opts):
         self._prepare([m1, m2, m3], [s1, s2, s3], [f1, f2, f3], nr_of_points,
-                      integ_time, mode=ContinuousHwTimeMode, **opts)
+                      point_time, mode=ContinuousHwTimeMode, **opts)
         self.acq_time = acq_time
         self.samp_freq = samp_freq
         
 class a4scanct(aNscan, Macro):
+    '''Continuous scan controlled by hardware trigger signals. A sequence of 
+    trigger pulses is programmed by time. The scan active time is calculated from
+    nr_of_points * point time. It corresponds to the time while all the involved 
+    in the scan moveables are at the constant velocity. Experimental channels are
+    configured to acquire during acquistion time calculated from acq_time [%] of  
+    the point_time. 
+    Temporary solution used to configure trigger device (pulse train generator): 
+    "TriggerDevices" evironment variable must be set to Ni660X device name 
+    or any other Tango device name implementing:
+    +) following attributes: 
+    - InitialDelayTime [s] - delay time from calling Start to generating first pulse 
+    - HighTime [s] - time interval while signal will maintain its high state
+    - LowTime [s] - time interval while signal will maintain its low state
+    - SampPerChan - nr of pulses to be generated
+    - IdleState - state (high or low) which signal will take after the Start command
+      and which will maintain during the InitialDelayTime.  
+    +) following commands:
+    - Start 
+    - Stop)'''
 
     hints = {'scan' : 'a2scanct', 'allowsHooks': ('pre-configuration', 
                                                   'post-configuration',
@@ -1261,15 +1345,18 @@ class a4scanct(aNscan, Macro):
            ['start_pos4',  Type.Float,   None, 'Scan start position 4'],
            ['final_pos4',  Type.Float,   None, 'Scan final position 4'],
            ["nr_of_points", Type.Integer, None, "Nr of scan points"],
-           ['integ_time', Type.Float,   None, 'Integration time'],
-           ["acq_time", Type.Float, 99, "Acquisition time per trigger. Expressed in percentage of time per trigger (scanTime/nrOfTriggers)"],
-           ["samp_freq", Type.Float, -1, "Sampling frequency. Default: -1 (means maximum possible)"]]
+           ['point_time', Type.Float,   None, 'Time interval reserved for ' + 
+                                              'each scan point [s].'],
+           ["acq_time", Type.Float, 99, 'Acquisition time per scan point. ' + 
+                      'Expressed in percentage of point_time. Default: 99 [%]'],
+           ["samp_freq", Type.Float, -1, 'Sampling frequency. ' + 
+                                       'Default: -1 (means maximum possible)']]
    
            
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, m4, s4, f4, 
-                nr_of_points, integ_time, acq_time, samp_freq, **opts):
+                nr_of_points, point_time, acq_time, samp_freq, **opts):
         self._prepare([m1, m2, m3, m4], [s1, s2, s3, s4], [f1, f2, f3, f4],
-                      nr_of_points, integ_time, mode=ContinuousHwTimeMode,
+                      nr_of_points, point_time, mode=ContinuousHwTimeMode,
                       **opts)
         self.acq_time = acq_time
         self.samp_freq = samp_freq

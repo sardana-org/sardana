@@ -69,12 +69,13 @@ from IPython.config.application import Application
 from IPython.frontend.terminal.ipapp import TerminalIPythonApp, \
     launch_new_instance
 
-import taurus
-from taurus.core import Release as TCRelease
-from taurus.core.util import CodecFactory
+from taurus.core.taurushelper import Factory, Manager, Warning
+from taurus.core.util.codecs import CodecFactory
+from taurus.core.taurushelper import setLogLevel
+
 
 # make sure Qt is properly initialized
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 
 from sardana.spock import exception
 from sardana.spock import colors
@@ -409,11 +410,12 @@ def from_name_to_tango(name):
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
 def clean_up():
-    taurus.Manager().cleanUp()
+    Manager().cleanUp()
 
 def get_taurus_core_version():
     try:
-        return TCRelease.version
+        import taurus
+        return taurus.core.release.version
     except:
         import traceback
         traceback.print_exc()
@@ -518,7 +520,7 @@ def _get_dev(dev_type):
         taurus_dev = getattr(spock_config, taurus_dev_var)
     if taurus_dev is None:
         dev_name = getattr(spock_config, dev_type + '_name')
-        factory = taurus.Factory()
+        factory = Factory()
         taurus_dev = factory.getDevice(dev_name)
         import PyTango
         dev = PyTango.DeviceProxy(dev_name)
@@ -708,7 +710,7 @@ def get_args(argv):
     # Define the profile file
     profile = "spockdoor"
     try:
-        for _, arg in enumerate(argv[:1]):
+        for _, arg in enumerate(argv[1:]):
             if arg.startswith('--profile='):
                 profile=arg[10:]
                 break
@@ -765,7 +767,7 @@ def init_taurus():
     # therefore this small hack: make sure CodecFactory is initialized.
     CodecFactory()
 
-    factory = taurus.Factory()
+    factory = Factory()
 
     import sardana.spock.spockms
     macroserver = sardana.spock.spockms
@@ -1030,7 +1032,7 @@ object?   -> Details about 'object'. ?object also works, ?? prints more.
 def start(user_ns=None):
     # Make sure the log level is changed to warning
     CodecFactory()
-    taurus.setLogLevel(taurus.Warning)
+    setLogLevel(Warning)
 
     try:
         check_requirements()
@@ -1080,7 +1082,10 @@ def prepare_cmdline(argv=None):
     # Define the profile file
     profile, append_profile = "spockdoor", True
     try:
-        for _, arg in enumerate(argv[:1]):
+        # in ipython the last option in the list takes precedence
+        # so reversing order for searching of the profile 
+        reversed_argv = reversed(argv[1:])
+        for _, arg in enumerate(reversed_argv):
             if arg.startswith('--profile='):
                 profile=arg[10:]
                 append_profile = False
@@ -1103,27 +1108,36 @@ def prepare_cmdline(argv=None):
             sys.stdout.write('No spock profile was created. '
                              'Starting ipython with default profile...\n')
             sys.stdout.flush()
-            append_profile = False
+            # removing all options refering to profile
+            for _, arg in enumerate(argv[1:]):
+                if arg.startswith('--profile='):
+                    argv.remove(arg)
+            return
 
     if append_profile:
         argv.append("--profile=" + profile)
 
 
 def run():
-    from IPython.utils.traitlets import Unicode
-    from IPython.frontend.qt.console.rich_ipython_widget import RichIPythonWidget
 
-    class SpockConsole(RichIPythonWidget):
+    try:
+        from IPython.utils.traitlets import Unicode
+        from IPython.frontend.qt.console.rich_ipython_widget import RichIPythonWidget
         
-        banner = Unicode(config=True)
+        class SpockConsole(RichIPythonWidget):
 
-        def _banner_default(self):
-            config = get_config()
-            return config.FrontendWidget.banner
+            banner = Unicode(config=True)
 
-    import IPython.frontend.qt.console.qtconsoleapp
-    IPythonQtConsoleApp = IPython.frontend.qt.console.qtconsoleapp.IPythonQtConsoleApp
-    IPythonQtConsoleApp.widget_factory = SpockConsole
+            def _banner_default(self):
+                config = get_config()
+                return config.FrontendWidget.banner
+
+        import IPython.frontend.qt.console.qtconsoleapp
+        IPythonQtConsoleApp = IPython.frontend.qt.console.qtconsoleapp.IPythonQtConsoleApp
+        IPythonQtConsoleApp.widget_factory = SpockConsole
+        IPythonQtConsoleApp.version.default_value = release.version
+    except ImportError:
+        pass
 
     try:
         check_requirements()

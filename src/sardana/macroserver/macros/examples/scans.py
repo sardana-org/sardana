@@ -168,7 +168,7 @@ class ascanr(Macro, Hookable):
         return self._gScan.data
         
 
-class toothedtriangle(Macro):
+class toothedtriangle(Macro, Hookable):
     """toothedtriangle macro implemented with the gscan framework.
     It performs nr_cycles cycles, each consisting of two stages: the first half
     of the cycle it behaves like the ascan macro (from start_pos to stop_pos in
@@ -177,7 +177,10 @@ class toothedtriangle(Macro):
     At each step, nr_samples acquisitions are performed.
     The total number of points in the scan is nr_interv*2*nr_cycles*nr_samples+1"""
 
-    hints = { 'scan' : 'toothedtriangle', 'allowsHooks':('pre-move', 'post-move', 'pre-acq', 'post-acq') }
+    hints = { 'scan' : 'toothedtriangle',
+             'allowsHooks':('pre-scan', 'pre-move', 'post-move', 'pre-acq',
+                            'post-acq', 'post-step', 'post-scan')
+             }
     env = ('ActiveMntGrp',)
 
     param_def = [
@@ -224,8 +227,11 @@ class toothedtriangle(Macro):
     def _generator(self):
         step = {}
         step["integ_time"] =  self.integ_time
-        step["post-acq-hooks"] = []
-        step["post-step-hooks"] = []
+        step["pre-move-hooks"] = self.getHooks('pre-move')
+        step["post-move-hooks"] = self.getHooks('post-move')
+        step["pre-acq-hooks"] = self.getHooks('pre-acq')
+        step["post-acq-hooks"] = self.getHooks('post-acq') + self.getHooks('_NOHINT_')
+        step["post-step-hooks"] = self.getHooks('post-step')
         step["check_func"] = []
         extrainfo = {"cycle":None, "interval":None, "sample":None, } 
         step['extrainfo'] = extrainfo
@@ -564,4 +570,42 @@ class ascanc_demo(Macro):
     def run(self,*args):
         for step in self._gScan.step_scan():
             yield step
+
+
+
+class ascan_with_addcustomdata(ascan_demo):
+    '''
+    example of an ascan-like macro where we demonstrate how to pass custom data to the data handler.
+    This is an extension of the ascan_demo macro. Wemake several calls to `:meth:DataHandler.addCustomData`
+    exemplifying different features.
+    At least the following recorders will act on custom data: 
+      - OutputRecorder (this will ignore array data)
+      - NXscan_FileRecorder
+      - SPEC_FileRecorder (this will ignore array data)
+    '''
+    def run(self, motor, start_pos, final_pos, nr_interv, integ_time, **opts):
+        #we get the datahandler
+        dh = self._gScan._data_handler
+        #at this point the entry name is not yet set, so we give it explicitly (otherwise it would default to "entry")
+        dh.addCustomData('Hello world1', 'dummyChar1', nxpath='/custom_entry:NXentry/customdata:NXcollection')
+        #this is the normal scan loop
+        for step in self._gScan.step_scan():
+            yield step
+        #the entry number is known and the default nxpath is used "/<currententry>/custom_data") if none given
+        dh.addCustomData('Hello world1', 'dummyChar1')
+        #you can pass arrays (but not all recorders will handle them) 
+        dh.addCustomData(range(10), 'dummyArray1') 
+        #you can pass a custom nxpath *relative* to the current entry
+        dh.addCustomData('Hello world2', 'dummyChar2', nxpath='sample:NXsample') 
+        
+        #calculate a linear fit to the timestamps VS motor positions and store it 
+        x = [r.data [motor.getName()] for r in self.data.records]
+        y = [r.data['timestamp'] for r in self.data.records]
+        fitted_y = numpy.polyval(numpy.polyfit(x,y,1), x)
+        dh.addCustomData(fitted_y, 'fittedtime', nxpath='measurement:NXcollection')
+        
+        #as a bonus, plot the fit
+        self.pyplot.plot(x, y, 'ro')
+        self.pyplot.plot(x, fitted_y, 'b-')
+
     

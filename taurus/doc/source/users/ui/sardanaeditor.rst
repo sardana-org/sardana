@@ -1,4 +1,4 @@
-.. currentmodule:: taurus.qt.qtgui.extra_sardana
+.. currentmodule:: sardana.taurus.qt.qtgui.extra_sardana
 
 .. _sardanaeditor_ui:
 
@@ -10,6 +10,6 @@ Sardana Editor's interface
 .. contents::
 
 .. todo:: 
-    Documentation to be written  
+    Sardana Editor documentation to be written  
 
  

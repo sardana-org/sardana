@@ -1,4 +1,4 @@
-.. currentmodule:: taurus.qt.qtgui.extra_sardana
+.. currentmodule:: sardana.taurus.qt.qtgui.extra_sardana
 
 .. _expconf_ui:
 
@@ -10,6 +10,6 @@ Experiment Configuration user interface
 .. contents::
 
 .. todo:: 
-    Documentation to be written  
+    Experiment Configuration documentation to be written  
 
  

@@ -38,7 +38,8 @@ from PyTango import DispLevel, DevState, AttrQuality
 from PyTango import SCALAR, SPECTRUM
 from PyTango import READ_WRITE, READ
 
-from taurus.core.util import CaselessDict, DebugIt
+from taurus.core.util.log import DebugIt
+from taurus.core.util.containers import CaselessDict
 
 from sardana import DataType, DataFormat
 from sardana import State, SardanaServer
@@ -46,6 +47,7 @@ from sardana.sardanaattribute import SardanaAttribute
 from sardana.tango.core.util import to_tango_attr_info
 
 from PoolDevice import PoolDevice, PoolDeviceClass
+
 
 def to_bool(s):
     return s.lower() == "true"
@@ -85,7 +87,7 @@ class Controller(PoolDevice):
             name = self.alias or full_name
             args = dict(type=self.Type, name=name, full_name=full_name,
                         library=self.Library, klass=self.Klass,
-                        id=self.Id, role_ids=self.Role_ids,
+                        id=self.Id, role_ids=role_ids,
                         properties=self._get_ctrl_properties())
             ctrl = self.pool.create_controller(**args)
             ctrl.add_listener(self.on_controller_changed)
@@ -106,9 +108,9 @@ class Controller(PoolDevice):
             if len(role_ids) == 0:
                 role_ids = self.Role_ids
         role_ids = map(int, role_ids)
-        
+
         return role_ids
-        
+
     def _get_ctrl_properties(self):
         try:
             ctrl_info = self.pool.get_controller_class_info(self.Klass)
@@ -161,7 +163,7 @@ class Controller(PoolDevice):
     def always_executed_hook(self):
         pass
 
-    def read_attr_hardware(self,data):
+    def read_attr_hardware(self, data):
         pass
 
     def dev_state(self):

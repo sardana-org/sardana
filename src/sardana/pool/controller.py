@@ -37,12 +37,13 @@ __docformat__ = 'restructuredtext'
 
 import copy
 
-import taurus
-from taurus.core.util import Logger
+from taurus.core.taurushelper import getLogLevel
+from taurus.core.util.log import Logger
 
 from sardana import DataAccess
 from sardana.sardanavalue import SardanaValue
-from .pooldefs import ControllerAPI, AcqTriggerType, AcqMode
+from sardana.pool.pooldefs import ControllerAPI, AcqTriggerType, AcqMode
+
 
 #: Constant data type (to be used as a *key* in the definition of
 #: :attr:`~Controller.axis_attributes` or :attr:`~Controller.ctrl_attributes`)
@@ -92,6 +93,7 @@ NotMemorized = "false"
 #: Constant MaxDimSize (to be used as a *key* in the definition of
 #: :attr:`~Controller.axis_attributes` or :attr:`~Controller.ctrl_attributes`)
 MaxDimSize = "maxdimsize"
+
 
 class Controller(object):
     """Base controller class. Do **NOT** inherit from this class directly
@@ -297,7 +299,7 @@ class Controller(object):
     def __init__(self, inst, props, *args, **kwargs):
         self._inst_name = inst
         self._log = Logger("Controller.%s" % inst)
-        self._log.log_obj.setLevel(taurus.getLogLevel())
+        self._log.log_obj.setLevel(getLogLevel())
         self._args = args
         self._kwargs = kwargs
         self._api_version = self._findAPIVersion()
@@ -1261,9 +1263,15 @@ class PseudoMotorController(PseudoController):
         :type index_or_role: int or str
         :return: PseudoMotor object for the given role/index
         :rtype: :class:`~sardana.pool.poolpseudomotor.PoolPseudoMotor`"""
+        dict_ids = self._getPoolController().get_element_ids()
+        dict_axis = self._getPoolController().get_element_axis()
+        pseudo_motor_ids = []
+        for akey, aname in dict_axis.items():
+            pseudo_motor_ids.append(dict_ids.keys()[dict_ids.values().index(aname)])
         return self._getElem(index_or_role, self.pseudo_motor_roles,
                              self.__pseudo_motor_role_elements,
-                             self._kwargs['pseudo_motor_roles'])
+                             pseudo_motor_ids)
+#                             self._kwargs['pseudo_motor_roles'])
 
 
 class PseudoCounterController(Controller):

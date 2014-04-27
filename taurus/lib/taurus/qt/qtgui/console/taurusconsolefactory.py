@@ -34,15 +34,17 @@ __all__ = ["TaurusConsoleFactory"]
 __docformat__ = 'restructuredtext'
 
 from taurus.core.util.singleton import Singleton
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 
 from taurusconsolewidget import TaurusConsoleWidget
 from taurusconsolewindow import TaurusConsoleWindow
 from taurusconsoleapplication import TaurusConsoleApplication
 
 import taurusconsoleextensions
-
-from IPython.frontend.qt.kernelmanager import QtKernelManager
+try:
+    from IPython.qt.kernelmanager import QtKernelManager
+except ImportError:
+    from IPython.frontend.qt.kernelmanager import QtKernelManager
 
 
 class TaurusConsoleFactory(Singleton):

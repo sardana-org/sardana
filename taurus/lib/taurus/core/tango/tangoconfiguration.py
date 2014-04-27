@@ -145,6 +145,16 @@ class TangoConfiguration(TaurusConfiguration):
         Manager().addJob(self.__fireRegisterEvent, None, (listener,))
         return ret
     
+    def removeListener(self, listener):
+        """ Remove a TaurusListener from the listeners list.
+        If it is the last listener, unsubscribe from events."""
+        ret = TaurusConfiguration.removeListener(self, listener)
+        if not ret:
+            return ret
+        if not self.hasListeners():
+            self._unsubscribeEvents()
+        return ret
+
     #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
     # PyTango event handling (private) 
     #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-    
@@ -182,7 +192,7 @@ class TangoConfiguration(TaurusConfiguration):
     def _unsubscribeEvents(self):
         # Careful in this method: This is intended to be executed in the cleanUp
         # so we should not access external objects from the factory, like the 
-        # parent object        
+        # parent object
         if self._cfg_evt_id and not self._dev_hw_obj is None:
             self.trace("Unsubscribing to configuration events (ID=%s)" % str(self._cfg_evt_id))
             try:
@@ -207,8 +217,20 @@ class TangoConfiguration(TaurusConfiguration):
         # add dev_name, dev_alias, attr_name, attr_full_name
         i.dev_name = self._getDev().getNormalName()
         i.dev_alias = self._getDev().getSimpleName()
-        i.attr_name = self._getAttr().getSimpleName()
-        i.attr_fullname = self._getAttr().getNormalName()
+        try:
+            attr = self._getAttr()
+            if attr is not None:
+                i.attr_fullname = self._getAttr().getNormalName()
+                i.attr_name = self._getAttr().getSimpleName()
+            else: 
+                self.debug(('TangoConfiguration.decode(%s/%s): ' +
+                              'self._getAttr() returned None (failed detach?)'), 
+                           i.dev_name, i.name)
+        except:
+            import traceback
+            self.warning('at TangoConfiguration.decode(%s/%s)', i.dev_name, i.name)
+            self.warning(traceback.format_exc())
+            i.attr_name = i.attr_fullname = ''
         
         # %6.2f is the default value that Tango sets when the format is
         # unassigned. This is only good for float types! So for other
@@ -232,6 +254,19 @@ class TangoConfiguration(TaurusConfiguration):
             else:
                 self._events_working = False
             return
+        if self._getAttr() is None and not self._listeners:
+            #===================================================================
+            # This is a safety net to catch "zombie" TangoConfiguration objects
+            # when they get called.
+            # If you get here, there is some bug elsewhere which should be
+            # investigated.
+            # Without this safety net, you would get exceptions.
+            # We assume that a TangoConfiguration object which has no listeners
+            # and which is not associated to a TangoAttribute, is a "zombie".
+            self.warning('"Zombie" object (%s) received an event. Unsubscribing it.', repr(self))
+            self._unsubscribeEvents()
+            return
+            #===================================================================
         self._events_working = True
         self._attr_timestamp = time.time()
         self._attr_info = self.decode(event.attr_conf)
@@ -239,9 +274,6 @@ class TangoConfiguration(TaurusConfiguration):
         #Manager().addJob(self._push_event, None, event)
         Manager().addJob(self.fireEvent, None, TaurusEventType.Config, self._attr_info, listeners=listeners)
         
-    #def _push_event(self, event):
-    #    """ Notify listeners when event received"""
-    #    self.fireEvent(TaurusEventType.Config, self._attr_info)
     
     #===========================================================================
     # Some methods reimplemented from TaurusConfiguration

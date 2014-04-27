@@ -33,7 +33,7 @@ import copy
 from guiqwt.plot import ImageDialog, CurveDialog
 
 import taurus.core
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 
 from taurus.core.util.containers import CaselessList
 from taurus.qt.qtgui.base import TaurusBaseWidget
@@ -441,6 +441,7 @@ class TaurusImageDialog(ImageDialog, TaurusBaseWidget):
         '''reimplemented from :class:`TaurusBaseWidget`'''
         return taurus.core.taurusattribute.TaurusAttribute
         
+    @Qt.pyqtSlot(str)
     def setModel(self, model):
         '''reimplemented from :class:`TaurusBaseWidget`'''
         if self.getUseParentModel():
@@ -451,6 +452,9 @@ class TaurusImageDialog(ImageDialog, TaurusBaseWidget):
                 plot.del_item(self.imgItem)
             except:
                 self.info("Unable to delete item from plot")
+        if not model:
+            self.imgItem = None
+            return
         if self.rgbmode:
             self.imgItem = make.rgbimage(taurusmodel=model)
         else:

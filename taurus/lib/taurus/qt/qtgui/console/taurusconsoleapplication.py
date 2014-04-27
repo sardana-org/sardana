@@ -34,9 +34,12 @@ __all__ = ["TaurusConsoleApplication"]
 __docformat__ = 'restructuredtext'
 
 
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 
-from IPython.frontend.qt.console.qtconsoleapp import IPythonQtConsoleApp
+try:
+    from IPython.qt.console.qtconsoleapp import IPythonQtConsoleApp
+except ImportError: #for IPython v<1.x
+    from IPython.frontend.qt.console.qtconsoleapp import IPythonQtConsoleApp
      
 
 class TaurusConsoleApplication(IPythonQtConsoleApp):

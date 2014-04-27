@@ -10,8 +10,21 @@ Getting started
 Installing
 ----------
 
-Linux
-~~~~~
+Linux (Debian-based)
+~~~~~~~~~~~~~~~~~~~~
+
+Since v3.0, Taurus is part of the official repositories of Debian (and Ubuntu
+and other Debian-based distros). You can install it and all its dependencies by
+doing (as root)::
+
+       aptitude install python-taurus
+       
+(see more detailed instructions in `this step-by-step howto
+<https://sourceforge.net/p/sardana/wiki/Howto-SardanaFromScratch/>`__)
+
+
+Linux (generic)
+~~~~~~~~~~~~~~~
 
 #. Download the latest version of taurus from http://pypi.python.org/pypi/taurus
 #. Extract the downloaded tar.gz into a temporary directory
@@ -53,19 +66,32 @@ necessary to run taurus on your windows machine
     #. Download and install latest `PyTango`_ from `PyTango downdoad page <http://pypi.python.org/pypi/PyTango>`_
     #. Download and install latest taurus from `Taurus downdoad page <http://pypi.python.org/pypi/taurus>`_
 
-Working from SVN
+Working from Git
 ----------------
 
-You can checkout taurus from SVN from the following location::
+Sometimes it is convenient to work directly from the git source without
+installing. Taurus code is hosted in a `subdirectory
+<http://sourceforge.net/p/sardana/sardana.git/ci/master/tree/taurus/>`_ of the
+`main Sardana git repository <http://sourceforge.net/p/sardana/sardana.git>`_
 
-    svn co http://tango-cs.svn.sourceforge.net/svnroot/tango-cs/gui/taurus/trunk taurus
+You can clone sardana from our main git repository::
 
-Afterward, if you decide to work directly from SVN code (without installing):
+    git clone git://git.code.sf.net/p/sardana/sardana.git sardana
 
-    1. add <taurus checkout dir>/lib to PYTHONPATH
-    2. build the resources once::
+and you will find the taurus code in the `sardana/taurus` directory.
+
+Then, if you decide to work directly from Git code (without installing):
+
+    1. add <sardana_root_dir>/taurus/lib to PYTHONPATH
+    2. add <sardana_root_dir>/taurus/scripts to PATH
+    3. build the resources::
     
+        cd <sardana_root_dir>/taurus
         python setup.py build_resources
+        
+
+
+
 
 .. _dependencies:
 
@@ -135,18 +161,17 @@ Optional packages
 
       python -c 'import PyQt4.Qwt5; print PyQt4.Qwt5.QWT_VERSION_STR'
 
-- The image widgets are only available if you have Qub_. Qub_ is a graphical
-  library provided by the BLISS group in ESRF_.
-  You may already have Qub_ installed. You will need Qub for qt4.
-  You can check it by doing::
-
-      python -c 'import Qub'
+- The image widgets are provided by the guiqwt_ library. The widgets based on
+  this library replace the previously used Qub_-based image widget which is now
+  considered deprecated in Taurus
     
 - The Gauge widgets are only available if you have the python extension of
   qtcontrols. qtcontrols is part of QTango_.
 
 - The JDraw synoptics widgets are only available if you have the :mod:`ply` 
   package installed.
+  
+- The NeXus browser widget is only available if you have PyMca_ installed
 
 
 .. _numpy: http://numpy.scipy.org/
@@ -159,6 +184,7 @@ Optional packages
 .. _Qt: http://qt.nokia.com/products/
 .. _PyQt: http://www.riverbankcomputing.co.uk/software/pyqt/
 .. _PyQwt: http://pyqwt.sourceforge.net/
+.. _guiqwt: http://code.google.com/p/guiqwt/
 .. _IPython: http://ipython.scipy.org/
 .. _Qub: http://www.blissgarden.org/projects/qub/
-.. _ESRF: http://www.esrf.eu/
+.. _PyMca: http://pymca.sourceforge.net/

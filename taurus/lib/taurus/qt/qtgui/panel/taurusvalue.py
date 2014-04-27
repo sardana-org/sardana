@@ -34,10 +34,11 @@ __all__ = ["TaurusValue", "TaurusValuesFrame", "DefaultTaurusValueCheckBox", "De
 __docformat__ = 'restructuredtext'
 
 import weakref
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 import PyTango
 import taurus.core
 
+from taurus.core.taurusbasetypes import TaurusElementType
 from taurus.qt.qtcore.mimetypes import TAURUS_ATTR_MIME_TYPE, TAURUS_DEV_MIME_TYPE, TAURUS_MODEL_MIME_TYPE
 from taurus.qt.qtcore.configuration import BaseConfigurableClass
 from taurus.qt.qtgui.base import TaurusBaseWidget
@@ -64,8 +65,8 @@ class DefaultLabelWidget(TaurusLabel):
     The base class used by default for showing the label of a TaurusValue. 
         
     .. note:: It only makes sense to use this class as a part of a TaurusValue,
-              since it assumes that it can get a reference to a TaurusValue via the
-              :meth:`getTaurusValueBuddy` member
+              since it assumes that it can get a reference to a TaurusValue via 
+              the :meth:`getTaurusValueBuddy` member
     '''
     
     _dragEnabled=True
@@ -83,10 +84,11 @@ class DefaultLabelWidget(TaurusLabel):
             return TaurusLabel.setModel(self, None)
         try: config = self.taurusValueBuddy().getLabelConfig()
         except Exception: config = 'label'
-        if self.taurusValueBuddy().getModelClass() == taurus.core.taurusattribute.TaurusAttribute:
+        elementtype = self.taurusValueBuddy().getModelType()
+        if elementtype == TaurusElementType.Attribute:
             config = self.taurusValueBuddy().getLabelConfig()
             TaurusLabel.setModel(self, model + "?configuration=%s"%config)
-        elif self.taurusValueBuddy().getModelClass() == taurus.core.taurusdevice.TaurusDevice:
+        elif elementtype == TaurusElementType.Device:
             TaurusLabel.setModel(self, model + "/state?configuration=dev_alias")
     
     def sizeHint(self):
@@ -114,9 +116,9 @@ class DefaultLabelWidget(TaurusLabel):
         '''reimplemented to use the taurusValueBuddy model instead of its own model'''
         mimeData = TaurusLabel.getModelMimeData(self)
         mimeData.setData(TAURUS_MODEL_MIME_TYPE, self.taurusValueBuddy().getModelName())
-        if self.taurusValueBuddy().getModelClass() == taurus.core.taurusdevice.TaurusDevice:
+        if self.taurusValueBuddy().getModelType() == TaurusElementType.Device:
             mimeData.setData(TAURUS_DEV_MIME_TYPE, self.taurusValueBuddy().getModelName())
-        elif self.taurusValueBuddy().getModelClass() == taurus.core.taurusattribute.TaurusAttribute:
+        elif self.taurusValueBuddy().getModelType() == TaurusElementType.Attribute:
             mimeData.setData(TAURUS_ATTR_MIME_TYPE, self.taurusValueBuddy().getModelName())
         return mimeData
     
@@ -381,13 +383,13 @@ class TaurusValue(Qt.QWidget, TaurusBaseWidget):
                  ordered by preference, being the first element always the
                  default one.
         '''
-#        if self._customWidget is not None: return None
         modelobj = self.getModelObj()
         if modelobj is None: 
             if returnAll: return [ExpandingLabel]
             else: return ExpandingLabel
         
-        if self.getModelClass() == taurus.core.taurusattribute.TaurusAttribute:
+        modeltype = self.getModelType()
+        if  modeltype == TaurusElementType.Attribute:
             ##The model is an attribute
             config = modelobj.getConfig()
             #print "---------ATTRIBUTE OBJECT:----------\n",modelobj.read()
@@ -424,9 +426,14 @@ class TaurusValue(Qt.QWidget, TaurusBaseWidget):
             else:
                 self.warning('Unsupported attribute type %s'%configType)
                 result = None
-        else:  
-            ##The model is a device           
+
+        elif modeltype == TaurusElementType.Device:
             result = [TaurusDevButton]
+        else:
+            msg = "Unsupported model type ('%s')"%modeltype
+            self.warning(msg)
+            raise ValueError(msg)
+
             
         if returnAll: return result
         else: return result[0]
@@ -445,8 +452,8 @@ class TaurusValue(Qt.QWidget, TaurusBaseWidget):
                  ordered by preference, being the first element always the
                  default one.
         '''
-#        if self._customWidget is not None: return None
-        if self.isReadOnly() or self.getModelClass() != taurus.core.taurusattribute.TaurusAttribute: 
+        modelclass = self.getModelClass()
+        if self.isReadOnly() or (modelclass and modelclass.getTaurusElementType() != TaurusElementType.Attribute):
             if returnAll: return []
             else: return None
         modelobj = self.getModelObj()
@@ -482,13 +489,13 @@ class TaurusValue(Qt.QWidget, TaurusBaseWidget):
         else: return result[0]
     
     def getDefaultUnitsWidgetClass(self):
-##        if self._customWidget is not None: return None
 #        if self.getModelClass() != taurus.core.taurusattribute.TaurusAttribute:
 #            return DefaultUnitsWidget
         return DefaultUnitsWidget
     
     def getDefaultCustomWidgetClass(self):
-        if self.getModelClass() == taurus.core.taurusattribute.TaurusAttribute:
+        modelclass = self.getModelClass()
+        if modelclass and modelclass.getTaurusElementType() != TaurusElementType.Attribute:
             return None
         try:
             key = self.getModelObj().getHWObj().info().dev_class
@@ -544,6 +551,20 @@ class TaurusValue(Qt.QWidget, TaurusBaseWidget):
         cname, ok = Qt.QInputDialog.getItem(self, 'Change Write Widget', 'Choose a new write widget class', classnames, 1, True)
         if ok:
             self.setWriteWidgetClass(str(cname))
+
+    def _destroyWidget(self, widget):
+        '''get rid of a widget in a safe way'''
+        widget.hide()
+        widget.setParent(None)
+        if hasattr(widget,'setModel'):
+            widget.setModel(None)
+        # COULD NOT INVESTIGATE DEEPER, BUT THE STARTUP-HANGING
+        # HAPPENS WITH SOME SIGNALS RELATED WITH THE LINEEDIT...
+        # MAYBE OTHER 'WRITE WIDGETS' HAVE THE SAME PROBLEM ?!?!?!
+        if isinstance(widget, Qt.QLineEdit):
+            widget.blockSignals(True)
+        # THIS HACK REDUCES THE STARTUP-HANGING RATE
+        widget.deleteLater()
         
     def _newSubwidget(self, oldWidget, newClass):
         '''eliminates oldWidget and returns a new one.
@@ -551,62 +572,48 @@ class TaurusValue(Qt.QWidget, TaurusBaseWidget):
         If newClass is the same as the olWidget class, nothing happens'''
         if oldWidget.__class__ == newClass: return oldWidget
         if oldWidget is not None:
-            oldWidget.hide()
-            oldWidget.setParent(None)
-            # THIS HACK REDUCES THE STARTUP-HANGING RATE
-            if hasattr(oldWidget,'setModel'):
-                oldWidget.setModel(None)
-            
-            # COULD NOT INVESTIGATE DEEPER, BUT THE STARTUP-HANGING
-            # HAPPENS WITH SOME SIGNALS RELATED WITH THE LINEEDIT...
-            # MAYBE OTHER 'WRITE WIDGETS' HAVE THE SAME PROBLEM ?!?!?!
-            if isinstance(oldWidget, Qt.QLineEdit):
-                oldWidget.blockSignals(True)
-                
-            # THIS HACK REDUCES THE STARTUP-HANGING RATE
-            oldWidget.deleteLater()
-
+            self._destroyWidget(oldWidget)
         if newClass is None: result = None
         else: result = newClass()
         return result
 
     def labelWidgetClassFactory(self, classID):
         if self._customWidget is not None: return None
-        if classID is None or classID is 'None': return None
+        if classID is None or classID == 'None': return None
         if isinstance(classID, type): return classID
         elif str(classID) == 'Auto': return self.getDefaultLabelWidgetClass()
         else: return TaurusWidgetFactory().getTaurusWidgetClass(classID)
 
     def readWidgetClassFactory(self, classID):
         if self._customWidget is not None: return None
-        if classID is None or classID is 'None': return None
+        if classID is None or classID == 'None': return None
         if isinstance(classID, type): return classID
         elif str(classID) == 'Auto': return self.getDefaultReadWidgetClass()
         else: return TaurusWidgetFactory().getTaurusWidgetClass(classID)
     
     def writeWidgetClassFactory(self, classID):
         if self._customWidget is not None: return None
-        if classID is None or classID is 'None': return None
+        if classID is None or classID == 'None': return None
         if isinstance(classID, type): return classID
         elif str(classID) == 'Auto': return self.getDefaultWriteWidgetClass()
         else: return TaurusWidgetFactory().getTaurusWidgetClass(classID)
         
     def unitsWidgetClassFactory(self, classID):
         if self._customWidget is not None: return None
-        if classID is None or classID is 'None': return None
+        if classID is None or classID == 'None': return None
         if isinstance(classID, type): return classID
         elif str(classID) == 'Auto': return self.getDefaultUnitsWidgetClass()
         else: return TaurusWidgetFactory().getTaurusWidgetClass(classID)
         
     def customWidgetClassFactory(self, classID):
-        if classID is None or classID is 'None': return None
+        if classID is None or classID == 'None': return None
         if isinstance(classID, type): return classID
         elif str(classID) == 'Auto': return self.getDefaultCustomWidgetClass()
         else: return TaurusWidgetFactory().getTaurusWidgetClass(classID)
         
     def extraWidgetClassFactory(self, classID):
         if self._customWidget is not None: return None
-        if classID is None or classID is 'None': return None
+        if classID is None or classID == 'None': return None
         if isinstance(classID, type): return classID
         elif str(classID) == 'Auto': return self.getDefaultExtraWidgetClass()
         else: return TaurusWidgetFactory().getTaurusWidgetClass(classID)
@@ -637,6 +644,7 @@ class TaurusValue(Qt.QWidget, TaurusBaseWidget):
             klass = self.readWidgetClassFactory(self.readWidgetClassID)
             self._readWidget = self._newSubwidget(self._readWidget, klass)
         except Exception,e:
+            self._destroyWidget(self._readWidget)
             self._readWidget = Qt.QLabel('[Error]')
             msg='Error creating read widget:\n'+str(e)
             self._readWidget.setToolTip(msg)
@@ -918,11 +926,9 @@ class TaurusValue(Qt.QWidget, TaurusBaseWidget):
                 
     @Qt.pyqtSignature("setModel(QString)")
     def setModel(self, model):
-        try:
-            taurus.Attribute(model)
-            self.__modelClass = taurus.core.taurusattribute.TaurusAttribute
-        except:
-            self.__modelClass = taurus.core.taurusdevice.TaurusDevice
+        """extending :meth:`TaurusBaseWidget.setModel` to change the modelclass
+        dynamically and to update the subwidgets"""
+        self.__modelClass = taurus.Manager().findObjectClass(model or '')
         TaurusBaseWidget.setModel(self,model)
         if not self._designMode:     #in design mode, no subwidgets are created
             self.updateCustomWidget()
@@ -1100,13 +1106,14 @@ if __name__ == "__main__":
     #models=['bl97/pc/dummy-01/CurrentSetpoint','bl97/pc/dummy-02/RemoteMode']
     #models=['sys/tg_test/1/state','sys/tg_test/1/status','sys/tg_test/1/short_scalar','sys/tg_test/1']
     #models =  ['sys/tg_test/1']+['sys/tg_test/1/%s_scalar'%s for s in ('float','short','string','long','boolean') ]
-    #models =  ['sys/tg_test/1/float_scalar','sys/tg_test/1/double_scalar']
+    #models =  ['sys/tg_test/1/float_scalar','sys/tg#_test/1/double_scalar']
     
     container.setModel(models)
     
-    #container.getTaurusValueByIndex(0).writeWidget().setDangerMessage('BOOO') #uncomment to test the dangerous operation support
-    #container.getTaurusValueByIndex(0).readWidget().setShowState(True)
-    #container.getTaurusValueByIndex(0).setWriteWidgetClass(TaurusValueLineEdit)
+    #container.getItemByIndex(0).writeWidget().setDangerMessage('BOOO') #uncomment to test the dangerous operation support
+    #container.getItemByIndex(0).readWidget().setShowState(True)
+    #container.getItemByIndex(0).setWriteWidgetClass(TaurusValueLineEdit)
+    #container[0].setWriteWidgetClass('None')
     #container.setModel(models)
     
     container.setModifiableByUser(True)

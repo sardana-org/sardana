@@ -28,11 +28,11 @@
 __all__ = ["ColumnDesc", "MoveableDesc", "Record", "RecordEnvironment",
            "ScanDataEnvironment", "RecordList", "ScanData", "ScanFactory"]
 
-
 import copy
-from taurus.core.util import Singleton
 
-from recorder import DataHandler
+from taurus.core.util.singleton import Singleton
+
+from sardana.macroserver.scan.recorder import DataHandler
 
 
 class ColumnDesc:
@@ -66,7 +66,7 @@ class ColumnDesc:
 
         # create members of the ColumnDesc class using the remaining keyword
         # args
-        self._extra_kwargs = kwargs 
+        self._extra_kwargs = kwargs
         self.__dict__.update(kwargs)
 
     def getShape(self):
@@ -239,7 +239,7 @@ class RecordList(dict):
     # make it pickable
     def __getstate__(self):
         return dict(datahandler=None, environ=None, records=self.records)
-        
+
     def setEnviron(self, environ):
         self.environ = environ
 

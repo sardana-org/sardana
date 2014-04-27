@@ -14,8 +14,8 @@ Installing
 
         #. Download the sardana source code:
             #. from latest stable version of `sardana <http://pypi.python.org/pypi/sardana>`_ (|version|)
-            #. from `SVN snapshot <http://tango-cs.svn.sourceforge.net/viewvc/tango-cs/share/Sardana/trunk/?view=tar>`_
-
+            #. from `SVN snapshot <https://sourceforge.net/p/sardana/code/HEAD/tarball?path=/trunk>`_
+            
         #. Extract the downloaded tar.gz into a temporary directory
 
         #. type [2]_ ::
@@ -45,7 +45,7 @@ necessary to run sardana on your windows machine
 
     #. from scratch:
         #. Download and install `PyQwt`_ < 6.0 from `PyQwt downdoad page <http://pyqwt.sourceforge.net/download.html>`_
-            #. Download and install compatible python with from link in the same `PyQwt`_ page
+            #. Download and install compatible python from link in the same `PyQwt`_ page
             #. Download and install compatible `numpy`_ from link in the same `PyQwt`_ page.
             #. Download and install compatible `PyQt`_ from link in the same `PyQwt`_ page.
 
@@ -55,18 +55,23 @@ necessary to run sardana on your windows machine
 
 .. _sardana-working-from-svn:
 
-Working from SVN
-----------------
+Working directly from Git
+-------------------------
 
-You can checkout sardana from SVN from the following location::
+Sometimes it is convenient to work directly from the git source without installing. To do so,
+you can clone sardana from our main git repository::
 
-    svn co http://svn.code.sf.net/p/sardana/code/trunk Sardana
-
-You can directly execute sardana binaries (Pool, MacroServer, Sardana or spock
+    git clone git://git.code.sf.net/p/sardana/sardana.git sardana
+    
+And then you can directly execute sardana binaries (Pool, MacroServer, Sardana or spock
 from the command line)::
 
-    homer@pc001:~/workspace$ cd Sardana
-    homer@pc001:~/workspace/Sardana$ scripts/Sardana
+    homer@pc001:~/workspace$ cd sardana
+    homer@pc001:~/workspace/sardana$ scripts/Sardana
+    
+.. tip:: If you plan to work normally from git without installing, you may want
+         to add the `sardana/scripts` directory to your `PATH` variable and 
+         `sardana/src` to your `PYTHONPATH` variable.
 
 
 .. rubric:: Footnotes

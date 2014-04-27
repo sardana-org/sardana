@@ -27,7 +27,7 @@
 
 __all__=["TaurusCurveItem"]
 
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 from taurus.qt.qtgui.base import TaurusBaseComponent
 import taurus
 from guiqwt.curve import CurveItem
@@ -104,7 +104,7 @@ class TaurusCurveItem(CurveItem, TaurusBaseComponent):
         if xvalue is None:
             xvalue = numpy.arange(len(yvalue))
         
-        self.setData(xvalue, yvalue)
+        self.set_data(xvalue, yvalue)
         p = self.plot()
         if p is not None: 
             p.replot()

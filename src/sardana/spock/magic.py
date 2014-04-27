@@ -32,22 +32,37 @@ __all__ = ['expconf', 'showscan', 'spsplot', 'debug_completer',
            'spock_pre_prompt_hook']
 
 
-from genutils import page, get_door, get_macro_server, ask_yes_no, arg_split
-from genutils import MSG_DONE, MSG_FAILED
-from genutils import get_ipapi
+from .genutils import page, get_door, get_macro_server, ask_yes_no, arg_split
+from .genutils import MSG_DONE, MSG_FAILED
+from .genutils import get_ipapi
 
 
 def expconf(self, parameter_s=''):
     """Launches a GUI for configuring the environment variables
     for the experiments (scans)"""
     try:
-        from taurus.qt.qtgui.extra_sardana import ExpDescriptionEditor
+        from sardana.taurus.qt.qtgui.extra_sardana import ExpDescriptionEditor
     except:
         print "Error importing ExpDescriptionEditor "\
               "(hint: is taurus extra_sardana installed?)"
+        return
     doorname = get_door().name()
-    w = ExpDescriptionEditor(door=doorname)
-    w.show()
+        
+    #===========================================================================
+    ## ugly hack to avoid ipython/qt thread problems #e.g. see
+    ## https://sourceforge.net/p/sardana/tickets/10/ 
+    ## this hack does not allow inter-process communication and leaves the 
+    ## widget open after closing spock 
+    ## @todo: investigate cause of segfaults when using launching qt widgets from ipython
+    # 
+    #w = ExpDescriptionEditor(door=doorname)
+    #w.show() #launching it like this, produces the problem of https://sourceforge.net/p/sardana/tickets/10/
+    import subprocess
+    import sys
+    fname = sys.modules[ExpDescriptionEditor.__module__].__file__
+    args = ['python', fname, doorname]
+    subprocess.Popen(args)
+    #===========================================================================
 
 
 def showscan(self, parameter_s=''):
@@ -150,8 +165,8 @@ def macrodata(self, parameter_s=''):
     door = get_door()
     macro_data = door.read_attribute("RecordData")
 
-    import taurus.core.util
-    factory = taurus.core.util.CodecFactory()
+    from taurus.core.util.codecs import CodecFactory
+    factory = CodecFactory()
     data = factory.decode(macro_data.value)    
     return data
     
@@ -166,7 +181,6 @@ def edmac(self, parameter_s=''):
     import os
     import tempfile
     import PyTango
-    import taurus.core.util
 
     ms = get_macro_server()
 
@@ -188,7 +202,7 @@ def edmac(self, parameter_s=''):
     try:
         remote_fname, code, line_nb = ms.GetMacroCode(macro_info)
     except PyTango.DevFailed, e:
-        taurus.core.util.print_DevFailed(e)
+        PyTango.Except.print_exception(e)
         return
 
     fd, local_fname = tempfile.mkstemp(prefix='spock_%s_' % pars[0],

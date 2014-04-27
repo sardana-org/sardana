@@ -26,19 +26,20 @@
 """
 taurustrend.py: Generic trend widget for Taurus
 """
-__all__=["ScanTrendsSet", "TaurusTrend", "TaurusTrendsSet"]
+__all__ = ["ScanTrendsSet", "TaurusTrend", "TaurusTrendsSet"]
 
 from datetime import datetime
 import time
 import numpy
 import re
 import gc
-from taurus.qt import Qt, Qwt5
+from taurus.external.qt import Qt, Qwt5
 
 import taurus.core
 from taurus.core.util.containers import CaselessDict, CaselessList, ArrayBuffer
 from taurus.qt.qtgui.base import TaurusBaseComponent
 from taurus.qt.qtgui.plot import TaurusPlot
+
 import PyTango
 
 def getArchivedTrendValues(*args, **kwargs):
@@ -48,7 +49,6 @@ def getArchivedTrendValues(*args, **kwargs):
     except:
         return []
 
-from taurus.qt.qtcore.tango.sardana.macroserver import QDoor
 
 def stripShape(s):
     '''
@@ -290,8 +290,15 @@ class TaurusTrendsSet(Qt.QObject, TaurusBaseComponent):
                     v = float(v)
                     ntrends = 1
                 except:
-                    ntrends = len(v)
-        else: ntrends = len(self._curves)
+                    try:
+                        #Trying with spectrums
+                        ntrends = len(v)
+                    except:
+                        #Simply unreadable
+                        value = None
+                        ntrends = len(self._curves)
+        else: 
+            ntrends = len(self._curves)
         
         if self._xBuffer is None:
             self._xBuffer = ArrayBuffer(numpy.zeros(min(128,self._maxBufferSize), dtype='d'), maxSize=self._maxBufferSize )
@@ -299,7 +306,13 @@ class TaurusTrendsSet(Qt.QObject, TaurusBaseComponent):
             self._yBuffer = ArrayBuffer(numpy.zeros((min(128,self._maxBufferSize), ntrends),dtype='d'), maxSize=self._maxBufferSize )
             
         #self.trace('_updateHistory(%s,%s(...))' % (model,type(value.value)))
-        if value is not None: self._yBuffer.append(value.value)
+        if value is not None: 
+            try:
+                self._yBuffer.append(value.value)
+            except Exception,e: 
+                self.warning('Problem updating history (%s=%s):%s', 
+                             model, value.value, e)
+                value = None
         
         if self.parent().getXIsTime():
             #add the timestamp to the x buffer
@@ -759,8 +772,19 @@ class ScanTrendsSet(TaurusTrendsSet):
         
         :param qdoor: (QDoor or str) either a QDoor instance or the QDoor name
         '''
+        from sardana.taurus.qt.qtcore.tango.sardana.macroserver import QDoor
         if not isinstance(qdoor, QDoor): qdoor = taurus.Device(qdoor)
         self.connect(qdoor, Qt.SIGNAL("recordDataUpdated"), self.scanDataReceived)
+        
+            
+    def disconnectQDoor(self, qdoor):
+        '''connects this ScanTrendsSet to a QDoor
+        
+        :param qdoor: (QDoor or str) either a QDoor instance or the QDoor name
+        '''
+        from sardana.taurus.qt.qtcore.tango.sardana.macroserver import QDoor
+        if not isinstance(qdoor, QDoor): qdoor = taurus.Device(qdoor)
+        self.disconnect(qdoor, Qt.SIGNAL("recordDataUpdated"), self.scanDataReceived)
     
     def getModel(self):
         return self.__model 
@@ -1081,6 +1105,10 @@ class TaurusTrend(TaurusPlot):
                 tset.unregisterDataChanged(self, self.curveDataChanged)
                 tset.forcedReadingTimer = None
                 tset.clearTrends(replot=False)
+                matchScan = re.search(r"scan:\/\/(.*)", name)
+                if matchScan:
+                    olddoorname = matchScan.group(1)
+                    tset.disconnectQDoor(olddoorname)
             if del_sets:        
                 self.autoShowYAxes()
                 

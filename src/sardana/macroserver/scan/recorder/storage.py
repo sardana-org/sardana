@@ -32,13 +32,18 @@ __docformat__ = 'restructuredtext'
 import os
 import time
 import itertools
+import re
 
 import numpy
 
-from datarecorder import DataRecorder, DataFormats, SaveModes
-from taurus.core.tango.sardana import PlotType
-from sardana.macroserver.macro import Type
 import PyTango
+
+from sardana.taurus.core.tango.sardana import PlotType
+from sardana.macroserver.macro import Type
+from sardana.macroserver.scan.recorder.datarecorder import DataRecorder, \
+    DataFormats, SaveModes
+from taurus.core.util.containers import chunks
+
 
 class BaseFileRecorder(DataRecorder):
     def __init__(self, **pars):
@@ -104,7 +109,7 @@ class FIO_FileRecorder(BaseFileRecorder):
         
         envRec = recordlist.getEnviron()
 
-        self.sampleTime = envRec['estimatedtime']/(envRec['total_scan_intervals'] + 1)
+        self.sampleTime = envRec['estimatedtime'] / (envRec['total_scan_intervals'] + 1)
         #datetime object
         start_time = envRec['starttime']
         
@@ -270,6 +275,9 @@ class SPEC_FileRecorder(BaseFileRecorder):
     """ Saves data to a file """
 
     formats = { DataFormats.Spec : '.spec' }
+    supported_dtypes = ('float32','float64','int8',
+                        'int16','int32','int64','uint8',
+                        'uint16','uint32','uint64')
 
     def __init__(self, filename=None, macro=None, **pars):
         BaseFileRecorder.__init__(self)
@@ -295,7 +303,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
         return DataFormats.whatis(DataFormats.Spec)
     
     def _startRecordList(self, recordlist):
-
+        '''Prepares and writes the scan header.'''
         if self.filename is None:
             return
 
@@ -311,11 +319,15 @@ class SPEC_FileRecorder(BaseFileRecorder):
         names = []
         for e in env['datadesc']:
             dims = len(e.shape)
-            if not dims or (dims==1 and e.shape[0] == 1):
-                sanitizedlabel = "".join(x for x in e.label.replace(' ','_') if x.isalnum() or x=='_') #substitute whitespaces by underscores and remove other non-alphanumeric characters
+            if not dims or (dims == 1 and e.shape[0] == 1):
+                sanitizedlabel = "".join(x for x in e.label.replace(' ', '_') if x.isalnum() or x == '_')  #substitute whitespaces by underscores and remove other non-alphanumeric characters
                 labels.append(sanitizedlabel)
                 names.append(e.name)
         self.names = names
+        
+        # prepare pre-scan snapshot
+        snapshot_labels, snapshot_values = self._preparePreScanSnapshot(env)
+        # format scan header
         data = {
                 'serialno':  serialno,
                 'title':     env['title'],
@@ -325,18 +337,72 @@ class SPEC_FileRecorder(BaseFileRecorder):
                 'nocols':    len(names),
                 'labels':    '  '.join(labels)
                }
-               
+        header = ''
+        header += '#S %(serialno)s %(title)s\n'
+        header += '#U %(user)s\n'
+        header += '#D %(epoch)s\n'
+        header += '#C Acquisition started at %(starttime)s\n'
+        # add a pre-scan snapshot (sep is two spaces for labels!!)
+        header += self._prepareMultiLines('O', '  ', snapshot_labels)
+        header += self._prepareMultiLines('P', ' ', snapshot_values)
+        header += '#N %(nocols)s\n'
+        header += '#L %(labels)s\n'
+        
         self.fd = open(self.filename,'a')
-        self.fd.write("""
-#S %(serialno)s %(title)s
-#U %(user)s
-#D %(epoch)s
-#C Acquisition started at %(starttime)s
-#N %(nocols)s
-#L %(labels)s
-""" % data )
+        self.fd.write(header % data )
         self.fd.flush()
-
+        
+    def _prepareMultiLines(self, character, sep, items_list):
+        '''Translate list of lists of items into multiple line string
+        
+        :param character (string): each line will start #<character><line_nr>
+        :sep: separator (string): separator to use between items
+        :param items_list (list):list of lists of items
+        
+        :return multi_lines (string): string with all the items'''
+        multi_lines = ''
+        for nr, items in enumerate(items_list):
+            start = '#%s%d ' % (character, nr)
+            items_str = sep.join(map(str, items))
+            end = '\n'
+            line = start + items_str + end
+            multi_lines += line 
+        return multi_lines
+    
+    def _preparePreScanSnapshot(self, env):
+        '''Extract pre-scan snapshot, filters elements of shape different 
+        than scalar and split labels and values into chunks of 8 items.
+        
+        :param: env (dict) scan environment
+        
+        :return: labels, values (tuple<list,list>)
+                 labels - list of chunks with 8 elements containing labels 
+                 values - list of chunks with 8 elements containing values    
+        '''
+        # preScanSnapShot is a list o ColumnDesc objects
+        pre_scan_snapshot = env.get('preScanSnapShot',[])
+        labels = []; values = []
+        for column_desc in pre_scan_snapshot:
+            shape = column_desc.shape # shape is a tuple of dimensions
+            label = column_desc.label
+            dtype = column_desc.dtype
+            pre_scan_value = column_desc.pre_scan_value
+            # skip items with shape different than scalar
+            if  len(shape) > 0:
+                self.info('Pre-scan snapshot of "%s" will not be stored.' + \
+                          ' Reason: value is non-scalar', label)
+                continue
+            if dtype not in self.supported_dtypes:
+                self.info('Pre-scan snapshot of "%s" will not be stored.' + \
+                          ' Reason: type %s not supported', label, dtype)
+                continue
+            labels.append(label)
+            values.append(pre_scan_value)
+        # split labels in chunks o 8 items
+        labels_chunks = list(chunks(labels, 8))
+        values_chunks = list(chunks(values, 8))
+        return labels_chunks, values_chunks
+        
     def _writeRecord(self, record):
         if self.filename is None:
             return
@@ -363,6 +429,39 @@ class SPEC_FileRecorder(BaseFileRecorder):
         self.fd.flush()
         self.fd.close()
 
+                    
+    def _addCustomData(self, value, name, **kwargs):
+        '''
+        The custom data will be added as a comment line in the form:: 
+        
+        #C name : value
+        
+        ..note:: non-scalar values (or name/values containing end-of-line) will not be written
+        '''
+        if self.filename is None:
+            self.info('Custom data "%s" will not be stored in SPEC file. Reason: uninitialized file',name)
+            return
+        if numpy.rank(value) > 0:  #ignore non-scalars
+            self.info('Custom data "%s" will not be stored in SPEC file. Reason: value is non-scalar', name)
+            return
+        v = str(value)
+        if '\n' in v or '\n' in name: #ignore if name or the string representation of the value contains end-of-line
+            self.info('Custom data "%s" will not be stored in SPEC file. Reason: unsupported format',name)
+            return
+        
+        fileWasClosed = self.fd is None or self.fd.closed
+        if fileWasClosed:
+            try:
+                self.fd = open(self.filename,'a')
+            except:
+                self.info('Custom data "%s" will not be stored in SPEC file. Reason: cannot open file',name)
+                return
+        self.fd.write('#C %s : %s\n' % (name, v))
+        self.fd.flush()
+        if fileWasClosed:
+            self.fd.close() #leave the file descriptor as found
+        
+        
 
 class BaseNEXUS_FileRecorder(BaseFileRecorder):
     """Base class for NeXus file recorders"""   
@@ -397,10 +496,10 @@ class BaseNEXUS_FileRecorder(BaseFileRecorder):
             self.fd.close()
    
         self.filename = filename
-        #obtain preferred nexus file mode for writing from the filename extension (defaults to hdf5) 
-        extension=os.path.splitext(filename)[1]
+        #obtain preferred nexus file mode for writing from the filename extension (defaults to hdf5)
+        extension = os.path.splitext(filename)[1]
         inv_formats = dict(itertools.izip(self.formats.itervalues(), self.formats.iterkeys()))
-        self.nxfilemode  = inv_formats.get(extension.lower(), DataFormats.w5)
+        self.nxfilemode = inv_formats.get(extension.lower(), DataFormats.w5)
         self.currentlist = None
     
     def getFormat(self):
@@ -409,8 +508,8 @@ class BaseNEXUS_FileRecorder(BaseFileRecorder):
     def sanitizeName(self, name):
         '''It returns a version of the given name that can be used as a python
         variable (and conforms to NeXus best-practices for dataset names)'''
-        #make sure the name does not start with a digit 
-        if name[0].isdigit(): name="_%s"%name 
+        #make sure the name does not start with a digit
+        if name[0].isdigit(): name = "_%s" % name
         #substitute whitespaces by underscores and remove other non-alphanumeric characters
         return "".join(x for x in name.replace(' ','_') if x.isalnum() or x=='_')
     
@@ -438,9 +537,9 @@ class BaseNEXUS_FileRecorder(BaseFileRecorder):
             
         fd.openpath(src)
         try:
-            nid=fd.getdataID()
+            nid = fd.getdataID()
         except self.nxs.NeXusError:
-            nid=fd.getgroupID()
+            nid = fd.getgroupID()
         fd.openpath(dst)
         if name is None:
             fd.makelink(nid)
@@ -467,6 +566,8 @@ class BaseNAPI_FileRecorder(BaseNEXUS_FileRecorder):
     #===========================================================================
     # Convenience methods to make NAPI less tedious
     #===========================================================================
+    
+    _nxentryInPath = re.compile(r'/[^/:]+:NXentry')
     
     def _makedata(self, name, dtype=None, shape=None, mode='lzw', chunks=None, comprank=None):
         '''
@@ -497,7 +598,7 @@ class BaseNAPI_FileRecorder(BaseNEXUS_FileRecorder):
         it returns the data Id (useful for linking). The dataset is left closed. 
         '''
         if shape is None:
-            if dtype=='char': 
+            if dtype == 'char':
                 shape = [len(data)]
                 chunks = chunks or list(shape) #for 'char', write the whole block in one chunk
             else:
@@ -516,16 +617,16 @@ class BaseNAPI_FileRecorder(BaseNEXUS_FileRecorder):
         '''Returns a str representing the name for a new entry.
         The name is formed by the prefix and an incremental numeric suffix.
         The offset indicates the start of the numeric suffix search'''
-        i=offset
+        i = offset
         while True:
-            entry="%s%i"%(prefix,i)
+            entry = "%s%i" % (prefix, i)
             if suffix:
                 entry += " - " + suffix
             try:
                 self.fd.opengroup(entry,'NXentry')
                 self.fd.closegroup()
-                i+=1
-            except ValueError: #no such group name exists
+                i += 1
+            except ValueError:  #no such group name exists
                 return entry
         
     def _nxln(self, src, dst):
@@ -538,33 +639,50 @@ class BaseNAPI_FileRecorder(BaseNEXUS_FileRecorder):
         '''
         self.fd.openpath(src)
         try:
-            nid=self.fd.getdataID()
+            nid = self.fd.getdataID()
         except self.nxs.NeXusError:
-            nid=self.fd.getgroupID()
+            nid = self.fd.getgroupID()
         self.fd.openpath(dst)
         self.fd.makelink(nid)
             
     def _createBranch(self, path):
-        """navigates the nexus tree starting in the current <entry> and finishing in <entry>/path.
-        It creates the groups if they do not exist, using the class info in self.instrDict
-        If successful, path is left open"""
-        groups=path.split('/')
-        self.fd.openpath("/%s:NXentry" % self.entryname)
-        relpath="" #the current path relative to <entry>, to use as a key for instrDict
-        for g in groups:
+        """
+        Navigates the nexus tree starting in / and finishing in path. 
+        
+        If path does not start with `/<something>:NXentry`, the current entry is
+        prepended to it.
+        
+        This method creates the groups if they do not exist. If the
+        path is given using `name:nxclass` notation, the given nxclass is used.
+        Otherwise, the class name is obtained from self.instrDict values (and if
+        not found, it defaults to NXcollection). If successful, path is left
+        open
+        """
+        m = self._nxentryInPath.match(path)
+        if m is None:
+            self._createBranch("/%s:NXentry" % self.entryname)  #if at all, it will recurse just once
+#            self.fd.openpath("/%s:NXentry" % self.entryname)
+        else:
+            self.fd.openpath("/")
+
+        relpath = ""
+        for g in path.split('/'):
             if len(g) == 0:
                 continue
             relpath = relpath + "/"+ g
-            try:
-                group_type = self.instrDict[relpath].klass
-            except:
-                group_type = 'NXcollection'
+            if ':' in g:
+                g,group_type = g.split(':')
+            else:
+                try:
+                    group_type = self.instrDict[relpath].klass
+                except:
+                    group_type = 'NXcollection'
             try:
                 self.fd.opengroup(g, group_type)
             except:
                 self.fd.makegroup(g, group_type)
-                self.fd.opengroup(g, group_type)    
-
+                self.fd.opengroup(g, group_type)
+                
 
 class NXscan_FileRecorder(BaseNAPI_FileRecorder):
     """saves data to a nexus file that follows the NXscan application definition
@@ -639,9 +757,9 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
                 self.warning('%s will not be stored. Reason: type %s not supported',dd.name,dd.dtype)
                         
         #make a dictionary out of env['instrumentlist'] (use fullnames -paths- as keys)
-        self.instrDict={}
-        for inst in env.get('instrumentlist',[]):
-            self.instrDict[inst.getFullName()]=inst
+        self.instrDict = {}
+        for inst in env.get('instrumentlist', []):
+            self.instrDict[inst.getFullName()] = inst
         if self.instrDict is {}:
             self.warning("missing information on NEXUS structure. Nexus Tree won't be created")
         
@@ -650,7 +768,7 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
         #populate the entry with some data
         self._writeData('definition', 'NXscan', 'char') #this is the Application Definition for NeXus Generic Scans
         import sardana.release
-        program_name = "%s (%s)"%(sardana.release.name, self.__class__.__name__)
+        program_name = "%s (%s)" % (sardana.release.name, self.__class__.__name__)
         self._writeData('program_name', program_name, 'char', attrs={'version':sardana.release.version})
         self._writeData("start_time",env['starttime'].isoformat(),'char') #note: the type should be NX_DATE_TIME, but the nxs python api does not recognize it
         self.fd.putattr("epoch",time.mktime(env['starttime'].timetuple()))
@@ -662,13 +780,12 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
         self.fd.closegroup()
         
         #prepare the "measurement" group
-        self.fd.makegroup("measurement","NXcollection")
-        self.fd.opengroup("measurement","NXcollection")
-        if self.savemode==SaveModes.Record:
+        self._createBranch("measurement:NXcollection")
+        if self.savemode == SaveModes.Record:
             #create extensible datasets
             for dd in self.datadesc:
-                self._makedata(dd.label,dd.dtype, [nxs.UNLIMITED]+list(dd.shape), chunks=[1]+list(dd.shape)) #the first dimension is extensible
-                if hasattr(dd,'data_units'):
+                self._makedata(dd.label, dd.dtype, [nxs.UNLIMITED] + list(dd.shape), chunks=[1] + list(dd.shape))  #the first dimension is extensible
+                if hasattr(dd, 'data_units'):
                     self.fd.opendata(dd.label)
                     self.fd.putattr('units', dd.data_units)
                     self.fd.closedata()
@@ -682,12 +799,9 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
         self.fd.flush()
     
     def _createPreScanSnapshot(self, env):
-        measurementpath = "/%s:NXentry/measurement:NXcollection"%self.entryname
-        self.fd.openpath(measurementpath)
         #write the pre-scan snapshot in the "measurement:NXcollection/pre_scan_snapshot:NXcollection" group
         self.preScanSnapShot = env.get('preScanSnapShot',[])
-        self.fd.makegroup("pre_scan_snapshot","NXcollection")
-        self.fd.opengroup("pre_scan_snapshot","NXcollection")
+        self._createBranch('measurement:NXcollection/pre_scan_snapshot:NXcollection')
         links = {}
         for dd in self.preScanSnapShot: #desc is a ColumnDesc object
             label = self.sanitizeName(dd.label)
@@ -731,9 +845,9 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
                     debug('%s casted to %s (was %s)', dd.label, dd.dtype,
                                                       data.dtype.name)
                     data = data.astype(dd.dtype)
-                    
-                slab_offset = [rec_nb]+[0]*len(dd.shape)
-                shape = [1]+list(npshape(data))
+
+                slab_offset = [rec_nb] + [0] * len(dd.shape)
+                shape = [1] + list(npshape(data))
                 try:
                     fd.putslab(data, slab_offset, shape)
                 except:
@@ -757,8 +871,8 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
         
         self._populateInstrumentInfo()
         self._createNXData()
-        
-        env=self.currentlist.getEnviron()
+
+        env = self.currentlist.getEnviron()
         self.fd.openpath("/%s:NXentry" % self.entryname)
         self._writeData("end_time",env['endtime'].isoformat(),'char')
         self.fd.flush()
@@ -789,14 +903,14 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
         self._endRecordList( recordlist )
 
     def _populateInstrumentInfo(self):
-        measurementpath = "/%s:NXentry/measurement:NXcollection"%self.entryname
+        measurementpath = "/%s:NXentry/measurement:NXcollection" % self.entryname
         #create a link for each
         for dd in self.datadesc:
-            if getattr(dd,'instrument', None): #we don't link if it is None or it is empty
+            if getattr(dd, 'instrument', None):  #we don't link if it is None or it is empty
                 try:
-                    datapath="%s/%s"%(measurementpath,dd.label) 
+                    datapath = "%s/%s" % (measurementpath, dd.label)
                     self.fd.openpath(datapath)
-                    nid=self.fd.getdataID()
+                    nid = self.fd.getdataID()
                     self._createBranch(dd.instrument)
                     self.fd.makelink(nid)
                 except Exception,e:
@@ -806,9 +920,9 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
             if getattr(dd,'instrument', None):
                 try:
                     label = self.sanitizeName(dd.label)
-                    datapath="%s/pre_scan_snapshot:NXcollection/%s"%(measurementpath,label)
+                    datapath = "%s/pre_scan_snapshot:NXcollection/%s" % (measurementpath, label)
                     self.fd.openpath(datapath)
-                    nid=self.fd.getdataID()
+                    nid = self.fd.getdataID()
                     self._createBranch(dd.instrument)
                     self.fd.makelink(nid)
                 except Exception,e:
@@ -831,35 +945,83 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
                     plots1d[axes].append(dd)
                 else:
                     plots1d[axes] = [dd]
-                    plots1d_names[axes] = 'plot_%i'%i #Note that datatesc ordering determines group name indexing
-                    i+=1
+                    plots1d_names[axes] = 'plot_%i' % i  #Note that datatesc ordering determines group name indexing
+                    i += 1
             else:
                 continue  #@todo: implement support for images and other
         
         #write the 1D NXdata group
-        for axes,v in plots1d.items():
-            self.fd.openpath("/%s:NXentry"%(self.entryname))
+        for axes, v in plots1d.items():
+            self.fd.openpath("/%s:NXentry" % (self.entryname))
             groupname = plots1d_names[axes]
             self.fd.makegroup(groupname,'NXdata')
             #write the signals
-            for i,dd in enumerate(v):
-                src = "/%s:NXentry/measurement:NXcollection/%s"%(self.entryname,dd.label)
-                dst = "/%s:NXentry/%s:NXdata"%(self.entryname,groupname)
+            for i, dd in enumerate(v):
+                src = "/%s:NXentry/measurement:NXcollection/%s" % (self.entryname, dd.label)
+                dst = "/%s:NXentry/%s:NXdata" % (self.entryname, groupname)
                 self._nxln(src, dst)
                 self.fd.opendata(dd.label)
-                self.fd.putattr('signal',min(i+1,2))
-                self.fd.putattr('axes',axes)
-                self.fd.putattr('interpretation','spectrum')
+                self.fd.putattr('signal', min(i + 1, 2))
+                self.fd.putattr('axes', axes)
+                self.fd.putattr('interpretation', 'spectrum')
             #write the axes
             for axis in axes.split(':'):
-                src = "/%s:NXentry/measurement:NXcollection/%s"%(self.entryname,axis)
-                dst = "/%s:NXentry/%s:NXdata"%(self.entryname,groupname)
+                src = "/%s:NXentry/measurement:NXcollection/%s" % (self.entryname, axis)
+                dst = "/%s:NXentry/%s:NXdata" % (self.entryname, groupname)
                 try:
                     self._nxln(src, dst)
                 except:
                     self.warning("cannot create link for '%s'. Skipping",axis)
-                
-
+                    
+    def _addCustomData(self, value, name, nxpath=None, dtype=None, **kwargs):
+        '''
+        apart from value and name, this recorder can use the following optional parameters:
+        
+        :param nxpath: (str) a nexus path (optionally using name:nxclass notation for
+                       the group names). See the rules for automatic nxclass
+                       resolution used by
+                       :meth:`NXscan_FileRecorder._createBranch`.
+                       If None given, it defaults to 
+                       nxpath='custom_data:NXcollection'
+                       
+        :param dtype: name of data type (it is inferred from value if not given)
+                       
+        '''           
+        if nxpath is None:
+            nxpath = 'custom_data:NXcollection'
+        if dtype is None:
+            if numpy.isscalar(value):
+                dtype = numpy.dtype(type(value)).name
+                if numpy.issubdtype(dtype, str):
+                    dtype = 'char'
+                if dtype == 'bool':
+                    value, dtype = int(value), 'int8' 
+            else:
+                value = numpy.array(value)
+                dtype = value.dtype.name
+            
+        if dtype not in self.supported_dtypes and dtype != 'char':
+            self.warning("cannot write '%s'. Reason: unsupported data type",name)
+            return
+        #open the file if necessary 
+        fileWasClosed = self.fd is None or not self.fd.isopen
+        if fileWasClosed:
+            if not self.overwrite and os.path.exists(self.filename): nxfilemode = 'rw'
+            import nxs
+            self.fd = nxs.open(self.filename, nxfilemode)
+        #write the data
+        self._createBranch(nxpath)
+        try:
+            self._writeData(name, value, dtype)
+        except ValueError, e:
+            msg = "Error writing %s. Reason: %s" % (name, str(e))
+            self.warning(msg)
+            self.macro.warning(msg)
+        #leave the file as it was
+        if fileWasClosed:
+            self.fd.close()
+        
+            
 class NXxas_FileRecorder(BaseNEXUS_FileRecorder):
     """saves data to a nexus file that follows the NXsas application definition
     
@@ -904,7 +1066,7 @@ class NXxas_FileRecorder(BaseNEXUS_FileRecorder):
 
         #add fields to nxentry
         import sardana.release
-        program_name = "%s (%s)"%(sardana.release.name, self.__class__.__name__)
+        program_name = "%s (%s)" % (sardana.release.name, self.__class__.__name__)
         self.nxentry.insert(nxs.NXfield(name='start_time', value=env['starttime'].isoformat()))
         self.nxentry.insert(nxs.NXfield(name='title', value=env['title']))
         self.nxentry.insert(nxs.NXfield(name='definition', value='NXxas'))
@@ -916,10 +1078,10 @@ class NXxas_FileRecorder(BaseNEXUS_FileRecorder):
         measurement = nxs.NXcollection(name='measurement')
         self.ddfieldsDict = {}
         for dd in self.datadesc:
-            field = NXfield_comp(name=dd.label, 
-                                 dtype=dd.dtype, 
-                                 shape=[nxs.UNLIMITED]+list(dd.shape), 
-                                 nxslab_dims=[1]+list(dd.shape)
+            field = NXfield_comp(name=dd.label,
+                                 dtype=dd.dtype,
+                                 shape=[nxs.UNLIMITED] + list(dd.shape),
+                                 nxslab_dims=[1] + list(dd.shape)
                                  )
             if hasattr(dd,'data_units'):
                 field.attrs['units'] = dd.data_units
@@ -1016,9 +1178,9 @@ class NXxas_FileRecorder(BaseNEXUS_FileRecorder):
                     debug('%s casted to %s (was %s)', dd.label, dd.dtype,
                                                       data.dtype.name)
                     data = data.astype(dd.dtype)
-                    
-                slab_offset = [rec_nb]+[0]*len(dd.shape)
-                shape = [1]+list(npshape(data))
+
+                slab_offset = [rec_nb] + [0] * len(dd.shape)
+                shape = [1] + list(npshape(data))
                 try:
                     field.put(data, slab_offset, shape)
                     field.write()
