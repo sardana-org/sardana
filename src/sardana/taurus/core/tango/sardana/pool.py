@@ -43,7 +43,7 @@ import operator
 import traceback
 
 from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
-    DeviceProxy, EventType
+    DeviceProxy
 
 from taurus import Factory, Device, Attribute
 from taurus.core.taurusbasetypes import TaurusEventType, TaurusSWDevState, \
@@ -57,7 +57,7 @@ from taurus.core.util.event import EventGenerator, AttributeEventWait, \
     AttributeEventIterator
 from taurus.core.tango import TangoDevice, FROM_TANGO_TO_STR_TYPE
 
-from .sardana import BaseSardanaElementContainer, BaseSardanaElement, AcqMode
+from .sardana import BaseSardanaElementContainer, BaseSardanaElement
 from .motion import Moveable, MoveableSource
 
 Ready = Standby = DevState.ON
@@ -1457,8 +1457,7 @@ class MeasurementGroup(PoolElement):
         collection while acquiring.'''
         for channel in self.getChannels():
             attrName = '%s/%s' % (channel['full_name'], "data")
-            self.addAttrListener(attrName, listener,
-                                 EventType.USER_EVENT)        
+            self.addAttrListener(attrName, listener)        
 
     def removeOnDataChangedListeners(self, listener):
         '''Removes listener which receives data events. Used in online data 
@@ -1467,9 +1466,9 @@ class MeasurementGroup(PoolElement):
             attrName = '%s/%s' % (channel['full_name'], "data")
             self.removeAttrListener(attrName, listener)        
 
-    def addAttrListener(self, attrName, listener, event_type):
+    def addAttrListener(self, attrName, listener):
         attr = Attribute(attrName)
-        attr.addListener(listener, event_type)
+        attr.addListener(listener)
        
     def removeAttrListener(self, attrName, listener):
         attr = Attribute(attrName)    
@@ -1530,7 +1529,7 @@ class IORegister(PoolElement):
         return self._getAttrEG('value')
 
     def readValue(self, force=False):
-        return self._getAttrValue('value', force=force)
+        return self._getAttrValue('value', force=fosrce)
 
     def startWriteValue(self, new_value, timeout=None):
         try:

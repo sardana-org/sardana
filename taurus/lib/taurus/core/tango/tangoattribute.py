@@ -323,8 +323,8 @@ class TangoAttribute(TaurusAttribute):
         except:
             self.fireEvent(TaurusEventType.Error, self.__attr_err, listener)
 
-    def addListener(self, listener, event_type=PyTango.EventType.CHANGE_EVENT):
-        """ Add a TaurusListener object in the listeneraddListeners list.
+    def addListener(self, listener):
+        """ Add a TaurusListener object in the listeners list.
             If it is the first element and Polling is enabled starts the 
             polling mechanism.
             If the listener is already registered nothing happens."""
@@ -339,15 +339,12 @@ class TangoAttribute(TaurusAttribute):
             return ret
 
         assert len(listeners) >= 1
-        
-        if self.__subscription_state == SubscriptionState.Unsubscribed and \
-                                                            len(listeners) == 1:
-            self._subscribeEvents(event_type=event_type)
-        
+
+        if self.__subscription_state == SubscriptionState.Unsubscribed and len(listeners) == 1:
+            self._subscribeEvents()
+
         #if initial_subscription_state == SubscriptionState.Subscribed:
-        if len(listeners) > 1 and \
-                (initial_subscription_state == SubscriptionState.Subscribed or \
-                self.isPollingActive()):
+        if len(listeners) > 1 and (initial_subscription_state == SubscriptionState.Subscribed or self.isPollingActive()):
             sm = self.getSerializationMode()
             if sm == TaurusSerializationMode.Concurrent:
                 Manager().addJob(self.__fireRegisterEvent, None, (listener,))
@@ -392,7 +389,7 @@ class TangoAttribute(TaurusAttribute):
     def _process_event_exception(self, ex):
         pass
 
-    def _subscribeEvents(self, event_type = PyTango.EventType.CHANGE_EVENT):
+    def _subscribeEvents(self):
         """ Enable subscription to the attribute events. If change events are 
             not supported polling is activated """
 
@@ -418,16 +415,16 @@ class TangoAttribute(TaurusAttribute):
         try:
             self.__subscription_state = SubscriptionState.Subscribing
             self.__chg_evt_id = dev.subscribe_event(self.getSimpleName(),
-                                                      event_type,
-                                                      self, [])
+                                                  PyTango.EventType.CHANGE_EVENT,
+                                                  self, [])
 
         except:
             self.__subscription_state = SubscriptionState.PendingSubscribe
             self._activatePolling()
             self.__chg_evt_id = dev.subscribe_event(self.getSimpleName(),
-                                                      event_type,
-                                                      self, [], True)
-      
+                                                  PyTango.EventType.CHANGE_EVENT,
+                                                  self, [], True)
+
     def _unsubscribeEvents(self):
         # Careful in this method: This is intended to be executed in the cleanUp
         # so we should not access external objects from the factory, like the
