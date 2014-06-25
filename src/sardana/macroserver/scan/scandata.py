@@ -312,6 +312,7 @@ class RecordList(dict):
             rc.setRecordNo(columnIndex)
             rc.data[label] = value
             if self.isRecordCompleted(self.currentIndex):
+                self[self.currentIndex] = rc
                 self.datahandler.addRecord(self, rc)
                 self.currentIndex +=1
                 
