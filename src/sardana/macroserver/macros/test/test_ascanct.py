@@ -28,11 +28,7 @@ except Exception, e:
 
 class UtilsForTests():
     def parsingOutputPoints(self, log_output):
-        """A helper method to parse log output of an executed scan macro.
-        :params log_output: (seq<str>) Result of macro_executor.getLog('output')
-        (see description in :class:`.BaseMacroExecutor`).
-
-        :return: (seq<number>) The numeric data of a scan.
+        """A helper method to know if points are ordered based on log_output.
         """
         first_data_line = 1
         scan_index = 0
@@ -48,13 +44,27 @@ class UtilsForTests():
 
         ordered_points = 0
         for i in range(len(list_points)-1):    
-            if list_points[i+1]>=list_points[i]:
-                ordered_points=1
+            if list_points[i+1] >= list_points[i]:
+                ordered_points = 1
             else:    
-                ordered_points=0
+                ordered_points = 0
                 break                
 
         return (nb_points, ordered_points)
+
+
+    def orderPointsData(self, data): 
+        """A helper method to know if points are ordered based on getData.
+        """
+        obtained_nb_points_data = len(data.keys())
+        ordered_points_data = 0
+        for i in range(obtained_nb_points_data-1):
+            if int(data.keys()[i+1]) >= int(data.keys()[i]):
+                ordered_points_data = 1
+            else:    
+                ordered_points_data = 0
+                break     
+        return ordered_points_data
 
 
 # Test for checking that the required number of points is present.
@@ -83,15 +93,33 @@ class AscanctTest(RunStopMacroTestCase, unittest.TestCase):
         ordered_points = bb 
 
         self.assertNotEqual(obtained_nb_points, 0, 
-                        "The ascanct execution did not return any scan point.")
+                        "The ascanct execution did not return any scan point.\n"
+                         + "Checked using log_output")
 
         self.assertEqual(int(obtained_nb_points), int(expected_nb_points), 
           "The ascanct execution did not return the expected number of " + 
           " points.\n Expected " + str(expected_nb_points) + " points." + 
-          "\n Obtained " + str(obtained_nb_points) + " points." )
+          "\n Obtained " + str(obtained_nb_points) + " points." 
+           + "Checked using log_output")
 
-        self.assertTrue(ordered_points, "Scan points are NOT in good order.")
+        self.assertTrue(ordered_points, "Scan points are NOT in good order.\n"
+                                         + "Checked using log_output")
 
+        # Test data from macro (macro_executor.getData())
+        data = self.macro_executor.getData() 
+        order_points_data = self.utils.orderPointsData(data)
 
+        self.assertTrue(len(data.keys())>0,
+                    "The ascanct execution did not return any scan point.\n"
+                     + "Checked using macro_executor.getData()")
 
+        obtained_nb_points_data = len(data.keys())
+        self.assertEqual(int(obtained_nb_points_data), int(expected_nb_points),
+           "The ascanct execution did not return the expected number of " + 
+           " points.\n Expected " + str(expected_nb_points) + " points." + 
+           "\n Obtained " + str(obtained_nb_points_data) + " points." +
+           "\nChecked using macro_executor.getData()")
+
+        self.assertTrue(order_points_data, "Scan points are NOT in good order."
+                                 + "\nChecked using  macro_executor.getData().")
 
