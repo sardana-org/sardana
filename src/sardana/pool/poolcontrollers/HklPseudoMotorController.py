@@ -237,6 +237,7 @@ class DiffracBasis(PseudoMotorController):
         self._affinecrystal = -1
         self._removereflection = -1
         self._deletecrystal = 'nothing'
+        self._addcrystal = 'nothing'
         self._loadreflections = " "  # Only to create the member, the value will be overwritten by the one in stored in the database
         self._savereflections = " "  # Only to create the member, the value will be overwritten by the one in stored in the database
 
