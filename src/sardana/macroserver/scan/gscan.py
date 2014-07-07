@@ -818,18 +818,22 @@ class GScan(Logger):
             if hasattr(self.macro, 'do_backup'):
                 self.macro.do_backup()
         except:
-            self.macro.warning("Failed to execute macro 'do_backup'")
-            self.debug("Details:", exc_info=1)
-            raise Exception("Failed to execute macro 'do_backup'")
+            msg = ("Failed to execute 'do_backup' method of the %s macro" % 
+                   self.macro.getName()) 
+            self.macro.debug(msg)
+            self.macro.debug('Details: ', exc_info = True)
+            raise Exception('error while doing a backup')
 
     def do_restore(self):
         try:
             if hasattr(self.macro, 'do_restore'):
                 self.macro.do_restore()
         except:
-            self.macro.warning("Failed to execute macro 'do_restore'")        
-            self.debug("Details:", exc_info=1)
-            raise Exception("Failed to execute macro 'do_restore'")
+            msg = ("Failed to execute 'do_restore' method of the %s macro" % 
+                   self.macro.getName())
+            self.macro.debug(msg)
+            self.macro.debug('Details: ', exc_info = True) 
+            raise Exception('error while restoring a backup')
 
 class SScan(GScan):
     """Step scan"""
@@ -1091,11 +1095,10 @@ class CScan(GScan):
         try:
             self._go_through_waypoints()
         except:
-            self.macro.error("An error occured moving to waypoints. Aborting...")
-            self.macro.debug("Details:", exc_info=1)
-            self.on_waypoints_end()
-            raise Exception("An error occured moving to waypoints. Aborting..." 
-                              "Maybe the DS is not running.")
+            self.macro.debug('An error occurred moving to waypoints')
+            self.macro.debug('Details: ', exc_info = True)
+            self.on_waypoints_end()        
+            raise Exception('error while moving to waypoints')
 
     def _go_through_waypoints(self):
         """Internal, unprotected method to go through the different waypoints."""
@@ -1181,6 +1184,11 @@ class CScan(GScan):
                 self.debug("Backup of %s", motor)
             except AttributeError:
                 motor_backup = None
+            except:
+                msg = 'Failed to do a backup of the %s motor' % motor
+                self.macro.debug(msg)
+                self.macro.debug('Details: ', exc_info = True)
+                raise Exception("error while doing the motor's backup")
             backup.append(motor_backup)
            
     def do_restore(self):
@@ -1194,11 +1202,12 @@ class CScan(GScan):
                 motor.setVelocity(motor_backup['velocity'])
                 motor.setAcceleration(motor_backup['acceleration'])
                 motor.setDeceleration(motor_backup['deceleration'])
-                self.debug("Restored %s", motor)
+                self.debug("Restored backup of the %s motor.", motor)
             except:
-                self.macro.warning("Failed to restore %s", motor)
-                self.debug("Details:", exc_info=1)
-                raise Exception("Failed to restore the motor")
+                msg = 'Failed to restore a backup of the %s motor' % motor
+                self.macro.debug(msg)
+                self.macro.debug('Details: ', exc_info = True)
+                raise Exception("error while restoring the motor's backup")
 
     def _setFastMotions(self, motors=None):
         '''make given motors go at their max speed and accel'''
@@ -1211,10 +1220,10 @@ class CScan(GScan):
                 motor.setAcceleration(self.get_min_acc_time(motor))
                 motor.setDeceleration(self.get_min_dec_time(motor))
                 self.debug("%s put into fast motion", motor)
-            except:
-                self.macro.warning("Failed to put %s into fast motion", motor)
-                self.debug("Details:", exc_info=1)
-                raise Exception("Failed to put the motor into fast motion")
+            except:                
+                self.macro.debug("Failed to put %s into fast motion", motor)
+                self.macro.debug('Details: ', exc_info = True)
+                raise Exception('error while configuring the motion parameters')
                 
     def get_max_top_velocity(self, motor):
         """Helper method to find the maximum top velocity for the motor.
@@ -1399,11 +1408,10 @@ class CSScan(CScan):
         try:
             self._go_through_waypoints()
         except:
-            self.macro.error("An error occured moving to waypoints. Aborting...")
-            self.macro.debug("Details:", exc_info=1)
+            self.macro.debug('An error occurred moving to waypoints')
+            self.macro.debug('Details: ', exc_info = True)
             self.on_waypoints_end()
-            raise Exception("An error occured moving to waypoints. Aborting..."
->                             "Maybe the DS is not running.")
+            raise Exception('error while moving to waypoints')
 
     def _go_through_waypoints(self):
         """Internal, unprotected method to go through the different waypoints."""
@@ -2125,16 +2133,18 @@ class CTScan(CScan):
             try:
                 self._measurement_group.stop()
             except:
-                self.warning("Exception while trying to stop measurement group.")
-                raise Exception("Exception while trying to stop measurement group.")
+                msg = "Exception occurred trying to stop the measurement group"
+                self.debug(msg)
+                self.debug('Details: ', exc_info = True)
+                raise Exception('stopping the measurement group failed')
 
         if self.__triggerStarted:
             self.debug("Stopping triggers")
             try:
                 self.extraTrigger.stop()
             except:
-                self.warning("Exception while trying to stop trigger.")
-                raise Exception("Exception while trying to stop trigger.")
+                self.debug('Exception occurred trying to stop the trigger')
+                raise Exception('stopping the trigger failed')
 
         if hasattr(self.macro, 'getHooks'):
             for hook in self.macro.getHooks('pre-cleanup'):
@@ -2142,8 +2152,10 @@ class CTScan(CScan):
                 try:
                     hook()
                 except:
-                    self.warning("Exception while trying to execute a pre-cleanup hook")
-                    raise Exception("Exception while trying to execute a pre-cleanup hook")
+                    msg = "Exception while trying to execute a pre-cleanup hook"
+                    self.debug(msg)
+                    self.debug('Details: ', exc_info = True)
+                    raise Exception('pre-cleanup hook failed')
 
         if self.__mntGrpConfigured:
             self.debug("Restoring configuration of measurement group")
@@ -2151,8 +2163,11 @@ class CTScan(CScan):
                 self._measurement_group.setConfiguration(self.mntGrpConfiguration)
                 #TODO: mntGrp configuration should contain also: nrOfTriggers, acqTime, sampling frequency
             except:
-                self.warning("Exception while trying to restore measurement group parameters")
-                raise Exception("Exception while trying to restore measurement group parameters")
+                msg = "Exception while restoring the measurement group " + \
+                      "parameters"
+                self.debug(msg)
+                self.debug('Details: ', exc_info = True)
+                raise Exception('restoring the measurement group failed')
 
         if hasattr(self.macro, 'getHooks'):
             for hook in self.macro.getHooks('post-cleanup'):
@@ -2160,8 +2175,11 @@ class CTScan(CScan):
                 try:
                     hook()
                 except:
-                    self.warning("Exception while trying to execute a post-cleanup hook")
-                    raise Exception("Exception while trying to execute a post-cleanup hook")
+                    msg = "Exception while trying to execute a " + \
+                          "post-cleanup hook"
+                    self.debug(msg)
+                    self.debug('Details: ', exc_info = True)
+                    raise Exception('post-cleanup hook failed')
 
         endTimestamp = time.time()
         self.debug("Cleanup took %s time." % repr(endTimestamp - startTimestamp))
