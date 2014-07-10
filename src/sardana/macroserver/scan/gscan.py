@@ -41,6 +41,7 @@ import numpy as np
 import PyTango
 import taurus
 
+from taurus.core import TaurusListener, TaurusEventType
 from taurus.core.util import USER_NAME, Logger
 from taurus.core.util.codecs import CodecFactory
 from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
@@ -1729,7 +1730,7 @@ class CTScan(CScan):
         - "pre-stop"
         - "stop"'''
         
-        class OnDataChangedCb(taurus.core.TaurusListener):
+        class OnDataChangedCb(TaurusListener):
             
             count_event = 0
         
@@ -1740,17 +1741,34 @@ class CTScan(CScan):
                 CTScan.ExtraMntGrp.OnDataChangedCb.count_event = 0
                 
             def eventReceived(self, event_src, event_type, event_value):
-                #@TODO, why it is CHANGE_EVENT????????? understand me!!!!!!!!
-                if event_type == PyTango.EventType.CHANGE_EVENT: 
-                    value = event_value.value
-                    _, data = self.codec.decode(('json', value),
-                                                ensure_ascii=True)
-
-                    channelName = event_src.getParentObj().getFullName()
-                    info = {'label' : channelName, 'data' : data} 
-                    self.recordList.addData(info)
-                    CTScan.ExtraMntGrp.OnDataChangedCb.count_event += 1                
-                    print type(data), data 
+                '''Method which processes the received events. It ignores events
+                of type different than Change and Error'''
+                try:
+                    if event_type == TaurusEventType.Error:
+                        for err in event_value:
+                            if err.reason == 'UnsupportedFeature':
+                                # when subscribing for events, Tango does one
+                                # readout of the attribute. However the Data
+                                # attribute is not fereseen for readout, it is
+                                # just the event communication channel.
+                                # Ignoring this exception..
+                                pass
+                            else:
+                                raise e
+                    elif event_type == TaurusEventType.Change:
+                        value = event_value.value
+                        _, data = self.codec.decode(('json', value),
+                                                    ensure_ascii=True)
+                        channelName = event_src.getParentObj().getFullName()
+                        info = {'label' : channelName, 'data' : data}
+                        self.recordList.addData(info)
+                        CTScan.ExtraMntGrp.OnDataChangedCb.count_event += 1
+                except Exception, e:
+                    #TODO: maybe here we should do some cleanup...
+                    msg = 'Exception occurred processing the received event'
+                    self.debug(msg)
+                    self.debug('Details: ', exc_info = True)
+                    raise Exception('"data" event callback failed')
 
         def __init__(self, macro):
             self.macro = macro
