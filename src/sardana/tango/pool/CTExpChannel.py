@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import PyTango
 
 ##############################################################################
 ##
@@ -33,7 +34,7 @@ import sys
 import time
 
 from PyTango import DevFailed, DevVoid, DevDouble, DevState, AttrQuality, \
-    DevString, Except, READ, SCALAR
+    DevString, Except, READ, SCALAR, ErrSeverity
 
 from taurus.core.util.log import DebugIt
 from taurus.core.util.codecs import CodecFactory
@@ -194,7 +195,7 @@ class CTExpChannel(PoolElementDevice):
         attrs = PoolElementDevice.initialize_dynamic_attributes(self)
 
         detect_evts = "value",
-        non_detect_evts = ()
+        non_detect_evts = "data",
 
         for attr_name in detect_evts:
             if attr_name in attrs:
@@ -215,6 +216,14 @@ class CTExpChannel(PoolElementDevice):
             quality = AttrQuality.ATTR_CHANGING
         self.set_attribute(attr, value=value.value, quality=quality,
                            timestamp=value.timestamp, priority=0)
+
+    def read_Data(self, attr):
+        desc = 'Data attribute is not foreseen for reading. It is used ' + \
+            'only as the communication channel for the continuous acquisitions.'
+        Except.throw_exception('UnsupportedFeature',
+                               desc,
+                               'CTExpChannel.read_Data',
+                               ErrSeverity.WARN)
 
     def is_Value_allowed(self, req_type):
         if self.get_state() in [DevState.FAULT, DevState.UNKNOWN]:
