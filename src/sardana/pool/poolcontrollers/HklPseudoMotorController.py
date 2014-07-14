@@ -139,6 +139,12 @@ class DiffracBasis(PseudoMotorController):
                        'AddReflection': {Type: (float,),
                                          Description: "Add reflection to current sample",
                                          Access: ReadWrite},
+                       'AddReflectionWithIndex': {Type: (float,),
+                                         Description: "Add reflection to current sample with given index",
+                                         Access: ReadWrite},
+                       'SwapReflections01': {Type: int,
+                                         Description: "Swap primary and secondary reflections",
+                                         Access: ReadWrite},
                        'ReflectionList': {Type: ((float,), (float,)),
                                           Description: "List of reflections for current sample",
                                           Access: ReadOnly},
@@ -238,6 +244,9 @@ class DiffracBasis(PseudoMotorController):
         self._removereflection = -1
         self._deletecrystal = 'nothing'
         self._addcrystal = 'nothing'
+        self._addreflection = [-1.]
+        self._addreflectionwithindex = [-1.]
+        self._swapreflections01 = -1
         self._loadreflections = " "  # Only to create the member, the value will be overwritten by the one in stored in the database
         self._savereflections = " "  # Only to create the member, the value will be overwritten by the one in stored in the database
 
@@ -355,7 +364,7 @@ class DiffracBasis(PseudoMotorController):
         self.geometry.wavelength_set(value)
 
     def getEngineMode(self):
-        print " getEngineMode"
+#        print " getEngineMode"
         return self.engine.mode().name()
 
     def setEngineMode(self, value):
@@ -687,7 +696,7 @@ class DiffracBasis(PseudoMotorController):
         self.selected_trajectory = value
 
     def getEngine(self):
-        print " getEngine"
+#        print " getEngine"
         return self.engine.name()
 
     def setEngine(self, value):
@@ -736,6 +745,104 @@ class DiffracBasis(PseudoMotorController):
         # affinement = 1)
         if len(value) > 3:
             newref.flag_set(value[3])
+
+    def setAddReflectionWithIndex(self, value):
+#        print " setAddReflectionWithIndex"
+        # Parameters: index, h, k, l, [affinement], angles are the current ones
+        # Read current reflections
+        old_reflections = self.sample.reflections_get()
+        nb_old_ref = len(old_reflections)
+        hkla = []
+        ihkla = 0
+        angles = []
+        for ref in old_reflections:
+            hkla.append([])
+            hkla[ihkla].append(ref.hkl_get()[0])
+            hkla[ihkla].append(ref.hkl_get()[1])
+            hkla[ihkla].append(ref.hkl_get()[2])            
+            hkla[ihkla].append(ref.flag_get())
+            angles.append([])
+            angles[ihkla].append(ihkla+1) # increase the index
+            for angle in ref.geometry_get().get_axes_values_unit():
+                angles[ihkla].append(angle)
+            ihkla = ihkla + 1
+
+        # Remove reflections with index bigger than the inserted one
+        if value[0] < nb_old_ref:
+            for j in range(int(value[0]), nb_old_ref):
+                # The index are shifted so we have to remove always de first index
+                self.setRemoveReflection(int(value[0]))
+
+
+        # Check if the index is bigger than existing ones
+        if value[0] < nb_old_ref:
+            for i in range(0, nb_old_ref):
+                if i < value[0]:
+                    pass
+                elif i == value[0]:
+                    # add new reflection
+                    self.setAddReflection(value[1:])
+                    # add old reflection
+                    self.setAddReflection(hkla[i])
+                    self.setAdjustAnglesToReflection(angles[i])
+                elif i > value[0]:
+                    self.setAddReflection(hkla[i])
+                    self.setAdjustAnglesToReflection(angles[i])
+            
+        else: # add the new one
+            self.setAddReflection(value[1:])
+
+    def setSwapReflections01(self, value):
+#        print " setSwapReflections01"
+        # Read current reflections
+        reflections = self.sample.reflections_get()
+        nb_ref = len(reflections)
+        
+        if nb_ref < 2:
+            print "Only " + str(nb_ref) + " reflection(s) defined. Swap not possible"
+            return
+
+        hkla = []
+        ihkla = 0
+        angles = []
+        for ref in reflections:
+            if ihkla < 2:
+                hkla.append([])
+                if ihkla == 1:
+                    hkla[ihkla].append(0)
+                else:
+                    hkla[ihkla].append(1)
+                hkla[ihkla].append(ref.hkl_get()[0])
+                hkla[ihkla].append(ref.hkl_get()[1])
+                hkla[ihkla].append(ref.hkl_get()[2])            
+                hkla[ihkla].append(ref.flag_get())
+                angles.append([])
+                # swap the index
+                if ihkla == 1:
+                    angles[ihkla].append(0)
+                else:
+                    angles[ihkla].append(1)
+                for angle in ref.geometry_get().get_axes_values_unit():
+                    angles[ihkla].append(angle)
+            ihkla = ihkla + 1
+
+        # Remove reflection 0
+        self.setRemoveReflection(0)
+
+        # Insert old ref 1 to 0
+
+        self.setAddReflectionWithIndex(hkla[1])
+        self.setAdjustAnglesToReflection(angles[1])
+        
+        # Remove reflection 1
+
+        self.setRemoveReflection(1)
+
+        # Insert old ref 0 to 1
+
+        self.setAddReflectionWithIndex(hkla[0])
+        self.setAdjustAnglesToReflection(angles[0])
+
 
     def getReflectionList(self):
         print " getReflectionList"
