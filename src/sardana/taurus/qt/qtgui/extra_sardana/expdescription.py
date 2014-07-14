@@ -35,6 +35,7 @@ from taurus.qt.qtgui.base import TaurusBaseWidget
 from taurus.qt.qtgui import resource
 
 from sardana.taurus.qt.qtcore.tango.sardana.model import SardanaBaseProxyModel, SardanaTypeTreeItem
+from taurus.qt.qtgui.util.ui import UILoadable
 
 ## Using a plain model and filtering and checking 'Acquirable' in item.itemData().interfaces is more elegant, but things don't get properly sorted...
 #from taurus.qt.qtcore.tango.sardana.model import SardanaElementPlainModel
@@ -63,6 +64,8 @@ class SardanaAcquirableProxyModel(SardanaBaseProxyModel):
             return treeItem.itemData() in self.ALLOWED_TYPES
         return True
 
+
+@UILoadable(with_ui='ui')
 class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
     '''
     A widget for editing the configuration of a experiment (measurement groups,
@@ -74,9 +77,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
     def __init__(self, parent=None, door=None, plotsButton=True):
         Qt.QWidget.__init__(self, parent)
         TaurusBaseWidget.__init__(self, 'ExpDescriptionEditor')
-        from ui.ui_ExpDescriptionEditor import Ui_ExpDescriptionEditor
-        self.ui = Ui_ExpDescriptionEditor()
-        self.ui.setupUi(self)
+        self.loadUi()
         self.ui.buttonBox.setStandardButtons(Qt.QDialogButtonBox.Reset | Qt.QDialogButtonBox.Apply)
         newperspectivesDict = copy.deepcopy(self.ui.sardanaElementTree.KnownPerspectives)
         #newperspectivesDict[self.ui.sardanaElementTree.DftPerspective]['model'] = [SardanaAcquirableProxyModel, SardanaElementPlainModel]
