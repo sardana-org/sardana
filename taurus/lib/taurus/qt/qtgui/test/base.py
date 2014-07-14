@@ -25,8 +25,9 @@
 
 """Utilities for creating generic tests for Taurus widgets"""
 
-from taurus.external import unittest
 import taurus.core
+from taurus.external import unittest
+from taurus.qt.qtgui.application import TaurusApplication
 from taurus.test import skipUnlessGui
 
 
@@ -52,18 +53,21 @@ class BaseWidgetTestCase(object):
     def setUp(self):
         """
         Preconditions:
-        - A TaurusApplication must be initialized.
-        - The widget must be instantiated
+        
+          - A TaurusApplication must be initialized.
+          - The widget must be instantiated
+        
         """
         if self._klass is None:
             self.skipTest('klass is None')
             return
 
         unittest.TestCase.setUp(self)
-
-        from taurus.qt.qtgui.application import TaurusApplication
-        if getattr(self, '_app', None) is None:
-            self._app = TaurusApplication([])
+        
+        app = TaurusApplication.instance()
+        if app is None:
+            app = TaurusApplication([])
+        self._app = app
 
         self._widget = self._klass(*self.initargs, **self.initkwargs)
 
@@ -88,12 +92,13 @@ class GenericWidgetTestCase(BaseWidgetTestCase):
     def setUp(self):
         """
         Preconditions:
-        - Those from :class:`BaseWidgetTestCase`
-        - A list of models corresponding to the modelnames list
-          should be created without using the widget being tested
-          (e.g. by using taurusManager.findObject()).
-          None should be used as a placeholder when a model cannot be created
-          for a given modelname.
+        
+          - Those from :class:`BaseWidgetTestCase`
+          - A list of models corresponding to the modelnames list
+            should be created without using the widget being tested
+            (e.g. by using taurusManager.findObject()).
+            None should be used as a placeholder when a model cannot be created
+            for a given modelname.
         """
         #Make sure the basics are taken care of (QApplication, etc)
         BaseWidgetTestCase.setUp(self)

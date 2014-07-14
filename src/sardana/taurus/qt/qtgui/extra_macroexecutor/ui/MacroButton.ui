@@ -1,6 +1,6 @@
 <ui version="4.0" >
  <class>MacroButton</class>
- <widget class="QWidget" name="MacroButton" >
+ <widget class="TaurusWidget" name="MacroButton" >
   <property name="geometry" >
    <rect>
     <x>0</x>
@@ -88,6 +88,14 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>TaurusWidget</class>
+   <extends>QWidget</extends>
+   <header>taurus.qt.qtgui.container</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>
+

@@ -36,9 +36,9 @@ from taurus.qt.qtgui.input import TaurusValueComboBox
 
 from taurus.qt.qtgui.panel import TaurusValue
 from taurus.qt.qtgui.container import TaurusWidget
+from taurus.qt.qtgui.util.ui import UILoadable
 from poolmotor import LabelWidgetDragsDeviceAndAttribute
 
-from ui_poolioregisterbuttons import Ui_PoolIORegisterButtons
 import taurus
 
 class PoolIORegisterReadWidget(TaurusLabel):
@@ -193,6 +193,7 @@ class PoolIORegister(TaurusWidget):
             self.ioreg_dev.getAttribute('Value').disablePolling()
 
 
+@UILoadable(with_ui='ui')
 class PoolIORegisterButtons(TaurusWidget):
     ''' A widget that displays and controls a pool IORegister device.
     It reads the value and provides buttons to switch between values.
@@ -201,11 +202,9 @@ class PoolIORegisterButtons(TaurusWidget):
     '''
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
-
+        self.loadUi()
+        
         self.ioreg_dev = None
-
-        self.ui = Ui_PoolIORegisterButtons()
-        self.ui.setupUi(self)
 
         self.alias_label = TaurusLabel()
         self.alias_label.setBgRole('state')
