@@ -173,6 +173,15 @@ class DiffracBasis(PseudoMotorController):
                        'ModeParametersValues': {Type: (float,),
                                                 Description: "Value of the parameters of the current mode (if any)",
                                                 Access: ReadWrite},
+                       'PsiRefH': {Type: float,
+                             Description: "x coordinate of the psi reference vector (-999 if not applicable)",
+                             Access: ReadWrite},
+                       'PsiRefK': {Type: float,
+                             Description: "y coordinate of the psi reference vector (-999 if not applicable)",
+                             Access: ReadWrite},
+                       'PsiRefL': {Type: float,
+                             Description: "z coordinate of the psi reference vector (-999 if not applicable)",
+                             Access: ReadWrite},
                        'MotorList': {Type: (str,),
                                      Description: "Name of the real motors",
                                      Access: ReadOnly},
@@ -981,12 +990,59 @@ class DiffracBasis(PseudoMotorController):
         parameters_values = []
         current_mode = self.engine.mode()
         parameters = current_mode.parameters()
-        print len(value)
         i = 0
         for parameter in parameters.parameters():
             if i < len(value):
                 parameter.value_unit_set(value[i], None)
             i = i + 1
+
+    def getPsiRefH(self):
+        value = -999
+        current_mode = self.engine.mode()
+        parameters = current_mode.parameters()
+        for parameter in parameters.parameters():
+            if parameter.name_get() in ["h1","h2","x"]:
+                value = parameter.value_unit_get()
+        return value
+
+    def setPsiRefH(self, value):
+        current_mode = self.engine.mode()
+        parameters = current_mode.parameters()
+        for parameter in parameters.parameters():
+            if parameter.name_get() in ["h1","h2","x"]:
+                parameter.value_unit_set(value, None)
+
+    def getPsiRefK(self):
+        value = -999
+        current_mode = self.engine.mode()
+        parameters = current_mode.parameters()
+        for parameter in parameters.parameters():
+            if parameter.name_get() in ["k1","k2","y"]:
+                value = parameter.value_unit_get()
+        return value
+
+    def setPsiRefK(self, value):
+        current_mode = self.engine.mode()
+        parameters = current_mode.parameters()
+        for parameter in parameters.parameters():
+            if parameter.name_get() in ["k1","k2","y"]:
+                parameter.value_unit_set(value, None)
+
+    def getPsiRefL(self):
+        value = -999
+        current_mode = self.engine.mode()
+        parameters = current_mode.parameters()
+        for parameter in parameters.parameters():
+            if parameter.name_get() in ["l1","l2","z"]:
+                value = parameter.value_unit_get()
+        return value
+
+    def setPsiRefL(self, value):
+        current_mode = self.engine.mode()
+        parameters = current_mode.parameters()
+        for parameter in parameters.parameters():
+            if parameter.name_get() in ["l1","l2","z"]:
+                parameter.value_unit_set(value, None)
 
     def getMotorList(self):
         motor_names = []
