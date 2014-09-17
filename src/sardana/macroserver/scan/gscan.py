@@ -2179,13 +2179,19 @@ class CTScan(CScan):
             self.debug("Restoring configuration of measurement group")
             try:
                 self._measurement_group.setConfiguration(self.mntGrpConfiguration)
-                #TODO: mntGrp configuration should contain also: nrOfTriggers, acqTime, sampling frequency
+                #TODO: mntGrp configuration should contain also: nrOfTriggers, 
+                #acqTime, sampling frequency
             except:
                 msg = "Exception while restoring the measurement group " + \
                       "parameters"
                 self.debug(msg)
                 self.debug('Details: ', exc_info = True)
                 raise ScanException('restoring the measurement group failed')
+            finally:
+                #TODO: use backup instead of hardcoded 'Timer'
+                # ct does not work after a ascanct if we do not put it because 
+                #an attribute of the meas has to be changed
+                self._measurement_group.mntGrp.setAcquisitionMode('Timer') 
 
         if hasattr(self.macro, 'getHooks'):
             for hook in self.macro.getHooks('post-cleanup'):
