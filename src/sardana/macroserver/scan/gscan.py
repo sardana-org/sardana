@@ -1768,7 +1768,7 @@ class CTScan(CScan):
                                 # Ignoring this exception..
                                 pass
                             else:
-                                raise e
+                                raise err
                     elif event_type == TaurusEventType.Change:
                         value = event_value.value
                         _, data = self.codec.decode(('json', value),
