@@ -771,7 +771,7 @@ class DiffracBasis(PseudoMotorController):
             hkla[ihkla].append(ref.hkl_get()[2])            
             hkla[ihkla].append(ref.flag_get())
             angles.append([])
-            angles[ihkla].append(ihkla+1) # increase the index
+            angles[ihkla].append(ihkla)
             for angle in ref.geometry_get().get_axes_values_unit():
                 angles[ihkla].append(angle)
             ihkla = ihkla + 1
@@ -791,9 +791,6 @@ class DiffracBasis(PseudoMotorController):
                 elif i == value[0]:
                     # add new reflection
                     self.setAddReflection(value[1:])
-                    # add old reflection
-                    self.setAddReflection(hkla[i])
-                    self.setAdjustAnglesToReflection(angles[i])
                 elif i > value[0]:
                     self.setAddReflection(hkla[i])
                     self.setAdjustAnglesToReflection(angles[i])
