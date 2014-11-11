@@ -937,6 +937,19 @@ class CounterTimerController(Controller, Readable, Startable, Stopable, Loadable
         return self.StartAllCT()
 
 
+class TriggerGateController(Controller, Stopable, Startable):
+    """Base class for a trigger/gate controller. Inherit from this class to
+    implement your own trigger/gate controller for the device pool.
+    """
+    
+    #: A :obj:`str` representing the controller gender
+    gender = 'Trigger/Gate controller'
+
+    def __init__(self, inst, props, *args, **kwargs):
+        Controller.__init__(self, inst, props, *args, **kwargs)
+
+    
+
 class ZeroDController(Controller, Readable, Stopable):
     """Base class for a 0D controller. Inherit from this class to
     implement your own 0D controller for the device pool."""

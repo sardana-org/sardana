@@ -279,6 +279,7 @@ ElementType = Enumeration("ElementType", (\
     "TwoDExpChannel",
     "ComChannel",
     "IORegister",
+    "TriggerGate",
     "PseudoMotor",
     "PseudoCounter",
     "Constraint",
@@ -302,7 +303,7 @@ ET = ElementType
 #: a set containning all "controllable" element types.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
 TYPE_ELEMENTS = set((ET.Motor, ET.CTExpChannel, ET.ZeroDExpChannel, \
-    ET.OneDExpChannel, ET.TwoDExpChannel, \
+    ET.OneDExpChannel, ET.TwoDExpChannel, ET.TriggerGate, \
     ET.ComChannel, ET.IORegister, ET.PseudoMotor, \
     ET.PseudoCounter, ET.Constraint))
 
