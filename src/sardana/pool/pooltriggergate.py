@@ -33,10 +33,30 @@ __docformat__ = 'restructuredtext'
 from sardana import ElementType
 
 from sardana.pool.poolelement import PoolElement
+from sardana.sardanaattribute import SardanaAttribute
 
+class Index(SardanaAttribute):
+
+    def __init__(self, *args, **kwargs):
+        super(Index, self).__init__(*args, **kwargs)
 
 class PoolTriggerGate(PoolElement):
 
     def __init__(self, **kwargs):
         kwargs['elem_type'] = ElementType.TriggerGate
-        PoolElement.__init__(self, **kwargs)
+        PoolElement.__init__(self, **kwargs)        
+        self._index = Index(self)
+    
+    def get_index_attribute(self):
+        """Returns the index attribute object for this trigger/gate
+        
+        :return: the index attribute
+        :rtype: :class:`~sardana.sardanaattribute.SardanaAttribute`"""
+        return self._index
+    
+    # --------------------------------------------------------------------------
+    # default acquisition channel
+    # --------------------------------------------------------------------------
+
+    def get_default_attribute(self):
+        return self.get_index_attribute()

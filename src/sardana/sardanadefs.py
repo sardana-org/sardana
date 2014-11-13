@@ -403,6 +403,7 @@ INTERFACES = {
     "ZeroDExpChannel" : (set(("ExpChannel",)), "A 0D experimental channel"),
     "OneDExpChannel" : (set(("ExpChannel",)), "A 1D experimental channel"),
     "TwoDExpChannel" : (set(("ExpChannel",)), "A 2D experimental channel"),
+    "TriggerGate" : (set(("PoolElement",)), "A trigger/gate"),
     "PseudoCounter" : (set(("ExpChannel",)), "A pseudo counter"),
     "ComChannel" : (set(("PoolElement",)), "A communication channel"),
     "MotorGroup" : (set(("PoolElement",),), "A motor group"),
