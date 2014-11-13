@@ -725,7 +725,8 @@ class BaseMacroServer(MacroServerDevice):
         attr.setSerializationMode(TaurusSerializationMode.Concurrent)
 
     NO_CLASS_TYPES = 'ControllerClass', 'ControllerLibrary', \
-                     'MacroLibrary', 'Instrument', 'Meta', 'ParameterType'
+                     'MacroLibrary', 'Instrument', 'Meta', 'ParameterType', \
+                     'TriggerGate'
 
     def on_environment_changed(self, evt_src, evt_type, evt_value):
         try:
