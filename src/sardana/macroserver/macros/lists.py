@@ -29,7 +29,7 @@ scan"""
 
 __all__ = ["ls0d", "ls1d", "ls2d", "lsa", "lscom", "lsct", "lsctrl",
            "lsctrllib", "lsdef", "lsexp", "lsi", "lsior", "lsm", "lsmeas",
-           "lspc", "lspm", "lsmac", "lsmaclib"]
+           "lspc", "lspm", "lsmac", "lsmaclib", "lstg"]
 
 __docformat__ = 'restructuredtext'
 
@@ -184,6 +184,11 @@ class ls2d(lsexp):
 class lspc(lsexp):
     """Lists all pseudo counters"""
     subtype = 'PseudoCounter'
+    
+class lstg(_lsobj):
+    """Lists all trigger/gate elements"""
+    type = Type.TriggerGate
+
 
 class lsctrllib(_lsobj):
     """Lists all existing controller classes"""
@@ -202,7 +207,8 @@ class lsi(_lsobj):
 
 class lsa(_lsobj):
     """Lists all existing objects"""
-    type = Type.Moveable, Type.ComChannel, Type.ExpChannel, Type.IORegister
+    type = Type.Moveable, Type.ComChannel, Type.ExpChannel, Type.IORegister,\
+           Type.TriggerGate
     
 class lsmeas(_lsobj):
     """List existing measurement groups"""
