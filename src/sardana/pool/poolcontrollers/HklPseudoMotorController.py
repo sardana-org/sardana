@@ -199,6 +199,7 @@ class DiffracBasis(PseudoMotorController):
         """
         PseudoMotorController.__init__(self, inst, props, *args, **kwargs)
 
+        self.first_crystal_set = 1
         self.samples_list = {}
 
         self.samples_list[
@@ -211,6 +212,12 @@ class DiffracBasis(PseudoMotorController):
                     math.radians(90.0),
                     math.radians(90.))
         self.sample.lattice_set(lattice)
+        self._a = 1.5
+        self._b = 1.5
+        self._c = 1.5
+        self._alpha = 90.
+        self._beta  = 90.
+        self._gamma = 90.
 
         self.crystallist = []
         self.crystallist.append("default_crystal")
@@ -351,8 +358,24 @@ class DiffracBasis(PseudoMotorController):
 
     def setCrystal(self, value):
         print " setCrystal"
-        if value in self.crystallist:
+        if self.first_crystal_set == 0:
+            if value in self.crystallist:
+                self.sample = self.samples_list[value]
+        else:            
+            self.crystallist.append(value)
+            self.samples_list[value] = Hkl.Sample.new(
+                value)  # By default a crystal is created with lattice parameters 1.54, 1.54, 1.54, 90., 90., 90.
             self.sample = self.samples_list[value]
+            lattice = self.sample.lattice_get()
+            lattice.set(self._a, self._b, self._c,
+                        math.radians(self._alpha),
+                        math.radians(self._gamma),
+                        math.radians(self._beta))
+            self.sample.lattice_set(lattice)
+            # For getting the UB matrix changing
+            self.sample.lattice_set(lattice)
+            
+            self.first_crystal_set = 0
 
     def setAffineCrystal(self, value):
         print " setAffineCrystal"
@@ -498,6 +521,7 @@ class DiffracBasis(PseudoMotorController):
         lattice = self.sample.lattice_get()
         apar = lattice.a_get()
         apar.value_unit_set(value, None)
+        self._a = value
         # For getting the UB matrix changing
         self.sample.lattice_set(lattice)
 
@@ -511,6 +535,7 @@ class DiffracBasis(PseudoMotorController):
         lattice = self.sample.lattice_get()
         bpar = lattice.b_get()
         bpar.value_unit_set(value, None)
+        self._b = value
         # For getting the UB matrix changing
         self.sample.lattice_set(lattice)
 
@@ -524,6 +549,7 @@ class DiffracBasis(PseudoMotorController):
         lattice = self.sample.lattice_get()
         cpar = lattice.c_get()
         cpar.value_unit_set(value, None)
+        self._c = value
         # For getting the UB matrix changing
         self.sample.lattice_set(lattice)
 
@@ -537,6 +563,7 @@ class DiffracBasis(PseudoMotorController):
         lattice = self.sample.lattice_get()
         alphapar = lattice.alpha_get()
         alphapar.value_unit_set(value, None)
+        self._alpha = value
         # For getting the UB matrix changing
         self.sample.lattice_set(lattice)
 
@@ -550,6 +577,7 @@ class DiffracBasis(PseudoMotorController):
         lattice = self.sample.lattice_get()
         betapar = lattice.beta_get()
         betapar.value_unit_set(value, None)
+        self._beta = value
         # For getting the UB matrix changing
         self.sample.lattice_set(lattice)
 
@@ -563,6 +591,7 @@ class DiffracBasis(PseudoMotorController):
         lattice = self.sample.lattice_get()
         gammapar = lattice.gamma_get()
         gammapar.value_unit_set(value, None)
+        self._gamma = value
         # For getting the UB matrix changing
         self.sample.lattice_set(lattice)
 
