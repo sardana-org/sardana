@@ -66,11 +66,16 @@ class DiffracBasis(PseudoMotorController):
     class_prop = {'DiffractometerType':
                  {Type: str, Description: 'Type of the diffractometer, e.g. E6C'}, }
 
-    ctrl_attributes = {'Crystal': {Type: str, Access: ReadWrite},
+    ctrl_attributes = {'Crystal': {Type: str, 
+                                   Memorize: MemorizedNoInit,
+                                   Access: ReadWrite},
                        'AffineCrystal': {Type: int,
+                                         Memorize: MemorizedNoInit,
                                          Description: "Affine current crystal. Add a new crystal with the post fix (affine)",
                                          Access: ReadWrite},
-                       'Wavelength': {Type: float, Access: ReadWrite},
+                       'Wavelength': {Type: float, 
+                                      Memorize: MemorizedNoInit,
+                                      Access: ReadWrite},
                        'EngineMode': {Type: str, Access: ReadWrite},
                        'EngineModeList': {Type: (str,), Access: ReadOnly},
                        'HKLModeList': {Type: (str,), Access: ReadOnly},
@@ -88,39 +93,51 @@ class DiffracBasis(PseudoMotorController):
                                              Access: ReadOnly},
                        'A': {Type: float,
                              Description: "a parameter of the lattice",
+                             Memorize: MemorizedNoInit,
                              Access: ReadWrite},
                        'B': {Type: float,
                              Description: "b parameter of the lattice",
+                             Memorize: MemorizedNoInit,
                              Access: ReadWrite},
                        'C': {Type: float,
                              Description: "c parameter of the lattice",
+                             Memorize: MemorizedNoInit,
                              Access: ReadWrite},
                        'Alpha': {Type: float,
                                  Description: "alpha parameter of the lattice",
+                                 Memorize: MemorizedNoInit,
                                  Access: ReadWrite},
                        'Beta': {Type: float,
                                 Description: "beta parameter of the lattice",
+                                Memorize: MemorizedNoInit,
                                 Access: ReadWrite},
                        'Gamma': {Type: float,
                                  Description: "gamma parameter of the lattice",
+                                 Memorize: MemorizedNoInit,
                                  Access: ReadWrite},
                        'AFit': {Type: int,
                                 Description: "Fit value of the a parameter of the lattice",
+                                Memorize: MemorizedNoInit,
                                 Access: ReadWrite},
                        'BFit': {Type: int,
                                 Description: "Fit value of the b parameter of the lattice",
+                                Memorize: MemorizedNoInit,
                                 Access: ReadWrite},
                        'CFit': {Type: int,
                                 Description: "Fit value of the c parameter of the lattice",
+                                Memorize: MemorizedNoInit,
                                 Access: ReadWrite},
                        'AlphaFit': {Type: int,
                                     Description: "Fit value of the alpha parameter of the lattice",
+                                    Memorize: MemorizedNoInit,
                                     Access: ReadWrite},
                        'BetaFit': {Type: int,
                                    Description: "Fit value of the beta parameter of the lattice",
+                                   Memorize: MemorizedNoInit,
                                    Access: ReadWrite},
                        'GammaFit': {Type: int,
                                     Description: "Fit value of the gamma parameter of the lattice",
+                                    Memorize: MemorizedNoInit,
                                     Access: ReadWrite},
                        'TrajectoryList': {Type: ((float,), (float,)),
                                           Description: "List of trajectories for hklSim",
@@ -134,8 +151,12 @@ class DiffracBasis(PseudoMotorController):
                        'Engine': {Type: str, Access: ReadWrite},
                        'EngineList': {Type: (str,), Access: ReadOnly},
                        'CrystalList': {Type: (str,), Access: ReadOnly},
-                       'AddCrystal': {Type: str, Access: ReadWrite},
-                       'DeleteCrystal': {Type: str, Access: ReadWrite},
+                       'AddCrystal': {Type: str, 
+                                      Memorize: MemorizedNoInit,
+                                      Access: ReadWrite},
+                       'DeleteCrystal': {Type: str, 
+                                         Memorize: MemorizedNoInit,
+                                         Access: ReadWrite},
                        'AddReflection': {Type: (float,),
                                          Description: "Add reflection to current sample",
                                          Access: ReadWrite},
@@ -149,16 +170,22 @@ class DiffracBasis(PseudoMotorController):
                                           Description: "List of reflections for current sample",
                                           Access: ReadOnly},
                        'RemoveReflection': {Type: int,
+                                            Memorize: MemorizedNoInit,
                                             Description: "Remove reflection with given index",
                                             Access: ReadWrite},
                        'LoadReflections': {Type: str,
                                            Description: "Load the reflections from the file given as argument",
-                                           # Memorize: MemorizedNoInit, # Comment it out if you don't want to load
-                                           # the last loaded reflection file
-                                           # automatically
+                                           Memorize: MemorizedNoInit, 
                                            Access: ReadWrite},
                        'SaveReflections': {Type: str,
                                            Description: "Save current reflections to file",
+                                           Memorize: MemorizedNoInit,
+                                           Access: ReadWrite},
+                       'LoadCrystal':     {Type: str,
+                                           Description: "Load the lattice parameters and reflections from the file corresponding to the given crystal",
+                                           Access: ReadWrite},
+                       'SaveCrystal': {Type: str,
+                                           Description: "Save current crystal parameters and reflections to file",
                                            Memorize: MemorizedNoInit,
                                            Access: ReadWrite},
                        'AdjustAnglesToReflection': {Type: (float,),
@@ -752,8 +779,7 @@ class DiffracBasis(PseudoMotorController):
         print " setAddCrystal"
         if value not in self.crystallist:
             self.crystallist.append(value)
-            self.samples_list[value] = Hkl.Sample.new(
-                value)  # By default a crystal is created with lattice parameters 1.54, 1.54, 1.54, 90., 90., 90.
+            self.samples_list[value] = Hkl.Sample.new(value)  # By default a crystal is created with lattice parameters 1.54, 1.54, 1.54, 90., 90., 90.
             self._addcrystal = value
 
     def getCrystalList(self):
@@ -912,17 +938,14 @@ class DiffracBasis(PseudoMotorController):
             self._loadreflections = value
         except:
             raise Exception("Not able to open reflections file")
+        print reflections_file
         # Remove all reflections
         for ref in self.sample.reflections_get():
             self.sample.del_reflection(ref)
         # Read the reflections from the file
         for line in reflections_file:
             ref_values = []
-            print "Line"
-            print "-------------" + str(line) + "--------------------"
             for value in line.split(' '):
-                print "value"
-                print "===============" + str(value) + "======================"
                 ref_values.append(
                     float(value))  # index 0 -> reflec. index; index 1,2, 3 hkl; 4 relevance; 5 affinement; last ones (2, 4 or 6) angles
             # Set hkl values to the reflection
@@ -937,6 +960,81 @@ class DiffracBasis(PseudoMotorController):
             geometry = newref.geometry_get()
             geometry.set_axes_values_unit(new_angles)
             newref.geometry_set(geometry)
+
+    def setLoadCrystal(self, value):  # value: complete path of the file with the crystal to set
+        print " setLoadCrystal"
+        # Read the file
+        try:
+            crystal_file = open(value, 'r')
+            self._loadcrystal = value
+        except:
+            raise Exception("Not able to open crystal file")
+
+        line_nb = 0
+
+        #print crystal_file
+
+        for line in crystal_file:
+            if line_nb == 0:
+                # Add crystal if not in the list
+                crystal = line[0:len(line)-1]
+                self.setAddCrystal(crystal)
+                # Set crystal
+                self.sample = self.samples_list[crystal]
+                # Remove all reflections from crystal (there should not be any ... but just in case)
+                for ref in self.sample.reflections_get():
+                    self.sample.del_reflection(ref)
+            elif line_nb == 1:
+                wavelength = float(line) # The value will be set after creating the new geometry with the reflections
+                self.geometry.wavelength_set(wavelength)
+            elif line_nb == 2:
+                # Set parameters
+                par_values = []
+                for value in line.split(' '):
+                    par_values.append(float(value))
+                
+                lattice = self.sample.lattice_get()
+                apar = lattice.a_get()
+                apar.value_unit_set(par_values[0], None)
+                self._a = par_values[0]
+                bpar = lattice.b_get()
+                bpar.value_unit_set(par_values[1], None)
+                self._b = par_values[1]
+                cpar = lattice.c_get()
+                cpar.value_unit_set(par_values[2], None)
+                self._c = par_values[2]
+                alphapar = lattice.alpha_get()
+                alphapar.value_unit_set(par_values[3], None)
+                self._alpha = par_values[3]
+                betapar = lattice.beta_get()
+                betapar.value_unit_set(par_values[4], None)
+                self._beta = par_values[4]
+                gammapar = lattice.gamma_get()
+                gammapar.value_unit_set(par_values[5], None)
+                self._gamma = par_values[5]
+                # For getting the UB matrix changing
+                self.sample.lattice_set(lattice)
+            else:
+                # Set reflections
+                ref_values = []
+                for value in line.split(' '):
+                    ref_values.append(
+                        float(value))  # index 0 -> reflec. index; index 1,2, 3 hkl; 4 relevance; 5 affinement; last ones (2, 4 or 6) angles
+                # Set hkl values to the reflection
+                newref = self.sample.add_reflection(
+                    self.geometry, self.detector, ref_values[1], ref_values[2], ref_values[3])
+                # Set affinement
+                newref.flag_set(ref_values[5])
+                # Adjust angles
+                new_angles = []
+                for i in range(6, len(ref_values)):
+                    new_angles.append(ref_values[i])
+                geometry = newref.geometry_get()
+                geometry.set_axes_values_unit(new_angles)
+                newref.geometry_set(geometry)
+           
+            
+            line_nb = line_nb + 1
 
     def setSaveReflections(self, value):  # value: directory, the file would be given by the name of the sample
         print "setSaveReflections"
@@ -961,6 +1059,60 @@ class DiffracBasis(PseudoMotorController):
             ref_str = ref_str + '\n'
             ref_file.write(ref_str)
         ref_file.close()
+
+    def setSaveCrystal(self, value):  # value: directory + filename
+        print "setSaveCrystal"
+        complete_file_name = value
+        self._savecrystal = complete_file_name
+        try:
+            open(complete_file_name)
+            new_file_name = complete_file_name + "_" + str(time.time())
+            cmd = "mv " + str(complete_file_name) + " " + str(new_file_name)
+            os.system(cmd)
+        except:
+            pass
+        crys_file = open(complete_file_name, 'w')
+
+        # write crystal name
+        
+        crystal_name = self.sample.name_get()
+        crys_str = crystal_name + "\n"
+        crys_file.write(crys_str)
+
+        # write wavelength
+        
+        wavelength = self.geometry.wavelength_get()
+        wl_str = str(wavelength) + "\n"
+        crys_file.write(wl_str)
+        
+
+        # write lattice parameters
+        apar = self.sample.lattice_get().a_get()
+        a = apar.value_unit_get()
+        bpar = self.sample.lattice_get().b_get()
+        b = bpar.value_unit_get()
+        cpar = self.sample.lattice_get().c_get()
+        c = cpar.value_unit_get()
+        alphapar = self.sample.lattice_get().alpha_get()
+        alpha = alphapar.value_unit_get()
+        betapar = self.sample.lattice_get().beta_get()
+        beta = betapar.value_unit_get()
+        gammapar = self.sample.lattice_get().gamma_get()
+        gamma = gammapar.value_unit_get()
+        par_str = str(a) + " " + str(b) + " " + str(c) + " " + str(alpha) + " " + str(beta) + " " + str(gamma) + "\n"
+        crys_file.write(par_str)
+
+        # write reflections
+        reflections = self.getReflectionList()
+        for ref in reflections:
+            ref_str = ""
+            for val in ref:
+                ref_str = ref_str + str(val) + " "
+            ref_str = ref_str[:-1]
+            ref_str = ref_str + '\n'
+            crys_file.write(ref_str)
+
+        crys_file.close()
 
     def setAdjustAnglesToReflection(self, value):  # value: reflexion index + new angles
         print " setAdjustAnglesToReflection"
