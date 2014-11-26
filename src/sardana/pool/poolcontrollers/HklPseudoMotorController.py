@@ -971,6 +971,7 @@ class DiffracBasis(PseudoMotorController):
             raise Exception("Not able to open crystal file")
 
         line_nb = 0
+        nb_ref = 0
 
         #print crystal_file
 
@@ -1032,9 +1033,14 @@ class DiffracBasis(PseudoMotorController):
                 geometry = newref.geometry_get()
                 geometry.set_axes_values_unit(new_angles)
                 newref.geometry_set(geometry)
-           
-            
+                nb_ref = nb_ref + 1
+                       
             line_nb = line_nb + 1
+        
+        if nb_ref > 1:
+            values = [0,1]
+            self.setComputeU(values)
+        
 
     def setSaveReflections(self, value):  # value: directory, the file would be given by the name of the sample
         print "setSaveReflections"
