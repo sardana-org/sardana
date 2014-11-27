@@ -403,6 +403,7 @@ class DiffracBasis(PseudoMotorController):
             self.sample.lattice_set(lattice)
             
             self.first_crystal_set = 0
+        self.engines.init(self.geometry, self.detector, self.sample)
 
     def setAffineCrystal(self, value):
         print " setAffineCrystal"
@@ -973,8 +974,6 @@ class DiffracBasis(PseudoMotorController):
         line_nb = 0
         nb_ref = 0
 
-        #print crystal_file
-
         for line in crystal_file:
             if line_nb == 0:
                 # Add crystal if not in the list
@@ -982,6 +981,7 @@ class DiffracBasis(PseudoMotorController):
                 self.setAddCrystal(crystal)
                 # Set crystal
                 self.sample = self.samples_list[crystal]
+                self.engines.init(self.geometry, self.detector, self.sample)
                 # Remove all reflections from crystal (there should not be any ... but just in case)
                 for ref in self.sample.reflections_get():
                     self.sample.del_reflection(ref)
@@ -1036,7 +1036,8 @@ class DiffracBasis(PseudoMotorController):
                 nb_ref = nb_ref + 1
                        
             line_nb = line_nb + 1
-        
+  
+
         if nb_ref > 1:
             values = [0,1]
             self.setComputeU(values)
