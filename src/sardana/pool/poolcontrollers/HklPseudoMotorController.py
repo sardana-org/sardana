@@ -202,12 +202,15 @@ class DiffracBasis(PseudoMotorController):
                                                 Access: ReadWrite},
                        'PsiRefH': {Type: float,
                              Description: "x coordinate of the psi reference vector (-999 if not applicable)",
+                             Memorize: MemorizedNoInit,
                              Access: ReadWrite},
                        'PsiRefK': {Type: float,
                              Description: "y coordinate of the psi reference vector (-999 if not applicable)",
+                             Memorize: MemorizedNoInit,
                              Access: ReadWrite},
                        'PsiRefL': {Type: float,
                              Description: "z coordinate of the psi reference vector (-999 if not applicable)",
+                             Memorize: MemorizedNoInit,
                              Access: ReadWrite},
                        'MotorList': {Type: (str,),
                                      Description: "Name of the real motors",
@@ -1200,9 +1203,13 @@ class DiffracBasis(PseudoMotorController):
     def setPsiRefH(self, value):
         current_mode = self.engine.mode()
         parameters = current_mode.parameters()
+        value_set = 0
         for parameter in parameters.parameters():
             if parameter.name_get() in ["h1","h2","x"]:
                 parameter.value_unit_set(value, None)
+                value_set = 1
+        if value_set == 0:
+            raise Exception("setPsiRefH: psiref not available in this mode")
 
     def getPsiRefK(self):
         value = -999
@@ -1216,9 +1223,13 @@ class DiffracBasis(PseudoMotorController):
     def setPsiRefK(self, value):
         current_mode = self.engine.mode()
         parameters = current_mode.parameters()
+        value_set = 0
         for parameter in parameters.parameters():
             if parameter.name_get() in ["k1","k2","y"]:
                 parameter.value_unit_set(value, None)
+                value_set = 1
+        if value_set == 0:
+            raise Exception("setPsiRefH: psiref not available in this mode")
 
     def getPsiRefL(self):
         value = -999
@@ -1232,9 +1243,13 @@ class DiffracBasis(PseudoMotorController):
     def setPsiRefL(self, value):
         current_mode = self.engine.mode()
         parameters = current_mode.parameters()
+        value_set = 0
         for parameter in parameters.parameters():
             if parameter.name_get() in ["l1","l2","z"]:
                 parameter.value_unit_set(value, None)
+                value_set = 1
+        if value_set == 0:
+            raise Exception("setPsiRefH: psiref not available in this mode")
 
     def getMotorList(self):
         motor_names = []
