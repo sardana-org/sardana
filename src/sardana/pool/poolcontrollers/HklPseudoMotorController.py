@@ -67,7 +67,7 @@ class DiffracBasis(PseudoMotorController):
                  {Type: str, Description: 'Type of the diffractometer, e.g. E6C'}, }
 
     ctrl_attributes = {'Crystal': {Type: str, 
-                                   Memorize: MemorizedNoInit,
+                                   Memorize: MemorizedNoInit, # If Crystal is changed to memorized. The changes commented with "memcrystal"
                                    Access: ReadWrite},
                        'AffineCrystal': {Type: int,
                                          Memorize: MemorizedNoInit,
@@ -226,7 +226,8 @@ class DiffracBasis(PseudoMotorController):
         """
         PseudoMotorController.__init__(self, inst, props, *args, **kwargs)
 
-        self.first_crystal_set = 1
+        ## Comment out if memorized crystal (memcrystal)
+        #self.first_crystal_set = 1
         self.samples_list = {}
 
         self.samples_list[
@@ -385,24 +386,30 @@ class DiffracBasis(PseudoMotorController):
 
     def setCrystal(self, value):
         print " setCrystal"
-        if self.first_crystal_set == 0:
-            if value in self.crystallist:
-                self.sample = self.samples_list[value]
-        else:            
-            self.crystallist.append(value)
-            self.samples_list[value] = Hkl.Sample.new(
-                value)  # By default a crystal is created with lattice parameters 1.54, 1.54, 1.54, 90., 90., 90.
+        if value in self.crystallist:
             self.sample = self.samples_list[value]
-            lattice = self.sample.lattice_get()
-            lattice.set(self._a, self._b, self._c,
-                        math.radians(self._alpha),
-                        math.radians(self._gamma),
-                        math.radians(self._beta))
-            self.sample.lattice_set(lattice)
-            # For getting the UB matrix changing
-            self.sample.lattice_set(lattice)
+        else:
+            raise Exception(
+                "setCrystal: crystal not in the list. Add it first")
+        ### Used this part and comment the above one out if memorized crystal (memcrystal)
+        #if self.first_crystal_set == 0:
+        #    if value in self.crystallist:
+        #        self.sample = self.samples_list[value]
+        #else: 
+        #    self.crystallist.append(value)
+        #    self.samples_list[value] = Hkl.Sample.new(
+        #        value)  # By default a crystal is created with lattice parameters 1.54, 1.54, 1.54, 90., 90., 90.
+        #    self.sample = self.samples_list[value]
+        #    lattice = self.sample.lattice_get()
+        #    lattice.set(self._a, self._b, self._c,
+        #                math.radians(self._alpha),
+        #                math.radians(self._gamma),
+        #                math.radians(self._beta))
+        #    self.sample.lattice_set(lattice)
+        #    # For getting the UB matrix changing
+        #    self.sample.lattice_set(lattice)
             
-            self.first_crystal_set = 0
+         #   self.first_crystal_set = 0
         self.engines.init(self.geometry, self.detector, self.sample)
 
     def setAffineCrystal(self, value):
