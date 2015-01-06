@@ -53,7 +53,7 @@ from gi.repository import Hkl
 from sardana import DataAccess
 from sardana.pool.controller import PseudoMotorController
 from sardana.pool.controller import Type, Access, Description
-from sardana.pool.controller import Memorize, MemorizedNoInit
+from sardana.pool.controller import Memorize, Memorized, MemorizedNoInit, NotMemorized
 
 ReadOnly = DataAccess.ReadOnly
 ReadWrite = DataAccess.ReadWrite
@@ -184,10 +184,14 @@ class DiffracBasis(PseudoMotorController):
                        'LoadCrystal':     {Type: str,
                                            Description: "Load the lattice parameters and reflections from the file corresponding to the given crystal",
                                            Access: ReadWrite},
-                       'SaveCrystal': {Type: str,
-                                           Description: "Save current crystal parameters and reflections to file",
-                                           Memorize: MemorizedNoInit,
+                       'SaveCrystal': {Type: int,
+                                           Description: "Save current crystal parameters and reflections",
+                                           Memorize: NotMemorized,
                                            Access: ReadWrite},
+                       'SaveDirectory': {Type: str,
+                                         Description: "Directory to save the crystal files to",
+                                         Memorize: Memorized,
+                                         Access: ReadWrite},
                        'AdjustAnglesToReflection': {Type: (float,),
                                                     Description: "Set the given angles to the reflection with given index",
                                                     Access: ReadWrite},
@@ -296,6 +300,9 @@ class DiffracBasis(PseudoMotorController):
         self._swapreflections01 = -1
         self._loadreflections = " "  # Only to create the member, the value will be overwritten by the one in stored in the database
         self._savereflections = " "  # Only to create the member, the value will be overwritten by the one in stored in the database
+        self._loadcrystal = " "  # Only to create the member, the value will be overwritten by the one in stored in the database
+        self._savecrystal = -1
+        self._savedirectory = " "  # Only to create the member, the value will be overwritten by the one in stored in the database
 
     def calc_physical(self, index, pseudos):
         return self.calc_all_physical(pseudos)[index - 1]
@@ -1077,18 +1084,12 @@ class DiffracBasis(PseudoMotorController):
             ref_file.write(ref_str)
         ref_file.close()
 
-    def setSaveCrystal(self, value):  # value: directory + filename
+    def setSaveCrystal(self, value):  # value: not used
         print "setSaveCrystal"
-        complete_file_name = value
-        self._savecrystal = complete_file_name
-        try:
-            open(complete_file_name)
-            new_file_name = complete_file_name + "_" + str(time.time())
-            cmd = "mv " + str(complete_file_name) + " " + str(new_file_name)
-            os.system(cmd)
-        except:
-            pass
-        crys_file = open(complete_file_name, 'w')
+        default_file_name = self._savedirectory + "/defaultcrystal.txt"
+        crystal_file_name = self._savedirectory + "/" + self.sample.name_get() + ".txt"
+
+        crys_file = open(default_file_name, 'w')
 
         # write crystal name
         
@@ -1130,6 +1131,12 @@ class DiffracBasis(PseudoMotorController):
             crys_file.write(ref_str)
 
         crys_file.close()
+        cmd = "cp " + str(default_file_name) + " " + str(crystal_file_name)
+        os.system(cmd)
+
+    def setSaveDirectory(self, value):
+        print "setSaveDirectory"
+        self._savedirectory = value
 
     def setAdjustAnglesToReflection(self, value):  # value: reflexion index + new angles
         print " setAdjustAnglesToReflection"
