@@ -992,9 +992,11 @@ class DiffracBasis(PseudoMotorController):
         nb_ref = 0
 
         for line in crystal_file:
-            if line_nb == 0:
-                # Add crystal if not in the list
-                crystal = line[0:len(line)-1]
+            line = line.replace("\n","")
+            if line.find("Crystal") != -1:
+                # Add crystal
+                line = line.replace(" ", "")
+                crystal = line.split("Crystal",1)[1]
                 self.setAddCrystal(crystal)
                 # Set crystal
                 self.sample = self.samples_list[crystal]
@@ -1002,42 +1004,54 @@ class DiffracBasis(PseudoMotorController):
                 # Remove all reflections from crystal (there should not be any ... but just in case)
                 for ref in self.sample.reflections_get():
                     self.sample.del_reflection(ref)
-            elif line_nb == 1:
-                wavelength = float(line) # The value will be set after creating the new geometry with the reflections
+            elif line.find("Wavelength") != -1:
+                line = line.replace(" ", "")
+                wavelength = float(line.split("Wavelength",1)[1]) # The value will be set after creating the new geometry with the reflections
                 self.geometry.wavelength_set(wavelength)
-            elif line_nb == 2:
+            elif line.find("A") != -1 and line.find("B") != -1 and line.find("C") != -1:
                 # Set parameters
-                par_values = []
-                for value in line.split(' '):
-                    par_values.append(float(value))
-                
+                par_line = line.split(" ")
+                avalue = float(par_line[1])
+                bvalue = float(par_line[3])
+                cvalue = float(par_line[5])
                 lattice = self.sample.lattice_get()
                 apar = lattice.a_get()
-                apar.value_unit_set(par_values[0], None)
-                self._a = par_values[0]
+                apar.value_unit_set(avalue, None)
+                self._a = avalue
                 bpar = lattice.b_get()
-                bpar.value_unit_set(par_values[1], None)
-                self._b = par_values[1]
+                bpar.value_unit_set(bvalue, None)
+                self._b = bvalue
                 cpar = lattice.c_get()
-                cpar.value_unit_set(par_values[2], None)
-                self._c = par_values[2]
+                cpar.value_unit_set(cvalue, None)
+                self._c = cvalue
+            elif line.find("Alpha") != -1 and line.find("Beta") != -1 and line.find("Gamma") != -1:                
+                par_line = line.split(" ")
+                alphavalue = float(par_line[1])
+                betavalue = float(par_line[3])
+                gammavalue = float(par_line[5])
                 alphapar = lattice.alpha_get()
-                alphapar.value_unit_set(par_values[3], None)
-                self._alpha = par_values[3]
+                alphapar.value_unit_set(alphavalue, None)
+                self._alpha = alphavalue
                 betapar = lattice.beta_get()
-                betapar.value_unit_set(par_values[4], None)
-                self._beta = par_values[4]
+                betapar.value_unit_set(betavalue, None)
+                self._beta = betavalue
                 gammapar = lattice.gamma_get()
-                gammapar.value_unit_set(par_values[5], None)
-                self._gamma = par_values[5]
+                gammapar.value_unit_set(gammavalue, None)
+                self._gamma = gammavalue
                 # For getting the UB matrix changing
                 self.sample.lattice_set(lattice)
-            else:
+            elif line.find("R0") != -1 or line.find("R1") != -1:
+                if line.find("R0") != -1:
+                    line = line.split("R0 ")[1]
+                else:
+                    line = line.split("R1 ")[1]
                 # Set reflections
                 ref_values = []
                 for value in line.split(' '):
-                    ref_values.append(
-                        float(value))  # index 0 -> reflec. index; index 1,2, 3 hkl; 4 relevance; 5 affinement; last ones (2, 4 or 6) angles
+                    try:
+                        ref_values.append(float(value))  # index 0 -> reflec. index; index 1,2, 3 hkl; 4 relevance; 5 affinement; last ones (2, 4 or 6) angles
+                    except:
+                        pass
                 # Set hkl values to the reflection
                 newref = self.sample.add_reflection(
                     self.geometry, self.detector, ref_values[1], ref_values[2], ref_values[3])
@@ -1091,16 +1105,23 @@ class DiffracBasis(PseudoMotorController):
 
         crys_file = open(default_file_name, 'w')
 
-        # write crystal name
+        # 
+        # date
+        #
         
+        date_str = "Created at " + time.strftime("%Y-%m-%d %H:%M") + "\n\n"
+        crys_file.write(date_str)
+
+        # write crystal name
+
         crystal_name = self.sample.name_get()
-        crys_str = crystal_name + "\n"
+        crys_str = "Crystal    " +   crystal_name + "\n\n"
         crys_file.write(crys_str)
 
         # write wavelength
         
         wavelength = self.geometry.wavelength_get()
-        wl_str = str(wavelength) + "\n"
+        wl_str = "Wavelength " + str(wavelength) + "\n\n"
         crys_file.write(wl_str)
         
 
@@ -1117,19 +1138,61 @@ class DiffracBasis(PseudoMotorController):
         beta = betapar.value_unit_get()
         gammapar = self.sample.lattice_get().gamma_get()
         gamma = gammapar.value_unit_get()
-        par_str = str(a) + " " + str(b) + " " + str(c) + " " + str(alpha) + " " + str(beta) + " " + str(gamma) + "\n"
+        par_str = "A " + str(a) + " B " + str(b) + " C " + str(c) + "\n"
+        crys_file.write(par_str)
+        par_str = "Alpha " + str(alpha) + " Beta " + str(beta) + " Gamma " + str(gamma) + "\n\n"
         crys_file.write(par_str)
 
         # write reflections
         reflections = self.getReflectionList()
+        ref_in = 0
         for ref in reflections:
             ref_str = ""
             for val in ref:
                 ref_str = ref_str + str(val) + " "
             ref_str = ref_str[:-1]
-            ref_str = ref_str + '\n'
+            ref_str = "R" + str(ref_in) + " " + ref_str + '\n'
+            if ref_in < 2:
+                crys_file.write(ref_str)
+            ref_in = ref_in + 1
+        if ref_in == 0:
+            ref_str = "No reflections\n"
             crys_file.write(ref_str)
+        crys_file.write("\n")
 
+        # Only for info in the file but not for loading:
+
+        # write mode        
+        mode_str = "Mode " + self.engine.mode().name() +  "\n\n"
+        crys_file.write(mode_str)
+
+        # write ub matrix
+        for i in range(0,3):
+            ub_str = ""
+            for j in range(0,3):
+                #ub_str = ub_str + "U" + str(i) + str(j) + " " + str(self.sample.UB_get().get(i, j)) + " "
+                ub_str = ub_str + "U" + str(i) + str(j) + " %.3f" % self.sample.UB_get().get(i, j) + " " 
+            ub_str = ub_str + "\n"
+            crys_file.write(ub_str)
+        crys_file.write("\n")
+        
+
+        # write u vector
+        u_str = "Ux " + str(self.sample.ux_get().value_unit_get()) + " Uy " + str(self.sample.uy_get().value_unit_get()) + " Uz " + str(self.sample.uz_get().value_unit_get()) + "\n\n"
+        crys_file.write(u_str)
+
+        # write psiref (if available in mode)
+
+        psirefh = self.getPsiRefH()
+        psirefk = self.getPsiRefK()
+        psirefl = self.getPsiRefL()
+        if psirefh != -999 or psirefk != -999 or psirefl != -999: 
+            psi_str = "PsiRef " + str(psirefh) + " " + str(psirefk) + " " + str(psirefl) + "\n"
+        else:
+            psi_str = "PsiRef not available in current engine mode\n"
+            
+        crys_file.write(psi_str)
+            
         crys_file.close()
         cmd = "cp " + str(default_file_name) + " " + str(crystal_file_name)
         os.system(cmd)
