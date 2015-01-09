@@ -988,7 +988,6 @@ class DiffracBasis(PseudoMotorController):
         except:
             raise Exception("Not able to open crystal file")
 
-        line_nb = 0
         nb_ref = 0
 
         for line in crystal_file:
@@ -1009,7 +1008,6 @@ class DiffracBasis(PseudoMotorController):
                 wavelength = float(line.split("Wavelength",1)[1]) # The value will be set after creating the new geometry with the reflections
                 self.geometry.wavelength_set(wavelength)
             elif line.find("A") != -1 and line.find("B") != -1 and line.find("C") != -1:
-                # Set parameters
                 par_line = line.split(" ")
                 avalue = float(par_line[1])
                 bvalue = float(par_line[3])
@@ -1040,6 +1038,27 @@ class DiffracBasis(PseudoMotorController):
                 self._gamma = gammavalue
                 # For getting the UB matrix changing
                 self.sample.lattice_set(lattice)
+            elif line.find("Mode") != -1:
+                mode = line[1]
+                self.setEngineMode(mode)
+            elif line.find("PsiRef") != -1:
+                if line.find("PsiRef not available") == -1:
+                    psiref_line = line.split(" ")
+                    psirefh = float(psiref_line[1])
+                    psirefk = float(psiref_line[2])
+                    psirefl = float(psiref_line[3])
+                    try:
+                        self.setPsiRefH(psirefh)
+                    except:
+                        print "PsiRefH not set. Psi not available in current mode"
+                    try:
+                        self.setPsiRefK(psirefk)
+                    except:
+                        print "PsiRefK not set. Psi not available in current mode"
+                    try:
+                        self.setPsiRefL(psirefl)
+                    except:
+                        print "PsiRefL not set. Psi not available in current mode"
             elif line.find("R0") != -1 or line.find("R1") != -1:
                 if line.find("R0") != -1:
                     line = line.split("R0 ")[1]
@@ -1065,9 +1084,11 @@ class DiffracBasis(PseudoMotorController):
                 geometry.set_axes_values_unit(new_angles)
                 newref.geometry_set(geometry)
                 nb_ref = nb_ref + 1
-                       
-            line_nb = line_nb + 1
-  
+            elif line.find("SaveDirectory") != -1:
+                line = line.split(" ")
+                if self._savedirectory == " " or self._savedirectory == "":
+                    self._savedirectory = line[1]
+
 
         if nb_ref > 1:
             values = [0,1]
@@ -1160,11 +1181,23 @@ class DiffracBasis(PseudoMotorController):
             crys_file.write(ref_str)
         crys_file.write("\n")
 
-        # Only for info in the file but not for loading:
-
         # write mode        
         mode_str = "Mode " + self.engine.mode().name() +  "\n\n"
         crys_file.write(mode_str)
+
+        # write psiref (if available in mode)
+
+        psirefh = self.getPsiRefH()
+        psirefk = self.getPsiRefK()
+        psirefl = self.getPsiRefL()
+        if psirefh != -999 or psirefk != -999 or psirefl != -999: 
+            psi_str = "PsiRef " + str(psirefh) + " " + str(psirefk) + " " + str(psirefl) + "\n\n"
+        else:
+            psi_str = "PsiRef not available in current engine mode\n\n"
+
+        crys_file.write(psi_str)
+
+        # Only for info in the file but not for loading:
 
         # write ub matrix
         for i in range(0,3):
@@ -1181,17 +1214,10 @@ class DiffracBasis(PseudoMotorController):
         u_str = "Ux " + str(self.sample.ux_get().value_unit_get()) + " Uy " + str(self.sample.uy_get().value_unit_get()) + " Uz " + str(self.sample.uz_get().value_unit_get()) + "\n\n"
         crys_file.write(u_str)
 
-        # write psiref (if available in mode)
+        # write directory where the file is saved
 
-        psirefh = self.getPsiRefH()
-        psirefk = self.getPsiRefK()
-        psirefl = self.getPsiRefL()
-        if psirefh != -999 or psirefk != -999 or psirefl != -999: 
-            psi_str = "PsiRef " + str(psirefh) + " " + str(psirefk) + " " + str(psirefl) + "\n"
-        else:
-            psi_str = "PsiRef not available in current engine mode\n"
-            
-        crys_file.write(psi_str)
+        dir_str = "SaveDirectory " + self._savedirectory + "\n"
+        crys_file.write(dir_str)
             
         crys_file.close()
         cmd = "cp " + str(default_file_name) + " " + str(crystal_file_name)
