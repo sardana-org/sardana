@@ -76,7 +76,9 @@ class DiffracBasis(PseudoMotorController):
                        'Wavelength': {Type: float, 
                                       Memorize: MemorizedNoInit,
                                       Access: ReadWrite},
-                       'EngineMode': {Type: str, Access: ReadWrite},
+                       'EngineMode': {Type: str, 
+                                      Memorize: MemorizedNoInit,
+                                      Access: ReadWrite},
                        'EngineModeList': {Type: (str,), Access: ReadOnly},
                        'HKLModeList': {Type: (str,), Access: ReadOnly},
                        'UBMatrix': {Type: ((float,), ),
@@ -148,7 +150,9 @@ class DiffracBasis(PseudoMotorController):
                        'ComputeTrajectoriesSim': {Type: (float,),
                                                   Description: "Pseudo motor values to compute the list of trajectories (1, 2 or 3 args)",
                                                   Access: ReadWrite},
-                       'Engine': {Type: str, Access: ReadWrite},
+                       'Engine': {Type: str,
+                                  Memorize: MemorizedNoInit,
+                                  Access: ReadWrite},
                        'EngineList': {Type: (str,), Access: ReadOnly},
                        'CrystalList': {Type: (str,), Access: ReadOnly},
                        'AddCrystal': {Type: str, 
@@ -1038,7 +1042,12 @@ class DiffracBasis(PseudoMotorController):
                 self._gamma = gammavalue
                 # For getting the UB matrix changing
                 self.sample.lattice_set(lattice)
-            elif line.find("Mode") != -1:
+            elif line.find("Engine") != -1:          
+                line = line.split(" ")
+                engine = line[1]
+                self.setEngine(engine)
+            elif line.find("Mode") != -1:          
+                line = line.split(" ")
                 mode = line[1]
                 self.setEngineMode(mode)
             elif line.find("PsiRef") != -1:
@@ -1180,6 +1189,10 @@ class DiffracBasis(PseudoMotorController):
             ref_str = "No reflections\n"
             crys_file.write(ref_str)
         crys_file.write("\n")
+
+        # write engine       
+        engine_str = "Engine " + self.engine.name() +  "\n\n"
+        crys_file.write(engine_str)
 
         # write mode        
         mode_str = "Mode " + self.engine.mode().name() +  "\n\n"
