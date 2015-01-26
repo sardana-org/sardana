@@ -113,13 +113,18 @@ class defelem(Macro):
 
 
 class udefelem(Macro):
-    """Deletes an existing element"""
+    """Deletes an existing element(s)"""
 
-    param_def = [ ['element', Type.Element, None, 'element name'],]
+    param_def = [
+       ['elements',
+        ParamRepeat(['element', Type.Element, None, 'element name'], min=1),
+        None, 'List of element(s) name'],
+    ]
 
-    def run(self, element):
-        pool = element.getPoolObj()
-        pool.deleteElement(element.getName())
+    def run(self, *elements):
+        for element in elements:
+            pool = element.getPoolObj()
+            pool.deleteElement(element.getName())
 
 
 class defctrl(Macro):
