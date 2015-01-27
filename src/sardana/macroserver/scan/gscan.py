@@ -253,7 +253,7 @@ class GScan(Logger):
         except UnknownEnv:
             mnt_grps = macro.getObjs(".*", type_class=Type.MeasurementGroup)
             if len(mnt_grps) == 0:
-                ScanSetupError('No Measurement Group defined')
+                raise ScanSetupError('No Measurement Group defined')
             mnt_grp = mnt_grps[0]
             macro.info("ActiveMntGrp not defined. Using %s", mnt_grp)
             macro.setEnv('ActiveMntGrp', mnt_grp.getName())
@@ -398,7 +398,7 @@ class GScan(Logger):
             raise
         except Exception:
             macro.warning('ScanFile is not defined. This operation will not '
-                          'be stored persistently. Use "expconf" (or "senv ScanDir <scan '
+                          'be stored persistently. Use "expconf" (or "senv ScanFile <scan '
                           'file(s)>") to enable it')
             return ()
 
@@ -1272,15 +1272,15 @@ class CScan(GScan):
             min_dec_time = motor.getDeceleration()
         return min_dec_time
  
-#    def set_max_top_velocity(self, motor):
-#        """Helper method to set the maximum top velocity for the motor to 
-#        its maximum allowed limit."""
-#        
-#        v = self.get_max_top_velocity(motor)
-#        try:
-#            motor.setVelocity(v)
-#        except:
-#            pass
+    def set_max_top_velocity(self, motor):
+        """Helper method to set the maximum top velocity for the motor to 
+        its maximum allowed limit."""
+        
+        v = self.get_max_top_velocity(motor)
+        try:
+            motor.setVelocity(v)
+        except:
+            pass
 
                 
 class CSScan(CScan):
@@ -2062,36 +2062,32 @@ class CTScan(CScan):
             self.macro.debug("Waiting for measurement group to finish")            
             while self._measurement_group.isMoving():
                 self.macro.checkPoint()
-                time.sleep(0.1)
-                
-#            self.macro.debug("Getting data")                
-#            data_list = self._measurement_group.getDataList()
-#            
-#            def populate_ideal_positions():
-#                moveables = self.moveables
-#                nr_of_points = self.macro.nr_of_points
-#                starts = self.macro.starts
-#                finals = self.macro.finals
-#                positions_records = [{} for i in xrange(nr_of_points)]
-#                
-#                for moveable, start, final in zip(moveables, starts, finals):
-#                    name = moveable.moveable.getName()
-#                    step_size = abs((end-start)/nr_of_points)
-#                    for point_nr, position in enumerate(np.arange(start, \
-#                                                            final, step_size)):
-#                        positions_records[point_nr][name] = position    
-#                    
-#                return positions_records
-#            
-#            #@todo: decide what to do with moveables
-#            position_list = populate_ideal_positions()
-#
-#            self.macro.debug("Storing data")
-#            for data_dict, position_dict in zip(data_list,position_list):
-#                data_dict.update(position_dict)
-#                self.data.addRecord(data_dict)    
-            ############
-            
+                time.sleep(0.1)                
+#             self.macro.debug("Getting data")                
+#             data_list = self._measurement_group.getDataList()
+#             
+#             def populate_ideal_positions():
+#                 moveables = self.moveables
+#                 nr_of_points = self.macro.nr_of_points
+#                 starts = self.macro.starts
+#                 finals = self.macro.finals
+#                 positions_records = [{} for i in xrange(nr_of_points)]
+#                 
+#                 for moveable, start, final in zip(moveables, starts, finals):
+#                     name = moveable.moveable.getName()
+#                     for point_nr, position in enumerate(np.linspace(start, \
+#                                                         final, nr_of_points)):
+#                         positions_records[point_nr][name] = position    
+#                     
+#                 return positions_records
+#             
+#             #TODO: decide what to do with moveables
+#             position_list = populate_ideal_positions()
+# 
+#             self.macro.debug("Storing data")
+#             for data_dict, position_dict in zip(data_list,position_list):
+#                 data_dict.update(position_dict)
+#                 self.data.addRecord(data_dict)                
             if start_positions is None:  
                 last_positions = positions
         
