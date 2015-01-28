@@ -743,6 +743,14 @@ def get_dev_from_class(db, classname):
         res[dev] = full_name, name, alias, out
     return res
 
+def get_free_server(db, prefix, start_from=1):
+    prefix = prefix + "_"
+    server_members = db.get_server_list(prefix + "*")
+    server = server_members.value_string
+    while prefix + str(start_from) in server:
+        start_from += 1
+    return prefix + str(start_from)
+
 def get_free_device(db, prefix, start_from=1):
     members = db.get_device_member(prefix + "/*")
     while str(start_from) in members:
@@ -750,13 +758,26 @@ def get_free_device(db, prefix, start_from=1):
     return prefix + "/" + str(start_from)
 
 def get_free_alias(db, prefix, start_from=1):
+    '''Iterates until failure, trying to retrieve from the database device of
+    the given alias. This way, first which fails is available in the database.
+
+    :param db: database where to look for the free alias
+    :type db: PyTango.Database
+    :param start_from: alias suffix in form of consecutive number
+    :type start_from: int
+    '''
     while True:
         name = prefix + "_" + str(start_from)
         try:
-            db.get_alias(name)
-            start_from += 1
-        except:
+            db.get_device_from_alias(name) # PyTango >= 8.1.0
+        except PyTango.DevFailed:
             return name
+        except AttributeError:
+            try:
+                db.get_device_alias(name) # deprecated since PyTango 8.1.0
+            except PyTango.DevFailed:
+                return name
+        start_from += 1
 
 def prepare_taurus(options, args, tango_args):
     # make sure the polling is not active
@@ -807,11 +828,15 @@ def prepare_logging(options, args, tango_args, start_time=None, log_messages=Non
         try:
             if not os.path.exists(path):
                 os.makedirs(path, 0777)
+            
+            from sardana import sardanacustomsettings    
+            maxBytes = getattr(sardanacustomsettings, 'LOG_FILES_SIZE', 1E7)
+            backupCount = getattr(sardanacustomsettings, 'LOG_BCK_COUNT', 5)
 
             fmt = Logger.getLogFormat()
             f_h = logging.handlers.RotatingFileHandler(log_file_name,
-                                                       maxBytes=1E7,
-                                                       backupCount=5)
+                                                       maxBytes=maxBytes,
+                                                       backupCount=backupCount)
             f_h.setFormatter(fmt)
             f_h.setLevel(log_file_level)
             root.addHandler(f_h)

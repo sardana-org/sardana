@@ -505,7 +505,9 @@ class Controller(object):
         Sends a string to the controller.
         Default implementation raises :exc:`NotImplementedError`.
 
-        :param str stream: stream to be sent"""
+        :param str stream: stream to be sent
+        :return: any relevant information e.g. response of the controller
+        :rtype: str"""
         raise NotImplementedError("SendToCtrl not implemented")
 
 
@@ -934,6 +936,19 @@ class CounterTimerController(Controller, Readable, Startable, Stopable, Loadable
         :exc:`NotImplementedError`."""
         return self.StartAllCT()
 
+
+class TriggerGateController(Controller, Stopable, Startable):
+    """Base class for a trigger/gate controller. Inherit from this class to
+    implement your own trigger/gate controller for the device pool.
+    """
+    
+    #: A :obj:`str` representing the controller gender
+    gender = 'Trigger/Gate controller'
+
+    def __init__(self, inst, props, *args, **kwargs):
+        Controller.__init__(self, inst, props, *args, **kwargs)
+
+    
 
 class ZeroDController(Controller, Readable, Stopable):
     """Base class for a 0D controller. Inherit from this class to
