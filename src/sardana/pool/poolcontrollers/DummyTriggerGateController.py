@@ -65,9 +65,9 @@ class DummyTriggerGateController(TriggerGateController):
         pass
 
     def PreStartOne(self, axis, value=None):
-        pass
+        return True
 
-    def StartOne(self, axis, repetitions):
+    def StartOne(self, axis):
         """Start the specified trigger"""
         pass
 
