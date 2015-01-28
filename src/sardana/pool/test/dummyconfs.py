@@ -23,13 +23,22 @@
 ##
 ##############################################################################
 
-__all__ = ['dummyCounterTimerConf01', 'dummyMeasurementGroupConf01',
-           'dummyPoolCTCtrlConf01']
+__all__ = ['dummyCounterTimerConf01', 'dummyTriggerGateConf01',
+           'dummyMeasurementGroupConf01', 'dummyPoolCTCtrlConf01', 
+           'dummyPoolTGCtrlConf01']
 
 # Pool Elements
 
 '''Minimum configuration to create a Pool CounterTimer'''
 dummyCounterTimerConf01 = { 'axis': 1,
+                            'ctrl': None,
+                            'full_name': '',
+                            'id': 2,
+                            'name': '',
+                            'pool': None }
+
+'''Minimum configuration to create a Pool TriggerGate'''
+dummyTriggerGateConf01 = { 'axis': 1,
                             'ctrl': None,
                             'full_name': '',
                             'id': 2,
@@ -57,3 +66,16 @@ dummyPoolCTCtrlConf01 = { 'class_info': None,
                         'properties': {},
                         'role_ids': '',
                         'type': 'CTExpChannel' }
+
+'''Minimum configuration to create a Pool TriggerGate controller'''
+dummyPoolTGCtrlConf01 = { 'class_info': None,
+                        'full_name': '',
+                        'id': 1,
+                        'klass': 'DummyTriggerGateController',
+                        'lib_info': None,
+                        'library': 'DummyTriggerGateController.py',
+                        'name': '',
+                        'pool': None,
+                        'properties': {},
+                        'role_ids': '',
+                        'type': 'TGChannel' }
