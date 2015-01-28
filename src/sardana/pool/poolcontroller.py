@@ -378,8 +378,11 @@ class PoolController(PoolBaseController):
 
     def get_ctrl(self):
         return self._ctrl
+    
+    def set_ctrl(self, ctrl):
+        self._ctrl = ctrl
 
-    ctrl = property(fget=get_ctrl, doc="actual controller object")
+    ctrl = property(fget=get_ctrl, fset=set_ctrl, doc="actual controller object")
 
     def get_ctrl_info(self):
         return self._ctrl_info
