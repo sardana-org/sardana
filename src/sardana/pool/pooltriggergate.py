@@ -24,7 +24,7 @@
 ##############################################################################
 
 """This module is part of the Python Pool library. It defines the base classes
-for CounterTimer"""
+for PoolTriggerGate"""
 
 __all__ = ["PoolTriggerGate"]
 
