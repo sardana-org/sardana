@@ -216,7 +216,7 @@ class PoolAction(Logger):
     main_element = property(get_main_element)
 
     def get_pool(self):
-        """Returns the pool object for thi action
+        """Returns the pool object for this action
 
         :return: sardana.pool.pool.Pool"""
         return self.main_element.pool
