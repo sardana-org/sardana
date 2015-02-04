@@ -29,6 +29,7 @@ trigger/gate generation"""
 
 __all__ = ["PoolTGGeneration", "TGChannel"]
 
+import time
 from taurus.core.util.log import DebugIt
 from sardana import State
 from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
@@ -102,23 +103,41 @@ class PoolTGGeneration(PoolAction):
             for pool_ctrl in pool_ctrls:
                 pool_ctrl.ctrl.StartAll()
         
+    def is_triggering(self, states):
+        """Determines if we are triggering or if the triggering has ended
+        based on the states returned by the controller(s)
+        
+        :param states: a map containing state information as returned by
+                       read_state_info
+        :type states: dict<PoolElement, State>
+        :return: returns True if is triggering or False otherwise
+        :rtype: bool"""
+        for elem in states:
+            state_tggate = states[elem][0]
+            if self._is_in_action(state_tggate):
+                return True
+
     @DebugIt()
     def action_loop(self):
-        """action_loop method"""
-        pass
+        '''action_loop method
+        '''
+        states = {}
+        for element in self._channels:
+            states[element] = None
 
+        # Triggering loop
+        nap = 0.2
+        while True:
+            self.read_state_info(ret=states)
+            if not self.is_triggering(states):
+                break
+            time.sleep(nap)
 
-
-
-
-
-
-
-
-
-
-
-
+        # Set element states after ending the triggering
+        for triggerelement, state_info in states.items():
+            with triggerelement:
+                triggerelement.clear_operation()
+                triggerelement.set_state_info(state_info, propagate=2)
 
 
 
