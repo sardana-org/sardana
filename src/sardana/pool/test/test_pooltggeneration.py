@@ -90,19 +90,14 @@ class PoolTriggerGateTestCase(unittest.TestCase):
         msg = ("State after start_action is '%s'. (Expected: '%s')" % 
                               (State.get(state_after_start_action), "Moving"))
         self.assertEqual(self.dummy_tg.state, State.Moving, msg)       
-     
-        try:
-            threading.Timer(1, self.delaySetState).start()      
-        except:
-            print "Error: unable to start thread"
-
+        threading.Timer(1, self.delaySetState).start() 
+    
         self.tgaction.action_loop()
-   
+
         self.mock_tg_ctrl.assert_has_calls([call.PreStateAll(),
                                             call.PreStateOne(1,),
                                             call.StateAll(), 
                                             call.StateOne(1,)])
-        
         state_after_action_loop = self.dummy_tg.state
         msg = ("State after action_loop is '%s'. (Expected: '%s')" % 
                                    (State.get(state_after_action_loop), "On"))
