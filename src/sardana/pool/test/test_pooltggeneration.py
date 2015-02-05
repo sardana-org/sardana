@@ -25,7 +25,7 @@
 #TODO: import using taurus.external.unittest
 from mock import Mock, call
 import time
-import thread
+import threading
 
 from taurus.external import unittest
 from sardana.pool.controller import TriggerGateController
@@ -76,10 +76,9 @@ class PoolTriggerGateTestCase(unittest.TestCase):
                                            (call.StartOne(1,)),
                                            (call.StartAll())])
                 
-    def delaySetState(self, threadName, delay):
-        time.sleep(delay)
+    def delaySetState(self):
+        time.sleep
         self.mock_tg_ctrl.StateOne.return_value = State.On
-        ret = self.mock_tg_ctrl.StateOne()
      
     def test_action_loop(self):
         """Verify trigger element states before and after action_loop."""
@@ -93,9 +92,9 @@ class PoolTriggerGateTestCase(unittest.TestCase):
         self.assertEqual(self.dummy_tg.state, State.Moving, msg)       
      
         try:
-           thread.start_new_thread(self.delaySetState, ("ThreadDelay", 1,))
+            threading.Timer(1, self.delaySetState).start()      
         except:
-           print "Error: unable to start thread"
+            print "Error: unable to start thread"
 
         self.tgaction.action_loop()
    
