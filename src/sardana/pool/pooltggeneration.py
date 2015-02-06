@@ -143,6 +143,3 @@ class PoolTGGeneration(PoolAction):
                 triggerelement.clear_operation()
                 state_info = triggerelement._from_ctrl_state_info(state_info)
                 triggerelement.set_state_info(state_info, propagate=2)
-
-
-
