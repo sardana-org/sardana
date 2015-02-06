@@ -22,13 +22,10 @@
 ## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
-#TODO: import using taurus.external.unittest
 from mock import Mock, call
 import time
 import threading
-
 from taurus.external import unittest
-from sardana.pool.controller import TriggerGateController
 from sardana.pool.pooltggeneration import PoolTGGeneration
 from sardana.sardanadefs import State
 from sardana.pool.test import (FakePool, createPoolController,
@@ -60,11 +57,11 @@ class PoolTriggerGateTestCase(unittest.TestCase):
         ctrl_methods = ['PreStartAll', 'StartAll', 'PreStartOne', 'StartOne',
                         'PreStateAll', 'StateAll', 'PreStateOne', 'StateOne']
         self.mock_tg_ctrl = Mock(spec=ctrl_methods)
-        self.mock_tg_ctrl.StateOne.return_value = State.Moving
+        self.mock_tg_ctrl.StateOne.return_value = (State.Moving, 'triggering')
         dummy_tg_ctrl.ctrl = self.mock_tg_ctrl
         self.tgaction = PoolTGGeneration(self.dummy_tg)
         self.tgaction.add_element(self.dummy_tg)
-        
+
     def test_start_action(self):
         """Verify that the created PoolTGAction start_action starts correctly 
         the involved controller."""
@@ -75,21 +72,20 @@ class PoolTriggerGateTestCase(unittest.TestCase):
                                            (call.PreStartOne(1,)),
                                            (call.StartOne(1,)),
                                            (call.StartAll())])
-                
+
     def delaySetState(self):
         time.sleep
-        self.mock_tg_ctrl.StateOne.return_value = State.On
-     
+        self.mock_tg_ctrl.StateOne.return_value = (State.On, 'On')
+
     def test_action_loop(self):
         """Verify trigger element states before and after action_loop."""
- 
         args = ()
         kwargs = {'config': self.cfg}
         self.tgaction.start_action(*args, **kwargs)
-        state_after_start_action = self.dummy_tg.state
+        element_state = self.dummy_tg.get_state()
         msg = ("State after start_action is '%s'. (Expected: '%s')" % 
-                              (State.get(state_after_start_action), "Moving"))
-        self.assertEqual(self.dummy_tg.state, State.Moving, msg)       
+                                    (State.get(element_state), "Moving"))
+        self.assertEqual(element_state, State.Moving, msg)       
         threading.Timer(1, self.delaySetState).start() 
     
         self.tgaction.action_loop()
@@ -98,10 +94,9 @@ class PoolTriggerGateTestCase(unittest.TestCase):
                                             call.PreStateOne(1,),
                                             call.StateAll(), 
                                             call.StateOne(1,)])
-        state_after_action_loop = self.dummy_tg.state
-        msg = ("State after action_loop is '%s'. (Expected: '%s')" % 
-                                   (State.get(state_after_action_loop), "On"))
-        self.assertEqual(self.dummy_tg.state, State.On, msg)    
+        element_state = self.dummy_tg.get_state()
+        msg = ("State after action_loop shall be different than Moving")
+        self.assertNotEqual(element_state, State.Moving, msg)    
 
     def tearDown(self):
         self.tgaction = None

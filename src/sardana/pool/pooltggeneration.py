@@ -108,14 +108,18 @@ class PoolTGGeneration(PoolAction):
         based on the states returned by the controller(s)
         
         :param states: a map containing state information as returned by
-                       read_state_info
-        :type states: dict<PoolElement, State>
+                       read_state_info: ((state, status), exception_error)
+        :type states: dict<PoolElement, tuple(tuple(int, str), str))
         :return: returns True if is triggering or False otherwise
         :rtype: bool"""
         for elem in states:
-            state_tggate = states[elem][0]
+            state_info_idx = 0
+            state_idx = 0
+            state_tggate = states[elem][state_info_idx][state_idx]
             if self._is_in_action(state_tggate):
                 return True
+            else:
+                return False
 
     @DebugIt()
     def action_loop(self):
@@ -137,6 +141,7 @@ class PoolTGGeneration(PoolAction):
         for triggerelement, state_info in states.items():
             with triggerelement:
                 triggerelement.clear_operation()
+                state_info = triggerelement._from_ctrl_state_info(state_info)
                 triggerelement.set_state_info(state_info, propagate=2)
 
 
