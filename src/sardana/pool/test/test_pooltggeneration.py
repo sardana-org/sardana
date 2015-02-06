@@ -68,7 +68,7 @@ class PoolTriggerGateTestCase(unittest.TestCase):
         """Method used to change the controller (mock) state"""
         self.mock_tg_ctrl.StateOne.return_value = (State.On, 'On')
 
-    def test_action_loop(self):
+    def test_tggeneration(self):
         """Verify trigger element states before and after action_loop."""
         args = ()
         kwargs = {'config': self.cfg}
