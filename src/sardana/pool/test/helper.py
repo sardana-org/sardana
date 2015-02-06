@@ -25,7 +25,7 @@
 
 __all__ = ['createPoolController', 'createPoolCounterTimer',
            'createPoolTriggerGate', 'createPoolMeasurementGroup',
-           'createPoolTGActionConfiguration']
+           'createPoolTGGenerationConfiguration']
 
 from sardana.pool.poolcontroller import PoolController
 from sardana.pool.poolcountertimer import PoolCounterTimer
@@ -71,9 +71,9 @@ def createPoolMeasurementGroup(pool, conf):
     kwargs['pool'] = pool
     return PoolMeasurementGroup(**kwargs)
 
-def createPoolTGActionConfiguration(ctrls, ctrls_conf, 
+def createPoolTGGenerationConfiguration(ctrls, ctrls_conf, 
                                     ctrl_channels, ctrl_channels_conf):
-    '''Method to create TGAction configuration. Order of the sequences is 
+    '''Method to create TGGeneration configuration. Order of the sequences is 
     important. For all sequences, the element of a given position refers 
     the same controller. 
     
