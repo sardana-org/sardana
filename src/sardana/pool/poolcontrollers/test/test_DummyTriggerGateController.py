@@ -115,7 +115,7 @@ class PoolDummyTriggerGateTestCase(unittest.TestCase):
         # TODO: at the moment of writing this test, the configuration of 
         # TGGenerationAction s
         self.cfg = createPoolTGGenerationConfiguration((dummy_tg_ctrl,), 
-                                        (dummyTriggerGateConf01,),
+                                        (dummyPoolTGCtrlConf01,),
                                         ((self.dummy_tg,),),
                                         ((dummyTriggerGateConf01,),))
         
