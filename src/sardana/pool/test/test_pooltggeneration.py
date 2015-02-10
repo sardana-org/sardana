@@ -85,7 +85,7 @@ class PoolTriggerGateTestCase(unittest.TestCase):
                                     (State.get(element_state), "Moving"))
         self.assertEqual(element_state, State.Moving, msg)
         # starting timer (1 s) which will change the controller state
-        threading.Timer(1, self.delaySetState).start()
+        threading.Timer(1, self.stopGeneration).start()
         # entering action loop
         self.tgaction.action_loop()
         # verifying that the action checked the controller states
