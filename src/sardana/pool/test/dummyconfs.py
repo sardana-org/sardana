@@ -25,10 +25,10 @@
 
 __all__ = ['dummyCounterTimerConf01', 'dummyTriggerGateConf01',
            'dummyMeasurementGroupConf01', 'dummyPoolCTCtrlConf01', 
-           'dummyPoolTGCtrlConf01']
+           'dummyPoolTGCtrlConf01', 'TangoAttributeCTCtrlConf01']
+
 
 # Pool Elements
-
 '''Minimum configuration to create a Pool CounterTimer'''
 dummyCounterTimerConf01 = { 'axis': 1,
                             'ctrl': None,
@@ -52,8 +52,9 @@ dummyMeasurementGroupConf01 = { 'full_name': '',
                               'pool': None,
                               'user_elements': [2] }
 
-# Pool Ctrls
 
+
+# Pool Ctrls
 '''Minimum configuration to create a Pool CounterTimer controller'''
 dummyPoolCTCtrlConf01 = { 'class_info': None,
                         'full_name': '',
@@ -66,6 +67,23 @@ dummyPoolCTCtrlConf01 = { 'class_info': None,
                         'properties': {},
                         'role_ids': '',
                         'type': 'CTExpChannel' }
+
+
+'''Minimum configuration to create a TangoAttributeCTcontroller'''
+TangoAttributeCTCtrlConf01 = {'class_info': None,
+                        'ctrl_info': 'hiho',
+                        'full_name': '',
+                        'id': 1,
+                        'klass': 'TangoAttrCTController',
+                        'lib_info': None,
+                        #'library': 'TangoAttrCTCtrl.py',
+                        'library': 'TangoAttrCounterTimerController.py',
+                        'name': '',
+                        'pool': None,
+                        'properties': {},
+                        'role_ids': '',
+                        'type': 'CTExpChannel' }
+
 
 '''Minimum configuration to create a Pool TriggerGate controller'''
 dummyPoolTGCtrlConf01 = { 'class_info': None,
