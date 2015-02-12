@@ -25,7 +25,8 @@
 
 __all__ = ['createPoolController', 'createPoolCounterTimer',
            'createPoolTriggerGate', 'createPoolMeasurementGroup',
-           'createPoolTGGenerationConfiguration']
+           'createPoolTGGenerationConfiguration',
+           'createCTAcquisitionConfiguration']
 
 from sardana.pool.poolcontroller import PoolController
 from sardana.pool.poolcountertimer import PoolCounterTimer
@@ -101,4 +102,43 @@ def createPoolTGGenerationConfiguration(ctrls, ctrls_conf,
             main_unit_data['channels'][channel] = channel_conf
         ctrls_configuration[ctrl] = ctrl_conf
     configuration = {'controllers': ctrls_configuration}
+    return configuration 
+
+
+
+def createCTAcquisitionConfiguration(ctrls, ctrls_conf, 
+                                    ctrl_channels, ctrl_channels_conf):
+    '''Method to create CTAcquisition configuration. Order of the sequences is 
+    important. For all sequences, the element of a given position refers 
+    the same controller. 
+    
+    :param ctrls: sequence of the controllers used by the action
+    :type ctrls: seq<sardana.pool.PoolController>
+    :param ctrls_conf: sequence of the controllers configuration dictionaries
+    :type ctrls_conf: dict
+    :param ctrl_channels: sequence of the sequences of the channels 
+    corresponding to the controllers 
+    :type ctrl_channels: seq<seq<sardana.pool.PoolCounterTimer>>
+    :param ctrl_channels_conf: sequence of the sequences of the channels 
+    configuration dictionaries
+    :type ctrl_channels_conf: seq<seq<dict>>
+    :return: a configuration dictionary
+    :rtype: dict<>
+    '''
+
+    master_ctrl_idx = 0
+    master_idx = 0
+    configuration = {}
+    ctrls_configuration = {}
+    configuration['timer'] = ctrl_channels[master_ctrl_idx][master_idx]
+    for ctrl, ctrl_conf, channels, channels_conf in zip(ctrls, ctrls_conf, 
+                                    ctrl_channels, ctrl_channels_conf):
+        ctrl_conf['units'] = {}
+        ctrl_conf['units']['0'] = main_unit_data = {}
+        ctrl_conf['units']['0']['channels'] = {}
+        for channel, channel_conf in zip(channels, channels_conf):
+            main_unit_data['channels'][channel] = channel_conf
+        main_unit_data['timer'] = channels[master_idx]
+        ctrls_configuration[ctrl] = ctrl_conf
+    configuration['controllers'] = ctrls_configuration
     return configuration 
