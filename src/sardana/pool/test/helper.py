@@ -27,7 +27,8 @@ __all__ = ['createPoolController', 'createPoolCounterTimer',
            'createPoolTriggerGate', 'createPoolMeasurementGroup',
            'createPoolTGGenerationConfiguration',
            'createCTAcquisitionConfiguration', 'createMGConfiguration',
-           'getTGConfiguration']
+           'getTGConfiguration', 'getSWtg_MGConfiguration',
+           'getHWtg_MGConfiguration']
 
 from sardana.pool.poolcontroller import PoolController
 from sardana.pool.poolcountertimer import PoolCounterTimer
@@ -144,6 +145,7 @@ def createCTAcquisitionConfiguration(ctrls, ctrls_conf,
     configuration['controllers'] = ctrls_configuration
     return configuration 
 
+
 def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,
                           ctrl_trigger_elements, ctrl_trigger_modes):
     '''Method to create general MeasurementGroup (and CT) configuration. 
@@ -204,6 +206,128 @@ def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,
     return MG_configuration
 
 
+def getSWtg_MGConfiguration(MGCfg):
+    """Get Measurement group configuration with only the channel elements
+    triggered by a SW Trigger"""
+
+    # Get all trigger_elements ('sw_time', 'sw_position', 'hw_tg_element') 
+    #sw_hw_tg list organized by controller 
+    #ex: sw_hw_tg = [[sw_time, sw_position, tg1],[sw_time],[tg1, tg2]]
+    # organized in a list by controller.
+    # This part of code is common to look for sw and for hw triggered counters
+    sw_hw_tg = []
+    ctr = MGCfg['controllers']
+    
+    for idx_ctrl in range(len(ctr)):
+        sw_hw_tg.append([])
+        channels = ctr[ctr.keys()[idx_ctrl]]['units']['0']['channels']
+        for channel in channels:
+            sw_hw_tg[idx_ctrl].append(channels[channel]['trigger_element'])
+           
+    # Get index of controllers which contains SW tg elements
+    ctrl_sw_list = []
+    for ctr_i in range(len(sw_hw_tg)):
+        for ch_j in range(len(sw_hw_tg[ctr_i])):
+            if (sw_hw_tg[ctr_i][ch_j] == 'sw_time' or
+                sw_hw_tg[ctr_i][ch_j] == 'sw_position'):
+                ctrl_sw_list.append(ctr_i)
+                break
+
+    # Build the new dictionary with only SW_tg elements
+    swtg_MGcfg = {}
+    ctr_sw = {}
+    for ctrl_num in ctrl_sw_list:
+        key_ctr = ctr.keys()[ctrl_num]
+        single_unit = ctr[key_ctr]['units']['0']
+        ch_orig = single_unit['channels']
+        ctr_sw[key_ctr] = {}
+        for key in ctr[key_ctr]:
+            if key != 'units':
+                ctr_sw[key_ctr][key] = ctr[key_ctr][key]
+        ctr_sw[key_ctr]['units'] = {}
+        new_single_unit = ctr_sw[key_ctr]['units']['0'] = {}
+        ch_dict = new_single_unit['channels'] = {}
+
+        for key in single_unit.keys():
+            if key != 'channels':
+                new_single_unit[key] = single_unit[key]
+
+        elem_from_ctrl = 0
+        for elem_type in sw_hw_tg[ctrl_num]:
+            if (elem_type == 'sw_time' or elem_type == 'sw_position'):
+                ch_dict[ch_orig.keys()[elem_from_ctrl]] = \
+                            ch_orig[ch_orig.keys()[elem_from_ctrl]]
+            elem_from_ctrl = elem_from_ctrl + 1
+            
+    swtg_MGcfg['controllers'] = ctr_sw
+    for key in MGCfg:
+        if key != 'controllers':
+            swtg_MGcfg[key] = MGCfg[key]
+    
+    return swtg_MGcfg
+
+
+def getHWtg_MGConfiguration(MGCfg):
+    """Get Measurement group configuration with only the channel elements
+    triggered by a HW Trigger"""
+
+    # Get all trigger_elements ('sw_time', 'sw_position', 'hw_tg_element') 
+    #sw_hw_tg list organized by controller 
+    #ex: sw_hw_tg = [[sw_time, sw_position, tg1],[hw_time],[tg1, tg2]]
+    # organized in a list by controller.
+    # This part of code is common to look for hw and for hw triggered counters
+    sw_hw_tg = []
+    ctr = MGCfg['controllers']
+    
+    for idx_ctrl in range(len(ctr)):
+        sw_hw_tg.append([])
+        channels = ctr[ctr.keys()[idx_ctrl]]['units']['0']['channels']
+        for channel in channels:
+            sw_hw_tg[idx_ctrl].append(channels[channel]['trigger_element'])
+           
+    # Get index of controllers which contains HW tg elements
+    ctrl_hw_list = []
+    for ctr_i in range(len(sw_hw_tg)):
+        for ch_j in range(len(sw_hw_tg[ctr_i])):
+            if (sw_hw_tg[ctr_i][ch_j] != 'sw_time' and
+                sw_hw_tg[ctr_i][ch_j] != 'sw_position'):
+                ctrl_hw_list.append(ctr_i)
+                break
+
+    # Build the new dictionary with only HW_tg elements
+    hwtg_MGcfg = {}
+    ctr_hw = {}
+    for ctrl_num in ctrl_hw_list:
+        key_ctr = ctr.keys()[ctrl_num]
+        single_unit = ctr[key_ctr]['units']['0']
+        ch_orig = single_unit['channels']
+        ctr_hw[key_ctr] = {}
+        for key in ctr[key_ctr]:
+            if key != 'units':
+                ctr_hw[key_ctr][key] = ctr[key_ctr][key]
+        ctr_hw[key_ctr]['units'] = {}
+        new_single_unit = ctr_hw[key_ctr]['units']['0'] = {}
+        ch_dict = new_single_unit['channels'] = {}
+
+        for key in single_unit.keys():
+            if key != 'channels':
+                new_single_unit[key] = single_unit[key]
+
+        elem_from_ctrl = 0
+        for elem_type in sw_hw_tg[ctrl_num]:
+            if (elem_type != 'sw_time' and elem_type != 'sw_position'):
+                ch_dict[ch_orig.keys()[elem_from_ctrl]] = \
+                            ch_orig[ch_orig.keys()[elem_from_ctrl]]
+            elem_from_ctrl = elem_from_ctrl + 1
+            
+    hwtg_MGcfg['controllers'] = ctr_hw
+    for key in MGCfg:
+        if key != 'controllers':
+            hwtg_MGcfg[key] = MGCfg[key]
+    
+    return hwtg_MGcfg
+
+
 def getTGConfiguration(MGcfg):
     '''Build TG configuration from complete MG configuration.
 
@@ -220,7 +344,8 @@ def getTGConfiguration(MGcfg):
         channels_dict = MGcfg["controllers"][ctrl]['units']['0']['channels']
         for channel in channels_dict:
             tg_element = channels_dict[channel]['trigger_element']
-            if tg_element not in _tg_element_list:
+            if (tg_element not in _tg_element_list and 
+                tg_element != 'sw_time' and tg_element != 'sw_position'):
                 _tg_element_list.append(tg_element)
 
     # Intermediate dictionary to organize each ctrl with its elements.
@@ -249,8 +374,6 @@ def getTGConfiguration(MGcfg):
     return TGcfg
 
 
-
-
 """
 def walk(dictionary, foundkey, answer=None, sofar=None):
     if sofar is None:
@@ -272,7 +395,8 @@ def delKeys(dictionary, removekey):
             path.pop(0)
         dd.pop(path[0])
 
-
+# This cannot be used without modifying the MGcfg. 
+# Delete elements of MGcfg deletes it as well the elements in original MGcfg.
 def getCTConfiguration(MGcfg):
     Extract CT configuration from complete MG configuration.
 
