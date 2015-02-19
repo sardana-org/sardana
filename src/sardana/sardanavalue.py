@@ -47,6 +47,7 @@ class SardanaValue(object):
         self.timestamp = timestamp
         self.dtype = dtype
         self.dformat = dformat
+        self.idx = None 
 
     def __repr__(self):
         v = None
