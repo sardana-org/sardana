@@ -29,6 +29,7 @@ from sardana.pool.controller import TriggerGateController
 from sardana.sardanaevent import EventGenerator
 from sardana.pool.pooltriggergate import TGEventType
 
+# TODO: move this class to sardana.tggeneration
 class RectangularFuncionGenerator(EventGenerator):
     
     id = 0
@@ -105,7 +106,7 @@ class RectangularFuncionGenerator(EventGenerator):
             self.fire_event(TGEventType.Passive, i)
             time.sleep(self._passive_period)
             i += 1
-        self.fire_event(TGEventType.Active, i)
+#         self.fire_event(TGEventType.Active, i)
         self.__alive = False
         
 
