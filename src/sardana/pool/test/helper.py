@@ -38,7 +38,7 @@ from sardana.pool.poolmeasurementgroup import PoolMeasurementGroup
 def createPoolController(pool, conf):
     '''Method to create a PoolController using a configuration dictionary
     '''
-    kwargs = conf
+    kwargs = dict(conf)
 
     ctrl_manager = pool.ctrl_manager
     ctrl_class_info = None
@@ -54,7 +54,7 @@ def createPoolController(pool, conf):
 def createPoolCounterTimer(pool, poolcontroller, conf):
     '''Method to create a PoolCounterTimer using a configuration dictionary
     '''
-    kwargs = conf
+    kwargs = dict(conf)
     kwargs['pool'] = pool
     kwargs['ctrl'] = poolcontroller
     return PoolCounterTimer(**kwargs)
@@ -62,7 +62,7 @@ def createPoolCounterTimer(pool, poolcontroller, conf):
 def createPoolTriggerGate(pool, poolcontroller, conf):
     '''Method to create a PoolTriggerGate using a configuration dictionary
     '''
-    kwargs = conf
+    kwargs = dict(conf)
     kwargs['pool'] = pool
     kwargs['ctrl'] = poolcontroller
     return PoolTriggerGate(**kwargs)
@@ -70,7 +70,7 @@ def createPoolTriggerGate(pool, poolcontroller, conf):
 def createPoolMeasurementGroup(pool, conf):
     '''Method to create a PoolMeasurementGroup using a configuration dictionary
     '''
-    kwargs = conf
+    kwargs = dict(conf)
     kwargs['pool'] = pool
     return PoolMeasurementGroup(**kwargs)
 
@@ -135,10 +135,12 @@ def createCTAcquisitionConfiguration(ctrls, ctrls_conf,
     configuration['timer'] = ctrl_channels[master_ctrl_idx][master_idx]
     for ctrl, ctrl_conf, channels, channels_conf in zip(ctrls, ctrls_conf, 
                                     ctrl_channels, ctrl_channels_conf):
+        ctrl_conf = dict(ctrl_conf)
         ctrl_conf['units'] = {}
         ctrl_conf['units']['0'] = main_unit_data = {}
         ctrl_conf['units']['0']['channels'] = {}
         for channel, channel_conf in zip(channels, channels_conf):
+            channel_conf = dict(channel_conf)
             main_unit_data['channels'][channel] = channel_conf
         main_unit_data['timer'] = channels[master_idx]
         ctrls_configuration[ctrl] = ctrl_conf
