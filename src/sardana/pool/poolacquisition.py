@@ -32,6 +32,7 @@ __all__ = ["AcquisitionState", "AcquisitionMap", "PoolCTAcquisition",
 __docformat__ = 'restructuredtext'
 
 import time
+import datetime
 
 from taurus.core.util.log import DebugIt
 from taurus.core.util.enumeration import Enumeration
@@ -39,6 +40,7 @@ from taurus.core.util.enumeration import Enumeration
 from sardana import State, ElementType, TYPE_TIMERABLE_ELEMENTS
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
+from sardana.pool.pooltriggergate import TGEventType
 
 #: enumeration representing possible motion states
 AcquisitionState = Enumeration("AcquisitionState", (\
@@ -64,8 +66,36 @@ class PoolAcquisition(PoolAction):
         PoolAction.__init__(self, main_element, name)
         ctname = name + ".CTAcquisition"
         zerodname = name + ".0DAcquisition"
+        contname = name + ".ContAcquisition"
+        self._config = None        
         self._0d_acq = zd_acq = Pool0DAcquisition(main_element, name=zerodname)
-        self._ct_acq = PoolCTAcquisition(main_element, name=ctname, slaves=(zd_acq,))
+        self._ct_acq = PoolContSWCTAcquisition(main_element, name=ctname, slaves=(zd_acq,))
+        self._cont_acq = PoolContHWAcquisition(main_element, name=contname)
+        
+    def set_config(self, config):
+        self._config = config
+        
+    def event_received(self, *args, **kwargs):
+        timestamp = time.time()
+        _, event_type, event_id = args
+        if event_type == TGEventType.Active:
+            t_fmt = '%Y-%m-%d %H:%M:%S.%f'
+            t_str = datetime.datetime.fromtimestamp(timestamp).strftime(t_fmt)
+            self.debug('Active event with id: %d received at: %s' %\
+                                                              (event_id, t_str))
+            is_acquiring = self.is_running()            
+            if is_acquiring:
+                self.debug('Skipping trigger: acquisition is still in progress.')
+            else:
+                self.debug('Executing acquisition.')
+                args = ()
+                kwargs = self._config
+                kwargs['synch'] = True
+                kwargs['idx'] = event_id
+                get_thread_pool().add(self._run_single, None, *args, **kwargs)
+                
+    def is_running(self):
+        return self._0d_acq.is_running() or self._ct_acq.is_running()
 
     def run(self, *args, **kwargs):
         n = kwargs.get('multiple', 1)
@@ -84,7 +114,7 @@ class PoolAcquisition(PoolAction):
             get_thread_pool().add(self._run_multiple, None, *args, **kwargs)
 
     def _run_single(self, *args, **kwargs):
-        """Runs this action"""
+        """Runs this action"""        
         synch = kwargs.get("synch", False)
         ct_acq = self._ct_acq
         zd_acq = self._0d_acq
@@ -95,6 +125,8 @@ class PoolAcquisition(PoolAction):
             zd_acq.run(*args, **kwargs)
 
     def _get_acq_for_element(self, element):
+#         if element.get_par('synchronization').startswith('sw'):
+#             return self._cont_acq
         elem_type = element.get_type()
         if elem_type in TYPE_TIMERABLE_ELEMENTS:
             return self._ct_acq
@@ -195,13 +227,14 @@ class PoolCTAcquisition(PoolAction):
     def start_action(self, *args, **kwargs):
         """Prepares everything for acquisition and starts it.
 
-           :param: config"""
-
+           :param: config"""        
         pool = self.pool
 
         # prepare data structures
         self._aborted = False
         self._stopped = False
+        
+        self.conf = kwargs
 
         self._acq_sleep_time = kwargs.pop("acq_sleep_time",
                                              pool.acq_loop_sleep_time)
@@ -218,7 +251,6 @@ class PoolCTAcquisition(PoolAction):
 
         _ = kwargs.get("items", self.get_elements())
         cfg = kwargs['config']
-
         # determine which is the controller which holds the master channel
 
         if integ_time is not None:
@@ -335,19 +367,18 @@ class PoolCTAcquisition(PoolAction):
         # read values to send a first event when starting to acquire
         with ActionContext(self):
             self.raw_read_value_loop(ret=values)
-            for acquirable, value in values.items():
+            for acquirable, value in values.items():                
                 acquirable.put_value(value, propagate=2)
 
         while True:
             self.read_state_info(ret=states)
-
             if not self.in_acquisition(states):
                 break
 
             # read value every n times
             if not i % nb_states_per_value:
                 self.read_value_loop(ret=values)
-                for acquirable, value in values.items():
+                for acquirable, value in values.items():                    
                     acquirable.put_value(value)
 
             time.sleep(nap)
@@ -371,6 +402,131 @@ class PoolCTAcquisition(PoolAction):
             acquirable.set_state_info(state_info, propagate=0)
             if acquirable in values:
                 value = values[acquirable]
+                acquirable.put_value(value, propagate=2)
+            with acquirable:
+                acquirable.clear_operation()
+                state_info = acquirable._from_ctrl_state_info(state_info)
+                acquirable.set_state_info(state_info, propagate=2)
+                
+class PoolContHWAcquisition(PoolCTAcquisition):
+    
+    def __init__(self, main_element, name="CTAcquisition", slaves=None):
+        PoolCTAcquisition.__init__(self, main_element, name="CTAcquisition", slaves=None)
+        
+    def action_loop(self):
+        i = 0
+
+        states, values = {}, {}
+        for element in self._channels:
+            states[element] = None
+            #values[element] = None
+
+        nap = self._acq_sleep_time
+        nb_states_per_value = self._nb_states_per_value
+
+        # read values to send a first event when starting to acquire
+        with ActionContext(self):
+            self.raw_read_value_loop(ret=values)
+            for acquirable, value in values.items():
+                if len(value.value) > 0:
+                    acquirable.put_value(value, propagate=2)
+
+        while True:
+            self.read_state_info(ret=states)
+            if not self.in_acquisition(states):
+                break
+
+            # read value every n times
+            if not i % nb_states_per_value:
+                self.read_value_loop(ret=values)
+                for acquirable, value in values.items():
+                    if len(value.value) > 0:
+                        acquirable.put_value(value)
+
+            time.sleep(nap)
+            i += 1
+
+        for slave in self._slaves:
+            try:
+                slave.stop_action()
+            except:
+                self.warning("Unable to stop slave acquisition %s",
+                             slave.getLogName())
+                self.debug("Details", exc_info=1)
+
+        with ActionContext(self):
+            self.raw_read_state_info(ret=states)
+            self.raw_read_value_loop(ret=values)
+
+        for acquirable, state_info in states.items():
+            # first update the element state so that value calculation
+            # that is done after takes the updated state into account
+            acquirable.set_state_info(state_info, propagate=0)
+            if acquirable in values:
+                value = values[acquirable]
+                if len(value.value) > 0:
+                    acquirable.put_value(value, propagate=2)
+            with acquirable:
+                acquirable.clear_operation()
+                state_info = acquirable._from_ctrl_state_info(state_info)
+                acquirable.set_state_info(state_info, propagate=2)
+
+                
+class PoolContSWCTAcquisition(PoolCTAcquisition):
+    
+    def __init__(self, main_element, name="CTAcquisition", slaves=None):
+        PoolCTAcquisition.__init__(self, main_element, name="CTAcquisition", slaves=None)
+
+    def action_loop(self):
+        i = 0
+
+        states, values = {}, {}
+        for element in self._channels:
+            states[element] = None
+            #values[element] = None
+
+        nap = self._acq_sleep_time
+        nb_states_per_value = self._nb_states_per_value
+
+        # read values to send a first event when starting to acquire
+#         with ActionContext(self):
+#             self.raw_read_value_loop(ret=values)
+#             for acquirable, value in values.items():
+#                 acquirable.put_value(value, propagate=2)
+
+        while True:
+            self.read_state_info(ret=states)
+            if not self.in_acquisition(states):
+                break
+
+            # read value every n times
+#             if not i % nb_states_per_value:
+#                 self.read_value_loop(ret=values)
+#                 for acquirable, value in values.items():
+#                     acquirable.put_value(value)
+
+            time.sleep(nap)
+#             i += 1
+
+        for slave in self._slaves:
+            try:
+                slave.stop_action()
+            except:
+                self.warning("Unable to stop slave acquisition %s",
+                             slave.getLogName())
+                self.debug("Details", exc_info=1)
+
+        with ActionContext(self):
+            self.raw_read_state_info(ret=states)
+            self.raw_read_value_loop(ret=values)
+
+        for acquirable, state_info in states.items():
+            # first update the element state so that value calculation
+            # that is done after takes the updated state into account
+            acquirable.set_state_info(state_info, propagate=0)
+            if acquirable in values:
+                value = values[acquirable]
+                value.idx = self.conf['idx']
                 acquirable.put_value(value, propagate=2)
             with acquirable:
                 acquirable.clear_operation()
