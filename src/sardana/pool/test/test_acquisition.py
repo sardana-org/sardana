@@ -26,6 +26,7 @@ import time
 import copy
 import logging
 import numpy
+import threading
 
 from taurus.external import unittest
 from taurus.test import insertTest
@@ -45,6 +46,7 @@ class AttributeListener(object):
     
     def __init__(self):
         self.data = {}
+        self.data_lock = threading.RLock()
     
     def event_received(self, *args, **kwargs):
         # s - type: sardana.sardanavalue.SardanaValue
@@ -57,7 +59,6 @@ class AttributeListener(object):
         obj_name = obj.name
         # obtaining the SardanaValue corresponding to read value
         sdn_value = v.get_value_obj()
-        
         # value and index pair (ensure they are lists even if they were scalars)       
         value = sdn_value.value
         if numpy.isscalar(value):
@@ -66,21 +67,37 @@ class AttributeListener(object):
         if numpy.isscalar(idx):
             idx = [idx]
         
-        # filling the measurement records     
-        channel_data = self.data.get(obj_name, [])
-        expected_idx = len(channel_data)
-        pad = [None] * (idx[0]-expected_idx)
+#         print s.name, t, (idx, value)
         
-        channel_data.extend(pad+value)
-        self.data[obj_name] = channel_data
-        
+        # filling the measurement records 
+        with self.data_lock:
+            channel_data = self.data.get(obj_name, [])
+            expected_idx = len(channel_data)
+            pad = [None] * (idx[0]-expected_idx)        
+            channel_data.extend(pad+value)
+            self.data[obj_name] = channel_data
+            
+    def get_table(self):
+        '''Construct a table-like array with padded  channel data as columns.
+        Return the '''
+        with self.data_lock:
+            max_len = max([len(d) for d in self.data.values()])
+            dtype_spec = []
+            table = []
+            for k in sorted(self.data.keys()):
+                v = self.data[k]
+                v.extend([None]*(max_len-len(v)))
+                table.append(v)
+                dtype_spec.append((k, 'float64'))
+            a = numpy.array(zip(*table), dtype=dtype_spec)
+            return a
 
 # @insertTest(helper_name='continuous_acquisition', offset=0, active_period=0.1,
 #             passive_period=0.2, repetitions=10000, integ_time=0.2)
 # @insertTest(helper_name='continuous_acquisition', offset=0, active_period=0.001,
 #             passive_period=0.21, repetitions=10000, integ_time=0.1)
-@insertTest(helper_name='continuous_acquisition', offset=0, active_period=0.001,
-            passive_period=0.15, repetitions=1000, integ_time=0.01)
+# @insertTest(helper_name='continuous_acquisition', offset=0, active_period=0.001,
+#             passive_period=0.15, repetitions=1000, integ_time=0.01)
 @insertTest(helper_name='continuous_acquisition', offset=0, active_period=0.001,
             passive_period=0.1, repetitions=10, integ_time=0.01)
 class AcquisitionTestCase(unittest.TestCase):
@@ -180,14 +197,16 @@ class AcquisitionTestCase(unittest.TestCase):
         while self.acquisition.is_running() or self.tggeneration.is_running():            
             time.sleep(1)
         # print the acquisition records
-        for i, record in enumerate(zip(*self.l.data.values())):
-            print i, record
+        table = self.l.get_table()
+        n_rows = table.shape[0]
+        for row in xrange(n_rows):
+            print row, table[row]        
         # checking if all the data were acquired 
-        for ch, data in self.l.data.items():
-            acq_data = len(data)
+        for ch_name in table.dtype.names:
+            ch_data_len = len(table[ch_name])
             msg = 'length of data for channel %s is %d and should be %d' %\
-                                                     (ch, acq_data, repetitions)
-            self.assertEqual(acq_data, repetitions, msg)
+                                                     (ch_name, ch_data_len, repetitions)
+            self.assertEqual(ch_data_len, repetitions, msg)
         # checking if there are no pending jobs
         jobs_after = get_thread_pool().qsize
         msg = ('there are %d jobs pending to be done after the acquisition ' +
