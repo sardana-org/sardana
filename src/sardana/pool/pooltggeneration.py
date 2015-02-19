@@ -33,6 +33,9 @@ import time
 from taurus.core.util.log import DebugIt
 from sardana import State
 from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
+#TODO: this class should be locate in this module
+from sardana.pool.poolcontrollers.DummyTriggerGateController import \
+                                                    RectangularFuncionGenerator
 
 # The purpose of this class was inspired on the CTAcquisition concept
 class TGChannel(PoolActionItem):
@@ -54,10 +57,16 @@ class PoolTGGeneration(PoolAction):
     '''
     def __init__(self, main_element, name="TGAction"):
         PoolAction.__init__(self, main_element, name)
-            
+        self._sw_tggenerator = RectangularFuncionGenerator()
+        self._repetitions = 1
+        
+    def setRepetitions(self, repetitions):
+        self._repetitions = repetitions
+        self._sw_tggenerator.setRepetitions(repetitions)
+
     def start_action(self, *args, **kwargs):
         '''Start action method
-        '''        
+        '''
         cfg = kwargs['config']
         ctrls_config = cfg['controllers']
         pool_ctrls = ctrls_config.keys()
@@ -102,10 +111,18 @@ class PoolTGGeneration(PoolAction):
             # StartAll on all controllers
             for pool_ctrl in pool_ctrls:
                 pool_ctrl.ctrl.StartAll()
+        if kwargs['software']:
+            self._sw_tggenerator.start()
+        
+    def stop_action(self, *args, **kwargs):
+        '''Stop action and the software TG generation'''
+        PoolAction.stop_action(self, *args, **kwargs)
+        self._sw_tggenerator.stop()
         
     def is_triggering(self, states):
         """Determines if we are triggering or if the triggering has ended
-        based on the states returned by the controller(s)
+        based on the states returned by the controller(s) and the software
+        TG generation.
         
         :param states: a map containing state information as returned by
                        read_state_info: ((state, status), exception_error)
@@ -116,10 +133,10 @@ class PoolTGGeneration(PoolAction):
             state_info_idx = 0
             state_idx = 0
             state_tggate = states[elem][state_info_idx][state_idx]
-            if self._is_in_action(state_tggate):
+            if self._is_in_action(state_tggate) or \
+               self._sw_tggenerator.isGenerating():
                 return True
-            else:
-                return False
+        return False
 
     @DebugIt()
     def action_loop(self):
