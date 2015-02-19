@@ -21,9 +21,11 @@
 ##
 ##############################################################################
 
-import time
-from sardana import State
-from sardana.pool.controller import CounterTimerController
+import time, copy
+from sardana.sardanavalue import SardanaValue
+from sardana import State, DataAccess
+from sardana.pool.controller import CounterTimerController, Type, Access,\
+                                    Description, Memorize, NotMemorized
 
 
 class Channel:
@@ -33,7 +35,7 @@ class Channel:
         self.value = 0.0
         self.is_counting = False
         self.active = True
-        self.nrOfTriggers = None
+        self.nrOfTriggers = 0
         self._counter = 0
         self.mode = "soft"
         self.buffer_values = []
@@ -96,8 +98,9 @@ class DummyCounterTimerController(CounterTimerController):
     
     def StateAll(self):
         pass
-    
+
     def StateOne(self, ind):
+        self._log.debug('StateOne(%d): entering...' % ind)
         idx = ind - 1
         sta = State.On
         status = "Stopped"
@@ -109,10 +112,12 @@ class DummyCounterTimerController(CounterTimerController):
             if channel.is_counting:
                 sta = State.Moving
                 status = "Acquiring"
+        ret = (sta, status)
+        self._log.debug('StateOne(%d): returning %s' % (ind, repr(ret)))
         return sta, status
         
-    def _updateChannelState(self, ind, elapsed_time):
-        channel = self.channels[ind]
+    def _updateChannelState(self, ind, elapsed_time):        
+        channel = self.channels[ind-1]
         if channel.mode == "soft":
             if self.integ_time is not None:
                 # counting in time
@@ -125,12 +130,15 @@ class DummyCounterTimerController(CounterTimerController):
                     self._finish(elapsed_time)
         elif channel.mode == "gate":
             if self.integ_time is not None:
-                if channel._counter == channel.nrOfTriggers:
-                #if elapsed_time >= self.integ_time * self.channels[ind].:
+                # counting in time 
+                #if elapsed_time >= self.integ_time*channel.nrOfTriggers:
+                if channel.nrOfTriggers <= channel._counter:
+                #if elapsed_time >= self.integ_time:
                     self._finish(elapsed_time)
     
     def _updateChannelValue(self, ind, elapsed_time):
         channel = self.channels[ind-1]
+
         if channel.mode == "soft":
             if self.integ_time is not None:
                 t = elapsed_time
@@ -149,15 +157,19 @@ class DummyCounterTimerController(CounterTimerController):
             if self.integ_time is not None:
                 t = elapsed_time
                 n = int(t / self.integ_time)
-                if not channel.is_counting:
-                    t = self.integ_time
+                cp = 0
+                if n > channel.nrOfTriggers:
+                    cp = n - channel.nrOfTriggers
+                
+                n = n - channel._counter -cp
+                self._log.debug('n - counters = %d' % n)                
+                t = self.integ_time                
                 if ind == self._timer:
-                    channel.buffer_value = [t]*n
+                    channel.buffer_values = [t]*n
                 else:
-                    channel.buffer_value = [t * channel.idx]*n
-                channel._counter = channel._counter + n
+                    channel.buffer_values = [t * channel.idx]*n
     
-    def _finish(self, elapsed_time, ind=None):
+    def _finish(self, elapsed_time, ind=None):        
         if ind is None:
             for ind, channel in self.counting_channels.items():
                 channel.is_counting = False
@@ -190,34 +202,41 @@ class DummyCounterTimerController(CounterTimerController):
                     self._updateChannelValue(ind, elapsed_time)
     
     def ReadOne(self, ind):
+        self._log.debug('ReadOne(%d): entering...' % ind)
         channel = self.read_channels[ind]
         if channel.mode == "gate":
-            v = channel.buffer_values
+            v = copy.deepcopy(channel.buffer_values)
+            sv = SardanaValue(v)
+            sv.idx = range(channel._counter, channel._counter + len(v))
             channel.buffer_values.__init__()
+            channel._counter = channel._counter + len(v)
         else:
-            v = self.read_channels[ind].value
-        return v
+            v = channel.value
+            sv = SardanaValue(v)
+        self._log.debug('ReadOne(%d): returning %s' % (ind, repr(v)))
+        return sv
     
     def PreStartAll(self):
         self.counting_channels = {}
     
     def PreStartOne(self, ind, value=None):
+        self._log.debug('PreStartOne(%d): entering...' % ind)
         idx = ind - 1
         channel = self.channels[idx]
-        channel.value = 0.0             
-        channel.buffer_values = []
+        channel.value = 0.0
         channel._counter = 0
+        channel.buffer_values = []
         self.counting_channels[ind] = channel
         return True
     
     def StartOne(self, ind, value=None):
+        self._log.debug('StartOne(%d): entering...' % ind)
         self.counting_channels[ind].is_counting = True
     
     def StartAll(self):
         self.start_time = time.time()
     
     def LoadOne(self, ind, value):
-        # TODO: Gate mode
         if value > 0:
             self.integ_time = value
             self.monitor_count = None
@@ -231,18 +250,18 @@ class DummyCounterTimerController(CounterTimerController):
             elapsed_time = now - self.start_time
             self._finish(elapsed_time, ind=ind)
 
-    def GetAxisExtraPar(self, axis, name):
+    def GetAxisExtraPar(self, ind, name):
         self._log.debug("GetAxisExtraPar(%d, %s): Entering...", axis, name)
+        idx = ind - 1
         if name.lower() == "triggermode":
-            return self.channels[axis].mode
-
+            return self.channels[idx].mode
         if name.lower() == "nroftriggers":
             return long(self.channels[axis].nrOfTriggers)
 
-    def SetAxisExtraPar(self, axis, name, value):       
+    def SetAxisExtraPar(self, ind, name, value):
+        idx = ind - 1       
         if name.lower() == "triggermode":
-            self.channels[axis].mode = value
-
+            self.channels[idx].mode = value
         if name.lower() == "nroftriggers":
-           self.channels[axis].nrOfTriggers = value
-            
+           self.channels[idx].nrOfTriggers = value
+                       
