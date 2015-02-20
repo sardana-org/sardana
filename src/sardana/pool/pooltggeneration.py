@@ -35,7 +35,7 @@ from sardana import State
 from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
 #TODO: this class should be locate in this module
 from sardana.pool.poolcontrollers.DummyTriggerGateController import \
-                                                    RectangularFuncionGenerator
+                                                    RectangularFunctionGenerator
 
 # The purpose of this class was inspired on the CTAcquisition concept
 class TGChannel(PoolActionItem):
@@ -57,7 +57,7 @@ class PoolTGGeneration(PoolAction):
     '''
     def __init__(self, main_element, name="TGAction"):
         PoolAction.__init__(self, main_element, name)
-        self._sw_tggenerator = RectangularFuncionGenerator()
+        self._sw_tggenerator = RectangularFunctionGenerator()
         self._repetitions = 1
         
     def setRepetitions(self, repetitions):

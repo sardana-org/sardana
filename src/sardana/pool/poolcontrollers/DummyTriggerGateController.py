@@ -30,7 +30,7 @@ from sardana.sardanaevent import EventGenerator
 from sardana.pool.pooltriggergate import TGEventType
 
 # TODO: move this class to sardana.tggeneration
-class RectangularFuncionGenerator(EventGenerator):
+class RectangularFunctionGenerator(EventGenerator):
     
     id = 0
     
@@ -157,7 +157,7 @@ class DummyTriggerGateController(TriggerGateController):
     def AddDevice(self, axis):
         self._log.debug('AddDevice(%d): entering...' % axis)
         idx = axis - 1
-        self.tg[idx] = RectangularFuncionGenerator()
+        self.tg[idx] = RectangularFunctionGenerator()
 
     def DeleteDevice(self, axis):
         pass
