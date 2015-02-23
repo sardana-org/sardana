@@ -166,8 +166,7 @@ class AcquisitionTestCase(unittest.TestCase):
         self.acquisition = PoolAcquisition(self.dummy_ct1)
 #         self.acquisition.setLogLevel(logging.DEBUG)
         self.acquisition.add_element(self.dummy_ct1)
-        self.acquisition._cont_acq.add_element(self.dummy_ct2)
-#         self.acquisition._cont_acq.set_main_element(self.dummy_ct2)            
+        self.acquisition._cont_acq.add_element(self.dummy_ct2)            
         
     def continuous_acquisition(self, offset, active_period, passive_period, 
                                                       repetitions, integ_time):
@@ -183,21 +182,33 @@ class AcquisitionTestCase(unittest.TestCase):
         # add listener to the tggeneration action
         self.tggeneration._sw_tggenerator.add_listener(self.acquisition)
         
-        config = {'integ_time': integ_time, 'config': self.acq_cfg}
+        config = {
+            'integ_time': integ_time, 
+            'config': self.acq_cfg
+        }
         self.acquisition.set_config(config)
         self.dummy_ct2.set_extra_par('nroftriggers', repetitions)
         
-        config = {'integ_time': integ_time, 'config': self.cont_acq_cfg}        
-        # TODO: start using the acquisition action
-        self.acquisition._cont_acq.run(*(), **config)        
+        args_acq = ()        
+        kwargs_acq = {
+            'integ_time': integ_time, 
+            'config': self.cont_acq_cfg,
+            'continuous': True
+        }                
+        self.acquisition.run(args_acq, **kwargs_acq)       
         args_tg = ()
-        kwargs_tg = {'config': self.tg_cfg, 'software': True}
+        kwargs_tg = {
+            'config': self.tg_cfg,
+            'software': True
+        }
         self.tggeneration.run(*args_tg, **kwargs_tg)
         # waiting for acquisition and tggeneration to finish                
         while self.acquisition.is_running() or self.tggeneration.is_running():            
             time.sleep(1)
-        # print the acquisition records
         table = self.l.get_table()
+        # print header
+        print table.dtype
+        # print acquisition records
         n_rows = table.shape[0]
         for row in xrange(n_rows):
             print row, table[row]        
@@ -205,7 +216,7 @@ class AcquisitionTestCase(unittest.TestCase):
         for ch_name in table.dtype.names:
             ch_data_len = len(table[ch_name])
             msg = 'length of data for channel %s is %d and should be %d' %\
-                                                     (ch_name, ch_data_len, repetitions)
+                                            (ch_name, ch_data_len, repetitions)
             self.assertEqual(ch_data_len, repetitions, msg)
         # checking if there are no pending jobs
         jobs_after = get_thread_pool().qsize
