@@ -39,6 +39,7 @@ from sardana.pool.pooldefs import AcqMode, AcqTriggerType
 from sardana.pool.poolgroupelement import PoolGroupElement
 from sardana.pool.poolacquisition import PoolAcquisition
 from sardana.pool.poolexternal import PoolExternalObject
+from sardana.pool.pooltggeneration import PoolTGGeneration
 
 from sardana.taurus.core.tango.sardana import PlotType, Normalization
 
@@ -112,6 +113,8 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     def _create_action_cache(self):
         acq_name = "%s.Acquisition" % self._name
+        tggen_name = "%s.TGGeneration" % self._name
+        self._tggeneration = PoolTGGeneration(self, tggen_name)
         return PoolAcquisition(self, acq_name)
 
     def _calculate_element_state(self, elem, elem_state_info):
@@ -296,6 +299,16 @@ class PoolMeasurementGroup(PoolGroupElement):
             indexes = sorted(user_elem_ids.keys())
             assert indexes == range(len(indexes))
             self.set_user_element_ids([ user_elem_ids[idx] for idx in indexes ])
+            
+            # TODO: this code splits the global mg configuration into 
+            # experimental channels triggered by hw and experimental channels
+            # triggered by sw. Refactor it!!!!
+            from sardana.pool.test.helper import getHWtg_MGConfiguration
+            from sardana.pool.test.helper import getSWtg_MGConfiguration
+            from sardana.pool.test.helper import getTGConfiguration
+            self._sw_acq_config = getSWtg_MGConfiguration(config)
+            self._hw_acq_config = getHWtg_MGConfiguration(config)
+            self._tg_config = getTGConfiguration(config)
 
         # checks
         g_timer, g_monitor = config['timer'], config['monitor']
@@ -504,18 +517,28 @@ class PoolMeasurementGroup(PoolGroupElement):
     # acquisition
     # --------------------------------------------------------------------------
 
-    def start_acquisition(self, value=None, multiple=1):
+    def start_acquisition(self, value=None, multiple=1, continuous=False):
         self._aborted = False
+        self.debug('start_acq elements: %s' % self.acquisition.get_elements())
         if not self._simulation_mode:
             # load configuration into controller(s) if necessary
             self.load_configuration()
             # start acquisition
-            kwargs = dict(head=self, config=self._config, multiple=multiple)
+            kwargs = dict(head=self, config=self._config, multiple=multiple, 
+                          continuous=continuous)
             if self.acquisition_mode in [AcqMode.Timer, AcqMode.ContTimer]:
                 kwargs["integ_time"] = self._integration_time
             elif self.acquisition_mode in [AcqMode.Monitor, AcqMode.ContMonitor]:
                 kwargs["monitor_count"] = self._monitor_count
             self.acquisition.run(**kwargs)
+            if continuous:
+                kwargs = dict(head=self, config=self._sw_acq_config, 
+                              multiple=multiple, continuous=continuous)
+                self.acquisition.set_config(kwargs)
+                self.tggeneration.add_listener(self.acquisition)
+                kwargs = dict(head=self, config=self._tg_config, 
+                              multiple=multiple, continuous=continuous)
+                self.tggeneration.run(**kwargs)
 
     def set_acquisition(self, acq_cache):
         self.set_action_cache(acq_cache)
@@ -524,4 +547,11 @@ class PoolMeasurementGroup(PoolGroupElement):
         return self.get_action_cache()
 
     acquisition = property(get_acquisition, doc="acquisition object")
+    
+    def set_tggeneration(self, tggeneration):
+        self._tggeneration = tggeneration
 
+    def get_tggeneration(self):
+        return self._tggeneration
+
+    tggeneration = property(get_tggeneration, doc="tggeneration object")
