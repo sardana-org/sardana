@@ -34,6 +34,7 @@ class FakePool(object):
     acq_loop_states_per_value = 10
 
     elements = {}
+    elements_by_full_name = {}
 
     def __init__(self):
         self.ctrl_manager = ControllerManager()
@@ -42,6 +43,10 @@ class FakePool(object):
 
     def add_element(self, element):
         self.elements[element.id] = element
+        self.elements_by_full_name[element.full_name] = element
 
     def get_element(self, id):
         return self.elements[id]
+    
+    def get_element_by_full_name(self, full_name):
+        return self.elements_by_full_name[full_name]
