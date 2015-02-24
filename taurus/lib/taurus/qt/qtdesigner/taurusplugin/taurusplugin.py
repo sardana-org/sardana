@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -37,8 +37,10 @@
       editing the widget model (same has 'Edit model...' task menu item
 """
 
-from taurus.qt import Qt
-from taurus.qt import QtDesigner
+import inspect
+
+from taurus.external.qt import Qt
+from taurus.external.qt import QtDesigner
 
 from taurus.core.util.log import Logger
 
@@ -73,10 +75,32 @@ class TaurusWidgetPlugin(QtDesigner.QPyDesignerCustomWidgetPlugin):
     def _getWidgetClassName(self):
         return self.getWidgetClass().__name__
 
+    def __getWidgetArgs(self, klass=None, designMode=True, parent=None):
+        if klass is None:
+            klass = self.getWidgetClass()
+        ctor = klass.__init__
+        aspec = inspect.getargspec(ctor)
+        if aspec.defaults is None:
+            kwspec = {}
+        else:
+            kwspec = dict(zip(aspec.args[-len(aspec.defaults):],
+                              aspec.defaults))
+        args, kwargs = [], {}
+        if 'designMode' in kwspec:
+            kwargs['designMode'] = designMode
+        if 'parent' in kwspec:
+            kwargs['parent'] = parent
+        else:
+            args.append(parent)
+        return args, kwargs
+
     def createWidget(self, parent):
         try:
             klass = self.getWidgetClass()
-            w = klass(parent, designMode = True)
+            args, kwargs = self.__getWidgetArgs(klass=klass,
+                                                designMode=True,
+                                                parent=parent)
+            w = klass(*args, **kwargs)
         except Exception, e:
             name = self._getWidgetClassName()
             print 100*"="
@@ -107,13 +131,16 @@ class TaurusWidgetPlugin(QtDesigner.QPyDesignerCustomWidgetPlugin):
         return self.getWidgetInfo('icon')
         
     def icon(self):
-        icon_name = self.getIconName()
-        if icon_name is None:
+        icon = self.getWidgetInfo('icon')
+        if icon is None:
             return Qt.QIcon()
-        if not icon_name.startswith(":"):
-            icon_name = ':/designer/%s' % icon_name
-        import taurus.qt.qtgui.resource
-        return taurus.qt.qtgui.resource.getIcon(icon_name)
+        elif isinstance(icon, Qt.QIcon):
+            return icon
+        else:
+            if not icon.startswith(":"):
+                icon = ':/designer/%s' % icon
+            import taurus.qt.qtgui.resource
+            return taurus.qt.qtgui.resource.getIcon(icon)
     
     def domXml(self):
         name = str(self.name())

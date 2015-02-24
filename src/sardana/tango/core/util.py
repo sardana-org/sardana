@@ -4,7 +4,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -421,9 +421,11 @@ def throw_sardana_exception(exc):
             tb = "<Unknown>"
             if exc.traceback is not None:
                 tb = str(exc.traceback)
-            Except.throw_exception(exc.msg, tb, exc.type)
+            Except.throw_exception(exc.type, exc.msg, tb)
     elif hasattr(exc, 'exc_info'):
         Except.throw_python_exception(*exc.exc_info)
+    else:
+        raise exc
 
 def ask_yes_no(prompt, default=None):
     """Asks a question and returns a boolean (y/n) answer.
@@ -569,19 +571,20 @@ def prepare_server(args, tango_args):
     """Register a proper server if the user gave an unknown server"""
     log_messages = []
     _, bin_name = os.path.split(args[0])
+    server_name, _ = os.path.splitext(bin_name)
 
     if "-?" in tango_args:
         return log_messages
 
     nodb = "-nodb" in tango_args
     if nodb and not hasattr(DeviceClass, "device_name_factory"):
-        print "In order to start %s with 'nodb' you need PyTango >= 7.2.3" % bin_name
+        print "In order to start %s with 'nodb' you need PyTango >= 7.2.3" % server_name
         sys.exit(1)
 
     if len(tango_args) < 2:
         valid = False
         while not valid:
-            inst_name = raw_input("Please indicate %s instance name: " % bin_name)
+            inst_name = raw_input("Please indicate %s instance name: " % server_name)
             #should be a instance name validator.
             valid_set = string.letters + string.digits + '_' + '-'
             out = ''.join([c for c in inst_name if c not in valid_set])
@@ -597,9 +600,9 @@ def prepare_server(args, tango_args):
         return log_messages
 
     db = Database()
-    if not exists_server_instance(db, bin_name, inst_name):
+    if not exists_server_instance(db, server_name, inst_name):
         if ask_yes_no('%s does not exist. Do you wish create a new one' % inst_name, default='y'):
-            if bin_name == 'MacroServer' :
+            if server_name == 'MacroServer' :
                 # build list of pools to which the MacroServer should connect to
                 pool_names = []
                 pools = get_dev_from_class(db, "Pool")
@@ -620,9 +623,9 @@ def prepare_server(args, tango_args):
                         print all_pools
                     else:
                         pool_names.append(elem)
-                    log_messages += register_sardana(db, bin_name, inst_name, pool_names)
+                    log_messages += register_sardana(db, server_name, inst_name, pool_names)
             else:
-                log_messages += register_sardana(db, bin_name, inst_name)
+                log_messages += register_sardana(db, server_name, inst_name)
     return log_messages
 
 def exists_server_instance(db, server_name, server_instance):
@@ -740,6 +743,14 @@ def get_dev_from_class(db, classname):
         res[dev] = full_name, name, alias, out
     return res
 
+def get_free_server(db, prefix, start_from=1):
+    prefix = prefix + "_"
+    server_members = db.get_server_list(prefix + "*")
+    server = server_members.value_string
+    while prefix + str(start_from) in server:
+        start_from += 1
+    return prefix + str(start_from)
+
 def get_free_device(db, prefix, start_from=1):
     members = db.get_device_member(prefix + "/*")
     while str(start_from) in members:
@@ -747,13 +758,26 @@ def get_free_device(db, prefix, start_from=1):
     return prefix + "/" + str(start_from)
 
 def get_free_alias(db, prefix, start_from=1):
+    '''Iterates until failure, trying to retrieve from the database device of
+    the given alias. This way, first which fails is available in the database.
+
+    :param db: database where to look for the free alias
+    :type db: PyTango.Database
+    :param start_from: alias suffix in form of consecutive number
+    :type start_from: int
+    '''
     while True:
         name = prefix + "_" + str(start_from)
         try:
-            db.get_alias(name)
-            start_from += 1
-        except:
+            db.get_device_from_alias(name) # PyTango >= 8.1.0
+        except PyTango.DevFailed:
             return name
+        except AttributeError:
+            try:
+                db.get_device_alias(name) # deprecated since PyTango 8.1.0
+            except PyTango.DevFailed:
+                return name
+        start_from += 1
 
 def prepare_taurus(options, args, tango_args):
     # make sure the polling is not active
@@ -804,11 +828,15 @@ def prepare_logging(options, args, tango_args, start_time=None, log_messages=Non
         try:
             if not os.path.exists(path):
                 os.makedirs(path, 0777)
+            
+            from sardana import sardanacustomsettings    
+            maxBytes = getattr(sardanacustomsettings, 'LOG_FILES_SIZE', 1E7)
+            backupCount = getattr(sardanacustomsettings, 'LOG_BCK_COUNT', 5)
 
             fmt = Logger.getLogFormat()
             f_h = logging.handlers.RotatingFileHandler(log_file_name,
-                                                       maxBytes=1E7,
-                                                       backupCount=5)
+                                                       maxBytes=maxBytes,
+                                                       backupCount=backupCount)
             f_h.setFormatter(fmt)
             f_h.setLevel(log_file_level)
             root.addHandler(f_h)

@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -29,12 +29,13 @@ curvesAppearanceChooserDlg.py:
     for a QwtPlot-derived widget (like Taurusplot)
 """
 
-from taurus.qt import Qt, Qwt5
-from ui.ui_CurveStatsDialog import  Ui_CurveStatsDialog
+from taurus.external.qt import Qt, Qwt5
 from datetime import datetime
 from taurus.qt.qtgui.resource import getIcon, getThemeIcon
+from taurus.qt.qtgui.util.ui import UILoadable
 
 
+@UILoadable(with_ui='ui')
 class CurveStatsDialog(Qt.QDialog):
     """
     A dialog for configuring and displaying statistics from  curves of a plot
@@ -43,8 +44,7 @@ class CurveStatsDialog(Qt.QDialog):
     statColumns = ('points','min', 'max', 'mean', 'std', 'rms')
     def __init__(self, parent=None):
         super(CurveStatsDialog,self).__init__(parent)
-        self.ui = Ui_CurveStatsDialog()
-        self.ui.setupUi(self)
+        self.loadUi()
         
         plot = parent
         xIsTime = plot.getXIsTime()

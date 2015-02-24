@@ -4,7 +4,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -505,7 +505,9 @@ class Controller(object):
         Sends a string to the controller.
         Default implementation raises :exc:`NotImplementedError`.
 
-        :param str stream: stream to be sent"""
+        :param str stream: stream to be sent
+        :return: any relevant information e.g. response of the controller
+        :rtype: str"""
         raise NotImplementedError("SendToCtrl not implemented")
 
 

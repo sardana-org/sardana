@@ -4,7 +4,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -561,8 +561,8 @@ class BaseDoor(MacroServerDevice):
         input_type = input_data['type']
         if input_type == 'input':
             result = self._input_handler.input(input_data)
-            if result is '' and 'default_value' in input_data:
-                result = input_data['default_value']
+            if result['input'] is '' and 'default_value' in input_data:
+                result['input'] = input_data['default_value']
             result = CodecFactory().encode('json', ('', result))[1]
             self.write_attribute('Input', result)
         elif input_type == 'timeout':
@@ -573,7 +573,7 @@ class BaseDoor(MacroServerDevice):
         return self._processRecordData(v)
 
     def _processRecordData(self, data):
-        if data is None: return
+        if data is None or data.value is None: return
         # make sure we get it as string since PyTango 7.1.4 returns a buffer
         # object and json.loads doesn't support buffer objects (only str)
         data = map(str, data.value)
@@ -885,7 +885,7 @@ class BaseMacroServer(MacroServerDevice):
 
     def getExpChannelElements(self):
         channel_types = "CTExpChannel", "ZeroDExpChannel", "OneDExpChannel", \
-            "PseudoCounter"
+            "TwoDExpChannel", "PseudoCounter"
         return self.getElementsOfTypes(channel_types)
 
     #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
@@ -1158,3 +1158,9 @@ def registerExtensions():
     factory = Factory('tango')
     factory.registerDeviceClass('MacroServer', BaseMacroServer)
     factory.registerDeviceClass('Door', BaseDoor)
+
+def unregisterExtensions():
+    """Registers the macroserver extensions in the :class:`taurus.core.tango.TangoFactory`"""
+    factory = Factory('tango')
+    factory.unregisterDeviceClass('MacroServer')
+    factory.unregisterDeviceClass('Door')

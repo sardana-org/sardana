@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -29,7 +29,7 @@ taurusdevicepropertytable.py:
 
 __all__ = ["TaurusPropTable"]
 
-from taurus.qt import Qt, QtCore, QtGui
+from taurus.external.qt import Qt, QtCore, QtGui
 from taurus.qt.qtgui.base import TaurusBaseWidget
 import taurus.core
 import PyTango

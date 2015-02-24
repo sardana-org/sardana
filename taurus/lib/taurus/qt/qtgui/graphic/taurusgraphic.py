@@ -1,10 +1,11 @@
 #!/usr/bin/env python
+import PyTango
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -46,7 +47,7 @@ from taurus.core.taurusvalidator import DeviceNameValidator, AttributeNameValida
 from taurus.core.taurusdevice import TaurusDevice
 from taurus.core.taurusattribute import TaurusAttribute
 from taurus.core.util.enumeration import Enumeration
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 from taurus.qt.qtgui.base import TaurusBaseComponent
 from taurus.qt.qtgui.util import (QT_ATTRIBUTE_QUALITY_PALETTE, QT_DEVICE_STATE_PALETTE,
                                   ExternalAppAction, TaurusWidgetFactory)
@@ -202,7 +203,8 @@ class TaurusGraphicsScene(Qt.QGraphicsScene):
                 standAlone = args.standAlone
             else:
                 clName,clParam,objName = self.panel_launcher,args,args
-            
+            if not clName or clName == 'noPanel': 
+                return
             self.debug('TaurusGraphicsScene.showNewPanel(%s,%s,%s)'%(clName,clParam,objName))
             if isinstance(clName,ExternalAppAction):
                 clName.actionTriggered(clParam if isinstance(clParam,(list,tuple)) else [clParam])
@@ -211,7 +213,7 @@ class TaurusGraphicsScene(Qt.QGraphicsScene):
                     klass = self.getClass(clName)
                     if klass is None: 
                         self.warning("%s Class not found!"%clName)
-                        return
+                        klass = self.getClass("TaurusDevicePanel")
                 else:
                     klass,clName = clName,getattr(clName,'__name__',str(clName))
                 widget = klass() #self.parent())
@@ -736,6 +738,7 @@ class QGraphicsTextBoxing(Qt.QGraphicsItemGroup):
         self._rect.setPen(Qt.QPen(Qt.Qt.NoPen))
         self._text = Qt.QGraphicsTextItem(self, scene)
         self._text.scale(self._TEXT_RATIO, self._TEXT_RATIO)
+        self._validBackground = None
         # using that like the previous code create a worst result
         self.__layoutValide = True
         self._alignment = Qt.Qt.AlignCenter | Qt.Qt.AlignVCenter
@@ -748,6 +751,9 @@ class QGraphicsTextBoxing(Qt.QGraphicsItemGroup):
         self._text.setPlainText(text)
         self._invalidateLayout()
 
+    def setValidBackground(self, color):
+        self._validBackground = color
+
     def toPlainText(self):
         return self._text.toPlainText()
 
@@ -757,8 +763,11 @@ class QGraphicsTextBoxing(Qt.QGraphicsItemGroup):
     def setBrush(self, brush):
         self._rect.setBrush(brush)
 
+    def pen(self):
+        return self._rect.pen()
+
     def setPen(self, pen):
-        self._text.setDefaultTextColor(pen.color())
+        self._rect.setPen(pen)
 
     def setDefaultTextColor(self, color):
         self._text.setDefaultTextColor(color)
@@ -864,6 +873,7 @@ class TaurusGraphicsItem(TaurusBaseComponent):
     def __init__(self, name = None, parent = None):
         self.call__init__(TaurusBaseComponent, name, parent) #<- log created here
         #self.debug('TaurusGraphicsItem(%s,%s)' % (name,parent))
+        self.ignoreRepaint = False
         self.setName(name)
         self._currFgBrush = None
         self._currBgBrush = None
@@ -903,10 +913,8 @@ class TaurusGraphicsItem(TaurusBaseComponent):
         self.noPrompt = self._extensions.get('noPrompt',False)
         self.standAlone = self._extensions.get('standAlone',False)
         self.noTooltip = self._extensions.get('noTooltip',False)
-        self.ignoreRepaint = self._extensions.get('ignoreRepaint',False)
+        self.ignoreRepaint = self._extensions.get('ignoreRepaint', self.ignoreRepaint)
         self.setName(self._extensions.get('name',self._name))
-        self._unitVisible = str(self._extensions.get('unitVisible',True)).lower().strip() in ('yes','true','1')
-        self._userFormat = self._extensions.get('userFormat', None)
         tooltip = '' if (self.noTooltip or self._name==self.__class__.__name__ or self._name is None) else str(self._name)
         #self.debug('setting %s.tooltip = %s'%(self._name,tooltip))
         self.setToolTip(tooltip)
@@ -970,6 +978,7 @@ class TaurusGraphicsAttributeItem(TaurusGraphicsItem):
         self._unitVisible = True
         self._currValue = None
         self._userFormat = None
+        self._unitVisible = True
         self.call__init__(TaurusGraphicsItem, name, parent)
 
     def getUnit(self):
@@ -982,35 +991,29 @@ class TaurusGraphicsAttributeItem(TaurusGraphicsItem):
 
     def updateStyle(self):
         v = self.getModelValueObj()
-        self._currText = self.getDisplayValue()
-        #self.debug('In TaurusGraphicsAttributeItem(%s).updateStyle(%s)'%(self.getName(),self._currText))
         if self.getShowQuality():
             try:
                 quality = None
                 if v:
                     quality = v.quality
-                #self._currHtmlText = QT_ATTRIBUTE_QUALITY_PALETTE.htmlStyle('TD',quality)
-                #self._currHtmlText += "<table cellpadding='1'><tr><td class='%s'>%s</td>" % (quality,self._currText)
-                #if self._unitVisible: self._currHtmlText += "<td>%s</td>" % self.getUnit()
-                #self._currHtmlText += "</tr></table>"
-                self._currHtmlText = QT_ATTRIBUTE_QUALITY_PALETTE.htmlStyle('P',quality)
-                unit = (self._unitVisible and self.getUnit()) or ''
-                if self._userFormat:
-                    text = self._userFormat % (v.value)
-                    if unit:
-                        text += ' ' + unit
+                if quality == PyTango.AttrQuality.ATTR_VALID and self._validBackground:
+                    background = self._validBackground
                 else:
-                    text = "%s%s" % (self._currText,' '+unit if unit else '')
-                self._currHtmlText += "<p class='%s'>%s</p>" % (quality, text)
-                self._currHtmlText = self._currHtmlText.decode('unicode-escape')
+                    background, _ = QT_ATTRIBUTE_QUALITY_PALETTE.qcolor(quality)
+                self.setBrush(Qt.QBrush(background))
             except:
                 self.warning('In TaurusGraphicsAttributeItem(%s).updateStyle(%s): colors failed!'%(self._name,self._currText))
-                self.warning(traceback.format_exc())               
+                self.warning(traceback.format_exc())
+
+        if v and self._userFormat:
+            text = self._userFormat % (v.value)
         else:
-            if self._unitVisible: self._currText += ' ' + unit
-            self._currText = self._currText.decode('unicode-escape')
-            self._currHtmlText = self.currText
-        
+            text = self._currText = self.getDisplayValue()
+        if self._unitVisible:
+            text = text + ' ' + self.getUnit()
+        self._currText = text.decode('unicode-escape')
+        self._currHtmlText = None
+
         TaurusGraphicsItem.updateStyle(self)
 
     def setUserFormat(self, format):
@@ -1101,7 +1104,6 @@ class TaurusRectStateItem(Qt.QGraphicsRectItem, TaurusGraphicsStateItem):
             self.setBrush(self._currBgBrush)
         Qt.QGraphicsRectItem.paint(self,painter,option,widget)
 
-
 class TaurusSplineStateItem(QSpline, TaurusGraphicsStateItem):
 
     def __init__(self, name=None, parent=None, scene=None):
@@ -1114,6 +1116,52 @@ class TaurusSplineStateItem(QSpline, TaurusGraphicsStateItem):
             self._currBgBrush.setStyle(self.brush().style())
             self.setBrush(self._currBgBrush)
         QSpline.paint(self, painter, option, widget)
+
+class TaurusRoundRectItem(Qt.QGraphicsPathItem):
+
+    def __init__(self, name=None, parent=None, scene=None):
+        Qt.QGraphicsPathItem.__init__(self, parent, scene)
+        self.__rect = None
+        self.setCornerWidth(0, 0)
+
+    def __updatePath(self):
+        if self.__rect == None:
+            return
+        if self.__corner == None:
+            return
+
+        path = Qt.QPainterPath()
+        cornerWidth, nbPoints = self.__corner
+        if cornerWidth == 0 or nbPoints == 0:
+            path.addRect(self.__rect)
+        elif cornerWidth * 2 > self.__rect.width():
+            path.addRect(self.__rect)
+        elif cornerWidth * 2 > self.__rect.height():
+            path.addRect(self.__rect)
+        else:
+            path.addRoundedRect(self.__rect, cornerWidth, cornerWidth)
+        self.setPath(path)
+
+    def setRect(self, x, y, width, height):
+        self.__rect = Qt.QRectF(x, y, width, height)
+        self.__updatePath()
+
+    def setCornerWidth(self, width, nbPoints):
+        self.__corner = width, nbPoints
+        self.__updatePath()
+
+class TaurusRoundRectStateItem(TaurusRoundRectItem, TaurusGraphicsStateItem):
+
+    def __init__(self, name=None, parent=None, scene=None):
+        name = name or self.__class__.__name__
+        TaurusRoundRectItem.__init__(self, parent, scene)
+        self.call__init__(TaurusGraphicsStateItem, name, parent)
+
+    def paint(self, painter, option, widget):
+        if self._currBgBrush:
+            self._currBgBrush.setStyle(self.brush().style())
+            self.setBrush(self._currBgBrush)
+        TaurusRoundRectItem.paint(self, painter, option, widget)
 
 class TaurusGroupItem(Qt.QGraphicsItemGroup):
 
@@ -1194,18 +1242,18 @@ class TaurusTextAttributeItem(QGraphicsTextBoxing, TaurusGraphicsAttributeItem):
 
 TYPE_TO_GRAPHICS = {
     None : { "Rectangle"      : Qt.QGraphicsRectItem,
-             "RoundRectangle" : Qt.QGraphicsRectItem,
+             "RoundRectangle" : TaurusRoundRectItem,
              "Ellipse"        : Qt.QGraphicsEllipseItem,
              "Polyline"       : Qt.QGraphicsPolygonItem,
              "Label"          : QGraphicsTextBoxing,
              "Line"           : Qt.QGraphicsLineItem,
              "Group"          : TaurusGroupItem,
-             "SwingObject"    : Qt.QGraphicsRectItem,
+             "SwingObject"    : TaurusTextAttributeItem,
              "Image"          : Qt.QGraphicsPixmapItem,
              "Spline"         : QSpline, },
 
     TaurusDevice : { "Rectangle"      : TaurusRectStateItem,
-                           "RoundRectangle" : TaurusRectStateItem,
+                           "RoundRectangle" : TaurusRoundRectStateItem,
                            "Ellipse"        : TaurusEllipseStateItem,
                            "Polyline"       : TaurusPolygonStateItem,
                            "Label"          : TaurusTextStateItem,
@@ -1216,7 +1264,7 @@ TYPE_TO_GRAPHICS = {
                            "Spline"         : TaurusSplineStateItem, },
 
     TaurusAttribute : { "Rectangle"      : TaurusRectStateItem,
-                           "RoundRectangle" : TaurusRectStateItem,
+                           "RoundRectangle" : TaurusRoundRectStateItem,
                            "Ellipse"        : TaurusEllipseStateItem,
                            "Polyline"       : TaurusPolygonStateItem,
                            "Label"          : TaurusTextAttributeItem,

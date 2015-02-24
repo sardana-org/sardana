@@ -4,7 +4,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -36,3 +36,10 @@ def registerExtensions():
 
     pool.registerExtensions()
     macroserver.registerExtensions()
+
+def unregisterExtensions():
+    from . import pool
+    from . import macroserver
+
+    pool.unregisterExtensions()
+    macroserver.unregisterExtensions()

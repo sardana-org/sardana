@@ -3,9 +3,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -35,7 +35,7 @@ __docformat__ = 'restructuredtext'
 
 import weakref
 
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 
 from taurus.core.taurusbasetypes import DataFormat, TaurusEventType
 
@@ -168,7 +168,8 @@ class TaurusBaseController(object):
         pass
         
     def _updateToolTip(self, widget):
-        widget.setToolTip(widget.getFormatedToolTip())
+        if widget.getAutoTooltip():
+            widget.setToolTip(widget.getFormatedToolTip())
 
 
 class TaurusAttributeControllerHelper(object):
@@ -259,7 +260,7 @@ class TaurusConfigurationControllerHelper(object):
             try:
                 #@todo: This works for tango, eval and epics configuration names but is not general.
                 #@todo: This should be done calling to the ConfigurationNameValidator
-                self._configParam = model[model.rfind('?configuration=')+15:].lower() 
+                self._configParam = model[model.rfind('?configuration=')+15:]
             except:
                 self._configParam = ''
         return self._configParam

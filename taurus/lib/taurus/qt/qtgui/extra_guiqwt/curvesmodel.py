@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ##
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -31,7 +31,7 @@ __all__ = ['TaurusCurveItemTableModel', 'CurveItemConf', 'CurveItemConfDlg']
 
 import copy
 
-from taurus.qt import Qt, Qwt5
+from taurus.external.qt import Qt, Qwt5
 from guiqwt.styles import CurveParam, AxesParam, update_style_attr
 from guiqwt.builder import make
 
@@ -39,7 +39,7 @@ import taurus
 from taurus.core.taurusexception import TaurusException
 from taurus.qt.qtcore.mimetypes import TAURUS_MODEL_LIST_MIME_TYPE, TAURUS_ATTR_MIME_TYPE
 from taurus.qt.qtgui.resource import getThemeIcon, getIcon
-from .ui.ui_CurveItemConfDlg import Ui_CurveItemConfDlg
+from taurus.qt.qtgui.util.ui import UILoadable
 from taurus.qt.qtgui.extra_guiqwt.styles import TaurusCurveParam
 
 AXIS_ID2NAME = {Qwt5.QwtPlot.yLeft:'left', Qwt5.QwtPlot.yRight:'right',
@@ -292,6 +292,7 @@ class TaurusCurveItemTableModel(Qt.QAbstractTableModel):
         #mimedata.setData()
 
 
+@UILoadable(with_ui='ui')
 class CurveItemConfDlg(Qt.QWidget):
     ''' A configuration dialog for creating new CurveItems.
     
@@ -301,14 +302,11 @@ class CurveItemConfDlg(Qt.QWidget):
 
     def __init__(self, parent=None, curves=None, showXcol=True):
         super(CurveItemConfDlg, self).__init__(parent)
-
+        self.loadUi()
         self._showXcol = showXcol
 
         if curves is None:
             curves = [CurveItemConf()]
-        self.ui = Ui_CurveItemConfDlg()
-        self.ui.setupUi(self)
-
         #add the NeXusWidget if extra_nexus is available
         try:
             from taurus.qt.qtgui.extra_nexus import TaurusNeXusBrowser

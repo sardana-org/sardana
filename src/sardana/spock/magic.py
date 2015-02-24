@@ -5,7 +5,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -74,6 +74,13 @@ def showscan(self, parameter_s=''):
     online, scan_nb = False, None
     if len(params) > 0:
         if params[0].lower() == 'online':
+            msg = 'To see the scans online, launch "expconf" and ' + \
+                  'enable the plots from the "plots" button ' + \
+                  '(top-right in the first tab)'
+            print msg
+            return
+        # show the scan plot, ignoring the plot configuration
+        elif params[0].lower() == 'online_raw':
             online = True
         else:
             scan_nb = int(params[0])

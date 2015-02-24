@@ -4,7 +4,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -29,7 +29,7 @@ __all__ = ["SardanaBaseWizard"]
 
 __docformat__ = 'restructuredtext'
 
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 
 
 class SardanaBasePage(Qt.QWizardPage):

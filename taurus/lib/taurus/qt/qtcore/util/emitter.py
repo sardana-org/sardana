@@ -2,7 +2,7 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ##
 ## http://www.tango-controls.org/static/tau/latest/doc/html/index.html
 ##
@@ -28,7 +28,7 @@ emitter.py: This module provides a task scheduler used by TaurusGrid and TaurusD
 
 from functools import partial
 import taurus
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 from taurus.core.util.log import Logger
 from taurus.core.util.singleton import Singleton
 import Queue,traceback
@@ -281,7 +281,7 @@ class SingletonWorker():#Qt.QObject):
         self.getQueue().put(item,block,timeout)
         
     def size(self):
-        self.getQueue().qsize()
+        return self.getQueue().qsize()
         
     def next(self,item=None):
         if item is not None: self.put(item)

@@ -4,7 +4,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -77,7 +77,7 @@ class DiscretePseudoMotorController(PseudoMotorController):
     def GetAxisAttributes(self, axis):
         axis_attrs = PseudoMotorController.GetAxisAttributes(self, axis)
         axis_attrs = dict(axis_attrs)
-        axis_attrs['Position']['type'] = int
+        axis_attrs['Position']['type'] = float
         return axis_attrs
 
 

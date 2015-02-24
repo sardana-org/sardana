@@ -4,7 +4,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -26,13 +26,14 @@
 """
 channelWidgets.py: 
 """
-__all__ = ["PoolChannel", "PoolChannelTV"]
-from taurus.qt import Qt
 
+__all__ = ["PoolChannel", "PoolChannelTV"]
+
+import taurus
+from taurus.external.qt import Qt
 from taurus.qt.qtgui.panel import TaurusValue, TaurusDevButton
 from taurus.qt.qtgui.container import TaurusWidget
 from poolmotor import LabelWidgetDragsDeviceAndAttribute
-import taurus
 
 
 class _ParentDevButton(TaurusDevButton):

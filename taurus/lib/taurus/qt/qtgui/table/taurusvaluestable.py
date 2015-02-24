@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -27,7 +27,7 @@ __all__ = ["TaurusValuesTable"]
 
 __docformat__ = 'restructuredtext'
 
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 import numpy
 
 import sys
@@ -420,7 +420,7 @@ class TaurusValuesIOTableDelegate(Qt.QStyledItemDelegate):
         else:
             data = index.model().data(index, Qt.Qt.EditRole)
             self._initialText = Qt.from_qvariant(data, str)
-            editor.setText(self._initialText)
+            editor.setText(str(self._initialText))
     
     def setModelData(self, editor, model,index):
         '''

@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -30,7 +30,7 @@
 __docformat__ = 'restructuredtext'
 
 
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 from guiqwt.tools import CommandTool, ToggleTool, DefaultToolbarID, QActionGroup, add_actions
 from guiqwt.signals import SIG_ITEMS_CHANGED
 

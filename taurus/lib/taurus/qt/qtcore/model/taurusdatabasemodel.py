@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ##
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -38,7 +38,7 @@ __all__ = ["TaurusTreeDevicePartItem", "TaurusTreeDeviceDomainItem",
 
 __docformat__ = 'restructuredtext'
 
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 from taurus.core.taurusbasetypes import TaurusElementType, TaurusSWDevHealth
 from taurus.core.taurusdatabase import TaurusInfo, TaurusDatabase
 import taurus.qt.qtcore.mimetypes
@@ -527,13 +527,13 @@ class TaurusDbDeviceModel(TaurusDbBaseModel):
             data = data.deviceTree()
 
         rootItem = self._rootItem
-        for domain in sorted(data.keys()):
+        for domain in data.keys():
             families = data[domain]
             domainItem = TaurusTreeDeviceDomainItem(self, domain.upper(), rootItem)
-            for family in sorted(families.keys()):
+            for family in families.keys():
                 members = families[family]
                 familyItem = TaurusTreeDeviceFamilyItem(self, family.upper(), domainItem)
-                for member in sorted(members.keys()):
+                for member in members.keys():
                     dev = members[member]
                     memberItem = TaurusTreeDeviceItem(self, dev, parent=familyItem)
                     familyItem.appendChild(memberItem)

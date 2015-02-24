@@ -3,9 +3,9 @@
 
 ##############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -243,7 +243,7 @@ intersphinx_mapping = {
     'http://docs.python.org/dev': None,
     'http://docs.scipy.org/doc/scipy/reference' : None,
     'http://docs.scipy.org/doc/numpy' : None,
-    'http://www.tango-controls.org/static/PyTango/latest/doc/html' : None,
+    'http://www.esrf.fr/computing/cs/tango/tango_doc/kernel_doc/pytango/latest/': None,
     'http://pyqt.sourceforge.net/Docs/PyQt4/' : None,
 }
 

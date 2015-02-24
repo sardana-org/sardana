@@ -4,7 +4,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -23,7 +23,7 @@
 ##
 ##############################################################################
 
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 from taurus import Database
 from taurus.core.taurusbasetypes import TaurusElementType
 from taurus.core.taurusdatabase import TaurusAttrInfo

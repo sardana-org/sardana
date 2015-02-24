@@ -2,9 +2,9 @@
 
 ##############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ##
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -32,9 +32,11 @@ import shutil
 import imp
 import StringIO
 
+from distutils import log
 from distutils.core import setup, Command
 from distutils.command.build import build as dftbuild
 from distutils.command.install import install as dftinstall
+from distutils.command.install_lib import install_lib as dftinstall_lib
 from distutils.command.install_scripts import install_scripts as dftinstall_scripts
 
 try:
@@ -66,6 +68,17 @@ package_dir = { 'taurus' : abspath('lib', 'taurus') }
 
 packages = [
     'taurus',
+    'taurus.test',
+
+    'taurus.external',
+    'taurus.external.argparse',
+    'taurus.external.enum',
+    'taurus.external.ordereddict',
+    'taurus.external.pint',
+    'taurus.external.qt',
+    'taurus.external.unittest',
+    'taurus.external.test',
+
     'taurus.core',
     'taurus.core.util',
     'taurus.core.util.argparse',
@@ -100,39 +113,44 @@ packages = [
     'taurus.qt.qtdesigner.taurusplugin',
 
     'taurus.qt.qtgui',
+    'taurus.qt.qtgui.test',
     'taurus.qt.qtgui.application',
     'taurus.qt.qtgui.base',
     'taurus.qt.qtgui.button',
+    'taurus.qt.qtgui.button.test',
+    'taurus.qt.qtgui.button.test.res',
+    'taurus.qt.qtgui.compact',
 #    'taurus.qt.qtgui.console',
     'taurus.qt.qtgui.container',
     'taurus.qt.qtgui.dialog',
     'taurus.qt.qtgui.display',
+    'taurus.qt.qtgui.display.test',
     'taurus.qt.qtgui.display.demo',
     'taurus.qt.qtgui.editor',
     'taurus.qt.qtgui.gauge',
     'taurus.qt.qtgui.gauge.demo',
     'taurus.qt.qtgui.graphic',
     'taurus.qt.qtgui.graphic.jdraw',
+    'taurus.qt.qtgui.graphic.jdraw.test.res',
+    'taurus.qt.qtgui.help',
     'taurus.qt.qtgui.image',
     'taurus.qt.qtgui.input',
     'taurus.qt.qtgui.model',
     'taurus.qt.qtgui.panel',
+    'taurus.qt.qtgui.panel.test',
     'taurus.qt.qtgui.panel.report',
-    'taurus.qt.qtgui.panel.report.ui',
-    'taurus.qt.qtgui.panel.ui',
     'taurus.qt.qtgui.plot',
-    'taurus.qt.qtgui.plot.ui',
     'taurus.qt.qtgui.resource',
 #    'taurus.qt.qtgui.shell',
     'taurus.qt.qtgui.style',
     'taurus.qt.qtgui.table',
     'taurus.qt.qtgui.taurusgui',
     'taurus.qt.qtgui.taurusgui.conf',
-    'taurus.qt.qtgui.taurusgui.ui',
     'taurus.qt.qtgui.tree',
     'taurus.qt.qtgui.ui',
     'taurus.qt.qtgui.util',
-
+    'taurus.qt.qtgui.util.test',
+    'taurus.qt.qtgui.util.test.test_ui',
     'taurus.qt.uic',
 ]
 
@@ -140,7 +158,6 @@ extra_packages = [
     'taurus.qt.qtgui.extra_nexus',
     'taurus.qt.qtgui.extra_xterm',
     'taurus.qt.qtgui.extra_guiqwt',
-    'taurus.qt.qtgui.extra_guiqwt.ui',
 
     'taurus.qt.qtgui.taurusgui.conf.tgconf_example01',
     'taurus.qt.qtgui.taurusgui.conf.tgconf_macrogui',
@@ -164,7 +181,7 @@ requires = [
     'PyQt4.Qwt5 (>=5.2.0)',   # plotting
     'ply (>=2.3)',            # jdraw parser
     'lxml (>=2.1)',           # tau2taurus, taurusuic4
-    'spyder (>=2.1)',         # shell, editor
+    'spyder (>=2.2)',         # shell, editor
 ]
 
 package_data = {
@@ -179,7 +196,34 @@ package_data = {
                                   'tauruswidget_qtdesignerplugin_template'],
     'taurus.qt.uic'            : ['pyuic4/*'],
     'taurus.qt.qtgui.taurusgui.conf.tgconf_example01' : ['images/*'],
+    'taurus.qt.qtgui.button.test' : ['res/*'],
+    'taurus.qt.qtgui.graphic.jdraw.test' : ['res/*'],
+        
+    'taurus.qt.qtgui.help': ['ui/*.ui'],
+    'taurus.qt.qtgui.panel.report': ['ui/*.ui'],
+    'taurus.qt.qtgui.panel': ['ui/*.ui'],
+    'taurus.qt.qtgui.plot': ['ui/*.ui'],
+    'taurus.qt.qtgui.taurusgui': ['ui/*.ui'],
+    'taurus.qt.qtgui.extra_guiqwt': ['ui/*.ui'],
+    'taurus.qt.qtgui.util.test.test_ui' : ['ui/*.ui', 'ui/mywidget2/*.ui'],
 }
+
+
+# The files listed here will be made executable when installed.
+# The file names are relative to the dir containing setup.py
+# Note: They must also be listed in packages or package_data
+executable_data = [
+    'taurus/qt/qtgui/button/test/res/Timeout',
+]
+
+# check if local implementations of enum and pint are here (debian removes them
+# before running setup to avoid license issues)
+if os.path.isdir(abspath('lib', 'taurus', 'external', 'enum', 'enum')):
+    packages.append('taurus.external.enum.enum')
+if os.path.isdir(abspath('lib', 'taurus', 'external', 'pint', 'pint')):
+    packages.append('taurus.external.pint.pint')
+    package_data['taurus.external.pint.pint'] = ['*.txt']
+    
 
 def get_script_files():
     scripts_dir = abspath('scripts')
@@ -409,25 +453,30 @@ class build(dftbuild):
             self.logo = abspath('lib', 'taurus', 'qt', 'qtgui', 'resource', 'taurus.png')
 
     def run(self):
-        if self.with_extra_widgets:
-            self.distribution.packages.extend(extra_packages)
-        self.distribution.package_data['taurus.qt.qtgui.resource'].extend(self.get_extra_resource_package_data())
+        self.build_package_data()
         self.build_jdraw()
         dftbuild.run(self)
 
+    def build_package_data(self):
+        packages = self.distribution.packages
+        package_data = self.distribution.package_data
+        if self.with_extra_widgets:
+            packages.extend(extra_packages)
+        resource_package_data = self.get_extra_resource_package_data()
+        package_data['taurus.qt.qtgui.resource'].extend(resource_package_data)
+
     def build_jdraw(self):
         print("Building jdraw grammar...", end='')
-        jd_dir = abspath('lib', 'taurus', 'qt', 'qtgui', 'graphic', 'jdraw')        
-        sys.path.append(jd_dir)
+        taurus_dir = abspath('lib')
+        sys.path.insert(0, taurus_dir)
         try:
-            import jdraw_parser
+            from taurus.qt.qtgui.graphic.jdraw import jdraw_parser
             jdraw_parser.new_parser()
             print(" [DONE]")
         except:
             print("[ERROR]")
-            raise
         finally:
-            sys.path.pop()
+            sys.path.pop(0)
         
     def has_doc(self):
         if self.no_doc:
@@ -580,6 +629,23 @@ call %py_exe% %pyscript% %*
                     fobj.write(bat_contents)
 
 
+class install_lib(dftinstall_lib):  
+    def run(self):
+        dftinstall_lib.run(self)
+        # Set the executable bits (owner, group, and world) on
+        # all executable_data
+        exe_ouput = [os.path.join(self.install_dir,f) for f in executable_data]
+        if os.name == 'posix':
+            for fn in self.get_outputs():
+                if fn in exe_ouput:
+                    if self.dry_run:
+                        log.info("changing mode of %s", fn)
+                    else:
+                        mode = ((os.stat(fn).st_mode) | 0555) & 07777
+                        log.info("changing mode of %s to %o", fn, mode)
+                        os.chmod(fn, mode)
+
+
 class install(dftinstall):
 
     user_options = list(dftinstall.user_options)
@@ -662,12 +728,20 @@ class build_doc_api(Command):
 
         docpreffix = abspath('doc', 'source', 'devel', 'api')
         templatespath = abspath('doc')
-        rstCreator = auto_rst4api.Auto_rst4API_Creator(exclude_patterns=['.*\.ui', '_[^\.]*[^_]'],
+        excl = ['.*\.ui', '_[^\.]*[^_]', '.*.extra_sardana', '.*.extra_pool', 
+                '.*.extra_macroexecutor', 'taurus.external']
+        rstCreator = auto_rst4api.Auto_rst4API_Creator(exclude_patterns=excl,
                                                        templatespath=templatespath,
                                                        overwrite_old=buildcmd.all_files,
                                                        verbose=self.distribution.verbose)
         if buildcmd.all_files:
             rstCreator.cleanAutogenerated(docpreffix)  #@todo: This may need to be called *only* if --fres-env or --all-files options are given
+
+        # import taurus module from the source to autogenerate the api docs
+        name = 'taurus'
+        data = imp.find_module(name, [abspath('lib')])
+        taurus = imp.load_module(name, *data)
+
         r = rstCreator.documentModule('taurus', docpreffix)
         out = self.out
         print("Auto Creation of API docs Finished with %i warnings:" % len(r), file=out)
@@ -678,6 +752,7 @@ class build_doc_api(Command):
 cmdclass = { 'build' : build,
              'build_resources' : build_resources,
              'install' : install,
+             'install_lib': install_lib,
              'install_man' : install_man,
              'install_html' : install_html,
              'install_scripts' : install_scripts,

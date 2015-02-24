@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -29,11 +29,12 @@ one or more curves"""
 import os.path
 from datetime import datetime
 
-from taurus.qt import Qt
+from taurus.external.qt import Qt
+from taurus.qt.qtgui.util.ui import UILoadable
 
-from ui import ui_DataExportDlg
 
-class QDataExportDialog(Qt.QDialog, ui_DataExportDlg.Ui_DataExportDlg):
+@UILoadable
+class QDataExportDialog(Qt.QDialog):
     """
     This creates a Qt dialog for showing and exporting x-y Ascii data from one or more curves 
     The data sets are passed (by calling setDataSets() or at instantiation time) as a dictionary::
@@ -51,7 +52,7 @@ class QDataExportDialog(Qt.QDialog, ui_DataExportDlg.Ui_DataExportDlg):
 
     def __init__(self, parent=None, datadict=None):
         super(QDataExportDialog,self).__init__(parent)
-        self.setupUi(self)
+        self.loadUi()
         self._xIsTime = False
         
         #connections

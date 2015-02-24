@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ##
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -23,12 +23,11 @@
 ##
 #############################################################################
 
-"""This module exposes PyQt4.QtSvg module"""
+"""This module exposes Qwt5 module"""
 
-from taurusqtoptions import QT_API, QT_API_PYQT, QT_API_PYSIDE
+from taurus.core.util.log import warning
+warning("importing Qwt5 from taurus.qt is deprecated. Use "
+        "taurus.external.qt instead")
+del warning
 
-# Now peform the imports.
-if QT_API == QT_API_PYQT:
-    from PyQt4.Qwt5 import *
-elif QT_API == QT_API_PYSIDE:
-    from PySide.Qwt5 import *
+from taurus.external.qt.Qwt5 import *

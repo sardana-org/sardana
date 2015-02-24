@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -32,14 +32,16 @@ __all__ = ['TaurusPlotConfDlg']
 raise NotImplementedError('Under Construction!')
 
 import taurus.core
-from taurus.qt import Qt, Qwt5
-from ui.ui_TaurusPlotConf import Ui_TaurusPlotConfDlg
+from taurus.external.qt import Qt, Qwt5
+from taurus.qt.qtgui.util.ui import UILoadable
+
 import curveprops
 try:
     import taurus.qt.qtgui.extra_nexus as extra_nexus
 except:
     extra_nexus = None
- 
+
+@UILoadable(with_ui='ui')
 class TaurusPlotConfDlg(Qt.QWidget):
     ''' A configuration dialog for TaurusPlot.
     
@@ -64,9 +66,7 @@ class TaurusPlotConfDlg(Qt.QWidget):
     
     def __init__(self, parent=None, curves=None):
         super(TaurusPlotConfDlg,self).__init__(parent)
-        
-        self.ui = Ui_TaurusPlotConfDlg()
-        self.ui.setupUi(self)
+        self.loadUi()
         
         ###################################
         #@todo: this block should disappear once we can use taurusuic4 to include taurus widgets

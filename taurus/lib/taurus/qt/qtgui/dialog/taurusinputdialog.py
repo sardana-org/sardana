@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -29,7 +29,7 @@ __all__ = ["TaurusInputDialog", "get_input"]
 
 __docformat__ = 'restructuredtext'
 
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 
 def get_input(input_data, parent=None, input_panel_klass=None):
     """Static convenience function to get an input from the user using a

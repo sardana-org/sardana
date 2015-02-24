@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -33,7 +33,7 @@ import copy
 from datetime import datetime
 import time
 import numpy
-from taurus.qt import Qt, Qwt5
+from taurus.external.qt import Qt, Qwt5
 
 import PyTango
 
@@ -1162,7 +1162,7 @@ class TaurusPlot(Qwt5.QwtPlot, TaurusBaseWidget):
         self._showMinAction = Qt.QAction("Show Min", None)
         self._showMinAction.setCheckable(True)
         self._showMinAction.setChecked(self._showMinPeaks)
-        self.connect(self._showMaxAction,  Qt.SIGNAL("toggled(bool)"), self.showMinPeaks)
+        self.connect(self._showMinAction,  Qt.SIGNAL("toggled(bool)"), self.showMinPeaks)
 
         self._printAction = Qt.QAction("&Print plot...", None)
         self.connect(self._printAction, Qt.SIGNAL("triggered()"), self.exportPrint)

@@ -3,9 +3,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -30,7 +30,7 @@ __all__ = ["TaurusAttrListComboBox", "TaurusValueComboBox"]
 
 __docformat__ = 'restructuredtext'
 
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 
 import PyTango
 import taurus.core
@@ -240,7 +240,9 @@ class TaurusValueComboBox(Qt.QComboBox, TaurusBaseWritableWidget):
         if isinstance(m, Qt.QAbstractItemModel):
             self.warning("Deprecation warning: use setQModel() if you want to set a Qt Item Model. The setModel() method is reserved for Taurus models")
             return Qt.QComboBox.setModel(self, m)
-        return TaurusBaseWritableWidget.setModel(self, m)
+        ret = TaurusBaseWritableWidget.setModel(self, m)
+        self.emitValueChanged()
+        return ret
 
     @classmethod
     def getQtDesignerPluginInfo(cls):

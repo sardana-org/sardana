@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -32,7 +32,7 @@ __docformat__ = 'restructuredtext'
 import os
 import traceback
 import taurus
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 from taurus.core.taurusvalidator import DeviceNameValidator, AttributeNameValidator
 from taurus.qt.qtgui.graphic.taurusgraphic import parseTangoUri, TaurusGraphicsItem, SynopticSelectionStyle
 from taurus.qt.qtcore.mimetypes import TAURUS_ATTR_MIME_TYPE, TAURUS_DEV_MIME_TYPE, TAURUS_MODEL_MIME_TYPE

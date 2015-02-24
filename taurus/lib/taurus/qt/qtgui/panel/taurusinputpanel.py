@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -29,13 +29,14 @@ __all__ = ["TaurusInputPanel"]
 
 __docformat__ = 'restructuredtext'
 
-import sys
 import collections
+import numpy
 
-from taurus.qt import Qt
-import ui.ui_TaurusInputPanel
+from taurus.external.qt import Qt
+from taurus.qt.qtgui.util.ui import UILoadable
 
 
+@UILoadable(with_ui='_ui')
 class TaurusInputPanel(Qt.QWidget):
     """A panel design to get an input from the user.
     
@@ -59,19 +60,19 @@ class TaurusInputPanel(Qt.QWidget):
           'String' and will display input widget accordingly. Custom
           data types can be handled differently by supplying a different
           input_panel_klass.
-        - *minimum* <int/float> (-sys.maxint):
-          minimum value (makes sence when data_type is 'Integer' or 'Float')
-        - *maximum* <int/float> (sys.maxint): 
-          maximum value (makes sence when data_type is 'Integer' or 'Float')
+        - *minimum* <int/float>:
+          minimum value (makes sense when data_type is 'Integer' or 'Float')
+        - *maximum* <int/float>:
+          maximum value (makes sense when data_type is 'Integer' or 'Float')
         - *step* <int/float> (1): 
-          step size value (makes sence when data_type is 'Integer' or 'Float')
+          step size value (makes sense when data_type is 'Integer' or 'Float')
         - *decimals* <int> (1): 
-          number of decimal places to show (makes sence when data_type is
+          number of decimal places to show (makes sense when data_type is
           'Float')
         - *default_value* <obj> (doesn't have default value): 
           default value
         - *allow_multiple* <bool> (False):
-          allow more than one value to be selected (makes sence when data_type
+          allow more than one value to be selected (makes sense when data_type
           is a sequence of possibilities)
         
 
@@ -96,9 +97,8 @@ class TaurusInputPanel(Qt.QWidget):
     def __init__(self, input_data, parent=None):
         Qt.QWidget.__init__(self, parent)
         self._input_data = input_data
-        self._ui = _ui = ui.ui_TaurusInputPanel.Ui_TaurusInputPanel()
-        _ui.setupUi(self)
-        self.fill_main_panel(_ui.inputPanel, input_data)
+        self.loadUi()
+        self.fill_main_panel(self._ui._inputPanel, input_data)
 
     def fill_main_panel(self, panel, input_data):
         layout = Qt.QVBoxLayout()
@@ -263,8 +263,8 @@ class TaurusInputPanel(Qt.QWidget):
     
     def create_integer_panel(self, input_data):
         panel = self._create_simple_panel(input_data)
-        minimum = input_data.get('minimum', -sys.maxint)
-        maximum = input_data.get('maximum', sys.maxint)
+        minimum = input_data.get('minimum', numpy.iinfo('i').min)
+        maximum = input_data.get('maximum', numpy.iinfo('i').max)
         step = input_data.get('step', 1)
         layout = panel.layout()
         self._ui.inputWidget = spinbox = Qt.QSpinBox()
@@ -281,8 +281,8 @@ class TaurusInputPanel(Qt.QWidget):
         
     def create_float_panel(self, input_data):
         panel = self._create_simple_panel(input_data)
-        minimum = input_data.get('minimum', -sys.maxint)
-        maximum = input_data.get('maximum', sys.maxint)
+        minimum = input_data.get('minimum', numpy.finfo('d').min)
+        maximum = input_data.get('maximum', numpy.finfo('d').max)
         step = input_data.get('step', 1)
         decimals = input_data.get('decimals', 1)
         layout = panel.layout()
@@ -339,14 +339,14 @@ class TaurusInputPanel(Qt.QWidget):
         return self._ui.inputWidget.checkState() == Qt.Qt.Checked
     
     def inputPanel(self):
-        return self._ui.inputPanel
+        return self._ui._inputPanel
 
     def buttonBox(self):
         """Returns the button box from this panel
 
         :return: the button box from this panel
         :rtype: PyQt4.Qt.QDialogButtonBox"""
-        return self._ui.buttonBox
+        return self._ui._buttonBox
 
     def addButton(self, button, role=Qt.QDialogButtonBox.ActionRole):
         """Adds the given button with the given to the button box
@@ -355,7 +355,7 @@ class TaurusInputPanel(Qt.QWidget):
         :type button: PyQt4.QtGui.QPushButton
         :param role: button role
         :type role: PyQt4.Qt.QDialogButtonBox.ButtonRole"""
-        self._ui.buttonBox.addButton(button, role)
+        self._ui._buttonBox.addButton(button, role)
 
     def setIconPixmap(self, pixmap):
         """Sets the icon to the dialog

@@ -1,10 +1,10 @@
-#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -27,14 +27,4 @@
 
 __docformat__ = 'restructuredtext'
 
-""" A Qt API selector that can be used to switch between PyQt and PySide.
-
-This uses the ETS 4.0 selection pattern of:
-PySide first, PyQt with API v2. second.
-
-Do not use this if you need PyQt with the old QString/QVariant API.
-"""
-
-import os
-import taurusqtoptions
-
+from taurus.external import qt as __qt

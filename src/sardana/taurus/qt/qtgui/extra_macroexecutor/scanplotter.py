@@ -4,7 +4,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -31,8 +31,8 @@ scanplotter.py:
 
 import taurus.core
 
-from taurus.qt import QtGui, Qwt5
-from taurus.qt.Qt import *
+from taurus.external.qt import QtGui, Qwt5
+#from taurus.qt.Qt import *
 
 from taurus.core.util import dictFromSequence
 from taurus.core.util.containers import CaselessDict

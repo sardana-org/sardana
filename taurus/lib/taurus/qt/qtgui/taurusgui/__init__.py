@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -27,13 +27,27 @@
 This package provides TaurusGui, a generic framework for creating GUIs without
 actual coding (just configuration files).
 
-See the examples provided in the conf directory.
+See the examples provided in the conf subdirectory directory as well as the 
+documentation of the :class:`TaurusGui` class.
 
-.. note:: 
-    Please be aware that TaurusGui has only recently being developed and it
-    is still under intense development. The syntax of the configuration files
-    may change at some point and more features and bug fixes are likely to
-    be added in the near future. 
+    
+The "new GUI wizard" and XML configuration files
+------------------------------------------------
+    
+Note that the configuration files can either be written by hand or by 
+launching the "new GUI" wizard with `taurusgui --new-gui`, which will create
+a new directory containing configuration, resource and launcher files.
+
+The new GUI wizard stores all the options in xml format in a file called
+`config.xml` and creates a simple `config.py` file containing the following
+line::
+
+    XML_CONFIG = 'config.xml'
+    
+This line indicates that `config.xml` should also be used as a source of 
+configuration options (in case of conflict, the options set in `config.py` 
+prevail). 
+
 """
 
 __docformat__ = 'restructuredtext'

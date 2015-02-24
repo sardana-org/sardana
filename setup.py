@@ -4,7 +4,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -302,15 +302,18 @@ def main():
 
     packages = [
         'sardana',
+        'sardana.test',
 
         'sardana.util',
         'sardana.util.motion',
 
         'sardana.pool',
+        'sardana.pool.test',
         'sardana.pool.poolcontrollers',
 
         'sardana.macroserver',
         'sardana.macroserver.macros',
+        'sardana.macroserver.macros.test',
         'sardana.macroserver.macros.examples',
         'sardana.macroserver.scan',
         'sardana.macroserver.scan.recorder',
@@ -318,9 +321,12 @@ def main():
         'sardana.tango',
         'sardana.tango.core',
         'sardana.tango.pool',
+        'sardana.tango.pool.test',
         'sardana.tango.macroserver',
+        'sardana.tango.macroserver.test',
 
         'sardana.spock',
+        'sardana.spock.test',
         'sardana.spock.ipython_00_10',
         'sardana.spock.ipython_00_11',
         'sardana.spock.ipython_01_00',
@@ -343,7 +349,12 @@ def main():
         'sardana.taurus.qt.qtgui.extra_sardana.ui',
         'sardana.taurus.qt.qtgui.extra_pool',
     ]
-
+    
+    package_data = {'sardana.taurus.qt.qtgui.extra_macroexecutor': ['ui/*.ui'],
+                    'sardana.taurus.qt.qtgui.extra_pool': ['ui/*.ui'],
+                    'sardana.taurus.qt.qtgui.extra_sardana': ['ui/*.ui']
+                    }
+    
     provides = [
         'sardana',
         'sardana.pool',
@@ -354,7 +365,7 @@ def main():
 
     requires = [
         'PyTango (>=7.2.3)',
-        'taurus (>= 3.1)',
+        'taurus (>= 3.4.0)',
         'lxml (>=2.1)',
         'ipython (>=0.10, !=0.11)'
     ]
@@ -366,7 +377,9 @@ def main():
         "scripts/Pool",
         "scripts/Sardana",
         "scripts/spectoascii",
-        "scripts/spock"
+        "scripts/spock",
+        "scripts/macroexecutor",
+        "scripts/sequencer"
     ]
 
     classifiers = [
@@ -401,6 +414,7 @@ def main():
           license=Release.license,
           packages=packages,
           package_dir=package_dir,
+          package_data=package_data,
           classifiers=classifiers,
           scripts=scripts,
           provides=provides,

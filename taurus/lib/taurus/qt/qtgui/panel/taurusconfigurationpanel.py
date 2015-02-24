@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -30,16 +30,18 @@ __all__ = ["TaurusConfigurationPanel"]
 __docformat__ = 'restructuredtext'
 
 import sys, traceback
-import ui.ui_TaurusConfigurationPanel
-from taurus.qt import Qt
+
+from taurus.external.qt import Qt
 from taurus.qt.qtgui.input import TaurusConfigLineEdit
 from taurus.qt.qtgui.util import getWidgetsOfType
+from taurus.qt.qtgui.util.ui import UILoadable
 
+
+@UILoadable(with_ui='_ui')
 class TaurusConfigurationPanel(Qt.QWidget):
     def __init__(self, parent=None, designMode=False):
         Qt.QWidget.__init__(self, parent)
-        self._ui = ui.ui_TaurusConfigurationPanel.Ui_TaurusConfigurationPanel()
-        self._ui.setupUi(self)
+        self.loadUi()
 
         Qt.QObject.connect(self._ui.pushButtonOk, Qt.SIGNAL("clicked()"), self._onOk)
         Qt.QObject.connect(self._ui.pushButtonApply, Qt.SIGNAL("clicked()"), self._onApply)
@@ -58,7 +60,7 @@ class TaurusConfigurationPanel(Qt.QWidget):
 	            w.writeValue()
 
     def _onCancel(self):
-       self._ui._Form.close()
+       self.close()
 
     def _onRestore(self):
 	    widgets=getWidgetsOfType(self, TaurusConfigLineEdit)

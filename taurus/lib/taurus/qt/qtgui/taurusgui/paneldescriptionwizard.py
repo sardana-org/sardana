@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -28,7 +28,7 @@ __all__=["PanelDescriptionWizard"]
 paneldescriptionwizard.py: 
 """
 
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 import sys
 import weakref
 from taurus.qt.qtgui.taurusgui.utils import PanelDescription
@@ -632,7 +632,6 @@ def main():
     form.show()
     
     paneldesc,ok = PanelDescriptionWizard.getDialog(form, extraWidgets=[('PyQt4.Qt.QLineEdit',':/taurus.png'),
-                                                                        ('PyQt4.Qt.QSpinBox','/tmp/kk.png'),
                                                                         ('PyQt4.Qt.QTextEdit',None)])
     if ok:
         w = paneldesc.getWidget(sdm=Qt.qApp.SDM)

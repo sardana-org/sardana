@@ -4,7 +4,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -39,6 +39,7 @@ from sardana.sardanaevent import EventType
 
 from sardana.macroserver.msbase import MSObject
 from sardana.macroserver.msparameter import Type
+from sardana.macroserver.msexception import MacroServerException
 
 
 class MacroProxy(object):
@@ -131,7 +132,8 @@ class MSDoor(MSObject):
     def get_macro_data(self):
         macro = self.running_macro
         if macro is None:
-            raise Exception("No macro has run so far!")
+            raise MacroServerException("No macro has run so far " + \
+                            "or the macro data was not preserved.")
         data = macro.data
         return data
 

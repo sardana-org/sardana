@@ -4,7 +4,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -34,7 +34,7 @@ from lxml import etree
 import PyTango
 
 from taurus import Device
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 from taurus.qt.qtgui.container import TaurusMainWindow, TaurusWidget
 from taurus.qt.qtcore.configuration import BaseConfigurableClass
 from taurus.qt.qtgui.display import TaurusLed

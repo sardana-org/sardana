@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -28,7 +28,7 @@ import os.path
 import optparse 
 
 import taurus
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 
 def env_index(env, env_name):
     env_name = str(env_name)

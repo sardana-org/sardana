@@ -4,7 +4,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -27,13 +27,15 @@
 
 __all__ = ["ExpDescriptionEditor"]
 
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 import copy
 import taurus
 import taurus.core
 from taurus.qt.qtgui.base import TaurusBaseWidget
+from taurus.qt.qtgui import resource
 
 from sardana.taurus.qt.qtcore.tango.sardana.model import SardanaBaseProxyModel, SardanaTypeTreeItem
+from taurus.qt.qtgui.util.ui import UILoadable
 
 ## Using a plain model and filtering and checking 'Acquirable' in item.itemData().interfaces is more elegant, but things don't get properly sorted...
 #from taurus.qt.qtcore.tango.sardana.model import SardanaElementPlainModel
@@ -62,6 +64,8 @@ class SardanaAcquirableProxyModel(SardanaBaseProxyModel):
             return treeItem.itemData() in self.ALLOWED_TYPES
         return True
 
+
+@UILoadable(with_ui='ui')
 class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
     '''
     A widget for editing the configuration of a experiment (measurement groups,
@@ -70,12 +74,10 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
     It receives a Sardana Door name as its model and gets/sets the configuration
     using the `ExperimentConfiguration` environmental variable for that Door.
     '''
-    def __init__(self, parent=None, door=None):
+    def __init__(self, parent=None, door=None, plotsButton=True):
         Qt.QWidget.__init__(self, parent)
         TaurusBaseWidget.__init__(self, 'ExpDescriptionEditor')
-        from ui.ui_ExpDescriptionEditor import Ui_ExpDescriptionEditor
-        self.ui = Ui_ExpDescriptionEditor()
-        self.ui.setupUi(self)
+        self.loadUi()
         self.ui.buttonBox.setStandardButtons(Qt.QDialogButtonBox.Reset | Qt.QDialogButtonBox.Apply)
         newperspectivesDict = copy.deepcopy(self.ui.sardanaElementTree.KnownPerspectives)
         #newperspectivesDict[self.ui.sardanaElementTree.DftPerspective]['model'] = [SardanaAcquirableProxyModel, SardanaElementPlainModel]
@@ -98,7 +100,18 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self.connect(self.ui.channelEditor.getQModel(), Qt.SIGNAL('modelReset ()'), self._updateButtonBox)
         self.connect(self.ui.preScanList, Qt.SIGNAL('dataChanged'), self.onPreScanSnapshotChanged)
         self.connect(self.ui.choosePathBT, Qt.SIGNAL('clicked ()'), self.onChooseScanDirButtonClicked)
-
+        
+        self.__plotManager = None
+        icon = resource.getIcon(":/actions/view.svg")
+        self.togglePlotsAction = Qt.QAction(icon, "Show/Hide plots", self)
+        self.togglePlotsAction.setCheckable(True)
+        self.togglePlotsAction.setChecked(False)
+        self.togglePlotsAction.setEnabled(plotsButton)
+        self.addAction(self.togglePlotsAction)
+        self.connect(self.togglePlotsAction, Qt.SIGNAL("toggled(bool)"), 
+                     self.onPlotsButtonToggled)
+        self.ui.plotsButton.setDefaultAction(self.togglePlotsAction)
+        
         if door is not None:
             self.setModel(door)
         self.connect(self.ui.buttonBox, Qt.SIGNAL("clicked(QAbstractButton *)"), self.onDialogButtonClicked)
@@ -352,7 +365,22 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
                 preScanList.append((nfo.full_name, nfo.name))
         self._localConfig['PreScanSnapshot'] = preScanList
         self._setDirty(True)
-
+        
+    def onPlotsButtonToggled(self, checked):
+        if checked:
+            from taurus.qt.qtgui.taurusgui.macrolistener import \
+                 DynamicPlotManager
+            self.__plotManager = DynamicPlotManager(self)
+            self.__plotManager.setModel(self.getModelName())
+            self.connect(self, Qt.SIGNAL('experimentConfigurationChanged'), 
+                         self.__plotManager.onExpConfChanged)
+        else:
+            self.disconnect(self, Qt.SIGNAL('experimentConfigurationChanged'), 
+                            self.__plotManager.onExpConfChanged)
+            self.__plotManager.removePanels()
+            self.__plotManager.setModel(None)
+            self.__plotManager = None
+            
 
 def demo(model=None):
     """Experiment configuration"""

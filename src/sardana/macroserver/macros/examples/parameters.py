@@ -2,7 +2,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -148,7 +148,9 @@ class pt9(Macro):
         pass
     
 class twice(Macro):
-    """twice description."""
+    """A macro that returns a float that is twice its input. It also sets its 
+    data to be a dictionary with 'in','out' as keys and value,result 
+    as values, respectively"""
 
     # uncomment the following lines as necessary. Otherwise you may delete them
     param_def = [ [ "value", Type.Float, 23, "value to be doubled" ] ]
@@ -161,4 +163,6 @@ class twice(Macro):
     #    pass
         
     def run(self, n):
-        return 2*n
+        ret = 2*n
+        self.setData({'in':n, 'out':ret})
+        return ret

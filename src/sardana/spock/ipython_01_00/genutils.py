@@ -5,7 +5,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -74,7 +74,7 @@ from taurus.core.taurushelper import Factory
 from taurus.core.util.codecs import CodecFactory
 
 # make sure Qt is properly initialized
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 
 from sardana.spock import exception
 from sardana.spock import colors
@@ -715,7 +715,7 @@ def get_args(argv):
     # Define the profile file
     profile = "spockdoor"
     try:
-        for _, arg in enumerate(argv[:1]):
+        for _, arg in enumerate(argv[1:]):
             if arg.startswith('--profile='):
                 profile=arg[10:]
                 break
@@ -820,7 +820,7 @@ def load_ipython_extension(ipython):
             debug = IPython.core.magic.line_magic(magic.debug)
             www = IPython.core.magic.line_magic(magic.www)
             post_mortem = IPython.core.magic.line_magic(magic.post_mortem)
-            spsplot = IPython.core.magic.line_magic(magic.post_mortem)
+            spsplot = IPython.core.magic.line_magic(magic.spsplot)
             macrodata = IPython.core.magic.line_magic(magic.macrodata)
             edmac = IPython.core.magic.line_magic(magic.edmac)
             showscan = IPython.core.magic.line_magic(magic.showscan)
@@ -829,8 +829,8 @@ def load_ipython_extension(ipython):
         ipython.register_magics(Sardana)
     else:
         expose_magic('debug', magic.debug, magic.debug_completer)
-        expose_magic('www', magic.www, magic.www_completer)
-        expose_magic('post_mortem', magic.post_mortem, magic.post_mortem_completer)
+        expose_magic('www', magic.www, None)
+        expose_magic('post_mortem', magic.post_mortem, None)
         expose_magic('spsplot', magic.spsplot, None)
         expose_magic('macrodata', magic.macrodata, None)
         expose_magic('edmac', magic.edmac, None)
@@ -1087,7 +1087,10 @@ def prepare_cmdline(argv=None):
     # Define the profile file
     profile, append_profile = "spockdoor", True
     try:
-        for _, arg in enumerate(argv[:1]):
+        # in ipython the last option in the list takes precedence
+        # so reversing order for searching of the profile 
+        reversed_argv = reversed(argv[1:])
+        for _, arg in enumerate(reversed_argv):
             if arg.startswith('--profile='):
                 profile=arg[10:]
                 append_profile = False
@@ -1110,27 +1113,36 @@ def prepare_cmdline(argv=None):
             sys.stdout.write('No spock profile was created. '
                              'Starting ipython with default profile...\n')
             sys.stdout.flush()
-            append_profile = False
+            # removing all options refering to profile
+            for _, arg in enumerate(argv[1:]):
+                if arg.startswith('--profile='):
+                    argv.remove(arg)
+            return
 
     if append_profile:
         argv.append("--profile=" + profile)
 
 
 def run():
-    from IPython.utils.traitlets import Unicode
-    from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
 
-    class SpockConsole(RichIPythonWidget):
+    try:
+        from IPython.utils.traitlets import Unicode
+        from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
         
-        banner = Unicode(config=True)
+        class SpockConsole(RichIPythonWidget):
 
-        def _banner_default(self):
-            config = get_config()
-            return config.FrontendWidget.banner
+            banner = Unicode(config=True)
 
-    import IPython.qt.console.qtconsoleapp
-    IPythonQtConsoleApp = IPython.qt.console.qtconsoleapp.IPythonQtConsoleApp
-    IPythonQtConsoleApp.widget_factory = SpockConsole
+            def _banner_default(self):
+                config = get_config()
+                return config.FrontendWidget.banner
+
+        import IPython.qt.console.qtconsoleapp
+        IPythonQtConsoleApp = IPython.qt.console.qtconsoleapp.IPythonQtConsoleApp
+        IPythonQtConsoleApp.widget_factory = SpockConsole
+        IPythonQtConsoleApp.version.default_value = release.version
+    except ImportError:
+        pass
 
     try:
         check_requirements()

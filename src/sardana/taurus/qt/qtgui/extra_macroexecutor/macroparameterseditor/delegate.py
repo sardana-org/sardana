@@ -4,7 +4,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -27,7 +27,7 @@
 delegate.py: 
 """
 
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 
 from sardana.taurus.qt.qtgui.extra_macroexecutor import globals
 from sardana.taurus.core.tango.sardana import macro

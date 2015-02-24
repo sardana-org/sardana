@@ -4,7 +4,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -34,7 +34,7 @@ from multiprocessing import Process, Pipe
 
 from taurus.core import TaurusManager
 from taurus.core.util.singleton import Singleton
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 from taurus.qt.qtgui.dialog import TaurusMessageBox, TaurusInputDialog
 
 from sardana.taurus.core.tango.sardana.macroserver import BaseInputHandler
@@ -52,6 +52,8 @@ class SpockInputHandler(BaseInputHandler):
         if input_data is None:
             input_data = {}
         prompt = input_data.get('prompt')
+        if 'data_type' in input_data:
+            print("Accepted input:  %s" % input_data['data_type'])
         ret = dict(input=None, cancel=False)
         try:
             if prompt is None:

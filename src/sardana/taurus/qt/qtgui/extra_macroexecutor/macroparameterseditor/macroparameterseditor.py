@@ -4,7 +4,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -28,7 +28,7 @@ macroparameterseditor.py:
 """
 import sys, inspect, glob
 
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 from taurus.core.util.singleton import Singleton
 from taurus.qt.qtgui.resource import getThemeIcon
 

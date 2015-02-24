@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -34,7 +34,7 @@ __all__ = ["TaurusValue", "TaurusValuesFrame", "DefaultTaurusValueCheckBox", "De
 __docformat__ = 'restructuredtext'
 
 import weakref
-from taurus.qt import Qt
+from taurus.external.qt import Qt
 import PyTango
 import taurus.core
 
@@ -49,6 +49,7 @@ from taurus.qt.qtgui.input import TaurusValueSpinBox, TaurusValueCheckBox
 from taurus.qt.qtgui.input import TaurusWheelEdit, TaurusValueLineEdit
 from taurus.qt.qtgui.button import TaurusLauncherButton
 from taurus.qt.qtgui.util import TaurusWidgetFactory, ConfigurationMenu
+from taurus.qt.qtgui.compact import TaurusReadWriteSwitcher
 
 
 class DefaultTaurusValueCheckBox(TaurusValueCheckBox):
@@ -100,14 +101,19 @@ class DefaultLabelWidget(TaurusLabel):
         see :meth:`QWidget.contextMenuEvent`"""
         menu = Qt.QMenu(self)  
         menu.addMenu(ConfigurationMenu(self.taurusValueBuddy())) #@todo: This should be done more Taurus-ish 
-        if hasattr(self.taurusValueBuddy().writeWidget(), 'resetPendingOperations'):
-            r_action = menu.addAction("reset write value",self.taurusValueBuddy().writeWidget().resetPendingOperations)
+        if hasattr(self.taurusValueBuddy().writeWidget(followCompact=True), 'resetPendingOperations'):
+            r_action = menu.addAction("reset write value",self.taurusValueBuddy().writeWidget(followCompact=True).resetPendingOperations)
             r_action.setEnabled(self.taurusValueBuddy().hasPendingOperations())
         if self.taurusValueBuddy().isModifiableByUser():
             menu.addAction("Change label",self.taurusValueBuddy().onChangeLabelConfig)
             menu.addAction("Change Read Widget",self.taurusValueBuddy().onChangeReadWidget)
             cw_action = menu.addAction("Change Write Widget",self.taurusValueBuddy().onChangeWriteWidget)
             cw_action.setEnabled(not self.taurusValueBuddy().isReadOnly()) #disable the action if the taurusValue is readonly
+            cm_action = menu.addAction("Compact")
+            cm_action.setCheckable(True)
+            cm_action.setChecked(self.taurusValueBuddy().isCompact())
+            self.connect(cm_action, Qt.SIGNAL("toggled(bool)"), self.taurusValueBuddy().setCompact)
+            
             
         menu.exec_(event.globalPos())
         event.accept()
@@ -146,6 +152,8 @@ class DefaultUnitsWidget(TaurusLabel):
         self.setSizePolicy(Qt.QSizePolicy.Preferred,Qt.QSizePolicy.Maximum)
         self.autoTrim = False
         self.setBgRole(None)
+        self.setAlignment(Qt.Qt.AlignLeft)
+        
     def setModel(self, model):
         if model is None or model=='': 
             return TaurusLabel.setModel(self, None)
@@ -232,6 +240,7 @@ class TaurusValue(Qt.QWidget, TaurusBaseWidget):
         breaks some conventions on the way it manages layouts of its parent model.
     '''
     __pyqtSignals__ = ("modelChanged(const QString &)",)
+    _compact = False
     
     def __init__(self, parent = None, designMode = False, customWidgetMap=None):
         name = self.__class__.__name__
@@ -281,7 +290,8 @@ class TaurusValue(Qt.QWidget, TaurusBaseWidget):
         if parent is not None:
             self.setParent(parent)
             
-        self.registerConfigProperty(self.getLabelConfig, self.setLabelConfig, 'labeConfig')
+        self.registerConfigProperty(self.getLabelConfig, self.setLabelConfig, 'labelConfig')
+        self.registerConfigProperty(self.isCompact, self.setCompact, 'compact')
             
     def setVisible(self, visible):
         for w in (self.labelWidget(), self.readWidget(), self.writeWidget(), self.unitsWidget(), self.customWidget(), self.extraWidget()):
@@ -289,21 +299,38 @@ class TaurusValue(Qt.QWidget, TaurusBaseWidget):
         Qt.QWidget.setVisible(self, visible)
     
     def labelWidget(self):
+        '''Returns the label widget'''
         return self._labelWidget
     
-    def readWidget(self):
+    def readWidget(self, followCompact=False):
+        '''
+        Returns the read widget. If followCompact=True, and compact mode is 
+        used, it returns the switcher's readWidget instead of the switcher 
+        itself.
+        '''
+        if followCompact and self.isCompact():
+            return self._readWidget.readWidget
         return self._readWidget
     
-    def writeWidget(self):
+    def writeWidget(self, followCompact=False):
+        '''
+        Returns the write widget. If followCompact=True, and compact mode is 
+        used, it returns the switcher's writeWidget instead of None.
+        '''
+        if followCompact and self.isCompact():
+            return self._readWidget.writeWidget
         return self._writeWidget
     
     def unitsWidget(self):
+        '''Returns the units widget'''
         return self._unitsWidget
     
     def customWidget(self):
+        '''Returns the custom widget'''
         return self._customWidget
     
     def extraWidget(self):
+        '''Returns the extra widget'''
         return self._extraWidget
     
     def setParent(self, parent):
@@ -495,7 +522,7 @@ class TaurusValue(Qt.QWidget, TaurusBaseWidget):
     
     def getDefaultCustomWidgetClass(self):
         modelclass = self.getModelClass()
-        if modelclass and modelclass.getTaurusElementType() != TaurusElementType.Attribute:
+        if modelclass and modelclass.getTaurusElementType() != TaurusElementType.Device:
             return None
         try:
             key = self.getModelObj().getHWObj().info().dev_class
@@ -582,41 +609,54 @@ class TaurusValue(Qt.QWidget, TaurusBaseWidget):
         if classID is None or classID == 'None': return None
         if isinstance(classID, type): return classID
         elif str(classID) == 'Auto': return self.getDefaultLabelWidgetClass()
-        else: return TaurusWidgetFactory().getTaurusWidgetClass(classID)
+        else: return TaurusWidgetFactory().getWidgetClass(classID)
 
     def readWidgetClassFactory(self, classID):
         if self._customWidget is not None: return None
         if classID is None or classID == 'None': return None
-        if isinstance(classID, type): return classID
-        elif str(classID) == 'Auto': return self.getDefaultReadWidgetClass()
-        else: return TaurusWidgetFactory().getTaurusWidgetClass(classID)
+        
+        if isinstance(classID, type): ret = classID
+        elif str(classID) == 'Auto': ret = self.getDefaultReadWidgetClass()
+        else: ret = TaurusWidgetFactory().getWidgetClass(classID)
+        
+        if self._compact:
+            R = ret
+            W = self.writeWidgetClassFactory(self.writeWidgetClassID, ignoreCompact=True)
+            if W is None: 
+                return R
+            switcherClass = self.getSwitcherClass()
+            switcherClass.readWClass = R
+            switcherClass.writeWClass = W
+            return switcherClass
+        return ret
     
-    def writeWidgetClassFactory(self, classID):
+    def writeWidgetClassFactory(self, classID, ignoreCompact=False):
         if self._customWidget is not None: return None
         if classID is None or classID == 'None': return None
+        if self._compact and not ignoreCompact: return None
         if isinstance(classID, type): return classID
         elif str(classID) == 'Auto': return self.getDefaultWriteWidgetClass()
-        else: return TaurusWidgetFactory().getTaurusWidgetClass(classID)
+        else: return TaurusWidgetFactory().getWidgetClass(classID)
         
     def unitsWidgetClassFactory(self, classID):
         if self._customWidget is not None: return None
         if classID is None or classID == 'None': return None
         if isinstance(classID, type): return classID
         elif str(classID) == 'Auto': return self.getDefaultUnitsWidgetClass()
-        else: return TaurusWidgetFactory().getTaurusWidgetClass(classID)
+        else: return TaurusWidgetFactory().getWidgetClass(classID)
         
     def customWidgetClassFactory(self, classID):
         if classID is None or classID == 'None': return None
         if isinstance(classID, type): return classID
         elif str(classID) == 'Auto': return self.getDefaultCustomWidgetClass()
-        else: return TaurusWidgetFactory().getTaurusWidgetClass(classID)
+        else: return TaurusWidgetFactory().getWidgetClass(classID)
         
     def extraWidgetClassFactory(self, classID):
         if self._customWidget is not None: return None
         if classID is None or classID == 'None': return None
         if isinstance(classID, type): return classID
         elif str(classID) == 'Auto': return self.getDefaultExtraWidgetClass()
-        else: return TaurusWidgetFactory().getTaurusWidgetClass(classID)
+        else: return TaurusWidgetFactory().getWidgetClass(classID)
         
     def updateLabelWidget(self):
         #get the class for the widget and replace it if necessary
@@ -657,6 +697,9 @@ class TaurusValue(Qt.QWidget, TaurusBaseWidget):
         if self._readWidget is not None:
             #give the new widget a reference to its buddy TaurusValue object
             self._readWidget.taurusValueBuddy = weakref.ref(self)
+            if isinstance(self._readWidget, TaurusReadWriteSwitcher):
+                self._readWidget.readWidget.taurusValueBuddy = weakref.ref(self)
+                self._readWidget.writeWidget.taurusValueBuddy = weakref.ref(self)
             
             #tweak the new widget
             if self.minimumHeight() is not None:
@@ -745,30 +788,51 @@ class TaurusValue(Qt.QWidget, TaurusBaseWidget):
     def addLabelWidgetToLayout(self):
         
         if self._labelWidget is not None and self.parent() is not None:
-            self.parent().layout().addWidget(self._labelWidget, self._row, 1)
+            alignment = getattr(self._labelWidget, 'layoutAlignment', 
+                                Qt.Qt.AlignmentFlag(0))
+            self.parent().layout().addWidget(self._labelWidget, self._row, 1, 1,
+                                             1, alignment)
+
     
     def addReadWidgetToLayout(self):
-        if self._readWidget is not None and self.parent() is not None: 
+        if self._readWidget is not None and self.parent() is not None:
+            alignment = getattr(self._readWidget, 'layoutAlignment', 
+                                Qt.Qt.AlignmentFlag(0))
             if self._writeWidget is None:
-                self.parent().layout().addWidget(self._readWidget, self._row, 2,1,2)
+                self.parent().layout().addWidget(self._readWidget, self._row,
+                                                 2, 1, 2, alignment)
             else:
-                self.parent().layout().addWidget(self._readWidget, self._row, 2)
-    
+                self.parent().layout().addWidget(self._readWidget, self._row,
+                                                 2, 1, 1, alignment)
+                    
     def addWriteWidgetToLayout(self):
         if self._writeWidget is not None and self.parent() is not None:
-            self.parent().layout().addWidget(self._writeWidget, self._row, 3)
+            alignment = getattr(self._writeWidget, 'layoutAlignment', 
+                                Qt.Qt.AlignmentFlag(0))
+            self.parent().layout().addWidget(self._writeWidget, self._row,
+                                             3, 1, 1, alignment)
+
     
     def addUnitsWidgetToLayout(self):
         if self._unitsWidget is not None and self.parent() is not None:
-            self.parent().layout().addWidget(self._unitsWidget, self._row, 4)
-            
+            alignment = getattr(self._unitsWidget, 'layoutAlignment', 
+                                Qt.Qt.AlignmentFlag(0))
+            self.parent().layout().addWidget(self._unitsWidget, self._row,
+                                             4, 1, 1, alignment)
+
     def addCustomWidgetToLayout(self):
         if self._customWidget is not None and self.parent() is not None:
-            self.parent().layout().addWidget(self._customWidget, self._row, 1,1,-1)
+            alignment = getattr(self._customWidget, 'layoutAlignment', 
+                                Qt.Qt.AlignmentFlag(0))
+            self.parent().layout().addWidget(self._customWidget, self._row,
+                                             1, 1, -1, alignment)
     
     def addExtraWidgetToLayout(self):
         if self._extraWidget is not None and self.parent() is not None:
-            self.parent().layout().addWidget(self._extraWidget, self._row, 5)
+            alignment = getattr(self._extraWidget, 'layoutAlignment', 
+                                Qt.Qt.AlignmentFlag(0))
+            self.parent().layout().addWidget(self._extraWidget, self._row,
+                                             5, 1, 1, alignment)
 
     @Qt.pyqtSignature("parentModelChanged(const QString &)")
     def parentModelChanged(self, parentmodel_name):
@@ -862,6 +926,17 @@ class TaurusValue(Qt.QWidget, TaurusBaseWidget):
     
     def resetExtraWidgetClass(self):
         self.extraWidgetClassID = 'Auto'
+        
+    def setCompact(self, compact):
+        if compact == self._compact:
+            return
+        self._compact = compact
+        if self.getModel():
+            self.updateReadWidget()
+            self.updateWriteWidget()
+
+    def isCompact(self):
+        return self._compact
         
     def isReadOnly(self):
         if not self.getAllowWrite(): return True 
@@ -975,7 +1050,7 @@ class TaurusValue(Qt.QWidget, TaurusBaseWidget):
         self.hasPendingOperations will look at the writeWidget's operations.
         If you want to ask the TaurusValue for its pending operations, call
         self.writeWidget().getPendingOperations()'''
-        w = self.writeWidget()
+        w = self.writeWidget(followCompact=True)
         if w is None: return False
         return w.hasPendingOperations()
                 
@@ -999,6 +1074,15 @@ class TaurusValue(Qt.QWidget, TaurusBaseWidget):
     def resetLabelConfig(self):
         self._labelConfig = 'label'
         self.updateLabelWidget()
+        
+    def getSwitcherClass(self):
+        '''Returns the TaurusValue switcher class (used in compact mode).        
+        Override this method if you want to use a custom switcher in 
+        TaurusValue subclasses.
+        '''
+        class TVSwitcher(TaurusReadWriteSwitcher):
+            pass
+        return TVSwitcher
     
     @classmethod
     def getQtDesignerPluginInfo(cls):
