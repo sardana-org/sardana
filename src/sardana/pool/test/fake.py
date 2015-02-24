@@ -40,6 +40,7 @@ class FakePool(object):
         self.ctrl_manager = ControllerManager()
         self.ctrl_manager.set_pool(self)
         self.ctrl_manager.setControllerPath([])
+        self._freeId = 1
 
     def add_element(self, element):
         self.elements[element.id] = element
@@ -50,3 +51,23 @@ class FakePool(object):
     
     def get_element_by_full_name(self, full_name):
         return self.elements_by_full_name[full_name]
+
+    def get_free_id(self):
+        while True:
+            try:
+                self.get_element(self._freeId)
+                self._freeId += 1
+            except KeyError:
+                return self._freeId
+
+    def get_free_name(self, base_name):
+        num = 1
+        while True:
+            try:
+                self.get_element_by_full_name(base_name+"%s" % num)
+                num += 1
+            except KeyError:
+                return base_name+"%s" % num
+
+    def get_manager(self):
+        return self.ctrl_manager
