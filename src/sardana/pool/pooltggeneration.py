@@ -60,6 +60,9 @@ class PoolTGGeneration(PoolAction):
         self._sw_tggenerator = RectangularFunctionGenerator()
         self._repetitions = 1
         
+    def add_listener(self, listener):
+        self._sw_tggenerator.add_listener(listener)
+ 
     def setRepetitions(self, repetitions):
         self._repetitions = repetitions
         self._sw_tggenerator.setRepetitions(repetitions)
@@ -111,7 +114,9 @@ class PoolTGGeneration(PoolAction):
             # StartAll on all controllers
             for pool_ctrl in pool_ctrls:
                 pool_ctrl.ctrl.StartAll()
-        if kwargs['software']:
+        # TODO: agree on the correct naming 'sw_time', 'sw_position', 'software'
+        # if kwargs.get('sw_time', False) or kwargs.get('sw_position', False):
+        if kwargs.get('software', False):
             self._sw_tggenerator.start()
         
     def stop_action(self, *args, **kwargs):
