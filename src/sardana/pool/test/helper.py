@@ -149,7 +149,7 @@ def createCTAcquisitionConfiguration(ctrls, ctrls_conf,
 
 
 def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,
-                          ctrl_trigger_elements, ctrl_trigger_modes):
+                          ctrl_trigger_elements, ctrl_trigger_types):
     '''Method to create general MeasurementGroup (and CT) configuration. 
     Order of the sequences is important. For all sequences, the element of a 
     given position refers the same controller. 
@@ -166,8 +166,8 @@ def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,
     :type ctrl_channels_conf: seq<seq<dict>>
     :param trigger_elements: sequence of the sequences of the trigger elements
     :type trigger_elements: seq<seq<sardana.pool.PoolTriggerGate>>
-    :param trigger_modes: sequence of the sequences of the trigger elements
-    :type trigger_modes: seq<seq<str>>
+    :param trigger_types: sequence of the sequences of the trigger elements
+    :type trigger_types: seq<seq<str>>
     :return: a configuration dictionary
     :rtype: dict<>
     '''
@@ -181,22 +181,33 @@ def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,
 
     ctrls_configuration = {}
     MG_configuration['timer'] = ctrl_channels[master_ctrl_idx][master_idx]
+    MG_configuration['monitor'] = ctrl_channels[master_ctrl_idx][master_idx]
     for ctrl, ctrl_conf, channels, channels_conf, trigger_elements, \
-            trigger_modes in zip(ctrls, ctrls_conf, ctrl_channels, 
-            ctrl_channels_conf, ctrl_trigger_elements, ctrl_trigger_modes):
+            trigger_types in zip(ctrls, ctrls_conf, ctrl_channels, 
+            ctrl_channels_conf, ctrl_trigger_elements, ctrl_trigger_types):
         ctrl_conf['units'] = {}
         ctrl_conf['units']['0'] = main_unit_data = {}
         ctrl_conf['units']['0']['channels'] = {}
-        for channel, channel_conf, trigger_element, trigger_mode in \
-              zip(channels, channels_conf, trigger_elements, trigger_modes):
+        index = 0
+        for channel, channel_conf, trigger_element, trigger_type in \
+              zip(channels, channels_conf, trigger_elements, trigger_types):
             main_unit_data['channels'][channel] = channel_conf
             main_unit_data['channels'][channel]['trigger_element'] = \
                                                                 trigger_element
-            main_unit_data['channels'][channel]['trigger_mode'] = trigger_mode
+            # TODO: decide if trigger_type (trigger_type) should be global for 
+            # the controller or be channel specific
+            main_unit_data['channels'][channel]['trigger_type'] = trigger_type
+            # this way we are forcing the trigger_type of the last channel
+            main_unit_data['trigger_type'] = trigger_type
+            # TODO: investigate why we need the index!
+            # adding a dummy index
+            main_unit_data['channels'][channel]['index'] = index
             if trigger_element not in _tg_elements:
-                _tg_elements.append(trigger_element)            
+                _tg_elements.append(trigger_element)
+            index += 1           
 
         main_unit_data['timer'] = channels[master_idx]
+        main_unit_data['monitor'] = channels[master_idx]
         ctrls_configuration[ctrl] = ctrl_conf
     MG_configuration['controllers'] = ctrls_configuration
 
@@ -224,7 +235,9 @@ def getSWtg_MGConfiguration(MGCfg):
         sw_hw_tg.append([])
         channels = ctr[ctr.keys()[idx_ctrl]]['units']['0']['channels']
         for channel in channels:
-            sw_hw_tg[idx_ctrl].append(channels[channel]['trigger_element'])
+            trigger_element = channels[channel].get('trigger_element', None)
+            if trigger_element != None:
+                sw_hw_tg[idx_ctrl].append(trigger_element)
            
     # Get index of controllers which contains SW tg elements
     ctrl_sw_list = []
@@ -285,7 +298,9 @@ def getHWtg_MGConfiguration(MGCfg):
         sw_hw_tg.append([])
         channels = ctr[ctr.keys()[idx_ctrl]]['units']['0']['channels']
         for channel in channels:
-            sw_hw_tg[idx_ctrl].append(channels[channel]['trigger_element'])
+            trigger_element = channels[channel].get('trigger_element', None)
+            if trigger_element != None:
+                sw_hw_tg[idx_ctrl].append(trigger_element)
            
     # Get index of controllers which contains HW tg elements
     ctrl_hw_list = []
@@ -345,8 +360,8 @@ def getTGConfiguration(MGcfg):
     for ctrl in MGcfg["controllers"]:
         channels_dict = MGcfg["controllers"][ctrl]['units']['0']['channels']
         for channel in channels_dict:
-            tg_element = channels_dict[channel]['trigger_element']
-            if (tg_element not in _tg_element_list and 
+            tg_element = channels_dict[channel].get('trigger_element', None)
+            if (tg_element != None and tg_element not in _tg_element_list and 
                 tg_element != 'sw_time' and tg_element != 'sw_position'):
                 _tg_element_list.append(tg_element)
 
@@ -404,7 +419,7 @@ def getCTConfiguration(MGcfg):
 
     CTcfg = copy.deepcopy(MGcfg)
     delKeys(CTcfg, 'trigger_element')
-    delKeys(CTcfg, 'trigger_mode')
+    delKeys(CTcfg, 'trigger_type')
     #if 'sw_position' in CTcfg: del CTcfg['sw_position']
     #if 'sw_time' in CTcfg: del CTcfg['sw_time']
     return CTcfg
