@@ -28,8 +28,10 @@ __all__ = ['createPoolController', 'createPoolCounterTimer',
            'createPoolTGGenerationConfiguration',
            'createCTAcquisitionConfiguration', 'createMGConfiguration',
            'getTGConfiguration', 'getSWtg_MGConfiguration',
-           'getHWtg_MGConfiguration']
+           'getHWtg_MGConfiguration', 'createElemConf',
+           'createCtrlConf', 'createConfbyCtrlKlass']
 
+from sardana.sardanadefs import ElementType
 from sardana.pool.poolcontroller import PoolController
 from sardana.pool.poolcountertimer import PoolCounterTimer
 from sardana.pool.pooltriggergate import PoolTriggerGate
@@ -390,6 +392,60 @@ def getTGConfiguration(MGcfg):
 
     return TGcfg
 
+def createConfbyCtrlKlass(pool, ctrl_klass, ctrl_name):
+    pool_mng = pool.get_manager()
+    klass = ctrl_klass
+    meta = pool_mng.getControllerMetaClass(klass)
+    _lib = meta.lib
+    #TODO check is is a valid name
+    # raise Exception("The %s ctrl exists." % ctrl_name)
+    name = full_name = ctrl_name
+    ctrl_id =  pool.get_free_id()
+    lib_name = _lib.full_name
+    ctrl_type = ElementType[meta.get_type()]
+
+    cfg = dict({ 'class_info': None,
+                 'full_name': full_name,
+                 'id': ctrl_id,
+                 'klass': klass,
+                 'lib_info': None,
+                 'library': lib_name,
+                 'name': name,
+                 'pool': None,
+                 'properties': {},
+                 'role_ids': '',
+                 'type': ctrl_type})
+    return cfg
+
+def createCtrlConf(pool, name, klass, lib):
+    cfg = dict({ 'class_info': None,
+                 'full_name': None,
+                 'id': None,
+                 'klass': None,
+                 'lib_info': None,
+                 'library': lib,
+                 'name': name,
+                 'pool': None,
+                 'properties': {},
+                 'role_ids': '',
+                 'type': 'ControllerClass'})
+    cfg['id'] = pool.get_free_id()
+    cfg['name'] = cfg['full_name'] = name
+    cfg['klass'] = klass
+    cfg['library'] = lib
+    return cfg
+
+def createElemConf(pool, axis, name):
+    cfg = dict({ 'axis': None,
+                 'ctrl': None,
+                 'full_name': '',
+                 'id': None,
+                 'name': '',
+                 'pool': None })
+    cfg['id'] = pool.get_free_id()
+    cfg['axis'] = axis
+    cfg['name'] = cfg['full_name'] = name
+    return cfg
 
 """
 def walk(dictionary, foundkey, answer=None, sofar=None):
