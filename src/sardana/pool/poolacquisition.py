@@ -67,9 +67,12 @@ class PoolAcquisition(PoolAction):
         ctname = name + ".CTAcquisition"
         zerodname = name + ".0DAcquisition"
         contname = name + ".ContAcquisition"
+        contctname = name + ".ContCTAcquisition"
         self._config = None        
         self._0d_acq = zd_acq = Pool0DAcquisition(main_element, name=zerodname)
-        self._ct_acq = PoolContSWCTAcquisition(main_element, name=ctname, slaves=(zd_acq,))
+        self._ct_acq = PoolCTAcquisition(main_element, name=ctname,
+                                                               slaves=(zd_acq,))
+        self._cont_ct_acq = PoolContSWCTAcquisition(main_element, name=contctname)
         self._cont_acq = PoolContHWAcquisition(main_element, name=contname)
         
     def set_config(self, config):
@@ -83,7 +86,7 @@ class PoolAcquisition(PoolAction):
             t_str = datetime.datetime.fromtimestamp(timestamp).strftime(t_fmt)
             self.debug('Active event with id: %d received at: %s' %\
                                                               (event_id, t_str))
-            is_acquiring = self.is_running()            
+            is_acquiring = self._cont_ct_acq.is_running()
             if is_acquiring:
                 self.debug('Skipping trigger: acquisition is still in progress.')
             else:
@@ -92,16 +95,25 @@ class PoolAcquisition(PoolAction):
                 kwargs = self._config
                 kwargs['synch'] = True
                 kwargs['idx'] = event_id
-                get_thread_pool().add(self._run_single, None, *args, **kwargs)
+                get_thread_pool().add(self._run_ct_continuous, None, *args, **kwargs)
                 
     def is_running(self):
-        return self._0d_acq.is_running() or self._ct_acq.is_running()
+        return self._0d_acq.is_running() or\
+               self._ct_acq.is_running() or\
+               self._cont_ct_acq.is_running() or\
+               self._cont_acq.is_running()
 
     def run(self, *args, **kwargs):
         n = kwargs.get('multiple', 1)
-        if n == 1:
-            return self._run_single(*args, **kwargs)
-        return self._run_multiple(*args, **kwargs)
+        # run multiple acquisition - currently used by StartMultiple Tango command
+        if n > 1:
+            return self._run_multiple(*args, **kwargs)
+        continuous = kwargs.get('continuous', False)
+        # run continuous acquisition
+        if continuous:
+            return self._run_continuous(*args, **kwargs)
+        # run single acquisition e.g. the one from the step scan
+        return self._run_single(*args, **kwargs)
 
     def _run_multiple(self, *args, **kwargs):
         n = kwargs['multiple']
@@ -123,15 +135,25 @@ class PoolAcquisition(PoolAction):
         else:
             ct_acq.run(*args, **kwargs)
             zd_acq.run(*args, **kwargs)
-
+            
+    def _run_continuous(self, *args, **kwargs):
+        """Runs continuous acquisition"""
+        self._cont_acq.run(*args, **kwargs)
+        
+    def _run_ct_continuous(self, *args, **kwargs):
+        """Run a single acquisition with the softwaer triggered elements 
+        during the continuous acquisition
+        """
+        self._cont_ct_acq.run(*args, **kwargs)
+        
     def _get_acq_for_element(self, element):
 #         if element.get_par('synchronization').startswith('sw'):
 #             return self._cont_acq
         elem_type = element.get_type()
         if elem_type in TYPE_TIMERABLE_ELEMENTS:
-            return self._ct_acq
+            return (self._ct_acq, self._cont_ct_acq)
         elif elem_type == ElementType.ZeroDExpChannel:
-            return self._0d_acq
+            return (self._0d_acq, )
 
     def clear_elements(self):
         """Clears all elements from this action"""
@@ -141,7 +163,8 @@ class PoolAcquisition(PoolAction):
 
         :param element: the new element to be added
         :type element: sardana.pool.poolelement.PoolElement"""
-        return self._get_acq_for_element(element).add_element(element)
+        for action in self._get_acq_for_element(element):
+            action.add_element(element)
 
     def remove_element(self, element):
         """Removes an element from this action. If the element is not part of
@@ -151,7 +174,8 @@ class PoolAcquisition(PoolAction):
         :type element: sardana.pool.poolelement.PoolElement
 
         :raises: ValueError"""
-        return self._get_acq_for_element(element).add_element(element)
+        for action in self._get_acq_for_element(element):
+            action.remove_element(element)        
 
     def get_elements(self, copy_of=False):
         """Returns a sequence of all elements involved in this action.
@@ -410,8 +434,8 @@ class PoolCTAcquisition(PoolAction):
                 
 class PoolContHWAcquisition(PoolCTAcquisition):
     
-    def __init__(self, main_element, name="CTAcquisition", slaves=None):
-        PoolCTAcquisition.__init__(self, main_element, name="CTAcquisition", slaves=None)
+    def __init__(self, main_element, name="ContHWAcquisition", slaves=None):
+        PoolCTAcquisition.__init__(self, main_element, name, slaves=slaves)
         
     def action_loop(self):
         i = 0
