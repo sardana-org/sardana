@@ -23,7 +23,6 @@
 ##
 ##############################################################################
 import time
-import copy
 import logging
 import numpy
 import threading
@@ -35,12 +34,9 @@ from taurus.test import insertTest
 from sardana.pool.pooltggeneration import PoolTGGeneration
 from sardana.pool.poolacquisition import PoolAcquisition
 from sardana.sardanathreadpool import get_thread_pool
-from sardana.pool.test import (FakePool, createPoolController,
-                               createPoolTriggerGate, createPoolCounterTimer,
-                               createPoolTGGenerationConfiguration,
-                               createCTAcquisitionConfiguration,
-                               dummyPoolTGCtrlConf01, dummyPoolCTCtrlConf01,
-                               dummyCounterTimerConf01, dummyTriggerGateConf01)
+from sardana.pool.test import (createPoolTGGenerationConfiguration,
+                               createCTAcquisitionConfiguration)
+from sardana.pool.test import BasePoolTestCase
 
 class AttributeListener(object):
     
@@ -100,7 +96,7 @@ class AttributeListener(object):
 #             passive_period=0.15, repetitions=1000, integ_time=0.01)
 @insertTest(helper_name='continuous_acquisition', offset=0, active_period=0.001,
             passive_period=0.1, repetitions=10, integ_time=0.01)
-class AcquisitionTestCase(unittest.TestCase):
+class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
     """Integration test of TGGeneration and Acquisition actions."""
 
     def setUp(self):
@@ -108,71 +104,87 @@ class AcquisitionTestCase(unittest.TestCase):
         dummy configurations.
         """
         unittest.TestCase.setUp(self)
-        pool = FakePool()
-        # create TG elements and its controllers
-        dummy_tg_ctrl = createPoolController(pool, dummyPoolTGCtrlConf01)
-        self.dummy_tg = createPoolTriggerGate(pool, dummy_tg_ctrl, 
-                                                        dummyTriggerGateConf01)
-        dummy_tg_ctrl.add_element(self.dummy_tg)
-        pool.add_element(dummy_tg_ctrl)
-        pool.add_element(self.dummy_tg)
-        self.tg_cfg = createPoolTGGenerationConfiguration((dummy_tg_ctrl,),
-                                        (dummyPoolTGCtrlConf01,),
-                                        ((self.dummy_tg,),),
-                                        ((dummyTriggerGateConf01,),))
-        # create TGGeneration action
-        self.tggeneration = PoolTGGeneration(self.dummy_tg)
-        self.tggeneration.add_element(self.dummy_tg)
-        # create CT elements and its controllers
-        dummyPoolCTCtrlConf01['name'] = 'ctrl1'
-        dummy_ct_ctrl1 = createPoolController(pool, dummyPoolCTCtrlConf01)
-#         dummy_ct_ctrl1.set_log_level(logging.DEBUG)
-        dummyPoolCTCtrlConf02 = copy.deepcopy(dummyPoolCTCtrlConf01)
-        dummyPoolCTCtrlConf02['id'] = 11
-        dummyPoolCTCtrlConf02['name'] = 'ctrl2'
-        dummy_ct_ctrl2 = createPoolController(pool, dummyPoolCTCtrlConf02)
-#         dummy_ct_ctrl2.set_log_level(logging.DEBUG)
-        dummyCounterTimerConf01['name'] = 'ct01'
-        self.dummy_ct1 = createPoolCounterTimer(pool, dummy_ct_ctrl1, 
-                                                        dummyCounterTimerConf01)
-        dummy_ct_ctrl1.add_element(self.dummy_ct1)
-        pool.add_element(self.dummy_ct1)
-        dummyPoolCTCtrlConf02 = copy.deepcopy(dummyPoolCTCtrlConf01)
-        dummyCounterTimerConf02 = copy.deepcopy(dummyCounterTimerConf01)
-        dummyCounterTimerConf02['name'] = 'ct02'
-        dummyCounterTimerConf02['id'] = 5
-        dummyCounterTimerConf02['axis'] = 2
-        dummyCounterTimerConf02['enabled'] = True
-        self.dummy_ct2 = createPoolCounterTimer(pool, dummy_ct_ctrl2, 
-                                                        dummyCounterTimerConf02)
-        dummy_ct_ctrl2.add_element(self.dummy_ct2)
-        self.dummy_ct2.set_extra_par('triggermode', 'gate')
-        pool.add_element(self.dummy_ct2)
-        pool.add_element(dummy_ct_ctrl2)
-        self.l = AttributeListener()
-        self.dummy_ct1._value.add_listener(self.l)
-        self.dummy_ct2._value.add_listener(self.l)
-        # enabling the channel - normally done when applying the MG conf.
-        # see poolmeasurementgroup.PoolMeasurementGroup._build_channel_defaults
-        dummyCounterTimerConf01['enabled'] = True
-        self.acq_cfg = createCTAcquisitionConfiguration((dummy_ct_ctrl1,),
-                                        (dummyPoolCTCtrlConf01,),
-                                        ((self.dummy_ct1,),),
-                                        ((dummyCounterTimerConf01,),))
-        self.cont_acq_cfg = createCTAcquisitionConfiguration((dummy_ct_ctrl2,),
-                                        (dummyPoolCTCtrlConf02,),
-                                        ((self.dummy_ct2,),),
-                                        ((dummyCounterTimerConf02,),))
-        self.acquisition = PoolAcquisition(self.dummy_ct1)
-#         self.acquisition.setLogLevel(logging.DEBUG)
-        self.acquisition.add_element(self.dummy_ct1)
-        self.acquisition._cont_acq.add_element(self.dummy_ct2)            
+        BasePoolTestCase.setUp(self)        
         
     def continuous_acquisition(self, offset, active_period, passive_period, 
                                                       repetitions, integ_time):
         """Executes measurement running the TGGeneration and Acquisition actions
         according the test parameters. Checks the lengths of the acquired data.
-        """        
+        """
+        # obtaining elements created in the BasePoolTestCase.setUp
+        tg_ctrl_1 = self.ctrls['__test_tg_ctrl_1']
+        tg_1_1 = self.tgs['__test_tg_1_1']
+        ct_1_1 = self.cts['__test_ct_1_1']
+        ct_2_1 = self.cts['__test_ct_2_1']
+        ct_ctrl_1 = self.ctrls['__test_ct_ctrl_1']
+        ct_ctrl_2 = self.ctrls['__test_ct_ctrl_2']
+        
+        tg_ctrl_1_conf = {
+            'name': tg_ctrl_1.name,
+            'full_name': tg_ctrl_1.full_name,
+            'id': tg_ctrl_1.id,
+        }
+        
+        tg_1_1_conf = {
+            'name': tg_1_1.name,
+            'full_name': tg_1_1.full_name,
+            'id': tg_1_1.id,            
+        }
+        
+        # crating configuration for TGGeneration
+        self.tg_cfg = createPoolTGGenerationConfiguration((tg_ctrl_1,),
+                                        (tg_ctrl_1_conf,),
+                                        ((tg_1_1,),),
+                                        ((tg_1_1_conf,),))
+        # create TGGeneration action
+        # TODO: the main_element should be a measurement group not an element
+        self.tggeneration = PoolTGGeneration(tg_1_1)
+        self.tggeneration.add_element(tg_1_1)
+                    
+        ct_2_1.set_extra_par('triggermode', 'gate')
+        
+        self.l = AttributeListener()
+        ct_1_1._value.add_listener(self.l)
+        ct_2_1._value.add_listener(self.l)
+        ct_ctrl_1_conf = {
+            'name': ct_ctrl_1.name,
+            'full_name': ct_ctrl_1.full_name,
+            'id': ct_ctrl_1.id,
+        }
+        ct_ctrl_2_conf = {
+            'name': ct_ctrl_2.name,
+            'full_name': ct_ctrl_2.full_name,
+            'id': ct_ctrl_2.id,
+        }
+        ct_1_1_conf = {
+            'name': ct_1_1.name,
+            'full_name': ct_1_1.full_name,
+            'id': ct_1_1.id,
+            # enabling the channel - normally done when applying the MG conf.
+            # see poolmeasurementgroup.PoolMeasurementGroup._build_channel_defaults
+            'enabled': True 
+        }
+        ct_2_1_conf = {
+            'name': ct_2_1.name,
+            'full_name': ct_2_1.full_name,
+            'id': ct_2_1.id,
+            # enabling the channel - normally done when applying the MG conf.
+            # see poolmeasurementgroup.PoolMeasurementGroup._build_channel_defaults
+            'enabled': True
+        }
+        self.acq_cfg = createCTAcquisitionConfiguration((ct_ctrl_1,),
+                        (ct_ctrl_1_conf,),
+                        ((ct_1_1,),),
+                        ((ct_1_1_conf,),))
+        self.cont_acq_cfg = createCTAcquisitionConfiguration((ct_ctrl_2,),
+                                        (ct_ctrl_2_conf,),
+                                        ((ct_2_1,),),
+                                        ((ct_2_1_conf,),))
+        self.acquisition = PoolAcquisition(ct_1_1)
+#         self.acquisition.setLogLevel(logging.DEBUG)
+        self.acquisition.add_element(ct_1_1)
+        self.acquisition._cont_acq.add_element(ct_2_1)
+        
         jobs_before = get_thread_pool().qsize
         # configuring tggeneration according to the test parameters 
         self.tggeneration._sw_tggenerator.setOffset(offset)
@@ -187,7 +199,7 @@ class AcquisitionTestCase(unittest.TestCase):
             'config': self.acq_cfg
         }
         self.acquisition.set_config(config)
-        self.dummy_ct2.set_extra_par('nroftriggers', repetitions)
+        ct_2_1.set_extra_par('nroftriggers', repetitions)
         
         args_acq = ()        
         kwargs_acq = {
@@ -225,7 +237,7 @@ class AcquisitionTestCase(unittest.TestCase):
         self.assertEqual(jobs_before, jobs_after, msg)                
         
     def tearDown(self):
+        BasePoolTestCase.tearDown(self)
         self.tgaction = None
-        self.cfg = None
-        self.dummy_tg = None
+        self.cfg = None        
         unittest.TestCase.tearDown(self)
