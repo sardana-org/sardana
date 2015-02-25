@@ -112,12 +112,12 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         according the test parameters. Checks the lengths of the acquired data.
         """
         # obtaining elements created in the BasePoolTestCase.setUp
-        tg_ctrl_1 = self.ctrls['__test_tg_ctrl_1']
-        tg_1_1 = self.tgs['__test_tg_1_1']
-        ct_1_1 = self.cts['__test_ct_1_1']
-        ct_2_1 = self.cts['__test_ct_2_1']
-        ct_ctrl_1 = self.ctrls['__test_ct_ctrl_1']
-        ct_ctrl_2 = self.ctrls['__test_ct_ctrl_2']
+        tg_ctrl_1 = self.ctrls['_test_tg_ctrl_1']
+        tg_1_1 = self.tgs['_test_tg_1_1']
+        ct_1_1 = self.cts['_test_ct_1_1']
+        ct_2_1 = self.cts['_test_ct_2_1']
+        ct_ctrl_1 = self.ctrls['_test_ct_ctrl_1']
+        ct_ctrl_2 = self.ctrls['_test_ct_ctrl_2']
         
         tg_ctrl_1_conf = {
             'name': tg_ctrl_1.name,

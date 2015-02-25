@@ -41,7 +41,7 @@ class BasePoolTestCase(object):
         self.tgs = {}
         # Create nctctrls CT ctrls
         for ctrl in range(1, self.nctctrls + 1):
-            name = '__test_ct_ctrl_%s' %ctrl
+            name = '_test_ct_ctrl_%s' %ctrl
             c_cfg = createCtrlConf(self.pool, name, 
                         'DummyCounterTimerController', 
                         'DummyCounterTimerController.py')
@@ -50,7 +50,7 @@ class BasePoolTestCase(object):
             self.pool.add_element(ctrl_obj)
             # Create nelems CT elements for each ctrl
             for elem in range(1, self.nctelems + 1):
-                name = '__test_ct_%s_%s' %(ctrl, elem)
+                name = '_test_ct_%s_%s' %(ctrl, elem)
                 e_cfg = createElemConf(self.pool, elem, name)
                 elem_obj = createPoolCounterTimer(self.pool, ctrl_obj, e_cfg)
                 ctrl_obj.add_element(elem_obj)
@@ -59,7 +59,7 @@ class BasePoolTestCase(object):
                 self.pool.add_element(elem_obj)
         # Create ntgctrls TG ctrls
         for ctrl in range(1, self.ntgctrls + 1):
-            name = '__test_tg_ctrl_%s' %ctrl
+            name = '_test_tg_ctrl_%s' %ctrl
             c_cfg = createCtrlConf(self.pool, name,
                         'DummyTriggerGateController', 
                         'DummyTriggerGateController.py')
@@ -68,7 +68,7 @@ class BasePoolTestCase(object):
             self.pool.add_element(ctrl_obj)
             # Create nelems CT elements for each ctrl
             for elem in range(1, self.ntgelems + 1):
-                name = '__test_tg_%s_%s' %(ctrl, elem)
+                name = '_test_tg_%s_%s' %(ctrl, elem)
                 e_cfg = createElemConf(self.pool, elem, name)
                 elem_obj = createPoolTriggerGate(self.pool, ctrl_obj, e_cfg)
                 ctrl_obj.add_element(elem_obj)
