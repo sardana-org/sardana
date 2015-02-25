@@ -30,7 +30,7 @@ __all__ = ['createPoolController', 'createPoolCounterTimer',
            'getTGConfiguration', 'getSWtg_MGConfiguration',
            'getHWtg_MGConfiguration', 'createElemConf',
            'createCtrlConf', 'createConfbyCtrlKlass', 
-           'createMGuserConfiguration']
+           'createMGUserConfiguration']
 
 from sardana.sardanadefs import ElementType
 from sardana.pool.poolcontroller import PoolController
@@ -151,29 +151,29 @@ def createCTAcquisitionConfiguration(ctrls, ctrls_conf,
     return configuration 
 
 
-def createMGuserConfiguration(pool, MGchannels):
+def createMGUserConfiguration(pool, channels):
     '''Method to create MeasurementGroup configuration using strings. 
  
     
-    :param MGelems: Each tuple: (expchan, associated_trigger, trigger_type) 
+    :param channels: Each tuple: (expchan, associated_trigger, trigger_type) 
                     First element of the list of lists is the master 
                     counter/timer.
                     First element of each list is the master counter/timer 
                     from the controller.
-    :type MGelems: seq<seq<tuple(str)>>
+    :type channels: seq<seq<tuple(str)>>
     :return: measurement group configuration dictionary of strings.
     :rtype: dict<>
     '''
 
     MG_configuration = {}
-    main_master_channel = pool.get_element_by_full_name(MGchannels[0][0][0])
+    main_master_channel = pool.get_element_by_full_name(channels[0][0][0])
     MG_configuration['timer'] = main_master_channel.full_name
     MG_configuration['monitor'] = main_master_channel.full_name
     
     all_ctrls_d = {}
-    for i in range(len(MGchannels)):
-        MGchannels_in_ctrl = MGchannels[i]
-        master_channel_str = MGchannels[i][0][0]
+    for i in range(len(channels)):
+        channels_in_ctrl = channels[i]
+        master_channel_str = channels[i][0][0]
         master_channel = pool.get_element_by_full_name(master_channel_str)
         ctrl = master_channel.get_controller()
         ctrl_full_name = ctrl.full_name
@@ -184,10 +184,10 @@ def createMGuserConfiguration(pool, MGchannels):
         unit_dict = {}
         unit_dict['monitor'] = master_channel_str
         unit_dict['timer'] = master_channel_str
-        unit_dict['trigger_type'] = MGchannels[i][0][2]
+        unit_dict['trigger_type'] = channels[i][0][2]
         channels_d = {}
-        for chan_idx in range(len(MGchannels_in_ctrl)):
-            channel_name_str = MGchannels_in_ctrl[chan_idx][0]
+        for chan_idx in range(len(channels_in_ctrl)):
+            channel_name_str = channels_in_ctrl[chan_idx][0]
             channel_element = pool.get_element_by_full_name(channel_name_str)
             one_channel_d = {}
             one_channel_d.update({'plot_type': 1})
@@ -209,9 +209,9 @@ def createMGuserConfiguration(pool, MGchannels):
             one_channel_d.update({'label':channel_element.name})
             one_channel_d.update({'data_units': 'No unit'})
             one_channel_d.update({'name':channel_element.name})
-            trig_elem_d = {'trigger_element': MGchannels_in_ctrl[chan_idx][1]}
+            trig_elem_d = {'trigger_element': channels_in_ctrl[chan_idx][1]}
             one_channel_d.update(trig_elem_d)
-            trigger_type_d = {'trigger_type': MGchannels_in_ctrl[chan_idx][2]}
+            trigger_type_d = {'trigger_type': channels_in_ctrl[chan_idx][2]}
             one_channel_d.update(trigger_type_d)
             channels_d.update({channel_name_str:one_channel_d})
 
