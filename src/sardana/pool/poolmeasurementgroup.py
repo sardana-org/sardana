@@ -523,7 +523,6 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     def start_acquisition(self, value=None, multiple=1, continuous=False):
         self._aborted = False
-        self.debug('start_acq elements: %s' % self.acquisition.get_elements())
         if not self._simulation_mode:
             # load configuration into controller(s) if necessary
             self.load_configuration()
