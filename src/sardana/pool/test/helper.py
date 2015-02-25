@@ -29,7 +29,8 @@ __all__ = ['createPoolController', 'createPoolCounterTimer',
            'createCTAcquisitionConfiguration', 'createMGConfiguration',
            'getTGConfiguration', 'getSWtg_MGConfiguration',
            'getHWtg_MGConfiguration', 'createElemConf',
-           'createCtrlConf', 'createConfbyCtrlKlass']
+           'createCtrlConf', 'createConfbyCtrlKlass', 
+           'createMGuserConfiguration']
 
 from sardana.sardanadefs import ElementType
 from sardana.pool.poolcontroller import PoolController
@@ -148,6 +149,80 @@ def createCTAcquisitionConfiguration(ctrls, ctrls_conf,
         ctrls_configuration[ctrl] = ctrl_conf
     configuration['controllers'] = ctrls_configuration
     return configuration 
+
+
+def createMGuserConfiguration(pool, MGchannels):
+    '''Method to create MeasurementGroup configuration using strings. 
+ 
+    
+    :param MGelems: Each tuple: (expchan, associated_trigger, trigger_type) 
+                    First element of the list of lists is the master 
+                    counter/timer.
+                    First element of each list is the master counter/timer 
+                    from the controller.
+    :type MGelems: seq<seq<tuple(str)>>
+    :return: measurement group configuration dictionary of strings.
+    :rtype: dict<>
+    '''
+
+    MG_configuration = {}
+    main_master_channel = pool.get_element_by_full_name(MGchannels[0][0][0])
+    MG_configuration['timer'] = main_master_channel.full_name
+    MG_configuration['monitor'] = main_master_channel.full_name
+    
+    all_ctrls_d = {}
+    for i in range(len(MGchannels)):
+        MGchannels_in_ctrl = MGchannels[i]
+        master_channel_str = MGchannels[i][0][0]
+        master_channel = pool.get_element_by_full_name(master_channel_str)
+        ctrl = master_channel.get_controller()
+        ctrl_full_name = ctrl.full_name
+
+        ctrl_d = {}
+        ctrl_d.update({ctrl_full_name:{}})
+
+        unit_dict = {}
+        unit_dict['monitor'] = master_channel_str
+        unit_dict['timer'] = master_channel_str
+        unit_dict['trigger_type'] = MGchannels[i][0][2]
+        channels_d = {}
+        for chan_idx in range(len(MGchannels_in_ctrl)):
+            channel_name_str = MGchannels_in_ctrl[chan_idx][0]
+            channel_element = pool.get_element_by_full_name(channel_name_str)
+            one_channel_d = {}
+            one_channel_d.update({'plot_type': 1})
+            one_channel_d.update({'plot_axes': ['<mov>']})
+            one_channel_d.update({'data_type': 'float64'})
+            one_channel_d.update({'index': 0})
+            one_channel_d.update({'enabled':True})
+            one_channel_d.update({'nexus_path': ''})
+            one_channel_d.update({'shape': []})
+            ctrl_from_channel = channel_element.get_controller()
+            ctrl_name = ctrl_from_channel.full_name
+            one_channel_d.update({'_controller_name':ctrl_name})
+            one_channel_d.update({'conditioning': ''})
+            one_channel_d.update({'full_name':channel_name_str})
+            one_channel_d.update({'_unit_id': '0'})
+            one_channel_d.update({'id':channel_element.id})
+            one_channel_d.update({'normalization': 0})
+            one_channel_d.update({'output': True})
+            one_channel_d.update({'label':channel_element.name})
+            one_channel_d.update({'data_units': 'No unit'})
+            one_channel_d.update({'name':channel_element.name})
+            trig_elem_d = {'trigger_element': MGchannels_in_ctrl[chan_idx][1]}
+            one_channel_d.update(trig_elem_d)
+            trigger_type_d = {'trigger_type': MGchannels_in_ctrl[chan_idx][2]}
+            one_channel_d.update(trigger_type_d)
+            channels_d.update({channel_name_str:one_channel_d})
+
+        unit_dict['channels'] = {}
+        unit_dict['channels'].update(channels_d)    
+        ctrl_d[ctrl_full_name]['units'] = {}
+        ctrl_d[ctrl_full_name]['units']['0'] = unit_dict
+        all_ctrls_d.update(ctrl_d)
+    
+    MG_configuration.update({'controllers':all_ctrls_d})
+    return MG_configuration
 
 
 def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,
