@@ -152,8 +152,8 @@ class PoolMeasurementGroup(PoolGroupElement):
     def _is_managed_element(self, element):
         return element.get_type() in TYPE_EXP_CHANNEL_ELEMENTS
 
-    def _build_channel_defaults(self, channel_data, channel):
         """Fills the channel default values for the given channel dictionary"""
+    def _build_channel_defaults(self, channel_data, channel):
 
         external_from_name = isinstance(channel, (str, unicode))
         ndim = None
@@ -296,6 +296,10 @@ class PoolMeasurementGroup(PoolGroupElement):
                         id = element.id
                     user_elem_ids[channel_data['index']] = id
                     channel_data = self._build_channel_defaults(channel_data, element)
+                    # creating TG information
+                    trigger_name = channel_data['trigger_element']
+                    trigger_element = pool.get_element_by_full_name(trigger_name)
+                    channel_data['trigger_element'] = trigger_element
             indexes = sorted(user_elem_ids.keys())
             assert indexes == range(len(indexes))
             self.set_user_element_ids([ user_elem_ids[idx] for idx in indexes ])
