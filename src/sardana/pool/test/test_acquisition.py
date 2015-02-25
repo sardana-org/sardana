@@ -119,23 +119,9 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         ct_ctrl_1 = self.ctrls['_test_ct_ctrl_1']
         ct_ctrl_2 = self.ctrls['_test_ct_ctrl_2']
         
-        tg_ctrl_1_conf = {
-            'name': tg_ctrl_1.name,
-            'full_name': tg_ctrl_1.full_name,
-            'id': tg_ctrl_1.id,
-        }
-        
-        tg_1_1_conf = {
-            'name': tg_1_1.name,
-            'full_name': tg_1_1.full_name,
-            'id': tg_1_1.id,            
-        }
-        
         # crating configuration for TGGeneration
         self.tg_cfg = createPoolTGGenerationConfiguration((tg_ctrl_1,),
-                                        (tg_ctrl_1_conf,),
-                                        ((tg_1_1,),),
-                                        ((tg_1_1_conf,),))
+                                                          ((tg_1_1,),),)
         # create TGGeneration action
         # TODO: the main_element should be a measurement group not an element
         self.tggeneration = PoolTGGeneration(tg_1_1)
@@ -146,42 +132,14 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         self.l = AttributeListener()
         ct_1_1._value.add_listener(self.l)
         ct_2_1._value.add_listener(self.l)
-        ct_ctrl_1_conf = {
-            'name': ct_ctrl_1.name,
-            'full_name': ct_ctrl_1.full_name,
-            'id': ct_ctrl_1.id,
-        }
-        ct_ctrl_2_conf = {
-            'name': ct_ctrl_2.name,
-            'full_name': ct_ctrl_2.full_name,
-            'id': ct_ctrl_2.id,
-        }
-        ct_1_1_conf = {
-            'name': ct_1_1.name,
-            'full_name': ct_1_1.full_name,
-            'id': ct_1_1.id,
-            # enabling the channel - normally done when applying the MG conf.
-            # see poolmeasurementgroup.PoolMeasurementGroup._build_channel_defaults
-            'enabled': True 
-        }
-        ct_2_1_conf = {
-            'name': ct_2_1.name,
-            'full_name': ct_2_1.full_name,
-            'id': ct_2_1.id,
-            # enabling the channel - normally done when applying the MG conf.
-            # see poolmeasurementgroup.PoolMeasurementGroup._build_channel_defaults
-            'enabled': True
-        }
+
         self.acq_cfg = createCTAcquisitionConfiguration((ct_ctrl_1,),
-                        (ct_ctrl_1_conf,),
-                        ((ct_1_1,),),
-                        ((ct_1_1_conf,),))
+                                                        ((ct_1_1,),),)
+                        
         self.cont_acq_cfg = createCTAcquisitionConfiguration((ct_ctrl_2,),
-                                        (ct_ctrl_2_conf,),
-                                        ((ct_2_1,),),
-                                        ((ct_2_1_conf,),))
+                                                             ((ct_2_1,),),)
         self.acquisition = PoolAcquisition(ct_1_1)
-#         self.acquisition.setLogLevel(logging.DEBUG)
+        # self.acquisition.setLogLevel(logging.DEBUG)
         self.acquisition.add_element(ct_1_1)
         self.acquisition._cont_acq.add_element(ct_2_1)
         

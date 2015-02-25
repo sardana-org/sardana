@@ -51,9 +51,7 @@ class PoolTriggerGateTestCase(unittest.TestCase):
         pool.add_element(dummy_tg_ctrl)
         pool.add_element(self.dummy_tg)
         self.cfg = createPoolTGGenerationConfiguration((dummy_tg_ctrl,),
-                                        (dummyTriggerGateConf01,),
-                                        ((self.dummy_tg,),),
-                                        ((dummyTriggerGateConf01,),))
+                                                       ((self.dummy_tg,),),)
         # Create mock and define its functions
         ctrl_methods = ['PreStartAll', 'StartAll', 'PreStartOne', 'StartOne',
                         'PreStateAll', 'StateAll', 'PreStateOne', 'StateOne']
