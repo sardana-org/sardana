@@ -32,7 +32,8 @@ from taurus.test import insertTest
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool.test import (BasePoolTestCase, createPoolMeasurementGroup,
                                createMGConfiguration,
-                               dummyMeasurementGroupConf01)
+                               dummyMeasurementGroupConf01,
+                               createMGUserConfiguration)
 #TODO Import AttributeListener from the right location.
 from sardana.pool.test.test_acquisition import AttributeListener
         
@@ -43,20 +44,20 @@ params_1 = { "offset":0,
               "repetitions":10, 
               "integ_time":0.01 }
 
-config_1 = ()
+config_1 = (
+    (('_test_ct_1_1', '_test_tg_1_1', 'trigger'),),
+    (('_test_ct_2_1', '_test_tg_2_1', 'trigger'),)
+)
 
 @insertTest(helper_name='meas_cont_acquisition', params=params_1, config=config_1)
 class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
     """Integration test of TGGeneration and Acquisition actions."""
 
     def setUp(self):
-        """Create a Controller, TriggerGate and PoolTGGeneration objects from 
-        dummy configurations.
+        """
         """
         BasePoolTestCase.setUp(self)
         unittest.TestCase.setUp(self)
-
-        # Subscribe to ... 
 
     def meas_cont_acquisition(self, params, config):
         """Executes measurement using the measurement group. 
@@ -70,37 +71,38 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
     
         jobs_before = get_thread_pool().qsize
         
+        pool = self.pool
+        
         dummyMeasurementGroupConf01["name"] = 'mg1'
         dummyMeasurementGroupConf01["full_name"] = 'mg1'
-        
-        user_elements = [self.dummy_ct1.id, self.dummy_ct2.id]
-        dummyMeasurementGroupConf01["user_elements"] = user_elements
+        # obtaining ids of measurement group elements
+        channels = []
+        for ctrl_links in config:
+            for link in ctrl_links:
+                channel_name = link[0]
+                channel = self.cts[channel_name]
+                channels.append(channel.id)
+        dummyMeasurementGroupConf01["user_elements"] = channels
         
         pmg = createPoolMeasurementGroup(pool, dummyMeasurementGroupConf01)
         # Add mg to pool
-        pool.add_element(self.pmg)
-        self.mg_conf = createMGConfiguration(ctrls, ctrls_conf, ctrl_channels,
-                  ctrl_channels_conf, ctrl_trigger_elements, ctrl_trigger_modes)
-        
-        # creating attribute listener - to be used for acquired data validation
-        self.attr_listener = AttributeListener()        
-        ## Add listeners
-        attributes = self.pmg.get_user_elements_attribute_sequence()                
-        for attr in attributes:
-            attr.add_listener(self.attr_listener)
-        
-        self.pmg.set_integration_time(integ_time)
-        self.pmg.set_configuration_from_user(self.mg_conf)
-        self.pmg._action_cache = self.pmg._fill_action_cache(None)
-        # TODO: add elements to action when applying configuration
-#         self.pmg.acquisition._cont_ct_acq.add_element(self.dummy_ct1)
-#         self.pmg.acquisition._cont_acq.add_element(self.dummy_ct2)
-        
-        self.pmg.start_acquisition(continuous=True)
+        pool.add_element(pmg)
+                                
+        pmg.set_integration_time(integ_time)
+        # creating mg user configuration
+        mg_conf = createMGUserConfiguration(pool, config)
+        pmg.set_configuration_from_user(mg_conf)
+#        pmg._action_cache = self.pmg._fill_action_cache(None)
 
+        attr_listener = AttributeListener()        
+        ## Add listeners
+        attributes = pmg.get_user_elements_attribute_sequence()                
+        for attr in attributes:
+            attr.add_listener(attr_listener)
+        pmg.start_acquisition(continuous=True)
         # waiting for acquisition and tggeneration to finish
-        acq = self.pmg.acquisition
-        tgg = self.pmg.tggeneration                
+        acq = pmg.acquisition
+        tgg = pmg.tggeneration                
         while acq.is_running or tgg.is_running():            
             time.sleep(1)
         # print the acquisition records
