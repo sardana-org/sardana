@@ -35,7 +35,6 @@ class BasePoolTestCase(object):
         """
         self.nctctrls = self.ntgctrls = 4
         self.nctelems = self.ntgelems = 5  
-        unittest.TestCase.setUp(self)
         self.pool = FakePool()
         self.ctrls = {}
         self.cts = {}
@@ -95,5 +94,3 @@ class BasePoolTestCase(object):
         self.ctrls = None
         self.cts = None
         self.tgs = None
-        unittest.TestCase.tearDown(self)
-
