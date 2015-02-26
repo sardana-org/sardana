@@ -39,6 +39,7 @@ from taurus.core.util.enumeration import Enumeration
 
 from sardana import State, ElementType, TYPE_TIMERABLE_ELEMENTS
 from sardana.sardanathreadpool import get_thread_pool
+from sardana.pool import AcqTriggerType
 from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
 from sardana.pool.pooltriggergate import TGEventType
 
@@ -149,12 +150,22 @@ class PoolAcquisition(PoolAction):
     def _get_acq_for_element(self, element):
 #         if element.get_par('synchronization').startswith('sw'):
 #             return self._cont_acq
+        actions = []
+        # filling actions for desynchronized acquisition
         elem_type = element.get_type()
         if elem_type in TYPE_TIMERABLE_ELEMENTS:
-            return (self._ct_acq, self._cont_ct_acq)
+            actions.append(self._ct_acq)
         elif elem_type == ElementType.ZeroDExpChannel:
-            return (self._0d_acq, )
-
+            actions.append(self._0d_acq)
+        # filling actions for synchronized acquisition
+        ctrl = element.get_controller()
+        trigger_type = ctrl.get_ctrl_par('trigger_type')
+        if trigger_type in (AcqTriggerType.Trigger, AcqTriggerType.Gate):
+            actions.append(self._cont_acq)
+        elif trigger_type in (AcqTriggerType.Software, AcqTriggerType.Unknown):
+            actions.append(self._cont_ct_acq)
+        return actions
+        
     def clear_elements(self):
         """Clears all elements from this action"""
 
