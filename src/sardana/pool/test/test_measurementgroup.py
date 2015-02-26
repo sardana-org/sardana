@@ -127,7 +127,9 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         # print the acquisition records
         for i, record in enumerate(zip(*attr_listener.data.values())):
             print i, record
-        # checking if all the data were acquired 
+        # checking if any of data was acquired        
+        self.assertTrue(attr_listener.data, 'No data were acquired')            
+        # checking if all the data were acquired
         for ch, data in attr_listener.data.items():
             acq_data = len(data)
             msg = 'length of data for channel %s is %d and should be %d' %\
