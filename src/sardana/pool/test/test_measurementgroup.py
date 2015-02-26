@@ -23,15 +23,13 @@
 ##
 ##############################################################################
 import time
-import logging
 
 from taurus.external import unittest
 from taurus.test import insertTest
-#TODO: import mock using taurus.external
 
 from sardana.sardanathreadpool import get_thread_pool
+from sardana.pool import AcqTriggerType
 from sardana.pool.test import (BasePoolTestCase, createPoolMeasurementGroup,
-                               createMGConfiguration,
                                dummyMeasurementGroupConf01,
                                createMGUserConfiguration)
 #TODO Import AttributeListener from the right location.
@@ -41,12 +39,12 @@ from sardana.pool.test.test_acquisition import AttributeListener
 params_1 = { "offset":0, 
               "active_period":0.001,
               "passive_period":0.15, 
-              "repetitions":10, 
+              "repetitions":100, 
               "integ_time":0.01 }
 
 config_1 = (
-    (('_test_ct_1_1', '_test_tg_1_1', 'trigger'),),
-    (('_test_ct_2_1', '_test_tg_2_1', 'trigger'),)
+    (('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),),
+    (('_test_ct_2_1', '_test_tg_2_1', AcqTriggerType.Trigger),)
 )
 
 @insertTest(helper_name='meas_cont_acquisition', params=params_1, config=config_1)
@@ -85,31 +83,45 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         dummyMeasurementGroupConf01["user_elements"] = channels
         
         pmg = createPoolMeasurementGroup(pool, dummyMeasurementGroupConf01)
+        # TODO: it should be possible execute test without the use of actions         
+        tgg = pmg.tggeneration        
         # Add mg to pool
         pool.add_element(pmg)
                                 
         pmg.set_integration_time(integ_time)
         # creating mg user configuration
         mg_conf = createMGUserConfiguration(pool, config)
-        pmg.set_configuration_from_user(mg_conf)
-#        pmg._action_cache = self.pmg._fill_action_cache(None)
+        # setting mg configuration - this cleans the action cache!
+        pmg.set_configuration_from_user(mg_conf)        
+        # setting parameters to the software tg generator
+        tgg._sw_tggenerator.setOffset(offset)
+        tgg._sw_tggenerator.setActivePeriod(active_period)
+        tgg._sw_tggenerator.setPassivePeriod(passive_period)
+        tgg._sw_tggenerator.setRepetitions(repetitions)
 
+        channels = []
+        for ctrl_links in config:
+            for link in ctrl_links:
+                channel_name = link[0]
+                channel = self.cts[channel_name]
+                channel.set_extra_par('nroftriggers', repetitions)
         attr_listener = AttributeListener()        
         ## Add listeners
         attributes = pmg.get_user_elements_attribute_sequence()                
         for attr in attributes:
             attr.add_listener(attr_listener)
+
         pmg.start_acquisition(continuous=True)
-        # waiting for acquisition and tggeneration to finish
+        # retrieving the acquisition since it was cleaned when applying mg conf        
         acq = pmg.acquisition
-        tgg = pmg.tggeneration                
-        while acq.is_running or tgg.is_running():            
-            time.sleep(1)
+        # waiting for acquisition and tggeneration to finish        
+        while acq.is_running() or tgg.is_running():            
+            time.sleep(1)        
         # print the acquisition records
-        for i, record in enumerate(zip(*self.attr_listener.data.values())):
+        for i, record in enumerate(zip(*attr_listener.data.values())):
             print i, record
         # checking if all the data were acquired 
-        for ch, data in self.attr_listener.data.items():
+        for ch, data in attr_listener.data.items():
             acq_data = len(data)
             msg = 'length of data for channel %s is %d and should be %d' %\
                                                      (ch, acq_data, repetitions)
