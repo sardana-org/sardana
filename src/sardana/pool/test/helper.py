@@ -453,8 +453,8 @@ def getTGConfiguration(MGcfg):
         for tg_elem in ctrl_tgelem_dict[ctrl]:
             ch = unit['channels'][tg_elem] = {}
             ch['full_name']= tg_elem.full_name
-
-    return TGcfg
+    #TODO: temporary returning tg_elements
+    return TGcfg, _tg_element_list
 
 def createConfbyCtrlKlass(pool, ctrl_klass, ctrl_name):
     pool_mng = pool.get_manager()

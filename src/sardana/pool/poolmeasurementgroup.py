@@ -110,11 +110,13 @@ class PoolMeasurementGroup(PoolGroupElement):
         kwargs['elem_type'] = ElementType.MeasurementGroup
         PoolGroupElement.__init__(self, **kwargs)
         self.set_configuration(kwargs.get('configuration'))
+        tggen_name = "%s.TGGeneration" % self._name
+        #TODO: take care of cleaning up the tggeneration action
+        # when the configuration changes
+        self._tggeneration = PoolTGGeneration(self, tggen_name)
 
     def _create_action_cache(self):
-        acq_name = "%s.Acquisition" % self._name
-        tggen_name = "%s.TGGeneration" % self._name
-        self._tggeneration = PoolTGGeneration(self, tggen_name)
+        acq_name = "%s.Acquisition" % self._name        
         return PoolAcquisition(self, acq_name)
 
     def _calculate_element_state(self, elem, elem_state_info):
@@ -311,8 +313,14 @@ class PoolMeasurementGroup(PoolGroupElement):
             from sardana.pool.test.helper import getSWtg_MGConfiguration
             from sardana.pool.test.helper import getTGConfiguration
             self._sw_acq_config = getSWtg_MGConfiguration(config)
-            self._hw_acq_config = getHWtg_MGConfiguration(config)
-            self._tg_config = getTGConfiguration(config)
+            self._hw_acq_config = getHWtg_MGConfiguration(config)            
+            self._tg_config, tg_elements = getTGConfiguration(config)
+            tggen_name = "%s.TGGeneration" % self._name
+            #taking care of cleaning up the tggeneration action
+            # when the configuration changes
+            self._tggeneration = PoolTGGeneration(self, tggen_name)
+            for tg in tg_elements:
+                self.tggeneration.add_element(tg)
 
         # checks
         g_timer, g_monitor = config['timer'], config['monitor']
