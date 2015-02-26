@@ -164,6 +164,7 @@ def createMGUserConfiguration(pool, channels):
     MG_configuration['monitor'] = main_master_channel.full_name
     
     all_ctrls_d = {}
+    index = 0 # index represents the order of the channels
     for i in range(len(channels)):
         channels_in_ctrl = channels[i]
         master_channel_str = channels[i][0][0]
@@ -187,7 +188,7 @@ def createMGUserConfiguration(pool, channels):
             one_channel_d.update({'plot_type': 1})
             one_channel_d.update({'plot_axes': ['<mov>']})
             one_channel_d.update({'data_type': 'float64'})
-            one_channel_d.update({'index': i})
+            one_channel_d.update({'index': index})
             one_channel_d.update({'enabled':True})
             one_channel_d.update({'nexus_path': ''})
             one_channel_d.update({'shape': []})
@@ -208,6 +209,7 @@ def createMGUserConfiguration(pool, channels):
             trigger_type_d = {'trigger_type': channels_in_ctrl[chan_idx][2]}
             one_channel_d.update(trigger_type_d)
             channels_d.update({channel_name_str:one_channel_d})
+            index += 1
 
         unit_dict['channels'] = {}
         unit_dict['channels'].update(channels_d)    
