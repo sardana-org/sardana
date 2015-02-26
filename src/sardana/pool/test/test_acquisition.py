@@ -31,6 +31,7 @@ from taurus.external import unittest
 from taurus.test import insertTest
 #TODO: import mock using taurus.external
 
+from sardana.pool import AcqTriggerType
 from sardana.pool.pooltggeneration import PoolTGGeneration
 from sardana.pool.poolacquisition import PoolAcquisition
 from sardana.sardanathreadpool import get_thread_pool
@@ -127,7 +128,7 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         self.tggeneration = PoolTGGeneration(tg_1_1)
         self.tggeneration.add_element(tg_1_1)
                     
-        ct_2_1.set_extra_par('triggermode', 'gate')
+        ct_ctrl_2.set_ctrl_par('trigger_type', AcqTriggerType.Trigger)
         
         self.l = AttributeListener()
         ct_1_1._value.add_listener(self.l)
