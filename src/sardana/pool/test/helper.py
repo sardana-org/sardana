@@ -154,6 +154,7 @@ def createMGUserConfiguration(pool, channels):
     :rtype: dict<>
     '''
 
+    channel_ids = []
     MG_configuration = {}
     main_master_channel = pool.get_element_by_full_name(channels[0][0][0])
     MG_configuration['timer'] = main_master_channel.full_name
@@ -178,6 +179,7 @@ def createMGUserConfiguration(pool, channels):
         for chan_idx in range(len(channels_in_ctrl)):
             channel_name_str = channels_in_ctrl[chan_idx][0]
             channel_element = pool.get_element_by_full_name(channel_name_str)
+            channel_ids.append(channel_element.id)
             one_channel_d = {}
             one_channel_d.update({'plot_type': 1})
             one_channel_d.update({'plot_axes': ['<mov>']})
@@ -211,7 +213,7 @@ def createMGUserConfiguration(pool, channels):
         all_ctrls_d.update(ctrl_d)
     
     MG_configuration.update({'controllers':all_ctrls_d})
-    return MG_configuration
+    return (MG_configuration, channel_ids)
 
 
 def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,

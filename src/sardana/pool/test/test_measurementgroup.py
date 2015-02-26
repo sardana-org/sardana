@@ -73,14 +73,10 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         
         dummyMeasurementGroupConf01["name"] = 'mg1'
         dummyMeasurementGroupConf01["full_name"] = 'mg1'
-        # obtaining ids of measurement group elements
-        channels = []
-        for ctrl_links in config:
-            for link in ctrl_links:
-                channel_name = link[0]
-                channel = self.cts[channel_name]
-                channels.append(channel.id)
-        dummyMeasurementGroupConf01["user_elements"] = channels
+
+        # creating mg user configuration and obtaining channel ids
+        (mg_conf, channel_ids) = createMGUserConfiguration(pool, config)
+        dummyMeasurementGroupConf01["user_elements"] = channel_ids
         
         pmg = createPoolMeasurementGroup(pool, dummyMeasurementGroupConf01)
         # TODO: it should be possible execute test without the use of actions         
@@ -89,8 +85,7 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         pool.add_element(pmg)
                                 
         pmg.set_integration_time(integ_time)
-        # creating mg user configuration
-        mg_conf = createMGUserConfiguration(pool, config)
+
         # setting mg configuration - this cleans the action cache!
         pmg.set_configuration_from_user(mg_conf)        
         # setting parameters to the software tg generator
