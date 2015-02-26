@@ -40,14 +40,26 @@ params_1 = { "offset":0,
               "active_period":0.001,
               "passive_period":0.15, 
               "repetitions":100, 
-              "integ_time":0.01 }
+              "integ_time":0.01 
+}
 
+doc_1 = 'Synchronized acquisition with two channels from the same controller'\
+        ' which use the same trigger'
 config_1 = (
+    (('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
+     ('_test_ct_1_2', '_test_tg_1_1', AcqTriggerType.Trigger)),  
+)
+doc_2 = 'Synchronized acquisition with two channels from different controllers'\
+        ' uses two different triggers'
+config_2 = (
     (('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),),
-    (('_test_ct_2_1', '_test_tg_2_1', AcqTriggerType.Trigger),)
+    (('_test_ct_2_1', '_test_tg_2_1', AcqTriggerType.Trigger),)  
 )
 
-@insertTest(helper_name='meas_cont_acquisition', params=params_1, config=config_1)
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_1,
+            params=params_1, config=config_1)
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_2,
+            params=params_1, config=config_2)
 class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
     """Integration test of TGGeneration and Acquisition actions."""
 
@@ -94,7 +106,7 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         tgg._sw_tggenerator.setPassivePeriod(passive_period)
         tgg._sw_tggenerator.setRepetitions(repetitions)
 
-        channels = []
+        
         for ctrl_links in config:
             for link in ctrl_links:
                 channel_name = link[0]
