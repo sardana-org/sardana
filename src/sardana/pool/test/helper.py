@@ -182,7 +182,7 @@ def createMGUserConfiguration(pool, channels):
             one_channel_d.update({'plot_type': 1})
             one_channel_d.update({'plot_axes': ['<mov>']})
             one_channel_d.update({'data_type': 'float64'})
-            one_channel_d.update({'index': 0})
+            one_channel_d.update({'index': i})
             one_channel_d.update({'enabled':True})
             one_channel_d.update({'nexus_path': ''})
             one_channel_d.update({'shape': []})
