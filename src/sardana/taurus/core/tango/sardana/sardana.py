@@ -64,6 +64,7 @@ Normalization = Enumeration("Normalization", ("No", "Avg", "Integ"))
 #: an enumeration describing all possible acquisition trigger types
 AcqTriggerType = Enumeration("AcqTriggerType", (\
     "Software",  # channel triggered by software - start and stop by software
+    "Trigger", # channel triggered by HW - start by external
     "Gate",  # channel triggered by HW - start and stop by external
     "Unknown"))
 
