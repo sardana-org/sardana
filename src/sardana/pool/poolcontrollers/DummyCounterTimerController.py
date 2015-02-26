@@ -24,6 +24,7 @@
 import time, copy
 from sardana.sardanavalue import SardanaValue
 from sardana import State, DataAccess
+from sardana.pool import AcqTriggerType
 from sardana.pool.controller import CounterTimerController, Type, Access,\
                                     Description, Memorize, NotMemorized
 
@@ -37,7 +38,7 @@ class Channel:
         self.active = True
         self.nrOfTriggers = 0
         self._counter = 0
-        self.mode = "soft"
+        self.mode = AcqTriggerType.Software
         self.buffer_values = []
 
 
@@ -72,6 +73,7 @@ class DummyCounterTimerController(CounterTimerController):
 
     def __init__(self, inst, props, *args, **kwargs):
         CounterTimerController.__init__(self, inst, props, *args, **kwargs)
+        self._trigger_type = AcqTriggerType.Software
         self.channels = self.MaxDevice*[None,]
         self.reset()
         
@@ -118,7 +120,7 @@ class DummyCounterTimerController(CounterTimerController):
         
     def _updateChannelState(self, ind, elapsed_time):        
         channel = self.channels[ind-1]
-        if channel.mode == "soft":
+        if channel.mode == AcqTriggerType.Software:
             if self.integ_time is not None:
                 # counting in time
                 if elapsed_time >= self.integ_time:
@@ -128,7 +130,7 @@ class DummyCounterTimerController(CounterTimerController):
                 v = int(elapsed_time*100*ind)
                 if v >= self.monitor_count:
                     self._finish(elapsed_time)
-        elif channel.mode == "gate":
+        elif channel.mode == AcqTriggerType.Trigger:
             if self.integ_time is not None:
                 # counting in time 
                 #if elapsed_time >= self.integ_time*channel.nrOfTriggers:
@@ -139,7 +141,7 @@ class DummyCounterTimerController(CounterTimerController):
     def _updateChannelValue(self, ind, elapsed_time):
         channel = self.channels[ind-1]
 
-        if channel.mode == "soft":
+        if channel.mode == AcqTriggerType.Software:
             if self.integ_time is not None:
                 t = elapsed_time
                 if not channel.is_counting:
@@ -153,7 +155,7 @@ class DummyCounterTimerController(CounterTimerController):
                 if ind == self._monitor:
                     if not channel.is_counting:
                         channel.value = self.monitor_count
-        elif channel.mode == "gate":
+        elif channel.mode == AcqTriggerType.Trigger:
             if self.integ_time is not None:
                 t = elapsed_time
                 n = int(t / self.integ_time)
@@ -204,13 +206,13 @@ class DummyCounterTimerController(CounterTimerController):
     def ReadOne(self, ind):
         self._log.debug('ReadOne(%d): entering...' % ind)
         channel = self.read_channels[ind]
-        if channel.mode == "gate":
+        if channel.mode == AcqTriggerType.Trigger:
             v = copy.deepcopy(channel.buffer_values)
             sv = SardanaValue(v)
             sv.idx = range(channel._counter, channel._counter + len(v))
             channel.buffer_values.__init__()
             channel._counter = channel._counter + len(v)
-        else:
+        elif channel.mode == AcqTriggerType.Software:
             v = channel.value
             sv = SardanaValue(v)
         self._log.debug('ReadOne(%d): returning %s' % (ind, repr(v)))
@@ -264,4 +266,14 @@ class DummyCounterTimerController(CounterTimerController):
             self.channels[idx].mode = value
         if name.lower() == "nroftriggers":
            self.channels[idx].nrOfTriggers = value
-                       
+           
+    def GetCtrlPar(self, par):
+        if par == 'trigger_type':            
+            return self._trigger_type
+    
+    def SetCtrlPar(self, par, value):
+        if par == 'trigger_type':
+            self._trigger_type = value            
+            for channel in self.channels:
+                if channel:
+                    channel.mode = value
