@@ -36,7 +36,7 @@ __all__ = ['dummyMeasurementGroupConf01',
 # Pool Measuremeng Group
 '''Minimum configuration to create a Pool MeasurementGroup'''
 dummyMeasurementGroupConf01 = { 'full_name': '',
-                              'id': 3,
+                              'id': None,
                               'name': '',
                               'pool': None,
                               'user_elements': [2] }

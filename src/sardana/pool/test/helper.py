@@ -74,6 +74,9 @@ def createPoolMeasurementGroup(pool, conf):
     '''Method to create a PoolMeasurementGroup using a configuration dictionary
     '''
     kwargs = dict(conf)
+    id = kwargs.get('id')
+    if id == None:
+        kwargs['id'] = pool.get_free_id()            
     kwargs['pool'] = pool
     return PoolMeasurementGroup(**kwargs)
 
