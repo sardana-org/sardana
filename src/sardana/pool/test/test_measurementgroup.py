@@ -74,6 +74,11 @@ config_5 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
 doc_6 = 'Test using Software Trigger AcqTriggerType'
 config_6 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Software)]]
 
+doc_7 = 'Test using both Software AcqTriggerType and Trigger AcqTriggerType'
+config_7 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Software)],
+            [('_test_ct_2_1', '_test_tg_2_1', AcqTriggerType.Trigger)]]
+
+
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_1,
             params=params_1, config=config_1)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_2,
@@ -86,6 +91,8 @@ config_6 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Software)]]
             params=params_1, config=config_5)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_6,
             params=params_1, config=config_6)
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_7,
+            params=params_1, config=config_7)
 class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
     """Integration test of TGGeneration and Acquisition actions."""
 
