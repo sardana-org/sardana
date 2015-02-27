@@ -52,14 +52,14 @@ params_2 = { "offset":0,
 }
 
 doc_1 = 'Synchronized acquisition with two channels from the same controller'\
-        ' which use the same trigger'
+        ' using the same trigger'
 config_1 = (
     (('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
      ('_test_ct_1_2', '_test_tg_1_1', AcqTriggerType.Trigger)),  
 )
 
 doc_2 = 'Synchronized acquisition with two channels from different controllers'\
-        ' uses two different triggers'
+        ' using two different triggers'
 config_2 = (
     (('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),),
     (('_test_ct_2_1', '_test_tg_2_1', AcqTriggerType.Trigger),)  
@@ -69,7 +69,7 @@ doc_3 = 'Use the same trigger in 2 channels of different controllers'
 config_3 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger)],
             [('_test_ct_2_1', '_test_tg_1_1', AcqTriggerType.Trigger)]]
 
-doc_4 = 'Acquisition with 2 controllers, with 2 Channels in each controller.'
+doc_4 = 'Acquisition using 2 controllers, with 2 channels in each controller.'
 config_4 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
              ('_test_ct_1_2', '_test_tg_1_1', AcqTriggerType.Trigger)],
             [('_test_ct_2_1', '_test_tg_1_2', AcqTriggerType.Trigger),
@@ -82,11 +82,11 @@ config_5 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
 doc_6 = 'Test using Software Trigger Type: element sw_time'
 config_6 = [[('_test_ct_1_1', 'sw_time', AcqTriggerType.Trigger)]]
 
-doc_7 = 'Test using both Software AcqTriggerType and Trigger AcqTriggerType'
+doc_7 = 'Test using both, a Software Trigger and a "Hardware" Trigger'
 config_7 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger)],
             [('_test_ct_2_1', 'sw_time', AcqTriggerType.Trigger)]]
 
-doc_8 = 'Tests that the acquisition using triggers can be stopped.'
+doc_8 = 'Test that the acquisition using triggers can be stopped.'
 config_8 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
              ('_test_ct_1_2', '_test_tg_1_1', AcqTriggerType.Trigger)]]  
 
