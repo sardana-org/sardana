@@ -49,6 +49,7 @@ config_1 = (
     (('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
      ('_test_ct_1_2', '_test_tg_1_1', AcqTriggerType.Trigger)),  
 )
+
 doc_2 = 'Synchronized acquisition with two channels from different controllers'\
         ' uses two different triggers'
 config_2 = (
@@ -56,10 +57,35 @@ config_2 = (
     (('_test_ct_2_1', '_test_tg_2_1', AcqTriggerType.Trigger),)  
 )
 
+doc_3 = 'Use the same trigger in 2 channels of different controllers'
+config_3 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger)],
+            [('_test_ct_2_1', '_test_tg_1_1', AcqTriggerType.Trigger)]]
+
+doc_4 = 'Acquisition with 2 controllers, with 2 Channels in each controller.'
+config_4 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
+             ('_test_ct_1_2', '_test_tg_1_1', AcqTriggerType.Trigger)],
+            [('_test_ct_2_1', '_test_tg_1_2', AcqTriggerType.Trigger),
+             ('_test_ct_2_2', '_test_tg_1_2', AcqTriggerType.Trigger)]]
+
+doc_5 = 'Use a different trigger in 2 channels of the same controller'
+config_5 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
+             ('_test_ct_1_2', '_test_tg_2_1', AcqTriggerType.Trigger)]]
+
+doc_6 = 'Test using Software Trigger AcqTriggerType'
+config_6 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Software)]]
+
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_1,
             params=params_1, config=config_1)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_2,
             params=params_1, config=config_2)
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_3,
+            params=params_1, config=config_3)
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_4,
+            params=params_1, config=config_4)
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_5,
+            params=params_1, config=config_5)
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_6,
+            params=params_1, config=config_6)
 class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
     """Integration test of TGGeneration and Acquisition actions."""
 
