@@ -23,6 +23,7 @@
 ##
 ##############################################################################
 import time
+import threading
 
 from taurus.external import unittest
 from taurus.test import insertTest
@@ -37,6 +38,13 @@ from sardana.pool.test.test_acquisition import AttributeListener
         
 
 params_1 = { "offset":0, 
+              "active_period":0.001,
+              "passive_period":0.15, 
+              "repetitions":100, 
+              "integ_time":0.01 
+}
+
+params_2 = { "offset":0, 
               "active_period":0.001,
               "passive_period":0.15, 
               "repetitions":100, 
@@ -93,6 +101,8 @@ config_7 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Software)],
             params=params_1, config=config_6)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_7,
             params=params_1, config=config_7)
+@insertTest(helper_name='meas_cont_stop_acquisition', test_method_doc=doc_1,
+            params=params_2, config=config_1)
 class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
     """Integration test of TGGeneration and Acquisition actions."""
 
@@ -101,6 +111,7 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         """
         BasePoolTestCase.setUp(self)
         unittest.TestCase.setUp(self)
+        self.pmg = None
 
     def meas_cont_acquisition(self, params, config):
         """Executes measurement using the measurement group. 
@@ -123,16 +134,16 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         (mg_conf, channel_ids) = createMGUserConfiguration(pool, config)
         dummyMeasurementGroupConf01["user_elements"] = channel_ids
         
-        pmg = createPoolMeasurementGroup(pool, dummyMeasurementGroupConf01)
+        self.pmg = createPoolMeasurementGroup(pool, dummyMeasurementGroupConf01)
         # TODO: it should be possible execute test without the use of actions         
-        tgg = pmg.tggeneration        
+        tgg = self.pmg.tggeneration        
         # Add mg to pool
-        pool.add_element(pmg)
+        pool.add_element(self.pmg)
                                 
-        pmg.set_integration_time(integ_time)
+        self.pmg.set_integration_time(integ_time)
 
         # setting mg configuration - this cleans the action cache!
-        pmg.set_configuration_from_user(mg_conf)        
+        self.pmg.set_configuration_from_user(mg_conf)        
         # setting parameters to the software tg generator
         tgg._sw_tggenerator.setOffset(offset)
         tgg._sw_tggenerator.setActivePeriod(active_period)
@@ -147,13 +158,13 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
                 channel.set_extra_par('nroftriggers', repetitions)
         attr_listener = AttributeListener()        
         ## Add listeners
-        attributes = pmg.get_user_elements_attribute_sequence()                
+        attributes = self.pmg.get_user_elements_attribute_sequence()                
         for attr in attributes:
             attr.add_listener(attr_listener)
 
-        pmg.start_acquisition(continuous=True)
+        self.pmg.start_acquisition(continuous=True)
         # retrieving the acquisition since it was cleaned when applying mg conf        
-        acq = pmg.acquisition
+        acq = self.pmg.acquisition
         # waiting for acquisition and tggeneration to finish        
         while acq.is_running() or tgg.is_running():            
             time.sleep(1)        
@@ -173,7 +184,66 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         msg = ('there are %d jobs pending to be done after the acquisition ' +
                                '(before: %d)') %(jobs_after, jobs_before)
         self.assertEqual(jobs_before, jobs_after, msg)                
+
+    def stopAcquisition(self):
+        """Method used to abort a running acquisition"""
+        self.pmg.stop()
+
+    def meas_cont_stop_acquisition(self, params, config):
+        """Executes measurement using the measurement group. 
+        Checks the lengths of the acquired data.
+        """    
         
+        pool = self.pool
+        dummyMeasurementGroupConf01["name"] = 'mg1'
+        dummyMeasurementGroupConf01["full_name"] = 'mg1'
+
+        # creating mg user configuration and obtaining channel ids
+        (mg_conf, channel_ids) = createMGUserConfiguration(pool, config)
+        dummyMeasurementGroupConf01["user_elements"] = channel_ids
+        
+        self.pmg = createPoolMeasurementGroup(pool, dummyMeasurementGroupConf01)
+        # TODO: it should be possible execute test without the use of actions         
+        tgg = self.pmg.tggeneration        
+        # Add mg to pool
+        pool.add_element(self.pmg)
+                                
+        self.pmg.set_integration_time(params["integ_time"])
+        # setting mg configuration - this cleans the action cache!
+        self.pmg.set_configuration_from_user(mg_conf)        
+        # setting parameters to the software tg generator
+        tgg._sw_tggenerator.setOffset(params["offset"])
+        tgg._sw_tggenerator.setActivePeriod(params["active_period"])
+        tgg._sw_tggenerator.setPassivePeriod(params["passive_period"])
+        tgg._sw_tggenerator.setRepetitions(params["repetitions"])
+
+        for ctrl_links in config:
+            for link in ctrl_links:
+                channel_name = link[0]
+                channel = self.cts[channel_name]
+                channel.set_extra_par('nroftriggers', params["repetitions"])
+        attr_listener = AttributeListener()        
+        ## Add listeners
+        attributes = self.pmg.get_user_elements_attribute_sequence()                
+        for attr in attributes:
+            attr.add_listener(attr_listener)
+
+        self.pmg.start_acquisition(continuous=True)
+        # retrieving the acquisition since it was cleaned when applying mg conf        
+        acq = self.pmg.acquisition
+        
+        # starting timer (0.05 s) which will stop the acquisiton
+        threading.Timer(0.2, self.stopAcquisition).start() 
+        # waiting for acquisition and tggeneration to be stoped by thread 
+        while acq.is_running() or tgg.is_running():
+            time.sleep(0.05)
+        msg = "acquisition shall NOT be running after stopping it"
+        self.assertEqual(acq.is_running(), False, msg) 
+
+        # print the acquisition records
+        for i, record in enumerate(zip(*attr_listener.data.values())):
+            print i, record
+                
     def tearDown(self):
         self.attr_listener = None
         self.pmg = None
