@@ -79,13 +79,16 @@ doc_5 = 'Use a different trigger in 2 channels of the same controller'
 config_5 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
              ('_test_ct_1_2', '_test_tg_2_1', AcqTriggerType.Trigger)]]
 
-doc_6 = 'Test using Software Trigger AcqTriggerType'
-config_6 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Software)]]
+doc_6 = 'Test using Software Trigger Type: element sw_time'
+config_6 = [[('_test_ct_1_1', 'sw_time', AcqTriggerType.Trigger)]]
 
 doc_7 = 'Test using both Software AcqTriggerType and Trigger AcqTriggerType'
-config_7 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Software)],
-            [('_test_ct_2_1', '_test_tg_2_1', AcqTriggerType.Trigger)]]
+config_7 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger)],
+            [('_test_ct_2_1', 'sw_time', AcqTriggerType.Trigger)]]
 
+doc_8 = 'Tests that the acquisition using triggers can be stopped.'
+config_8 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
+             ('_test_ct_1_2', '_test_tg_1_1', AcqTriggerType.Trigger)]]  
 
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_1,
             params=params_1, config=config_1)
@@ -101,8 +104,8 @@ config_7 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Software)],
             params=params_1, config=config_6)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_7,
             params=params_1, config=config_7)
-@insertTest(helper_name='meas_cont_stop_acquisition', test_method_doc=doc_1,
-            params=params_2, config=config_1)
+@insertTest(helper_name='meas_cont_stop_acquisition', test_method_doc=doc_8,
+            params=params_2, config=config_8)
 class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
     """Integration test of TGGeneration and Acquisition actions."""
 
@@ -190,8 +193,8 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         self.pmg.stop()
 
     def meas_cont_stop_acquisition(self, params, config):
-        """Executes measurement using the measurement group. 
-        Checks the lengths of the acquired data.
+        """Executes measurement using the measurement group and tests that the 
+        acquisition can be stopped.
         """    
         
         pool = self.pool
