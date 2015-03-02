@@ -33,9 +33,8 @@ import time
 from taurus.core.util.log import DebugIt
 from sardana import State
 from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
-#TODO: this class should be locate in this module
-from sardana.pool.poolcontrollers.DummyTriggerGateController import \
-                                                    RectangularFunctionGenerator
+from sardana.pool.poolcontrollers.DummyTriggerGateController import\
+                                                     DummyTriggerGateController
 
 # The purpose of this class was inspired on the CTAcquisition concept
 class TGChannel(PoolActionItem):
@@ -57,22 +56,27 @@ class PoolTGGeneration(PoolAction):
     '''
     def __init__(self, main_element, name="TGAction"):
         PoolAction.__init__(self, main_element, name)
-        self._sw_tggenerator = RectangularFunctionGenerator()
+        self._listener = None
         self._repetitions = 1
         
     def add_listener(self, listener):
-        self._sw_tggenerator.add_listener(listener)
+        self._listener = listener
  
     def setRepetitions(self, repetitions):
-        self._repetitions = repetitions
-        self._sw_tggenerator.setRepetitions(repetitions)
+        self._repetitions = repetitions        
 
     def start_action(self, *args, **kwargs):
         '''Start action method
         '''
-        cfg = kwargs['config']
-        ctrls_config = cfg['controllers']
+        cfg = kwargs['config']        
+        ctrls_config = cfg.get('controllers')
         pool_ctrls = ctrls_config.keys()
+        
+        # obtaining generation parameters from kwargs
+        offset = kwargs.get('offset')
+        active_period = kwargs.get('active_period')
+        passive_period = kwargs.get('passive_period')
+        repetitions = kwargs.get('repetitions')
         
         # Prepare a dictionary with the involved channels
         self._channels = channels = {}
@@ -85,6 +89,26 @@ class PoolTGGeneration(PoolAction):
             for element, element_info in elements.items():
                 channel = TGChannel(element, info=element_info)
                 channels[element] = channel
+                
+        # loads generation parameters
+        for pool_ctrl in pool_ctrls:
+            ctrl = pool_ctrl.ctrl
+            # TODO: the attaching of the listeners should be done more generic
+            # attaching listener to the software trigger gate generator
+            if isinstance(ctrl, DummyTriggerGateController) and\
+               self._listener != None:
+                ctrl.add_listener(self._listener)
+            pool_ctrl_data = ctrls_config[pool_ctrl]
+            main_unit_data = pool_ctrl_data['units']['0']
+            elements = main_unit_data['channels']
+            for element in elements:
+                axis = element.axis
+                channel = channels[element]
+                if channel.enabled:
+                    ctrl.SetAxisPar(axis, 'offset', offset)
+                    ctrl.SetAxisPar(axis, 'active_period', active_period)
+                    ctrl.SetAxisPar(axis, 'passive_period', passive_period)
+                    ctrl.SetAxisPar(axis, 'repetitions', repetitions)
 
         with ActionContext(self):
             # PreStartAll on all controllers
@@ -94,6 +118,10 @@ class PoolTGGeneration(PoolAction):
             # PreStartOne & StartOne on all elements
             for pool_ctrl in pool_ctrls:
                 ctrl = pool_ctrl.ctrl
+                # attaching listener to the software trigger gate generator
+                if isinstance(ctrl, DummyTriggerGateController) and\
+                   self._listener != None:
+                    ctrl.add_listener(self._listener)
                 pool_ctrl_data = ctrls_config[pool_ctrl]
                 main_unit_data = pool_ctrl_data['units']['0']
                 elements = main_unit_data['channels']
@@ -113,11 +141,7 @@ class PoolTGGeneration(PoolAction):
     
             # StartAll on all controllers
             for pool_ctrl in pool_ctrls:
-                pool_ctrl.ctrl.StartAll()
-        # TODO: agree on the correct naming 'sw_time', 'sw_position', 'software'
-        # if kwargs.get('sw_time', False) or kwargs.get('sw_position', False):
-        if kwargs.get('software', False):
-            self._sw_tggenerator.start()
+                pool_ctrl.ctrl.StartAll()        
         
     def stop_action(self, *args, **kwargs):
         '''Stop action and the software TG generation'''
@@ -138,8 +162,7 @@ class PoolTGGeneration(PoolAction):
             state_info_idx = 0
             state_idx = 0
             state_tggate = states[elem][state_info_idx][state_idx]
-            if self._is_in_action(state_tggate) or \
-               self._sw_tggenerator.isGenerating():
+            if self._is_in_action(state_tggate):
                 return True
         return False
 

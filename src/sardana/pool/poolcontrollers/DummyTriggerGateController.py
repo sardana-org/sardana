@@ -29,7 +29,6 @@ from sardana.pool.controller import TriggerGateController
 from sardana.sardanaevent import EventGenerator
 from sardana.pool.pooltriggergate import TGEventType
 
-# TODO: move this class to sardana.tggeneration
 class RectangularFunctionGenerator(EventGenerator):
     
     id = 0
