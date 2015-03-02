@@ -29,7 +29,7 @@ from taurus.external import unittest
 from taurus.test import insertTest
 
 from sardana.sardanathreadpool import get_thread_pool
-from sardana.pool import AcqTriggerType
+from sardana.pool import AcqTriggerType, AcqMode
 from sardana.pool.test import (BasePoolTestCase, createPoolMeasurementGroup,
                                dummyMeasurementGroupConf01,
                                createMGUserConfiguration)
@@ -80,11 +80,11 @@ config_5 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
              ('_test_ct_1_2', '_test_tg_2_1', AcqTriggerType.Trigger)]]
 
 doc_6 = 'Test using Software Trigger Type: element sw_time'
-config_6 = [[('_test_ct_1_1', 'sw_time', AcqTriggerType.Trigger)]]
+config_6 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger)]]
 
 doc_7 = 'Test using both, a Software Trigger and a "Hardware" Trigger'
 config_7 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger)],
-            [('_test_ct_2_1', 'sw_time', AcqTriggerType.Trigger)]]
+            [('_test_ct_2_1', '_test_tg_1_1', AcqTriggerType.Trigger)]]
 
 doc_8 = 'Test that the acquisition using triggers can be stopped.'
 config_8 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
@@ -138,8 +138,6 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         dummyMeasurementGroupConf01["user_elements"] = channel_ids
         
         self.pmg = createPoolMeasurementGroup(pool, dummyMeasurementGroupConf01)
-        # TODO: it should be possible execute test without the use of actions         
-        tgg = self.pmg.tggeneration        
         # Add mg to pool
         pool.add_element(self.pmg)
                                 
@@ -147,12 +145,6 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
 
         # setting mg configuration - this cleans the action cache!
         self.pmg.set_configuration_from_user(mg_conf)        
-        # setting parameters to the software tg generator
-        tgg._sw_tggenerator.setOffset(offset)
-        tgg._sw_tggenerator.setActivePeriod(active_period)
-        tgg._sw_tggenerator.setPassivePeriod(passive_period)
-        tgg._sw_tggenerator.setRepetitions(repetitions)
-
         
         for ctrl_links in config:
             for link in ctrl_links:
@@ -165,11 +157,12 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         for attr in attributes:
             attr.add_listener(attr_listener)
 
-        self.pmg.start_acquisition(continuous=True)
+        self.pmg.set_acquisition_mode(AcqMode.ContTimer)
+        self.pmg.start_acquisition()
         # retrieving the acquisition since it was cleaned when applying mg conf        
         acq = self.pmg.acquisition
         # waiting for acquisition and tggeneration to finish        
-        while acq.is_running() or tgg.is_running():            
+        while acq.is_running():            
             time.sleep(1)        
         # print the acquisition records
         for i, record in enumerate(zip(*attr_listener.data.values())):
@@ -206,19 +199,13 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         dummyMeasurementGroupConf01["user_elements"] = channel_ids
         
         self.pmg = createPoolMeasurementGroup(pool, dummyMeasurementGroupConf01)
-        # TODO: it should be possible execute test without the use of actions         
-        tgg = self.pmg.tggeneration        
         # Add mg to pool
         pool.add_element(self.pmg)
                                 
         self.pmg.set_integration_time(params["integ_time"])
         # setting mg configuration - this cleans the action cache!
         self.pmg.set_configuration_from_user(mg_conf)        
-        # setting parameters to the software tg generator
-        tgg._sw_tggenerator.setOffset(params["offset"])
-        tgg._sw_tggenerator.setActivePeriod(params["active_period"])
-        tgg._sw_tggenerator.setPassivePeriod(params["passive_period"])
-        tgg._sw_tggenerator.setRepetitions(params["repetitions"])
+        # setting parameters to the software tg generator        
 
         for ctrl_links in config:
             for link in ctrl_links:
@@ -231,14 +218,15 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         for attr in attributes:
             attr.add_listener(attr_listener)
 
-        self.pmg.start_acquisition(continuous=True)
+        self.pmg.set_acquisition_mode(AcqMode.ContTimer)
+        self.pmg.start_acquisition()
         # retrieving the acquisition since it was cleaned when applying mg conf        
         acq = self.pmg.acquisition
         
         # starting timer (0.05 s) which will stop the acquisiton
         threading.Timer(0.2, self.stopAcquisition).start() 
         # waiting for acquisition and tggeneration to be stoped by thread 
-        while acq.is_running() or tgg.is_running():
+        while acq.is_running():
             time.sleep(0.05)
         msg = "acquisition shall NOT be running after stopping it"
         self.assertEqual(acq.is_running(), False, msg) 

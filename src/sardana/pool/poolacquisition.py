@@ -42,6 +42,7 @@ from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool import AcqTriggerType
 from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
 from sardana.pool.pooltriggergate import TGEventType
+from sardana.pool.pooltggeneration import PoolTGGeneration
 
 #: enumeration representing possible motion states
 AcquisitionState = Enumeration("AcquisitionState", (\
@@ -69,12 +70,14 @@ class PoolAcquisition(PoolAction):
         zerodname = name + ".0DAcquisition"
         contname = name + ".ContAcquisition"
         contctname = name + ".ContCTAcquisition"
+        tggenname = name + ".TGGeneration"
         self._config = None        
         self._0d_acq = zd_acq = Pool0DAcquisition(main_element, name=zerodname)
         self._ct_acq = PoolCTAcquisition(main_element, name=ctname,
                                                                slaves=(zd_acq,))
         self._cont_ct_acq = PoolContSWCTAcquisition(main_element, name=contctname)
         self._cont_acq = PoolContHWAcquisition(main_element, name=contname)
+        self._tg_gen = PoolTGGeneration(main_element, name=tggenname)
         
     def set_config(self, config):
         self._config = config
@@ -102,19 +105,21 @@ class PoolAcquisition(PoolAction):
         return self._0d_acq.is_running() or\
                self._ct_acq.is_running() or\
                self._cont_ct_acq.is_running() or\
-               self._cont_acq.is_running()
+               self._cont_acq.is_running() or\
+               self._tg_gen.is_running()
 
-    def run(self, *args, **kwargs):
+    def run(self, *args, **kwargs):        
         n = kwargs.get('multiple', 1)
         # run multiple acquisition - currently used by StartMultiple Tango command
         if n > 1:
             return self._run_multiple(*args, **kwargs)
-        continuous = kwargs.get('continuous', False)
-        # run continuous acquisition
-        if continuous:
-            return self._run_continuous(*args, **kwargs)
+        synchronized = kwargs.get('synchronized', False)
+        # run synchronized acquisition
+        if synchronized:
+            return self._run_synchronized(*args, **kwargs)
         # run single acquisition e.g. the one from the step scan
-        return self._run_single(*args, **kwargs)
+        else:
+            return self._run_single(*args, **kwargs)
 
     def _run_multiple(self, *args, **kwargs):
         n = kwargs['multiple']
@@ -137,9 +142,21 @@ class PoolAcquisition(PoolAction):
             ct_acq.run(*args, **kwargs)
             zd_acq.run(*args, **kwargs)
             
-    def _run_continuous(self, *args, **kwargs):
+    def _run_synchronized(self, *args, **kwargs):
         """Runs continuous acquisition"""
+        # TODO: this code splits the global mg configuration into 
+        # experimental channels triggered by hw and experimental channels
+        # triggered by sw. Refactor it!!!!
+        from sardana.pool.test.helper import getHWtg_MGConfiguration
+        from sardana.pool.test.helper import getSWtg_MGConfiguration
+        from sardana.pool.test.helper import getTGConfiguration
+        config = kwargs['config']
+        sw_acq_config = getSWtg_MGConfiguration(config)
+        hw_acq_config = getHWtg_MGConfiguration(config)            
+        tg_config, _ = getTGConfiguration(config)
         self._cont_acq.run(*args, **kwargs)
+        kwargs['config'] = tg_config  
+        self._tg_gen.run(*args, **kwargs)
         
     def _run_ct_continuous(self, *args, **kwargs):
         """Run a single acquisition with the softwaer triggered elements 
@@ -148,22 +165,20 @@ class PoolAcquisition(PoolAction):
         self._cont_ct_acq.run(*args, **kwargs)
         
     def _get_acq_for_element(self, element):
-#         if element.get_par('synchronization').startswith('sw'):
-#             return self._cont_acq
-        actions = []
-        # filling actions for desynchronized acquisition
+        actions = []        
         elem_type = element.get_type()
         if elem_type in TYPE_TIMERABLE_ELEMENTS:
             actions.append(self._ct_acq)
+            ctrl = element.get_controller()
+            trigger_type = ctrl.get_ctrl_par('trigger_type')
+            if trigger_type in (AcqTriggerType.Trigger, AcqTriggerType.Gate):
+                actions.append(self._cont_acq)
+            elif trigger_type in (AcqTriggerType.Software, AcqTriggerType.Unknown):
+                actions.append(self._cont_ct_acq)
         elif elem_type == ElementType.ZeroDExpChannel:
             actions.append(self._0d_acq)
-        # filling actions for synchronized acquisition
-        ctrl = element.get_controller()
-        trigger_type = ctrl.get_ctrl_par('trigger_type')
-        if trigger_type in (AcqTriggerType.Trigger, AcqTriggerType.Gate):
-            actions.append(self._cont_acq)
-        elif trigger_type in (AcqTriggerType.Software, AcqTriggerType.Unknown):
-            actions.append(self._cont_ct_acq)
+        elif elem_type == ElementType.TriggerGate:
+            actions.append(self._tg_gen)
         return actions
         
     def clear_elements(self):

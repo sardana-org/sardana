@@ -110,10 +110,6 @@ class PoolMeasurementGroup(PoolGroupElement):
         kwargs['elem_type'] = ElementType.MeasurementGroup
         PoolGroupElement.__init__(self, **kwargs)
         self.set_configuration(kwargs.get('configuration'))
-        tggen_name = "%s.TGGeneration" % self._name
-        #TODO: take care of cleaning up the tggeneration action
-        # when the configuration changes
-        self._tggeneration = PoolTGGeneration(self, tggen_name)
 
     def _create_action_cache(self):
         acq_name = "%s.Acquisition" % self._name        
@@ -146,13 +142,27 @@ class PoolMeasurementGroup(PoolGroupElement):
         for ctrl in self.get_pool_controllers():
             if ctrl.name.lower() == name or ctrl.full_name.lower() == name:
                 return ctrl
-
+            
+    def add_user_element(self, element, index=None):
+        '''Override the base behavior, so the TriggerGate elements are silently 
+        skipped if used multiple times in the group'''
+        user_elements = self._user_elements
+        if element in user_elements:
+            # skipping TriggerGate element if already present  
+            if element.get_type() is ElementType.TriggerGate:
+                return
+        return PoolGroupElement.add_user_element(self, element, index)
     # --------------------------------------------------------------------------
     # configuration
     # --------------------------------------------------------------------------
 
     def _is_managed_element(self, element):
-        return element.get_type() in TYPE_EXP_CHANNEL_ELEMENTS
+        element_type = element.get_type()
+        # TODO: TriggerGate elements are treated as managed elements,
+        # this was not yet 100% tested
+        return element_type in TYPE_EXP_CHANNEL_ELEMENTS or\
+               element_type is ElementType.TriggerGate
+                
 
         """Fills the channel default values for the given channel dictionary"""
     def _build_channel_defaults(self, channel_data, channel):
@@ -285,6 +295,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         else:
             # create a configuration based on a new configuration
             user_elem_ids = {}
+            tg_elem_ids = []
             pool = self.pool
             for c, c_data in config['controllers'].items():
                 external = isinstance(c, (str, unicode))
@@ -302,26 +313,13 @@ class PoolMeasurementGroup(PoolGroupElement):
                     trigger_name = channel_data['trigger_element']
                     trigger_element = pool.get_element_by_full_name(trigger_name)
                     channel_data['trigger_element'] = trigger_element
+                    tg_elem_ids.append(trigger_element.id)
             indexes = sorted(user_elem_ids.keys())
             assert indexes == range(len(indexes))
-            self.set_user_element_ids([ user_elem_ids[idx] for idx in indexes ])
-            
-            # TODO: this code splits the global mg configuration into 
-            # experimental channels triggered by hw and experimental channels
-            # triggered by sw. Refactor it!!!!
-            from sardana.pool.test.helper import getHWtg_MGConfiguration
-            from sardana.pool.test.helper import getSWtg_MGConfiguration
-            from sardana.pool.test.helper import getTGConfiguration
-            self._sw_acq_config = getSWtg_MGConfiguration(config)
-            self._hw_acq_config = getHWtg_MGConfiguration(config)            
-            self._tg_config, tg_elements = getTGConfiguration(config)
-            tggen_name = "%s.TGGeneration" % self._name
-            #taking care of cleaning up the tggeneration action
-            # when the configuration changes
-            self._tggeneration = PoolTGGeneration(self, tggen_name)
-            for tg in tg_elements:
-                self.tggeneration.add_element(tg)
-
+            user_elem_ids_list = [ user_elem_ids[idx] for idx in indexes ]
+            user_elem_ids_list.extend(tg_elem_ids)
+            self.set_user_element_ids(user_elem_ids_list)
+                        
         # checks
         g_timer, g_monitor = config['timer'], config['monitor']
 
@@ -534,23 +532,25 @@ class PoolMeasurementGroup(PoolGroupElement):
         if not self._simulation_mode:
             # load configuration into controller(s) if necessary
             self.load_configuration()
-            # start acquisition
+            # determining the acquisition parameters            
             kwargs = dict(head=self, config=self._config, multiple=multiple, 
                           continuous=continuous)
-            if self.acquisition_mode in [AcqMode.Timer, AcqMode.ContTimer]:
-                kwargs["integ_time"] = self._integration_time
-            elif self.acquisition_mode in [AcqMode.Monitor, AcqMode.ContMonitor]:
-                kwargs["monitor_count"] = self._monitor_count
+            acquisition_mode = self.acquisition_mode
+            if acquisition_mode is AcqMode.Timer:
+                kwargs['integ_time'] = self._integration_time
+                kwargs['synchronized'] = False
+            elif acquisition_mode is AcqMode.ContTimer:
+                kwargs['integ_time'] = self._integration_time
+                kwargs['synchronized'] = True            
+            elif self.acquisition_mode is AcqMode.Monitor:
+                kwargs['monitor_count'] = self._monitor_count
+                kwargs['synchronized'] = False
+            elif acquisition_mode is AcqMode.ContMonitor:
+                kwargs['monitor_count'] = self._monitor_count
+                kwargs['synchronized'] = True
+            # start acquisition
             self.acquisition.run(**kwargs)
-            if continuous:
-                kwargs = dict(head=self, config=self._sw_acq_config, 
-                              multiple=multiple, continuous=continuous)
-                self.acquisition.set_config(kwargs)
-                self.tggeneration.add_listener(self.acquisition)
-                kwargs = dict(head=self, config=self._tg_config, 
-                              multiple=multiple, continuous=continuous)
-                self.tggeneration.run(**kwargs)
-
+                     
     def set_acquisition(self, acq_cache):
         self.set_action_cache(acq_cache)
 
@@ -558,11 +558,3 @@ class PoolMeasurementGroup(PoolGroupElement):
         return self.get_action_cache()
 
     acquisition = property(get_acquisition, doc="acquisition object")
-    
-    def set_tggeneration(self, tggeneration):
-        self._tggeneration = tggeneration
-
-    def get_tggeneration(self):
-        return self._tggeneration
-
-    tggeneration = property(get_tggeneration, doc="tggeneration object")
