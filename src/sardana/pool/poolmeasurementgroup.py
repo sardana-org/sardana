@@ -563,27 +563,33 @@ class PoolMeasurementGroup(PoolGroupElement):
     # acquisition
     # --------------------------------------------------------------------------
 
-    def start_acquisition(self, value=None, multiple=1, continuous=False):
+    def start_acquisition(self, value=None, multiple=1):
         self._aborted = False
         if not self._simulation_mode:
             # load configuration into controller(s) if necessary
             self.load_configuration()
-            # determining the acquisition parameters            
-            kwargs = dict(head=self, config=self._config, multiple=multiple, 
-                          continuous=continuous)
+            # determining the acquisition parameters
+            kwargs = dict(head=self, config=self._config, multiple=multiple)
             acquisition_mode = self.acquisition_mode
-            if acquisition_mode is AcqMode.Timer:
-                kwargs['integ_time'] = self._integration_time
-                kwargs['synchronized'] = False
-            elif acquisition_mode is AcqMode.ContTimer:
-                kwargs['integ_time'] = self._integration_time
-                kwargs['synchronized'] = True            
-            elif self.acquisition_mode is AcqMode.Monitor:
-                kwargs['monitor_count'] = self._monitor_count
-                kwargs['synchronized'] = False
-            elif acquisition_mode is AcqMode.ContMonitor:
-                kwargs['monitor_count'] = self._monitor_count
+            integration_time = self._integration_time
+            if acquisition_mode in (AcqMode.Timer, AcqMode.ContTimer):
+                kwargs['integ_time'] = integration_time
+            elif acquisition_mode in (AcqMode.Monitor, AcqMode.ContMonitor):
+                kwargs['monitor'] = self._monitor
+            if acquisition_mode in (AcqMode.ContTimer, AcqMode.ContMonitor):                                
+                # TODO: calculate the active_period, based on the involved elements
+                # hardcoding the active_period to 1 us
+                active_period = 1e-6
+                if active_period > integration_time:
+                    raise ValueError('IntegrationTime must be higher than 1 us')
+                passive_period = integration_time - active_period
+                kwargs['active_period'] = active_period
+                kwargs['passive_period'] = passive_period
+                kwargs['offset'] = self._offset
+                kwargs['repetitions'] = self._repetitions
                 kwargs['synchronized'] = True
+            elif self.acquisition_mode in (AcqMode.Timer, AcqMode.Monitor):
+                kwargs['synchronized'] = False            
             # start acquisition
             self.acquisition.run(**kwargs)
                      
