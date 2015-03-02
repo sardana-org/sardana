@@ -104,6 +104,8 @@ class PoolMeasurementGroup(PoolGroupElement):
     def __init__(self, **kwargs):
         self._integration_time = None
         self._monitor_count = None
+        self._offset = 0
+        self._repetitions = 1
         self._acquisition_mode = AcqMode.Timer
         self._config = None
         self._config_dirty = True
@@ -470,6 +472,40 @@ class PoolMeasurementGroup(PoolGroupElement):
         return self.get_configuration()['timer']
 
     timer = property(get_timer)
+    
+    # --------------------------------------------------------------------------
+    # repetitions
+    # --------------------------------------------------------------------------
+
+    def get_repetitions(self):
+        return self._repetitions
+
+    def set_repetitions(self, repetitions, propagate=1):
+        self._repetitions = repetitions
+        if not propagate:
+            return
+        self.fire_event(EventType("repetitions", priority=propagate),
+                        repetitions)
+
+    offset = property(get_repetitions, set_repetitions,
+                                doc="repetitions used in synchronized acquisition")
+    
+    # --------------------------------------------------------------------------
+    # offset
+    # --------------------------------------------------------------------------
+
+    def get_offset(self):
+        return self._offset
+
+    def set_offset(self, offset, propagate=1):
+        self._offset = offset
+        if not propagate:
+            return
+        self.fire_event(EventType("offset", priority=propagate),
+                        offset)
+
+    offset = property(get_offset, set_offset,
+                                doc="offset used in synchronized acquisition")
 
     # --------------------------------------------------------------------------
     # integration time
@@ -489,7 +525,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                                 doc="the current integration time")
 
     # --------------------------------------------------------------------------
-    # integration time
+    # monitor count
     # --------------------------------------------------------------------------
 
     def get_monitor_count(self):
