@@ -162,9 +162,7 @@ class DummyCounterTimerController(CounterTimerController):
                 cp = 0
                 if n > channel.nrOfTriggers:
                     cp = n - channel.nrOfTriggers
-                
                 n = n - channel._counter -cp
-                self._log.debug('n - counters = %d' % n)                
                 t = self.integ_time                
                 if ind == self._timer:
                     channel.buffer_values = [t]*n
