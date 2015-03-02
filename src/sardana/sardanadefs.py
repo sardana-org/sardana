@@ -318,7 +318,7 @@ TYPE_MOVEABLE_ELEMENTS = set((ET.Motor, ET.PseudoMotor, ET.MotorGroup))
 #: a set containing the possible types of physical elements.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
 TYPE_PHYSICAL_ELEMENTS = set((ET.Motor, ET.CTExpChannel, ET.ZeroDExpChannel, \
-    ET.OneDExpChannel, ET.TwoDExpChannel, \
+    ET.OneDExpChannel, ET.TwoDExpChannel, ET.TriggerGate,\
     ET.ComChannel, ET.IORegister))
 
 #: a set containing the possible types of acquirable elements.
