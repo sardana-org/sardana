@@ -148,12 +148,13 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         ct_ctrl_2 = self.ctrls['_test_ct_ctrl_2']
         
         # crating configuration for TGGeneration
-        self.tg_cfg = createPoolTGGenerationConfiguration((tg_ctrl_1,),
-                                                          ((tg_1_1,),),)
+        tg_cfg = createPoolTGGenerationConfiguration((tg_ctrl_1,), 
+                                                     ((tg_1_1,),),)
         # creating TGGeneration action
         # TODO: the main_element should be a measurement group not an element
         self.tggeneration = PoolTGGeneration(tg_1_1)
         self.tggeneration.add_element(tg_1_1)
+        self.tggeneration.add_listener(self)
         self.l = AttributeListener()
         ct_1_1._value.add_listener(self.l)
         ct_2_1._value.add_listener(self.l)
@@ -170,13 +171,6 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         self.sw_acq.add_element(ct_2_1)
 
         jobs_before = get_thread_pool().qsize
-        # configuring tggeneration according to the test parameters 
-        self.tggeneration._sw_tggenerator.setOffset(offset)
-        self.tggeneration._sw_tggenerator.setActivePeriod(active_period)
-        self.tggeneration._sw_tggenerator.setPassivePeriod(passive_period)
-        self.tggeneration._sw_tggenerator.setRepetitions(repetitions)
-        # add listener to the tggeneration action
-        self.tggeneration._sw_tggenerator.add_listener(self)
         
         self.sw_acq_args = ()
         self.sw_acq_kwargs = {
@@ -195,8 +189,11 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         self.hw_acq.run(hw_acq_args, **hw_acq_kwargs)       
         tg_args = ()
         tg_kwargs = {
-            'config': self.tg_cfg,
-            'software': True
+            'config': tg_cfg,
+            'offset': offset,
+            'active_period': active_period,
+            'passive_period': passive_period,
+            'repetitions': repetitions
         }
         self.tggeneration.run(*tg_args, **tg_kwargs)
         # waiting for acquisition and tggeneration to finish                

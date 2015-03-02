@@ -142,6 +142,7 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         pool.add_element(self.pmg)
                                 
         self.pmg.set_integration_time(integ_time)
+        self.pmg.set_offset(offset)
 
         # setting mg configuration - this cleans the action cache!
         self.pmg.set_configuration_from_user(mg_conf)        

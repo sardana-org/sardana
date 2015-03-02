@@ -54,7 +54,8 @@ class PoolTriggerGateTestCase(unittest.TestCase):
                                                        ((self.dummy_tg,),),)
         # Create mock and define its functions
         ctrl_methods = ['PreStartAll', 'StartAll', 'PreStartOne', 'StartOne',
-                        'PreStateAll', 'StateAll', 'PreStateOne', 'StateOne']
+                        'PreStateAll', 'StateAll', 'PreStateOne', 'StateOne',
+                        'SetAxisPar']
         self.mock_tg_ctrl = Mock(spec=ctrl_methods)
         self.mock_tg_ctrl.StateOne.return_value = (State.Moving, 'triggering')
 
