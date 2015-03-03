@@ -153,11 +153,14 @@ def createMGUserConfiguration(pool, channels):
                     First element of each list is the master counter/timer 
                     from the controller.
     :type channels: seq<seq<tuple(str)>>
-    :return: measurement group configuration dictionary of strings.
-    :rtype: dict<>
+    :return: a tuple of three elements: measurement group configuration 
+             dictionary of strings, sequence of channel ids, sequence of channel
+             names
+    :rtype: tupe(dict<>, seq<int>, seq<string>
     '''
 
     channel_ids = []
+    channel_names = []
     MG_configuration = {}
     main_master_channel = pool.get_element_by_full_name(channels[0][0][0])
     MG_configuration['timer'] = main_master_channel.full_name
@@ -182,6 +185,7 @@ def createMGUserConfiguration(pool, channels):
         channels_d = {}
         for chan_idx in range(len(channels_in_ctrl)):
             channel_name_str = channels_in_ctrl[chan_idx][0]
+            channel_names.append(channel_name_str)
             channel_element = pool.get_element_by_full_name(channel_name_str)
             channel_ids.append(channel_element.id)
             one_channel_d = {}
@@ -218,7 +222,7 @@ def createMGUserConfiguration(pool, channels):
         all_ctrls_d.update(ctrl_d)
     
     MG_configuration.update({'controllers':all_ctrls_d})
-    return (MG_configuration, channel_ids)
+    return (MG_configuration, channel_ids, channel_names)
 
 
 def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,

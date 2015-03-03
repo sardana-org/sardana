@@ -91,6 +91,7 @@ class AttributeListener(object):
                 dtype_spec.append((k, 'float64'))
             a = numpy.array(zip(*table), dtype=dtype_spec)
             return a
+        
 
 @insertTest(helper_name='continuous_acquisition', offset=0, active_period=0.1,
             passive_period=0.2, repetitions=10, integ_time=0.2)
@@ -201,15 +202,20 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
               self.sw_acq.is_running() or\
               self.tggeneration.is_running():            
             time.sleep(1)
-        table = self.l.get_table()
-        # print header
-        print table.dtype
         # print acquisition records
+        table = self.l.get_table()
+        header = table.dtype.names                
+        print header        
         n_rows = table.shape[0]
         for row in xrange(n_rows):
             print row, table[row]
-        # checking if all the data were acquired 
-        for ch_name in table.dtype.names:
+        # checking if all channels produced data
+        conf_channels = ['_test_ct_1_1', '_test_ct_2_1']
+        for channel in conf_channels:
+            msg = 'data from channel %s were not acquired' % channel
+            self.assertIn(channel, header, msg)
+        # checking if all the data were acquired
+        for ch_name in header:
             ch_data_len = len(table[ch_name])
             msg = 'length of data for channel %s is %d and should be %d' %\
                                             (ch_name, ch_data_len, repetitions)

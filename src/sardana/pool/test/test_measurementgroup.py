@@ -125,7 +125,8 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         pool = self.pool
         
         # creating mg user configuration and obtaining channel ids
-        (mg_conf, channel_ids) = createMGUserConfiguration(pool, config)
+        mg_conf, channel_ids, channel_names = \
+                                        createMGUserConfiguration(pool, config)
         
         dummyMeasurementGroupConf01["name"] = 'mg1'
         dummyMeasurementGroupConf01["full_name"] = 'mg1'        
@@ -153,21 +154,30 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         # waiting for acquisition to finish        
         while acq.is_running():            
             time.sleep(1) 
-        # print the acquisition records
-        for i, record in enumerate(zip(*attr_listener.data.values())):
-            print i, record
+        # printing acquisition records
+        table = attr_listener.get_table()
+        header = table.dtype.names
+        print header        
+        n_rows = table.shape[0]
+        for row in xrange(n_rows):
+            print row, table[row]        
         # checking if any of data was acquired        
-        self.assertTrue(attr_listener.data, 'No data were acquired')            
+        self.assertTrue(attr_listener.data, 'no data were acquired')        
+        # checking if all channels produced data        
+        for channel in channel_names:
+            msg = 'data from channel %s were not acquired' % channel
+            self.assertIn(channel, header, msg)
+                    
         # checking if all the data were acquired
-        for ch, data in attr_listener.data.items():
-            acq_data = len(data)
+        for ch_name in header:
+            ch_data_len = len(table[ch_name])
             msg = 'length of data for channel %s is %d and should be %d' %\
-                                                     (ch, acq_data, repetitions)
-            self.assertEqual(acq_data, repetitions, msg)
+                                            (ch_name, ch_data_len, repetitions)
+            self.assertEqual(ch_data_len, repetitions, msg)
         # checking if there are no pending jobs
         jobs_after = get_thread_pool().qsize
         msg = ('there are %d jobs pending to be done after the acquisition ' +
-                               '(before: %d)') %(jobs_after, jobs_before)
+                               '(before: %d)') % (jobs_after, jobs_before)
         self.assertEqual(jobs_before, jobs_after, msg)                
 
     def stopAcquisition(self):
@@ -187,7 +197,7 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         dummyMeasurementGroupConf01["full_name"] = 'mg1'
 
         # creating mg user configuration and obtaining channel ids
-        (mg_conf, channel_ids) = createMGUserConfiguration(pool, config)
+        mg_conf, channel_ids, _ = createMGUserConfiguration(pool, config)
         dummyMeasurementGroupConf01["user_elements"] = channel_ids
         
         self.pmg = createPoolMeasurementGroup(pool, dummyMeasurementGroupConf01)
