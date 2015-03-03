@@ -32,9 +32,7 @@ __all__ = ["PoolTGGeneration", "TGChannel"]
 import time
 from taurus.core.util.log import DebugIt
 from sardana import State
-from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
-from sardana.pool.poolcontrollers.DummyTriggerGateController import\
-                                                     DummyTriggerGateController
+from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction 
 
 # The purpose of this class was inspired on the CTAcquisition concept
 class TGChannel(PoolActionItem):
@@ -95,8 +93,7 @@ class PoolTGGeneration(PoolAction):
             ctrl = pool_ctrl.ctrl
             # TODO: the attaching of the listeners should be done more generic
             # attaching listener to the software trigger gate generator
-            if isinstance(ctrl, DummyTriggerGateController) and\
-               self._listener != None:
+            if hasattr(ctrl, 'add_listener') and self._listener != None:
                 ctrl.add_listener(self._listener)
             pool_ctrl_data = ctrls_config[pool_ctrl]
             main_unit_data = pool_ctrl_data['units']['0']
@@ -117,11 +114,7 @@ class PoolTGGeneration(PoolAction):
     
             # PreStartOne & StartOne on all elements
             for pool_ctrl in pool_ctrls:
-                ctrl = pool_ctrl.ctrl
-                # attaching listener to the software trigger gate generator
-                if isinstance(ctrl, DummyTriggerGateController) and\
-                   self._listener != None:
-                    ctrl.add_listener(self._listener)
+                ctrl = pool_ctrl.ctrl                
                 pool_ctrl_data = ctrls_config[pool_ctrl]
                 main_unit_data = pool_ctrl_data['units']['0']
                 elements = main_unit_data['channels']
@@ -141,12 +134,7 @@ class PoolTGGeneration(PoolAction):
     
             # StartAll on all controllers
             for pool_ctrl in pool_ctrls:
-                pool_ctrl.ctrl.StartAll()        
-        
-    def stop_action(self, *args, **kwargs):
-        '''Stop action and the software TG generation'''
-        PoolAction.stop_action(self, *args, **kwargs)
-        self._sw_tggenerator.stop()
+                pool_ctrl.ctrl.StartAll()                
         
     def is_triggering(self, states):
         """Determines if we are triggering or if the triggering has ended
