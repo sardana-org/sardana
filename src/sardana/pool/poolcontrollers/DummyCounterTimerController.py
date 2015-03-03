@@ -36,7 +36,7 @@ class Channel:
         self.value = 0.0
         self.is_counting = False
         self.active = True
-        self.nrOfTriggers = 0
+        self.repetitions = 0
         self._counter = 0
         self.mode = AcqTriggerType.Software
         self.buffer_values = []
@@ -61,14 +61,7 @@ class DummyCounterTimerController(CounterTimerController):
                          Description : 'TriggerMode: soft or gate',
                          Access : DataAccess.ReadWrite,
                          Memorize : NotMemorized
-                        },
-                        #attributes added for continuous acqusition mode
-                       "NrOfTriggers":
-                        {Type : long,
-                         Description : 'Nr of triggers',
-                         Access : DataAccess.ReadWrite,
-                         Memorize : NotMemorized
-                        },
+                        }
                       }
 
     def __init__(self, inst, props, *args, **kwargs):
@@ -133,8 +126,8 @@ class DummyCounterTimerController(CounterTimerController):
         elif channel.mode == AcqTriggerType.Trigger:
             if self.integ_time is not None:
                 # counting in time 
-                #if elapsed_time >= self.integ_time*channel.nrOfTriggers:
-                if channel.nrOfTriggers <= channel._counter:
+                #if elapsed_time >= self.integ_time*channel.repetitions:
+                if channel.repetitions <= channel._counter:
                 #if elapsed_time >= self.integ_time:
                     self._finish(elapsed_time)
     
@@ -160,8 +153,8 @@ class DummyCounterTimerController(CounterTimerController):
                 t = elapsed_time
                 n = int(t / self.integ_time)
                 cp = 0
-                if n > channel.nrOfTriggers:
-                    cp = n - channel.nrOfTriggers
+                if n > channel.repetitions:
+                    cp = n - channel.repetitions
                 n = n - channel._counter -cp
                 t = self.integ_time                
                 if ind == self._timer:
@@ -254,20 +247,18 @@ class DummyCounterTimerController(CounterTimerController):
         self._log.debug("GetAxisExtraPar(%d, %s): Entering...", axis, name)
         idx = ind - 1
         if name.lower() == "triggermode":
-            return self.channels[idx].mode
-        if name.lower() == "nroftriggers":
-            return long(self.channels[axis].nrOfTriggers)
+            return self.channels[idx].mode        
 
     def SetAxisExtraPar(self, ind, name, value):
         idx = ind - 1       
         if name.lower() == "triggermode":
-            self.channels[idx].mode = value
-        if name.lower() == "nroftriggers":
-           self.channels[idx].nrOfTriggers = value
+            self.channels[idx].mode = value        
            
     def GetCtrlPar(self, par):
         if par == 'trigger_type':            
             return self._trigger_type
+        elif par == 'repetitions':
+            return self._repetitions
     
     def SetCtrlPar(self, par, value):
         if par == 'trigger_type':
@@ -275,3 +266,9 @@ class DummyCounterTimerController(CounterTimerController):
             for channel in self.channels:
                 if channel:
                     channel.mode = value
+        elif par == 'repetitions':
+            self._repetitions = value
+            for channel in self.channels:
+                if channel:
+                    channel.repetitions = value
+            

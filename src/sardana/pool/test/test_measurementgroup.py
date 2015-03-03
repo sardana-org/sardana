@@ -37,18 +37,14 @@ from sardana.pool.test import (BasePoolTestCase, createPoolMeasurementGroup,
 from sardana.pool.test.test_acquisition import AttributeListener
         
 
-params_1 = { "offset":0, 
-              "active_period":0.001,
-              "passive_period":0.15, 
-              "repetitions":100, 
-              "integ_time":0.01 
+params_1 = {"offset":0,                
+            "repetitions":100, 
+            "integ_time":0.01 
 }
 
-params_2 = { "offset":0, 
-              "active_period":0.001,
-              "passive_period":0.15, 
-              "repetitions":100, 
-              "integ_time":0.01 
+params_2 = {"offset":0, 
+            "repetitions":100, 
+            "integ_time":0.01 
 }
 
 doc_1 = 'Synchronized acquisition with two channels from the same controller'\
@@ -121,8 +117,6 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         Checks the lengths of the acquired data.
         """    
         offset = params["offset"]
-        active_period = params["active_period"]
-        passive_period = params["passive_period"] 
         repetitions = params["repetitions"]
         integ_time = params["integ_time"]
     
@@ -130,41 +124,35 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         
         pool = self.pool
         
-        dummyMeasurementGroupConf01["name"] = 'mg1'
-        dummyMeasurementGroupConf01["full_name"] = 'mg1'
-
         # creating mg user configuration and obtaining channel ids
         (mg_conf, channel_ids) = createMGUserConfiguration(pool, config)
-        dummyMeasurementGroupConf01["user_elements"] = channel_ids
         
+        dummyMeasurementGroupConf01["name"] = 'mg1'
+        dummyMeasurementGroupConf01["full_name"] = 'mg1'        
+        dummyMeasurementGroupConf01["user_elements"] = channel_ids        
         self.pmg = createPoolMeasurementGroup(pool, dummyMeasurementGroupConf01)
         # Add mg to pool
         pool.add_element(self.pmg)
-                                
-        self.pmg.set_integration_time(integ_time)
+        # setting measurement parameters
+        self.pmg.set_acquisition_mode(AcqMode.ContTimer)
         self.pmg.set_offset(offset)
+        self.pmg.set_repetitions(repetitions)
+        self.pmg.set_integration_time(integ_time)
 
-        # setting mg configuration - this cleans the action cache!
+        # setting measurement configuration - this cleans the action cache!
         self.pmg.set_configuration_from_user(mg_conf)        
-        
-        for ctrl_links in config:
-            for link in ctrl_links:
-                channel_name = link[0]
-                channel = self.cts[channel_name]
-                channel.set_extra_par('nroftriggers', repetitions)
+                
         attr_listener = AttributeListener()        
         ## Add listeners
         attributes = self.pmg.get_user_elements_attribute_sequence()                
         for attr in attributes:
             attr.add_listener(attr_listener)
-
-        self.pmg.set_acquisition_mode(AcqMode.ContTimer)
+        
         self.pmg.start_acquisition()
-        # retrieving the acquisition since it was cleaned when applying mg conf        
         acq = self.pmg.acquisition
-        # waiting for acquisition and tggeneration to finish        
+        # waiting for acquisition to finish        
         while acq.is_running():            
-            time.sleep(1)        
+            time.sleep(1) 
         # print the acquisition records
         for i, record in enumerate(zip(*attr_listener.data.values())):
             print i, record
@@ -189,8 +177,11 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
     def meas_cont_stop_acquisition(self, params, config):
         """Executes measurement using the measurement group and tests that the 
         acquisition can be stopped.
-        """    
-        
+        """            
+        offset = params["offset"]
+        repetitions = params["repetitions"]
+        integ_time = params["integ_time"]
+                
         pool = self.pool
         dummyMeasurementGroupConf01["name"] = 'mg1'
         dummyMeasurementGroupConf01["full_name"] = 'mg1'
@@ -203,23 +194,21 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         # Add mg to pool
         pool.add_element(self.pmg)
                                 
-        self.pmg.set_integration_time(params["integ_time"])
+        self.pmg.set_acquisition_mode(AcqMode.ContTimer)
+        self.pmg.set_offset(offset)
+        self.pmg.set_repetitions(repetitions)
+        self.pmg.set_integration_time(integ_time)
+        
         # setting mg configuration - this cleans the action cache!
         self.pmg.set_configuration_from_user(mg_conf)        
         # setting parameters to the software tg generator        
 
-        for ctrl_links in config:
-            for link in ctrl_links:
-                channel_name = link[0]
-                channel = self.cts[channel_name]
-                channel.set_extra_par('nroftriggers', params["repetitions"])
         attr_listener = AttributeListener()        
         ## Add listeners
         attributes = self.pmg.get_user_elements_attribute_sequence()                
         for attr in attributes:
             attr.add_listener(attr_listener)
-
-        self.pmg.set_acquisition_mode(AcqMode.ContTimer)
+        
         self.pmg.start_acquisition()
         # retrieving the acquisition since it was cleaned when applying mg conf        
         acq = self.pmg.acquisition

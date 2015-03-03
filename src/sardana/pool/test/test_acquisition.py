@@ -178,22 +178,22 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
             'config': self.sw_acq_cfg
         }
 
-        ct_1_1.set_extra_par('nroftriggers', repetitions)
         ct_ctrl_1.set_ctrl_par('trigger_type', AcqTriggerType.Trigger)
 
         hw_acq_args = ()
         hw_acq_kwargs = {
             'integ_time': integ_time,
+            'repetitions': repetitions,
             'config': self.hw_acq_cfg,
         }                
         self.hw_acq.run(hw_acq_args, **hw_acq_kwargs)       
         tg_args = ()
         tg_kwargs = {
-            'config': tg_cfg,
             'offset': offset,
             'active_period': active_period,
             'passive_period': passive_period,
-            'repetitions': repetitions
+            'repetitions': repetitions,
+            'config': tg_cfg
         }
         self.tggeneration.run(*tg_args, **tg_kwargs)
         # waiting for acquisition and tggeneration to finish                
