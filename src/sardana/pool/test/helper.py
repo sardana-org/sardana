@@ -27,9 +27,8 @@ __all__ = ['createPoolController', 'createPoolCounterTimer',
            'createPoolTriggerGate', 'createPoolMeasurementGroup',
            'createPoolTGGenerationConfiguration',
            'createCTAcquisitionConfiguration', 'createMGConfiguration',
-           'getTGConfiguration', 'getSWtg_MGConfiguration',
-           'getHWtg_MGConfiguration', 'createElemConf',
-           'createCtrlConf', 'createConfbyCtrlKlass', 
+           'getTGConfiguration', 'split_MGConfigurations',
+           'createElemConf', 'createCtrlConf', 'createConfbyCtrlKlass', 
            'createMGUserConfiguration']
 
 from sardana.sardanadefs import ElementType
@@ -295,55 +294,34 @@ def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,
 
     return MG_configuration
 
+def split_MGConfigurations(mg_cfg_in):
+    """Split MeasurementGroup configuration with channels
+    triggered by SW Trigger and channels triggered by HW trigger"""
 
-def getSWtg_MGConfiguration(mg_cfg_in):
-    """Get Measurement group configuration with only the channel elements
-    triggered by a SW Trigger"""
     ctrls_in = mg_cfg_in['controllers']
-    mg_cfg_out = {}
-    mg_cfg_out['controllers'] = ctrls_out = {}
+    mg_sw_cfg_out = {}
+    mg_hw_cfg_out = {}
+    mg_sw_cfg_out['controllers'] = ctrls_sw_out = {}
+    mg_hw_cfg_out['controllers'] = ctrls_hw_out = {}
     for ctrl, ctrl_info in ctrls_in.items():        
         tg_element = ctrl_info.get('trigger_element')
         if tg_element != None:
             tg_pool_ctrl = tg_element.get_controller() 
             tg_ctrl = tg_pool_ctrl._ctrl
-            # TODO: filtering software TG controllers on add_listener attribute
-            # this is not generic!
+            # TODO: filtering software and HW TG controllers on 
+            # add_listener attribute, this is not generic!
             if hasattr(tg_ctrl, 'add_listener'):
-                ctrls_out[ctrl] = ctrl_info
-    # TODO: timer and monitor are just random elements!!!
-    if len(ctrls_out):
-        mg_cfg_out['timer'] = ctrls_out.values()[0]['units']['0']['timer'] 
-        mg_cfg_out['monitor'] = ctrls_out.values()[0]['units']['0']['monitor']    
-    return mg_cfg_out
-
-def getHWtg_MGConfiguration(mg_cfg_in):
-    """Get Measurement group configuration with only the channel elements
-    triggered by a HW Trigger"""
-
-    # Get all trigger_elements ('sw_time', 'sw_position', 'hw_tg_element') 
-    #sw_hw_tg list organized by controller 
-    #ex: sw_hw_tg = [[sw_time, sw_position, tg1],[hw_time],[tg1, tg2]]
-    # organized in a list by controller.
-    # This part of code is common to look for hw and for hw triggered counters
-    ctrls_in = mg_cfg_in['controllers']
-    mg_cfg_out = {}
-    mg_cfg_out['controllers'] = ctrls_out = {}
-    for ctrl, ctrl_info in ctrls_in.items():        
-        tg_element = ctrl_info.get('trigger_element')
-        if tg_element != None:
-            tg_pool_ctrl = tg_element.get_controller() 
-            tg_ctrl = tg_pool_ctrl._ctrl
-            # TODO: filtering software TG controllers on add_listener attribute
-            # this is not generic!
+                ctrls_sw_out[ctrl] = ctrl_info
             if not hasattr(tg_ctrl, 'add_listener'):
-                ctrls_out[ctrl] = ctrl_info
+                ctrls_hw_out[ctrl] = ctrl_info
     # TODO: timer and monitor are just random elements!!!
-    if len(ctrls_out):
-        mg_cfg_out['timer'] = ctrls_out.values()[0]['units']['0']['timer'] 
-        mg_cfg_out['monitor'] = ctrls_out.values()[0]['units']['0']['monitor']    
-    return mg_cfg_out
-
+    if len(ctrls_sw_out):
+        mg_sw_cfg_out['timer'] = ctrls_sw_out.values()[0]['units']['0']['timer'] 
+        mg_sw_cfg_out['monitor'] = ctrls_sw_out.values()[0]['units']['0']['monitor']  
+    if len(ctrls_hw_out):
+        mg_hw_cfg_out['timer'] = ctrls_hw_out.values()[0]['units']['0']['timer'] 
+        mg_hw_cfg_out['monitor'] = ctrls_hw_out.values()[0]['units']['0']['monitor']    
+    return (mg_sw_cfg_out, mg_hw_cfg_out)
 
 def getTGConfiguration(MGcfg):
     '''Build TG configuration from complete MG configuration.
@@ -458,37 +436,4 @@ def createConfFromObj(obj):
         cfg['enabled'] = True
     return cfg
 
-"""
-def walk(dictionary, foundkey, answer=None, sofar=None):
-    if sofar is None:
-        sofar = []
-    if answer is None:
-        answer = []
-    for k,v in dictionary.iteritems():
-        if k == foundkey:
-            answer.append(sofar + [k])
-        if isinstance(v, dict):
-            walk(v, foundkey, answer, sofar+[k])
-    return answer
-
-def delKeys(dictionary, removekey):
-    for path in walk(dictionary, removekey):
-        dd = dictionary
-        while len(path) > 1:
-            dd = dd[path[0]]
-            path.pop(0)
-        dd.pop(path[0])
-
-# This cannot be used without modifying the MGcfg. 
-# Delete elements of MGcfg deletes it as well the elements in original MGcfg.
-def getCTConfiguration(MGcfg):
-    Extract CT configuration from complete MG configuration.
-
-    CTcfg = copy.deepcopy(MGcfg)
-    delKeys(CTcfg, 'trigger_element')
-    delKeys(CTcfg, 'trigger_type')
-    #if 'sw_position' in CTcfg: del CTcfg['sw_position']
-    #if 'sw_time' in CTcfg: del CTcfg['sw_time']
-    return CTcfg
-"""
 

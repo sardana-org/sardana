@@ -147,12 +147,10 @@ class PoolAcquisition(PoolAction):
         # TODO: this code splits the global mg configuration into 
         # experimental channels triggered by hw and experimental channels
         # triggered by sw. Refactor it!!!!
-        from sardana.pool.test.helper import getHWtg_MGConfiguration
-        from sardana.pool.test.helper import getSWtg_MGConfiguration
+        from sardana.pool.test.helper import split_MGConfigurations
         from sardana.pool.test.helper import getTGConfiguration
         config = kwargs['config']
-        sw_acq_cfg = getSWtg_MGConfiguration(config)
-        cont_acq_cfg = getHWtg_MGConfiguration(config)            
+        (sw_acq_cfg, cont_acq_cfg) = split_MGConfigurations(config)        
         tg_cfg, _ = getTGConfiguration(config)
         # starting continuous acquisition only if there are any controllers
         if len(cont_acq_cfg['controllers']):
