@@ -252,9 +252,6 @@ def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,
     master_ctrl_idx = 0
     master_idx = 0
     MG_configuration = {}
-    MG_configuration['sw_position'] = False
-    MG_configuration['sw_time'] = False
-
     ctrls_configuration = {}
     MG_configuration['timer'] = ctrl_channels[master_ctrl_idx][master_idx]
     MG_configuration['monitor'] = ctrl_channels[master_ctrl_idx][master_idx]
@@ -285,12 +282,7 @@ def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,
         main_unit_data['timer'] = channels[master_idx]
         main_unit_data['monitor'] = channels[master_idx]
         ctrls_configuration[ctrl] = ctrl_conf
-    MG_configuration['controllers'] = ctrls_configuration
-
-    if 'sw_position' in _tg_elements:
-        MG_configuration['sw_position'] = True
-    if 'sw_time' in _tg_elements:
-        MG_configuration['sw_time'] = True    
+    MG_configuration['controllers'] = ctrls_configuration 
 
     return MG_configuration
 
@@ -339,8 +331,7 @@ def getTGConfiguration(MGcfg):
         channels_dict = MGcfg["controllers"][ctrl]['units']['0']['channels']
         for channel in channels_dict:
             tg_element = channels_dict[channel].get('trigger_element', None)
-            if (tg_element != None and tg_element not in _tg_element_list and 
-                tg_element != 'sw_time' and tg_element != 'sw_position'):
+            if (tg_element != None and tg_element not in _tg_element_list):
                 _tg_element_list.append(tg_element)
 
     # Intermediate dictionary to organize each ctrl with its elements.
