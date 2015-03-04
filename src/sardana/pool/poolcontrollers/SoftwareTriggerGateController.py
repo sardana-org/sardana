@@ -104,6 +104,9 @@ class SoftwareTriggerGateController(TriggerGateController):
         pass
 
     def PreStartOne(self, axis, value=None):
+        self._log.debug('PreStartOne(%d): entering...' % axis)
+        idx = axis - 1
+        self.tg[idx].prepare()
         return True
 
     def StartOne(self, axis):
