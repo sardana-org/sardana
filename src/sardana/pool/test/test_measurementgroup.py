@@ -112,22 +112,15 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         unittest.TestCase.setUp(self)
         self.pmg = None
 
-    def meas_cont_acquisition(self, params, config):
-        """Executes measurement using the measurement group. 
-        Checks the lengths of the acquired data.
-        """    
-        offset = params["offset"]
-        repetitions = params["repetitions"]
-        integ_time = params["integ_time"]
-    
-        jobs_before = get_thread_pool().qsize
-        
+
+    def prepare_meas(self, params, config):
+        """ Prepare the meas and returns the channel names
+        """
         pool = self.pool
         
         # creating mg user configuration and obtaining channel ids
         mg_conf, channel_ids, channel_names = \
-                                        createMGUserConfiguration(pool, config)
-        
+                                        createMGUserConfiguration(pool, config)       
         dummyMeasurementGroupConf01["name"] = 'mg1'
         dummyMeasurementGroupConf01["full_name"] = 'mg1'        
         dummyMeasurementGroupConf01["user_elements"] = channel_ids        
@@ -136,12 +129,20 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         pool.add_element(self.pmg)
         # setting measurement parameters
         self.pmg.set_acquisition_mode(AcqMode.ContTimer)
-        self.pmg.set_offset(offset)
-        self.pmg.set_repetitions(repetitions)
-        self.pmg.set_integration_time(integ_time)
-
+        self.pmg.set_offset(params["offset"])
+        self.pmg.set_repetitions(params["repetitions"])
+        self.pmg.set_integration_time(params["integ_time"])
         # setting measurement configuration - this cleans the action cache!
-        self.pmg.set_configuration_from_user(mg_conf)        
+        self.pmg.set_configuration_from_user(mg_conf) 
+
+        return channel_names
+
+    def meas_cont_acquisition(self, params, config):
+        """Executes measurement using the measurement group. 
+        Checks the lengths of the acquired data.
+        """
+        jobs_before = get_thread_pool().qsize
+        channel_names = self.prepare_meas(params, config)     
                 
         attr_listener = AttributeListener()        
         ## Add listeners
@@ -169,6 +170,7 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
             self.assertIn(channel, header, msg)
                     
         # checking if all the data were acquired
+        repetitions = params["repetitions"]
         for ch_name in header:
             ch_data_len = len(table[ch_name])
             msg = 'length of data for channel %s is %d and should be %d' %\
@@ -187,30 +189,8 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
     def meas_cont_stop_acquisition(self, params, config):
         """Executes measurement using the measurement group and tests that the 
         acquisition can be stopped.
-        """            
-        offset = params["offset"]
-        repetitions = params["repetitions"]
-        integ_time = params["integ_time"]
-                
-        pool = self.pool
-        dummyMeasurementGroupConf01["name"] = 'mg1'
-        dummyMeasurementGroupConf01["full_name"] = 'mg1'
-
-        # creating mg user configuration and obtaining channel ids
-        mg_conf, channel_ids, _ = createMGUserConfiguration(pool, config)
-        dummyMeasurementGroupConf01["user_elements"] = channel_ids
-        
-        self.pmg = createPoolMeasurementGroup(pool, dummyMeasurementGroupConf01)
-        # Add mg to pool
-        pool.add_element(self.pmg)
-                                
-        self.pmg.set_acquisition_mode(AcqMode.ContTimer)
-        self.pmg.set_offset(offset)
-        self.pmg.set_repetitions(repetitions)
-        self.pmg.set_integration_time(integ_time)
-        
-        # setting mg configuration - this cleans the action cache!
-        self.pmg.set_configuration_from_user(mg_conf)        
+        """  
+        self.prepare_meas(params, config)     
         # setting parameters to the software tg generator        
 
         attr_listener = AttributeListener()        
