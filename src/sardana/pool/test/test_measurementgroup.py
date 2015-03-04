@@ -211,6 +211,10 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         msg = "acquisition shall NOT be running after stopping it"
         self.assertEqual(acq.is_running(), False, msg) 
 
+        tp = get_thread_pool()
+        numBW= tp.getNumOfBusyWorkers()
+        msg = "The number of busy workers is not zero; numBW = %s", % (numBW)
+        self.assertEqual(numBW, 0, msg)
         # print the acquisition records
         for i, record in enumerate(zip(*attr_listener.data.values())):
             print i, record
