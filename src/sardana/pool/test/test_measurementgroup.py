@@ -107,6 +107,10 @@ doc_9 = 'Test two consecutive synchronized acquisitions with different'\
             params=params_2, config=config_8) 
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_9,
             params=params_1, config=config_1, second_config=config_7)
+@insertTest(helper_name='meas_double_acquisition', test_method_doc=doc_8,
+            params=params_2, config=config_8)
+@insertTest(helper_name='meas_double_acquisition', test_method_doc=doc_4,
+            params=params_1, config=config_4)
 class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
     """Integration test of TGGeneration and Acquisition actions."""
 
@@ -149,8 +153,9 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         for attr in attributes:
             attr.add_listener(self.attr_listener)
 
-    def data_asserts(self, channel_names, params, repetitions):
-
+    def acq_asserts(self, channel_names, params, repetitions):
+        """ Run a cont acquisition + asserts
+        """
         self.prepare_attribute_listener()
         self.pmg.start_acquisition()   
         acq = self.pmg.acquisition
@@ -178,6 +183,25 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
                                             (ch_name, ch_data_len, repetitions)
             self.assertEqual(ch_data_len, repetitions, msg)
 
+    def meas_double_acquisition(self, params, config):
+        """ Run two acquisition with the same meas in two different mode: 
+             - ContTimer
+             - Timer
+        """ 
+        # AcqMode.ContTimer
+        channel_names = self.prepare_meas(params, config)     
+        repetitions = params["repetitions"]   
+        self.acq_asserts(channel_names, params, repetitions) 
+        # AcqMode.Timer
+        self.pmg.set_acquisition_mode(AcqMode.ContTimer)
+        # Run AcqMode.Timer
+        self.pmg.start_acquisition()
+        acq = self.pmg.acquisition
+        # waiting for acquisition to finish        
+        while acq.is_running():            
+            time.sleep(1)
+        #TODO add asserts
+
     def consecutive_acquisitions(self, pool, params, second_config):
         # creating mg user configuration and obtaining channel ids
         mg_conf, channel_ids, channel_names = createMGUserConfiguration(pool, second_config)
@@ -185,7 +209,7 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         # setting mg configuration - this cleans the action cache!
         self.pmg.set_configuration_from_user(mg_conf)        
         repetitions = params["repetitions"]
-        self.data_asserts(channel_names, params, repetitions)
+        self.acq_asserts(channel_names, params, repetitions)
 
     def meas_cont_acquisition(self, params, config, second_config=None):
         """Executes measurement using the measurement group. 
@@ -194,7 +218,7 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         jobs_before = get_thread_pool().qsize
         channel_names = self.prepare_meas(params, config)     
         repetitions = params["repetitions"]   
-        self.data_asserts(channel_names, params, repetitions)     
+        self.acq_asserts(channel_names, params, repetitions)     
 
         if second_config is not None:
             self.consecutive_acquisitions(self.pool, params, second_config)
