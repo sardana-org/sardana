@@ -213,7 +213,7 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
 
         tp = get_thread_pool()
         numBW= tp.getNumOfBusyWorkers()
-        msg = "The number of busy workers is not zero; numBW = %s", % (numBW)
+        msg = "The number of busy workers is not zero; numBW = %s" % (numBW)
         self.assertEqual(numBW, 0, msg)
         # print the acquisition records
         for i, record in enumerate(zip(*attr_listener.data.values())):
