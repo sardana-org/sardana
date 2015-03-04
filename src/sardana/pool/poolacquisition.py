@@ -151,12 +151,22 @@ class PoolAcquisition(PoolAction):
         from sardana.pool.test.helper import getSWtg_MGConfiguration
         from sardana.pool.test.helper import getTGConfiguration
         config = kwargs['config']
-        sw_acq_config = getSWtg_MGConfiguration(config)
-        hw_acq_config = getHWtg_MGConfiguration(config)            
-        tg_config, _ = getTGConfiguration(config)
-        self._cont_acq.run(*args, **kwargs)
-        kwargs['config'] = tg_config  
-        self._tg_gen.run(*args, **kwargs)
+        sw_acq_cfg = getSWtg_MGConfiguration(config)
+        cont_acq_cfg = getHWtg_MGConfiguration(config)            
+        tg_cfg, _ = getTGConfiguration(config)
+        # starting continuous acquisition only if there are any controllers
+        if len(cont_acq_cfg['controllers']):
+            cont_acq_kwargs = dict(kwargs)
+            cont_acq_kwargs['config'] = cont_acq_cfg
+            self._cont_acq.run(*args, **cont_acq_kwargs)
+        if len(sw_acq_cfg['controllers']):
+            sw_acq_kwargs = dict(kwargs)
+            sw_acq_kwargs['config'] = sw_acq_cfg
+            self.set_config(sw_acq_kwargs)
+            self._tg_gen.add_listener(self)
+        tg_kwargs = dict(kwargs)
+        tg_kwargs['config'] = tg_cfg
+        self._tg_gen.run(*args, **tg_kwargs)
         
     def _run_ct_continuous(self, *args, **kwargs):
         """Run a single acquisition with the softwaer triggered elements 
