@@ -315,6 +315,9 @@ class PoolMeasurementGroup(PoolGroupElement):
                     trigger_name = channel_data['trigger_element']
                     trigger_element = pool.get_element_by_full_name(trigger_name)
                     channel_data['trigger_element'] = trigger_element
+                    # TODO: setting global trigger element for the controller
+                    # this assumes that the last trigger element takes precedence
+                    c_data['trigger_element'] = trigger_element
                     tg_elem_ids.append(trigger_element.id)
             indexes = sorted(user_elem_ids.keys())
             assert indexes == range(len(indexes))
@@ -450,7 +453,7 @@ class PoolMeasurementGroup(PoolGroupElement):
             # skip external channels
             if type(ctrl) is str:
                 continue
-            # telling controller in which acquisition mode it will participate                 
+            # telling controller in which acquisition mode it will participate
             ctrl.set_ctrl_par('acquisition_mode', self.acquisition_mode)
             #@TODO: fix optimization and enable it again
             if ctrl.operator == self and not force and not self._config_dirty:
@@ -464,7 +467,17 @@ class PoolMeasurementGroup(PoolGroupElement):
                     #    ctrl.set_ctrl_par('monitor', g_monitor.axis)
                     ctrl.set_ctrl_par('timer', unit_data['timer'].axis)
                     ctrl.set_ctrl_par('monitor', unit_data['monitor'].axis)
-                    ctrl.set_ctrl_par('trigger_type', unit_data['trigger_type'])
+                    trigger_type = unit_data['trigger_type']
+                    # TODO: mixing units with ctrl data concepts
+                    trigger_element = ctrl_data.get('trigger_element')
+                    if trigger_element:
+                        tg_pool_ctrl = trigger_element.get_controller()
+                        tg_ctrl = tg_pool_ctrl._ctrl
+                        # checking if we are using software or hardware trigger
+                        # TODO: this check is not generic !!!
+                        if hasattr(tg_ctrl, 'add_listener'):
+                            trigger_type = AcqTriggerType.Software                    
+                    ctrl.set_ctrl_par('trigger_type', trigger_type)
 
         self._config_dirty = False
 
