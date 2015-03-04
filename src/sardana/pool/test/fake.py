@@ -50,10 +50,7 @@ class FakePool(object):
         return self.elements[id]
     
     def get_element_by_full_name(self, full_name):
-        if full_name != 'sw_time' and full_name != 'sw_position':
-            return self.elements_by_full_name[full_name]
-        else:
-            return full_name
+        return self.elements_by_full_name[full_name]
 
     def get_free_id(self):
         while True:
