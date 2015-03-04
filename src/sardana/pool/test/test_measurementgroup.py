@@ -86,6 +86,9 @@ doc_8 = 'Test that the acquisition using triggers can be stopped.'
 config_8 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
              ('_test_ct_1_2', '_test_stg_1_1', AcqTriggerType.Trigger)]]  
 
+doc_9 = 'Test two consecutive synchronized acquisitions with different'\
+        ' configuration.'
+
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_1,
             params=params_1, config=config_1)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_2,
@@ -101,7 +104,9 @@ config_8 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_7,
             params=params_1, config=config_7)
 @insertTest(helper_name='meas_cont_stop_acquisition', test_method_doc=doc_8,
-            params=params_2, config=config_8)
+            params=params_2, config=config_8) 
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_9,
+            params=params_1, config=config_1, second_config=config_7)
 class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
     """Integration test of TGGeneration and Acquisition actions."""
 
@@ -111,7 +116,7 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         BasePoolTestCase.setUp(self)
         unittest.TestCase.setUp(self)
         self.pmg = None
-
+        self.attr_listener = None
 
     def prepare_meas(self, params, config):
         """ Prepare the meas and returns the channel names
@@ -137,45 +142,63 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
 
         return channel_names
 
-    def meas_cont_acquisition(self, params, config):
-        """Executes measurement using the measurement group. 
-        Checks the lengths of the acquired data.
-        """
-        jobs_before = get_thread_pool().qsize
-        channel_names = self.prepare_meas(params, config)     
-                
-        attr_listener = AttributeListener()        
+    def prepare_attribute_listener(self):
+        self.attr_listener = AttributeListener()        
         ## Add listeners
         attributes = self.pmg.get_user_elements_attribute_sequence()                
         for attr in attributes:
-            attr.add_listener(attr_listener)
-        
-        self.pmg.start_acquisition()
+            attr.add_listener(self.attr_listener)
+
+    def data_asserts(self, channel_names, params, repetitions):
+
+        self.prepare_attribute_listener()
+        self.pmg.start_acquisition()   
         acq = self.pmg.acquisition
-        # waiting for acquisition to finish        
+        # waiting for acquisition 
         while acq.is_running():            
-            time.sleep(1) 
+            time.sleep(1)  
         # printing acquisition records
-        table = attr_listener.get_table()
+        table = self.attr_listener.get_table()
         header = table.dtype.names
         print header        
         n_rows = table.shape[0]
         for row in xrange(n_rows):
             print row, table[row]        
         # checking if any of data was acquired        
-        self.assertTrue(attr_listener.data, 'no data were acquired')        
+        self.assertTrue(self.attr_listener.data, 'no data were acquired')        
         # checking if all channels produced data        
         for channel in channel_names:
             msg = 'data from channel %s were not acquired' % channel
             self.assertIn(channel, header, msg)
                     
         # checking if all the data were acquired
-        repetitions = params["repetitions"]
         for ch_name in header:
             ch_data_len = len(table[ch_name])
             msg = 'length of data for channel %s is %d and should be %d' %\
                                             (ch_name, ch_data_len, repetitions)
             self.assertEqual(ch_data_len, repetitions, msg)
+
+    def consecutive_acquisitions(self, pool, params, second_config):
+        # creating mg user configuration and obtaining channel ids
+        mg_conf, channel_ids, channel_names = createMGUserConfiguration(pool, second_config)
+
+        # setting mg configuration - this cleans the action cache!
+        self.pmg.set_configuration_from_user(mg_conf)        
+        repetitions = params["repetitions"]
+        self.data_asserts(channel_names, params, repetitions)
+
+    def meas_cont_acquisition(self, params, config, second_config=None):
+        """Executes measurement using the measurement group. 
+        Checks the lengths of the acquired data.
+        """
+        jobs_before = get_thread_pool().qsize
+        channel_names = self.prepare_meas(params, config)     
+        repetitions = params["repetitions"]   
+        self.data_asserts(channel_names, params, repetitions)     
+
+        if second_config is not None:
+            self.consecutive_acquisitions(self.pool, params, second_config)
+
         # checking if there are no pending jobs
         jobs_after = get_thread_pool().qsize
         msg = ('there are %d jobs pending to be done after the acquisition ' +
@@ -191,13 +214,7 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         acquisition can be stopped.
         """  
         self.prepare_meas(params, config)     
-        # setting parameters to the software tg generator        
-
-        attr_listener = AttributeListener()        
-        ## Add listeners
-        attributes = self.pmg.get_user_elements_attribute_sequence()                
-        for attr in attributes:
-            attr.add_listener(attr_listener)
+        self.prepare_attribute_listener()
         
         self.pmg.start_acquisition()
         # retrieving the acquisition since it was cleaned when applying mg conf        
@@ -216,7 +233,7 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         msg = "The number of busy workers is not zero; numBW = %s" % (numBW)
         self.assertEqual(numBW, 0, msg)
         # print the acquisition records
-        for i, record in enumerate(zip(*attr_listener.data.values())):
+        for i, record in enumerate(zip(*self.attr_listener.data.values())):
             print i, record
                 
     def tearDown(self):
