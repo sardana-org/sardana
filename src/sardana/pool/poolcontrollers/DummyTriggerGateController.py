@@ -121,10 +121,10 @@ class DummyTriggerGateController(TriggerGateController):
         TriggerGateController.__init__(self, inst, props, *args, **kwargs)
         self.tg = {}
         
-    def add_listener(self, listener):
-        '''Backdoor method to attach listeners. It will be removed whenever 
-        a proper EventChannel mechanism will be implemented'''
-        self.tg[0].add_listener(listener)
+#     def add_listener(self, listener):
+#         '''Backdoor method to attach listeners. It will be removed whenever 
+#         a proper EventChannel mechanism will be implemented'''
+#         self.tg[0].add_listener(listener)
         
     def SetAxisPar(self, axis, name, value):
         idx = axis - 1
