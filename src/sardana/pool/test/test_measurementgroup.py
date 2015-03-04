@@ -75,16 +75,16 @@ doc_5 = 'Use a different trigger in 2 channels of the same controller'
 config_5 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
              ('_test_ct_1_2', '_test_tg_2_1', AcqTriggerType.Trigger)]]
 
-doc_6 = 'Test using Software Trigger Type: element sw_time'
-config_6 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger)]]
+doc_6 = 'Test using Software Trigger'
+config_6 = [[('_test_ct_1_1', '_test_stg_1_1', AcqTriggerType.Trigger)]]
 
 doc_7 = 'Test using both, a Software Trigger and a "Hardware" Trigger'
 config_7 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger)],
-            [('_test_ct_2_1', '_test_tg_1_1', AcqTriggerType.Trigger)]]
+            [('_test_ct_2_1', '_test_stg_1_1', AcqTriggerType.Trigger)]]
 
 doc_8 = 'Test that the acquisition using triggers can be stopped.'
 config_8 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
-             ('_test_ct_1_2', '_test_tg_1_1', AcqTriggerType.Trigger)]]  
+             ('_test_ct_1_2', '_test_stg_1_1', AcqTriggerType.Trigger)]]  
 
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_1,
             params=params_1, config=config_1)
