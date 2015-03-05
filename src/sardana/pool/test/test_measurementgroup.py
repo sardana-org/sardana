@@ -24,6 +24,7 @@
 ##############################################################################
 import time
 import threading
+import copy
 
 from taurus.external import unittest
 from taurus.test import insertTest
@@ -51,11 +52,12 @@ class BaseAcquisition(object):
         
         # creating mg user configuration and obtaining channel ids
         mg_conf, channel_ids, channel_names = \
-                                        createMGUserConfiguration(pool, config)       
-        dummyMeasurementGroupConf01["name"] = 'mg1'
-        dummyMeasurementGroupConf01["full_name"] = 'mg1'        
-        dummyMeasurementGroupConf01["user_elements"] = channel_ids        
-        self.pmg = createPoolMeasurementGroup(pool, dummyMeasurementGroupConf01)
+                                        createMGUserConfiguration(pool, config)
+        conf = copy.deepcopy(dummyMeasurementGroupConf01)        
+        conf["name"] = 'mg1'
+        conf["full_name"] = 'mg1'
+        conf["user_elements"] = channel_ids
+        self.pmg = createPoolMeasurementGroup(pool, conf)
         # Add mg to pool
         pool.add_element(self.pmg)
         # setting measurement parameters
