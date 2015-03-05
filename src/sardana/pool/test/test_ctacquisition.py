@@ -54,6 +54,7 @@ class PoolMeasurementGroupTestCase(unittest.TestCase):
         pool.add_element(pct)
 
         self.pmg = createPoolMeasurementGroup(pool, dummyMeasurementGroupConf01)
+        pool.add_element(self.pmg)
         self._pct = pct # keep a reference to use it in test_acquisition
 
     def test_init(self):
