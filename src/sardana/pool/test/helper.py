@@ -30,7 +30,7 @@ __all__ = ['createPoolController', 'createPoolCounterTimer',
            'getTGConfiguration', 'split_MGConfigurations',
            'createElemConf', 'createCtrlConf', 'createConfbyCtrlKlass', 
            'createMGUserConfiguration']
-
+import copy
 from sardana.sardanadefs import ElementType
 from sardana.pool.poolcontroller import PoolController
 from sardana.pool.poolcountertimer import PoolCounterTimer
@@ -40,7 +40,7 @@ from sardana.pool.poolmeasurementgroup import PoolMeasurementGroup
 def createPoolController(pool, conf):
     '''Method to create a PoolController using a configuration dictionary
     '''
-    kwargs = dict(conf)
+    kwargs = copy.deepcopy(conf)
 
     ctrl_manager = pool.ctrl_manager
     ctrl_class_info = None
@@ -56,7 +56,7 @@ def createPoolController(pool, conf):
 def createPoolCounterTimer(pool, poolcontroller, conf):
     '''Method to create a PoolCounterTimer using a configuration dictionary
     '''
-    kwargs = dict(conf)
+    kwargs = copy.deepcopy(conf)
     kwargs['pool'] = pool
     kwargs['ctrl'] = poolcontroller
     return PoolCounterTimer(**kwargs)
@@ -64,7 +64,7 @@ def createPoolCounterTimer(pool, poolcontroller, conf):
 def createPoolTriggerGate(pool, poolcontroller, conf):
     '''Method to create a PoolTriggerGate using a configuration dictionary
     '''
-    kwargs = dict(conf)
+    kwargs = copy.deepcopy(conf)
     kwargs['pool'] = pool
     kwargs['ctrl'] = poolcontroller
     return PoolTriggerGate(**kwargs)
@@ -72,10 +72,10 @@ def createPoolTriggerGate(pool, poolcontroller, conf):
 def createPoolMeasurementGroup(pool, conf):
     '''Method to create a PoolMeasurementGroup using a configuration dictionary
     '''
-    kwargs = dict(conf)
+    kwargs = copy.deepcopy(conf)
     id = kwargs.get('id')
     if id == None:
-        kwargs['id'] = pool.get_free_id()            
+        kwargs['id'] = pool.get_free_id()
     kwargs['pool'] = pool
     return PoolMeasurementGroup(**kwargs)
 
