@@ -78,10 +78,10 @@ class PoolAcquisition(PoolAction):
         self._cont_ct_acq = PoolContSWCTAcquisition(main_element, name=contctname)
         self._cont_acq = PoolContHWAcquisition(main_element, name=contname)
         self._tg_gen = PoolTGGeneration(main_element, name=tggenname)
-        
+
     def set_config(self, config):
         self._config = config
-        
+
     def event_received(self, *args, **kwargs):
         timestamp = time.time()
         _, event_type, event_id = args
@@ -100,7 +100,7 @@ class PoolAcquisition(PoolAction):
                 kwargs['synch'] = True
                 kwargs['idx'] = event_id
                 get_thread_pool().add(self._run_ct_continuous, None, *args, **kwargs)
-                
+
     def is_running(self):
         return self._0d_acq.is_running() or\
                self._ct_acq.is_running() or\
@@ -141,7 +141,7 @@ class PoolAcquisition(PoolAction):
         else:
             ct_acq.run(*args, **kwargs)
             zd_acq.run(*args, **kwargs)
-            
+
     def _run_synchronized(self, *args, **kwargs):
         """Runs continuous acquisition"""
         # TODO: this code splits the global mg configuration into 
@@ -165,20 +165,27 @@ class PoolAcquisition(PoolAction):
         tg_kwargs = dict(kwargs)
         tg_kwargs['config'] = tg_cfg
         self._tg_gen.run(*args, **tg_kwargs)
-        
+
     def _run_ct_continuous(self, *args, **kwargs):
         """Run a single acquisition with the softwaer triggered elements 
         during the continuous acquisition
         """
         self._cont_ct_acq.run(*args, **kwargs)
-        
+
     def _get_acq_for_element(self, element):
         actions = []        
         elem_type = element.get_type()
         if elem_type in TYPE_TIMERABLE_ELEMENTS:
             actions.append(self._ct_acq)
             ctrl = element.get_controller()
-            trigger_type = ctrl.get_ctrl_par('trigger_type')
+            # TODO: protecting controllers which do not implement trigger_type
+            # this try..except is protecting controllers which do not implement 
+            # this parameter yet, maybe a default behavior could be implemented
+            # in all experimental channel controllers
+            try: 
+                trigger_type = ctrl.get_ctrl_par('trigger_type')
+            except:
+                trigger_type = AcqTriggerType.Unknown
             if trigger_type in (AcqTriggerType.Trigger, AcqTriggerType.Gate):
                 actions.append(self._cont_acq)
             elif trigger_type in (AcqTriggerType.Software, AcqTriggerType.Unknown):
@@ -188,7 +195,7 @@ class PoolAcquisition(PoolAction):
         elif elem_type == ElementType.TriggerGate:
             actions.append(self._tg_gen)
         return actions
-        
+
     def clear_elements(self):
         """Clears all elements from this action"""
 
@@ -291,7 +298,7 @@ class PoolCTAcquisition(PoolAction):
         # prepare data structures
         self._aborted = False
         self._stopped = False
-        
+
         self.conf = kwargs
 
         self._acq_sleep_time = kwargs.pop("acq_sleep_time",
@@ -465,12 +472,12 @@ class PoolCTAcquisition(PoolAction):
                 acquirable.clear_operation()
                 state_info = acquirable._from_ctrl_state_info(state_info)
                 acquirable.set_state_info(state_info, propagate=2)
-                
+
 class PoolContHWAcquisition(PoolCTAcquisition):
-    
+
     def __init__(self, main_element, name="ContHWAcquisition", slaves=None):
         PoolCTAcquisition.__init__(self, main_element, name, slaves=slaves)
-        
+
     def start_action(self, *args, **kwargs):
         """Prepares everything for acquisition and starts it.
 
@@ -480,7 +487,7 @@ class PoolContHWAcquisition(PoolCTAcquisition):
         # prepare data structures
         self._aborted = False
         self._stopped = False
-        
+
         self.conf = kwargs
 
         self._acq_sleep_time = kwargs.pop("acq_sleep_time",
@@ -542,7 +549,7 @@ class PoolContHWAcquisition(PoolCTAcquisition):
         #    channel.prepare_to_acquire(self)
 
         with ActionContext(self):
-            
+
             # repetitions
             repetitions = self.conf['repetitions']
             for pool_ctrl in pool_ctrls:
@@ -649,9 +656,9 @@ class PoolContHWAcquisition(PoolCTAcquisition):
                 state_info = acquirable._from_ctrl_state_info(state_info)
                 acquirable.set_state_info(state_info, propagate=2)
 
-                
+
 class PoolContSWCTAcquisition(PoolCTAcquisition):
-    
+
     def __init__(self, main_element, name="CTAcquisition", slaves=None):
         PoolCTAcquisition.__init__(self, main_element, name="CTAcquisition", slaves=None)
 

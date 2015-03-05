@@ -312,7 +312,12 @@ class PoolMeasurementGroup(PoolGroupElement):
                     user_elem_ids[channel_data['index']] = id
                     channel_data = self._build_channel_defaults(channel_data, element)
                     # creating TG information
-                    trigger_name = channel_data['trigger_element']
+                    trigger_name = channel_data.get('trigger_element')
+                    # TODO: protecting measurement groups which do not have trigger_element
+                    # if trigger_element will have a default value we could remove this protection
+                    print 'trigger_name', trigger_name
+                    if not trigger_name:
+                        continue
                     trigger_element = pool.get_element_by_full_name(trigger_name)
                     channel_data['trigger_element'] = trigger_element
                     # TODO: setting global trigger element for the controller
