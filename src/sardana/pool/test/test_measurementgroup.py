@@ -35,90 +35,12 @@ from sardana.pool.test import (BasePoolTestCase, createPoolMeasurementGroup,
                                createMGUserConfiguration)
 #TODO Import AttributeListener from the right location.
 from sardana.pool.test.test_acquisition import AttributeListener
-        
 
-params_1 = {"offset":0,                
-            "repetitions":100, 
-            "integ_time":0.01 
-}
-
-params_2 = {"offset":0, 
-            "repetitions":100, 
-            "integ_time":0.01 
-}
-
-doc_1 = 'Synchronized acquisition with two channels from the same controller'\
-        ' using the same trigger'
-config_1 = (
-    (('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
-     ('_test_ct_1_2', '_test_tg_1_1', AcqTriggerType.Trigger)),  
-)
-
-doc_2 = 'Synchronized acquisition with two channels from different controllers'\
-        ' using two different triggers'
-config_2 = (
-    (('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),),
-    (('_test_ct_2_1', '_test_tg_2_1', AcqTriggerType.Trigger),)  
-)
-
-doc_3 = 'Use the same trigger in 2 channels of different controllers'
-config_3 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger)],
-            [('_test_ct_2_1', '_test_tg_1_1', AcqTriggerType.Trigger)]]
-
-doc_4 = 'Acquisition using 2 controllers, with 2 channels in each controller.'
-config_4 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
-             ('_test_ct_1_2', '_test_tg_1_1', AcqTriggerType.Trigger)],
-            [('_test_ct_2_1', '_test_tg_1_2', AcqTriggerType.Trigger),
-             ('_test_ct_2_2', '_test_tg_1_2', AcqTriggerType.Trigger)]]
-
-doc_5 = 'Use a different trigger in 2 channels of the same controller'
-config_5 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
-             ('_test_ct_1_2', '_test_tg_2_1', AcqTriggerType.Trigger)]]
-
-doc_6 = 'Test using Software Trigger'
-config_6 = [[('_test_ct_1_1', '_test_stg_1_1', AcqTriggerType.Trigger)]]
-
-doc_7 = 'Test using both, a Software Trigger and a "Hardware" Trigger'
-config_7 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger)],
-            [('_test_ct_2_1', '_test_stg_1_1', AcqTriggerType.Trigger)]]
-
-doc_8 = 'Test that the acquisition using triggers can be stopped.'
-config_8 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
-             ('_test_ct_1_2', '_test_stg_1_1', AcqTriggerType.Trigger)]]  
-
-doc_9 = 'Test two consecutive synchronized acquisitions with different'\
-        ' configuration.'
-
-@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_1,
-            params=params_1, config=config_1)
-@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_2,
-            params=params_1, config=config_2)
-@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_3,
-            params=params_1, config=config_3)
-@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_4,
-            params=params_1, config=config_4)
-@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_5,
-            params=params_1, config=config_5)
-@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_6,
-            params=params_1, config=config_6)
-@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_7,
-            params=params_1, config=config_7)
-@insertTest(helper_name='meas_cont_stop_acquisition', test_method_doc=doc_8,
-            params=params_2, config=config_8) 
-@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_9,
-            params=params_1, config=config_1, second_config=config_7)
-@insertTest(helper_name='meas_double_acquisition', test_method_doc=doc_8,
-            params=params_2, config=config_8)
-@insertTest(helper_name='meas_double_acquisition', test_method_doc=doc_4,
-            params=params_1, config=config_4)
-class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
-    """Integration test of TGGeneration and Acquisition actions."""
-
-    def setUp(self):
+class BaseAcquisition(object):
+    def setUp(self, pool):
         """
         """
-        BasePoolTestCase.setUp(self)
-        unittest.TestCase.setUp(self)
+        self.pool = pool
         self.pmg = None
         self.attr_listener = None
 
@@ -259,8 +181,99 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         # print the acquisition records
         for i, record in enumerate(zip(*self.attr_listener.data.values())):
             print i, record
-                
+
     def tearDown(self):
         self.attr_listener = None
         self.pmg = None
+
+params_1 = {"offset":0,                
+            "repetitions":100, 
+            "integ_time":0.01 
+}
+
+params_2 = {"offset":0, 
+            "repetitions":100, 
+            "integ_time":0.01 
+}
+
+doc_1 = 'Synchronized acquisition with two channels from the same controller'\
+        ' using the same trigger'
+config_1 = (
+    (('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
+     ('_test_ct_1_2', '_test_tg_1_1', AcqTriggerType.Trigger)),  
+)
+
+doc_2 = 'Synchronized acquisition with two channels from different controllers'\
+        ' using two different triggers'
+config_2 = (
+    (('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),),
+    (('_test_ct_2_1', '_test_tg_2_1', AcqTriggerType.Trigger),)  
+)
+
+doc_3 = 'Use the same trigger in 2 channels of different controllers'
+config_3 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger)],
+            [('_test_ct_2_1', '_test_tg_1_1', AcqTriggerType.Trigger)]]
+
+doc_4 = 'Acquisition using 2 controllers, with 2 channels in each controller.'
+config_4 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
+             ('_test_ct_1_2', '_test_tg_1_1', AcqTriggerType.Trigger)],
+            [('_test_ct_2_1', '_test_tg_1_2', AcqTriggerType.Trigger),
+             ('_test_ct_2_2', '_test_tg_1_2', AcqTriggerType.Trigger)]]
+
+doc_5 = 'Use a different trigger in 2 channels of the same controller'
+config_5 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
+             ('_test_ct_1_2', '_test_tg_2_1', AcqTriggerType.Trigger)]]
+
+doc_6 = 'Test using Software Trigger'
+config_6 = [[('_test_ct_1_1', '_test_stg_1_1', AcqTriggerType.Trigger)]]
+
+doc_7 = 'Test using both, a Software Trigger and a "Hardware" Trigger'
+config_7 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger)],
+            [('_test_ct_2_1', '_test_stg_1_1', AcqTriggerType.Trigger)]]
+
+doc_8 = 'Test that the acquisition using triggers can be stopped.'
+config_8 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
+             ('_test_ct_1_2', '_test_stg_1_1', AcqTriggerType.Trigger)]]  
+
+doc_9 = 'Test two consecutive synchronous acquisitions with different'\
+        ' configuration.'
+
+doc_10 = 'Test synchronous acquisition followed by asynchronous'\
+        ' acquisition using the same configuration.'
+
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_1,
+            params=params_1, config=config_1)
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_2,
+            params=params_1, config=config_2)
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_3,
+            params=params_1, config=config_3)
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_4,
+            params=params_1, config=config_4)
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_5,
+            params=params_1, config=config_5)
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_6,
+            params=params_1, config=config_6)
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_7,
+            params=params_1, config=config_7)
+@insertTest(helper_name='meas_cont_stop_acquisition', test_method_doc=doc_8,
+            params=params_2, config=config_8) 
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_9,
+            params=params_1, config=config_1, second_config=config_7)
+@insertTest(helper_name='meas_double_acquisition', test_method_doc=doc_10,
+            params=params_2, config=config_8)
+@insertTest(helper_name='meas_double_acquisition', test_method_doc=doc_10,
+            params=params_1, config=config_4)
+class AcquisitionTestCase(BasePoolTestCase, BaseAcquisition, unittest.TestCase):
+    """Integration test of TGGeneration and Acquisition actions."""
+
+    def setUp(self):
+        """
+        """
+        BasePoolTestCase.setUp(self)
+        BaseAcquisition.setUp(self, self.pool)
+        unittest.TestCase.setUp(self)
+           
+    def tearDown(self):
+        BasePoolTestCase.tearDown(self)
+        BaseAcquisition.tearDown(self)
         unittest.TestCase.tearDown(self)
