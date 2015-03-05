@@ -28,18 +28,17 @@ __all__ = ['FakePool']
 from sardana.pool.poolcontrollermanager import ControllerManager
 
 class FakePool(object):
-    ''' Fake class to simulate the behaviour of the Pool class
+    ''' Fake class to simulate the behavior of the Pool class
     '''
     acq_loop_sleep_time = 0.1
     acq_loop_states_per_value = 10
-
-    elements = {}
-    elements_by_full_name = {}
 
     def __init__(self):
         self.ctrl_manager = ControllerManager()
         self.ctrl_manager.set_pool(self)
         self.ctrl_manager.setControllerPath([])
+        self.elements = {}
+        self.elements_by_full_name = {}
         self._freeId = 1
 
     def add_element(self, element):
