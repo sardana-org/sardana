@@ -30,7 +30,7 @@ __all__ = ['BasePoolTestCase', 'ControllerLoadsTestCase',
 
 import os
 import PyTango
-from taurus import Device
+from taurus import Device, Factory
 from taurus.external import unittest
 from taurus.core.tango.starter import ProcessStarter
 from sardana import sardanacustomsettings
@@ -74,6 +74,13 @@ class BasePoolTestCase(object):
         """
         unregisterExtensions()
         self._starter.cleanDb(force=True)
+        self._starter = None
+        # deeply cleaning pool taurus device
+        self.pool = None
+        f = Factory()
+        f.removeExistingDevice(self.pool_name)
+        f.removeExistingAttribute(self.pool_name + '/elements')
+        self.pool_name = None
 
 
 # TODO: Currently test inputs are implemented as class members, it would be
