@@ -27,6 +27,7 @@ import PyTango
 from sardana.tango.pool.test import BasePoolTestCase
 from sardana.tango.core.util import get_free_alias
 
+__all__ = ['SarTestTestCase']
 
 class SarTestTestCase(BasePoolTestCase):
     """ Base class to setup sardana test environment.

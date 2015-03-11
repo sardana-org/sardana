@@ -25,3 +25,4 @@
 
 from base import (BasePoolTestCase, ControllerLoadsTestCase,
                   ControllerCreationTestCase, ElementCreationTestCase)
+from base_sartest import SarTestTestCase
