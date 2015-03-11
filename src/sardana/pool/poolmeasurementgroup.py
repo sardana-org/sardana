@@ -314,8 +314,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                     # creating TG information
                     trigger_name = channel_data.get('trigger_element')
                     # TODO: protecting measurement groups which do not have trigger_element
-                    # if trigger_element will have a default value we could remove this protection
-                    print 'trigger_name', trigger_name
+                    # if trigger_element will have a default value we could remove this protection                    
                     if not trigger_name:
                         continue
                     trigger_element = pool.get_element_by_full_name(trigger_name)
