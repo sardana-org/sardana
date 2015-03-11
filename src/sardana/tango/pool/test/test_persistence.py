@@ -30,21 +30,23 @@ from taurus.test import insertTest
 from sardana.tango.pool.test import BasePoolTestCase
 from sardana.tango.core.util import get_free_alias
 
+#TODO: fix PersistenceTestCase so it works with multiple test scenarios
+#(using insertTest). At this moment it works only with one
+# @insertTest(helper_name='check_elems_presistence', 
+#             test_method_doc='Test persistence of dummy STG elements',
+#             cls = 'SoftwareTriggerGateController')
 @insertTest(helper_name='check_elems_presistence', 
-            test_method_doc='Test persitance of dummy STG elements',
-            cls = 'SoftwareTriggerGateController')
-@insertTest(helper_name='check_elems_presistence', 
-            test_method_doc='Test persitance of dummy TG elements',
+            test_method_doc='Test persistence of dummy TG elements',
             cls = 'DummyTriggerGateController')
-@insertTest(helper_name='check_elems_presistence', 
-            test_method_doc='Test persitance of dummy motors elements',
-            cls = 'DummyMotorController')
+# @insertTest(helper_name='check_elems_presistence', 
+#             test_method_doc='Test persistence of dummy motors elements',
+#             cls = 'DummyMotorController')
 class PersistenceTestCase(BasePoolTestCase, unittest.TestCase):
     """ Test the persistence of the Sardana Tango elements.
     """
 
     def check_elems_presistence(self, cls):
-        """Helper method to test the elements persitence. The actions are:
+        """Helper method to test the elements persistence. The actions are:
             - creation of controller and element
             - restart Pool
             - check if element persist
@@ -56,8 +58,17 @@ class PersistenceTestCase(BasePoolTestCase, unittest.TestCase):
         self.ctrl_name = get_free_alias(PyTango.Database(), base_name)
         try:
             ctrl = self.pool.createController(cls, self.ctrl_name, *props)
+            #TODO: waiting extra 3 seconds in case the container (pool) is not 
+            #notified about the newly created controller 
+            #(default timeout is 0.5 s)
+            if ctrl is None:
+                elements_info = self.pool.getElementsInfo()
+                ctrl = self.pool._wait_for_element_in_container(elements_info,
+                                                                self.ctrl_name,
+                                                                timeout = 3)
         except:
             ctrl = None
+
         msg = 'Impossible to create ctrl: "%s"' % (self.ctrl_name)
         self.assertIsNotNone(ctrl, msg)
         # Create element
@@ -99,4 +110,4 @@ class PersistenceTestCase(BasePoolTestCase, unittest.TestCase):
             cleanup_success = False        
         BasePoolTestCase.tearDown(self)
         if not cleanup_success:
-            raise Exception("Cleanup failed. Database may be left dirty.")           
+            raise Exception("Cleanup failed. Database may be left dirty.")
