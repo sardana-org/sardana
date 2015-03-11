@@ -504,7 +504,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         self.fire_event(EventType("repetitions", priority=propagate),
                         repetitions)
 
-    offset = property(get_repetitions, set_repetitions,
+    repetitions = property(get_repetitions, set_repetitions,
                                 doc="repetitions used in synchronized acquisition")
     
     # --------------------------------------------------------------------------
