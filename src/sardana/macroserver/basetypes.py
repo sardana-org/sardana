@@ -29,7 +29,8 @@ macros"""
 __all__ = ["Integer", "Float", "Boolean", "String", "User", "Filename",
            "File", "Macro", "MacroLibrary", "Env", "Motor", "MotorParam",
            "MotorGroup", "ExpChannel", "MeasurementGroup", "ComChannel",
-           "IORegister", "Controller", "Instrument", "ControllerClass" ]
+           "IORegister", "Controller", "Instrument", "ControllerClass", 
+           "TriggerGate" ]
 
 __docformat__ = 'restructuredtext'
 

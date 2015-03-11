@@ -240,6 +240,7 @@ class Pool(PyTango.Device_4Impl, Logger):
     is_ControllerList_allowed = \
     is_InstrumentList_allowed = \
     is_ExpChannelList_allowed = \
+    is_TriggerGateList_allowed = \
     is_AcqChannelList_allowed = \
     is_MotorGroupList_allowed = \
     is_MotorList_allowed = \
@@ -497,14 +498,6 @@ class Pool(PyTango.Device_4Impl, Logger):
                             (axis, elem_axis.get_name()))
 
         self._check_element(name, full_name)
-
-        # TODO: this is temporary solution
-        # in order to avoid TriggerGate Tango device creationg
-        if elem_type == ElementType.TriggerGate:
-            self.pool.create_element(type="TriggerGate", name=name,
-                full_name=full_name, id=self.pool.get_new_id(), axis=axis,
-                ctrl_id=ctrl.get_id())
-            return
 
         util = PyTango.Util.instance()
 
@@ -902,13 +895,9 @@ class Pool(PyTango.Device_4Impl, Logger):
             db = PyTango.Util.instance().get_database()
             props = { 'InstrumentList' : self.InstrumentList }
             db.put_device_property(self.get_name(), props)
-        # TODO: since the Tango device was not created
-        # (see _create_single_element method) we do not delete it
-        if elem_type == ElementType.TriggerGate:
-            return
-        else:
-            util = PyTango.Util.instance()
-            util.delete_device(type_name, full_name)
+
+        util = PyTango.Util.instance()
+        util.delete_device(type_name, full_name)
 
     #@DebugIt()
     def GetControllerClassInfo(self, names):

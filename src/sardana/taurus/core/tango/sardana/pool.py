@@ -29,7 +29,7 @@ __all__ = ["InterruptException", "StopException", "AbortException",
            "BaseElement", "ControllerClass", "ControllerLibrary",
            "PoolElement", "Controller", "ComChannel", "ExpChannel",
            "CTExpChannel", "ZeroDExpChannel", "OneDExpChannel", "TwoDExpChannel",
-           "PseudoCounter", "Motor", "PseudoMotor", "MotorGroup",
+           "PseudoCounter", "Motor", "PseudoMotor", "MotorGroup", "TriggerGate",
            "MeasurementGroup", "IORegister", "Instrument", "Pool",
            "registerExtensions", "getChannelConfigs"]
 
@@ -608,6 +608,10 @@ class PseudoCounter(ExpChannel):
     """ Class encapsulating PseudoCounter functionality."""
     pass
 
+
+class TriggerGate(PoolElement):
+    """ Class encapsulating TriggerGate functionality."""
+    pass
 
 class Motor(PoolElement, Moveable):
     """ Class encapsulating Motor functionality."""
@@ -1824,7 +1828,7 @@ def registerExtensions():
 
     hw_type_names = [
         'Controller',
-        'ComChannel', 'Motor', 'PseudoMotor',
+        'ComChannel', 'Motor', 'PseudoMotor', 'TriggerGate',
         'CTExpChannel', 'ZeroDExpChannel', 'OneDExpChannel', 'TwoDExpChannel',
         'PseudoCounter', 'IORegister', 'MotorGroup', 'MeasurementGroup']
 
@@ -1839,7 +1843,7 @@ def unregisterExtensions():
 
     hw_type_names = [
         'Controller',
-        'ComChannel', 'Motor', 'PseudoMotor',
+        'ComChannel', 'Motor', 'PseudoMotor', 'TriggerGate',
         'CTExpChannel', 'ZeroDExpChannel', 'OneDExpChannel', 'TwoDExpChannel',
         'PseudoCounter', 'IORegister', 'MotorGroup', 'MeasurementGroup']
 

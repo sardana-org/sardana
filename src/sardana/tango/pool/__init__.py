@@ -71,6 +71,7 @@ def prepare_pool(util):
     from .PseudoCounter import PseudoCounterClass, PseudoCounter
     from .MeasurementGroup import MeasurementGroupClass, MeasurementGroup
     from .IORegister import IORegisterClass, IORegister
+    from .TriggerGate import TriggerGateClass, TriggerGate
     from .Pool import PoolClass, Pool
 
     util.add_class(PoolClass, Pool)
@@ -83,6 +84,7 @@ def prepare_pool(util):
     util.add_class(TwoDExpChannelClass, TwoDExpChannel)
     util.add_class(PseudoMotorClass, PseudoMotor)
     util.add_class(PseudoCounterClass, PseudoCounter)
+    util.add_class(TriggerGateClass, TriggerGate)
     util.add_class(MotorGroupClass, MotorGroup)
     util.add_class(MeasurementGroupClass, MeasurementGroup)
 

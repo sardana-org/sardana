@@ -49,7 +49,7 @@ from taurus.core.util.codecs import CodecFactory
 
 PoolElementType = Enumeration("PoolElementType",
     ("0D", "1D", "2D", "Communication", "CounterTimer", "IORegister",
-      "Motor", "PseudoCounter", "PseudoMotor"))
+      "Motor", "PseudoCounter", "PseudoMotor", "TriggerGate"))
 
 ChannelView = Enumeration("ChannelView",
     ("Channel", "Enabled", "Output", "PlotType", "PlotAxes", "Timer",
