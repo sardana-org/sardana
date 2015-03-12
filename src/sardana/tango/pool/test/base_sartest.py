@@ -32,41 +32,49 @@ __all__ = ['SarTestTestCase']
 class SarTestTestCase(BasePoolTestCase):
     """ Base class to setup sardana test environment.
         It creates the controllers defined in cls_list 
-        with the given 'n' elements.  
+        with the given 'n' elements.
+
+        - cls_list is a list of tuples: (ctrl_class, prefix, subfix, num_elem)
+
+        The ctrls name and elements name will be hardcode following
+        the next structure:
+
+        - The ctrl_name will be prefix + _ctrl_ + postfix.
+        - The elem_name will be prefix + _ + postfix + _ + axis
     """
-    cls_list = [('DummyMotorController', 5),
-                ('DummyCounterTimerController', 5),
-                ('SoftwareTriggerGateController', 1), 
-                ('DummyTriggerGateController', 1)]
+    cls_list = [('DummyMotorController', '_test_mt', '1', 5),
+                ('DummyCounterTimerController', '_test_ct', '1', 5),
+                ('DummyCounterTimerController', '_test_ct', '2', 5),
+                ('SoftwareTriggerGateController', '_test_stg', '1', 5),
+                ('SoftwareTriggerGateController', '_test_stg', '2', 5),
+                ('DummyTriggerGateController', '_test_tg', '1', 5),
+                ('DummyTriggerGateController', '_test_tg', '2', 5)]
+
     def setUp(self):
         BasePoolTestCase.setUp(self)
 
         self.ctrl_list = []
         self.elem_list = []
 
-        for cls, nlem in self.cls_list:
+        for cls, prefix, postfix, nelem in self.cls_list:
             # Create controller
             props = ()
-            base_name = "ctrl_sartest_" + cls 
-            ctrl_name = get_free_alias(PyTango.Database(), base_name)  
+            ctrl_name = prefix + "_ctrl_%s" % (postfix)
             try:
                 ctrl = self.pool.createController(cls, ctrl_name, *props)
             except:
-                print('Impossible to create ctrl: "%s"' % (ctrl_name))
-                continue
+                msg = 'Impossible to create ctrl: "%s"' % (ctrl_name)
+                raise Exception('Aborting SartestTesCase: %s' % (msg))
             self.ctrl_list.append(ctrl_name)
             # Create 5 elemens
-            for axis in range(1,nlem+1):
-                base_name = "elem_sartest_" + cls
-                elem_name = get_free_alias(PyTango.Database(), base_name)
+            for axis in range(1,nelem+1):
+                elem_name = prefix + "_" + postfix + '_%s' % (axis)
                 try:
                     elem = self.pool.createElement(elem_name, ctrl, axis)
                 except Exception, e:
-                    print('Impossible to create element: "%s"' % (elem_name))
-                    print e.__repr__()
-                    break
-                self.elem_list.append(elem_name)
-                
+                    msg = 'Impossible to create element: "%s"' % (elem_name)
+                    raise Exception('Aborting SartestTesCase: %s' % (msg))
+                self.elem_list.append(elem_name)              
 
     def tearDown(self):
         """Remove the elements and the controllers
@@ -85,10 +93,13 @@ class SarTestTestCase(BasePoolTestCase):
             except:
                 dirty_ctrls.append(ctrl_name)
 
+        BasePoolTestCase.tearDown(self) 
+
         if dirty_elems or dirty_ctrls :
             msg = "Cleanup failed. Database may be left dirty." + \
                      "\n\tCtrls : %s\n\tElems : %s" % (dirty_ctrls, dirty_elems)
             raise Exception(msg)
+      
 
 if __name__ == "__main__":
      stc = SarTestTestCase()
