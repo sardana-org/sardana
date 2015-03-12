@@ -300,7 +300,7 @@ class RecordList(dict):
         #TODO: implement proper handling of timestamps and moveables 
         if missingRecords < 0:
             missingRecords = abs(missingRecords)
-            for _ in range(missingRecords):
+            for _ in xrange(missingRecords):
                 rc = Record({'point_nb' : self.recordno,'timestamp': None})
                 for refMoveableLabel in self.refMoveablesLabels:
                     rc.data[refMoveableLabel] = None
@@ -324,9 +324,9 @@ class RecordList(dict):
         rc = self.records[recordno]
         for label in self.labels:
             if not rc.data.has_key(label):
-                print 'Mising label: ', label
+                print 'Mising label: ', label #TODO: remove these debugging prints
                 return False
-            print 'Present label',label
+            print 'Present label',label #TODO: remove these debugging prints
         rc.completed = 1
         return True
                     
