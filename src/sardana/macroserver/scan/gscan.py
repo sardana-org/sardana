@@ -1771,10 +1771,14 @@ class CTScan(CScan):
                                 raise err
                     elif event_type == TaurusEventType.Change:
                         value = event_value.value
+                        # TODO: event_value.value will be a dictionary with
+                        # at least dict(data=seq<float>, index=seq<int>) 
                         _, data = self.codec.decode(('json', value),
                                                     ensure_ascii=True)
                         channelName = event_src.getParentObj().getFullName()
                         info = {'label' : channelName, 'data' : data}
+                        # TODO: info will be a dict(data=seq<float>, index=seq<int>,
+                        #                           label=str) 
                         self.recordList.addData(info)
                         CTScan.ExtraMntGrp.OnDataChangedCb.count_event += 1
                 except Exception, e:
