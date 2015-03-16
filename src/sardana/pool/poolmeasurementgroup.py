@@ -442,7 +442,15 @@ class PoolMeasurementGroup(PoolGroupElement):
                         unit_data['trigger_type'] = u_data['trigger_type']
                 unit_data['channels'] = channels = {}
                 for ch, ch_data in u_data['channels'].items():
-                    channels[ch.full_name] = dict(ch_data)
+                    channels[ch.full_name] = channel_data = dict(ch_data)
+                    # TODO: remove when agreed on which level we use trigger_element
+                    # it is probable that trigger_element won't be used on the 
+                    # channel level, but on the unit/controller level
+                    if channel_data.has_key('trigger_element'):
+                        # use trigger_element with string instead of objects
+                        # otherwise JSON serialization errors are raised
+                        tg_full_name = ch_data['trigger_element'].full_name
+                        channel_data['trigger_element'] = tg_full_name
 
         config['label'] = cfg['label']
         config['description'] = cfg['description']
@@ -480,7 +488,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                         # checking if we are using software or hardware trigger
                         # TODO: this check is not generic !!!
                         if hasattr(tg_ctrl, 'add_listener'):
-                            trigger_type = AcqTriggerType.Software                    
+                            trigger_type = AcqTriggerType.Software
                     ctrl.set_ctrl_par('trigger_type', trigger_type)
 
         self._config_dirty = False
