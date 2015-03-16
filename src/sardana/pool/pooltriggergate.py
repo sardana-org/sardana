@@ -37,6 +37,7 @@ from sardana.sardanaevent import EventType
 
 from sardana.pool.poolelement import PoolElement
 from sardana.sardanaattribute import SardanaAttribute
+from sardana.pool.pooltggeneration import PoolTGGeneration
 
 TGEventType = Enumeration(
 'TGEventType', (
@@ -53,9 +54,11 @@ class PoolTriggerGate(PoolElement):
 
     def __init__(self, **kwargs):
         kwargs['elem_type'] = ElementType.TriggerGate
-        PoolElement.__init__(self, **kwargs)        
+        PoolElement.__init__(self, **kwargs)
+        tggen_name = "%s.TGGeneration" % self._name
+        self.set_action_cache(PoolTGGeneration(self, name=tggen_name))
         self._index = Index(self)
-        
+
     # --------------------------------------------------------------------------
     # offset
     # --------------------------------------------------------------------------
