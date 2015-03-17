@@ -156,6 +156,28 @@ class TangoAcquisitionTestCase(SarTestTestCase, unittest.TestCase):
                 attr_data.addListener(self.attr_listener)
         return chn_names
 
+    def _acq_asserts(self, channel_names, repetitions):
+        """ Do the asserts after an acquisition
+        """
+        # printing acquisition records
+        table = self.attr_listener.get_table()
+        header = table.dtype.names
+        n_rows = table.shape[0]
+        for row in xrange(n_rows):
+            print row, table[row]
+        # checking if any of data was acquired
+        self.assertTrue(self.attr_listener.data, 'no data were acquired')
+        # checking if all channels produced data
+        for channel in channel_names:
+            msg = 'data from channel %s were not acquired' % channel
+            self.assertIn(channel, header, msg)
+        # checking if all the data were acquired
+        for ch_name in header:
+            ch_data_len = len(table[ch_name])
+            msg = 'length of data for channel %s is %d and should be %d' %\
+                                            (ch_name, ch_data_len, repetitions)
+            self.assertEqual(ch_data_len, repetitions, msg)
+
     def meas_cont_acquisition(self, params, config):
         self.prepare_meas(params, config)
         self.attr_listener = TangoAttributeListener()
@@ -165,6 +187,7 @@ class TangoAcquisitionTestCase(SarTestTestCase, unittest.TestCase):
         while self.meas.State() == PyTango.DevState.MOVING:
             print "Acquiring..."
             time.sleep(0.1)
+        self._acq_asserts(chn_names, params["repetitions"])
 
     def tearDown(self):
         try:
