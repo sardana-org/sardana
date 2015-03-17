@@ -33,6 +33,48 @@ from taurus.test import insertTest
 from sardana.pool import AcqTriggerType
 from sardana.tango.pool.test import SarTestTestCase
 
+# TODO: It will be moved
+from sardana.pool.test.test_acquisition import AttributeListener
+from taurus.core import TaurusEventType
+
+class TangoAttributeListener(AttributeListener):
+
+    def eventReceived(self, *args, **kwargs):
+        self.event_received(*args, **kwargs)
+
+    def event_received(self, *args, **kwargs):
+        try:
+            event_src, event_type, event_value = args
+            if event_type == TaurusEventType.Error:
+                for err in event_value:
+                    if err.reason == 'UnsupportedFeature':
+                        # when subscribing for events, Tango does one
+                        # readout of the attribute. However the Data
+                        # attribute is not fereseen for readout, it is
+                        # just the event communication channel.
+                        # Ignoring this exception..
+                        pass
+                    else:
+                        raise err
+            elif event_type == TaurusEventType.Change:
+                _value = json.loads(event_value.value)
+                # TODO _value will be  a dictionary
+                # value = _value['data']
+                # idx = _value['index']
+                obj_name = event_src.getParentObj().getFullName()
+                # TODO remove the simulation
+                value = _value
+                index = len(self.data.get(obj_name, []))
+                idx = [i for i in range(index, len(value)+index)]
+                # filling the measurement records
+                with self.data_lock:
+                    channel_data = self.data.get(obj_name, [])
+                    expected_idx = len(channel_data)
+                    pad = [None] * (idx[0]-expected_idx)
+                    channel_data.extend(pad+value)
+                    self.data[obj_name] = channel_data
+        except Exception, e:
+            raise Exception('"data" event callback failed')
 
 params_1 = {
     "offset": 0,
@@ -60,10 +102,8 @@ class TangoAcquisitionTestCase(SarTestTestCase, unittest.TestCase):
     def prepare_meas(self, params, config):
         """ Prepare the meas and returns the channel names
         """
-
         # creating mg 
         self.name = '_test_mg_1'
-
         exp_chns = []
         exp_dict = {}
         for ctrl in config:
@@ -86,7 +126,8 @@ class TangoAcquisitionTestCase(SarTestTestCase, unittest.TestCase):
         jcfg = self.meas.read_attribute('configuration').value
         cfg = json.loads(jcfg)
         for ctrl in cfg['controllers']:
-            channels = cfg['controllers'][ctrl]['units']['0']['channels']
+            units =  cfg['controllers'][ctrl]['units']['0']
+            channels = units['channels']
             for chn in channels:
                 name = channels[chn]['name']
                 tg_elem, acqType = exp_dict[name]
@@ -94,6 +135,7 @@ class TangoAcquisitionTestCase(SarTestTestCase, unittest.TestCase):
                 tg_elem_full_name = tg_dev.getFullName()
                 channels[chn]['trigger_element'] = tg_elem_full_name
                 channels[chn]['trigger_type'] = acqType
+                units['trigger_type'] = acqType
 
         # setting measurement parameters
         self.meas.write_attribute('configuration', json.dumps(cfg))
@@ -102,17 +144,22 @@ class TangoAcquisitionTestCase(SarTestTestCase, unittest.TestCase):
         self.meas.write_attribute('repetitions', params["repetitions"])
         self.meas.write_attribute('integrationtime', params["integ_time"])
 
-    def meas_cont_acquisition(self, params, config):
-        self.prepare_meas(params, config)
-        # TODO: substitute it with AttributeListener and asserts
+    def _add_attribute_listener(self, config):
         # Subscribe to events
-        cb = PyTango.utils.EventCallBack()
+        chn_names = []
         for ctrl in config:
             for ch_tg in ctrl:
                 channel = ch_tg[0]
-                channel_dev = PyTango.DeviceProxy(channel)
-                channel_dev.subscribe_event('data', 
-                                            PyTango.EventType.CHANGE_EVENT, cb)
+                attr_data = taurus.Attribute(channel+'/data')
+                ch_fullname = attr_data.getParent().getFullName()
+                chn_names.append(ch_fullname)
+                attr_data.addListener(self.attr_listener)
+        return chn_names
+
+    def meas_cont_acquisition(self, params, config):
+        self.prepare_meas(params, config)
+        self.attr_listener = TangoAttributeListener()
+        chn_names = self._add_attribute_listener(config)
         # Do acquisition
         self.meas.Start()
         while self.meas.State() == PyTango.DevState.MOVING:
