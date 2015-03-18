@@ -27,7 +27,6 @@ import time
 import json
 # TODO: decide what to use: taurus or PyTango
 import PyTango
-import taurus
 from taurus.external import unittest
 from taurus.test import insertTest
 from sardana.pool import AcqTriggerType
@@ -35,45 +34,42 @@ from sardana.tango.pool.test import SarTestTestCase
 
 # TODO: It will be moved
 from sardana.pool.test.test_acquisition import AttributeListener
-from taurus.core import TaurusEventType
 
 class TangoAttributeListener(AttributeListener):
 
-    def eventReceived(self, *args, **kwargs):
+    def push_event(self, *args, **kwargs):
         self.event_received(*args, **kwargs)
 
     def event_received(self, *args, **kwargs):
         try:
-            event_src, event_type, event_value = args
-            if event_type == TaurusEventType.Error:
-                for err in event_value:
+            event = args[0]
+            if event.err:
+                for err in event.errors:
                     if err.reason == 'UnsupportedFeature':
                         # when subscribing for events, Tango does one
                         # readout of the attribute. However the Data
                         # attribute is not fereseen for readout, it is
                         # just the event communication channel.
                         # Ignoring this exception..
-                        pass
+                        return
                     else:
                         raise err
-            elif event_type == TaurusEventType.Change:
-                _value = json.loads(event_value.value)
-                # TODO _value will be  a dictionary
-                # value = _value['data']
-                # idx = _value['index']
-                obj_name = event_src.getParentObj().getFullName()
-                # TODO remove the simulation
-                value = _value
-                index = len(self.data.get(obj_name, []))
-                idx = [i for i in range(index, len(value)+index)]
-                # filling the measurement records
-                with self.data_lock:
-                    channel_data = self.data.get(obj_name, [])
-                    expected_idx = len(channel_data)
-                    pad = [None] * (idx[0]-expected_idx)
-                    channel_data.extend(pad+value)
-                    self.data[obj_name] = channel_data
+            _value = json.loads(event.attr_value.value)
+            value = _value['data']
+            idx = _value['index']
+            dev = event.device
+            obj_fullname = '%s:%s/%s' % (dev.get_db_host().split('.')[0], 
+                                        dev.get_db_port(),
+                                        dev.name())
+            # filling the measurement records
+            with self.data_lock:
+                channel_data = self.data.get(obj_fullname, [])
+                expected_idx = len(channel_data)
+                pad = [None] * (idx[0]-expected_idx)
+                channel_data.extend(pad+value)
+                self.data[obj_fullname] = channel_data
         except Exception, e:
+            print e
             raise Exception('"data" event callback failed')
 
 params_1 = {
@@ -90,14 +86,35 @@ config_1 = (
      ('_test_ct_1_2', '_test_tg_1_1', AcqTriggerType.Trigger)),
 )
 
+doc_2 = 'Synchronized acquisition with two channels from the same controller'\
+        ' using the software trigger'
+config_2 = (
+    (('_test_ct_1_1', '_test_stg_1_1', AcqTriggerType.Trigger),
+     ('_test_ct_1_2', '_test_stg_1_1', AcqTriggerType.Trigger)),
+)
+
+doc_3 = 'Synchronized acquisition with two channels from the same controller'\
+        ' using the software trigger'
+config_3 = (
+    (('_test_ct_1_1', '_test_stg_1_1', AcqTriggerType.Trigger),
+     ('_test_ct_1_2', '_test_stg_1_1', AcqTriggerType.Trigger)),
+    (('_test_ct_2_1', '_test_tg_1_1', AcqTriggerType.Trigger),
+     ('_test_ct_2_2', '_test_tg_1_1', AcqTriggerType.Trigger)),
+)
+
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_1,
             params=params_1, config=config_1)
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_2,
+            params=params_1, config=config_2)
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_3,
+            params=params_1, config=config_3)
 class TangoAcquisitionTestCase(SarTestTestCase, unittest.TestCase):
     """Integration test of TGGeneration and Acquisition actions."""
 
     def setUp(self):
         SarTestTestCase.setUp(self)
         unittest.TestCase.setUp(self)
+        self.event_ids = {}
 
     def prepare_meas(self, params, config):
         """ Prepare the meas and returns the channel names
@@ -131,9 +148,11 @@ class TangoAcquisitionTestCase(SarTestTestCase, unittest.TestCase):
             for chn in channels:
                 name = channels[chn]['name']
                 tg_elem, acqType = exp_dict[name]
-                tg_dev = taurus.Device(tg_elem)
-                tg_elem_full_name = tg_dev.getFullName()
-                channels[chn]['trigger_element'] = tg_elem_full_name
+                tg_dev = PyTango.DeviceProxy(tg_elem)
+                tg_fullname = '%s:%s/%s' % (tg_dev.get_db_host().split('.')[0], 
+                                            tg_dev.get_db_port(),
+                                            tg_dev.name())
+                channels[chn]['trigger_element'] = tg_fullname
                 channels[chn]['trigger_type'] = acqType
                 units['trigger_type'] = acqType
 
@@ -150,10 +169,15 @@ class TangoAcquisitionTestCase(SarTestTestCase, unittest.TestCase):
         for ctrl in config:
             for ch_tg in ctrl:
                 channel = ch_tg[0]
-                attr_data = taurus.Attribute(channel+'/data')
-                ch_fullname = attr_data.getParent().getFullName()
+                dev = PyTango.DeviceProxy(channel)
+                ch_fullname = '%s:%s/%s' % (dev.get_db_host().split('.')[0], 
+                                            dev.get_db_port(),
+                                            dev.name())
+                event_id = dev.subscribe_event('Data', 
+                                               PyTango.EventType.CHANGE_EVENT, 
+                                               self.attr_listener)
+                self.event_ids[dev] = event_id
                 chn_names.append(ch_fullname)
-                attr_data.addListener(self.attr_listener)
         return chn_names
 
     def _acq_asserts(self, channel_names, repetitions):
@@ -162,6 +186,7 @@ class TangoAcquisitionTestCase(SarTestTestCase, unittest.TestCase):
         # printing acquisition records
         table = self.attr_listener.get_table()
         header = table.dtype.names
+        print header
         n_rows = table.shape[0]
         for row in xrange(n_rows):
             print row, table[row]
@@ -190,6 +215,8 @@ class TangoAcquisitionTestCase(SarTestTestCase, unittest.TestCase):
         self._acq_asserts(chn_names, params["repetitions"])
 
     def tearDown(self):
+        for channel, event_id in self.event_ids.items():
+            channel.unsubscribe_event(event_id)
         try:
             # Delete the meas
             self.pool.DeleteElement(self.name)
@@ -197,5 +224,3 @@ class TangoAcquisitionTestCase(SarTestTestCase, unittest.TestCase):
             print('Impossible to delete MeasurementGroup: %s' % (self.name))
         unittest.TestCase.tearDown(self)
         SarTestTestCase.tearDown(self)
-
-

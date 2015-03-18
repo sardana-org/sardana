@@ -42,13 +42,17 @@ class SarTestTestCase(BasePoolTestCase):
         - The ctrl_name will be prefix + _ctrl_ + postfix.
         - The elem_name will be prefix + _ + postfix + _ + axis
     """
-    cls_list = [('DummyMotorController', '_test_mt', '1', 5),
-                ('DummyCounterTimerController', '_test_ct', '1', 5),
-                ('DummyCounterTimerController', '_test_ct', '2', 5),
-                ('SoftwareTriggerGateController', '_test_stg', '1', 5),
-                ('SoftwareTriggerGateController', '_test_stg', '2', 5),
-                ('DummyTriggerGateController', '_test_tg', '1', 5),
-                ('DummyTriggerGateController', '_test_tg', '2', 5)]
+    #TODO: Formating PEP8 
+    cls_list = [
+        ('Motor', 'DummyMotorController', 'DummyMotorController', '_test_mt','1', 5),
+        ('CTExpChannel', 'DummyCounterTimerController', 'DummyCounterTimerController', '_test_ct', '1', 5),
+        ('CTExpChannel', 'DummyCounterTimerController', 'DummyCounterTimerController', '_test_ct', '2', 5),
+        ('TriggerGate', 'SoftwareTriggerGateController', 'SoftwareTriggerGateController', '_test_stg', '1', 5),
+        ('TriggerGate', 'SoftwareTriggerGateController', 'SoftwareTriggerGateController', '_test_stg', '2', 5),
+        ('TriggerGate', 'DummyTriggerGateController', 'DummyTriggerGateController', '_test_tg', '1', 5),
+        ('TriggerGate', 'DummyTriggerGateController', 'DummyTriggerGateController', '_test_tg', '2', 5)
+    ]
+
 
     def setUp(self):
         BasePoolTestCase.setUp(self)
@@ -56,13 +60,13 @@ class SarTestTestCase(BasePoolTestCase):
         self.ctrl_list = []
         self.elem_list = []
 
-        for cls, prefix, postfix, nelem in self.cls_list:
+        for sar_type, lib, cls, prefix, postfix, nelem in self.cls_list:
             # Create controller
-            props = ()
             ctrl_name = prefix + "_ctrl_%s" % (postfix)
             try:
-                ctrl = self.pool.createController(cls, ctrl_name, *props)
-            except:
+                self.pool.CreateController([sar_type, lib, cls, ctrl_name])
+            except Exception, e:
+                print e
                 msg = 'Impossible to create ctrl: "%s"' % (ctrl_name)
                 raise Exception('Aborting SartestTesCase: %s' % (msg))
             self.ctrl_list.append(ctrl_name)
@@ -70,8 +74,9 @@ class SarTestTestCase(BasePoolTestCase):
             for axis in range(1,nelem+1):
                 elem_name = prefix + "_" + postfix + '_%s' % (axis)
                 try:
-                    elem = self.pool.createElement(elem_name, ctrl, axis)
+                    self.pool.createElement([sar_type, ctrl_name, str(axis), elem_name])
                 except Exception, e:
+                    print e
                     msg = 'Impossible to create element: "%s"' % (elem_name)
                     raise Exception('Aborting SartestTesCase: %s' % (msg))
                 self.elem_list.append(elem_name)              
