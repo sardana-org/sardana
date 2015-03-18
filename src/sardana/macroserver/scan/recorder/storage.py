@@ -846,7 +846,6 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
             if record.data.has_key( dd.name ):
                 data = rec_data[dd.name]
                 fd.opendata(dd.label)
-                
                 if data is None:
                     data = numpy.zeros(dd.shape, dtype=dd.dtype)
                 if not hasattr(data, 'shape'):
@@ -863,13 +862,13 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
                 except:
                     warning("Could not write <%s> with shape %s", data, shape)
                     raise
-                    
-                ###Note: the following 3 lines of code were substituted by the one above.
-                ###      (now we trust the datadesc info instead of asking the nxs file each time)
-                #shape,dtype=self.fd.getinfo()
-                #shape[0]=1 #the shape of the record is of just 1 slab in the extensible dimension (first dim)
-                #self.fd.putslab(record.data[lbl],[record.recordno]+[0]*(len(shape)-1),shape)
-                fd.closedata()
+                finally:
+                    ###Note: the following 3 lines of code were substituted by the one above.
+                    ###      (now we trust the datadesc info instead of asking the nxs file each time)
+                    #shape,dtype=self.fd.getinfo()
+                    #shape[0]=1 #the shape of the record is of just 1 slab in the extensible dimension (first dim)
+                    #self.fd.putslab(record.data[lbl],[record.recordno]+[0]*(len(shape)-1),shape)
+                    fd.closedata()
             else:
                 debug("missing data for label '%s'", dd.label)
         fd.flush()
