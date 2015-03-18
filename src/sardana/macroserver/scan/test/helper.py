@@ -10,8 +10,6 @@ Do what gscan does for creating the ScanData, without using gscan.
 
 __all__ = ['createScanDataEnvironment']
 
-import time
-from datetime import date
 
 import time
 from datetime import date
@@ -21,6 +19,27 @@ from sardana.macroserver.scan.recorder.storage import NXscan_FileRecorder
 
 from sardana.macroserver.scan.scandata import (ScanData, ScanDataEnvironment, 
                                                ColumnDesc)
+
+import threading
+import numpy
+
+
+class DummyEventSource(threading.Thread):
+
+    def __init__(self, name, scanData, values, intervals=None):
+        threading.Thread.__init__(self, name=name)
+        self.scan_data = scanData
+        self.values = values
+        self.intervals = intervals or numpy.random.rand(len(self.values))
+
+    def run(self):
+        i = 0
+        for v,t in zip(self.values, self.intervals):
+            time.sleep(t)
+            self.scan_data.addData(v)
+
+    def get_obj(self):
+        return self
 
 def createScanDataEnvironment(columns, ScanDir='/tmp/', 
                                             ScanFile='data_nxs.hdf5'):
@@ -58,7 +77,6 @@ def createScanDataEnvironment(columns, ScanDir='/tmp/',
 
 
 def main():
-
     DH = DataHandler()
     file_name = "/tmp/data_nxs.hdf5"
     NXrecorder = NXscan_FileRecorder(filename=file_name, 
@@ -70,21 +88,32 @@ def main():
     ScanFile = 'data_nxs.hdf5'
     
     env = createScanDataEnvironment(columns, ScanDir, ScanFile)
-
     newScanData = ScanData(environment=env, data_handler=DH)
-    newScanData.start()
 
-    data1 = {'label':'ch1', 'data':[10.0, 6.0, 3.4]}
-    data2 = {'label':'ch2', 'data':[9.2, 7.4]}
-    data3 = {'label':'ch2', 'data':[1.1]}
-    newScanData.addData(data1)
-    newScanData.addData(data2)
-    newScanData.addData(data3)
+
+    data1 = [
+        {'label':'ch1', 'data':[10.0, 6.0, 3.4]},
+        {'label':'ch1', 'data':[10.0, 6.0, 3.4]},
+        {'label':'ch1', 'data':[10.0, 3.4]},
+        {'label':'ch1', 'data':[10.0, 6.0, 3.4]},
+        {'label':'ch1', 'data':[10.0, 3.4]}
+    ]
+    data2 = [
+        {'label':'ch2', 'data':[9.2, 7.4]},
+        {'label':'ch2', 'data':[1.1]}
+    ]
+    srcs = [
+            DummyEventSource('s1', newScanData, data1),
+            DummyEventSource('s2', newScanData, data2)
+            ]
+    newScanData.start()
+    for s in srcs:
+        s.start()
+    for s in srcs:
+        s.join()
 
     newScanData.end()
 
 if __name__=="__main__":
     main()
-
-
 
