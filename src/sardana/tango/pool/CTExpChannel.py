@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import PyTango
 
 ##############################################################################
 ##
@@ -123,50 +122,48 @@ class CTExpChannel(PoolElementDevice):
             value = self.calculate_tango_state(event_value)
         elif name == "status":
             value = self.calculate_tango_status(event_value)
-        else:
+        elif name == "value":
             if isinstance(event_value, SardanaAttribute):
                 if event_value.error:
                     error = Except.to_dev_failed(*event_value.exc_info)
                 else:
-                    value = event_value.value
+                    # TODO: workaround to pass values via two attributes (Data and Value)
+                    value_obj = event_value.get_value_obj()
+                    attr, value = self.prepare_ct_data(value_obj)
                 timestamp = event_value.timestamp
             else:
                 value = event_value
+            w_value = event_source.get_value_attribute().w_value
 
-            if name == "value":
-                w_value = event_source.get_value_attribute().w_value
-                state = self.ct.get_state()
-                if state == State.Moving:
-                    quality = AttrQuality.ATTR_CHANGING
-                attr, value = self.prepare_ct_data(value)
-                if attr == None:
-                    return
+            state = self.ct.get_state()
+            if state == State.Moving:
+                quality = AttrQuality.ATTR_CHANGING
+            if attr == None:
+                return
 
         self.set_attribute(attr, value=value, w_value=w_value,
                            timestamp=timestamp, quality=quality,
                            priority=priority, error=error, synch=False)
-        
-    def prepare_ct_data(self, data):
+
+    def prepare_ct_data(self, value_obj):
         """Prepares value to be passed via communication channel - Tango Events.
-        
-        :param data: any python type e.g. list, float
-        
+
+        :param data: SardanaValue
+
         :return: (attr,value) attribute and value 
         :rtype: :(class:`taurus.TaurusAttribute`, object)"""
-        
-        if isinstance(data,list):
-            if len(data) == 0:
-                return None, None
-            name = 'Data'            
-            _, value = self.codec.encode(('', data))
-        else:
+        # scalar float data are passed via Value
+        value = value_obj.value
+        if isinstance(value, float):
             name = 'Value'
-            if isinstance(data, float):            
-                value = data
-            else:            
-                value = None
+            attr_value = value
+        else:
+            name = 'Data'
+            index = value_obj.idx
+            raw_data = dict(data=value, index=index)
+            _, attr_value = self.codec.encode(('', raw_data))
         attr = self.get_attribute_by_name(name)
-        return attr, value        
+        return attr, attr_value
 
     def always_executed_hook(self):
         #state = to_tango_state(self.ct.get_state(cache=False))
