@@ -711,7 +711,15 @@ class PoolContSWCTAcquisition(PoolCTAcquisition):
             acquirable.set_state_info(state_info, propagate=0)
             if acquirable in values:
                 value = values[acquirable]
-                value.idx = self.conf['idx']
+                # TODO: workaround in order to pass the value via Tango Data attribute
+                # At this moment experimental channel values are passed via two
+                # different Tango attributes (Value and Data).
+                # The discrimination is  based on type of the value: if the type
+                # is scalar it is passed via Value, and if type is spectrum it 
+                # is passed via Data. 
+                # We want to pass it via Data so we encapsulate value and index in lists.
+                value.value = [value.value]
+                value.idx = [self.conf['idx']]
                 acquirable.put_value(value, propagate=2)
             with acquirable:
                 acquirable.clear_operation()
