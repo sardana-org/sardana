@@ -33,6 +33,7 @@ import copy
 from taurus.core.util.singleton import Singleton
 
 from sardana.macroserver.scan.recorder import DataHandler
+from threading import RLock
 
 
 class ColumnDesc:
@@ -235,6 +236,7 @@ class RecordList(dict):
         else:
             self.environ = environ
         self.records = []
+        self.rlock = RLock()
 
     # make it pickable
     def __getstate__(self):
@@ -290,36 +292,35 @@ class RecordList(dict):
                      and data - list of values
         :type data:  dict"""
         #TODO: re-implement to handle list of data
-        label = data['label']
-        rawData = data['data']
-        rawDataLen = len(rawData)
-        recordsLen = len(self.records)
-        columnIndex = self.columnIndexDict[label]
-        missingRecords = recordsLen - (columnIndex + rawDataLen)
-        
-        #TODO: implement proper handling of timestamps and moveables 
-        if missingRecords < 0:
-            missingRecords = abs(missingRecords)
-            for _ in xrange(missingRecords):
-                rc = Record({'point_nb' : self.recordno,'timestamp': None})
-                for refMoveableLabel in self.refMoveablesLabels:
-                    rc.data[refMoveableLabel] = None
-                self.records.append(rc)
-                self.recordno += 1
-                
-        for value in rawData:
-            rc = self.records[columnIndex]
-            rc.setRecordNo(columnIndex)
-            rc.data[label] = value
-            if self.isRecordCompleted(self.currentIndex):
-                self[self.currentIndex] = rc
-                self.datahandler.addRecord(self, rc)
-                self.currentIndex +=1
-                
-            columnIndex += 1                        
-            self.columnIndexDict[label] = columnIndex
+        with self.rlock:
+            label = data['label']
+            rawData = data['data']
+            rawDataLen = len(rawData)
+            recordsLen = len(self.records)
+            columnIndex = self.columnIndexDict[label]
+            missingRecords = recordsLen - (columnIndex + rawDataLen)
             
-            
+            #TODO: implement proper handling of timestamps and moveables
+            if missingRecords < 0:
+                missingRecords = abs(missingRecords)
+                for _ in xrange(missingRecords):
+                    rc = Record({'point_nb' : self.recordno,'timestamp': None})
+                    for refMoveableLabel in self.refMoveablesLabels:
+                        rc.data[refMoveableLabel] = None
+                    self.records.append(rc)
+                    self.recordno += 1
+
+            for value in rawData:
+                rc = self.records[columnIndex]
+                rc.setRecordNo(columnIndex)
+                rc.data[label] = value
+                if self.isRecordCompleted(self.currentIndex):
+                    self[self.currentIndex] = rc
+                    self.datahandler.addRecord(self, rc)
+                    self.currentIndex +=1
+                columnIndex += 1
+                self.columnIndexDict[label] = columnIndex
+
     def isRecordCompleted(self, recordno):
         rc = self.records[recordno]
         for label in self.labels:
