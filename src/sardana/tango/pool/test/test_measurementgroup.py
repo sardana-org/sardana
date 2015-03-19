@@ -72,6 +72,91 @@ class TangoAttributeListener(AttributeListener):
             print e
             raise Exception('"data" event callback failed')
 
+class MeasSarTestTestCase(SarTestTestCase):
+    """ Helper class to setup the need environmet for execute """
+
+    def setUp(self):
+        SarTestTestCase.setUp(self)
+        self.event_ids = {}
+
+    def create_meas(self, config):
+        """ Create a meas with the given configuration
+        """
+        # creating mg 
+        self.name = '_test_mg_1'
+        exp_chns = []
+        exp_dict = {}
+        for ctrl in config:
+            for elem_tuple in ctrl:
+                exp_chn, tg_elem, AcqTGType = elem_tuple
+                exp_chns.append(exp_chn)
+                exp_dict[exp_chn] = (tg_elem, AcqTGType )
+
+        self.pool.CreateMeasurementGroup([self.name] + exp_chns)
+
+        try:
+            self.meas = PyTango.DeviceProxy(self.name)
+        except:
+            raise Exception('Could not create the MeasurementGroup: %s' %\
+                                                                   (self.name))
+
+        # When measurement group gets created it fills the configuration with 
+        # the default values. Reusing read configuration in order to set test 
+        # parameters.
+        jcfg = self.meas.read_attribute('configuration').value
+        cfg = json.loads(jcfg)
+        for ctrl in cfg['controllers']:
+            units =  cfg['controllers'][ctrl]['units']['0']
+            channels = units['channels']
+            for chn in channels:
+                name = channels[chn]['name']
+                tg_elem, acqType = exp_dict[name]
+                tg_dev = PyTango.DeviceProxy(tg_elem)
+                tg_fullname = '%s:%s/%s' % (tg_dev.get_db_host().split('.')[0], 
+                                            tg_dev.get_db_port(),
+                                            tg_dev.name())
+                channels[chn]['trigger_element'] = tg_fullname
+                channels[chn]['trigger_type'] = acqType
+                units['trigger_type'] = acqType
+
+        # Write the built configuration
+        self.meas.write_attribute('configuration', json.dumps(cfg))
+
+    def prepare_meas(self, params):
+        """ Set the measurement group parameters
+        """
+        self.meas.write_attribute('acquisitionmode', params["mode"])
+        self.meas.write_attribute('offset', params["offset"])
+        self.meas.write_attribute('repetitions', params["repetitions"])
+        self.meas.write_attribute('integrationtime', params["integ_time"])
+
+    def _add_attribute_listener(self, config):
+        # Subscribe to events
+        chn_names = []
+        for ctrl in config:
+            for ch_tg in ctrl:
+                channel = ch_tg[0]
+                dev = PyTango.DeviceProxy(channel)
+                ch_fullname = '%s:%s/%s' % (dev.get_db_host().split('.')[0], 
+                                            dev.get_db_port(),
+                                            dev.name())
+                event_id = dev.subscribe_event('Data', 
+                                               PyTango.EventType.CHANGE_EVENT, 
+                                               self.attr_listener)
+                self.event_ids[dev] = event_id
+                chn_names.append(ch_fullname)
+        return chn_names
+
+    def tearDown(self):
+        for channel, event_id in self.event_ids.items():
+            channel.unsubscribe_event(event_id)
+        try:
+            # Delete the meas
+            self.pool.DeleteElement(self.name)
+        except:
+            print('Impossible to delete MeasurementGroup: %s' % (self.name))
+        SarTestTestCase.tearDown(self)
+
 params_1 = {
     "offset": 0,
     "repetitions": 100,
@@ -108,77 +193,12 @@ config_3 = (
             params=params_1, config=config_2)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_3,
             params=params_1, config=config_3)
-class TangoAcquisitionTestCase(SarTestTestCase, unittest.TestCase):
+class TangoAcquisitionTestCase(MeasSarTestTestCase, unittest.TestCase):
     """Integration test of TGGeneration and Acquisition actions."""
 
     def setUp(self):
-        SarTestTestCase.setUp(self)
+        MeasSarTestTestCase.setUp(self)
         unittest.TestCase.setUp(self)
-        self.event_ids = {}
-
-    def prepare_meas(self, params, config):
-        """ Prepare the meas and returns the channel names
-        """
-        # creating mg 
-        self.name = '_test_mg_1'
-        exp_chns = []
-        exp_dict = {}
-        for ctrl in config:
-            for elem_tuple in ctrl:
-                exp_chn, tg_elem, AcqTGType = elem_tuple
-                exp_chns.append(exp_chn)
-                exp_dict[exp_chn] = (tg_elem, AcqTGType )
-
-        self.pool.CreateMeasurementGroup([self.name] + exp_chns)
-
-        try:
-            self.meas = PyTango.DeviceProxy(self.name)
-        except:
-            raise Exception('Could not create the MeasurementGroup: %s' %\
-                                                                    (self.name))
-
-        # When measurement group gets created it fills the configuration with 
-        # the default values. Reusing read configuration in order to set test 
-        # parameters.
-        jcfg = self.meas.read_attribute('configuration').value
-        cfg = json.loads(jcfg)
-        for ctrl in cfg['controllers']:
-            units =  cfg['controllers'][ctrl]['units']['0']
-            channels = units['channels']
-            for chn in channels:
-                name = channels[chn]['name']
-                tg_elem, acqType = exp_dict[name]
-                tg_dev = PyTango.DeviceProxy(tg_elem)
-                tg_fullname = '%s:%s/%s' % (tg_dev.get_db_host().split('.')[0], 
-                                            tg_dev.get_db_port(),
-                                            tg_dev.name())
-                channels[chn]['trigger_element'] = tg_fullname
-                channels[chn]['trigger_type'] = acqType
-                units['trigger_type'] = acqType
-
-        # setting measurement parameters
-        self.meas.write_attribute('configuration', json.dumps(cfg))
-        self.meas.write_attribute('acquisitionmode', params["mode"])
-        self.meas.write_attribute('offset', params["offset"])
-        self.meas.write_attribute('repetitions', params["repetitions"])
-        self.meas.write_attribute('integrationtime', params["integ_time"])
-
-    def _add_attribute_listener(self, config):
-        # Subscribe to events
-        chn_names = []
-        for ctrl in config:
-            for ch_tg in ctrl:
-                channel = ch_tg[0]
-                dev = PyTango.DeviceProxy(channel)
-                ch_fullname = '%s:%s/%s' % (dev.get_db_host().split('.')[0], 
-                                            dev.get_db_port(),
-                                            dev.name())
-                event_id = dev.subscribe_event('Data', 
-                                               PyTango.EventType.CHANGE_EVENT, 
-                                               self.attr_listener)
-                self.event_ids[dev] = event_id
-                chn_names.append(ch_fullname)
-        return chn_names
 
     def _acq_asserts(self, channel_names, repetitions):
         """ Do the asserts after an acquisition
@@ -204,7 +224,10 @@ class TangoAcquisitionTestCase(SarTestTestCase, unittest.TestCase):
             self.assertEqual(ch_data_len, repetitions, msg)
 
     def meas_cont_acquisition(self, params, config):
-        self.prepare_meas(params, config)
+        """ Helper method to do a continous acquisition
+        """
+        self.create_meas(config)
+        self.prepare_meas(params)
         self.attr_listener = TangoAttributeListener()
         chn_names = self._add_attribute_listener(config)
         # Do acquisition
@@ -215,12 +238,5 @@ class TangoAcquisitionTestCase(SarTestTestCase, unittest.TestCase):
         self._acq_asserts(chn_names, params["repetitions"])
 
     def tearDown(self):
-        for channel, event_id in self.event_ids.items():
-            channel.unsubscribe_event(event_id)
-        try:
-            # Delete the meas
-            self.pool.DeleteElement(self.name)
-        except:
-            print('Impossible to delete MeasurementGroup: %s' % (self.name))
         unittest.TestCase.tearDown(self)
-        SarTestTestCase.tearDown(self)
+        MeasSarTestTestCase.tearDown(self)
