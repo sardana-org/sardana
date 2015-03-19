@@ -24,3 +24,4 @@
 ##############################################################################
 
 from macroexecutor import TangoMacroExecutor
+from base import *
