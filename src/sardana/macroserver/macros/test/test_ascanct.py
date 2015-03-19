@@ -5,13 +5,13 @@ from taurus.external import unittest
 from sardana.macroserver.macros.test import (RunStopMacroTestCase, testRun, 
                                                         testStop, SarDemoEnv)
 from sardana.pool import AcqTriggerType
-from sardana.tango.pool.test import elemcreation
 from sardana.pool.test import (createPoolMeasurementGroup,
                                dummyMeasurementGroupConf01,
                                createMGUserConfiguration)
 #TODO: MeasSarTestTestCase is a util, could be moved to base_sartest or another
 # utils module.
-from sardana.tango.pool.test.test_measurementgroup import MeasSarTestTestCase 
+from sardana.tango.pool.test.test_measurementgroup import MeasSarTestTestCase
+from sardana.tango.macroserver.test import BaseMacroServerTestCase
 
 #get handy motor names from sardemo
 try:
@@ -73,6 +73,7 @@ class UtilsForTests():
                 break     
         return ordered_points_data
 
+#TODO Decide what we do with old AscanctTest test (Move or delete)
 """
 # Test for checking that the required number of points is present.
 @testRun(macro_params=[_m1, '0', '10', '10', '0.1'], wait_timeout=float("inf"))
@@ -136,38 +137,47 @@ class AscanctTest(RunStopMacroTestCase, unittest.TestCase):
 # an ascanct with a trigger device.
 # Test for checking that the required number of points is present.
 mg_config1 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger)]]
-macro_params_1 = [_m1, '0', '10', '10', '0.1']
+macro_params_1 = ['_test_mt_1_1', '0', '10', '10', '0.1']
+
 @testRun(meas_config=mg_config1, macro_params=macro_params_1, 
-                                            wait_timeout=float("inf"))
-class AscanctTest(MeasSarTestTestCase, RunStopMacroTestCase, unittest.TestCase):
+         wait_timeout=float("inf"))
+class AscanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
+                  RunStopMacroTestCase, unittest.TestCase):
     macro_name = 'ascanct'
-    macro_params=[_m1, '0', '10', '10', '0.1']
 
     utils = UtilsForTests()
+    # TODO remove it; It will generate by SCAN framework
+    params_1 = {
+        "offset": 0,
+        "repetitions": 100,
+        "integ_time": 0.01,
+        "name": '_exp_01',
+        "mode": "ContTimer"
+    }
 
     def setUp(self):
-        self.params_1 = {
-            "offset": 0,
-            "repetitions": 100,
-            "integ_time": 0.01,
-            "name": '_exp_01',
-            "mode": "ContTimer"
-        }
         unittest.TestCase.setUp(self)
-        RunStopMacroTestCase.setUp(self)
         MeasSarTestTestCase.setUp(self)
+        BaseMacroServerTestCase.setUp(self, self.pool_name)
+        RunStopMacroTestCase.setUp(self)
 
     def macro_runs(self, meas_config, macro_params, wait_timeout=float("inf")):
         
-        # creating mg user configuration and obtaining channel ids
+        # creating MEAS
         self.create_meas(meas_config)
+        # TODO remove it
         self.prepare_meas(self.params_1)
-        """Checking that the required number of scan points is present."""
+        # Set ActiveMntGrp
+        self.macro_executor.run(macro_name='senv',
+                                macro_params=['ActiveMntGrp', '_test_mg_1'],
+                                sync=True, timeout=wait_timeout)
+        # Run the ascanct
         self.macro_executor.run(macro_name=self.macro_name,
                                 macro_params=macro_params,
                                 sync=True, timeout=wait_timeout)
         self.assertFinished('Macro %s did not finish' % self.macro_name)
 
+        #Checking that the required number of scan points is present.
         expected_nb_points = macro_params[3]
             
         # Test data from log_output (macro_executor.getLog('output'))
@@ -179,8 +189,8 @@ class AscanctTest(MeasSarTestTestCase, RunStopMacroTestCase, unittest.TestCase):
         ordered_points = bb 
 
         self.assertNotEqual(obtained_nb_points, 0, 
-                        "The ascanct execution did not return any scan point.\n"
-                         + "Checked using log_output")
+                       "The ascanct execution did not return any scan point.\n"
+                       + "Checked using log_output")
 
         self.assertEqual(int(obtained_nb_points), int(expected_nb_points), 
           "The ascanct execution did not return the expected number of " + 
@@ -207,10 +217,12 @@ class AscanctTest(MeasSarTestTestCase, RunStopMacroTestCase, unittest.TestCase):
            "\nChecked using macro_executor.getData()")
 
         self.assertTrue(order_points_data, "Scan points are NOT in good order."
-                                 + "\nChecked using  macro_executor.getData().")
+                                + "\nChecked using  macro_executor.getData().")
 
     def tearDown(self):
+        BaseMacroServerTestCase.tearDown(self)
         MeasSarTestTestCase.tearDown(self)
+        RunStopMacroTestCase.tearDown(self)
         unittest.TestCase.tearDown(self)
 
 
