@@ -24,6 +24,7 @@
 ##############################################################################
 
 import time
+import threading
 import json
 # TODO: decide what to use: taurus or PyTango
 import PyTango
@@ -165,33 +166,43 @@ params_1 = {
     "mode": "ContTimer"
 }
 doc_1 = 'Synchronized acquisition with two channels from the same controller'\
-        ' using the same trigger'
+        ' using hardware trigger'
 config_1 = (
     (('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
      ('_test_ct_1_2', '_test_tg_1_1', AcqTriggerType.Trigger)),
 )
-
 doc_2 = 'Synchronized acquisition with two channels from the same controller'\
-        ' using the software trigger'
+        ' using software trigger'
 config_2 = (
     (('_test_ct_1_1', '_test_stg_1_1', AcqTriggerType.Trigger),
      ('_test_ct_1_2', '_test_stg_1_1', AcqTriggerType.Trigger)),
 )
-
-doc_3 = 'Synchronized acquisition with two channels from the same controller'\
-        ' using the software trigger'
+doc_3 = 'Synchronized acquisition with four channels from two different'\
+        'controllers using hardware and software triggers'
 config_3 = (
     (('_test_ct_1_1', '_test_stg_1_1', AcqTriggerType.Trigger),
      ('_test_ct_1_2', '_test_stg_1_1', AcqTriggerType.Trigger)),
     (('_test_ct_2_1', '_test_tg_1_1', AcqTriggerType.Trigger),
      ('_test_ct_2_2', '_test_tg_1_1', AcqTriggerType.Trigger)),
 )
+doc_4 = 'Stop of the synchronized acquisition with two channels from the same'\
+        ' controller using hardware trigger'
+doc_5 = 'Stop of the synchronized acquisition with two channels from the same'\
+        ' controller using software trigger'
+doc_6 = 'Stop of the synchronized acquisition with four channels from two'\
+        ' different controllers using hardware and software triggers'
 
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_1,
             params=params_1, config=config_1)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_2,
             params=params_1, config=config_2)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_3,
+            params=params_1, config=config_3)
+@insertTest(helper_name='stop_meas_cont_acquisition', test_method_doc=doc_4,
+            params=params_1, config=config_1)
+@insertTest(helper_name='stop_meas_cont_acquisition', test_method_doc=doc_5,
+            params=params_1, config=config_2)
+@insertTest(helper_name='stop_meas_cont_acquisition', test_method_doc=doc_6,
             params=params_1, config=config_3)
 class TangoAcquisitionTestCase(MeasSarTestTestCase, unittest.TestCase):
     """Integration test of TGGeneration and Acquisition actions."""
@@ -236,6 +247,35 @@ class TangoAcquisitionTestCase(MeasSarTestTestCase, unittest.TestCase):
             print "Acquiring..."
             time.sleep(0.1)
         self._acq_asserts(chn_names, params["repetitions"])
+
+    def stop_meas_cont_acquisition(self, params, config):
+        '''Helper method to do measurement and stop it'''
+        self.create_meas(config)
+        self.prepare_meas(params)
+        self.attr_listener = TangoAttributeListener()
+        chn_names = self._add_attribute_listener(config)
+        # Do measurement
+        self.meas.Start()
+        # starting timer (0.2 s) which will stop the measurement group
+        threading.Timer(0.2, self.stopMeas).start()
+        while self.meas.State() == PyTango.DevState.MOVING:
+            print "Acquiring..."
+            time.sleep(0.1)
+        state = self.meas.State()
+        desired_state = PyTango.DevState.ON
+        msg = 'mg state after stop is %s (should be %s)' %\
+                                                         (state, desired_state)
+        self.assertEqual(state, desired_state, msg)
+        for name in chn_names:
+            channel = PyTango.DeviceProxy(name)
+            state = channel.state()
+            msg = 'channel %s state after stop is %s (should be %s)' %\
+                                                   (name, state, desired_state)
+            self.assertEqual(state, desired_state, msg)
+
+    def stopMeas(self):
+        '''Method used to stop measreument group'''
+        self.meas.stop()
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
