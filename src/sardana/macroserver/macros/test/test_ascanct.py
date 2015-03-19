@@ -4,6 +4,14 @@
 from taurus.external import unittest
 from sardana.macroserver.macros.test import (RunStopMacroTestCase, testRun, 
                                                         testStop, SarDemoEnv)
+from sardana.pool import AcqTriggerType
+from sardana.tango.pool.test import elemcreation
+from sardana.pool.test import (createPoolMeasurementGroup,
+                               dummyMeasurementGroupConf01,
+                               createMGUserConfiguration)
+#TODO: MeasSarTestTestCase is a util, could be moved to base_sartest or another
+# utils module.
+from sardana.tango.pool.test.test_measurementgroup import MeasSarTestTestCase 
 
 #get handy motor names from sardemo
 try:
@@ -65,7 +73,7 @@ class UtilsForTests():
                 break     
         return ordered_points_data
 
-
+"""
 # Test for checking that the required number of points is present.
 @testRun(macro_params=[_m1, '0', '10', '10', '0.1'], wait_timeout=float("inf"))
 class AscanctTest(RunStopMacroTestCase, unittest.TestCase):
@@ -75,6 +83,85 @@ class AscanctTest(RunStopMacroTestCase, unittest.TestCase):
     utils = UtilsForTests()
 
     def macro_runs(self, macro_params, wait_timeout=float("inf")):
+        Checking that the required number of scan points is present.
+        self.macro_executor.run(macro_name=self.macro_name,
+                                macro_params=macro_params,
+                                sync=True, timeout=wait_timeout)
+        self.assertFinished('Macro %s did not finish' % self.macro_name)
+
+        expected_nb_points = macro_params[3]
+            
+        # Test data from log_output (macro_executor.getLog('output'))
+        log_output = self.macro_executor.getLog('output')
+        (aa, bb) = self.utils.parsingOutputPoints(log_output)
+        # ordered_points: (int) obtained number of points.
+        obtained_nb_points = aa
+        # ordered_points: booleand which indicates if points are ordered.
+        ordered_points = bb 
+
+        self.assertNotEqual(obtained_nb_points, 0, 
+                        "The ascanct execution did not return any scan point.\n"
+                         + "Checked using log_output")
+
+        self.assertEqual(int(obtained_nb_points), int(expected_nb_points), 
+          "The ascanct execution did not return the expected number of " + 
+          " points.\n Expected " + str(expected_nb_points) + " points." + 
+          "\n Obtained " + str(obtained_nb_points) + " points." 
+           + "Checked using log_output")
+
+        self.assertTrue(ordered_points, "Scan points are NOT in good order.\n"
+                                         + "Checked using log_output")
+
+        # Test data from macro (macro_executor.getData())
+        data = self.macro_executor.getData() 
+        order_points_data = self.utils.orderPointsData(data)
+
+        self.assertTrue(len(data.keys())>0,
+                    "The ascanct execution did not return any scan point.\n"
+                     + "Checked using macro_executor.getData()")
+
+        obtained_nb_points_data = len(data.keys())
+        self.assertEqual(int(obtained_nb_points_data), int(expected_nb_points),
+           "The ascanct execution did not return the expected number of " + 
+           " points.\n Expected " + str(expected_nb_points) + " points." + 
+           "\n Obtained " + str(obtained_nb_points_data) + " points." +
+           "\nChecked using macro_executor.getData()")
+
+        self.assertTrue(order_points_data, "Scan points are NOT in good order."
+                                 + "\nChecked using  macro_executor.getData().")
+
+"""
+
+# Test for checking that the required number of points is present by doing 
+# an ascanct with a trigger device.
+# Test for checking that the required number of points is present.
+mg_config1 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger)]]
+macro_params_1 = [_m1, '0', '10', '10', '0.1']
+@testRun(meas_config=mg_config1, macro_params=macro_params_1, 
+                                            wait_timeout=float("inf"))
+class AscanctTest(MeasSarTestTestCase, RunStopMacroTestCase, unittest.TestCase):
+    macro_name = 'ascanct'
+    macro_params=[_m1, '0', '10', '10', '0.1']
+
+    utils = UtilsForTests()
+
+    def setUp(self):
+        self.params_1 = {
+            "offset": 0,
+            "repetitions": 100,
+            "integ_time": 0.01,
+            "name": '_exp_01',
+            "mode": "ContTimer"
+        }
+        unittest.TestCase.setUp(self)
+        RunStopMacroTestCase.setUp(self)
+        MeasSarTestTestCase.setUp(self)
+
+    def macro_runs(self, meas_config, macro_params, wait_timeout=float("inf")):
+        
+        # creating mg user configuration and obtaining channel ids
+        self.create_meas(meas_config)
+        self.prepare_meas(self.params_1)
         """Checking that the required number of scan points is present."""
         self.macro_executor.run(macro_name=self.macro_name,
                                 macro_params=macro_params,
@@ -121,4 +208,9 @@ class AscanctTest(RunStopMacroTestCase, unittest.TestCase):
 
         self.assertTrue(order_points_data, "Scan points are NOT in good order."
                                  + "\nChecked using  macro_executor.getData().")
+
+    def tearDown(self):
+        MeasSarTestTestCase.tearDown(self)
+        unittest.TestCase.tearDown(self)
+
 
