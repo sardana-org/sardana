@@ -119,9 +119,9 @@ class DummyTriggerGateController(TriggerGateController):
         self.tg[idx].start()        
 
     def AbortOne(self, axis):
-        """Start the specified trigger
+        """Abort the specified trigger
         """
-        self._log.debug('StartOne(%d): entering...' % axis)
+        self._log.debug('AbortOne(%d): entering...' % axis)
         idx = axis - 1
         self.tg[idx].stop()
 
