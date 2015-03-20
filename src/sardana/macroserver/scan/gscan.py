@@ -50,7 +50,7 @@ from sardana.util.tree import BranchNode, LeafNode, Tree
 from sardana.util.motion import Motor as VMotor
 from sardana.util.motion import MotionPath
 from sardana.macroserver.msexception import MacroServerException, UnknownEnv, \
-    InterruptException
+    InterruptException, StopException
 from sardana.macroserver.msparameter import Type
 from sardana.macroserver.scan.scandata import ColumnDesc, MoveableDesc, \
     ScanFactory, ScanDataEnvironment
@@ -1095,10 +1095,12 @@ class CScan(GScan):
         """Go through the different waypoints."""
         try:
             self._go_through_waypoints()
-        except:
+        except StopException:
+            self.on_waypoints_end()
+        except Exception:
             self.macro.debug('An error occurred moving to waypoints')
             self.macro.debug('Details: ', exc_info = True)
-            self.on_waypoints_end()        
+            self.on_waypoints_end()
             raise ScanException('error while moving to waypoints')
 
     def _go_through_waypoints(self):
