@@ -37,12 +37,12 @@ class DummyEventSource(threading.Thread):
             try:
                 idx = range(i, i+len(v))
                 i += len(v)
-                skip = None in v
+                skip = float('NaN') in v
             except TypeError: # if v is not a list
                 idx = [i]
                 i += 1
                 v = [v]
-                skip = None in v
+                skip = float('NaN') in v
             if skip:
                 continue 
             time.sleep(t)
