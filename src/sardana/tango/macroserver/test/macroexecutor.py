@@ -91,7 +91,10 @@ class TangoStatusCb(TangoAttrCb):
             self._tango_macro_executor._done_event.set()
         # make sure we get it as string since PyTango 7.1.4 returns a buffer
         # object and json.loads doesn't support buffer objects (only str)
-        attr_value = event_data.attr_value
+        
+        attr_value = getattr(event_data, 'attr_value')
+        if attr_value is None:
+            return
         v = map(str, attr_value.value)
         if not len(v[1]):
             return
