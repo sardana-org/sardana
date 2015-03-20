@@ -264,14 +264,18 @@ class RecordList(dict):
         self.columnIndexDict = {}
         self.labels = []
         self.refMoveablesLabels = []
+        self.channelLabels = []
         self.currentIndex = 0
         self._mylabel = []
-        
+
         for dataDesc in self.getEnvironValue('datadesc'):
             if isinstance(dataDesc, MoveableDesc):
                 self.refMoveablesLabels.append(dataDesc.name)
-            self.labels.append(dataDesc.name)        
-        
+            else:
+                name = dataDesc.name
+                if not name in ('point_nb', 'timestamp'):
+                    self.channelLabels.append(name)
+            self.labels.append(dataDesc.name)
         for label in self.labels:
             self.columnIndexDict[label] = 0
         ####
@@ -285,10 +289,10 @@ class RecordList(dict):
         self.recordno += 1
 
         self.datahandler.addRecord(self, rc)
-        
+
     def addData(self, data):
         """Adds data to the record list
-        
+
         :param data: dictionary with two mandatory elements: label - string 
                      and data - list of values
         :type data:  dict"""
@@ -307,9 +311,7 @@ class RecordList(dict):
                 missingRecords = abs(missingRecords)
                 for _ in xrange(missingRecords):
                     rc = Record({'point_nb' : self.recordno,'timestamp': None})
-                    for _label in self.labels:
-                        if _label in ['point_nb', 'timestamp']:
-                            continue
+                    for _label in self.channelLabels:
                         rc.data[_label] = None
                         rc.setRecordNo(self.recordno)
                         rc.data[_label] = float('NaN')
@@ -336,14 +338,12 @@ class RecordList(dict):
 
     def isRecordCompleted(self, recordno):
         rc = self.records[recordno]
-        for label in self.labels:
-            if label in ['point_nb', 'timestamp']:
-                continue
+        for label in self.channelLabels:
             if self.columnIndexDict[label] <= self.currentIndex:
                 return False
         rc.completed = 1
         return True
-                    
+
     def addRecords(self, records):
         map(self.addRecord, records)
 
