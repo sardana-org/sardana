@@ -32,17 +32,17 @@ class DummyTriggerGateController(TriggerGateController):
     gender = "Simulation"
     organization = "ALBA-Cells"
     MaxDevice = 1
-    
+
     def __init__(self, inst, props, *args, **kwargs):
         """Constructor"""
         TriggerGateController.__init__(self, inst, props, *args, **kwargs)
         self.tg = {}
-        
+
 #     def add_listener(self, listener):
 #         '''Backdoor method to attach listeners. It will be removed whenever 
 #         a proper EventChannel mechanism will be implemented'''
 #         self.tg[0].add_listener(listener)
-        
+
     def SetAxisPar(self, axis, name, value):
         idx = axis - 1
         tg = self.tg[idx]
@@ -116,7 +116,7 @@ class DummyTriggerGateController(TriggerGateController):
         """
         self._log.debug('StartOne(%d): entering...' % axis)
         idx = axis - 1
-        self.tg[idx].start()        
+        self.tg[idx].start()
 
     def AbortOne(self, axis):
         """Abort the specified trigger
@@ -124,6 +124,7 @@ class DummyTriggerGateController(TriggerGateController):
         self._log.debug('AbortOne(%d): entering...' % axis)
         idx = axis - 1
         self.tg[idx].stop()
+        self._log.debug('AbortOne(%d): leaving...' % axis)
 
     def PreReadAll(self):
         pass
