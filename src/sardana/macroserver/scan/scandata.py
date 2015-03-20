@@ -160,7 +160,7 @@ class MoveableDesc(ColumnDesc):
         return self.__class__(moveable=self.moveable, **self.toDict())
 
 
-class Record:
+class Record(object):
     """ One record is a set of values measured at the same time.
 
     The Record.data member will be
@@ -265,6 +265,7 @@ class RecordList(dict):
         self.labels = []
         self.refMoveablesLabels = []
         self.currentIndex = 0
+        self._mylabel = []
         
         for dataDesc in self.getEnvironValue('datadesc'):
             if isinstance(dataDesc, MoveableDesc):
@@ -295,39 +296,51 @@ class RecordList(dict):
         with self.rlock:
             label = data['label']
             rawData = data['data']
-            rawDataLen = len(rawData)
+            idxs = data['index']
+
+            maxIdx = max(idxs)
             recordsLen = len(self.records)
-            columnIndex = self.columnIndexDict[label]
-            missingRecords = recordsLen - (columnIndex + rawDataLen)
-            
+            # Calculate missing records
+            missingRecords = recordsLen - (maxIdx + 1)
             #TODO: implement proper handling of timestamps and moveables
             if missingRecords < 0:
                 missingRecords = abs(missingRecords)
                 for _ in xrange(missingRecords):
                     rc = Record({'point_nb' : self.recordno,'timestamp': None})
+                    for _label in self.labels:
+                        if _label in ['point_nb', 'timestamp']:
+                            continue
+                        rc.data[_label] = None
+                        rc.setRecordNo(self.recordno)
+                        rc.data[_label] = float('NaN')
+
                     for refMoveableLabel in self.refMoveablesLabels:
                         rc.data[refMoveableLabel] = None
                     self.records.append(rc)
                     self.recordno += 1
-
-            for value in rawData:
-                rc = self.records[columnIndex]
-                rc.setRecordNo(columnIndex)
+            for idx, value in zip(idxs, rawData):
+                rc = self.records[idx]
+                rc.setRecordNo(idx)
                 rc.data[label] = value
-                if self.isRecordCompleted(self.currentIndex):
-                    self[self.currentIndex] = rc
-                    self.datahandler.addRecord(self, rc)
-                    self.currentIndex +=1
-                columnIndex += 1
-                self.columnIndexDict[label] = columnIndex
+                self.columnIndexDict[label] = idx + 1
+            self.tryToAdd(idx, label)
+
+    def tryToAdd(self, idx, label):
+        start = self.currentIndex
+        for i in range(start, idx+1):
+            if self.isRecordCompleted(i):
+                rc = self.records[i]
+                self[self.currentIndex] = rc
+                self.datahandler.addRecord(self, rc)
+                self.currentIndex +=1
 
     def isRecordCompleted(self, recordno):
         rc = self.records[recordno]
         for label in self.labels:
-            if not rc.data.has_key(label):
-                print 'Mising label: ', label #TODO: remove these debugging prints
+            if label in ['point_nb', 'timestamp']:
+                continue
+            if self.columnIndexDict[label] <= self.currentIndex:
                 return False
-            print 'Present label',label #TODO: remove these debugging prints
         rc.completed = 1
         return True
                     
@@ -335,6 +348,12 @@ class RecordList(dict):
         map(self.addRecord, records)
 
     def end(self):
+        start = self.currentIndex
+        for i in range(start, len(self.records)):
+            rc = self.records[i]
+            self[self.currentIndex] = rc
+            self.datahandler.addRecord(self, rc)
+            self.currentIndex +=1
         self.datahandler.endRecordList(self)
 
     def getDataHandler(self):
