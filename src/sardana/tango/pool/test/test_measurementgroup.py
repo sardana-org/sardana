@@ -84,22 +84,23 @@ class MeasSarTestTestCase(SarTestTestCase):
         """ Create a meas with the given configuration
         """
         # creating mg 
-        self.name = '_test_mg_1'
-        exp_chns = []
+        self.mg_name = '_test_mg_1'
+        self.expchan_names = []
+        self.tg_names = []
         exp_dict = {}
         for ctrl in config:
             for elem_tuple in ctrl:
                 exp_chn, tg_elem, AcqTGType = elem_tuple
-                exp_chns.append(exp_chn)
+                self.expchan_names.append(exp_chn)
                 exp_dict[exp_chn] = (tg_elem, AcqTGType )
 
-        self.pool.CreateMeasurementGroup([self.name] + exp_chns)
+        self.pool.CreateMeasurementGroup([self.mg_name] + self.expchan_names)
 
         try:
-            self.meas = PyTango.DeviceProxy(self.name)
+            self.meas = PyTango.DeviceProxy(self.mg_name)
         except:
             raise Exception('Could not create the MeasurementGroup: %s' %\
-                                                                   (self.name))
+                                                                (self.mg_name))
 
         # When measurement group gets created it fills the configuration with 
         # the default values. Reusing read configuration in order to set test 
@@ -119,6 +120,7 @@ class MeasSarTestTestCase(SarTestTestCase):
                 channels[chn]['trigger_element'] = tg_fullname
                 channels[chn]['trigger_type'] = acqType
                 units['trigger_type'] = acqType
+                self.tg_names.append(tg_elem)
 
         # Write the built configuration
         self.meas.write_attribute('configuration', json.dumps(cfg))
@@ -153,9 +155,9 @@ class MeasSarTestTestCase(SarTestTestCase):
             channel.unsubscribe_event(event_id)
         try:
             # Delete the meas
-            self.pool.DeleteElement(self.name)
+            self.pool.DeleteElement(self.mg_name)
         except:
-            print('Impossible to delete MeasurementGroup: %s' % (self.name))
+            print('Impossible to delete MeasurementGroup: %s' % (self.mg_name))
         SarTestTestCase.tearDown(self)
 
 params_1 = {
