@@ -1778,7 +1778,8 @@ class CTScan(CScan):
                         _, data = self.codec.decode(('json', value),
                                                     ensure_ascii=True)
                         channelName = event_src.getParentObj().getFullName()
-                        info = {'label' : channelName, 'data' : data}
+                        info = {'label' : channelName}
+                        info.update(data)
                         # TODO: info will be a dict(data=seq<float>, index=seq<int>,
                         #                           label=str) 
                         self.recordList.addData(info)
