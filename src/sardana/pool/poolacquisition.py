@@ -194,6 +194,7 @@ class PoolAcquisition(PoolAction):
             actions.append(self._0d_acq)
         elif elem_type == ElementType.TriggerGate:
             actions.append(self._tg_gen)
+        self.debug('_get_acq_for_element: returning actions: %s for element: %s' % (actions, element))
         return actions
 
     def clear_elements(self):

@@ -361,6 +361,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         self.fire_event(EventType("configuration", priority=propagate), config)
 
     def set_configuration_from_user(self, cfg, propagate=1):
+        self.debug('set_configuration_from_user: entering...')
         config = {}
         user_elements = self.get_user_elements()
         pool = self.pool
@@ -489,6 +490,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                         # TODO: this check is not generic !!!
                         if hasattr(tg_ctrl, 'add_listener'):
                             trigger_type = AcqTriggerType.Software
+                    self.debug('load_configuration: setting trigger_type: %s to ctrl: %s' % (trigger_type, ctrl))
                     ctrl.set_ctrl_par('trigger_type', trigger_type)
 
         self._config_dirty = False
@@ -601,7 +603,8 @@ class PoolMeasurementGroup(PoolGroupElement):
                 kwargs['integ_time'] = integration_time
             elif acquisition_mode in (AcqMode.Monitor, AcqMode.ContMonitor):
                 kwargs['monitor'] = self._monitor
-            if acquisition_mode in (AcqMode.ContTimer, AcqMode.ContMonitor):                                
+            if acquisition_mode in (AcqMode.ContTimer, AcqMode.ContMonitor):
+                self._action_cache = None
                 # TODO: calculate the active_period, based on the involved elements
                 # hardcoding the active_period to 1 us
                 active_period = 1e-6
@@ -617,7 +620,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                 kwargs['synchronized'] = False            
             # start acquisition
             self.acquisition.run(**kwargs)
-                     
+
     def set_acquisition(self, acq_cache):
         self.set_action_cache(acq_cache)
 

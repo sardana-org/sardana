@@ -1809,11 +1809,13 @@ class CTScan(CScan):
             return False
     
         def start(self):
-            self.mntGrp.start_async_acq_sequence(self.acqTime, self.dataCb)
+#             self.mntGrp.start_async_acq_sequence(self.acqTime, self.dataCb)
+            self.mntGrp.addOnDataChangedListeners(self.dataCb)
+            self.mntGrp.Start()
      
         def stop(self):
             self.mntGrp.removeOnDataChangedListeners(self.dataCb)
-            self.mntGrp.stop()
+            self.mntGrp.Stop()
     
         def getDataList(self):
             dataList = [ {"point_nb" : i, "timestamp" : 0} for i in xrange(self.nrOfTriggers) ]
@@ -1869,7 +1871,7 @@ class CTScan(CScan):
                        moveables=moveables, env=env, constraints=constraints,
                        extrainfodesc=extrainfodesc)
         self._measurement_group = self.ExtraMntGrp(macro)
-        self.extraTrigger = self.ExtraTrigger(macro)            
+        #self.extraTrigger = self.ExtraTrigger(macro)            
         
     def prepare_waypoint(self, waypoint, start_positions, iterate_only=False):
         '''Prepare list of MotionPath objects per each physical motor. 
@@ -1973,21 +1975,28 @@ class CTScan(CScan):
             self.macro.checkPoint()
     
             #configuring trigger lines
-            oldHighTime, oldLowTime, oldDelay, oldNrOfTriggers = \
-                                        self.extraTrigger.getConfiguration()
-            self.__triggerConfigured = True
-            timePerTrigger = self.extraTrigger.configure(delayTime=delta_start,
-                                           scanTime=acq_duration,
-                                           nrOfTriggers=self.macro.nr_of_points)
+#             oldHighTime, oldLowTime, oldDelay, oldNrOfTriggers = \
+#                                         self.extraTrigger.getConfiguration()
+#             self.__triggerConfigured = True
+#             timePerTrigger = self.extraTrigger.configure(delayTime=delta_start,
+#                                            scanTime=acq_duration,
+#                                            nrOfTriggers=self.macro.nr_of_points)
             self.macro.checkPoint()
     
             #configuring measurementGroup
             self.mntGrpConfiguration = self._measurement_group.getConfiguration()
             self.__mntGrpConfigured = True
             self._measurement_group.mntGrp.setAcquisitionMode('ContTimer')
-            self._measurement_group.configure(self.macro.nr_of_points, 
-                                       self.macro.acq_time, 
-                                       timePerTrigger)
+            self.debug('Setting Repetitions: %f' % self.macro.nr_of_points)
+            self._measurement_group.mntGrp.write_attribute('Repetitions', 
+                                                       self.macro.nr_of_points)
+            self.debug('Setting IntegrationTime: %f' % self.macro.acq_time)
+            integ_time = self.macro.acq_time * self.macro.integ_time / 100
+            self._measurement_group.mntGrp.write_attribute('IntegrationTime',
+                                                                    integ_time)
+            self.debug('Setting Offset: %f' % delta_start)
+            self._measurement_group.mntGrp.write_attribute('Offset',
+                                                           delta_start)
             self.macro.checkPoint()
     
             #extra post configuration
@@ -2038,7 +2047,7 @@ class CTScan(CScan):
     
             self.macro.debug("Starting measurement group")
             self.__mntGrpStarted = True
-            self._measurement_group.start()            
+            self._measurement_group.start()
             ###########
             
             self.timestamp_to_start = time.time() + delta_start
@@ -2049,7 +2058,7 @@ class CTScan(CScan):
             self.macro.debug("Moving to waypoint position: %s" % repr(final_pos))
             self.macro.debug("Starting triggers")
             self.__triggerStarted = True
-            self.extraTrigger.start()
+#             self.extraTrigger.start()
             motion.move(final_pos)
                         
             self.motion_event.clear()
@@ -2156,13 +2165,13 @@ class CTScan(CScan):
                 self.debug('Details: ', exc_info = True)
                 raise ScanException('stopping the measurement group failed')
 
-        if self.__triggerStarted:
-            self.debug("Stopping triggers")
-            try:
-                self.extraTrigger.stop()
-            except:
-                self.debug('Exception occurred trying to stop the trigger')
-                raise ScanException('stopping the trigger failed')
+#         if self.__triggerStarted:
+#             self.debug("Stopping triggers")
+#             try:
+#                 self.extraTrigger.stop()
+#             except:
+#                 self.debug('Exception occurred trying to stop the trigger')
+#                 raise ScanException('stopping the trigger failed')
 
         if hasattr(self.macro, 'getHooks'):
             for hook in self.macro.getHooks('pre-cleanup'):

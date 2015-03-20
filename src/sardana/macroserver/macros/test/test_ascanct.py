@@ -166,7 +166,7 @@ class AscanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
         # creating MEAS
         self.create_meas(meas_config)
         # TODO remove it
-        self.prepare_meas(self.params_1)
+#         self.prepare_meas(self.params_1)
         # Set ActiveMntGrp
         self.macro_executor.run(macro_name='senv',
                                 macro_params=['ActiveMntGrp', '_test_mg_1'],
@@ -179,7 +179,7 @@ class AscanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
 
         #Checking that the required number of scan points is present.
         expected_nb_points = macro_params[3]
-            
+
         # Test data from log_output (macro_executor.getLog('output'))
         log_output = self.macro_executor.getLog('output')
         (aa, bb) = self.utils.parsingOutputPoints(log_output)
