@@ -58,9 +58,15 @@ class TGGenerationTestCase(unittest.TestCase):
 
     def tggeneration(self, ctrl_lib, ctrl_klass, offset, active_period,
                         passive_period, repetitions):
-        #TODO: document method arguments
         """Helper method to verify trigger element states before and after 
         trigger/gate generation.
+        Method arguments:
+        ctrl_lib: controller library used for the test
+        ctrl_klass: controller class used for the test
+        offset: temporal offset before beginning the trigger generation
+        active_period: signal at which triggers will be generated
+        passive_period: temporal passive period between two active periods
+        repetitions: number of generated triggers 
         """
         # create controller and element
         ctrl_conf = createCtrlConf(self.pool, 'tgctrl01', ctrl_klass, ctrl_lib)
@@ -105,9 +111,16 @@ class TGGenerationTestCase(unittest.TestCase):
 
     def abort_tggeneration(self, ctrl_lib, ctrl_klass, offset, active_period,
                         passive_period, repetitions, abort_time):
-        #TODO: document method arguments
         """Helper method to verify trigger element states before and after 
         trigger/gate generation.
+        Method arguments:
+        ctrl_lib: controller library used for the test
+        ctrl_klass: controller class used for the test
+        offset: temporal offset before beginning the trigger generation
+        active_period: signal at which triggers will be generated
+        passive_period: temporal passive period between two active periods
+        repetitions: number of generated triggers 
+        abort_time: wait this time before stopping the trigger generation.
         """
         # create controller and element
         ctrl_conf = createCtrlConf(self.pool, 'tgctrl01', ctrl_klass, ctrl_lib)
