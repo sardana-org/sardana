@@ -34,16 +34,7 @@ from sardana.pool.test import (FakePool, createCtrlConf, createElemConf,
                                createPoolController, createPoolTriggerGate,
                                createPoolTGGenerationConfiguration)
 
-@insertTest(helper_name='tggeneration',
-            ctrl_lib = 'DummyTriggerGateController',
-            ctrl_klass = 'DummyTriggerGateController',
-            offset=0, active_period=0.01, passive_period=0.1, repetitions=3)
-@insertTest(helper_name='abort_tggeneration',
-            ctrl_lib = 'DummyTriggerGateController',
-            ctrl_klass = 'DummyTriggerGateController',
-            offset=0, active_period=0.01, passive_period=0.1, repetitions=100,
-            abort_time=0.5)
-class TGGenerationTestCase(unittest.TestCase):
+class TGGenerationTestCase(object):
     #TODO: use doc. link to insertTest decorator function instead of string
     """Base class for integration tests of PoolTGGeneration class and any
     PoolTriggerGateController. One can parameterize it e.g. choose controller
@@ -53,7 +44,6 @@ class TGGenerationTestCase(unittest.TestCase):
     def setUp(self):
         """Create a FakePool object.
         """
-        unittest.TestCase.setUp(self)
         self.pool = FakePool()
 
     def tggeneration(self, ctrl_lib, ctrl_klass, offset, active_period,
@@ -155,7 +145,7 @@ class TGGenerationTestCase(unittest.TestCase):
 
         # starting timer (abort_time) stop the trigger generation
         threading.Timer(abort_time, self.stopGeneration).start()
-        
+
         # entering action loop
         self.tgaction.action_loop()
         # verifying that the elements involved in action changed its state
@@ -168,4 +158,24 @@ class TGGenerationTestCase(unittest.TestCase):
         self.tg_ctrl = None
         self.tg_cfg = None
         self.tg_elem = None
+
+
+@insertTest(helper_name='tggeneration',
+            ctrl_lib = 'DummyTriggerGateController',
+            ctrl_klass = 'DummyTriggerGateController',
+            offset=0, active_period=0.01, passive_period=0.1, repetitions=3)
+@insertTest(helper_name='abort_tggeneration',
+            ctrl_lib = 'DummyTriggerGateController',
+            ctrl_klass = 'DummyTriggerGateController',
+            offset=0, active_period=0.01, passive_period=0.1, repetitions=100,
+            abort_time=0.5)
+class DummyTGGenerationTestCase(TGGenerationTestCase, unittest.TestCase):
+    """Integration TestCase of TGGeneration with DummyTriggerGateController"""
+
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        TGGenerationTestCase.setUp(self)
+
+    def tearDown(self):
+        TGGenerationTestCase.tearDown(self)
         unittest.TestCase.tearDown(self)
