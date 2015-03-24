@@ -1,6 +1,6 @@
 import time
 import threading
-import numpy
+import math
 from sardana.sardanaevent import EventGenerator
 from sardana.pool.pooltriggergate import TGEventType
 
@@ -40,15 +40,8 @@ class RectangularFunctionGenerator(EventGenerator):
     def setActivePeriod(self, active_period):
         self._active_period = active_period
         # calculate rough number of naps
-        necessary_naps = int(active_period/self.max_nap_time)
-        if necessary_naps == 0:
-            nap = active_period
-            necessary_naps = 1
-        else:
-            # calculate equidistant moments 
-            nap_moments = numpy.linspace(0, active_period, necessary_naps)
-            # get the final nap period
-            nap = nap_moments[1] - nap_moments[0]
+        necessary_naps = int(math.ceil(active_period/self.max_nap_time))
+        nap = active_period/necessary_naps
         self._active_period_necessary_naps = necessary_naps
         self._active_period_nap = nap
 
@@ -57,16 +50,9 @@ class RectangularFunctionGenerator(EventGenerator):
 
     def setPassivePeriod(self, passive_period):
         self._passive_period = passive_period
-        # calculate rough number of naps
-        necessary_naps = int(passive_period/self.max_nap_time)
-        if necessary_naps == 0:
-            nap = passive_period
-            necessary_naps = 1
-        else:
-            # calculate equidistant moments 
-            nap_moments = numpy.linspace(0, passive_period, necessary_naps)
-            # get the final nap period
-            nap = nap_moments[1] - nap_moments[0]
+        # calculate rough number of naps no longer than max_nap_time
+        necessary_naps = int(math.ceil(passive_period/self.max_nap_time))
+        nap = passive_period/necessary_naps
         self._passive_period_necessary_naps = necessary_naps
         self._passive_period_nap = nap
 
