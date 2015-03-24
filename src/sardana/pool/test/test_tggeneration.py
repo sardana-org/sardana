@@ -23,6 +23,8 @@
 ##
 ##############################################################################
 
+import threading
+
 from taurus.test import insertTest
 from taurus.external import unittest
 
@@ -35,8 +37,12 @@ from sardana.pool.test import (FakePool, createCtrlConf, createElemConf,
 @insertTest(helper_name='tggeneration',
             ctrl_lib = 'DummyTriggerGateController',
             ctrl_klass = 'DummyTriggerGateController',
-            offset=0, active_period=0.1, passive_period=0.1, repetitions=3,
-            integ_time=0.01)
+            offset=0, active_period=0.01, passive_period=0.1, repetitions=3)
+@insertTest(helper_name='abort_tggeneration',
+            ctrl_lib = 'DummyTriggerGateController',
+            ctrl_klass = 'DummyTriggerGateController',
+            offset=0, active_period=0.01, passive_period=0.1, repetitions=100,
+            abort_time=0.5)
 class TGGenerationTestCase(unittest.TestCase):
     #TODO: use doc. link to insertTest decorator function instead of string
     """Base class for integration tests of PoolTGGeneration class and any
@@ -51,7 +57,7 @@ class TGGenerationTestCase(unittest.TestCase):
         self.pool = FakePool()
 
     def tggeneration(self, ctrl_lib, ctrl_klass, offset, active_period,
-                        passive_period, repetitions, integ_time):
+                        passive_period, repetitions):
         #TODO: document method arguments
         """Helper method to verify trigger element states before and after 
         trigger/gate generation.
@@ -86,6 +92,57 @@ class TGGenerationTestCase(unittest.TestCase):
         msg = ("State after start_action is '%s'. (Expected: '%s')" % 
                                     (State.get(element_state), "Moving"))
         self.assertEqual(element_state, State.Moving, msg)
+        # entering action loop
+        self.tgaction.action_loop()
+        # verifying that the elements involved in action changed its state
+        element_state = self.tg_elem.get_state()
+        msg = ("State after action_loop shall be different than Moving")
+        self.assertNotEqual(element_state, State.Moving, msg)
+
+    def stopGeneration(self):
+        """Method used to change the controller (mock) state"""
+        self.tgaction.stop_action()
+
+    def abort_tggeneration(self, ctrl_lib, ctrl_klass, offset, active_period,
+                        passive_period, repetitions, abort_time):
+        #TODO: document method arguments
+        """Helper method to verify trigger element states before and after 
+        trigger/gate generation.
+        """
+        # create controller and element
+        ctrl_conf = createCtrlConf(self.pool, 'tgctrl01', ctrl_klass, ctrl_lib)
+        elem_conf = createElemConf(self.pool, 1, 'tg01')
+        self.tg_ctrl = createPoolController(self.pool, ctrl_conf)
+        self.tg_elem = createPoolTriggerGate(self.pool, self.tg_ctrl,
+                                                        elem_conf)
+        # add controller and elements to containers
+        self.tg_ctrl.add_element(self.tg_elem)
+        self.pool.add_element(self.tg_ctrl)
+        self.pool.add_element(self.tg_elem)
+        # create TGGeneration action and its configuration
+        self.tg_cfg = createPoolTGGenerationConfiguration((self.tg_ctrl,),
+                                                       ((self.tg_elem,),),)
+        self.tgaction = PoolTGGeneration(self.tg_elem)
+        self.tgaction.add_element(self.tg_elem)
+        #create start_action arguments
+        args = ()
+        kwargs = {'config': self.tg_cfg,
+                  'offset': offset,
+                  'active_period': active_period,
+                  'passive_period': passive_period,
+                  'repetitions': repetitions,
+                 }
+        # starting action
+        self.tgaction.start_action(*args, **kwargs)
+        # verifying that the elements involved in action changed its state
+        element_state = self.tg_elem.get_state()
+        msg = ("State after start_action is '%s'. (Expected: '%s')" % 
+                                    (State.get(element_state), "Moving"))
+        self.assertEqual(element_state, State.Moving, msg)
+
+        # starting timer (abort_time) stop the trigger generation
+        threading.Timer(abort_time, self.stopGeneration).start()
+        
         # entering action loop
         self.tgaction.action_loop()
         # verifying that the elements involved in action changed its state
