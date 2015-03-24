@@ -45,6 +45,23 @@ class TGGenerationTestCase(object):
 
     .. seealso:: :meth:`taurus.test.base.insertTest`"""
 
+    def createElements(self, ctrl_klass, ctrl_lib):
+        # create controller and element
+        ctrl_conf = createCtrlConf(self.pool, 'tgctrl01', ctrl_klass, ctrl_lib)
+        elem_conf = createElemConf(self.pool, 1, 'tg01')
+        self.tg_ctrl = createPoolController(self.pool, ctrl_conf)
+        self.tg_elem = createPoolTriggerGate(self.pool, self.tg_ctrl,
+                                                        elem_conf)
+        # add controller and elements to containers
+        self.tg_ctrl.add_element(self.tg_elem)
+        self.pool.add_element(self.tg_ctrl)
+        self.pool.add_element(self.tg_elem)
+        # create TGGeneration action and its configuration
+        self.tg_cfg = createPoolTGGenerationConfiguration((self.tg_ctrl,),
+                                                       ((self.tg_elem,),),)
+        self.tgaction = PoolTGGeneration(self.tg_elem)
+        self.tgaction.add_element(self.tg_elem)
+
     def setUp(self):
         """Create a FakePool object.
         """
@@ -68,21 +85,10 @@ class TGGenerationTestCase(object):
        :param repetitions: number of generated triggers
        :type repetitions: int
         """
-        # create controller and element
-        ctrl_conf = createCtrlConf(self.pool, 'tgctrl01', ctrl_klass, ctrl_lib)
-        elem_conf = createElemConf(self.pool, 1, 'tg01')
-        self.tg_ctrl = createPoolController(self.pool, ctrl_conf)
-        self.tg_elem = createPoolTriggerGate(self.pool, self.tg_ctrl,
-                                                        elem_conf)
-        # add controller and elements to containers
-        self.tg_ctrl.add_element(self.tg_elem)
-        self.pool.add_element(self.tg_ctrl)
-        self.pool.add_element(self.tg_elem)
-        # create TGGeneration action and its configuration
-        self.tg_cfg = createPoolTGGenerationConfiguration((self.tg_ctrl,),
-                                                       ((self.tg_elem,),),)
-        self.tgaction = PoolTGGeneration(self.tg_elem)
-        self.tgaction.add_element(self.tg_elem)
+
+        # create controller and trigger element
+        self.createElements(ctrl_klass, ctrl_lib)
+
         #create start_action arguments
         args = ()
         kwargs = {'config': self.tg_cfg,
@@ -129,22 +135,11 @@ class TGGenerationTestCase(object):
        :param abort_time: wait this time before stopping the trigger generation.
        :type abort_time: float
         """
-        # create controller and element
-        ctrl_conf = createCtrlConf(self.pool, 'tgctrl01', ctrl_klass, ctrl_lib)
-        elem_conf = createElemConf(self.pool, 1, 'tg01')
-        self.tg_ctrl = createPoolController(self.pool, ctrl_conf)
-        self.tg_elem = createPoolTriggerGate(self.pool, self.tg_ctrl,
-                                                        elem_conf)
-        # add controller and elements to containers
-        self.tg_ctrl.add_element(self.tg_elem)
-        self.pool.add_element(self.tg_ctrl)
-        self.pool.add_element(self.tg_elem)
-        # create TGGeneration action and its configuration
-        self.tg_cfg = createPoolTGGenerationConfiguration((self.tg_ctrl,),
-                                                       ((self.tg_elem,),),)
-        self.tgaction = PoolTGGeneration(self.tg_elem)
-        self.tgaction.add_element(self.tg_elem)
-        #create start_action arguments
+
+        # create controller and trigger element
+        self.createElements(ctrl_klass, ctrl_lib)
+
+        # create start_action arguments
         args = ()
         kwargs = {'config': self.tg_cfg,
                   'offset': offset,
