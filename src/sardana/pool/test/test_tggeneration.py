@@ -23,6 +23,11 @@
 ##
 ##############################################################################
 
+"""This module contains tests for trigger gate generation using a 
+given controller"""
+
+__docformat__ = "restructuredtext"
+
 import threading
 
 from taurus.test import insertTest
@@ -35,11 +40,10 @@ from sardana.pool.test import (FakePool, createCtrlConf, createElemConf,
                                createPoolTGGenerationConfiguration)
 
 class TGGenerationTestCase(object):
-    #TODO: use doc. link to insertTest decorator function instead of string
     """Base class for integration tests of PoolTGGeneration class and any
-    PoolTriggerGateController. One can parameterize it e.g. choose controller
-    class or trigger/gate generation parameters like active or passive period,
-    using the insertTest decorator and any of the helper methods."""
+    PoolTriggerGateController. Test is parameterized using trigger parameters.
+
+    .. seealso:: :meth:`taurus.test.base.insertTest`"""
 
     def setUp(self):
         """Create a FakePool object.
@@ -50,13 +54,19 @@ class TGGenerationTestCase(object):
                         passive_period, repetitions):
         """Helper method to verify trigger element states before and after 
         trigger/gate generation.
-        Method arguments:
-        ctrl_lib: controller library used for the test
-        ctrl_klass: controller class used for the test
-        offset: temporal offset before beginning the trigger generation
-        active_period: signal at which triggers will be generated
-        passive_period: temporal passive period between two active periods
-        repetitions: number of generated triggers 
+
+       :param ctrl_lib: controller library used for the test
+       :type ctrl_lib: str
+       :param ctrl_klass: controller class used for the test
+       :type ctrl_klass: str
+       :param offset: temporal offset before beginning the trigger generation
+       :type offset: float
+       :param active_period: signal at which triggers will be generated
+       :type active_period: float
+       :param passive_period: temporal passive period between two active periods
+       :type passive_period: float
+       :param repetitions: number of generated triggers
+       :type repetitions: int
         """
         # create controller and element
         ctrl_conf = createCtrlConf(self.pool, 'tgctrl01', ctrl_klass, ctrl_lib)
@@ -102,15 +112,22 @@ class TGGenerationTestCase(object):
     def abort_tggeneration(self, ctrl_lib, ctrl_klass, offset, active_period,
                         passive_period, repetitions, abort_time):
         """Helper method to verify trigger element states before and after 
-        trigger/gate generation.
-        Method arguments:
-        ctrl_lib: controller library used for the test
-        ctrl_klass: controller class used for the test
-        offset: temporal offset before beginning the trigger generation
-        active_period: signal at which triggers will be generated
-        passive_period: temporal passive period between two active periods
-        repetitions: number of generated triggers 
-        abort_time: wait this time before stopping the trigger generation.
+        trigger/gate generation when aborting the trigger generation.
+
+       :param ctrl_lib: controller library used for the test
+       :type ctrl_lib: str
+       :param ctrl_klass: controller class used for the test
+       :type ctrl_klass: str
+       :param offset: temporal offset before beginning the trigger generation
+       :type offset: float
+       :param active_period: signal at which triggers will be generated
+       :type active_period: float
+       :param passive_period: temporal passive period between two active periods
+       :type passive_period: float
+       :param repetitions: number of generated triggers
+       :type repetitions: int
+       :param abort_time: wait this time before stopping the trigger generation.
+       :type abort_time: float
         """
         # create controller and element
         ctrl_conf = createCtrlConf(self.pool, 'tgctrl01', ctrl_klass, ctrl_lib)
