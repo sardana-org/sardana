@@ -24,7 +24,6 @@
 ##############################################################################
 import time
 import datetime
-import logging
 import numpy
 import threading
 
@@ -35,23 +34,23 @@ from taurus.test import insertTest
 from sardana.pool import AcqTriggerType
 from sardana.pool.pooltggeneration import PoolTGGeneration
 from sardana.pool.pooltriggergate import TGEventType
-from sardana.pool.poolacquisition import PoolContHWAcquisition,\
-                                         PoolContSWCTAcquisition
+from sardana.pool.poolacquisition import (PoolContHWAcquisition,
+                                          PoolContSWCTAcquisition)
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool.test import (createPoolTGGenerationConfiguration,
-                               createCTAcquisitionConfiguration)
-from sardana.pool.test import BasePoolTestCase
+                               createCTAcquisitionConfiguration,
+                               BasePoolTestCase)
 
 class AttributeListener(object):
-    
+
     def __init__(self):
         self.data = {}
         self.data_lock = threading.RLock()
-    
+
     def event_received(self, *args, **kwargs):
         # s - type: sardana.sardanavalue.SardanaValue
         # t - type: sardana.sardanaevent.EventType
-        # v - type: sardana.sardanaattribute.SardanaAttribute e.g. 
+        # v - type: sardana.sardanaattribute.SardanaAttribute e.g.
         #           sardana.pool.poolbasechannel.Value
         s, t, v = args
         # obtaining sardana element e.g. exp. channel (the attribute owner)
@@ -59,24 +58,21 @@ class AttributeListener(object):
         obj_name = obj.name
         # obtaining the SardanaValue corresponding to read value
         sdn_value = v.get_value_obj()
-        # value and index pair (ensure they are lists even if they were scalars)       
+        # value and index pair (ensure they are lists even if they were scalars)      
         value = sdn_value.value
         if numpy.isscalar(value):
             value = [value]
         idx = sdn_value.idx
         if numpy.isscalar(idx):
             idx = [idx]
-        
-#         print s.name, t, (idx, value)
-        
-        # filling the measurement records 
+        # filling the measurement records
         with self.data_lock:
             channel_data = self.data.get(obj_name, [])
             expected_idx = len(channel_data)
-            pad = [None] * (idx[0]-expected_idx)        
+            pad = [None] * (idx[0]-expected_idx)
             channel_data.extend(pad+value)
             self.data[obj_name] = channel_data
-            
+
     def get_table(self):
         '''Construct a table-like array with padded  channel data as columns.
         Return the '''
@@ -91,30 +87,16 @@ class AttributeListener(object):
                 dtype_spec.append((k, 'float64'))
             a = numpy.array(zip(*table), dtype=dtype_spec)
             return a
-        
 
-@insertTest(helper_name='continuous_acquisition', offset=0, active_period=0.1,
-            passive_period=0.2, repetitions=10, integ_time=0.2)
-@insertTest(helper_name='continuous_acquisition', offset=0, active_period=0.001,
-            passive_period=0.21, repetitions=10, integ_time=0.1)
-@insertTest(helper_name='continuous_acquisition', offset=0, active_period=0.001,
-            passive_period=0.15, repetitions=10, integ_time=0.01)
-@insertTest(helper_name='continuous_acquisition', offset=0, active_period=0.001,
-            passive_period=0.1, repetitions=10, integ_time=0.01)
-class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
-    """Integration test of PoolTGGeneration, PoolContHWAcquisition and 
-    PoolContSWCTAcquisition actions. This test plays the role of the 
-    PoolAcquisition macro action (it aggregates the sub-actions and assign the 
-    elements to corresponding sub-actions) and the PoolMeasurementGroup (it 
-    configures the elements and controllers).
-    """
+class AcquisitionTestCase(BasePoolTestCase):
     def setUp(self):
-        """Create a Controller, TriggerGate and PoolTGGeneration objects from 
+        """Create a Controller, TriggerGate and PoolTGGeneration objects from
         dummy configurations.
         """
-        unittest.TestCase.setUp(self)
         BasePoolTestCase.setUp(self)
-        
+        self.l = AttributeListener()
+        self.channel_names = []
+
     def event_received(self, *args, **kwargs):
         """Executes a single software triggered acquisition."""
         timestamp = time.time()
@@ -125,7 +107,7 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
             is_acquiring = self.sw_acq.is_running()
             if is_acquiring:
                 pass # skipping acquisition cause the previous on is ongoing
-            else:                
+            else:
                 args = dict(self.sw_acq_args)
                 kwargs = dict(self.sw_acq_kwargs)
                 kwargs['idx'] = event_id
@@ -134,50 +116,43 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
                                       None,
                                       *args,
                                       **kwargs)
-        
-    def continuous_acquisition(self, offset, active_period, passive_period, 
-                                                      repetitions, integ_time):
-        """Executes measurement running the TGGeneration and Acquisition actions
-        according the test parameters. Checks the lengths of the acquired data.
+
+    def createPoolTGGeneration(self, tg_list):
+        # TODO: the main_element should be a measurement group not an element
+        self.tggeneration = PoolTGGeneration(tg_list[0])
+        for tg in tg_list:
+            self.tggeneration.add_element(tg)
+        self.tggeneration.add_listener(self)
+
+    def hw_continuous_acquisition(self, offset, active_period, passive_period,
+                               repetitions, integ_time):
+        """Executes measurement running the TGGeneration and Acquisition
+        actions according the test parameters. Checks the lengths of the
+        acquired data.
         """
         # obtaining elements created in the BasePoolTestCase.setUp
-        tg_ctrl_1 = self.ctrls['_test_stg_ctrl_1']
-        tg_1_1 = self.tgs['_test_stg_1_1']
-        ct_1_1 = self.cts['_test_ct_1_1'] # hw synchronized
-        ct_2_1 = self.cts['_test_ct_2_1'] # sw synchronized
-        ct_ctrl_1 = self.ctrls['_test_ct_ctrl_1'] 
-        ct_ctrl_2 = self.ctrls['_test_ct_ctrl_2']
-        
+        tg_1_1 = self.tgs[self.tg_elem_name]
+        ct_1_1 = self.cts[self.chn_elem_name]
+
+        tg_ctrl_1 = tg_1_1.get_controller()
+        ct_ctrl_1 = ct_1_1.get_controller()
+
         # crating configuration for TGGeneration
-        tg_cfg = createPoolTGGenerationConfiguration((tg_ctrl_1,), 
-                                                     ((tg_1_1,),),)
+        tg_cfg = createPoolTGGenerationConfiguration((tg_ctrl_1,),
+                                                     ((tg_1_1,),))
         # creating TGGeneration action
-        # TODO: the main_element should be a measurement group not an element
-        self.tggeneration = PoolTGGeneration(tg_1_1)
-        self.tggeneration.add_element(tg_1_1)
-        self.tggeneration.add_listener(self)
-        self.l = AttributeListener()
-        ct_1_1._value.add_listener(self.l)
-        ct_2_1._value.add_listener(self.l)
+        self.createPoolTGGeneration([tg_1_1])
+        # add_listeners
+        self.addListeners([ct_1_1])
         # creating acquisition configurations
         self.hw_acq_cfg = createCTAcquisitionConfiguration((ct_ctrl_1,),
-                                                             ((ct_1_1,),),)
-        self.sw_acq_cfg = createCTAcquisitionConfiguration((ct_ctrl_2,),
-                                                        ((ct_2_1,),),)
+                                                           ((ct_1_1,),))
         # creating acquisition actions
         self.hw_acq = PoolContHWAcquisition(ct_1_1)
-        self.sw_acq = PoolContSWCTAcquisition(ct_2_1)
-
         self.hw_acq.add_element(ct_1_1)
-        self.sw_acq.add_element(ct_2_1)
 
+        # get the current number of jobs
         jobs_before = get_thread_pool().qsize
-        
-        self.sw_acq_args = ()
-        self.sw_acq_kwargs = {
-            'integ_time': integ_time, 
-            'config': self.sw_acq_cfg
-        }
 
         ct_ctrl_1.set_ctrl_par('trigger_type', AcqTriggerType.Trigger)
 
@@ -186,8 +161,8 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
             'integ_time': integ_time,
             'repetitions': repetitions,
             'config': self.hw_acq_cfg,
-        }                
-        self.hw_acq.run(hw_acq_args, **hw_acq_kwargs)       
+        }
+        self.hw_acq.run(hw_acq_args, **hw_acq_kwargs)    
         tg_args = ()
         tg_kwargs = {
             'offset': offset,
@@ -197,21 +172,26 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
             'config': tg_cfg
         }
         self.tggeneration.run(*tg_args, **tg_kwargs)
-        # waiting for acquisition and tggeneration to finish                
-        while self.hw_acq.is_running() or\
-              self.sw_acq.is_running() or\
-              self.tggeneration.is_running():            
+        # waiting for acquisition and tggeneration to finish              
+        while self.hw_acq.is_running() or self.tggeneration.is_running():          
             time.sleep(1)
+
+        self.do_asserts(self.channel_names, repetitions, jobs_before)
+
+    def addListeners(self, chn_list):
+        for chn in chn_list:
+            chn._value.add_listener(self.l)
+
+    def do_asserts(self, channel_names, repetitions, jobs_before):
         # print acquisition records
         table = self.l.get_table()
-        header = table.dtype.names                
-        print header        
+        header = table.dtype.names
+        print header
         n_rows = table.shape[0]
         for row in xrange(n_rows):
             print row, table[row]
         # checking if all channels produced data
-        conf_channels = ['_test_ct_1_1', '_test_ct_2_1']
-        for channel in conf_channels:
+        for channel in channel_names:
             msg = 'data from channel %s were not acquired' % channel
             self.assertIn(channel, header, msg)
         # checking if all the data were acquired
@@ -223,11 +203,104 @@ class AcquisitionTestCase(BasePoolTestCase, unittest.TestCase):
         # checking if there are no pending jobs
         jobs_after = get_thread_pool().qsize
         msg = ('there are %d jobs pending to be done after the acquisition ' +
-                               '(before: %d)') %(jobs_after, jobs_before)
+               '(before: %d)') %(jobs_after, jobs_before)
         self.assertEqual(jobs_before, jobs_after, msg)
-        
+
     def tearDown(self):
         BasePoolTestCase.tearDown(self)
-        self.tgaction = None
-        self.cfg = None        
+        self.l = None
+        self.channel_names = None
+
+@insertTest(helper_name='continuous_acquisition', offset=0, active_period=0.1,
+            passive_period=0.2, repetitions=10, integ_time=0.2)
+@insertTest(helper_name='continuous_acquisition', offset=0, active_period=0.001,
+            passive_period=0.21, repetitions=10, integ_time=0.1)
+@insertTest(helper_name='continuous_acquisition', offset=0, active_period=0.001,
+            passive_period=0.15, repetitions=10, integ_time=0.01)
+@insertTest(helper_name='continuous_acquisition', offset=0, active_period=0.001,
+            passive_period=0.1, repetitions=10, integ_time=0.01)
+class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
+    """Integration test of PoolTGGeneration, PoolContHWAcquisition and
+    PoolContSWCTAcquisition actions. This test plays the role of the
+    PoolAcquisition macro action (it aggregates the sub-actions and assign the
+    elements to corresponding sub-actions) and the PoolMeasurementGroup (it
+    configures the elements and controllers).
+    """
+    def setUp(self):
+        """Create a Controller, TriggerGate and PoolTGGeneration objects from
+        dummy configurations.
+        """
+        unittest.TestCase.setUp(self)
+        AcquisitionTestCase.setUp(self)
+
+    def continuous_acquisition(self, offset, active_period, passive_period,
+                               repetitions, integ_time):
+        """Executes measurement running the TGGeneration and Acquisition actions
+        according the test parameters. Checks the lengths of the acquired data.
+        """
+        # obtaining elements created in the BasePoolTestCase.setUp
+        tg_1_1 = self.tgs['_test_stg_1_1']
+        tg_2_1 = self.tgs['_test_tg_1_1']
+        tg_ctrl_1 = tg_1_1.get_controller()
+        tg_ctrl_2 = tg_2_1.get_controller()
+        ct_1_1 = self.cts['_test_ct_1_1'] # hw synchronized
+        ct_2_1 = self.cts['_test_ct_2_1'] # sw synchronized
+        ct_ctrl_1 = ct_1_1.get_controller()
+        ct_ctrl_2 = ct_2_1.get_controller()
+        self.channel_names.append('_test_ct_1_1')
+        self.channel_names.append('_test_ct_2_1')
+        # crating configuration for TGGeneration
+        tg_cfg = createPoolTGGenerationConfiguration((tg_ctrl_1, tg_ctrl_2),
+                                                     ((tg_1_1,), (tg_2_1,)))
+        # creating TGGeneration action
+        self.createPoolTGGeneration([tg_1_1, tg_2_1])
+        # add_listeners
+        self.addListeners([ct_1_1, ct_2_1])
+        # creating acquisition configurations
+        self.hw_acq_cfg = createCTAcquisitionConfiguration((ct_ctrl_1,),
+                                                             ((ct_1_1,),))
+        self.sw_acq_cfg = createCTAcquisitionConfiguration((ct_ctrl_2,),
+                                                           ((ct_2_1,),))
+        # creating acquisition actions
+        self.hw_acq = PoolContHWAcquisition(ct_1_1)
+        self.sw_acq = PoolContSWCTAcquisition(ct_2_1)
+
+        self.hw_acq.add_element(ct_1_1)
+        self.sw_acq.add_element(ct_2_1)
+
+        # get the current number of jobs
+        jobs_before = get_thread_pool().qsize
+
+        self.sw_acq_args = ()
+        self.sw_acq_kwargs = {
+            'integ_time': integ_time,
+            'config': self.sw_acq_cfg
+        }
+        ct_ctrl_1.set_ctrl_par('trigger_type', AcqTriggerType.Trigger)
+        hw_acq_args = ()
+        hw_acq_kwargs = {
+            'integ_time': integ_time,
+            'repetitions': repetitions,
+            'config': self.hw_acq_cfg,
+        }
+        self.hw_acq.run(hw_acq_args, **hw_acq_kwargs)    
+        tg_args = ()
+        tg_kwargs = {
+            'offset': offset,
+            'active_period': active_period,
+            'passive_period': passive_period,
+            'repetitions': repetitions,
+            'config': tg_cfg
+        }
+        self.tggeneration.run(*tg_args, **tg_kwargs)
+        # waiting for acquisition and tggeneration to finish          
+        while self.hw_acq.is_running() or\
+              self.sw_acq.is_running() or\
+              self.tggeneration.is_running():      
+            time.sleep(1)
+        self.do_asserts(self.channel_names, repetitions, jobs_before)
+
+    def tearDown(self):
+        AcquisitionTestCase.tearDown(self) 
         unittest.TestCase.tearDown(self)
+
