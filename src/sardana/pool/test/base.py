@@ -30,62 +30,22 @@ from sardana.pool.test import (FakePool, createPoolController, createCtrlConf,
 class BasePoolTestCase(object):
     """Base pool test for setting the environment."""
 
-    def setUp(self):
-        """Create a collection of controllers and elements.
-        """
-        self.nctctrls = self.ntgctrls = 4
-        self.nctelems = self.ntgelems = 5  
-        self.pool = FakePool()
-        self.ctrls = {}
-        self.cts = {}
-        self.tgs = {}
-        # Create nctctrls CT ctrls
-        for ctrl in range(1, self.nctctrls + 1):
-            name = '_test_ct_ctrl_%s' % ctrl
-            c_cfg = createCtrlConf(self.pool, name, 
-                        'DummyCounterTimerController', 
-                        'DummyCounterTimerController.py')
-            ctrl_obj = createPoolController(self.pool, c_cfg)
-            self.ctrls[name] = ctrl_obj
-            self.pool.add_element(ctrl_obj)
-            # Create nelems CT elements for each ctrl
-            for axis in range(1, self.nctelems + 1):
-                name = '_test_ct_%s_%s' % (ctrl, axis)
-                e_cfg = createElemConf(self.pool, axis, name)
-                elem_obj = createPoolCounterTimer(self.pool, ctrl_obj, e_cfg)
-                ctrl_obj.add_element(elem_obj)
-                # CT elements
-                self.cts[name] = elem_obj
-                self.pool.add_element(elem_obj)
-        # Create ntgctrls TG ctrls
-        for ctrl in range(1, self.ntgctrls + 1):
-            name = '_test_tg_ctrl_%s' % ctrl
-            c_cfg = createCtrlConf(self.pool, name,
-                        'DummyTriggerGateController', 
-                        'DummyTriggerGateController.py')
-            ctrl_obj = createPoolController(self.pool, c_cfg)
-            self.ctrls[name] = ctrl_obj
-            self.pool.add_element(ctrl_obj)
-            # Create nelems CT elements for each ctrl
-            for axis in range(1, self.ntgelems + 1):
-                name = '_test_tg_%s_%s' % (ctrl, axis)
-                e_cfg = createElemConf(self.pool, axis, name)
-                elem_obj = createPoolTriggerGate(self.pool, ctrl_obj, e_cfg)
-                ctrl_obj.add_element(elem_obj)
-                # TG elements
-                self.tgs[name] = elem_obj
-                self.pool.add_element(elem_obj)
-        # Create one software TG ctrl
-        name = '_test_stg_ctrl_1'
-        c_cfg = createCtrlConf(self.pool, name,
-                    'SoftwareTriggerGateController',
-                    'SoftwareTriggerGateController.py')
+    def createController(self, name, klass, lib):
+        c_cfg = createCtrlConf(self.pool, name, klass, lib)
         ctrl_obj = createPoolController(self.pool, c_cfg)
         self.ctrls[name] = ctrl_obj
         self.pool.add_element(ctrl_obj)
-        # Create one software TG element
-        axis = 1
-        name = '_test_stg_1_%d' % axis
+        return ctrl_obj
+
+    def createCTElement(self, ctrl_obj, name, axis):
+        e_cfg = createElemConf(self.pool, axis, name)
+        elem_obj = createPoolCounterTimer(self.pool, ctrl_obj, e_cfg)
+        ctrl_obj.add_element(elem_obj)
+        # CT elements
+        self.cts[name] = elem_obj
+        self.pool.add_element(elem_obj)
+
+    def createTGElement(self, ctrl_obj, name, axis):
         e_cfg = createElemConf(self.pool, axis, name)
         elem_obj = createPoolTriggerGate(self.pool, ctrl_obj, e_cfg)
         ctrl_obj.add_element(elem_obj)
@@ -93,9 +53,48 @@ class BasePoolTestCase(object):
         self.tgs[name] = elem_obj
         self.pool.add_element(elem_obj)
 
-        # Check the elements creation 
+    def setUp(self):
+        """Create a collection of controllers and elements.
+        """
+        self.nctctrls = self.ntgctrls = 4
+        self.nctelems = self.ntgelems = 5
+        self.pool = FakePool()
+        self.ctrls = {}
+        self.cts = {}
+        self.tgs = {}
+        # Create nctctrls CT ctrls
+        for ctrl in range(1, self.nctctrls + 1):
+            name = '_test_ct_ctrl_%s' % ctrl
+            ctrl_obj = self.createController(name,
+                                'DummyCounterTimerController',
+                                'DummyCounterTimerController.py')
+            # Create nelems CT elements for each ctrl
+            for axis in range(1, self.nctelems + 1):
+                name = '_test_ct_%s_%s' % (ctrl, axis)
+                self.createCTElement(ctrl_obj, name, axis)
+        # Create ntgctrls TG ctrls
+        for ctrl in range(1, self.ntgctrls + 1):
+            name = '_test_tg_ctrl_%s' % ctrl
+            ctrl_obj = self.createController(name,
+                            'DummyTriggerGateController',
+                            'DummyTriggerGateController.py')
+            # Create nelems CT elements for each ctrl
+            for axis in range(1, self.ntgelems + 1):
+                name = '_test_tg_%s_%s' % (ctrl, axis)
+                self.createTGElement(ctrl_obj, name, axis)
+        # Create one software TG ctrl
+        name = '_test_stg_ctrl_1'
+        ctrl_obj = self.createController(name,
+                            'SoftwareTriggerGateController',
+                            'SoftwareTriggerGateController.py')
+        # Create one software TG element
+        axis = 1
+        name = '_test_stg_1_%d' % axis
+        self.createTGElement(ctrl_obj, name, axis)
+
+        # Check the elements creation
         cts = len(self.cts.keys())
-        tgs = len(self.tgs.keys()) 
+        tgs = len(self.tgs.keys())
         msg = 'Something happened during the creation of CT elements.\n' + \
               'Expected %s and there are %s, %s' % \
               (self.nctelems, cts, self.cts.keys())
