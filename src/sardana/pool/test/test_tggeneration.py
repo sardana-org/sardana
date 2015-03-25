@@ -45,9 +45,10 @@ class TGGenerationTestCase(object):
 
     .. seealso:: :meth:`taurus.test.base.insertTest`"""
 
-    def createElements(self, ctrl_klass, ctrl_lib):
+    def createElements(self, ctrl_klass, ctrl_lib, ctrl_props):
         # create controller and element
-        ctrl_conf = createCtrlConf(self.pool, 'tgctrl01', ctrl_klass, ctrl_lib)
+        ctrl_conf = createCtrlConf(self.pool, 'tgctrl01', ctrl_klass,
+                                   ctrl_lib, ctrl_props)
         elem_conf = createElemConf(self.pool, 1, 'tg01')
         self.tg_ctrl = createPoolController(self.pool, ctrl_conf)
         self.tg_elem = createPoolTriggerGate(self.pool, self.tg_ctrl,
@@ -67,8 +68,8 @@ class TGGenerationTestCase(object):
         """
         self.pool = FakePool()
 
-    def tggeneration(self, ctrl_lib, ctrl_klass, offset, active_period,
-                        passive_period, repetitions):
+    def tggeneration(self, ctrl_lib, ctrl_klass, ctrl_props,
+                     offset, active_period, passive_period, repetitions):
         """Helper method to verify trigger element states before and after 
         trigger/gate generation.
 
@@ -87,7 +88,7 @@ class TGGenerationTestCase(object):
         """
 
         # create controller and trigger element
-        self.createElements(ctrl_klass, ctrl_lib)
+        self.createElements(ctrl_klass, ctrl_lib, ctrl_props)
 
         #create start_action arguments
         args = ()
@@ -115,8 +116,9 @@ class TGGenerationTestCase(object):
         """Method used to change the controller (mock) state"""
         self.tgaction.stop_action()
 
-    def abort_tggeneration(self, ctrl_lib, ctrl_klass, offset, active_period,
-                        passive_period, repetitions, abort_time):
+    def abort_tggeneration(self, ctrl_lib, ctrl_klass, ctrl_props,
+                           offset, active_period, passive_period, repetitions, 
+                           abort_time):
         """Helper method to verify trigger element states before and after 
         trigger/gate generation when aborting the trigger generation.
 
@@ -137,7 +139,7 @@ class TGGenerationTestCase(object):
         """
 
         # create controller and trigger element
-        self.createElements(ctrl_klass, ctrl_lib)
+        self.createElements(ctrl_klass, ctrl_lib, ctrl_props)
 
         # create start_action arguments
         args = ()
@@ -175,10 +177,12 @@ class TGGenerationTestCase(object):
 @insertTest(helper_name='tggeneration',
             ctrl_lib = 'DummyTriggerGateController',
             ctrl_klass = 'DummyTriggerGateController',
+            ctrl_props = {},
             offset=0, active_period=0.01, passive_period=0.1, repetitions=3)
 @insertTest(helper_name='abort_tggeneration',
             ctrl_lib = 'DummyTriggerGateController',
             ctrl_klass = 'DummyTriggerGateController',
+            ctrl_props = {},
             offset=0, active_period=0.01, passive_period=0.1, repetitions=100,
             abort_time=0.5)
 class DummyTGGenerationTestCase(TGGenerationTestCase, unittest.TestCase):

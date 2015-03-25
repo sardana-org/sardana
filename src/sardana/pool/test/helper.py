@@ -384,7 +384,7 @@ def createConfbyCtrlKlass(pool, ctrl_klass, ctrl_name):
                  'type': ctrl_type})
     return cfg
 
-def createCtrlConf(pool, name, klass, lib):
+def createCtrlConf(pool, name, klass, lib, props={}):
     cfg = dict({ 'class_info': None,
                  'full_name': None,
                  'id': None,
@@ -393,7 +393,7 @@ def createCtrlConf(pool, name, klass, lib):
                  'library': lib,
                  'name': name,
                  'pool': None,
-                 'properties': {},
+                 'properties': props,
                  'role_ids': '',
                  'type': 'ControllerClass'})
     cfg['id'] = pool.get_free_id()
