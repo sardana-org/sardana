@@ -29,3 +29,4 @@ from .fake import *
 from .helper import *
 from .dummyconfs import *
 from .base import *
+from .test_acquisition import *
