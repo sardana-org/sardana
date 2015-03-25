@@ -2,9 +2,9 @@
 
 ##############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ##
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -102,9 +102,12 @@ class QtTestCase(unittest.TestCase):
         return self.__test_qt_module("QtGui")
 
     def test_icons(self):
-        from taurus.external.qt.QtGui import QIcon
-        icon = QIcon.fromTheme("folder-open")
-        self.assertFalse(icon.isNull())
+        '''check that theme icons work'''
+        from taurus.qt.qtgui.resource import getThemeIcon
+        icon = getThemeIcon("folder-open")
+        msg = ('Theme icons not available ' + 
+               '(if PyQt<4.6, make sure to build resources first!)')
+        self.assertFalse(icon.isNull(), msg)
 
 
 def  main():

@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ##
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -256,8 +256,14 @@ class TaurusDevice(TaurusModel):
     def _getDefaultDescription(self):
         return DFT_DEVICE_DESCRIPTION
 
-    def poll(self, attrs):
+    def poll(self, attrs, asynch=False, req_id=None):
         '''Polling certain attributes of the device. This default
         implementation simply polls each attribute one by one'''
+
+        # asynchronous requests are not supported. If asked to do it,
+        # just return an ID of 1 and in the reply (req_id != None) we do a
+        # synchronous polling.
+        if asynch is True:
+            return 1
         for attr in attrs.values():
             attr.poll()

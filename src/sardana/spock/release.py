@@ -5,7 +5,7 @@
 ##
 ## This file is part of Sardana
 ## 
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -39,7 +39,7 @@ name = 'spock'
 revision = '1'
 
 #version = '0.8.1.svn.r' + revision.rstrip('M')
-version = '1.4.2'
+version = '1.5.0'
 
 description = "An enhanced interactive Macro Server shell."
 

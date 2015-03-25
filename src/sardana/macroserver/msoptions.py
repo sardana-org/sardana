@@ -4,7 +4,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -42,6 +42,8 @@ class ViewOption(object):
 
     _DEFAULT_VIEW_OPTIONS = {
         'ShowDial' : True,
+        'ShowCtrlAxis' : False,
+        'PosFormat': -1,
     }
 
     @classmethod
@@ -54,6 +56,6 @@ class ViewOption(object):
         if name in cls._DEFAULT_VIEW_OPTIONS:
             d[name] = cls._DEFAULT_VIEW_OPTIONS[name]
         else:
-            del d[name]
+            del d[name]    
 
 

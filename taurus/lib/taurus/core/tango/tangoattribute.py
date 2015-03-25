@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ##
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -196,7 +196,7 @@ class TangoAttribute(TaurusAttribute):
                     attrvalue = str(value).lower() == 'true'
             elif type == DataType.DevUChar:
                 attrvalue = chr(value)
-            elif type == DataType.DevState:
+            elif type == DataType.DevState or type == DataType.DevEncoded:
                 attrvalue = value
             else:
                 attrvalue = str(value)

@@ -4,7 +4,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -308,6 +308,7 @@ def main():
         'sardana.util.motion',
 
         'sardana.pool',
+        'sardana.pool.test',
         'sardana.pool.poolcontrollers',
 
         'sardana.macroserver',
@@ -320,6 +321,7 @@ def main():
         'sardana.tango',
         'sardana.tango.core',
         'sardana.tango.pool',
+        'sardana.tango.pool.test',
         'sardana.tango.macroserver',
         'sardana.tango.macroserver.test',
 
@@ -363,7 +365,7 @@ def main():
 
     requires = [
         'PyTango (>=7.2.3)',
-        'taurus (>= 3.3.1)',
+        'taurus (>= 3.4.0)',
         'lxml (>=2.1)',
         'ipython (>=0.10, !=0.11)'
     ]

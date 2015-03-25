@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -175,7 +175,7 @@ class QPixmapWidget(Qt.QWidget):
         """Sets the alignment to apply when drawing the pixmap.
         :param pixmap: the new alignment
         :type  pixmap: PyQt4.Qt.Alignment"""
-        self._alignment = alignment
+        self._alignment = Qt.Qt.Alignment(alignment)
         self.update()
     
     def resetAlignment(self):

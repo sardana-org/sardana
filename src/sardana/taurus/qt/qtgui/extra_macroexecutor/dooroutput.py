@@ -4,7 +4,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -49,28 +49,28 @@ class DoorOutput(Qt.QPlainTextEdit):
         if output is None:
             return
         for line in output:
-            txt += "OUTPUT  " + line.replace(' ', '&nbsp;') + "\n"
+            txt += line.replace(' ', '&nbsp;') + "\n"
         txt += "</font>"
         self.appendHtmlText(txt)
 
     def onDoorInfoChanged(self, info):
         """call on info attribute changed"""
-        txt = "<font color=\"Black\">"
+        txt = "<font color=\"Blue\">"
         if info is None:
             return
 
         for line in info:
-            txt += "INFO  " + line.replace(' ', '&nbsp;') + "\n"
+            txt += line.replace(' ', '&nbsp;') + "\n"
         txt += "</font>"
         self.appendHtmlText(txt)
 
     def onDoorWarningChanged(self, warning):
         """call on warning attribute changed"""
-        txt = "<font color=\"Black\">"
+        txt = "<font color=\"Orange\">"
         if warning is None:
             return
         for line in warning:
-            txt += "WARNING  " + line.replace(' ', '&nbsp;') + "\n"
+            txt += line.replace(' ', '&nbsp;') + "\n"
         txt += "</font>"
         self.appendHtmlText(txt)
 
@@ -80,7 +80,7 @@ class DoorOutput(Qt.QPlainTextEdit):
         if error is None:
             return
         for line in error:
-            txt += "ERROR  " + line.replace(' ', '&nbsp;') + "\n"
+            txt += line.replace(' ', '&nbsp;') + "\n"
         txt += "</font>"
         self.appendHtmlText(txt)
 
@@ -121,7 +121,7 @@ class DoorDebug(Qt.QPlainTextEdit):
         if debug is None:
             return
         for line in debug:
-            self.appendPlainText("DEBUG  " + line)
+            self.appendPlainText(line)
 
         if not self._isStopped:
             self.moveCursor(Qt.QTextCursor.End)
@@ -154,7 +154,7 @@ class DoorResult(Qt.QPlainTextEdit):
         if result is None:
             return
         for line in result:
-            self.appendPlainText("RESULT  " + line)
+            self.appendPlainText(line)
         self.moveCursor(Qt.QTextCursor.End)
 
     def contextMenuEvent(self, event):

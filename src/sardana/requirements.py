@@ -4,7 +4,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -37,7 +37,7 @@ __requires__ = {
 #     module        minimum
     "Python"      : (2, 6, 0),
     "PyTango"     : (7, 2, 3),
-    "taurus.core" : (3, 3, 1),
+    "taurus.core" : (3, 4, 0),
 }
 
 def check_requirements(exec_name=None):

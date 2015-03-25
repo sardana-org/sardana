@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -53,7 +53,7 @@ name = 'taurus'
 # bdist_deb does not accept underscores (a Debian convention).
 
 
-version_info = (3,3,1,'rc',0)
+version_info = (3,4,0,'rc',0)
 version = '.'.join(map(str, version_info[:3]))
 revision = str(version_info[4])
 
@@ -70,7 +70,7 @@ authors = {'Tiago'          : ('Tiago Coutinho','tiago.coutinho@esrf.fr'),
            'Reszela'        : ('Zbigniew Reszela','zreszela@cells.es') }
             
 
-url = 'http://packages.python.org/taurus'
+url = 'http://taurus-scada.org'
 
 download_url = 'http://pypi.python.org/packages/source/t/taurus'
 

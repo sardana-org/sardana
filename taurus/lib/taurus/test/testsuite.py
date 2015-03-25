@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ##
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -62,6 +62,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.skip_gui:
-        import taurus.test
-        taurus.test.GUI_TESTS_ENABLED = False
+        import taurus.test.skip
+        taurus.test.skip.GUI_TESTS_ENABLED = False
     run()

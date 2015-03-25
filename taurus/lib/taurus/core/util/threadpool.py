@@ -2,9 +2,9 @@
 
 #############################################################################
 ##
-## This file is part of Taurus, a Tango User Interface Library
+## This file is part of Taurus
 ## 
-## http://www.tango-controls.org/static/taurus/latest/doc/html/index.html
+## http://taurus-scada.org
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -51,7 +51,7 @@ class ThreadPool(Logger):
         self.jobs = Queue(Qsize)
         self.size = Psize
         self.accept = True
-        
+
     @propertx
     def size():
         def set(self, newSize):

@@ -5,7 +5,7 @@
 ##
 ## This file is part of Sardana
 ## 
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+## http://www.sardana-controls.org/
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ## 
@@ -49,7 +49,7 @@ name = 'sardana'
 #: the new substring. We have to avoid using either dashes or underscores,
 #: because bdist_rpm does not accept dashes (an RPM) convention, and
 #: bdist_deb does not accept underscores (a Debian convention).
-version_info = (1, 4, 2, 'rc', 0)
+version_info = (1, 5, 0, 'rc', 0)
 version = '.'.join(map(str, version_info[:3]))
 revision = str(version_info[4])
 
@@ -68,7 +68,7 @@ authors = {'Tiago'          : ('Tiago Coutinho','tiago.coutinho@esrf.fr'),
            'Pascual-Izarra' : ('Carlos Pascual-Izarra','cpascual@cells.es'),
            'Reszela'        : ('Zbigniew Reszela','zreszela@cells.es') }
 
-url = 'http://packages.python.org/sardana'
+url = 'http://www.sardana-controls.org'
 
 download_url = 'http://pypi.python.org/packages/source/s/sardana'
 
