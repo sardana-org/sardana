@@ -95,14 +95,16 @@ class RectangularFunctionGenerator(EventGenerator):
                 # check if someone has stopped the generation
                 # in the middle of period
                 if not self.__work:
-                    break
+                    self.__alive = False
+                    return
             self.fire_event(TGEventType.Passive, i)
             for _ in xrange(self._passive_period_necessary_naps):
                 time.sleep(self._passive_period_nap)
                 # check if someone has stopped the generation
                 # in the middle of period
                 if not self.__work:
-                    break
+                    self.__alive = False
+                    return
             i += 1
 #         self.fire_event(TGEventType.Active, i)
         self.__alive = False
