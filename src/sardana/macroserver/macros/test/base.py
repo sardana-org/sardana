@@ -196,8 +196,8 @@ class RunMacroTestCase(BaseMacroTestCase):
         BaseMacroTestCase.setUp(self)
         self.macro_executor.registerAll()
 
-    def macro_runs(self, macro_params=None, wait_timeout=float("inf"),
-                   data=_NOT_PASSED):
+    def macro_runs(self, macro_name=None, macro_params=None,
+                   wait_timeout=float("inf"), data=_NOT_PASSED):
         """A helper method to create tests that check if the macro can be
         successfully executed for the given input parameters. It may also
         optionally perform checks on the outputs from the execution.
@@ -210,6 +210,9 @@ class RunMacroTestCase(BaseMacroTestCase):
         :param data: (obj) Optional. If passed, the macro data after the
                      execution is tested to be equal to this.
         """
+        if macro_name:
+            self.macro_name = macro_name
+
         self.macro_executor.run(macro_name=self.macro_name,
                                 macro_params=macro_params,
                                 sync=True, timeout=wait_timeout)
@@ -225,8 +228,8 @@ class RunMacroTestCase(BaseMacroTestCase):
         #TODO: implement generic asserts for macro result and macro output, etc
         #      in a similar way to what is done for macro data
 
-    def macro_fails(self, macro_params=None, wait_timeout=float("inf"),
-                    exception=None):
+    def macro_fails(self, macro_name=None, macro_params=None,
+                    wait_timeout=float("inf"), exception=None):
         """Check that the macro fails to run for the given input parameters
 
         :param macro_params: (seq<str>) input parameters for the macro
@@ -237,6 +240,9 @@ class RunMacroTestCase(BaseMacroTestCase):
                         (IMPORTANT: this is just a comparison of str
                         representations of exception objects)
         """
+        if macro_name:
+            self.macro_name = macro_name
+
         self.macro_executor.run(macro_name=self.macro_name,
                                 macro_params=macro_params,
                                 sync=True, timeout=wait_timeout)
@@ -270,7 +276,7 @@ class RunStopMacroTestCase(RunMacroTestCase):
         msg = msg + '; State buffer was %s' % state_buffer
         self.assertIn(state, stoppedStates, msg)
 
-    def macro_stops(self, macro_params=None, stop_delay=0.1,
+    def macro_stops(self, macro_name=None, macro_params=None, stop_delay=0.1,
                     wait_timeout=float("inf")):
         """A helper method to create tests that check if the macro can be
         successfully stoped (a.k.a. aborted) after it has been launched.
@@ -283,6 +289,9 @@ class RunStopMacroTestCase(RunMacroTestCase):
         :param wait_timeout: (float) maximum allowed time (in s) for the macro
                              to finish. By default infinite timeout is used.
         """
+        if macro_name:
+            self.macro_name = macro_name
+
         self.macro_executor.run(macro_name=self.macro_name,
                                 macro_params=macro_params,
                                 sync=False)
