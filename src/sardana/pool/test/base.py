@@ -30,8 +30,8 @@ from sardana.pool.test import (FakePool, createPoolController, createCtrlConf,
 class BasePoolTestCase(object):
     """Base pool test for setting the environment."""
 
-    def createController(self, name, klass, lib):
-        c_cfg = createCtrlConf(self.pool, name, klass, lib)
+    def createController(self, name, klass, lib, props={}):
+        c_cfg = createCtrlConf(self.pool, name, klass, lib, props)
         ctrl_obj = createPoolController(self.pool, c_cfg)
         self.ctrls[name] = ctrl_obj
         self.pool.add_element(ctrl_obj)
