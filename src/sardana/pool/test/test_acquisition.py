@@ -131,30 +131,35 @@ class AcquisitionTestCase(BasePoolTestCase):
         acquired data.
         """
         # obtaining elements created in the BasePoolTestCase.setUp
-        tg_1_1 = self.tgs[self.tg_elem_name]
-        ct_1_1 = self.cts[self.chn_elem_name]
-
-        tg_ctrl_1 = tg_1_1.get_controller()
-        ct_ctrl_1 = ct_1_1.get_controller()
-
+        tg = self.tgs[self.tg_elem_name]
+        tg_ctrl = tg.get_controller()
         # crating configuration for TGGeneration
-        tg_cfg = createPoolTGGenerationConfiguration((tg_ctrl_1,),
-                                                     ((tg_1_1,),))
+        tg_cfg = createPoolTGGenerationConfiguration((tg_ctrl,),
+                                                     ((tg,),))
         # creating TGGeneration action
-        self.createPoolTGGeneration([tg_1_1])
+        self.createPoolTGGeneration([tg])
+
+        channels = []
+        for name in self.channel_names:
+            channels.append(self.cts[name])
+
+        ct_ctrl = self.ctrls[self.chn_ctrl_name]
+
+
         # add_listeners
-        self.addListeners([ct_1_1])
+        self.addListeners(channels)
         # creating acquisition configurations
-        self.hw_acq_cfg = createCTAcquisitionConfiguration((ct_ctrl_1,),
-                                                           ((ct_1_1,),))
+        self.hw_acq_cfg = createCTAcquisitionConfiguration((ct_ctrl,),
+                                                           (channels,))
         # creating acquisition actions
-        self.hw_acq = PoolContHWAcquisition(ct_1_1)
-        self.hw_acq.add_element(ct_1_1)
+        self.hw_acq = PoolContHWAcquisition(channels[0])
+        for channel in channels:
+            self.hw_acq.add_element(channel)
 
         # get the current number of jobs
         jobs_before = get_thread_pool().qsize
 
-        ct_ctrl_1.set_ctrl_par('trigger_type', AcqTriggerType.Trigger)
+        ct_ctrl.set_ctrl_par('trigger_type', AcqTriggerType.Trigger)
 
         hw_acq_args = ()
         hw_acq_kwargs = {
