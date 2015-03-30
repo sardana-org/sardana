@@ -49,8 +49,6 @@ if not isinstance(PyTango.Release.version_info, tuple):
 sys.path.insert(0, _src_dir)
 sys.path.insert(0, _taurus_lib_dir)
 
-
-
 import sardana
 
 def fix_sardana_for_doc():
