@@ -130,6 +130,24 @@ class BaseAcquisition(object):
         self.acquire(AcqMode.Timer)
         # TODO: implement asserts of Timer acquisition
 
+    def meas_double_acquisition_samemode(self, params, config):
+        """ Run two acquisition with the same meas in two different mode: 
+             - ContTimer
+             - Timer
+        """ 
+        # AcqMode.ContTimer
+        channel_names = self.prepare_meas(params, config)     
+        repetitions = params["repetitions"]
+        self.prepare_attribute_listener()
+        self.acquire(AcqMode.ContTimer)
+        self.acq_asserts(channel_names, repetitions)
+        self.remove_attribute_listener()
+        self.prepare_attribute_listener()
+        self.acquire(AcqMode.ContTimer)
+        self.acq_asserts(channel_names, repetitions)
+        self.remove_attribute_listener()
+        # TODO: implement asserts of Timer acquisition
+
     def consecutive_acquisitions(self, pool, params, second_config):
         # creating mg user configuration and obtaining channel ids
         mg_conf, channel_ids, channel_names = createMGUserConfiguration(pool, second_config)
@@ -197,7 +215,7 @@ class BaseAcquisition(object):
         self.pmg = None
 
 params_1 = {"offset":0,                
-            "repetitions":100, 
+            "repetitions":10, 
             "integ_time":0.01 
 }
 
@@ -243,7 +261,14 @@ config_7 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger)],
 
 doc_8 = 'Test that the acquisition using triggers can be stopped.'
 config_8 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
-             ('_test_ct_1_2', '_test_stg_1_1', AcqTriggerType.Trigger)]]  
+             ('_test_ct_1_2', '_test_stg_1_1', AcqTriggerType.Trigger)]] 
+
+
+doc_11 = 'Acquisition using 2 controllers, with 2 channels in each controller.'
+config_11 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
+             ('_test_ct_1_2', '_test_tg_1_1', AcqTriggerType.Trigger)],
+            [('_test_ct_2_1', '_test_stg_1_1', AcqTriggerType.Trigger),
+             ('_test_ct_2_2', '_test_stg_1_1', AcqTriggerType.Trigger)]] 
 
 doc_9 = 'Test two consecutive synchronous acquisitions with different'\
         ' configuration.'
@@ -251,7 +276,7 @@ doc_9 = 'Test two consecutive synchronous acquisitions with different'\
 doc_10 = 'Test synchronous acquisition followed by asynchronous'\
         ' acquisition using the same configuration.'
 
-@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_1,
+"""@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_1,
             params=params_1, config=config_1)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_2,
             params=params_1, config=config_2)
@@ -272,7 +297,11 @@ doc_10 = 'Test synchronous acquisition followed by asynchronous'\
 @insertTest(helper_name='meas_double_acquisition', test_method_doc=doc_10,
             params=params_2, config=config_8)
 @insertTest(helper_name='meas_double_acquisition', test_method_doc=doc_10,
-            params=params_1, config=config_4)
+            params=params_1, config=config_4)"""
+
+
+@insertTest(helper_name='meas_double_acquisition_samemode', test_method_doc=doc_11,
+            params=params_2, config=config_11)
 class AcquisitionTestCase(BasePoolTestCase, BaseAcquisition, unittest.TestCase):
     """Integration test of TGGeneration and Acquisition actions."""
 
