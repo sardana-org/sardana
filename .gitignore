@@ -1,6 +1,5 @@
 /MANIFEST
-/contrib
 /dist
-*.pyc
-/build/
+/build
 /setup.cfg
+*.pyc
