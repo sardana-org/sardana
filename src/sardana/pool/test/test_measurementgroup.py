@@ -276,7 +276,7 @@ doc_9 = 'Test two consecutive synchronous acquisitions with different'\
 doc_10 = 'Test synchronous acquisition followed by asynchronous'\
         ' acquisition using the same configuration.'
 
-"""@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_1,
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_1,
             params=params_1, config=config_1)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_2,
             params=params_1, config=config_2)
@@ -297,9 +297,7 @@ doc_10 = 'Test synchronous acquisition followed by asynchronous'\
 @insertTest(helper_name='meas_double_acquisition', test_method_doc=doc_10,
             params=params_2, config=config_8)
 @insertTest(helper_name='meas_double_acquisition', test_method_doc=doc_10,
-            params=params_1, config=config_4)"""
-
-
+            params=params_1, config=config_4)
 @insertTest(helper_name='meas_double_acquisition_samemode', test_method_doc=doc_11,
             params=params_2, config=config_11)
 class AcquisitionTestCase(BasePoolTestCase, BaseAcquisition, unittest.TestCase):
