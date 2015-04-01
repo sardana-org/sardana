@@ -77,15 +77,23 @@ class BaseAcquisition(object):
         for attr in attributes:
             attr.add_listener(self.attr_listener)
 
-    def acq_asserts(self, channel_names, params, repetitions):
+    def remove_attribute_listener(self):
+        ## Remove listeners
+        attributes = self.pmg.get_user_elements_attribute_sequence()                
+        for attr in attributes:
+            attr.remove_listener(self.attr_listener)
+
+    def acquire(self, mode):
         """ Run a cont acquisition + asserts
         """
-        self.prepare_attribute_listener()
+        self.pmg.set_acquisition_mode(mode)
         self.pmg.start_acquisition()   
         acq = self.pmg.acquisition
         # waiting for acquisition 
         while acq.is_running():            
             time.sleep(1)  
+
+    def acq_asserts(self, channel_names, repetitions):
         # printing acquisition records
         table = self.attr_listener.get_table()
         header = table.dtype.names
@@ -114,17 +122,13 @@ class BaseAcquisition(object):
         """ 
         # AcqMode.ContTimer
         channel_names = self.prepare_meas(params, config)     
-        repetitions = params["repetitions"]   
-        self.acq_asserts(channel_names, params, repetitions) 
-        # AcqMode.Timer
-        self.pmg.set_acquisition_mode(AcqMode.ContTimer)
-        # Run AcqMode.Timer
-        self.pmg.start_acquisition()
-        acq = self.pmg.acquisition
-        # waiting for acquisition to finish        
-        while acq.is_running():            
-            time.sleep(1)
-        #TODO add asserts
+        repetitions = params["repetitions"]
+        self.prepare_attribute_listener()
+        self.acquire(AcqMode.ContTimer)
+        self.acq_asserts(channel_names, repetitions)
+        self.remove_attribute_listener()
+        self.acquire(AcqMode.Timer)
+        # TODO: implement asserts of Timer acquisition
 
     def consecutive_acquisitions(self, pool, params, second_config):
         # creating mg user configuration and obtaining channel ids
@@ -133,7 +137,9 @@ class BaseAcquisition(object):
         # setting mg configuration - this cleans the action cache!
         self.pmg.set_configuration_from_user(mg_conf)        
         repetitions = params["repetitions"]
-        self.acq_asserts(channel_names, params, repetitions)
+        self.prepare_attribute_listener()
+        self.acquire(AcqMode.ContTimer)
+        self.acq_asserts(channel_names, repetitions)
 
     def meas_cont_acquisition(self, params, config, second_config=None):
         """Executes measurement using the measurement group. 
@@ -141,8 +147,10 @@ class BaseAcquisition(object):
         """
         jobs_before = get_thread_pool().qsize
         channel_names = self.prepare_meas(params, config)     
-        repetitions = params["repetitions"]   
-        self.acq_asserts(channel_names, params, repetitions)     
+        repetitions = params["repetitions"] 
+        self.prepare_attribute_listener()  
+        self.acquire(AcqMode.ContTimer)
+        self.acq_asserts(channel_names, repetitions)     
 
         if second_config is not None:
             self.consecutive_acquisitions(self.pool, params, second_config)
