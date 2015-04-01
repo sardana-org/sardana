@@ -1732,7 +1732,7 @@ class CTScan(CScan):
                 self.master.Stop()
 
     
-    class ExtraMntGrp:
+    class ExtraMntGrp(object):
         '''Helper class and temporary solution for configuring experimental channels.
         It assumes that experimental channels are implementing:
         +) following attributes:
@@ -1815,10 +1815,13 @@ class CTScan(CScan):
 #             self.mntGrp.start_async_acq_sequence(self.acqTime, self.dataCb)
             self.mntGrp.addOnDataChangedListeners(self.dataCb)
             self.mntGrp.Start()
-     
+
         def stop(self):
             self.mntGrp.removeOnDataChangedListeners(self.dataCb)
             self.mntGrp.Stop()
+
+        def state(self):
+            return self.mntGrp.State()
     
         def getDataList(self):
             dataList = [ {"point_nb" : i, "timestamp" : 0} for i in xrange(self.nrOfTriggers) ]
@@ -2075,10 +2078,10 @@ class CTScan(CScan):
                 hook()
                 
             ############    
-            self.macro.debug("Waiting for measurement group to finish")            
-            while self._measurement_group.isMoving():
+            self.macro.debug("Waiting for measurement group to finish")
+            while self._measurement_group.state() == PyTango.DevState.MOVING:
                 self.macro.checkPoint()
-                time.sleep(0.1)                
+                time.sleep(0.1)
 #             self.macro.debug("Getting data")                
 #             data_list = self._measurement_group.getDataList()
 #             
