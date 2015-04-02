@@ -298,7 +298,7 @@ class dNscan(aNscan):
 
     def _prepare(self, motorlist, startlist, endlist, scan_length, integ_time, mode=StepMode, **opts):
         self._motion=self.getMotion( [ m.getName() for m in motorlist] )
-        self.originalPositions = numpy.array(self._motion.readPosition())
+        self.originalPositions = numpy.array(self._motion.readPosition(force=True))
         starts = numpy.array(startlist, dtype='d') + self.originalPositions
         finals = numpy.array(endlist, dtype='d') + self.originalPositions
         aNscan._prepare(self, motorlist, starts, finals, scan_length, integ_time, mode=mode, **opts)
