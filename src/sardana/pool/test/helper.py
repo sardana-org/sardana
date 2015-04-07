@@ -27,7 +27,6 @@ __all__ = ['createPoolController', 'createPoolCounterTimer',
            'createPoolTriggerGate', 'createPoolMeasurementGroup',
            'createPoolTGGenerationConfiguration',
            'createCTAcquisitionConfiguration', 'createMGConfiguration',
-           'getTGConfiguration', 'split_MGConfigurations',
            'createElemConf', 'createCtrlConf', 'createConfbyCtrlKlass', 
            'createMGUserConfiguration']
 import copy
@@ -285,79 +284,6 @@ def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,
     MG_configuration['controllers'] = ctrls_configuration 
 
     return MG_configuration
-
-def split_MGConfigurations(mg_cfg_in):
-    """Split MeasurementGroup configuration with channels
-    triggered by SW Trigger and channels triggered by HW trigger"""
-
-    ctrls_in = mg_cfg_in['controllers']
-    mg_sw_cfg_out = {}
-    mg_hw_cfg_out = {}
-    mg_sw_cfg_out['controllers'] = ctrls_sw_out = {}
-    mg_hw_cfg_out['controllers'] = ctrls_hw_out = {}
-    for ctrl, ctrl_info in ctrls_in.items():        
-        tg_element = ctrl_info.get('trigger_element')
-        if tg_element != None:
-            tg_pool_ctrl = tg_element.get_controller() 
-            tg_ctrl = tg_pool_ctrl._ctrl
-            # TODO: filtering software and HW TG controllers on 
-            # add_listener attribute, this is not generic!
-            if hasattr(tg_ctrl, 'add_listener'):
-                ctrls_sw_out[ctrl] = ctrl_info
-            if not hasattr(tg_ctrl, 'add_listener'):
-                ctrls_hw_out[ctrl] = ctrl_info
-    # TODO: timer and monitor are just random elements!!!
-    if len(ctrls_sw_out):
-        mg_sw_cfg_out['timer'] = ctrls_sw_out.values()[0]['units']['0']['timer'] 
-        mg_sw_cfg_out['monitor'] = ctrls_sw_out.values()[0]['units']['0']['monitor']  
-    if len(ctrls_hw_out):
-        mg_hw_cfg_out['timer'] = ctrls_hw_out.values()[0]['units']['0']['timer'] 
-        mg_hw_cfg_out['monitor'] = ctrls_hw_out.values()[0]['units']['0']['monitor']    
-    return (mg_sw_cfg_out, mg_hw_cfg_out)
-
-def getTGConfiguration(MGcfg):
-    '''Build TG configuration from complete MG configuration.
-
-    :param MGcfg: configuration dictionary of the whole Measurement Group.
-    :type MGcfg: dict<>
-    :return: a configuration dictionary of TG elements organized by controller
-    :rtype: dict<>
-    '''
-
-    # Create list with not repeated elements
-    _tg_element_list = []
-
-    for ctrl in MGcfg["controllers"]:
-        channels_dict = MGcfg["controllers"][ctrl]['units']['0']['channels']
-        for channel in channels_dict:
-            tg_element = channels_dict[channel].get('trigger_element', None)
-            if (tg_element != None and tg_element not in _tg_element_list):
-                _tg_element_list.append(tg_element)
-
-    # Intermediate dictionary to organize each ctrl with its elements.
-    ctrl_tgelem_dict = {}
-    for tgelem in _tg_element_list:
-        tg_ctrl = tgelem.get_controller()
-        if tg_ctrl not in ctrl_tgelem_dict.keys():
-            ctrl_tgelem_dict[tg_ctrl] = [tgelem]
-        else:
-            ctrl_tgelem_dict[tg_ctrl].append(tgelem)
-
-    # Build TG configuration dictionary.
-    TGcfg = {}
-    TGcfg['controllers'] = {}
-
-    for ctrl in ctrl_tgelem_dict:
-        TGcfg['controllers'][ctrl] = {}
-        TGcfg['controllers'][ctrl]['units'] = {}
-        TGcfg['controllers'][ctrl]['units']['0'] = {}
-        TGcfg['controllers'][ctrl]['units']['0']['channels'] = {}
-        unit = TGcfg['controllers'][ctrl]['units']['0']
-        for tg_elem in ctrl_tgelem_dict[ctrl]:
-            ch = unit['channels'][tg_elem] = {}
-            ch['full_name']= tg_elem.full_name
-    #TODO: temporary returning tg_elements
-    return TGcfg, _tg_element_list
 
 def createConfbyCtrlKlass(pool, ctrl_klass, ctrl_name):
     pool_mng = pool.get_manager()
