@@ -30,17 +30,20 @@ class SoftwareTriggerGateController(TriggerGateController):
     gender = "Simulation"
     organization = "ALBA-Cells"
     MaxDevice = 1
-    
+
     def __init__(self, inst, props, *args, **kwargs):
         """Constructor"""
         TriggerGateController.__init__(self, inst, props, *args, **kwargs)
         self.tg = {}
-        
+
     def add_listener(self, listener):
         '''Backdoor method to attach listeners. It will be removed whenever 
         a proper EventChannel mechanism will be implemented'''
         self.tg[0].add_listener(listener)
-        
+
+    def remove_listener(self, listener):
+        self.tg[0].remove_listener(listener)
+
     def SetAxisPar(self, axis, name, value):
         idx = axis - 1
         tg = self.tg[idx]

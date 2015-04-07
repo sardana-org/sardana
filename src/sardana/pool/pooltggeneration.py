@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import functools
 
 ##############################################################################
 ##
@@ -38,7 +39,7 @@ from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
 class TGChannel(PoolActionItem):
     """An item involved in the trigger/gate generation. 
     Maps directly to a trigger object"""
-    
+
     def __init__(self, trigger_gate, info=None):
         PoolActionItem.__init__(self, trigger_gate)
         if info:
@@ -47,7 +48,7 @@ class TGChannel(PoolActionItem):
 
     def __getattr__(self, name):
         return getattr(self.element, name)
-    
+
 
 class PoolTGGeneration(PoolAction):
     '''Action class responsible for trigger/gate generation
@@ -56,26 +57,26 @@ class PoolTGGeneration(PoolAction):
         PoolAction.__init__(self, main_element, name)
         self._listener = None
         self._repetitions = 1
-        
+
     def add_listener(self, listener):
         self._listener = listener
- 
+
     def setRepetitions(self, repetitions):
-        self._repetitions = repetitions        
+        self._repetitions = repetitions
 
     def start_action(self, *args, **kwargs):
         '''Start action method
         '''
-        cfg = kwargs['config']        
+        cfg = kwargs['config']
         ctrls_config = cfg.get('controllers')
         pool_ctrls = ctrls_config.keys()
-        
+
         # obtaining generation parameters from kwargs
         offset = kwargs.get('offset')
         active_period = kwargs.get('active_period')
         passive_period = kwargs.get('passive_period')
         repetitions = kwargs.get('repetitions')
-        
+
         # Prepare a dictionary with the involved channels
         self._channels = channels = {}
         for pool_ctrl in pool_ctrls:
@@ -87,7 +88,7 @@ class PoolTGGeneration(PoolAction):
             for element, element_info in elements.items():
                 channel = TGChannel(element, info=element_info)
                 channels[element] = channel
-                
+
         # loads generation parameters
         for pool_ctrl in pool_ctrls:
             ctrl = pool_ctrl.ctrl
@@ -95,6 +96,10 @@ class PoolTGGeneration(PoolAction):
             # attaching listener to the software trigger gate generator
             if hasattr(ctrl, 'add_listener') and self._listener != None:
                 ctrl.add_listener(self._listener)
+                # TODO: is finish_hook the best place to remove listener? 
+                finish_hook = functools.partial(ctrl.remove_listener,
+                                                self._listener)
+                self._finish_hook = finish_hook
             pool_ctrl_data = ctrls_config[pool_ctrl]
             main_unit_data = pool_ctrl_data['units']['0']
             elements = main_unit_data['channels']
@@ -111,7 +116,7 @@ class PoolTGGeneration(PoolAction):
             # PreStartAll on all controllers
             for pool_ctrl in pool_ctrls:
                 pool_ctrl.ctrl.PreStartAll()
-    
+
             # PreStartOne & StartOne on all elements
             for pool_ctrl in pool_ctrls:
                 ctrl = pool_ctrl.ctrl                
@@ -127,20 +132,20 @@ class PoolTGGeneration(PoolAction):
                             raise Exception("%s.PreStartOne(%d) returns False" \
                                             % (pool_ctrl.name, axis))
                         ctrl.StartOne(axis)
-    
+
             # set the state of all elements to inform their listeners
             for channel in channels:
                 channel.set_state(State.Moving, propagate=2)
-    
+
             # StartAll on all controllers
             for pool_ctrl in pool_ctrls:
-                pool_ctrl.ctrl.StartAll()                
-        
+                pool_ctrl.ctrl.StartAll()
+
     def is_triggering(self, states):
         """Determines if we are triggering or if the triggering has ended
         based on the states returned by the controller(s) and the software
         TG generation.
-        
+
         :param states: a map containing state information as returned by
                        read_state_info: ((state, status), exception_error)
         :type states: dict<PoolElement, tuple(tuple(int, str), str))
