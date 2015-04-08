@@ -1817,8 +1817,11 @@ class CTScan(CScan):
             self.mntGrp.Start()
 
         def stop(self):
-            self.mntGrp.removeOnDataChangedListeners(self.dataCb)
+            # TODO: Think about changing subscription model to pull.
+            # If at the moment of aborting there are events in the
+            # queue they could be lost.
             self.mntGrp.Stop()
+            self.mntGrp.removeOnDataChangedListeners(self.dataCb)
 
         def state(self):
             return self.mntGrp.State()
