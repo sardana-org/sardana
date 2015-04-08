@@ -1770,7 +1770,7 @@ class CTScan(CScan):
                                 # Ignoring this exception..
                                 pass
                             else:
-                                raise err
+                                raise Exception(repr(err))
                     elif event_type == TaurusEventType.Change:
                         value = event_value.value
                         # TODO: event_value.value will be a dictionary with
