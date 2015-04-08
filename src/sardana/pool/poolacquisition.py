@@ -614,6 +614,10 @@ class PoolContHWAcquisition(PoolCTAcquisition):
         with ActionContext(self):
             self.raw_read_value_loop(ret=values)
             for acquirable, value in values.items():
+                #TODO: This is a protection to avoid invalid types.
+                # Uncomment these lines
+                #if not isinstance(value.value, list):
+                #     continue
                 if len(value.value) > 0:
                     acquirable.put_value(value, propagate=2)
 
@@ -626,6 +630,10 @@ class PoolContHWAcquisition(PoolCTAcquisition):
             if not i % nb_states_per_value:
                 self.read_value_loop(ret=values)
                 for acquirable, value in values.items():
+                    #TODO: This is a protection to avoid invalid types.
+                    # Uncomment these lines
+                    #if not isinstance(value.value, list):
+                    #    continue
                     if len(value.value) > 0:
                         acquirable.put_value(value)
 
@@ -650,6 +658,10 @@ class PoolContHWAcquisition(PoolCTAcquisition):
             acquirable.set_state_info(state_info, propagate=0)
             if acquirable in values:
                 value = values[acquirable]
+                #TODO: This is a protection to avoid invalid types.
+                # Uncomment these lines
+                #if not isinstance(value.value, list):
+                #    continue
                 if len(value.value) > 0:
                     acquirable.put_value(value, propagate=2)
             with acquirable:
