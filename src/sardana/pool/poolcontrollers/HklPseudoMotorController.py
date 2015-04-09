@@ -1,29 +1,29 @@
 # -*- coding: utf-8 -*-
 
 ##############################################################################
-##
-## This file is part of Sardana
-##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
-##
-## Copyright: 2013 PetraIII,
-##            2013 Synchrotron-Soleil
-##                 L'Orme des Merisiers Saint-Aubin
-##                 BP 48 91192 GIF-sur-YVETTE CEDEX
-##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
-##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
-##
+#
+# This file is part of Sardana
+#
+# http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+#
+# Copyright: 2013 PetraIII,
+#            2013 Synchrotron-Soleil
+#                 L'Orme des Merisiers Saint-Aubin
+#                 BP 48 91192 GIF-sur-YVETTE CEDEX
+#
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+#
 ##############################################################################
 
 """This module contains the definition of an Hkl pseudo motor controller
@@ -37,50 +37,94 @@ __copyright__ = ("Copyright (c) 2013 DESY "
                  "BP 48 91192 GIF-sur-YVETTE CEDEX")
 __license__ = 'LGPL-3+'
 
-__all__ = ["Diffrac6C", "DiffracE6C", "DiffracK6C",
-           "Diffrac4C", "DiffracE4C", "DiffracK4C", "Diffrac4CZAXIS",
-           "Diffrac2C"]
+__all__ = ["Diffrac6C", "DiffracE6C", "DiffracE4C", "Diffractometer"]
 
 __docformat__ = 'restructuredtext'
 
-import math
 import os
 import time
+
+import PyTango
+
+from itertools import chain
 
 from gi.repository import GLib
 from gi.repository import Hkl
 
+from taurus.core.util.codecs import CodecFactory
+
 from sardana import DataAccess
 from sardana.pool.controller import PseudoMotorController
 from sardana.pool.controller import Type, Access, Description
-from sardana.pool.controller import Memorize, Memorized, MemorizedNoInit, NotMemorized
+from sardana.pool.controller import Memorize, Memorized, MemorizedNoInit, NotMemorized  # noqa
 
 ReadOnly = DataAccess.ReadOnly
 ReadWrite = DataAccess.ReadWrite
+USER = Hkl.UnitEnum.USER
+DEFAULT_CRYSTAL = "default_crystal"
+
+class AxisPar(object):
+    def __init__(self, engine, name):
+        self.engine = engine
+        self.name = name
+        self._modes = None
+
+    @property
+    def mode(self):
+        return self.engine.current_mode_get()
+
+    @mode.setter
+    def mode(self, value):
+        self.engine.current_mode_set(value)
+
+    @property
+    def modes(self):
+        if self._modes is None:
+            self._modes = self.engine.modes_names_get()
+        return self._modes
+
+    @property
+    def modeparameters(self):
+        return self.engine.parameters_names_get()
+
+    @property
+    def modeparametersvalues(self):
+         return [p.value_get(USER)
+                 for p in [self.engine.parameter_get(n)
+                           for n in self.modeparameters]]
+
+    @modeparametersvalues.setter
+    def modeparametersvalues(self, value):
+        for parameter, v in zip(self.modeparameters,
+                                value):
+            p = self.engine.parameter_get(parameter)
+            p.value_set(v, USER)
+            self.engine.parameter_set(parameter, p)
 
 
 class DiffracBasis(PseudoMotorController):
 
     """ The PseudoMotor controller for the diffractometer"""
 
-    class_prop = {'DiffractometerType':
-                 {Type: str, Description: 'Type of the diffractometer, e.g. E6C'}, }
+    class_prop = {'DiffractometerType': {Type: str,
+                                         Description: 'Type of the diffractometer, e.g. E6C'},  # noqa
+    }
 
-    ctrl_attributes = {'Crystal': {Type: str, 
-                                   Memorize: MemorizedNoInit, # If Crystal is changed to memorized. The changes commented with "memcrystal"
+    ctrl_attributes = {'Crystal': {Type: str,
+                                   Memorize: MemorizedNoInit,  # noqa If Crystal is changed to memorized. The changes commented with "memcrystal"
                                    Access: ReadWrite},
                        'AffineCrystal': {Type: int,
                                          Memorize: MemorizedNoInit,
-                                         Description: "Affine current crystal. Add a new crystal with the post fix (affine)",
+                                         Description: "Affine current crystal. Add a new crystal with the post fix (affine)",  # noqa
                                          Access: ReadWrite},
-                       'Wavelength': {Type: float, 
+                       'Wavelength': {Type: float,
                                       Memorize: MemorizedNoInit,
                                       Access: ReadWrite},
-                       'EngineMode': {Type: str, 
+                       'EngineMode': {Type: str,  # TODO delete
                                       Memorize: MemorizedNoInit,
                                       Access: ReadWrite},
                        'EngineModeList': {Type: (str,), Access: ReadOnly},
-                       'HKLModeList': {Type: (str,), Access: ReadOnly},
+                       'HKLModeList': {Type: (str,), Access: ReadOnly},  # TODO delete
                        'UBMatrix': {Type: ((float,), ),
                                     Description: "The reflection matrix",
                                     Access: ReadOnly},
@@ -88,10 +132,10 @@ class DiffracBasis(PseudoMotorController):
                        'Uy': {Type: float, Access: ReadWrite},
                        'Uz': {Type: float, Access: ReadWrite},
                        'ComputeU': {Type: (int,),
-                                    Description: "Compute reflection matrix using two given reflections",
+                                    Description: "Compute reflection matrix using two given reflections",  # noqa
                                     Access: ReadWrite},
                        'LatticeReciprocal': {Type: (float,),
-                                             Description: "The reciprocal lattice parameters of the sample",
+                                             Description: "The reciprocal lattice parameters of the sample",  # noqa
                                              Access: ReadOnly},
                        'A': {Type: float,
                              Description: "a parameter of the lattice",
@@ -118,115 +162,152 @@ class DiffracBasis(PseudoMotorController):
                                  Memorize: MemorizedNoInit,
                                  Access: ReadWrite},
                        'AFit': {Type: int,
-                                Description: "Fit value of the a parameter of the lattice",
+                                Description: "Fit value of the a parameter of the lattice",  # noqa
                                 Memorize: MemorizedNoInit,
                                 Access: ReadWrite},
                        'BFit': {Type: int,
-                                Description: "Fit value of the b parameter of the lattice",
+                                Description: "Fit value of the b parameter of the lattice",  # noqa
                                 Memorize: MemorizedNoInit,
                                 Access: ReadWrite},
                        'CFit': {Type: int,
-                                Description: "Fit value of the c parameter of the lattice",
+                                Description: "Fit value of the c parameter of the lattice",  # noqa
                                 Memorize: MemorizedNoInit,
                                 Access: ReadWrite},
                        'AlphaFit': {Type: int,
-                                    Description: "Fit value of the alpha parameter of the lattice",
+                                    Description: "Fit value of the alpha parameter of the lattice",  # noqa
                                     Memorize: MemorizedNoInit,
                                     Access: ReadWrite},
                        'BetaFit': {Type: int,
-                                   Description: "Fit value of the beta parameter of the lattice",
+                                   Description: "Fit value of the beta parameter of the lattice",  # noqa
                                    Memorize: MemorizedNoInit,
                                    Access: ReadWrite},
                        'GammaFit': {Type: int,
-                                    Description: "Fit value of the gamma parameter of the lattice",
+                                    Description: "Fit value of the gamma parameter of the lattice",  # noqa
                                     Memorize: MemorizedNoInit,
                                     Access: ReadWrite},
                        'TrajectoryList': {Type: ((float,), (float,)),
-                                          Description: "List of trajectories for hklSim",
+                                          Description: "List of trajectories for hklSim",  # noqa
                                           Access: ReadOnly},
                        'SelectedTrajectory': {Type: int,
-                                              Description: "Index of the trajectory you want to take for the given hkl values. 0 (by default) if first.",
+                                              Description: "Index of the trajectory you want to take for the given hkl values. 0 (by default) if first.",  # noqa
                                               Access: ReadWrite},
                        'ComputeTrajectoriesSim': {Type: (float,),
-                                                  Description: "Pseudo motor values to compute the list of trajectories (1, 2 or 3 args)",
+                                                  Description: "Pseudo motor values to compute the list of trajectories (1, 2 or 3 args)",  # noqa
                                                   Access: ReadWrite},
                        'Engine': {Type: str,
                                   Memorize: MemorizedNoInit,
                                   Access: ReadWrite},
                        'EngineList': {Type: (str,), Access: ReadOnly},
+                       'EnginesConf': {Type: str, Access: ReadOnly},
                        'CrystalList': {Type: (str,), Access: ReadOnly},
-                       'AddCrystal': {Type: str, 
+                       'AddCrystal': {Type: str,
                                       Memorize: MemorizedNoInit,
                                       Access: ReadWrite},
-                       'DeleteCrystal': {Type: str, 
+                       'DeleteCrystal': {Type: str,
                                          Memorize: MemorizedNoInit,
                                          Access: ReadWrite},
                        'AddReflection': {Type: (float,),
-                                         Description: "Add reflection to current sample",
+                                         Description: "Add reflection to current sample",  # noqa
                                          Access: ReadWrite},
                        'AddReflectionWithIndex': {Type: (float,),
-                                         Description: "Add reflection to current sample with given index",
-                                         Access: ReadWrite},
+                                                  Description: "Add reflection to current sample with given index",  # noqa
+                                                  Access: ReadWrite},
                        'SwapReflections01': {Type: int,
-                                         Description: "Swap primary and secondary reflections",
-                                         Access: ReadWrite},
+                                             Description: "Swap primary and secondary reflections",  # noqa
+                                             Access: ReadWrite},
                        'ReflectionList': {Type: ((float,), (float,)),
-                                          Description: "List of reflections for current sample",
+                                          Description: "List of reflections for current sample",  # noqa
                                           Access: ReadOnly},
                        'RemoveReflection': {Type: int,
                                             Memorize: MemorizedNoInit,
-                                            Description: "Remove reflection with given index",
+                                            Description: "Remove reflection with given index",  # noqa
                                             Access: ReadWrite},
                        'LoadReflections': {Type: str,
-                                           Description: "Load the reflections from the file given as argument",
-                                           Memorize: MemorizedNoInit, 
+                                           Description: "Load the reflections from the file given as argument",  # noqa
+                                           Memorize: MemorizedNoInit,
                                            Access: ReadWrite},
                        'SaveReflections': {Type: str,
-                                           Description: "Save current reflections to file",
+                                           Description: "Save current reflections to file",  # noqa
                                            Memorize: MemorizedNoInit,
                                            Access: ReadWrite},
                        'LoadCrystal':     {Type: str,
-                                           Description: "Load the lattice parameters and reflections from the file corresponding to the given crystal",
+                                           Description: "Load the lattice parameters and reflections from the file corresponding to the given crystal",  # noqa
                                            Access: ReadWrite},
                        'SaveCrystal': {Type: int,
-                                           Description: "Save current crystal parameters and reflections",
-                                           Memorize: NotMemorized,
-                                           Access: ReadWrite},
+                                       Description: "Save current crystal parameters and reflections",  # noqa
+                                       Memorize: NotMemorized,
+                                       Access: ReadWrite},
                        'SaveDirectory': {Type: str,
-                                         Description: "Directory to save the crystal files to",
+                                         Description: "Directory to save the crystal files to",  # noqa
                                          Memorize: Memorized,
                                          Access: ReadWrite},
                        'AdjustAnglesToReflection': {Type: (float,),
-                                                    Description: "Set the given angles to the reflection with given index",
+                                                    Description: "Set the given angles to the reflection with given index",  # noqa
                                                     Access: ReadWrite},
                        'ReflectionAngles': {Type: ((float,), (float,)),
-                                            Description: "Angles between reflections",
+                                            Description: "Angles between reflections",  # noqa
                                             Access: ReadOnly},
-                       'ModeParametersNames': {Type: (str,),
-                                               Description: "Name of the parameters of the current mode (if any)",
+                       'ModeParametersNames': {Type: (str,), # TODO delete
+                                               Description: "Name of the parameters of the current mode (if any)",  # noqa
                                                Access: ReadOnly},
-                       'ModeParametersValues': {Type: (float,),
-                                                Description: "Value of the parameters of the current mode (if any)",
+                       'ModeParametersValues': {Type: (float,),  # TODO delete
+                                                Description: "Value of the parameters of the current mode (if any)",  # noqa
                                                 Access: ReadWrite},
                        'PsiRefH': {Type: float,
-                             Description: "x coordinate of the psi reference vector (-999 if not applicable)",
-                             Memorize: MemorizedNoInit,
-                             Access: ReadWrite},
+                                   Description: "x coordinate of the psi reference vector (-999 if not applicable)",  # noqa
+                                   Memorize: MemorizedNoInit,
+                                   Access: ReadWrite},
                        'PsiRefK': {Type: float,
-                             Description: "y coordinate of the psi reference vector (-999 if not applicable)",
-                             Memorize: MemorizedNoInit,
-                             Access: ReadWrite},
+                                   Description: "y coordinate of the psi reference vector (-999 if not applicable)",  # noqa
+                                   Memorize: MemorizedNoInit,
+                                   Access: ReadWrite},
                        'PsiRefL': {Type: float,
-                             Description: "z coordinate of the psi reference vector (-999 if not applicable)",
-                             Memorize: MemorizedNoInit,
-                             Access: ReadWrite},
+                                   Description: "z coordinate of the psi reference vector (-999 if not applicable)",  # noqa
+                                   Memorize: MemorizedNoInit,
+                                   Access: ReadWrite},
                        'MotorList': {Type: (str,),
                                      Description: "Name of the real motors",
                                      Access: ReadOnly},
                        'HKLPseudoMotorList': {Type: (str,),
-                                              Description: "Name of the hkl pseudo motors",
+                                              Description: "Name of the hkl pseudo motors",  # noqa
                                               Access: ReadOnly},
-                       }
+                       'EnergyDevice': {Type: str,
+                                        Description: "Name of the energy device to read the energy from",
+                                        Memorize: Memorized,
+                                        Access: ReadWrite},
+                       'AutoEnergyUpdate': {Type: int,
+                                            Description: "If 1 wavelength is read from EnergyDevice",
+                                            Memorize: Memorized,
+                                            Access: ReadWrite},
+    }
+
+    axis_attributes = {
+        'Mode': {
+            Type: str,
+            Memorize: MemorizedNoInit,
+            Access: ReadWrite
+        },
+        'Modes': {
+            Type: (str,),
+            Access: ReadOnly
+        },
+        'ModeParameters': {
+            Type: (str,),
+            Description: "Name of the parameters of the current mode (if any)",  # noqa
+            Access: ReadOnly
+        },
+        'ModeParametersValues': {
+            Type: (float,),
+            Description: "Value of the parameters of the current mode (if any)",  # noqa
+            Access: ReadWrite
+        },
+    }
+
+    def GetAxisExtraPar(self, axis, name):
+        return getattr(self.axispar[axis - 1], name.lower())
+
+    def SetAxisExtraPar(self, axis, name, value):
+         setattr(self.axispar[axis - 1], name.lower(), value)
 
     MaxDevice = 1
 
@@ -237,60 +318,46 @@ class DiffracBasis(PseudoMotorController):
         """
         PseudoMotorController.__init__(self, inst, props, *args, **kwargs)
 
-        ## Comment out if memorized crystal (memcrystal)
-        #self.first_crystal_set = 1
-        self.samples_list = {}
+        # Comment out if memorized crystal (memcrystal)
+        # self.first_crystal_set = 1
+        self.samples = {}
+        self.samples[DEFAULT_CRYSTAL] = self.sample = Hkl.Sample.new(DEFAULT_CRYSTAL)  # noqa
 
-        self.samples_list[
-            "default_crystal"] = Hkl.Sample.new("default_crystal")
-#    self.sample = Hkl.Sample.new("default_crystal")
-        self.sample = self.samples_list["default_crystal"]
         lattice = self.sample.lattice_get()
-        lattice.set(1.5, 1.5, 1.5,
-                    math.radians(90.0),
-                    math.radians(90.0),
-                    math.radians(90.))
+        self._a = self._b = self._c = 1.5
+        self._alpha = self._beta = self._gamma = 90.
+        lattice.set(self._a, self._b, self._c,
+                    self._alpha, self._beta, self._gamma, USER)
         self.sample.lattice_set(lattice)
-        self._a = 1.5
-        self._b = 1.5
-        self._c = 1.5
-        self._alpha = 90.
-        self._beta  = 90.
-        self._gamma = 90.
-
-        self.crystallist = []
-        self.crystallist.append("default_crystal")
 
         self.detector = Hkl.Detector.factory_new(Hkl.DetectorType(0))
-        self.detector.idx_set(1)
 
         for key, factory in Hkl.factories().iteritems():
             if key == self.DiffractometerType:
                 self.geometry = factory.create_new_geometry()
                 self.engines = factory.create_new_engine_list()
 
-        if self.DiffractometerType in ("E6C", "K6C", "SOLEIL SIXS MED2+2", "PETRA3 P09 EH2"):
-            self.nb_ph_axes = 6
-        elif self.DiffractometerType in ("E4CV", "K4CV", "E4CH", "SOLEIL MARS", "ZAXIS"):  # "SOLEIL SIXS MED1+2" also here ???
-            self.nb_ph_axes = 4
-        elif self.DiffractometerType in ("TwoC"):
-            self.nb_ph_axes = 2
-
-            # here we set the detector arm with only positive values for
-            # now tth or delta arm
-        for axis in self.geometry.axes():
-            if axis.name_get() in ["tth", "delta"]:
-                axis.min_max_unit_set(0, 180.)
+        self.nb_ph_axes = len(self.geometry.axis_names_get())
 
         self.engines.init(self.geometry, self.detector, self.sample)
-        engines_names = [engine.name() for engine in self.engines.engines()]
-        print str(engines_names)
 
         # Engine hkl -> it has not effect, it will be set the last value set
         # (stored in DB)
-        self.engine = self.engines.get_by_name("hkl")
+        self.engine = self.engines.engine_get_by_name("hkl")
+
+        self.engine_list = []
+        self.axispar = []
+        for engine in self.engines.engines_get():
+            self.engine_list.append(engine.name_get())
+            for pseudo in engine.pseudo_axis_names_get():
+                self.axispar.append(AxisPar(engine, pseudo))
+
+        self.engine_list = tuple(self.engine_list)
+        self.engines_conf = None  # defered because it does not work in the __init__
 
         self.trajectorylist = []
+
+        # simulation part
         self.lastpseudopos = [0] * 3
         self.selected_trajectory = 0
 
@@ -302,95 +369,115 @@ class DiffracBasis(PseudoMotorController):
         self._addreflection = [-1.]
         self._addreflectionwithindex = [-1.]
         self._swapreflections01 = -1
-        self._loadreflections = " "  # Only to create the member, the value will be overwritten by the one in stored in the database
-        self._savereflections = " "  # Only to create the member, the value will be overwritten by the one in stored in the database
-        self._loadcrystal = " "  # Only to create the member, the value will be overwritten by the one in stored in the database
+        self._loadreflections = " "  # Only to create the member, the
+                                     # value will be overwritten by
+                                     # the one in stored in the
+                                     # database
+        self._savereflections = " "  # Only to create the member, the
+                                     # value will be overwritten by
+                                     # the one in stored in the
+                                     # database
+        self._loadcrystal = " "  # Only to create the member, the
+                                 # value will be overwritten by the
+                                 # one in stored in the database
         self._savecrystal = -1
-        self._savedirectory = " "  # Only to create the member, the value will be overwritten by the one in stored in the database
+        self._savedirectory = " "  # Only to create the member, the
+                                   # value will be overwritten by the
+                                   # one in stored in the database
+        self._energydevice = " "  # Only to create the member, the
+                                   # value will be overwritten by the
+                                   # one in stored in the database
+        self._autoenergyupdate = 0  # Only to create the member, the
+                                   # value will be overwritten by the
+                                   # one in stored in the database
 
-    def calc_physical(self, index, pseudos):
-        return self.calc_all_physical(pseudos)[index - 1]
+        self.energy_device = None
+        self.lambda_to_e = 12398.424 # Amstrong * eV
 
-    def calc_pseudo(self, index, physicals):
-        pos = self.calc_all_pseudo(physicals)[index - 1]
-        return pos
+    def _solutions(self, values, curr_physical_position):
+        # set all the motor min and max to restrain the solutions
+        # with only valid positions.
+        for role, current in zip(self.motor_roles, curr_physical_position):
+            motor = self.GetMotor(role)
+            axis = self.geometry.axis_get(role)
+            axis.value_set(current, USER)
+            try:
+                config = PyTango.AttributeProxy(motor.get_full_name() + '/position').get_config()  # noqa
+                mini, maxi = float(config.min_value), float(config.max_value)
+                axis.min_max_set(mini, maxi, USER)
+            except ValueError:
+                pass
+            self.geometry.axis_set(role, axis)
 
-    def calc_all_physical(self, pseudos):
+        # computation and select the expected solution
+        return self.engine.pseudo_axis_values_set(values, USER)
 
-        h = pseudos[0]
-        k = pseudos[1]
-        l = pseudos[2]
+    def CalcPhysical(self, axis, pseudo_pos, curr_physical_pos):
+        return self.CalcAllPhysical(pseudo_pos, curr_physical_pos)[axis - 1]
 
-        try:
-            if self.nb_ph_axes == 4:  # "E4CV", "E4CH", "SOLEIL MARS": hkl(3), psi(1), q(1); "K4CV": hkl(3), psi(1), q(1), eulerians(3); "SOLEIL SIXS MED1+2": hkl(3), q2(2), qper_qpar(2)
-                if self.engine.name() == "hkl":
-                    self.engine.set_values_unit(
-                        [pseudos[0], pseudos[1], pseudos[2]])  # compute the HklGeometry angles for this HklEngine
-                elif self.engine.name() == "psi":
-                    self.engine.set_values_unit([pseudos[3]])
-                elif self.engine.name() == "q":
-                    self.engine.set_values_unit([pseudos[4]])
-                elif self.engine.name() == "eulerians":
-                    self.engine.set_values_unit(
-                        [pseudos[5], pseudos[6], pseudos[7]])
-                elif self.engine.name() == "q2":
-                    self.engine.set_values_unit([pseudos[3], pseudos[4]])
-                elif self.engine.name() == "qper_qpar":
-                    self.engine.set_values_unit([pseudos[5], pseudos[6]])
-            elif self.nb_ph_axes == 6:  # "E6C", "SOLEIL SIXS MED2+2": hkl(3), psi(1), q2(2), qper_qpar(2); "K6C":  hkl(3), psi(1), q2(2), qper_qpar(2), eulerians(3); "PETRA3 P09 EH2": hkl(3)
-                if self.engine.name() == "hkl":
-                    self.engine.set_values_unit(
-                        [pseudos[0], pseudos[1], pseudos[2]])
-                elif self.engine.name() == "psi":
-                    self.engine.set_values_unit([pseudos[3]])
-                elif self.engine.name() == "q2":
-                    self.engine.set_values_unit([pseudos[4], pseudos[5]])
-                elif self.engine.name() == "qper_qpar":
-                    self.engine.set_values_unit([pseudos[6], pseudos[7]])
-                elif self.engine.name() == "eulerians":
-                    self.engine.set_values_unit(
-                        [pseudos[8], pseudos[9], pseudos[10]])
-            else:
-                if self.engine.name() == "hkl":
-                    self.engine.set_values_unit(
-                        [pseudos[0], pseudos[1], pseudos[2]])
+    def CalcPseudo(self, axis, physical_pos, curr_pseudo_pos):
+        return self.CalcAllPseudo(physical_pos, curr_pseudo_pos)[axis - 1]
 
-        # Read the positions
-            for i, item in enumerate(self.engine.engines().geometries().items()):
-                if i == self.selected_trajectory:
-                    values = item.geometry().get_axes_values_unit()
+    def CalcAllPhysical(self, pseudo_pos, curr_physical_pos):
+        # TODO it should work with all the kind of engine ? or only
+        # with the hkl engine ? What I understand from this is that
+        # the pseudos values contain all the values from all the
+        # engines. This is not generic at all. If I add new engines
+        # this code should be fixed. worse the engine names is
+        # hardcoded. for now I will just rewrite the code with the
+        # same logic but with the new hkl API.
 
-        except GLib.GError, err:
-            raise Exception("Not solution for this mode")
+        engine_name = self.engine.name_get()
+        values = None
+        if engine_name == "hkl":
+            values = [pseudo_pos[0], pseudo_pos[1], pseudo_pos[2]]
+        elif self.nb_ph_axes == 4:  # noqa "E4CV", "E4CH", "SOLEIL MARS": hkl(3), psi(1), q(1); "K4CV": hkl(3), psi(1), q(1), eulerians(3); "SOLEIL SIXS MED1+2": hkl(3), q2(2), qper_qpar(2)
+            if engine_name == "psi":
+                values = [pseudo_pos[3]]
+            elif engine_name == "q":
+                values = [pseudo_pos[4]]
+            elif engine_name == "eulerians":
+                values = [pseudo_pos[5], pseudo_pos[6], pseudo_pos[7]]
+            elif engine_name == "q2":
+                values = [pseudo_pos[3], pseudo_pos[4]]
+            elif engine_name == "qper_qpar":
+                values = [pseudo_pos[5], pseudo_pos[6]]
+        elif self.nb_ph_axes == 6:  # noqa "E6C", "SOLEIL SIXS MED2+2": hkl(3), psi(1), q2(2), qper_qpar(2); "K6C":  hkl(3), psi(1), q2(2), qper_qpar(2), eulerians(3); "PETRA3 P09 EH2": hkl(3)
+            if engine_name == "psi":
+                values = [pseudo_pos[3]]
+            elif engine_name == "q2":
+                values = [pseudo_pos[4], pseudo_pos[5]]
+            elif engine_name == "qper_qpar":
+                values = [pseudo_pos[6], pseudo_pos[7]]
+            elif engine_name == "eulerians":
+                values = [pseudo_pos[8], pseudo_pos[9], pseudo_pos[10]]
 
-        return tuple(values)
+        self.getWavelength()
 
-    def calc_all_pseudo(self, physicals):
-        print "calc_all_pseudo"
+        solutions = self._solutions(values, curr_physical_pos)
+        for i, item in enumerate(solutions.items()):
+            if i == self.selected_trajectory:
+                angles = item.geometry_get().axis_values_get(USER)
 
-        mu = physicals[0]
-        th = physicals[1]
-        if self.nb_ph_axes > 2:
-            chi = physicals[2]
-            phi = physicals[3]
-        if self.nb_ph_axes == 6:
-            gamma = physicals[4]
-            delta = physicals[5]
+        # TODO why replace this by a tuple ?
+        return tuple(angles)
 
-        # Calcular hkl
-        if self.nb_ph_axes == 6:
-            self.geometry.set_axes_values_unit(
-                [mu, th, chi, phi, gamma, delta])
-        elif self.nb_ph_axes == 4:
-            self.geometry.set_axes_values_unit([mu, th, chi, phi])
-        else:
-            self.geometry.set_axes_values_unit([mu, th])
+    def CalcAllPseudo(self, physical_pos, curr_pseudo_pos):
+        # TODO howto avoid this nb_ph_axes, does the length of the
+        # physical values are not equal to the expected len of the
+        # geometry axes.
+        
+        self.getWavelength()
+            
 
+        # write the physical motor into the geometry
+        self.geometry.axis_values_set(physical_pos[:self.nb_ph_axes], USER)
         self.engines.get()
 
+        # extract all the pseudo axes values
         values = []
-        for tmp_engine in self.engines.engines():
-            values = values + tmp_engine.pseudo_axes().values_unit_get()
+        for engine in self.engines.engines_get():
+            values = values + engine.pseudo_axis_values_get(USER)
 
         return tuple(values)
 
@@ -400,132 +487,105 @@ class DiffracBasis(PseudoMotorController):
 
     def setCrystal(self, value):
         print " setCrystal"
-        if value in self.crystallist:
-            self.sample = self.samples_list[value]
-        else:
-            raise Exception(
-                "setCrystal: crystal not in the list. Add it first")
-        ### Used this part and comment the above one out if memorized crystal (memcrystal)
+        self.sample = self.samples[value]
+        # Used this part and comment the above one out if memorized crystal (memcrystal)
         #if self.first_crystal_set == 0:
-        #    if value in self.crystallist:
-        #        self.sample = self.samples_list[value]
-        #else: 
-        #    self.crystallist.append(value)
-        #    self.samples_list[value] = Hkl.Sample.new(
+        #    if value in self.samples:
+        #        self.sample = self.samples[value]
+        #else:
+        #    self.samples[value] = Hkl.Sample.new(
         #        value)  # By default a crystal is created with lattice parameters 1.54, 1.54, 1.54, 90., 90., 90.
-        #    self.sample = self.samples_list[value]
+        #    self.sample = self.samples[value]
         #    lattice = self.sample.lattice_get()
-        #    lattice.set(self._a, self._b, self._c,
-        #                math.radians(self._alpha),
-        #                math.radians(self._gamma),
-        #                math.radians(self._beta))
+        #    lattice.set(self._a, self._b, self._c, self._alpha, self._beta, self._gamma, USER)
         #    self.sample.lattice_set(lattice)
         #    # For getting the UB matrix changing
         #    self.sample.lattice_set(lattice)
-            
-         #   self.first_crystal_set = 0
+
+        #   self.first_crystal_set = 0
         self.engines.init(self.geometry, self.detector, self.sample)
 
     def setAffineCrystal(self, value):
         print " setAffineCrystal"
         new_sample_name = self.sample.name_get() + " (affine)"
-        if new_sample_name not in self.crystallist:
-            self.crystallist.append(new_sample_name)
-            self.samples_list[new_sample_name] = self.sample.copy()
-            self.samples_list[new_sample_name].name_set(new_sample_name)
-            self.samples_list[new_sample_name].affine()
-            self.sample = self.samples_list[new_sample_name]
+        if new_sample_name not in self.samples:
+            sample = self.sample.copy()
+            sample.name_set(new_sample_name)
+            sample.affine()
+            self.sample = self.samples[new_sample_name] = sample
 
     def getWavelength(self):
         print " getWavelength"
-        return self.geometry.wavelength_get()
+        if self._energydevice != " " and self._autoenergyupdate:
+            try:
+                if self.energy_device == None:
+                    self.energy_device = PyTango.DeviceProxy(self._energydevice)
+                energy = self.energy_device.Position
+                wavelength = self.lambda_to_e/energy
+                self.setWavelength(wavelength)
+            except:
+                print "Not able to get energy from energy device"
+        return self.geometry.wavelength_get(USER)
 
     def setWavelength(self, value):
         print " setWavelength"
-        self.geometry.wavelength_set(value)
+        self.geometry.wavelength_set(value, USER)
 
     def getEngineMode(self):
-#        print " getEngineMode"
-        return self.engine.mode().name()
+        return self.engine.current_mode_get()
 
     def setEngineMode(self, value):
         print " setEngineMode"
-        for mode in self.engine.modes():
-            if value == mode.name():
-                self.engine.select_mode(mode)
+        # TODO why not throw the exception when the mode name is
+        # wrong. The hkl library return an usefull Exception for this.
+        for mode in self.engine.modes_names_get():
+            if value == mode:
+                self.engine.current_mode_set(mode)
 
     def getEngineModeList(self):
         print " getEngineModeList"
-        engine_mode_names = []
-        i = 0
-        for mode in self.engine.modes():
-            engine_mode_names.append(mode.name())
-        return engine_mode_names
+        return self.engine.modes_names_get()
 
     def getHKLModeList(self):
         print " getHKLModeList"
-        hkl_mode_names = []
+        # TODO seems to me complicate... why this Hkl specific part.
+        # It seems that this controleur mix all the engines and does
+        # something special with the hkl one ???   neverthless I would
+        # be possible to create a self.engines instead of recomputing
+        # it all the time.
         for key, factory in Hkl.factories().iteritems():
             if key == self.DiffractometerType:
                 new_engines = factory.create_new_engine_list()
         new_engines.init(self.geometry, self.detector, self.sample)
-        hkl_engine = new_engines.get_by_name("hkl")
-        for mode in hkl_engine.modes():
-            hkl_mode_names.append(mode.name())
-        return hkl_mode_names
-
+        hkl_engine = new_engines.engine_get_by_name("hkl")
+        return hkl_engine.modes_names_get()
     def getUBMatrix(self):
-        print " getUBMatrix"
-        arr = []
-        arr.append([])
-        arr[0].append(self.sample.UB_get().get(0, 0))
-        arr[0].append(self.sample.UB_get().get(0, 1))
-        arr[0].append(self.sample.UB_get().get(0, 2))
-        arr.append([])
-        arr[1].append(self.sample.UB_get().get(1, 0))
-        arr[1].append(self.sample.UB_get().get(1, 1))
-        arr[1].append(self.sample.UB_get().get(1, 2))
-        arr.append([])
-        arr[2].append(self.sample.UB_get().get(2, 0))
-        arr[2].append(self.sample.UB_get().get(2, 1))
-        arr[2].append(self.sample.UB_get().get(2, 2))
-        return arr
+        UB = self.sample.UB_get()
+        return [[UB.get(i, j) for j in range(3)] for i in range(3)]
 
     def getUx(self):
-        print " getUx"
-        return self.sample.ux_get().value_unit_get()
+        return self.sample.ux_get().value_get(USER)
 
     def setUx(self, value):
-        print " setUx"
-        self.sample.ux_get().value_unit_set(value, None)
-        # This is required to make the change visible in the UB matrix
-        U = self.sample.U_get()
-        UB = self.sample.UB_get()
-        self.sample.UB_set(UB)
+        ux = self.sample.ux_get()
+        ux.value_set(value, USER)
+        self.sample.ux_set(ux)
 
     def getUy(self):
-        print " getUy"
-        return self.sample.uy_get().value_unit_get()
+        return self.sample.uy_get().value_get(USER)
 
     def setUy(self, value):
-        print " setUy"
-        self.sample.uy_get().value_unit_set(value, None)
-        # This is required to make the change visible in the UB matrix
-        U = self.sample.U_get()
-        UB = self.sample.UB_get()
-        self.sample.UB_set(UB)
+        uy = self.sample.uy_get()
+        uy.value_set(value, USER)
+        self.sample.uy_set(uy)
 
     def getUz(self):
-        print " getUz"
-        return self.sample.uz_get().value_unit_get()
+        return self.sample.uz_get().value_get(USER)
 
     def setUz(self, value):
-        print " setUz"
-        self.sample.uz_get().value_unit_set(value, None)
-        # This is required to make the change visible in the UB matrix
-        U = self.sample.U_get()
-        UB = self.sample.UB_get()
-        self.sample.UB_set(UB)
+        uz = self.sample.uz_get()
+        uz.value_set(value, USER)
+        self.sample.uz_set(uz)
 
     def setComputeU(self, value):
         print " setComputeU"
@@ -550,99 +610,91 @@ class DiffracBasis(PseudoMotorController):
         lattice = self.sample.lattice_get()
         reciprocal = lattice.copy()
         lattice.reciprocal(reciprocal)
-        lattice_parameters = []
-        ic = 0
-        for val in reciprocal.get():
-            if (ic < 3):
-                lattice_parameters.append(val)
-            else:
-                lattice_parameters.append(math.degrees(val))
-            ic = ic + 1
-        return lattice_parameters
+        return reciprocal.get(USER)
 
     def getA(self):
         print " getA"
-        apar = self.sample.lattice_get().a_get()
-        return apar.value_unit_get()
+        lattice = self.sample.lattice_get()
+        a, _b, _c, _alpha, _beta, _gamma = lattice.get(USER)
+        return a
 
     def setA(self, value):
         print " setA"
         lattice = self.sample.lattice_get()
-        apar = lattice.a_get()
-        apar.value_unit_set(value, None)
-        self._a = value
-        # For getting the UB matrix changing
+        a, b, c, alpha, beta, gamma = lattice.get(USER)
+        lattice.set(value, b, c, alpha, beta, gamma, USER)
         self.sample.lattice_set(lattice)
+        self._a = value
 
     def getB(self):
         print " getB"
-        bpar = self.sample.lattice_get().b_get()
-        return bpar.value_unit_get()
+        lattice = self.sample.lattice_get()
+        _a, b, _c, _alpha, _beta, _gamma = lattice.get(USER)
+        return b
 
     def setB(self, value):
         print " setB"
         lattice = self.sample.lattice_get()
-        bpar = lattice.b_get()
-        bpar.value_unit_set(value, None)
-        self._b = value
-        # For getting the UB matrix changing
+        a, b, c, alpha, beta, gamma = lattice.get(USER)
+        lattice.set(a, value, c, alpha, beta, gamma, USER)
         self.sample.lattice_set(lattice)
+        self._b = value
 
     def getC(self):
         print " getC"
-        cpar = self.sample.lattice_get().c_get()
-        return cpar.value_unit_get()
+        lattice = self.sample.lattice_get()
+        _a, _b, c, _alpha, _beta, _gamma = lattice.get(USER)
+        return c
 
     def setC(self, value):
         print " setC"
         lattice = self.sample.lattice_get()
-        cpar = lattice.c_get()
-        cpar.value_unit_set(value, None)
-        self._c = value
-        # For getting the UB matrix changing
+        a, b, c, alpha, beta, gamma = lattice.get(USER)
+        lattice.set(a, b, value, alpha, beta, gamma, USER)
         self.sample.lattice_set(lattice)
+        self._c = value
 
     def getAlpha(self):
         print " getAlpha"
-        alphapar = self.sample.lattice_get().alpha_get()
-        return alphapar.value_unit_get()
+        lattice = self.sample.lattice_get()
+        _a, _b, _c, alpha, _beta, _gamma = lattice.get(USER)
+        return alpha
 
     def setAlpha(self, value):
         print " setAlpha"
         lattice = self.sample.lattice_get()
-        alphapar = lattice.alpha_get()
-        alphapar.value_unit_set(value, None)
-        self._alpha = value
-        # For getting the UB matrix changing
+        a, b, c, alpha, beta, gamma = lattice.get(USER)
+        lattice.set(a, b, c, value, beta, gamma, USER)
         self.sample.lattice_set(lattice)
+        self._alpha = value
 
     def getBeta(self):
         print " getBeta"
-        betapar = self.sample.lattice_get().beta_get()
-        return betapar.value_unit_get()
+        lattice = self.sample.lattice_get()
+        _a, _b, _c, _alpha, beta, _gamma = lattice.get(USER)
+        return beta
 
     def setBeta(self, value):
         print " setBeta"
         lattice = self.sample.lattice_get()
-        betapar = lattice.beta_get()
-        betapar.value_unit_set(value, None)
-        self._beta = value
-        # For getting the UB matrix changing
+        a, b, c, alpha, beta, gamma = lattice.get(USER)
+        lattice.set(a, b, c, alpha, value, gamma, USER)
         self.sample.lattice_set(lattice)
+        self._beta = value
 
     def getGamma(self):
         print " getGamma"
-        gammapar = self.sample.lattice_get().gamma_get()
-        return gammapar.value_unit_get()
+        lattice = self.sample.lattice_get()
+        _a, _b, _c, _alpha, _beta, gamma = lattice.get(USER)
+        return gamma
 
     def setGamma(self, value):
         print " setGamma"
         lattice = self.sample.lattice_get()
-        gammapar = lattice.gamma_get()
-        gammapar.value_unit_set(value, None)
-        self._gamma = value
-        # For getting the UB matrix changing
+        a, b, c, alpha, beta, gamma = lattice.get(USER)
+        lattice.set(a, b, c, alpha, beta, value, USER)
         self.sample.lattice_set(lattice)
+        self._gamma = value
 
     def getAFit(self):
         print " getAFit"
@@ -708,67 +760,19 @@ class DiffracBasis(PseudoMotorController):
         print " getcomputeTrajectoriesSim"
         return self.lastpseudopos
 
-    def setComputeTrajectoriesSim(self, value):
-        print " setcomputeTrajectoriesSim"
-        if self.engine.name() == "hkl":
-            if len(value) < 3:
-                raise Exception(
-                    "Not enough parameters given. Three are necessary: h, k, l ")
-            else:
-                try:
-                    self.engine.set_values_unit(
-                        [value[0], value[1], value[2]])  # compute the HklGeometry angles for this HklEngine
-                except GLib.GError, err:
-                    raise Exception("Not solution for current mode")
-        elif self.engine.name() == "psi":
-            try:
-                self.engine.set_values_unit([value[0]])
-            except GLib.GError, err:
-                raise Exception("Not solution for current mode")
-        elif self.engine.name() == "q":
-            try:
-                self.engine.set_values_unit([value[0]])
-            except GLib.GError, err:
-                raise Exception("Not solution for current mode")
-        elif self.engine.name() == "eulerians":
-            if len(value) < 3:
-                raise Exception(
-                    "Not enough parameters given. Three are necessary for eulerians mode")
-            else:
-                try:
-                    self.engine.set_values_unit([value[0], value[1], value[2]])
-                except GLib.GError, err:
-                    raise Exception("Not solution for current mode")
-        elif self.engine.name() == "q2":
-            if len(value) < 2:
-                raise Exception(
-                    "Not enough parameters given. Three are necessary for q2 mode")
-            else:
-                try:
-                    self.engine.set_values_unit([value[0], value[1]])
-                except GLib.GError, err:
-                    raise Exception("Not solution for current mode")
-        elif self.engine.name() == "qper_qpar":
-            if len(value) < 2:
-                raise Exception(
-                    "Not enough parameters given. Three are necessary for qper_qpar mode")
-            else:
-                try:
-                    self.engine.set_values_unit([value[0], value[1]])
-                except GLib.GError, err:
-                    raise Exception("Not solution for current mode")
-
-        self.trajectorylist = []
-        for i, item in enumerate(self.engine.engines().geometries().items()):
-            self.trajectorylist.append(item.geometry().get_axes_values_unit())
-
-        for i in range(0, 3):
-            self.lastpseudopos[i] = 0
-        i = 0
-        for myv in value:
-            self.lastpseudopos[i] = myv
-            i = i + 1
-        print self.trajectorylist
+    def setComputeTrajectoriesSim(self, values):
+        # TODO the hkl library should return these informations
+        # assert (len(values) == len(self.engine.pseudo_axis_names_get()),
+        #         "Not the right number of parameters given (%d, %d expected)"
+        #         " for the \"%s\" engine" %
+        #         (len(values),
+        #          len(self.engine.pseudo_axis_names_get()),
+        #          self.engine.name_get())
+        curr_physical_pos = self.geometry.axis_values_get(USER)
+        solutions = self._solutions(values, curr_physical_pos)
+        self.trajectorylist = [item.geometry_get().axis_values_get(USER)
+                               for item in solutions.items()]
+        self.lastpseudos = tuple(values)
 
     def getTrajectoryList(self):
         print " getTrajectoryList"
@@ -783,37 +787,42 @@ class DiffracBasis(PseudoMotorController):
         self.selected_trajectory = value
 
     def getEngine(self):
-#        print " getEngine"
-        return self.engine.name()
+        return self.engine.name_get()
 
     def setEngine(self, value):
         print " setEngine"
-        self.engine = self.engines.get_by_name(value)
+        self.engine = self.engines.engine_get_by_name(value)
 
     def getEngineList(self):
-        print " getEngineList"
-        engine_names = []
-        for engine in self.engines.engines():
-            engine_names.append(engine.name())
-        return engine_names
+        return self.engine_list
+
+    def getEnginesConf(self):
+        if self.engines_conf is None:
+            elements = []
+            for engine in self.engines.engines_get():
+                name = engine.name_get()
+                motors = tuple([self.GetPseudoMotor(pseudo)
+                                for pseudo in engine.pseudo_axis_names_get()])
+                elements.append((name, motors))
+            json_codec = CodecFactory().getCodec(format)
+            f, conf = json_codec.encode(('', tuple(elements)))[1]
+            print f, enc
+            self.engines_conf = conf
 
     def setAddCrystal(self, value):
-        print " setAddCrystal"
-        if value not in self.crystallist:
-            self.crystallist.append(value)
-            self.samples_list[value] = Hkl.Sample.new(value)  # By default a crystal is created with lattice parameters 1.54, 1.54, 1.54, 90., 90., 90.
+        if value not in self.samples:
+            self.samples[value] = Hkl.Sample.new(value)
+            # TODO why this
             self._addcrystal = value
 
     def getCrystalList(self):
-        print " getCrsytalList"
-        return self.crystallist
+        return list(self.samples)
 
     def setDeleteCrystal(self, value):
         print " setDeleteCrystal"
-        if value in self.crystallist:
-            del self.samples_list[value]
-            i = self.crystallist.index(value)
-            del self.crystallist[i]
+        if value in self.samples:
+            self.samples.pop(value)
+            # TODO why this
             self._deletecrystal = value
 
     def setAddReflection(self, value):
@@ -824,7 +833,7 @@ class DiffracBasis(PseudoMotorController):
         for i in range(0, self.nb_ph_axes):
             motor = self.GetMotor(i)
             motor_position.append(motor.position.value)
-        self.geometry.set_axes_values_unit(motor_position)
+        self.geometry.axis_values_set(motor_position, USER)
         newref = self.sample.add_reflection(
             self.geometry, self.detector, value[0], value[1], value[2])
         # Set affinement if given (by default reflections are created with
@@ -833,7 +842,6 @@ class DiffracBasis(PseudoMotorController):
             newref.flag_set(value[3])
 
     def setAddReflectionWithIndex(self, value):
-#        print " setAddReflectionWithIndex"
         # Parameters: index, h, k, l, [affinement], angles are the current ones
         # Read current reflections
         old_reflections = self.sample.reflections_get()
@@ -845,20 +853,20 @@ class DiffracBasis(PseudoMotorController):
             hkla.append([])
             hkla[ihkla].append(ref.hkl_get()[0])
             hkla[ihkla].append(ref.hkl_get()[1])
-            hkla[ihkla].append(ref.hkl_get()[2])            
+            hkla[ihkla].append(ref.hkl_get()[2])
             hkla[ihkla].append(ref.flag_get())
             angles.append([])
             angles[ihkla].append(ihkla)
-            for angle in ref.geometry_get().get_axes_values_unit():
+            for angle in ref.geometry_get().axis_values_get(USER):
                 angles[ihkla].append(angle)
             ihkla = ihkla + 1
 
         # Remove reflections with index bigger than the inserted one
         if value[0] < nb_old_ref:
             for j in range(int(value[0]), nb_old_ref):
-                # The index are shifted so we have to remove always de first index
+                # The index are shifted so we have to remove always de
+                # first index
                 self.setRemoveReflection(int(value[0]))
-
 
         # Check if the index is bigger than existing ones
         if value[0] < nb_old_ref:
@@ -871,18 +879,16 @@ class DiffracBasis(PseudoMotorController):
                 elif i > value[0]:
                     self.setAddReflection(hkla[i])
                     self.setAdjustAnglesToReflection(angles[i])
-            
-        else: # add the new one
+        else:  # add the new one
             self.setAddReflection(value[1:])
 
     def setSwapReflections01(self, value):
-#        print " setSwapReflections01"
         # Read current reflections
         reflections = self.sample.reflections_get()
         nb_ref = len(reflections)
-        
+
         if nb_ref < 2:
-            print "Only " + str(nb_ref) + " reflection(s) defined. Swap not possible"
+            print "Only %d reflection(s) defined. Swap not possible" % (nb_ref,)
             return
 
         hkla = []
@@ -897,7 +903,7 @@ class DiffracBasis(PseudoMotorController):
                     hkla[ihkla].append(1)
                 hkla[ihkla].append(ref.hkl_get()[0])
                 hkla[ihkla].append(ref.hkl_get()[1])
-                hkla[ihkla].append(ref.hkl_get()[2])            
+                hkla[ihkla].append(ref.hkl_get()[2])
                 hkla[ihkla].append(ref.flag_get())
                 angles.append([])
                 # swap the index
@@ -905,7 +911,7 @@ class DiffracBasis(PseudoMotorController):
                     angles[ihkla].append(0)
                 else:
                     angles[ihkla].append(1)
-                for angle in ref.geometry_get().get_axes_values_unit():
+                for angle in ref.geometry_get().axis_values_get(USER):
                     angles[ihkla].append(angle)
             ihkla = ihkla + 1
 
@@ -916,7 +922,7 @@ class DiffracBasis(PseudoMotorController):
 
         self.setAddReflectionWithIndex(hkla[1])
         self.setAdjustAnglesToReflection(angles[1])
-        
+
         # Remove reflection 1
 
         self.setRemoveReflection(1)
@@ -939,7 +945,7 @@ class DiffracBasis(PseudoMotorController):
             reflectionslist[i].append(ref.hkl_get()[2])
             reflectionslist[i].append(0)  # Relevance
             reflectionslist[i].append(ref.flag_get())  # Affinement
-            for value in ref.geometry_get().get_axes_values_unit():
+            for value in ref.geometry_get().axis_values_get(USER):
                 reflectionslist[i].append(value)
             i = i + 1
         return reflectionslist
@@ -956,32 +962,38 @@ class DiffracBasis(PseudoMotorController):
         print " setLoadReflections"
         # Read the file
         try:
-            reflections_file = open(value, 'r')
-            self._loadreflections = value
+            with open(value, 'r') as f:
+                self._loadreflections = value
+                print f
+
+                # Remove all reflections
+                for reflection in self.sample.reflections_get():
+                    self.sample.del_reflection(reflection)
+
+                # add one reflection per line (no check for now)
+                # TODO it seems that the wavelength is missing in the file.
+                for line in f:
+                    # the reflection line is structured like this
+                    # index 0 -> reflec. index;
+                    # index 1, 2, 3 -> hkl;
+                    # index 4 -> relevance
+                    # index 5 -> affinement;
+                    # last ones (2, 4 or 6) -> geometry axes values
+                    values = [float(v) for v in line.split(' ')]
+
+                    # create the reflection
+                    reflection = self.sample.add_reflection(self.geometry, self.detector,
+                                                            values[1], values[2], values[3])
+                    # set the affinement
+                    reflection.flag_set(values[5])
+
+                    # set the axes values
+                    geometry = reflection.geometry_get()
+                    geometry.axes_values_set(values[6:], USER)
+                    reflection.geometry_set(geometry)
         except:
             raise Exception("Not able to open reflections file")
-        print reflections_file
-        # Remove all reflections
-        for ref in self.sample.reflections_get():
-            self.sample.del_reflection(ref)
-        # Read the reflections from the file
-        for line in reflections_file:
-            ref_values = []
-            for value in line.split(' '):
-                ref_values.append(
-                    float(value))  # index 0 -> reflec. index; index 1,2, 3 hkl; 4 relevance; 5 affinement; last ones (2, 4 or 6) angles
-            # Set hkl values to the reflection
-            newref = self.sample.add_reflection(
-                self.geometry, self.detector, ref_values[1], ref_values[2], ref_values[3])
-            # Set affinement
-            newref.flag_set(ref_values[5])
-            # Adjust angles
-            new_angles = []
-            for i in range(6, len(ref_values)):
-                new_angles.append(ref_values[i])
-            geometry = newref.geometry_get()
-            geometry.set_axes_values_unit(new_angles)
-            newref.geometry_set(geometry)
+
 
     def setLoadCrystal(self, value):  # value: complete path of the file with the crystal to set
         print " setLoadCrystal"
@@ -1002,7 +1014,7 @@ class DiffracBasis(PseudoMotorController):
                 crystal = line.split("Crystal",1)[1]
                 self.setAddCrystal(crystal)
                 # Set crystal
-                self.sample = self.samples_list[crystal]
+                self.sample = self.samples[crystal]
                 self.engines.init(self.geometry, self.detector, self.sample)
                 # Remove all reflections from crystal (there should not be any ... but just in case)
                 for ref in self.sample.reflections_get():
@@ -1010,7 +1022,7 @@ class DiffracBasis(PseudoMotorController):
             elif line.find("Wavelength") != -1:
                 line = line.replace(" ", "")
                 wavelength = float(line.split("Wavelength",1)[1]) # The value will be set after creating the new geometry with the reflections
-                self.geometry.wavelength_set(wavelength)
+                self.geometry.wavelength_set(wavelength, USER)
             elif line.find("A") != -1 and line.find("B") != -1 and line.find("C") != -1:
                 par_line = line.split(" ")
                 avalue = float(par_line[1])
@@ -1018,35 +1030,35 @@ class DiffracBasis(PseudoMotorController):
                 cvalue = float(par_line[5])
                 lattice = self.sample.lattice_get()
                 apar = lattice.a_get()
-                apar.value_unit_set(avalue, None)
+                apar.value_set(avalue, USER)
                 self._a = avalue
                 bpar = lattice.b_get()
-                bpar.value_unit_set(bvalue, None)
+                bpar.value_set(bvalue, USER)
                 self._b = bvalue
                 cpar = lattice.c_get()
-                cpar.value_unit_set(cvalue, None)
+                cpar.value_set(cvalue, USER)
                 self._c = cvalue
-            elif line.find("Alpha") != -1 and line.find("Beta") != -1 and line.find("Gamma") != -1:                
+            elif line.find("Alpha") != -1 and line.find("Beta") != -1 and line.find("Gamma") != -1:
                 par_line = line.split(" ")
                 alphavalue = float(par_line[1])
                 betavalue = float(par_line[3])
                 gammavalue = float(par_line[5])
                 alphapar = lattice.alpha_get()
-                alphapar.value_unit_set(alphavalue, None)
+                alphapar.value_set(alphavalue, USER)
                 self._alpha = alphavalue
                 betapar = lattice.beta_get()
-                betapar.value_unit_set(betavalue, None)
+                betapar.value_set(betavalue, USER)
                 self._beta = betavalue
                 gammapar = lattice.gamma_get()
-                gammapar.value_unit_set(gammavalue, None)
+                gammapar.value_set(gammavalue, USER)
                 self._gamma = gammavalue
                 # For getting the UB matrix changing
                 self.sample.lattice_set(lattice)
-            elif line.find("Engine") != -1:          
+            elif line.find("Engine") != -1:
                 line = line.split(" ")
                 engine = line[1]
                 self.setEngine(engine)
-            elif line.find("Mode") != -1:          
+            elif line.find("Mode") != -1:
                 line = line.split(" ")
                 mode = line[1]
                 self.setEngineMode(mode)
@@ -1090,7 +1102,7 @@ class DiffracBasis(PseudoMotorController):
                 for i in range(6, len(ref_values)):
                     new_angles.append(ref_values[i])
                 geometry = newref.geometry_get()
-                geometry.set_axes_values_unit(new_angles)
+                geometry.axis_values_set(new_angles, USER)
                 newref.geometry_set(geometry)
                 nb_ref = nb_ref + 1
             elif line.find("SaveDirectory") != -1:
@@ -1102,7 +1114,7 @@ class DiffracBasis(PseudoMotorController):
         if nb_ref > 1:
             values = [0,1]
             self.setComputeU(values)
-        
+
 
     def setSaveReflections(self, value):  # value: directory, the file would be given by the name of the sample
         print "setSaveReflections"
@@ -1135,10 +1147,10 @@ class DiffracBasis(PseudoMotorController):
 
         crys_file = open(default_file_name, 'w')
 
-        # 
+        #
         # date
         #
-        
+
         date_str = "Created at " + time.strftime("%Y-%m-%d %H:%M") + "\n\n"
         crys_file.write(date_str)
 
@@ -1149,25 +1161,25 @@ class DiffracBasis(PseudoMotorController):
         crys_file.write(crys_str)
 
         # write wavelength
-        
-        wavelength = self.geometry.wavelength_get()
+
+        wavelength = self.geometry.wavelength_get(USER)
         wl_str = "Wavelength " + str(wavelength) + "\n\n"
         crys_file.write(wl_str)
-        
+
 
         # write lattice parameters
         apar = self.sample.lattice_get().a_get()
-        a = apar.value_unit_get()
+        a = apar.value_get(USER)
         bpar = self.sample.lattice_get().b_get()
-        b = bpar.value_unit_get()
+        b = bpar.value_get(USER)
         cpar = self.sample.lattice_get().c_get()
-        c = cpar.value_unit_get()
+        c = cpar.value_get(USER)
         alphapar = self.sample.lattice_get().alpha_get()
-        alpha = alphapar.value_unit_get()
+        alpha = alphapar.value_get(USER)
         betapar = self.sample.lattice_get().beta_get()
-        beta = betapar.value_unit_get()
+        beta = betapar.value_get(USER)
         gammapar = self.sample.lattice_get().gamma_get()
-        gamma = gammapar.value_unit_get()
+        gamma = gammapar.value_get(USER)
         par_str = "A " + str(a) + " B " + str(b) + " C " + str(c) + "\n"
         crys_file.write(par_str)
         par_str = "Alpha " + str(alpha) + " Beta " + str(beta) + " Gamma " + str(gamma) + "\n\n"
@@ -1190,12 +1202,12 @@ class DiffracBasis(PseudoMotorController):
             crys_file.write(ref_str)
         crys_file.write("\n")
 
-        # write engine       
-        engine_str = "Engine " + self.engine.name() +  "\n\n"
+        # write engine
+        engine_str = "Engine " + self.engine.name_get() +  "\n\n"
         crys_file.write(engine_str)
 
-        # write mode        
-        mode_str = "Mode " + self.engine.mode().name() +  "\n\n"
+        # write mode
+        mode_str = "Mode " + self.engine.current_mode_get() +  "\n\n"
         crys_file.write(mode_str)
 
         # write psiref (if available in mode)
@@ -1203,7 +1215,7 @@ class DiffracBasis(PseudoMotorController):
         psirefh = self.getPsiRefH()
         psirefk = self.getPsiRefK()
         psirefl = self.getPsiRefL()
-        if psirefh != -999 or psirefk != -999 or psirefl != -999: 
+        if psirefh != -999 or psirefk != -999 or psirefl != -999:
             psi_str = "PsiRef " + str(psirefh) + " " + str(psirefk) + " " + str(psirefl) + "\n\n"
         else:
             psi_str = "PsiRef not available in current engine mode\n\n"
@@ -1217,21 +1229,20 @@ class DiffracBasis(PseudoMotorController):
             ub_str = ""
             for j in range(0,3):
                 #ub_str = ub_str + "U" + str(i) + str(j) + " " + str(self.sample.UB_get().get(i, j)) + " "
-                ub_str = ub_str + "U" + str(i) + str(j) + " %.3f" % self.sample.UB_get().get(i, j) + " " 
+                ub_str = ub_str + "U" + str(i) + str(j) + " %.3f" % self.sample.UB_get().get(i, j) + " "
             ub_str = ub_str + "\n"
             crys_file.write(ub_str)
         crys_file.write("\n")
-        
 
         # write u vector
-        u_str = "Ux " + str(self.sample.ux_get().value_unit_get()) + " Uy " + str(self.sample.uy_get().value_unit_get()) + " Uz " + str(self.sample.uz_get().value_unit_get()) + "\n\n"
+        u_str = "Ux " + str(self.sample.ux_get().value_get(USER)) + " Uy " + str(self.sample.uy_get().value_get(USER)) + " Uz " + str(self.sample.uz_get().value_get(USER)) + "\n\n"
         crys_file.write(u_str)
 
         # write directory where the file is saved
 
         dir_str = "SaveDirectory " + self._savedirectory + "\n"
         crys_file.write(dir_str)
-            
+
         crys_file.close()
         cmd = "cp " + str(default_file_name) + " " + str(crystal_file_name)
         os.system(cmd)
@@ -1250,7 +1261,7 @@ class DiffracBasis(PseudoMotorController):
         for ref in self.sample.reflections_get():
             if i == ref_index:
                 geometry = ref.geometry_get()
-                geometry.set_axes_values_unit(new_angles)
+                geometry.axis_values_set(new_angles, USER)
                 ref.geometry_set(geometry)
             i = i + 1
 
@@ -1266,7 +1277,7 @@ class DiffracBasis(PseudoMotorController):
                 j = j + 1
                 angle = 0
                 if i < j:
-                    angle = self.sample.get_reflection_mesured_angle(
+                    angle = self.sample.get_reflection_measured_angle(
                         ref1, ref2)
                 elif j < i:
                     angle = self.sample.get_reflection_theoretical_angle(
@@ -1275,90 +1286,58 @@ class DiffracBasis(PseudoMotorController):
         return reflectionsangles
 
     def getModeParametersNames(self):
-        parameters_names = []
-        current_mode = self.engine.mode()
-        parameters = current_mode.parameters()
-        for parameter in parameters.parameters():
-            parameters_names.append(parameter.name_get())
-        return parameters_names
+        return self.engine.parameters_names_get()
+    
 
     def getModeParametersValues(self):
-        parameters_values = []
-        current_mode = self.engine.mode()
-        parameters = current_mode.parameters()
-        for parameter in parameters.parameters():
-            parameters_values.append(parameter.value_unit_get())
-        return parameters_values
+        return [p.value_get(USER)
+                for p in [self.engine.parameter_get(n)
+                          for n in self.engine.parameters_names_get()]]
 
     def setModeParametersValues(self, value):
-        parameters_values = []
-        current_mode = self.engine.mode()
-        parameters = current_mode.parameters()
-        i = 0
-        for parameter in parameters.parameters():
-            if i < len(value):
-                parameter.value_unit_set(value[i], None)
-            i = i + 1
+        for parameter, v in zip(self.engine.parameters_names_get(), value):
+            p = self.engine.parameter_get(parameter)
+            p.value_set(v, USER)
+            self.engine.parameter_set(parameter, p)
+
+    def _getPsiRef(self, parameters):
+        # TODO I do not understand this method. check that the
+        # parameters names are ok. I changed one.
+        value = -999
+        for parameter in self.engine.parameters_names_get():
+            if parameter in parameters:
+                value = self.engine.parameter_get(parameter).value_get(USER)
+        return value
 
     def getPsiRefH(self):
-        value = -999
-        current_mode = self.engine.mode()
-        parameters = current_mode.parameters()
-        for parameter in parameters.parameters():
-            if parameter.name_get() in ["h1","h2","x"]:
-                value = parameter.value_unit_get()
-        return value
-
-    def setPsiRefH(self, value):
-        current_mode = self.engine.mode()
-        parameters = current_mode.parameters()
-        value_set = 0
-        for parameter in parameters.parameters():
-            if parameter.name_get() in ["h1","h2","x"]:
-                parameter.value_unit_set(value, None)
-                value_set = 1
-        if value_set == 0:
-            raise Exception("setPsiRefH: psiref not available in this mode")
+        return self._getPsiRef(["h1", "h2", "x"])
 
     def getPsiRefK(self):
-        value = -999
-        current_mode = self.engine.mode()
-        parameters = current_mode.parameters()
-        for parameter in parameters.parameters():
-            if parameter.name_get() in ["k1","k2","y"]:
-                value = parameter.value_unit_get()
-        return value
-
-    def setPsiRefK(self, value):
-        current_mode = self.engine.mode()
-        parameters = current_mode.parameters()
-        value_set = 0
-        for parameter in parameters.parameters():
-            if parameter.name_get() in ["k1","k2","y"]:
-                parameter.value_unit_set(value, None)
-                value_set = 1
-        if value_set == 0:
-            raise Exception("setPsiRefH: psiref not available in this mode")
+        return self._getPsiRef(["k1", "k2", "y"])
 
     def getPsiRefL(self):
-        value = -999
-        current_mode = self.engine.mode()
-        parameters = current_mode.parameters()
-        for parameter in parameters.parameters():
-            if parameter.name_get() in ["l1","l2","z"]:
-                value = parameter.value_unit_get()
-        return value
+        return self._getPsiRef(["l1", "l2", "z"])
+
+    def _setPsiRef(self, parameters, value):
+        # TODO idem here :)
+        value_set = False
+        for parameter in self.engine.parameters_names_get():
+            if parameter in parameters:
+                p = self.engine.parameter_get(parameter)
+                p.value_set(value, USER)
+                self.engine.parameter_set(parameter, p)
+                value_set = True
+        if not value_set:
+            raise Exception("psiref not available in this mode")
+
+    def setPsiRefH(self, value):
+        self._setPsiRef(["h1", "h2", "x"], value)
+
+    def setPsiRefK(self, value):
+        self._setPsiRef(["k1", "k2", "y"], value)
 
     def setPsiRefL(self, value):
-        current_mode = self.engine.mode()
-        parameters = current_mode.parameters()
-        value_set = 0
-        for parameter in parameters.parameters():
-            if parameter.name_get() in ["l1","l2","z"]:
-                parameter.value_unit_set(value, None)
-                value_set = 1
-        if value_set == 0:
-            raise Exception("setPsiRefH: psiref not available in this mode")
+        self._setPsiRef(["l1", "l2", "z"], value)
 
     def getMotorList(self):
         motor_names = []
@@ -1376,6 +1355,22 @@ class DiffracBasis(PseudoMotorController):
             hkl_pm_names.append(mot_info)
         return hkl_pm_names
 
+    def setEnergyDevice(self, value):
+        print "setEnergyDevice"
+        self._energydevice = value
+        try:
+            self.energy_device = PyTango.DeviceProxy(self._energydevice)
+        except:
+            self.energy_device = None
+            print "Not able to create proxy to energydevice"
+
+    def setAutoEnergyUpdate(self, value):
+        print "setAutoEnergyUpdate"
+        self._autoenergyupdate = value
+        
+    
+
+
 # 6C Diffractometers ####################
 
 
@@ -1384,7 +1379,7 @@ class Diffrac6C(DiffracBasis):  # DiffractometerType: "PETRA3 P09 EH2"
     """ The PseudoMotor controller for the diffractometer"""
 
     pseudo_motor_roles = "h", "k", "l"
-    motor_roles = "mu", "th", "chi", "phi", "gamma", "delta"
+    motor_roles = "mu", "omega", "chi", "phi", "delta", "gamma"
 
     def __init__(self, inst, props, *args, **kwargs):
         """ Do the default init plus the specific diffractometer
@@ -1395,28 +1390,12 @@ class Diffrac6C(DiffracBasis):  # DiffractometerType: "PETRA3 P09 EH2"
         DiffracBasis.__init__(self, inst, props, *args, **kwargs)
 
 
-class DiffracE6C(DiffracBasis):  # DiffractometerType: "E6C", "SOLEIL SIXS MED2+2"
+class DiffracE6C(DiffracBasis):
 
     """ The PseudoMotor controller for the diffractometer"""
 
-    pseudo_motor_roles = "h", "k", "l", "psi", "q21", "q22", "qperqpar1", "qperpar2"
-    motor_roles = "mu", "th", "chi", "phi", "gamma", "delta"
-
-    def __init__(self, inst, props, *args, **kwargs):
-        """ Do the default init plus the specific diffractometer
-        staff.
-        @param properties of the controller
-        """
-
-        DiffracBasis.__init__(self, inst, props, *args, **kwargs)
-
-
-class DiffracK6C(DiffracBasis):  # DiffractometerType: "K6C"
-
-    """ The PseudoMotor controller for the diffractometer"""
-
-    pseudo_motor_roles = "h", "k", "l", "psi", "q21", "q22", "qperqpar1", "qperpar2", "eulerians1", "eulerians2", "eulerians3"
-    motor_roles = "mu", "th", "chi", "phi", "gamma", "delta"
+    pseudo_motor_roles = "h", "k", "l", "psi", "q", "alpha", "qper", "qpar"
+    motor_roles = "mu", "omega", "chi", "phi", "delta", "gamma"
 
     def __init__(self, inst, props, *args, **kwargs):
         """ Do the default init plus the specific diffractometer
@@ -1429,23 +1408,7 @@ class DiffracK6C(DiffracBasis):  # DiffractometerType: "K6C"
 # 4C Diffractometers ####################
 
 
-class Diffrac4C(DiffracBasis):
-
-    """ The PseudoMotor controller for the diffractometer"""
-
-    pseudo_motor_roles = "h", "k", "l"
-    motor_roles = "omega", "chi", "phi", "tth"
-
-    def __init__(self, inst, props, *args, **kwargs):
-        """ Do the default init plus the specific diffractometer
-        staff.
-        @param properties of the controller
-        """
-
-        DiffracBasis.__init__(self, inst, props, *args, **kwargs)
-
-
-class DiffracE4C(DiffracBasis):  # DiffractometerType: "E4CV", "E4CH", "SOLEIL MARS"
+class DiffracE4C(DiffracBasis):
 
     """ The PseudoMotor controller for the diffractometer"""
 
@@ -1461,52 +1424,25 @@ class DiffracE4C(DiffracBasis):  # DiffractometerType: "E4CV", "E4CH", "SOLEIL M
         DiffracBasis.__init__(self, inst, props, *args, **kwargs)
 
 
-class DiffracK4C(DiffracBasis):  # DiffractometerType: "K4CV"
+# wip Generic diffractometer
 
+class Diffractometer(DiffracBasis):
     """ The PseudoMotor controller for the diffractometer"""
-
-    pseudo_motor_roles = "h", "k", "l", "psi", "q", "eulerians1", "eulerians2", "eulerians3"
-    motor_roles = "omega", "chi", "phi", "tth"
 
     def __init__(self, inst, props, *args, **kwargs):
         """ Do the default init plus the specific diffractometer
         staff.
         @param properties of the controller
         """
-
         DiffracBasis.__init__(self, inst, props, *args, **kwargs)
 
+        factory = Hkl.factories()[self.DiffractometerType]
+        self.geometry = factory.create_new_geometry()
+        self.engines = factory.create_new_engine_list()
 
-class Diffrac4CZAXIS(DiffracBasis):  # DiffractometerType: "ZAXIS", "SOLEIL SIXS MED1+2"
-
-    """ The PseudoMotor controller for the diffractometer"""
-
-    pseudo_motor_roles = "h", "k", "l", "q21", "q22", "qperqpar1", "qperqpar2"
-    motor_roles = "omega", "chi", "phi", "tth"
-
-    def __init__(self, inst, props, *args, **kwargs):
-        """ Do the default init plus the specific diffractometer
-        staff.
-        @param properties of the controller
-        """
-
-        DiffracBasis.__init__(self, inst, props, *args, **kwargs)
-
-
-# 2C Diffractometers ####################
-
-
-class Diffrac2C(DiffracBasis):
-
-    """ The PseudoMotor controller for the diffractometer"""
-
-    pseudo_motor_roles = "h", "k", "l"
-    motor_roles = "omega", "tth"
-
-    def __init__(self, inst, props, *args, **kwargs):
-        """ Do the default init plus the specific diffractometer
-        staff.
-        @param properties of the controller
-        """
-
-        DiffracBasis.__init__(self, inst, props, *args, **kwargs)
+        # dynamically set the roles using the hkl library
+        Diffractometer.motor_roles = tuple(self.geometry.axis_names_get())
+        Diffractometer.pseudo_motor_roles = tuple(
+            chain.from_iterable(
+                [engine.pseudo_axis_names_get()
+                 for engine in self.engines.engines_get()]))
