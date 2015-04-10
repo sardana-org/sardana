@@ -1731,7 +1731,8 @@ class CTScan(CScan):
             if self.master != None:
                 self.master.Stop()
 
-    
+    # TODO: Since SEP6, ExtraMntGrp class has to be refactored.
+    # Some methods are not SEP6 compliant. 
     class ExtraMntGrp(object):
         '''Helper class and temporary solution for configuring experimental channels.
         It assumes that experimental channels are implementing:
@@ -1806,6 +1807,7 @@ class CTScan(CScan):
                 self.activeChannels.append(expChannel)
     
         def isMoving(self):
+            # TODO: This method is deprecated, use state method instead.
             for channel in self.activeChannels:
                 if channel.State() == PyTango.DevState.MOVING:
                     return True
