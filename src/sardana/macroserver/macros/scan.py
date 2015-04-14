@@ -670,6 +670,47 @@ class mesh(Macro,Hookable):
     def data(self):
         return self._gScan.data
 
+class dmesh(mesh): 
+    '''same as mesh but it interprets the positions as being relative to the
+    current positions and upon completion, it returns the motors to their
+    original positions'''
+
+    hints = copy.deepcopy(mesh.hints)
+    hints['scan'] = 'dmesh'
+
+    env = copy.deepcopy(mesh.env)
+ 
+    param_def = [
+       ['motor1',      Type.Moveable,   None, 'First motor to move'],
+       ['m1_start_pos',Type.Float,   None, 'Scan start position for first motor'],
+       ['m1_final_pos',Type.Float,   None, 'Scan final position for first motor'],
+       ['m1_nr_interv',Type.Integer, None, 'Number of scan intervals'],
+       ['motor2',      Type.Moveable,   None, 'Second motor to move'],
+       ['m2_start_pos',Type.Float,   None, 'Scan start position for second motor'],
+       ['m2_final_pos',Type.Float,   None, 'Scan final position for second motor'],
+       ['m2_nr_interv',Type.Integer, None, 'Number of scan intervals'],
+       ['integ_time',  Type.Float,   None, 'Integration time'],
+       ['bidirectional',   Type.Boolean, False, 'Save time by scanning s-shaped']
+    ]
+
+    def prepare(self, m1, m1_start_pos, m1_final_pos, m1_nr_interv,
+                m2, m2_start_pos, m2_final_pos, m2_nr_interv, integ_time,
+                bidirectional, **opts):
+        self._motion=self.getMotion( [m1,m2] )
+        self.originalPositions = numpy.array(self._motion.readPosition(force=True))
+        start1 = self.originalPositions[0] +  m1_start_pos
+        start2 =  self.originalPositions[1] +  m2_start_pos
+        final1 = self.originalPositions[0] +  m1_final_pos
+        final2 =  self.originalPositions[1] +  m2_final_pos
+        mesh.prepare(self, m1, start1, final1, m1_nr_interv,
+                m2, start2, final2, m2_nr_interv, integ_time,
+                bidirectional, **opts)
+
+    def do_restore(self):
+        self.info("Returning to start positions...")
+        self.info(self.originalPositions)
+        self._motion.move(self.originalPositions)
+
 class fscan(Macro,Hookable):
     '''N-dimensional scan along user defined paths.
     The motion path for each motor is defined through the evaluation of a
@@ -1154,6 +1195,49 @@ class meshc(Macro,Hookable):
     @property
     def data(self):
         return self._gScan.data
+
+
+class dmeshc(meshc): 
+    '''same as meshc but it interprets the positions as being relative to the
+    current positions and upon completion, it returns the motors to their
+    original positions'''
+
+    hints = copy.deepcopy(meshc.hints)
+    hints['scan'] = 'dmeshc'
+
+    env = copy.deepcopy(meshc.env)
+    
+    param_def = [
+       ['motor1',        Type.Moveable, None, 'First motor to move'],
+       ['m1_start_pos',  Type.Float,    None, 'Scan start position for first motor'],
+       ['m1_final_pos',  Type.Float,    None, 'Scan final position for first motor'],
+       ['slow_down',     Type.Float,    None, 'global scan slow down factor (0, 1]'],
+       ['motor2',        Type.Moveable, None, 'Second motor to move'],
+       ['m2_start_pos',  Type.Float,    None, 'Scan start position for second motor'],
+       ['m2_final_pos',  Type.Float,    None, 'Scan final position for second motor'],
+       ['m2_nr_interv',  Type.Integer,  None, 'Number of scan intervals'],
+       ['integ_time',    Type.Float,    None, 'Integration time'],
+       ['bidirectional', Type.Boolean,  False, 'Save time by scanning s-shaped']
+    ]
+
+    def prepare(self, m1, m1_start_pos, m1_final_pos, slow_down,
+                m2, m2_start_pos, m2_final_pos, m2_nr_interv, integ_time,
+                bidirectional, **opts):
+        self._motion=self.getMotion( [m1,m2] )
+        self.originalPositions = numpy.array(self._motion.readPosition(force=True))
+        start1 = self.originalPositions[0] +  m1_start_pos
+        start2 =  self.originalPositions[1] +  m2_start_pos
+        final1 = self.originalPositions[0] +  m1_final_pos
+        final2 =  self.originalPositions[1] +  m2_final_pos
+        meshc.prepare(self, m1, start1, final1, slow_down,
+                m2, start2, final2, m2_nr_interv, integ_time,
+                bidirectional, **opts)
+
+    def do_restore(self):
+        self.info("Returning to start positions...")
+        self.info(self.originalPositions)
+        self._motion.move(self.originalPositions)
+
     
 class ascanct(aNscan, Macro):
     '''Continuous scan controlled by hardware trigger signals. A sequence of 
