@@ -140,6 +140,12 @@ class Parameterizable(object):
         return self._build_parameter(self.get_result_definition())
 
     def _build_parameter(self, param_def):
+        '''Builds a list of parameters, each of them represented by a dictionary
+        containing information: name, type, default_value, description, min and
+        max values. In case of simple parameters, type is the parameter type.
+        In case of ParamRepeat, type is a list containing definition of the 
+        param repeat.
+        '''
         ret = []
         param_def = param_def or ()
         for p in param_def:
