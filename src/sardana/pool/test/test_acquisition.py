@@ -35,7 +35,8 @@ from sardana.pool import AcqTriggerType
 from sardana.pool.pooltggeneration import PoolTGGeneration
 from sardana.pool.pooltriggergate import TGEventType
 from sardana.pool.poolacquisition import (PoolContHWAcquisition,
-                                          PoolContSWCTAcquisition)
+                                          PoolContSWCTAcquisition,
+                                          PoolCTAcquisition)
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool.test import (createPoolTGGenerationConfiguration,
                                createCTAcquisitionConfiguration,
@@ -182,6 +183,47 @@ class AcquisitionTestCase(BasePoolTestCase):
             time.sleep(1)
 
         self.do_asserts(self.channel_names, repetitions, jobs_before)
+
+    def hw_step_acquisition(self, offset, active_period, passive_period,
+                               repetitions, integ_time):
+        """Executes measurement running the TGGeneration and Acquisition
+        actions according the test parameters. Checks the lengths of the
+        acquired data.
+        """
+
+        channels = []
+        for name in self.channel_names:
+            channels.append(self.cts[name])
+
+        ct_ctrl = self.ctrls[self.chn_ctrl_name]
+
+        # add_listeners
+        # TODO: think of different listeners or even about synchronous read
+        # at the end of the scan
+        #self.addListeners(channels)
+        # creating acquisition configurations
+        self.acq_cfg = createCTAcquisitionConfiguration((ct_ctrl,),
+                                                           (channels,))
+        # creating acquisition actions
+        self.ct_acq = PoolCTAcquisition(channels[0])
+        for channel in channels:
+            self.hw_acq.add_element(channel)
+
+        ct_ctrl.set_ctrl_par('trigger_type', AcqTriggerType.Software)
+
+        ct_acq_args = ()
+        ct_acq_kwargs = {
+            'integ_time': integ_time,
+            'repetitions': repetitions,
+            'config': self.acq_cfg,
+        }
+        self.ct_acq.run(ct_acq_args, **ct_acq_kwargs)
+        # waiting for acquisition 
+        while self.ct_acq.is_running():
+            time.sleep(1)
+
+        # TODO: develop asserts
+
 
     def addListeners(self, chn_list):
         for chn in chn_list:
