@@ -184,8 +184,7 @@ class AcquisitionTestCase(BasePoolTestCase):
 
         self.do_asserts(self.channel_names, repetitions, jobs_before)
 
-    def hw_step_acquisition(self, offset, active_period, passive_period,
-                               repetitions, integ_time):
+    def hw_step_acquisition(self, repetitions, integ_time):
         """Executes measurement running the TGGeneration and Acquisition
         actions according the test parameters. Checks the lengths of the
         acquired data.
@@ -197,17 +196,13 @@ class AcquisitionTestCase(BasePoolTestCase):
 
         ct_ctrl = self.ctrls[self.chn_ctrl_name]
 
-        # add_listeners
-        # TODO: think of different listeners or even about synchronous read
-        # at the end of the scan
-        #self.addListeners(channels)
         # creating acquisition configurations
         self.acq_cfg = createCTAcquisitionConfiguration((ct_ctrl,),
-                                                           (channels,))
+                                                        (channels,))
         # creating acquisition actions
         self.ct_acq = PoolCTAcquisition(channels[0])
         for channel in channels:
-            self.hw_acq.add_element(channel)
+            self.ct_acq.add_element(channel)
 
         ct_ctrl.set_ctrl_par('trigger_type', AcqTriggerType.Software)
 
@@ -220,9 +215,11 @@ class AcquisitionTestCase(BasePoolTestCase):
         self.ct_acq.run(ct_acq_args, **ct_acq_kwargs)
         # waiting for acquisition 
         while self.ct_acq.is_running():
-            time.sleep(1)
+            time.sleep(0.02)
 
-        # TODO: develop asserts
+        v = channel.value.value
+        msg = ("Value shall be a float and it is a %s" % type(v))
+        self.assertIsInstance(v, float, msg)
 
 
     def addListeners(self, chn_list):
