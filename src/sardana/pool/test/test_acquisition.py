@@ -217,9 +217,13 @@ class AcquisitionTestCase(BasePoolTestCase):
         while self.ct_acq.is_running():
             time.sleep(0.02)
 
-        v = channel.value.value
-        msg = ("Value shall be a float and it is a %s" % type(v))
-        self.assertIsInstance(v, float, msg)
+        for channel in channels:
+            name = channel.name
+            value = channel.value.value
+            print 'channel: %s = %s' % (name, value)
+            msg = ('Value for channel %s is of type %s, should be <float>' %
+                    (name, type(value)))
+            self.assertIsInstance(value, float, msg)
 
 
     def addListeners(self, chn_list):
