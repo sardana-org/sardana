@@ -287,8 +287,8 @@ class RecordList(dict):
         self.records.append(rc)
         self[self.recordno] = rc
         self.recordno += 1
-
         self.datahandler.addRecord(self, rc)
+        self.currentIndex +=1
 
     def addData(self, data):
         """Adds data to the record list
