@@ -1285,7 +1285,10 @@ except:
 
 def FileRecorder(filename, macro, **pars):
     ext = os.path.splitext(filename)[1].lower() or '.spec'
-    
+    # Compatibility between extensions hdf5 and h5: for hdf5 format.
+    if ext == ".hdf5":
+        ext = ".h5"
+
     hintedklass = globals().get(getattr(macro,'hints',{}).get('FileRecorder',None))
     
     if hintedklass is not None and issubclass(hintedklass, BaseFileRecorder): 
