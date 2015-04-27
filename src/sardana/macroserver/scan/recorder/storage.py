@@ -289,6 +289,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
         BaseFileRecorder.__init__(self)
         if filename:
             self.setFileName(filename)
+        self._expectedlabels = pars.get('labels', None)
     
     def setFileName(self, filename):
         if self.fd != None:
@@ -323,12 +324,27 @@ class SPEC_FileRecorder(BaseFileRecorder):
         #store names for performance reason
         labels = []
         names = []
+        _d_label_name = {}
+        # REORGANIZE label and names
         for e in env['datadesc']:
             dims = len(e.shape)
             if not dims or (dims == 1 and e.shape[0] == 1):
                 sanitizedlabel = "".join(x for x in e.label.replace(' ', '_') if x.isalnum() or x == '_')  #substitute whitespaces by underscores and remove other non-alphanumeric characters
                 labels.append(sanitizedlabel)
                 names.append(e.name)
+                _d_label_name[sanitizedlabel] = e.name
+        if self._expectedlabels: 
+            names = []     
+            labels = self._expectedlabels
+            for label in labels:
+                try:
+                    names.append(_d_label_name[label])
+                except KeyError:
+                    msg = ('Try to generate a Spec File with an '
+                           'non-existent label: %s' % (label))
+                    raise Exception(msg)
+                  
+        print labels, names
         self.names = names
         
         # prepare pre-scan snapshot
@@ -397,8 +413,11 @@ class SPEC_FileRecorder(BaseFileRecorder):
             label = column_desc.label
             dtype = column_desc.dtype
             pre_scan_value = column_desc.pre_scan_value
+            # skip items
+            #if label not in self._expectedlabels:
+            #    continue
             # skip items with shape different than scalar
-            if  len(shape) > 0:
+            if len(shape) > 0:
                 self.info('Pre-scan snapshot of "%s" will not be stored.' + \
                           ' Reason: value is non-scalar', label)
                 continue
