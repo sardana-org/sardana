@@ -456,7 +456,11 @@ class PoolCTAcquisition(PoolAction):
                 ctrl = pool_ctrl.ctrl
                 pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
                 main_unit_data = pool_ctrl_data['units']['0']
-                elements = main_unit_data['channels']
+                elements = main_unit_data['channels'].keys()
+                timer_monitor = main_unit_data[master_key]
+                # make sure that the timer/monitor is started as the last one
+                elements.remove(timer_monitor)
+                elements.append(timer_monitor)
                 for element in elements:
                     axis = element.axis
                     channel = channels[element]
