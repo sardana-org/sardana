@@ -290,6 +290,9 @@ class SPEC_FileRecorder(BaseFileRecorder):
         if filename:
             self.setFileName(filename)
         self._expectedlabels = pars.get('labels', None)
+
+    def setLabels(self, labels):
+        self._expectedlabels = labels
     
     def setFileName(self, filename):
         if self.fd != None:
@@ -343,8 +346,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
                     msg = ('Try to generate a Spec File with an '
                            'non-existent label: %s' % (label))
                     raise Exception(msg)
-                  
-        print labels, names
+
         self.names = names
         
         # prepare pre-scan snapshot
