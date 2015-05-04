@@ -671,9 +671,20 @@ class mesh(Macro,Hookable):
         return self._gScan.data
 
 class dmesh(mesh): 
-    '''same as mesh but it interprets the positions as being relative to the
-    current positions and upon completion, it returns the motors to their
-    original positions'''
+    '''2d relative grid scan.
+    The relative mesh scan traces out a grid using motor1 and motor2.
+    If first motor is at the position X before the scan begins, it will
+    be scanned from X+m1_start_pos to X+m1_final_pos using the specified
+    m1_nr_interv number of intervals. If the second motor is
+    at the position Y before the scan begins, it will be scanned
+    from Y+m2_start_pos to Y+m2_final_pos using the specified m2_nr_interv
+    number of intervals.
+    Each point is counted for the integ_time seconds (or monitor counts,
+    if integ_time is negative).
+    The scan of motor1 is done at each point scanned by motor2. That is, the
+    first motor scan is nested within the second motor scan.
+    Upon scan completion, it returns the motors to their original positions.
+    '''
 
     hints = copy.deepcopy(mesh.hints)
     hints['scan'] = 'dmesh'
@@ -1198,15 +1209,25 @@ class meshc(Macro,Hookable):
 
 
 class dmeshc(meshc): 
-    '''same as meshc but it interprets the positions as being relative to the
-    current positions and upon completion, it returns the motors to their
-    original positions'''
+    '''2d relative continuous grid scan.
+    The relative mesh scan traces out a grid using motor1 and motor2.
+    If first motor is at the position X before the scan begins, it will
+    be continuously scanned from X+m1_start_pos to X+m1_final_pos.
+    If the second motor is at the position Y before the scan begins,
+    it will be discrete scanned from Y+m2_start_pos to Y+m2_final_pos
+    using the specified m2_nr_interv number of intervals.
+    The scan considers the accel. and decel. times of the motor1, so the
+    counts (for the integ_time seconds or monitor counts,
+    if integ_time is negative) are executed while motor1 is moving
+    with the constant velocity.
+    Upon scan completion, it returns the motors to their original positions.
+    '''
 
     hints = copy.deepcopy(meshc.hints)
     hints['scan'] = 'dmeshc'
 
     env = copy.deepcopy(meshc.env)
-    
+
     param_def = [
        ['motor1',        Type.Moveable, None, 'First motor to move'],
        ['m1_start_pos',  Type.Float,    None, 'Scan start position for first motor'],
