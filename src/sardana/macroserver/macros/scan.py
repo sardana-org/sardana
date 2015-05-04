@@ -719,8 +719,8 @@ class dmesh(mesh):
 
     def do_restore(self):
         self.info("Returning to start positions...")
-        self.info(self.originalPositions)
         self._motion.move(self.originalPositions)
+
 
 class fscan(Macro,Hookable):
     '''N-dimensional scan along user defined paths.
@@ -1256,10 +1256,9 @@ class dmeshc(meshc):
 
     def do_restore(self):
         self.info("Returning to start positions...")
-        self.info(self.originalPositions)
         self._motion.move(self.originalPositions)
 
-    
+
 class ascanct(aNscan, Macro):
     '''Continuous scan controlled by hardware trigger signals. A sequence of 
     trigger pulses is programmed by time. The scan active time is calculated from
