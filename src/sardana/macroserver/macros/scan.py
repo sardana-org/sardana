@@ -1146,8 +1146,12 @@ class meshc(Macro,Hookable):
         self.nr_waypoints = m2_nr_interv + 1
         
         self.name=opts.get('name','meshc')
-        
-        moveables=self.motors
+
+        moveables = []
+        for m, start, final in zip(self.motors, self.starts, self.finals):
+            moveables.append(MoveableDesc(moveable=m, min_value=min(start,final), max_value=max(start,final)))
+        moveables[0].is_reference = True
+
         env=opts.get('env',{})
         constrains=[getCallable(cns) for cns in opts.get('constrains',[UNCONSTRAINED])]
         extrainfodesc = opts.get('extrainfodesc',[])
@@ -1156,7 +1160,7 @@ class meshc(Macro,Hookable):
         #self.pre_scan_hooks = self.getHooks('pre-scan')
         #self.post_scan_hooks = self.getHooks('post-scan'
 
-        self._gScan = CScan(self, self._waypoint_generator, self._period_generator, moveables, env, constrains, extrainfodesc)
+        self._gScan = CSScan(self, self._waypoint_generator, self._period_generator, moveables, env, constrains, extrainfodesc)
         self._gScan.frozen_motors = [m2]
         
     def _waypoint_generator(self):
