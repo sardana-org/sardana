@@ -46,7 +46,19 @@ def createPoolController(pool, conf):
     ctrl_lib_info = ctrl_manager.getControllerLib(kwargs['library'])
     if ctrl_lib_info is not None:
         ctrl_class_info = ctrl_lib_info.get_controller(kwargs['klass'])
-
+    # check if all controller properties are present in conf.
+    # in case of missing prop. and existing default value, use the default
+    properties = kwargs['properties']
+    ctrl_properties = ctrl_class_info.ctrl_properties
+    for prop_info in ctrl_properties.values():
+        prop_name = prop_info.name
+        prop_value = properties.get(prop_name)
+        if prop_value is None:
+            if prop_info.default_value is None:
+                class_name = ctrl_class_info.get_name()
+                raise Exception("Controller class '%s' needs property '%s'"
+                                % (class_name, prop_name))
+            properties[prop_name] = prop_info.default_value
     kwargs['pool'] = pool
     kwargs['lib_info'] = ctrl_lib_info
     kwargs['class_info'] = ctrl_class_info
