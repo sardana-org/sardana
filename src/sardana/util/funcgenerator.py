@@ -39,22 +39,22 @@ class RectangularFunctionGenerator(EventGenerator):
 
     def setActivePeriod(self, active_period):
         self._active_period = active_period
-        # calculate rough number of naps
-        necessary_naps = int(math.ceil(active_period/self.max_nap_time))
-        nap = active_period/necessary_naps
-        self._active_period_necessary_naps = necessary_naps
-        self._active_period_nap = nap
 
     def getActivePeriod(self):
         return self._active_period
 
     def setPassivePeriod(self, passive_period):
         self._passive_period = passive_period
+    
+    def calculateNap(self, period):
         # calculate rough number of naps no longer than max_nap_time
-        necessary_naps = int(math.ceil(passive_period/self.max_nap_time))
-        nap = passive_period/necessary_naps
-        self._passive_period_necessary_naps = necessary_naps
-        self._passive_period_nap = nap
+        necessary_naps = int(math.ceil(period/self.max_nap_time))
+        # avoid zero ZeroDivisionError
+        if necessary_naps == 0:
+            nap = 0
+        else:
+            nap = period/necessary_naps
+        return necessary_naps, nap
 
     def getPassivePeriod(self):
         return self._passive_period
@@ -87,19 +87,28 @@ class RectangularFunctionGenerator(EventGenerator):
     def __run(self):
         '''Generates Sardana events at requested times'''
         i = 0
+        next_time = time.time() + self._offset
         time.sleep(self._offset)
         while i < self._repetitions and self.__work:
+            curr_time = time.time()
+            period = max(0, next_time - curr_time)
+            necessary_naps, nap_time = self.calculateNap(period)
+            next_time += self._active_period
             self.fire_event(TGEventType.Active, i)
-            for _ in xrange(self._active_period_necessary_naps):
-                time.sleep(self._active_period_nap)
+            for _ in xrange(necessary_naps):
+                time.sleep(nap_time)
                 # check if someone has stopped the generation
                 # in the middle of period
                 if not self.__work:
                     self.__alive = False
                     return
+            curr_time = time.time()
+            period = max(0, next_time - curr_time)
+            necessary_naps, nap_time = self.calculateNap(period)
+            next_time += self._passive_period
             self.fire_event(TGEventType.Passive, i)
-            for _ in xrange(self._passive_period_necessary_naps):
-                time.sleep(self._passive_period_nap)
+            for _ in xrange(necessary_naps):
+                time.sleep(nap_time)
                 # check if someone has stopped the generation
                 # in the middle of period
                 if not self.__work:
