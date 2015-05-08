@@ -93,6 +93,7 @@ def sar_demo(self):
     zerod_ctrl_name = get_free_names(db, "zerodctrl", 1)[0]
     oned_ctrl_name = get_free_names(db, "onedctrl", 1)[0]
     twod_ctrl_name = get_free_names(db, "twodctrl", 1)[0]
+    stg_ctrl_name = get_free_names(db, "stgctrl", 1)[0]
     pm_ctrl_name = get_free_names(db, "slitctrl", 1)[0]
     
     motor_names = get_free_names(db, "mot", 4)
@@ -100,6 +101,7 @@ def sar_demo(self):
     zerod_names = get_free_names(db, "zerod", 4)
     oned_names = get_free_names(db, "oned", 1)
     twod_names = get_free_names(db, "twod", 1)
+    stg_names = get_free_names(db, "stg", 1)
     gap, offset = get_free_names(db, "gap", 1) + get_free_names(db, "offset", 1)
     
     mg_name = get_free_names(db, "mntgrp", 1)[0]
@@ -141,7 +143,13 @@ def sar_demo(self):
     for axis, twod_name in enumerate(twod_names, 1):
         self.print("Creating 2D channel", twod_name, "...")
         self.defelem(twod_name , twod_ctrl_name, axis)
-    
+
+    self.print("Creating software TG controller", stg_ctrl_name, "...")
+    self.defctrl("SoftwareTriggerGateController", stg_ctrl_name)
+    for axis, stg_name in enumerate(stg_names, 1):
+        self.print("Creating software TG element", stg_name, "...")
+        self.defelem(stg_name , stg_ctrl_name, axis)
+
     self.print("Creating Slit", pm_ctrl_name, "with", gap, ",", offset, "...")
     sl2t, sl2b = motor_names[:2]
     self.defctrl("Slit", pm_ctrl_name, "sl2t="+sl2t, "sl2b="+sl2b,
@@ -151,9 +159,9 @@ def sar_demo(self):
     self.defmeas(mg_name, *ct_names)
     
     controllers = pm_ctrl_name, mot_ctrl_name, ct_ctrl_name, \
-            zerod_ctrl_name, oned_ctrl_name, twod_ctrl_name
+            zerod_ctrl_name, oned_ctrl_name, twod_ctrl_name, stg_ctrl_name
     elements = [gap, offset] + motor_names + ct_names + \
-            zerod_names + oned_names + twod_names
+            zerod_names + oned_names + twod_names + stg_names
     d = dict(controllers=controllers, elements=elements,
              measurement_groups=[mg_name])
     
