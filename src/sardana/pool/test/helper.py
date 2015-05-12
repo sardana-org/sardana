@@ -49,7 +49,10 @@ def createPoolController(pool, conf):
     # check if all controller properties are present in conf.
     # in case of missing prop. and existing default value, use the default
     properties = kwargs['properties']
-    ctrl_properties = ctrl_class_info.ctrl_properties
+    if ctrl_class_info:
+        ctrl_properties = ctrl_class_info.ctrl_properties
+    else:
+        ctrl_properties = {}
     for prop_info in ctrl_properties.values():
         prop_name = prop_info.name
         prop_value = properties.get(prop_name)
