@@ -232,6 +232,7 @@ class DiffracBasis(PseudoMotorController):
                                            Access: ReadWrite},
                        'LoadCrystal':     {Type: str,
                                            Description: "Load the lattice parameters and reflections from the file corresponding to the given crystal",  # noqa
+                                           Memorize: MemorizedNoInit,
                                            Access: ReadWrite},
                        'SaveCrystal': {Type: int,
                                        Description: "Save current crystal parameters and reflections",  # noqa
@@ -271,6 +272,9 @@ class DiffracBasis(PseudoMotorController):
                        'HKLPseudoMotorList': {Type: (str,),
                                               Description: "Name of the hkl pseudo motors",  # noqa
                                               Access: ReadOnly},
+                       'MotorRoles': {Type: (str,),
+                                          Description: "Name of the motor roles",  # noqa
+                                          Access: ReadOnly},
                        'EnergyDevice': {Type: str,
                                         Description: "Name of the energy device to read the energy from",
                                         Memorize: Memorized,
@@ -1354,6 +1358,10 @@ class DiffracBasis(PseudoMotorController):
             mot_info = motor.name + "  (" + motor.full_name + ")"
             hkl_pm_names.append(mot_info)
         return hkl_pm_names
+
+    def getMotorRoles(self):
+        roles_names = tuple(self.geometry.axis_names_get())
+        return roles_names
 
     def setEnergyDevice(self, value):
         print "setEnergyDevice"
