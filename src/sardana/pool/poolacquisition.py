@@ -145,16 +145,31 @@ class PoolAcquisition(PoolAction):
         contname = name + ".ContAcquisition"
         contctname = name + ".ContCTAcquisition"
         tggenname = name + ".TGGeneration"
-        self._config = None        
+        
+        self._config = None
+        # TODO: verify ct_acq_busy flag implementation
+        # _cont_ct_acq_busy flag is used to mark the software synch acquisition
+        # action as busy - subsequent triggers should be skipped until this 
+        # flag gets reset
+        # this was code in rush, veridy it at some point
+        self._cont_ct_acq_busy = False
         self._0d_acq = zd_acq = Pool0DAcquisition(main_element, name=zerodname)
         self._ct_acq = PoolCTAcquisition(main_element, name=ctname,
                                                                slaves=(zd_acq,))
         self._cont_ct_acq = PoolContSWCTAcquisition(main_element, name=contctname)
+        self._cont_ct_acq.set_finish_hook(self.reset_cont_ct_acq)
         self._cont_acq = PoolContHWAcquisition(main_element, name=contname)
         self._tg_gen = PoolTGGeneration(main_element, name=tggenname)
 
+
     def set_config(self, config):
         self._config = config
+
+    def reset_cont_ct_acq(self):
+        self._cont_ct_acq_busy = False
+
+    def is_cont_ct_acq_busy(self):
+        return self._cont_ct_acq_busy
 
     def event_received(self, *args, **kwargs):
         timestamp = time.time()
@@ -164,11 +179,13 @@ class PoolAcquisition(PoolAction):
             t_str = datetime.datetime.fromtimestamp(timestamp).strftime(t_fmt)
             self.debug('Active event with id: %d received at: %s' %\
                                                               (event_id, t_str))
-            is_acquiring = self._cont_ct_acq.is_running()
-            if is_acquiring:
+            # this code is not thread safe, but for the moment we assume that
+            # only one EventGenerator will work at the same time
+            if self.is_cont_ct_acq_busy():
                 self.debug('Skipping trigger: acquisition is still in progress.')
             else:
                 self.debug('Executing acquisition.')
+                self._cont_ct_acq_busy = True
                 args = ()
                 kwargs = self._config
                 kwargs['synch'] = True
