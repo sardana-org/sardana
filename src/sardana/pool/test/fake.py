@@ -33,10 +33,12 @@ class FakePool(object):
     acq_loop_sleep_time = 0.1
     acq_loop_states_per_value = 10
 
-    def __init__(self):
+    def __init__(self, poolpath=[], loglevel=None):
         self.ctrl_manager = ControllerManager()
+        if loglevel:
+            self.ctrl_manager.setLogLevel(loglevel)
         self.ctrl_manager.set_pool(self)
-        self.ctrl_manager.setControllerPath([])
+        self.ctrl_manager.setControllerPath(poolpath)
         self.elements = {}
         self.elements_by_full_name = {}
         self._freeId = 1
@@ -70,3 +72,9 @@ class FakePool(object):
 
     def get_manager(self):
         return self.ctrl_manager
+
+    def cleanup(self):
+        self.ctrl_manager.cleanUp()
+        self.ctrl_manager.reInit()
+        self.elements = {}
+        self.elements_by_full_name = {}

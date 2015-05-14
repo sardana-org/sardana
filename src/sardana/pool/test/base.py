@@ -26,9 +26,12 @@
 from sardana.pool.test import (FakePool, createPoolController, createCtrlConf,
                                createPoolCounterTimer, createPoolTriggerGate,
                                createElemConf)
+import logging
 
 class BasePoolTestCase(object):
     """Base pool test for setting the environment."""
+    POOLPATH = []
+    LOGLEVEL = logging.WARNING
 
     def createController(self, name, klass, lib, props={}):
         c_cfg = createCtrlConf(self.pool, name, klass, lib, props)
@@ -58,7 +61,9 @@ class BasePoolTestCase(object):
         """
         self.nctctrls = self.ntgctrls = 4
         self.nctelems = self.ntgelems = 5
-        self.pool = FakePool()
+        self.pool = FakePool(self.POOLPATH, self.LOGLEVEL)
+        # Use debug mode
+
         self.ctrls = {}
         self.cts = {}
         self.tgs = {}
@@ -108,6 +113,7 @@ class BasePoolTestCase(object):
             raise Exception(msg)
 
     def tearDown(self):
+        self.pool.cleanup()
         self.pool = None
         self.ctrls = None
         self.cts = None
