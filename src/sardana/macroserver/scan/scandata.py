@@ -29,6 +29,7 @@ __all__ = ["ColumnDesc", "MoveableDesc", "Record", "RecordEnvironment",
            "ScanDataEnvironment", "RecordList", "ScanData", "ScanFactory"]
 
 import copy
+import math
 
 from taurus.core.util.singleton import Singleton
 
@@ -290,6 +291,18 @@ class RecordList(dict):
         self.datahandler.addRecord(self, rc)
         self.currentIndex +=1
 
+    def applyZeroOrderInterpolation(self, record):
+        ''' Apply a zero order interpolation to the given record
+        '''
+        if len(self.records) > 1:
+            data = record.data
+            prev_data = self.records[self.currentIndex - 1].data
+            for k, v in data.items():
+                if v is None:
+                    continue
+                if math.isnan(v):
+                    data[k] = prev_data[k]
+
     def addData(self, data):
         """Adds data to the record list
 
@@ -333,6 +346,7 @@ class RecordList(dict):
             if self.isRecordCompleted(i):
                 rc = self.records[i]
                 self[self.currentIndex] = rc
+                self.applyZeroOrderInterpolation(rc)
                 self.datahandler.addRecord(self, rc)
                 self.currentIndex +=1
 
