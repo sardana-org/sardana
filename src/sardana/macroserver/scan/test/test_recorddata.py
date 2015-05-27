@@ -26,7 +26,6 @@
 import nxs
 import math
 import os
-import numpy
 from taurus.external import unittest
 from taurus.test import insertTest
 from sardana.macroserver.scan.scandata import ScanData
@@ -47,8 +46,14 @@ data1 = {
     'ch3':[float('Nan'), float('Nan'), 32., 33., 34., 35.]
     }
 
+data3 = {
+    'ch1':[10., float('Nan'), 12., [float('Nan')]*3, 16.],
+    'ch2':[20., 21., [22., 23., 24.], float('Nan'), [26.]]
+    }
+
 @insertTest(helper_name='recorddata', data=data1)
 @insertTest(helper_name='recorddata', data=data)
+@insertTest(helper_name='zeroOrderInterpolation', data=data3)
 class ScanDataTestCase(unittest.TestCase):
     """Use ScanData, DataHandler and ScanDataEnvironment in order to record
     data and verify that the stored data in the NeXus file corresponds with
@@ -112,9 +117,38 @@ class ScanDataTestCase(unittest.TestCase):
                 msg = ('%s: input data is not equal to stored data. '
                        'Expected: %s , Read: %s' %\
                        (chn, self.inputs[chn][i], chn_data[i]))
-                if math.isnan(chn_data[i]) and math.isnan(self.inputs[chn][i]):
+                if math.isnan(chn_data[i]) and \
+                    math.isnan(self.inputs[chn][i]):
                     continue
                 self.assertEqual(chn_data[i], self.inputs[chn][i], msg)
+
+    def zeroOrderInterpolation(self, data):
+        """Verify that the data write in the NeXus file has been
+           modified using a zero order interpolation.
+        """
+        self.prepareScandData(data)
+        # Fill the recoder
+        self.scan_data.start()
+        for s in self.srcs:
+            s.start()
+        for s in self.srcs:
+            s.join()
+        self.scan_data.end()
+        # Test the generated nxs file
+        f = nxs.load(self.file_name)
+        m = f['entry1']['measurement']
+        for chn in data.keys():
+            chn_data = m[chn].nxdata
+            #check the interpolations
+            for i in range(len(chn_data)):
+                msg = '%s[%s]: has a "Nan" value.' % (chn, i)
+                if math.isnan(self.inputs[chn][i]):
+                    self.assertFalse(math.isnan(chn_data[i]), msg)
+                    if i > 0:
+                        msg = ('%s[%s]: data has not been interpolated '
+                               'properly. Expected: %s , Read: %s' %\
+                               (chn, i, chn_data[i], chn_data[i-1]))
+                        self.assertEqual(chn_data[i-1], chn_data[i], msg)
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)
