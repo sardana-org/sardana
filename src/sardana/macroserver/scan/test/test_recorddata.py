@@ -51,9 +51,10 @@ data3 = {
     'ch2':[20., 21., [22., 23., 24.], float('Nan'), [26.]]
     }
 
-@insertTest(helper_name='recorddata', data=data1)
-@insertTest(helper_name='recorddata', data=data)
-@insertTest(helper_name='zeroOrderInterpolation', data=data3)
+@insertTest(helper_name='recorddata', data=data1, applyInterpolation=False)
+@insertTest(helper_name='recorddata', data=data, applyInterpolation=False)
+@insertTest(helper_name='zeroOrderInterpolation', data=data3,
+            applyInterpolation=True)
 class ScanDataTestCase(unittest.TestCase):
     """Use ScanData, DataHandler and ScanDataEnvironment in order to record
     data and verify that the stored data in the NeXus file corresponds with
@@ -69,11 +70,12 @@ class ScanDataTestCase(unittest.TestCase):
                                          macro="dscan", overwrite=True)
         self.data_handler.addRecorder(nx_recorder)
 
-    def prepareScandData(self, data):
+    def prepareScandData(self, data, applyInterpolation=False):
         scan_dir, scan_file = os.path.split(self.file_name)
         env = createScanDataEnvironment(data.keys(), scan_dir, scan_file)
         self.scan_data = ScanData(environment=env,
-                                 data_handler=self.data_handler)
+                                 data_handler=self.data_handler,
+                                 applyInterpolation=applyInterpolation)
         self.srcs = []
         self.inputs = {}
         max_len = -1
@@ -95,11 +97,11 @@ class ScanDataTestCase(unittest.TestCase):
             diff = max_len - len(dat)
             self.inputs[name] = dat + [float('Nan')]*diff
 
-    def recorddata(self, data):
+    def recorddata(self, data, applyInterpolation):
         """Verify that the data sent for storage is equal 
            to the actual data present in the created NeXus file.
         """
-        self.prepareScandData(data)
+        self.prepareScandData(data, applyInterpolation)
         # Fill the recoder
         self.scan_data.start()
         for s in self.srcs:
@@ -122,11 +124,11 @@ class ScanDataTestCase(unittest.TestCase):
                     continue
                 self.assertEqual(chn_data[i], self.inputs[chn][i], msg)
 
-    def zeroOrderInterpolation(self, data):
+    def zeroOrderInterpolation(self, data, applyInterpolation):
         """Verify that the data write in the NeXus file has been
            modified using a zero order interpolation.
         """
-        self.prepareScandData(data)
+        self.prepareScandData(data, applyInterpolation)
         # Fill the recoder
         self.scan_data.start()
         for s in self.srcs:

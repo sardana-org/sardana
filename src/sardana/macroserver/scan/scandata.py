@@ -229,15 +229,19 @@ class RecordList(dict):
     """  A RecordList is a set of records: for example a scan.
     It is composed of a environment and a list of records"""
 
-    def __init__(self, datahandler, environ=None):
+    def __init__(self, datahandler, environ=None, applyInterpolation=True):
 
         self.datahandler = datahandler
+        self.applyInterpolation = applyInterpolation
         if environ == None:
             self.environ = RecordEnvironment()
         else:
             self.environ = environ
         self.records = []
         self.rlock = RLock()
+        # currentIndex indicates the place in the records list
+        # where the next completed record will be written
+        self.currentIndex = 0
 
     # make it pickable
     def __getstate__(self):
@@ -294,7 +298,7 @@ class RecordList(dict):
     def applyZeroOrderInterpolation(self, record):
         ''' Apply a zero order interpolation to the given record
         '''
-        if len(self.records) > 1:
+        if self.currentIndex > 0:
             data = record.data
             prev_data = self.records[self.currentIndex - 1].data
             for k, v in data.items():
@@ -346,7 +350,8 @@ class RecordList(dict):
             if self.isRecordCompleted(i):
                 rc = self.records[i]
                 self[self.currentIndex] = rc
-                self.applyZeroOrderInterpolation(rc)
+                if self.applyInterpolation:
+                    self.applyZeroOrderInterpolation(rc)
                 self.datahandler.addRecord(self, rc)
                 self.currentIndex +=1
 
@@ -376,9 +381,10 @@ class RecordList(dict):
 
 class ScanData(RecordList):
 
-    def __init__(self, environment=None, data_handler=None):
+    def __init__(self, environment=None, data_handler=None,
+                 applyInterpolation=True):
         dh = data_handler or DataHandler()
-        RecordList.__init__(self, dh, environment)
+        RecordList.__init__(self, dh, environment, applyInterpolation)
 
 
 class ScanFactory(Singleton):
