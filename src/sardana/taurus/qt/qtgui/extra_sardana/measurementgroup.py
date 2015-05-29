@@ -4,7 +4,7 @@
 ##
 ## This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
 ##
 ## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -300,7 +300,7 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
         elif taurus_role == ChannelView.Normalization:
             ret = Normalization[ret]
         elif taurus_role == ChannelView.PlotAxes:
-            ret = ":".join(ret)
+            ret = "|".join(ret)
         elif taurus_role == ChannelView.Shape:
             ret = str(ret)
         return ret
@@ -318,7 +318,7 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
         elif taurus_role == ChannelView.Normalization:
             data = Normalization[str_value]
         elif taurus_role == ChannelView.PlotAxes:
-            data = [a for a in str_value.split(':')]
+            data = [a for a in str_value.split('|')]
         elif taurus_role == ChannelView.Shape:
             s = str_value
             try:
@@ -672,7 +672,7 @@ class AxesSelector(Qt.QWidget):
             cb.addItems(choices)
 
     def text(self):
-        return ":".join(self.getCurrentChoices())
+        return "|".join(self.getCurrentChoices())
 
     def getCurrentChoices(self):
         if self._LE is None:
@@ -682,7 +682,7 @@ class AxesSelector(Qt.QWidget):
 
     def setCurrentChoices(self, choice):
         if self._LE is None:
-            texts = str(choice).split(':')
+            texts = str(choice).split('|')
             for t, cb in zip(texts[:len(self._CBs)], self._CBs):
                 cb.setCurrentIndex(max(0, cb.findText(t)))
         else:
