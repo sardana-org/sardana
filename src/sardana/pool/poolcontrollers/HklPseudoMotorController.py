@@ -1113,6 +1113,9 @@ class DiffracBasis(PseudoMotorController):
                 line = line.split(" ")
                 if self._savedirectory == " " or self._savedirectory == "":
                     self._savedirectory = line[1]
+            elif line.find("AutoEnergyUpdate") != -1:
+                line = line.split(" ")
+                self._autoenergyupdate = int(line[1])
 
 
         if nb_ref > 1:
@@ -1225,6 +1228,11 @@ class DiffracBasis(PseudoMotorController):
             psi_str = "PsiRef not available in current engine mode\n\n"
 
         crys_file.write(psi_str)
+
+        # write autoenergyupdate value
+ 
+        autoenergyupdate_str = "AutoEnergyUpdate " + str(self._autoenergyupdate) + "\n\n" 
+        crys_file.write(autoenergyupdate_str)
 
         # Only for info in the file but not for loading:
 
