@@ -371,6 +371,8 @@ class RecordList(dict):
         for i in range(start, len(self.records)):
             rc = self.records[i]
             self[self.currentIndex] = rc
+            if self.applyInterpolation:
+                self.applyZeroOrderInterpolation(rc)
             self.datahandler.addRecord(self, rc)
             self.currentIndex +=1
         self.datahandler.endRecordList(self)
