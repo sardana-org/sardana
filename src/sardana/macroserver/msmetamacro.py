@@ -89,6 +89,7 @@ class MacroLibrary(SardanaLibrary):
     get_macro = SardanaLibrary.get_meta
     get_macros = SardanaLibrary.get_metas
     has_macro = SardanaLibrary.has_meta
+    has_macros = SardanaLibrary.has_metas
 
     add_macro_class = SardanaLibrary.add_meta_class
     get_macro_class = SardanaLibrary.get_meta_class
