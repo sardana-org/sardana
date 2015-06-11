@@ -78,8 +78,10 @@ When you have a big library of functions and classes, the approach to expose
 them to sardana should be to first carefully decide which procedures should be
 invoked by a :term:`GUI`\/:term:`CLI` (namely the name of the procedure, which
 parameters it should receive and if it returns any value). Then write the
-macro(s) which invoke the code of the original library. Avoid the temptation to
-convert the functions/classes of the original library into macros because:
+macro(s) which invoke the code of the original library (see :ref:`Using
+external python libraries <sardana-macro-using-external-libraries>`).
+Avoid the temptation to convert the functions/classes of the original library
+into macros because:
 
   - This will most certainly break your code (any code that calls a function
     or class that has been converted to a macro will fail)
@@ -643,6 +645,28 @@ prepare HelloWorld to run only after year 1989:
     
         def run(self):
             print "Hello, World!"
+
+.. _sardana-macro-using-external-libraries:
+
+Using external python libraries
+-------------------------------
+
+Macro libraries can use code e.g. call functions and instantiate classes
+defined by external python libraries. In order to import the external libraries
+inside the macro library, they must be available for the python interpreter
+running the Sardana/MacroServer server
+(see :ref:`Running server <sardana-getting-started-running-server>`).
+
+This could be achieved in two ways:
+
+    - Adding the directory containing the external library to the *PythonPath*
+      property of the MacroServer tango device (path separators can be ``\n``
+      or ``:``).
+    - Adding the directory containing the external library to the *PYTHONPATH*
+      :term:`OS` environment variable of the Sardana/MacroServer process.
+
+The external libraries can be reloaded at Sardana/MacroServer server
+runtime using the :class:`~sardana.macroserver.macros.expert.rellib` macro.
 
 .. _sardana-macro-plotting:
 
