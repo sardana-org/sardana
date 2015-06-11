@@ -255,16 +255,14 @@ class SardanaLibrary(SardanaBaseObject):
                self.has_meta_function(meta_name)
 
     def has_metas(self):
-        """Returns True if meta names exists in this library
+        """Returns True if any meta object exists in the library
         or False otherwise.
 
-        :param meta_name: the meta names
-        :type meta_name: str
-
         :return:
-            True if the given meta (class or function) names belongs exits 
+            True if any meta object (class or function) exists
             in the library or False otherwise
-        :rtype: bool"""
+        :rtype: bool
+        """
         has_metas_bool = False
         if (len(self.get_meta_classes()) > 0 or 
             len(self.get_meta_functions()) > 0):
