@@ -483,7 +483,8 @@ class MacroManager(MacroServerManager):
                 except:
                     self.error("Error adding macro %s", macro.__name__)
                     self.debug("Details:", exc_info=1)
-        self._modules[module_name] = macro_lib
+        if macro_lib.has_macros():
+            self._modules[module_name] = macro_lib
         return macro_lib
 
     def addMacro(self, macro_lib, macro):
