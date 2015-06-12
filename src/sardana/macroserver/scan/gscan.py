@@ -1077,8 +1077,7 @@ class CScan(GScan):
         if restore_positions is not None:
             self._setFastMotions()
             self.macro.info("Correcting overshoot...")
-            self._physical_motion.move(restore_positions)
-            #self.motion.move(restore_positions)
+            self.motion.move(restore_positions)
         self.do_restore()
         self.motion_end_event.set()        
         self.motion_event.set()
@@ -2045,8 +2044,18 @@ class CTScan(CScan):
         self.on_waypoints_end(positions)
         
     def on_waypoints_end(self, restore_positions=None):
+        """To be called by the waypoint thread to handle the end of waypoints
+        (either because no more waypoints or because a macro abort was
+        triggered)"""
         self.macro.debug("on_waypoints_end() entering...")
-        CScan.on_waypoints_end(self, restore_positions=restore_positions)
+        self.set_all_waypoints_finished(True)
+        if restore_positions is not None:
+            self._setFastMotions()
+            self.macro.info("Correcting overshoot...")
+            self._physical_motion.move(restore_positions)
+        self.do_restore()
+        self.motion_end_event.set()        
+        self.motion_event.set()
         self.cleanup()
 
     def scan_loop(self):        
