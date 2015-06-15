@@ -183,9 +183,11 @@ class MacroManager(MacroServerManager):
         self._macro_path = p
 
         macro_file_names = self._findMacroLibNames()
-        for mod_name in macro_file_names:
+        for mod_name, file_name in macro_file_names.iteritems():
+            dir_name = os.path.dirname(file_name)
+            path = [dir_name]
             try:
-                self.reloadMacroLib(mod_name)
+                self.reloadMacroLib(mod_name, path)
             except:
                 pass
 
