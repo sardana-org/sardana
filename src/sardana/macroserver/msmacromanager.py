@@ -401,33 +401,19 @@ class MacroManager(MacroServerManager):
         """Reloads the given library(=module) names.
 
         :raises:
-            ImportError in case the reload process is not successful
             LibraryError if trying to reload a macro library
-            
+
         :param module_name: module name
         :param path:
-            a list of absolute path to search for libraries [default: None,
-            meaning search in MacroPath. If not found, search for a built-in,
-            frozen or special module and continue search in sys.path. ]
+            a list of absolute path to search for libraries [default: None. 
+            Search in sys.path.]
         :return: the reloaded python module object"""
-        
         if module_name in self._modules:
-            raise LibraryError("Cannot use simple reload to reload a Macro Library")
+            raise LibraryError("Cannot use simple " +
+                               "reload to reload a Macro Library")
         
         mod_manager = ModuleManager()
-        retry = path is None
-        try:
-            if retry:
-                path = self.getMacroPath()
-                if path:
-                    path = copy.copy(path)
-                    path.reverse()                
-            return mod_manager.reloadModule(module_name, path)
-        except ImportError:
-            if retry:
-                return mod_manager.reloadModule(module_name, path=None)
-            else:
-                raise
+        return mod_manager.reloadModule(module_name, path=None)
 
     def reloadMacroLib(self, module_name, path=None):
         """Reloads the given library(=module) names.
