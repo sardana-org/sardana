@@ -342,9 +342,11 @@ class relmaclib(Macro):
             self.output("%s successfully (re)loaded (found %d macros)", name, len(macros))
 
 class addmaclib(Macro):
-    """Loads a new macro library. Keep in mind that macros from the new library
-    can override macros already present in the system."""
+    """Loads a new macro library.
 
+    .. warning:: Keep in mind that macros from the new library can override
+                 macros already present in the system.
+    """
     param_def = [
         ['macro_library_name', Type.String, None,
          'The module name to be loaded (without extension)']

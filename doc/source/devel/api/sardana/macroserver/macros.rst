@@ -444,7 +444,13 @@
 .. class:: ioregister.read_ioreg
 
     Reads an output register
-    
+
+.. class:: expert.addmaclib
+
+    Loads a new macro library.
+
+    .. warning:: Keep in mind that macros from the new library can override
+                 macros already present in the system.
 
 .. class:: expert.rellib
 
