@@ -268,6 +268,13 @@ Glossary
         an :term:`expression` or a one of several constructs with a keyword, such
         as :keyword:`if`, :keyword:`while` or :keyword:`for`.
 
+    stepper
+        A stepper motor (or step motor) is a brushless DC electric motor that
+        divides a full rotation into a number of equal steps. The motor's
+        position can then be commanded to move and hold at one of these steps
+        without any feedback sensor (an open-loop controller), as long as the
+        motor is carefully sized to the application.
+
     triple-quoted string
         A string which is bound by three instances of either a quotation mark
         (") or an apostrophe (').  While they don't provide any functionality
