@@ -43,7 +43,15 @@ Glossary
         A template for creating user-defined objects. Class definitions
         normally contain method definitions which operate on instances of the
         class.
-      
+
+    closed loop
+        A.k.a feedback loop, occurs when outputs of a system are routed back
+        as inputs as part of a chain of cause-and-effect that forms a circuit
+        or loop. In case of motion systems, closed loop positioning uses the
+        position sensors e.g. encoders to measure the system's output. The
+        measured signal is looped back to the control unit as input and is used
+        to correct the moveable's position.
+
     expression
         A piece of syntax which can be evaluated to some value.  In other words,
         an expression is an accumulation of expression elements like literals,
