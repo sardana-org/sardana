@@ -33,10 +33,11 @@
 # ----------------------------------------------------------------------------
 
 ''' Creates mocks of modules required by sardana. This is adapted from the
- buildmock module from taurus doc'''
+ buildmock module from taurus/doc
 
-# TODO: this code should reuse the one from taurus/doc/buildock.py
-
+ .. todo:: Whenever taurus provides build mock utilities remove the copy&pasted
+           code. See: https://sourceforge.net/p/tauruslib/tickets/169
+'''
 from __future__ import with_statement
 
 import os
