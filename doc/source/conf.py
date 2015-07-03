@@ -33,30 +33,38 @@ _setup_dir = os.path.abspath(os.path.join(_this_dir, os.path.pardir,
                              os.path.pardir))
 _src_dir = os.path.join(_setup_dir, 'src')
 _mock_path = os.path.join(_setup_dir, 'doc', 'mock.zip')
-
 # append mock dir to the sys path (mocks will be used if needed)
 sys.path.append(_mock_path)
 
 # fix the mock so that the docs work with it
+mock_version = (999, 99, 9, 'mock', 0)
 import PyTango
 if not isinstance(PyTango.Release.version_info, tuple):
-    PyTango.Release.version_info=(999, 99, 9, 'mock', 0)
+    PyTango.Release.version_info = mock_version
+# fix the mock so that the docs work with it
 import taurus
 if not isinstance(taurus.Release.version_info, tuple):
-    taurus.Release.version_info=(999, 99, 9, 'mock', 0)
+    taurus.Release.version_info = mock_version
+    # fix the insertTest decorator so it always returns the decorated class,
+    # otherwise the mocked version of the decorator returns mock objects,
+    # this is causing problems with inheritance diagrams
+    import taurus.test
+    def insertTest(klass, *args, **kwargs):
+        return klass
+    taurus.test.insertTest = insertTest
 
 # Import code from src distribution
 sys.path.insert(0, _src_dir)
 
 import sardana
-
+# TODO: check if it is still necessary to fix_sardana_for_doc
 def fix_sardana_for_doc():
-    
+
     def type_getattr(self, name):
         if name not in self._pending_type_names:
             self._pending_type_names[name] = name
         return self._pending_type_names[name]
-    
+
     import sardana.macroserver.msparameter
     sardana.macroserver.msparameter.TypeNames.__getattr__ = type_getattr
 
