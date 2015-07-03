@@ -48,11 +48,7 @@ import shutil
 
 # Define templates
 
-module_init_template = """\
-from __future__ import print_function
-
-{imports}
-
+_mock_module = """
 class _MockMeta(type):
     def __getattr__(self, name):
         return _Mock()
@@ -81,7 +77,14 @@ class _Mock(object):
     def __index__(*a, **kw): return 1
 """
 
-import_template = """import {name} as {asname}"""
+module_init_template = """\
+from __future__ import print_function
+from _mock import _Mock
+
+{imports}
+"""
+
+import_template = """{asname} = __import__('{fullname}', fromlist=['{name}'])"""
 mock_template = """{name} = _Mock()"""
 
 klass_template = """\
@@ -175,12 +178,26 @@ def build_module(module_name, imports=(), out_prefix='mock',
         # internal imports (from the same package)
         if (inspect.ismodule(element) and
             element.__name__.split('.')[0] == module_name.split('.')[0]):
-            # add the module to the imports set #@TODO: this does not work
-            #imports.add(import_template.format(name=element.__name__,
-            #                                    asname=element_name))
-            # @todo: The above lines were commented because they created
-            # problems with circular imports. So for now we just mock them
-            mocks.append(mock_template.format(name=element_name))
+            # add the module to the imports set
+            full_name = element.__name__
+            name = full_name.split('.')[-1]
+            imports.add(import_template.format(fullname=full_name,
+                                               name=name,
+                                               asname=element_name))
+            # this comment refers to the above code:
+            # when this code was copied from taurus/doc/buildmock the imports
+            # were not done but pure mocks were used, it was warned that the
+            # real imports may cause circular errors, but this was not the case
+            # for mocks needed for sardana
+            # in case of sardana, just mocking modules instead of importing them
+            # was not enough e.g.
+            # "from taurus.external import unittest" is creating a _Mock
+            # unittest and than multiple inheritance using the unittest.TestCase
+            # was not working due to the metaclass problems
+            # TODO: when moving back this utils to taurus check if the circular
+            #       import errors are still present
+            #mocks.append(mock_template.format(name=element_name))
+
             # make sure that the module is built
             build_module(element.__name__, imports=(),
                          out_prefix=out_prefix, exclude=exclude,
@@ -317,14 +334,17 @@ def build_mocks_for_sardana(output='mock.zip'):
     module_names = ['PyTango', 'PyMca', 'numpy', 'PyQt4', 'sip', 'lxml',
                     'guidata', 'guiqwt', 'spyderlib', 'IPython', 'ply',
                     'taurus']
-    module_names = ['PyTango', 'taurus', 'lxml']
 
-    exclude = ['exec', 'None',
+    exclude = ['exec', 'None', 'object',
                'spyderlib.scientific_startup',
                'spyderlib.spyder',
                'spyderlib.widgets.externalshell.start_ipython_kernel']
+
     include = ['__version__']
 
+    _mock_filename = os.path.join(outdir, '_mock.py')
+    with open(_mock_filename, "w") as f:
+        f.write(_mock_module)
     for module_name in module_names:
         build_full_module(module_name, exclude=exclude, include=include,
                           out_prefix=outdir)
