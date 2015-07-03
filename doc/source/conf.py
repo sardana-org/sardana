@@ -32,10 +32,7 @@ _this_dir = os.path.dirname(os.path.abspath(__file__))
 _setup_dir = os.path.abspath(os.path.join(_this_dir, os.path.pardir, 
                              os.path.pardir))
 _src_dir = os.path.join(_setup_dir, 'src')
-_taurus_dir = os.path.join(_setup_dir, 'taurus')
-_taurus_lib_dir = os.path.join(_taurus_dir, 'lib')
-_mock_path = os.path.join(_taurus_dir, 'doc', 'mock.zip')
-
+_mock_path = os.path.join(_setup_dir, 'doc', 'mock.zip')
 
 # append mock dir to the sys path (mocks will be used if needed)
 sys.path.append(_mock_path)
@@ -44,10 +41,12 @@ sys.path.append(_mock_path)
 import PyTango
 if not isinstance(PyTango.Release.version_info, tuple):
     PyTango.Release.version_info=(999, 99, 9, 'mock', 0)
+import taurus
+if not isinstance(taurus.Release.version_info, tuple):
+    taurus.Release.version_info=(999, 99, 9, 'mock', 0)
 
 # Import code from src distribution
 sys.path.insert(0, _src_dir)
-sys.path.insert(0, _taurus_lib_dir)
 
 import sardana
 
