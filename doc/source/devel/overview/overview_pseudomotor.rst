@@ -58,7 +58,13 @@ drift effect.
     the new desired position of the pseudomotor being moved, during the
     calculation of the physical positions. The write value of the
     pseudomotor's position gets updated at each move of the pseudomotor or
-    any of the underneath motors. 
+    any of the underneath motors.
+
+    .. note:: Movements being stopped unexpectedly: abort by the user,
+        over-travel limit or any other exceptional condition may cause
+        considerable discrepancy in the motor's write and read positions.
+        In the subsequent pseudomotor's move, Sardana will also correct this
+        difference by using the write instead of read values.
 
     The drift correction is configurable with the *DriftCorrection* property
     either globally (on the Pool device level) or locally (on each PseudoMotor
