@@ -43,7 +43,15 @@ Glossary
         A template for creating user-defined objects. Class definitions
         normally contain method definitions which operate on instances of the
         class.
-      
+
+    closed loop
+        A.k.a feedback loop, occurs when outputs of a system are routed back
+        as inputs as part of a chain of cause-and-effect that forms a circuit
+        or loop. In case of motion systems, closed loop positioning uses the
+        position sensors e.g. encoders to measure the system's output. The
+        measured signal is looped back to the control unit as input and is used
+        to correct the moveable's position.
+
     expression
         A piece of syntax which can be evaluated to some value.  In other words,
         an expression is an accumulation of expression elements like literals,
@@ -259,6 +267,13 @@ Glossary
         A statement is part of a suite (a "block" of code).  A statement is either
         an :term:`expression` or a one of several constructs with a keyword, such
         as :keyword:`if`, :keyword:`while` or :keyword:`for`.
+
+    stepper
+        A stepper motor (or step motor) is a brushless DC electric motor that
+        divides a full rotation into a number of equal steps. The motor's
+        position can then be commanded to move and hold at one of these steps
+        without any feedback sensor (an open-loop controller), as long as the
+        motor is carefully sized to the application.
 
     triple-quoted string
         A string which is bound by three instances of either a quotation mark
