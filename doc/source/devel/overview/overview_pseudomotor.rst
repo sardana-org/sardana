@@ -74,8 +74,8 @@ drift effect.
 
 Let's use the slit pseudomotor controller to visualize the drift effect.
 This controller comprises two pseudomotors: gap and offset, each of them based
-on the same two physical motors: top and bottom. In this example we will
-simulate the inaccurate positioning of the bottom motor (loosing of 0.002 unit
+on the same two physical motors: right and left. In this example we will
+simulate the inaccurate positioning of the left motor (loosing of 0.002 unit
 every 1 unit move).
 
 *Drift correction disabled*
@@ -85,8 +85,8 @@ every 1 unit move).
 
     .. sourcecode:: spock
 
-        Door_lab_1 [1]: wm top bottom gap offset
-                            top         bottom            gap         offset
+        Door_lab_1 [1]: wm right left gap offset
+                          right           left            gap         offset
         User
          High     Not specified  Not specified  Not specified  Not specified
          Current          0.000          0.000          0.000          0.000
@@ -98,20 +98,20 @@ every 1 unit move).
 
         Door_lab_1 [2]: mv gap 1
 
-   The calculation of the physical motors' positions gives us 0.5 for both top
-   and bottom (in accordance with the current offset of 0)
+   The calculation of the physical motors' positions gives us 0.5 for both right
+   and left (in accordance with the current offset of 0)
 
     .. sourcecode:: spock
 
-        Door_lab_1 [3]: wm top bottom gap offset
-                            top         bottom            gap         offset
+        Door_lab_1 [3]: wm right left gap offset
+                          right           left            gap         offset
         User
          High     Not specified  Not specified  Not specified  Not specified
          Current          0.500          0.498          0.998          0.001
          Low      Not specified  Not specified  Not specified  Not specified
 
    We observe that the gap pseudomotor did not reach the desired
-   position of 1 due to the bottom's positioning problem. Bottom's
+   position of 1 due to the left's positioning problem. Left's
    position write and read discrepancy of 0.002 causes that the gap reached
    only 0.998 and that the offset drifted to 0.001.
 
@@ -122,41 +122,41 @@ every 1 unit move).
 
         Door_lab_1 [4]: mv gap 2
 
-   The calculation of the physical motors' positions gives us 1.001 for top
-   and 0.999 for bottom (in accordance with the current offset of 0.001).
+   The calculation of the physical motors' positions gives us 1.001 for right
+   and 0.999 for left (in accordance with the current offset of 0.001).
 
     .. sourcecode:: spock
 
-        Door_lab_1 [5]: wm top bottom gap offset
-                            top         bottom            gap         offset
+        Door_lab_1 [5]: wm right left gap offset
+                          right           left            gap         offset
         User
          High     Not specified  Not specified  Not specified  Not specified
          Current          1.001          0.997          1.998          0.002
          Low      Not specified  Not specified  Not specified  Not specified
 
    We observe that the gap pseudomotor did not reach the desired position of 2
-   due to the bottom's positioning problem. Bottom's position write and
+   due to the left's positioning problem. Left's position write and
    read discrepancy of 0.002 causes that the gap reached only 1.998 and that
    the offset drifted again by 0.001 and the total accumulated drift is 0.002.
 
 #. Move gap to 3
 
-   The calculation of the physical motors' positions gives us 1.502 for top
-   and 1.498 for bottom (in accordance with the current offset of 0.002).
+   The calculation of the physical motors' positions gives us 1.502 for right
+   and 1.498 for left (in accordance with the current offset of 0.002).
 
     .. sourcecode:: spock
 
         Door_lab_1 [6]: mv gap 3
 
-        Door_lab_1 [7]: wm top bottom gap offset
-                            top         bottom            gap         offset
+        Door_lab_1 [7]: wm right left gap offset
+                          right           left            gap         offset
         User
          High     Not specified  Not specified  Not specified  Not specified
          Current          1.502          1.496          2.998          0.003
          Low      Not specified  Not specified  Not specified  Not specified
 
    We observe that the gap pseudomotor did not reach the desired position of 3
-   due to the bottom's positioning problem. Bottom's position write and
+   due to the left's positioning problem. Left's position write and
    read discrepancy of 0.002 causes that the gap reached only 2.998 and that
    the offset drifted by 0.001 and the total accumulated drift is 0.003.
 
@@ -173,8 +173,8 @@ every 1 unit move).
 
     .. sourcecode:: spock
 
-        Door_lab_1 [1]: wm top bottom gap offset
-                            top         bottom            gap         offset
+        Door_lab_1 [1]: wm right left gap offset
+                          right           left            gap         offset
         User
          High     Not specified  Not specified  Not specified  Not specified
          Current          0.000          0.000          0.000          0.000
@@ -186,20 +186,20 @@ every 1 unit move).
 
         Door_lab_1 [2]: mv gap 1
 
-   The calculation of the physical motors' positions gives us 0.5 for both top
-   and bottom (in accordance with the **last set** offset of 0).
+   The calculation of the physical motors' positions gives us 0.5 for both right
+   and left (in accordance with the **last set** offset of 0).
 
     .. sourcecode:: spock
 
-        Door_lab_1 [3]: wm top bottom gap offset
-                            top         bottom            gap         offset
+        Door_lab_1 [3]: wm right left gap offset
+                          right           left            gap         offset
         User
          High     Not specified  Not specified  Not specified  Not specified
          Current          0.500          0.498          0.998          0.001
          Low      Not specified  Not specified  Not specified  Not specified
 
    We observe that the gap pseudomotor did not reach the desired position of 1
-   due to the bottom's positioning problem. Bottom's position write and
+   due to the left's positioning problem. Left's position write and
    read discrepancy of 0.002 causes that the gap reached only 0.998 and that
    the offset drifted to 0.001.
 
@@ -209,20 +209,20 @@ every 1 unit move).
 
         Door_lab_1 [4]: mv gap 2
 
-   The calculation of the physical motors' positions gives us 1 for top
-   and 1 for bottom (in accordance to the **last set** offset 0).
+   The calculation of the physical motors' positions gives us 1 for right
+   and 1 for left (in accordance to the **last set** offset 0).
 
     .. sourcecode:: spock
 
-        Door_lab_1 [5]: wm top bottom gap offset
-                            top         bottom            gap         offset
+        Door_lab_1 [5]: wm right left gap offset
+                          right           left            gap         offset
         User
          High     Not specified  Not specified  Not specified  Not specified
          Current          1.000          0.998          1.998          0.001
          Low      Not specified  Not specified  Not specified  Not specified
 
    We observe that the gap pseudomotor did not reach the desired position of 2
-   due to the bottom's positioning problem. Bottom's position write and
+   due to the left's positioning problem. Left's position write and
    read discrepancy of 0.002 causes that the gap reached only 1.998 and that
    the offset drifted again by 0.001 but thanks to the drift correction is
    maintained at this value.
@@ -233,20 +233,20 @@ every 1 unit move).
 
         Door_lab_1 [6]: mv gap 3
 
-   The calculation of the physical motors' positions gives us 1.5 for top
-   and 1.5 for bottom (in accordance to the **last set** offset of 0).
+   The calculation of the physical motors' positions gives us 1.5 for right
+   and 1.5 for left (in accordance to the **last set** offset of 0).
 
     .. sourcecode:: spock
 
-        Door_lab_1 [7]: wm top bottom gap offset
-                            top         bottom            gap         offset
+        Door_lab_1 [7]: wm right left gap offset
+                          right           left            gap         offset
         User
          High     Not specified  Not specified  Not specified  Not specified
          Current          1.500          1.498          2.998          0.001
          Low      Not specified  Not specified  Not specified  Not specified
 
    We observe that the gap pseudomotor did not reach the desired position of 3
-   due to the bottom's positioning problem. Bottom's position write and
+   due to the left's positioning problem. Left's position write and
    read discrepancy of 0.002 causes that the gap reached only 2.998 and that
    the offset drifted again by 0.001 but thanks to the drift correction is
    maintained at this value.
