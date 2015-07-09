@@ -976,8 +976,12 @@ class PoolMotorTVReadWidget(TaurusWidget):
             if isinstance(self.parent(), TaurusReadWriteSwitcher):
                 self.parent().enterEdit()
                 return True
-        if obj is self.lbl_read:
-            return self.lbl_read.eventFilter(obj, event)
+        try:
+            if obj is self.lbl_read:
+                return self.lbl_read.eventFilter(obj, event)
+        except AttributeError:
+            # self.lbl_read may not exist now
+            pass
         return True
 
     @ProtectTaurusMessageBox(msg='An error occurred trying to abort the motion.')
@@ -1154,9 +1158,13 @@ class PoolMotorTVWriteWidget(TaurusWidget):
         
     def eventFilter(self, obj, event):
         '''reimplemented to intercept events from the subwidgets'''
-        if obj in (self.btn_to_neg_press, self.btn_to_pos_press):
-            if event.type() == Qt.QEvent.MouseButtonRelease:                
-                self.emitEditingFinished()
+        try:
+            if obj in (self.btn_to_neg_press, self.btn_to_pos_press):
+                if event.type() == Qt.QEvent.MouseButtonRelease:
+                    self.emitEditingFinished()
+        except AttributeError:
+            # self.btn_to_neg_press, self.btn_to_pos_press may not exist now
+            pass
         # emit editingFinished when focus out to a non-editing widget        
         if event.type() == Qt.QEvent.FocusOut:                  
             focused = Qt.qApp.focusWidget()            
