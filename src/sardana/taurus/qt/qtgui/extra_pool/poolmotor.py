@@ -826,15 +826,16 @@ class PoolMotorTVLabelWidget(TaurusWidget):
             motor_dev.getAttribute('PowerOn').write(poweron)
 
     def setModel(self, model):
-        TaurusWidget.setModel(self, model)
         # Handle User/Expert view
         self.disconnect(self.taurusValueBuddy(), Qt.SIGNAL('expertViewChanged(bool)'), self.setExpertView)
         self.disconnect(self.btn_poweron, Qt.SIGNAL('clicked()'), self.setPowerOn)
         if model in (None, ''):
+            self.lbl_alias.setModel(model)
+            TaurusWidget.setModel(self, model)
             return
-        TaurusWidget.setModel(self, model + '/Status')
         self.lbl_alias.taurusValueBuddy = self.taurusValueBuddy
         self.lbl_alias.setModel(model)
+        TaurusWidget.setModel(self, model + '/Status')
 
         self.connect(self.taurusValueBuddy(), Qt.SIGNAL('expertViewChanged(bool)'), self.setExpertView)
         # Handle Power ON/OFF
