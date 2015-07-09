@@ -444,16 +444,36 @@
 .. class:: ioregister.read_ioreg
 
     Reads an output register
-    
+
+.. class:: expert.addmaclib
+
+    Loads a new macro library.
+
+    .. warning:: Keep in mind that macros from the new library can override
+                 macros already present in the system.
 
 .. class:: expert.rellib
 
     Reloads the given python library code from the macro server filesystem.
-    
+
     .. warning:: use with extreme care! Accidentally reloading a system
                  module or an installed python module may lead to unpredictable
-                 behavior 
-    
+                 behavior
+
+    .. warning:: Prior to the Sardana version 1.6.0 this macro was successfully
+                 reloading python libraries located in the MacroPath.
+                 The MacroPath is not a correct place to locate your python
+                 libraries. They may be successfully loaded on the MacroServer
+                 startup, but this can not be guaranteed.
+                 In order to use python libraries within your macro code,
+                 locate them in either of valid system PYTHONPATH or
+                 MacroServer's PythonPath property (of the host where
+                 MacroServer runs).
+                 In order to achieve the previous behavior, just configure the
+                 the same directory in both system PYTHONPATH (or MacroServer's
+                 PythonPath) and MacroPath.
+
+
     .. note:: if python module is used by any macro, don't forget to reload
               the corresponding macros afterward so the changes take effect.
     

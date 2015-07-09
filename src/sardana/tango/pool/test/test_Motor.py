@@ -50,7 +50,6 @@ class ReadMotorPositionOutsideLim(BasePoolTestCase, unittest.TestCase):
         self.elem = PyTango.DeviceProxy(self.elem_name)
         self.elem.DefinePosition(0)
 
-    @unittest.expectedFailure #Note: this tests known bug #238
     def test_read_position_outside_sw_lim(self):
         """Test bug #238: reading position when motor is out of SW lims.
         Verify that position has a numeric type."""

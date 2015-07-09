@@ -1011,6 +1011,12 @@ class CScan(GScan):
         self._moveables_trees, \
         physical_moveables_names, \
         self._physical_moveables = data_structures
+        # The physical motion object contains only physical motors - no pseudo
+        # motors (in case the pseudomotors are involved in the scan,
+        # it comprarises the underneath physical motors)
+        # This is due to the fact that the CTScan coordinates the
+        # pseudomotors' underneeth physical motors on on their constant
+        # velocity in contrary to the the CScan which do not coordinate them
         self._physical_motion = self.macro.getMotion(physical_moveables_names)
         
     def populate_moveables_data_structures(self, moveables):
@@ -1085,8 +1091,7 @@ class CScan(GScan):
         if restore_positions is not None:
             self._setFastMotions()
             self.macro.info("Correcting overshoot...")
-            self._physical_motion.move(restore_positions)
-            #self.motion.move(restore_positions)
+            self.motion.move(restore_positions)
         self.do_restore()
         self.motion_end_event.set()        
         self.motion_event.set()
@@ -2118,8 +2123,24 @@ class CTScan(CScan):
         self.on_waypoints_end(positions)
         
     def on_waypoints_end(self, restore_positions=None):
+        """To be called by the waypoint thread to handle the end of waypoints
+        (either because no more waypoints or because a macro abort was
+        triggered)
+
+        .. todo:: Unify this method for all the continuous scans. Hint: use
+                  the motion property and return the _physical_motion member
+                  instead of _motion or in both cases: CSScan and CTScan
+                  coordinate the physical motors' velocit.
+        """
         self.macro.debug("on_waypoints_end() entering...")
-        CScan.on_waypoints_end(self, restore_positions=restore_positions)
+        self.set_all_waypoints_finished(True)
+        if restore_positions is not None:
+            self._setFastMotions()
+            self.macro.info("Correcting overshoot...")
+            self._physical_motion.move(restore_positions)
+        self.do_restore()
+        self.motion_end_event.set()        
+        self.motion_event.set()
         self.cleanup()
 
     def scan_loop(self):        

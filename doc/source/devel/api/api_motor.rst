@@ -192,16 +192,23 @@ The motor awaits for the :meth:`~sardana.pool.controller.Startable.PreStartOne`
 to signal that the motion will be possible to return successfully from the move
 request.
 
-The next diagram shows the state machine of a motor.
+.. TODO: Once the "caption" bug is fixed (see the next TODO) move the following
+..      text to the figure caption
+
+The following diagram shows the motion state machine of a motor. The black state 
+transitions are the ones which can be triggered by a *user*.
+For simplicity, only the most relevant states involved in a motor
+motion are shown. Error states are omitted.
 
 .. graphviz:: motion.dot
     :alt: Basic motion diagram
-    :caption:
-        Basic motion diagram. The black state transitions are the ones which
-        can be triggered by a *user*.
-        For simplicity, only the most relevant states involved in a motor
-        motion are shown. Error states are omited
 
-
-
-
+.. TODO: Figure captions for figures using graphviz (:caption:) does not work
+..       for version 1.3.1 of Sphinx 
+..       (see: https://github.com/sphinx-doc/sphinx/issues/1788)
+..       It will be fixed in next Sphinx release.
+..    :caption:
+..        Basic motion diagram. The black state transitions are the ones which
+..        can be triggered by a *user*.
+..        For simplicity, only the most relevant states involved in a motor
+..        motion are shown. Error states are omitted

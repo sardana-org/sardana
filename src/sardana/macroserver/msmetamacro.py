@@ -89,6 +89,7 @@ class MacroLibrary(SardanaLibrary):
     get_macro = SardanaLibrary.get_meta
     get_macros = SardanaLibrary.get_metas
     has_macro = SardanaLibrary.has_meta
+    has_macros = SardanaLibrary.has_metas
 
     add_macro_class = SardanaLibrary.add_meta_class
     get_macro_class = SardanaLibrary.get_meta_class
@@ -139,6 +140,12 @@ class Parameterizable(object):
         return self._build_parameter(self.get_result_definition())
 
     def _build_parameter(self, param_def):
+        '''Builds a list of parameters, each of them represented by a dictionary
+        containing information: name, type, default_value, description, min and
+        max values. In case of simple parameters, type is the parameter type.
+        In case of ParamRepeat, type is a list containing definition of the 
+        param repeat.
+        '''
         ret = []
         param_def = param_def or ()
         for p in param_def:

@@ -27,27 +27,36 @@
 This module defines the test suite for the whole Sardana package
 Usage::
 
-  from taurus.test import testsuite
+  from sardana.test import testsuite
   testsuite.run()
 
 """
 
 __docformat__ = 'restructuredtext'
 
-import os
+import sys, os
 from taurus.external import unittest
 import sardana
 
 
-def run(disableLogger=True):
-    '''Runs all tests for the taurus package'''
+def run():
+    '''Runs all tests for the taurus package
+
+    :returns: the test runner result
+    :rtype: unittest.result.TestResult
+    '''
     # discover all tests within the sardana/src directory
     loader = unittest.defaultTestLoader
     suite = loader.discover(os.path.dirname(sardana.__file__))
     # use the basic text test runner that outputs to sys.stderr
     runner = unittest.TextTestRunner(descriptions=True, verbosity=2)
     # run the test suite
-    runner.run(suite)
+    result = runner.run(suite)
+    return result
 
 if __name__ == '__main__':
-    run()
+    result = run()
+    exit_code = 0
+    if not result.wasSuccessful():
+        exit_code = 1
+    sys.exit(exit_code)
