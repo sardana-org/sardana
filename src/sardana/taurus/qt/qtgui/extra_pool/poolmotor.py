@@ -1438,7 +1438,11 @@ class PoolMotorTV(TaurusValue):
         self.writeWidget(followCompact=True).btn_to_neg.setEnabled(enabled)
         self.writeWidget(followCompact=True).btn_to_neg_press.setEnabled(enabled)
 
-    def updatePowerOn(self, poweron):
+    def updatePowerOn(self, poweron='__no_argument__'):
+        if poweron == '__no_argument__':
+            msg = 'updatePowerOn called without args (bug in old PyQt). Ignored'
+            self.debug(msg)
+            return
         btn_text = 'Set ON'
         if poweron:
             btn_text = 'Set OFF'
@@ -1452,7 +1456,11 @@ class PoolMotorTV(TaurusValue):
         #self.labelWidget().lbl_alias.updateStyle()
         self.labelWidget().lbl_alias.controllerUpdate()
 
-    def updatePosition(self, position):
+    def updatePosition(self, position='__no_argument__'):
+        if position == '__no_argument__':
+            msg = 'updatePowerOn called without args (bug in old PyQt). Ignored'
+            self.debug(msg)
+            return
         # we do not need the position for nothing...
         # we just want to check if any software limit is 'active'
         # and updateLimits takes care of it
