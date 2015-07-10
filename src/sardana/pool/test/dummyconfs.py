@@ -30,7 +30,8 @@ __all__ = ['dummyMeasurementGroupConf01',
            'dummyCounterTimerConf01', 'dummyCounterTimerConf02', 
            'dummyCounterTimerConf03', 'dummyCounterTimerConf04',
            'dummyTriggerGateConf01', 'dummyTriggerGateConf02',
-           'dummyTriggerGateConf03', 'dummyTriggerGateConf04']
+           'dummyTriggerGateConf03', 'dummyTriggerGateConf04',
+           'dummyPoolSTGCtrlConf01']
 
 
 # Pool Measuremeng Group
@@ -106,6 +107,19 @@ dummyPoolTGCtrlConf01 = { 'class_info': None,
                         'klass': 'DummyTriggerGateController',
                         'lib_info': None,
                         'library': 'DummyTriggerGateController.py',
+                        'name': '',
+                        'pool': None,
+                        'properties': {},
+                        'role_ids': '',
+                        'type': 'TGChannel' }
+
+'''Minimum configuration to create a Pool Software TriggerGate controller'''
+dummyPoolSTGCtrlConf01 = { 'class_info': None,
+                        'full_name': '',
+                        'id': 1,
+                        'klass': 'SoftwareTriggerGateController',
+                        'lib_info': None,
+                        'library': 'SoftwareTriggerGateController.py',
                         'name': '',
                         'pool': None,
                         'properties': {},
