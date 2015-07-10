@@ -269,15 +269,16 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
             t_fmt = '%Y-%m-%d %H:%M:%S.%f'
             t_str = datetime.datetime.fromtimestamp(timestamp).strftime(t_fmt)
             print 'Active event with id: %d received at: %s' % (event_id, t_str)
-            is_acquiring = self.sw_acq.is_running()
-            if is_acquiring:
-                pass # skipping acquisition cause the previous on is ongoing
+            if self.sw_acq_busy.is_set():
+                # skipping acquisition cause the previous on is ongoing
+                return
             else:
+                self.sw_acq_busy.set()
                 args = dict(self.sw_acq_args)
                 kwargs = dict(self.sw_acq_kwargs)
                 kwargs['idx'] = event_id
                 kwargs['synch'] = True
-                get_thread_pool().add(self.sw_acq.run, 
+                get_thread_pool().add(self.sw_acq.run,
                                       None,
                                       *args,
                                       **kwargs)
@@ -313,6 +314,16 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         # creating acquisition actions
         self.hw_acq = PoolContHWAcquisition(ct_1_1)
         self.sw_acq = PoolContSWCTAcquisition(ct_2_1)
+        # Since we deposit the software acquisition action on the PoolThread's
+        # queue we can not rely on the action's state - one may still wait
+        # in the queue (its state has not changed to running yet) and we would
+        # be depositing another one. This way we may be starting multiple
+        # times the same action (with the same elements involved), what results
+        # in "already involved in operation" errors.
+        # Use an external Event flag to mark if we have any software
+        # acquisition action pending.
+        self.sw_acq_busy = threading.Event()
+        self.sw_acq.set_finish_hook(self.sw_acq_busy.clear)
 
         self.hw_acq.add_element(ct_1_1)
         self.sw_acq.add_element(ct_2_1)
