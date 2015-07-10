@@ -8,7 +8,7 @@ from sardana.pool.pooltggeneration import PoolTGGeneration
 from sardana.pool.pooltriggergate import TGEventType
 
 from sardana.pool.test import (FakePool, createPoolController,
-                               createPoolTriggerGate, dummyPoolTGCtrlConf01,
+                               createPoolTriggerGate, dummyPoolSTGCtrlConf01,
                                dummyTriggerGateConf01, 
                                createPoolTGGenerationConfiguration)
 
@@ -67,8 +67,8 @@ class TriggerGateReceiver(object):
         i = 0
         count = self.count
         periods = []
-        mean_c2c, std_c2c, max_c2c = 0, 0, 0 
-        while i < count:            
+        mean_c2c, std_c2c, max_c2c = 0, 0, 0
+        while i < count:
             t1 = self.active_events[i]
             t2 = self.active_events[i+1]
             period = t2 - t1
@@ -106,18 +106,16 @@ class PoolDummyTriggerGateTestCase(unittest.TestCase):
         unittest.TestCase.setUp(self)
         pool = FakePool()
         
-        dummy_tg_ctrl = createPoolController(pool, dummyPoolTGCtrlConf01)        
-        self.dummy_tg = createPoolTriggerGate(pool, dummy_tg_ctrl, 
-                                                        dummyTriggerGateConf01)
+        dummy_tg_ctrl = createPoolController(pool, dummyPoolSTGCtrlConf01)
+        self.dummy_tg = createPoolTriggerGate(pool, dummy_tg_ctrl,
+                                              dummyTriggerGateConf01)
         # marrying the element with the controller
         dummy_tg_ctrl.add_element(self.dummy_tg)
         
         # TODO: at the moment of writing this test, the configuration of 
         # TGGenerationAction s
-        self.cfg = createPoolTGGenerationConfiguration((dummy_tg_ctrl,), 
-                                        (dummyPoolTGCtrlConf01,),
-                                        ((self.dummy_tg,),),
-                                        ((dummyTriggerGateConf01,),))
+        self.cfg = createPoolTGGenerationConfiguration((dummy_tg_ctrl,),
+                                                       ((self.dummy_tg,),))
         
         # marrying the element with the action
         self.tg_action = PoolTGGeneration(self.dummy_tg)
@@ -127,18 +125,20 @@ class PoolDummyTriggerGateTestCase(unittest.TestCase):
         # the triggers were correctly generated
         # TODO: For the moment the insertion of the receiver is very "nasty"
         # refactor it, whenever a correct EventChannel mechanism is
-        self.tg_receiver = TriggerGateReceiver()        
-        dummy_tg_ctrl._ctrl.add_listener(self.tg_receiver)
+        self.tg_receiver = TriggerGateReceiver()
+
+        self.tg_action.add_listener(self.tg_receiver)
 
     def generation(self, offset, active_period, passive_period, repetitions):
         """Verify that the created PoolTGAction start_action starts correctly 
         the involved controller."""
         args = ()
-        kwargs = {'config': self.cfg}
-        self.dummy_tg.set_repetitions(repetitions)
-        self.dummy_tg.set_offset(offset)
-        self.dummy_tg.set_active_period(active_period)
-        self.dummy_tg.set_passive_period(passive_period)
+        kwargs = {'config': self.cfg,
+                  'offset': offset,
+                  'active_period': active_period,
+                  'passive_period': passive_period,
+                  'repetitions': repetitions
+                 }
         self.tg_action.start_action(*args, **kwargs)
         self.tg_action.action_loop()
         
@@ -147,7 +147,7 @@ class PoolDummyTriggerGateTestCase(unittest.TestCase):
         msg = ('Received triggers: %d does not correspond to generated: %d' %\
                (received_triggers, repetitions))
         self.assertEqual(received_triggers, repetitions, msg)
-        
+
         # testing cycle-to-cycle jitter
         c2c_mean_limit = 0.00001
         c2c_std_limit = 0.00001
@@ -162,7 +162,7 @@ class PoolDummyTriggerGateTestCase(unittest.TestCase):
         msg = 'Max cycle-to-cycle jitter (%f) is higher than limit (%f)' %\
                                                       (c2c_max, c2c_max_limit)
         self.assertLess(c2c_mean, c2c_mean_limit, msg)
-        
+
         # testing characteristics
         characteristics = self.tg_receiver.calc_characteristics()
         i = 0
@@ -172,8 +172,8 @@ class PoolDummyTriggerGateTestCase(unittest.TestCase):
             measured_passive_period = periods[1]
             msg = ('Measured active period: %f does not correspond to ' +\
                    'generated: %f' ) % (measured_active_period, active_period)
-            self.assertAlmostEqual(measured_active_period, active_period, 
-                                   delta=.001, msg=msg) 
+            self.assertAlmostEqual(measured_active_period, active_period,
+                                   delta=.001, msg=msg)
             msg = ('Measured passive period: %f does not correspond to ' +\
                    'generated: %f') % (measured_passive_period, passive_period)
             self.assertAlmostEqual(measured_passive_period, passive_period,
