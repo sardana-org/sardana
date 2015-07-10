@@ -313,7 +313,6 @@ class RecordList(dict):
         :param data: dictionary with two mandatory elements: label - string 
                      and data - list of values
         :type data:  dict"""
-        #TODO: re-implement to handle list of data
         with self.rlock:
             label = data['label']
             rawData = data['data']
