@@ -1814,13 +1814,6 @@ class CTScan(CScan):
                 expChannel.getHWObj().set_timeout_millis(120000) #in case of readout of position channels, it can take really long...
                 self.activeChannels.append(expChannel)
     
-        def isMoving(self):
-            # TODO: This method is deprecated, use state method instead.
-            for channel in self.activeChannels:
-                if channel.State() == PyTango.DevState.MOVING:
-                    return True
-            return False
-    
         def start(self):
 #             self.mntGrp.start_async_acq_sequence(self.acqTime, self.dataCb)
             self.mntGrp.addOnDataChangedListeners(self.dataCb)
