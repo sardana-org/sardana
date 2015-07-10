@@ -29,7 +29,6 @@ import threading
 
 from taurus.external import unittest
 from taurus.test import insertTest
-#TODO: import mock using taurus.external
 
 from sardana.pool import AcqTriggerType
 from sardana.pool.pooltggeneration import PoolTGGeneration
@@ -40,7 +39,7 @@ from sardana.pool.poolacquisition import (PoolContHWAcquisition,
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool.test import (createPoolTGGenerationConfiguration,
                                createCTAcquisitionConfiguration,
-                               BasePoolTestCase)
+                               BasePoolTestCase, FakeElement)
 
 class AttributeListener(object):
 
@@ -119,8 +118,8 @@ class AcquisitionTestCase(BasePoolTestCase):
                                       **kwargs)
 
     def createPoolTGGeneration(self, tg_list):
-        # TODO: the main_element should be a measurement group not an element
-        self.tggeneration = PoolTGGeneration(tg_list[0])
+        main_element = FakeElement(self.pool)
+        self.tggeneration = PoolTGGeneration(main_element)
         for tg in tg_list:
             self.tggeneration.add_element(tg)
         self.tggeneration.add_listener(self)
@@ -200,7 +199,8 @@ class AcquisitionTestCase(BasePoolTestCase):
         self.acq_cfg = createCTAcquisitionConfiguration((ct_ctrl,),
                                                         (channels,))
         # creating acquisition actions
-        self.ct_acq = PoolCTAcquisition(channels[0])
+        main_element = FakeElement(self.pool)
+        self.ct_acq = PoolCTAcquisition(main_element)
         for channel in channels:
             self.ct_acq.add_element(channel)
 

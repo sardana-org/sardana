@@ -23,7 +23,7 @@
 ##
 ##############################################################################
 
-__all__ = ['FakePool']
+__all__ = ['FakePool', 'FakeElement']
 
 from sardana.pool.poolcontrollermanager import ControllerManager
 
@@ -78,3 +78,9 @@ class FakePool(object):
         self.ctrl_manager.reInit()
         self.elements = {}
         self.elements_by_full_name = {}
+
+
+class FakeElement(object):
+    '''Fake pool element'''
+    def __init__(self, pool):
+        self.pool = pool
