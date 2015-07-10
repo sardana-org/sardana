@@ -97,26 +97,6 @@ class AcquisitionTestCase(BasePoolTestCase):
         self.l = AttributeListener()
         self.channel_names = []
 
-    def event_received(self, *args, **kwargs):
-        """Executes a single software triggered acquisition."""
-        timestamp = time.time()
-        _, event_type, event_id = args
-        if event_type == TGEventType.Active:
-            t_fmt = '%Y-%m-%d %H:%M:%S.%f'
-            t_str = datetime.datetime.fromtimestamp(timestamp).strftime(t_fmt)
-            is_acquiring = self.sw_acq.is_running()
-            if is_acquiring:
-                pass # skipping acquisition cause the previous on is ongoing
-            else:
-                args = dict(self.sw_acq_args)
-                kwargs = dict(self.sw_acq_kwargs)
-                kwargs['idx'] = event_id
-                kwargs['synch'] = True
-                get_thread_pool().add(self.sw_acq.run, 
-                                      None,
-                                      *args,
-                                      **kwargs)
-
     def createPoolTGGeneration(self, tg_list):
         main_element = FakeElement(self.pool)
         self.tggeneration = PoolTGGeneration(main_element)
@@ -280,6 +260,27 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         """
         unittest.TestCase.setUp(self)
         AcquisitionTestCase.setUp(self)
+
+    def event_received(self, *args, **kwargs):
+        """Executes a single software triggered acquisition."""
+        timestamp = time.time()
+        _, event_type, event_id = args
+        if event_type == TGEventType.Active:
+            t_fmt = '%Y-%m-%d %H:%M:%S.%f'
+            t_str = datetime.datetime.fromtimestamp(timestamp).strftime(t_fmt)
+            print 'Active event with id: %d received at: %s' % (event_id, t_str)
+            is_acquiring = self.sw_acq.is_running()
+            if is_acquiring:
+                pass # skipping acquisition cause the previous on is ongoing
+            else:
+                args = dict(self.sw_acq_args)
+                kwargs = dict(self.sw_acq_kwargs)
+                kwargs['idx'] = event_id
+                kwargs['synch'] = True
+                get_thread_pool().add(self.sw_acq.run, 
+                                      None,
+                                      *args,
+                                      **kwargs)
 
     def continuous_acquisition(self, offset, active_period, passive_period,
                                repetitions, integ_time):
