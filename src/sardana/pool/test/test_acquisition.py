@@ -263,12 +263,8 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
 
     def event_received(self, *args, **kwargs):
         """Executes a single software triggered acquisition."""
-        timestamp = time.time()
         _, event_type, event_id = args
         if event_type == TGEventType.Active:
-            t_fmt = '%Y-%m-%d %H:%M:%S.%f'
-            t_str = datetime.datetime.fromtimestamp(timestamp).strftime(t_fmt)
-            print 'Active event with id: %d received at: %s' % (event_id, t_str)
             if self.sw_acq_busy.is_set():
                 # skipping acquisition cause the previous on is ongoing
                 return
