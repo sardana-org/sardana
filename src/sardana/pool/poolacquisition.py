@@ -33,6 +33,7 @@ __docformat__ = 'restructuredtext'
 
 import time
 import datetime
+import threading
 
 from taurus.core.util.log import DebugIt
 from taurus.core.util.enumeration import Enumeration
@@ -145,19 +146,13 @@ class PoolAcquisition(PoolAction):
         contname = name + ".ContAcquisition"
         contctname = name + ".ContCTAcquisition"
         tggenname = name + ".TGGeneration"
-        
+
         self._config = None
-        # TODO: verify ct_acq_busy flag implementation
-        # _cont_ct_acq_busy flag is used to mark the software synch acquisition
-        # action as busy - subsequent triggers should be skipped until this 
-        # flag gets reset
-        # this was code in rush, veridy it at some point
-        self._cont_ct_acq_busy = False
+        self._cont_ct_acq_busy = threading.Event()
         self._0d_acq = zd_acq = Pool0DAcquisition(main_element, name=zerodname)
         self._ct_acq = PoolCTAcquisition(main_element, name=ctname,
                                                                slaves=(zd_acq,))
         self._cont_ct_acq = PoolContSWCTAcquisition(main_element, name=contctname)
-        self._cont_ct_acq.set_finish_hook(self.reset_cont_ct_acq)
         self._cont_acq = PoolContHWAcquisition(main_element, name=contname)
         self._tg_gen = PoolTGGeneration(main_element, name=tggenname)
 
@@ -165,11 +160,19 @@ class PoolAcquisition(PoolAction):
     def set_config(self, config):
         self._config = config
 
-    def reset_cont_ct_acq(self):
-        self._cont_ct_acq_busy = False
+    def set_cont_ct_acq_busy(self, busy):
+        '''Callback to reset busy event about the continuous count acquisition.
+        It is triggered by the WorkerThread when the acquisition has finished.
+        '''
+        if busy is True:
+            self._cont_ct_acq_busy.set()
+        else:
+            self._cont_ct_acq_busy.clear()
 
     def is_cont_ct_acq_busy(self):
-        return self._cont_ct_acq_busy
+        '''Verify if the continuous count acquisition is busy
+        '''
+        return self._cont_ct_acq_busy.is_set()
 
     def event_received(self, *args, **kwargs):
         timestamp = time.time()
@@ -182,15 +185,20 @@ class PoolAcquisition(PoolAction):
             # this code is not thread safe, but for the moment we assume that
             # only one EventGenerator will work at the same time
             if self.is_cont_ct_acq_busy():
-                self.debug('Skipping trigger: acquisition is still in progress.')
+                msg = 'Skipping trigger: acquisition is still in progress.'
+                self.debug(msg)
+                return
             else:
+                self.set_cont_ct_acq_busy(True)
                 self.debug('Executing acquisition.')
-                self._cont_ct_acq_busy = True
                 args = ()
                 kwargs = self._config
                 kwargs['synch'] = True
                 kwargs['idx'] = event_id
-                get_thread_pool().add(self._run_ct_continuous, None, *args, **kwargs)
+                get_thread_pool().add(self._run_ct_continuous,
+                                      callback=self.set_cont_ct_acq_busy,
+                                      *args,
+                                      **kwargs)
 
     def is_running(self):
         return self._0d_acq.is_running() or\
@@ -199,9 +207,10 @@ class PoolAcquisition(PoolAction):
                self._cont_acq.is_running() or\
                self._tg_gen.is_running()
 
-    def run(self, *args, **kwargs):        
+    def run(self, *args, **kwargs):
         n = kwargs.get('multiple', 1)
-        # run multiple acquisition - currently used by StartMultiple Tango command
+        # run multiple acquisition - currently used by StartMultiple 
+        # Tango command
         if n > 1:
             return self._run_multiple(*args, **kwargs)
         synchronized = kwargs.get('synchronized', False)
@@ -256,10 +265,17 @@ class PoolAcquisition(PoolAction):
         self._tg_gen.run(*args, **tg_kwargs)
 
     def _run_ct_continuous(self, *args, **kwargs):
-        """Run a single acquisition with the softwaer triggered elements 
+        """Run a single acquisition with the software triggered elements
         during the continuous acquisition
         """
-        self._cont_ct_acq.run(*args, **kwargs)
+        try:
+            self._cont_ct_acq.run(*args, **kwargs)
+        except:
+            self.error('Continuous Count Acquisition has failed')
+            self.debug('Details:', exc_info=True)
+        finally:
+            # return False indicating that the acquisition is not busy 
+            return False
 
     def _get_acq_for_element(self, element):
         actions = []        
