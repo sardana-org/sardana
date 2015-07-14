@@ -91,9 +91,9 @@ class RectangularFunctionGenerator(EventGenerator):
         time.sleep(self._offset)
         while i < self._repetitions and self.__work:
             curr_time = time.time()
+            next_time += self._active_period
             period = max(0, next_time - curr_time)
             necessary_naps, nap_time = self.calculateNap(period)
-            next_time += self._active_period
             self.fire_event(TGEventType.Active, i)
             for _ in xrange(necessary_naps):
                 time.sleep(nap_time)
@@ -103,9 +103,9 @@ class RectangularFunctionGenerator(EventGenerator):
                     self.__alive = False
                     return
             curr_time = time.time()
+            next_time += self._passive_period
             period = max(0, next_time - curr_time)
             necessary_naps, nap_time = self.calculateNap(period)
-            next_time += self._passive_period
             self.fire_event(TGEventType.Passive, i)
             for _ in xrange(necessary_naps):
                 time.sleep(nap_time)
