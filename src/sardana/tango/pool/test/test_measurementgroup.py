@@ -196,8 +196,14 @@ doc_6 = 'Stop of the synchronized acquisition with four channels from two'\
 
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_1,
             params=params_1, config=config_1)
-@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_2,
-            params=params_1, config=config_2)
+# TODO: implement dedicated asserts/test for only software synchronized
+#       acquisition.
+#       Until this TODO gets implemented we comment the test since it may 
+#       fail (last acquisitions may not be executed - the previous one could
+#       still be in progress, so the shape of data will not correspond to the 
+#       number of repetitions
+# @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_2,
+#             params=params_1, config=config_2)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_3,
             params=params_1, config=config_3)
 @insertTest(helper_name='stop_meas_cont_acquisition', test_method_doc=doc_4,
