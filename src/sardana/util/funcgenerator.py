@@ -28,6 +28,9 @@ class RectangularFunctionGenerator(EventGenerator):
         self.__thread = None # will be allocated in prepare
         self.__stop = False
         self.__alive = False
+        self.name = ('RectangularFunctionGenerator-%d' % \
+                     RectangularFunctionGenerator.id)
+        RectangularFunctionGenerator.id += 1
 
     def setRepetitions(self, repetitions):
         self._repetitions = repetitions
@@ -80,8 +83,8 @@ class RectangularFunctionGenerator(EventGenerator):
             return self.__alive
 
     def prepare(self):
-        thread_name = 'RectangularFunctionGenerator-%d' % (self.id)
-        self.__thread = threading.Thread(target=self.__run, name = thread_name)
+        self.__thread = threading.Thread(target=self.__run,
+                                         name=self.name)
 
     def start(self):
         '''Start function generator'''
