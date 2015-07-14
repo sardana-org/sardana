@@ -25,7 +25,8 @@ class RectangularFunctionGenerator(EventGenerator):
         self._passive_period_necessary_naps = 1
         # threading private members
         self.__lock = threading.Lock()
-        self.__work = False
+        self.__thread = None # will be allocated in prepare
+        self.__stop = False
         self.__alive = False
 
     def setRepetitions(self, repetitions):
@@ -70,12 +71,13 @@ class RectangularFunctionGenerator(EventGenerator):
             time.sleep(nap_time)
             # check if someone has stopped the generation
             # in the middle of period
-            if not self.__work:
-                self.__alive = False
-                raise StopException('Function generation stopped')
+            with self.__lock:
+                if self.__stop:
+                    raise StopException('Function generation stopped')
 
     def isGenerating(self):
-        return self.__alive
+        with self.__lock:
+            return self.__alive
 
     def prepare(self):
         thread_name = 'RectangularFunctionGenerator-%d' % (self.id)
@@ -83,20 +85,18 @@ class RectangularFunctionGenerator(EventGenerator):
 
     def start(self):
         '''Start function generator'''
-        self.__lock.acquire()
-        try:
-            if not self.__alive:
-                self.__alive = True
-                self.__work = True
-                self.__thread.start()
-        finally:
-            self.__lock.release()
+        with self.__lock:
+            if self.__alive:
+                msg = '%s is alive hence can not be started.' % self.name
+                raise RuntimeError(msg)
+            self.__alive = True
+            self.__stop = False
+            self.__thread.start()
 
     def stop(self):
         '''Stop function generator'''
-        self.__lock.acquire()
-        self.__work = False
-        self.__lock.release()
+        with self.__lock:
+            self.__stop = True
         self.__thread.join()
 
     def __run(self):
@@ -108,8 +108,9 @@ class RectangularFunctionGenerator(EventGenerator):
         try:
             self.partialSleep(necessary_naps, nap_time)
             while i < self._repetitions:
-                if not self.__work:
-                    raise StopException('Function generation stopped')
+                with self.__lock:
+                    if self.__stop:
+                        raise StopException('Function generation stopped')
                 curr_time = time.time()
                 next_time += self._active_period
                 period = max(0, next_time - curr_time)
@@ -124,6 +125,6 @@ class RectangularFunctionGenerator(EventGenerator):
                 self.partialSleep(necessary_naps, nap_time)
                 i += 1
         except StopException, e:
-            self.debug(e.msg)
+            pass
         finally:
             self.__alive = False
