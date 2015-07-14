@@ -4,6 +4,9 @@ import math
 from sardana.sardanaevent import EventGenerator
 from sardana.pool.pooltriggergate import TGEventType
 
+class StopException(Exception):
+    pass
+
 class RectangularFunctionGenerator(EventGenerator):
 
     id = 0
@@ -45,9 +48,13 @@ class RectangularFunctionGenerator(EventGenerator):
 
     def setPassivePeriod(self, passive_period):
         self._passive_period = passive_period
-    
+
+    def getPassivePeriod(self):
+        return self._passive_period
+
     def calculateNap(self, period):
-        # calculate rough number of naps no longer than max_nap_time
+        '''Calculates rough number of naps no longer than max_nap_time
+        '''
         necessary_naps = int(math.ceil(period/self.max_nap_time))
         # avoid zero ZeroDivisionError
         if necessary_naps == 0:
@@ -56,8 +63,16 @@ class RectangularFunctionGenerator(EventGenerator):
             nap = period/necessary_naps
         return necessary_naps, nap
 
-    def getPassivePeriod(self):
-        return self._passive_period
+    def partialSleep(self, necessary_naps, nap_time):
+        '''Performs externally stoppable sleep
+        '''
+        for _ in xrange(necessary_naps):
+            time.sleep(nap_time)
+            # check if someone has stopped the generation
+            # in the middle of period
+            if not self.__work:
+                self.__alive = False
+                raise StopException('Function generation stopped')
 
     def isGenerating(self):
         return self.__alive
@@ -87,33 +102,28 @@ class RectangularFunctionGenerator(EventGenerator):
     def __run(self):
         '''Generates Sardana events at requested times'''
         i = 0
-        next_time = time.time() + self._offset
-        time.sleep(self._offset)
-        while i < self._repetitions and self.__work:
-            curr_time = time.time()
-            next_time += self._active_period
-            period = max(0, next_time - curr_time)
-            necessary_naps, nap_time = self.calculateNap(period)
-            self.fire_event(TGEventType.Active, i)
-            for _ in xrange(necessary_naps):
-                time.sleep(nap_time)
-                # check if someone has stopped the generation
-                # in the middle of period
+        curr_time = time.time()
+        next_time = curr_time + self._offset
+        necessary_naps, nap_time = self.calculateNap(self._offset)
+        try:
+            self.partialSleep(necessary_naps, nap_time)
+            while i < self._repetitions:
                 if not self.__work:
-                    self.__alive = False
-                    return
-            curr_time = time.time()
-            next_time += self._passive_period
-            period = max(0, next_time - curr_time)
-            necessary_naps, nap_time = self.calculateNap(period)
-            self.fire_event(TGEventType.Passive, i)
-            for _ in xrange(necessary_naps):
-                time.sleep(nap_time)
-                # check if someone has stopped the generation
-                # in the middle of period
-                if not self.__work:
-                    self.__alive = False
-                    return
-            i += 1
-#         self.fire_event(TGEventType.Active, i)
-        self.__alive = False
+                    raise StopException('Function generation stopped')
+                curr_time = time.time()
+                next_time += self._active_period
+                period = max(0, next_time - curr_time)
+                necessary_naps, nap_time = self.calculateNap(period)
+                self.fire_event(TGEventType.Active, i)
+                self.partialSleep(necessary_naps, nap_time)
+                curr_time = time.time()
+                next_time += self._passive_period
+                period = max(0, next_time - curr_time)
+                necessary_naps, nap_time = self.calculateNap(period)
+                self.fire_event(TGEventType.Passive, i)
+                self.partialSleep(necessary_naps, nap_time)
+                i += 1
+        except StopException, e:
+            self.debug(e.msg)
+        finally:
+            self.__alive = False
