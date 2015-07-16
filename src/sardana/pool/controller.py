@@ -389,7 +389,6 @@ class Controller(object):
         Default implementation raises :exc:`NotImplementedError`."""
         raise NotImplementedError("StateOne must be defined in the controller")
 
-    #def SetCtrlPar(self, unit, parameter, value):
     def SetCtrlPar(self, parameter, value):
         """**Controller API**. Override if necessary.
         Called to set a parameter with a value. Default implementation sets
@@ -398,7 +397,6 @@ class Controller(object):
         .. versionadded:: 1.0"""
         setattr(self, '_' + parameter, value)
 
-    #def GetCtrlPar(self, unit, parameter):
     def GetCtrlPar(self, parameter):
         """**Controller API**. Override if necessary.
         Called to set a parameter with a value. Default implementation returns
@@ -407,7 +405,6 @@ class Controller(object):
         .. versionadded:: 1.0"""
         return getattr(self, '_' + parameter)
 
-    #def SetAxisPar(self, unit, axis, parameter, value):
     def SetAxisPar(self, axis, parameter, value):
         """**Controller API**. Override is MANDATORY.
         Called to set a parameter with a value on the given axis. Default
@@ -417,7 +414,6 @@ class Controller(object):
         .. versionadded:: 1.0"""
         return self.SetPar(axis, parameter, value)
 
-    #def GetAxisPar(self, unit, axis, parameter):
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
         Called to get a parameter value on the given axis. Default

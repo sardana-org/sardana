@@ -52,8 +52,6 @@ from sardana.taurus.core.tango.sardana import PlotType, Normalization
 #    - 'controllers' : dict<Controller, dict> where:
 #        - key: ctrl
 #        - value: dict<str, dict> with (at least) keys:
-#            - 'units': dict<str, dict> with (at least) keys:
-#                - 'id' : the unit ID inside the controller
 #                - 'timer' : the timer channel name / timer channel id
 #                - 'monitor' : the monitor channel name / monitor channel id
 #                - 'trigger_type' : 'Gate'/'Software'
@@ -80,7 +78,6 @@ from sardana.taurus.core.tango.sardana import PlotType, Normalization
 
 # Example: 2 NI cards, where channel 1 of card 1 is wired to channel 1 of card 2
 # at configuration time we should set:
-# ctrl.setPar( <unit>, <parameter name>, <parameter value> )
 # ni0ctrl.setCtrlPar(0, 'trigger_type', AcqTriggerType.Software)
 # ni0ctrl.setCtrlPar(0, 'timer', 1) # channel 1 is the timer
 # ni0ctrl.setCtrlPar(0, 'monitor', 4) # channel 4 is the monitor
@@ -252,27 +249,22 @@ class PoolMeasurementGroup(PoolGroupElement):
             ctrl = element.controller
             ctrl_data = controllers.get(ctrl)
 
-            # attention: following lines are only prepared for 1 unit per
-            # controller
             if ctrl_data is None:
                 controllers[ctrl] = ctrl_data = {}
-                ctrl_data['units'] = units = {}
-                units['0'] = unit_data = {}
-                unit_data['id'] = 0
-                unit_data['channels'] = channels = {}
+                ctrl_data['channels'] = channels = {}
                 if elem_type in TYPE_TIMERABLE_ELEMENTS:
                     elements = ctrls[ctrl]
                     if g_timer in elements:
-                        unit_data['timer'] = g_timer
+                        ctrl_data['timer'] = g_timer
                     else:
-                        unit_data['timer'] = elements[0]
+                        ctrl_data['timer'] = elements[0]
                     if g_monitor in elements:
-                        unit_data['monitor'] = g_monitor
+                        ctrl_data['monitor'] = g_monitor
                     else:
-                        unit_data['monitor'] = elements[0]
-                    unit_data['trigger_type'] = AcqTriggerType.Software
+                        ctrl_data['monitor'] = elements[0]
+                    ctrl_data['trigger_type'] = AcqTriggerType.Software
             else:
-                channels = ctrl_data['units']['0']['channels']
+                channels = ctrl_data['channels']
             channels[element] = channel_data = {}
             channel_data['index'] = user_elements.index(element)
             channel_data = self._build_channel_defaults(channel_data, element)
@@ -281,10 +273,7 @@ class PoolMeasurementGroup(PoolGroupElement):
 
         if len(external_user_elements) > 0:
             controllers['__tango__'] = ctrl_data = {}
-            ctrl_data['units'] = units = {}
-            units['0'] = unit_data = {}
-            unit_data['id'] = 0
-            unit_data['channels'] = channels = {}
+            ctrl_data['channels'] = channels = {}
             for index, element in external_user_elements:
                 channels[element] = channel_data = {}
                 channel_data['index'] = index
@@ -301,8 +290,7 @@ class PoolMeasurementGroup(PoolGroupElement):
             pool = self.pool
             for c, c_data in config['controllers'].items():
                 external = isinstance(c, (str, unicode))
-                # attention: following line only prepared for 1 unit per controller
-                for channel_data in c_data['units']['0']['channels'].values():
+                for channel_data in c_data['channels'].values():
                     if external:
                         element = id = channel_data['full_name']
                         channel_data['source'] = id
@@ -328,14 +316,12 @@ class PoolMeasurementGroup(PoolGroupElement):
             user_elem_ids_list = [ user_elem_ids[idx] for idx in indexes ]
             user_elem_ids_list.extend(tg_elem_ids)
             self.set_user_element_ids(user_elem_ids_list)
-                        
-        # checks
+
         g_timer, g_monitor = config['timer'], config['monitor']
 
-        # attention: following line only prepared for 1 unit per controller
-        timer_ctrl_data = config['controllers'][g_timer.controller]['units']['0']
+        timer_ctrl_data = config['controllers'][g_timer.controller]
         if timer_ctrl_data['timer'] != g_timer:
-            self.warning('unit timer and global timer mismatch. '
+            self.warning('controller timer and global timer mismatch. '
                          'Using global timer')
             self.debug('For controller %s, timer is defined as channel %s. '
                        'The global timer is set to channel %s which belongs '
@@ -343,10 +329,9 @@ class PoolMeasurementGroup(PoolGroupElement):
                        timer_ctrl_data['timer'].name, g_timer.name)
             timer_ctrl_data['timer'] = g_timer
 
-        # attention: following line only prepared for 1 unit per controller
-        monitor_ctrl_data = config['controllers'][g_monitor.controller]['units']['0']
+        monitor_ctrl_data = config['controllers'][g_monitor.controller]
         if monitor_ctrl_data['monitor'] != g_monitor:
-            self.warning('unit monitor and global monitor mismatch. '
+            self.warning('controller monitor and global monitor mismatch. '
                          'Using global monitor')
             self.debug('For controller %s, monitor is defined as channel %s. '
                        'The global timer is set to channel %s which belongs '
@@ -374,9 +359,7 @@ class PoolMeasurementGroup(PoolGroupElement):
 
         for c_name, c_data in cfg['controllers'].items():
             # discard controllers which don't have items (garbage)
-            ch_count = 0
-            for u_data in c_data['units'].values():
-                ch_count += len(u_data['channels'])
+            ch_count = len(c_data['channels'])
             if ch_count == 0:
                 continue
 
@@ -387,27 +370,21 @@ class PoolMeasurementGroup(PoolGroupElement):
                 ctrl = pool.get_element_by_full_name(c_name)
                 assert ctrl.get_type() == ElementType.Controller
             controllers[ctrl] = ctrl_data = {}
-            ctrl_data['units'] = units = {}
-            for u_id, u_data in c_data['units'].items():
-                # discard units which don't have items (garbage)
-                if len(u_data['channels']) == 0:
-                    continue
-                units[u_id] = unit_data = dict(u_data)
-                unit_data['id'] = u_data.get('id', u_id)
-                if not external and ctrl.is_timerable():
-                    unit_data['timer'] = pool.get_element_by_full_name(u_data['timer'])
-                    unit_data['monitor'] = pool.get_element_by_full_name(u_data['monitor'])
-                    unit_data['trigger_type'] = u_data['trigger_type']
-                unit_data['channels'] = channels = {}
-                for ch_name, ch_data in u_data['channels'].items():
-                    if external:
-                        validator = AttributeNameValidator()
-                        params = validator.getParams(ch_data['full_name'])
-                        params['pool'] = self.pool
-                        channel = PoolExternalObject(**params)
-                    else:
-                        channel = pool.get_element_by_full_name(ch_name)
-                    channels[channel] = dict(ch_data)
+
+            if not external and ctrl.is_timerable():
+                ctrl_data['timer'] = pool.get_element_by_full_name(c_data['timer'])
+                ctrl_data['monitor'] = pool.get_element_by_full_name(c_data['monitor'])
+                ctrl_data['trigger_type'] = c_data['trigger_type']
+            ctrl_data['channels'] = channels = {}
+            for ch_name, ch_data in c_data['channels'].items():
+                if external:
+                    validator = AttributeNameValidator()
+                    params = validator.getParams(ch_data['full_name'])
+                    params['pool'] = self.pool
+                    channel = PoolExternalObject(**params)
+                else:
+                    channel = pool.get_element_by_full_name(ch_name)
+                channels[channel] = dict(ch_data)
 
         config['label'] = cfg.get('label', self.name)
         config['description'] = cfg.get('description', self.DFT_DESC)
@@ -430,28 +407,24 @@ class PoolMeasurementGroup(PoolGroupElement):
                 ctrl_name = c.full_name
             external = ctrl_name.startswith('__')
             controllers[ctrl_name] = ctrl_data = {}
-            ctrl_data['units'] = units = {}
-            for u_id, u_data in c_data['units'].items():
-                units[u_id] = unit_data = {}
-                unit_data['id'] = u_data['id']
-                if not external and c.is_timerable():
-                    if u_data.has_key('timer'):
-                        unit_data['timer'] = u_data['timer'].full_name
-                    if u_data.has_key('monitor'):
-                        unit_data['monitor'] = u_data['monitor'].full_name
-                    if u_data.has_key('trigger_type'):
-                        unit_data['trigger_type'] = u_data['trigger_type']
-                unit_data['channels'] = channels = {}
-                for ch, ch_data in u_data['channels'].items():
-                    channels[ch.full_name] = channel_data = dict(ch_data)
-                    # TODO: remove when agreed on which level we use trigger_element
-                    # it is probable that trigger_element won't be used on the 
-                    # channel level, but on the unit/controller level
-                    if channel_data.has_key('trigger_element'):
-                        # use trigger_element with string instead of objects
-                        # otherwise JSON serialization errors are raised
-                        tg_full_name = ch_data['trigger_element'].full_name
-                        channel_data['trigger_element'] = tg_full_name
+            if not external and c.is_timerable():
+                if c_data.has_key('timer'):
+                    ctrl_data['timer'] = c_data['timer'].full_name
+                if c_data.has_key('monitor'):
+                    ctrl_data['monitor'] = c_data['monitor'].full_name
+                if c_data.has_key('trigger_type'):
+                    ctrl_data['trigger_type'] = c_data['trigger_type']
+            ctrl_data['channels'] = channels = {}
+            for ch, ch_data in c_data['channels'].items():
+                channels[ch.full_name] = channel_data = dict(ch_data)
+                # TODO: remove when agreed on which level we use trigger_element
+                # it is probable that trigger_element won't be used on the
+                # channel level, but on the unit/controller level
+                if channel_data.has_key('trigger_element'):
+                    # use trigger_element with string instead of objects
+                    # otherwise JSON serialization errors are raised
+                    tg_full_name = ch_data['trigger_element'].full_name
+                    channel_data['trigger_element'] = tg_full_name
 
         config['label'] = cfg['label']
         config['description'] = cfg['description']
@@ -473,25 +446,24 @@ class PoolMeasurementGroup(PoolGroupElement):
                 continue
             ctrl.operator = self
             if ctrl.is_timerable():
-                for unit, unit_data in ctrl_data['units'].items():
-                    #if ctrl == g_timer.controller:
-                    #    ctrl.set_ctrl_par('timer', g_timer.axis)
-                    #if ctrl == g_monitor.controller:
-                    #    ctrl.set_ctrl_par('monitor', g_monitor.axis)
-                    ctrl.set_ctrl_par('timer', unit_data['timer'].axis)
-                    ctrl.set_ctrl_par('monitor', unit_data['monitor'].axis)
-                    trigger_type = unit_data['trigger_type']
-                    # TODO: mixing units with ctrl data concepts
-                    trigger_element = ctrl_data.get('trigger_element')
-                    if trigger_element:
-                        tg_pool_ctrl = trigger_element.get_controller()
-                        tg_ctrl = tg_pool_ctrl._ctrl
-                        # checking if we are using software or hardware trigger
-                        # TODO: this check is not generic !!!
-                        if hasattr(tg_ctrl, 'add_listener'):
-                            trigger_type = AcqTriggerType.Software
-                    self.debug('load_configuration: setting trigger_type: %s to ctrl: %s' % (trigger_type, ctrl))
-                    ctrl.set_ctrl_par('trigger_type', trigger_type)
+                #if ctrl == g_timer.controller:
+                #    ctrl.set_ctrl_par('timer', g_timer.axis)
+                #if ctrl == g_monitor.controller:
+                #    ctrl.set_ctrl_par('monitor', g_monitor.axis)
+                ctrl.set_ctrl_par('timer', ctrl_data['timer'].axis)
+                ctrl.set_ctrl_par('monitor', ctrl_data['monitor'].axis)
+                trigger_type = ctrl_data['trigger_type']
+                # TODO: mixing units with ctrl data concepts
+                trigger_element = ctrl_data.get('trigger_element')
+                if trigger_element:
+                    tg_pool_ctrl = trigger_element.get_controller()
+                    tg_ctrl = tg_pool_ctrl._ctrl
+                    # checking if we are using software or hardware trigger
+                    # TODO: this check is not generic !!!
+                    if hasattr(tg_ctrl, 'add_listener'):
+                        trigger_type = AcqTriggerType.Software
+                self.debug('load_configuration: setting trigger_type: %s to ctrl: %s' % (trigger_type, ctrl))
+                ctrl.set_ctrl_par('trigger_type', trigger_type)
 
         self._config_dirty = False
 

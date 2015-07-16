@@ -462,22 +462,18 @@ class PoolController(PoolBaseController):
 
     @check_ctrl
     def set_ctrl_par(self, name, value):
-        #return self.ctrl.setCtrlPar(unit, name, value)
         return self.ctrl.SetCtrlPar(name, value)
 
     @check_ctrl
     def get_ctrl_par(self, name):
-        #return self.ctrl.getCtrlPar(unit, name, value)
         return self.ctrl.GetCtrlPar(name)
 
     @check_ctrl
     def set_axis_par(self, axis, name, value):
-        #return self.ctrl.SetAxisPar(unit, axis, name, value)
         return self.ctrl.SetAxisPar(axis, name, value)
 
     @check_ctrl
     def get_axis_par(self, axis, name):
-        #return self.ctrl.GetAxisPar(unit, axis, name, value)
         return self.ctrl.GetAxisPar(axis, name)
 
 

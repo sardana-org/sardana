@@ -85,11 +85,11 @@ def split_MGConfigurations(mg_cfg_in):
                 ctrls_hw_out[ctrl] = ctrl_info
     # TODO: timer and monitor are just random elements!!!
     if len(ctrls_sw_out):
-        mg_sw_cfg_out['timer'] = ctrls_sw_out.values()[0]['units']['0']['timer'] 
-        mg_sw_cfg_out['monitor'] = ctrls_sw_out.values()[0]['units']['0']['monitor']  
+        mg_sw_cfg_out['timer'] = ctrls_sw_out.values()[0]['timer']
+        mg_sw_cfg_out['monitor'] = ctrls_sw_out.values()[0]['monitor']
     if len(ctrls_hw_out):
-        mg_hw_cfg_out['timer'] = ctrls_hw_out.values()[0]['units']['0']['timer'] 
-        mg_hw_cfg_out['monitor'] = ctrls_hw_out.values()[0]['units']['0']['monitor']    
+        mg_hw_cfg_out['timer'] = ctrls_hw_out.values()[0]['timer']
+        mg_hw_cfg_out['monitor'] = ctrls_hw_out.values()[0]['monitor']
     return (mg_sw_cfg_out, mg_hw_cfg_out)
 
 def getTGConfiguration(MGcfg):
@@ -105,7 +105,7 @@ def getTGConfiguration(MGcfg):
     _tg_element_list = []
 
     for ctrl in MGcfg["controllers"]:
-        channels_dict = MGcfg["controllers"][ctrl]['units']['0']['channels']
+        channels_dict = MGcfg["controllers"][ctrl]['channels']
         for channel in channels_dict:
             tg_element = channels_dict[channel].get('trigger_element', None)
             if (tg_element != None and tg_element not in _tg_element_list):
@@ -125,13 +125,10 @@ def getTGConfiguration(MGcfg):
     TGcfg['controllers'] = {}
 
     for ctrl in ctrl_tgelem_dict:
-        TGcfg['controllers'][ctrl] = {}
-        TGcfg['controllers'][ctrl]['units'] = {}
-        TGcfg['controllers'][ctrl]['units']['0'] = {}
-        TGcfg['controllers'][ctrl]['units']['0']['channels'] = {}
-        unit = TGcfg['controllers'][ctrl]['units']['0']
+        TGcfg['controllers'][ctrl] = ctrls = {}
+        ctrls['channels'] = {}
         for tg_elem in ctrl_tgelem_dict[ctrl]:
-            ch = unit['channels'][tg_elem] = {}
+            ch = ctrls['channels'][tg_elem] = {}
             ch['full_name']= tg_elem.full_name
     #TODO: temporary returning tg_elements
     return TGcfg, _tg_element_list
@@ -453,8 +450,7 @@ class PoolCTAcquisition(PoolAction):
         for pool_ctrl in pool_ctrls:
             ctrl = pool_ctrl.ctrl
             pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-            main_unit_data = pool_ctrl_data['units']['0']
-            elements = main_unit_data['channels']
+            elements = pool_ctrl_data['channels']
 
             for element, element_info in elements.items():
                 axis = element.axis
@@ -470,9 +466,8 @@ class PoolCTAcquisition(PoolAction):
             for pool_ctrl in pool_ctrls:
                 ctrl = pool_ctrl.ctrl
                 pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-                main_unit_data = pool_ctrl_data['units']['0']
                 ctrl.PreLoadAll()
-                master = main_unit_data[master_key]
+                master = pool_ctrl_data[master_key]
                 axis = master.axis
                 res = ctrl.PreLoadOne(axis, master_value)
                 if not res:
@@ -488,9 +483,8 @@ class PoolCTAcquisition(PoolAction):
             for pool_ctrl in pool_ctrls:
                 ctrl = pool_ctrl.ctrl
                 pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-                main_unit_data = pool_ctrl_data['units']['0']
-                elements = main_unit_data['channels'].keys()
-                timer_monitor = main_unit_data[master_key]
+                elements = pool_ctrl_data['channels'].keys()
+                timer_monitor = pool_ctrl_data[master_key]
                 # make sure that the timer/monitor is started as the last one
                 elements.remove(timer_monitor)
                 elements.append(timer_monitor)
@@ -646,8 +640,7 @@ class PoolContHWAcquisition(PoolCTAcquisition):
         for pool_ctrl in pool_ctrls:
             ctrl = pool_ctrl.ctrl
             pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-            main_unit_data = pool_ctrl_data['units']['0']
-            elements = main_unit_data['channels']
+            elements = pool_ctrl_data['channels']
 
             for element, element_info in elements.items():
                 axis = element.axis
@@ -669,9 +662,8 @@ class PoolContHWAcquisition(PoolCTAcquisition):
             for pool_ctrl in pool_ctrls:
                 ctrl = pool_ctrl.ctrl
                 pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-                main_unit_data = pool_ctrl_data['units']['0']
                 ctrl.PreLoadAll()
-                master = main_unit_data[master_key]
+                master = pool_ctrl_data[master_key]
                 axis = master.axis
                 res = ctrl.PreLoadOne(axis, master_value)
                 if not res:
@@ -687,8 +679,7 @@ class PoolContHWAcquisition(PoolCTAcquisition):
             for pool_ctrl in pool_ctrls:
                 ctrl = pool_ctrl.ctrl
                 pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-                main_unit_data = pool_ctrl_data['units']['0']
-                elements = main_unit_data['channels']
+                elements = pool_ctrl_data['channels']
                 for element in elements:
                     axis = element.axis
                     channel = channels[element]
@@ -895,8 +886,7 @@ class Pool0DAcquisition(PoolAction):
         for pool_ctrl in pool_ctrls:
             ctrl = pool_ctrl.ctrl
             pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-            main_unit_data = pool_ctrl_data['units']['0']
-            elements = main_unit_data['channels']
+            elements = pool_ctrl_data['channels']
 
             for element, element_info in elements.items():
                 channel = Channel(element, info=element_info)
