@@ -390,10 +390,9 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
     def roleToolTip(self, taurus_role):
         return getElementTypeToolTip(taurus_role)
 
-    def getPyData(self, ctrlname=None, unitid=None, chname=None, key=None):
+    def getPyData(self, ctrlname=None, chname=None, key=None):
         '''
-        If controller name, unitid and channel name are given, it returns the dictionary with the channel info.
-        If only controller name and unit id are given, it returns the dictionary with the unit info.
+        If controller name and channel name are given, it returns the dictionary with the channel info.
         If only controller name is given, it returns the dictionary with the controller info.
 
         Note that it will raise a KeyError exception if any of the keys are not
@@ -401,12 +400,10 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         '''
         if ctrlname is None:
             raise ValueError('controller name must be passed')
-        if unitid is None:
-            return self._mgconfig['controllers'][ctrlname]
-        elif chname is None:
-            return  self._mgconfig['controllers'][ctrlname]['units'][unitid]
+        if chname is None:
+            return  self._mgconfig['controllers'][ctrlname]
         else:
-            return  self._mgconfig['controllers'][ctrlname]['units'][unitid]['channels'][chname]
+            return  self._mgconfig['controllers'][ctrlname]['channels'][chname]
 
     def setupModelData(self, mgconfig):
         if mgconfig is None:
@@ -471,7 +468,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         taurus_role = self.role(index.column())
         if taurus_role == ChannelView.Trigger:
             ch_name, ch_data = index.internalPointer().itemData()
-            unitdict = self.getPyData(ctrlname=ch_data['_controller_name'], unitid=ch_data['_unit_id'])
+            unitdict = self.getPyData(ctrlname=ch_data['_controller_name'])
             key = self.data_keys_map[taurus_role]
             return Qt.QVariant(AcqTriggerType[unitdict.get(key, None)])
         elif taurus_role in (ChannelView.Timer, ChannelView.Monitor):
@@ -481,7 +478,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
                 return Qt.QVariant()
             ch_info = self.getAvailableChannels()[ch_name]
             if ch_info['type'] in ('CTExpChannel', 'OneDExpChannel', 'TwoDExpChannel'):
-                unitdict = self.getPyData(ctrlname=ctrlname, unitid=ch_data['_unit_id'])
+                unitdict = self.getPyData(ctrlname=ctrlname)
                 key = self.data_keys_map[taurus_role]
                 master_full_name = unitdict.get(key, None)
             else:
@@ -501,7 +498,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         if taurus_role in (ChannelView.Timer, ChannelView.Monitor, ChannelView.Trigger):
             ch_name, ch_data = index.internalPointer().itemData()
             ch_info = self.getAvailableChannels()[ch_name]
-            unit_data = self.getPyData(ctrlname=ch_data['_controller_name'], unitid=ch_data['_unit_id'])
+            unit_data = self.getPyData(ctrlname=ch_data['_controller_name'])
             key = self.data_keys_map[taurus_role]
             data = Qt.from_qvariant(qvalue, str)
 
@@ -530,7 +527,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
                   index, index)
         return True
 
-    def addChannel(self, chname=None, chinfo=None, ctrlname=None, unitname=None, external=False):  #@todo: Very inefficient implementation. We should use {begin|end}InsertRows
+    def addChannel(self, chname=None, chinfo=None, ctrlname=None, external=False):  #@todo: Very inefficient implementation. We should use {begin|end}InsertRows
 
         if chname is None:
             chname = chinfo['full_name']
@@ -538,22 +535,19 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         if ctrlname is None:
             desc = self.getAvailableChannels()[chname]
             ctrlname = desc['controller']
-        if unitname is None:
-            desc = self.getAvailableChannels()[chname]
-            unitname = desc.get('unit', '0')  #@fixme: at the moment of writing, the unit info cannot be obtained from desc
 
         #update the internal data
         self.beginResetModel()  #we are altering the internal data here, so we need to protect it
         ctrlsdict = self.dataSource()['controllers']
-        if not ctrlsdict.has_key(ctrlname): ctrlsdict[ctrlname] = {'units':{}}
-        unitsdict = ctrlsdict[ctrlname]['units']
-        if not unitsdict.has_key(unitname):
-            unitsdict[unitname] = unit = {'channels':{}}
-            if not external and chinfo['type'] in ('CTExpChannel', 'OneDExpChannel', 'TwoDExpChannel'):
-                unit['timer'] = chname
-                unit['monitor'] = chname
-                unit['trigger_type'] = AcqTriggerType.Software
-        channelsdict = unitsdict[unitname]['channels']
+        print '   ', ctrlsdict
+        if not ctrlsdict.has_key(ctrlname):
+            ctrlsdict[ctrlname] = {'channels':{}}
+        ctrl = ctrlsdict[ctrlname]
+        if not external and chinfo['type'] in ('CTExpChannel', 'OneDExpChannel', 'TwoDExpChannel'):
+            ctrl['timer'] = chname
+            ctrl['monitor'] = chname
+            ctrl['trigger_type'] = AcqTriggerType.Software
+        channelsdict = ctrl['channels']
         if channelsdict.has_key(chname):
             self.error('Channel "%s" is already in the measurement group. It will not be added again' % chname)
             return
@@ -578,18 +572,14 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
             if chname in avail_channels:
                 desc = self.getAvailableChannels()[chname]
                 ctrlname = desc['controller']
-                unitname = desc.get('unit', '0')  #@fixme: at the moment of writing, the unit info cannot be obtained from desc
             else:
                 #@todo: This assumes that if it is not in the list of avail_channels, it must be an external tango channel
                 ctrlname = '__tango__'
-                unitname = '0'
             try:
-                self.dataSource()['controllers'][ctrlname]['units'][unitname]['channels'].pop(chname)
+                self.dataSource()['controllers'][ctrlname]['channels'].pop(chname)
                 try:
-                    if not self.dataSource()['controllers'][ctrlname]['units'][unitname]['channels']:
-                        self.dataSource()['controllers'][ctrlname]['units'].pop(unitname)
-                        if not self.dataSource()['controllers'][ctrlname]['units']:
-                            self.dataSource()['controllers'].pop(ctrlname)
+                    if not self.dataSource()['controllers'][ctrlname]['channels']:
+                        self.dataSource()['controllers'].pop(ctrlname)
                 except:
                     self.error('error cleaning the data source dictionary')
             except:
@@ -737,10 +727,8 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
                 editor.setCurrentIndex(editor.findText(current))
             else:
                 for ctrl_data in dataSource['controllers'].values():
-                    for unit_data in ctrl_data['units'].values():
-                        if key in unit_data:
-                            channel = all_channels[unit_data[key]]
-                            editor.addItem(channel['name'], Qt.QVariant(channel['full_name']))
+                    for channel in ctrl_data['channels']:
+                        editor.addItem(channel['name'], Qt.QVariant(channel['full_name']))
                 current = dataSource.get(key)  # current global timer/monitor
                 editor.setCurrentIndex(editor.findData(Qt.QVariant(current)))
         elif taurus_role == ChannelView.Trigger:
@@ -767,7 +755,7 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
             if new_value == old_value:
                 return
             ch_name, ch_data = index.internalPointer().itemData()
-            channels = getChannelConfigs(dataSource, ctrls=[ch_data['_controller_name']], units=[ch_data['_unit_id']])
+            channels = getChannelConfigs(dataSource, ctrls=[ch_data['_controller_name']])
             affected = [d['name'] for n, d in channels]
             if len(affected) > 1:
                 op = Qt.QMessageBox.question(editor, "Caution: multiple channels affected",
@@ -790,8 +778,8 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
             selected_master = editor.itemData(editor.currentIndex())
             if ch_info['type'] in ('CTExpChannel', 'OneDExpChannel', 'TwoDExpChannel'):
                 affected = []
-                unit_data = model.getPyData(ctrlname=ch_data['_controller_name'], unitid=ch_data['_unit_id'])
-                channels = getChannelConfigs(dataSource, ctrls=[ch_data['_controller_name']], units=[ch_data['_unit_id']])
+                unit_data = model.getPyData(ctrlname=ch_data['_controller_name'])
+                channels = getChannelConfigs(dataSource, ctrls=[ch_data['_controller_name']])
                 for n, d in channels:
                     affected.append(d['name'])
                 # if old timer/monitor was also the global, then non
@@ -921,7 +909,7 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
             if not ok:
                 return
             for m in models:
-                qmodel.addChannel(chname=m, ctrlname='__tango__', unitname='0', external=True)
+                qmodel.addChannel(chname=m, ctrlname='__tango__', external=True)
         else:
             for ch_info in avail_channels.values():
                 if ch_info['name'] == chname:

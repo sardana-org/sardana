@@ -108,8 +108,8 @@ class MeasSarTestTestCase(SarTestTestCase):
         jcfg = self.meas.read_attribute('configuration').value
         cfg = json.loads(jcfg)
         for ctrl in cfg['controllers']:
-            units =  cfg['controllers'][ctrl]['units']['0']
-            channels = units['channels']
+            ctrl_data =  cfg['controllers'][ctrl]
+            channels = ctrl_data['channels']
             for chn in channels:
                 name = channels[chn]['name']
                 tg_elem, acqType = exp_dict[name]
@@ -119,7 +119,7 @@ class MeasSarTestTestCase(SarTestTestCase):
                                             tg_dev.name())
                 channels[chn]['trigger_element'] = tg_fullname
                 channels[chn]['trigger_type'] = acqType
-                units['trigger_type'] = acqType
+                ctrl_data['trigger_type'] = acqType
                 self.tg_names.append(tg_elem)
 
         # Write the built configuration

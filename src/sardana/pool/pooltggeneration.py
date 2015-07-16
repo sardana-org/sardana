@@ -82,8 +82,7 @@ class PoolTGGeneration(PoolAction):
         for pool_ctrl in pool_ctrls:
             ctrl = pool_ctrl.ctrl
             pool_ctrl_data = ctrls_config[pool_ctrl]
-            main_unit_data = pool_ctrl_data['units']['0']
-            elements = main_unit_data['channels']
+            elements = pool_ctrl_data['channels']
 
             for element, element_info in elements.items():
                 channel = TGChannel(element, info=element_info)
@@ -101,8 +100,7 @@ class PoolTGGeneration(PoolAction):
                                                 self._listener)
                 self._finish_hook = finish_hook
             pool_ctrl_data = ctrls_config[pool_ctrl]
-            main_unit_data = pool_ctrl_data['units']['0']
-            elements = main_unit_data['channels']
+            elements = pool_ctrl_data['channels']
             for element in elements:
                 axis = element.axis
                 channel = channels[element]
@@ -121,8 +119,7 @@ class PoolTGGeneration(PoolAction):
             for pool_ctrl in pool_ctrls:
                 ctrl = pool_ctrl.ctrl                
                 pool_ctrl_data = ctrls_config[pool_ctrl]
-                main_unit_data = pool_ctrl_data['units']['0']
-                elements = main_unit_data['channels']
+                elements = pool_ctrl_data['channels']
                 for element in elements:
                     axis = element.axis
                     channel = channels[element]

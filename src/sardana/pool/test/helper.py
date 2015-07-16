@@ -107,17 +107,14 @@ def createPoolTGGenerationConfiguration(ctrls, ctrl_channels):
     :return: a configuration dictionary
     :rtype: dict<>
     '''
-
     ctrls_configuration = {}
     for ctrl, channels in zip(ctrls, ctrl_channels):
-        ctrl_conf = createConfFromObj(ctrl)
-        ctrl_conf['units'] = {}
-        ctrl_conf['units']['0'] = main_unit_data = {}
-        ctrl_conf['units']['0']['channels'] = {}
+        ctrl_data = createConfFromObj(ctrl)
+        ctrl_data['channels'] = {}
         for channel in channels:
             channel_conf = createConfFromObj(channel)
-            main_unit_data['channels'][channel] = channel_conf
-        ctrls_configuration[ctrl] = ctrl_conf
+            ctrl_data['channels'][channel] = channel_conf
+        ctrls_configuration[ctrl] = ctrl_data
     configuration = {'controllers': ctrls_configuration}
     return configuration 
 
@@ -143,30 +140,28 @@ def createCTAcquisitionConfiguration(ctrls, ctrl_channels):
     ctrls_configuration = {}
     configuration['timer'] = ctrl_channels[master_ctrl_idx][master_idx]
     for ctrl, channels in zip(ctrls, ctrl_channels):
-        ctrl_conf = createConfFromObj(ctrl)
-        ctrl_conf['units'] = {}
-        ctrl_conf['units']['0'] = main_unit_data = {}
-        ctrl_conf['units']['0']['channels'] = {}
+        ctrl_data = createConfFromObj(ctrl)
+        ctrl_data['channels'] = {}
         for channel in channels:
             channel_conf = createConfFromObj(channel)
-            main_unit_data['channels'][channel] = channel_conf
-        main_unit_data['timer'] = channels[master_idx]
-        ctrls_configuration[ctrl] = ctrl_conf
+            ctrl_data['channels'][channel] = channel_conf
+        ctrl_data['timer'] = channels[master_idx]
+        ctrls_configuration[ctrl] = ctrl_data
     configuration['controllers'] = ctrls_configuration
     return configuration 
 
 
 def createMGUserConfiguration(pool, channels):
-    '''Method to create MeasurementGroup configuration using strings. 
- 
-    
-    :param channels: Each tuple: (expchan, associated_trigger, trigger_type) 
-                    First element of the list of lists is the master 
+    '''Method to create MeasurementGroup configuration using strings.
+
+
+    :param channels: Each tuple: (expchan, associated_trigger, trigger_type)
+                    First element of the list of lists is the master
                     counter/timer.
-                    First element of each list is the master counter/timer 
+                    First element of each list is the master counter/timer
                     from the controller.
     :type channels: seq<seq<tuple(str)>>
-    :return: a tuple of three elements: measurement group configuration 
+    :return: a tuple of three elements: measurement group configuration
              dictionary of strings, sequence of channel ids, sequence of channel
              names
     :rtype: tupe(dict<>, seq<int>, seq<string>
@@ -178,7 +173,7 @@ def createMGUserConfiguration(pool, channels):
     main_master_channel = pool.get_element_by_full_name(channels[0][0][0])
     MG_configuration['timer'] = main_master_channel.full_name
     MG_configuration['monitor'] = main_master_channel.full_name
-    
+
     all_ctrls_d = {}
     index = 0 # index represents the order of the channels
     for i in range(len(channels)):
@@ -191,10 +186,10 @@ def createMGUserConfiguration(pool, channels):
         ctrl_d = {}
         ctrl_d.update({ctrl_full_name:{}})
 
-        unit_dict = {}
-        unit_dict['monitor'] = master_channel_str
-        unit_dict['timer'] = master_channel_str
-        unit_dict['trigger_type'] = channels[i][0][2]
+        ctrl_data = {}
+        ctrl_data['monitor'] = master_channel_str
+        ctrl_data['timer'] = master_channel_str
+        ctrl_data['trigger_type'] = channels[i][0][2]
         channels_d = {}
         for chan_idx in range(len(channels_in_ctrl)):
             channel_name_str = channels_in_ctrl[chan_idx][0]
@@ -214,7 +209,6 @@ def createMGUserConfiguration(pool, channels):
             one_channel_d.update({'_controller_name':ctrl_name})
             one_channel_d.update({'conditioning': ''})
             one_channel_d.update({'full_name':channel_name_str})
-            one_channel_d.update({'_unit_id': '0'})
             one_channel_d.update({'id':channel_element.id})
             one_channel_d.update({'normalization': 0})
             one_channel_d.update({'output': True})
@@ -228,15 +222,13 @@ def createMGUserConfiguration(pool, channels):
             channels_d.update({channel_name_str:one_channel_d})
             index += 1
 
-        unit_dict['channels'] = {}
-        unit_dict['channels'].update(channels_d)    
-        ctrl_d[ctrl_full_name]['units'] = {}
-        ctrl_d[ctrl_full_name]['units']['0'] = unit_dict
+        ctrl_data['channels'] = {}
+        ctrl_data['channels'].update(channels_d)
+        ctrl_d[ctrl_full_name] = ctrl_data
         all_ctrls_d.update(ctrl_d)
-    
-    MG_configuration.update({'controllers':all_ctrls_d})
-    return (MG_configuration, channel_ids, channel_names)
 
+    MG_configuration.update({'controllers': all_ctrls_d})
+    return (MG_configuration, channel_ids, channel_names)
 
 def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,
                           ctrl_trigger_elements, ctrl_trigger_types):
@@ -269,33 +261,31 @@ def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,
     ctrls_configuration = {}
     MG_configuration['timer'] = ctrl_channels[master_ctrl_idx][master_idx]
     MG_configuration['monitor'] = ctrl_channels[master_ctrl_idx][master_idx]
-    for ctrl, ctrl_conf, channels, channels_conf, trigger_elements, \
+    for ctrl, ctrl_data, channels, channels_conf, trigger_elements, \
             trigger_types in zip(ctrls, ctrls_conf, ctrl_channels, 
             ctrl_channels_conf, ctrl_trigger_elements, ctrl_trigger_types):
-        ctrl_conf['units'] = {}
-        ctrl_conf['units']['0'] = main_unit_data = {}
-        ctrl_conf['units']['0']['channels'] = {}
+        ctrl_data['channels'] = {}
         index = 0
         for channel, channel_conf, trigger_element, trigger_type in \
               zip(channels, channels_conf, trigger_elements, trigger_types):
-            main_unit_data['channels'][channel] = channel_conf
-            main_unit_data['channels'][channel]['trigger_element'] = \
+            ctrl_data['channels'][channel] = channel_conf
+            ctrl_data['channels'][channel]['trigger_element'] = \
                                                                 trigger_element
             # TODO: decide if trigger_type (trigger_type) should be global for 
             # the controller or be channel specific
-            main_unit_data['channels'][channel]['trigger_type'] = trigger_type
+            ctrl_data['channels'][channel]['trigger_type'] = trigger_type
             # this way we are forcing the trigger_type of the last channel
-            main_unit_data['trigger_type'] = trigger_type
+            ctrl_data['trigger_type'] = trigger_type
             # TODO: investigate why we need the index!
             # adding a dummy index
-            main_unit_data['channels'][channel]['index'] = index
+            ctrl_data['channels'][channel]['index'] = index
             if trigger_element not in _tg_elements:
                 _tg_elements.append(trigger_element)
             index += 1           
 
-        main_unit_data['timer'] = channels[master_idx]
-        main_unit_data['monitor'] = channels[master_idx]
-        ctrls_configuration[ctrl] = ctrl_conf
+        ctrl_data['timer'] = channels[master_idx]
+        ctrl_data['monitor'] = channels[master_idx]
+        ctrls_configuration[ctrl] = ctrl_data
     MG_configuration['controllers'] = ctrls_configuration 
 
     return MG_configuration
