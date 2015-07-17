@@ -190,6 +190,7 @@ def createMGUserConfiguration(pool, channels):
         ctrl_data['monitor'] = master_channel_str
         ctrl_data['timer'] = master_channel_str
         ctrl_data['trigger_type'] = channels[i][0][2]
+        ctrl_data['trigger_element'] = channels[i][0][1]
         channels_d = {}
         for chan_idx in range(len(channels_in_ctrl)):
             channel_name_str = channels_in_ctrl[chan_idx][0]
@@ -215,10 +216,6 @@ def createMGUserConfiguration(pool, channels):
             one_channel_d.update({'label':channel_element.name})
             one_channel_d.update({'data_units': 'No unit'})
             one_channel_d.update({'name':channel_element.name})
-            trig_elem_d = {'trigger_element': channels_in_ctrl[chan_idx][1]}
-            one_channel_d.update(trig_elem_d)
-            trigger_type_d = {'trigger_type': channels_in_ctrl[chan_idx][2]}
-            one_channel_d.update(trigger_type_d)
             channels_d.update({channel_name_str:one_channel_d})
             index += 1
 
@@ -269,13 +266,9 @@ def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,
         for channel, channel_conf, trigger_element, trigger_type in \
               zip(channels, channels_conf, trigger_elements, trigger_types):
             ctrl_data['channels'][channel] = channel_conf
-            ctrl_data['channels'][channel]['trigger_element'] = \
-                                                                trigger_element
-            # TODO: decide if trigger_type (trigger_type) should be global for 
-            # the controller or be channel specific
-            ctrl_data['channels'][channel]['trigger_type'] = trigger_type
             # this way we are forcing the trigger_type of the last channel
             ctrl_data['trigger_type'] = trigger_type
+            ctrl_data['trigger_element'] = trigger_element
             # TODO: investigate why we need the index!
             # adding a dummy index
             ctrl_data['channels'][channel]['index'] = index

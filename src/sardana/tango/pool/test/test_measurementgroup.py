@@ -117,8 +117,7 @@ class MeasSarTestTestCase(SarTestTestCase):
                 tg_fullname = '%s:%s/%s' % (tg_dev.get_db_host().split('.')[0], 
                                             tg_dev.get_db_port(),
                                             tg_dev.name())
-                channels[chn]['trigger_element'] = tg_fullname
-                channels[chn]['trigger_type'] = acqType
+                ctrl_data['trigger_element'] = tg_fullname
                 ctrl_data['trigger_type'] = acqType
                 self.tg_names.append(tg_elem)
 

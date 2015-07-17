@@ -300,17 +300,14 @@ class PoolMeasurementGroup(PoolGroupElement):
                     user_elem_ids[channel_data['index']] = id
                     channel_data = self._build_channel_defaults(channel_data, element)
                     # creating TG information
-                    trigger_name = channel_data.get('trigger_element')
-                    # TODO: protecting measurement groups which do not have trigger_element
-                    # if trigger_element will have a default value we could remove this protection                    
-                    if not trigger_name:
-                        continue
-                    trigger_element = pool.get_element_by_full_name(trigger_name)
-                    channel_data['trigger_element'] = trigger_element
-                    # TODO: setting global trigger element for the controller
-                    # this assumes that the last trigger element takes precedence
-                    c_data['trigger_element'] = trigger_element
-                    tg_elem_ids.append(trigger_element.id)
+                trigger_name = c_data.get('trigger_element')
+                # TODO: protecting measurement groups which do not have trigger_element
+                # if trigger_element will have a default value we could remove this protection
+                if not trigger_name:
+                    continue
+                trigger_element = pool.get_element_by_full_name(trigger_name)
+                c_data['trigger_element'] = trigger_element
+                tg_elem_ids.append(trigger_element.id)
             indexes = sorted(user_elem_ids.keys())
             assert indexes == range(len(indexes))
             user_elem_ids_list = [ user_elem_ids[idx] for idx in indexes ]
@@ -350,7 +347,6 @@ class PoolMeasurementGroup(PoolGroupElement):
         config = {}
         user_elements = self.get_user_elements()
         pool = self.pool
-
         timer_name = cfg.get('timer', user_elements[0].full_name)
         monitor_name = cfg.get('monitor', user_elements[0].full_name)
         config['timer'] = pool.get_element_by_full_name(timer_name)
@@ -370,11 +366,15 @@ class PoolMeasurementGroup(PoolGroupElement):
                 ctrl = pool.get_element_by_full_name(c_name)
                 assert ctrl.get_type() == ElementType.Controller
             controllers[ctrl] = ctrl_data = {}
-
             if not external and ctrl.is_timerable():
                 ctrl_data['timer'] = pool.get_element_by_full_name(c_data['timer'])
                 ctrl_data['monitor'] = pool.get_element_by_full_name(c_data['monitor'])
                 ctrl_data['trigger_type'] = c_data['trigger_type']
+                _ctrl = cfg['controllers'][c_name]
+                if _ctrl.has_key('trigger_element'):
+                    trigger_element = _ctrl['trigger_element'] #pool.get_element_by_full_name(_ctrl['trigger_element'])
+                    ctrl_data['trigger_element'] = trigger_element
+
             ctrl_data['channels'] = channels = {}
             for ch_name, ch_data in c_data['channels'].items():
                 if external:
@@ -388,6 +388,7 @@ class PoolMeasurementGroup(PoolGroupElement):
 
         config['label'] = cfg.get('label', self.name)
         config['description'] = cfg.get('description', self.DFT_DESC)
+
         self.set_configuration(config, propagate=propagate)
 
     def get_configuration(self):
@@ -414,17 +415,14 @@ class PoolMeasurementGroup(PoolGroupElement):
                     ctrl_data['monitor'] = c_data['monitor'].full_name
                 if c_data.has_key('trigger_type'):
                     ctrl_data['trigger_type'] = c_data['trigger_type']
-            ctrl_data['channels'] = channels = {}
-            for ch, ch_data in c_data['channels'].items():
-                channels[ch.full_name] = channel_data = dict(ch_data)
-                # TODO: remove when agreed on which level we use trigger_element
-                # it is probable that trigger_element won't be used on the
-                # channel level, but on the unit/controller level
-                if channel_data.has_key('trigger_element'):
+                if c_data.has_key('trigger_element'):
                     # use trigger_element with string instead of objects
                     # otherwise JSON serialization errors are raised
-                    tg_full_name = ch_data['trigger_element'].full_name
-                    channel_data['trigger_element'] = tg_full_name
+                    tg_full_name = c_data['trigger_element'].full_name
+                    ctrl_data['trigger_element'] = tg_full_name
+            ctrl_data['channels'] = channels = {}
+            for ch, ch_data in c_data['channels'].items():
+                channels[ch.full_name] = dict(ch_data)
 
         config['label'] = cfg['label']
         config['description'] = cfg['description']
@@ -434,7 +432,6 @@ class PoolMeasurementGroup(PoolGroupElement):
         """Loads the current configuration to all involved controllers"""
         cfg = self.get_configuration()
         g_timer, g_monitor = cfg['timer'], cfg['monitor']
-
         for ctrl, ctrl_data in cfg['controllers'].items():
             # skip external channels
             if type(ctrl) is str:

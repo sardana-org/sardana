@@ -105,11 +105,9 @@ def getTGConfiguration(MGcfg):
     _tg_element_list = []
 
     for ctrl in MGcfg["controllers"]:
-        channels_dict = MGcfg["controllers"][ctrl]['channels']
-        for channel in channels_dict:
-            tg_element = channels_dict[channel].get('trigger_element', None)
-            if (tg_element != None and tg_element not in _tg_element_list):
-                _tg_element_list.append(tg_element)
+        tg_element = MGcfg["controllers"][ctrl].get('trigger_element', None)
+        if (tg_element != None and tg_element not in _tg_element_list):
+            _tg_element_list.append(tg_element)
 
     # Intermediate dictionary to organize each ctrl with its elements.
     ctrl_tgelem_dict = {}
@@ -245,7 +243,7 @@ class PoolAcquisition(PoolAction):
         # TODO: this code splits the global mg configuration into 
         # experimental channels triggered by hw and experimental channels
         # triggered by sw. Refactor it!!!!
-        (sw_acq_cfg, cont_acq_cfg) = split_MGConfigurations(config)        
+        (sw_acq_cfg, cont_acq_cfg) = split_MGConfigurations(config)
         tg_cfg, _ = getTGConfiguration(config)
         # starting continuous acquisition only if there are any controllers
         if len(cont_acq_cfg['controllers']):
