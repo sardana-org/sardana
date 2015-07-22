@@ -76,7 +76,7 @@ def is_macro(macro, abs_file=None, logger=None):
         # if it is a class defined in some other module forget it to
         # avoid replicating the same macro in different macro files
         try:
-            if inspect.getabsfile(macro) != abs_file:
+            if inspect.getabsfile(macro).lower() != abs_file.lower():
                 return False
         except TypeError:
             return False
@@ -84,7 +84,7 @@ def is_macro(macro, abs_file=None, logger=None):
         # if it is a function defined in some other module forget it to
         # avoid replicating the same macro in different macro files
         try:
-            if inspect.getabsfile(macro) != abs_file:
+            if inspect.getabsfile(macro).lower() != abs_file.lower():
                 return False
         except TypeError:
             return False
