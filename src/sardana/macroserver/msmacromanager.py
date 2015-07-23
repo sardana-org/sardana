@@ -76,7 +76,10 @@ def is_macro(macro, abs_file=None, logger=None):
         # if it is a class defined in some other module forget it to
         # avoid replicating the same macro in different macro files
         try:
-            if inspect.getabsfile(macro).lower() != abs_file.lower():
+            # use normcase to treat case insensitivity of paths on
+            # certain platforms e.g. Windows
+            if os.path.normcase(inspect.getabsfile(macro)) !=\
+               os.path.normcase(abs_file):
                 return False
         except TypeError:
             return False
@@ -84,7 +87,10 @@ def is_macro(macro, abs_file=None, logger=None):
         # if it is a function defined in some other module forget it to
         # avoid replicating the same macro in different macro files
         try:
-            if inspect.getabsfile(macro).lower() != abs_file.lower():
+            # use normcase to treat case insensitivity of paths on
+            # certain platforms e.g. Windows
+            if os.path.normcase(inspect.getabsfile(macro)) !=\
+               os.path.normcase(abs_file):
                 return False
         except TypeError:
             return False
