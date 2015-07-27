@@ -610,7 +610,9 @@ class FastDummyMotorController(MotorController):
         if len(self.m) < axis:
             raise Exception("Invalid axis %d" % axis)
         if self.m[idx] is None:
-            self.m[idx] = BaseMotion()
+            m = BaseMotion()
+            m.curr_pos = 0
+            self.m[idx] = m
 
     def DeleteDevice(self, axis):
         MotorController.DeleteDevice(self, axis)

@@ -113,13 +113,18 @@ class defelem(Macro):
 
 
 class udefelem(Macro):
-    """Deletes an existing element"""
+    """Deletes an existing element(s)"""
 
-    param_def = [ ['element', Type.Element, None, 'element name'],]
+    param_def = [
+       ['elements',
+        ParamRepeat(['element', Type.Element, None, 'element name'], min=1),
+        None, 'List of element(s) name'],
+    ]
 
-    def run(self, element):
-        pool = element.getPoolObj()
-        pool.deleteElement(element.getName())
+    def run(self, *elements):
+        for element in elements:
+            pool = element.getPoolObj()
+            pool.deleteElement(element.getName())
 
 
 class defctrl(Macro):
@@ -281,8 +286,21 @@ class rellib(Macro):
     
     .. warning:: use with extreme care! Accidentally reloading a system
                  module or an installed python module may lead to unpredictable
-                 behavior 
-    
+                 behavior
+
+    .. warning:: Prior to the Sardana version 1.6.0 this macro was successfully
+                 reloading python libraries located in the MacroPath.
+                 The MacroPath is not a correct place to locate your python
+                 libraries. They may be successfully loaded on the MacroServer
+                 startup, but this can not be guaranteed.
+                 In order to use python libraries within your macro code,
+                 locate them in either of valid system PYTHONPATH or
+                 MacroServer PythonPath property (of the host where
+                 MacroServer runs).
+                 In order to achieve the previous behavior, just configure the
+                 the same directory in both system PYTHONPATH (or MacroServer's
+                 PythonPath) and MacroPath.
+
     .. note:: if python module is used by any macro, don't forget to reload
               the corresponding macros afterward so the changes take effect."""
 
@@ -324,9 +342,11 @@ class relmaclib(Macro):
             self.output("%s successfully (re)loaded (found %d macros)", name, len(macros))
 
 class addmaclib(Macro):
-    """Loads a new macro library. Keep in mind that macros from the new library
-    can override macros already present in the system."""
+    """Loads a new macro library.
 
+    .. warning:: Keep in mind that macros from the new library can override
+                 macros already present in the system.
+    """
     param_def = [
         ['macro_library_name', Type.String, None,
          'The module name to be loaded (without extension)']

@@ -314,7 +314,7 @@ class ParamDecoder:
         macro_meta = self.macro_meta
         macro_type = macro_meta.get_type()
         pars_str = self.param_str_list[1:]
-        pars_def = macro_meta.get_parameter_definition()
+        pars_def = macro_meta.get_parameter()
         if macro_type == ElementType.MacroClass:
             _, self.param_list = self.decodeNormal(pars_str, pars_def)
         elif macro_type == ElementType.MacroFunction:
@@ -326,24 +326,27 @@ class ParamDecoder:
 
     def decodeNormal(self, str_list, def_list):
         str_len = len(str_list)
-        par_len = len(def_list)
         obj_list = []
         str_idx = 0
         for i, par_def in enumerate(def_list):
-            name, type_class, def_val, desc = par_def
+            name = par_def['name']
+            type_class = par_def['type']
+            def_val = par_def['default_value']
             if str_idx == str_len:
                 if def_val is None:
-                    if not isinstance(type_class, ParamRepeat):
+                    if not isinstance(type_class, list):
                         raise MissingParam, "'%s' not specified" % name
-                    elif isinstance(type_class, ParamRepeat):
-                        min = par_def[1].opts['min']
-                        if min > 0:
-                            raise WrongParam, "'%s' demands at least %d values" % (name, min)
+                    elif isinstance(type_class, list):
+                        min_rep = par_def['min']
+                        if min_rep > 0:
+                            msg = "'%s' demands at least %d values" %\
+                                  (name, min_rep)
+                            raise WrongParam, msg
                 new_obj_list = []
                 if not def_val is None:
                     new_obj_list.append(def_val)
             else:
-                if isinstance(type_class, ParamRepeat):
+                if isinstance(type_class, list):
                     data = self.decodeRepeat(str_list[str_idx:], par_def)
                     dec_token, new_obj_list = data
                 else:
@@ -369,9 +372,11 @@ class ParamDecoder:
         return str_idx, obj_list
 
     def decodeRepeat(self, str_list, par_def):
-        name, rep_data, def_val, desc = par_def
-        min_rep = rep_data.min
-        max_rep = rep_data.max
+        name = par_def['name']
+        param_def = par_def['type']
+        min_rep = par_def['min']
+        max_rep = par_def['max']
+
         dec_token = 0
         obj_list = []
         rep_nr = 0
@@ -379,7 +384,7 @@ class ParamDecoder:
             if max_rep is not None and rep_nr == max_rep:
                 break
             new_token, new_obj_list = self.decodeNormal(str_list[dec_token:],
-                                                        rep_data.param_def)
+                                                        param_def)
             dec_token += new_token
             if len(new_obj_list) == 1:
                 new_obj_list = new_obj_list[0]

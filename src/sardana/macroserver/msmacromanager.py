@@ -76,7 +76,10 @@ def is_macro(macro, abs_file=None, logger=None):
         # if it is a class defined in some other module forget it to
         # avoid replicating the same macro in different macro files
         try:
-            if inspect.getabsfile(macro) != abs_file:
+            # use normcase to treat case insensitivity of paths on
+            # certain platforms e.g. Windows
+            if os.path.normcase(inspect.getabsfile(macro)) !=\
+               os.path.normcase(abs_file):
                 return False
         except TypeError:
             return False
@@ -84,7 +87,10 @@ def is_macro(macro, abs_file=None, logger=None):
         # if it is a function defined in some other module forget it to
         # avoid replicating the same macro in different macro files
         try:
-            if inspect.getabsfile(macro) != abs_file:
+            # use normcase to treat case insensitivity of paths on
+            # certain platforms e.g. Windows
+            if os.path.normcase(inspect.getabsfile(macro)) !=\
+               os.path.normcase(abs_file):
                 return False
         except TypeError:
             return False
@@ -183,9 +189,11 @@ class MacroManager(MacroServerManager):
         self._macro_path = p
 
         macro_file_names = self._findMacroLibNames()
-        for mod_name in macro_file_names:
+        for mod_name, file_name in macro_file_names.iteritems():
+            dir_name = os.path.dirname(file_name)
+            path = [dir_name]
             try:
-                self.reloadMacroLib(mod_name)
+                self.reloadMacroLib(mod_name, path)
             except:
                 pass
 
@@ -399,33 +407,19 @@ class MacroManager(MacroServerManager):
         """Reloads the given library(=module) names.
 
         :raises:
-            ImportError in case the reload process is not successful
             LibraryError if trying to reload a macro library
-            
+
         :param module_name: module name
         :param path:
-            a list of absolute path to search for libraries [default: None,
-            meaning search in MacroPath. If not found, search for a built-in,
-            frozen or special module and continue search in sys.path. ]
+            a list of absolute path to search for libraries [default: None. 
+            Search in sys.path.]
         :return: the reloaded python module object"""
-        
         if module_name in self._modules:
-            raise LibraryError("Cannot use simple reload to reload a Macro Library")
+            raise LibraryError("Cannot use simple " +
+                               "reload to reload a Macro Library")
         
         mod_manager = ModuleManager()
-        retry = path is None
-        try:
-            if retry:
-                path = self.getMacroPath()
-                if path:
-                    path = copy.copy(path)
-                    path.reverse()                
-            return mod_manager.reloadModule(module_name, path)
-        except ImportError:
-            if retry:
-                return mod_manager.reloadModule(module_name, path=None)
-            else:
-                raise
+        return mod_manager.reloadModule(module_name, path=None)
 
     def reloadMacroLib(self, module_name, path=None):
         """Reloads the given library(=module) names.
@@ -483,7 +477,8 @@ class MacroManager(MacroServerManager):
                 except:
                     self.error("Error adding macro %s", macro.__name__)
                     self.debug("Details:", exc_info=1)
-        self._modules[module_name] = macro_lib
+        if macro_lib.has_macros():
+            self._modules[module_name] = macro_lib
         return macro_lib
 
     def addMacro(self, macro_lib, macro):

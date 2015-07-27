@@ -3,9 +3,9 @@
 
 .. _docs:
 
-=====================
-Sardana Documentation
-=====================
+===============================
+Sardana |version| Documentation
+===============================
 
 Sardana is a software suite for Supervision, Control and Data Acquisition in 
 scientific installations.

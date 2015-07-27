@@ -419,7 +419,10 @@ class ControllerManager(Singleton, Logger):
                     # if it is a class defined in some other class forget it to
                     # avoid replicating the same controller in different
                     # controller files
-                    if inspect.getabsfile(klass) != abs_file:
+                    # use normcase to treat case insensitivity of paths on
+                    # certain platforms e.g. Windows
+                    if os.path.normcase(inspect.getabsfile(klass)) !=\
+                       os.path.normcase(abs_file):
                         continue
                     lib_contains_controllers = True
                     self.addController(controller_lib, klass)
