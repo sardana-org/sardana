@@ -94,7 +94,7 @@ class DNscancTest(DNscanTest):
     pass
 
 
-@testRun(macro_params=[_m1, '0', '5', '4', '.1'], wait_timeout=float("inf"))
+@testRun(macro_params=[_m1, '0', '5', '4', '.1'], wait_timeout=30.0)
 @testStop(macro_params=[_m1, '0', '5', '3', '.1'])
 class AscanTest(ANscanTest, unittest.TestCase):
 
@@ -104,7 +104,7 @@ class AscanTest(ANscanTest, unittest.TestCase):
     """
     macro_name = 'ascan'
 
-    def macro_runs(self, macro_params=None, wait_timeout=float("inf")):
+    def macro_runs(self, macro_params=None, wait_timeout=30.0):
         """Reimplementation of macro_runs method for ascan macro.
         It verifies using double checking, with log output and data from
         the macro:
@@ -161,7 +161,7 @@ class AscanTest(ANscanTest, unittest.TestCase):
                                "Final possition differs from set value (using getLog)")
 
 
-@testRun(macro_params=[_m1, '-1', '1', '2', '.1'])
+@testRun(macro_params=[_m1, '-1', '1', '2', '.1'], wait_timeout=30)
 @testStop(macro_params=[_m1, '1', '-1', '3', '.1'])
 class DscanTest(DNscanTest, unittest.TestCase):
 
@@ -171,9 +171,12 @@ class DscanTest(DNscanTest, unittest.TestCase):
     macro_name = 'dscan'
 
 
-@testRun(macro_params=[_m1, '-1', '1', '3', _m2, '-1', '0', '2', '.1'])
-@testRun(macro_params=[_m1, '-2', '2', '3', _m2, '-2', '-1', '2', '.1'])
-@testStop(macro_params=[_m1, '-3', '0', '3', _m2, '-3', '0', '2', '.1'])
+@testRun(macro_params=[_m1, '-1', '1', '3', _m2, '-1', '0', '2', '.1'], 
+         wait_timeout=30)
+@testRun(macro_params=[_m1, '-2', '2', '3', _m2, '-2', '-1', '2', '.1'], 
+         wait_timeout=30)
+@testStop(macro_params=[_m1, '-3', '0', '3', _m2, '-3', '0', '2', '.1'], 
+          wait_timeout=30)
 class MeshTest(RunStopMacroTestCase, unittest.TestCase):
 
     """Test of mesh macro. It verifies that macro mesh can be executed and

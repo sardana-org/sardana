@@ -48,7 +48,12 @@ class ViewOption(object):
 
     @classmethod
     def init_options(cls, d):
-        d.update(cls._DEFAULT_VIEW_OPTIONS)
+        '''Init missing options with the default values.
+        '''
+        diff = set(cls._DEFAULT_VIEW_OPTIONS).difference(d)
+        if len(diff) > 0:
+            for key in diff:
+                d[key] = cls._DEFAULT_VIEW_OPTIONS[key]
         return d
 
     @classmethod
