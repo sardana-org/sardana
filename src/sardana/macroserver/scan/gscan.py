@@ -1648,93 +1648,6 @@ class CSScan(CScan):
 class CTScan(CScan):
     '''Continuous scan controlled by hardware trigger signals. 
     Sequence of trigger signals is programmed in time. '''
-    
-    class ExtraTrigger:
-        '''Helper class and temporary solution for configuring trigger device.
-           It is used to configure any Tango device name implementing:
-           +) following attributes: 
-           - InitialDelayTime [s] - delay time from calling Start to generating first pulse 
-           - HighTime [s] - time interval while signal will maintain its high state
-           - LowTime [s] - time interval while signal will maintain its low state
-           - SampPerChan - nr of pulses to be generated
-           - IdleState - state (high or low) which signal will take after the Start command
-                         and which will maintain during the InitialDelayTime.  
-           +) following commands:
-           - Start 
-           - Stop)'''
-         
-        MIN_HIGH_TIME = 0.0000002
-        MIN_TIME_PER_TRIGGER = 0.000001
-    
-        def __init__(self, macro):
-            self.macro = macro
-            
-            triggerDeviceName = self.macro.getEnv("TriggerDevice")
-            self.master = None
-            self.slaves = []
-            masterName = None
-            slaveNames = []
-            
-            if isinstance(triggerDeviceName, str):
-                masterName = triggerDeviceName
-            elif isinstance(triggerDeviceName, list):
-                masterName = triggerDeviceName[0]
-                slaveNames = triggerDeviceName[1:]
-            
-            for name in slaveNames:
-                slave = PyTango.DeviceProxy(name)
-                self.slaves.append(slave)
-            if masterName != None:
-                self.master = PyTango.DeviceProxy(masterName)        
-    
-        def configure(self, scanTime=None, nrOfTriggers=None, idleState="Low", lowTime=None, highTime=None, delayTime=0):
-            if not None in (scanTime, nrOfTriggers, delayTime, idleState):
-                timePerTrigger = scanTime / nrOfTriggers
-                if timePerTrigger < self.MIN_TIME_PER_TRIGGER:
-                    raise Exception("scanTime is not long enough to manage this amount of triggers")
-                highTime = self.MIN_HIGH_TIME
-                lowTime = timePerTrigger - highTime
-            elif not None in (lowTime, highTime, delayTime, nrOfTriggers, idleState):
-                pass
-            else:
-                raise Exception("Missing parameters.")
-            
-            if self.master.State() != PyTango.DevState.STANDBY:
-                self.master.Stop()
-            self.master.write_attribute("InitialDelayTime", delayTime)
-            self.master.write_attribute("HighTime", highTime) # 162.5 ns
-            self.master.write_attribute("LowTime", lowTime) # 2.75 ms
-            self.master.write_attribute("SampPerChan", long(nrOfTriggers))
-            self.master.write_attribute("IdleState", idleState)
-            self.master.write_attribute("SampleTimingType", "Implicit")
-    
-            for slave in self.slaves:
-                if slave.State() != PyTango.DevState.STANDBY:
-                    slave.Stop()
-                slave.write_attribute("HighTime", highTime) # 162.5 ns
-                slave.write_attribute("LowTime", lowTime) # 2.75 ms
-                slave.write_attribute("SampPerChan", long(nrOfTriggers))
-                slave.write_attribute("IdleState", idleState)
-                slave.write_attribute("SampleTimingType", "Implicit")
-                
-            return timePerTrigger
-    
-        def getConfiguration(self):
-            return None, None, None, None
-    
-        def start(self):
-            for slave in self.slaves:
-                self.macro.debug("Staring  %s" % slave.name())
-                slave.Start()
-            if self.master != None:
-                self.master.Start()
-    
-        def stop(self):
-            for slave in self.slaves:
-                self.macro.debug("Stopping  %s" % slave.name())
-                slave.Stop()
-            if self.master != None:
-                self.master.Stop()
 
     # TODO: Since SEP6, ExtraMntGrp class has to be refactored.
     # Some methods are not SEP6 compliant. 
@@ -1883,8 +1796,7 @@ class CTScan(CScan):
                        moveables=moveables, env=env, constraints=constraints,
                        extrainfodesc=extrainfodesc)
         self._measurement_group = self.ExtraMntGrp(macro)
-        #self.extraTrigger = self.ExtraTrigger(macro)            
-        
+
     def prepare_waypoint(self, waypoint, start_positions, iterate_only=False):
         '''Prepare list of MotionPath objects per each physical motor. 
         :param waypoint: (dict) waypoint dictionary with necessary information
@@ -1971,8 +1883,6 @@ class CTScan(CScan):
             self.__mntGrpConfigured = False
             self.__triggerConfigured = False
             self.__mntGrpStarted = False
-            self.__triggerStarted = False
-            
             #validation of parameters
             for start, end in zip(self.macro.starts, self.macro.finals):
                 if start == end:
@@ -1985,16 +1895,7 @@ class CTScan(CScan):
                 for hook in macro.getHooks('pre-configuration'):
                     hook()
             self.macro.checkPoint()
-    
-            #configuring trigger lines
-#             oldHighTime, oldLowTime, oldDelay, oldNrOfTriggers = \
-#                                         self.extraTrigger.getConfiguration()
-#             self.__triggerConfigured = True
-#             timePerTrigger = self.extraTrigger.configure(delayTime=delta_start,
-#                                            scanTime=acq_duration,
-#                                            nrOfTriggers=self.macro.nr_of_points)
-            self.macro.checkPoint()
-    
+
             #configuring measurementGroup
             self.mntGrpConfiguration = self._measurement_group.getConfiguration()
             self.__mntGrpConfigured = True
@@ -2069,8 +1970,6 @@ class CTScan(CScan):
             # move to waypoint end position
             self.macro.debug("Moving to waypoint position: %s" % repr(final_pos))
             self.macro.debug("Starting triggers")
-            self.__triggerStarted = True
-#             self.extraTrigger.start()
             motion.move(final_pos)
                         
             self.motion_event.clear()
@@ -2192,14 +2091,6 @@ class CTScan(CScan):
                 self.debug(msg)
                 self.debug('Details: ', exc_info = True)
                 raise ScanException('stopping the measurement group failed')
-
-#         if self.__triggerStarted:
-#             self.debug("Stopping triggers")
-#             try:
-#                 self.extraTrigger.stop()
-#             except:
-#                 self.debug('Exception occurred trying to stop the trigger')
-#                 raise ScanException('stopping the trigger failed')
 
         if hasattr(self.macro, 'getHooks'):
             for hook in self.macro.getHooks('pre-cleanup'):
