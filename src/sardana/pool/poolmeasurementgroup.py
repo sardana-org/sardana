@@ -292,22 +292,18 @@ class PoolMeasurementGroup(PoolGroupElement):
                 external = isinstance(c, (str, unicode))
                 for channel_data in c_data['channels'].values():
                     if external:
-                        element = id = channel_data['full_name']
-                        channel_data['source'] = id
+                        element = _id = channel_data['full_name']
+                        channel_data['source'] = _id
                     else:
                         element = pool.get_element_by_full_name(channel_data['full_name'])
-                        id = element.id
-                    user_elem_ids[channel_data['index']] = id
+                        _id = element.id
+                    user_elem_ids[channel_data['index']] = _id
                     channel_data = self._build_channel_defaults(channel_data, element)
-                    # creating TG information
-                trigger_name = c_data.get('trigger_element')
-                # TODO: protecting measurement groups which do not have trigger_element
-                # if trigger_element will have a default value we could remove this protection
-                if not trigger_name:
-                    continue
-                trigger_element = pool.get_element_by_full_name(trigger_name)
-                c_data['trigger_element'] = trigger_element
-                tg_elem_ids.append(trigger_element.id)
+                tg_element = c_data['trigger_element']
+                # for backwards compatibility purposes
+                # protect measurementgroups without trigger_element defined
+                if tg_element:
+                    tg_elem_ids.append(tg_element.id)
             indexes = sorted(user_elem_ids.keys())
             assert indexes == range(len(indexes))
             user_elem_ids_list = [ user_elem_ids[idx] for idx in indexes ]
@@ -367,14 +363,19 @@ class PoolMeasurementGroup(PoolGroupElement):
                 assert ctrl.get_type() == ElementType.Controller
             controllers[ctrl] = ctrl_data = {}
             if not external and ctrl.is_timerable():
-                ctrl_data['timer'] = pool.get_element_by_full_name(c_data['timer'])
-                ctrl_data['monitor'] = pool.get_element_by_full_name(c_data['monitor'])
+                timer_name = c_data['timer']
+                timer = pool.get_element_by_full_name(timer_name)
+                ctrl_data['timer'] = timer
+                monitor_name = c_data['monitor']
+                monitor = pool.get_element_by_full_name(monitor_name)
+                ctrl_data['monitor'] = monitor
+                tg_name = c_data.get('trigger_element')
+                # for backwards compatibility purposes
+                # protect measurementgroups without trigger_element defined
+                if tg_name:
+                    tg_element = pool.get_element_by_full_name(tg_name)
+                ctrl_data['trigger_element'] = tg_element
                 ctrl_data['trigger_type'] = c_data['trigger_type']
-                _ctrl = cfg['controllers'][c_name]
-                if _ctrl.has_key('trigger_element'):
-                    trigger_element = _ctrl['trigger_element'] #pool.get_element_by_full_name(_ctrl['trigger_element'])
-                    ctrl_data['trigger_element'] = trigger_element
-
             ctrl_data['channels'] = channels = {}
             for ch_name, ch_data in c_data['channels'].items():
                 if external:
