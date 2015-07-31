@@ -389,6 +389,7 @@ class PoolCTAcquisition(PoolAction):
     def get_read_value_loop_ctrls(self):
         return self._pool_ctrl_dict_loop
 
+    @DebugIt()
     def start_action(self, *args, **kwargs):
         """Prepares everything for acquisition and starts it.
 
@@ -519,6 +520,7 @@ class PoolCTAcquisition(PoolAction):
             if self._is_in_action(s):
                 return True
 
+    @DebugIt()
     def action_loop(self):
         i = 0
 
@@ -579,6 +581,7 @@ class PoolContHWAcquisition(PoolCTAcquisition):
     def __init__(self, main_element, name="ContHWAcquisition", slaves=None):
         PoolCTAcquisition.__init__(self, main_element, name, slaves=slaves)
 
+    @DebugIt()
     def start_action(self, *args, **kwargs):
         """Prepares everything for acquisition and starts it.
 
@@ -696,6 +699,7 @@ class PoolContHWAcquisition(PoolCTAcquisition):
             for pool_ctrl in pool_ctrls:
                 pool_ctrl.ctrl.StartAll()
         
+    @DebugIt()
     def action_loop(self):
         i = 0
 
@@ -772,6 +776,7 @@ class PoolContSWCTAcquisition(PoolCTAcquisition):
     def __init__(self, main_element, name="CTAcquisition", slaves=None):
         PoolCTAcquisition.__init__(self, main_element, name="CTAcquisition", slaves=None)
 
+    @DebugIt()
     def action_loop(self):
         i = 0
 
