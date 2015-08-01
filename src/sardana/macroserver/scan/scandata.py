@@ -284,7 +284,29 @@ class RecordList(dict):
         for label in self.labels:
             self.columnIndexDict[label] = 0
         ####
-        self.datahandler.startRecordList(self)
+        self.datahandler.startRecordList(self) 
+
+    def initRecord(self):
+        '''Init a dummy record and add it to the records list.
+        A dummy record has:
+           - point_nb of the consecutive record
+           - each column initialized with NaN
+           - each moveable initialized with None
+        '''
+        rc = Record({'point_nb' : self.recordno,'timestamp': None})
+        rc.setRecordNo(self.recordno)
+        for _label in self.channelLabels:
+            rc.data[_label] = float('NaN')
+        for refMoveableLabel in self.refMoveablesLabels:
+            rc.data[refMoveableLabel] = None
+        self.records.append(rc)
+        self.recordno += 1
+
+    def initRecords(self, nb_records):
+        '''Call nb_records times initRecord method
+        '''
+        for _ in range(nb_records):
+            self.initRecord()
 
     def addRecord(self, record):
         rc = Record(record)
@@ -325,17 +347,7 @@ class RecordList(dict):
             #TODO: implement proper handling of timestamps and moveables
             if missingRecords < 0:
                 missingRecords = abs(missingRecords)
-                for _ in xrange(missingRecords):
-                    rc = Record({'point_nb' : self.recordno,'timestamp': None})
-                    for _label in self.channelLabels:
-                        rc.data[_label] = None
-                        rc.setRecordNo(self.recordno)
-                        rc.data[_label] = float('NaN')
-
-                    for refMoveableLabel in self.refMoveablesLabels:
-                        rc.data[refMoveableLabel] = None
-                    self.records.append(rc)
-                    self.recordno += 1
+                self.initRecords(missingRecords)
             for idx, value in zip(idxs, rawData):
                 rc = self.records[idx]
                 rc.setRecordNo(idx)
