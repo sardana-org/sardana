@@ -94,6 +94,7 @@ def sar_demo(self):
     oned_ctrl_name = get_free_names(db, "onedctrl", 1)[0]
     twod_ctrl_name = get_free_names(db, "twodctrl", 1)[0]
     stg_ctrl_name = get_free_names(db, "stgctrl", 1)[0]
+    tg_ctrl_name = get_free_names(db, "tgctrl", 1)[0]
     pm_ctrl_name = get_free_names(db, "slitctrl", 1)[0]
     
     motor_names = get_free_names(db, "mot", 4)
@@ -102,6 +103,7 @@ def sar_demo(self):
     oned_names = get_free_names(db, "oned", 1)
     twod_names = get_free_names(db, "twod", 1)
     stg_names = get_free_names(db, "stg", 1)
+    tg_names = get_free_names(db, "tg", 1)
     gap, offset = get_free_names(db, "gap", 1) + get_free_names(db, "offset", 1)
     
     mg_name = get_free_names(db, "mntgrp", 1)[0]
@@ -144,7 +146,13 @@ def sar_demo(self):
         self.print("Creating 2D channel", twod_name, "...")
         self.defelem(twod_name , twod_ctrl_name, axis)
 
-    self.print("Creating software TG controller", stg_ctrl_name, "...")
+    self.print("Creating trigger controller", tg_ctrl_name, "...")
+    self.defctrl("DummyTriggerGateController", tg_ctrl_name)
+    for axis, tg_name in enumerate(tg_names, 1):
+        self.print("Creating trigger element", tg_name, "...")
+        self.defelem(tg_name , tg_ctrl_name, axis)
+
+    self.print("Creating software trigger controller", stg_ctrl_name, "...")
     self.defctrl("SoftwareTriggerGateController", stg_ctrl_name)
     for axis, stg_name in enumerate(stg_names, 1):
         self.print("Creating software TG element", stg_name, "...")
