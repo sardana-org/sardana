@@ -61,6 +61,9 @@ mg_config2 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
 mg_config3 = [[('_test_ct_1_1', '_test_stg_1_1', AcqTriggerType.Trigger)],
               [('_test_ct_2_1', '_test_tg_1_1', AcqTriggerType.Trigger)]
     ]
+mg_config4 = [[('_test_ct_1_1', '_test_stg_1_1', AcqTriggerType.Trigger)],
+              [('_test_ct_2_1', '_test_stg_1_1', AcqTriggerType.Trigger)]
+    ]
 macro_params_1 = ['_test_mt_1_1', '0', '10', '100', '0.1']
 
 @testRun(meas_config=mg_config1, macro_params=macro_params_1, 
@@ -68,6 +71,8 @@ macro_params_1 = ['_test_mt_1_1', '0', '10', '100', '0.1']
 @testRun(meas_config=mg_config2, macro_params=macro_params_1, 
          wait_timeout=float("inf"))
 @testRun(meas_config=mg_config3, macro_params=macro_params_1, 
+         wait_timeout=float("inf"))
+@testRun(meas_config=mg_config4, macro_params=macro_params_1, 
          wait_timeout=float("inf"))
 @testStop(meas_config=mg_config1, macro_params=macro_params_1,
          stop_delay=5, wait_timeout=float("inf"))
