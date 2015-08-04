@@ -62,13 +62,17 @@ class SoftwareTriggerGateController(TriggerGateController):
         tg = self.tg[idx]
         name = name.lower()
         if name == 'offset':
-            v = tg.setOffset()
+            v = tg.getOffset()
         elif name == 'active_period':
-            v = tg.setActivePeriod()
+            v = tg.getActivePeriod()
         elif name == 'passive_period':
             v = tg.getPassivePeriod()
         elif name == "repetitions":
             v = tg.getRepetitions()
+        else:
+            v = None
+            msg = 'GetAxisPar(%d): has not attribute %s' %(axis, name)
+            self._log.debug(msg)
         return v
 
     def AddDevice(self, axis):
