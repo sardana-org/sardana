@@ -575,14 +575,14 @@ class PoolMeasurementGroup(PoolGroupElement):
                 kwargs['monitor'] = self._monitor
             if acquisition_mode in (AcqMode.ContTimer, AcqMode.ContMonitor):
                 self._action_cache = None
-                # TODO: calculate the active_period, based on the involved elements
-                # hardcoding the active_period to 1 us
-                active_period = 1e-6
-                if active_period > integration_time:
+                # TODO: calculate the active_interval, based on the involved elements
+                # hardcoding the active_interval to 1 us
+                active_interval = 1e-6
+                if active_interval > integration_time:
                     raise ValueError('IntegrationTime must be higher than 1 us')
-                passive_period = integration_time - active_period
-                kwargs['active_period'] = active_period
-                kwargs['passive_period'] = passive_period
+                passive_interval = integration_time - active_interval
+                kwargs['active_interval'] = active_interval
+                kwargs['passive_interval'] = passive_interval
                 kwargs['offset'] = self._offset
                 kwargs['repetitions'] = self._repetitions
                 kwargs['synchronized'] = True

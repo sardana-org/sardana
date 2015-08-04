@@ -50,10 +50,10 @@ class SoftwareTriggerGateController(TriggerGateController):
         name = name.lower()
         if name == 'offset':
             tg.setOffset(value)
-        elif name == 'active_period':
-            tg.setActivePeriod(value)
-        elif name == 'passive_period':
-            tg.setPassivePeriod(value)
+        elif name == 'active_interval':
+            tg.setActiveInterval(value)
+        elif name == 'passive_interval':
+            tg.setPassiveInterval(value)
         elif name == 'repetitions':
             tg.setRepetitions(value)
             
@@ -63,10 +63,10 @@ class SoftwareTriggerGateController(TriggerGateController):
         name = name.lower()
         if name == 'offset':
             v = tg.getOffset()
-        elif name == 'active_period':
-            v = tg.getActivePeriod()
-        elif name == 'passive_period':
-            v = tg.getPassivePeriod()
+        elif name == 'active_interval':
+            v = tg.getActiveInterval()
+        elif name == 'passive_interval':
+            v = tg.getPassiveInterval()
         elif name == "repetitions":
             v = tg.getRepetitions()
         else:

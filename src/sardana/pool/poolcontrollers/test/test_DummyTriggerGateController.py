@@ -8,14 +8,14 @@ from sardana.pool.test import (FakePool, createPoolController,
                                dummyTriggerGateConf01, 
                                createPoolTGGenerationConfiguration)
 
-@insertTest(helper_name='generation', offset=0, active_period=.1,
-                                              passive_period=.1, repetitions=0)
-@insertTest(helper_name='generation', offset=0, active_period=.01,
-                                              passive_period=.01, repetitions=10)
-@insertTest(helper_name='generation', offset=0, active_period=.01,
-                                             passive_period=.02, repetitions=10)
-@insertTest(helper_name='generation', offset=0, active_period=.01,
-                                             passive_period=.05, repetitions=10)
+@insertTest(helper_name='generation', offset=0, active_interval=.1,
+            passive_interval=.1, repetitions=0)
+@insertTest(helper_name='generation', offset=0, active_interval=.01,
+            passive_interval=.01, repetitions=10)
+@insertTest(helper_name='generation', offset=0, active_interval=.01,
+            passive_interval=.02, repetitions=10)
+@insertTest(helper_name='generation', offset=0, active_interval=.01,
+            passive_interval=.05, repetitions=10)
 class PoolDummyTriggerGateTestCase(unittest.TestCase):
     """Parameterizable integration test of the PoolTGGeneration action and
     the DummTriggerGateController.
@@ -44,14 +44,15 @@ class PoolDummyTriggerGateTestCase(unittest.TestCase):
         self.tg_action = PoolTGGeneration(self.dummy_tg)
         self.tg_action.add_element(self.dummy_tg)
 
-    def generation(self, offset, active_period, passive_period, repetitions):
+    def generation(self, offset, active_interval, passive_interval,
+                   repetitions):
         """Verify that the created PoolTGAction start_action starts correctly 
         the involved controller."""
         args = ()
         kwargs = {'config': self.cfg,
                   'offset': offset,
-                  'active_period': active_period,
-                  'passive_period': passive_period,
+                  'active_interval': active_interval,
+                  'passive_interval': passive_interval,
                   'repetitions': repetitions
                  }
         self.tg_action.start_action(*args, **kwargs)

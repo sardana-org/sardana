@@ -73,8 +73,8 @@ class PoolTGGeneration(PoolAction):
 
         # obtaining generation parameters from kwargs
         offset = kwargs.get('offset')
-        active_period = kwargs.get('active_period')
-        passive_period = kwargs.get('passive_period')
+        active_interval = kwargs.get('active_interval')
+        passive_interval = kwargs.get('passive_interval')
         repetitions = kwargs.get('repetitions')
 
         # Prepare a dictionary with the involved channels
@@ -106,8 +106,8 @@ class PoolTGGeneration(PoolAction):
                 channel = channels[element]
                 if channel.enabled:
                     ctrl.SetAxisPar(axis, 'offset', offset)
-                    ctrl.SetAxisPar(axis, 'active_period', active_period)
-                    ctrl.SetAxisPar(axis, 'passive_period', passive_period)
+                    ctrl.SetAxisPar(axis, 'active_interval', active_interval)
+                    ctrl.SetAxisPar(axis, 'passive_interval', passive_interval)
                     ctrl.SetAxisPar(axis, 'repetitions', repetitions)
 
         with ActionContext(self):

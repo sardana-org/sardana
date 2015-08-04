@@ -104,8 +104,8 @@ class AcquisitionTestCase(BasePoolTestCase):
             self.tggeneration.add_element(tg)
         self.tggeneration.add_listener(self)
 
-    def hw_continuous_acquisition(self, offset, active_period, passive_period,
-                               repetitions, integ_time):
+    def hw_continuous_acquisition(self, offset, active_interval,
+                                  passive_interval, repetitions, integ_time):
         """Executes measurement running the TGGeneration and Acquisition
         actions according the test parameters. Checks the lengths of the
         acquired data.
@@ -151,8 +151,8 @@ class AcquisitionTestCase(BasePoolTestCase):
         tg_args = ()
         tg_kwargs = {
             'offset': offset,
-            'active_period': active_period,
-            'passive_period': passive_period,
+            'active_interval': active_interval,
+            'passive_interval': passive_interval,
             'repetitions': repetitions,
             'config': tg_cfg
         }
@@ -239,14 +239,17 @@ class AcquisitionTestCase(BasePoolTestCase):
         self.l = None
         self.channel_names = None
 
-@insertTest(helper_name='continuous_acquisition', offset=0, active_period=0.1,
-            passive_period=0.2, repetitions=10, integ_time=0.2)
-@insertTest(helper_name='continuous_acquisition', offset=0, active_period=0.001,
-            passive_period=0.21, repetitions=10, integ_time=0.1)
-@insertTest(helper_name='continuous_acquisition', offset=0, active_period=0.001,
-            passive_period=0.15, repetitions=10, integ_time=0.01)
-@insertTest(helper_name='continuous_acquisition', offset=0, active_period=0.001,
-            passive_period=0.1, repetitions=10, integ_time=0.01)
+@insertTest(helper_name='continuous_acquisition', offset=0, active_interval=0.1,
+            passive_interval=0.2, repetitions=10, integ_time=0.2)
+@insertTest(helper_name='continuous_acquisition', offset=0,
+            active_interval=0.001, passive_interval=0.21, repetitions=10,
+            integ_time=0.1)
+@insertTest(helper_name='continuous_acquisition', offset=0,
+            active_interval=0.001, passive_interval=0.15, repetitions=10,
+            integ_time=0.01)
+@insertTest(helper_name='continuous_acquisition', offset=0,
+            active_interval=0.001, passive_interval=0.1, repetitions=10,
+            integ_time=0.01)
 class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
     """Integration test of PoolTGGeneration, PoolContHWAcquisition and
     PoolContSWCTAcquisition actions. This test plays the role of the
@@ -279,7 +282,7 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
                                       *args,
                                       **kwargs)
 
-    def continuous_acquisition(self, offset, active_period, passive_period,
+    def continuous_acquisition(self, offset, active_interval, passive_interval,
                                repetitions, integ_time):
         """Executes measurement running the TGGeneration and Acquisition actions
         according the test parameters. Checks the lengths of the acquired data.
@@ -343,8 +346,8 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         tg_args = ()
         tg_kwargs = {
             'offset': offset,
-            'active_period': active_period,
-            'passive_period': passive_period,
+            'active_interval': active_interval,
+            'passive_interval': passive_interval,
             'repetitions': repetitions,
             'config': tg_cfg
         }

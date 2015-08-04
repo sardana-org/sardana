@@ -89,62 +89,64 @@ class PoolTriggerGate(PoolElement):
                         doc="trigger/gate events offset")
 
     # --------------------------------------------------------------------------
-    # active_period
+    # active_interval
     # --------------------------------------------------------------------------
 
-    def get_active_period(self, cache=True, propagate=1):
+    def get_active_interval(self, cache=True, propagate=1):
         if not cache or self._velocity is None:
-            active_period = self.read_active_period()
-            self._set_active_period(active_period, propagate=propagate)
-        return self._active_period
+            active_interval = self.read_active_interval()
+            self._set_active_interval(active_interval, propagate=propagate)
+        return self._active_interval
 
-    def set_active_period(self, active_period, propagate=1):
-        self.controller.set_axis_par(self.axis, "active_period", active_period)
-        self._set_active_period(active_period, propagate=propagate)
+    def set_active_interval(self, active_interval, propagate=1):
+        self.controller.set_axis_par(self.axis, "active_interval", active_interval)
+        self._set_active_interval(active_interval, propagate=propagate)
 
-    def _set_active_period(self, active_period, propagate=1):
-        self._active_period = active_period
+    def _set_active_interval(self, active_interval, propagate=1):
+        self._active_interval = active_interval
         if not propagate:
             return
-        self.fire_event(EventType("active_period", priority=propagate), 
-                                                                    active_period)
+        self.fire_event(EventType("active_interval", priority=propagate),
+                                  active_interval)
 
-    def read_active_period(self):
-        active_period = self.controller.get_axis_par(self.axis, "active_period")
-        assert_type(int, active_period)
-        return active_period
+    def read_active_interval(self):
+        active_interval = self.controller.get_axis_par(self.axis, "active_interval")
+        assert_type(int, active_interval)
+        return active_interval
 
-    active_period = property(get_active_period, set_active_period,
-                        doc="trigger/gate events active_period")
+    active_interval = property(get_active_interval, set_active_interval,
+                               doc="trigger/gate events active_interval")
 
 # --------------------------------------------------------------------------
-    # passive_period
+    # passive_interval
     # --------------------------------------------------------------------------
 
-    def get_passive_period(self, cache=True, propagate=1):
+    def get_passive_interval(self, cache=True, propagate=1):
         if not cache or self._velocity is None:
-            passive_period = self.read_passive_period()
-            self._set_passive_period(passive_period, propagate=propagate)
-        return self._passive_period
+            passive_interval = self.read_passive_interval()
+            self._set_passive_interval(passive_interval, propagate=propagate)
+        return self._passive_interval
 
-    def set_passive_period(self, passive_period, propagate=1):
-        self.controller.set_axis_par(self.axis, "passive_period", passive_period)
-        self._set_passive_period(passive_period, propagate=propagate)
+    def set_passive_interval(self, passive_interval, propagate=1):
+        self.controller.set_axis_par(self.axis, "passive_interval",
+                                     passive_interval)
+        self._set_passive_interval(passive_interval, propagate=propagate)
 
-    def _set_passive_period(self, passive_period, propagate=1):
-        self._passive_period = passive_period
+    def _set_passive_interval(self, passive_interval, propagate=1):
+        self._passive_interval = passive_interval
         if not propagate:
             return
-        self.fire_event(EventType("passive_period", priority=propagate), 
-                                                                    passive_period)
+        self.fire_event(EventType("passive_interval", priority=propagate), 
+                                  passive_interval)
 
-    def read_passive_period(self):
-        passive_period = self.controller.get_axis_par(self.axis, "passive_period")
-        assert_type(int, passive_period)
-        return passive_period
+    def read_passive_interval(self):
+        passive_interval = self.controller.get_axis_par(self.axis,
+                                                        "passive_interval")
+        assert_type(int, passive_interval)
+        return passive_interval
 
-    passive_period = property(get_passive_period, set_passive_period,
-                        doc="trigger/gate events passive_period")
+    passive_interval = property(get_passive_interval, set_passive_interval,
+                                doc="trigger/gate events passive_interval")
 
     # --------------------------------------------------------------------------
     # repetitions

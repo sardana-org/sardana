@@ -69,7 +69,7 @@ class TGGenerationTestCase(object):
         self.pool = FakePool()
 
     def tggeneration(self, ctrl_lib, ctrl_klass, ctrl_props,
-                     offset, active_period, passive_period, repetitions):
+                     offset, active_interval, passive_interval, repetitions):
         """Helper method to verify trigger element states before and after 
         trigger/gate generation.
 
@@ -79,10 +79,10 @@ class TGGenerationTestCase(object):
        :type ctrl_klass: str
        :param offset: temporal offset before beginning the trigger generation
        :type offset: float
-       :param active_period: signal at which triggers will be generated
-       :type active_period: float
-       :param passive_period: temporal passive period between two active periods
-       :type passive_period: float
+       :param active_interval: signal at which triggers will be generated
+       :type active_interval: float
+       :param passive_interval: temporal passive period between two active periods
+       :type passive_interval: float
        :param repetitions: number of generated triggers
        :type repetitions: int
         """
@@ -94,8 +94,8 @@ class TGGenerationTestCase(object):
         args = ()
         kwargs = {'config': self.tg_cfg,
                   'offset': offset,
-                  'active_period': active_period,
-                  'passive_period': passive_period,
+                  'active_interval': active_interval,
+                  'passive_interval': passive_interval,
                   'repetitions': repetitions,
                  }
         # starting action
@@ -117,8 +117,8 @@ class TGGenerationTestCase(object):
         self.tgaction.stop_action()
 
     def abort_tggeneration(self, ctrl_lib, ctrl_klass, ctrl_props,
-                           offset, active_period, passive_period, repetitions, 
-                           abort_time):
+                           offset, active_interval, passive_interval,
+                           repetitions, abort_time):
         """Helper method to verify trigger element states before and after 
         trigger/gate generation when aborting the trigger generation.
 
@@ -128,10 +128,10 @@ class TGGenerationTestCase(object):
        :type ctrl_klass: str
        :param offset: temporal offset before beginning the trigger generation
        :type offset: float
-       :param active_period: signal at which triggers will be generated
-       :type active_period: float
-       :param passive_period: temporal passive period between two active periods
-       :type passive_period: float
+       :param active_interval: signal at which triggers will be generated
+       :type active_interval: float
+       :param passive_interval: temporal passive period between two active periods
+       :type passive_interval: float
        :param repetitions: number of generated triggers
        :type repetitions: int
        :param abort_time: wait this time before stopping the trigger generation.
@@ -145,8 +145,8 @@ class TGGenerationTestCase(object):
         args = ()
         kwargs = {'config': self.tg_cfg,
                   'offset': offset,
-                  'active_period': active_period,
-                  'passive_period': passive_period,
+                  'active_interval': active_interval,
+                  'passive_interval': passive_interval,
                   'repetitions': repetitions,
                  }
         # starting action
@@ -178,13 +178,13 @@ class TGGenerationTestCase(object):
             ctrl_lib = 'DummyTriggerGateController',
             ctrl_klass = 'DummyTriggerGateController',
             ctrl_props = {},
-            offset=0, active_period=0.01, passive_period=0.1, repetitions=3)
+            offset=0, active_interval=0.01, passive_interval=0.1, repetitions=3)
 @insertTest(helper_name='abort_tggeneration',
             ctrl_lib = 'DummyTriggerGateController',
             ctrl_klass = 'DummyTriggerGateController',
             ctrl_props = {},
-            offset=0, active_period=0.01, passive_period=0.1, repetitions=100,
-            abort_time=0.5)
+            offset=0, active_interval=0.01, passive_interval=0.1, 
+            repetitions=100, abort_time=0.5)
 class DummyTGGenerationTestCase(TGGenerationTestCase, unittest.TestCase):
     """Integration TestCase of TGGeneration with DummyTriggerGateController"""
 

@@ -17,12 +17,12 @@ class RectangularFunctionGenerator(EventGenerator):
         # function characteristics
         self._repetitions = 0
         self._offset = 0
-        self._active_period = 0
-        self._active_period_nap = 0
-        self._active_period_necessary_naps = 1
-        self._passive_period = 0
-        self._passive_period_nap = 0
-        self._passive_period_necessary_naps = 1
+        self._active_interval = 0
+        self._active_interval_nap = 0
+        self._active_interval_necessary_naps = 1
+        self._passive_interval = 0
+        self._passive_interval_nap = 0
+        self._passive_interval_necessary_naps = 1
         # threading private members
         self.__lock = threading.Lock()
         self.__thread = None # will be allocated in prepare
@@ -44,17 +44,17 @@ class RectangularFunctionGenerator(EventGenerator):
     def getOffset(self):
         return self._offset
 
-    def setActivePeriod(self, active_period):
-        self._active_period = active_period
+    def setActiveInterval(self, active_interval):
+        self._active_interval = active_interval
 
-    def getActivePeriod(self):
-        return self._active_period
+    def getActiveInterval(self):
+        return self._active_interval
 
-    def setPassivePeriod(self, passive_period):
-        self._passive_period = passive_period
+    def setPassiveInterval(self, passive_interval):
+        self._passive_interval = passive_interval
 
-    def getPassivePeriod(self):
-        return self._passive_period
+    def getPassiveInterval(self):
+        return self._passive_interval
 
     def calculateNap(self, period):
         '''Calculates rough number of naps no longer than max_nap_time
@@ -115,13 +115,13 @@ class RectangularFunctionGenerator(EventGenerator):
                     if self.__stop:
                         raise StopException('Function generation stopped')
                 curr_time = time.time()
-                next_time += self._active_period
+                next_time += self._active_interval
                 period = max(0, next_time - curr_time)
                 necessary_naps, nap_time = self.calculateNap(period)
                 self.fire_event(TGEventType.Active, i)
                 self.partialSleep(necessary_naps, nap_time)
                 curr_time = time.time()
-                next_time += self._passive_period
+                next_time += self._passive_interval
                 period = max(0, next_time - curr_time)
                 necessary_naps, nap_time = self.calculateNap(period)
                 self.fire_event(TGEventType.Passive, i)
