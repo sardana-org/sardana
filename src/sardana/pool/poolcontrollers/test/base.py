@@ -48,12 +48,8 @@ class BaseControllerTestCase(object):
             raise Exception('Ctrl klass has not been defined')
         if self.NAME == '':
             self.NAME = self.KLASS.__name__
-        try:
-            self.ctrl = self.KLASS(self.NAME, self.CONF)
-            self.ctrl.AddDevice(self.AXIS)
-        except:
-            self.ctrl = None
-            raise Exception('Imposible to create an instance of %s' %self.KLASS)
+        self.ctrl = self.KLASS(self.NAME, self.CONF)
+        self.ctrl.AddDevice(self.AXIS)
 
     def tearDown(self):
         if self.ctrl is not None:
