@@ -52,13 +52,15 @@ class BaseControllerTestCase(object):
         if self.ctrl is not None:
             self.ctrl.DeleteDevice(self.AXIS)
 
-    def axisPar(self, parameter, value):
+    def axisPar(self, name, value, expected_value=None):
         axis = self.AXIS
-        self.ctrl.SetAxisPar(axis, parameter, value)
-        r_value = self.ctrl.GetAxisPar(axis, parameter)
+        if expected_value is None:
+            expected_value = value
+        self.ctrl.SetAxisPar(axis, name, value)
+        r_value = self.ctrl.GetAxisPar(axis, name)
         msg = ('The %s value is %s, and the expected value is %s'
-               %(parameter, r_value, value))
-        self.assertEqual(value, r_value, msg)
+               %(name, r_value, expected_value))
+        self.assertEqual(r_value, expected_value, msg)
 
 
 class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
