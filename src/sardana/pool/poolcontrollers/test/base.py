@@ -30,25 +30,22 @@ import unittest
 from sardana import State
 
 class BaseControllerTestCase(object):
-    """ Base class for test any controller.
+    """ Base test case for unit testing arbitrary controllers.
     This class will create a controller instance and define an axis from the
     class member attributes:
         KLASS <type> controller class
-        NAME <str> mame of the controller
-        CONF <dict> configuration of the controller
+        PROPS <dict> properties of the controller
         AXIS <int> number of the axis
     """
     KLASS = None
-    NAME = ''
-    CONF = {}
+    PROPS = {}
     AXIS = 1
 
     def setUp(self):
         if self.KLASS is None:
             raise Exception('Ctrl klass has not been defined')
-        if self.NAME == '':
-            self.NAME = self.KLASS.__name__
-        self.ctrl = self.KLASS(self.NAME, self.CONF)
+        name = 'test_ctrl'
+        self.ctrl = self.KLASS(name, self.PROPS)
         self.ctrl.AddDevice(self.AXIS)
 
     def tearDown(self):
@@ -65,11 +62,6 @@ class BaseControllerTestCase(object):
 
 
 class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
-    KLASS = None
-    NAME = ''
-    CONF = {}
-    BaseControllerTestCase.CONF.update(CONF)
-    AXIS = 1
 
     def setUp(self):
         unittest.TestCase.setUp(self)

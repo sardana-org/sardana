@@ -34,6 +34,3 @@ from sardana.pool.poolcontrollers.SoftwareTriggerGateController import\
             repetitions=10, abort=.1)
 class SoftwareTriggerGateControllerTestCase(TriggerGateControllerTestCase):
     KLASS = SoftwareTriggerGateController
-    NAME = 'stg_ctrl'
-    CONF = {}
-    TriggerGateControllerTestCase.CONF.update(CONF)
