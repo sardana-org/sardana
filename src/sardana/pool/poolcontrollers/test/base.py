@@ -22,7 +22,12 @@
 ## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
+__all__ = ['BaseControllerTestCase', 'TriggerGateControllerTestCase']
 
+import time
+import unittest
+
+from sardana import State
 
 class BaseControllerTestCase(object):
     """ Base class for test any controller.
@@ -61,3 +66,56 @@ class BaseControllerTestCase(object):
         msg = ('The %s value is %s, and the expected value is %s'
                %(parameter, r_value, value))
         self.assertEqual(value, r_value, msg)
+
+
+class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
+    KLASS = None
+    NAME = ''
+    CONF = {}
+    BaseControllerTestCase.CONF.update(CONF)
+    AXIS = 1
+
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        BaseControllerTestCase.setUp(self)
+
+    def tearDown(self):
+        BaseControllerTestCase.tearDown(self)
+        unittest.TestCase.tearDown(self)
+
+    def pregeneration(self, offset, active, passive, repetitions):
+        """Method to configurate the trigger/gate controller.
+        Set the axis parameters and pre start the axis.
+        """
+        # Configuration
+        self.axisPar('offset', offset)
+        self.axisPar('active_interval', active)
+        self.axisPar('passive_interval', passive)
+        self.axisPar('repetitions', repetitions)
+        # Pre Start the axis
+        self.ctrl.PreStartOne(self.AXIS)
+
+    def generation(self, offset, active, passive, repetitions):
+        """ Helper for test a simple generation
+        """
+        self.pregeneration(offset, active, passive, repetitions)
+        self.ctrl.StartOne(self.AXIS)
+        while self.ctrl.StateOne(self.AXIS)[0] == State.Moving:
+            time.sleep(active)
+        state, status = self.ctrl.StateOne(self.AXIS)
+        msg = ('The axis %d is not Stopped, its status is %s'
+               %(self.AXIS, status))
+        self.assertEqual(state, State.get('On'), msg)
+
+    def abort(self, offset, active, passive, repetitions, abort):
+        """ Helper for test the abort
+        """
+        self.pregeneration(offset, active, passive, repetitions)
+        self.ctrl.StartOne(self.AXIS)
+        while self.ctrl.StateOne(self.AXIS)[0] == State.Moving:
+            time.sleep(abort)
+            self.ctrl.AbortOne(self.AXIS)
+        state, status = self.ctrl.StateOne(self.AXIS)
+        msg = ('The axis %d is not Stopped, its status is %s'
+               %(self.AXIS, status))
+        self.assertEqual(state, State.get('On'), msg)
