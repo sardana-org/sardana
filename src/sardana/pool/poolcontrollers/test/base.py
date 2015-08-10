@@ -74,6 +74,7 @@ class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
     def setUp(self):
         unittest.TestCase.setUp(self)
         BaseControllerTestCase.setUp(self)
+        self.isAborted = False
 
     def tearDown(self):
         BaseControllerTestCase.tearDown(self)
@@ -124,6 +125,7 @@ class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
         while self.ctrl.StateOne(self.AXIS)[0] == State.Moving:
             time.sleep(abort)
             self.ctrl.AbortOne(self.AXIS)
+        self.isAborted = True
         self.post_generation_hook()
         state, status = self.ctrl.StateOne(self.AXIS)
         msg = ('The axis %d is not Stopped, its status is %s'
