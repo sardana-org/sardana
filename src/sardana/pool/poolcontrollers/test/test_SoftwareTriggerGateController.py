@@ -12,6 +12,10 @@ from sardana.pool.test import (FakePool, createPoolController,
                                dummyTriggerGateConf01, 
                                createPoolTGGenerationConfiguration)
 
+from sardana.pool.poolcontrollers.test import TriggerGateControllerTestCase
+from sardana.pool.poolcontrollers.SoftwareTriggerGateController import\
+                                                  SoftwareTriggerGateController
+
 class TriggerGateReceiver(object):
     '''Software TriggerGateReceiver which captures timestamps whenever an event
     comes. Provides useful methods for calculating the event generation 
@@ -50,16 +54,16 @@ class TriggerGateReceiver(object):
             t1 = self.active_events[i]
             t2 = self.passive_events[i]
             t3 = self.active_events[i+1]
-            active_interval = t2 - t1
-            passive_interval = t3 - t2
-            characteristics[i] = (active_interval, passive_interval)
+            active_period = t2 - t1
+            passive_period = t3 - t2
+            characteristics[i] = (active_period, passive_period)
             i += 1
         return characteristics
 
     def calc_cycletocycle(self):
         '''Calculate the cycle-to-cycle jitter characteristics: mean, std and max.
-        Cycle-to-cycle jitter is a difference between a cycle period and a cycle 
-        period before it. To calculate one cycle-to-cycle jitter one needs 
+        Cycle-to-cycle jitter is a difference between a cycle period and a cycle
+        period before it. To calculate one cycle-to-cycle jitter one needs
         exactly 3 active events:
 
         c2c_jitter_1 = cycle_2 - cycle_1
@@ -88,14 +92,26 @@ class TriggerGateReceiver(object):
         return mean_c2c, std_c2c, max_c2c
 
 
-@insertTest(helper_name='generation', offset=0, active_interval=.1,
-            passive_interval=.1, repetitions=0)
-@insertTest(helper_name='generation', offset=0, active_interval=.01,
-            passive_interval=.01, repetitions=10)
-@insertTest(helper_name='generation', offset=0, active_interval=.01,
-            passive_interval=.02, repetitions=10)
-@insertTest(helper_name='generation', offset=0, active_interval=0.1,
-            passive_interval=0.05, repetitions=3)
+@insertTest(helper_name='generation',  configuration={'offset': 0,
+                                                     'active_interval': .1,
+                                                     'passive_interval': .1,
+                                                     'repetitions': 10})
+@insertTest(helper_name='abort', configuration={'offset': 0,
+                                                'active_interval': .1,
+                                                'passive_interval': .1,
+                                                'repetitions': 10},
+            abort=.1)
+class SoftwareTriggerGateControllerTestCase(TriggerGateControllerTestCase):
+    KLASS = SoftwareTriggerGateController
+
+@insertTest(helper_name='generation', offset=0, active_period=.1,
+                                              passive_period=.1, repetitions=0)
+@insertTest(helper_name='generation', offset=0, active_period=.01,
+                                              passive_period=.01, repetitions=10)
+@insertTest(helper_name='generation', offset=0, active_period=.01,
+                                             passive_period=.02, repetitions=10)
+@insertTest(helper_name='generation', offset=0, active_period=0.1,
+                                             passive_period=0.05, repetitions=3)
 class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
     """Parameterizable integration test of the PoolTGGeneration action and
     the SoftwareTriggerGateController.
@@ -105,7 +121,7 @@ class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
     """
 
     def setUp(self):
-        """Create a Controller, TriggerGate and PoolTGGeneration objects from 
+        """Create a Controller, TriggerGate and PoolTGGeneration objects from
         dummy configurations
         """
         unittest.TestCase.setUp(self)
@@ -117,7 +133,7 @@ class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
         # marrying the element with the controller
         sw_tg_ctrl.add_element(self.sw_tg)
 
-        # TODO: at the moment of writing this test, the configuration of 
+        # TODO: at the moment of writing this test, the configuration of
         # TGGenerationAction s
         self.cfg = createPoolTGGenerationConfiguration((sw_tg_ctrl,),
                                                        ((self.sw_tg,),))
@@ -134,15 +150,14 @@ class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
 
         self.tg_action.add_listener(self.tg_receiver)
 
-    def generation(self, offset, active_interval, passive_interval,
-                   repetitions):
-        """Verify that the created PoolTGAction start_action starts correctly 
+    def generation(self, offset, active_period, passive_period, repetitions):
+        """Verify that the created PoolTGAction start_action starts correctly
         the involved controller."""
         args = ()
         kwargs = {'config': self.cfg,
                   'offset': offset,
-                  'active_interval': active_interval,
-                  'passive_interval': passive_interval,
+                  'active_period': active_period,
+                  'passive_period': passive_period,
                   'repetitions': repetitions
                  }
         self.tg_action.start_action(*args, **kwargs)
@@ -174,17 +189,15 @@ class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
         i = 0
         while i < (repetitions - 1):
             periods = characteristics[i]
-            measured_active_interval = periods[0]
-            measured_passive_interval = periods[1]
+            measured_active_period = periods[0]
+            measured_passive_period = periods[1]
             msg = ('Measured active period: %f does not correspond to ' +\
-                   'generated: %f' ) % (measured_active_interval,
-                                        active_interval)
-            self.assertAlmostEqual(measured_active_interval, active_interval,
+                   'generated: %f' ) % (measured_active_period, active_period)
+            self.assertAlmostEqual(measured_active_period, active_period,
                                    delta=.002, msg=msg)
             msg = ('Measured passive period: %f does not correspond to ' +\
-                   'generated: %f') % (measured_passive_interval,
-                                       passive_interval)
-            self.assertAlmostEqual(measured_passive_interval, passive_interval,
+                   'generated: %f') % (measured_passive_period, passive_period)
+            self.assertAlmostEqual(measured_passive_period, passive_period,
                                    delta=.002, msg=msg)
             i += 1
 
