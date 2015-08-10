@@ -23,14 +23,52 @@
 ##
 ##############################################################################
 
-from taurus.test.base import insertTest
-from sardana.pool.poolcontrollers.test import TriggerGateControllerTestCase
-from sardana.pool.poolcontrollers.SoftwareTriggerGateController import\
-                                                  SoftwareTriggerGateController
 
-@insertTest(helper_name='generation', offset=0, active=.1, passive=.1,
-            repetitions=10)
-@insertTest(helper_name='abort', offset=0, active=.1, passive=.1,
-            repetitions=10, abort=.1)
-class SoftwareTriggerGateControllerTestCase(TriggerGateControllerTestCase):
-    KLASS = SoftwareTriggerGateController
+from taurus.test import insertTest
+from sardana.pool.poolcontrollers.test import (TriggerGateControllerTestCase,
+                                               PositionGenerator,
+                                               TriggerGateReceiver)
+from sardana.pool.poolcontrollers.SoftwareTriggerGatePositionController import\
+                                        SoftwareTriggerGatePositionController
+
+@insertTest(helper_name='generation', configuration={'offset': 0,
+                                                     'active_interval': .1,
+                                                     'passive_interval': .9,
+                                                     'repetitions': 10,
+                                                     'sign': 1,
+                                                     'initial_pos': 0})
+@insertTest(helper_name='abort', configuration={'offset': 0,
+                                                'active_interval': .1,
+                                                'passive_interval': .9,
+                                                'repetitions': 10,
+                                                'sign': 1,
+                                                'initial_pos': 0},
+            abort=0.5)
+class SoftwareTriggerGatePositionControllerTestCase(TriggerGateControllerTestCase):
+    KLASS = SoftwareTriggerGatePositionController
+
+    def post_configuration_hook(self):
+        # Configure and run the position generator
+        start_pos = 0
+        end_pos = 10
+        period = 0.01
+        self.generator = PositionGenerator(start_pos, end_pos, period)
+        # create and add listeners
+        self._device = self.ctrl.GetDevice(self.AXIS)
+        self.tg_receiver = TriggerGateReceiver()
+
+        self.generator.add_listener(self._device)
+        self.ctrl.add_listener(self.tg_receiver)
+        # run PositionGenerator
+        self.generator.start()
+
+    def post_generation_hook(self):
+        # remove listener
+        self.generator.remove_listener(self._device)
+        # testing number of received triggers
+        received_triggers = self.tg_receiver.count
+        repetitions = self._device.getRepetitions()
+        msg = ('Received triggers: %d does not correspond to generated: %d' %\
+               (received_triggers, repetitions))
+        if not self.isAborted:
+            self.assertEqual(received_triggers, repetitions, msg)
