@@ -25,10 +25,12 @@
 __all__ = ['BaseControllerTestCase', 'TriggerGateControllerTestCase',
            'PositionGenerator']
 
-import time
+import time, threading
 import unittest
 
 from sardana import State
+from sardana.pool.poolcontrollers.DummyMotorController import Motion
+from sardana.sardanaattribute import SardanaAttribute
 
 class BaseControllerTestCase(object):
     """ Base test case for unit testing arbitrary controllers.
@@ -124,3 +126,67 @@ class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
         msg = ('The axis %d is not Stopped, its status is %s'
                %(self.AXIS, status))
         self.assertEqual(state, State.get('On'), msg)
+
+class PositionGenerator(threading.Thread):
+    """ It is a position generator. A Sardana Motion class is used for simulate
+    the motor. The attribute value has the current user position of the motor.
+    """
+    def __init__(self, start_pos, end_pos, period):
+        """
+        :param start_pos: start position for the motion
+        :param end_pos: end position for the motion
+        :param period: nap time between fireevents
+        :return:
+        """
+        threading.Thread.__init__(self)
+        self.motor = Motion()
+        self.motor.setMinVelocity(0)
+        self.motor.setMaxVelocity(10)
+        self.motor.setAccelerationTime(1)
+        self.motor.setDecelerationTime(1)
+        self.motor.setCurrentPosition(0)
+        self._start_pos = start_pos
+        self._end_pos = end_pos
+        self._period = period
+        self.value = SardanaAttribute(self, name='Position',
+                                      initial_value=0)
+
+    def run(self):
+        """
+        Start the motion and update the SardanaAttribute value with the current
+        position of the motion between every nap period
+        """
+        self.motor.startMotion(self._start_pos, self._end_pos)
+        while self.motor.isInMotion():
+            value = self.motor.getCurrentUserPosition()
+            self.value.set_value(value, timestamp=time.time(), propagate=1)
+            time.sleep(self._period)
+        value = self.motor.getCurrentUserPosition()
+        self.value.set_value(value, timestamp=time.time(), propagate=1)
+
+    def getMotor(self):
+        """ Get the motion object
+        """
+        return self.motor
+
+    def setStartPos(self, pos):
+        """ Update start position
+        """
+        self._start_pos = pos
+        self.value.set_value(pos)
+
+    def setEndPos(self, pos):
+        """ Update end position
+        """
+        self._end_pos = pos
+
+    def setPeriod(self, time):
+        """ Update the nap time
+        """
+        self._end_pos = time
+
+    def add_listener(self, listener):
+        self.value.add_listener(listener)
+
+    def remove_listener(self, listener):
+         self.value.remove_listener(listener)
