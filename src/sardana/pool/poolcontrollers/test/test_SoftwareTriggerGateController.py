@@ -23,7 +23,7 @@
 ##
 ##############################################################################
 
-from taurus.test.base import insertTest
+from taurus.test import insertTest
 from taurus.external import unittest
 
 from sardana.pool.pooltggeneration import PoolTGGeneration
