@@ -1,95 +1,42 @@
-import time
-import numpy
+#!/usr/bin/env python
+
+##############################################################################
+##
+## This file is part of Sardana
+##
+## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+##
+## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+##
+## Sardana is free software: you can redistribute it and/or modify
+## it under the terms of the GNU Lesser General Public License as published by
+## the Free Software Foundation, either version 3 of the License, or
+## (at your option) any later version.
+##
+## Sardana is distributed in the hope that it will be useful,
+## but WITHOUT ANY WARRANTY; without even the implied warranty of
+## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+## GNU Lesser General Public License for more details.
+##
+## You should have received a copy of the GNU Lesser General Public License
+## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+##
+##############################################################################
 
 from taurus.test.base import insertTest
 from taurus.external import unittest
 
 from sardana.pool.pooltggeneration import PoolTGGeneration
-from sardana.pool.pooltriggergate import TGEventType
 
 from sardana.pool.test import (FakePool, createPoolController,
                                createPoolTriggerGate, softwarePoolTGCtrlConf01,
                                dummyTriggerGateConf01, 
                                createPoolTGGenerationConfiguration)
 
-from sardana.pool.poolcontrollers.test import TriggerGateControllerTestCase
+from sardana.pool.poolcontrollers.test import (TriggerGateControllerTestCase,
+                                               TriggerGateReceiver)
 from sardana.pool.poolcontrollers.SoftwareTriggerGateController import\
                                                   SoftwareTriggerGateController
-
-class TriggerGateReceiver(object):
-    '''Software TriggerGateReceiver which captures timestamps whenever an event
-    comes. Provides useful methods for calculating the event generation 
-    performance
-    '''
-    #TODO: add more jitter measurements e.g. drift
-    def __init__(self):
-        self.active_events = {}
-        self.passive_events = {}
-
-    def getCount(self):
-        count = len(self.passive_events.keys())
-        return count
-
-    count = property(getCount)
-
-    def event_received(self, *args, **kwargs):
-        # store also a timestamp of the start event when it will be implemented
-        timestamp = time.time()
-        _, t, v = args
-        if t == TGEventType.Active:
-            self.active_events[v] = timestamp
-        elif t == TGEventType.Passive:
-            self.passive_events[v] = timestamp
-        else:
-            raise ValueError('Unknown EventType')
-
-    def calc_characteristics(self):
-        #TODO: refactor the characteristics calculation method to use numpy
-        i = 0
-        count = self.count
-        characteristics = {}
-        # there is no active event ending the last passive period, that's why
-        # calculate characteristics until (count - 1) 
-        while i < (count - 1):
-            t1 = self.active_events[i]
-            t2 = self.passive_events[i]
-            t3 = self.active_events[i+1]
-            active_period = t2 - t1
-            passive_period = t3 - t2
-            characteristics[i] = (active_period, passive_period)
-            i += 1
-        return characteristics
-
-    def calc_cycletocycle(self):
-        '''Calculate the cycle-to-cycle jitter characteristics: mean, std and max.
-        Cycle-to-cycle jitter is a difference between a cycle period and a cycle
-        period before it. To calculate one cycle-to-cycle jitter one needs
-        exactly 3 active events:
-
-        c2c_jitter_1 = cycle_2 - cycle_1
-        cycle_2 = active_3 - active_2
-        cycle_1 = active_2 - active_1
-        '''
-        i = 0
-        count = self.count
-        periods = []
-        mean_c2c, std_c2c, max_c2c = 0, 0, 0
-        # there is no active event ending the last passive period, that's why
-        # calculate characteristics until (count - 1)
-        while i < (count - 1):
-            t1 = self.active_events[i]
-            t2 = self.active_events[i+1]
-            period = t2 - t1
-            periods.append(period)
-            i += 1
-        if len(periods) > 0:
-            periods_array = numpy.array(periods)
-            print periods_array
-            c2c = numpy.diff(periods_array)
-            mean_c2c = c2c.mean()
-            std_c2c = c2c.std()
-            max_c2c = c2c.max()
-        return mean_c2c, std_c2c, max_c2c
 
 
 @insertTest(helper_name='generation',  configuration={'offset': 0,
