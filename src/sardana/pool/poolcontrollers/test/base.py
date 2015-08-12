@@ -34,6 +34,7 @@ from sardana import State
 from sardana.pool.pooltriggergate import TGEventType
 from sardana.pool.poolcontrollers.DummyMotorController import Motion
 from sardana.sardanaattribute import SardanaAttribute
+from taurus.core.util.log import Logger
 
 class BaseControllerTestCase(object):
     """ Base test case for unit testing arbitrary controllers.
@@ -46,8 +47,13 @@ class BaseControllerTestCase(object):
     KLASS = None
     PROPS = {}
     AXIS = 1
+    DEBUG = False
 
     def setUp(self):
+        self.logger = Logger('BaseControllerTestCase')
+        if self.DEBUG:
+            self.logger.setLogLevel(Logger.Debug)
+
         if self.KLASS is None:
             raise Exception('Ctrl klass has not been defined')
         name = 'test_ctrl'
