@@ -58,6 +58,7 @@ class BaseControllerTestCase(object):
             raise Exception('Ctrl klass has not been defined')
         name = 'test_ctrl'
         self.ctrl = self.KLASS(name, self.PROPS)
+        self.pre_AddDevice_hook()
         self.ctrl.AddDevice(self.AXIS)
 
     def tearDown(self):
@@ -74,6 +75,8 @@ class BaseControllerTestCase(object):
                %(name, r_value, expected_value))
         self.assertEqual(r_value, expected_value, msg)
 
+    def pre_AddDevice_hook(self):
+        pass
 
 class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
 
