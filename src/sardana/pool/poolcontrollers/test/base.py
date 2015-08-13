@@ -66,6 +66,8 @@ class BaseControllerTestCase(object):
             self.ctrl.DeleteDevice(self.AXIS)
 
     def axisPar(self, name, value, expected_value=None):
+        """ Helper for test the SetAxisPar & GetaxisPar methods
+        """
         axis = self.AXIS
         if expected_value is None:
             expected_value = value
@@ -74,6 +76,14 @@ class BaseControllerTestCase(object):
         msg = ('The %s value is %s, and the expected value is %s'
                %(name, r_value, expected_value))
         self.assertEqual(r_value, expected_value, msg)
+
+    def stateOne(self, expected_state=State.On):
+        """ Helper for test the stateOne method
+        """
+        sta, status = self.ctrl.StateOne(self.AXIS)
+        msg = ('The current state of axis(%d) is %d when expected, %d'
+               %(self.AXIS, sta, expected_state))
+        self.assertEqual(sta, expected_state, msg)
 
     def pre_AddDevice_hook(self):
         pass
@@ -118,7 +128,7 @@ class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
         self.post_configuration_hook()
         self.ctrl.StartOne(self.AXIS)
         while self.ctrl.StateOne(self.AXIS)[0] == State.Moving:
-            time.sleep(configuration.get('active_interval'))
+            time.sleep(0.001)
         self.post_generation_hook()
         state, status = self.ctrl.StateOne(self.AXIS)
         msg = ('The axis %d is not Stopped, its status is %s'
