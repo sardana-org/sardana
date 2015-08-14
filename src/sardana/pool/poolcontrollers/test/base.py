@@ -85,6 +85,14 @@ class BaseControllerTestCase(object):
                %(self.AXIS, sta, expected_state))
         self.assertEqual(sta, expected_state, msg)
 
+    def configure(self, configuration):
+        """ This method set the axis parameters and pre start the axis.
+        """
+        for key, value in configuration.items():
+            self.axisPar(key, value)
+        # PreStartOne the axis
+        self.ctrl.PreStartOne(self.AXIS)
+
     def pre_AddDevice_hook(self):
         pass
 
@@ -99,17 +107,6 @@ class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
         BaseControllerTestCase.tearDown(self)
         unittest.TestCase.tearDown(self)
 
-    def pregeneration(self, configuration):
-        """Method to configurate the trigger/gate controller.
-        Set the axis parameters and pre start the axis.
-        """
-        # Configuration
-        for key, value in configuration.items():
-            self.axisPar(key, value)
-
-        # Pre Start the axis
-        self.ctrl.PreStartOne(self.AXIS)
-
     def post_configuration_hook(self):
         ''' Hook for post configure actions
         '''
@@ -123,7 +120,7 @@ class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
     def generation(self, configuration):
         """ Helper for test a simple generation
         """
-        self.pregeneration(configuration)
+        self.configure(configuration)
         # execute Hook
         self.post_configuration_hook()
         self.ctrl.StartOne(self.AXIS)
@@ -138,7 +135,7 @@ class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
     def abort(self, configuration, abort):
         """ Helper for test the abort
         """
-        self.pregeneration(configuration)
+        self.configure(configuration)
         self.post_configuration_hook()
         self.ctrl.StartOne(self.AXIS)
         while self.ctrl.StateOne(self.AXIS)[0] == State.Moving:
