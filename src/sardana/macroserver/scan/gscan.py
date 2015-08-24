@@ -1881,7 +1881,6 @@ class CTScan(CScan):
                 return
             ############
             self.__mntGrpConfigured = False
-            self.__triggerConfigured = False
             self.__mntGrpStarted = False
             #validation of parameters
             for start, end in zip(self.macro.starts, self.macro.finals):
@@ -1969,7 +1968,6 @@ class CTScan(CScan):
             
             # move to waypoint end position
             self.macro.debug("Moving to waypoint position: %s" % repr(final_pos))
-            self.macro.debug("Starting triggers")
             motion.move(final_pos)
                         
             self.motion_event.clear()
