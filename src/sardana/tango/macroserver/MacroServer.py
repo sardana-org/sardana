@@ -251,9 +251,12 @@ class MacroServer(SardanaDevice):
         """
         macro_server = self.macro_server
         codec = CodecFactory().getCodec('json')
-        ret = [ codec.encode(('', macro.serialize()))[1]
-            for macro in macro_server.get_macros()
-                if macro.name in macro_names ]
+        ret = [ ]
+       
+        for _, macro in macro_server.get_macros().items():
+            if macro.name in macro_names:
+                ret.append(codec.encode(('', macro.serialize()))[1])
+                
         return ret
     
     def ReloadMacro(self, macro_names):
