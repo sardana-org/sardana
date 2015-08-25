@@ -215,7 +215,8 @@ class aNscan(Hookable):
         moveables_trees = self._gScan.get_moveables_trees()  
         step = {}
         step["pre-move-hooks"] = self.getHooks('pre-move')
-        step["post-move-hooks"] = self.getHooks('post-move')
+        post_move_hooks = self.getHooks('post-move') + [self.fill_missing_records]
+        step["post-move-hooks"] = post_move_hooks
         step["check_func"] = []
         step["active_time"] = self.nr_of_points * self.integ_time
         step["positions"] = []
@@ -287,6 +288,14 @@ class aNscan(Hookable):
             return self.nr_interv
         elif mode == ContinuousMode:
             return self.nr_waypoints
+
+    def fill_missing_records(self):
+        # fill record list with dummy records for the final padding
+        nb_of_points = self.nr_of_points
+        scan = self._gScan
+        nb_of_records = len(scan.data.records)
+        missing_records = nb_of_points - nb_of_records
+        scan.data.initRecords(missing_records)
 
 class dNscan(aNscan):
     '''same as aNscan but it interprets the positions as being relative to the

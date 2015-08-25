@@ -2180,16 +2180,6 @@ class CTScan(CScan):
         endTimestamp = time.time()
         self.debug("Cleanup took %s time." % repr(endTimestamp - startTimestamp))
 
-    def end(self):
-        # fill record list with dummy records for the final padding
-        # TODO: refactor this code so the aNscan or macros are in charge of
-        # adding dummy records for the final padding
-        nb_of_points = self.macro.nr_of_points
-        nb_of_records = len(self.data.records)
-        missing_records = nb_of_points - nb_of_records
-        self.data.initRecords(missing_records) 
-        CScan.end(self)
-
 
 class HScan(SScan):
     """Hybrid scan"""
