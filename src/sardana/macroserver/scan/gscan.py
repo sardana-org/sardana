@@ -1880,6 +1880,10 @@ class CTScan(CScan):
         last_positions = None
         for _, waypoint in waypoints:
             self.macro.debug("Waypoint iteration...")
+            # initializing mntgrp control variables
+            self.__mntGrpConfigured = False
+            self.__mntGrpStarted = False
+
             start_positions = waypoint.get('start_positions')
             positions = waypoint['positions']
             if start_positions is None:
@@ -1896,18 +1900,31 @@ class CTScan(CScan):
             #execute pre-move hooks
             for hook in waypoint.get('pre-move-hooks',[]): 
                 hook()
-    
+            # parepare list of start and final positions for the motion object 
             start_pos, final_pos = [] , []
             for path in motion_paths:
                 start_pos.append(path.initial_user_pos)
                 final_pos.append(path.final_user_pos)
-            
+            # validate if start and final positions are within range
+            moveables = self._physical_moveables
+            for start, final, moveable in zip(start_pos, final_pos, moveables):
+                min_pos = self.get_min_pos(moveable)
+                max_pos = self.get_max_pos(moveable)
+                if start < min_pos or start > max_pos:
+                    name = moveable.getName()
+                    msg = 'start position of motor %s (%f) ' % (name, start) +\
+                          'is out of range (%f, %f)' % (min_pos, max_pos)
+                    raise ScanException(msg)
+                if final < min_pos or start > max_pos:
+                    name = moveable.getName
+                    msg = 'start position of motor %s (%f) ' % (name, final) +\
+                          'is out of range (%f, %f)' % (min_pos, max_pos)
+                    raise ScanException(msg)
+
             if macro.isStopped():
                 self.on_waypoints_end()
                 return
             ############
-            self.__mntGrpConfigured = False
-            self.__mntGrpStarted = False
             #validation of parameters
             for start, end in zip(self.macro.starts, self.macro.finals):
                 if start == end:
