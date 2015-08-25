@@ -2020,10 +2020,6 @@ class CTScan(CScan):
             if macro.isStopped():
                 self.on_waypoints_end()
                 return
-            
-            #execute post-move hooks
-            for hook in waypoint.get('post-move-hooks',[]):
-                hook()
                 
             ############    
             self.macro.debug("Waiting for measurement group to finish")
@@ -2054,7 +2050,12 @@ class CTScan(CScan):
 #             self.macro.debug("Storing data")
 #             for data_dict, position_dict in zip(data_list,position_list):
 #                 data_dict.update(position_dict)
-#                 self.data.addRecord(data_dict)                
+#                 self.data.addRecord(data_dict)
+            #execute post-move hooks
+
+            for hook in waypoint.get('post-move-hooks',[]):
+                hook()
+
             if start_positions is None:  
                 last_positions = positions
         
