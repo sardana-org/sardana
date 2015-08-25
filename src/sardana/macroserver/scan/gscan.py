@@ -1288,8 +1288,34 @@ class CScan(GScan):
             motor.setVelocity(v)
         except:
             pass
+    
+    def get_min_pos(self, motor):
+        '''Helper method to find the minimum position for a given motor.
+        If the motor doesn't define its minimum position, then the negative 
+        infinite float representation is returned.
+        '''
+        pos_obj = motor.getPositionObj()
+        min_pos, _ = pos_obj.getRange()
+        try:
+            min_pos = float(min_pos)
+        except ValueError:
+            min_pos = float('-Inf')
+        return min_pos
 
-                
+    def get_max_pos(self, motor):
+        '''Helper method to find the maximum position for a given motor.
+        If the motor doesn't define its maximum position, then the positive
+        infinite float representation is returned.
+        '''
+        pos_obj = motor.getPositionObj()
+        _, max_pos = pos_obj.getRange()
+        try:
+            max_pos = float(max_pos)
+        except ValueError:
+            max_pos = float('Inf')
+        return max_pos
+
+
 class CSScan(CScan):
     """Continuous scan controlled by software"""
     
