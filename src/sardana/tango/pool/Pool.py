@@ -905,7 +905,7 @@ class Pool(PyTango.Device_4Impl, Logger):
             ctrl_class = ctrl_classes[name]
             data = None
             if ctrl_class is not None:
-                data = ctrl_class.toDict()
+                data = ctrl_class.serialize()
             ret.append(data)
         return json.dumps(ret)
 
