@@ -283,6 +283,10 @@ class DiffracBasis(PseudoMotorController):
                                             Description: "If 1 wavelength is read from EnergyDevice",
                                             Memorize: Memorized,
                                             Access: ReadWrite},
+                       'ComputeHKL': {Type: (float,),
+                                            Description: "Compute hkl for given angles",
+                                            Memorize: NotMemorized,
+                                            Access: ReadWrite},
     }
 
     axis_attributes = {
@@ -394,6 +398,7 @@ class DiffracBasis(PseudoMotorController):
         self._autoenergyupdate = 0  # Only to create the member, the
                                    # value will be overwritten by the
                                    # one in stored in the database
+        self._computehkl = []
 
         self.energy_device = None
         self.lambda_to_e = 12398.424 # Amstrong * eV
@@ -1383,8 +1388,28 @@ class DiffracBasis(PseudoMotorController):
     def setAutoEnergyUpdate(self, value):
         print "setAutoEnergyUpdate"
         self._autoenergyupdate = value
-        
+
+    def setComputeHKL(self, value):
+        print "setComputeHKL"
+              
+        self.getWavelength()
+            
+
+        # write the physical motor into the geometry
+        if len(value) >=  self.nb_ph_axes:
+            self.geometry.axis_values_set(value[:self.nb_ph_axes], USER)
+            self.engines.get()
+        else:            
+            raise Exception("Not enough arguments. %d are need " % (self.nb_ph_axes))
+
+        # extract hkl  values
+        values = []
+        engine = self.engines.engine_get_by_name("hkl")
+        values = engine.pseudo_axis_values_get(USER)
     
+        self._computehkl = values
+
+        
 
 
 # 6C Diffractometers ####################
