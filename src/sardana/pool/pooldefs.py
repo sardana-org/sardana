@@ -30,6 +30,7 @@ __all__ = ["ControllerAPI", "AcqTriggerType", "AcqMode"]
 __docformat__ = 'restructuredtext'
 
 from sardana.taurus.core.tango.sardana import AcqTriggerType, AcqMode
+from sardana.pool.pooltriggergate import SynchDomain, SynchSource, SynchValue
 
 #: A constant defining the controller API version currently supported
 ControllerAPI = 1.1
