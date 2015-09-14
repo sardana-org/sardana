@@ -35,6 +35,7 @@ from taurus.external import unittest
 
 from sardana.pool.pooltggeneration import PoolTGGeneration
 from sardana.sardanadefs import State
+from sardana.pool.pooldefs import SynchDomain
 from sardana.pool.test import (FakePool, createCtrlConf, createElemConf,
                                createPoolController, createPoolTriggerGate,
                                createPoolTGGenerationConfiguration)
@@ -69,7 +70,7 @@ class TGGenerationTestCase(object):
         self.pool = FakePool()
 
     def tggeneration(self, ctrl_lib, ctrl_klass, ctrl_props,
-                     offset, active_interval, passive_interval, repetitions):
+                     synchronization):
         """Helper method to verify trigger element states before and after 
         trigger/gate generation.
 
@@ -93,10 +94,7 @@ class TGGenerationTestCase(object):
         #create start_action arguments
         args = ()
         kwargs = {'config': self.tg_cfg,
-                  'offset': offset,
-                  'active_interval': active_interval,
-                  'passive_interval': passive_interval,
-                  'repetitions': repetitions,
+                  'synchronization': synchronization
                  }
         # starting action
         self.tgaction.start_action(*args, **kwargs)
@@ -117,8 +115,7 @@ class TGGenerationTestCase(object):
         self.tgaction.stop_action()
 
     def abort_tggeneration(self, ctrl_lib, ctrl_klass, ctrl_props,
-                           offset, active_interval, passive_interval,
-                           repetitions, abort_time):
+                           synchronization, abort_time):
         """Helper method to verify trigger element states before and after 
         trigger/gate generation when aborting the trigger generation.
 
@@ -144,10 +141,7 @@ class TGGenerationTestCase(object):
         # create start_action arguments
         args = ()
         kwargs = {'config': self.tg_cfg,
-                  'offset': offset,
-                  'active_interval': active_interval,
-                  'passive_interval': passive_interval,
-                  'repetitions': repetitions,
+                  'synchronization': synchronization
                  }
         # starting action
         self.tgaction.start_action(*args, **kwargs)
@@ -174,17 +168,29 @@ class TGGenerationTestCase(object):
         self.tg_elem = None
 
 
+synchronization1 = [dict(delay={SynchDomain.Time:(None, 0)},
+                         active={SynchDomain.Time:(None, .01)},
+                         total={SynchDomain.Time:(None, .02)},
+                         repeats=0)
+                   ]
+synchronization2 = [dict(delay={SynchDomain.Time:(None, 0)},
+                         active={SynchDomain.Time:(None, .01)},
+                         total={SynchDomain.Time:(None, .02)},
+                         repeats=100)
+                   ]
 @insertTest(helper_name='tggeneration',
             ctrl_lib = 'DummyTriggerGateController',
             ctrl_klass = 'DummyTriggerGateController',
             ctrl_props = {},
-            offset=0, active_interval=0.01, passive_interval=0.1, repetitions=3)
+            synchronization = synchronization1
+            )
 @insertTest(helper_name='abort_tggeneration',
             ctrl_lib = 'DummyTriggerGateController',
             ctrl_klass = 'DummyTriggerGateController',
             ctrl_props = {},
-            offset=0, active_interval=0.01, passive_interval=0.1, 
-            repetitions=100, abort_time=0.5)
+            synchronization = synchronization2,
+            abort_time=0.5
+            )
 class DummyTGGenerationTestCase(TGGenerationTestCase, unittest.TestCase):
     """Integration TestCase of TGGeneration with DummyTriggerGateController"""
 

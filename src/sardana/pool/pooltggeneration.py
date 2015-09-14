@@ -68,14 +68,9 @@ class PoolTGGeneration(PoolAction):
         '''Start action method
         '''
         cfg = kwargs['config']
+        synchronization = kwargs.get('synchronization')
         ctrls_config = cfg.get('controllers')
         pool_ctrls = ctrls_config.keys()
-
-        # obtaining generation parameters from kwargs
-        offset = kwargs.get('offset')
-        active_interval = kwargs.get('active_interval')
-        passive_interval = kwargs.get('passive_interval')
-        repetitions = kwargs.get('repetitions')
 
         # Prepare a dictionary with the involved channels
         self._channels = channels = {}
@@ -105,10 +100,7 @@ class PoolTGGeneration(PoolAction):
                 axis = element.axis
                 channel = channels[element]
                 if channel.enabled:
-                    ctrl.SetAxisPar(axis, 'offset', offset)
-                    ctrl.SetAxisPar(axis, 'active_interval', active_interval)
-                    ctrl.SetAxisPar(axis, 'passive_interval', passive_interval)
-                    ctrl.SetAxisPar(axis, 'repetitions', repetitions)
+                    ctrl.SetConfiguration(axis, synchronization)
 
         with ActionContext(self):
             # PreStartAll on all controllers
