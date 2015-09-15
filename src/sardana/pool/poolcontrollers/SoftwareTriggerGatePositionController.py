@@ -20,9 +20,12 @@
 ## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
+import numpy as np
 from sardana import State
+from sardana.pool.pooldefs import SynchDomain, SynchValue
 from sardana.util.funcgenerator import PositionFunctionGenerator
 from sardana.pool.controller import TriggerGateController
+from sardana.pool.pooltriggergate import TGEventType
 
 class SoftwareTriggerGatePositionController(TriggerGateController):
     """Basic controller intended for demonstration purposes only.
@@ -44,44 +47,42 @@ class SoftwareTriggerGatePositionController(TriggerGateController):
     def remove_listener(self, listener):
         self.tg[0].remove_listener(listener)
 
-    def SetAxisPar(self, axis, name, value):
+    def SetConfiguration(self, axis, configuration):
         idx = axis - 1
         tg = self.tg[idx]
-        name = name.lower()
-        if name == 'offset':
-            tg.setOffset(value)
-        elif name == 'active_interval':
-            tg.setActiveInterval(value)
-        elif name == 'passive_interval':
-            tg.setPassiveInterval(value)
-        elif name == 'repetitions':
-            tg.setRepetitions(value)
-        elif name == 'initial_pos':
-            tg.setInitialPos(value)
-        elif name == 'sign':
-            tg.setSign(value)
+        # TODO: implement nonequidistant triggering
+        event_values = []
+        event_conditions = []
+        event_types = []
+        event_ids = []
+        event_id = 0
+        for group in configuration:
+            repeats = group['repeats']
+            initial = group['initial'][SynchDomain.Position][SynchValue]
+            for repeat in xrange(repeats):
+                event_values.append(initial)
+                event_types.append(TGEventType.Active)
+                active = group['active'][SynchDomain.Position][SynchValue]
+                # determine the event conditions
+                comparison = np.greater_equal
+                if active < 0:
+                    comparison  = np.less_equal
+                event_conditions.extend([comparison, comparison])
+                final = initial + active
+                event_values.append(final)
+                event_types.append(TGEventType.Passive)
+                event_ids.extend([event_id, event_id])
+                total = group['total'][SynchDomain.Position][SynchValue]
+                initial = initial + total
+                event_id += 1
+                repeat += 1
+        tg.setConfiguration(event_values, event_conditions, event_types,\
+                            event_ids)
 
-    def GetAxisPar(self, axis, name):
+    def GetConfiguration(self, axis):
         idx = axis - 1
         tg = self.tg[idx]
-        name = name.lower()
-        if name == 'offset':
-            v = tg.getOffset()
-        elif name == 'active_interval':
-            v = tg.getActiveInterval()
-        elif name == 'passive_interval':
-            v = tg.getPassiveInterval()
-        elif name == "repetitions":
-            v = tg.getRepetitions()
-        elif name == "initial_pos":
-            v = tg.getInitialPos()
-        elif name == "sign":
-            v = tg.getSign()
-        else:
-            v = None
-            msg = 'GetAxisPar(%d): has not attribute %s' %(axis, name)
-            self._log.debug(msg)
-        return v
+        # TODO: implement me!!
 
     def AddDevice(self, axis):
         self._log.debug('AddDevice(%d): entering...' % axis)

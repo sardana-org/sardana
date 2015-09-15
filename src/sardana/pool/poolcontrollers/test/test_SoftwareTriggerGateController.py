@@ -27,6 +27,7 @@ from taurus.test import insertTest
 from taurus.external import unittest
 
 from sardana.pool.pooltggeneration import PoolTGGeneration
+from sardana.pool.pooldefs import SynchDomain
 
 from sardana.pool.test import (FakePool, createPoolController,
                                createPoolTriggerGate, softwarePoolTGCtrlConf01,
@@ -38,16 +39,29 @@ from sardana.pool.poolcontrollers.test import (TriggerGateControllerTestCase,
 from sardana.pool.poolcontrollers.SoftwareTriggerGateController import\
                                                   SoftwareTriggerGateController
 
+synchronization1 = [dict(delay={SynchDomain.Time:(None, 0)},
+                         active={SynchDomain.Time:(None, .03)},
+                         total={SynchDomain.Time:(None, .1)},
+                         repeats=0)
+                    ]
+synchronization2 = [dict(delay={SynchDomain.Time:(None, 0)},
+                         active={SynchDomain.Time:(None, .01)},
+                         total={SynchDomain.Time:(None, .02)},
+                         repeats=10)
+                    ]
+synchronization3 = [dict(delay={SynchDomain.Time:(None, 0)},
+                         active={SynchDomain.Time:(None, .1)},
+                         total={SynchDomain.Time:(None, .1)},
+                         repeats=0)
+                    ]
+synchronization4 = [dict(delay={SynchDomain.Time:(None, 0)},
+                         active={SynchDomain.Time:(None, .1)},
+                         total={SynchDomain.Time:(None, .15)},
+                         repeats=3)
+                    ]
 
-@insertTest(helper_name='generation',  configuration={'offset': 0,
-                                                     'active_interval': .1,
-                                                     'passive_interval': .1,
-                                                     'repetitions': 10})
-@insertTest(helper_name='abort', configuration={'offset': 0,
-                                                'active_interval': .1,
-                                                'passive_interval': .1,
-                                                'repetitions': 10},
-            abort=.1)
+@insertTest(helper_name='generation',  configuration=synchronization1)
+@insertTest(helper_name='abort', configuration=synchronization2, abort=.1)
 class SoftwareTriggerGateControllerTestCase(TriggerGateControllerTestCase):
     KLASS = SoftwareTriggerGateController
 
@@ -101,11 +115,15 @@ class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
         """Verify that the created PoolTGAction start_action starts correctly
         the involved controller."""
         args = ()
+        # composing synchronization configuration
+        total_interval = active_interval + passive_interval
+        synchronization = [dict(delay={SynchDomain.Time:(None, offset)},
+                                active={SynchDomain.Time:(None, active_interval)},
+                                total={SynchDomain.Time:(None, total_interval)},
+                                repeats=repetitions)
+                           ]
         kwargs = {'config': self.cfg,
-                  'offset': offset,
-                  'active_interval': active_interval,
-                  'passive_interval': passive_interval,
-                  'repetitions': repetitions
+                  'synchronization': synchronization
                  }
         self.tg_action.start_action(*args, **kwargs)
         self.tg_action.action_loop()

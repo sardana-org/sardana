@@ -23,6 +23,7 @@
 
 
 from sardana import State
+from sardana.pool.pooldefs import SynchDomain, SynchValue
 from sardana.util.funcgenerator import RectangularFunctionGenerator
 from sardana.pool.controller import TriggerGateController
 
@@ -42,6 +43,36 @@ class DummyTriggerGateController(TriggerGateController):
 #         '''Backdoor method to attach listeners. It will be removed whenever 
 #         a proper EventChannel mechanism will be implemented'''
 #         self.tg[0].add_listener(listener)
+
+    def SetConfiguration(self, axis, conf):
+        idx = axis - 1
+        tg = self.tg[idx]
+        # TODO: implement nonequidistant triggering
+        conf = conf[0]
+        delay = conf['delay'][SynchDomain.Time][SynchValue]
+        total_time = conf['total'][SynchDomain.Time][SynchValue]
+        active_time = conf['active'][SynchDomain.Time][SynchValue]
+        passive_time = total_time - active_time
+        repeats = conf['repeats']
+        tg.setOffset(delay)
+        tg.setActiveInterval(active_time)
+        tg.setPassiveInterval(passive_time)
+        tg.setRepetitions(repeats)
+
+    def GetConfiguration(self, axis):
+        idx = axis - 1
+        tg = self.tg[idx]
+        # TODO: implement nonequidistant triggering
+        active_time=tg.getActiveInterval(),
+        passive_time=tg.getPassiveInterval()
+        total_time = active_time + passive_time
+        conf = list(dict(delay=tg.getOffset(),
+                         total=total_time,
+                         active=active_time,
+                         repeats=tg.getRepetitions()
+                         )
+                    )
+        return conf
 
     def SetAxisPar(self, axis, name, value):
         idx = axis - 1

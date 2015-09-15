@@ -85,14 +85,12 @@ class BaseControllerTestCase(object):
                %(self.AXIS, sta, expected_state))
         self.assertEqual(sta, expected_state, msg)
 
-    def configure(self, configuration):
+    def start_action(self, configuration):
         """ This method set the axis parameters and pre start the axis.
         """
         for key, value in configuration.items():
             self.axisPar(key, value)
-        # PreStartOne the axis
-        self.ctrl.PreStartOne(self.AXIS)
-
+        self.ctrl.SetConfiguration(configuration)
     def pre_AddDevice_hook(self):
         pass
 
@@ -120,9 +118,12 @@ class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
     def generation(self, configuration):
         """ Helper for test a simple generation
         """
-        self.configure(configuration)
+        self.configuration = configuration
+        self.ctrl.SetConfiguration(self.AXIS, configuration)
         # execute Hook
         self.post_configuration_hook()
+        # PreStartOne the axis
+        self.ctrl.PreStartOne(self.AXIS)
         self.ctrl.StartOne(self.AXIS)
         while self.ctrl.StateOne(self.AXIS)[0] == State.Moving:
             time.sleep(0.001)
@@ -135,8 +136,11 @@ class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
     def abort(self, configuration, abort):
         """ Helper for test the abort
         """
-        self.configure(configuration)
+        self.configuration = configuration
+        self.ctrl.SetConfiguration(self.AXIS, configuration)
         self.post_configuration_hook()
+        # PreStartOne the axis
+        self.ctrl.PreStartOne(self.AXIS)
         self.ctrl.StartOne(self.AXIS)
         while self.ctrl.StateOne(self.AXIS)[0] == State.Moving:
             time.sleep(abort)
@@ -210,7 +214,7 @@ class PositionGenerator(threading.Thread):
         self.value.add_listener(listener)
 
     def remove_listener(self, listener):
-         self.value.remove_listener(listener)
+        self.value.remove_listener(listener)
 
 
 class TriggerGateReceiver(object):

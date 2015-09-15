@@ -25,25 +25,29 @@
 
 
 from taurus.test import insertTest
+from sardana.pool.pooldefs import SynchDomain
 from sardana.pool.poolcontrollers.test import (TriggerGateControllerTestCase,
                                                PositionGenerator,
                                                TriggerGateReceiver)
 from sardana.pool.poolcontrollers.SoftwareTriggerGatePositionController import\
                                         SoftwareTriggerGatePositionController
 
-@insertTest(helper_name='generation', configuration={'offset': 0,
-                                                     'active_interval': .1,
-                                                     'passive_interval': .9,
-                                                     'repetitions': 10,
-                                                     'sign': 1,
-                                                     'initial_pos': 0})
-@insertTest(helper_name='abort', configuration={'offset': 0,
-                                                'active_interval': .1,
-                                                'passive_interval': .9,
-                                                'repetitions': 10,
-                                                'sign': 1,
-                                                'initial_pos': 0},
-            abort=0.5)
+synchronization1 = [dict(delay={SynchDomain.Position:(None, 0)},
+                         initial={SynchDomain.Position:(None, 0)},
+                         active={SynchDomain.Position:(None, .1)},
+                         total={SynchDomain.Position:(None, 1)},
+                         repeats=10)
+                    ]
+
+synchronization2 = [dict(delay={SynchDomain.Position:(None, 0)},
+                         initial={SynchDomain.Position:(None, 0)},
+                         active={SynchDomain.Position:(None, -1.1)},
+                         total={SynchDomain.Position:(None, -1)},
+                         repeats=10)
+                    ]
+
+@insertTest(helper_name='generation', configuration=synchronization1)
+@insertTest(helper_name='abort', configuration=synchronization2, abort=0.5)
 class SoftwareTriggerGatePositionControllerTestCase(TriggerGateControllerTestCase):
     KLASS = SoftwareTriggerGatePositionController
 
@@ -67,7 +71,10 @@ class SoftwareTriggerGatePositionControllerTestCase(TriggerGateControllerTestCas
         self.generator.remove_listener(self._device)
         # testing number of received triggers
         received_triggers = self.tg_receiver.count
-        repetitions = self._device.getRepetitions()
+        conf = self.ctrl.GetConfiguration(self.AXIS)
+        repetitions = 0
+        for group in conf:
+            repetitions += group['repeats']
         msg = ('Received triggers: %d does not correspond to generated: %d' %\
                (received_triggers, repetitions))
         if not self.isAborted:

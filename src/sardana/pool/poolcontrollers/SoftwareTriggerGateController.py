@@ -21,6 +21,7 @@
 ##
 ##############################################################################
 from sardana import State
+from sardana.pool.pooldefs import SynchDomain, SynchValue
 from sardana.util.funcgenerator import RectangularFunctionGenerator
 from sardana.pool.controller import TriggerGateController
 
@@ -45,35 +46,39 @@ class SoftwareTriggerGateController(TriggerGateController):
         self.tg[0].remove_listener(listener)
 
     def SetAxisPar(self, axis, name, value):
-        idx = axis - 1
-        tg = self.tg[idx]
-        name = name.lower()
-        if name == 'offset':
-            tg.setOffset(value)
-        elif name == 'active_interval':
-            tg.setActiveInterval(value)
-        elif name == 'passive_interval':
-            tg.setPassiveInterval(value)
-        elif name == 'repetitions':
-            tg.setRepetitions(value)
-            
+        pass
+
     def GetAxisPar(self, axis, name):
+        return None
+
+    def SetConfiguration(self, axis, conf):
         idx = axis - 1
         tg = self.tg[idx]
-        name = name.lower()
-        if name == 'offset':
-            v = tg.getOffset()
-        elif name == 'active_interval':
-            v = tg.getActiveInterval()
-        elif name == 'passive_interval':
-            v = tg.getPassiveInterval()
-        elif name == "repetitions":
-            v = tg.getRepetitions()
-        else:
-            v = None
-            msg = 'GetAxisPar(%d): has not attribute %s' %(axis, name)
-            self._log.debug(msg)
-        return v
+        # TODO: implement nonequidistant triggering
+        conf = conf[0]
+        delay = conf['delay'][SynchDomain.Time][SynchValue]
+        total_time = conf['total'][SynchDomain.Time][SynchValue]
+        active_time = conf['active'][SynchDomain.Time][SynchValue]
+        passive_time = total_time - active_time
+        repeats = conf['repeats']
+        tg.setOffset(delay)
+        tg.setActiveInterval(active_time)
+        tg.setPassiveInterval(passive_time)
+        tg.setRepetitions(repeats)
+
+    def GetConfiguration(self, axis):
+        idx = axis - 1
+        tg = self.tg[idx]
+        # TODO: implement nonequidistant triggering
+        active_time=tg.getActiveInterval(),
+        passive_time=tg.getPassiveInterval()
+        total_time = active_time + passive_time
+        conf = [dict(delay=tg.getOffset(),
+                         total=total_time,
+                         active=active_time,
+                         repeats=tg.getRepetitions()
+                         )]
+        return conf
 
     def AddDevice(self, axis):
         self._log.debug('AddDevice(%d): entering...' % axis)

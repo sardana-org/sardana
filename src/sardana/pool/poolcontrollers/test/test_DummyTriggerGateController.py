@@ -2,20 +2,26 @@ from taurus.test.base import insertTest
 from taurus.external import unittest
 
 from sardana.pool.pooltggeneration import PoolTGGeneration
+from sardana.pool.pooldefs import SynchDomain
 
 from sardana.pool.test import (FakePool, createPoolController,
                                createPoolTriggerGate, dummyPoolTGCtrlConf01,
                                dummyTriggerGateConf01, 
                                createPoolTGGenerationConfiguration)
 
-@insertTest(helper_name='generation', offset=0, active_interval=.1,
-            passive_interval=.1, repetitions=0)
-@insertTest(helper_name='generation', offset=0, active_interval=.01,
-            passive_interval=.01, repetitions=10)
-@insertTest(helper_name='generation', offset=0, active_interval=.01,
-            passive_interval=.02, repetitions=10)
-@insertTest(helper_name='generation', offset=0, active_interval=.01,
-            passive_interval=.05, repetitions=10)
+synchronization1 = [dict(delay={SynchDomain.Time:(None, 0)},
+                         active={SynchDomain.Time:(None, .03)},
+                         total={SynchDomain.Time:(None, .1)},
+                         repeats=0)
+                    ]
+synchronization2 = [dict(delay={SynchDomain.Time:(None, 0)},
+                         active={SynchDomain.Time:(None, .01)},
+                         total={SynchDomain.Time:(None, .02)},
+                         repeats=10)
+                    ]
+
+@insertTest(helper_name='generation', synchronization=synchronization1)
+@insertTest(helper_name='generation', synchronization=synchronization2)
 class PoolDummyTriggerGateTestCase(unittest.TestCase):
     """Parameterizable integration test of the PoolTGGeneration action and
     the DummTriggerGateController.
@@ -44,16 +50,12 @@ class PoolDummyTriggerGateTestCase(unittest.TestCase):
         self.tg_action = PoolTGGeneration(self.dummy_tg)
         self.tg_action.add_element(self.dummy_tg)
 
-    def generation(self, offset, active_interval, passive_interval,
-                   repetitions):
+    def generation(self, synchronization):
         """Verify that the created PoolTGAction start_action starts correctly 
         the involved controller."""
         args = ()
         kwargs = {'config': self.cfg,
-                  'offset': offset,
-                  'active_interval': active_interval,
-                  'passive_interval': passive_interval,
-                  'repetitions': repetitions
+                  'synchronization': synchronization
                  }
         self.tg_action.start_action(*args, **kwargs)
         self.tg_action.action_loop()
