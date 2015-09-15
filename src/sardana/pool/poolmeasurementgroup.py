@@ -557,6 +557,28 @@ class PoolMeasurementGroup(PoolGroupElement):
                                 doc="the current acquisition mode")
 
     # --------------------------------------------------------------------------
+    # acquisition mode
+    # --------------------------------------------------------------------------
+
+    def get_synchronization(self):
+        return self._synchronization
+
+    def set_synchronization(self, synchronization, propagate=1):
+        self._synchronization = synchronization
+        repetitions = 0
+        for group in synchronization:
+            repetitions += group['repeats']
+        self._repetitions = repetitions
+        self._config_dirty = True #acquisition mode goes to configuration
+        if not propagate:
+            return
+        self.fire_event(EventType("synchronization", priority=propagate),
+                        synchronization)
+
+    synchronization = property(get_synchronization, set_synchronization,
+                                doc="the current acquisition mode")
+
+    # --------------------------------------------------------------------------
     # acquisition
     # --------------------------------------------------------------------------
 
@@ -577,14 +599,15 @@ class PoolMeasurementGroup(PoolGroupElement):
                 self._action_cache = None
                 # TODO: calculate the active_interval, based on the involved elements
                 # hardcoding the active_interval to 1 us
-                active_interval = 1e-6
-                if active_interval > integration_time:
-                    raise ValueError('IntegrationTime must be higher than 1 us')
-                passive_interval = integration_time - active_interval
-                kwargs['active_interval'] = active_interval
-                kwargs['passive_interval'] = passive_interval
-                kwargs['offset'] = self._offset
+#                 active_interval = 1e-6
+#                 if active_interval > integration_time:
+#                     raise ValueError('IntegrationTime must be higher than 1 us')
+#                 passive_interval = integration_time - active_interval
+#                 kwargs['active_interval'] = active_interval
+#                 kwargs['passive_interval'] = passive_interval
+#                 kwargs['offset'] = self._offset
                 kwargs['repetitions'] = self._repetitions
+                kwargs['synchronization'] = self._synchronization
                 kwargs['synchronized'] = True
             elif self.acquisition_mode in (AcqMode.Timer, AcqMode.Monitor):
                 kwargs['synchronized'] = False            

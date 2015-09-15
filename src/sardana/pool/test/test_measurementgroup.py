@@ -31,6 +31,7 @@ from taurus.test import insertTest
 
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool import AcqTriggerType, AcqMode
+from sardana.pool.pooldefs import SynchDomain
 from sardana.pool.test import (BasePoolTestCase, createPoolMeasurementGroup,
                                dummyMeasurementGroupConf01,
                                createMGUserConfiguration)
@@ -62,9 +63,10 @@ class BaseAcquisition(object):
         pool.add_element(self.pmg)
         # setting measurement parameters
         self.pmg.set_acquisition_mode(AcqMode.ContTimer)
-        self.pmg.set_offset(params["offset"])
-        self.pmg.set_repetitions(params["repetitions"])
+#         self.pmg.set_offset(params["offset"])
+#         self.pmg.set_repetitions(params["repetitions"])
         self.pmg.set_integration_time(params["integ_time"])
+        self.pmg.set_synchronization(params['synchronization'])
         # setting measurement configuration - this cleans the action cache!
         self.pmg.set_configuration_from_user(mg_conf) 
 
@@ -121,8 +123,11 @@ class BaseAcquisition(object):
              - Timer
         """ 
         # AcqMode.ContTimer
-        channel_names = self.prepare_meas(params, config)     
-        repetitions = params["repetitions"]
+        channel_names = self.prepare_meas(params, config)
+        synchronization = params["synchronization"]
+        repetitions = 0
+        for group in synchronization:
+            repetitions += group['repeats']
         self.prepare_attribute_listener()
         self.acquire(AcqMode.ContTimer)
         self.acq_asserts(channel_names, repetitions)
@@ -136,8 +141,11 @@ class BaseAcquisition(object):
              - Timer
         """ 
         # AcqMode.ContTimer
-        channel_names = self.prepare_meas(params, config)     
-        repetitions = params["repetitions"]
+        channel_names = self.prepare_meas(params, config)
+        synchronization = params["synchronization"]
+        repetitions = 0
+        for group in synchronization:
+            repetitions += group['repeats']
         self.prepare_attribute_listener()
         self.acquire(AcqMode.ContTimer)
         self.acq_asserts(channel_names, repetitions)
@@ -153,8 +161,10 @@ class BaseAcquisition(object):
         mg_conf, channel_ids, channel_names = createMGUserConfiguration(pool, second_config)
 
         # setting mg configuration - this cleans the action cache!
-        self.pmg.set_configuration_from_user(mg_conf)        
-        repetitions = params["repetitions"]
+        self.pmg.set_configuration_from_user(mg_conf)
+        repetitions = 0
+        for group in params['synchronization']:
+            repetitions += group['repeats']
         self.prepare_attribute_listener()
         self.acquire(AcqMode.ContTimer)
         self.acq_asserts(channel_names, repetitions)
@@ -164,11 +174,13 @@ class BaseAcquisition(object):
         Checks the lengths of the acquired data.
         """
         jobs_before = get_thread_pool().qsize
-        channel_names = self.prepare_meas(params, config)     
-        repetitions = params["repetitions"] 
+        channel_names = self.prepare_meas(params, config)
+        repetitions = 0
+        for group in params['synchronization']:
+            repetitions += group['repeats']
         self.prepare_attribute_listener()  
         self.acquire(AcqMode.ContTimer)
-        self.acq_asserts(channel_names, repetitions)     
+        self.acq_asserts(channel_names, repetitions)
 
         if second_config is not None:
             self.consecutive_acquisitions(self.pool, params, second_config)
@@ -214,14 +226,22 @@ class BaseAcquisition(object):
         self.attr_listener = None
         self.pmg = None
 
-params_1 = {"offset":0,                
-            "repetitions":10, 
-            "integ_time":0.01 
+synchronization1 = [dict(delay={SynchDomain.Time:(None, 0)},
+                         active={SynchDomain.Time:(None, .01)},
+                         total={SynchDomain.Time:(None, .02)},
+                         repeats=10)
+                    ]
+synchronization2 = [dict(delay={SynchDomain.Time:(None, 0)},
+                         active={SynchDomain.Time:(None, .01)},
+                         total={SynchDomain.Time:(None, .02)},
+                         repeats=100)
+                    ]
+params_1 = {"synchronization":synchronization1,
+            "integ_time":0.01
 }
 
-params_2 = {"offset":0, 
-            "repetitions":100, 
-            "integ_time":0.01 
+params_2 = {"synchronization":synchronization2,
+            "integ_time":0.01
 }
 
 doc_1 = 'Synchronized acquisition with two channels from the same controller'\
