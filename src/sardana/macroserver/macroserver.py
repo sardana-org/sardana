@@ -49,6 +49,7 @@ from sardana.macroserver.msbase import MSObject
 from sardana.macroserver.mscontainer import MSContainer
 from sardana.macroserver.msdoor import MSDoor
 from sardana.macroserver.msmacromanager import MacroManager
+from sardana.macroserver.msrecordermanager import RecorderManager
 from sardana.macroserver.mstypemanager import TypeManager
 from sardana.macroserver.msenvmanager import EnvironmentManager
 from sardana.macroserver.msparameter import ParamType
@@ -137,7 +138,7 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
     logReportKlass = NonOverlappingTimedRotatingFileHandler
     
     def __init__(self, full_name, name=None, macro_path=None,
-                 environment_db=None):
+                 environment_db=None, recorder_path=None):
         # dict<str, Pool>
         # key   - device name (case insensitive)
         # value - Pool object representing the device name
@@ -155,6 +156,8 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
         self._environment_manager = EnvironmentManager(self,
                                         environment_db=environment_db)
         self._macro_manager = MacroManager(self, macro_path=macro_path)
+        self._recorder_manager = RecorderManager(self,
+                                                 recorder_path=recorder_path)
 
     def serialize(self, *args, **kwargs):
         kwargs = MSObject.serialize(self, *args, **kwargs)
@@ -204,6 +207,20 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
             seq<str>
         """
         self.macro_manager.setMacroPath(macro_path)
+
+    # --------------------------------------------------------------------------
+    # Recorder path related methods
+    # --------------------------------------------------------------------------
+
+    def set_recorder_path(self, recorder_path):
+        """Sets the recorder path.
+
+        :param recorder_path:
+            recorder path
+        :type recorder_path:
+            seq<str>
+        """
+        self.recorder_manager.setRecorderPath(recorder_path)
 
     # --------------------------------------------------------------------------
     # Report related methods
@@ -399,7 +416,11 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
     @property
     def macro_manager(self):
         return self._macro_manager
-    
+
+    @property
+    def recorder_manager(self):
+        return self._recorder_manager
+
     @property
     def environment_manager(self):
         return self._environment_manager
