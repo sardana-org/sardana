@@ -45,7 +45,6 @@ class TGChannel(PoolActionItem):
         PoolActionItem.__init__(self, trigger_gate)
         if info:
             self.__dict__.update(info)
-        self.enabled = True
 
     def __getattr__(self, name):
         return getattr(self.element, name)
@@ -72,7 +71,6 @@ class PoolTGGeneration(PoolAction):
         # Prepare a dictionary with the involved channels
         self._channels = channels = {}
         for pool_ctrl in pool_ctrls:
-            ctrl = pool_ctrl.ctrl
             pool_ctrl_data = ctrls_config[pool_ctrl]
             elements = pool_ctrl_data['channels']
 
@@ -105,8 +103,7 @@ class PoolTGGeneration(PoolAction):
             for element in elements:
                 axis = element.axis
                 channel = channels[element]
-                if channel.enabled:
-                    ctrl.SetConfiguration(axis, synchronization)
+                ctrl.SetConfiguration(axis, synchronization)
 
         with ActionContext(self):
             # PreStartAll on all controllers
@@ -115,18 +112,17 @@ class PoolTGGeneration(PoolAction):
 
             # PreStartOne & StartOne on all elements
             for pool_ctrl in pool_ctrls:
-                ctrl = pool_ctrl.ctrl                
+                ctrl = pool_ctrl.ctrl
                 pool_ctrl_data = ctrls_config[pool_ctrl]
                 elements = pool_ctrl_data['channels']
                 for element in elements:
                     axis = element.axis
                     channel = channels[element]
-                    if channel.enabled:
-                        ret = ctrl.PreStartOne(axis)
-                        if not ret:
-                            raise Exception("%s.PreStartOne(%d) returns False" \
-                                            % (pool_ctrl.name, axis))
-                        ctrl.StartOne(axis)
+                    ret = ctrl.PreStartOne(axis)
+                    if not ret:
+                        raise Exception("%s.PreStartOne(%d) returns False" \
+                                        % (pool_ctrl.name, axis))
+                    ctrl.StartOne(axis)
 
             # set the state of all elements to inform their listeners
             for channel in channels:
@@ -163,6 +159,7 @@ class PoolTGGeneration(PoolAction):
             states[element] = None
 
         # Triggering loop
+        # TODO: make nap configurable (see motion or acquisition loops)
         nap = 0.2
         while True:
             self.read_state_info(ret=states)
