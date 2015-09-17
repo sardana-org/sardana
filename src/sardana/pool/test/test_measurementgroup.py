@@ -31,7 +31,7 @@ from taurus.test import insertTest
 
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool import AcqTriggerType, AcqMode
-from sardana.pool.pooldefs import SynchDomain
+from sardana.pool.pooldefs import SynchDomain, SynchSource, SynchValue
 from sardana.pool.test import (BasePoolTestCase, createPoolMeasurementGroup,
                                dummyMeasurementGroupConf01,
                                createMGUserConfiguration)
@@ -221,10 +221,36 @@ class BaseAcquisition(object):
         # print the acquisition records
         for i, record in enumerate(zip(*self.attr_listener.data.values())):
             print i, record
+            
+    def meas_contpos_acquisition(self, params, config, second_config=None):
+        # TODO: this code is ready only for one group configuration
+        synchronization = params['synchronization'][0]
+        mot_name = synchronization['total'][SynchDomain.Position][SynchSource]
+        initial = synchronization['initial'][SynchDomain.Position][SynchValue]
+        total = synchronization['total'][SynchDomain.Position][SynchValue]
+        repeats = synchronization['repeats']
+        position = initial + total * repeats
+        mot = self.mots[mot_name]
+        mot.set_base_rate(0)
+        mot.set_velocity(0.1)
+        channel_names = self.prepare_meas(params, config)
+        repetitions = 0
+        for group in params['synchronization']:
+            repetitions += group['repeats']
+        self.prepare_attribute_listener()
+        self.pmg.start_acquisition()
+        mot.set_position(position)
+        acq = self.pmg.acquisition
+        # waiting for acquisition 
+        while acq.is_running():
+            time.sleep(1)
+        time.sleep(3)
+        self.acq_asserts(channel_names, repetitions)
 
     def tearDown(self):
         self.attr_listener = None
         self.pmg = None
+
 
 synchronization1 = [dict(delay={SynchDomain.Time:(None, 0)},
                          active={SynchDomain.Time:(None, .01)},
@@ -236,11 +262,35 @@ synchronization2 = [dict(delay={SynchDomain.Time:(None, 0)},
                          total={SynchDomain.Time:(None, .02)},
                          repeats=100)
                     ]
+synchronization3 = [dict(delay={SynchDomain.Position:(None, 0)},
+                         active={SynchDomain.Position:(None, .01)},
+                         total={SynchDomain.Position:(None, .02)},
+                         repeats=100)
+                    ]
+synchronization3 = [dict(initial={SynchDomain.Position:('_test_mot_1_1', 0)},
+                         active={SynchDomain.Position:('_test_mot_1_1', .1)},
+                         total={SynchDomain.Position:('_test_mot_1_1', .2)},
+                         repeats=10)
+                    ]
+synchronization4 = [dict(initial={SynchDomain.Position:('_test_mot_1_1', 0)},
+                         active={SynchDomain.Position:('_test_mot_1_1', -.1)},
+                         total={SynchDomain.Position:('_test_mot_1_1', -.2)},
+                         repeats=10)
+                    ]
+
 params_1 = {"synchronization":synchronization1,
             "integ_time":0.01
 }
 
 params_2 = {"synchronization":synchronization2,
+            "integ_time":0.01
+}
+
+params_3 = {"synchronization":synchronization3,
+            "integ_time":0.01
+}
+
+params_4 = {"synchronization":synchronization4,
             "integ_time":0.01
 }
 
@@ -296,6 +346,16 @@ doc_9 = 'Test two consecutive synchronous acquisitions with different'\
 doc_10 = 'Test synchronous acquisition followed by asynchronous'\
         ' acquisition using the same configuration.'
 
+doc_12 = 'Acquisition using 2 controllers, with 2 channels in each controller.'
+config_12 = [[('_test_ct_1_1', '_test_stgp_1_1', AcqTriggerType.Trigger),
+              ('_test_ct_1_2', '_test_stgp_1_1', AcqTriggerType.Trigger)],
+             [('_test_ct_2_1', '_test_stgp_1_1', AcqTriggerType.Trigger),
+              ('_test_ct_2_2', '_test_stgp_1_1', AcqTriggerType.Trigger)]]
+
+@insertTest(helper_name='meas_contpos_acquisition', test_method_doc=doc_12,
+            params=params_4, config=config_12)
+@insertTest(helper_name='meas_contpos_acquisition', test_method_doc=doc_12,
+            params=params_3, config=config_12)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_1,
             params=params_1, config=config_1)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_2,
@@ -335,7 +395,7 @@ class AcquisitionTestCase(BasePoolTestCase, BaseAcquisition, unittest.TestCase):
         BasePoolTestCase.setUp(self)
         BaseAcquisition.setUp(self, self.pool)
         unittest.TestCase.setUp(self)
-           
+
     def tearDown(self):
         BasePoolTestCase.tearDown(self)
         BaseAcquisition.tearDown(self)
