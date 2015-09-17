@@ -25,7 +25,7 @@
 
 from sardana.pool.test import (FakePool, createPoolController, createCtrlConf,
                                createPoolCounterTimer, createPoolTriggerGate,
-                               createElemConf)
+                               createPoolMotor, createElemConf)
 import logging
 
 class BasePoolTestCase(object):
@@ -56,17 +56,26 @@ class BasePoolTestCase(object):
         self.tgs[name] = elem_obj
         self.pool.add_element(elem_obj)
 
+    def createMotorElement(self, ctrl_obj, name, axis):
+        e_cfg = createElemConf(self.pool, axis, name)
+        elem_obj = createPoolMotor(self.pool, ctrl_obj, e_cfg)
+        ctrl_obj.add_element(elem_obj)
+        # MOT elements
+        self.mots[name] = elem_obj
+        self.pool.add_element(elem_obj)
+
     def setUp(self):
         """Create a collection of controllers and elements.
         """
-        self.nctctrls = self.ntgctrls = 4
-        self.nctelems = self.ntgelems = 5
+        self.nctctrls = self.ntgctrls = self.nmotctrls = 4
+        self.nctelems = self.ntgelems = self.nmotelems = 5
         self.pool = FakePool(self.POOLPATH, self.LOGLEVEL)
         # Use debug mode
 
         self.ctrls = {}
         self.cts = {}
         self.tgs = {}
+        self.mots = {}
         # Create nctctrls CT ctrls
         for ctrl in range(1, self.nctctrls + 1):
             name = '_test_ct_ctrl_%s' % ctrl
@@ -96,20 +105,50 @@ class BasePoolTestCase(object):
         axis = 1
         name = '_test_stg_1_%d' % axis
         self.createTGElement(ctrl_obj, name, axis)
+        #TODO: remove this element whenever time and position controllers 
+        #      will be merged
+        # Create one software position TG ctrl
+        name = '_test_stgp_ctrl_1'
+        ctrl_obj = self.createController(name,
+                            'SoftwareTriggerGatePositionController',
+                            'SoftwareTriggerGatePositionController.py')
+        # Create one software TG element
+        axis = 1
+        name = '_test_stgp_1_%d' % axis
+        self.createTGElement(ctrl_obj, name, axis)
+        # Create nctrls MOT ctrls
+        for ctrl in range(1, self.nctctrls + 1):
+            name = '_test_mot_ctrl_%s' % ctrl
+            ctrl_obj = self.createController(name,
+                                'DummyMotorController',
+                                'DummyMotorController.py')
+            # Create nelems CT elements for each ctrl
+            for axis in range(1, self.nctelems + 1):
+                name = '_test_mot_%s_%s' % (ctrl, axis)
+                self.createMotorElement(ctrl_obj, name, axis)
 
         # Check the elements creation
         cts = len(self.cts.keys())
         tgs = len(self.tgs.keys())
+        mots = len(self.mots.keys())
+
+        expected_cts = self.ntgelems * self.ntgctrls
         msg = 'Something happened during the creation of CT elements.\n' + \
               'Expected %s and there are %s, %s' % \
-              (self.nctelems, cts, self.cts.keys())
-        if cts != self.nctelems * self.nctctrls:
+              (expected_cts, cts, self.cts.keys())
+        if cts != expected_cts:
             raise Exception(msg)
-        expected_tgs = self.ntgelems * self.ntgctrls + 1 # one software TG
+        expected_tgs = self.ntgelems * self.ntgctrls + 2 # two software TG
         msg = 'Something happened during the creation of TG elements.\n' + \
               'Expected %s and there are %s, %s' % \
               (expected_tgs, tgs, self.tgs.keys())
         if tgs != expected_tgs:
+            raise Exception(msg)
+        expected_mots = self.nmotelems * self.nmotctrls
+        msg = 'Something happened during the creation of MOT elements.\n' + \
+              'Expected %s and there are %s, %s' % \
+              (self.nmotelems, mots, self.mots.keys())
+        if mots != expected_mots:
             raise Exception(msg)
 
     def tearDown(self):

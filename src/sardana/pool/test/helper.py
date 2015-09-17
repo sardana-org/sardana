@@ -24,8 +24,8 @@
 ##############################################################################
 
 __all__ = ['createPoolController', 'createPoolCounterTimer',
-           'createPoolTriggerGate', 'createPoolMeasurementGroup',
-           'createPoolTGGenerationConfiguration',
+           'createPoolTriggerGate', 'createPoolMotor',
+           'createPoolMeasurementGroup', 'createPoolTGGenerationConfiguration',
            'createCTAcquisitionConfiguration', 'createMGConfiguration',
            'createElemConf', 'createCtrlConf', 'createConfbyCtrlKlass', 
            'createMGUserConfiguration']
@@ -34,6 +34,7 @@ from sardana.sardanadefs import ElementType
 from sardana.pool.poolcontroller import PoolController
 from sardana.pool.poolcountertimer import PoolCounterTimer
 from sardana.pool.pooltriggergate import PoolTriggerGate
+from sardana.pool.poolmotor import PoolMotor
 from sardana.pool.poolmeasurementgroup import PoolMeasurementGroup
 
 def createPoolController(pool, conf):
@@ -82,6 +83,14 @@ def createPoolTriggerGate(pool, poolcontroller, conf):
     kwargs['pool'] = pool
     kwargs['ctrl'] = poolcontroller
     return PoolTriggerGate(**kwargs)
+
+def createPoolMotor(pool, poolcontroller, conf):
+    '''Method to create a PoolMotor using a configuration dictionary
+    '''
+    kwargs = copy.deepcopy(conf)
+    kwargs['pool'] = pool
+    kwargs['ctrl'] = poolcontroller
+    return PoolMotor(**kwargs)
 
 def createPoolMeasurementGroup(pool, conf):
     '''Method to create a PoolMeasurementGroup using a configuration dictionary
