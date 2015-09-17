@@ -23,12 +23,28 @@
 ##
 ##############################################################################
 
+import os
+
 from taurus.external import unittest
 from taurus.test import insertTest
 
 from sardana.macroserver.macroserver import MacroServer
+from sardana.macroserver.scan.recorder import DataRecorder
+from sardana.macroserver.scan.recorder.storage import FileRecorder
 
 
+_TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+_FAKE_RECORDER_DIR = os.path.join(_TEST_DIR, 'res')
+
+
+@insertTest(helper_name='getRecorderClass', klass_name="JsonRecorder")
+@insertTest(helper_name='getRecorderClass', klass_name="FIO_FileRecorder")
+@insertTest(helper_name='getRecorderClass', klass_name="FakeScanRecorder",
+            extra_paths=[_FAKE_RECORDER_DIR])
+@insertTest(helper_name='getRecorderClasses', filter=FileRecorder,
+            extra_paths=[_FAKE_RECORDER_DIR], extra_recorders=1)
+@insertTest(helper_name='getRecorderClasses', extra_paths=[_FAKE_RECORDER_DIR],
+            extra_recorders=1)
 @insertTest(helper_name='getRecorderPath',
             recorder_path=["/tmp/foo", "#/tmp/foo2"], expected_num_path=2)
 @insertTest(helper_name='getRecorderPath', recorder_path=["/tmp/foo:/tmp/foo2"],
@@ -37,7 +53,6 @@ from sardana.macroserver.macroserver import MacroServer
             expected_num_path=2)
 @insertTest(helper_name='getRecorderPath')
 class RecorderManagerTest(unittest.TestCase):
-
     # Just an hardcode fullname for create an instance of MacroServer.
     # This macroserver does not need to be defined.
     ms_fullname = "macroserver/demo1/1"
@@ -57,7 +72,7 @@ class RecorderManagerTest(unittest.TestCase):
         self.manager.setRecorderPath(recorder_path)
 
     def getRecorderPath(self, recorder_path=[], expected_num_path=1):
-        """Helper  for test the number of reading recorder paths.
+        """Helper for test the number of reading recorder paths.
         The number of reading path sould be len(recorder_path) + 1
         """
         if recorder_path is not []:
@@ -68,3 +83,35 @@ class RecorderManagerTest(unittest.TestCase):
         msg = "The number of paths do not concur, read %d, expected %d" %\
               (num_paths, expected_num_path)
         self.assertEqual(num_paths, expected_num_path, msg)
+
+    def getRecorderClasses(self, filter=DataRecorder, extra_paths=None,
+                           extra_recorders=0):
+        """Helper for test getRecorderClasses method of the record Manager.
+        """
+        # Use default recorders paths
+        self.manager.setRecorderPath([])
+        default_recorder_klass = self.manager.getRecorderClasses(filter)
+        # Add extra recorders paths
+        if extra_paths is not None:
+            self.manager.setRecorderPath(extra_paths)
+        recorder_klass = self.manager.getRecorderClasses(filter)
+        n_default_recorders = len(default_recorder_klass)
+        n_recorders = len(recorder_klass)
+        total_recorders = n_default_recorders + extra_recorders
+        msg = "Number of recorder classes do not concur, expected %d, get %d" %\
+              (total_recorders, n_recorders)
+        self.assertEqual(total_recorders, n_recorders, msg)
+
+    def getRecorderClass(self, klass_name, extra_paths=[]):
+        """Helper for test getRecorderClass method of the record Manager.
+        """
+        self.manager.setRecorderPath(extra_paths)
+        klass = self.manager.getRecorderClass(klass_name)
+        msg = "Recoder manager does not found the class %s" %(klass_name)
+        self.assertEqual(klass, None, msg)
+        _name = klass.__name__
+        msg = "The class %s is not subclass of DataRecorder" %(_name)
+        self.assertTrue(issubclass(klass, DataRecorder), msg)
+        msg = "The class name giveb by the recorder manager is different." +\
+              "Expected %s, get %s" %(klass_name, _name)
+        self.assertEqual(_name, klass_name, msg)
