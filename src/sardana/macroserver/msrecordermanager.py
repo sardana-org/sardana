@@ -35,7 +35,7 @@ import copy
 
 from sardana.sardanamodulemanager import ModuleManager
 from sardana.macroserver.msmanager import MacroServerManager
-
+from sardana.macroserver.scan.recorder import DataRecorder
 
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -143,3 +143,32 @@ class RecorderManager(MacroServerManager):
         except:
             self.error("Error adding recorder %s", module_name)
             self.debug("Details:", exc_info=1)
+
+    def getRecorderClasses(self, filter=DataRecorder):
+        """ Returns a :obj:`dict` containing information about recorder classes.
+
+        :param filter: a klass of a valid type of Recorder
+        :type filter: obj
+
+        :return: a :obj:`dict` containing information about recorder classes
+        :rtype:
+            :obj:`dict`\<:obj:`str`\, :class:`DataRecorder`\>
+        """
+        recorder_klasses = {}
+        # TODO This is a template
+        #
+        # TODO get all classes from the _recorder_path and filter them.
+        #if issubclass(klass, filter):
+        #    recorder_klasses[name] = klass
+        return recorder_klasses
+
+    def getRecorderClass(self, klass_name):
+        """ Return the Recorder class for the given class name.
+        :param klass_name: Name of the recorder class.
+        :type klass_name: str
+        :return:  a :obj:`class` class of recorder or None if it does not exist
+        :rtype:
+            :obj:`class:`DataRecorder`\>
+        """
+        recorder_klasses = self.getRecorderClasses()
+        return recorder_klasses.get(klass_name, None)
