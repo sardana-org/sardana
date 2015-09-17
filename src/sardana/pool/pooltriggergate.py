@@ -89,66 +89,6 @@ class PoolTriggerGate(PoolElement):
                         doc="trigger/gate events offset")
 
     # --------------------------------------------------------------------------
-    # active_interval
-    # --------------------------------------------------------------------------
-
-    def get_active_interval(self, cache=True, propagate=1):
-        if not cache or self._velocity is None:
-            active_interval = self.read_active_interval()
-            self._set_active_interval(active_interval, propagate=propagate)
-        return self._active_interval
-
-    def set_active_interval(self, active_interval, propagate=1):
-        self.controller.set_axis_par(self.axis, "active_interval", active_interval)
-        self._set_active_interval(active_interval, propagate=propagate)
-
-    def _set_active_interval(self, active_interval, propagate=1):
-        self._active_interval = active_interval
-        if not propagate:
-            return
-        self.fire_event(EventType("active_interval", priority=propagate),
-                                  active_interval)
-
-    def read_active_interval(self):
-        active_interval = self.controller.get_axis_par(self.axis, "active_interval")
-        assert_type(int, active_interval)
-        return active_interval
-
-    active_interval = property(get_active_interval, set_active_interval,
-                               doc="trigger/gate events active_interval")
-
-# --------------------------------------------------------------------------
-    # passive_interval
-    # --------------------------------------------------------------------------
-
-    def get_passive_interval(self, cache=True, propagate=1):
-        if not cache or self._velocity is None:
-            passive_interval = self.read_passive_interval()
-            self._set_passive_interval(passive_interval, propagate=propagate)
-        return self._passive_interval
-
-    def set_passive_interval(self, passive_interval, propagate=1):
-        self.controller.set_axis_par(self.axis, "passive_interval",
-                                     passive_interval)
-        self._set_passive_interval(passive_interval, propagate=propagate)
-
-    def _set_passive_interval(self, passive_interval, propagate=1):
-        self._passive_interval = passive_interval
-        if not propagate:
-            return
-        self.fire_event(EventType("passive_interval", priority=propagate), 
-                                  passive_interval)
-
-    def read_passive_interval(self):
-        passive_interval = self.controller.get_axis_par(self.axis,
-                                                        "passive_interval")
-        assert_type(int, passive_interval)
-        return passive_interval
-
-    passive_interval = property(get_passive_interval, set_passive_interval,
-                                doc="trigger/gate events passive_interval")
-
-    # --------------------------------------------------------------------------
     # repetitions
     # --------------------------------------------------------------------------
 
