@@ -57,13 +57,9 @@ class PoolTGGeneration(PoolAction):
     def __init__(self, main_element, name="TGAction"):
         PoolAction.__init__(self, main_element, name)
         self._listener = None
-        self._repetitions = 1
 
     def add_listener(self, listener):
         self._listener = listener
-
-    def setRepetitions(self, repetitions):
-        self._repetitions = repetitions
 
     def start_action(self, *args, **kwargs):
         '''Start action method
