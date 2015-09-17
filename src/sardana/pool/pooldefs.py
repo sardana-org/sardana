@@ -29,8 +29,21 @@ __all__ = ["ControllerAPI", "AcqTriggerType", "AcqMode"]
 
 __docformat__ = 'restructuredtext'
 
+from taurus.core.util.enumeration import Enumeration
 from sardana.taurus.core.tango.sardana import AcqTriggerType, AcqMode
-from sardana.pool.pooltriggergate import SynchDomain, SynchSource, SynchValue
 
 #: A constant defining the controller API version currently supported
 ControllerAPI = 1.1
+
+# synchronization domain: Time means that the configuration parameter will be 
+# expressed in the time domain, Position means the motor position domain and
+# Monitor means the count to monitor domain  
+SynchDomain = Enumeration(
+'SynchDomain', (
+    'Time',
+    'Position',
+    'Monitor'
+))
+
+SynchSource = 0
+SynchValue = 1

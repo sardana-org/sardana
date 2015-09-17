@@ -45,19 +45,6 @@ TGEventType = Enumeration(
     'Passive'
 ))
 
-# synchronization domain: Time means that the configuration parameter will be 
-# expressed in the time domain, Position means the motor position domain and
-# Monitor means the count to monitor domain  
-SynchDomain = Enumeration(
-'SynchDomain', (
-    'Time',
-    'Position',
-    'Monitor'
-))
-
-SynchSource = 0
-SynchValue = 1
-
 class Index(SardanaAttribute):
 
     def __init__(self, *args, **kwargs):
