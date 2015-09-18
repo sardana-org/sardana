@@ -61,6 +61,10 @@ class UnknownMacro(UnknownCode):
     pass
 
 
+class UnknownRecorder(UnknownCode):
+    pass
+
+
 class UnknownMacroLibrary(UnknownLibrary):
     pass
 

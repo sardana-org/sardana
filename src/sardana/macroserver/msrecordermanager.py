@@ -30,13 +30,17 @@ __all__ = ["RecorderManager"]
 
 __docformat__ = 'restructuredtext'
 
-import os
+import os, sys
 import copy
+import inspect
 
 from sardana.sardanamodulemanager import ModuleManager
 from sardana.macroserver.msmanager import MacroServerManager
 from sardana.macroserver.scan.recorder import DataRecorder
-
+from sardana.macroserver.msmetarecorder import RecorderLibrary, \
+    RecorderClass
+from sardana.macroserver.msexception import UnknownRecorder
+from sardana.macroserver.scan.recorder.storage import BaseFileRecorder
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -59,6 +63,11 @@ class RecorderManager(MacroServerManager):
         # value - RecorderLibrary object representing the module
         self._modules = {}
 
+        #: dict<str, <metarecorder.RecorderClass>
+        #: key   - recorder name
+        #: value - RecorderClass object representing the recorder
+        self._recorder_dict = {}
+
         # list<str>
         # elements are absolute paths
         self._recorder_path = []
@@ -68,6 +77,11 @@ class RecorderManager(MacroServerManager):
     def cleanUp(self):
         if self.is_cleaned():
             return
+
+        if self._modules:
+            for _, types_dict in self._modules.items():
+                for type_name in types_dict:
+                    Type.removeType(type_name)
 
         self._recorder_path = None
         self._modules = None
@@ -95,31 +109,80 @@ class RecorderManager(MacroServerManager):
             dir_name = os.path.dirname(file_name)
             path = [dir_name]
             try:
-                self.loadRecorderLib(mod_name, path)
+                self.reloadRecorderLib(mod_name, path, False)
             except:
                 pass
+        self.debug("Recorder Classes: %s " % self.getRecorderClasses())
 
     def getRecorderPath(self):
         return self._recorder_path
+
+    def getRecorderClass(self, recorder_name):
+        """ Return the Recorder class for the given class name.
+        :param klass_name: Name of the recorder class.
+        :type klass_name: str
+        :return:  a :obj:`class` class of recorder or None if it does not exist
+        :rtype:
+            :obj:`class:`~sardana.macroserver.msmetarecorder.RecorderClass`\>
+        """
+        ret = self._recorder_dict.get(recorder_name)
+        if ret is None:
+            raise UnknownRecorder("Unknown recorder %s" % recorder_name)
+        return ret
+
+    def getRecorderClasses(self, filter=DataRecorder):
+        """ Returns a :obj:`dict` containing information about recorder classes.
+
+        :param filter: a klass of a valid type of Recorder
+        :type filter: obj
+
+        :return: a :obj:`dict` containing information about recorder classes
+        :rtype:
+            :obj:`dict`\<:obj:`str`\, :class:`~sardana.macroserver.msmetarecorder.RecorderClass`\>
+        """
+        ret = {}
+        for name, klass in self._recorder_dict.items():
+            if issubclass(klass.recorder_class, filter):
+                ret[name] = klass
+        return ret
+
+    def _findModuleName(self, path, name):
+#        return name
+        mod_name = ""
+        path_list = path.split(os.sep)
+        path_list.append(name)
+        while path_list:
+            if mod_name:
+                mod_name = "." + mod_name
+            mod_name = path_list[-1] + mod_name
+            path_list[-1] = "__init__.py"
+            jpath = os.path.join(*path_list)
+            if not path_list[0]:
+                jpath = os.sep + jpath
+            if not os.path.isfile(jpath):
+                break
+            path_list.pop()
+        return mod_name
 
     def _findRecorderLibNames(self, recorder_path=None):
         paths = recorder_path or self.getRecorderPath()
         ret = {}
         for path in reversed(paths):
             try:
-                for dir in os.listdir(path):
-                    name, ext = os.path.splitext(dir)
+                for fdir in os.listdir(path):
+                    name, ext = os.path.splitext(fdir)
                     if name.startswith("_"):
                         continue
                     if ext.endswith('.py'):
-                        full_path = os.path.abspath(os.path.join(path, dir))
-                        ret[name] = full_path
+                        module_name = self._findModuleName(path, name)
+                        full_path = os.path.abspath(os.path.join(path, fdir))
+                        ret[module_name] = full_path
             except:
                 self.debug("'%s' is not a valid path" % path)
         return ret
 
-    def loadRecorderLib(self, module_name, path=None):
-        """Loads the given library(=module) names.
+    def reloadRecorderLib(self, module_name, path=None, reload=True):
+        """Reloads the given library(=module) names.
 
         :param module_name: recorder library name (=python module name)
         :param path:
@@ -133,42 +196,78 @@ class RecorderManager(MacroServerManager):
             path = copy.copy(path)
             path.reverse()
 
+        # if there was previous Recorder Lib info remove it
+        if module_name in self._modules.keys():
+            self._modules.pop(module_name)
+
         if module_name in self._modules:
             return None
 
         mod_manager = ModuleManager()
+        m, exc_info = None, None
         try:
-            self._modules[module_name] = mod_manager.loadModule(module_name,
-                                                                path)
+            m = mod_manager.reloadModule(
+                module_name, path, reload=reload)
         except:
             self.error("Error adding recorder %s", module_name)
             self.debug("Details:", exc_info=1)
+            exc_info = sys.exc_info()
+        params = dict(module=m, name=module_name,
+                      macro_server=self.macro_server)
+#                      , exc_info=exc_info)
+#            self._modules[module_name]
+        if m is None or exc_info is not None:
+            params['exc_info'] = exc_info
+            recorder_lib = RecorderLibrary(**params)
+            self._modules[module_name] = recorder_lib
+        else:
+            recorder_lib = RecorderLibrary(**params)
+            lib_contains_recorders = False
+            abs_file = recorder_lib.file_path
+            for _, klass in inspect.getmembers(m, inspect.isclass):
+                if klass in finalSubClasses(BaseFileRecorder):
+                    # optional implementation:
+                    #   if issubclass(klass, BaseFileRecorder):
+                    #
+                    # if it is a class defined in some other class forget it to
+                    # avoid replicating the same recorder in different
+                    # recorder files
+                    # use normcase to treat case insensitivity of paths on
+                    # certain platforms e.g. Windows
+                    if os.path.normcase(inspect.getabsfile(klass)) !=\
+                       os.path.normcase(abs_file):
+                        continue
+                    lib_contains_recorders = True
+                    self.addRecorder(recorder_lib, klass)
+            if lib_contains_recorders:
+                self._modules[module_name] = recorder_lib
 
-    def getRecorderClasses(self, filter=DataRecorder):
-        """ Returns a :obj:`dict` containing information about recorder classes.
+        return recorder_lib
 
-        :param filter: a klass of a valid type of Recorder
-        :type filter: obj
+    def addRecorder(self, recorder_lib, klass):
+        """Adds a new recorder class"""
+        recorder_name = klass.__name__
+        exists = recorder_lib.has_recorder(recorder_name)
+        if exists:
+            action = "Updating"
+        else:
+            action = "Adding"
 
-        :return: a :obj:`dict` containing information about recorder classes
-        :rtype:
-            :obj:`dict`\<:obj:`str`\, :class:`DataRecorder`\>
-        """
-        recorder_klasses = {}
-        # TODO This is a template
-        #
-        # TODO get all classes from the _recorder_path and filter them.
-        #if issubclass(klass, filter):
-        #    recorder_klasses[name] = klass
-        return recorder_klasses
+        self.debug("%s recorder %s" % (action, recorder_name))
 
-    def getRecorderClass(self, klass_name):
-        """ Return the Recorder class for the given class name.
-        :param klass_name: Name of the recorder class.
-        :type klass_name: str
-        :return:  a :obj:`class` class of recorder or None if it does not exist
-        :rtype:
-            :obj:`class:`DataRecorder`\>
-        """
-        recorder_klasses = self.getRecorderClasses()
-        return recorder_klasses.get(klass_name, None)
+        try:
+            recorder_class = RecorderClass(lib=recorder_lib, klass=klass,
+                                           macro_server=self.macro_server)
+            #self._setRecorderTypes(klass, recorder_class)
+            recorder_lib.add_recorder(recorder_class)
+            self._recorder_dict[recorder_name] = recorder_class
+
+        except:
+            self.warning("Failed to add recorder class %s", recorder_name,
+                         exc_info=1)
+
+        if exists:
+            action = "Updated"
+        else:
+            action = "Added"
+        self.debug("%s recorder %s" % (action, recorder_name))
