@@ -22,7 +22,7 @@
 ##############################################################################
 import numpy as np
 from sardana import State
-from sardana.pool.pooldefs import SynchDomain, SynchValue
+from sardana.pool.pooldefs import SynchDomain
 from sardana.util.funcgenerator import PositionFunctionGenerator
 from sardana.pool.controller import TriggerGateController
 from sardana.pool.pooltriggergate import TGEventType
@@ -58,11 +58,11 @@ class SoftwareTriggerGatePositionController(TriggerGateController):
         event_id = 0
         for group in configuration:
             repeats = group['repeats']
-            initial = group['initial'][SynchDomain.Position][SynchValue]
+            initial = group['initial'][SynchDomain.Position]
             for repeat in xrange(repeats):
                 event_values.append(initial)
                 event_types.append(TGEventType.Active)
-                active = group['active'][SynchDomain.Position][SynchValue]
+                active = group['active'][SynchDomain.Position]
                 # determine the event conditions
                 comparison = np.greater_equal
                 if active < 0:
@@ -72,7 +72,7 @@ class SoftwareTriggerGatePositionController(TriggerGateController):
                 event_values.append(final)
                 event_types.append(TGEventType.Passive)
                 event_ids.extend([event_id, event_id])
-                total = group['total'][SynchDomain.Position][SynchValue]
+                total = group['total'][SynchDomain.Position]
                 initial = initial + total
                 event_id += 1
                 repeat += 1

@@ -39,24 +39,24 @@ from sardana.pool.poolcontrollers.test import (TriggerGateControllerTestCase,
 from sardana.pool.poolcontrollers.SoftwareTriggerGateController import\
                                                   SoftwareTriggerGateController
 
-synchronization1 = [dict(delay={SynchDomain.Time:(None, 0)},
-                         active={SynchDomain.Time:(None, .03)},
-                         total={SynchDomain.Time:(None, .1)},
+synchronization1 = [dict(delay={SynchDomain.Time: 0},
+                         active={SynchDomain.Time: .03},
+                         total={SynchDomain.Time: .1},
                          repeats=0)
                     ]
-synchronization2 = [dict(delay={SynchDomain.Time:(None, 0)},
-                         active={SynchDomain.Time:(None, .01)},
-                         total={SynchDomain.Time:(None, .02)},
+synchronization2 = [dict(delay={SynchDomain.Time: 0},
+                         active={SynchDomain.Time: .01},
+                         total={SynchDomain.Time: .02},
                          repeats=10)
                     ]
-synchronization3 = [dict(delay={SynchDomain.Time:(None, 0)},
-                         active={SynchDomain.Time:(None, .1)},
-                         total={SynchDomain.Time:(None, .1)},
+synchronization3 = [dict(delay={SynchDomain.Time: 0},
+                         active={SynchDomain.Time: .1},
+                         total={SynchDomain.Time: .1},
                          repeats=0)
                     ]
-synchronization4 = [dict(delay={SynchDomain.Time:(None, 0)},
-                         active={SynchDomain.Time:(None, .1)},
-                         total={SynchDomain.Time:(None, .15)},
+synchronization4 = [dict(delay={SynchDomain.Time: 0},
+                         active={SynchDomain.Time: .1},
+                         total={SynchDomain.Time: .15},
                          repeats=3)
                     ]
 
@@ -117,9 +117,9 @@ class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
         args = ()
         # composing synchronization configuration
         total_interval = active_interval + passive_interval
-        synchronization = [dict(delay={SynchDomain.Time:(None, offset)},
-                                active={SynchDomain.Time:(None, active_interval)},
-                                total={SynchDomain.Time:(None, total_interval)},
+        synchronization = [dict(delay={SynchDomain.Time: offset},
+                                active={SynchDomain.Time: active_interval},
+                                total={SynchDomain.Time: total_interval},
                                 repeats=repetitions)
                            ]
         kwargs = {'config': self.cfg,

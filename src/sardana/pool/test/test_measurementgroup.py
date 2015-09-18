@@ -31,7 +31,7 @@ from taurus.test import insertTest
 
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool import AcqTriggerType, AcqMode
-from sardana.pool.pooldefs import SynchDomain, SynchSource, SynchValue
+from sardana.pool.pooldefs import SynchDomain
 from sardana.pool.test import (BasePoolTestCase, createPoolMeasurementGroup,
                                dummyMeasurementGroupConf01,
                                createMGUserConfiguration)
@@ -67,6 +67,7 @@ class BaseAcquisition(object):
 #         self.pmg.set_repetitions(params["repetitions"])
         self.pmg.set_integration_time(params["integ_time"])
         self.pmg.set_synchronization(params['synchronization'])
+        self.pmg.set_moveable(params.get('moveable', None))
         # setting measurement configuration - this cleans the action cache!
         self.pmg.set_configuration_from_user(mg_conf) 
 
@@ -225,11 +226,11 @@ class BaseAcquisition(object):
     def meas_contpos_acquisition(self, params, config, second_config=None):
         # TODO: this code is ready only for one group configuration
         synchronization = params['synchronization'][0]
-        mot_name = synchronization['total'][SynchDomain.Position][SynchSource]
-        initial = synchronization['initial'][SynchDomain.Position][SynchValue]
-        total = synchronization['total'][SynchDomain.Position][SynchValue]
+        initial = synchronization['initial'][SynchDomain.Position]
+        total = synchronization['total'][SynchDomain.Position]
         repeats = synchronization['repeats']
         position = initial + total * repeats
+        mot_name = params['moveable']
         mot = self.mots[mot_name]
         mot.set_base_rate(0)
         mot.set_velocity(0.1)
@@ -252,29 +253,29 @@ class BaseAcquisition(object):
         self.pmg = None
 
 
-synchronization1 = [dict(delay={SynchDomain.Time:(None, 0)},
-                         active={SynchDomain.Time:(None, .01)},
-                         total={SynchDomain.Time:(None, .02)},
+synchronization1 = [dict(delay={SynchDomain.Time: 0},
+                         active={SynchDomain.Time: .01},
+                         total={SynchDomain.Time: .02},
                          repeats=10)
                     ]
-synchronization2 = [dict(delay={SynchDomain.Time:(None, 0)},
-                         active={SynchDomain.Time:(None, .01)},
-                         total={SynchDomain.Time:(None, .02)},
+synchronization2 = [dict(delay={SynchDomain.Time: 0},
+                         active={SynchDomain.Time: .01},
+                         total={SynchDomain.Time: .02},
                          repeats=100)
                     ]
-synchronization3 = [dict(delay={SynchDomain.Position:(None, 0)},
-                         active={SynchDomain.Position:(None, .01)},
-                         total={SynchDomain.Position:(None, .02)},
+synchronization3 = [dict(delay={SynchDomain.Position: 0},
+                         active={SynchDomain.Position: .01},
+                         total={SynchDomain.Position: .02},
                          repeats=100)
                     ]
-synchronization3 = [dict(initial={SynchDomain.Position:('_test_mot_1_1', 0)},
-                         active={SynchDomain.Position:('_test_mot_1_1', .1)},
-                         total={SynchDomain.Position:('_test_mot_1_1', .2)},
+synchronization3 = [dict(initial={SynchDomain.Position: 0},
+                         active={SynchDomain.Position: .1},
+                         total={SynchDomain.Position: .2},
                          repeats=10)
                     ]
-synchronization4 = [dict(initial={SynchDomain.Position:('_test_mot_1_1', 0)},
-                         active={SynchDomain.Position:('_test_mot_1_1', -.1)},
-                         total={SynchDomain.Position:('_test_mot_1_1', -.2)},
+synchronization4 = [dict(initial={SynchDomain.Position: 0},
+                         active={SynchDomain.Position: -.1},
+                         total={SynchDomain.Position: -.2},
                          repeats=10)
                     ]
 
@@ -287,10 +288,12 @@ params_2 = {"synchronization":synchronization2,
 }
 
 params_3 = {"synchronization":synchronization3,
+            "moveable": '_test_mot_1_1',
             "integ_time":0.01
 }
 
 params_4 = {"synchronization":synchronization4,
+            "moveable": '_test_mot_1_1',
             "integ_time":0.01
 }
 

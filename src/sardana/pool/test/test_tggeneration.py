@@ -168,14 +168,14 @@ class TGGenerationTestCase(object):
         self.tg_elem = None
 
 
-synchronization1 = [dict(delay={SynchDomain.Time:(None, 0)},
-                         active={SynchDomain.Time:(None, .01)},
-                         total={SynchDomain.Time:(None, .02)},
+synchronization1 = [dict(delay={SynchDomain.Time: 0},
+                         active={SynchDomain.Time: .01},
+                         total={SynchDomain.Time: .02},
                          repeats=0)
                    ]
-synchronization2 = [dict(delay={SynchDomain.Time:(None, 0)},
-                         active={SynchDomain.Time:(None, .01)},
-                         total={SynchDomain.Time:(None, .02)},
+synchronization2 = [dict(delay={SynchDomain.Time: 0},
+                         active={SynchDomain.Time: .01},
+                         total={SynchDomain.Time: .02},
                          repeats=100)
                    ]
 @insertTest(helper_name='tggeneration',

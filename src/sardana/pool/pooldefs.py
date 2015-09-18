@@ -44,6 +44,3 @@ SynchDomain = Enumeration(
     'Position',
     'Monitor'
 ))
-
-SynchSource = 0
-SynchValue = 1

@@ -21,7 +21,7 @@
 ##
 ##############################################################################
 from sardana import State
-from sardana.pool.pooldefs import SynchDomain, SynchValue
+from sardana.pool.pooldefs import SynchDomain
 from sardana.util.funcgenerator import RectangularFunctionGenerator
 from sardana.pool.controller import TriggerGateController
 
@@ -56,9 +56,9 @@ class SoftwareTriggerGateController(TriggerGateController):
         tg = self.tg[idx]
         # TODO: implement nonequidistant triggering
         conf = conf[0]
-        delay = conf['delay'][SynchDomain.Time][SynchValue]
-        total_time = conf['total'][SynchDomain.Time][SynchValue]
-        active_time = conf['active'][SynchDomain.Time][SynchValue]
+        delay = conf['delay'][SynchDomain.Time]
+        total_time = conf['total'][SynchDomain.Time]
+        active_time = conf['active'][SynchDomain.Time]
         passive_time = total_time - active_time
         repeats = conf['repeats']
         tg.setOffset(delay)

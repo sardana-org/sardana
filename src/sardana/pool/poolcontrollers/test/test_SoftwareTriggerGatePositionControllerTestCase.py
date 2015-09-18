@@ -32,17 +32,17 @@ from sardana.pool.poolcontrollers.test import (TriggerGateControllerTestCase,
 from sardana.pool.poolcontrollers.SoftwareTriggerGatePositionController import\
                                         SoftwareTriggerGatePositionController
 
-synchronization1 = [dict(delay={SynchDomain.Position:(None, 0)},
-                         initial={SynchDomain.Position:(None, 0)},
-                         active={SynchDomain.Position:(None, .1)},
-                         total={SynchDomain.Position:(None, 1)},
+synchronization1 = [dict(delay={SynchDomain.Position: 0},
+                         initial={SynchDomain.Position: 0},
+                         active={SynchDomain.Position: .1},
+                         total={SynchDomain.Position: 1},
                          repeats=10)
                     ]
 
-synchronization2 = [dict(delay={SynchDomain.Position:(None, 0)},
-                         initial={SynchDomain.Position:(None, 0)},
-                         active={SynchDomain.Position:(None, -1.1)},
-                         total={SynchDomain.Position:(None, -1)},
+synchronization2 = [dict(delay={SynchDomain.Position: 0},
+                         initial={SynchDomain.Position: 0},
+                         active={SynchDomain.Position: -1},
+                         total={SynchDomain.Position: -1.1},
                          repeats=10)
                     ]
 

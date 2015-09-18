@@ -106,6 +106,8 @@ class PoolMeasurementGroup(PoolGroupElement):
         self._acquisition_mode = AcqMode.Timer
         self._config = None
         self._config_dirty = True
+        self._moveable = None
+        self._moveable_obj = None
         kwargs['elem_type'] = ElementType.MeasurementGroup
         PoolGroupElement.__init__(self, **kwargs)
         self.set_configuration(kwargs.get('configuration'))
@@ -587,7 +589,8 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     def set_moveable(self, moveable, propagate=1):
         self._moveable = moveable
-        self._moveable_obj = self.pool.get_element_by_full_name(moveable)
+        if self._moveable != 'None' and self._moveable != None:
+            self._moveable_obj = self.pool.get_element_by_full_name(moveable)
         self.fire_event(EventType("moveable", priority=propagate),
                         moveable)
 

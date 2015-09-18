@@ -33,7 +33,7 @@ __all__ = ["PoolTGGeneration", "TGChannel"]
 import time
 from taurus.core.util.log import DebugIt
 from sardana import State
-from sardana.pool.pooldefs import SynchDomain, SynchSource
+from sardana.pool.pooldefs import SynchDomain
 from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction 
 
 # The purpose of this class was inspired on the CTAcquisition concept
@@ -61,10 +61,18 @@ class PoolTGGeneration(PoolAction):
         self._listener = listener
 
     def start_action(self, *args, **kwargs):
-        '''Start action method
+        '''Start action method. Expects the following kwargs:
+        - config - dictionary containing measurement group configuration
+        - synchronization - list of dictionaries containing information about
+          the expected synchronization
+        - moveable (optional)- moveable object used as the synchronization
+          source in the Position domain
+        - monitor (optional) - counter/timer object used as the synchronization
+          source in the Monitor domain
         '''
         cfg = kwargs['config']
         synchronization = kwargs.get('synchronization')
+        moveable = kwargs.get('moveable')
         ctrls_config = cfg.get('controllers')
         pool_ctrls = ctrls_config.keys()
 

@@ -346,9 +346,9 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         self.hw_acq.run(hw_acq_args, **hw_acq_kwargs)    
         tg_args = ()
         total_interval = active_interval + passive_interval
-        synchronization = [dict(delay={SynchDomain.Time:(None, offset)},
-                                active={SynchDomain.Time:(None, active_interval)},
-                                total={SynchDomain.Time:(None, total_interval)},
+        synchronization = [dict(delay={SynchDomain.Time: offset},
+                                active={SynchDomain.Time: active_interval},
+                                total={SynchDomain.Time: total_interval},
                                 repeats=repetitions)]
         tg_kwargs = {
             'config': tg_cfg,
