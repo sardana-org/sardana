@@ -222,6 +222,18 @@ class MeasurementGroup(PoolGroupDevice):
     def write_Moveable(self, attr):
         self.measurement_group.moveable = attr.get_write_value()
 
+    def read_Synchronization(self, attr):
+        synchronization = self.measurement_group.synchronization
+        codec = CodecFactory().getCodec('json')
+        data = codec.encode(('', synchronization))
+        attr.set_value(data[1])
+
+    def write_Synchronization(self, attr):
+        data = attr.get_write_value()
+        synchronization = CodecFactory().decode(('json', data),
+                                                ensure_ascii=True)
+        self.measurement_group.synchronization = synchronization
+
     def Start(self):
         try:
             self.wait_for_operation()
@@ -279,7 +291,10 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
                                 'Display level' : DispLevel.OPERATOR } ],
         'Moveable': [ [DevString, SCALAR, READ_WRITE],
                               { 'Memorized'     : "true",
-                                'Display level' : DispLevel.EXPERT } ]
+                                'Display level' : DispLevel.EXPERT } ],
+        'Synchronization': [ [DevString, SCALAR, READ_WRITE],
+                              { 'Memorized'     : "true",
+                                'Display level' : DispLevel.EXPERT } ],
     }
     attr_list.update(PoolGroupDeviceClass.attr_list)
 

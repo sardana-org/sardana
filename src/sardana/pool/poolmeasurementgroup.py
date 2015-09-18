@@ -108,6 +108,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         self._config_dirty = True
         self._moveable = None
         self._moveable_obj = None
+        self._synchronization = []
         kwargs['elem_type'] = ElementType.MeasurementGroup
         PoolGroupElement.__init__(self, **kwargs)
         self.set_configuration(kwargs.get('configuration'))
