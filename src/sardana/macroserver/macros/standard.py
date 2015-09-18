@@ -93,9 +93,9 @@ class _wm(Macro):
                 except PyTango.AsynReplyNotArrived, e:
                     continue
                 except PyTango.DevFailed:
-                    data[name].append('NaN')
+                    data[name].append(float('NaN'))
                     if show_dial:
-                        data[name].append('NaN')
+                        data[name].append(float('NaN'))
                     req2delete.append(name)
                     self.debug('Error when reading %s position(s)' % name)
                     self.debug('Details:', exc_info=1)
