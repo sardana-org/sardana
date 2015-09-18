@@ -202,7 +202,7 @@ class PoolAction(Logger):
         self._elements = []
         self._pool_ctrl_dict = {}
         self._pool_ctrl_list = []
-        self._finish_hook = None
+        self._finish_hooks = []
         self._running = False
         self._state_info = OperationInfo()
         self._value_info = OperationInfo()
@@ -346,23 +346,29 @@ class PoolAction(Logger):
         raise NotImplementedError("start_action must be implemented in "
                                   "subclass")
 
-    def set_finish_hook(self, hook):
+    def set_finish_hooks(self, hook):
         """Attaches/Detaches a finish hook
 
-        :param hook: a callable object or None
+        :param hook: a list of callable objects or None
         :type hook: callable or None"""
-        self._finish_hook = hook
+        self._finish_hooks = hook
+
+    def add_finish_hook(self, hook):
+        self._finish_hooks.append(hook)
+    
+    def remove_finish_hook(self, hook):
+        self._finish_hooks.remove(hook)
 
     def finish_action(self):
         """Finishes the action execution. If a finish hook is defined it safely
         executes it. Otherwise nothing happens"""
-        hook = self._finish_hook
-        if hook is None:
-            return
-        try:
-            hook()
-        except:
-            self.warning("Exception running function finish hook", exc_info=1)
+        hooks = self._finish_hooks
+        for hook in hooks:
+            try:
+                hook()
+            except:
+                self.warning("Exception running function finish hook",
+                             exc_info=1)
 
     def stop_action(self, *args, **kwargs):
         """Stop procedure for this action."""

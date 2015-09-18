@@ -323,7 +323,7 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         # Use an external Event flag to mark if we have any software
         # acquisition action pending.
         self.sw_acq_busy = threading.Event()
-        self.sw_acq.set_finish_hook(self.sw_acq_busy.clear)
+        self.sw_acq.add_finish_hook(self.sw_acq_busy.clear)
 
         self.hw_acq.add_element(ct_1_1)
         self.sw_acq.add_element(ct_2_1)
