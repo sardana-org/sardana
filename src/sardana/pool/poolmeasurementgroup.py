@@ -577,6 +577,22 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     synchronization = property(get_synchronization, set_synchronization,
                                 doc="the current acquisition mode")
+    
+    # --------------------------------------------------------------------------
+    # moveable
+    # --------------------------------------------------------------------------
+
+    def get_moveable(self):
+        return self._synchronization
+
+    def set_moveable(self, moveable, propagate=1):
+        self._moveable = moveable
+        self._moveable_obj = self.pool.get_element_by_full_name(moveable)
+        self.fire_event(EventType("moveable", priority=propagate),
+                        moveable)
+
+    moveable = property(get_moveable, set_moveable,
+                                doc="moveable source used in synchronization")
 
     # --------------------------------------------------------------------------
     # acquisition
@@ -609,6 +625,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                 kwargs['repetitions'] = self._repetitions
                 kwargs['synchronization'] = self._synchronization
                 kwargs['synchronized'] = True
+                kwargs['moveable'] = self._moveable_obj
             elif self.acquisition_mode in (AcqMode.Timer, AcqMode.Monitor):
                 kwargs['synchronized'] = False            
             # start acquisition
