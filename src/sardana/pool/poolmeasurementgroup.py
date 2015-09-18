@@ -585,7 +585,7 @@ class PoolMeasurementGroup(PoolGroupElement):
     # --------------------------------------------------------------------------
 
     def get_moveable(self):
-        return self._synchronization
+        return self._moveable
 
     def set_moveable(self, moveable, propagate=1):
         self._moveable = moveable

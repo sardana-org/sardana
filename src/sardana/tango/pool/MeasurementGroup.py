@@ -213,6 +213,15 @@ class MeasurementGroup(PoolGroupDevice):
     def write_Repetitions(self, attr):
         self.measurement_group.repetitions = attr.get_write_value()
 
+    def read_Moveable(self, attr):
+        moveable = self.measurement_group.moveable
+        if moveable is None:
+            moveable = 'None'
+        attr.set_value(moveable)
+
+    def write_Moveable(self, attr):
+        self.measurement_group.moveable = attr.get_write_value()
+
     def Start(self):
         try:
             self.wait_for_operation()
@@ -267,7 +276,10 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
                                 'Display level' : DispLevel.OPERATOR } ],
         'Repetitions': [ [DevLong, SCALAR, READ_WRITE],
                               { 'Memorized'     : "true",
-                                'Display level' : DispLevel.OPERATOR } ]
+                                'Display level' : DispLevel.OPERATOR } ],
+        'Moveable': [ [DevString, SCALAR, READ_WRITE],
+                              { 'Memorized'     : "true",
+                                'Display level' : DispLevel.EXPERT } ]
     }
     attr_list.update(PoolGroupDeviceClass.attr_list)
 
