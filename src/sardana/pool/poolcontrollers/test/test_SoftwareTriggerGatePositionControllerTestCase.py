@@ -62,12 +62,13 @@ class SoftwareTriggerGatePositionControllerTestCase(TriggerGateControllerTestCas
         self.tg_receiver = TriggerGateReceiver()
 
         self.generator.add_listener(self._device)
-        self.ctrl.add_listener(self.tg_receiver)
+        self.ctrl.add_listener(self.AXIS, self.tg_receiver)
         # run PositionGenerator
         self.generator.start()
 
     def post_generation_hook(self):
         # remove listener
+        self.ctrl.remove_listener(self.AXIS, self.tg_receiver)
         self.generator.remove_listener(self._device)
         # testing number of received triggers
         received_triggers = self.tg_receiver.count

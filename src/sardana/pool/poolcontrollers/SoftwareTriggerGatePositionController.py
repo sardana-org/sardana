@@ -38,18 +38,38 @@ class SoftwareTriggerGatePositionController(TriggerGateController):
         """Constructor"""
         TriggerGateController.__init__(self, inst, props, *args, **kwargs)
         self.tg = {}
+        self.event_map = {}
+        self.conf = {}
 
-    def add_listener(self, listener):
+    def add_listener(self, axis, listener):
         '''Backdoor method to attach listeners. It will be removed whenever
         a proper EventChannel mechanism will be implemented'''
-        self.tg[0].add_listener(listener)
+        idx = axis - 1
+        tg = self.tg[idx]
+        tg.add_listener(listener)
 
-    def remove_listener(self, listener):
-        self.tg[0].remove_listener(listener)
+    def remove_listener(self, axis, listener):
+        idx = axis - 1
+        tg = self.tg[idx]
+        tg.remove_listener(listener)
+
+    def subscribe_event(self, axis, attribute):
+        self.event_map[attribute] = axis
+
+    def unsubscribe_event(self, axis, attribute):
+        self.event_map.pop(attribute)
+
+    def event_received(self, *args, **kwargs):
+        s, _, _ = args
+        axis = self.event_map[s]
+        idx = axis - 1
+        tg = self.tg[idx]
+        tg.event_received(*args, **kwargs)
 
     def SetConfiguration(self, axis, configuration):
         idx = axis - 1
         tg = self.tg[idx]
+        self.conf[idx] = configuration
         # TODO: implement nonequidistant triggering
         event_values = []
         event_conditions = []
@@ -81,8 +101,7 @@ class SoftwareTriggerGatePositionController(TriggerGateController):
 
     def GetConfiguration(self, axis):
         idx = axis - 1
-        tg = self.tg[idx]
-        # TODO: implement me!!
+        return self.conf[idx]
 
     def AddDevice(self, axis):
         self._log.debug('AddDevice(%d): entering...' % axis)

@@ -89,29 +89,35 @@ class PoolTGGeneration(PoolAction):
         # loads generation parameters
         for pool_ctrl in pool_ctrls:
             ctrl = pool_ctrl.ctrl
-            # TODO: the attaching of the listeners should be done more generic
-            # attaching listener to the software trigger gate generator
-            if hasattr(ctrl, 'add_listener') and self._listener != None:
-                # TODO: attachment to the position attribute is just a poof of
-                # concept. It requires deatach and probably several improvements
-                total = synchronization[0]['total']
-                position = total.get(SynchDomain.Position, None)
-                if position is not None:
-                    source = position[SynchSource]
-                    motor = self.get_pool().get_element_by_full_name(source)
-                    attr = motor.get_position_attribute()
-                    attr.add_listener(ctrl.tg[0])
-                ctrl.add_listener(self._listener)
-                # TODO: is finish_hook the best place to remove listener? 
-                finish_hook = functools.partial(ctrl.remove_listener,
-                                                self._listener)
-                self._finish_hook = finish_hook
             pool_ctrl_data = ctrls_config[pool_ctrl]
             elements = pool_ctrl_data['channels']
             for element in elements:
                 axis = element.axis
                 channel = channels[element]
                 ctrl.SetConfiguration(axis, synchronization)
+            # TODO: the attaching of the listeners should be done more generic
+            # attaching listener to the software trigger gate generator
+            if hasattr(ctrl, 'add_listener') and self._listener != None:
+                for element in elements:
+                    axis = element.axis
+                    ctrl.add_listener(axis, self._listener)
+                    remove_acq_listener = functools.partial(ctrl.remove_listener,
+                                                        axis, self._listener)
+                    self.add_finish_hook(remove_acq_listener)
+                # TODO: attachment to the position attribute is just a poof of
+                # concept. It requires deatach and probably several improvements
+                if moveable is not None:
+                    position = moveable.get_position_attribute()
+                    position.add_listener(ctrl)
+                    remove_pos_listener = functools.partial(position.remove_listener,
+                                                    ctrl)
+                    self.add_finish_hook(remove_pos_listener)
+                    for element in elements:
+                        axis = element.axis
+                        ctrl.subscribe_event(axis, position)
+                        unsubscribe_event = functools.partial(ctrl.unsubscribe_event,
+                                                    axis, position)
+                        self.add_finish_hook(unsubscribe_event)
 
         with ActionContext(self):
             # PreStartAll on all controllers
