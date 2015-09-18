@@ -249,7 +249,7 @@ class PositionFunctionGenerator(EventGenerator):
     def __run(self):
         '''Generates Sardana events at requested times'''
         try:
-            while len(self.event_values) > 1:
+            while len(self.event_values) > 0:
                 with self.__lock:
                     if self.__stop:
                         raise StopException('Function generation stopped')
