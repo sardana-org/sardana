@@ -30,7 +30,9 @@ import json
 import PyTango
 from taurus.external import unittest
 from taurus.test import insertTest
+from taurus.core.util import CodecFactory
 from sardana.pool import AcqTriggerType
+from sardana.pool.pooldefs import SynchDomain
 from sardana.tango.pool.test import SarTestTestCase
 
 # TODO: It will be moved
@@ -128,8 +130,10 @@ class MeasSarTestTestCase(SarTestTestCase):
         """ Set the measurement group parameters
         """
         self.meas.write_attribute('acquisitionmode', params["mode"])
-        self.meas.write_attribute('offset', params["offset"])
-        self.meas.write_attribute('repetitions', params["repetitions"])
+        synchronization = params["synchronization"]
+        codec = CodecFactory().getCodec('json')
+        data = codec.encode(('', synchronization))
+        self.meas.write_attribute('synchronization', data[1])
         self.meas.write_attribute('integrationtime', params["integ_time"])
 
     def _add_attribute_listener(self, config):
@@ -159,9 +163,13 @@ class MeasSarTestTestCase(SarTestTestCase):
             print('Impossible to delete MeasurementGroup: %s' % (self.mg_name))
         SarTestTestCase.tearDown(self)
 
+synchronization1 = [dict(delay={SynchDomain.Time: 0},
+                         active={SynchDomain.Time: .01},
+                         total={SynchDomain.Time: .02},
+                         repeats=10)
+]
 params_1 = {
-    "offset": 0,
-    "repetitions": 100,
+    "synchronization": synchronization1,
     "integ_time": 0.01,
     "name": '_exp_01',
     "mode": "ContTimer"
@@ -253,7 +261,8 @@ class TangoAcquisitionTestCase(MeasSarTestTestCase, unittest.TestCase):
         while self.meas.State() == PyTango.DevState.MOVING:
             print "Acquiring..."
             time.sleep(0.1)
-        self._acq_asserts(chn_names, params["repetitions"])
+        repetitions = params['synchronization'][0]['repeats']
+        self._acq_asserts(chn_names, repetitions)
 
     def stop_meas_cont_acquisition(self, params, config):
         '''Helper method to do measurement and stop it'''
