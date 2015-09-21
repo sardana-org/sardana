@@ -117,7 +117,7 @@ class RecorderManager(MacroServerManager):
     def getRecorderPath(self):
         return self._recorder_path
 
-    def getRecorderClass(self, recorder_name):
+    def getRecorderMetaClass(self, recorder_name):
         """ Return the Recorder class for the given class name.
         :param klass_name: Name of the recorder class.
         :type klass_name: str
@@ -130,7 +130,7 @@ class RecorderManager(MacroServerManager):
             raise UnknownRecorder("Unknown recorder %s" % recorder_name)
         return ret
 
-    def getRecorderClasses(self, filter=DataRecorder):
+    def getRecorderMetaClasses(self, filter=DataRecorder):
         """ Returns a :obj:`dict` containing information about recorder classes.
 
         :param filter: a klass of a valid type of Recorder
@@ -145,6 +145,29 @@ class RecorderManager(MacroServerManager):
             if issubclass(klass.recorder_class, filter):
                 ret[name] = klass
         return ret
+
+    def getRecorderClasses(self, filter=DataRecorder):
+        """ Returns a :obj:`dict` containing information about recorder classes.
+        :param filter: a klass of a valid type of Recorder
+        :type filter: obj
+        :return: a :obj:`dict` containing information about recorder classes
+        :rtype:
+            :obj:`dict`\<:obj:`str`\, :class:`DataRecorder`\>
+        """
+        meta_klasses = self.getRecorderMetaClasses()
+        return dict((key, value.klass) \
+                        for (key, value) in meta_klasses.items())
+
+    def getRecorderClass(self, klass_name):
+        """ Return the Recorder class for the given class name.
+        :param klass_name: Name of the recorder class.
+        :type klass_name: str
+        :return:  a :obj:`class` class of recorder or None if it does not exist
+        :rtype:
+            :obj:`class:`DataRecorder`\>
+        """
+        recorder_klasses = self.getRecorderClasses()
+        return recorder_klasses.get(klass_name, None)
 
     def _findModuleName(self, path, name):
 #        return name
@@ -214,8 +237,6 @@ class RecorderManager(MacroServerManager):
             exc_info = sys.exc_info()
         params = dict(module=m, name=module_name,
                       macro_server=self.macro_server)
-#                      , exc_info=exc_info)
-#            self._modules[module_name]
         if m is None or exc_info is not None:
             params['exc_info'] = exc_info
             recorder_lib = RecorderLibrary(**params)
@@ -225,10 +246,10 @@ class RecorderManager(MacroServerManager):
             lib_contains_recorders = False
             abs_file = recorder_lib.file_path
             for _, klass in inspect.getmembers(m, inspect.isclass):
-                if klass in finalSubClasses(BaseFileRecorder):
-                    # optional implementation:
-                    #   if issubclass(klass, BaseFileRecorder):
-                    #
+                if issubclass(klass, DataRecorder):
+#                if issubclass(klass, BaseFileRecorder):
+#                if klass in finalSubClasses(DataRecorder):
+#                if klass in finalSubClasses(BaseFileRecorder):
                     # if it is a class defined in some other class forget it to
                     # avoid replicating the same recorder in different
                     # recorder files
