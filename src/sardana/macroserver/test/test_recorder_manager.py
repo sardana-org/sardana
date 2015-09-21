@@ -59,9 +59,9 @@ class RecorderManagerTest(unittest.TestCase):
 
     def setUp(self):
         name = self.ms_fullname.split("/")[1]
-        _macro_server = MacroServer(self.ms_fullname, name, macro_path=[],
+        self._macro_server = MacroServer(self.ms_fullname, name, macro_path=[],
                                     recorder_path=[])
-        self.manager = _macro_server.recorder_manager
+        self.manager = self._macro_server.recorder_manager
 
     def tearDown(self):
         pass
@@ -108,7 +108,7 @@ class RecorderManagerTest(unittest.TestCase):
         self.manager.setRecorderPath(extra_paths)
         klass = self.manager.getRecorderClass(klass_name)
         msg = "Recoder manager does not found the class %s" %(klass_name)
-        self.assertEqual(klass, None, msg)
+        self.assertNotEqual(klass, None, msg)
         _name = klass.__name__
         msg = "The class %s is not subclass of DataRecorder" %(_name)
         self.assertTrue(issubclass(klass, DataRecorder), msg)
