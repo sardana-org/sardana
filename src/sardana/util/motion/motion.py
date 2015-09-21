@@ -128,24 +128,6 @@ class MotionPath(object):
             self.initial_user_pos = initial_pos
             self.final_user_pos = final_pos
 
-        # in this case active_time forces that the user range
-        # correspond to the constant velocity
-        # and
-        if self.active_time != None:
-            velocity = displacement / self.active_time
-            self.motor.setMaxVelocity(velocity)
-            sign = final_pos > initial_pos and 1 or -1
-            accel_time = motor.getAccelerationTime()
-            decel_time = motor.getDecelerationTime()
-            base_vel = motor.getMinVelocity()
-            accel_displacement = accel_time * 0.5 * (velocity + base_vel)
-            decel_displacement = decel_time * 0.5 * (velocity + base_vel)
-            initial_pos -= sign * accel_displacement
-            final_pos += sign * decel_displacement
-            displacement = abs(final_pos - initial_pos)
-            self.initial_user_pos = initial_pos
-            self.final_user_pos = final_pos
-
         if displacement == 0:
             positive_displacement = False
             small_motion = True
