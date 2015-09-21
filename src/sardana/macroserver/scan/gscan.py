@@ -49,6 +49,7 @@ from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
 from sardana.util.tree import BranchNode, LeafNode, Tree
 from sardana.util.motion import Motor as VMotor
 from sardana.util.motion import MotionPath
+from sardana.pool.pooldefs import SynchDomain
 from sardana.macroserver.msexception import MacroServerException, UnknownEnv, \
     InterruptException, StopException
 from sardana.macroserver.msparameter import Type
@@ -1944,16 +1945,40 @@ class CTScan(CScan):
             self.mntGrpConfiguration = self._measurement_group.getConfiguration()
             self.__mntGrpConfigured = True
             self._measurement_group.mntGrp.setAcquisitionMode('ContTimer')
-            self.debug('Setting Repetitions: %f' % self.macro.nr_of_points)
-            self._measurement_group.mntGrp.write_attribute('Repetitions', 
-                                                       self.macro.nr_of_points)
             self.debug('Setting IntegrationTime: %f' % self.macro.acq_time)
             integ_time = self.macro.acq_time * self.macro.integ_time / 100
             self._measurement_group.mntGrp.write_attribute('IntegrationTime',
                                                                     integ_time)
-            self.debug('Setting Offset: %f' % delta_start)
-            self._measurement_group.mntGrp.write_attribute('Offset',
-                                                           delta_start)
+            # TODO: let a pseudomotor specify which motor should be used as source
+            MASTER = 0
+            moveable = moveables[MASTER].full_name
+            # TODO: apply the moveable source whenever software controllers
+            # gets merged, scans involving moveables should use moveable source
+            # for synchronization
+            # self._measurement_group.mntGrp.write_attribute('Moveable', moveable)
+            path = motion_paths[MASTER]
+            repeats = self.macro.nr_of_points
+            active_time = integ_time
+            active_position = path.max_vel * active_time
+            start = self.macro.starts[MASTER]
+            final = self.macro.finals[MASTER]
+            total_position = (final - start) / repeats
+            initial_position = start
+            total_time = total_position / path.max_vel
+            delay_time = path.max_vel_time
+            synchronization = [{'delay': {SynchDomain.Time:delay_time},
+                                'initial': {SynchDomain.Position:initial_position},
+                                'active': {SynchDomain.Position:active_position,
+                                          SynchDomain.Time:active_time},
+                                'total': {SynchDomain.Position:total_position,
+                                         SynchDomain.Time:total_time},
+                                'repeats': repeats}]
+            self.debug('Synchronization: %s' % synchronization)
+            codec = CodecFactory().getCodec('json')
+            data = codec.encode(('', synchronization))
+            self.debug('Data: %s' % data[1])
+            self._measurement_group.mntGrp.write_attribute('Synchronization',
+                                                           data[1])
             self.macro.checkPoint()
     
             #extra post configuration
@@ -2014,13 +2039,10 @@ class CTScan(CScan):
             # move to waypoint end position
             self.macro.debug("Moving to waypoint position: %s" % repr(final_pos))
             motion.move(final_pos)
-                        
             self.motion_event.clear()
-
             if macro.isStopped():
                 self.on_waypoints_end()
                 return
-                
             ############    
             self.macro.debug("Waiting for measurement group to finish")
             while self._measurement_group.state() == PyTango.DevState.MOVING:
