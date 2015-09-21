@@ -134,6 +134,10 @@ class MeasurementGroup(PoolGroupDevice):
             cfg = self.measurement_group.get_user_configuration()
             codec = CodecFactory().getCodec('json')
             _, event_value = codec.encode(('', cfg))
+        elif name == "synchronization":
+            synchronization = self.measurement_group.synchronization
+            codec = CodecFactory().getCodec('json')
+            _, event_value = codec.encode(('', synchronization))
         else:
             if isinstance(event_value, SardanaAttribute):
                 if event_value.error:
