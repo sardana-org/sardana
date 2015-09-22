@@ -42,6 +42,7 @@ from taurus.core.util.log import DebugIt
 from sardana import State, SardanaServer
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.pool import AcqMode
+from sardana.pool.pooldefs import SynchDomain
 from sardana.tango.core.util import exception_str
 from sardana.tango.pool.PoolDevice import PoolGroupDevice, PoolGroupDeviceClass
 
@@ -135,9 +136,8 @@ class MeasurementGroup(PoolGroupDevice):
             codec = CodecFactory().getCodec('json')
             _, event_value = codec.encode(('', cfg))
         elif name == "synchronization":
-            synchronization = self.measurement_group.synchronization
             codec = CodecFactory().getCodec('json')
-            _, event_value = codec.encode(('', synchronization))
+            _, event_value = codec.encode(('', event_value))
         else:
             if isinstance(event_value, SardanaAttribute):
                 if event_value.error:
@@ -148,6 +148,20 @@ class MeasurementGroup(PoolGroupDevice):
         self.set_attribute(attr, value=event_value, timestamp=timestamp,
                            quality=quality, priority=priority, error=error,
                            synch=False)
+
+    def synchronization_str2enum(self, synchronization):
+        '''Translates synchronization data structure so it uses SynchDomain 
+        enums as keys instead of strings.
+        '''
+        for group in synchronization:
+            for param, conf in group.iteritems():
+                # skip repeats cause its value is just a long number
+                if param == 'repeats':
+                    continue
+                for domain, value in conf.iteritems():
+                    conf.pop(domain)
+                    conf[SynchDomain.fromStr(domain)] = value
+        return synchronization
 
     def always_executed_hook(self):
         pass
@@ -236,6 +250,8 @@ class MeasurementGroup(PoolGroupDevice):
         data = attr.get_write_value()
         synchronization = CodecFactory().decode(('json', data),
                                                 ensure_ascii=True)
+        # translate dictionary keys 
+        synchronization = self.synchronization_str2enum(synchronization)
         self.measurement_group.synchronization = synchronization
 
     def Start(self):

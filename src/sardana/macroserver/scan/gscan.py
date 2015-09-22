@@ -1871,11 +1871,7 @@ class CTScan(CScan):
                                          SynchDomain.Time:total_time},
                                 'repeats': repeats}]
             self.debug('Synchronization: %s' % synchronization)
-            codec = CodecFactory().getCodec('json')
-            data = codec.encode(('', synchronization))
-            self.debug('Data: %s' % data[1])
-            self.measurement_group.write_attribute('Synchronization',
-                                                           data[1])
+            self.measurement_group.setSynchronization(synchronization)
             self.macro.checkPoint()
     
             #extra post configuration

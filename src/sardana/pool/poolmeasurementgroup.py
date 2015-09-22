@@ -568,17 +568,6 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     def set_synchronization(self, synchronization, propagate=1):
         self._synchronization = synchronization
-        # TODO: remove this code when decision about the synchronization 
-        # format will be taken: if we pass enumerated keys or not
-        # cast keys from string to int (JSON cast dict keys to string)
-        for group in synchronization:
-            parameters = ['initial', 'active', 'total', 'delay']
-            for param in parameters:
-                d = group.get(param)
-                if d is not None:
-                    for k, v in d.iteritems():
-                        d.pop(k)
-                        d[int(k)] = v
         repetitions = 0
         for group in synchronization:
             repetitions += group['repeats']
