@@ -1746,18 +1746,9 @@ class CTScan(CScan):
             self.macro = macro
             activeMntGrpName = self.macro.getEnv("ActiveMntGrp")
             self.mntGrp = self.macro.getMeasurementGroup(activeMntGrpName)
-            self.dataCb = self.OnDataChangedCb(self.macro.data)        
-            self.activeChannels = []
-            self.nrOfTriggers = 0
-            channels = self.mntGrp.getChannels()
-            for channel in channels:
-                channelName = channel["name"]
-                expChannel = self.macro.getExpChannel(channelName)
-                expChannel.getHWObj().set_timeout_millis(120000) #in case of readout of position channels, it can take really long...
-                self.activeChannels.append(expChannel)
-    
+            self.dataCb = self.OnDataChangedCb(self.macro.data)
+
         def start(self):
-#             self.mntGrp.start_async_acq_sequence(self.acqTime, self.dataCb)
             self.mntGrp.addOnDataChangedListeners(self.dataCb)
             self.mntGrp.Start()
 
@@ -1770,55 +1761,11 @@ class CTScan(CScan):
 
         def state(self):
             return self.mntGrp.State()
-    
-        def getDataList(self):
-            dataList = [ {"point_nb" : i, "timestamp" : 0} for i in xrange(self.nrOfTriggers) ]
-            for channel in self.activeChannels:
-                dataDesc = channel.getFullName()
-                channelData = channel.getAttribute("Data").read().value
-                for i, data in enumerate(channelData):
-                    dataList[i][dataDesc] = data
-            return dataList
-    
-        def setSamplingFrequency(self, freq):
-            for channel in self.activeChannels:
-                channel.getAttribute('SamplingFrequency').write(freq)
-    
-        def setAcquisitionTime(self, acqTime):
-            for channel in self.activeChannels:
-                channel.getAttribute('AcquisitionTime').write(acqTime)
-    
-        def setTriggerMode(self, mode):
-            if mode not in ["soft", "gate"]:
-                raise Exception("Trigger mode must be either soft or gate.")
-            for channel in self.activeChannels:
-                channel.getAttribute('TriggerMode').write(mode)
-    
-        def setNrOfTriggers(self, nrOfTriggers):
-            self.nrOfTriggers = nrOfTriggers
-            for channel in self.activeChannels:
-                self.macro.debug("setNrOfTriggers(%d): channel=%s" % (nrOfTriggers,channel.getName()))
-                channel.getAttribute('NrOfTriggers').write(nrOfTriggers)
-                
+
         def setDataCb(self, cb):
             self.dataCb = cb
-    
-        def configure(self, nrOfTriggers, acqTime, timePerTrigger, sampFreq=-1, triggerMode="gate"):
-            self.macro.debug("acqTime: %s" % acqTime)
-            if timePerTrigger == None:
-                raise Exception("TimePerTrigger attribute must be set")
-            acqTime = timePerTrigger * acqTime / 100.0            
-            self.setNrOfTriggers(nrOfTriggers)
-            self.setSamplingFrequency(sampFreq)
-            self.acqTime = acqTime
-            self.macro.debug("MG: nrOfTriggers: %s, timePerTrigger: %s, acqTime: %s, sampFreq: %s" % (nrOfTriggers,timePerTrigger,acqTime,sampFreq))
-    
-        def getConfiguration(self):
-            return None
-    
-        def setConfiguration(self, configuration):
-            pass
-    
+
+
     def __init__(self, macro, generator=None,
                  moveables=[], env={}, constraints=[], extrainfodesc=[]):
         CScan.__init__(self, macro, generator=generator,
@@ -1942,7 +1889,6 @@ class CTScan(CScan):
             self.macro.checkPoint()
 
             #configuring measurementGroup
-            self.mntGrpConfiguration = self._measurement_group.getConfiguration()
             self.__mntGrpConfigured = True
             self._measurement_group.mntGrp.setAcquisitionMode('ContTimer')
             self.debug('Setting IntegrationTime: %f' % self.macro.acq_time)
@@ -2171,21 +2117,8 @@ class CTScan(CScan):
 
         if self.__mntGrpConfigured:
             self.debug("Restoring configuration of measurement group")
-            try:
-                self._measurement_group.setConfiguration(self.mntGrpConfiguration)
-                #TODO: mntGrp configuration should contain also: nrOfTriggers, 
-                #acqTime, sampling frequency
-            except:
-                msg = "Exception while restoring the measurement group " + \
-                      "parameters"
-                self.debug(msg)
-                self.debug('Details: ', exc_info = True)
-                raise ScanException('restoring the measurement group failed')
-            finally:
-                #TODO: use backup instead of hardcoded 'Timer'
-                # ct does not work after a ascanct if we do not put it because 
-                #an attribute of the meas has to be changed
-                self._measurement_group.mntGrp.setAcquisitionMode('Timer') 
+            # ct does not work after a ascanct if we do not put it in 'Timer'
+            self._measurement_group.mntGrp.setAcquisitionMode('Timer') 
 
         if hasattr(self.macro, 'getHooks'):
             for hook in self.macro.getHooks('post-cleanup'):
