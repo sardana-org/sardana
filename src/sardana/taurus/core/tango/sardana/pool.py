@@ -1449,7 +1449,18 @@ class MeasurementGroup(PoolElement):
     
     def setAcquisitionMode(self, acqMode):
         self.getAcquisitionModeObj().write(acqMode)
-        
+    
+    def getSynchronizationObj(self):
+        return self._getAttrEG('Synchronization')
+
+    def getSynchronization(self):
+        return self._getAttrValue('Synchronization')
+
+    def setSynchronization(self, synchronization):
+        codec = CodecFactory().getCodec('json')
+        _, data = codec.encode(('', synchronization))
+        self.getSynchronizationObj().write(data)
+
     def addOnDataChangedListeners(self, listener):
         '''Adds listener which receives data events. Used in online data 
         collection while acquiring.'''
