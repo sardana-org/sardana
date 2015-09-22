@@ -1678,100 +1678,51 @@ class CTScan(CScan):
     '''Continuous scan controlled by hardware trigger signals. 
     Sequence of trigger signals is programmed in time. '''
 
-    # TODO: Since SEP6, ExtraMntGrp class has to be refactored.
-    # Some methods are not SEP6 compliant. 
-    class ExtraMntGrp(object):
-        '''Helper class and temporary solution for configuring experimental channels.
-        It assumes that experimental channels are implementing:
-        +) following attributes:
-        - Data - an array of acquired data
-        - TriggerMode - Soft or Gate - to configure/unconfigure channel for hardware trigger
-        - NrOfTriggers - to specify how many hardware triggers and acquistions will be done
-        - SamplingFrequency - have sence only for sampling experimental channels
-        +) following SendToCtrl strings:
-        - "pre-start"
-        - "start"
-        - "pre-stop"
-        - "stop"'''
-        
-        class OnDataChangedCb(TaurusListener):
-            
-            count_event = 0
-        
-            def __init__(self, recordList):
-                taurus.core.TaurusListener.__init__(self, 'OnDataChangedCb')
-                self.recordList = recordList
-                self.codec = CodecFactory().getCodec('json')
-                CTScan.ExtraMntGrp.OnDataChangedCb.count_event = 0
-                
-            def eventReceived(self, event_src, event_type, event_value):
-                '''Method which processes the received events. It ignores events
-                of type different than Change and Error'''
-                try:
-                    if event_type == TaurusEventType.Error:
-                        for err in event_value:
-                            if err.reason == 'UnsupportedFeature':
-                                # when subscribing for events, Tango does one
-                                # readout of the attribute. However the Data
-                                # attribute is not fereseen for readout, it is
-                                # just the event communication channel.
-                                # Ignoring this exception..
-                                pass
-                            else:
-                                raise Exception(repr(err))
-                    elif event_type == TaurusEventType.Change:
-                        value = event_value.value
-                        # value is a dictionary with at least keys: data, index
-                        # and its values are of type sequence
-                        # e.g. dict(data=seq<float>, index=seq<int>) 
-                        _, data = self.codec.decode(('json', value),
-                                                    ensure_ascii=True)
-                        channelName = event_src.getParentObj().getFullName()
-                        info = {'label' : channelName}
-                        info.update(data)
-                        # info is a dictionary with at least keys: label, data,
-                        # index and its values are of type string for label and
-                        # sequence for data, index
-                        # e.g. dict(label=str, data=seq<float>, index=seq<int>)
-                        self.recordList.addData(info)
-                        CTScan.ExtraMntGrp.OnDataChangedCb.count_event += 1
-                except Exception, e:
-                    #TODO: maybe here we should do some cleanup...
-                    msg = 'Exception occurred processing the received event'
-                    self.debug(msg)
-                    self.debug('Details: ', exc_info = True)
-                    raise Exception('"data" event callback failed')
-
-        def __init__(self, macro):
-            self.macro = macro
-            activeMntGrpName = self.macro.getEnv("ActiveMntGrp")
-            self.mntGrp = self.macro.getMeasurementGroup(activeMntGrpName)
-            self.dataCb = self.OnDataChangedCb(self.macro.data)
-
-        def start(self):
-            self.mntGrp.addOnDataChangedListeners(self.dataCb)
-            self.mntGrp.Start()
-
-        def stop(self):
-            # TODO: Think about changing subscription model to pull.
-            # If at the moment of aborting there are events in the
-            # queue they could be lost.
-            self.mntGrp.Stop()
-            self.mntGrp.removeOnDataChangedListeners(self.dataCb)
-
-        def state(self):
-            return self.mntGrp.State()
-
-        def setDataCb(self, cb):
-            self.dataCb = cb
-
-
     def __init__(self, macro, generator=None,
                  moveables=[], env={}, constraints=[], extrainfodesc=[]):
         CScan.__init__(self, macro, generator=generator,
                        moveables=moveables, env=env, constraints=constraints,
                        extrainfodesc=extrainfodesc)
-        self._measurement_group = self.ExtraMntGrp(macro)
+        # prepare codec for decoding the Data events
+        self.codec = CodecFactory().getCodec('json')
+
+    def eventReceived(self, event_src, event_type, event_value):
+        '''Method which processes the received events. It ignores events
+        of type different than Change and Error'''
+        try:
+            if event_type == TaurusEventType.Error:
+                for err in event_value:
+                    if err.reason == 'UnsupportedFeature':
+                        # when subscribing for events, Tango does one
+                        # readout of the attribute. However the Data
+                        # attribute is not fereseen for readout, it is
+                        # just the event communication channel.
+                        # Ignoring this exception..
+                        pass
+                    else:
+                        raise Exception(repr(err))
+            elif event_type == TaurusEventType.Change:
+                value = event_value.value
+                # value is a dictionary with at least keys: data, index
+                # and its values are of type sequence
+                # e.g. dict(data=seq<float>, index=seq<int>) 
+                _, data = self.codec.decode(('json', value),
+                                            ensure_ascii=True)
+                channelName = event_src.getParentObj().getFullName()
+                info = {'label' : channelName}
+                info.update(data)
+                # info is a dictionary with at least keys: label, data,
+                # index and its values are of type string for label and
+                # sequence for data, index
+                # e.g. dict(label=str, data=seq<float>, index=seq<int>)
+                self.data.addData(info)
+#                 CTScan.ExtraMntGrp.OnDataChangedCb.count_event += 1
+        except Exception, e:
+            #TODO: maybe here we should do some cleanup...
+            msg = 'Exception occurred processing the received event'
+            self.debug(msg)
+            self.debug('Details: ', exc_info = True)
+            raise Exception('"data" event callback failed')
 
     def prepare_waypoint(self, waypoint, start_positions, iterate_only=False):
         '''Prepare list of MotionPath objects per each physical motor. 
@@ -1890,10 +1841,10 @@ class CTScan(CScan):
 
             #configuring measurementGroup
             self.__mntGrpConfigured = True
-            self._measurement_group.mntGrp.setAcquisitionMode('ContTimer')
+            self.measurement_group.setAcquisitionMode('ContTimer')
             self.debug('Setting IntegrationTime: %f' % self.macro.acq_time)
             integ_time = self.macro.acq_time * self.macro.integ_time / 100
-            self._measurement_group.mntGrp.write_attribute('IntegrationTime',
+            self.measurement_group.write_attribute('IntegrationTime',
                                                                     integ_time)
             # TODO: let a pseudomotor specify which motor should be used as source
             MASTER = 0
@@ -1901,7 +1852,7 @@ class CTScan(CScan):
             # TODO: apply the moveable source whenever software controllers
             # gets merged, scans involving moveables should use moveable source
             # for synchronization
-            # self._measurement_group.mntGrp.write_attribute('Moveable', moveable)
+            # self.measurement_group.write_attribute('Moveable', moveable)
             path = motion_paths[MASTER]
             repeats = self.macro.nr_of_points
             active_time = integ_time
@@ -1923,7 +1874,7 @@ class CTScan(CScan):
             codec = CodecFactory().getCodec('json')
             data = codec.encode(('', synchronization))
             self.debug('Data: %s' % data[1])
-            self._measurement_group.mntGrp.write_attribute('Synchronization',
+            self.measurement_group.write_attribute('Synchronization',
                                                            data[1])
             self.macro.checkPoint()
     
@@ -1975,7 +1926,9 @@ class CTScan(CScan):
     
             self.macro.debug("Starting measurement group")
             self.__mntGrpStarted = True
-            self._measurement_group.start()
+            # add listener of data events
+            self.measurement_group.addOnDataChangedListeners(self)
+            self.measurement_group.start()
             ###########
             
             self.timestamp_to_start = time.time() + delta_start
@@ -1991,7 +1944,7 @@ class CTScan(CScan):
                 return
             ############    
             self.macro.debug("Waiting for measurement group to finish")
-            while self._measurement_group.state() == PyTango.DevState.MOVING:
+            while self.measurement_group.state() == PyTango.DevState.MOVING:
                 self.macro.checkPoint()
                 time.sleep(0.1)
 #             self.macro.debug("Getting data")                
@@ -2097,7 +2050,9 @@ class CTScan(CScan):
         if self.__mntGrpStarted:
             self.debug("Stopping measurement group")
             try:
-                self._measurement_group.stop()
+                self.measurement_group.stop()
+                # remove listener of the data events
+                self.measurement_group.removeOnDataChangedListeners(self)
             except:
                 msg = "Exception occurred trying to stop the measurement group"
                 self.debug(msg)
@@ -2118,7 +2073,7 @@ class CTScan(CScan):
         if self.__mntGrpConfigured:
             self.debug("Restoring configuration of measurement group")
             # ct does not work after a ascanct if we do not put it in 'Timer'
-            self._measurement_group.mntGrp.setAcquisitionMode('Timer') 
+            self.measurement_group.setAcquisitionMode('Timer') 
 
         if hasattr(self.macro, 'getHooks'):
             for hook in self.macro.getHooks('post-cleanup'):
