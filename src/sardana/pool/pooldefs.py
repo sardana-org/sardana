@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from operator import __getitem__
 
 ##############################################################################
 ##
@@ -29,7 +30,7 @@ __all__ = ["ControllerAPI", "AcqTriggerType", "AcqMode"]
 
 __docformat__ = 'restructuredtext'
 
-from taurus.core.util.enumeration import Enumeration
+from taurus.external.enum import IntEnum
 from sardana.taurus.core.tango.sardana import AcqTriggerType, AcqMode
 
 #: A constant defining the controller API version currently supported
@@ -38,9 +39,25 @@ ControllerAPI = 1.1
 # synchronization domain: Time means that the configuration parameter will be 
 # expressed in the time domain, Position means the motor position domain and
 # Monitor means the count to monitor domain  
-SynchDomain = Enumeration(
-'SynchDomain', (
-    'Time',
-    'Position',
-    'Monitor'
-))
+class SynchDomain(IntEnum):
+
+    Time = 0
+    Position = 1
+    Monitor = 2
+
+    @classmethod
+    def fromStr(cls, string):
+        '''Convert string representation of SynchDomain enum e.g.
+        'SynchDomain.Time' to SynchDomain objects. It also works with just
+        domain strings like 'Time'. The following expressions are True:
+
+        SynchDomain.fromStr(str(SynchDomain.Time)) == SynchDomain.Time
+        SynchDomain.fromStr('Time') == SynchDomain.Time
+        '''
+        domain = string.split('.')
+        if len(domain) == 1:
+            return __getitem__(cls, domain[0])
+        elif len(domain) == 2:
+            return __getitem__(cls, domain[1])
+        else:
+            raise ValueError('Can not convert %s to SynchDomain' % string)
