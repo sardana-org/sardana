@@ -89,18 +89,6 @@ class SoftwareTriggerGateController(TriggerGateController):
         idx = axis - 1
         self.tg[idx] = RectangularFunctionGenerator()
 
-    def DeleteDevice(self, axis):
-        pass
-
-    def PreStateAll(self):
-        pass
-
-    def StateAll(self):
-        pass
-
-    def PreStateOne(self, axis):
-        pass
-
     def StateOne(self, axis):
         """Get the dummy trigger/gate state"""
         self._log.debug('StateOne(%d): entering...' % axis)
@@ -112,12 +100,6 @@ class SoftwareTriggerGateController(TriggerGateController):
             status = "Moving"
         self._log.debug('StateOne(%d): returning (%s, %s)' % (axis, sta, status))
         return sta, status
-
-    def PreStartAll(self):
-        pass
-
-    def StartAll(self):
-        pass
 
     def PreStartOne(self, axis, value=None):
         self._log.debug('PreStartOne(%d): entering...' % axis)
@@ -138,18 +120,3 @@ class SoftwareTriggerGateController(TriggerGateController):
         self._log.debug('AbortOne(%d): entering...' % axis)
         idx = axis - 1
         self.tg[idx].stop()
-
-    def PreReadAll(self):
-        pass
-
-    def ReadAll(self):
-        pass
-
-    def PreReadOne(self,axis):
-        pass
-
-    def ReadOne(self, axis):
-        pass
-
-    def LoadOne(self, axis, value):
-        pass
