@@ -35,6 +35,7 @@ from sardana.pool.test import (FakePool, createPoolController,
                                createPoolTGGenerationConfiguration)
 
 from sardana.pool.poolcontrollers.test import (TriggerGateControllerTestCase,
+                                               PositionGenerator,
                                                TriggerGateReceiver)
 from sardana.pool.poolcontrollers.SoftwareTriggerGateController import\
                                                   SoftwareTriggerGateController
@@ -59,10 +60,62 @@ synchronization4 = [{SynchParam.Delay: {SynchDomain.Time: 0},
                      SynchParam.Total: {SynchDomain.Time: .15},
                      SynchParam.Repeats: 3}]
 
+synchronization5 = [{SynchParam.Delay: {SynchDomain.Position: 0},
+                     SynchParam.Initial: {SynchDomain.Position: 0},
+                     SynchParam.Active: {SynchDomain.Position: .1},
+                     SynchParam.Total: {SynchDomain.Position: 1},
+                     SynchParam.Repeats: 10}
+                    ]
+
+synchronization6 = [{SynchParam.Delay: {SynchDomain.Position: 0},
+                     SynchParam.Initial: {SynchDomain.Position: 0},
+                     SynchParam.Active: {SynchDomain.Position: -1},
+                     SynchParam.Total: {SynchDomain.Position: -1.1},
+                     SynchParam.Repeats: 10}
+                    ]
+
+
 @insertTest(helper_name='generation',  configuration=synchronization1)
 @insertTest(helper_name='abort', configuration=synchronization2, abort=.1)
 class SoftwareTriggerGateControllerTestCase(TriggerGateControllerTestCase):
     KLASS = SoftwareTriggerGateController
+
+
+@insertTest(helper_name='generation', configuration=synchronization5)
+@insertTest(helper_name='abort', configuration=synchronization6, abort=0.5)
+class SoftwareTriggerGatePositionControllerTestCase(TriggerGateControllerTestCase):
+    KLASS = SoftwareTriggerGateController
+
+    def post_configuration_hook(self):
+        # Configure and run the position generator
+        start_pos = 0
+        end_pos = 10
+        period = 0.01
+        self.generator = PositionGenerator(start_pos, end_pos, period)
+        # create and add listeners
+        self._device = self.ctrl.tg[self.AXIS - 1]
+        self.tg_receiver = TriggerGateReceiver()
+
+        self.generator.add_listener(self._device)
+        self.ctrl.add_listener(self.AXIS, self.tg_receiver)
+        # run PositionGenerator
+        self.generator.start()
+
+    def post_generation_hook(self):
+        # remove listener
+        self.ctrl.remove_listener(self.AXIS, self.tg_receiver)
+        self.generator.remove_listener(self._device)
+        # testing number of received triggers
+        received_triggers = self.tg_receiver.count
+        conf = self.ctrl.GetConfiguration(self.AXIS)
+        repetitions = 0
+        for group in conf:
+            repetitions += group[SynchParam.Repeats]
+        msg = ('Received triggers: %d does not correspond to generated: %d' %\
+               (received_triggers, repetitions))
+        if not self.isAborted:
+            self.assertEqual(received_triggers, repetitions, msg)
+
 
 @insertTest(helper_name='generation', offset=0, active_interval=.1,
                                               passive_interval=.1, repetitions=0)

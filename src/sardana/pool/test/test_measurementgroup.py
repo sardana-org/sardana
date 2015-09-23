@@ -350,10 +350,10 @@ doc_10 = 'Test synchronous acquisition followed by asynchronous'\
         ' acquisition using the same configuration.'
 
 doc_12 = 'Acquisition using 2 controllers, with 2 channels in each controller.'
-config_12 = [[('_test_ct_1_1', '_test_stgp_1_1', AcqTriggerType.Trigger),
-              ('_test_ct_1_2', '_test_stgp_1_1', AcqTriggerType.Trigger)],
-             [('_test_ct_2_1', '_test_stgp_1_1', AcqTriggerType.Trigger),
-              ('_test_ct_2_2', '_test_stgp_1_1', AcqTriggerType.Trigger)]]
+config_12 = [[('_test_ct_1_1', '_test_stg_1_1', AcqTriggerType.Trigger),
+              ('_test_ct_1_2', '_test_stg_1_1', AcqTriggerType.Trigger)],
+             [('_test_ct_2_1', '_test_stg_1_1', AcqTriggerType.Trigger),
+              ('_test_ct_2_2', '_test_stg_1_1', AcqTriggerType.Trigger)]]
 
 @insertTest(helper_name='meas_contpos_acquisition', test_method_doc=doc_12,
             params=params_4, config=config_12)

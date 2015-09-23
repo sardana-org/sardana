@@ -105,17 +105,6 @@ class BasePoolTestCase(object):
         axis = 1
         name = '_test_stg_1_%d' % axis
         self.createTGElement(ctrl_obj, name, axis)
-        #TODO: remove this element whenever time and position controllers 
-        #      will be merged
-        # Create one software position TG ctrl
-        name = '_test_stgp_ctrl_1'
-        ctrl_obj = self.createController(name,
-                            'SoftwareTriggerGatePositionController',
-                            'SoftwareTriggerGatePositionController.py')
-        # Create one software TG element
-        axis = 1
-        name = '_test_stgp_1_%d' % axis
-        self.createTGElement(ctrl_obj, name, axis)
         # Create nctrls MOT ctrls
         for ctrl in range(1, self.nctctrls + 1):
             name = '_test_mot_ctrl_%s' % ctrl
@@ -138,7 +127,7 @@ class BasePoolTestCase(object):
               (expected_cts, cts, self.cts.keys())
         if cts != expected_cts:
             raise Exception(msg)
-        expected_tgs = self.ntgelems * self.ntgctrls + 2 # two software TG
+        expected_tgs = self.ntgelems * self.ntgctrls + 1 # one software TG
         msg = 'Something happened during the creation of TG elements.\n' + \
               'Expected %s and there are %s, %s' % \
               (expected_tgs, tgs, self.tgs.keys())
