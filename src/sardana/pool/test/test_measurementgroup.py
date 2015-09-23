@@ -31,7 +31,7 @@ from taurus.test import insertTest
 
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool import AcqTriggerType, AcqMode
-from sardana.pool.pooldefs import SynchDomain
+from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.pool.test import (BasePoolTestCase, createPoolMeasurementGroup,
                                dummyMeasurementGroupConf01,
                                createMGUserConfiguration)
@@ -128,7 +128,7 @@ class BaseAcquisition(object):
         synchronization = params["synchronization"]
         repetitions = 0
         for group in synchronization:
-            repetitions += group['repeats']
+            repetitions += group[SynchParam.Repeats]
         self.prepare_attribute_listener()
         self.acquire(AcqMode.ContTimer)
         self.acq_asserts(channel_names, repetitions)
@@ -146,7 +146,7 @@ class BaseAcquisition(object):
         synchronization = params["synchronization"]
         repetitions = 0
         for group in synchronization:
-            repetitions += group['repeats']
+            repetitions += group[SynchParam.Repeats]
         self.prepare_attribute_listener()
         self.acquire(AcqMode.ContTimer)
         self.acq_asserts(channel_names, repetitions)
@@ -165,7 +165,7 @@ class BaseAcquisition(object):
         self.pmg.set_configuration_from_user(mg_conf)
         repetitions = 0
         for group in params['synchronization']:
-            repetitions += group['repeats']
+            repetitions += group[SynchParam.Repeats]
         self.prepare_attribute_listener()
         self.acquire(AcqMode.ContTimer)
         self.acq_asserts(channel_names, repetitions)
@@ -178,7 +178,7 @@ class BaseAcquisition(object):
         channel_names = self.prepare_meas(params, config)
         repetitions = 0
         for group in params['synchronization']:
-            repetitions += group['repeats']
+            repetitions += group[SynchParam.Repeats]
         self.prepare_attribute_listener()  
         self.acquire(AcqMode.ContTimer)
         self.acq_asserts(channel_names, repetitions)
@@ -226,9 +226,9 @@ class BaseAcquisition(object):
     def meas_contpos_acquisition(self, params, config, second_config=None):
         # TODO: this code is ready only for one group configuration
         synchronization = params['synchronization'][0]
-        initial = synchronization['initial'][SynchDomain.Position]
-        total = synchronization['total'][SynchDomain.Position]
-        repeats = synchronization['repeats']
+        initial = synchronization[SynchParam.Initial][SynchDomain.Position]
+        total = synchronization[SynchParam.Total][SynchDomain.Position]
+        repeats = synchronization[SynchParam.Repeats]
         position = initial + total * repeats
         mot_name = params['moveable']
         mot = self.mots[mot_name]
@@ -237,7 +237,7 @@ class BaseAcquisition(object):
         channel_names = self.prepare_meas(params, config)
         repetitions = 0
         for group in params['synchronization']:
-            repetitions += group['repeats']
+            repetitions += group[SynchParam.Repeats]
         self.prepare_attribute_listener()
         self.pmg.start_acquisition()
         mot.set_position(position)
@@ -253,31 +253,31 @@ class BaseAcquisition(object):
         self.pmg = None
 
 
-synchronization1 = [dict(delay={SynchDomain.Time: 0},
-                         active={SynchDomain.Time: .01},
-                         total={SynchDomain.Time: .02},
-                         repeats=10)
-                    ]
-synchronization2 = [dict(delay={SynchDomain.Time: 0},
-                         active={SynchDomain.Time: .01},
-                         total={SynchDomain.Time: .02},
-                         repeats=100)
-                    ]
-synchronization3 = [dict(delay={SynchDomain.Position: 0},
-                         active={SynchDomain.Position: .01},
-                         total={SynchDomain.Position: .02},
-                         repeats=100)
-                    ]
-synchronization3 = [dict(initial={SynchDomain.Position: 0},
-                         active={SynchDomain.Position: .1},
-                         total={SynchDomain.Position: .2},
-                         repeats=10)
-                    ]
-synchronization4 = [dict(initial={SynchDomain.Position: 0},
-                         active={SynchDomain.Position: -.1},
-                         total={SynchDomain.Position: -.2},
-                         repeats=10)
-                    ]
+synchronization1 = [{SynchParam.Delay: {SynchDomain.Time: 0},
+                     SynchParam.Active: {SynchDomain.Time: .01},
+                     SynchParam.Total: {SynchDomain.Time: .02},
+                     SynchParam.Repeats: 10}]
+
+synchronization2 = [{SynchParam.Delay: {SynchDomain.Time: 0},
+                     SynchParam.Active: {SynchDomain.Time: .01},
+                     SynchParam.Total: {SynchDomain.Time: .02},
+                     SynchParam.Repeats: 100}]
+
+synchronization3 = [{SynchParam.Delay: {SynchDomain.Time: 0},
+                     SynchParam.Active: {SynchDomain.Time: .01},
+                     SynchParam.Total: {SynchDomain.Time: .02},
+                     SynchParam.Repeats: 100}]
+
+synchronization3 = [{SynchParam.Initial: {SynchDomain.Position: 0},
+                     SynchParam.Active: {SynchDomain.Position: .1},
+                     SynchParam.Total: {SynchDomain.Position: .2},
+                     SynchParam.Repeats: 10}]
+
+synchronization4 = [{SynchParam.Initial: {SynchDomain.Position: 0},
+                     SynchParam.Active: {SynchDomain.Position: -.1},
+                     SynchParam.Total: {SynchDomain.Position: -.2},
+                     SynchParam.Repeats: 10}]
+
 
 params_1 = {"synchronization":synchronization1,
             "integ_time":0.01

@@ -26,7 +26,8 @@ from operator import __getitem__
 
 """This file contains the basic pool definitions."""
 
-__all__ = ["ControllerAPI", "AcqTriggerType", "AcqMode"]
+__all__ = ["ControllerAPI", "AcqTriggerType", "AcqMode", "SynchDomain",
+           "SynchParam"]
 
 __docformat__ = 'restructuredtext'
 
@@ -39,11 +40,7 @@ ControllerAPI = 1.1
 # synchronization domain: Time means that the configuration parameter will be 
 # expressed in the time domain, Position means the motor position domain and
 # Monitor means the count to monitor domain  
-class SynchDomain(IntEnum):
-
-    Time = 0
-    Position = 1
-    Monitor = 2
+class SynchEnum(IntEnum):
 
     @classmethod
     def fromStr(cls, string):
@@ -61,3 +58,17 @@ class SynchDomain(IntEnum):
             return __getitem__(cls, domain[1])
         else:
             raise ValueError('Can not convert %s to SynchDomain' % string)
+
+class SynchDomain(SynchEnum):
+
+    Time = 0
+    Position = 1
+    Monitor = 2
+
+class SynchParam(SynchEnum):
+
+    Delay = 0
+    Total = 1
+    Active = 2
+    Repeats = 3
+    Initial = 4

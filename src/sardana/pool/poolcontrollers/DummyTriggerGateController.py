@@ -23,7 +23,7 @@
 
 
 from sardana import State
-from sardana.pool.pooldefs import SynchDomain
+from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.util.funcgenerator import RectangularFunctionGenerator
 from sardana.pool.controller import TriggerGateController
 
@@ -38,6 +38,7 @@ class DummyTriggerGateController(TriggerGateController):
         """Constructor"""
         TriggerGateController.__init__(self, inst, props, *args, **kwargs)
         self.tg = {}
+        self.conf = None
 
 #     def add_listener(self, listener):
 #         '''Backdoor method to attach listeners. It will be removed whenever 
@@ -49,11 +50,11 @@ class DummyTriggerGateController(TriggerGateController):
         tg = self.tg[idx]
         # TODO: implement nonequidistant triggering
         conf = conf[0]
-        delay = conf['delay'][SynchDomain.Time]
-        total_time = conf['total'][SynchDomain.Time]
-        active_time = conf['active'][SynchDomain.Time]
+        delay = conf[SynchParam.Delay][SynchDomain.Time]
+        total_time = conf[SynchParam.Total][SynchDomain.Time]
+        active_time = conf[SynchParam.Active][SynchDomain.Time]
         passive_time = total_time - active_time
-        repeats = conf['repeats']
+        repeats = conf[SynchParam.Repeats]
         tg.setOffset(delay)
         tg.setActiveInterval(active_time)
         tg.setPassiveInterval(passive_time)
@@ -63,15 +64,14 @@ class DummyTriggerGateController(TriggerGateController):
         idx = axis - 1
         tg = self.tg[idx]
         # TODO: implement nonequidistant triggering
+        # TODO: wrong configuration dict. return the same conf.
         active_time=tg.getActiveInterval(),
         passive_time=tg.getPassiveInterval()
         total_time = active_time + passive_time
-        conf = list(dict(delay=tg.getOffset(),
-                         total=total_time,
-                         active=active_time,
-                         repeats=tg.getRepetitions()
-                         )
-                    )
+        conf = [{SynchParam.Delay: tg.getOffset(),
+                 SynchParam.Total: total_time,
+                 SynchParam.Active: active_time,
+                 SynchParam.Repeats: tg.getRepetitions()}]
         return conf
 
     def SetAxisPar(self, axis, name, value):

@@ -27,7 +27,7 @@ from taurus.test import insertTest
 from taurus.external import unittest
 
 from sardana.pool.pooltggeneration import PoolTGGeneration
-from sardana.pool.pooldefs import SynchDomain
+from sardana.pool.pooldefs import SynchDomain, SynchParam
 
 from sardana.pool.test import (FakePool, createPoolController,
                                createPoolTriggerGate, softwarePoolTGCtrlConf01,
@@ -39,26 +39,25 @@ from sardana.pool.poolcontrollers.test import (TriggerGateControllerTestCase,
 from sardana.pool.poolcontrollers.SoftwareTriggerGateController import\
                                                   SoftwareTriggerGateController
 
-synchronization1 = [dict(delay={SynchDomain.Time: 0},
-                         active={SynchDomain.Time: .03},
-                         total={SynchDomain.Time: .1},
-                         repeats=0)
-                    ]
-synchronization2 = [dict(delay={SynchDomain.Time: 0},
-                         active={SynchDomain.Time: .01},
-                         total={SynchDomain.Time: .02},
-                         repeats=10)
-                    ]
-synchronization3 = [dict(delay={SynchDomain.Time: 0},
-                         active={SynchDomain.Time: .1},
-                         total={SynchDomain.Time: .1},
-                         repeats=0)
-                    ]
-synchronization4 = [dict(delay={SynchDomain.Time: 0},
-                         active={SynchDomain.Time: .1},
-                         total={SynchDomain.Time: .15},
-                         repeats=3)
-                    ]
+synchronization1 = [{SynchParam.Delay: {SynchDomain.Time: 0},
+                     SynchParam.Active: {SynchDomain.Time: .03},
+                     SynchParam.Total: {SynchDomain.Time: .1},
+                     SynchParam.Repeats: 0}]
+
+synchronization2 = [{SynchParam.Delay: {SynchDomain.Time: 0},
+                     SynchParam.Active: {SynchDomain.Time: .01},
+                     SynchParam.Total: {SynchDomain.Time: .02},
+                     SynchParam.Repeats: 10}]
+
+synchronization3 = [{SynchParam.Delay: {SynchDomain.Time: 0},
+                     SynchParam.Active: {SynchDomain.Time: .1},
+                     SynchParam.Total: {SynchDomain.Time: .1},
+                     SynchParam.Repeats:0}]
+
+synchronization4 = [{SynchParam.Delay: {SynchDomain.Time: 0},
+                     SynchParam.Active: {SynchDomain.Time: .1},
+                     SynchParam.Total: {SynchDomain.Time: .15},
+                     SynchParam.Repeats: 3}]
 
 @insertTest(helper_name='generation',  configuration=synchronization1)
 @insertTest(helper_name='abort', configuration=synchronization2, abort=.1)
@@ -117,10 +116,12 @@ class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
         args = ()
         # composing synchronization configuration
         total_interval = active_interval + passive_interval
-        synchronization = [dict(delay={SynchDomain.Time: offset},
-                                active={SynchDomain.Time: active_interval},
-                                total={SynchDomain.Time: total_interval},
-                                repeats=repetitions)
+        synchronization = [{SynchParam.Delay: {SynchDomain.Time: offset},
+                            SynchParam.Active: {SynchDomain.Time:
+                                                   active_interval},
+                            SynchParam.Total: {SynchDomain.Time:
+                                                   total_interval},
+                            SynchParam.Repeats: repetitions}
                            ]
         kwargs = {'config': self.cfg,
                   'synchronization': synchronization

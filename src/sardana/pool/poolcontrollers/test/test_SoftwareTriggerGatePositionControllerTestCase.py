@@ -25,26 +25,24 @@
 
 
 from taurus.test import insertTest
-from sardana.pool.pooldefs import SynchDomain
+from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.pool.poolcontrollers.test import (TriggerGateControllerTestCase,
                                                PositionGenerator,
                                                TriggerGateReceiver)
 from sardana.pool.poolcontrollers.SoftwareTriggerGatePositionController import\
                                         SoftwareTriggerGatePositionController
 
-synchronization1 = [dict(delay={SynchDomain.Position: 0},
-                         initial={SynchDomain.Position: 0},
-                         active={SynchDomain.Position: .1},
-                         total={SynchDomain.Position: 1},
-                         repeats=10)
-                    ]
+synchronization1 = [{SynchParam.Delay: {SynchDomain.Position: 0},
+                     SynchParam.Initial: {SynchDomain.Position: 0},
+                     SynchParam.Active: {SynchDomain.Position: .1},
+                     SynchParam.Total: {SynchDomain.Position: 1},
+                     SynchParam.Repeats: 10}]
 
-synchronization2 = [dict(delay={SynchDomain.Position: 0},
-                         initial={SynchDomain.Position: 0},
-                         active={SynchDomain.Position: -1},
-                         total={SynchDomain.Position: -1.1},
-                         repeats=10)
-                    ]
+synchronization2 = [{SynchParam.Delay: {SynchDomain.Position: 0},
+                     SynchParam.Initial: {SynchDomain.Position: 0},
+                     SynchParam.Active: {SynchDomain.Position: -1},
+                     SynchParam.Total: {SynchDomain.Position: -1.1},
+                     SynchParam.Repeats: 10}]
 
 @insertTest(helper_name='generation', configuration=synchronization1)
 @insertTest(helper_name='abort', configuration=synchronization2, abort=0.5)
@@ -75,7 +73,7 @@ class SoftwareTriggerGatePositionControllerTestCase(TriggerGateControllerTestCas
         conf = self.ctrl.GetConfiguration(self.AXIS)
         repetitions = 0
         for group in conf:
-            repetitions += group['repeats']
+            repetitions += group[SynchParam.Repeats]
         msg = ('Received triggers: %d does not correspond to generated: %d' %\
                (received_triggers, repetitions))
         if not self.isAborted:

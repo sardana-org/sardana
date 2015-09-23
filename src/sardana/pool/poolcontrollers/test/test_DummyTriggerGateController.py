@@ -2,23 +2,22 @@ from taurus.test.base import insertTest
 from taurus.external import unittest
 
 from sardana.pool.pooltggeneration import PoolTGGeneration
-from sardana.pool.pooldefs import SynchDomain
+from sardana.pool.pooldefs import SynchDomain, SynchParam
 
 from sardana.pool.test import (FakePool, createPoolController,
                                createPoolTriggerGate, dummyPoolTGCtrlConf01,
                                dummyTriggerGateConf01, 
                                createPoolTGGenerationConfiguration)
 
-synchronization1 = [dict(delay={SynchDomain.Time: 0},
-                         active={SynchDomain.Time: .03},
-                         total={SynchDomain.Time: .1},
-                         repeats=0)
-                    ]
-synchronization2 = [dict(delay={SynchDomain.Time: 0},
-                         active={SynchDomain.Time: .01},
-                         total={SynchDomain.Time: .02},
-                         repeats=10)
-                    ]
+synchronization1 = [{SynchParam.Delay: {SynchDomain.Time: 0},
+                     SynchParam.Active: {SynchDomain.Time: .03},
+                     SynchParam.Total: {SynchDomain.Time: .1},
+                     SynchParam.Repeats: 0}]
+
+synchronization2 = [{SynchParam.Delay: {SynchDomain.Time: 0},
+                     SynchParam.Active: {SynchDomain.Time: .01},
+                     SynchParam.Total: {SynchDomain.Time: .02},
+                     SynchParam.Repeats: 10}]
 
 @insertTest(helper_name='generation', synchronization=synchronization1)
 @insertTest(helper_name='generation', synchronization=synchronization2)

@@ -35,7 +35,7 @@ from taurus.core.taurusvalidator import AttributeNameValidator
 from sardana import State, ElementType, \
     TYPE_EXP_CHANNEL_ELEMENTS, TYPE_TIMERABLE_ELEMENTS
 from sardana.sardanaevent import EventType
-from sardana.pool.pooldefs import AcqMode, AcqTriggerType
+from sardana.pool.pooldefs import AcqMode, AcqTriggerType, SynchParam
 from sardana.pool.poolgroupelement import PoolGroupElement
 from sardana.pool.poolacquisition import PoolAcquisition
 from sardana.pool.poolexternal import PoolExternalObject
@@ -570,7 +570,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         self._synchronization = synchronization
         repetitions = 0
         for group in synchronization:
-            repetitions += group['repeats']
+            repetitions += group[SynchParam.Repeats]
         self._repetitions = repetitions
         self._config_dirty = True #acquisition mode goes to configuration
         if not propagate:

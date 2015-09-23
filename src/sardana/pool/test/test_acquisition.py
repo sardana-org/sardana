@@ -31,7 +31,7 @@ from taurus.external import unittest
 from taurus.test import insertTest
 
 from sardana.pool import AcqTriggerType
-from sardana.pool.pooldefs import SynchDomain
+from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.pool.pooltggeneration import PoolTGGeneration
 from sardana.pool.pooltriggergate import TGEventType
 from sardana.pool.poolacquisition import (PoolContHWAcquisition,
@@ -346,10 +346,10 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         self.hw_acq.run(hw_acq_args, **hw_acq_kwargs)    
         tg_args = ()
         total_interval = active_interval + passive_interval
-        synchronization = [dict(delay={SynchDomain.Time: offset},
-                                active={SynchDomain.Time: active_interval},
-                                total={SynchDomain.Time: total_interval},
-                                repeats=repetitions)]
+        synchronization = [{SynchParam.Delay: {SynchDomain.Time: offset},
+                            SynchParam.Active: {SynchDomain.Time: active_interval},
+                            SynchParam.Total: {SynchDomain.Time: total_interval},
+                            SynchParam.Repeats: repetitions}]
         tg_kwargs = {
             'config': tg_cfg,
             'synchronization': synchronization

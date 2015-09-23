@@ -35,7 +35,7 @@ from taurus.external import unittest
 
 from sardana.pool.pooltggeneration import PoolTGGeneration
 from sardana.sardanadefs import State
-from sardana.pool.pooldefs import SynchDomain
+from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.pool.test import (FakePool, createCtrlConf, createElemConf,
                                createPoolController, createPoolTriggerGate,
                                createPoolTGGenerationConfiguration)
@@ -168,16 +168,16 @@ class TGGenerationTestCase(object):
         self.tg_elem = None
 
 
-synchronization1 = [dict(delay={SynchDomain.Time: 0},
-                         active={SynchDomain.Time: .01},
-                         total={SynchDomain.Time: .02},
-                         repeats=0)
-                   ]
-synchronization2 = [dict(delay={SynchDomain.Time: 0},
-                         active={SynchDomain.Time: .01},
-                         total={SynchDomain.Time: .02},
-                         repeats=100)
-                   ]
+synchronization1 = [{SynchParam.Delay: {SynchDomain.Time: 0},
+                     SynchParam.Active: {SynchDomain.Time: .01},
+                     SynchParam.Total: {SynchDomain.Time: .02},
+                     SynchParam.Repeats: 0}]
+
+synchronization2 = [{SynchParam.Delay: {SynchDomain.Time: 0},
+                     SynchParam.Active: {SynchDomain.Time: .01},
+                     SynchParam.Total: {SynchDomain.Time: .02},
+                     SynchParam.Repeats: 100}]
+
 @insertTest(helper_name='tggeneration',
             ctrl_lib = 'DummyTriggerGateController',
             ctrl_klass = 'DummyTriggerGateController',

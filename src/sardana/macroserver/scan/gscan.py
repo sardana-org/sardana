@@ -49,7 +49,7 @@ from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
 from sardana.util.tree import BranchNode, LeafNode, Tree
 from sardana.util.motion import Motor as VMotor
 from sardana.util.motion import MotionPath
-from sardana.pool.pooldefs import SynchDomain
+from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.macroserver.msexception import MacroServerException, UnknownEnv, \
     InterruptException, StopException
 from sardana.macroserver.msparameter import Type
@@ -1863,13 +1863,13 @@ class CTScan(CScan):
             initial_position = start
             total_time = total_position / path.max_vel
             delay_time = path.max_vel_time
-            synchronization = [{'delay': {SynchDomain.Time:delay_time},
-                                'initial': {SynchDomain.Position:initial_position},
-                                'active': {SynchDomain.Position:active_position,
+            synchronization = [{SynchParam.Delay: {SynchDomain.Time:delay_time},
+                                SynchParam.Initial: {SynchDomain.Position:initial_position},
+                                SynchParam.Active: {SynchDomain.Position:active_position,
                                           SynchDomain.Time:active_time},
-                                'total': {SynchDomain.Position:total_position,
+                                SynchParam.Total: {SynchDomain.Position:total_position,
                                          SynchDomain.Time:total_time},
-                                'repeats': repeats}]
+                                SynchParam.Repeats: repeats}]
             self.debug('Synchronization: %s' % synchronization)
             self.measurement_group.setSynchronization(synchronization)
             self.macro.checkPoint()

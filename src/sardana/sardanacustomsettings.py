@@ -31,7 +31,7 @@ aspects of Sardana.
 
 #:UnitTest door name: the door to be used by unit tests.
 #:UNITTEST_DOOR_NAME Must be defined for running sardana unittests. 
-UNITTEST_DOOR_NAME = "door/demo1/1"
+UNITTEST_DOOR_NAME = "door/rhoms/1"
 #:UnitTests Pool DS name: Pool DS to use in unit tests.
 UNITTEST_POOL_DS_NAME = "unittest1"
 #:UnitTests Pool Device name: Pool Device to use in unit tests.

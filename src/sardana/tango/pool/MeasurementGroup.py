@@ -42,7 +42,7 @@ from taurus.core.util.log import DebugIt
 from sardana import State, SardanaServer
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.pool import AcqMode
-from sardana.pool.pooldefs import SynchDomain
+from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.tango.core.util import exception_str
 from sardana.tango.pool.PoolDevice import PoolGroupDevice, PoolGroupDeviceClass
 
@@ -153,14 +153,19 @@ class MeasurementGroup(PoolGroupDevice):
         '''Translates synchronization data structure so it uses SynchDomain 
         enums as keys instead of strings.
         '''
+        self.debug('Synchronization: %s' % repr(synchronization))
         for group in synchronization:
             for param, conf in group.iteritems():
+                group.pop(param)
+                param = SynchParam.fromStr(param)
+                group[param] = conf
                 # skip repeats cause its value is just a long number
-                if param == 'repeats':
+                if param == SynchParam.Repeats:
                     continue
                 for domain, value in conf.iteritems():
                     conf.pop(domain)
-                    conf[SynchDomain.fromStr(domain)] = value
+                    domain = SynchDomain.fromStr(domain)
+                    conf[domain] = value
         return synchronization
 
     def always_executed_hook(self):
