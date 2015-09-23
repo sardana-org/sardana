@@ -1924,7 +1924,9 @@ class CTScan(CScan):
             self.__mntGrpStarted = True
             # add listener of data events
             self.measurement_group.addOnDataChangedListeners(self)
-            self.measurement_group.start()
+            # TODO: investigate deadlock if using MG taurus extension start
+            # using taurus extension start (lowercase s!) causes a deadlock
+            self.measurement_group.Start()
             ###########
             
             self.timestamp_to_start = time.time() + delta_start
