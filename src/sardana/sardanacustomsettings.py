@@ -46,3 +46,12 @@ LOG_BCK_COUNT = 5
 #: - "CLI": Input via spock command line. This is the default.
 #: - "Qt": Input via Qt dialogs
 SPOCK_INPUT_HANDLER = "CLI"
+
+#: dict<str, str>
+#: key   - scan file extension
+#: value - recorder name
+SCAN_RECORDER_MAP = {'.h5': 'NXscan_FileRecorder',
+                     '.h4': 'NXscan_FileRecorder',
+                     '.xml': 'NXscan_FileRecorder',
+                     '.spec': 'SPEC_FileRecorder',
+                     '.fio': 'FIO_FileRecorder'}
