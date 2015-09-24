@@ -141,7 +141,7 @@ class PositionFunctionGenerator(EventGenerator):
     def __init__(self, *args, **kwargs):
         EventGenerator.__init__(self)
         # function characteristics
-        self._event = threading.Event()
+        self.__event = threading.Event()
         self.event_values = []
         self.event_ids = []
         self.event_types = []
@@ -162,7 +162,7 @@ class PositionFunctionGenerator(EventGenerator):
         _, t, v = args
         print v.value
         self.last_value = v.value
-        self._event.set()
+        self.__event.set()
 
     def calc_step(self):
         step = (self._active_interval + self._passive_interval) * self._sign
@@ -238,6 +238,8 @@ class PositionFunctionGenerator(EventGenerator):
                 raise RuntimeError(msg)
             self.__alive = True
             self.__stop = False
+            # clear event so we wait for the position updates from now on
+            self.__event.clear()
             self.__thread.start()
 
     def stop(self):
@@ -253,9 +255,9 @@ class PositionFunctionGenerator(EventGenerator):
                 with self.__lock:
                     if self.__stop:
                         raise StopException('Function generation stopped')
-                self._event.wait()
+                self.__event.wait()
                 # reset flag so in next iteration we will wait for a new update
-                self._event.clear()
+                self.__event.clear()
                 idx = 0
                 candidate = self.event_values[idx]
                 condition = self.event_conditions[idx]
