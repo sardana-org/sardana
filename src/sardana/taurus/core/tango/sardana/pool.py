@@ -1461,6 +1461,15 @@ class MeasurementGroup(PoolElement):
         _, data = codec.encode(('', synchronization))
         self.getSynchronizationObj().write(data)
 
+    def getMoveableObj(self):
+        return self._getAttrEG('Moveable')
+
+    def getMoveable(self):
+        return self._getAttrValue('Moveable')
+
+    def setMoveable(self, moveable):
+        self.getMoveableObj().write(moveable)
+
     def addOnDataChangedListeners(self, listener):
         '''Adds listener which receives data events. Used in online data 
         collection while acquiring.'''
