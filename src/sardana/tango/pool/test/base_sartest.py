@@ -59,27 +59,31 @@ class SarTestTestCase(BasePoolTestCase):
 
         self.ctrl_list = []
         self.elem_list = []
-
-        for sar_type, lib, cls, prefix, postfix, nelem in self.cls_list:
-            # Create controller
-            ctrl_name = prefix + "_ctrl_%s" % (postfix)
-            try:
-                self.pool.CreateController([sar_type, lib, cls, ctrl_name])
-            except Exception, e:
-                print e
-                msg = 'Impossible to create ctrl: "%s"' % (ctrl_name)
-                raise Exception('Aborting SartestTesCase: %s' % (msg))
-            self.ctrl_list.append(ctrl_name)
-            # Create 5 elemens
-            for axis in range(1,nelem+1):
-                elem_name = prefix + "_" + postfix + '_%s' % (axis)
+        try:
+            for sar_type, lib, cls, prefix, postfix, nelem in self.cls_list:
+                # Create controller
+                ctrl_name = prefix + "_ctrl_%s" % (postfix)
                 try:
-                    self.pool.createElement([sar_type, ctrl_name, str(axis), elem_name])
+                    self.pool.CreateController([sar_type, lib, cls, ctrl_name])
                 except Exception, e:
                     print e
-                    msg = 'Impossible to create element: "%s"' % (elem_name)
+                    msg = 'Impossible to create ctrl: "%s"' % (ctrl_name)
                     raise Exception('Aborting SartestTesCase: %s' % (msg))
-                self.elem_list.append(elem_name)              
+                self.ctrl_list.append(ctrl_name)
+                # Create 5 elemens
+                for axis in range(1,nelem+1):
+                    elem_name = prefix + "_" + postfix + '_%s' % (axis)
+                    try:
+                        self.pool.createElement([sar_type, ctrl_name, str(axis), elem_name])
+                    except Exception, e:
+                        print e
+                        msg = 'Impossible to create element: "%s"' % (elem_name)
+                        raise Exception('Aborting SartestTesCase: %s' % (msg))
+                    self.elem_list.append(elem_name)
+        except Exception, e:
+            # force tearDown in order to eliminate the Pool
+            BasePoolTestCase.tearDown(self)
+            print e
 
     def tearDown(self):
         """Remove the elements and the controllers
