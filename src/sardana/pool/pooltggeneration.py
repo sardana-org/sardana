@@ -104,8 +104,6 @@ class PoolTGGeneration(PoolAction):
                     remove_acq_listener = functools.partial(ctrl.remove_listener,
                                                         axis, self._listener)
                     self.add_finish_hook(remove_acq_listener)
-                # TODO: attachment to the position attribute is just a poof of
-                # concept. It requires deatach and probably several improvements
                 if moveable is not None:
                     position = moveable.get_position_attribute()
                     position.add_listener(ctrl)
