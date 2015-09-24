@@ -1849,10 +1849,7 @@ class CTScan(CScan):
             # TODO: let a pseudomotor specify which motor should be used as source
             MASTER = 0
             moveable = moveables[MASTER].full_name
-            # TODO: apply the moveable source whenever software controllers
-            # gets merged, scans involving moveables should use moveable source
-            # for synchronization
-            # self.measurement_group.write_attribute('Moveable', moveable)
+            self.measurement_group.setMoveable(moveable)
             path = motion_paths[MASTER]
             repeats = self.macro.nr_of_points
             active_time = integ_time
