@@ -1862,15 +1862,15 @@ class CTScan(CScan):
             initial_position = start
             total_time = total_position / path.max_vel
             delay_time = path.max_vel_time
-            synchronization = [{SynchParam.Delay: {SynchDomain.Time:delay_time},
-                                SynchParam.Initial: {SynchDomain.Position:initial_position},
-                                SynchParam.Active: {SynchDomain.Position:active_position,
+            synch = [{SynchParam.Delay: {SynchDomain.Time:delay_time},
+                      SynchParam.Initial: {SynchDomain.Position:initial_position},
+                      SynchParam.Active: {SynchDomain.Position:active_position,
                                           SynchDomain.Time:active_time},
-                                SynchParam.Total: {SynchDomain.Position:total_position,
+                      SynchParam.Total: {SynchDomain.Position:total_position,
                                          SynchDomain.Time:total_time},
-                                SynchParam.Repeats: repeats}]
-            self.debug('Synchronization: %s' % synchronization)
-            self.measurement_group.setSynchronization(synchronization)
+                      SynchParam.Repeats: repeats}]
+            self.debug('Synchronization: %s' % synch)
+            self.measurement_group.setSynchronization(synch)
             self.macro.checkPoint()
     
             #extra post configuration
