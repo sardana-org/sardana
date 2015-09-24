@@ -266,7 +266,8 @@ class PositionFunctionGenerator(EventGenerator):
                     while len(self.event_values) > idx + 2:
                         candidate = self.event_values[idx + 1]
                         condition = self.event_conditions[idx + 1]
-                        if condition(candidate, self.last_value):
+                        if condition(candidate, self.last_value) and \
+                           not candidate == self.last_value:
                             break
                         idx += 1
                     # emit the corresponding event
