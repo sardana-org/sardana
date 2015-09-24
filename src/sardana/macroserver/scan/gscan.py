@@ -1854,6 +1854,8 @@ class CTScan(CScan):
             repeats = self.macro.nr_of_points
             active_time = integ_time
             active_position = path.max_vel * active_time
+            if not path.positive_displacement:
+                active_position *= -1
             start = self.macro.starts[MASTER]
             final = self.macro.finals[MASTER]
             total_position = (final - start) / repeats
