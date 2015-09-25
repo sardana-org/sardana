@@ -43,37 +43,25 @@ from sardana.pool.poolcontrollers.SoftwareTriggerGateController import\
 synchronization1 = [{SynchParam.Delay: {SynchDomain.Time: 0},
                      SynchParam.Active: {SynchDomain.Time: .03},
                      SynchParam.Total: {SynchDomain.Time: .1},
-                     SynchParam.Repeats: 0}]
-
+                     SynchParam.Repeats: 0}
+                    ]
 synchronization2 = [{SynchParam.Delay: {SynchDomain.Time: 0},
                      SynchParam.Active: {SynchDomain.Time: .01},
                      SynchParam.Total: {SynchDomain.Time: .02},
-                     SynchParam.Repeats: 10}]
-
-synchronization3 = [{SynchParam.Delay: {SynchDomain.Time: 0},
-                     SynchParam.Active: {SynchDomain.Time: .1},
-                     SynchParam.Total: {SynchDomain.Time: .1},
-                     SynchParam.Repeats:0}]
-
-synchronization4 = [{SynchParam.Delay: {SynchDomain.Time: 0},
-                     SynchParam.Active: {SynchDomain.Time: .1},
-                     SynchParam.Total: {SynchDomain.Time: .15},
-                     SynchParam.Repeats: 3}]
-
-synchronization5 = [{SynchParam.Delay: {SynchDomain.Position: 0},
+                     SynchParam.Repeats: 10}
+                    ]
+synchronization3 = [{SynchParam.Delay: {SynchDomain.Position: 0},
                      SynchParam.Initial: {SynchDomain.Position: 0},
                      SynchParam.Active: {SynchDomain.Position: .1},
                      SynchParam.Total: {SynchDomain.Position: 1},
                      SynchParam.Repeats: 10}
                     ]
-
-synchronization6 = [{SynchParam.Delay: {SynchDomain.Position: 0},
+synchronization4 = [{SynchParam.Delay: {SynchDomain.Position: 0},
                      SynchParam.Initial: {SynchDomain.Position: 0},
                      SynchParam.Active: {SynchDomain.Position: -1},
                      SynchParam.Total: {SynchDomain.Position: -1.1},
                      SynchParam.Repeats: 10}
                     ]
-
 
 @insertTest(helper_name='generation',  configuration=synchronization1)
 @insertTest(helper_name='abort', configuration=synchronization2, abort=.1)
@@ -81,8 +69,8 @@ class SoftwareTriggerGateControllerTestCase(TriggerGateControllerTestCase):
     KLASS = SoftwareTriggerGateController
 
 
-@insertTest(helper_name='generation', configuration=synchronization5)
-@insertTest(helper_name='abort', configuration=synchronization6, abort=0.5)
+@insertTest(helper_name='generation', configuration=synchronization3)
+@insertTest(helper_name='abort', configuration=synchronization4, abort=0.5)
 class SoftwareTriggerGatePositionControllerTestCase(TriggerGateControllerTestCase):
     KLASS = SoftwareTriggerGateController
 
@@ -194,7 +182,7 @@ class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
         c2c_max_limit = 0.00001
         c2c_mean, c2c_std, c2c_max = self.tg_receiver.calc_cycletocycle()
         msg = 'Mean cycle-to-cycle jitter (%f) is higher than limit (%f)' %\
-                                                      (c2c_mean, c2c_mean_limit)
+                                                    (c2c_mean, c2c_mean_limit)
         self.assertLess(c2c_mean, c2c_mean_limit, msg)
         msg = 'Std cycle-to-cycle jitter (%f) is higher than limit (%f)' %\
                                                       (c2c_std, c2c_std_limit)
@@ -211,11 +199,13 @@ class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
             measured_active_interval = intervals[0]
             measured_passive_interval = intervals[1]
             msg = ('Measured active interval: %f does not correspond to ' +\
-                   'generated: %f' ) % (measured_active_interval, active_interval)
+                   'generated: %f' ) % (measured_active_interval,
+                                        active_interval)
             self.assertAlmostEqual(measured_active_interval, active_interval,
                                    delta=.002, msg=msg)
             msg = ('Measured passive interval: %f does not correspond to ' +\
-                   'generated: %f') % (measured_passive_interval, passive_interval)
+                   'generated: %f') % (measured_passive_interval,
+                                       passive_interval)
             self.assertAlmostEqual(measured_passive_interval, passive_interval,
                                    delta=.002, msg=msg)
             i += 1
