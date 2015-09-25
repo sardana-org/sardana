@@ -248,14 +248,19 @@ class PositionFunctionGenerator(EventGenerator):
             self.__stop = True
         self.__thread.join()
 
+    def __checkStop(self):
+        '''Helper method for stopping generation'''
+        with self.__lock:
+            if self.__stop:
+                raise StopException('Function generation stopped')
+
     def __run(self):
         '''Generates Sardana events at requested times'''
         try:
             while len(self.event_values) > 0:
-                with self.__lock:
-                    if self.__stop:
-                        raise StopException('Function generation stopped')
-                self.__event.wait()
+                # periodically check if someone has stopped generation
+                while not self.__event.wait(0.1):
+                    self.__checkStop()
                 # reset flag so in next iteration we will wait for a new update
                 self.__event.clear()
                 idx = 0
@@ -273,7 +278,8 @@ class PositionFunctionGenerator(EventGenerator):
                     # emit the corresponding event
                     event_id = self.event_ids[idx]
                     event_type = self.event_types[idx]
-                    print "Candidate: %f; Update: %f" % (self.event_values[idx], self.last_value)
+                    print "Candidate: %f; Update: %f" % (self.event_values[idx],
+                                                         self.last_value)
                     self.fire_event(event_type, event_id)
                     # eliminate sent and lost events from the list 
                     self.event_values = self.event_values[idx+1:]
