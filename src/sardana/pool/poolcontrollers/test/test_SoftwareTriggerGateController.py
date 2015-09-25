@@ -105,14 +105,8 @@ class SoftwareTriggerGatePositionControllerTestCase(TriggerGateControllerTestCas
             self.assertEqual(received_triggers, repetitions, msg)
 
 
-@insertTest(helper_name='generation', offset=0, active_interval=.1,
-                                              passive_interval=.1, repetitions=0)
-@insertTest(helper_name='generation', offset=0, active_interval=.01,
-                                              passive_interval=.01, repetitions=10)
-@insertTest(helper_name='generation', offset=0, active_interval=.01,
-                                             passive_interval=.02, repetitions=10)
-@insertTest(helper_name='generation', offset=0, active_interval=0.1,
-                                             passive_interval=0.05, repetitions=3)
+@insertTest(helper_name='generation', synchronization=synchronization1)
+@insertTest(helper_name='generation', synchronization=synchronization2)
 class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
     """Parameterizable integration test of the PoolTGGeneration action and
     the SoftwareTriggerGateController.
@@ -151,24 +145,22 @@ class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
 
         self.tg_action.add_listener(self.tg_receiver)
 
-    def generation(self, offset, active_interval, passive_interval, repetitions):
+    def generation(self, synchronization):
         """Verify that the created PoolTGAction start_action starts correctly
         the involved controller."""
         args = ()
-        # composing synchronization configuration
-        total_interval = active_interval + passive_interval
-        synchronization = [{SynchParam.Delay: {SynchDomain.Time: offset},
-                            SynchParam.Active: {SynchDomain.Time:
-                                                   active_interval},
-                            SynchParam.Total: {SynchDomain.Time:
-                                                   total_interval},
-                            SynchParam.Repeats: repetitions}
-                           ]
         kwargs = {'config': self.cfg,
                   'synchronization': synchronization
                  }
         self.tg_action.start_action(*args, **kwargs)
         self.tg_action.action_loop()
+
+        # obtaining parameters for further comparison with the results
+        synchronization = synchronization[0] # prepared for just one group
+        repetitions = synchronization[SynchParam.Repeats]
+        active_interval = synchronization[SynchParam.Active][SynchDomain.Time]
+        total_interval = synchronization[SynchParam.Total][SynchDomain.Time]
+        passive_interval = total_interval - active_interval
 
         # testing number of received triggers
         received_triggers = self.tg_receiver.count
