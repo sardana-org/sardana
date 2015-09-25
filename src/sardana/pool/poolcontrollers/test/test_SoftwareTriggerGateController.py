@@ -70,16 +70,25 @@ class SoftwareTriggerGateControllerTestCase(TriggerGateControllerTestCase):
 
 
 @insertTest(helper_name='generation', configuration=synchronization3)
-@insertTest(helper_name='abort', configuration=synchronization4, abort=0.5)
+@insertTest(helper_name='abort', configuration=synchronization4, abort=1)
 class SoftwareTriggerGatePositionControllerTestCase(TriggerGateControllerTestCase):
     KLASS = SoftwareTriggerGateController
 
     def post_configuration_hook(self):
         # Configure and run the position generator
-        start_pos = 0
-        end_pos = 10
+        configuration = self.configuration[0]
+        repeat = configuration[SynchParam.Repeats]
+        initial = configuration[SynchParam.Initial][SynchDomain.Position]
+        total = configuration[SynchParam.Total][SynchDomain.Position]
+        final = initial + repeat * total
+        if total < 0:
+            initial += 1
+            final -= 1
+        else:
+            initial -= 1
+            final += 1
         period = 0.01
-        self.generator = PositionGenerator(start_pos, end_pos, period)
+        self.generator = PositionGenerator(initial, final, period)
         # create and add listeners
         self._device = self.ctrl.tg[self.AXIS - 1]
         self.tg_receiver = TriggerGateReceiver()
