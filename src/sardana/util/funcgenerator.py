@@ -259,7 +259,8 @@ class PositionFunctionGenerator(EventGenerator):
         try:
             while len(self.event_values) > 0:
                 # periodically check if someone has stopped generation
-                while not self.__event.wait(0.1):
+                while not self.__event.isSet():
+                    self.__event.wait(0.1)
                     self.__checkStop()
                 # reset flag so in next iteration we will wait for a new update
                 self.__event.clear()
