@@ -333,13 +333,15 @@ class relmaclib(Macro):
         name = macro_library.name
         new_macro_library = self.reloadMacroLibrary(name)
         if new_macro_library.has_errors():
+            self.warning("%s could not be (re)loaded", name)
             exc_info = new_macro_library.get_error()
-            #msg = "".join(traceback.format_exception(*exc_info))
             msg = "".join(traceback.format_exception_only(*exc_info[:2]))
             self.error(msg)
+            self.warning("The old %s macro library is still available.", name)
         else:
             macros = new_macro_library.get_macros()
             self.output("%s successfully (re)loaded (found %d macros)", name, len(macros))
+
 
 class addmaclib(Macro):
     """Loads a new macro library.
@@ -365,6 +367,7 @@ class addmaclib(Macro):
         old_macros = self.getMacroNames()
         new_macro_library = self.reloadMacroLibrary(macro_library_name)
         if new_macro_library.has_errors():
+            self.warning("%s could not be added", macro_library_name)
             exc_info = new_macro_library.get_error()
             msg = "".join(traceback.format_exception_only(*exc_info[:2]))
             self.error(msg)
@@ -393,13 +396,13 @@ class relmac(Macro):
     def run(self, macro_code):
         name = macro_code.name
         macro_library_name = macro_code.lib.name
-        self.reloadMacro(name)
-        macro_library = self.getMacroLibrary(macro_library_name)
+        macro_library = self.reloadMacro(name)
         if macro_library.has_errors():
+            self.warning("%s could not be (re)loaded", name)
             exc_info = macro_library.get_error()
-            #msg = "".join(traceback.format_exception(*exc_info))
             msg = "".join(traceback.format_exception_only(*exc_info[:2]))
             self.error(msg)
+            self.warning("The old %s macro is still available.", name)
         else:
             self.output("%s successfully (re)loaded", name)
 

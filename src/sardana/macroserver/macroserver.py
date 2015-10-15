@@ -426,7 +426,9 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
         new_elements, changed_elements, deleted_elements = [], [], []
         
         new_lib = manager.reloadMacroLib(lib_name)
-        
+        if new_lib.has_errors():
+            return new_lib
+
         if old_lib is None:
             new_elements.extend(new_lib.get_macros())
             new_elements.append(new_lib)
@@ -437,7 +439,7 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
             changed_names = set.intersection(new_names, old_names)
             deleted_names = old_names.difference(new_names)
             new_names = new_names.difference(old_names)
-            
+
             for new_name in new_names:
                 new_elements.append(new_lib.get_macro(new_name))
             for changed_name in changed_names:
@@ -459,7 +461,7 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
     def reload_macro(self, macro_name):
         macro_info = self.macro_manager.getMacro(macro_name)
         lib_name = macro_info.module_name
-        self.reload_macro_lib(lib_name)
+        return self.reload_macro_lib(lib_name)
     
     def reload_macros(self, macro_names):
         lib_names = set()

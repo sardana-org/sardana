@@ -440,14 +440,20 @@ class MacroManager(MacroServerManager):
             path = copy.copy(path)
             path.reverse()
 
+        mod_manager = ModuleManager()
+        m, exc_info = None, None
+        valid, exc_info = mod_manager.isValidModule(module_name, path)
+        if not valid:
+            params = dict(module=m, name=module_name,
+                          macro_server=self.macro_server, exc_info=exc_info)
+            return MacroLibrary(**params)
+
         # if there was previous Macro Library info remove it
         old_macro_lib = self._modules.pop(module_name, None)
         if old_macro_lib is not None:
             for macro in old_macro_lib.get_macros():
                 self._macro_dict.pop(macro.name)
 
-        mod_manager = ModuleManager()
-        m, exc_info = None, None
         try:
             m = mod_manager.reloadModule(module_name, path)
         except:
