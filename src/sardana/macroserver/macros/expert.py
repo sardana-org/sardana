@@ -404,7 +404,12 @@ class relmac(Macro):
             self.error(msg)
             self.warning("The old %s macro is still available.", name)
         else:
-            self.output("%s successfully (re)loaded", name)
+            maclibname = macro_library_name
+            self.output("%s macro successfully (re)loaded", name)
+            macros_in_lib = macro_library.get_macros()
+            self.output("\nAll macros from macro library %s have " + \
+                        "been reloaded:", maclibname)
+            self.output([macro.name for macro in macros_in_lib])
 
 
 class sar_info(Macro):
