@@ -1279,22 +1279,25 @@ except:
     pass #NXxas_FileRecorder won't be usable
 
 
-#===============================================================================
+#==============================================================================
 # END: THE ABOVE BLOCK SHOULD BE REMOVED IF NEXUS ACCEPTS THE PATCH TO NXfield
-#===============================================================================
+#==============================================================================
 
 
 def FileRecorder(filename, macro, **pars):
     ext = os.path.splitext(filename)[1].lower() or '.spec'
-    
-    hintedklass = globals().get(getattr(macro,'hints',{}).get('FileRecorder',None))
-    
-    if hintedklass is not None and issubclass(hintedklass, BaseFileRecorder): 
-        klass = hintedklass
-    elif ext in NXscan_FileRecorder.formats.values():
-        klass = NXscan_FileRecorder
-    elif ext in FIO_FileRecorder.formats.values():
-        klass = FIO_FileRecorder
+    rec_manager = macro.getMacroServer().recorder_manager
+
+    hinted_recorder = getattr(macro, 'hints', {}).get('FileRecorder', None)
+    if hinted_recorder is not None:
+        macro.deprecated("FileRecorder macro hints are deprecated. "
+                         "Use ScanRecorder variable instead.")
+        klass = rec_manager.getRecorderClass(hinted_recorder)
     else:
-        klass = SPEC_FileRecorder
+        klasses = rec_manager.getRecorderClasses(
+            filter=BaseFileRecorder, extension=ext)
+        if len(klasses.keys()) == 1:
+            klass = klasses.values()[0]
+        else:
+            klass = SPEC_FileRecorder
     return klass(filename=filename, macro=macro, **pars)
