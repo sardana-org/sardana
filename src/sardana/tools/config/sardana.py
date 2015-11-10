@@ -38,7 +38,7 @@ import logging
 import types, operator
 import json
 
-from taurus.core.util.codecs import CodecFactory
+from taurus.core.util import CodecFactory
 
 LOG = logging.getLogger()
 
