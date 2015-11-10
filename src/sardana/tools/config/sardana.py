@@ -1661,7 +1661,7 @@ class Sardana:
             self._devicePools[serv.getInstanceName()] = serv
 
     def prepareMSs(self):
-        servNodes = self._sarNode.findall("MacroServer")
+        servNodes = self._sarNode.findall("MacroServerServer")
 
         self._macServs = {}
 
