@@ -30,7 +30,8 @@ from taurus.test import insertTest
 
 from sardana.macroserver.macroserver import MacroServer
 from sardana.macroserver.scan.recorder import DataRecorder
-from sardana.macroserver.scan.recorder.storage import FileRecorder
+from sardana.macroserver.scan.recorder.storage import FileRecorder,\
+    BaseFileRecorder
 
 
 _TEST_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -115,3 +116,41 @@ class RecorderManagerTest(unittest.TestCase):
         msg = "The class name giveb by the recorder manager is different." +\
               "Expected %s, get %s" %(klass_name, _name)
         self.assertEqual(_name, klass_name, msg)
+
+    def test_SameClassNames(self):
+        """Test whether ordered path precedence is maintained in case of
+        different recorder classes with the same name located in different
+        paths.
+        """
+        path1 = os.path.join(_TEST_DIR, 'res', 'recorders', 'path1')
+        path2 = os.path.join(_TEST_DIR, 'res', 'recorders', 'path2')
+        path3 = os.path.join(_TEST_DIR, 'res', 'recorders', 'path3')
+        # set three paths containing recorders with the same class names
+        recorder_path = [path3, path1, path2]
+        self._updateRecorderManager(recorder_path)
+        klass = self.manager.getRecorderMetaClass('FakeScanRecorder')
+        # retrieve path to the recorder library
+        path = os.sep.join(klass.lib.full_name.split(os.sep)[:-1])
+        msg = 'Ordered path precedence is not maintained by RecorderManager'
+        self.assertEqual(path3, path, msg)
+
+    def test_SameFormats(self):
+        """Test whether ordered path precedence is maintained in case of
+        different recorder classes supporting the same format located in
+        different paths.
+        """
+        path1 = os.path.join(_TEST_DIR, 'res', 'recorders', 'path1')
+        path2 = os.path.join(_TEST_DIR, 'res', 'recorders', 'path2')
+        path3 = os.path.join(_TEST_DIR, 'res', 'recorders', 'path3')
+        recorder_path = [path3, path1, path2]
+        # set three paths containing recorders of the same format
+        self._updateRecorderManager(recorder_path)
+        klasses = self.manager.getRecorderMetaClasses(filter=BaseFileRecorder,
+                                                  extension='.spec')
+        msg = 'More than one recorder class for a specific format'
+        self.assertEqual(len(klasses), 1, msg)
+        klass = klasses.values()[0]
+        # retrieve path to the recorder library
+        path = os.sep.join(klass.lib.full_name.split(os.sep)[:-1])
+        msg = 'Ordered path precedence is not maintained by RecorderManager'
+        self.assertEqual(path3, path, msg)
