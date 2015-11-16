@@ -215,10 +215,12 @@ class GScan(Logger):
       corresponding column name will contain the value"""
 
     MAX_SCAN_HISTORY = 20
-    
-    env = ('ActiveMntGrp', 'ExtraColumns' 'ScanDir', 'ScanFile', 'SharedMemory', 'OutputCols')
-    
-    def __init__(self, macro, generator=None, moveables=[], env={}, constraints=[], extrainfodesc=[]):
+
+    env = ('ActiveMntGrp', 'ExtraColumns' 'ScanDir', 'ScanFile', 'ScanRecorder',
+           'SharedMemory', 'OutputCols')
+
+    def __init__(self, macro, generator=None, moveables=[], env={}, constraints=[],
+                 extrainfodesc=[]):
         self._macro = macro
         self._generator = generator
         self._extrainfodesc = extrainfodesc
@@ -401,30 +403,51 @@ class GScan(Logger):
                           'file(s)>") to enable it')
             return ()
 
+        scan_recorders = []
+        try:
+            scan_recorders = macro.getEnv('ScanRecorder')
+        except InterruptException:
+            raise
+        except Exception:
+            macro.info('ScanRecorder is not defined. This operation will use'
+                       'a default recorder')
+
         if isinstance(file_names, (str, unicode)):
             file_names = (file_names,)
         elif not operator.isSequenceType(file_names):
             scan_file_t = type(file_names).__name__
             raise TypeError("ScanFile MUST be string or sequence of strings."\
                             " It is '%s'" % scan_file_t)
-            
+
+        if isinstance(scan_recorders, (str, unicode)):
+            scan_recorders = (scan_recorders,)
+        elif not operator.isSequenceType(scan_recorders):
+            scan_recorders_t = type(scan_recorders).__name__
+            raise TypeError("ScanRecorder MUST be string or sequence of strings."\
+                            " It is '%s'" % scan_recorders_t)
+
         file_recorders = []
-        for file_name in file_names:
+        for i, file_name in enumerate(file_names):
             abs_file_name = os.path.join(scan_dir, file_name)
             try:
-                file_recorder = FileRecorder(abs_file_name, macro=macro)
+                file_recorder = None
+                if len(scan_recorders) > i:
+                    file_recorder = self._rec_manager.getRecorderClass(
+                        scan_recorders[i])(abs_file_name, macro=macro)
+                if not file_recorder:
+                    file_recorder = FileRecorder(abs_file_name, macro=macro)
                 file_recorders.append(file_recorder)
             except InterruptException:
                 raise
             except Exception:
                 macro.warning("Error creating recorder for %s", abs_file_name)
                 macro.debug("Details:", exc_info=1)
-        
+
         if len(file_recorders) == 0:
             macro.warning("No valid recorder found. This operation will not be "
                           " stored persistently")
         return file_recorders
-    
+
     def _getSharedMemoryRecorder(self, eid):
         macro, mg, shm = self.macro, self.measurement_group, False
         try:
