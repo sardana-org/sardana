@@ -52,8 +52,7 @@ from sardana.macroserver.msexception import MacroServerException, UnknownEnv, \
 from sardana.macroserver.msparameter import Type
 from sardana.macroserver.scan.scandata import ColumnDesc, MoveableDesc, \
     ScanFactory, ScanDataEnvironment
-from sardana.macroserver.scan.recorder import OutputRecorder, JsonRecorder, \
-    SharedMemoryRecorder, FileRecorder
+from sardana.macroserver.scan.recorder import FileRecorder
 from sardana.taurus.core.tango.sardana.pool import Ready
 
 
@@ -223,10 +222,11 @@ class GScan(Logger):
         self._macro = macro
         self._generator = generator
         self._extrainfodesc = extrainfodesc
-        
-        #nasty hack to make sure macro has access to gScan as soon as possible 
-        self._macro._gScan = self #TODO: CAUTION! this may be causing a circular reference! 
-        
+
+        #nasty hack to make sure macro has access to gScan as soon as possible
+        self._macro._gScan = self #TODO: CAUTION! this may be causing a circular reference!
+        self._rec_manager = macro.getMacroServer().recorder_manager
+
         self._moveables, moveable_names = [], []
         for moveable in moveables:
             if not isinstance(moveable, MoveableDesc):
@@ -355,7 +355,8 @@ class GScan(Logger):
         try:
             json_enabled = self.macro.getEnv('JsonRecorder')
             if json_enabled:
-                return JsonRecorder(self.macro)
+                return self._rec_manager.getRecorderClass("JsonRecorder")(
+                    self.macro)
         except InterruptException:
             raise
         except Exception:
@@ -371,8 +372,9 @@ class GScan(Logger):
             raise
         except:
             pass
-        return OutputRecorder(self.macro, cols=cols, number_fmt='%g')
-    
+        return self._rec_manager.getRecorderClass("OutputRecorder")(
+            self.macro, cols=cols, number_fmt='%g')
+
     def _getFileRecorders(self):
         macro = self.macro
         try:
@@ -477,8 +479,8 @@ class GScan(Logger):
                     kwargs.update({ 'program' : macro.getDoorName(),
                                   'array' : "%s_1D" % array_prefix,
                                   'shape' : (cols, 99) } )
-            
-        shmRecorder = SharedMemoryRecorder(shm, **kwargs)
+        shmRecorder = self._rec_manager.getRecorderClass(
+            "SharedMemoryRecorder")(shm, **kwargs)
         if shmRecorder is None:
             self.info('SharedMemory %s is not available'%shm)
         return shmRecorder
