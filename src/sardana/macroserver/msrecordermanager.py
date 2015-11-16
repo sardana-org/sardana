@@ -151,10 +151,6 @@ class RecorderManager(MacroServerManager):
                 self.reloadRecorderLib(mod_name, path, reload=False)
             except:
                 pass
-        self.debug("Recorder Classes: %s " % self.getRecorderClasses())
-        self.debug("Scan Recorder Map: %s " % self._scan_recorder_map)
-        self.debug("NXS Recorder Classes: %s " %
-                   self.getRecorderClasses(extension='.nxs'))
 
     def getRecorderPath(self):
         return self._recorder_path
