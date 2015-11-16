@@ -41,7 +41,7 @@ _FAKE_RECORDER_DIR = os.path.join(_TEST_DIR, 'res')
 @insertTest(helper_name='getRecorderClass', klass_name="FIO_FileRecorder")
 @insertTest(helper_name='getRecorderClass', klass_name="FakeScanRecorder",
             extra_paths=[_FAKE_RECORDER_DIR])
-@insertTest(helper_name='getRecorderClasses', filter=FileRecorder,
+@insertTest(helper_name='getRecorderClasses', filter=DataRecorder,
             extra_paths=[_FAKE_RECORDER_DIR], extra_recorders=1)
 @insertTest(helper_name='getRecorderClasses', extra_paths=[_FAKE_RECORDER_DIR],
             extra_recorders=1)
