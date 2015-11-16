@@ -218,8 +218,8 @@ class RecorderManager(MacroServerManager):
         :rtype:
             :obj:`class:`DataRecorder`\>
         """
-        recorder_klasses = self.getRecorderClasses()
-        return recorder_klasses.get(klass_name, None)
+        meta_klass = self.getRecorderMetaClass(klass_name)
+        return meta_klass.klass
 
     def _findModuleName(self, path, name):
         mod_name = ""
