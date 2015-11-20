@@ -23,10 +23,10 @@
 ##
 ##############################################################################
 
-"""This is the macro server scan recorder module"""
+"""This package contains the standard macroserver recorders"""
 
 __docformat__ = 'restructuredtext'
 
-from .datarecorder import *
 from .sharedmemory import *
 from .storage import *
+from .output import *
