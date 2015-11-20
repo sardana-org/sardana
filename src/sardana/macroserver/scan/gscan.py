@@ -456,6 +456,7 @@ class GScan(Logger):
 
     def _getSharedMemoryRecorder(self, eid):
         macro, mg, shm = self.macro, self.measurement_group, False
+        shmRecorder = None
         try:
             shm = macro.getEnv('SharedMemory')
         except InterruptException:
@@ -508,10 +509,12 @@ class GScan(Logger):
                     kwargs.update({ 'program' : macro.getDoorName(),
                                   'array' : "%s_1D" % array_prefix,
                                   'shape' : (cols, 99) } )
-        shmRecorder = self._rec_manager.getRecorderClass(
-            "SharedMemoryRecorder")(shm, **kwargs)
-        if shmRecorder is None:
-            self.info('SharedMemory %s is not available'%shm)
+        try:
+            shmRecorder = SharedMemoryRecorder(shm, macro, **kwargs)
+        except Exception:
+            macro.warning("Error creating %s SharedMemory recorder." % shm)
+            macro.debug("Details:", exc_info=1)
+        
         return shmRecorder
 
     def _secsToTimedelta(self, secs):
