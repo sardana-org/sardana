@@ -147,10 +147,23 @@ class RecorderManagerTest(unittest.TestCase):
         self._updateRecorderManager(recorder_path)
         klasses = self.manager.getRecorderMetaClasses(filter=BaseFileRecorder,
                                                   extension='.spec')
-        msg = 'More than one recorder class for a specific format'
-        self.assertEqual(len(klasses), 1, msg)
         klass = klasses.values()[0]
         # retrieve path to the recorder library
         path = os.sep.join(klass.lib.full_name.split(os.sep)[:-1])
         msg = 'Ordered path precedence is not maintained by RecorderManager'
         self.assertEqual(path3, path, msg)
+
+    def test_ExternalVsBuiltinPrecedence(self):
+        """Test if external recorders are of higher priority than the built-in)
+        """
+        external_path = os.path.join(_TEST_DIR, 'res', 'recorders', 
+                                     'pathexternal')
+
+        # set three paths containing recorders with the same class names
+        recorder_path = [external_path]
+        self._updateRecorderManager(recorder_path)
+        klass = self.manager.getRecorderMetaClass('SPEC_FileRecorder')
+        # retrieve path to the recorder library
+        path = os.sep.join(klass.lib.full_name.split(os.sep)[:-1])
+        msg = 'Wrong precedence of recorder paths'
+        self.assertEqual(path, external_path, msg)
