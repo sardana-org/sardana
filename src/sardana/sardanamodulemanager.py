@@ -273,9 +273,7 @@ class ModuleManager(Singleton, Logger):
         with PathContext(path):
             self.info("loading module %s...", module_name)
             try:
-                module = __import__(
-                    module_name, globals(), locals(),
-                    [module_name.split(".")[-1]], -1)
+                module = __import__(module_name, globals(), locals(), -1)
             except:
                 self.error("Error loading module %s", module_name)
                 self.debug("Details:", exc_info=1)

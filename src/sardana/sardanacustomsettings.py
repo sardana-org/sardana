@@ -47,11 +47,9 @@ LOG_BCK_COUNT = 5
 #: - "Qt": Input via Qt dialogs
 SPOCK_INPUT_HANDLER = "CLI"
 
+#: Use this map in order to avoid ambiguity with scan recorders (file) if
+#: extension is intended to be the recorder selector.
 #: dict<str, str>
 #: key   - scan file extension
 #: value - recorder name
-SCAN_RECORDER_MAP = {'.h5': 'NXscan_FileRecorder',
-                     '.h4': 'NXscan_FileRecorder',
-                     '.xml': 'NXscan_FileRecorder',
-                     '.spec': 'SPEC_FileRecorder',
-                     '.fio': 'FIO_FileRecorder'}
+SCAN_RECORDER_MAP = None 
