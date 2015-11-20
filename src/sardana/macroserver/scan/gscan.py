@@ -52,7 +52,9 @@ from sardana.macroserver.msexception import MacroServerException, UnknownEnv, \
 from sardana.macroserver.msparameter import Type
 from sardana.macroserver.scan.scandata import ColumnDesc, MoveableDesc, \
     ScanFactory, ScanDataEnvironment
-from sardana.macroserver.scan.recorder import FileRecorder
+from sardana.macroserver.scan.recorder import (AmbiguousRecorderError,
+                                               SharedMemoryRecorder,
+                                               FileRecorder)
 from sardana.taurus.core.tango.sardana.pool import Ready
 
 
@@ -408,9 +410,9 @@ class GScan(Logger):
             scan_recorders = macro.getEnv('ScanRecorder')
         except InterruptException:
             raise
-        except Exception:
-            macro.info('ScanRecorder is not defined. This operation will use'
-                       'a default recorder')
+        except UnknownEnv:
+            macro.info('ScanRecorder is not defined. This operation will use '
+                       'the default recorder.')
 
         if isinstance(file_names, (str, unicode)):
             file_names = (file_names,)
@@ -439,6 +441,10 @@ class GScan(Logger):
                 file_recorders.append(file_recorder)
             except InterruptException:
                 raise
+            except AmbiguousRecorderError, e:
+                macro.error('Select recorder that you would like to use '
+                            '(i.e. set ScanRecorder environment variable).')
+                raise e
             except Exception:
                 macro.warning("Error creating recorder for %s", abs_file_name)
                 macro.debug("Details:", exc_info=1)
