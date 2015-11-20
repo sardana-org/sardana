@@ -279,7 +279,7 @@ class RecorderManager(MacroServerManager):
         params = dict(module=m, name=module_name,
                       macro_server=self.macro_server, exc_info=exc_info)
         if m is None:
-            file_name = self._findMacroLibName(module_name)
+            file_name = self._findRecorderLibName(module_name)
             if file_name is None:
                 if exc_info:
                     msg = format_exception_only_str(*exc_info[:2])
