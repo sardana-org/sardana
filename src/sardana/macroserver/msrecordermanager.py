@@ -76,7 +76,7 @@ class RecorderManager(MacroServerManager):
         # elements are absolute paths
         self._recorder_path = []
 
-        # custom map (per installation) allowing to avoid 
+        # custom map (per installation) allowing to avoid
         # recorder class ambiguity problems (using extension filter)
         #: dict<str, str>
         #: key   - scan file extension
@@ -178,7 +178,7 @@ class RecorderManager(MacroServerManager):
                             ret[name] = klass
                     else:
                         _map = self._scan_recorder_map
-                        if (extension in _map.keys() and 
+                        if (extension in _map.keys() and
                             klass in _map[extension]):
                             ret[name] = klass
                 else:
@@ -284,7 +284,8 @@ class RecorderManager(MacroServerManager):
                 if exc_info:
                     msg = format_exception_only_str(*exc_info[:2])
                 else:
-                    msg = "Error (re)loading recorder library '%s'" % module_name
+                    msg = "Error (re)loading recorder library '%s'" \
+                        % module_name
                 raise LibraryError(msg, exc_info=exc_info)
             params['file_path'] = file_name
             recorder_lib = RecorderLibrary(**params)
@@ -345,14 +346,14 @@ class RecorderManager(MacroServerManager):
             recorders = self._scan_recorder_map.get(ext, [])
             if len(recorders) == 0:
                 recorders.append(recorder_class)
-            else: 
-                recorder_from_map = recorders[-1] # it could be any recorder
+            else:
+                recorder_from_map = recorders[-1]  # it could be any recorder
                 # recorders are on the same priority level (located in the same
                 # directory) - just append it to the list
                 if recorder_from_map.lib.path == recorder_class.lib.path:
                     recorders.append(recorder_class)
                 # new recorder comes from another directory (it must be of
-                # higher priority) - forget about others and create new list   
+                # higher priority) - forget about others and create new list
                 else:
                     recorders = [recorder_class]
             self._scan_recorder_map[ext] = recorders
