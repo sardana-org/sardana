@@ -37,6 +37,7 @@ import copy
 import types
 import inspect
 
+from taurus.external.ordereddict import OrderedDict
 from taurus.core import ManagerState
 from taurus.core.util.log import Logger
 from taurus.core.util.singleton import Singleton
@@ -158,9 +159,11 @@ class ControllerManager(Singleton, Logger):
 
         controller_file_names = self._findControllerLibNames()
 
-        for controller_file_name in controller_file_names:
+        for mod_name, file_name in controller_file_names.iteritems():
+            dir_name = os.path.dirname(file_name)
+            path = [dir_name]
             try:
-                self.reloadControllerLib(controller_file_name, reload=reload)
+                self.reloadControllerLib(mod_name, path, reload=reload)
             except Exception:
                 pass
 
@@ -175,15 +178,15 @@ class ControllerManager(Singleton, Logger):
     def _findControllerLibNames(self, path=None):
         """internal method"""
         path = path or self.getControllerPath()
-        ret = []
-        for p in path:
+        ret = OrderedDict()
+        for p in reversed(path):
             try:
                 for f in os.listdir(p):
                     name, ext = os.path.splitext(f)
                     if not name[0].isalpha():
                         continue
                     if ext.endswith('py'):
-                        ret.append(name)
+                        ret[name] = os.path.abspath(os.path.join(p, f))
             except:
                 self.debug("'%s' is not a valid path" % p)
         return ret
