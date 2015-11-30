@@ -85,10 +85,12 @@ class RecorderManagerTest(unittest.TestCase):
               (num_paths, expected_num_path)
         self.assertEqual(num_paths, expected_num_path, msg)
 
-    def getRecorderClasses(self, filter=DataRecorder, extra_paths=None,
+    def getRecorderClasses(self, filter=None, extra_paths=None,
                            extra_recorders=0):
         """Helper for test getRecorderClasses method of the record Manager.
         """
+        if filter is None:
+            filter = DataRecorder
         # Use default recorders paths
         self.manager.setRecorderPath([])
         default_recorder_klass = self.manager.getRecorderClasses(filter)
