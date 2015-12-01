@@ -23,10 +23,13 @@
 ##
 ##############################################################################
 
-"""This is the macro server scan recorder module"""
+from sardana.macroserver.scan.recorder.storage import (BaseFileRecorder,
+                                                       DataFormats)
 
-__docformat__ = 'restructuredtext'
+class FakeScanRecorder(BaseFileRecorder):
+    """ Fake ScanRecorder class for test purpose"""
+    pass
 
-from .datarecorder import *
-from .sharedmemory import *
-from .storage import *
+class FakeScanRecorderFormat(BaseFileRecorder):
+    """ Fake ScanRecorder class for test purpose"""
+    formats = { DataFormats.Spec : '.spec' }

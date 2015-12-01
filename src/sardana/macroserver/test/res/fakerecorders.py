@@ -23,10 +23,8 @@
 ##
 ##############################################################################
 
-"""This is the macro server scan recorder module"""
+from sardana.macroserver.scan.recorder.storage import BaseFileRecorder
 
-__docformat__ = 'restructuredtext'
-
-from .datarecorder import *
-from .sharedmemory import *
-from .storage import *
+class FakeScanRecorder(BaseFileRecorder):
+    """ Fake ScanRecorder class for test purpose"""
+    pass

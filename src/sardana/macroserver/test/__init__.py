@@ -22,11 +22,3 @@
 ## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
-
-"""This is the macro server scan recorder module"""
-
-__docformat__ = 'restructuredtext'
-
-from .datarecorder import *
-from .sharedmemory import *
-from .storage import *
