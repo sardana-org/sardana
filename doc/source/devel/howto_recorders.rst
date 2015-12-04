@@ -55,8 +55,8 @@ Configuration
 
 Custom recorders may be added to the Sardana system by placing the recorder
 library module in a directory which is specified by the MacroServer
-*RecorderPath* property. RecorderPath property may contain a list of directories
-separated by **:** (their order is relevant).
+*RecorderPath* property. RecorderPath property may contain an ordered, 
+colon-separated list of directories.
 In case of overriding recorders by name or by file extension (in case of the
 file recorders), recorders located in the first paths are of higher priority
 than the ones from the last paths.
@@ -64,19 +64,18 @@ than the ones from the last paths.
 Three types of overriding may occur:
 
 **By recorder library name**
-   If in two directories are located Python modules
-   with the same name, just the library located in the the higher priority
-   directory will be loaded.
+   If Python modules with the same name are located in different directories, 
+   the library located in the the higher priority directory will be loaded.
 
 **By recorder name**
-   If in two different modules resides two recorder classes
-   with the same name, just the recorder from the library located in the higher
+   If two recorder classes with the same name appear in two different modules,
+   only the recorder from the library located in the higher
    priority module will be loaded. If both modules are located in the same
    directory, the behavior is undetermined.
 
 **By file extension**
-   If in two different modules resides two different recorders but supporting
-   the same file extension, the one from the higher priority path will be used
+   If two different recorders supporting the same file extension appear in two 
+   different modules, the one from the higher priority path will be used
    when selection is based on the extension (but both will be available for the
    selection by name). If both of these recorders' modules are located in the
    same directory, the system will assign a list of recorders to a given

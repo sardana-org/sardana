@@ -173,7 +173,7 @@ Following variables are supported:
 
 **ScanRecorder**
     Its value may be either of type string or of list of strings. If
-    ScanRecorder variable is defined it explicitly indicates which recorder
+    ScanRecorder variable is defined, it explicitly indicates which recorder
     class should be used and for which file defined by ScanFile (based on the 
     order).
 
