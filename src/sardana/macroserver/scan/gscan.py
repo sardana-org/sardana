@@ -411,8 +411,7 @@ class GScan(Logger):
         except InterruptException:
             raise
         except UnknownEnv:
-            macro.info('ScanRecorder is not defined. This operation will use '
-                       'the default recorder.')
+            pass
 
         if isinstance(file_names, (str, unicode)):
             file_names = (file_names,)
