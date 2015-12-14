@@ -42,7 +42,6 @@ from sardana.taurus.core.tango.sardana import PlotType
 from sardana.macroserver.macro import Type
 from sardana.macroserver.scan.recorder import (BaseFileRecorder,
                                                BaseNAPI_FileRecorder,
-                                               DataFormats,
                                                SaveModes)
 from taurus.core.util.containers import chunks
 
@@ -50,7 +49,7 @@ from taurus.core.util.containers import chunks
 class FIO_FileRecorder(BaseFileRecorder):
     """ Saves data to a file """
 
-    formats = { DataFormats.fio : '.fio' }
+    formats = {'fio': '.fio'}
 
     def __init__(self, filename=None, macro=None, **pars):
         BaseFileRecorder.__init__(self)
@@ -89,7 +88,7 @@ class FIO_FileRecorder(BaseFileRecorder):
             self.filename = "%s_%s.%s" % (tpl[0], "[ScanId]", tpl[2])
 
     def getFormat(self):
-        return DataFormats.whatis(DataFormats.fio)
+        return self.formats.keys()[0]
     
     def _startRecordList(self, recordlist):
 
@@ -266,7 +265,7 @@ class FIO_FileRecorder(BaseFileRecorder):
 class SPEC_FileRecorder(BaseFileRecorder):
     """ Saves data to a file """
 
-    formats = { DataFormats.Spec : '.spec' }
+    formats = {'Spec': '.spec'}
     supported_dtypes = ('float32','float64','int8',
                         'int16','int32','int64','uint8',
                         'uint16','uint32','uint64')
@@ -292,7 +291,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
         self.currentlist = None
 
     def getFormat(self):
-        return DataFormats.whatis(DataFormats.Spec)
+        return self.formats.keys()[0]
     
     def _startRecordList(self, recordlist):
         '''Prepares and writes the scan header.'''
