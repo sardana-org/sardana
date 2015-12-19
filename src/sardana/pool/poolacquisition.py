@@ -69,20 +69,27 @@ def split_MGConfigurations(mg_cfg_in):
 
     ctrls_in = mg_cfg_in['controllers']
     mg_sw_cfg_out = {}
+    mg_0d_cfg_out = {}
     mg_hw_cfg_out = {}
     mg_sw_cfg_out['controllers'] = ctrls_sw_out = {}
+    mg_0d_cfg_out['controllers'] = ctrls_0d_out = {}
     mg_hw_cfg_out['controllers'] = ctrls_hw_out = {}
-    for ctrl, ctrl_info in ctrls_in.items():        
-        tg_element = ctrl_info.get('trigger_element')
-        if tg_element != None:
-            tg_pool_ctrl = tg_element.get_controller() 
-            tg_ctrl = tg_pool_ctrl._ctrl
-            # TODO: filtering software and HW TG controllers on 
-            # add_listener attribute, this is not generic!
-            if hasattr(tg_ctrl, 'add_listener'):
-                ctrls_sw_out[ctrl] = ctrl_info
-            if not hasattr(tg_ctrl, 'add_listener'):
-                ctrls_hw_out[ctrl] = ctrl_info
+    for ctrl, ctrl_info in ctrls_in.items():
+        # splitting ZeroD based on the type
+        if ctrl.get_ctrl_types()[0] == ElementType.ZeroDExpChannel:
+            ctrls_0d_out[ctrl] = ctrl_info
+        # splitting rest of the channels based on the assigned trigger
+        else:
+            tg_element = ctrl_info.get('trigger_element')
+            if tg_element != None:
+                tg_pool_ctrl = tg_element.get_controller() 
+                tg_ctrl = tg_pool_ctrl._ctrl
+                # TODO: filtering software and HW TG controllers on 
+                # add_listener attribute, this is not generic!
+                if hasattr(tg_ctrl, 'add_listener'):
+                    ctrls_sw_out[ctrl] = ctrl_info
+                if not hasattr(tg_ctrl, 'add_listener'):
+                    ctrls_hw_out[ctrl] = ctrl_info
     # TODO: timer and monitor are just random elements!!!
     if len(ctrls_sw_out):
         mg_sw_cfg_out['timer'] = ctrls_sw_out.values()[0]['timer']
@@ -90,7 +97,7 @@ def split_MGConfigurations(mg_cfg_in):
     if len(ctrls_hw_out):
         mg_hw_cfg_out['timer'] = ctrls_hw_out.values()[0]['timer']
         mg_hw_cfg_out['monitor'] = ctrls_hw_out.values()[0]['monitor']
-    return (mg_sw_cfg_out, mg_hw_cfg_out)
+    return (mg_hw_cfg_out, mg_sw_cfg_out, mg_0d_cfg_out)
 
 def getTGConfiguration(MGcfg):
     '''Build TG configuration from complete MG configuration.
@@ -243,12 +250,12 @@ class PoolAcquisition(PoolAction):
         # TODO: this code splits the global mg configuration into 
         # experimental channels triggered by hw and experimental channels
         # triggered by sw. Refactor it!!!!
-        (sw_acq_cfg, cont_acq_cfg) = split_MGConfigurations(config)
+        (hw_acq_cfg, sw_acq_cfg, zerod_acq_cfg) = split_MGConfigurations(config)
         tg_cfg, _ = getTGConfiguration(config)
         # starting continuous acquisition only if there are any controllers
-        if len(cont_acq_cfg['controllers']):
+        if len(hw_acq_cfg['controllers']):
             cont_acq_kwargs = dict(kwargs)
-            cont_acq_kwargs['config'] = cont_acq_cfg
+            cont_acq_kwargs['config'] = hw_acq_cfg
             self._cont_acq.run(*args, **cont_acq_kwargs)
         if len(sw_acq_cfg['controllers']):
             sw_acq_kwargs = dict(kwargs)
