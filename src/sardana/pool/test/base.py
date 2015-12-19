@@ -25,7 +25,8 @@
 
 from sardana.pool.test import (FakePool, createPoolController, createCtrlConf,
                                createPoolCounterTimer, createPoolTriggerGate,
-                               createPoolMotor, createElemConf)
+                               createPoolMotor, createElemConf,
+                               createPoolZeroDExpChannel)
 import logging
 
 class BasePoolTestCase(object):
@@ -48,6 +49,14 @@ class BasePoolTestCase(object):
         self.cts[name] = elem_obj
         self.pool.add_element(elem_obj)
 
+    def createZeroDElement(self, ctrl_obj, name, axis):
+        e_cfg = createElemConf(self.pool, axis, name)
+        elem_obj = createPoolZeroDExpChannel(self.pool, ctrl_obj, e_cfg)
+        ctrl_obj.add_element(elem_obj)
+        # ZeroD elements
+        self.zerods[name] = elem_obj
+        self.pool.add_element(elem_obj)
+
     def createTGElement(self, ctrl_obj, name, axis):
         e_cfg = createElemConf(self.pool, axis, name)
         elem_obj = createPoolTriggerGate(self.pool, ctrl_obj, e_cfg)
@@ -67,13 +76,14 @@ class BasePoolTestCase(object):
     def setUp(self):
         """Create a collection of controllers and elements.
         """
-        self.nctctrls = self.ntgctrls = self.nmotctrls = 4
-        self.nctelems = self.ntgelems = self.nmotelems = 5
+        self.nctctrls = self.nzerodctrls = self.ntgctrls = self.nmotctrls = 4
+        self.nctelems = self.nzerodelems = self.ntgelems = self.nmotelems = 5
         self.pool = FakePool(self.POOLPATH, self.LOGLEVEL)
         # Use debug mode
 
         self.ctrls = {}
         self.cts = {}
+        self.zerods = {}
         self.tgs = {}
         self.mots = {}
         # Create nctctrls CT ctrls
@@ -86,6 +96,16 @@ class BasePoolTestCase(object):
             for axis in range(1, self.nctelems + 1):
                 name = '_test_ct_%s_%s' % (ctrl, axis)
                 self.createCTElement(ctrl_obj, name, axis)
+        # Create nzerodctrls ZeroD ctrls
+        for ctrl in range(1, self.nzerodctrls + 1):
+            name = '_test_0d_ctrl_%s' % ctrl
+            ctrl_obj = self.createController(name,
+                                'DummyZeroDController',
+                                'DummyZeroDController.py')
+            # Create nelems ZeroD elements for each ctrl
+            for axis in range(1, self.nzerodelems + 1):
+                name = '_test_0d_%s_%s' % (ctrl, axis)
+                self.createZeroDElement(ctrl_obj, name, axis)
         # Create ntgctrls TG ctrls
         for ctrl in range(1, self.ntgctrls + 1):
             name = '_test_tg_ctrl_%s' % ctrl

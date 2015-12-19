@@ -355,6 +355,11 @@ config_12 = [[('_test_ct_1_1', '_test_stg_1_1', AcqTriggerType.Trigger),
              [('_test_ct_2_1', '_test_stg_1_1', AcqTriggerType.Trigger),
               ('_test_ct_2_2', '_test_stg_1_1', AcqTriggerType.Trigger)]]
 
+doc_13 = 'Test acquisition of zerod using software gate.'
+config_13 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),],
+             [('_test_0d_1_1', '_test_stg_1_1', AcqTriggerType.Gate),]]
+
+
 @insertTest(helper_name='meas_contpos_acquisition', test_method_doc=doc_12,
             params=params_4, config=config_12)
 @insertTest(helper_name='meas_contpos_acquisition', test_method_doc=doc_12,
@@ -389,6 +394,10 @@ config_12 = [[('_test_ct_1_1', '_test_stg_1_1', AcqTriggerType.Trigger),
             params=params_1, config=config_4)
 @insertTest(helper_name='meas_double_acquisition_samemode', test_method_doc=doc_11,
             params=params_2, config=config_11)
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_9,
+            params=params_1, config=config_1, second_config=config_7)
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_13,
+            params=params_1, config=config_13)
 class AcquisitionTestCase(BasePoolTestCase, BaseAcquisition, unittest.TestCase):
     """Integration test of TGGeneration and Acquisition actions."""
 
