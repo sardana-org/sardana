@@ -149,8 +149,10 @@ class PoolAcquisition(PoolAction):
         contctname = name + ".ContCTAcquisition"
         tggenname = name + ".TGGeneration"
 
-        self._config = None
+        self._sw_config = None
+        self._zerod_config = None
         self._cont_ct_acq_busy = threading.Event()
+        self._zerod_acq_busy = threading.Event()
         self._0d_acq = zd_acq = Pool0DAcquisition(main_element, name=zerodname)
         self._ct_acq = PoolCTAcquisition(main_element, name=ctname,
                                                                slaves=(zd_acq,))
@@ -159,8 +161,11 @@ class PoolAcquisition(PoolAction):
         self._tg_gen = PoolTGGeneration(main_element, name=tggenname)
 
 
-    def set_config(self, config):
-        self._config = config
+    def set_sw_config(self, config):
+        self._sw_config = config
+
+    def set_zerod_config(self, config):
+        self._zerod_config = config
 
     def set_cont_ct_acq_busy(self, busy):
         '''Callback to reset busy event about the continuous count acquisition.
@@ -171,36 +176,74 @@ class PoolAcquisition(PoolAction):
         else:
             self._cont_ct_acq_busy.clear()
 
+    def set_zerod_acq_busy(self, busy):
+        '''Callback to reset busy event about the continuous count acquisition.
+        It is triggered by the WorkerThread when the acquisition has finished.
+        '''
+        if busy is True:
+            self._zerod_acq_busy.set()
+        else:
+            self._zerod_acq_busy.clear()
+
     def is_cont_ct_acq_busy(self):
         '''Verify if the continuous count acquisition is busy
         '''
         return self._cont_ct_acq_busy.is_set()
 
+    def is_zerod_acq_busy(self):
+        '''Verify if the zerod acquisition is busy
+        '''
+        return self._zerod_acq_busy.is_set()
+
     def event_received(self, *args, **kwargs):
         timestamp = time.time()
         _, event_type, event_id = args
+        t_fmt = '%Y-%m-%d %H:%M:%S.%f'
+        t_str = datetime.datetime.fromtimestamp(timestamp).strftime(t_fmt)
+        self.debug('%s event with id: %d received at: %s' %\
+                             (TGEventType.whatis(event_type), event_id, t_str))
         if event_type == TGEventType.Active:
-            t_fmt = '%Y-%m-%d %H:%M:%S.%f'
-            t_str = datetime.datetime.fromtimestamp(timestamp).strftime(t_fmt)
-            self.debug('Active event with id: %d received at: %s' %\
-                                                              (event_id, t_str))
             # this code is not thread safe, but for the moment we assume that
             # only one EventGenerator will work at the same time
-            if self.is_cont_ct_acq_busy():
-                msg = 'Skipping trigger: acquisition is still in progress.'
-                self.debug(msg)
-                return
-            else:
-                self.set_cont_ct_acq_busy(True)
-                self.debug('Executing acquisition.')
-                args = ()
-                kwargs = self._config
-                kwargs['synch'] = True
-                kwargs['idx'] = event_id
-                get_thread_pool().add(self._run_ct_continuous,
-                                      callback=self.set_cont_ct_acq_busy,
-                                      *args,
-                                      **kwargs)
+            if self._sw_config:
+                if self.is_cont_ct_acq_busy():
+                    msg = ('Skipping trigger: software acquisition is still'
+                           ' in progress.')
+                    self.debug(msg)
+                    return
+                else:
+                    self.set_cont_ct_acq_busy(True)
+                    self.debug('Executing software acquisition.')
+                    args = ()
+                    kwargs = self._sw_config
+                    kwargs['synch'] = True
+                    kwargs['idx'] = event_id
+                    get_thread_pool().add(self._run_ct_continuous,
+                                          callback=self.set_cont_ct_acq_busy,
+                                          *args,
+                                          **kwargs)
+            if self._zerod_config:
+                if self.is_zerod_acq_busy():
+                    msg = ('Skipping trigger: ZeroD acquisition is still in'
+                           ' progress.')
+                    self.debug(msg)
+                    return
+                else:
+                    self.set_zerod_acq_busy(True)
+                    self.debug('Executing ZeroD acquisition.')
+                    args = ()
+                    kwargs = self._zerod_config
+                    kwargs['synch'] = True
+                    kwargs['idx'] = event_id
+                    get_thread_pool().add(self._run_zerod_acquisition,
+                                          callback=self.set_zerod_acq_busy,
+                                          *args,
+                                          **kwargs)
+
+        elif event_type == TGEventType.Passive:
+            if self._zerod_config and self.is_zerod_acq_busy():
+                self.debug('Stopping ZeroD acquisition.')
+                self._0d_acq.stop_action()
 
     def is_running(self):
         return self._0d_acq.is_running() or\
@@ -257,11 +300,16 @@ class PoolAcquisition(PoolAction):
             cont_acq_kwargs = dict(kwargs)
             cont_acq_kwargs['config'] = hw_acq_cfg
             self._cont_acq.run(*args, **cont_acq_kwargs)
-        if len(sw_acq_cfg['controllers']):
-            sw_acq_kwargs = dict(kwargs)
-            sw_acq_kwargs['config'] = sw_acq_cfg
-            self.set_config(sw_acq_kwargs)
+        if len(sw_acq_cfg['controllers']) or len(zerod_acq_cfg['controllers']):
             self._tg_gen.add_listener(self)
+            if len(sw_acq_cfg['controllers']):
+                sw_acq_kwargs = dict(kwargs)
+                sw_acq_kwargs['config'] = sw_acq_cfg
+                self.set_sw_config(sw_acq_kwargs)
+            if len(zerod_acq_cfg['controllers']):
+                zerod_acq_kwargs = dict(kwargs)
+                zerod_acq_kwargs['config'] = zerod_acq_cfg
+                self.set_zerod_config(zerod_acq_kwargs)
         tg_kwargs = dict(kwargs)
         tg_kwargs['config'] = tg_cfg
         self._tg_gen.run(*args, **tg_kwargs)
@@ -274,6 +322,19 @@ class PoolAcquisition(PoolAction):
             self._cont_ct_acq.run(*args, **kwargs)
         except:
             self.error('Continuous Count Acquisition has failed')
+            self.debug('Details:', exc_info=True)
+        finally:
+            # return False indicating that the acquisition is not busy 
+            return False
+
+    def _run_zerod_acquisition(self, *args, **kwargs):
+        """Run a single acquisition with the software triggered elements
+        during the continuous acquisition
+        """
+        try:
+            self._0d_acq.run(*args, **kwargs)
+        except:
+            self.error('ZeroD Acquisition has failed')
             self.debug('Details:', exc_info=True)
         finally:
             # return False indicating that the acquisition is not busy 

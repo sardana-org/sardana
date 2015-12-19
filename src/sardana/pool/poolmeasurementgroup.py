@@ -365,7 +365,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                 ctrl = pool.get_element_by_full_name(c_name)
                 assert ctrl.get_type() == ElementType.Controller
             controllers[ctrl] = ctrl_data = {}
-            if not external and ctrl.is_timerable():
+            if not external:
                 timer_name = c_data['timer']
                 timer = pool.get_element_by_full_name(timer_name)
                 ctrl_data['timer'] = timer
