@@ -36,6 +36,7 @@ import time
 from sardana import ElementType
 from sardana.sardanaevent import EventType
 from sardana.sardanaattribute import SardanaAttribute
+from sardana.sardanavalue import SardanaValue
 
 from sardana.pool.poolbasechannel import PoolBaseChannel
 from sardana.pool.poolacquisition import Pool0DAcquisition
@@ -132,6 +133,8 @@ class Value(SardanaAttribute):
         accumulation_type = kwargs.pop('accumulation_type', self.DefaultAccumulationType)
         super(Value, self).__init__(*args, **kwargs)
         self.set_accumulation_type(accumulation_type)
+        # member to store the acquisition index
+        self._index = None
 
     def get_val(self):
         return self.obj.get_value_attribute()
@@ -148,12 +151,26 @@ class Value(SardanaAttribute):
         return self._accumulation
 
     accumulation = property(get_accumulation)
-
+    
     def _get_value(self):
         value = self._accumulation.value
         if value is None:
             raise Exception("Value not available: no acquisition done so far!")
         return value
+
+    def _get_value_obj(self):
+        '''Override superclass method and compose a SardanaValue object from 
+        the present values.
+        '''
+        value = self._accumulation.value
+        # use timestamp of the last acquired sample as timestamp of accumulation
+        timestamp = self._accumulation.get_time_buffer()[-1]
+        idx = self._index
+        # TODO: eventually fix when it will be reconsidered if SardanaValue 
+        # stores lists of values and indexes, or a list of SardanaValues will be
+        # used as buffer. 
+        value_obj = SardanaValue(value=[value], idx=[idx], timestamp=timestamp)
+        return value_obj
 
     def get_value_buffer(self):
         return self.accumulation.get_value_buffer()
@@ -162,13 +179,21 @@ class Value(SardanaAttribute):
         return self.accumulation.get_time_buffer()
 
     def clear_buffer(self):
+        self._index = None
         self.accumulation.clear()
 
-    def append_value(self, value, propagate=1):
+    def append_value(self, value, index=None, propagate=1):
         self.accumulation.append_value(value.value, value.timestamp)
+        self._index = index
         if propagate > 0:
             evt_type = EventType(self.name, priority=propagate)
             self.fire_event(evt_type, self)
+
+    def propagate(self, priority=1):
+        '''Propagate event to listeners
+        '''
+        evt_type = EventType(self.name, priority=priority)
+        self.fire_event(evt_type, self)
 
 
 class Pool0DExpChannel(PoolBaseChannel):
@@ -236,13 +261,17 @@ class Pool0DExpChannel(PoolBaseChannel):
             :class:`~sardana.sardanavalue.SardanaValue`"""
         return self.acquisition.read_value()[self]
 
-    def put_current_value(self, value, propagate=1):
+    def put_current_value(self, value, index=None, propagate=1):
         """Sets a value.
 
         :param value:
             the new value
         :type value:
             :class:`~sardana.sardanavalue.SardanaValue`
+        :param index:
+            acquisition index to which the current value belongs
+        :type index:
+            :class:`int`
         :param propagate:
             0 for not propagating, 1 to propagate, 2 propagate with priority
         :type propagate:
@@ -251,7 +280,7 @@ class Pool0DExpChannel(PoolBaseChannel):
         curr_val_attr.set_value(value, propagate=propagate)
         if self.is_in_operation():
             acc_val_attr = self.get_accumulated_value_attribute()
-            acc_val_attr.append_value(value, propagate=propagate)
+            acc_val_attr.append_value(value, index=index, propagate=propagate)
 
     def get_current_value(self, cache=True, propagate=1):
         """Returns the counter value.
@@ -267,8 +296,8 @@ class Pool0DExpChannel(PoolBaseChannel):
     current_value = property(get_current_value, doc="0D value")
     accumulated_value = property(get_accumulated_value, doc="0D value")
 
-    def put_value(self, value, propagate=1):
-        return self.put_current_value(value, propagate=propagate)
+    def put_value(self, value, index=None, propagate=1):
+        return self.put_current_value(value, index=index, propagate=propagate)
 
     def _get_value(self):
         return self.get_current_value()
@@ -279,6 +308,12 @@ class Pool0DExpChannel(PoolBaseChannel):
         if not propagate:
             return
         self.fire_event(EventType("value", priority=propagate), cumulation.value)
+
+    def propagate_value(self, priority=2):
+        '''Propagate value attribute to its listeners.
+        '''
+        value = self.get_value_attribute()
+        value.propagate(priority=priority)
 
     def clear_buffer(self):
         self.get_accumulated_value_attribute().clear_buffer()

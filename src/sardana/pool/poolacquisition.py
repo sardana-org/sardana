@@ -923,6 +923,8 @@ class Pool0DAcquisition(PoolAction):
 
         pool = self.pool
 
+        self.conf = kwargs
+
         # prepare data structures
         self._aborted = False
         self._stopped = False
@@ -985,7 +987,6 @@ class Pool0DAcquisition(PoolAction):
                 return True
 
     def action_loop(self):
-        i = 0
 
         states, values = {}, {}
         for element in self._channels:
@@ -996,10 +997,11 @@ class Pool0DAcquisition(PoolAction):
         while not (self._stopped or self._aborted):
             self.read_value(ret=values)
             for acquirable, value in values.items():
-                acquirable.put_value(value)
-
-            i += 1
+                acquirable.put_value(value, index=self.conf['idx'], propagate=0)
             time.sleep(nap)
+
+        for element in self._channels:
+            element.propagate_value(priority=1)
 
         with ActionContext(self):
             self.raw_read_state_info(ret=states)
