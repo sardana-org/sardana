@@ -1547,7 +1547,7 @@ class IORegister(PoolElement):
         return self._getAttrEG('value')
 
     def readValue(self, force=False):
-        return self._getAttrValue('value', force=fosrce)
+        return self._getAttrValue('value', force=force)
 
     def startWriteValue(self, new_value, timeout=None):
         try:
