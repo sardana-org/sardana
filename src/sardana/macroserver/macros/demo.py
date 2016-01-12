@@ -30,6 +30,7 @@ __all__ = ["sar_demo"]
 import PyTango
 
 from sardana.macroserver.macro import macro, Type
+from sardana.macroserver.msexception import UnknownEnv
 
 _ENV = "_SAR_DEMO"
 
@@ -58,10 +59,18 @@ def clear_sar_demo(self):
     except:
         self.error("No demo has been prepared yet on this sardana!")
         return
-    
+
+    try:
+        _ActiveMntGrp = self.getEnv("ActiveMntGrp")
+    except UnknownEnv:
+        _ActiveMntGrp = None
+
     self.print("Removing measurement groups...")
     for mg in SAR_DEMO.get("measurement_groups", ()):
         self.udefmeas(mg)
+        if mg == _ActiveMntGrp:
+            self.print("Unsetting ActiveMntGrp (was: %s)" % _ActiveMntGrp)
+            self.unsetEnv("ActiveMntGrp")
     
     self.print("Removing elements...")
     for elem in SAR_DEMO.get("elements", ()):
@@ -149,7 +158,13 @@ def sar_demo(self):
    
     self.print("Creating measurement group", mg_name, "...")
     self.defmeas(mg_name, *ct_names)
-    
+
+    try:
+        self.getEnv("ActiveMntGrp")
+    except UnknownEnv:
+        self.print("Setting %s as ActiveMntGrp" % mg_name)
+        self.setEnv("ActiveMntGrp", mg_name)
+
     controllers = pm_ctrl_name, mot_ctrl_name, ct_ctrl_name, \
             zerod_ctrl_name, oned_ctrl_name, twod_ctrl_name
     elements = [gap, offset] + motor_names + ct_names + \
