@@ -355,7 +355,45 @@ class SardanaDevice(Device_4Impl, Logger):
 
             data_type = attr.get_data_type()
             if w_value is not None and isinstance(attr, WAttribute):
-                attr.set_write_value(w_value)
+                # The following try/except workarounds bug-238: "Not possible
+                # to read motor's position when it's out of limits"
+                # (http://sourceforge.net/p/sardana/tickets/238)
+                # In the condition of position attribute out of range, its
+                # w_value will not be updated during readouts or when pushing
+                # events.
+                # The workaround does not affect the drift correction feature
+                # of the pseudomotors, but affects pending operation of the
+                # Taurus write widgets of the position attribute or any other
+                # feature (not known at the moment of applying this workaround)
+                # or anyone trusting the w_value.
+                #
+                # TODO: Remove the try/except protection whenever Sardana
+                # feature-286 has been implemented and bug-54 has been fixed. 
+                # The lack of the feature and the bug can lead to the situation
+                # when motor's position write value is out of range.
+                #
+                # feature-286: "Solve inconsistencies between user position
+                # limits and dial position limits"
+                # (http://sourceforge.net/p/sardana/tickets/286)
+                #
+                # bug-54: "Software limits problems between motors and
+                # pseudomotors"
+                # (http://sourceforge.net/p/sardana/tickets/54)
+                ###############################################################
+                try:
+                    attr.set_write_value(w_value)
+                except DevFailed as df:
+                    error = df[0]
+                    reason = error.reason
+                    if reason == PyTango.constants.API_WAttrOutsideLimit and\
+                       attr_name == 'position':
+                        msg = ('Unable to update "w_value" because it is' +
+                               ' out of range')
+                        self.warning(msg)
+                        self.debug('Details:', exc_info = 1)
+                    else:
+                        raise df
+                ###############################################################
             if fire_event:
                 if data_type == ArgType.DevEncoded:
                     fmt, data = value

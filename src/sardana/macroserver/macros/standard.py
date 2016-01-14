@@ -31,6 +31,7 @@ __docformat__ = 'restructuredtext'
 import datetime
 from taurus.console.table import Table
 
+import PyTango
 from PyTango import DevState
 from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, ViewOption
 
@@ -49,78 +50,84 @@ class _wm(Macro):
          None, 'List of motor to show'],
     ]
 
-    def prepare(self, *motor_list, **opts):
-        self.table_opts = {}
-    
     def run(self, *motor_list):
         show_dial = self.getViewOption(ViewOption.ShowDial)
         show_ctrlaxis = self.getViewOption(ViewOption.ShowCtrlAxis)
         pos_format = self.getViewOption(ViewOption.PosFormat)
-
         motor_width = 9
-        motor_names = []
-        motor_pos   = []
-        motor_list = list(motor_list)
-        motor_list.sort()
+        motors = {} # dict(motor name: motor obj)
+        requests = {} # dict(motor name: request id)
+        data = {} # dict(motor name: list of motor data)
+        # sending asynchronous requests: neither Taurus nor Sardana extensions
+        # allow asynchronous requests - use PyTango asynchronous request model
         for motor in motor_list:
-
             name = motor.getName()
-            motor_names.append([name])
-
-            pos = motor.getPosition(force=True)
-            if pos is None:
-                pos = float('NAN')
-        
-            # TODO: refactor this code, so the info tuple is progressively
-            # expanded depending on the _ViewOptions, instead of repeating the 
-            # code in the if/else statements
+            motors[name] = motor
+            args = ('position',)
             if show_dial:
-                dial_pos = motor.getDialPosition(force=True)
-                if dial_pos is None:
-                    dial_pos = float('NAN')
-                if show_ctrlaxis:
-                    ctrl_name = self.getController(motor.controller).name
-                    axis_nb = getattr(motor, "axis")
-                    motor_pos.append((ctrl_name, str(axis_nb), pos, dial_pos))
-                else:
-                    motor_pos.append((pos,dial_pos))
-            else:
-                if show_ctrlaxis:
-                    ctrl_name = self.getController(motor.controller).name
-                    axis_nb = getattr(motor, "axis")
-                    motor_pos.append((ctrl_name, str(axis_nb), pos))
-                else:
-                    motor_pos.append((pos,))
-
-            motor_width = max(motor_width,len(name))
-            
-            if show_ctrlaxis:
-                motor_width = max(motor_width, len(ctrl_name), len(str(axis_nb)))
- 
-        fmt = '%c*.%df' % ('%',motor_width - 5)
-
-        if pos_format > -1:
-            fmt = '%c*.%df' % ('%',int(pos_format))
-
-        row_head_str = []
+                args += ('dialposition',)
+            _id = motor.read_attributes_asynch(args)
+            requests[name] = _id
+            motor_width = max(motor_width, len(name))
+            data[name] = []
+        # get additional motor information (ctrl name & axis)
         if show_ctrlaxis:
-            row_head_str += ['Ctrl', 'Axis']
-            if show_dial:
-                t_format = ['%*s','%*s',fmt,fmt]
-                row_head_str += ['User', 'Dial']
-            else:
-                t_format = ['%*s','%*s',fmt]
-                row_head_str += ['User']
-        else:
-            if show_dial:
-                t_format = [fmt, fmt]
-            else:
-                t_format = [fmt]
-
-        row_head_str = row_head_str if len(row_head_str) else None 
-        table = Table(motor_pos, elem_fmt=t_format,
-                      col_head_str=motor_names, col_head_width=motor_width,
-                      row_head_str=row_head_str, **self.table_opts)
+            for name, motor in motors.iteritems():
+                ctrl_name = self.getController(motor.controller).name
+                axis_nb = str(getattr(motor, "axis"))
+                data[name].extend((ctrl_name, axis_nb))
+                motor_width = max(motor_width, len(ctrl_name), len(axis_nb))
+        # collect asynchronous replies
+        while len(requests) > 0:
+            req2delete = []
+            for name, _id in requests.iteritems():
+                motor = motors[name]
+                try:
+                    attrs = motor.read_attributes_reply(_id)
+                    for attr in attrs:
+                        value = attr.value
+                        if value == None:
+                            value = float('NaN')
+                        data[name].append(value)
+                    req2delete.append(name)
+                except PyTango.AsynReplyNotArrived, e:
+                    continue
+                except PyTango.DevFailed:
+                    data[name].append(float('NaN'))
+                    if show_dial:
+                        data[name].append(float('NaN'))
+                    req2delete.append(name)
+                    self.debug('Error when reading %s position(s)' % name)
+                    self.debug('Details:', exc_info=1)
+                    continue
+            # removing motors which alredy replied
+            for name in req2delete:
+                requests.pop(name)
+        # define format for numerical values
+        fmt = '%c*.%df' % ('%', motor_width - 5)
+        if pos_format > -1:
+            fmt = '%c*.%df' % ('%', int(pos_format))
+        # prepare row headers and formats
+        row_headers = []
+        t_format = []
+        if show_ctrlaxis:
+            row_headers += ['Ctrl', 'Axis']
+            t_format += ['%*s', '%*s']
+        row_headers.append('User')
+        t_format.append(fmt)
+        if show_dial:
+            row_headers.append('Dial')
+            t_format.append(fmt)
+        # sort the data dict by keys
+        col_headers = []
+        values = []
+        for mot_name, mot_values in sorted(data.items()):
+            col_headers.append([mot_name]) # convert name to list
+            values.append(mot_values)
+        # create and print table
+        table = Table(values, elem_fmt=t_format,
+                      col_head_str=col_headers, col_head_width=motor_width,
+                      row_head_str=row_headers)
         for line in table.genOutput():
             self.output(line)
 

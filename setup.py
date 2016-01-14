@@ -317,6 +317,11 @@ def main():
         'sardana.macroserver.macros.examples',
         'sardana.macroserver.scan',
         'sardana.macroserver.scan.recorder',
+        'sardana.macroserver.recorders',
+        'sardana.macroserver.recorders.examples',
+
+        'sardana.macroserver.test',
+        'sardana.macroserver.test.res',
 
         'sardana.tango',
         'sardana.tango.core',
@@ -352,7 +357,8 @@ def main():
     
     package_data = {'sardana.taurus.qt.qtgui.extra_macroexecutor': ['ui/*.ui'],
                     'sardana.taurus.qt.qtgui.extra_pool': ['ui/*.ui'],
-                    'sardana.taurus.qt.qtgui.extra_sardana': ['ui/*.ui']
+                    'sardana.taurus.qt.qtgui.extra_sardana': ['ui/*.ui'],
+                    'sardana.macroserver.test.res': ['recorders/path*/*'],
                     }
     
     provides = [
@@ -365,7 +371,7 @@ def main():
 
     requires = [
         'PyTango (>=7.2.3)',
-        'taurus (>= 3.4.0)',
+        'taurus (>= 3.6.0)',
         'lxml (>=2.1)',
         'ipython (>=0.10, !=0.11)'
     ]

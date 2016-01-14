@@ -254,6 +254,21 @@ class SardanaLibrary(SardanaBaseObject):
         return self.has_meta_class(meta_name) or \
                self.has_meta_function(meta_name)
 
+    def has_metas(self):
+        """Returns True if any meta object exists in the library
+        or False otherwise.
+
+        :return:
+            True if any meta object (class or function) exists
+            in the library or False otherwise
+        :rtype: bool
+        """
+        has_metas_bool = False
+        if (len(self.get_meta_classes()) > 0 or 
+            len(self.get_meta_functions()) > 0):
+            has_metas_bool = True
+        return has_metas_bool
+
     def get_metas(self):
         """Returns a sequence of the meta (class and functions) that belong to
         this library.

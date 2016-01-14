@@ -28,6 +28,5 @@
 __docformat__ = 'restructuredtext'
 
 from .datarecorder import *
-from .output import *
 from .sharedmemory import *
 from .storage import *

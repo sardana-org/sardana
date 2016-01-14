@@ -183,8 +183,31 @@ class ModuleManager(Singleton, Logger):
                 mfile.close()
         return pathname
 
+    def isValidModule(self, module_name, path=None):
+        """ Method to verify is a module is loadable.
+        """
+        m, mfile = None, None
+        fake_name = "_" + module_name + "_"
+        try:
+            mfile, pathname, desc = imp.find_module(module_name, path)
+            self.info("(re)loading module %s...", module_name)
+            m = imp.load_module(fake_name, mfile, pathname, desc)
+        except:
+            self.error("Invalid module %s", module_name)
+            self.debug("Details:", exc_info=1)
+            return False, sys.exc_info()
+        finally:
+            if mfile is not None:
+                mfile.close()
+
+        del sys.modules[fake_name]
+        return True, None
+
     def reloadModule(self, module_name, path=None, reload=True):
         """Loads/reloads the given module name"""
+        valid, _ = self.isValidModule(module_name, path)
+        if not valid:
+            return None
 
         if not reload:
             return self.loadModule(module_name, path=path)
@@ -205,7 +228,7 @@ class ModuleManager(Singleton, Logger):
                 mfile.close()
 
         if m is None:
-            return
+            return None
 
         self._modules[module_name] = m
 
@@ -250,7 +273,7 @@ class ModuleManager(Singleton, Logger):
         with PathContext(path):
             self.info("loading module %s...", module_name)
             try:
-                module = __import__(module_name, globals(), locals(), [], -1)
+                module = __import__(module_name, globals(), locals(), -1)
             except:
                 self.error("Error loading module %s", module_name)
                 self.debug("Details:", exc_info=1)

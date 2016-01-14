@@ -826,15 +826,16 @@ class PoolMotorTVLabelWidget(TaurusWidget):
             motor_dev.getAttribute('PowerOn').write(poweron)
 
     def setModel(self, model):
-        TaurusWidget.setModel(self, model)
         # Handle User/Expert view
         self.disconnect(self.taurusValueBuddy(), Qt.SIGNAL('expertViewChanged(bool)'), self.setExpertView)
         self.disconnect(self.btn_poweron, Qt.SIGNAL('clicked()'), self.setPowerOn)
         if model in (None, ''):
+            self.lbl_alias.setModel(model)
+            TaurusWidget.setModel(self, model)
             return
-        TaurusWidget.setModel(self, model + '/Status')
         self.lbl_alias.taurusValueBuddy = self.taurusValueBuddy
         self.lbl_alias.setModel(model)
+        TaurusWidget.setModel(self, model + '/Status')
 
         self.connect(self.taurusValueBuddy(), Qt.SIGNAL('expertViewChanged(bool)'), self.setExpertView)
         # Handle Power ON/OFF
@@ -976,8 +977,12 @@ class PoolMotorTVReadWidget(TaurusWidget):
             if isinstance(self.parent(), TaurusReadWriteSwitcher):
                 self.parent().enterEdit()
                 return True
-        if obj is self.lbl_read:
-            return self.lbl_read.eventFilter(obj, event)
+        try:
+            if obj is self.lbl_read:
+                return self.lbl_read.eventFilter(obj, event)
+        except AttributeError:
+            # self.lbl_read may not exist now
+            pass
         return True
 
     @ProtectTaurusMessageBox(msg='An error occurred trying to abort the motion.')
@@ -1154,9 +1159,13 @@ class PoolMotorTVWriteWidget(TaurusWidget):
         
     def eventFilter(self, obj, event):
         '''reimplemented to intercept events from the subwidgets'''
-        if obj in (self.btn_to_neg_press, self.btn_to_pos_press):
-            if event.type() == Qt.QEvent.MouseButtonRelease:                
-                self.emitEditingFinished()
+        try:
+            if obj in (self.btn_to_neg_press, self.btn_to_pos_press):
+                if event.type() == Qt.QEvent.MouseButtonRelease:
+                    self.emitEditingFinished()
+        except AttributeError:
+            # self.btn_to_neg_press, self.btn_to_pos_press may not exist now
+            pass
         # emit editingFinished when focus out to a non-editing widget        
         if event.type() == Qt.QEvent.FocusOut:                  
             focused = Qt.qApp.focusWidget()            
@@ -1429,7 +1438,11 @@ class PoolMotorTV(TaurusValue):
         self.writeWidget(followCompact=True).btn_to_neg.setEnabled(enabled)
         self.writeWidget(followCompact=True).btn_to_neg_press.setEnabled(enabled)
 
-    def updatePowerOn(self, poweron):
+    def updatePowerOn(self, poweron='__no_argument__'):
+        if poweron == '__no_argument__':
+            msg = 'updatePowerOn called without args (bug in old PyQt). Ignored'
+            self.debug(msg)
+            return
         btn_text = 'Set ON'
         if poweron:
             btn_text = 'Set OFF'
@@ -1443,7 +1456,11 @@ class PoolMotorTV(TaurusValue):
         #self.labelWidget().lbl_alias.updateStyle()
         self.labelWidget().lbl_alias.controllerUpdate()
 
-    def updatePosition(self, position):
+    def updatePosition(self, position='__no_argument__'):
+        if position == '__no_argument__':
+            msg = 'updatePowerOn called without args (bug in old PyQt). Ignored'
+            self.debug(msg)
+            return
         # we do not need the position for nothing...
         # we just want to check if any software limit is 'active'
         # and updateLimits takes care of it

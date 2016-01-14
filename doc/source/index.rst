@@ -54,3 +54,4 @@ Projects related to Sardana
 .. _IPython: http://ipython.org/
 
 :Last Update: |today|
+:Release: |release|

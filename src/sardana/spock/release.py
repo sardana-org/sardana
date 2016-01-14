@@ -39,7 +39,8 @@ name = 'spock'
 revision = '1'
 
 #version = '0.8.1.svn.r' + revision.rstrip('M')
-version = '1.5.0'
+# BUMP TO 2.0.0 DUE TO BACKWARDS INCOMPATIBILITY OF FEATURE-380
+version = '1.6.1'
 
 description = "An enhanced interactive Macro Server shell."
 

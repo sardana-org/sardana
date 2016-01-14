@@ -113,13 +113,18 @@ class defelem(Macro):
 
 
 class udefelem(Macro):
-    """Deletes an existing element"""
+    """Deletes an existing element(s)"""
 
-    param_def = [ ['element', Type.Element, None, 'element name'],]
+    param_def = [
+       ['elements',
+        ParamRepeat(['element', Type.Element, None, 'element name'], min=1),
+        None, 'List of element(s) name'],
+    ]
 
-    def run(self, element):
-        pool = element.getPoolObj()
-        pool.deleteElement(element.getName())
+    def run(self, *elements):
+        for element in elements:
+            pool = element.getPoolObj()
+            pool.deleteElement(element.getName())
 
 
 class defctrl(Macro):
@@ -281,8 +286,21 @@ class rellib(Macro):
     
     .. warning:: use with extreme care! Accidentally reloading a system
                  module or an installed python module may lead to unpredictable
-                 behavior 
-    
+                 behavior
+
+    .. warning:: Prior to the Sardana version 1.6.0 this macro was successfully
+                 reloading python libraries located in the MacroPath.
+                 The MacroPath is not a correct place to locate your python
+                 libraries. They may be successfully loaded on the MacroServer
+                 startup, but this can not be guaranteed.
+                 In order to use python libraries within your macro code,
+                 locate them in either of valid system PYTHONPATH or
+                 MacroServer PythonPath property (of the host where
+                 MacroServer runs).
+                 In order to achieve the previous behavior, just configure the
+                 the same directory in both system PYTHONPATH (or MacroServer's
+                 PythonPath) and MacroPath.
+
     .. note:: if python module is used by any macro, don't forget to reload
               the corresponding macros afterward so the changes take effect."""
 
@@ -315,18 +333,22 @@ class relmaclib(Macro):
         name = macro_library.name
         new_macro_library = self.reloadMacroLibrary(name)
         if new_macro_library.has_errors():
+            self.warning("%s could not be (re)loaded", name)
             exc_info = new_macro_library.get_error()
-            #msg = "".join(traceback.format_exception(*exc_info))
             msg = "".join(traceback.format_exception_only(*exc_info[:2]))
             self.error(msg)
+            self.warning("The old %s macro library is still available.", name)
         else:
             macros = new_macro_library.get_macros()
             self.output("%s successfully (re)loaded (found %d macros)", name, len(macros))
 
-class addmaclib(Macro):
-    """Loads a new macro library. Keep in mind that macros from the new library
-    can override macros already present in the system."""
 
+class addmaclib(Macro):
+    """Loads a new macro library.
+
+    .. warning:: Keep in mind that macros from the new library can override
+                 macros already present in the system.
+    """
     param_def = [
         ['macro_library_name', Type.String, None,
          'The module name to be loaded (without extension)']
@@ -345,6 +367,7 @@ class addmaclib(Macro):
         old_macros = self.getMacroNames()
         new_macro_library = self.reloadMacroLibrary(macro_library_name)
         if new_macro_library.has_errors():
+            self.warning("%s could not be added", macro_library_name)
             exc_info = new_macro_library.get_error()
             msg = "".join(traceback.format_exception_only(*exc_info[:2]))
             self.error(msg)
@@ -373,15 +396,20 @@ class relmac(Macro):
     def run(self, macro_code):
         name = macro_code.name
         macro_library_name = macro_code.lib.name
-        self.reloadMacro(name)
-        macro_library = self.getMacroLibrary(macro_library_name)
+        macro_library = self.reloadMacro(name)
         if macro_library.has_errors():
+            self.warning("%s could not be (re)loaded", name)
             exc_info = macro_library.get_error()
-            #msg = "".join(traceback.format_exception(*exc_info))
             msg = "".join(traceback.format_exception_only(*exc_info[:2]))
             self.error(msg)
+            self.warning("The old %s macro is still available.", name)
         else:
-            self.output("%s successfully (re)loaded", name)
+            maclibname = macro_library_name
+            self.output("%s macro successfully (re)loaded", name)
+            macros_in_lib = macro_library.get_macros()
+            self.output("\nAll macros from macro library %s have " + \
+                        "been reloaded:", maclibname)
+            self.output([macro.name for macro in macros_in_lib])
 
 
 class sar_info(Macro):
