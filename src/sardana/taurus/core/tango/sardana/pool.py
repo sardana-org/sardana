@@ -1588,8 +1588,22 @@ class Pool(TangoDevice, MoveableSource):
                 elements.removeElement(element)
             except:
                 self.warning("Failed to remove %s", element_data)
-
+        for element_data in elems.get('change', ()):
+            element = self._removeElement(element_data)
+            element = self._addElement(element_data)
         return elems
+
+    def _addElement(self, element_data):
+        element_data['manager'] = self
+        element = BaseSardanaElement(**element_data)
+        self.getElementsInfo().addElement(element)
+        return element
+
+    def _removeElement(self, element_data):
+        name = element_data['full_name']
+        element = self.getElementInfo(name)
+        self.getElementsInfo().removeElement(element)
+        return element
 
     def getElementsInfo(self):
         return self._elements
