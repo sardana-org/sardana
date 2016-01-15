@@ -217,14 +217,18 @@ class SardanaContainer(object):
         return [ elem.get_name() for elem in self.get_elements_by_type(t) ]
 
     def rename_element(self, old_name, new_name):
-        """Rename a pool object
+        """Rename an object
            
-           :param old_name: old pool object name
+           :param old_name: old object name
            :type old_name: str
-           :param new_name: new pool object name
+           :param new_name: new object name
            :type new_name: str
         """
-        raise NotImplementedError
+        element = self._element_names.pop(old_name, None)
+        if element is None:
+            raise KeyError('There is no element with name %s' % old_name)
+        element.name = new_name
+        self._element_names[new_name] = element
 
     def check_element(self, name, full_name):
         raise_element_name = True
