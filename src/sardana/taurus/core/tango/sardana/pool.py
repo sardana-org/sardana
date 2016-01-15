@@ -1583,7 +1583,7 @@ class Pool(TangoDevice, MoveableSource):
             element = BaseSardanaElement(**element_data)
             elements.addElement(element)
         for element_data in elems.get('del', ()):
-            element = self.getElementInfo(element_data['name'])
+            element = self.getElementInfo(element_data['full_name'])
             try:
                 elements.removeElement(element)
             except:
