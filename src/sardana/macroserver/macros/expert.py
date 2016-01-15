@@ -112,6 +112,23 @@ class defelem(Macro):
         self.print("Created %s" % str(elem))
 
 
+class renameelem(Macro):
+    """Renames any type of Pool elements apart of Pools."""
+
+    param_def = [ ['element', Type.PoolElement, None, 'element to be renamed'],
+                  ['new_name', Type.String, None, 'new name']]
+
+    def prepare(self, elem, new_name):
+        if elem.getType() == "Pool":
+            raise WrongParam('Pool elements can not be renamed')
+
+    def run(self, elem, new_name):
+        pool = elem.getPoolObj()
+        old_name = elem.getName()
+        pool.renameElement(old_name, new_name)
+        self.print("Renamed %s to %s" % (old_name, new_name))
+
+
 class udefelem(Macro):
     """Deletes an existing element(s)"""
 
@@ -125,6 +142,7 @@ class udefelem(Macro):
         for element in elements:
             pool = element.getPoolObj()
             pool.deleteElement(element.getName())
+
 
 
 class defctrl(Macro):
