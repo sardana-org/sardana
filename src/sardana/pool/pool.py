@@ -532,6 +532,11 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         self.fire_event(EventType("ElementCreated"), elem)
         return ret
 
+    def rename_element(self, old_name, new_name):
+        PoolContainer.rename_element(self, old_name, new_name)
+        elem = self.get_element_by_name(new_name)
+        self.fire_event(EventType("ElementChanged"), elem)
+
     def delete_element(self, name):
         try:
             elem = self.get_element(name=name)

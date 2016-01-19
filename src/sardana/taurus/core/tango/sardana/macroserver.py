@@ -845,8 +845,8 @@ class BaseMacroServer(MacroServerDevice):
         return element
 
     def _removeElement(self, element_data):
-        name = element_data['name']
-        element = self.getElementInfo(name)
+        full_name = element_data['full_name']
+        element = self.getElementInfo(full_name)
         self.getElementsInfo().removeElement(element)
         return element
 

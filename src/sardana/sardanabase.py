@@ -74,6 +74,14 @@ class SardanaBaseObject(EventGenerator, EventReceiver, Logger):
         :return: this sardana object name
         :rtype: str"""
         return self._name
+    
+    def set_name(self, name):
+        """Sets sardana object name
+        
+        :param: sardana object name
+        :type: str"""
+        self._name = name
+
 
     def get_full_name(self):
         """Returns this sardana object full name
@@ -178,7 +186,7 @@ class SardanaBaseObject(EventGenerator, EventReceiver, Logger):
 
     manager = property(get_manager,
                        doc="reference to the :class:`sardana.Manager`")
-    name = property(get_name, doc="object name")
+    name = property(get_name, set_name, doc="object name")
     full_name = property(get_full_name, doc="object full name")
     frontend = property(get_frontend, doc="the object frontend")
 

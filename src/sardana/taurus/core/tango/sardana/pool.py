@@ -1583,13 +1583,27 @@ class Pool(TangoDevice, MoveableSource):
             element = BaseSardanaElement(**element_data)
             elements.addElement(element)
         for element_data in elems.get('del', ()):
-            element = self.getElementInfo(element_data['name'])
+            element = self.getElementInfo(element_data['full_name'])
             try:
                 elements.removeElement(element)
             except:
                 self.warning("Failed to remove %s", element_data)
-
+        for element_data in elems.get('change', ()):
+            element = self._removeElement(element_data)
+            element = self._addElement(element_data)
         return elems
+
+    def _addElement(self, element_data):
+        element_data['manager'] = self
+        element = BaseSardanaElement(**element_data)
+        self.getElementsInfo().addElement(element)
+        return element
+
+    def _removeElement(self, element_data):
+        name = element_data['full_name']
+        element = self.getElementInfo(name)
+        self.getElementsInfo().removeElement(element)
+        return element
 
     def getElementsInfo(self):
         return self._elements
@@ -1742,6 +1756,14 @@ class Pool(TangoDevice, MoveableSource):
         self.command_inout(cmd, pars)
         elements_info = self.getElementsInfo()
         return self._wait_for_element_in_container(elements_info, name)
+
+    def renameElement(self, old_name, new_name):
+        self.debug('trying to rename element: %s to: %s', old_name, new_name)
+        self.command_inout('RenameElement', [old_name, new_name])
+        elements_info = self.getElementsInfo()
+        return self._wait_for_element_in_container(elements_info, new_name,
+                                                   contains=True)
+
 
     def deleteElement(self, name):
         self.debug('trying to delete element: %s', name)
