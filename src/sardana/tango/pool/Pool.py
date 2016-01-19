@@ -716,9 +716,9 @@ class Pool(PyTango.Device_4Impl, Logger):
             self.ElementsCache = None
 
             value = { }
-            if evt_name is "elementcreated":
+            if evt_name == "elementcreated":
                 key = 'new'
-            elif evt_name is "elementdeleted":
+            elif evt_name == "elementdeleted":
                 key = 'del'
             else:
                 key = 'change'
