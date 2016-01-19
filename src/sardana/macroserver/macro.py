@@ -373,7 +373,10 @@ class Macro(Logger):
     Ready = State.On
 
     #: internal variable
-    Abort = State.Alarm
+    Abort = State.On
+
+    #: internal variable
+    Exception = State.Alarm
 
     #: Constant used to specify all elements in a parameter
     All = ParamType.All

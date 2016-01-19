@@ -1080,10 +1080,10 @@ class MacroExecutor(Logger):
         try:
             self.__runStatelessXML()
             self.sendState(Macro.Finished)
-        except AbortException:
+        except (StopException, AbortException):
             self.sendState(Macro.Abort)
         except Exception:
-            self.sendState(Macro.Abort)
+            self.sendState(Macro.Exception)
         finally:
             self._macro_stack = None
             self._xml_stack = None
