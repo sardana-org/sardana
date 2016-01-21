@@ -392,7 +392,8 @@ class Door(SardanaDevice):
         return [etree.tostring(xml_seq, pretty_print=False)]
 
     def is_RunMacro_allowed(self):
-        return self.get_state() in [Macro.Finished, Macro.Abort]
+        return self.get_state() in [Macro.Finished, Macro.Abort,
+                                    Macro.Exception]
 
     def SimulateMacro(self, par_str_list):
         raise Exception("Not implemented yet")
@@ -410,7 +411,8 @@ class Door(SardanaDevice):
         return ret
     
     def is_GetMacroEnv_allowed(self):
-        return self.get_state() in [Macro.Finished, Macro.Abort]
+        return self.get_state() in [Macro.Finished, Macro.Abort,
+                                    Macro.Exception]
 
 
 class DoorClass(SardanaDeviceClass):
