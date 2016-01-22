@@ -104,15 +104,14 @@ def sar_demo_hkl(self):
     hkl_ctrl_name = get_free_names(db, "hklctrl", 1)[0]
 
     motor_names = []
-    for motor in ["mu", "komega", "kappa", "kphi", "gamma", "delta"]:
+    for motor in ["mu", "omega", "chi", "phi", "gamma", "delta"]:
         motor_names += get_free_names(db, motor, 1)
 
     pseudo_names = []
     for pseudo in ["h", "k", "l",
                    "psi",
-                   "q21", "q22",
-                   "qperqpar1", "qperpar2",
-                   "eulerians1", "eulerians2", "eulerians3"]:
+                   "q", "alpha",
+                   "qper", "qpar"]:
         pseudo_names += get_free_names(db, pseudo, 1)
 
     pools = self.getPools()
@@ -130,9 +129,9 @@ def sar_demo_hkl(self):
         self.defelem(motor_name, motor_ctrl_name, axis)
 
     self.print("Creating hkl controller", hkl_ctrl_name, "...")
-    self.defctrl("DiffracK6C", hkl_ctrl_name,
+    self.defctrl("DiffracE6C", hkl_ctrl_name,
                  "mu=" + motor_names[0],  # motor role
-                 "th=" + motor_names[1],
+                 "omega=" + motor_names[1],
                  "chi=" + motor_names[2],
                  "phi=" + motor_names[3],
                  "gamma=" + motor_names[4],
@@ -141,13 +140,10 @@ def sar_demo_hkl(self):
                  "k=" + pseudo_names[1],
                  "l=" + pseudo_names[2],
                  "psi=" + pseudo_names[3],
-                 "q21=" + pseudo_names[4],
-                 "q22=" + pseudo_names[5],
-                 "qperqpar1=" + pseudo_names[6],
-                 "qperpar2=" + pseudo_names[7],
-                 "eulerians1=" + pseudo_names[8],
-                 "eulerians2=" + pseudo_names[9],
-                 "eulerians3=" + pseudo_names[10],
+                 "q=" + pseudo_names[4],
+                 "alpha=" + pseudo_names[5],
+                 "qper=" + pseudo_names[6],
+                 "qpar=" + pseudo_names[7],
                  "diffractometertype", "K6C")
 
     controllers = motor_ctrl_name, hkl_ctrl_name
