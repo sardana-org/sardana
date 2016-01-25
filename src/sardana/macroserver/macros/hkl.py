@@ -144,7 +144,7 @@ def sar_demo_hkl(self):
                  "alpha=" + pseudo_names[5],
                  "qper=" + pseudo_names[6],
                  "qpar=" + pseudo_names[7],
-                 "diffractometertype", "K6C")
+                 "diffractometertype", "E6C")
 
     controllers = motor_ctrl_name, hkl_ctrl_name
     elements = pseudo_names + motor_names
