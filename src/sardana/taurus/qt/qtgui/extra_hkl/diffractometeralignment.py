@@ -12,7 +12,6 @@ __docformat__ = 'restructuredtext'
 import sys
 import time
 import PyQt4.Qt as Qt
-from ui_diffractometeralignment import Ui_DiffractometerAlignment
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtgui.display import TaurusLabel
 from taurus.qt.qtgui.base import TaurusBaseWidget
@@ -26,6 +25,7 @@ from taurus.qt.qtgui.input import TaurusValueLineEdit
 
 import taurus.core.util.argparse
 import taurus.qt.qtgui.application
+from taurus.qt.qtgui.util.ui import UILoadable
 
 from PyTango import *
 from taurus.qt.qtgui.extra_macroexecutor import TaurusMacroExecutorWidget, TaurusSequencerWidget, \
@@ -50,14 +50,14 @@ class EngineModesComboBox(Qt.QComboBox, TaurusBaseWidget):
         self.clear()
         self.addItems(enginemodes)
 
-
+  
+@UILoadable(with_ui="_ui")
 class DiffractometerAlignment(TaurusWidget):
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode=designMode)
         
-        self._ui = Ui_DiffractometerAlignment()
-        self._ui.setupUi(self)
+        self.loadUi(filename="diffractometeralignment.ui")
 
         self.selectsignal = SelectSignal()
 

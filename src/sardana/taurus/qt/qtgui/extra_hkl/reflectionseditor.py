@@ -11,20 +11,21 @@ __docformat__ = 'restructuredtext'
 
 import sys
 import PyQt4.Qt as Qt
-from ui_reflectionseditor import Ui_ReflectionsEditor
 import taurus.core
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtgui.input import TaurusValueLineEdit
 
 from PyQt4 import QtCore, QtGui
+from taurus.qt.qtgui.util.ui import UILoadable
 
+@UILoadable(with_ui="_ui")
 class ReflectionsEditor(TaurusWidget):
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode=designMode)
+
+        self.loadUi(filename="reflectionseditor.ui")
         
-        self._ui = Ui_ReflectionsEditor()
-        self._ui.setupUi(self)
         self.connect(self._ui.ApplyButton, Qt.SIGNAL("clicked()"), self.apply)
         self.connect(self._ui.ClearButton, Qt.SIGNAL("clicked()"), self.clear)
         
@@ -68,7 +69,7 @@ class ReflectionsEditor(TaurusWidget):
             self.nb_reflections = 0
 
         try:
-            self.angle_names = self.device.motorroles
+            angle_names = self.device.motorroles
         except: # Only for compatibility
             if self.nb_angles == 4:
                 angle_names.append("omega")
@@ -99,7 +100,7 @@ class ReflectionsEditor(TaurusWidget):
                 self.hkl_values[i][jref].setGeometry(QtCore.QRect(xhkl[i], ybasis + 30*(jref+1), 81, 27))
                 object_name = "hklvalue" + str(i) + "_" + str(jref)
                 self.hkl_values[i][jref].setObjectName(object_name)
-            
+
         for i in range(0, self.nb_angles):
             self.angle_labels.append(QtGui.QLabel(self))
             self.angle_labels[i].setGeometry(QtCore.QRect(xangles[i], ybasis, 70, 20))

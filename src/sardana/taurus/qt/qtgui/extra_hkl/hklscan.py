@@ -11,7 +11,6 @@ __docformat__ = 'restructuredtext'
 
 import sys
 import PyQt4.Qt as Qt
-from ui_hklscan import Ui_HKLScan
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtgui.display import TaurusLabel
 from taurus.qt.qtgui.base import TaurusBaseWidget
@@ -26,6 +25,7 @@ from displayscanangles import DisplayScanAngles
 
 import taurus.core.util.argparse
 import taurus.qt.qtgui.application
+from taurus.qt.qtgui.util.ui import UILoadable
 
 from PyTango import *
 from taurus.qt.qtgui.extra_macroexecutor import TaurusMacroExecutorWidget, TaurusSequencerWidget, \
@@ -47,14 +47,14 @@ class EngineModesComboBox(Qt.QComboBox, TaurusBaseWidget):
         self.clear()
         self.addItems(enginemodes)
 
-
+   
+@UILoadable(with_ui="_ui")
 class HKLScan(TaurusWidget):
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode=designMode)
         
-        self._ui = Ui_HKLScan()
-        self._ui.setupUi(self)
+        self.loadUi(filename="hklscan.ui")
 
         self.connect(self._ui.hklStartScanButton, Qt.SIGNAL("clicked()"), self.start_hklscan)
         self.connect(self._ui.hklStopScanButton, Qt.SIGNAL("clicked()"), self.stop_hklscan)

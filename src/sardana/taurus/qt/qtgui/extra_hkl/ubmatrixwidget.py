@@ -11,7 +11,6 @@ __docformat__ = 'restructuredtext'
 
 import sys
 import PyQt4.Qt as Qt
-from ui_ubmatrixwidget import Ui_ubmatrix
 from taurus.qt.qtgui.container import TaurusWidget
 from reflectionslist import ReflectionsList
 from reflectionseditor import ReflectionsEditor
@@ -25,6 +24,7 @@ import taurus.core
 
 import taurus.core.util.argparse
 import taurus.qt.qtgui.application
+from taurus.qt.qtgui.util.ui import UILoadable
 
 
 class PrivateComboBox(Qt.QComboBox, TaurusBaseWidget):
@@ -43,13 +43,15 @@ class PrivateComboBox(Qt.QComboBox, TaurusBaseWidget):
         self.addItems(items)
 
 
+
+@UILoadable(with_ui="_ui")
 class UBMatrixBase(TaurusWidget):
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode=designMode)
+     
+        self.loadUi(filename="ubmatrixwidget.ui")
         
-        self._ui = Ui_ubmatrix()
-        self._ui.setupUi(self)
         self.connect(self._ui.UpdateButton, Qt.SIGNAL("clicked()"), self.update_values)
         self.connect(self._ui.ComputeUButton, Qt.SIGNAL("clicked()"), self.compute_u)
         self.connect(self._ui.ReflectionsListButton, Qt.SIGNAL("clicked()"), self.reflections_list_window)
@@ -230,7 +232,7 @@ class UBMatrixBase(TaurusWidget):
                     self.rl_label1_7.setObjectName("rl_label1_7")
                 #               self.testlabel.setLayoutDirection(QtCore.Qt.RightToLeft)
                     self.rl_label1_8 = QtGui.QLabel(w)
-                    self.rl_label1_8.setGeometry(QtCore.QRect(xangle2 + 20, 70, 41, 20))
+                    self.rl_label1_8.setGeometry(QtCore.QRect(xangle2 + 20, 70, 71, 20))
                     self.rl_label1_8.setObjectName("rl_label1_8")
                 #               self.testlabel.setLayoutDirection(QtCore.Qt.RightToLeft)
                     self.rl_label1_9 = QtGui.QLabel(w)
@@ -263,7 +265,7 @@ class UBMatrixBase(TaurusWidget):
                 # 6 circles diffractometer
                     elif len(ref) == 12:
                         self.rl_label1_11 = QtGui.QLabel(w)
-                        self.rl_label1_11.setGeometry(QtCore.QRect(xangle5 + 20, 70, 41, 20))
+                        self.rl_label1_11.setGeometry(QtCore.QRect(xangle5 + 20, 70, 71, 20))
                         self.rl_label1_11.setObjectName("rl_label1_11")
                         self.rl_label1_12 = QtGui.QLabel(w)
                         self.rl_label1_12.setGeometry(QtCore.QRect(xangle6 + 20, 70, 41, 20))

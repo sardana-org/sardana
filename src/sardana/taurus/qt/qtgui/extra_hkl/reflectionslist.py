@@ -11,16 +11,16 @@ __docformat__ = 'restructuredtext'
 
 import sys
 import PyQt4.Qt as Qt
-from ui_reflectionslist import Ui_ReflectionsList
 from taurus.qt.qtgui.container import TaurusWidget
+from taurus.qt.qtgui.util.ui import UILoadable
 
+@UILoadable(with_ui="_ui")
 class ReflectionsList(TaurusWidget):
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode=designMode)
         
-        self._ui = Ui_ReflectionsList()
-        self._ui.setupUi(self)
+        self.loadUi(filename="reflectionslist.ui")
         
     
     @classmethod

@@ -11,16 +11,18 @@ __docformat__ = 'restructuredtext'
 
 import sys
 import PyQt4.Qt as Qt
-from ui_displayscanangles import Ui_DisplayScanAngles
 from taurus.qt.qtgui.container import TaurusWidget
 
+from taurus.qt.qtgui.util.ui import UILoadable
+   
+@UILoadable(with_ui="_ui")
 class DisplayScanAngles(TaurusWidget):
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode=designMode)
         
-        self._ui = Ui_DisplayScanAngles()
-        self._ui.setupUi(self)
+        self.loadUi(filename="displayscanangles.ui")
+        #self._ui.setupUi(self)
         
     
     @classmethod

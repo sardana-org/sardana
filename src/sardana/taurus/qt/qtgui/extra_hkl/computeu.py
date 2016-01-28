@@ -11,18 +11,19 @@ __docformat__ = 'restructuredtext'
 
 import sys
 import PyQt4.Qt as Qt
-from ui_computeu import Ui_ComputeU
 import taurus.core
 from taurus.qt.qtgui.container import TaurusWidget
 
+from taurus.qt.qtgui.util.ui import UILoadable
 
+@UILoadable(with_ui="_ui")
 class ComputeU(TaurusWidget):
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode=designMode)
         
-        self._ui = Ui_ComputeU()
-        self._ui.setupUi(self)
+        self.loadUi(filename="computeu.ui")
+        
         self.connect(self._ui.ComputeButton, Qt.SIGNAL("clicked()"), self.compute_u)
         
     @classmethod

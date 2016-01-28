@@ -11,7 +11,6 @@ __docformat__ = 'restructuredtext'
 
 import sys
 import PyQt4.Qt as Qt
-from ui_selectsignal import Ui_SelectSignal
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtgui.base import TaurusBaseWidget
 import time
@@ -23,6 +22,8 @@ import taurus.core
 from PyQt4 import QtCore, QtGui
 
 import taurus.core
+
+from taurus.qt.qtgui.util.ui import UILoadable
 
 class SignalComboBox(Qt.QComboBox, TaurusBaseWidget):
     """ComboBox representing list of possible signals"""
@@ -39,14 +40,14 @@ class SignalComboBox(Qt.QComboBox, TaurusBaseWidget):
         self.clear()
         self.addItems(signals)
 
-
+   
+@UILoadable(with_ui="_ui")
 class SelectSignal(TaurusWidget):
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode=designMode)
         
-        self._ui = Ui_SelectSignal()
-        self._ui.setupUi(self)
+        self.loadUi(filename="selectsignal.ui")
         
         self.signalComboBox = SignalComboBox(self)
         self.signalComboBox.setGeometry(QtCore.QRect(70, 50, 161, 27))
