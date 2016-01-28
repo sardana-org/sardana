@@ -2,7 +2,7 @@
 
 # Code implementation generated from reading ui file 'displayscanangles.ui'
 #
-# Created: Mon Aug  5 14:13:28 2013 
+# Created: Mon Aug  5 14:13:28 2013
 #      by: Taurus UI code generator 3.0.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -14,17 +14,17 @@ import PyQt4.Qt as Qt
 from taurus.qt.qtgui.container import TaurusWidget
 
 from taurus.qt.qtgui.util.ui import UILoadable
-   
+
+
 @UILoadable(with_ui="_ui")
 class DisplayScanAngles(TaurusWidget):
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode=designMode)
-        
+
         self.loadUi(filename="displayscanangles.ui")
-        #self._ui.setupUi(self)
-        
-    
+        # self._ui.setupUi(self)
+
     @classmethod
     def getQtDesignerPluginInfo(cls):
         ret = TaurusWidget.getQtDesignerPluginInfo()

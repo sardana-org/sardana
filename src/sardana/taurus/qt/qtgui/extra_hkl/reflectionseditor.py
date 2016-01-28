@@ -2,7 +2,7 @@
 
 # Code implementation generated from reading ui file 'reflectionseditor.ui'
 #
-# Created: Fri Aug  9 08:43:32 2013 
+# Created: Fri Aug  9 08:43:32 2013
 #      by: Taurus UI code generator 3.0.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -18,6 +18,7 @@ from taurus.qt.qtgui.input import TaurusValueLineEdit
 from PyQt4 import QtCore, QtGui
 from taurus.qt.qtgui.util.ui import UILoadable
 
+
 @UILoadable(with_ui="_ui")
 class ReflectionsEditor(TaurusWidget):
 
@@ -25,11 +26,10 @@ class ReflectionsEditor(TaurusWidget):
         TaurusWidget.__init__(self, parent, designMode=designMode)
 
         self.loadUi(filename="reflectionseditor.ui")
-        
+
         self.connect(self._ui.ApplyButton, Qt.SIGNAL("clicked()"), self.apply)
         self.connect(self._ui.ClearButton, Qt.SIGNAL("clicked()"), self.clear)
-        
-    
+
     @classmethod
     def getQtDesignerPluginInfo(cls):
         ret = TaurusWidget.getQtDesignerPluginInfo()
@@ -39,21 +39,21 @@ class ReflectionsEditor(TaurusWidget):
         ret['container'] = False
         return ret
 
-    def setModel(self,model):
-        if model !=  None:
+    def setModel(self, model):
+        if model != None:
             self.device = taurus.Device(model)
 
         xhkl = []
         xangles = []
         xlabels = []
-        for i in range(0,6):
-            xhkl.append(70+80*i)
-            xangles.append(310+80*i)
-            xlabels.append(340+90*i)
+        for i in range(0, 6):
+            xhkl.append(70 + 80 * i)
+            xangles.append(310 + 80 * i)
+            xlabels.append(340 + 90 * i)
         ybasis = 20
-        
+
         reflections = self.device.reflectionlist
-        
+
         angle_names = []
         self.angle_labels = []
         self.hkl_values = []
@@ -63,14 +63,14 @@ class ReflectionsEditor(TaurusWidget):
         # Find number of real motors
         self.nb_angles = len(self.device.motorlist)
 
-        if reflections != None:            
+        if reflections != None:
             self.nb_reflections = len(reflections)
-        else:             
+        else:
             self.nb_reflections = 0
 
         try:
             angle_names = self.device.motorroles
-        except: # Only for compatibility
+        except:  # Only for compatibility
             if self.nb_angles == 4:
                 angle_names.append("omega")
                 angle_names.append("chi")
@@ -84,52 +84,57 @@ class ReflectionsEditor(TaurusWidget):
                 angle_names.append("gamma")
                 angle_names.append("delta")
 
-        for jref in range(0,10):
+        for jref in range(0, 10):
             self.index_values.append(QtGui.QLineEdit(self))
             self.index_values[jref].setLayoutDirection(QtCore.Qt.RightToLeft)
-            self.index_values[jref].setGeometry(QtCore.QRect(20, ybasis + 30*(jref+1), 51, 27))
+            self.index_values[jref].setGeometry(
+                QtCore.QRect(20, ybasis + 30 * (jref + 1), 51, 27))
             object_name = "indexvalue" + str(jref)
             self.index_values[jref].setObjectName(object_name)
-            
-            
-        for i in range(0,3):
+
+        for i in range(0, 3):
             self.hkl_values.append([])
-            for jref in range(0,10):
+            for jref in range(0, 10):
                 self.hkl_values[i].append(QtGui.QLineEdit(self))
-                self.hkl_values[i][jref].setLayoutDirection(QtCore.Qt.RightToLeft)
-                self.hkl_values[i][jref].setGeometry(QtCore.QRect(xhkl[i], ybasis + 30*(jref+1), 81, 27))
+                self.hkl_values[i][jref].setLayoutDirection(
+                    QtCore.Qt.RightToLeft)
+                self.hkl_values[i][jref].setGeometry(
+                    QtCore.QRect(xhkl[i], ybasis + 30 * (jref + 1), 81, 27))
                 object_name = "hklvalue" + str(i) + "_" + str(jref)
                 self.hkl_values[i][jref].setObjectName(object_name)
 
         for i in range(0, self.nb_angles):
             self.angle_labels.append(QtGui.QLabel(self))
-            self.angle_labels[i].setGeometry(QtCore.QRect(xangles[i], ybasis, 70, 20))
+            self.angle_labels[i].setGeometry(
+                QtCore.QRect(xangles[i], ybasis, 70, 20))
             self.angle_labels[i].setLayoutDirection(QtCore.Qt.RightToLeft)
             object_name = "anglelabel" + str(i)
             self.angle_labels[i].setObjectName(object_name)
-            self.angle_labels[i].setText(QtGui.QApplication.translate("Form", angle_names[i], None, QtGui.QApplication.UnicodeUTF8))
+            self.angle_labels[i].setText(QtGui.QApplication.translate(
+                "Form", angle_names[i], None, QtGui.QApplication.UnicodeUTF8))
             self.angle_values.append([])
-            for jref in range(0,10):
+            for jref in range(0, 10):
                 self.angle_values[i].append(QtGui.QLineEdit(self))
-                self.angle_values[i][jref].setLayoutDirection(QtCore.Qt.RightToLeft)
-                self.angle_values[i][jref].setGeometry(QtCore.QRect(xangles[i], ybasis + 30*(jref+1), 81, 27))
+                self.angle_values[i][jref].setLayoutDirection(
+                    QtCore.Qt.RightToLeft)
+                self.angle_values[i][jref].setGeometry(QtCore.QRect(
+                    xangles[i], ybasis + 30 * (jref + 1), 81, 27))
                 object_name = "anglevalue" + str(i) + "_" + str(jref)
                 self.angle_values[i][jref].setObjectName(object_name)
- 
 
         for jref in range(0, self.nb_reflections):
             ref = reflections[jref]
             # Fill index
             self.index_values[jref].setText(str(jref))
             # Fill hkl values
-            for i in range(0,3):
-                self.hkl_values[i][jref].setText(("%12.4f" % ref[i+1]).strip())
+            for i in range(0, 3):
+                self.hkl_values[i][jref].setText(
+                    ("%12.4f" % ref[i + 1]).strip())
             # Fill the angle values
             for i in range(0, self.nb_angles):
-                self.angle_values[i][jref].setText(("%12.4f" % ref[i+6]).strip())
+                self.angle_values[i][jref].setText(
+                    ("%12.4f" % ref[i + 6]).strip())
 
-        
-                           
     def apply(self):
         # Get the values for the new reflections
         hklnew = []
@@ -145,57 +150,60 @@ class ReflectionsEditor(TaurusWidget):
             except:
                 indexnew.append(-1)
             icount = 0
-            for ihkl in range(0,3):
+            for ihkl in range(0, 3):
                 try:
-                    hklnew[jref].append(float(self.hkl_values[ihkl][jref].text()))
+                    hklnew[jref].append(
+                        float(self.hkl_values[ihkl][jref].text()))
                     icount = icount + 1
                 except:
                     hklnew[jref].append('')
             iref_hkl.append(icount)
             icount = 0
-            for iangle in range(0,self.nb_angles):
+            for iangle in range(0, self.nb_angles):
                 try:
-                    anglesnew[jref].append(float(self.angle_values[iangle][jref].text()))
+                    anglesnew[jref].append(
+                        float(self.angle_values[iangle][jref].text()))
                     icount = icount + 1
                 except:
                     anglesnew[jref].append('')
             iref_angles.append(icount)
-            
+
         # Remove all reflections
         if self.device.reflectionlist != None:
             self.nb_reflections = len(self.device.reflectionlist)
         else:
             self.nb_reflections = 0
-        for i in range(0,self.nb_reflections):
-            # The index is reset after removing, so we remove always the first one
+        for i in range(0, self.nb_reflections):
+            # The index is reset after removing, so we remove always the first
+            # one
             self.device.write_attribute("removereflection", 0)
 
-
         # Create reflections (always with current angles attached)
-        for jref in range(0,10):
-            for iref in range(0,10):
+        for jref in range(0, 10):
+            for iref in range(0, 10):
                 if indexnew[jref] == iref:
                     self.index_values[jref].setText(str(jref))
                     if iref_hkl[iref] == 3:
-                        self.device.write_attribute("addreflection", hklnew[iref])
+                        self.device.write_attribute(
+                            "addreflection", hklnew[iref])
                 # Set the angles if given
                     if iref_angles[iref] == self.nb_angles:
                         cmd = []
                         cmd.append(iref)
-                        for i in range(0,self.nb_angles):
+                        for i in range(0, self.nb_angles):
                             cmd.append(anglesnew[iref][i])
-                        self.device.write_attribute("adjustanglestoreflection", cmd)
+                        self.device.write_attribute(
+                            "adjustanglestoreflection", cmd)
 
         self.clear()
-        
 
-    def clear(self):        
+    def clear(self):
         reflections = self.device.reflectionlist
-        
+
         # Clean the values
         for jref in range(0, 10):
             # Fill hkl values
-            for i in range(0,3):
+            for i in range(0, 3):
                 self.hkl_values[i][jref].setText('')
             # Fill the angle values
             for i in range(0, self.nb_angles):
@@ -209,14 +217,15 @@ class ReflectionsEditor(TaurusWidget):
                 self.index_values[jref].setText(str(jref))
                 ref = reflections[jref]
                 # Fill hkl values
-                for i in range(0,3):
-                    self.hkl_values[i][jref].setText(("%12.4f" % ref[i+1]).strip())
+                for i in range(0, 3):
+                    self.hkl_values[i][jref].setText(
+                        ("%12.4f" % ref[i + 1]).strip())
                 # Fill the angle values
                 for i in range(0, self.nb_angles):
-                    self.angle_values[i][jref].setText(("%12.4f" % ref[i+6]).strip())
+                    self.angle_values[i][jref].setText(
+                        ("%12.4f" % ref[i + 6]).strip())
         else:
             self.nb_reflections = 0
-            
 
 
 def main():

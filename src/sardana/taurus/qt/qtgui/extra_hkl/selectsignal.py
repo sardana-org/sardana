@@ -2,7 +2,7 @@
 
 # Code implementation generated from reading ui file 'selectsignal.ui'
 #
-# Created: Fri Aug 16 10:44:03 2013 
+# Created: Fri Aug 16 10:44:03 2013
 #      by: Taurus UI code generator 3.0.1
 #
 # WARNING! All changes made in this file will be lost!
@@ -25,35 +25,37 @@ import taurus.core
 
 from taurus.qt.qtgui.util.ui import UILoadable
 
+
 class SignalComboBox(Qt.QComboBox, TaurusBaseWidget):
     """ComboBox representing list of possible signals"""
-    
+
     def __init__(self, parent=None):
         name = self.__class__.__name__
         self.call__init__wo_kw(Qt.QComboBox, parent)
         self.call__init__(TaurusBaseWidget, name)
         self.setSizeAdjustPolicy(Qt.QComboBox.AdjustToContentsOnFirstShow)
         self.setToolTip("Choose a signal ...")
-        QtCore.QMetaObject.connectSlotsByName(self) 
-       
+        QtCore.QMetaObject.connectSlotsByName(self)
+
     def loadSignals(self, signals):
         self.clear()
         self.addItems(signals)
 
-   
+
 @UILoadable(with_ui="_ui")
 class SelectSignal(TaurusWidget):
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode=designMode)
-        
+
         self.loadUi(filename="selectsignal.ui")
-        
+
         self.signalComboBox = SignalComboBox(self)
         self.signalComboBox.setGeometry(QtCore.QRect(70, 50, 161, 27))
         self.signalComboBox.setObjectName("SignalcomboBox")
-        
-        self.connect(self.signalComboBox,Qt.SIGNAL("currentIndexChanged(QString)"), self.onSignalChanged)
+
+        self.connect(self.signalComboBox, Qt.SIGNAL(
+            "currentIndexChanged(QString)"), self.onSignalChanged)
 
         self.doorName = None
         self.door_device = None
@@ -87,15 +89,15 @@ class SelectSignal(TaurusWidget):
                     for name in line.split(' '):
                         if name != '':
                             isig = isig + 1
-                            if isig > 3: # Don't add the asterik, the group name and the timer as timer
-                                name = name.replace(',','')
+                            if isig > 3:  # Don't add the asterik, the group name and the timer as timer
+                                name = name.replace(',', '')
                                 signals.append(name)
 
             self.signalComboBox.loadSignals(signals)
 
-    def onSignalChanged(self,signalname):
+    def onSignalChanged(self, signalname):
         self._ui.SignallineEdit.setText(signalname)
-        
+
 
 def main():
     app = Qt.QApplication(sys.argv)
