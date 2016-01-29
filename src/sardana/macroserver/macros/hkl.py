@@ -14,6 +14,7 @@ import re
 
 from sardana.macroserver.macro import *
 
+from scan import aNscan
 
 class _diffrac:
     """Internal class used as a base class for the diffractometer macros"""
@@ -1157,7 +1158,7 @@ class newcrystal(iMacro, _diffrac):
             self.diffrac.write_attribute("gamma", float(gamma))
 
 
-class hscan(Macro, _diffrac):
+class hscan(aNscan, Macro, _diffrac):
     "Scan h axis"
 
     param_def = [
@@ -1169,19 +1170,13 @@ class hscan(Macro, _diffrac):
 
     def prepare(self, start_pos, final_pos, nr_interv, integ_time):
         _diffrac.prepare(self)
-
-    def run(self, start_pos, final_pos, nr_interv, integ_time):
-
-        ascan, pars = self.createMacro(
-            "ascan", self.h_device, start_pos, final_pos, nr_interv, integ_time)
-
-        self.runMacro(ascan)
+        aNscan._prepare(self, [self.h_device], [start_pos], [final_pos], nr_interv, integ_time)
 
     def on_stop(self):
         _diffrac.on_stop(self)
 
 
-class kscan(Macro, _diffrac):
+class kscan(aNscan, Macro, _diffrac):
     "Scan k axis"
 
     param_def = [
@@ -1193,19 +1188,13 @@ class kscan(Macro, _diffrac):
 
     def prepare(self, start_pos, final_pos, nr_interv, integ_time):
         _diffrac.prepare(self)
-
-    def run(self, start_pos, final_pos, nr_interv, integ_time):
-
-        ascan, pars = self.createMacro(
-            "ascan", self.k_device, start_pos, final_pos, nr_interv, integ_time)
-
-        self.runMacro(ascan)
+        aNscan._prepare(self, [self.k_device], [start_pos], [final_pos], nr_interv, integ_time)
 
     def on_stop(self):
         _diffrac.on_stop(self)
 
 
-class lscan(Macro, _diffrac):
+class lscan(aNscan, Macro, _diffrac):
     "Scan l axis"
 
     param_def = [
@@ -1217,19 +1206,13 @@ class lscan(Macro, _diffrac):
 
     def prepare(self, start_pos, final_pos, nr_interv, integ_time):
         _diffrac.prepare(self)
-
-    def run(self, start_pos, final_pos, nr_interv, integ_time):
-
-        ascan, pars = self.createMacro(
-            "ascan", self.l_device, start_pos, final_pos, nr_interv, integ_time)
-
-        self.runMacro(ascan)
+        aNscan._prepare(self, [self.l_device], [start_pos], [final_pos], nr_interv, integ_time)
 
     def on_stop(self):
         _diffrac.on_stop(self)
 
 
-class hklscan(Macro, _diffrac):
+class hklscan(aNscan, Macro, _diffrac):
     "Scan h k l axes"
 
     param_def = [
@@ -1245,13 +1228,8 @@ class hklscan(Macro, _diffrac):
 
     def prepare(self, h_start_pos, h_final_pos, k_start_pos, k_final_pos, l_start_pos, l_final_pos, nr_interv, integ_time):
         _diffrac.prepare(self)
-
-    def run(self, h_start_pos, h_final_pos, k_start_pos, k_final_pos, l_start_pos, l_final_pos, nr_interv, integ_time):
-
-        a3scan, pars = self.createMacro("a3scan", self.h_device, h_start_pos, h_final_pos, self.k_device,
-                                        k_start_pos, k_final_pos, self.l_device, l_start_pos, l_final_pos, nr_interv, integ_time)
-
-        self.runMacro(a3scan)
+        aNscan._prepare(self, [self.h_device, self.k_device, self.l_device], [h_start_pos, k_start_pos, l_start_pos], [h_final_pos, k_final_pos, l_final_pos], nr_interv, integ_time)
+        
 
 
 class th2th(Macro):
