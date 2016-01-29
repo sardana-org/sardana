@@ -7,7 +7,6 @@
 import time
 import math
 import numpy as np
-import getpass
 import os
 
 import re
@@ -586,7 +585,7 @@ class freeze(Macro, _diffrac):
             self.diffrac.write_attribute("enginemode", mode_restore)
 
         else:
-            self.warning("Only implemented for parameter psi. Nothing done")
+            self.error("Only implemented for parameter psi. Nothing done")
 
 
 class setmode(iMacro, _diffrac):
@@ -736,11 +735,7 @@ class or0(Macro, _diffrac):
                     "Can not orient: or0 %9.5f %9.5f %9.5f are parallel to or1" % (H, K, L))
                 return
 
-        values = []
-        values.append(0)
-        values.append(H)
-        values.append(K)
-        values.append(L)
+        values = [0, H, K, L]
         self.diffrac.write_attribute("AddReflectionWithIndex", values)
 
         self.execMacro('compute_u')
@@ -771,11 +766,7 @@ class or1(Macro, _diffrac):
                     "Can not orient: or0 is parallel to or1 %9.5f %9.5f %9.5f" % (H, K, L))
                 return
 
-        values = []
-        values.append(1)
-        values.append(H)
-        values.append(K)
-        values.append(L)
+        values = [1, H, K, L]
         self.diffrac.write_attribute("AddReflectionWithIndex", values)
 
         self.execMacro('compute_u')
@@ -929,12 +920,7 @@ class setorn(iMacro, _diffrac):
 
         # Set reflection
 
-        values = []
-        values.append(ref_id)
-        values.append(H)
-        values.append(K)
-        values.append(L)
-
+        values = [ref_id, H, K, L]
         self.diffrac.write_attribute("AddReflectionWithIndex", values)
 
         # Adjust angles
@@ -1020,9 +1006,7 @@ class compute_u(Macro, _diffrac):
         if reflections != None:
             if len(reflections) > 1:
                 self.output("Computing U with reflections 0 and 1")
-                values = []
-                values.append(0)
-                values.append(1)
+                values = [0,1]
                 self.diffrac.write_attribute("ComputeU", values)
                 self.execMacro('savecrystal')
             else:
@@ -1046,10 +1030,7 @@ class add_reflection(Macro, _diffrac):
 
     def run(self, H, K, L, affinement):
 
-        values = []
-        values.append(H)
-        values.append(K)
-        values.append(L)
+        values = [H, K, L]
         if affinement != -999.:
             values.append(affinement)
 
@@ -1426,11 +1407,11 @@ class load_crystal(iMacro, _diffrac):
         
         active_dir = ""
         try:
-            files = os.listdir('/home/' + getpass.getuser() + '/crystals/')
-            active_dir = '/home/' + getpass.getuser() + '/crystals/'
+            files = os.listdir(os.path.expanduser('~') + '/crystals/')
+            active_dir = os.path.expanduser('~') + '/crystals/'
         except:
             self.output(
-                "Directory for loading files /home/%s/crystals does not exist" % getpass.getuser())
+                "Directory for loading files %s/crystals does not exist" % os.path.expanduser('~'))
             newdir = self.input("Type new directory")
             try:
                 files = os.listdir(newdir)
