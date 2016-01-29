@@ -22,8 +22,6 @@ class _diffrac:
 
     def prepare(self):
 
-        self.prepared = False
-
         dev_name = self.getEnv('DiffracDevice')
         self.diffrac = self.getDevice(dev_name)
 
@@ -80,8 +78,6 @@ class _diffrac:
         for motor in motor_list:
             self.angle_device_names[self.angle_names[i]] = motor.split(' ')[0]
             i = i + 1
-
-        self.prepared = True
 
     def on_stop(self):
 
@@ -171,8 +167,6 @@ class br(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self, H, K, L, AnglesIndex, FlagNotBlocking):
-        if not self.prepared:
-            return
 
         if AnglesIndex != -1:
             sel_tr = AnglesIndex
@@ -275,8 +269,6 @@ class ca(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self, H, K, L):
-        if not self.prepared:
-            return
 
         hkl_values = [H, K, L]
 
@@ -322,8 +314,6 @@ class caa(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self, H, K, L):
-        if not self.prepared:
-            return
 
         hkl_values = [H, K, L]
 
@@ -376,8 +366,6 @@ class ci(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self, mu, theta, chi, phi, gamma, delta):
-        if not self.prepared:
-            return
 
         if delta == -999 and self.nb_motors == 6:
             self.error("Six angle values are need as argument")
@@ -402,9 +390,7 @@ class pa(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self):
-        if not self.prepared:
-            return
-
+        
         str_type = "Eulerian 6C"
         if self.type == 'E4CV':
             str_type = "Eulerian 4C Vertical"
@@ -478,8 +464,6 @@ class wh(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self):
-        if not self.prepared:
-            return
 
         self.output("")
         self.output("Engine: %s" % self.diffrac.engine)
@@ -573,8 +557,6 @@ class freeze(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self, parameter, value):
-        if not self.prepared:
-            return
 
         if parameter == "psi":
             engine_restore = self.diffrac.engine
@@ -616,8 +598,6 @@ class setmode(iMacro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self, new_mode):
-        if not self.prepared:
-            return
 
         modes = self.diffrac.enginemodelist
 
@@ -666,8 +646,6 @@ class getmode(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self):
-        if not self.prepared:
-            return
 
         self.output(self.diffrac.enginemode)
 
@@ -690,8 +668,6 @@ class setlat(iMacro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self, a, b, c, alpha, beta, gamma):
-        if not self.prepared:
-            return
 
         if gamma == -999:
             a = self.diffrac.a
@@ -745,8 +721,6 @@ class or0(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self, H, K, L):
-        if not self.prepared:
-            return
 
         # Check collinearity
 
@@ -782,8 +756,6 @@ class or1(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self, H, K, L):
-        if not self.prepared:
-            return
 
         # Check collinearity
 
@@ -825,8 +797,6 @@ class setor0(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self, H, K, L, mu, theta, chi, phi, gamma, delta):
-        if not self.prepared:
-            return
 
         setorn, pars = self.createMacro(
             "setorn", 0, H, K, L, mu, theta, chi, phi, gamma, delta)
@@ -853,8 +823,6 @@ class setor1(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self, H, K, L, mu, theta, chi, phi, gamma, delta):
-        if not self.prepared:
-            return
 
         setorn, pars = self.createMacro(
             "setorn", 1, H, K, L, mu, theta, chi, phi, gamma, delta)
@@ -882,8 +850,6 @@ class setorn(iMacro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self, ref_id, H, K, L, mu, theta, chi, phi, gamma, delta):
-        if not self.prepared:
-            return
 
         if delta == -999:
             reflections = []
@@ -999,8 +965,6 @@ class setaz(iMacro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self, PsiH, PsiK, PsiL):
-        if not self.prepared:
-            return
         engine_restore = self.diffrac.engine
         mode_restore = self.diffrac.enginemode
 
@@ -1048,8 +1012,6 @@ class compute_u(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self):
-        if not self.prepared:
-            return
 
         reflections = self.diffrac.reflectionlist
         if reflections != None:
@@ -1080,8 +1042,6 @@ class add_reflection(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self, H, K, L, affinement):
-        if not self.prepared:
-            return
 
         values = []
         values.append(H)
@@ -1100,8 +1060,6 @@ class affine(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self):
-        if not self.prepared:
-            return
 
         self.diffrac.write_attribute("AffineCrystal", 0)
 
@@ -1113,8 +1071,6 @@ class or_swap(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self):
-        if not self.prepared:
-            return
 
         self.diffrac.write_attribute("SwapReflections01", 0)
         self.output("Orientation vectors swapped.")
@@ -1133,8 +1089,6 @@ class newcrystal(iMacro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self, crystal_name):
-        if not self.prepared:
-            return
 
         crystal_list = self.diffrac.crystallist
 
@@ -1360,8 +1314,6 @@ class luppsi(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self, rel_start_angle, rel_final_angle, nr_interv, integ_time):
-        if not self.prepared:
-            return
 
         global count_scan
         count_scan = 1
@@ -1440,8 +1392,6 @@ class luppsi_debug(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self, rel_start_angle, rel_final_angle, nr_interv, integ_time):
-        if not self.prepared:
-            return
 
         if ((integ_time != -999)):
             self.diffrac.write_attribute("engine", "hkl")
@@ -1480,8 +1430,6 @@ class savecrystal(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self):
-        if not self.prepared:
-            return
 
         self.diffrac.write_attribute("SaveCrystal", 1)
 
@@ -1495,8 +1443,7 @@ class load_crystal(iMacro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self):
-        if not self.prepared:
-            return
+        
         active_dir = ""
         try:
             files = os.listdir('/home/' + getpass.getuser() + '/crystals/')
@@ -1665,8 +1612,7 @@ class blockprintmove(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self, flagprint):
-        if not self.prepared:
-            return
+        
         moving = 1
         tmp_dev = {}
         for angle in self.angle_names:
