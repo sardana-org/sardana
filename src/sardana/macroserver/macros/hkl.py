@@ -254,7 +254,64 @@ class ubr(Macro, _diffrac):
     def on_stop(self):
         _diffrac.on_stop(self)
 
+class _ca(Macro, _diffrac):
+    """Calculate motor positions for given H K L according to the current
+    operation mode, for all trajectories or for the first one"""
 
+    param_def = [
+        ['H', Type.Float, None, "H value for the azimutal vector"],
+        ['K', Type.Float, None, "K value for the azimutal vector"],
+        ['L', Type.Float, None, "L value for the azimutal vector"],
+        ['Trajectory', Type.Float, -1, "If -1, all trajectories"],
+    ]
+
+    def prepare(self, H, K, L, Trajectory):
+        _diffrac.prepare(self)
+
+    def run(self, H, K, L, Trajectory):
+
+        hkl_values = [H, K, L]
+
+        self.diffrac.write_attribute("computetrajectoriessim", hkl_values)
+
+        if Trajectory == -1:
+            start_range = 0
+            end_range = len(self.diffrac.trajectorylist)
+        else:
+            start_range = Trajectory
+            end_range = Trajectory + 1
+            
+        for i in range(start_range, end_range):
+            angles_list = self.diffrac.trajectorylist[i]
+            self.output("")
+            self.output("Trajectory %2d " % i)
+
+            self.output("H K L =  %9.5f %9.5f %9.5f " %
+                        (self.h_device.position, self.k_device.position,
+                         self.l_device.position))
+
+            try:
+                self.output("Azimuth (Psi) = %7.5f" %
+                            (self.psidevice.Position))
+            except:
+                self.warning(
+                    "Not able to read psi. Check if environment Psi is defined")
+                
+            self.output("Wavelength =  %7.5f" % (self.diffrac.WaveLength))
+            self.output("")
+
+            str_pos = {}
+            j = 0
+            for name in self.angle_names:
+                str_pos[name] = "%7.5f" % angles_list[j]
+                j = j + 1
+
+            self.output("%10s %11s %12s %11s %10s %11s" %
+                        ("Delta", "Theta", "Chi", "Phi", "Mu", "Gamma"))
+            self.output("%10s %11s %12s %11s %10s %11s" %
+                        (str_pos[self.labelmotor["Delta"]], str_pos[self.labelmotor["Theta"]], str_pos[self.labelmotor["Chi"]], str_pos[self.labelmotor["Phi"]], str_pos[self.labelmotor["Mu"]], str_pos[self.labelmotor["Gamma"]]))
+
+            
 class ca(Macro, _diffrac):
     """Calculate motor positions for given H K L according to the current
     operation mode (trajectory 0)."""
@@ -272,32 +329,7 @@ class ca(Macro, _diffrac):
 
         hkl_values = [H, K, L]
 
-        self.diffrac.write_attribute("computetrajectoriessim", hkl_values)
-
-        angles_list = self.diffrac.trajectorylist[0]
-        self.output("Trajectory 0 (more trajectories by caa H K L)")
-        self.output("")
-
-        try:
-            self.output("%s %7.5f" %
-                        ("Azimuth (Psi) = ", self.psidevice.Position))
-        except:
-            self.warning(
-                "Not able to read psi. Check if environment Psi is defined")
-
-        self.output("%s %7.5f" % ("Wavelength = ", self.diffrac.WaveLength))
-        self.output("")
-
-        str_pos = {}
-        i = 0
-        for name in self.angle_names:
-            str_pos[name] = "%7.5f" % angles_list[i]
-            i = i + 1
-
-        self.output("%10s %11s %12s %11s %10s %11s" %
-                    ("Delta", "Theta", "Chi", "Phi", "Mu", "Gamma"))
-        self.output("%10s %11s %12s %11s %10s %11s" %
-                    (str_pos[self.labelmotor["Delta"]], str_pos[self.labelmotor["Theta"]], str_pos[self.labelmotor["Chi"]], str_pos[self.labelmotor["Phi"]], str_pos[self.labelmotor["Mu"]], str_pos[self.labelmotor["Gamma"]]))
+        self.execMacro("_ca", H, K, L, 0)
 
 
 class caa(Macro, _diffrac):
@@ -317,37 +349,7 @@ class caa(Macro, _diffrac):
 
         hkl_values = [H, K, L]
 
-        self.diffrac.write_attribute("computetrajectoriessim", hkl_values)
-
-        for i in range(0, len(self.diffrac.trajectorylist)):
-            angles_list = self.diffrac.trajectorylist[i]
-            self.output("")
-            self.output("Trajectory %2d " % i)
-
-            self.output("H K L =  %9.5f %9.5f %9.5f " %
-                        (self.h_device.position, self.k_device.position,
-                         self.l_device.position))
-
-            try:
-                self.output("Azimuth (Psi) = %7.5f" %
-                            (self.psidevice.Position))
-            except:
-                self.warning(
-                    "Not able to read psi. Check if environment Psi is defined")
-            self.output("Wavelength =  %7.5f" % (self.diffrac.WaveLength))
-            self.output("")
-
-            str_pos1 = "%7.5f" % angles_list[5]
-            str_pos2 = "%7.5f" % angles_list[1]
-            str_pos3 = "%7.5f" % angles_list[2]
-            str_pos4 = "%7.5f" % angles_list[3]
-            str_pos5 = "%7.5f" % angles_list[0]
-            str_pos6 = "%7.5f" % angles_list[4]
-
-            self.output("%10s %11s %12s %11s %10s %11s" %
-                        ("Delta", "Theta", "Chi", "Phi", "Mu", "Gamma"))
-            self.output("%10s %11s %12s %11s %10s %11s" %
-                        (str_pos1, str_pos2, str_pos3, str_pos4, str_pos5, str_pos6))
+        self.execMacro("_ca", H, K, L)
 
 
 class ci(Macro, _diffrac):
