@@ -604,14 +604,13 @@ class freeze(Macro, _diffrac):
             self.warning("Only implemented for parameter psi. Nothing done")
 
 
-class setmode(Macro, _diffrac):
+class setmode(iMacro, _diffrac):
     """Set operation mode."""
 
     param_def = [
         ['new_mode', Type.Integer, -1, "Mode to be set"]
     ]
 
-    interactive = True
 
     def prepare(self, new_mode):
         _diffrac.prepare(self)
@@ -673,7 +672,7 @@ class getmode(Macro, _diffrac):
         self.output(self.diffrac.enginemode)
 
 
-class setlat(Macro, _diffrac):
+class setlat(iMacro, _diffrac):
     """Set the crystal lattice parameters a, b, c, alpha, beta, gamma.
        for the currently active diffraction pseudo motor controller."""
 
@@ -686,8 +685,6 @@ class setlat(Macro, _diffrac):
         ['gamma', Type.Float, -999, "Lattice 'gamma' parameter"]
     ]
 
-    hints = {'interactive': 'True'}
-    interactive = True
 
     def prepare(self, a, b, c, alpha, beta, gamma):
         _diffrac.prepare(self)
@@ -824,9 +821,6 @@ class setor0(Macro, _diffrac):
         ['delta', Type.Float, -999, "Delta value"],
     ]
 
-    hints = {'interactive': 'True'}
-    interactive = True
-
     def prepare(self, H, K, L, mu, theta, chi, phi, gamma, delta):
         _diffrac.prepare(self)
 
@@ -855,9 +849,6 @@ class setor1(Macro, _diffrac):
         ['delta', Type.Float, -999, "Delta value"],
     ]
 
-    hints = {'interactive': 'True'}
-    interactive = True
-
     def prepare(self, H, K, L, mu, theta, chi, phi, gamma, delta):
         _diffrac.prepare(self)
 
@@ -871,7 +862,7 @@ class setor1(Macro, _diffrac):
         self.runMacro(setorn)
 
 
-class setorn(Macro, _diffrac):
+class setorn(iMacro, _diffrac):
     """Set orientation reflection indicated by the index."""
 
     param_def = [
@@ -886,9 +877,6 @@ class setorn(Macro, _diffrac):
         ['gamma', Type.Float, -999, "Gamma value"],
         ['delta', Type.Float, -999, "Delta value"],
     ]
-
-    hints = {'interactive': 'True'}
-    interactive = True
 
     def prepare(self, ref_id, H, K, L, mu, theta, chi, phi, gamma, delta):
         _diffrac.prepare(self)
@@ -998,7 +986,7 @@ class setorn(Macro, _diffrac):
         self.execMacro('compute_u')
 
 
-class setaz(Macro, _diffrac):
+class setaz(iMacro, _diffrac):
     """ Set hkl values of the psi reference vector"""
 
     param_def = [
@@ -1006,7 +994,6 @@ class setaz(Macro, _diffrac):
         ['PsiK', Type.Float, -999, "K value of psi reference vector"],
         ['PsiL', Type.Float, -999, "L value of psi reference vector"],
     ]
-    interactive = True
 
     def prepare(self, PsiH, PsiK, PsiL):
         _diffrac.prepare(self)
@@ -1134,14 +1121,13 @@ class or_swap(Macro, _diffrac):
         self.execMacro('compute_u')
 
 
-class newcrystal(Macro, _diffrac):
+class newcrystal(iMacro, _diffrac):
     """ Create a new crystal (if it does not exist) and select it. """
 
     param_def = [
         ['crystal_name',  Type.String, "", 'Name of the crystal to add and select']
     ]
 
-    interactive = True
 
     def prepare(self, crystal_name):
         _diffrac.prepare(self)
@@ -1500,15 +1486,10 @@ class savecrystal(Macro, _diffrac):
         self.diffrac.write_attribute("SaveCrystal", 1)
 
 
-class load_crystal(Macro, _diffrac):
+class load_crystal(iMacro, _diffrac):
     """
          load_crystal  - loads crystal information from file
     """
-
-    param_def = [
-    ]
-
-    interactive = True
 
     def prepare(self):
         _diffrac.prepare(self)
@@ -1562,7 +1543,7 @@ class load_crystal(Macro, _diffrac):
                 self.output("An input file has to be given. Nothing done")
 
 
-class lattice_cal(Macro, _diffrac):
+class lattice_cal(iMacro, _diffrac):
     """
         lattice_cal - calibrate lattice parameters a, b or c to current 2theta value
     """
@@ -1570,7 +1551,6 @@ class lattice_cal(Macro, _diffrac):
     param_def = [
         ["parameter", Type.String, "", "Parameter"],
     ]
-    interactive = True
 
     def prepare(self, parameter):
         _diffrac.prepare(self)
@@ -1620,7 +1600,7 @@ class lattice_cal(Macro, _diffrac):
             self.output("usage:  lattice_cal parameter")
 
 
-class tw(Macro):
+class tw(iMacro):
     """
     tw - tweak motor by variable delta
     """
@@ -1629,7 +1609,6 @@ class tw(Macro):
         ['motor', Type.Moveable, "test", 'Motor to move'],
         ['delta',   Type.Float, -999, 'amount to tweak']
     ]
-    interactive = True
 
     def run(self, motor, delta):
         if delta != -999:
