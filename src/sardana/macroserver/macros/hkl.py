@@ -1261,7 +1261,9 @@ def hook_pre_move(self, hook_pars):
 class luppsi(Macro, _diffrac):
     """psi scan:
 
-    Relative scan psi angle    
+    Relative scan psi angle
+
+    [TODO] Still not tested    
     """
 
     param_def = [
