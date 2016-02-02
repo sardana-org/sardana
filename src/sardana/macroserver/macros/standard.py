@@ -24,7 +24,7 @@
 """This is the standard macro module"""
 
 __all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "set_lim", "set_lm",
-           "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm"] 
+           "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm", "tw"] 
 
 __docformat__ = 'restructuredtext'
 
@@ -33,7 +33,9 @@ from taurus.console.table import Table
 
 import PyTango
 from PyTango import DevState
-from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, ViewOption
+from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, ViewOption, iMacro
+
+import numpy as np
 
 ################################################################################
 #
@@ -546,6 +548,62 @@ class umvr(Macro):
                 pos += disp
             motor_pos_list.extend([motor, pos])
         self.execMacro('umv', *motor_pos_list)
+
+
+class tw(iMacro):
+    """
+    tw - tweak motor by variable delta
+    """
+
+    param_def = [
+        ['motor', Type.Moveable, "test", 'Motor to move'],
+        ['delta',   Type.Float, -999, 'amount to tweak']
+    ]
+
+    def run(self, motor, delta):
+        if delta != -999:
+            self.output(
+                "Indicate direction with + (or p) or - (or n) or enter")
+            self.output(
+                "new step size. Type something else (or ctrl-C) to quit.")
+            self.output("")
+            if np.sign(delta) == -1:
+                a = "-"
+            if np.sign(delta) == 1:
+                a = "+"
+            while a in ('+', '-', 'p', 'n'):
+                pos = motor.position
+                a = self.input("%s = %s, which way? " % (
+                    motor, pos), default_value=a, data_type=Type.String)
+                try:
+                    a1 = float(a)
+                    check = "True"
+                except:
+                    check = "False"
+
+                if a == "p" and np.sign(delta) < 0:
+                    a = "+"
+                    delta = -delta
+                if a == "n" and np.sign(delta) > 0:
+                    a = "-"
+                    delta = -delta
+                if a == "+" and np.sign(delta) < 0:
+                    delta = -delta
+                if a == "-" and np.sign(delta) > 0:
+                    delta = -delta
+
+                if check == "True":
+                    delta = float(a1)
+                    if np.sign(delta) == -1:
+                        a = "-"
+                    if np.sign(delta) == 1:
+                        a = "+"
+                pos += delta
+                self.mv(motor, pos)
+
+        else:
+            self.output("usage: tw motor delta")
+
 
 
 ################################################################################
