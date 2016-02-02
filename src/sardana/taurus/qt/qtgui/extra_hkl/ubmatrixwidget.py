@@ -437,8 +437,8 @@ class UBMatrixBase(TaurusWidget):
 def main():
 
     parser = taurus.core.util.argparse.get_taurus_parser()
-    parser.usage = "%prog [options] <model>"
-#    taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser)
+    parser.usage = "%prog  <model>"
+    parser.set_description("a taurus application for setting diffractometer parameters: ubmatrix, lattice, reflections, ...")
 
     app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser)
     args = app.get_command_line_args()
@@ -452,15 +452,6 @@ def main():
     w.show()
 
     sys.exit(app.exec_())
-
- #   if len(sys.argv)>1: model=sys.argv[1]
- #   else: model = None
-
- #   app = Qt.QApplication(sys.argv)
- #   w = UBMatrixBase()
- #   w.setModel(model)
- #   w.show()
- #   sys.exit(app.exec_())
 
 if __name__ == "__main__":
     main()

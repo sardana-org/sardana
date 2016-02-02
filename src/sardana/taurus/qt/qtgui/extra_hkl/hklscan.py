@@ -337,7 +337,8 @@ class HKLScan(TaurusWidget):
 def main():
 
     parser = taurus.core.util.argparse.get_taurus_parser()
-    parser.usage = "%prog [options] <model> <door_name>"
+    parser.usage = "%prog  <model> [door_name]"
+    parser.set_description("a taurus application for performing hkl scans")
 
     app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser)
     args = app.get_command_line_args()
