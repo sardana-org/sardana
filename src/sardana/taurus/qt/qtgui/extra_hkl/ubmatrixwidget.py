@@ -438,7 +438,8 @@ def main():
 
     parser = taurus.core.util.argparse.get_taurus_parser()
     parser.usage = "%prog  <model>"
-    parser.set_description("a taurus application for setting diffractometer parameters: ubmatrix, lattice, reflections, ...")
+    parser.set_description(
+        "a taurus application for setting diffractometer parameters: ubmatrix, lattice, reflections, ...")
 
     app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser)
     args = app.get_command_line_args()
