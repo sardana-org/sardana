@@ -443,7 +443,7 @@ def main():
     app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser)
     args = app.get_command_line_args()
     if len(args) < 1:
-        sys.stderr.write("Need to supply model attribute")
+        sys.stderr.write("Need to supply model attribute\n")
         sys.exit(1)
 
     w = UBMatrixBase()
