@@ -66,7 +66,7 @@ DEFAULT_CRYSTAL = "default_crystal"
 
 from taurus.core.util.log import Logger
 
-logger = Logger("ModuleManager")
+logger = Logger.getLogger("ModuleManager")
 
 logger.info("The diffractometer controller is at early stage. Controller attributes and commands can slightly change")
 

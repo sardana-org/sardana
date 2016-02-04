@@ -15,6 +15,14 @@ from sardana.macroserver.macro import *
 
 from scan import aNscan
 
+
+from taurus.core.util.log import Logger
+
+logger = Logger.getLogger("ModuleManager")
+
+logger.info("Diffractometer macros are at early stage. They can slightly change. Macro luppsi is not tested.")
+
+
 class _diffrac:
     """Internal class used as a base class for the diffractometer macros"""
 
