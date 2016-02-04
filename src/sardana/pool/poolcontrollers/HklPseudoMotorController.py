@@ -63,6 +63,14 @@ ReadWrite = DataAccess.ReadWrite
 USER = Hkl.UnitEnum.USER
 DEFAULT_CRYSTAL = "default_crystal"
 
+
+from taurus.core.util.log import Logger
+
+logger = Logger("ModuleManager")
+
+logger.info("The diffractometer controller is at early stage. Controller attributes and commands can slightly change")
+
+
 class AxisPar(object):
     def __init__(self, engine, name):
         self.engine = engine
