@@ -997,31 +997,26 @@ class DiffracBasis(PseudoMotorController):
                 bvalue = float(par_line[3])
                 cvalue = float(par_line[5])
                 lattice = self.sample.lattice_get()
-                apar = lattice.a_get()
-                apar.value_set(avalue, USER)
+                a, b, c, alpha, beta, gamma = lattice.get(USER)
+                lattice.set(avalue,bvalue,cvalue, alpha, beta, gamma, USER)
+                # For getting the UB matrix changing
+                self.sample.lattice_set(lattice)
                 self._a = avalue
-                bpar = lattice.b_get()
-                bpar.value_set(bvalue, USER)
                 self._b = bvalue
-                cpar = lattice.c_get()
-                cpar.value_set(cvalue, USER)
                 self._c = cvalue
             elif line.find("Alpha") != -1 and line.find("Beta") != -1 and line.find("Gamma") != -1:
                 par_line = line.split(" ")
                 alphavalue = float(par_line[1])
                 betavalue = float(par_line[3])
                 gammavalue = float(par_line[5])
-                alphapar = lattice.alpha_get()
-                alphapar.value_set(alphavalue, USER)
-                self._alpha = alphavalue
-                betapar = lattice.beta_get()
-                betapar.value_set(betavalue, USER)
-                self._beta = betavalue
-                gammapar = lattice.gamma_get()
-                gammapar.value_set(gammavalue, USER)
-                self._gamma = gammavalue
+                lattice = self.sample.lattice_get()
+                a, b, c, alpha, beta, gamma = lattice.get(USER)
+                lattice.set(a,b,c, alphavalue, betavalue, gammavalue, USER)
                 # For getting the UB matrix changing
                 self.sample.lattice_set(lattice)
+                self._alpha = alphavalue
+                self._beta = betavalue
+                self._gamma = gammavalue
             elif line.find("Engine") != -1:
                 line = line.split(" ")
                 engine = line[1]
