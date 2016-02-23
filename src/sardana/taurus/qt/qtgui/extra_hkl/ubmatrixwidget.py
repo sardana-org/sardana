@@ -444,8 +444,8 @@ def main():
     app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser)
     args = app.get_command_line_args()
     if len(args) < 1:
-        sys.stderr.write("Need to supply model attribute\n")
-        sys.exit(1)
+        msg = "model not set (requires diffractometer controller)"
+        parser.error(msg)
 
     w = UBMatrixBase()
     w.model = args[0]
