@@ -12,9 +12,7 @@ import os
 import re
 
 from sardana.macroserver.macro import *
-
-from scan import aNscan
-
+from sardana.macroserver.macros.scan import aNscan
 
 from taurus.core.util.log import Logger
 
