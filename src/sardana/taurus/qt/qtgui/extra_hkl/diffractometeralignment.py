@@ -348,6 +348,7 @@ def main():
         "a taurus application for diffractometer alignment: h, k, l movements and scans, go to maximum, ...")
 
     app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser)
+    app.setApplicationName("diffractometeralignment")
     args = app.get_command_line_args()
     if len(args) < 1:
         sys.stderr.write("Need to supply model attribute\n")

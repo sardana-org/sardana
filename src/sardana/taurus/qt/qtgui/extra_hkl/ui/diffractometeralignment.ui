@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Form</string>
+   <string>diffractometeralignment</string>
   </property>
   <widget class="Line" name="line_2">
    <property name="geometry">
