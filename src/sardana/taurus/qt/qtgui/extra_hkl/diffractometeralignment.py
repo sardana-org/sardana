@@ -21,7 +21,6 @@ from taurus.qt.qtgui.base import TaurusBaseWidget
 
 from PyQt4 import QtCore, QtGui
 
-import taurus.core
 from taurus.qt.qtcore.communication import SharedDataManager
 from taurus.qt.qtgui.input import TaurusValueLineEdit
 
@@ -30,10 +29,8 @@ import taurus.core.util.argparse
 import taurus.qt.qtgui.application
 from taurus.qt.qtgui.util.ui import UILoadable
 
-from PyTango import *
-from taurus.qt.qtgui.extra_macroexecutor import TaurusMacroExecutorWidget, TaurusSequencerWidget, \
-    TaurusMacroConfigurationDialog, \
-    TaurusMacroDescriptionViewer, DoorOutput, DoorDebug, DoorResult
+from taurus.qt.qtgui.extra_macroexecutor import TaurusMacroConfigurationDialog
+
 
 from selectsignal import SelectSignal
 
@@ -114,7 +111,7 @@ class DiffractometerAlignment(TaurusWidget):
         self._ui.taurusValueLineL.setModel(lmodel)
         self._ui.taurusLabelValueL.setModel(lmodel)
 
-     # Add dynamically the angle widgets
+        # Add dynamically the angle widgets
 
         motor_list = self.device.motorlist
         self.motor_names = []
@@ -158,7 +155,8 @@ class DiffractometerAlignment(TaurusWidget):
             alname = "angleslabel" + str(i)
             angles_labels[i].setObjectName(alname)
             angles_labels[i].setText(QtGui.QApplication.translate(
-                "HKLScan", self.angles_names[i], None, QtGui.QApplication.UnicodeUTF8))
+                "HKLScan", self.angles_names[i], None,
+                QtGui.QApplication.UnicodeUTF8))
 
             angles_taurus_label.append(TaurusLabel(self))
             angles_taurus_label[i].setGeometry(
@@ -174,7 +172,7 @@ class DiffractometerAlignment(TaurusWidget):
             angles_taurus_input[i].setObjectName(atlname)
             angles_taurus_input[i].setModel(self.motor_names[i] + "/Position")
 
-       # Set model to engine and modes
+        # Set model to engine and modes
 
         enginemodel = model + '/engine'
         self._ui.taurusLabelEngine.setModel(enginemodel)
@@ -211,7 +209,8 @@ class DiffractometerAlignment(TaurusWidget):
             wname = "scanbutton" + str(i)
             scan_buttons[i].setObjectName(wname)
             scan_buttons[i].setText(QtGui.QApplication.translate(
-                "DiffractometerAlignment", self.angles_names[i], None, QtGui.QApplication.UnicodeUTF8))
+                "DiffractometerAlignment", self.angles_names[i], None,
+                QtGui.QApplication.UnicodeUTF8))
             self.connect(scan_buttons[i], Qt.SIGNAL(
                 "clicked()"), exec_functions[i])
 
@@ -228,7 +227,8 @@ class DiffractometerAlignment(TaurusWidget):
             wname = "tomaxbutton" + str(i)
             self.tomax_buttons[i].setObjectName(wname)
             self.tomax_buttons[i].setText(QtGui.QApplication.translate(
-                "DiffractometerAlignment", 'n.n.', None, QtGui.QApplication.UnicodeUTF8))
+                "DiffractometerAlignment", 'n.n.', None,
+                QtGui.QApplication.UnicodeUTF8))
             self.connect(self.tomax_buttons[i], Qt.SIGNAL(
                 "clicked()"), tomax_functions[i])
 
@@ -273,7 +273,8 @@ class DiffractometerAlignment(TaurusWidget):
             for i in range(len(output_values)):
                 if output_values[i] == "Position to move":
                     self.tomax_buttons[imot].setText(QtGui.QApplication.translate(
-                        "DiffractometerAlignment", str(output_values[i + 1]), None, QtGui.QApplication.UnicodeUTF8))
+                        "DiffractometerAlignment", str(output_values[i + 1]),
+                        None, QtGui.QApplication.UnicodeUTF8))
 
     def tomax_scan1(self):
         self.tomax_scan(0)
@@ -344,8 +345,9 @@ def main():
 
     parser = taurus.core.util.argparse.get_taurus_parser()
     parser.usage = "%prog <model> [door_name]"
-    parser.set_description(
-        "a taurus application for diffractometer alignment: h, k, l movements and scans, go to maximum, ...")
+    desc = ("a taurus application for diffractometer alignment: h, k, l " +
+            "movements and scans, go to maximum, ...")
+    parser.set_description(desc)
 
     app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser)
     app.setApplicationName("diffractometeralignment")
