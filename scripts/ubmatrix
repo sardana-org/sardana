@@ -23,5 +23,5 @@
 ##
 ##############################################################################
 
-from sardana.taurus.qt.qtgui.extra_hkl.ubmatrixwidget import main
+from sardana.taurus.qt.qtgui.extra_hkl.ubmatrix import main
 main()

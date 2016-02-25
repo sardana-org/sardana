@@ -49,7 +49,7 @@ class UBMatrixBase(TaurusWidget):
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode=designMode)
 
-        self.loadUi(filename="ubmatrixwidget.ui")
+        self.loadUi(filename="ubmatrix.ui")
 
         self.connect(self._ui.UpdateButton, Qt.SIGNAL(
             "clicked()"), self.update_values)
@@ -442,6 +442,7 @@ def main():
         "a taurus application for setting diffractometer parameters: ubmatrix, lattice, reflections, ...")
 
     app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser)
+    app.setApplicationName("ubmatrix")
     args = app.get_command_line_args()
     if len(args) < 1:
         msg = "model not set (requires diffractometer controller)"

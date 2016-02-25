@@ -28,5 +28,5 @@ __init__.py:
 """
 
 from hklscan import HKLScan
-from ubmatrixwidget import UBMatrixBase
+from ubmatrix import UBMatrixBase
 from diffractometeralignment import DiffractometerAlignment
