@@ -12,6 +12,9 @@ __docformat__ = 'restructuredtext'
 import sys
 import time
 import PyQt4.Qt as Qt
+# TODO: avoid using of PyTango - use Taurus instead
+import PyTango
+
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtgui.display import TaurusLabel
 from taurus.qt.qtgui.base import TaurusBaseWidget
@@ -253,7 +256,6 @@ class DiffractometerAlignment(TaurusWidget):
         macro_command.append("diff_scan")
         macro_command.append(str(self.motor_names[imot]))
         current_pos = self.motor_devices[imot].Position
-        print current_pos
         range_scan = float(self.range_inputs[imot].text())
         macro_command.append(str(current_pos - range_scan))
         macro_command.append(str(current_pos + range_scan))
@@ -263,9 +265,8 @@ class DiffractometerAlignment(TaurusWidget):
         macro_command.append(self.angles_names[imot])
         macro_command.append(str(self.selectsignal._ui.SignallineEdit.text()))
 
-        print macro_command
         self.door_device.RunMacro(macro_command)
-        while(self.door_device.State()) == DevState.RUNNING:
+        while(self.door_device.State()) == PyTango.DevState.RUNNING:
             time.sleep(0.01)
         output_values = self.door_device.read_attribute("Output").value
         if output_values != None:
@@ -299,7 +300,6 @@ class DiffractometerAlignment(TaurusWidget):
         macro_command.append(str(self.motor_names[imot]))
         macro_command.append(self.angles_names[imot])
 
-        print macro_command
         self.door_device.RunMacro(macro_command)
 
     def onModeChanged(self, modename):
@@ -351,8 +351,8 @@ def main():
     app.setApplicationName("diffractometeralignment")
     args = app.get_command_line_args()
     if len(args) < 1:
-        sys.stderr.write("Need to supply model attribute\n")
-        sys.exit(1)
+        msg = "model not set (requires diffractometer controller)"
+        parser.error(msg)
 
     w = DiffractometerAlignment()
     w.model = args[0]
@@ -363,7 +363,9 @@ def main():
     if len(args) > 1:
         w.onDoorChanged(args[1])
     else:
-        print "WARNING: Not door name supplied. Connection to MacroServer/Door not automatically done"
+        msg = ("No door name supplied. Connection to MacroServer/Door will " +
+               "not not automatically done.")
+        app.warning(msg)
 
     w.show()
 
