@@ -41,6 +41,7 @@ import taurus.core
 
 from taurus.qt.qtgui.util.ui import UILoadable
 
+from sardana.taurus.core.tango.sardana.macroserver import registerExtensions
 
 class SignalComboBox(Qt.QComboBox, TaurusBaseWidget):
     """ComboBox representing list of possible signals"""
@@ -75,6 +76,8 @@ class SelectSignal(TaurusWidget):
 
         self.doorName = None
         self.door_device = None
+        
+        registerExtensions()
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
@@ -93,21 +96,10 @@ class SelectSignal(TaurusWidget):
 
         if self.doorName != None:
             signals = []
-            isig = 0
-            macro_cmd = []
-            macro_cmd.append("lsmeas")
-            self.door_device.RunMacro(macro_cmd)
-            while(self.door_device.State()) == PyTango.DevState.RUNNING:
-                time.sleep(0.01)
-            output_values = self.door_device.read_attribute("Output").value
-            for line in output_values:
-                if line.find('*') != -1:
-                    for name in line.split(' '):
-                        if name != '':
-                            isig = isig + 1
-                            if isig > 3:  # Don't add the asterik, the group name and the timer as timer
-                                name = name.replace(',', '')
-                                signals.append(name)
+            conf = self.door_device.getExperimentConfiguration()
+            mg_name = conf['ActiveMntGrp']
+            mg = taurus.Device(mg_name)
+            signals = mg.ElementList
 
             self.signalComboBox.loadSignals(signals)
 
