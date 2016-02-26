@@ -353,11 +353,13 @@ def main():
         'sardana.taurus.qt.qtgui.extra_sardana',
         'sardana.taurus.qt.qtgui.extra_sardana.ui',
         'sardana.taurus.qt.qtgui.extra_pool',
+        'sardana.taurus.qt.qtgui.extra_hkl',
     ]
     
     package_data = {'sardana.taurus.qt.qtgui.extra_macroexecutor': ['ui/*.ui'],
                     'sardana.taurus.qt.qtgui.extra_pool': ['ui/*.ui'],
                     'sardana.taurus.qt.qtgui.extra_sardana': ['ui/*.ui'],
+                    'sardana.taurus.qt.qtgui.extra_hkl': ['ui/*.ui'],
                     'sardana.macroserver.test.res': ['recorders/path*/*'],
                     }
     
@@ -385,7 +387,10 @@ def main():
         "scripts/spectoascii",
         "scripts/spock",
         "scripts/macroexecutor",
-        "scripts/sequencer"
+        "scripts/sequencer",
+        "scripts/ubmatrix",
+        "scripts/diffractometeralignment",
+        "scripts/hklscan"
     ]
 
     classifiers = [
