@@ -19,7 +19,7 @@ import json
 ascan = 0
 gmotor = 0
 
-logger = Logger.getLogger("ModuleManager")
+logger = Logger.getLogger("MacroManager")
 
 logger.info("Diffractometer macros are at early stage. They can slightly change. Macro luppsi is not tested.")
 

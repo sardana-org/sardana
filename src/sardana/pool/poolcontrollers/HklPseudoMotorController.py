@@ -66,9 +66,9 @@ DEFAULT_CRYSTAL = "default_crystal"
 
 from taurus.core.util.log import Logger
 
-logger = Logger.getLogger("ModuleManager")
+logger = Logger.getLogger("ControllerManager")
 
-logger.info("The diffractometer controller is at early stage. Controller attributes and commands can slightly change")
+logger.info("The diffractometer controller is at early stage. Controller attributes and commands can slightly change.")
 
 
 class AxisPar(object):
