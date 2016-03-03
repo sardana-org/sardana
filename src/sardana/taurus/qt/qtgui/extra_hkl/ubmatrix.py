@@ -32,7 +32,7 @@ from reflectionslist import ReflectionsList
 from reflectionseditor import ReflectionsEditor
 from taurus.qt.qtgui.base import TaurusBaseWidget
 
-from PyQt4 import QtCore, QtGui
+from taurus.external.qt import QtCore, QtGui
 
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtgui.input import TaurusValueLineEdit

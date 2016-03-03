@@ -31,7 +31,8 @@ import taurus.core
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtgui.input import TaurusValueLineEdit
 
-from PyQt4 import QtCore, QtGui
+from taurus.external.qt import QtCore, QtGui
+
 from taurus.qt.qtgui.util.ui import UILoadable
 
 

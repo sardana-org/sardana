@@ -34,10 +34,7 @@ import PyTango
 
 import taurus.core
 
-
-from PyQt4 import QtCore, QtGui
-
-import taurus.core
+from taurus.external.qt import QtCore, QtGui
 
 from taurus.qt.qtgui.util.ui import UILoadable
 

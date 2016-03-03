@@ -36,7 +36,7 @@ from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtgui.display import TaurusLabel
 from taurus.qt.qtgui.base import TaurusBaseWidget
 
-from PyQt4 import QtCore, QtGui
+from taurus.external.qt import QtCore, QtGui
 
 from taurus.qt.qtcore.communication import SharedDataManager
 from taurus.qt.qtgui.input import TaurusValueLineEdit
