@@ -4,6 +4,9 @@
     server Tango device server as part of the Sardana project.
     
 """
+
+# TODO: use taurus instead of PyTango API e.g. read_attribute,
+# write_attribute. This module is full of PyTango centric calls.
 import time
 import math
 import os
@@ -156,7 +159,8 @@ class _diffrac:
         if mat:
             return regx.sub(repl, ch)
 
-
+# TODO: Revrite this macro in order to use events instead of polling to obtain 
+# the position updates. See umv macro as an example
 class br(Macro, _diffrac):
     """The br macro is used to move the diffractometer to the reciprocal space 
     coordinates given by H, K and L. If a fourth parameter is given, the combination
