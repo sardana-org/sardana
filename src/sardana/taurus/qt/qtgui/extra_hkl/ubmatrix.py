@@ -26,7 +26,7 @@
 __docformat__ = 'restructuredtext'
 
 import sys
-import PyQt4.Qt as Qt
+from taurus.external.qt import Qt
 from taurus.qt.qtgui.container import TaurusWidget
 from reflectionslist import ReflectionsList
 from reflectionseditor import ReflectionsEditor

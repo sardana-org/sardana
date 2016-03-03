@@ -28,7 +28,7 @@ __docformat__ = 'restructuredtext'
 
 import sys
 import time
-import PyQt4.Qt as Qt
+from taurus.external.qt import Qt
 # TODO: avoid using of PyTango - use Taurus instead
 import PyTango
 
