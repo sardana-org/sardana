@@ -24,7 +24,7 @@
 """This is the standard macro module"""
 
 __all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "set_lim", "set_lm",
-           "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm"] 
+           "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm", "tw"] 
 
 __docformat__ = 'restructuredtext'
 
@@ -33,7 +33,10 @@ from taurus.console.table import Table
 
 import PyTango
 from PyTango import DevState
-from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, ViewOption
+from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, ViewOption, iMacro
+from sardana.macroserver.msexception import StopException
+
+import numpy as np
 
 ################################################################################
 #
@@ -546,6 +549,61 @@ class umvr(Macro):
                 pos += disp
             motor_pos_list.extend([motor, pos])
         self.execMacro('umv', *motor_pos_list)
+
+# TODO: implement tw macro with param repeats in order to be able to pass
+# multiple motors and multiple deltas. Also allow to pass the integration time
+# in order to execute the measurement group acquisition after each move and 
+# print the results. Basically follow the SPEC's API: https://certif.com/spec_help/tw.html
+class tw(iMacro):
+    """Tweak motor by variable delta"""
+
+    param_def = [
+        ['motor', Type.Moveable, "test", 'Motor to move'],
+        ['delta',   Type.Float, None, 'Amount to tweak']
+    ]
+
+    def run(self, motor, delta):
+        self.output(
+            "Indicate direction with + (or p) or - (or n) or enter")
+        self.output(
+            "new step size. Type something else (or ctrl-C) to quit.")
+        self.output("")
+        if np.sign(delta) == -1:
+            a = "-"
+        if np.sign(delta) == 1:
+            a = "+"
+        while a in ('+', '-', 'p', 'n'):
+            pos = motor.position
+            a = self.input("%s = %s, which way? " % (
+                motor, pos), default_value=a, data_type=Type.String)
+            try:
+                # check if the input is a new delta
+                delta = float(a)
+                # obtain the sign of the new delta
+                if np.sign(delta) == -1:
+                    a = "-"
+                else:
+                    a = "+"
+            except:
+                # convert to the common sign
+                if a == "p":
+                    a = "+"
+                # convert to the common sign
+                elif a == "n":
+                    a = "-"
+                # the sign is already correct, just continue
+                elif a  in ("+", "-"):
+                    pass
+                else:
+                    msg = "Typing '%s' caused 'tw' macro to stop." % a
+                    self.info(msg)
+                    raise StopException()
+                # invert the delta if necessary
+                if (a == "+" and np.sign(delta) < 0) or \
+                   (a == "-" and np.sign(delta) > 0):
+                    delta = -delta
+            pos += delta
+            self.mv(motor, pos)
 
 
 ################################################################################

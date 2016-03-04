@@ -22,6 +22,7 @@ motion related macros
     * :class:`~sardana.macroserver.macros.standard.umv`
     * :class:`~sardana.macroserver.macros.standard.mvr`
     * :class:`~sardana.macroserver.macros.standard.umvr`
+    * :class:`~sardana.macroserver.macros.standard.tw`
     * :class:`~sardana.macroserver.macros.lists.lsm`
     * :class:`~sardana.macroserver.macros.lists.lspm`
 
