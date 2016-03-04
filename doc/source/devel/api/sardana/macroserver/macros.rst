@@ -586,6 +586,10 @@
     Move motor(s) relative to the current position(s) and update
     
 
+.. class:: standard.tw
+
+   Tweak motor by variable delta
+
 .. class:: env.usenv
 
     Unsets the given environment variable
