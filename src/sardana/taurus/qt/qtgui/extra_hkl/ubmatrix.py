@@ -42,6 +42,8 @@ import taurus.core.util.argparse
 import taurus.qt.qtgui.application
 from taurus.qt.qtgui.util.ui import UILoadable
 
+global flag_update
+flag_update = 0
 
 class PrivateComboBox(Qt.QComboBox, TaurusBaseWidget):
     """ComboBox"""
@@ -55,9 +57,10 @@ class PrivateComboBox(Qt.QComboBox, TaurusBaseWidget):
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def loadItems(self, items):
-        self.clear()
-        self.addItems(items)
-
+        all_items = [self.itemText(i) for i in range(self.count())]
+        for crys in items:
+            if crys not in all_items:
+                self.addItem(crys)
 
 @UILoadable(with_ui="_ui")
 class UBMatrixBase(TaurusWidget):
@@ -99,7 +102,7 @@ class UBMatrixBase(TaurusWidget):
             self.device = taurus.Device(model)
 
         self.update_values()
-
+        
         uxmodel = model + "/ux"
         self._ui.taurusuxvalue.setModel(uxmodel)
         self._ui.taurusuxeditvalue.setModel(uxmodel)
@@ -178,7 +181,8 @@ class UBMatrixBase(TaurusWidget):
 
         self.connect(self.crystalscombobox, Qt.SIGNAL(
             "currentIndexChanged(QString)"), self.onCrystalChanged)
-
+        
+        
     def onEngineChanged(self, enginename):
         self.device.write_attribute("engine", str(enginename))
 
@@ -186,13 +190,9 @@ class UBMatrixBase(TaurusWidget):
         self.device.write_attribute("enginemode", str(modename))
 
     def onCrystalChanged(self, crystalname):
-        self.device.write_attribute("crystal", str(crystalname))
+        if str(crystalname) != "":
+            self.device.write_attribute("crystal", str(crystalname))
 
-
-#    def on_alatticeeditvalue_textEdited(self, text):
-#        print "Funciona"
-#        print text
-       # textEdited
 
     def update_values(self):
         ub_values = self.device.ubmatrix
@@ -206,6 +206,17 @@ class UBMatrixBase(TaurusWidget):
         self._ui.taurusub32value.setValue(ub_values[2][1])
         self._ui.taurusub33value.setValue(ub_values[2][2])
 
+        global flag_update
+        if flag_update:
+            all_items = [self.crystalscombobox.itemText(i) for i in range(self.crystalscombobox.count())]
+            for crys in self.device.crystallist:
+                if crys not in all_items:
+                    self.crystalscombobox.addItem(crys)
+            for i in range(self.crystalscombobox.count()):
+                if self.crystalscombobox.itemText(i) not in self.device.crystallist:
+                    self.crystalscombobox.removeItem(i)
+        flag_update = 1
+            
     def compute_u(self):
         index = [0, 1]
 
@@ -439,7 +450,6 @@ class UBMatrixBase(TaurusWidget):
         w.show()
 
     def add_select_crystal(self):
-
         new_crystal = str(self._ui.NewCrystalLineEdit.text())
         self.device.write_attribute("AddCrystal", new_crystal)
         self.crystalscombobox.loadItems(self.device.crystallist)
