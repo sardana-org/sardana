@@ -357,10 +357,11 @@ def main():
     parser.set_description("a taurus application for performing hkl scans")
 
     app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser)
+    app.setApplicationName("hklscan")
     args = app.get_command_line_args()
     if len(args) < 1:
-        sys.stderr.write("Need to supply model attribute\n")
-        sys.exit(1)
+        msg = "model not set (requires diffractometer controller)"
+        parser.error(msg)
 
     w = HKLScan()
     w.model = args[0]
