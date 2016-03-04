@@ -34,6 +34,7 @@ from taurus.console.table import Table
 import PyTango
 from PyTango import DevState
 from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, ViewOption, iMacro
+from sardana.macroserver.msexception import StopException
 
 import numpy as np
 
@@ -551,13 +552,11 @@ class umvr(Macro):
 
 
 class tw(iMacro):
-    """
-    tw - tweak motor by variable delta
-    """
+    """tw - tweak motor by variable delta"""
 
     param_def = [
         ['motor', Type.Moveable, "test", 'Motor to move'],
-        ['delta',   Type.Float, None, 'amount to tweak']
+        ['delta',   Type.Float, None, 'Amount to tweak']
     ]
 
     def run(self, motor, delta):
@@ -575,28 +574,31 @@ class tw(iMacro):
             a = self.input("%s = %s, which way? " % (
                 motor, pos), default_value=a, data_type=Type.String)
             try:
-                a1 = float(a)
-                check = "True"
-            except:
-                check = "False"
-
-            if a == "p" and np.sign(delta) < 0:
-                a = "+"
-                delta = -delta
-            if a == "n" and np.sign(delta) > 0:
-                a = "-"
-                delta = -delta
-            if a == "+" and np.sign(delta) < 0:
-                delta = -delta
-            if a == "-" and np.sign(delta) > 0:
-                delta = -delta
-
-            if check == "True":
-                delta = float(a1)
+                # check if the input is a new delta
+                delta = float(a)
+                # obtain the sign of the new delta
                 if np.sign(delta) == -1:
                     a = "-"
-                if np.sign(delta) == 1:
+                else:
                     a = "+"
+            except:
+                # convert to the common sign
+                if a == "p":
+                    a = "+"
+                # convert to the common sign
+                elif a == "n":
+                    a = "-"
+                # the sign is already correct, just continue
+                elif a  in ("+", "-"):
+                    pass
+                else:
+                    msg = "Typing '%s' caused 'tw' macro to stop." % a
+                    self.info(msg)
+                    raise StopException()
+                # invert the delta if necessary
+                if (a == "+" and np.sign(delta) < 0) or \
+                   (a == "-" and np.sign(delta) > 0):
+                    delta = -delta
             pos += delta
             self.mv(motor, pos)
 
