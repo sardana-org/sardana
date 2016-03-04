@@ -221,7 +221,8 @@ class UBMatrixBase(TaurusWidget):
         index = [0, 1]
 
         self.device.write_attribute("computeu", index)
-
+        self.update_values()
+        
     def reflections_list_window(self):
 
         reflections = self.device.reflectionlist
