@@ -457,9 +457,7 @@ class UBMatrixBase(TaurusWidget):
         self.device.write_attribute("Crystal", new_crystal)
 
     def affine(self):
-
-        self.device.write_attribute("affine", 1)
-
+        self.device.write_attribute("affinecrystal", 1)
 
 def main():
 
