@@ -550,9 +550,12 @@ class umvr(Macro):
             motor_pos_list.extend([motor, pos])
         self.execMacro('umv', *motor_pos_list)
 
-
+# TODO: implement tw macro with param repeats in order to be able to pass
+# multiple motors and multiple deltas. Also allow to pass the integration time
+# in order to execute the measurement group acquisition after each move and 
+# print the results. Basically follow the SPEC's API: https://certif.com/spec_help/tw.html
 class tw(iMacro):
-    """tw - tweak motor by variable delta"""
+    """Tweak motor by variable delta"""
 
     param_def = [
         ['motor', Type.Moveable, "test", 'Motor to move'],
