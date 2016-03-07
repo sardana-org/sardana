@@ -600,7 +600,7 @@ class DiffracBasis(PseudoMotorController):
         if len(value) < 2:
             return
         nb_reflections = len(self.sample.reflections_get())
-        if value[0] > nb_reflections or value[1] > nb_reflections:
+        if value[0] >= nb_reflections or value[1] >= nb_reflections:
             return
         i = 0
         for ref in self.sample.reflections_get():
