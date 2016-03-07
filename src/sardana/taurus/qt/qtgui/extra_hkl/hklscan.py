@@ -262,6 +262,9 @@ class HKLScan(TaurusWidget):
         start_hkl = []
         stop_hkl = []
         missed_values = 0
+        # TODO: This code will raise exception if one of the line edits is empty.
+        # But not all dimensions (H & K & L) are obligatory. One could try
+        # to display angles of just 1 or 2 dimensional scan.
         try:
             start_hkl.append(float(self._ui.lineEditStartH.text()))
             start_hkl.append(float(self._ui.lineEditStartK.text()))
@@ -317,6 +320,8 @@ class HKLScan(TaurusWidget):
                 taurusValueAngle[i].setObjectName(tva_name)
                 taurusValueAngle[i].setValue(
                     "...                             No angle solution for hkl values                             ...")
+        # TODO: not all dimensions (H & K & L) are obligatory. One could try 
+        # to display angles of just 1 or 2 dimensional scan.
         if nb_points == -1:
             nb_points = 0
             taurusValueAngle.append(TaurusValueLineEdit(w))
