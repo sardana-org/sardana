@@ -270,7 +270,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>ComputeU</string>
+    <string>ComputeUB</string>
    </property>
   </widget>
   <widget class="Line" name="line">
