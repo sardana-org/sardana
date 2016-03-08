@@ -1209,9 +1209,7 @@ class DiffracBasis(PseudoMotorController):
 
     def setAdjustAnglesToReflection(self, value):  # value: reflexion index + new angles
         ref_index = value[0]
-        new_angles = []
-        for i in range(1, len(value)):
-            new_angles.append(value[i])
+        new_angles = value[1:]
         i = 0
         for ref in self.sample.reflections_get():
             if i == ref_index:
