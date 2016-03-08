@@ -957,7 +957,7 @@ class DiffracBasis(PseudoMotorController):
 
                 # set the axes values
                 geometry = reflection.geometry_get()
-                geometry.axes_values_set(values[6:], USER)
+                geometry.axis_values_set(values[6:], USER)
                 reflection.geometry_set(geometry)
 
     def setLoadCrystal(self, value):  # value: complete path of the file with the crystal to set
