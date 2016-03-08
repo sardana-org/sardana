@@ -931,38 +931,34 @@ class DiffracBasis(PseudoMotorController):
 
     def setLoadReflections(self, value):  # value: complete path of the file with the reflections to set
         # Read the file
-        try:
-            with open(value, 'r') as f:
-                self._loadreflections = value
+        with open(value, 'r') as f:
+            self._loadreflections = value
 
-                # Remove all reflections
-                for reflection in self.sample.reflections_get():
-                    self.sample.del_reflection(reflection)
+            # Remove all reflections
+            for reflection in self.sample.reflections_get():
+                self.sample.del_reflection(reflection)
 
-                # add one reflection per line (no check for now)
-                # TODO it seems that the wavelength is missing in the file.
-                for line in f:
-                    # the reflection line is structured like this
-                    # index 0 -> reflec. index;
-                    # index 1, 2, 3 -> hkl;
-                    # index 4 -> relevance
-                    # index 5 -> affinement;
-                    # last ones (2, 4 or 6) -> geometry axes values
-                    values = [float(v) for v in line.split(' ')]
+            # add one reflection per line (no check for now)
+            # TODO it seems that the wavelength is missing in the file.
+            for line in f:
+                # the reflection line is structured like this
+                # index 0 -> reflec. index;
+                # index 1, 2, 3 -> hkl;
+                # index 4 -> relevance
+                # index 5 -> affinement;
+                # last ones (2, 4 or 6) -> geometry axes values
+                values = [float(v) for v in line.split(' ')]
 
-                    # create the reflection
-                    reflection = self.sample.add_reflection(self.geometry, self.detector,
-                                                            values[1], values[2], values[3])
-                    # set the affinement
-                    reflection.flag_set(values[5])
+                # create the reflection
+                reflection = self.sample.add_reflection(self.geometry, self.detector,
+                                                        values[1], values[2], values[3])
+                # set the affinement
+                reflection.flag_set(values[5])
 
-                    # set the axes values
-                    geometry = reflection.geometry_get()
-                    geometry.axes_values_set(values[6:], USER)
-                    reflection.geometry_set(geometry)
-        except:
-            raise Exception("Not able to open reflections file")
-
+                # set the axes values
+                geometry = reflection.geometry_get()
+                geometry.axes_values_set(values[6:], USER)
+                reflection.geometry_set(geometry)
 
     def setLoadCrystal(self, value):  # value: complete path of the file with the crystal to set
         # Read the file
@@ -1091,16 +1087,15 @@ class DiffracBasis(PseudoMotorController):
             os.system(cmd)
         except:
             pass
-        ref_file = open(complete_file_name, 'w')
-        reflections = self.getReflectionList()
-        for ref in reflections:
-            ref_str = ""
-            for val in ref:
-                ref_str = ref_str + str(val) + " "
-            ref_str = ref_str[:-1]
-            ref_str = ref_str + '\n'
-            ref_file.write(ref_str)
-        ref_file.close()
+        with open(complete_file_name, 'w') as ref_file:
+            reflections = self.getReflectionList()
+            for ref in reflections:
+                ref_str = ""
+                for val in ref:
+                    ref_str = ref_str + str(val) + " "
+                ref_str = ref_str[:-1]
+                ref_str = ref_str + '\n'
+                ref_file.write(ref_str)
 
     def setSaveCrystal(self, value):  # value: not used
         default_file_name = self._savedirectory + "/defaultcrystal.txt"
