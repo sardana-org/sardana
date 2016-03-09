@@ -506,7 +506,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Nb points:</string>
+    <string>Nb of intervals:</string>
    </property>
   </widget>
   <widget class="QLineEdit" name="NbPointslineEdit">
