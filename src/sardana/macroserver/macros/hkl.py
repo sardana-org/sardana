@@ -11,6 +11,7 @@ import time
 import math
 import os
 import re
+import numpy as np
 
 from sardana.macroserver.macro import *
 from sardana.macroserver.macros.scan import aNscan
@@ -1527,31 +1528,22 @@ class diff_scan(Macro):
         channel_fullname = channel.getFullName()
         motor_name = motor.getName()
 
-        self.arr_data = []
+        arr_data = []
         arr_motpos = []
-        for elm in ascan.data.records:
-            for dat in elm.data:
-                if dat == channel_fullname:
-                    self.arr_data.append(elm.data[channel_fullname])
-                if dat == motor_name:
-                    arr_motpos.append(elm.data[motor_name])
+        for record in ascan.data.records:
+            record_data = record.data
+            arr_data.append(record_data[channel_fullname])
+            arr_motpos.append(record_data[motor_name])
 
-        
-        # Compute maximum 
-
-        for i in range(0, len(self.arr_data)):
-            if self.arr_data[i] > self.dmax:
-                self.dmax = self.arr_data[i]
-                self.imax = i
-
-        # Position to move arr_motpos[imax]
+        # Find motor position corresponding to the maximum of channel values
+        idx_max = np.argmax(arr_data)
+        pos_max = arr_motpos[idx_max]
 
         self.output("Position to move")
-        self.output(arr_motpos[self.imax])
-        
-        env_name = angle_name + "_peak"
+        self.output(pos_max)
 
-        self.setEnv(env_name, arr_motpos[self.imax])
+        env_name = angle_name + "_peak"
+        self.setEnv(env_name, pos_max)
 
 
 class diff_goto_peak(Macro):
