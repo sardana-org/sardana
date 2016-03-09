@@ -270,7 +270,7 @@ class DiffractometerAlignment(TaurusWidget):
     def exec_scan(self, imot):
         macro_command = []
 
-        macro_command.append("diff_scan")
+        macro_command.append("_diff_scan")
         macro_command.append(str(self.motor_names[imot]))
         current_pos = self.motor_devices[imot].Position
         range_scan = float(self.range_inputs[imot].text())
@@ -279,7 +279,6 @@ class DiffractometerAlignment(TaurusWidget):
         macro_command.append(str(self._ui.NbPointslineEdit.text()))
         macro_command.append(
             str(self.selectsignal._ui.SampleTimelineEdit.text()))
-        macro_command.append(self.angles_names[imot])
         macro_command.append(str(self.selectsignal._ui.SignallineEdit.text()))
 
         self.door_device.RunMacro(macro_command)

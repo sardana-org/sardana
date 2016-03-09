@@ -1501,7 +1501,7 @@ class blockprintmove(Macro, _diffrac):
             self.flushOutput()
 
 
-class diff_scan(Macro):
+class _diff_scan(Macro):
     """Perfoms an scan keeping the data for further analysis/moves"""
 
     param_def = [
@@ -1510,11 +1510,10 @@ class diff_scan(Macro):
        ['final_pos',  Type.Float,   None, 'Scan final position'],
        ['nr_interv',  Type.Integer, None, 'Number of scan intervals'],
        ['integ_time', Type.Float,   None, 'Integration time'],
-       ['angle_name', Type.String,   None, 'Name of the diffractometer angle'],      
        ['channel',    Type.ExpChannel,   None, 'Channel to analize']
     ]
 
-    def run(self, motor, start_pos, final_pos, nr_interv, integ_time, angle_name, channel):
+    def run(self, motor, start_pos, final_pos, nr_interv, integ_time, channel):
 
         ascan, pars= self.createMacro("ascan",motor, start_pos, final_pos, nr_interv, integ_time)
         self.runMacro(ascan)
@@ -1535,6 +1534,3 @@ class diff_scan(Macro):
 
         self.output("Position to move")
         self.output(pos_max)
-
-        env_name = angle_name + "_peak"
-        self.setEnv(env_name, pos_max)
