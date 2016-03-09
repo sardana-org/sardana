@@ -1521,17 +1521,11 @@ class diff_scan(Macro):
        ['channel',    Type.String,   None, 'Channel to analize']
     ]
 
-    result_def = [ [ "result", Type.String, None, "the ascan object" ]]
-
     def run(self, motor, start_pos, final_pos, nr_interv, integ_time, angle_name, channel):
 
         ascan, pars= self.createMacro("ascan",motor, start_pos, final_pos, nr_interv, integ_time)
 
         self.runMacro(ascan)
-        result = " "
-        for elm in ascan.data.records:
-            result = result + str(elm.data)
-        self.output(result)
 
         # Find the full name of the channel for the signal
 
@@ -1574,10 +1568,7 @@ class diff_scan(Macro):
         
         env_name = angle_name + "_peak"
 
-        self.setEnv(env_name, arr_motpos[self.imax])    
-
-        return result 
-
+        self.setEnv(env_name, arr_motpos[self.imax])
 
 
 class diff_goto_peak(Macro):
