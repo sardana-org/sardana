@@ -720,7 +720,7 @@ class setlat(iMacro, _diffrac):
             self.diffrac.write_attribute("beta", beta)
             self.diffrac.write_attribute("gamma", gamma)
 
-        self.execMacro('compute_u')
+        self.execMacro('compute_ub')
 
 
 class or0(Macro, _diffrac):
@@ -751,7 +751,7 @@ class or0(Macro, _diffrac):
         values = [0, H, K, L]
         self.diffrac.write_attribute("AddReflectionWithIndex", values)
 
-        self.execMacro('compute_u')
+        self.execMacro('compute_ub')
 
 
 class or1(Macro, _diffrac):
@@ -782,7 +782,7 @@ class or1(Macro, _diffrac):
         values = [1, H, K, L]
         self.diffrac.write_attribute("AddReflectionWithIndex", values)
 
-        self.execMacro('compute_u')
+        self.execMacro('compute_ub')
 
 
 class setor0(Macro, _diffrac):
@@ -951,7 +951,7 @@ class setorn(iMacro, _diffrac):
 
         # Recompute u
 
-        self.execMacro('compute_u')
+        self.execMacro('compute_ub')
 
 
 class setaz(iMacro, _diffrac):
@@ -1007,8 +1007,8 @@ class setaz(iMacro, _diffrac):
         self.execMacro('savecrystal')
 
 
-class compute_u(Macro, _diffrac):
-    """ Compute U matrix with reflections 0 and 1 """
+class compute_ub(Macro, _diffrac):
+    """ Compute UB matrix with reflections 0 and 1 """
 
     def prepare(self):
         _diffrac.prepare(self)
@@ -1018,14 +1018,14 @@ class compute_u(Macro, _diffrac):
         reflections = self.diffrac.reflectionlist
         if reflections != None:
             if len(reflections) > 1:
-                self.output("Computing U with reflections 0 and 1")
+                self.output("Computing UB with reflections 0 and 1")
                 values = [0,1]
-                self.diffrac.write_attribute("ComputeU", values)
+                self.diffrac.write_attribute("ComputeUB", values)
                 self.execMacro('savecrystal')
             else:
-                self.warning("U can not be computed. Only one reflection")
+                self.warning("UB can not be computed. Only one reflection")
         else:
-            self.warning("U can not be computed. No reflection")
+            self.warning("UB can not be computed. No reflection")
 
 
 class add_reflection(Macro, _diffrac):
@@ -1071,7 +1071,7 @@ class or_swap(Macro, _diffrac):
 
         self.diffrac.write_attribute("SwapReflections01", 0)
         self.output("Orientation vectors swapped.")
-        self.execMacro('compute_u')
+        self.execMacro('compute_ub')
 
 
 class newcrystal(iMacro, _diffrac):
@@ -1466,7 +1466,7 @@ class lattice_cal(iMacro, _diffrac):
                                 (parameter, a1))
                     self.diffrac.write_attribute("c", a1)
 
-                self.execMacro('compute_u')
+                self.execMacro('compute_ub')
 
             else:
                 self.output("Lattice parameter a, b or c")

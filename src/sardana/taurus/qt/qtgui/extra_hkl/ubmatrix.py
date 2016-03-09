@@ -73,7 +73,7 @@ class UBMatrixBase(TaurusWidget):
         self.connect(self._ui.UpdateButton, Qt.SIGNAL(
             "clicked()"), self.update_values)
         self.connect(self._ui.ComputeUButton,
-                     Qt.SIGNAL("clicked()"), self.compute_u)
+                     Qt.SIGNAL("clicked()"), self.compute_ub)
         self.connect(self._ui.ReflectionsListButton, Qt.SIGNAL(
             "clicked()"), self.reflections_list_window)
         self.connect(self._ui.EditReflectionsButton, Qt.SIGNAL(
@@ -217,10 +217,10 @@ class UBMatrixBase(TaurusWidget):
                     self.crystalscombobox.removeItem(i)
         flag_update = 1
             
-    def compute_u(self):
+    def compute_ub(self):
         index = [0, 1]
 
-        self.device.write_attribute("computeu", index)
+        self.device.write_attribute("computeub", index)
         self.update_values()
         
     def reflections_list_window(self):

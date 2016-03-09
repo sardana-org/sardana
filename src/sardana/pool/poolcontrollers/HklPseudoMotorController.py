@@ -139,7 +139,7 @@ class DiffracBasis(PseudoMotorController):
                        'Ux': {Type: float, Access: ReadWrite},
                        'Uy': {Type: float, Access: ReadWrite},
                        'Uz': {Type: float, Access: ReadWrite},
-                       'ComputeU': {Type: (int,),
+                       'ComputeUB': {Type: (int,),
                                     Description: "Compute reflection matrix using two given reflections",  # noqa
                                     Access: ReadWrite},
                        'LatticeReciprocal': {Type: (float,),
@@ -596,7 +596,7 @@ class DiffracBasis(PseudoMotorController):
         uz.value_set(value, USER)
         self.sample.uz_set(uz)
 
-    def setComputeU(self, value):
+    def setComputeUB(self, value):
         if len(value) < 2:
             return
         nb_reflections = len(self.sample.reflections_get())
@@ -1072,7 +1072,7 @@ class DiffracBasis(PseudoMotorController):
 
         if nb_ref > 1:
             values = [0,1]
-            self.setComputeU(values)
+            self.setComputeUB(values)
 
 
     def setSaveReflections(self, value):  # value: directory, the file would be given by the name of the sample

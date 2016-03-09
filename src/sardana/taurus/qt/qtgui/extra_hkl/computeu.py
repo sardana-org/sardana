@@ -63,7 +63,7 @@ class ComputeU(TaurusWidget):
         index.append(int(self._ui.indexreflection1lineEdit.text()))
         index.append(int(self._ui.indexreflection2lineEdit.text()))
 
-        self.device.write_attribute("computeu", index)
+        self.device.write_attribute("computeub", index)
 
 
 def main():
