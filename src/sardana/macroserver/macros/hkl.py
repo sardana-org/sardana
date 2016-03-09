@@ -1532,10 +1532,7 @@ class diff_scan(Macro):
         for elm in ascan.data.records:
             result = result + str(elm.data)
         self.output(result)
-        scan_id = self.getEnv("ScanID")
-        self.setEnv("Last_Diffractometer_ScanID", scan_id)
 
- 
         # Find the full name of the channel for the signal
 
         self.dmax = 0
