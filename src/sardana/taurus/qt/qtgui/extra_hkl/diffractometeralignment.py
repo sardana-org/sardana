@@ -312,12 +312,9 @@ class DiffractometerAlignment(TaurusWidget):
         self.tomax_scan(5)
 
     def tomax_scan(self, imot):
-        macro_command = []
-
-        macro_command.append("diff_goto_peak")
-        macro_command.append(str(self.motor_names[imot]))
-        macro_command.append(self.angles_names[imot])
-
+        motor = str(self.motor_names[imot])
+        position = str(self.tomax_buttons[imot].text())
+        macro_command = ["mv", motor, position]
         self.door_device.RunMacro(macro_command)
 
     def onModeChanged(self, modename):

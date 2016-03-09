@@ -1538,21 +1538,3 @@ class diff_scan(Macro):
 
         env_name = angle_name + "_peak"
         self.setEnv(env_name, pos_max)
-
-
-class diff_goto_peak(Macro):
-    
-    """Move to peak"""
-      
-    param_def = [
-        ['motor',      Type.Motor,   None, 'Motor to move'],
-        ['angle_name', Type.String,   None, 'Name of the diffractometer angle to move']
-        ]
-     
-    def run(self, motor, angle_name):
-     
-        angle_env = angle_name + "_peak"
-
-        pos_max = float(self.getEnv(angle_env))
-        
-        self.mv(motor, pos_max)
