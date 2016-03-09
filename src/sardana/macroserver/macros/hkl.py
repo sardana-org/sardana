@@ -19,9 +19,6 @@ from taurus.core.util.log import Logger
 
 import json
 
-ascan = 0
-gmotor = 0
-
 logger = Logger.getLogger("MacroManager")
 
 logger.info("Diffractometer macros are at early stage. They can slightly change. Macro luppsi is not tested.")
@@ -1527,10 +1524,6 @@ class diff_scan(Macro):
     result_def = [ [ "result", Type.String, None, "the ascan object" ]]
 
     def run(self, motor, start_pos, final_pos, nr_interv, integ_time, angle_name, channel):
-        global ascan
-        global gmotor
-        
-        gmotor = motor
 
         ascan, pars= self.createMacro("ascan",motor, start_pos, final_pos, nr_interv, integ_time)
 
@@ -1558,7 +1551,7 @@ class diff_scan(Macro):
                     arr = chan['full_name'].split("/")
                     self.fullname = "/".join(arr[0:-1])
 
-        motor_name = gmotor.getName()
+        motor_name = motor.getName()
 
         self.arr_data = []
         arr_motpos = []
