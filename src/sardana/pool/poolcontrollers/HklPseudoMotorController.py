@@ -787,7 +787,7 @@ class DiffracBasis(PseudoMotorController):
     def setAddCrystal(self, value):
         if value not in self.samples:
             self.samples[value] = Hkl.Sample.new(value)
-            # TODO why this
+            # value returned when the attribute is read
             self._addcrystal = value
 
     def getCrystalList(self):
@@ -796,7 +796,7 @@ class DiffracBasis(PseudoMotorController):
     def setDeleteCrystal(self, value):
         if value in self.samples:
             self.samples.pop(value)
-            # TODO why this
+            # value returned when the attribute is read
             self._deletecrystal = value
 
     def setAddReflection(self, value):
