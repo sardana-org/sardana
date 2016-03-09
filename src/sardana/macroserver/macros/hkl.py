@@ -7,6 +7,12 @@
 
 # TODO: use taurus instead of PyTango API e.g. read_attribute,
 # write_attribute. This module is full of PyTango centric calls.
+
+# TODO: use explicit getters to obtain Sardana elements
+# (controller - getController, pseudomotor - getPseudoMotor, ...) instead of
+# using getDevice. However this getter seems to accept only the elements names
+# and not the full names.
+
 import time
 import math
 import os
