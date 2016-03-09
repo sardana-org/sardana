@@ -17,8 +17,6 @@ from sardana.macroserver.macros.scan import aNscan
 
 from taurus.core.util.log import Logger
 
-import json
-
 logger = Logger.getLogger("MacroManager")
 
 logger.info("Diffractometer macros are at early stage. They can slightly change. Macro luppsi is not tested.")
@@ -1518,38 +1516,23 @@ class diff_scan(Macro):
        ['nr_interv',  Type.Integer, None, 'Number of scan intervals'],
        ['integ_time', Type.Float,   None, 'Integration time'],
        ['angle_name', Type.String,   None, 'Name of the diffractometer angle'],      
-       ['channel',    Type.String,   None, 'Channel to analize']
+       ['channel',    Type.ExpChannel,   None, 'Channel to analize']
     ]
 
     def run(self, motor, start_pos, final_pos, nr_interv, integ_time, angle_name, channel):
 
         ascan, pars= self.createMacro("ascan",motor, start_pos, final_pos, nr_interv, integ_time)
-
         self.runMacro(ascan)
 
-        # Find the full name of the channel for the signal
-
-        self.dmax = 0
-
-        pools = []
-        pools = self.getPools()
-        
-        self.fullname = "Channel not found"
-        for pool in pools:
-            for el in  pool.AcqChannelList:
-                chan = json.loads( el)
-                if channel == chan['name']:
-                    arr = chan['full_name'].split("/")
-                    self.fullname = "/".join(arr[0:-1])
-
+        channel_fullname = channel.getFullName()
         motor_name = motor.getName()
 
         self.arr_data = []
         arr_motpos = []
         for elm in ascan.data.records:
             for dat in elm.data:
-                if dat == self.fullname:
-                    self.arr_data.append(elm.data[self.fullname])
+                if dat == channel_fullname:
+                    self.arr_data.append(elm.data[channel_fullname])
                 if dat == motor_name:
                     arr_motpos.append(elm.data[motor_name])
 
