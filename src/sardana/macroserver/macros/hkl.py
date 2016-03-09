@@ -87,6 +87,10 @@ class _diffrac:
             self.angle_device_names[self.angle_names[i]] = motor.split(' ')[0]
             i = i + 1
 
+    # TODO: it should not be necessary to implement on_stop methods in the
+    # macros in order to stop the moveables. Macro API should provide this kind
+    # of emergency stop (if the moveables are correctly reserved with the
+    # getMotion method) in case of aborting a macro.
     def on_stop(self):
 
         for angle in self.angle_names:
@@ -223,9 +227,6 @@ class br(Macro, _diffrac):
         self.setEnv('Q', [hkl_values[0], hkl_values[1],
                           hkl_values[2], self.diffrac.WaveLength])
 
-    def on_stop(self):
-        _diffrac.on_stop(self)
-
 
 class ubr(Macro, _diffrac):
     """
@@ -260,8 +261,6 @@ class ubr(Macro, _diffrac):
         else:
             self.output("usage:  ubr H K L [Trajectory]")
 
-    def on_stop(self):
-        _diffrac.on_stop(self)
 
 class _ca(Macro, _diffrac):
     """Calculate motor positions for given H K L according to the current
@@ -1162,9 +1161,6 @@ class hscan(aNscan, Macro, _diffrac):
         _diffrac.prepare(self)
         aNscan._prepare(self, [self.h_device], [start_pos], [final_pos], nr_interv, integ_time)
 
-    def on_stop(self):
-        _diffrac.on_stop(self)
-
 
 class kscan(aNscan, Macro, _diffrac):
     "Scan k axis"
@@ -1180,9 +1176,6 @@ class kscan(aNscan, Macro, _diffrac):
         _diffrac.prepare(self)
         aNscan._prepare(self, [self.k_device], [start_pos], [final_pos], nr_interv, integ_time)
 
-    def on_stop(self):
-        _diffrac.on_stop(self)
-
 
 class lscan(aNscan, Macro, _diffrac):
     "Scan l axis"
@@ -1197,9 +1190,6 @@ class lscan(aNscan, Macro, _diffrac):
     def prepare(self, start_pos, final_pos, nr_interv, integ_time):
         _diffrac.prepare(self)
         aNscan._prepare(self, [self.l_device], [start_pos], [final_pos], nr_interv, integ_time)
-
-    def on_stop(self):
-        _diffrac.on_stop(self)
 
 
 class hklscan(aNscan, Macro, _diffrac):
@@ -1504,8 +1494,6 @@ class blockprintmove(Macro, _diffrac):
                 self.h_device.position, self.k_device.position, self.l_device.position))
             self.flushOutput()
 
-    def on_stop(self):
-        _diffrac.on_stop(self)
 
 class diff_scan(Macro):
     """Perfoms an scan keeping the data for further analysis/moves"""
