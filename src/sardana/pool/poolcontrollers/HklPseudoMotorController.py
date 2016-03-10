@@ -123,7 +123,7 @@ class DiffracBasis(PseudoMotorController):
                                    Access: ReadWrite},
                        'AffineCrystal': {Type: int,
                                          Memorize: MemorizedNoInit,
-                                         Description: "Affine current crystal. Add a new crystal with the post fix (affine)",  # noqa
+                                         Description: "Fine tunning of lattice parameters and UB matrix based on current crystal reflections. Reflections with affinement set to 0 are not used. A new crystal with the post fix (affine) is created and set as current crystal",  # noqa
                                          Access: ReadWrite},
                        'Wavelength': {Type: float,
                                       Memorize: MemorizedNoInit,

@@ -1059,7 +1059,11 @@ class add_reflection(Macro, _diffrac):
 
 
 class affine(Macro, _diffrac):
-    """Affine current crystal"""
+    """Affine current crystal.
+    Fine tunning of lattice parameters and UB matrix based on 
+    current crystal reflections. Reflections with affinement 
+    set to 0 are not used. A new crystal with the post fix 
+    (affine) is created and set as current crystal"""
 
     def prepare(self):
         _diffrac.prepare(self)
