@@ -750,7 +750,7 @@ class or0(Macro, _diffrac):
                 return
 
         values = [0, H, K, L]
-        self.diffrac.write_attribute("AddReflectionWithIndex", values)
+        self.diffrac.write_attribute("SubstituteReflection", values)
 
         self.execMacro('compute_ub')
 
@@ -781,7 +781,7 @@ class or1(Macro, _diffrac):
                 return
 
         values = [1, H, K, L]
-        self.diffrac.write_attribute("AddReflectionWithIndex", values)
+        self.diffrac.write_attribute("SubstituteReflection", values)
 
         self.execMacro('compute_ub')
 
@@ -935,7 +935,7 @@ class setorn(iMacro, _diffrac):
         # Set reflection
 
         values = [ref_id, H, K, L]
-        self.diffrac.write_attribute("AddReflectionWithIndex", values)
+        self.diffrac.write_attribute("SubstituteReflection", values)
 
         # Adjust angles
 

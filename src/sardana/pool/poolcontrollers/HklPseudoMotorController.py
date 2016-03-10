@@ -217,8 +217,8 @@ class DiffracBasis(PseudoMotorController):
                        'AddReflection': {Type: (float,),
                                          Description: "Add reflection to current sample",  # noqa
                                          Access: ReadWrite},
-                       'AddReflectionWithIndex': {Type: (float,),
-                                                  Description: "Add reflection to current sample with given index",  # noqa
+                       'SubstituteReflection': {Type: (float,),
+                                                  Description: "Substitute reflexion with the given index by the given one",  # noqa
                                                   Access: ReadWrite},
                        'SwapReflections01': {Type: int,
                                              Description: "Swap primary and secondary reflections",  # noqa
@@ -383,7 +383,7 @@ class DiffracBasis(PseudoMotorController):
         self._deletecrystal = 'nothing'
         self._addcrystal = 'nothing'
         self._addreflection = [-1.]
-        self._addreflectionwithindex = [-1.]
+        self._substitutereflection = [-1.]
         self._swapreflections01 = -1
         self._loadreflections = " "  # Only to create the member, the
                                      # value will be overwritten by
@@ -814,7 +814,7 @@ class DiffracBasis(PseudoMotorController):
         if len(value) > 3:
             newref.flag_set(value[3])
 
-    def setAddReflectionWithIndex(self, value):
+    def setSubstituteReflection(self, value):
         # Parameters: index, h, k, l, [affinement], angles are the current ones
         # Read current reflections
         old_reflections = self.sample.reflections_get()
@@ -893,7 +893,7 @@ class DiffracBasis(PseudoMotorController):
 
         # Insert old ref 1 to 0
 
-        self.setAddReflectionWithIndex(hkla[1])
+        self.setSubstituteReflection(hkla[1])
         self.setAdjustAnglesToReflection(angles[1])
 
         # Remove reflection 1
@@ -902,7 +902,7 @@ class DiffracBasis(PseudoMotorController):
 
         # Insert old ref 0 to 1
 
-        self.setAddReflectionWithIndex(hkla[0])
+        self.setSubstituteReflection(hkla[0])
         self.setAdjustAnglesToReflection(angles[0])
 
 
