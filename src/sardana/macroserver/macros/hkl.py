@@ -228,7 +228,7 @@ class br(Macro, _diffrac):
         self.checkPoint()
 
         if FlagNotBlocking == 0:
-            self.execMacro('blockprintmove', 0)
+            self.execMacro('_blockprintmove', 0)
 
         self.setEnv('Q', [hkl_values[0], hkl_values[1],
                           hkl_values[2], self.diffrac.WaveLength])
@@ -263,7 +263,7 @@ class ubr(Macro, _diffrac):
         if ll != "Not set":
             br, pars = self.createMacro("br", hh, kk, ll, AnglesIndex, 1)
             self.runMacro(br)
-            self.execMacro('blockprintmove', 1)
+            self.execMacro('_blockprintmove', 1)
         else:
             self.output("usage:  ubr H K L [Trajectory]")
 
@@ -1469,8 +1469,9 @@ class lattice_cal(iMacro, _diffrac):
             self.output("usage:  lattice_cal parameter")
 
 
-class blockprintmove(Macro, _diffrac):
-
+class _blockprintmove(Macro, _diffrac):
+    """This macro is internal and reserved to the hkl infrastucture
+    """
     param_def = [
         ['flagprint', Type.Integer, 0, '1 for printing']
     ]
@@ -1502,8 +1503,9 @@ class blockprintmove(Macro, _diffrac):
 
 
 class _diff_scan(Macro):
-    """Perfoms an scan keeping the data for further analysis/moves"""
-
+    """Perfoms an scan keeping the data for further analysis/moves.
+    This macro is internal and reserved to the hkl infrastucture.
+    """
     param_def = [
        ['motor',      Type.Motor,   None, 'Motor to move'],
        ['start_pos',  Type.Float,   None, 'Scan start position'],
