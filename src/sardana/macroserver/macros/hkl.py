@@ -13,6 +13,12 @@
 # using getDevice. However this getter seems to accept only the elements names
 # and not the full names.
 
+__all__ = ["add_reflexion", "affine", "br", "ca", "caa", "ci", "compute_ub",
+           "freeze", "getmode", "hklscan", "hscan", "kscan", "lattice_cal",
+           "load_crystal", "lscan", "newcrystal", "or0", "or1", "or_swap",
+           "pa", "savecrystal", "setaz", "setlat", "setmode", "setor0",
+           "setor1", "setorn", "th2th", "ubr", "wh"]
+
 import time
 import math
 import os
