@@ -48,7 +48,7 @@ diffractometer related macros
 .. hlist::
     :columns: 5
 
-    * :class:`~sardana.macroserver.macros.hkl.add_reflexion`
+    * :class:`~sardana.macroserver.macros.hkl.add_reflection`
     * :class:`~sardana.macroserver.macros.hkl.affine`
     * :class:`~sardana.macroserver.macros.hkl.br`
     * :class:`~sardana.macroserver.macros.hkl.ca`

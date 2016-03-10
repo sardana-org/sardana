@@ -356,7 +356,7 @@
     Calibrate lattice parameters a, b or c to current 2theta value.
   
 
-.. class:: env.load_crystal
+.. class:: hkl.load_crystal
 
     Load crystal information from file
 
@@ -753,7 +753,7 @@
     Show all motor positions
     
 
-.. class:: standard.wh
+.. class:: hkl.wh
 
     Show principal axes and reciprocal space positions.
 
