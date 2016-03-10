@@ -173,6 +173,7 @@ class _diffrac:
 
 # TODO: Revrite this macro in order to use events instead of polling to obtain 
 # the position updates. See umv macro as an example
+# TODO: H, K, L parameters should be of type float and not string
 class br(Macro, _diffrac):
     """The br macro is used to move the diffractometer to the reciprocal space 
     coordinates given by H, K and L. If a fourth parameter is given, the combination
@@ -239,7 +240,7 @@ class br(Macro, _diffrac):
         self.setEnv('Q', [hkl_values[0], hkl_values[1],
                           hkl_values[2], self.diffrac.WaveLength])
 
-
+# TODO: hh, kk, ll parameters should be of type float and not string
 class ubr(Macro, _diffrac):
     """
         ubr H K L
