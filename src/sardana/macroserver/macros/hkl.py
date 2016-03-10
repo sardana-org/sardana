@@ -175,9 +175,10 @@ class _diffrac:
 # the position updates. See umv macro as an example
 # TODO: H, K, L parameters should be of type float and not string
 class br(Macro, _diffrac):
-    """The br macro is used to move the diffractometer to the reciprocal space 
-    coordinates given by H, K and L. If a fourth parameter is given, the combination
-    of angles to be set is the correspondig to the given index. The index of the
+    """Move the diffractometer to the reciprocal space coordinates given by 
+    H, K and L. 
+    If a fourth parameter is given, the combination of angles to be set is 
+    the correspondig to the given index. The index of the
     angles combinations are then changed."""
 
     param_def = [
@@ -242,8 +243,8 @@ class br(Macro, _diffrac):
 
 # TODO: hh, kk, ll parameters should be of type float and not string
 class ubr(Macro, _diffrac):
-    """
-        ubr H K L
+    """Move the diffractometer to the reciprocal space coordinates given by 
+    H, K and L und update.
     """
 
     param_def = [
@@ -476,7 +477,7 @@ class pa(Macro, _diffrac):
 
 
 class wh(Macro, _diffrac):
-    """wh - where, principal axes and reciprocal space
+    """Show principal axes and reciprocal space positions.
 
     Prints the current reciprocal space coordinates (H K L) and the user 
     positions of the principal motors. Depending on the diffractometer geometry, 
@@ -674,7 +675,7 @@ class getmode(Macro, _diffrac):
 
 
 class setlat(iMacro, _diffrac):
-    """Set the crystal lattice parameters a, b, c, alpha, beta, gamma.
+    """Set the crystal lattice parameters a, b, c, alpha, beta and gamma
        for the currently active diffraction pseudo motor controller."""
 
     param_def = [
@@ -1355,6 +1356,9 @@ class luppsi(Macro, _diffrac):
 
 
 class savecrystal(Macro, _diffrac):
+    """
+         Save crystal information to file
+    """
 
     def prepare(self):
         _diffrac.prepare(self)
@@ -1366,7 +1370,7 @@ class savecrystal(Macro, _diffrac):
 
 class load_crystal(iMacro, _diffrac):
     """
-         load_crystal  - loads crystal information from file
+         Load crystal information from file
     """
 
     def prepare(self):
@@ -1425,7 +1429,7 @@ class load_crystal(iMacro, _diffrac):
 
 class lattice_cal(iMacro, _diffrac):
     """
-        lattice_cal - calibrate lattice parameters a, b or c to current 2theta value
+        Calibrate lattice parameters a, b or c to current 2theta value
     """
 
     param_def = [

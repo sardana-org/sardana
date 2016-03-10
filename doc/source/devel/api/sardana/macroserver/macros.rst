@@ -58,6 +58,27 @@
     four-motor continuous scan
     
 
+.. class:: hkl.add_reflection
+
+    Add reflection at the botton of reflections list.
+
+
+.. class:: expert.addmaclib
+
+    Loads a new macro library.
+
+    .. warning:: Keep in mind that macros from the new library can override
+                 macros already present in the system.
+
+.. class:: hkl.affine
+
+    Affine current crystal.
+    Fine tunning of lattice parameters and UB matrix based on 
+    current crystal reflections. Reflections with affinement 
+    set to 0 are not used. A new crystal with the post fix 
+    (affine) is created and set as current crystal.
+
+
 .. class:: scan.amultiscan
 
     Multiple motor scan.
@@ -94,7 +115,32 @@
     The step size is (start_pos-final_pos)/nr_interv. The number of data points collected
     will be nr_interv+1. Count time is given by time which if positive,
     specifies seconds and if negative, specifies monitor counts. 
-    
+   
+.. class:: hkl.br
+
+    Move the diffractometer to the reciprocal space 
+    coordinates given by H, K and L. If a fourth parameter is given, the combination
+    of angles to be set is the correspondig to the given index. The index of the
+    angles combinations are then changed.
+
+   
+.. class:: hkl.ca
+
+    Calculate motor positions for given H K L according to the current
+    operation mode (trajectory 0).
+
+
+.. class:: hkl.caa
+
+    Calculate motor positions for given H K L according to the current
+    operation mode (all trajectories).
+
+
+.. class:: hkl.ci
+
+    Calculate hkl for given angle values.
+
+
 .. class:: demo.clear_sar_demo
 
     Undoes changes done with sar_demo
@@ -103,6 +149,10 @@
 
     Puts the contents of the given data in a file inside the pool
     
+
+.. class:: hkl.compute_ub
+
+   Compute UB matrix with reflections 0 and 1.
 
 .. class:: standard.ct
 
@@ -247,6 +297,10 @@
     Returns the contents of the given library file
     
 
+.. class:: hkl.freeze
+
+   Set psi value for psi constant modes.
+
 .. class:: scan.fscan
 
     N-dimensional scan along user defined paths.
@@ -277,6 +331,36 @@
     Reads and outputs the data from the communication channel
     
 
+.. class:: hkl.getmode
+
+    Get operation mode.
+
+
+.. class:: hkl.hklscan
+
+    Scan h k l axes. 
+
+
+.. class:: hkl.hscan
+
+    Scan h axis.
+
+
+.. class:: hkl.kscan
+
+    Scan k axis.
+
+
+.. class:: hkl.lattice_cal
+
+    Calibrate lattice parameters a, b or c to current 2theta value.
+  
+
+.. class:: env.load_crystal
+
+    Load crystal information from file
+
+
 .. class:: env.load_env
 
     Read environment variables from config_env.xml file
@@ -299,7 +383,12 @@
 
 .. class:: lists.lsa
 
-    Lists all existing objects
+    Lists all existing objects 
+
+
+.. class:: hkl.lscan
+
+    Scan l axis. 
     
 
 .. class:: lists.lscom
@@ -419,7 +508,31 @@
 .. class:: standard.mvr
 
     Move motor(s) relative to the current position(s)
-    
+
+.. class:: hkl.newcrystal
+
+    Create a new crystal (if it does not exist) and select it.
+
+
+.. class:: hkl.or0
+
+    Set primary orientation reflection.
+
+
+.. class:: hkl.or1
+
+    Set secondary orientation reflection.
+
+
+.. class:: hkl.or_swap
+
+    Swap values for primary and secondary vectors.
+
+
+.. class:: hkl.pa
+
+    Prints information about the active diffractometer.
+
 
 .. class:: expert.prdef
 
@@ -444,13 +557,6 @@
 .. class:: ioregister.read_ioreg
 
     Reads an output register
-
-.. class:: expert.addmaclib
-
-    Loads a new macro library.
-
-    .. warning:: Keep in mind that macros from the new library can override
-                 macros already present in the system.
 
 .. class:: expert.rellib
 
@@ -500,6 +606,11 @@
 .. class:: expert.sar_info
 
     Prints details about the given sardana object
+
+
+.. class:: hkl.savecrystal
+
+    Save crystal information to file.
     
 
 .. class:: scan.scanhist
@@ -546,6 +657,37 @@
     Sets the USER position of the motor to the specified value (by changing OFFSET and keeping DIAL)
     
 
+.. class:: hkl.setaz
+
+    Set hkl values of the psi reference vector.
+
+
+.. class:: hkl.setlat
+
+    Set the crystal lattice parameters a, b, c, alpha, beta and gamma
+    for the currently active diffraction pseudo motor controller.
+
+
+.. class:: hkl.setmode
+
+    Set operation mode.
+
+
+.. class:: hkl.setor0
+
+    Set primary orientation reflection choosing hkl and angle values.
+
+
+.. class:: hkl.setor1
+
+    Set secondary orientation reflection choosing hkl and angle values.
+
+
+.. class:: hkl.setorn
+
+    Set orientation reflection indicated by the index.
+
+
 .. class:: standard.settimer
 
     Defines the timer channel for the active measurement group
@@ -554,8 +696,18 @@
 .. class:: env.setvo
 
     Sets the given view option to the given value
-    
 
+
+.. class:: hkl.th2th
+
+    Relative scan around current position in del and th with d_th=2*d_delta.
+
+
+.. class:: hkl.ubr
+
+    Move the diffractometer to the reciprocal space coordinates given by H, K and L und update.
+
+    
 .. class:: standard.uct
 
     Count on the active measurement group and update
@@ -599,6 +751,16 @@
 .. class:: standard.wa
 
     Show all motor positions
+    
+
+.. class:: standard.wh
+
+    Show principal axes and reciprocal space positions.
+
+    Prints the current reciprocal space coordinates (H K L) and the user 
+    positions of the principal motors. Depending on the diffractometer geometry, 
+    other parameters such as the angles of incidence and reflection (ALPHA and 
+    BETA) and the incident wavelength (LAMBDA) may be displayed.
     
 
 .. class:: standard.wm

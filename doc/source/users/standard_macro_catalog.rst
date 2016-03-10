@@ -42,6 +42,43 @@ counting macros
     * :class:`~sardana.macroserver.macros.lists.ls2d`
     * :class:`~sardana.macroserver.macros.lists.lspc`
 
+diffractometer related macros
+-----------------------------
+
+.. hlist::
+    :columns: 5
+
+    * :class:`~sardana.macroserver.macros.hkl.add_reflexion`
+    * :class:`~sardana.macroserver.macros.hkl.affine`
+    * :class:`~sardana.macroserver.macros.hkl.br`
+    * :class:`~sardana.macroserver.macros.hkl.ca`
+    * :class:`~sardana.macroserver.macros.hkl.caa`
+    * :class:`~sardana.macroserver.macros.hkl.ci`
+    * :class:`~sardana.macroserver.macros.hkl.compute_ub`
+    * :class:`~sardana.macroserver.macros.hkl.freeze`
+    * :class:`~sardana.macroserver.macros.hkl.getmode`
+    * :class:`~sardana.macroserver.macros.hkl.hklscan`
+    * :class:`~sardana.macroserver.macros.hkl.hscan`
+    * :class:`~sardana.macroserver.macros.hkl.kscan`
+    * :class:`~sardana.macroserver.macros.hkl.lattice_cal`
+    * :class:`~sardana.macroserver.macros.hkl.load_crystal`
+    * :class:`~sardana.macroserver.macros.hkl.lscan`
+    * :class:`~sardana.macroserver.macros.hkl.newcrystal`
+    * :class:`~sardana.macroserver.macros.hkl.or0`
+    * :class:`~sardana.macroserver.macros.hkl.or1`
+    * :class:`~sardana.macroserver.macros.hkl.or_swap`
+    * :class:`~sardana.macroserver.macros.hkl.pa`
+    * :class:`~sardana.macroserver.macros.hkl.savecrystal`
+    * :class:`~sardana.macroserver.macros.hkl.setaz`
+    * :class:`~sardana.macroserver.macros.hkl.setlat`
+    * :class:`~sardana.macroserver.macros.hkl.setmode`
+    * :class:`~sardana.macroserver.macros.hkl.setor0`
+    * :class:`~sardana.macroserver.macros.hkl.setor1`
+    * :class:`~sardana.macroserver.macros.hkl.setorn`
+    * :class:`~sardana.macroserver.macros.hkl.th2th`
+    * :class:`~sardana.macroserver.macros.hkl.ubr`
+    * :class:`~sardana.macroserver.macros.hkl.wh`
+
 environment related macros
 --------------------------
 
