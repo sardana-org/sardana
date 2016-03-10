@@ -109,7 +109,7 @@ class AxisPar(object):
             p.value_set(v, USER)
             self.engine.parameter_set(parameter, p)
 
-
+# TODO: all the fit attributes (AFit or GammaFit)should change its type to bool 
 class DiffracBasis(PseudoMotorController):
 
     """ The PseudoMotor controller for the diffractometer"""
