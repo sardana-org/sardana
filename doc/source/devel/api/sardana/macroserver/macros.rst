@@ -58,7 +58,7 @@
     four-motor continuous scan
     
 
-.. class:: hkl.add_reflection
+.. class:: hkl.addreflection
 
     Add reflection at the botton of reflections list.
 
@@ -150,7 +150,7 @@
     Puts the contents of the given data in a file inside the pool
     
 
-.. class:: hkl.compute_ub
+.. class:: hkl.computeub
 
    Compute UB matrix with reflections 0 and 1.
 
@@ -351,12 +351,12 @@
     Scan k axis.
 
 
-.. class:: hkl.lattice_cal
+.. class:: hkl.latticecal
 
     Calibrate lattice parameters a, b or c to current 2theta value.
   
 
-.. class:: hkl.load_crystal
+.. class:: hkl.loadcrystal
 
     Load crystal information from file
 
@@ -524,7 +524,7 @@
     Set secondary orientation reflection.
 
 
-.. class:: hkl.or_swap
+.. class:: hkl.orswap
 
     Swap values for primary and secondary vectors.
 

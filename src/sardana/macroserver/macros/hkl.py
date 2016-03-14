@@ -13,9 +13,9 @@
 # using getDevice. However this getter seems to accept only the elements names
 # and not the full names.
 
-__all__ = ["add_reflexion", "affine", "br", "ca", "caa", "ci", "compute_ub",
-           "freeze", "getmode", "hklscan", "hscan", "kscan", "lattice_cal",
-           "load_crystal", "lscan", "newcrystal", "or0", "or1", "or_swap",
+__all__ = ["addreflexion", "affine", "br", "ca", "caa", "ci", "computeub",
+           "freeze", "getmode", "hklscan", "hscan", "kscan", "latticecal",
+           "loadcrystal", "lscan", "newcrystal", "or0", "or1", "orswap",
            "pa", "savecrystal", "setaz", "setlat", "setmode", "setor0",
            "setor1", "setorn", "th2th", "ubr", "wh"]
 
@@ -729,7 +729,7 @@ class setlat(iMacro, _diffrac):
             self.diffrac.write_attribute("beta", beta)
             self.diffrac.write_attribute("gamma", gamma)
 
-        self.execMacro('compute_ub')
+        self.execMacro('computeub')
 
 
 class or0(Macro, _diffrac):
@@ -760,7 +760,7 @@ class or0(Macro, _diffrac):
         values = [0, H, K, L]
         self.diffrac.write_attribute("SubstituteReflection", values)
 
-        self.execMacro('compute_ub')
+        self.execMacro('computeub')
 
 
 class or1(Macro, _diffrac):
@@ -791,7 +791,7 @@ class or1(Macro, _diffrac):
         values = [1, H, K, L]
         self.diffrac.write_attribute("SubstituteReflection", values)
 
-        self.execMacro('compute_ub')
+        self.execMacro('computeub')
 
 
 class setor0(Macro, _diffrac):
@@ -960,7 +960,7 @@ class setorn(iMacro, _diffrac):
 
         # Recompute u
 
-        self.execMacro('compute_ub')
+        self.execMacro('computeub')
 
 
 class setaz(iMacro, _diffrac):
@@ -1016,7 +1016,7 @@ class setaz(iMacro, _diffrac):
         self.execMacro('savecrystal')
 
 
-class compute_ub(Macro, _diffrac):
+class computeub(Macro, _diffrac):
     """ Compute UB matrix with reflections 0 and 1 """
 
     def prepare(self):
@@ -1037,7 +1037,7 @@ class compute_ub(Macro, _diffrac):
             self.warning("UB can not be computed. No reflection")
 
 
-class add_reflection(Macro, _diffrac):
+class addreflection(Macro, _diffrac):
     """ Add reflection at the botton of reflections list """
 
     param_def = [
@@ -1074,7 +1074,7 @@ class affine(Macro, _diffrac):
         self.diffrac.write_attribute("AffineCrystal", 0)
 
 
-class or_swap(Macro, _diffrac):
+class orswap(Macro, _diffrac):
     """Swap values for primary and secondary vectors."""
 
     def prepare(self):
@@ -1084,7 +1084,7 @@ class or_swap(Macro, _diffrac):
 
         self.diffrac.write_attribute("SwapReflections01", 0)
         self.output("Orientation vectors swapped.")
-        self.execMacro('compute_ub')
+        self.execMacro('computeub')
 
 
 class newcrystal(iMacro, _diffrac):
@@ -1368,7 +1368,7 @@ class savecrystal(Macro, _diffrac):
         self.diffrac.write_attribute("SaveCrystal", 1)
 
 
-class load_crystal(iMacro, _diffrac):
+class loadcrystal(iMacro, _diffrac):
     """
          Load crystal information from file
     """
@@ -1427,7 +1427,7 @@ class load_crystal(iMacro, _diffrac):
                 self.output("An input file has to be given. Nothing done")
 
 
-class lattice_cal(iMacro, _diffrac):
+class latticecal(iMacro, _diffrac):
     """
         Calibrate lattice parameters a, b or c to current 2theta value
     """
@@ -1473,7 +1473,7 @@ class lattice_cal(iMacro, _diffrac):
                                 (parameter, a1))
                     self.diffrac.write_attribute("c", a1)
 
-                self.execMacro('compute_ub')
+                self.execMacro('computeub')
 
             else:
                 self.output("Lattice parameter a, b or c")
@@ -1481,7 +1481,7 @@ class lattice_cal(iMacro, _diffrac):
         else:
             self.output(
                 "Calibration of lattice parameters a, b or c to current 2theta value")
-            self.output("usage:  lattice_cal parameter")
+            self.output("usage:  latticecal parameter")
 
 
 class _blockprintmove(Macro, _diffrac):
