@@ -1365,6 +1365,7 @@ class savecrystal(Macro, _diffrac):
 
     def run(self):
 
+        self.info("Be aware: changes in crystal file format are still possible.")
         self.diffrac.write_attribute("SaveCrystal", 1)
 
 
@@ -1377,7 +1378,7 @@ class loadcrystal(iMacro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self):
-        
+        self.info("Be aware: changes in crystal file format are still possible.")
         active_dir = ""
         try:
             files = os.listdir(os.path.expanduser('~') + '/crystals/')
