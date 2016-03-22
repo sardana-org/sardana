@@ -809,6 +809,7 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         door = Device(self.doorName())
         doorState = door.state()
         if doorState == PyTango.DevState.ON or doorState == PyTango.DevState.ALARM:
+            self.setFocus()
             paramEditorModel = self.paramEditorModel()
             macroNode = paramEditorModel.root()
             id = macroNode.assignId()
