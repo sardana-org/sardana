@@ -40,7 +40,7 @@ revision = '1'
 
 #version = '0.8.1.svn.r' + revision.rstrip('M')
 # BUMP TO 2.0.0 DUE TO BACKWARDS INCOMPATIBILITY OF FEATURE-380
-version = '1.6.1'
+version = '1.6.2'
 
 description = "An enhanced interactive Macro Server shell."
 
