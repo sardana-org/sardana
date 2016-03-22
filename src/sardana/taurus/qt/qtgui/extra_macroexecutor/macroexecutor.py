@@ -103,8 +103,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
         self.connect(self._ctrlUpAction, Qt.SIGNAL("triggered()"), self.controlUpAction)
 
     def setCommand(self):
-        command = self._model.toSpockCommand()
-        command = command.replace("None", "").strip()
+        command = self._model.toSpockCommand().strip()
         if not self.disableSpockCommandUpdate:
             self.setText(command)
 
