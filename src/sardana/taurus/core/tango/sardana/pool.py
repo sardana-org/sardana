@@ -1237,6 +1237,9 @@ class MGConfiguration(object):
                 except:
                     pass
 
+    def getChannels(self):
+        return self.channel_list
+
     def getChannelInfo(self, channel_name):
         try:
             return self.tango_channels_info[channel_name]
@@ -1395,7 +1398,7 @@ class MeasurementGroup(PoolElement):
         self.write_attribute("configuration", json.dumps(cfg))
 
     def getChannels(self):
-        return self.getConfiguration().channel_list
+        return self.getConfiguration().getChannels()
 
     def getCounters(self):
         cfg = self.getConfiguration()
@@ -1442,6 +1445,42 @@ class MeasurementGroup(PoolElement):
             return
         self._last_integ_time = ctime
         self.getIntegrationTimeObj().write(ctime)
+
+    def enableChannels(self, channels):
+        '''Enable acquisition of the indicated channels.
+
+        :param channels: (seq<str> or None) a sequence of strings indicating
+                         channel names
+        '''
+        self._enableChannels(channels, True)
+
+    def disableChannels(self, channels):
+        '''Disable acquisition of the indicated channels.
+
+        :param channels: (seq<str> or None) a sequence of strings indicating
+                         channel names
+        '''
+        self._enableChannels(channels, False)
+
+    def _enableChannels(self, channels, state):
+        found = {}
+        for channel in channels:
+            found[channel] = False
+        cfg = self.getConfiguration()
+        for channel in cfg.getChannels():
+            name = channel['name']
+            if name in channels:
+                channel['enabled'] = state
+                found[name] = True
+        wrong_channels = []
+        for ch, f in found.items():
+            if f is False:
+                wrong_channels.append(ch)
+        if len(wrong_channels) > 0:
+            msg = 'channels: %s are not present in measurement group' % \
+                                                                wrong_channels
+            raise Exception(msg)
+        self.setConfiguration(cfg.raw_data)
 
     def _start(self, *args, **kwargs):
         self.Start()
