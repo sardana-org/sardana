@@ -1449,7 +1449,7 @@ class MeasurementGroup(PoolElement):
     def enableChannels(self, channels):
         '''Enable acquisition of the indicated channels.
 
-        :param channels: (seq<str> or None) a sequence of strings indicating
+        :param channels: (seq<str>) a sequence of strings indicating
                          channel names
         '''
         self._enableChannels(channels, True)
@@ -1457,7 +1457,7 @@ class MeasurementGroup(PoolElement):
     def disableChannels(self, channels):
         '''Disable acquisition of the indicated channels.
 
-        :param channels: (seq<str> or None) a sequence of strings indicating
+        :param channels: (seq<str>) a sequence of strings indicating
                          channel names
         '''
         self._enableChannels(channels, False)
