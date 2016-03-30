@@ -291,7 +291,20 @@ class Door(SardanaDevice):
     
     def always_executed_hook(self):
         pass
-    
+
+    def dev_status(self):
+        self._status = SardanaDevice.dev_status(self)
+        self._status += '\n Macro stack ([state] macro):'
+        macro = self.getRunningMacro()
+        mstack = ''
+        while macro is not None:
+            mstate = macro.getMacroStatus()['state']
+            mstack = '\n    -[%s]\t%s' % (mstate, macro.getCommand()) + mstack
+            macro = macro.getParentMacro()
+        self._status += mstack
+        return self._status
+
+
     def read_attr_hardware(self,data):
         pass
     
