@@ -25,8 +25,7 @@
 
 """This is the macro server scan data recorder module"""
 
-__all__ = ["DataFormats", "SaveModes", "RecorderStatus", "DataHandler",
-           "DataRecorder"]
+__all__ = ["SaveModes", "RecorderStatus", "DataHandler", "DataRecorder"]
 
 __docformat__ = 'restructuredtext'
 
@@ -35,8 +34,6 @@ import time
 from taurus.core.util.log import Logger
 from taurus.core.util.enumeration import Enumeration
 
-DataFormats = Enumeration('DataFormats', ('Spec', 'CSV', 'XLS', 'w5', 'w4',
-                                          'wx', 'fio'))
 SaveModes = Enumeration('SaveModes', ('Record', 'Block'))
 RecorderStatus = Enumeration('RecorderStatus', ('Idle', 'Active', 'Disable'))
 

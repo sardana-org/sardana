@@ -23,9 +23,9 @@
 ##
 ##############################################################################
 
-from sardana.macroserver.scan.recorder import BaseFileRecorder, DataFormats
+from sardana.macroserver.scan.recorder import BaseFileRecorder
 
 class SPEC_FileRecorder(BaseFileRecorder):
     """ Saves data to a file """
 
-    formats = { DataFormats.Spec : '.spec' }
+    formats = {'Spec': '.spec'}

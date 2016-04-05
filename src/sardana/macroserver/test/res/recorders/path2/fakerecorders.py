@@ -23,8 +23,7 @@
 ##
 ##############################################################################
 
-from sardana.macroserver.scan.recorder.storage import (BaseFileRecorder,
-                                                       DataFormats)
+from sardana.macroserver.scan.recorder.storage import BaseFileRecorder
 
 class FakeScanRecorder(BaseFileRecorder):
     """ Fake ScanRecorder class for test purpose"""
@@ -32,4 +31,4 @@ class FakeScanRecorder(BaseFileRecorder):
 
 class FakeScanRecorderFormat(BaseFileRecorder):
     """ Fake ScanRecorder class for test purpose"""
-    formats = { DataFormats.Spec : '.spec' }
+    formats = {'Spec': '.spec'}

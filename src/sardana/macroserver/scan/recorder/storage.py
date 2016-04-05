@@ -42,7 +42,7 @@ import PyTango
 from sardana.taurus.core.tango.sardana import PlotType
 from sardana.macroserver.macro import Type
 from sardana.macroserver.scan.recorder.datarecorder import DataRecorder, \
-    DataFormats, SaveModes
+    SaveModes
 from sardana.macroserver.msexception import MacroServerException
 from taurus.core.util.containers import chunks
 
@@ -70,9 +70,9 @@ class BaseFileRecorder(DataRecorder):
 class BaseNEXUS_FileRecorder(BaseFileRecorder):
     """Base class for NeXus file recorders"""   
     
-    formats = { DataFormats.w5 : '.h5', 
-                DataFormats.w4 : '.h4', 
-                DataFormats.wx : '.xml' }
+    formats = {'w5': '.h5',
+               'w4': '.h4',
+               'wx': '.xml'}
     supported_dtypes = ('float32','float64','int8',
                         'int16','int32','int64','uint8',
                         'uint16','uint32','uint64') #note that 'char' is not supported yet!
@@ -103,11 +103,11 @@ class BaseNEXUS_FileRecorder(BaseFileRecorder):
         #obtain preferred nexus file mode for writing from the filename extension (defaults to hdf5)
         extension = os.path.splitext(filename)[1]
         inv_formats = dict(itertools.izip(self.formats.itervalues(), self.formats.iterkeys()))
-        self.nxfilemode = inv_formats.get(extension.lower(), DataFormats.w5)
+        self.nxfilemode = inv_formats.get(extension.lower(), 'w5')
         self.currentlist = None
     
     def getFormat(self):
-        return DataFormats.whatis(self.nxfilemode)
+        return self.nxfilemode
     
     def sanitizeName(self, name):
         '''It returns a version of the given name that can be used as a python
