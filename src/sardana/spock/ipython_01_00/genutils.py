@@ -954,12 +954,6 @@ object?   -> Details about 'object'. ?object also works, ?? prints more.
     completer.greedy = False
 
     # ------------------------------------
-    # InteractiveShellApp
-    # ------------------------------------
-    i_shell_app = config.InteractiveShellApp
-    i_shell_app.ignore_old_config = True
-
-    # ------------------------------------
     # TerminalIPythonApp: options for the IPython terminal (and not Qt Console)
     # ------------------------------------
     term_app = config.TerminalIPythonApp
