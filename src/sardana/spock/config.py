@@ -28,8 +28,15 @@
 
 __all__ = ['Spock']
 
-from IPython.config.configurable import Configurable
-from IPython.utils.traitlets import Unicode, Bool
+
+try:
+    # IPython 4.x
+    from traitlets.config.configurable import Configurable
+    from traitlets import Unicode, Bool
+except ImportError:
+    # IPython < 4.x
+    from IPython.config.configurable import Configurable
+    from IPython.utils.traitlets import Unicode, Bool
 
 class Spock(Configurable):
     macro_server_name = Unicode(config=True)

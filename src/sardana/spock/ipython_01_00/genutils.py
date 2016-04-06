@@ -61,11 +61,19 @@ from IPython.core.profiledir import ProfileDirError, ProfileDir
 from IPython.core.application import BaseIPythonApplication
 from IPython.core.interactiveshell import InteractiveShell
 from IPython.utils.io import ask_yes_no as _ask_yes_no
-from IPython.utils.path import get_ipython_dir
 from IPython.utils.process import arg_split
 from IPython.utils.coloransi import TermColors
-from IPython.config.application import Application
 from IPython.terminal.ipapp import TerminalIPythonApp, launch_new_instance
+
+try:
+    # IPython 4.x
+    from traitlets.config.application import Application
+    from IPython.paths import get_ipython_dir
+except:
+    # IPython <4.x
+   from IPython.config.application import Application
+   from IPython.utils.path import get_ipython_dir
+
 
 import taurus
 #from taurus.core import Release as TCRelease
@@ -793,6 +801,7 @@ def load_ipython_extension(ipython):
     init_taurus()
 
     config = ipython.config
+
     user_ns = ipython.user_ns
     user_ns['MACRO_SERVER_NAME'] = config.Spock.macro_server_name
     user_ns['MACRO_SERVER_ALIAS'] = config.Spock.macro_server_alias
@@ -943,12 +952,6 @@ object?   -> Details about 'object'. ?object also works, ?? prints more.
     completer = config.IPCompleter
     completer.omit__names = 2
     completer.greedy = False
-
-    # ------------------------------------
-    # InteractiveShellApp
-    # ------------------------------------
-    i_shell_app = config.InteractiveShellApp
-    i_shell_app.ignore_old_config = True
 
     # ------------------------------------
     # TerminalIPythonApp: options for the IPython terminal (and not Qt Console)
@@ -1124,10 +1127,19 @@ def prepare_cmdline(argv=None):
 
 
 def run():
-
     try:
-        from IPython.utils.traitlets import Unicode
-        from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
+        try:
+            # IPython 4.x
+            from traitlets import Unicode
+            from qtconsole.rich_jupyter_widget import RichIPythonWidget
+            from qtconsole.qtconsoleapp import IPythonQtConsoleApp
+            # TODO: check if we can/should set IPythonQtConsoleApp.version
+        except:
+            # IPython <4.x
+            from IPython.utils.traitlets import Unicode
+            from IPython.qt.console.rich_ipython_widget import RichIPythonWidget
+            from IPython.qt.console.qtconsoleapp import IPythonQtConsoleApp
+            IPythonQtConsoleApp.version.default_value = release.version
         
         class SpockConsole(RichIPythonWidget):
 
@@ -1137,10 +1149,8 @@ def run():
                 config = get_config()
                 return config.FrontendWidget.banner
 
-        import IPython.qt.console.qtconsoleapp
-        IPythonQtConsoleApp = IPython.qt.console.qtconsoleapp.IPythonQtConsoleApp
         IPythonQtConsoleApp.widget_factory = SpockConsole
-        IPythonQtConsoleApp.version.default_value = release.version
+
     except ImportError:
         pass
 
