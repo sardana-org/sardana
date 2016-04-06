@@ -107,12 +107,26 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
         if not self.disableSpockCommandUpdate:
             self.setText(command)
 
+    def onDataChanged(self, idx):
+        """
+        If data is changed to nothing set it to the default value.
+        Otherwise update the spock command and check the validation.
+        This is a workaround for bug-451 that clear all input parameters when an
+        empty string parameter is deselected.
+        """
+        if idx.data() == "":
+            defaultvalue = self._model.nodeFromIndex(idx).defValue()
+            if defaultvalue != "":
+                self._model.setData(idx, defaultvalue)
+        else:
+            self.setCommand()
+
     def setModel(self, model):
         enable = bool(model)
         self.disableEditMode = not enable
         self.setEnabled(enable)
         self._model = model
-        self.connect(self._model, Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), self.setCommand)
+        self.connect(self._model, Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), self.onDataChanged)
         self.connect(self._model, Qt.SIGNAL("modelReset()"), self.setCommand)
 
     def model(self):
