@@ -49,8 +49,7 @@ name = 'sardana'
 #: the new substring. We have to avoid using either dashes or underscores,
 #: because bdist_rpm does not accept dashes (an RPM) convention, and
 #: bdist_deb does not accept underscores (a Debian convention).
-# BUMP TO 2.0.0 DUE TO BACKWARDS INCOMPATIBILITY OF FEATURE-380
-version_info = (1, 6, 2, 'rc', 0)
+version_info = (2, 0, 0, 'rc', 0)
 version = '.'.join(map(str, version_info[:3]))
 revision = str(version_info[4])
 
