@@ -31,6 +31,7 @@ import time
 from taurus.external.qt import Qt
 # TODO: avoid using of PyTango - use Taurus instead
 import PyTango
+import sardana
 
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtgui.display import TaurusLabel
@@ -364,7 +365,8 @@ def main():
             "movements and scans, go to maximum, ...")
     parser.set_description(desc)
 
-    app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser)
+    app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser,
+            app_version=sardana.Release.version)
     app.setApplicationName("diffractometeralignment")
     args = app.get_command_line_args()
     if len(args) < 1:

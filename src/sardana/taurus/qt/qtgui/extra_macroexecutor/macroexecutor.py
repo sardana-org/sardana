@@ -39,6 +39,7 @@ from taurus.qt.qtgui.display import TaurusLed
 from taurus.qt.qtgui.dialog import TaurusMessageBox
 from taurus.qt.qtgui.resource import getIcon, getThemeIcon
 
+import sardana
 from sardana.taurus.core.tango.sardana import macro
 from sardana.taurus.core.tango.sardana.macro import MacroRunException
 from sardana.taurus.qt.qtgui.extra_macroexecutor.macroparameterseditor import ParamEditorManager, ParamEditorModel, StandardMacroParametersEditor
@@ -998,7 +999,7 @@ def main():
     from taurus.qt.qtgui.application import TaurusApplication
     import taurus
 
-    app = TaurusApplication(sys.argv, app_version=taurus.Release.version)
+    app = TaurusApplication(sys.argv, app_version=sardana.Release.version)
     args = app.get_command_line_args()
 
     app.setOrganizationName("Taurus")
