@@ -519,9 +519,6 @@ class Pool(PyTango.Device_4Impl, Logger):
                 if elem_type == ElementType.Motor:
                     data["position"] = { "abs_change" : "1.0"}
                     data["dialposition"] = { "abs_change" : "5.0"}
-                    if get_tango_version_number() < 80000:
-                        print 20 * "AH! "
-                        data["limit_switches"] = { "abs_change" : "1.0"}
                 elif elem_type == ElementType.CTExpChannel:
                     data["value"] = { "abs_change" : "1.0"}
                 elif elem_type == ElementType.PseudoMotor:
