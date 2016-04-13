@@ -858,17 +858,11 @@ class MacroExecutor(Logger):
             result = (str(result),)
         return result
 
-    def _decodeXMLMacroParameters(self, xml_macro):
-        str_params = [xml_macro.get('name')]
-        for param in xml_macro.findall('.//param'):
-            str_params.append(param.get('value'))
-        return self._decodeMacroParameters(str_params)
-
     def _decodeMacroParameters(self, params):
         return self.macro_manager.decodeMacroParameters(self.door, params)
 
     def _prepareXMLMacro(self, xml_macro, parent_macro=None):
-        macro_meta, _, params = self._decodeXMLMacroParameters(xml_macro)
+        macro_meta, _, params = self._decodeMacroParameters(xml_macro)
         init_opts = {
             'id'           : xml_macro.get('id'),
             'macro_line'   : xml_macro.get('macro_line'),
