@@ -1191,10 +1191,8 @@ class Macro(Logger):
         if len(args) == 1:
             if type(par0) in types.StringTypes :
                 args = par0.split()
-                
             elif operator.isSequenceType(par0):
                 args = par0
-        args = map(str, args)
 
         self.debug("Executing macro: %s" % args[0])
         macro_obj, prepare_result = self.prepareMacro(*args, **kwargs)

@@ -955,7 +955,14 @@ class MacroExecutor(Logger):
                 pars = par0.split(' ')
             elif is_non_str_seq(par0):
                 pars = par0
-        pars = map(str, pars)
+
+        def recur_map(fun, data):
+            if hasattr(data, "__iter__"):
+                return [recur_map(fun, elem) for elem in data]
+            else:
+                return fun(data)
+
+        pars = recur_map(str, pars)
 
         macro_klass, str_pars, pars = self._decodeMacroParameters(pars)
 
