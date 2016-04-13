@@ -639,13 +639,24 @@ class MacroManager(MacroServerManager):
             ret.append(json_codec.encode(('', macro_meta.serialize()))[1])
         return ret
 
-    def decodeMacroParameters(self, door, in_par_list):
-        if len(in_par_list) == 0:
-            raise RuntimeError('Macro name not specified')
-        macro_name = in_par_list[0]
+    def decodeMacroParameters(self, door, raw_params):
+        """Decode macro parameters
+
+        :param door: (sardana.macroserver.msdoor.MSDoor) door object
+        :param raw_params: (lxml.etree._Element or list) xml element representing
+                          macro with subelements representing parameters or list
+                          with macro name followed by parameter values
+        """
+        if isinstance(raw_params, etree._Element):
+            macro_name = raw_params.get("name")
+        elif isinstance(raw_params, list):
+            # leave only macro parameters in the list
+            macro_name = raw_params.pop(0)
+        else:
+            raise Exception("Wrong format of raw_params object")
         macro_meta = self.getMacro(macro_name)
-        out_par_list = ParamDecoder(door, macro_meta, in_par_list)
-        return macro_meta, in_par_list, out_par_list
+        out_par_list = ParamDecoder(door, macro_meta, raw_params)
+        return macro_meta, raw_params, out_par_list
 
     def strMacroParamValues(self, par_list):
         """strMacroParamValues(list<string> par_list) -> list<string>
