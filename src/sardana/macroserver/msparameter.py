@@ -331,7 +331,9 @@ class ParamDecoder:
         # ignore other tags than "param" and "paramRepeat"
         # e.g. sequencer may create tags like "hookPlace"
         if isinstance(raw_params, etree._Element):
-            raw_params = raw_params.findall(".//param")
+            for raw_param in raw_params:
+                if not raw_param.tag in ("param", "paramrepeat"):
+                    raw_params.remove(raw_param)
 
         params = []
         for raw_param, param_def in zip(raw_params, params_def):
