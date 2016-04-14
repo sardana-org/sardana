@@ -478,6 +478,9 @@ class SingleParamNode(ParamNode):
     def __len__(self):
         return 0
 
+    def __repr__(self):
+        return self._value
+
     def value(self):
         return self._value
 
@@ -530,6 +533,9 @@ class RepeatParamNode(ParamNode, BranchNode):
         if param is None:
             return
         self.setParamsInfo(copy.deepcopy(param.get('type')))
+
+    def __repr__(self):
+        return repr(self.children())
 
     def arrangeIndexes(self):
         for i, child in enumerate(self.children()):
@@ -648,6 +654,9 @@ class RepeatNode(BranchNode):
         BranchNode.__init__(self, parent)
         if parent is None: return
         self.setIndex(len(self.parent()) + 1)
+
+    def __repr__(self):
+        return repr(self.children())
 
     def index(self):
         return self._index
