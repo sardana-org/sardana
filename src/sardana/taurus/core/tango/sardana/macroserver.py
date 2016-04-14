@@ -472,14 +472,27 @@ class BaseDoor(MacroServerDevice):
 
         :return (lxml.etree._Element) macro XML element
         """
-        # TODO: raise exceptions for the last two incompatible cases 
         ms = self.macro_server
         macro_node = ms.getMacroNodeObj(macro_name)
         param_nodes = macro_node.params()
+        # validate if creating XML is possible (two last cases) 
+        contain_param_repeat = False
+        len_param_nodes = len(param_nodes)
+        for i, param_node in enumerate(param_nodes):
+            if isinstance(param_node, RepeatParamNode):
+                if contain_param_repeat:
+                    msg = "Only one repeat parameter is allowed"
+                    raise Exception(msg)
+                if i < len_param_nodes - 1:
+                    msg = "Repeat parameter must be the last one"
+                    raise Exception(msg)
+                contain_param_repeat = True
+
         for i, param_raw in enumerate(macro_params):
             param_node = param_nodes[i]
             if isinstance(param_node, SingleParamNode):
                 param_node.setValue(param_raw)
+            # the rest of the values are interpreted as repeat parameter
             elif isinstance(param_node, RepeatParamNode):
                 params_info = param_node.paramsInfo()
                 params_info_len = len(params_info)
@@ -490,8 +503,7 @@ class BaseDoor(MacroServerDevice):
                     repeat_node = param_node.child(rep)
                     member_node = repeat_node.child(mem)
                     if isinstance(member_node, RepeatParamNode):
-                        msg = ('Spock is not compatible with nested repeat '
-                               'parameters')
+                        msg = ("Nested repeat parameters are not allowed")
                         raise Exception(msg)
                     member_node.setValue(member_raw)
                     mem += 1
