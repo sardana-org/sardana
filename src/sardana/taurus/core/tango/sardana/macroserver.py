@@ -471,6 +471,10 @@ class BaseDoor(MacroServerDevice):
         :param macro_params: (sequence[str]) list of parameter values
 
         :return (lxml.etree._Element) macro XML element
+
+        .. todo:: This method implements exactly the same logic as :meth:
+        `sardana.macroserver.msmacromanager.MacroExecutor._createMacroXmlFromStr`
+        unify them, and place in some common place.
         """
         ms = self.macro_server
         macro_node = ms.getMacroNodeObj(macro_name)
