@@ -105,10 +105,11 @@ class lsenv(Macro):
          None, 'List of macros to show environment'],
     ]
     
-    def prepare(self, *macro_list, **opts):
+    def prepare(self, macro_list, **opts):
         self.table_opts = opts
         
-    def run(self, *macro_list):
+    def run(self, macro_list):
+        print macro_list
         # list the environment for the current door
         if len(macro_list) == 0:
             # list All the environment for the current door
@@ -155,7 +156,7 @@ class senv(Macro):
                   None, 'value(s). one item will eval to a single element. More than one item will eval to a tuple of elements'],
                 ]
 
-    def run(self, env, *value):
+    def run(self, env, value):
         if len(value) == 1: 
             value = value[0]
         else:
@@ -172,7 +173,7 @@ class usenv(Macro):
          None, 'List of environment items to be removed'],
     ]    
     
-    def run(self, *env):
+    def run(self, env):
         self.unsetEnv(env)
         self.output("Success!")
         

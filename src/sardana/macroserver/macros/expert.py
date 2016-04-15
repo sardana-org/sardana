@@ -73,14 +73,14 @@ class defmeas(Macro):
             None, 'List of measurement channels'],
     ]
 
-    def prepare(self, name, *channel_list, **opts):
+    def prepare(self, name, channel_list, **opts):
 
         mntgrp_list = self.findObjs(name, type_class=Type.MeasurementGroup)
 
         if len(mntgrp_list) != 0:
             raise Exception('A measurement group with that name already exists')
 
-    def run(self, name, *channel_list):
+    def run(self, name, channel_list):
         channel0 = self.getObj(channel_list[0])
         pool = channel0.getPoolObj()
         mg = pool.createMeasurementGroup(name, channel_list)
@@ -138,7 +138,7 @@ class udefelem(Macro):
         None, 'List of element(s) name'],
     ]
 
-    def run(self, *elements):
+    def run(self, elements):
         for element in elements:
             pool = element.getPoolObj()
             pool.deleteElement(element.getName())
@@ -170,7 +170,7 @@ class defctrl(Macro):
                    'a role or property item'],min=0),
                    None, 'roles and/or properties'] ]
 
-    def run(self, ctrl_class, name, *props):
+    def run(self, ctrl_class, name, props):
         pool = ctrl_class.getPoolObj()
         elem = pool.createController(ctrl_class.name, name, *props)
         self.print("Created %s" % str(elem))
@@ -200,7 +200,7 @@ class send2ctrl(Macro):
                   ParamRepeat(['string item', Type.String, None, 'a string item'],),
                   None, 'data to be sent']]
 
-    def run(self, controller, *data):
+    def run(self, controller, data):
         name = controller.getName()
         pool = controller.getPoolObj()
         str_data = " ".join(data)
