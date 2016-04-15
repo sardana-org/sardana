@@ -306,10 +306,10 @@ class ParamDecoder:
 
         :param door: (sardana.macroserver.msdoor.MSDoor) door object
         :param macro_meta: (sardana.macroserver.msmetamacro.MacroClass) macro
-                           meta class
-        :param raw_params: (lxml.etree._Element or list) xml element representing
-                          macro with subelements representing parameters or list
-                          with parameter values
+            meta class
+        :param raw_params: (lxml.etree._Element or list) xml element
+            representing macro with subelements representing parameters or list
+            with parameter values
         """
         self.door = door
         self.macro_meta = macro_meta
@@ -346,7 +346,7 @@ class ParamDecoder:
         """Decode and validate parameter
 
         :param raw_param: (lxml.etree._Element or list) xml element
-                          representing parameter
+            representing parameter
         :param param_def: (dict) parameter definition
 
         :return: (list): list with decoded parameter repetitions
@@ -380,9 +380,8 @@ class ParamDecoder:
         """Decode and validate repeat parameter
 
         :param raw_param_repeat: (lxml.etree._Element or list) xml element
-                                 representing param repeat with subelements
-                                 representing repetitions or list representing
-                                 repetitions
+            representing param repeat with subelements representing repetitions
+            or list representing repetitions
         :param param_repeat_def: (dict) repeat parameter definition
 
         :return: (list): list with decoded parameter repetitions
@@ -402,10 +401,18 @@ class ParamDecoder:
                   (len_rep, name, max_rep)
             raise RuntimeError, msg
         for raw_repeat in raw_param_repeat:
-            repeat = []
-            for i, param_raw in enumerate(raw_repeat):
-                obj = self.decodeNormal(param_raw, param_type[i])
-                repeat.append(obj)
+            if len(param_type) > 1:
+                repeat = []
+                for i, member_raw in enumerate(raw_repeat):
+                    member_type = param_type[i]
+                    member = self.decodeNormal(member_raw, member_type)
+                    repeat.append(member)
+            else:
+                # if the repeat parameter is composed of just one member
+                # do not encapsulate it in list and pass directly the item
+                if isinstance(raw_repeat, etree._Element):
+                    raw_repeat = raw_repeat[0]
+                repeat = self.decodeNormal(raw_repeat, param_type[0])
             param_repeat.append(repeat)
         return param_repeat
 
