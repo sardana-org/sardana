@@ -193,7 +193,7 @@ class wa(Macro):
 
     param_def = [
         ['filter',
-         ParamRepeat(['filter', Type.String, '.*', 'a regular expression filter'], min=0, max=1),
+         ParamRepeat(['filter', Type.String, '.*', 'a regular expression filter'], min=1),
          '.*', 'a regular expression filter'],
     ]
 
@@ -222,7 +222,7 @@ class pwa(Macro):
 
     param_def = [
         ['filter',
-         ParamRepeat(['filter', Type.String, '.*', 'a regular expression filter'], min=0, max=1),
+         ParamRepeat(['filter', Type.String, '.*', 'a regular expression filter'], min=1),
          '.*', 'a regular expression filter'],
     ]
 
