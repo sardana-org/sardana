@@ -660,7 +660,8 @@ class MacroManager(MacroServerManager):
         else:
             raise Exception("Wrong format of raw_params object")
         macro_meta = self.getMacro(macro_name)
-        out_par_list = ParamDecoder(door, macro_meta, raw_params)
+        params_def = macro_meta.get_parameter()
+        out_par_list = ParamDecoder(door, params_def, raw_params)
         return macro_meta, raw_params, out_par_list
 
     def strMacroParamValues(self, par_list):

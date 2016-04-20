@@ -301,18 +301,17 @@ AbstractParamTypes = ParamType, ElementParamType, ElementParamInterface, AttrPar
 
 class ParamDecoder:
 
-    def __init__(self, door, macro_meta, raw_params):
+    def __init__(self, door, params_def, raw_params):
         """Create ParamDecorder object and decode macro parameters
 
         :param door: (sardana.macroserver.msdoor.MSDoor) door object
-        :param macro_meta: (sardana.macroserver.msmetamacro.MacroClass) macro
-            meta class
+        :param params_def: list<list> macro parameter definition
         :param raw_params: (lxml.etree._Element or list) xml element
             representing macro with subelements representing parameters or list
             with parameter values
         """
         self.door = door
-        self.macro_meta = macro_meta
+        self.params_def = params_def
         self.raw_params = raw_params
         self.params = None
         self.decode()
@@ -325,9 +324,8 @@ class ParamDecoder:
         """Decode raw representation of parameters to parameters as passed
         to the prepare or run methods.
         """
-        macro_meta = self.macro_meta
         raw_params = self.raw_params
-        params_def = macro_meta.get_parameter()
+        params_def = self.params_def
         # ignore other tags than "param" and "paramRepeat"
         # e.g. sequencer may create tags like "hookPlace"
         if isinstance(raw_params, etree._Element):
