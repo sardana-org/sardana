@@ -479,6 +479,8 @@ class SingleParamNode(ParamNode):
         return 0
 
     def __repr__(self):
+        if self._value is None:
+            return "None"
         return self._value
 
     def value(self):
@@ -491,6 +493,8 @@ class SingleParamNode(ParamNode):
         return self._defValue
 
     def setDefValue(self, defValue):
+        if defValue == "None":
+            defValue = None
         self._defValue = defValue
 
     def type(self):
@@ -881,6 +885,7 @@ class MacroNode(BranchNode):
 
     def toSpockCommand(self):
         values, alerts = self.toRun()
+        values = map(str, values)
         return "%s %s" % (self.name(), str.join(' ', values))
 
 

@@ -927,6 +927,8 @@ class MacroExecutor(Logger):
                     params.append(p.get('value'))
                 elif p.tag == 'paramrepeat':
                     params.extend([ p2.get('value') for p2 in p.findall(".//param")])
+            # cast None's to string
+            params = map(str, params)
             macro.set('macro_line', "%s(%s)" % (name, ", ".join(params)))
 
     def __preprocessResult(self, result):
