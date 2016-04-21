@@ -301,24 +301,21 @@ AbstractParamTypes = ParamType, ElementParamType, ElementParamInterface, AttrPar
 
 class ParamDecoder:
 
-    def __init__(self, door, params_def, raw_params):
+    def __init__(self, type_manager, params_def, raw_params):
         """Create ParamDecorder object and decode macro parameters
 
-        :param door: (sardana.macroserver.msdoor.MSDoor) door object
+        :param type_manager: (sardana.macroserver.mstypemanager.TypeManager)
+            type manager object
         :param params_def: list<list> macro parameter definition
         :param raw_params: (lxml.etree._Element or list) xml element
             representing macro with subelements representing parameters or list
             with parameter values
         """
-        self.door = door
+        self.type_manager = type_manager
         self.params_def = params_def
         self.raw_params = raw_params
         self.params = None
         self.decode()
-
-    @property
-    def type_manager(self):
-        return self.door.type_manager
 
     def decode(self):
         """Decode raw representation of parameters to parameters as passed

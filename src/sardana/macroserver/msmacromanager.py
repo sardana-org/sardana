@@ -661,7 +661,8 @@ class MacroManager(MacroServerManager):
             raise Exception("Wrong format of raw_params object")
         macro_meta = self.getMacro(macro_name)
         params_def = macro_meta.get_parameter()
-        out_par_list = ParamDecoder(door, params_def, raw_params)
+        type_manager = door.type_manager
+        out_par_list = ParamDecoder(type_manager, params_def, raw_params)
         return macro_meta, raw_params, out_par_list
 
     def strMacroParamValues(self, par_list):
