@@ -360,6 +360,8 @@ class ParamDecoder:
                     value = raw_param
                 if value is None:
                     value = param_def['default_value']
+                if value is None:
+                    raise MissingParam, "'%s' not specified" % name
                 param = param_type.getObj(value)
             except ValueError, e:
                 raise WrongParamType, e.message

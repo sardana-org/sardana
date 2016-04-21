@@ -466,6 +466,7 @@ class ParamNode(BaseNode):
 
 class SingleParamNode(ParamNode):
     """Single parameter class."""
+
     def __init__(self, parent=None, param=None):
         ParamNode.__init__(self, parent, param)
         if param is None: return
@@ -504,8 +505,10 @@ class SingleParamNode(ParamNode):
         self._type = type
 
     def toXml(self):
-        paramElement = etree.Element("param", name=self.name(),
-                                              value=self.value())
+        value = self.value()
+        paramElement = etree.Element("param", name=self.name())
+        if not value is None:
+            paramElement.set("value", value)
         return paramElement
 
     def fromXml(self, xmlElement):
