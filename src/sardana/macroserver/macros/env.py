@@ -109,7 +109,6 @@ class lsenv(Macro):
         self.table_opts = opts
         
     def run(self, macro_list):
-        print macro_list
         # list the environment for the current door
         if len(macro_list) == 0:
             # list All the environment for the current door

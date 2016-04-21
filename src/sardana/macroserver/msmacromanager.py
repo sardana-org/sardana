@@ -847,7 +847,6 @@ class MacroExecutor(Logger):
                     msg = "Repeat parameter must be the last one"
                     raise Exception(msg)
                 contain_param_repeat = True
-        print macro_params, param_nodes
         # this ignores raw_parameters which exceeds the param_def  
         for param_node, param_raw in zip(param_nodes, macro_params):
             if isinstance(param_node, SingleParamNode):

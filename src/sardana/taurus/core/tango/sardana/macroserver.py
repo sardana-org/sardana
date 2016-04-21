@@ -546,7 +546,6 @@ class BaseDoor(MacroServerDevice):
                                                             macro_params)
                     xml_macro.set('id', str(uuid.uuid1()))
                     xml_seq.append(xml_macro)
-                    print etree.tostring(xml_seq)
         elif etree.iselement(obj):
             xml_root = obj
         else:
