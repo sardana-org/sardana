@@ -96,9 +96,9 @@ class TestParamDecoder(unittest.TestCase):
             decoding process
         :param expected_exception: expected exception class
         """
-        if not expected_params and not expected_exception:
+        if expected_params is None and expected_exception is None:
             raise ValueError("missing expected_params or expected_exception")
-        if expected_params and expected_exception:
+        if not expected_params is None and not expected_exception is None:
             raise ValueError("too many expected expected values")
         exception = None
         try:
