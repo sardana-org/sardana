@@ -558,6 +558,7 @@ class RepeatParamNode(ParamNode, BranchNode):
         self.insertChild(repeat)
         for repeatParam in self.paramsInfo():
             repeat.addParam(repeatParam)
+        return repeat
 
     def isReachedMin(self):
         if self.min() is None:
