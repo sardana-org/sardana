@@ -502,9 +502,13 @@ class BaseDoor(MacroServerDevice):
                 params_info_len = len(params_info)
                 rep = 0; mem = 0
                 rest_raw = macro_params[i:]
-                rest_raw_len = len(rest_raw)
-                for j, member_raw in enumerate(rest_raw):
+                for member_raw in rest_raw:
                     repeat_node = param_node.child(rep)
+                    # add a new repeat node (this is needed when the raw values
+                    # fill more repeat nodes that the minimum number of 
+                    # repetitions e.g. min=0
+                    if repeat_node is None:
+                        repeat_node = param_node.addRepeat()
                     member_node = repeat_node.child(mem)
                     if isinstance(member_node, RepeatParamNode):
                         msg = ("Nested repeat parameters are not allowed")
@@ -512,8 +516,7 @@ class BaseDoor(MacroServerDevice):
                     member_node.setValue(member_raw)
                     mem += 1
                     mem %= params_info_len
-                    if mem == 0 and j < rest_raw_len - 1:
-                        param_node.addRepeat()
+                    if mem == 0:
                         rep += 1
                 break
         xml_macro = macro_node.toXml()
