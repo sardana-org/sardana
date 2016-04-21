@@ -491,9 +491,8 @@ class BaseDoor(MacroServerDevice):
                     msg = "Repeat parameter must be the last one"
                     raise Exception(msg)
                 contain_param_repeat = True
-
-        for i, param_raw in enumerate(macro_params):
-            param_node = param_nodes[i]
+        # this ignores raw_parameters which exceeds the param_def  
+        for param_node, param_raw in zip(param_nodes, macro_params):
             if isinstance(param_node, SingleParamNode):
                 param_node.setValue(param_raw)
             # the rest of the values are interpreted as repeat parameter
