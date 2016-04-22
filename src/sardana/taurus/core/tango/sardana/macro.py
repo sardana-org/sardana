@@ -531,6 +531,9 @@ class SingleParamNode(ParamNode):
             return ([val], alert)
         return ([val], "")
 
+    def toList(self):
+        return self._value
+
 class RepeatParamNode(ParamNode, BranchNode):
     """Repeat parameter class."""
 
@@ -648,6 +651,9 @@ class RepeatParamNode(ParamNode, BranchNode):
             motors += child.allMotors()
         return motors
 
+    def toList(self):
+        return [child.toList() for child in self.children()]
+
 #    def isAllowedMoveUp(self):
 #        return self is not self.parent().child(0)
 #
@@ -714,6 +720,12 @@ class RepeatNode(BranchNode):
 
     def isAllowedMoveDown(self):
         return self is not self.parent().child(len(self.parent()) - 1)
+
+    def toList(self):
+        if len(self.children()) == 1:
+            return self.child(0).toList()
+        else:
+            return [child.toList() for child in self.children()]
 
 class MacroNode(BranchNode):
     """Class to represent macro element."""
@@ -1071,6 +1083,15 @@ class MacroNode(BranchNode):
             param = SingleParamNode(self)
             param.setValue(words[index])
             self.addParam(param)
+
+    def toList(self):
+        """Convert to list representation in format:
+        [macro_name, *parameter_values] where complex repeat parameters are
+        encapsulated in lists e.g. ['mv', [['mot01', 0], ['mot02', 0]]]
+        """
+        list_ = [param.toList() for param in self.params()]
+        list_.insert(0, self.name())
+        return list_
 
 
 class SequenceNode(BranchNode):
