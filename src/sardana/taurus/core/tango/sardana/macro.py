@@ -1033,7 +1033,7 @@ class MacroNode(BranchNode):
         if withId: 
             id_ = self.id()
             if not id_ is None:
-                macroElement.set("id", self.id())
+                macroElement.set("id", str(self.id()))
         for hookPlace in self.hookPlaces():
             hookElement = etree.SubElement(macroElement, "hookPlace")
             hookElement.text = hookPlace
