@@ -29,7 +29,7 @@ from lxml import etree
 
 from taurus.external import unittest
 from taurus.test import insertTest
-from sardana.util.macro import createMacroNode
+from sardana.taurus.core.tango.sardana.macro import createMacroNode
 from sardana.macroserver.macro import Type
 
 # TODO: Use unittest.mock instead of this fake class.
