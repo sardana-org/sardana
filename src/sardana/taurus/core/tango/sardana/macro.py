@@ -913,7 +913,7 @@ class MacroNode(BranchNode):
         else:
             valueString = ''
             for value in values:
-                valueString += (value + ', ')
+                valueString += (str(value) + ', ')
             return '[%s]' % valueString[:-2]
 
 #    def allMotors(self):

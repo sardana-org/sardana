@@ -79,7 +79,7 @@ class ParamEditorDelegate(Qt.QStyledItemDelegate):
     def setEditorData(self, editor, index):
         if index.column() == 1:
             text = Qt.from_qvariant(index.model().data(index, Qt.Qt.DisplayRole), str)
-            if text == "None" or text == "":
+            if text == "None" or text == "" or text is None:
                 Qt.QStyledItemDelegate.setEditorData(self, editor, index)
             else:
                 editor.setValue(text)
