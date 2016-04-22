@@ -1145,3 +1145,69 @@ def ParamFactory(paramInfo):
         param = SingleParamNode(param=paramInfo)
     return param
 
+def createMacroNode(macro_name, params_def, macro_params):
+    """The best effort creation of the macro XML object. It tries to
+    convert flat list of string parameter values to the correct macro XML
+    object. The cases that can not be converted are:
+        * repeat parameter containing repeat parameters
+        * two repeat parameters
+        * repeat parameter that is not the last parameter
+
+    :param macro_name: (str) macro name
+    :param params_def: (list<dict>) list of param definitions
+    :param macro_params: (sequence[str]) list of parameter values
+
+    :return (lxml.etree._Element) macro XML element
+
+    .. todo:: This method implements exactly the same logic as :meth:
+    `sardana.taurus.core.tango.sardana.macroserver.BaseDoor._createMacroXmlFromStr`
+    unify them and place in some common location.
+    """
+    macro_node = MacroNode(name=macro_name)
+    # create parameter nodes (it is recursive for repeat parameters containing
+    # repeat parameters)
+    for param_info in params_def:
+        macro_node.addParam(ParamFactory(param_info))
+    # obtain just the first level parameters
+    param_nodes = macro_node.params()
+    # validate if creating XML is possible (two last cases) 
+    contain_param_repeat = False
+    len_param_nodes = len(param_nodes)
+    for i, param_node in enumerate(param_nodes):
+        if isinstance(param_node, RepeatParamNode):
+            if contain_param_repeat:
+                msg = "Only one repeat parameter is allowed"
+                raise Exception(msg)
+            if i < len_param_nodes - 1:
+                msg = "Repeat parameter must be the last one"
+                raise Exception(msg)
+            contain_param_repeat = True
+    # this ignores raw_parameters which exceeds the param_def  
+    for param_node, param_raw in zip(param_nodes, macro_params):
+        if isinstance(param_node, SingleParamNode):
+            param_node.setValue(param_raw)
+        # the rest of the values are interpreted as repeat parameter
+        elif isinstance(param_node, RepeatParamNode):
+            params_info = param_node.paramsInfo()
+            params_info_len = len(params_info)
+            rep = 0; mem = 0
+            rest_raw = macro_params[i:]
+            for member_raw in rest_raw:
+                repeat_node = param_node.child(rep)
+                # add a new repeat node (this is needed when the raw values
+                # fill more repeat nodes that the minimum number of 
+                # repetitions e.g. min=0
+                if repeat_node is None:
+                    repeat_node = param_node.addRepeat()
+                member_node = repeat_node.child(mem)
+                if isinstance(member_node, RepeatParamNode):
+                    msg = ("Nested repeat parameters are not allowed")
+                    raise Exception(msg)
+                member_node.setValue(member_raw)
+                mem += 1
+                mem %= params_info_len
+                if mem == 0:
+                    rep += 1
+            break
+    return macro_node
+
