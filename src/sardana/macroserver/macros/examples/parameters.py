@@ -146,7 +146,61 @@ class pt9(Macro):
     
     def run(self, *args, **kwargs):
         pass
-    
+
+class pt10(Macro):
+    """Macro with list of numbers followed by a motor parameter. The repeat
+    parameter may be defined as first one."""
+
+    param_def = [
+       ['numb_list', [['pos', Type.Float, None, 'value']], None, 'List of values'],
+       ['motor', Type.Motor, None, 'Motor to move']
+    ]
+
+    def run(self, *args, **kwargs):
+        pass
+
+
+class pt11(Macro):
+    """Macro with list of numbers followed by a motor parameter. The repeat
+    parameter may be defined as first one."""
+
+    param_def = [
+       ['counter', Type.ExpChannel, None, 'Counter to count'],
+       ['numb_list', [['pos', Type.Float, None, 'value']], None, 'List of values'],
+       ['motor', Type.Motor, None, 'Motor to move']
+    ]
+
+    def run(self, *args, **kwargs):
+        pass
+
+
+class pt12(Macro):
+    """Macro with list of motors followed by list of numbers. Two repeat
+    parameters may defined."""
+
+    param_def = [
+       ['numb_list', [['pos', Type.Float, None, 'value']], None, 'List of values'],
+       ['motor_list', [['motor', Type.Motor, None, 'Motor to move']], None, 'List of motors']
+    ]
+
+    def run(self, *args, **kwargs):
+        pass
+
+
+class pt13(Macro):
+    """Macro with list of motors groups, where each motor group is a list of 
+    motors. Repeat parameters may be defined as nested."""
+
+    param_def = [
+       ['motor_group_list',
+        [['motor_list', [['motor', Type.Motor, None, 'Motor to move']], None, 'List of motors']],
+        None, 'Motor groups']
+    ]
+
+    def run(self, *args, **kwargs):
+        pass
+
+
 class twice(Macro):
     """A macro that returns a float that is twice its input. It also sets its 
     data to be a dictionary with 'in','out' as keys and value,result 
