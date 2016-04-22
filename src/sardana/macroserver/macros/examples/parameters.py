@@ -38,7 +38,7 @@ class pt0(Macro):
     
 class pt1(Macro):
     """Macro with one float parameter: Each parameter is described in the 
-    param_def sequence as being a sequence of for elements: name, type, 
+    param_def sequence as being a sequence of four elements: name, type, 
     default value and description"""
     
     param_def = [ [ 'value', Type.Float, None, 'some bloody float'] ]
@@ -48,7 +48,7 @@ class pt1(Macro):
 
 class pt2(Macro):
     """Macro with one Motor parameter: Each parameter is described in the 
-    param_def sequence as being a sequence of for elements: name, type, 
+    param_def sequence as being a sequence of four elements: name, type, 
     default value and description"""
 
     param_def = [ [ 'motor', Type.Motor, None, 'some bloody motor'] ]
@@ -133,7 +133,7 @@ class pt8(Macro):
         pass
 
 class pt9(Macro):
-    """Same as macro pt7 but witb old style ParamRepeat. If you are writing
+    """Same as macro pt7 but with old style ParamRepeat. If you are writing
     a macro with variable number of parameters for the first time don't even
     bother to look at this example since it is DEPRECATED."""
 
