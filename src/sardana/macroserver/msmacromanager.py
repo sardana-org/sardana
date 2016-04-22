@@ -967,19 +967,28 @@ class MacroExecutor(Logger):
         :param opts: keyword optional parameters for prepare
         :return: a tuple of two elements: macro object, the result of preparing the macro
         """
-        par0 = pars[0]
-        if len(pars) == 1:
-            if is_pure_str(par0):
-                pars = par0.split(' ')
-            elif is_non_str_seq(par0):
-                pars = par0
-
         def recur_map(fun, data):
             if hasattr(data, "__iter__"):
                 return [recur_map(fun, elem) for elem in data]
             else:
                 return fun(data)
 
+        par0 = pars[0]
+        if len(pars) == 1:
+            if is_pure_str(par0):
+                # dealing with sth like args = ('ascan th 0 100 10 1.0',)
+                pars = par0.split()
+                macro_name, macro_params = pars[0], pars[1:]
+                macro_node = self._createMacroNode(macro_name, macro_params)
+                pars = macro_node.toList()
+            elif is_non_str_seq(par0):
+                # dealing with sth like args = (['ascan', 'th', '0', '100', '10', '1.0'],)
+                # or args = (['mv', [[mot01, 0], [mot02, 0]]])
+                pars = par0
+        # dealing with sth like args = ('ascan', 'th', '0', '100', '10', '1.0')
+        # or args = ('mv', [[mot01, 0], [mot02, 0]])
+
+        # in case parameters were passed as objects cast them to strings
         pars = recur_map(str, pars)
 
         macro_klass, str_pars, pars = self._decodeMacroParameters(pars)
