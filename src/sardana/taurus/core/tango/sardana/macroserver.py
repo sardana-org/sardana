@@ -51,13 +51,12 @@ from taurus.core.util.containers import CaselessDict
 from taurus.core.util.codecs import CodecFactory
 from taurus.core.util.event import EventGenerator, AttributeEventWait
 from taurus.core.tango import TangoDevice
-
-
 from .macro import MacroInfo, Macro, \
     MacroNode, ParamFactory, RepeatNode, RepeatParamNode, SingleParamNode, \
     ParamNode
 from .sardana import BaseSardanaElementContainer, BaseSardanaElement
 from .pool import getChannelConfigs
+from .macro import createMacroNode
 
 CHANGE_EVT_TYPES = TaurusEventType.Change, TaurusEventType.Periodic
 
@@ -459,7 +458,7 @@ class BaseDoor(MacroServerDevice):
         self._user_xml = None
         self._block_lines = 0
 
-    def _createMacroXmlFromStr(self, macro_name, macro_params):
+    def _createMacroXml(self, macro_name, macro_params):
         """The best effort creation of the macro XML object. It tries to
         convert flat list of string parameter values to the correct macro XML
         object. The cases that can not be converted are:
@@ -471,55 +470,11 @@ class BaseDoor(MacroServerDevice):
         :param macro_params: (sequence[str]) list of parameter values
 
         :return (lxml.etree._Element) macro XML element
-
-        .. todo:: This method implements exactly the same logic as :meth:
-        `sardana.macroserver.msmacromanager.MacroExecutor._createMacroXmlFromStr`
-        unify them, and place in some common place.
         """
-        ms = self.macro_server
-        macro_node = ms.getMacroNodeObj(macro_name)
-        param_nodes = macro_node.params()
-        # validate if creating XML is possible (two last cases) 
-        contain_param_repeat = False
-        len_param_nodes = len(param_nodes)
-        for i, param_node in enumerate(param_nodes):
-            if isinstance(param_node, RepeatParamNode):
-                if contain_param_repeat:
-                    msg = "Only one repeat parameter is allowed"
-                    raise Exception(msg)
-                if i < len_param_nodes - 1:
-                    msg = "Repeat parameter must be the last one"
-                    raise Exception(msg)
-                contain_param_repeat = True
-        # this ignores raw_parameters which exceeds the param_def  
-        for param_node, param_raw in zip(param_nodes, macro_params):
-            if isinstance(param_node, SingleParamNode):
-                param_node.setValue(param_raw)
-            # the rest of the values are interpreted as repeat parameter
-            elif isinstance(param_node, RepeatParamNode):
-                params_info = param_node.paramsInfo()
-                params_info_len = len(params_info)
-                rep = 0; mem = 0
-                rest_raw = macro_params[i:]
-                for member_raw in rest_raw:
-                    repeat_node = param_node.child(rep)
-                    # add a new repeat node (this is needed when the raw values
-                    # fill more repeat nodes that the minimum number of 
-                    # repetitions e.g. min=0
-                    if repeat_node is None:
-                        repeat_node = param_node.addRepeat()
-                    member_node = repeat_node.child(mem)
-                    if isinstance(member_node, RepeatParamNode):
-                        msg = ("Nested repeat parameters are not allowed")
-                        raise Exception(msg)
-                    member_node.setValue(member_raw)
-                    mem += 1
-                    mem %= params_info_len
-                    if mem == 0:
-                        rep += 1
-                break
-        xml_macro = macro_node.toXml()
-        return xml_macro
+        macro_info = self.macro_server.getMacroInfoObj(macro_name)
+        params_def = macro_info.parameters
+        macro_node = createMacroNode(macro_name, params_def, macro_params)
+        return macro_node.toXml()
 
     def preRunMacro(self, obj, parameters):
         self._clearRunMacro()
@@ -542,8 +497,7 @@ class BaseDoor(MacroServerDevice):
                 for m in macros:
                     macro_name = m[0]
                     macro_params = m[1]
-                    xml_macro = self._createMacroXmlFromStr(macro_name,
-                                                            macro_params)
+                    xml_macro = self._createMacroXml(macro_name, macro_params)
                     xml_macro.set('id', str(uuid.uuid1()))
                     xml_seq.append(xml_macro)
         elif etree.iselement(obj):
