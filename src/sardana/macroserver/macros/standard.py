@@ -20,7 +20,6 @@
 ## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
-from IPython.external.jsonpointer._jsonpointer import pairwise
 
 """This is the standard macro module"""
 
