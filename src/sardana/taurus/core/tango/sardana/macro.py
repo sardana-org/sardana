@@ -640,7 +640,7 @@ class RepeatParamNode(ParamNode, BranchNode):
 
     def fromXml(self, xmlElement):
         self.setName(xmlElement.get("name"))
-        for repeatElement in xmlElement.getiterator("repeat"):
+        for repeatElement in xmlElement:
             repeat = RepeatNode(self)
             repeat.fromXml(repeatElement)
             self.insertChild(repeat)
