@@ -699,6 +699,8 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
         
         :param key: the key for the environment to be unset"""
         ret = self.environment_manager.unsetEnv(key)
+        # list is unhashable - convert to a tuple
+        if isinstance(key, list): key = tuple(key)
         evt = { 'del' : { key : None } }
         self.fire_event(EventType("EnvironmentChanged"), evt)
         return ret

@@ -60,6 +60,10 @@ from sardana.macroserver.msexception import UnknownMacroLibrary, \
     LibraryError, UnknownMacro, MissingEnv, AbortException, StopException, \
     MacroServerException, UnknownEnv
 
+# These classes are imported from the "client" part of sardana, if finally
+# both the client and the server side needs them, place them in some common location 
+from sardana.taurus.core.tango.sardana.macro import createMacroNode
+
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
@@ -638,14 +642,32 @@ class MacroManager(MacroServerManager):
             macro_meta = self.getMacro(macro_name)
             ret.append(json_codec.encode(('', macro_meta.serialize()))[1])
         return ret
+    
+    def _createMacroNode(self, macro_name, macro_params):
+        macro = self.getMacro(macro_name)
+        params_def = macro.get_parameter()
+        return createMacroNode(macro_name, params_def, macro_params)
 
-    def decodeMacroParameters(self, door, in_par_list):
-        if len(in_par_list) == 0:
-            raise RuntimeError('Macro name not specified')
-        macro_name = in_par_list[0]
+    def decodeMacroParameters(self, door, raw_params):
+        """Decode macro parameters
+
+        :param door: (sardana.macroserver.msdoor.MSDoor) door object
+        :param raw_params: (lxml.etree._Element or list) xml element representing
+                          macro with subelements representing parameters or list
+                          with macro name followed by parameter values
+        """
+        if isinstance(raw_params, etree._Element):
+            macro_name = raw_params.get("name")
+        elif isinstance(raw_params, list):
+            # leave only macro parameters in the list
+            macro_name = raw_params.pop(0)
+        else:
+            raise Exception("Wrong format of raw_params object")
         macro_meta = self.getMacro(macro_name)
-        out_par_list = ParamDecoder(door, macro_meta, in_par_list)
-        return macro_meta, in_par_list, out_par_list
+        params_def = macro_meta.get_parameter()
+        type_manager = door.type_manager
+        out_par_list = ParamDecoder(type_manager, params_def, raw_params)
+        return macro_meta, raw_params, out_par_list
 
     def strMacroParamValues(self, par_list):
         """strMacroParamValues(list<string> par_list) -> list<string>
@@ -791,13 +813,18 @@ class MacroExecutor(Logger):
     def getNewMacroID(self):
         self._macro_counter -= 1
         return self._macro_counter
+    
+    def _createMacroNode(self, macro_name, macro_params):
+        return self.macro_manager._createMacroNode(macro_name, macro_params)
 
     def _preprocessParameters(self, par_str_list):
         if not par_str_list[0].lstrip().startswith('<'):
             xml_root = xml_seq = etree.Element('sequence')
-            xml_macro = etree.SubElement(xml_seq, 'macro', name=par_str_list[0])
-            for p in par_str_list[1:]:
-                etree.SubElement(xml_macro, 'param', value=p)
+            macro_name = par_str_list[0]
+            macro_params = par_str_list[1:]
+            macro_node = self._createMacroNode(macro_name, macro_params)
+            xml_macro = macro_node.toXml()
+            xml_seq.append(xml_macro)
         else:
             xml_root = etree.fromstring(par_str_list[0])
 
@@ -840,6 +867,8 @@ class MacroExecutor(Logger):
                     params.append(p.get('value'))
                 elif p.tag == 'paramrepeat':
                     params.extend([ p2.get('value') for p2 in p.findall(".//param")])
+            # cast None's to string
+            params = map(str, params)
             macro.set('macro_line', "%s(%s)" % (name, ", ".join(params)))
 
     def __preprocessResult(self, result):
@@ -858,17 +887,11 @@ class MacroExecutor(Logger):
             result = (str(result),)
         return result
 
-    def _decodeXMLMacroParameters(self, xml_macro):
-        str_params = [xml_macro.get('name')]
-        for param in xml_macro.findall('.//param'):
-            str_params.append(param.get('value'))
-        return self._decodeMacroParameters(str_params)
-
     def _decodeMacroParameters(self, params):
         return self.macro_manager.decodeMacroParameters(self.door, params)
 
     def _prepareXMLMacro(self, xml_macro, parent_macro=None):
-        macro_meta, _, params = self._decodeXMLMacroParameters(xml_macro)
+        macro_meta, _, params = self._decodeMacroParameters(xml_macro)
         init_opts = {
             'id'           : xml_macro.get('id'),
             'macro_line'   : xml_macro.get('macro_line'),
@@ -944,13 +967,29 @@ class MacroExecutor(Logger):
         :param opts: keyword optional parameters for prepare
         :return: a tuple of two elements: macro object, the result of preparing the macro
         """
+        def recur_map(fun, data):
+            if hasattr(data, "__iter__"):
+                return [recur_map(fun, elem) for elem in data]
+            else:
+                return fun(data)
+
         par0 = pars[0]
         if len(pars) == 1:
             if is_pure_str(par0):
-                pars = par0.split(' ')
+                # dealing with sth like args = ('ascan th 0 100 10 1.0',)
+                pars = par0.split()
+                macro_name, macro_params = pars[0], pars[1:]
+                macro_node = self._createMacroNode(macro_name, macro_params)
+                pars = macro_node.toList()
             elif is_non_str_seq(par0):
+                # dealing with sth like args = (['ascan', 'th', '0', '100', '10', '1.0'],)
+                # or args = (['mv', [[mot01, 0], [mot02, 0]]])
                 pars = par0
-        pars = map(str, pars)
+        # dealing with sth like args = ('ascan', 'th', '0', '100', '10', '1.0')
+        # or args = ('mv', [[mot01, 0], [mot02, 0]])
+
+        # in case parameters were passed as objects cast them to strings
+        pars = recur_map(str, pars)
 
         macro_klass, str_pars, pars = self._decodeMacroParameters(pars)
 

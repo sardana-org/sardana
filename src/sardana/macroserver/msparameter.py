@@ -33,6 +33,8 @@ __all__ = ["WrongParam", "MissingParam", "UnknownParamObj", "WrongParamType",
 
 __docformat__ = 'restructuredtext'
 
+from lxml import etree
+
 from taurus.core.util.containers import CaselessDict
 
 from sardana import ElementType, INTERFACES_EXPANDED
@@ -299,105 +301,120 @@ AbstractParamTypes = ParamType, ElementParamType, ElementParamInterface, AttrPar
 
 class ParamDecoder:
 
-    def __init__(self, door, macro_meta, param_str_list):
-        self.door = door
-        self.macro_meta = macro_meta
-        self.param_str_list = param_str_list
-        self.param_list = None
+    def __init__(self, type_manager, params_def, raw_params):
+        """Create ParamDecorder object and decode macro parameters
+
+        :param type_manager: (sardana.macroserver.mstypemanager.TypeManager)
+            type manager object
+        :param params_def: list<list> macro parameter definition
+        :param raw_params: (lxml.etree._Element or list) xml element
+            representing macro with subelements representing parameters or list
+            with parameter values
+        """
+        self.type_manager = type_manager
+        self.params_def = params_def
+        self.raw_params = raw_params
+        self.params = None
         self.decode()
 
-    @property
-    def type_manager(self):
-        return self.door.type_manager
-
     def decode(self):
-        macro_meta = self.macro_meta
-        macro_type = macro_meta.get_type()
-        pars_str = self.param_str_list[1:]
-        pars_def = macro_meta.get_parameter()
-        if macro_type == ElementType.MacroClass:
-            _, self.param_list = self.decodeNormal(pars_str, pars_def)
-        elif macro_type == ElementType.MacroFunction:
-            if macro_meta.function.param_def is None:
-                self.param_list = self.param_str_list[1:]
-            else:
-                _, self.param_list = self.decodeNormal(pars_str, pars_def)
-        return self.param_list
+        """Decode raw representation of parameters to parameters as passed
+        to the prepare or run methods.
+        """
+        raw_params = self.raw_params
+        params_def = self.params_def
+        # ignore other tags than "param" and "paramRepeat"
+        # e.g. sequencer may create tags like "hookPlace"
+        if isinstance(raw_params, etree._Element):
+            for raw_param in raw_params:
+                if not raw_param.tag in ("param", "paramrepeat"):
+                    raw_params.remove(raw_param)
 
-    def decodeNormal(self, str_list, def_list):
-        str_len = len(str_list)
-        obj_list = []
-        str_idx = 0
-        for i, par_def in enumerate(def_list):
-            name = par_def['name']
-            type_class = par_def['type']
-            def_val = par_def['default_value']
-            if str_idx == str_len:
-                if def_val is None:
-                    if not isinstance(type_class, list):
-                        raise MissingParam, "'%s' not specified" % name
-                    elif isinstance(type_class, list):
-                        min_rep = par_def['min']
-                        if min_rep > 0:
-                            msg = "'%s' demands at least %d values" %\
-                                  (name, min_rep)
-                            raise WrongParam, msg
-                new_obj_list = []
-                if not def_val is None:
-                    new_obj_list.append(def_val)
-            else:
-                if isinstance(type_class, list):
-                    data = self.decodeRepeat(str_list[str_idx:], par_def)
-                    dec_token, new_obj_list = data
+        params = []
+        for raw_param, param_def in zip(raw_params, params_def):
+            obj = self.decodeNormal(raw_param, param_def)
+            params.append(obj)
+        self.params = params
+        return self.params
+
+    def decodeNormal(self, raw_param, param_def):
+        """Decode and validate parameter
+
+        :param raw_param: (lxml.etree._Element or list) xml element
+            representing parameter
+        :param param_def: (dict) parameter definition
+
+        :return: (list): list with decoded parameter repetitions
+        """
+        param_type = param_def["type"]
+        name = param_def["name"]
+        if isinstance(param_type, list):
+            param = self.decodeRepeat(raw_param, param_def)
+        else:
+            type_manager = self.type_manager
+            param_type = type_manager.getTypeObj(param_type)
+            try:
+                if isinstance(raw_param, etree._Element):
+                    value = raw_param.get("value")
                 else:
-                    type_manager = self.type_manager
-                    type_name = type_class
-                    type_class = type_manager.getTypeClass(type_name)
-                    par_type = type_manager.getTypeObj(type_name)
-                    par_str = str_list[str_idx]
-                    try:
-                        val = par_type.getObj(par_str)
-                    except ValueError, e:
-                        raise WrongParamType, e.message
-                    except UnknownParamObj, e:
-                        raise WrongParam, e.message
-                    if val is None:
-                        msg = 'Could not create %s parameter "%s" for "%s"' % \
-                              (par_type.getName(), name, par_str)
-                        raise WrongParam, msg
-                    dec_token = 1
-                    new_obj_list = [val]
-                str_idx += dec_token
-            obj_list += new_obj_list
-        return str_idx, obj_list
+                    value = raw_param
+                if value is None:
+                    value = param_def['default_value']
+                if value is None:
+                    raise MissingParam, "'%s' not specified" % name
+                param = param_type.getObj(value)
+            except ValueError, e:
+                raise WrongParamType, e.message
+            except UnknownParamObj, e:
+                raise WrongParam, e.message
+            if param is None:
+                msg = 'Could not create %s parameter "%s" for "%s"' % \
+                      (param_type.getName(), name, raw_param)
+                raise WrongParam, msg
+        return param
 
-    def decodeRepeat(self, str_list, par_def):
-        name = par_def['name']
-        param_def = par_def['type']
-        min_rep = par_def['min']
-        max_rep = par_def['max']
+    def decodeRepeat(self, raw_param_repeat, param_repeat_def):
+        """Decode and validate repeat parameter
 
-        dec_token = 0
-        obj_list = []
-        rep_nr = 0
-        while dec_token < len(str_list):
-            if max_rep is not None and rep_nr == max_rep:
-                break
-            new_token, new_obj_list = self.decodeNormal(str_list[dec_token:],
-                                                        param_def)
-            dec_token += new_token
-            if len(new_obj_list) == 1:
-                new_obj_list = new_obj_list[0]
-            obj_list.append(new_obj_list)
-            rep_nr += 1
-        if rep_nr < min_rep:
+        :param raw_param_repeat: (lxml.etree._Element or list) xml element
+            representing param repeat with subelements representing repetitions
+            or list representing repetitions
+        :param param_repeat_def: (dict) repeat parameter definition
+
+        :return: (list): list with decoded parameter repetitions
+        """
+        name = param_repeat_def['name']
+        param_type = param_repeat_def['type']
+        min_rep = param_repeat_def['min']
+        max_rep = param_repeat_def['max']
+        param_repeat = []
+        len_rep = len(raw_param_repeat)
+        if min_rep and len_rep < min_rep:
             msg = 'Found %d repetitions of param %s, min is %d' % \
-                  (rep_nr, name, min_rep)
+                  (len_rep, name, min_rep)
             raise RuntimeError, msg
-        return dec_token, obj_list
+        if  max_rep and len_rep > max_rep:
+            msg = 'Found %d repetitions of param %s, max is %d' % \
+                  (len_rep, name, max_rep)
+            raise RuntimeError, msg
+        for raw_repeat in raw_param_repeat:
+            if len(param_type) > 1:
+                repeat = []
+                for i, member_raw in enumerate(raw_repeat):
+                    member_type = param_type[i]
+                    member = self.decodeNormal(member_raw, member_type)
+                    repeat.append(member)
+            else:
+                # if the repeat parameter is composed of just one member
+                # do not encapsulate it in list and pass directly the item
+                if isinstance(raw_repeat, etree._Element):
+                    raw_repeat = raw_repeat[0]
+                repeat = self.decodeNormal(raw_repeat, param_type[0])
+            param_repeat.append(repeat)
+        return param_repeat
 
     def getParamList(self):
-        return self.param_list
+        return self.params
 
     def __getattr__(self, name):
-        return getattr(self.param_list, name)
+        return getattr(self.params, name)
