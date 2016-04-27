@@ -160,7 +160,7 @@ def sar_demo(self):
                  "Gap="+gap, "Offset="+offset])
    
     self.print("Creating measurement group", mg_name, "...")
-    self.defmeas(mg_name, *ct_names)
+    self.defmeas(mg_name, ct_names)
 
     try:
         self.getEnv("ActiveMntGrp")
