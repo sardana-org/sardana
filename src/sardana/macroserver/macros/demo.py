@@ -75,8 +75,9 @@ def clear_sar_demo(self):
             self.unsetEnv("ActiveMntGrp")
     
     self.print("Removing elements...")
-    for elem in SAR_DEMO.get("elements", ()):
-        self.udefelem(elem)
+    elements =  SAR_DEMO.get("elements", ())
+    if len(elements) > 0:
+        self.udefelem(elements)
     
     self.print("Removing controllers...")
     for ctrl in SAR_DEMO.get("controllers", ()):
@@ -155,8 +156,8 @@ def sar_demo(self):
     
     self.print("Creating Slit", pm_ctrl_name, "with", gap, ",", offset, "...")
     sl2t, sl2b = motor_names[:2]
-    self.defctrl("Slit", pm_ctrl_name, "sl2t="+sl2t, "sl2b="+sl2b,
-                 "Gap="+gap, "Offset="+offset)
+    self.defctrl("Slit", pm_ctrl_name, ["sl2t="+sl2t, "sl2b="+sl2b,
+                 "Gap="+gap, "Offset="+offset])
    
     self.print("Creating measurement group", mg_name, "...")
     self.defmeas(mg_name, *ct_names)
