@@ -974,16 +974,25 @@ class MacroExecutor(Logger):
            Several different parameter formats are supported:
            1. several parameters:
              1.1 executor.prepareMacro('ascan', 'th', '0', '100', '10', '1.0')
+                 executor.prepareMacro('mv', [['th', '0']])
              1.2 executor.prepareMacro('ascan', 'th', 0, 100, 10, 1.0)
+                 executor.prepareMacro('mv', [['th', 0]])
              1.3 th = self.getObj('th');
                  executor.prepareMacro('ascan', th, 0, 100, 10, 1.0)
+                 executor.prepareMacro('mv', [[th, 0]])
            2. a sequence of parameters:
               2.1 executor.prepareMacro(['ascan', 'th', '0', '100', '10', '1.0')
+                  executor.prepareMacro(['mv', [['th', '0']]])
               2.2 executor.prepareMacro(('ascan', 'th', 0, 100, 10, 1.0))
+                  executor.prepareMacro(['mv', [['th', 0]]])
               2.3 th = self.getObj('th');
                   executor.prepareMacro(['ascan', th, 0, 100, 10, 1.0])
-           3. a space separated string of parameters:
+                  executor.prepareMacro(['mv', [[th, 0]]])
+           3. a space separated string of parameters (this is not compatible
+              with multiple or nested repeat parameters, furthermore the repeat
+              parameter must be the last one):
               executor.prepareMacro('ascan th 0 100 10 1.0')
+              executor.prepareMacro('mv %s 0' % motor.getName())
 
         :param pars: the command parameters as explained above
         :param opts: keyword optional parameters for prepare
