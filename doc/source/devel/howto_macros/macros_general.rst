@@ -319,6 +319,26 @@ The complete list of types distributed with sardana is made up by these five
 simple types: ``Integer``, ``Float``, ``Boolean``, ``String``, ``Any``, plus
 all available sardana interfaces (:obj:`~sardana.sardanadefs.Interface`)
 
+.. _sardana-macro-repeat-parameters:
+
+Repeat parameters
+~~~~~~~~~~~~~~~~~
+
+A special parameter type is the repeat parameter (a.k.a. *ParamRepeat*,
+originating from the ``ParamRepeat`` class which usage is deprecated).
+The repeat parameter type is a list of parameter members. It is possible to
+pass from zero to multiple repetitions of the repeat parameter items at the
+execution time.
+
+The repeat parameter definition allows to:
+
+    - restrict the minimum and/or maximum number of repetitions
+    - nest repeat parameters inside of another repeat parameters [#f3]_
+    - define multiple repeat parameters in the same macro [#f3]_
+
+A set of macro parameter examples can be found
+:ref:`here <sardana-devel-macro-parameter-examples>`.
+
 .. _sardana-macro-context:
 
 Macro context
@@ -1167,6 +1187,9 @@ value but also the ranges so it is safe to change them if necessary.
 
 .. [#f2] To check which version of Python_ you are using type on the command
          line ``python -c "import sys; sys.stdout.write(sys.version)"``
+
+.. [#f3] Currently only GUI macro clients (*macroexecutor* or *sequencer*)
+       are compatible with this kind of repeat parameters usage.
 
 .. |input_integer| image:: ../../_static/macro_input_integer.png
     :align: middle
