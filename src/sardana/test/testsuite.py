@@ -47,7 +47,8 @@ def run():
     '''
     # discover all tests within the sardana/src directory
     loader = unittest.defaultTestLoader
-    suite = loader.discover(os.path.dirname(sardana.__file__))
+    start_dir = os.path.dirname(sardana.__file__)
+    suite = loader.discover(start_dir, top_level_dir=os.path.dirname(start_dir))
     # use the basic text test runner that outputs to sys.stderr
     runner = unittest.TextTestRunner(descriptions=True, verbosity=2)
     # run the test suite
