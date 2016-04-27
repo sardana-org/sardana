@@ -857,8 +857,8 @@ class MacroExecutor(Logger):
             if eid is None:
                 eid = str(self.getNewMacroID())
                 macro.set('id', eid)
-            name = macro.get('name')
-            params = []
+#             name = macro.get('name')
+#             params = []
             
             # SEEMS THERE IS A MEMORY LEAK IN lxml.etree Element.xpath :
             # https://bugs.launchpad.net/lxml/+bug/397933
@@ -870,14 +870,14 @@ class MacroExecutor(Logger):
             #        params.append(p.get('value'))
             #    else:
             #        params.extend([ p2.get('value') for p2 in p.findall(".//param")])
-            for p in macro.findall('*'):
-                if p.tag == 'param':
-                    params.append(p.get('value'))
-                elif p.tag == 'paramrepeat':
-                    params.extend([ p2.get('value') for p2 in p.findall(".//param")])
-            # cast None's to string
-            params = map(str, params)
-            macro.set('macro_line', "%s(%s)" % (name, ", ".join(params)))
+#             for p in macro.findall('*'):
+#                 if p.tag == 'param':
+#                     params.append(p.get('value'))
+#                 elif p.tag == 'paramrepeat':
+#                     params.extend([ p2.get('value') for p2 in p.findall(".//param")])
+#             # cast None's to string
+#             params = map(str, params)
+#             macro.set('macro_line', "%s(%s)" % (name, ", ".join(params)))
 
     def __preprocessResult(self, result):
         """decodes the given output from a macro in order to be able to send to
@@ -897,16 +897,30 @@ class MacroExecutor(Logger):
 
     def _decodeMacroParameters(self, params):
         return self.macro_manager.decodeMacroParameters(self.door, params)
+    
+    def _composeMacroLine(self, macro_name, macro_params, macro_id):
+        # recursive map to maintain the list objects structure
+        params_str_list = recur_map(str, macro_params)
+        # plain map to be able to perform join (only strings may be joined)
+        params_str_list = map(str, params_str_list)
+        params_str = ', '.join(params_str_list)
+        macro_id = macro_id
+        # create macro_line - string representation of macro, its parameters and id
+        macro_line = "%s(%s) -> %s" % (macro_name, params_str, macro_id)
+        return macro_line
 
     def _prepareXMLMacro(self, xml_macro, parent_macro=None):
-        macro_meta, _, params = self._decodeMacroParameters(xml_macro)
+        macro_meta, _, macro_params = self._decodeMacroParameters(xml_macro)
+        macro_name = macro_meta.name
+        macro_id = xml_macro.get("id")
+        macro_line = self._composeMacroLine(macro_name, macro_params, macro_id)
         init_opts = {
-            'id'           : xml_macro.get('id'),
-            'macro_line'   : xml_macro.get('macro_line'),
+            'id'           : macro_id,
+            'macro_line'   : macro_line,
             'parent_macro' : parent_macro,
         }
 
-        macro_obj = self._createMacroObj(macro_meta, params, init_opts)
+        macro_obj = self._createMacroObj(macro_meta, macro_params, init_opts)
         for macro in xml_macro.findall('macro'):
             hook = MacroExecutor.RunSubXMLHook(self, macro)
             hook_hints = macro.findall('hookPlace')
@@ -915,7 +929,7 @@ class MacroExecutor(Logger):
             else:
                 hook_places = [ h.text for h in hook_hints ]
                 macro_obj.hooks = [ (hook, hook_places) ]
-        prepare_result = self._prepareMacroObj(macro_obj, params)
+        prepare_result = self._prepareMacroObj(macro_obj, macro_params)
         return macro_obj, prepare_result
 
     def _createMacroObj(self, macro_name_or_meta, pars, init_opts={}):
@@ -993,12 +1007,18 @@ class MacroExecutor(Logger):
         # in case parameters were passed as objects cast them to strings
         pars = recur_map(str, pars)
 
-        macro_klass, str_pars, pars = self._decodeMacroParameters(pars)
+        meta_macro, _, macro_params = self._decodeMacroParameters(pars)
+        macro_name = meta_macro.name
+        macro_id = init_opts.get("id")
+        if macro_id is None:
+            macro_id = str(self.getNewMacroID())
+            init_opts["id"] = macro_id
+        macro_line = self._composeMacroLine(macro_name, macro_params, macro_id)
 
-        init_opts['macro_line'] = "%s(%s) -> [%s]" % (str_pars[0], ", ".join(str_pars[1:]), id)
-        if not init_opts.has_key('id'):
-            init_opts['id'] = str(self.getNewMacroID())
-        return self.prepareMacroObj(macro_klass, pars, init_opts, prepare_opts)
+        init_opts['macro_line'] = macro_line
+
+        return self.prepareMacroObj(meta_macro, macro_params, init_opts, 
+                                    prepare_opts)
 
     def getRunningMacro(self):
         return self._macro_pointer
