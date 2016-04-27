@@ -331,7 +331,13 @@ class ParamDecoder:
                     raw_params.remove(raw_param)
 
         params = []
-        for raw_param, param_def in zip(raw_params, params_def):
+        # iterate over definition since missing values may just mean using
+        # the default values
+        for i, param_def in enumerate(params_def):
+            try:
+                raw_param = raw_params[i]
+            except IndexError:
+                raw_param = None
             obj = self.decodeNormal(raw_param, param_def)
             params.append(obj)
         self.params = params
@@ -388,6 +394,10 @@ class ParamDecoder:
         min_rep = param_repeat_def['min']
         max_rep = param_repeat_def['max']
         param_repeat = []
+        if raw_param_repeat is None:
+            raw_param_repeat = param_repeat_def['default_value']
+        if raw_param_repeat is None:
+            raw_param_repeat = []
         len_rep = len(raw_param_repeat)
         if min_rep and len_rep < min_rep:
             msg = 'Found %d repetitions of param %s, min is %d' % \
