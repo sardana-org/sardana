@@ -125,6 +125,14 @@ def is_macro(macro, abs_file=None, logger=None):
         return False
     return True
 
+def recur_map(fun, data):
+    """Recursive map. Similar to map, but maintains the list objects structure
+    """
+    if hasattr(data, "__iter__"):
+        return [recur_map(fun, elem) for elem in data]
+    else:
+        return fun(data)
+
 
 class MacroManager(MacroServerManager):
 
@@ -967,12 +975,6 @@ class MacroExecutor(Logger):
         :param opts: keyword optional parameters for prepare
         :return: a tuple of two elements: macro object, the result of preparing the macro
         """
-        def recur_map(fun, data):
-            if hasattr(data, "__iter__"):
-                return [recur_map(fun, elem) for elem in data]
-            else:
-                return fun(data)
-
         par0 = pars[0]
         if len(pars) == 1:
             if is_pure_str(par0):
