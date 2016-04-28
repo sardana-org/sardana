@@ -1049,19 +1049,28 @@ class Macro(Logger):
         Several different parameter formats are supported::
 
             # several parameters:
-            self.createMacro('ascan', 'th', '0', '100', '10', '1.0')
-            self.createMacro('ascan', 'th', 0, 100, 10, 1.0)
+            self.execMacro('ascan', 'th', '0', '100', '10', '1.0')
+            self.execMacro('mv', [[motor.getName(), '0']])
+            self.execMacro('ascan', 'th', 0, 100, 10, 1.0)
+            self.execMacro('mv', [[motor.getName(), 0]])
             th = self.getObj('th')
-            self.createMacro('ascan', th, 0, 100, 10, 1.0)
+            self.execMacro('ascan', th, 0, 100, 10, 1.0)
+            self.execMacro('mv', [th, 0]])
 
             # a sequence of parameters:
-            self.createMacro(['ascan', 'th', '0', '100', '10', '1.0')
-            self.createMacro(('ascan', 'th', 0, 100, 10, 1.0))
+            self.execMacro(['ascan', 'th', '0', '100', '10', '1.0')
+            self.execMacro(['mv', [[motor.getName(), '0']]])
+            self.execMacro(('ascan', 'th', 0, 100, 10, 1.0))
+            self.execMacro(['mv', [[motor.getName(), 0]]])
             th = self.getObj('th')
-            self.createMacro(['ascan', th, 0, 100, 10, 1.0])
+            self.execMacro(['ascan', th, 0, 100, 10, 1.0])
+            self.execMacro(['mv', [[th, 0]]])
 
-            # a space separated string of parameters:
-            self.createMacro('ascan th 0 100 10 1.0')
+            # a space separated string of parameters (this is not compatible
+            # with multiple or nested repeat parameters, furthermore the repeat
+            # parameter must be the last one):
+            self.execMacro('ascan th 0 100 10 1.0')
+            self.execMacro('mv %s 0' % motor.getName())
 
         :param pars: the command parameters as explained above
         :return:
@@ -1097,19 +1106,28 @@ class Macro(Logger):
         Several different parameter formats are supported::
 
             # several parameters:
-            executor.prepareMacro('ascan', 'th', '0', '100', '10', '1.0')
-            executor.prepareMacro('ascan', 'th', 0, 100, 10, 1.0)
+            self.execMacro('ascan', 'th', '0', '100', '10', '1.0')
+            self.execMacro('mv', [[motor.getName(), '0']])
+            self.execMacro('ascan', 'th', 0, 100, 10, 1.0)
+            self.execMacro('mv', [[motor.getName(), 0]])
             th = self.getObj('th')
-            executor.prepareMacro('ascan', th, 0, 100, 10, 1.0)
+            self.execMacro('ascan', th, 0, 100, 10, 1.0)
+            self.execMacro('mv', [th, 0]])
 
             # a sequence of parameters:
-            executor.prepareMacro(['ascan', 'th', '0', '100', '10', '1.0')
-            executor.prepareMacro(('ascan', 'th', 0, 100, 10, 1.0))
+            self.execMacro(['ascan', 'th', '0', '100', '10', '1.0')
+            self.execMacro(['mv', [[motor.getName(), '0']]])
+            self.execMacro(('ascan', 'th', 0, 100, 10, 1.0))
+            self.execMacro(['mv', [[motor.getName(), 0]]])
             th = self.getObj('th')
-            executor.prepareMacro(['ascan', th, 0, 100, 10, 1.0])
+            self.execMacro(['ascan', th, 0, 100, 10, 1.0])
+            self.execMacro(['mv', [[th, 0]]])
 
-            # a space separated string of parameters:
-            executor._prepareMacro('ascan th 0 100 10 1.0')
+            # a space separated string of parameters (this is not compatible
+            # with multiple or nested repeat parameters, furthermore the repeat
+            # parameter must be the last one):
+            self.execMacro('ascan th 0 100 10 1.0')
+            self.execMacro('mv %s 0' % motor.getName())
 
         :param args: the command parameters as explained above
         :param kwargs: keyword optional parameters for prepare
@@ -1171,18 +1189,27 @@ class Macro(Logger):
 
             # several parameters:
             self.execMacro('ascan', 'th', '0', '100', '10', '1.0')
+            self.execMacro('mv', [[motor.getName(), '0']])
             self.execMacro('ascan', 'th', 0, 100, 10, 1.0)
+            self.execMacro('mv', [[motor.getName(), 0]])
             th = self.getObj('th')
             self.execMacro('ascan', th, 0, 100, 10, 1.0)
+            self.execMacro('mv', [th, 0]])
 
             # a sequence of parameters:
             self.execMacro(['ascan', 'th', '0', '100', '10', '1.0')
+            self.execMacro(['mv', [[motor.getName(), '0']]])
             self.execMacro(('ascan', 'th', 0, 100, 10, 1.0))
+            self.execMacro(['mv', [[motor.getName(), 0]]])
             th = self.getObj('th')
             self.execMacro(['ascan', th, 0, 100, 10, 1.0])
+            self.execMacro(['mv', [[th, 0]]])
 
-            # a space separated string of parameters:
+            # a space separated string of parameters (this is not compatible
+            # with multiple or nested repeat parameters, furthermore the repeat
+            # parameter must be the last one):
             self.execMacro('ascan th 0 100 10 1.0')
+            self.execMacro('mv %s 0' % motor.getName())
 
         :param pars: the command parameters as explained above
 

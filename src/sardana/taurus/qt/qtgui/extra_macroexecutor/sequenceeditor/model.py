@@ -159,7 +159,7 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
             if index.column() == 0:
                 return Qt.QVariant(node.name())
             elif index.column() == 1:
-                return Qt.QVariant(node.value())
+                return Qt.QVariant(str(node.value()))
             elif index.column() == 2:
                 if isinstance(node, macro.MacroNode):
                     return Qt.QVariant(node.progress())
