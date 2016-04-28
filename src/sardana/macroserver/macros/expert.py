@@ -293,9 +293,9 @@ class prdef(Macro):
     ]
 
     def run(self,macro_data):
-       code_lines, first_line = macro_data.code
-       for code_line in code_lines:
-           self.output(code_line.strip('\n'))
+        code_lines, _ = macro_data.code
+        for code_line in code_lines:
+            self.output(code_line.strip('\n'))
 
 
 class rellib(Macro):

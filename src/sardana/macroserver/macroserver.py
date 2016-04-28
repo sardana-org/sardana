@@ -743,7 +743,7 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
         for type_name in type_name_list:
             type_class_name = type_name
             if type_class_name.endswith('*'):
-               type_class_name = type_class_name[:-1]
+                type_class_name = type_class_name[:-1]
             type_inst = self.get_data_type(type_class_name)
             if not type_inst.hasCapability(ParamType.ItemList):
                 continue
