@@ -79,7 +79,10 @@ class lsdef(_ls):
     align =  Right,    Right,                Left
 
     def run(self, filter):
-        
+        # TODO: passing a list causes TypeError: unhashable type: 'list'
+        # uncomment it when bug-473 is fixed:
+        # https://sourceforge.net/p/sardana/tickets/473/
+        filter = filter[0]
         cols = self.get_column_names()
         out = List(cols, text_alignment=self.align,
                    max_col_width=self.width)
