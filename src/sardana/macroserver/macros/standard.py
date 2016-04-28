@@ -213,7 +213,6 @@ class wa(Macro):
         else:
             self.output('Current positions (user) on %s'%datetime.datetime.now().isoformat(' '))
         self.output('')
-        self.output(self.all_motors)
         self.execMacro('_wm', self.all_motors, **self.table_opts)
 
 
