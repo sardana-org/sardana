@@ -24,7 +24,7 @@
 ##############################################################################
 
 """
-This module defines the test suite for the whole Sardana package
+This module defines the test suite for the whole sardana package
 Usage::
 
   from sardana.test import testsuite
@@ -40,7 +40,7 @@ import sardana
 
 
 def run():
-    '''Runs all tests for the taurus package
+    '''Runs all tests for the sardana package
 
     :returns: the test runner result
     :rtype: unittest.result.TestResult
