@@ -41,6 +41,7 @@ from taurus.qt.qtgui.display import TaurusLed
 from taurus.qt.qtgui.dialog import TaurusMessageBox
 from taurus.qt.qtgui.resource import getIcon, getThemeIcon
 
+import sardana
 from sardana.taurus.qt.qtgui.extra_macroexecutor.common import MacroExecutionWindow, MacroComboBox, standardPlotablesFilter
 from sardana.taurus.qt.qtgui.extra_macroexecutor.macroparameterseditor import ParamEditorManager, StandardMacroParametersEditor
 from sardana.taurus.qt.qtgui.extra_macroexecutor.macroparameterseditor.delegate import ParamEditorDelegate
@@ -862,7 +863,7 @@ def main():
 #    from rfoo.utils import rconsole
 #    rconsole.spawn_server()
 
-    app = TaurusApplication(sys.argv, app_version=taurus.Release.version)
+    app = TaurusApplication(sys.argv, app_version=sardana.Release.version)
     args = app.get_command_line_args()
 
     app.setOrganizationName(globals.ORGANIZATION_NAME)

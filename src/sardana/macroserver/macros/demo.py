@@ -75,8 +75,9 @@ def clear_sar_demo(self):
             self.unsetEnv("ActiveMntGrp")
     
     self.print("Removing elements...")
-    for elem in SAR_DEMO.get("elements", ()):
-        self.udefelem(elem)
+    elements =  SAR_DEMO.get("elements", ())
+    if len(elements) > 0:
+        self.udefelem(elements)
     
     self.print("Removing controllers...")
     for ctrl in SAR_DEMO.get("controllers", ()):
@@ -105,14 +106,15 @@ def sar_demo(self):
     oned_ctrl_name = get_free_names(db, "onedctrl", 1)[0]
     twod_ctrl_name = get_free_names(db, "twodctrl", 1)[0]
     pm_ctrl_name = get_free_names(db, "slitctrl", 1)[0]
-    
+    ior_ctrl_name = get_free_names(db, "iorctrl", 1)[0]
+
     motor_names = get_free_names(db, "mot", 4)
     ct_names = get_free_names(db, "ct", 4)
     zerod_names = get_free_names(db, "zerod", 4)
     oned_names = get_free_names(db, "oned", 1)
     twod_names = get_free_names(db, "twod", 1)
     gap, offset = get_free_names(db, "gap", 1) + get_free_names(db, "offset", 1)
-    
+    ior_names = get_free_names(db, "ior", 2)
     mg_name = get_free_names(db, "mntgrp", 1)[0]
     
     pools = self.getPools()
@@ -155,11 +157,17 @@ def sar_demo(self):
     
     self.print("Creating Slit", pm_ctrl_name, "with", gap, ",", offset, "...")
     sl2t, sl2b = motor_names[:2]
-    self.defctrl("Slit", pm_ctrl_name, "sl2t="+sl2t, "sl2b="+sl2b,
-                 "Gap="+gap, "Offset="+offset)
-   
+    self.defctrl("Slit", pm_ctrl_name, ["sl2t="+sl2t, "sl2b="+sl2b,
+                 "Gap="+gap, "Offset="+offset])
+
+    self.print("Creating IORegister controller", ior_ctrl_name, "...")
+    self.defctrl("DummyIORController", ior_ctrl_name)
+    for axis, ior_name in enumerate(ior_names, 1):
+        self.print("Creating IORegister", ior_name, "...")
+        self.defelem(ior_name, ior_ctrl_name, axis)
+
     self.print("Creating measurement group", mg_name, "...")
-    self.defmeas(mg_name, *ct_names)
+    self.defmeas(mg_name, ct_names)
 
     try:
         self.getEnv("ActiveMntGrp")
@@ -168,9 +176,9 @@ def sar_demo(self):
         self.setEnv("ActiveMntGrp", mg_name)
 
     controllers = pm_ctrl_name, mot_ctrl_name, ct_ctrl_name, \
-            zerod_ctrl_name, oned_ctrl_name, twod_ctrl_name
+            zerod_ctrl_name, oned_ctrl_name, twod_ctrl_name, ior_ctrl_name
     elements = [gap, offset] + motor_names + ct_names + \
-            zerod_names + oned_names + twod_names
+            zerod_names + oned_names + twod_names + ior_names
     d = dict(controllers=controllers, elements=elements,
              measurement_groups=[mg_name])
     

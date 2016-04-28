@@ -466,6 +466,7 @@ class ParamNode(BaseNode):
 
 class SingleParamNode(ParamNode):
     """Single parameter class."""
+
     def __init__(self, parent=None, param=None):
         ParamNode.__init__(self, parent, param)
         if param is None: return
@@ -478,6 +479,11 @@ class SingleParamNode(ParamNode):
     def __len__(self):
         return 0
 
+    def __repr__(self):
+        if self._value is None:
+            return "None"
+        return self._value
+
     def value(self):
         return self._value
 
@@ -488,6 +494,8 @@ class SingleParamNode(ParamNode):
         return self._defValue
 
     def setDefValue(self, defValue):
+        if defValue == "None":
+            defValue = None
         self._defValue = defValue
 
     def type(self):
@@ -497,8 +505,10 @@ class SingleParamNode(ParamNode):
         self._type = type
 
     def toXml(self):
-        paramElement = etree.Element("param", name=self.name(),
-                                              value=self.value())
+        value = self.value()
+        paramElement = etree.Element("param", name=self.name())
+        if not value is None:
+            paramElement.set("value", value)
         return paramElement
 
     def fromXml(self, xmlElement):
@@ -521,6 +531,9 @@ class SingleParamNode(ParamNode):
             return ([val], alert)
         return ([val], "")
 
+    def toList(self):
+        return self._value
+
 class RepeatParamNode(ParamNode, BranchNode):
     """Repeat parameter class."""
 
@@ -530,6 +543,9 @@ class RepeatParamNode(ParamNode, BranchNode):
         if param is None:
             return
         self.setParamsInfo(copy.deepcopy(param.get('type')))
+
+    def __repr__(self):
+        return repr(self.children())
 
     def arrangeIndexes(self):
         for i, child in enumerate(self.children()):
@@ -552,6 +568,7 @@ class RepeatParamNode(ParamNode, BranchNode):
         self.insertChild(repeat)
         for repeatParam in self.paramsInfo():
             repeat.addParam(repeatParam)
+        return repeat
 
     def isReachedMin(self):
         if self.min() is None:
@@ -623,7 +640,7 @@ class RepeatParamNode(ParamNode, BranchNode):
 
     def fromXml(self, xmlElement):
         self.setName(xmlElement.get("name"))
-        for repeatElement in xmlElement.getiterator("repeat"):
+        for repeatElement in xmlElement:
             repeat = RepeatNode(self)
             repeat.fromXml(repeatElement)
             self.insertChild(repeat)
@@ -633,6 +650,9 @@ class RepeatParamNode(ParamNode, BranchNode):
         for child in self.children():
             motors += child.allMotors()
         return motors
+
+    def toList(self):
+        return [child.toList() for child in self.children()]
 
 #    def isAllowedMoveUp(self):
 #        return self is not self.parent().child(0)
@@ -648,6 +668,9 @@ class RepeatNode(BranchNode):
         BranchNode.__init__(self, parent)
         if parent is None: return
         self.setIndex(len(self.parent()) + 1)
+
+    def __repr__(self):
+        return repr(self.children())
 
     def index(self):
         return self._index
@@ -697,6 +720,12 @@ class RepeatNode(BranchNode):
 
     def isAllowedMoveDown(self):
         return self is not self.parent().child(len(self.parent()) - 1)
+
+    def toList(self):
+        if len(self.children()) == 1:
+            return self.child(0).toList()
+        else:
+            return [child.toList() for child in self.children()]
 
 class MacroNode(BranchNode):
     """Class to represent macro element."""
@@ -871,6 +900,7 @@ class MacroNode(BranchNode):
 
     def toSpockCommand(self):
         values, alerts = self.toRun()
+        values = map(str, values)
         return "%s %s" % (self.name(), str.join(' ', values))
 
 
@@ -883,7 +913,7 @@ class MacroNode(BranchNode):
         else:
             valueString = ''
             for value in values:
-                valueString += (value + ', ')
+                valueString += (str(value) + ', ')
             return '[%s]' % valueString[:-2]
 
 #    def allMotors(self):
@@ -1000,7 +1030,10 @@ class MacroNode(BranchNode):
         """
 
         macroElement = etree.Element("macro", name=self.name())
-        if withId: macroElement.set("id", str(self.id()))
+        if withId: 
+            id_ = self.id()
+            if not id_ is None:
+                macroElement.set("id", str(self.id()))
         for hookPlace in self.hookPlaces():
             hookElement = etree.SubElement(macroElement, "hookPlace")
             hookElement.text = hookPlace
@@ -1050,6 +1083,15 @@ class MacroNode(BranchNode):
             param = SingleParamNode(self)
             param.setValue(words[index])
             self.addParam(param)
+
+    def toList(self):
+        """Convert to list representation in format:
+        [macro_name, *parameter_values] where complex repeat parameters are
+        encapsulated in lists e.g. ['mv', [['mot01', 0], ['mot02', 0]]]
+        """
+        list_ = [param.toList() for param in self.params()]
+        list_.insert(0, self.name())
+        return list_
 
 
 class SequenceNode(BranchNode):
@@ -1123,4 +1165,70 @@ def ParamFactory(paramInfo):
     else:
         param = SingleParamNode(param=paramInfo)
     return param
+
+def createMacroNode(macro_name, params_def, macro_params):
+    """The best effort creation of the macro XML object. It tries to
+    convert flat list of string parameter values to the correct macro XML
+    object. The cases that can not be converted are:
+        * repeat parameter containing repeat parameters
+        * two repeat parameters
+        * repeat parameter that is not the last parameter
+
+    :param macro_name: (str) macro name
+    :param params_def: (list<dict>) list of param definitions
+    :param macro_params: (sequence[str]) list of parameter values
+
+    :return (lxml.etree._Element) macro XML element
+
+    .. todo:: This method implements exactly the same logic as :meth:
+    `sardana.taurus.core.tango.sardana.macroserver.BaseDoor._createMacroXmlFromStr`
+    unify them and place in some common location.
+    """
+    macro_node = MacroNode(name=macro_name)
+    # create parameter nodes (it is recursive for repeat parameters containing
+    # repeat parameters)
+    for param_info in params_def:
+        macro_node.addParam(ParamFactory(param_info))
+    # obtain just the first level parameters
+    param_nodes = macro_node.params()
+    # validate if creating XML is possible (two last cases) 
+    contain_param_repeat = False
+    len_param_nodes = len(param_nodes)
+    for i, param_node in enumerate(param_nodes):
+        if isinstance(param_node, RepeatParamNode):
+            if contain_param_repeat:
+                msg = "Only one repeat parameter is allowed"
+                raise Exception(msg)
+            if i < len_param_nodes - 1:
+                msg = "Repeat parameter must be the last one"
+                raise Exception(msg)
+            contain_param_repeat = True
+    # this ignores raw_parameters which exceeds the param_def  
+    for param_node, param_raw in zip(param_nodes, macro_params):
+        if isinstance(param_node, SingleParamNode):
+            param_node.setValue(param_raw)
+        # the rest of the values are interpreted as repeat parameter
+        elif isinstance(param_node, RepeatParamNode):
+            params_info = param_node.paramsInfo()
+            params_info_len = len(params_info)
+            rep = 0; mem = 0
+            rest_raw = macro_params[i:]
+            for member_raw in rest_raw:
+                repeat_node = param_node.child(rep)
+                # add a new repeat node (this is needed when the raw values
+                # fill more repeat nodes that the minimum number of 
+                # repetitions e.g. min=0
+                if repeat_node is None:
+                    repeat_node = param_node.addRepeat()
+                member_node = repeat_node.child(mem)
+                if isinstance(member_node, RepeatParamNode):
+                    msg = ("Nested repeat parameters are not allowed")
+                    raise Exception(msg)
+                member_node.setValue(member_raw)
+                mem += 1
+                mem %= params_info_len
+                if mem == 0:
+                    rep += 1
+            break
+    return macro_node
 

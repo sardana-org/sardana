@@ -50,8 +50,8 @@ class call_wm(Macro):
          None, 'List of motor to show'],
     ]
 
-    def run(self, *m):
-        self.macros.wm(*m)
+    def run(self, m):
+        self.macros.wm(m)
         
 class subsubm(Macro):
     """this macro just calls the 'subm' macro

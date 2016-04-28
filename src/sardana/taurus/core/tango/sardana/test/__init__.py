@@ -22,8 +22,3 @@
 ## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
-
-from macroexecutor import BaseMacroExecutor, MacroExecutorFactory
-from base import (macroTest, BaseMacroTestCase, RunMacroTestCase,
-                  RunStopMacroTestCase, testRun, testFail, testStop)
-from sardemoenv import *

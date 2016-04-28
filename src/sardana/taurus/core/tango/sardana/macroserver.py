@@ -51,13 +51,12 @@ from taurus.core.util.containers import CaselessDict
 from taurus.core.util.codecs import CodecFactory
 from taurus.core.util.event import EventGenerator, AttributeEventWait
 from taurus.core.tango import TangoDevice
-
-
 from .macro import MacroInfo, Macro, \
     MacroNode, ParamFactory, RepeatNode, RepeatParamNode, SingleParamNode, \
     ParamNode
 from .sardana import BaseSardanaElementContainer, BaseSardanaElement
 from .pool import getChannelConfigs
+from .macro import createMacroNode
 
 CHANGE_EVT_TYPES = TaurusEventType.Change, TaurusEventType.Periodic
 
@@ -459,6 +458,24 @@ class BaseDoor(MacroServerDevice):
         self._user_xml = None
         self._block_lines = 0
 
+    def _createMacroXml(self, macro_name, macro_params):
+        """The best effort creation of the macro XML object. It tries to
+        convert flat list of string parameter values to the correct macro XML
+        object. The cases that can not be converted are:
+            * repeat parameter containing repeat parameters
+            * two repeat parameters
+            * repeat parameter that is not the last parameter
+
+        :param macro_name: (str) macro name
+        :param macro_params: (sequence[str]) list of parameter values
+
+        :return (lxml.etree._Element) macro XML element
+        """
+        macro_info = self.macro_server.getMacroInfoObj(macro_name)
+        params_def = macro_info.parameters
+        macro_node = createMacroNode(macro_name, params_def, macro_params)
+        return macro_node.toXml()
+
     def preRunMacro(self, obj, parameters):
         self._clearRunMacro()
 
@@ -478,11 +495,11 @@ class BaseDoor(MacroServerDevice):
                     macros.append((obj, parameters))
                 xml_root = xml_seq = etree.Element('sequence')
                 for m in macros:
-                    xml_macro = etree.SubElement(xml_seq, 'macro')
-                    xml_macro.set('name', m[0])
+                    macro_name = m[0]
+                    macro_params = m[1]
+                    xml_macro = self._createMacroXml(macro_name, macro_params)
                     xml_macro.set('id', str(uuid.uuid1()))
-                    for p in m[1]:
-                        etree.SubElement(xml_macro, 'param', value=p)
+                    xml_seq.append(xml_macro)
         elif etree.iselement(obj):
             xml_root = obj
         else:

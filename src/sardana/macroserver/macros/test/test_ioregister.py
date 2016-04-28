@@ -23,36 +23,17 @@
 ##
 ##############################################################################
 
-"""Tests for wm macros"""
+"""Tests for ioregister macros"""
 
 from taurus.external import unittest
-from sardana.macroserver.macros.test import (RunMacroTestCase, testRun,
-                                             getMotors)
+from sardana.macroserver.macros.test import RunMacroTestCase, testRun, getIORs
 
-#get handy motor names from sardemo
-_m1, _m2 = getMotors()[:2]
+IOR_NAME = getIORs()[0]
 
-class WBase(RunMacroTestCase):
-
-    """Base class for testing macros used to read position.
+@testRun(macro_name="write_ioreg", macro_params=[IOR_NAME, "1"],
+         wait_timeout=1)
+@testRun(macro_name="read_ioreg", macro_params=[IOR_NAME], wait_timeout=1)
+class IORegisterTest(RunMacroTestCase, unittest.TestCase):
+    """Test case for ioregister macros
     """
-
-    def macro_runs(self, **kw):
-        """Testing the execution of the 'wm' macro and verify that the log
-        'output' exists.
-        """
-        RunMacroTestCase.macro_runs(self, **kw)
-        self.logOutput = self.macro_executor.getLog("output")
-        msg = "wm macro did not return any data."
-        self.assertTrue(len(self.logOutput) > 0, msg)
-
-
-@testRun(macro_params=[_m1], wait_timeout=5.0)
-class WmTest(WBase, unittest.TestCase):
-
-    """Test of wm macro. It verifies that the macro 'wm' can be executed.
-    It inherits from WmBase and from unittest.TestCase.
-    It tests the execution of the 'wm' macro and verifies that the log 'output'
-    exists.
-    """
-    macro_name = "wm"
+    pass

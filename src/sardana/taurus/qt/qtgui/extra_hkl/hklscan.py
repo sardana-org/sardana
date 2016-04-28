@@ -26,6 +26,8 @@
 __docformat__ = 'restructuredtext'
 
 import sys
+
+import sardana
 from taurus.external.qt import Qt
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtgui.display import TaurusLabel
@@ -361,7 +363,8 @@ def main():
     parser.usage = "%prog  <model> [door_name]"
     parser.set_description("a taurus application for performing hkl scans")
 
-    app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser)
+    app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser,
+            app_version=sardana.Release.version)
     app.setApplicationName("hklscan")
     args = app.get_command_line_args()
     if len(args) < 1:

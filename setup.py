@@ -340,6 +340,7 @@ def main():
         'sardana.taurus.core',
         'sardana.taurus.core.tango',
         'sardana.taurus.core.tango.sardana',
+        'sardana.taurus.core.tango.sardana.test',
         'sardana.taurus.qt',
         'sardana.taurus.qt.qtcore',
         'sardana.taurus.qt.qtcore.tango',

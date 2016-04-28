@@ -273,9 +273,6 @@ class regscan(Macro):
     """regscan.
     Do an absolute scan of the specified motor with different number of intervals for each region.
     It uses the gscan framework.
-
-    NOTE: Due to a ParamRepeat limitation, integration time has to be
-    specified before the regions.
     """
 
     hints = {'scan' : 'regscan'}
@@ -291,7 +288,7 @@ class regscan(Macro):
          None, 'List of tuples: (next_pos, region_nr_intervals']
     ]
 
-    def prepare(self, motor, integ_time, start_pos, *regions, **opts):
+    def prepare(self, motor, integ_time, start_pos, regions, **opts):
         self.name='regscan'
         self.integ_time = integ_time
         self.start_pos = start_pos
@@ -333,9 +330,6 @@ class reg2scan(Macro):
     """reg2scan.
     Do an absolute scan of the specified motors with different number of intervals for each region.
     It uses the gscan framework. All the motors will be drived to the same position in each step
-
-    NOTE: Due to a ParamRepeat limitation, integration time has to be
-    specified before the regions.
     """
 
     hints = {'scan' : 'reg2scan'}
@@ -352,7 +346,7 @@ class reg2scan(Macro):
          None, 'List of tuples: (next_pos, region_nr_intervals']
     ]
 
-    def prepare(self, motor1, motor2, integ_time, start_pos, *regions, **opts):
+    def prepare(self, motor1, motor2, integ_time, start_pos, regions, **opts):
         self.name='reg2scan'
         self.integ_time = integ_time
         self.start_pos = start_pos
@@ -414,7 +408,7 @@ class reg3scan(Macro):
          None, 'List of tuples: (next_pos, region_nr_intervals']
     ]
 
-    def prepare(self, motor1, motor2, motor3, integ_time, start_pos, *regions, **opts):
+    def prepare(self, motor1, motor2, motor3, integ_time, start_pos, regions, **opts):
         self.name='reg3scan'
         self.integ_time = integ_time
         self.start_pos = start_pos
