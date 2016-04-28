@@ -65,8 +65,7 @@ def macroTest(klass=None, helper_name=None, test_method_name=None,
         - \*\*helper_kwargs: All remaining keyword arguments are passed to the
                              helper.
 
-    `macroTest` assumes that the decorated class has a `macro_name` 
-    class member.
+    `macroTest` can work with the `macro_name` class member
 
     This decorator can be considered a "base" decorator. It is often used to
     create other decorators in which the helper method is pre-set. Some
@@ -122,8 +121,8 @@ def macroTest(klass=None, helper_name=None, test_method_name=None,
     return insertTest(klass=klass, helper_name=helper_name, 
                       test_method_name=test_method_name,
                       test_method_doc=test_method_doc, 
-                      tested_name = klass.macro_name, 
-                      **helper_kwargs)
+                      tested_name = helper_kwargs.get("macro_name") or \
+                      klass.macro_name, **helper_kwargs)
 
 
 #Definition of specializations of the macroTest decorator:
@@ -141,7 +140,7 @@ class BaseMacroTestCase(object):
     To use it, simply inherit from BaseMacroTestCase *and* unittest.TestCase
     and provide the following class members:
 
-      - macro_name (string) name of the macro to be tested (mandatory)
+      - macro_name (string) name of the macro to be tested
       - door_name (string) name of the door where the macro will be executed.
                  This is optional. If not set,
                  `sardanacustomsettings.UNITTEST_DOOR_NAME` is used
@@ -154,10 +153,6 @@ class BaseMacroTestCase(object):
     def setUp(self):
         """ A macro_executor instance must be created
         """
-        if self.macro_name is None:
-            msg = '%s does not define macro_name' % self.__class__.__name__
-            raise NotImplementedError(msg)
-
         mefact = MacroExecutorFactory()
         self.macro_executor = mefact.getMacroExecutor(self.door_name)
 
@@ -196,12 +191,14 @@ class RunMacroTestCase(BaseMacroTestCase):
         BaseMacroTestCase.setUp(self)
         self.macro_executor.registerAll()
 
-    def macro_runs(self, macro_params=None, wait_timeout=float("inf"),
-                   data=_NOT_PASSED):
+    def macro_runs(self, macro_name=None, macro_params=None,
+                   wait_timeout=float("inf"), data=_NOT_PASSED):
         """A helper method to create tests that check if the macro can be
         successfully executed for the given input parameters. It may also
         optionally perform checks on the outputs from the execution.
 
+        :param macro_name: (str) macro name (takes precedence over macro_name
+                             class member)
         :param macro_params: (seq<str>): parameters for running the macro.
                              If passed, they must be given as a sequence of
                              their string representations.
@@ -210,10 +207,11 @@ class RunMacroTestCase(BaseMacroTestCase):
         :param data: (obj) Optional. If passed, the macro data after the
                      execution is tested to be equal to this.
         """
-        self.macro_executor.run(macro_name=self.macro_name,
+        macro_name = macro_name or self.macro_name
+        self.macro_executor.run(macro_name=macro_name,
                                 macro_params=macro_params,
                                 sync=True, timeout=wait_timeout)
-        self.assertFinished('Macro %s did not finish' % self.macro_name)
+        self.assertFinished('Macro %s did not finish' % macro_name)
 
         #check if the data of the macro is the expected one
         if data is not _NOT_PASSED:
@@ -225,10 +223,12 @@ class RunMacroTestCase(BaseMacroTestCase):
         #TODO: implement generic asserts for macro result and macro output, etc
         #      in a similar way to what is done for macro data
 
-    def macro_fails(self, macro_params=None, wait_timeout=float("inf"),
-                    exception=None):
+    def macro_fails(self, macro_name=None, macro_params=None,
+                    wait_timeout=float("inf"), exception=None):
         """Check that the macro fails to run for the given input parameters
 
+        :param macro_name: (str) macro name (takes precedence over macro_name
+                             class member)
         :param macro_params: (seq<str>) input parameters for the macro
         :param wait_timeout: maximum allowed time for the macro to fail. By
                              default infinite timeout is used.
@@ -237,7 +237,7 @@ class RunMacroTestCase(BaseMacroTestCase):
                         (IMPORTANT: this is just a comparison of str
                         representations of exception objects)
         """
-        self.macro_executor.run(macro_name=self.macro_name,
+        self.macro_executor.run(macro_name=macro_name or self.macro_name,
                                 macro_params=macro_params,
                                 sync=True, timeout=wait_timeout)
         state = self.macro_executor.getState()
@@ -270,11 +270,13 @@ class RunStopMacroTestCase(RunMacroTestCase):
         msg = msg + '; State buffer was %s' % state_buffer
         self.assertIn(state, stoppedStates, msg)
 
-    def macro_stops(self, macro_params=None, stop_delay=0.1,
+    def macro_stops(self, macro_name=None, macro_params=None, stop_delay=0.1,
                     wait_timeout=float("inf")):
         """A helper method to create tests that check if the macro can be
         successfully stoped (a.k.a. aborted) after it has been launched.
 
+        :param macro_name: (str) macro name (takes precedence over macro_name
+                             class member)
         :param macro_params: (seq<str>): parameters for running the macro.
                              If passed, they must be given as a sequence of
                              their string representations.
@@ -283,7 +285,7 @@ class RunStopMacroTestCase(RunMacroTestCase):
         :param wait_timeout: (float) maximum allowed time (in s) for the macro
                              to finish. By default infinite timeout is used.
         """
-        self.macro_executor.run(macro_name=self.macro_name,
+        self.macro_executor.run(macro_name=macro_name or self.macro_name,
                                 macro_params=macro_params,
                                 sync=False)
 
@@ -291,7 +293,7 @@ class RunStopMacroTestCase(RunMacroTestCase):
             time.sleep(stop_delay)
         self.macro_executor.stop()
         self.macro_executor.wait(timeout=wait_timeout)
-        self.assertStopped('Macro %s did not stop' % self.macro_name)
+        self.assertStopped('Macro %s did not stop' % macro_name)
 
 
 if __name__ == '__main__':
