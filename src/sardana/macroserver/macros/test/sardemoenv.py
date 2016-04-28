@@ -23,6 +23,10 @@
 ##
 #############################################################################
 
+__all__ = ("SarDemoEnv", "getElements", "getControllers", "getMotors",
+           "getPseudoMotors", "getMoveables", "getCTs", "getZerods",
+           "getOneds", "getTwods", "getIORs")
+
 from taurus import Device
 from sardana.taurus.core.tango.sardana import registerExtensions
 from taurus.core.util.singleton import Singleton
@@ -150,6 +154,56 @@ class SarDemoEnv(Singleton):
         """Change the door name and reset all lists
         """
         self.__init__(door_name)
+
+
+def getElements(elem_type="all", fallback_name="element_not_defined",
+                fallback_elements_len=5):
+    if fallback_name is None:
+        fallback_name = elem_type + "_not_defined"
+    try:
+        elements = SarDemoEnv().getElements(elem_type)
+    except RuntimeError:
+        import taurus
+        from sardana import sardanacustomsettings
+        door_name = getattr(sardanacustomsettings, 'UNITTEST_DOOR_NAME',
+                            'UNDEFINED')
+        taurus.warning("The door %s is not running. " % (door_name) +
+                       "Ignore this message if you are building the documentation.")
+        elements = [fallback_name] * fallback_elements_len
+    except Exception, e:
+        import taurus
+        taurus.debug(e)
+        taurus.warning("It was not possible to retrieve the motor names. " +
+                     "Ignore this message if you are building the documentation.")
+        elements = [fallback_name] * fallback_elements_len
+    return elements
+
+def getControllers():
+    return getElements(elem_type="controller")
+
+def getCTs():
+    return getElements(elem_type="ctexpchannel")
+
+def getMotors():
+    return getElements(elem_type="motor")
+
+def getPseudoMotors():
+    return getElements(elem_type="pseudomotor")
+
+def getMoveables():
+    return getElements(elem_type="moveable")
+
+def getZerods():
+    return getElements(elem_type="zerodexpchannel")
+
+def getOneds():
+    return getElements(elem_type="onedexpchannel")
+
+def getTwods():
+    return getElements(elem_type="twodexpchannel")
+
+def getIORs():
+    return getElements(elem_type="ioregister")
 
 
 if __name__ == '__main__':

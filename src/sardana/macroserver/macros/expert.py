@@ -73,14 +73,14 @@ class defmeas(Macro):
             None, 'List of measurement channels'],
     ]
 
-    def prepare(self, name, *channel_list, **opts):
+    def prepare(self, name, channel_list, **opts):
 
         mntgrp_list = self.findObjs(name, type_class=Type.MeasurementGroup)
 
         if len(mntgrp_list) != 0:
             raise Exception('A measurement group with that name already exists')
 
-    def run(self, name, *channel_list):
+    def run(self, name, channel_list):
         channel0 = self.getObj(channel_list[0])
         pool = channel0.getPoolObj()
         mg = pool.createMeasurementGroup(name, channel_list)
@@ -112,6 +112,23 @@ class defelem(Macro):
         self.print("Created %s" % str(elem))
 
 
+class renameelem(Macro):
+    """Renames any type of Pool elements apart of Pools."""
+
+    param_def = [ ['element', Type.PoolElement, None, 'element to be renamed'],
+                  ['new_name', Type.String, None, 'new name']]
+
+    def prepare(self, elem, new_name):
+        if elem.getType() == "Pool":
+            raise WrongParam('Pool elements can not be renamed')
+
+    def run(self, elem, new_name):
+        pool = elem.getPoolObj()
+        old_name = elem.getName()
+        pool.renameElement(old_name, new_name)
+        self.print("Renamed %s to %s" % (old_name, new_name))
+
+
 class udefelem(Macro):
     """Deletes an existing element(s)"""
 
@@ -121,10 +138,11 @@ class udefelem(Macro):
         None, 'List of element(s) name'],
     ]
 
-    def run(self, *elements):
+    def run(self, elements):
         for element in elements:
             pool = element.getPoolObj()
             pool.deleteElement(element.getName())
+
 
 
 class defctrl(Macro):
@@ -152,7 +170,7 @@ class defctrl(Macro):
                    'a role or property item'],min=0),
                    None, 'roles and/or properties'] ]
 
-    def run(self, ctrl_class, name, *props):
+    def run(self, ctrl_class, name, props):
         pool = ctrl_class.getPoolObj()
         elem = pool.createController(ctrl_class.name, name, *props)
         self.print("Created %s" % str(elem))
@@ -182,7 +200,7 @@ class send2ctrl(Macro):
                   ParamRepeat(['string item', Type.String, None, 'a string item'],),
                   None, 'data to be sent']]
 
-    def run(self, controller, *data):
+    def run(self, controller, data):
         name = controller.getName()
         pool = controller.getPoolObj()
         str_data = " ".join(data)
@@ -275,9 +293,9 @@ class prdef(Macro):
     ]
 
     def run(self,macro_data):
-       code_lines, first_line = macro_data.code
-       for code_line in code_lines:
-           self.output(code_line.strip('\n'))
+        code_lines, _ = macro_data.code
+        for code_line in code_lines:
+            self.output(code_line.strip('\n'))
 
 
 class rellib(Macro):
@@ -333,13 +351,15 @@ class relmaclib(Macro):
         name = macro_library.name
         new_macro_library = self.reloadMacroLibrary(name)
         if new_macro_library.has_errors():
+            self.warning("%s could not be (re)loaded", name)
             exc_info = new_macro_library.get_error()
-            #msg = "".join(traceback.format_exception(*exc_info))
             msg = "".join(traceback.format_exception_only(*exc_info[:2]))
             self.error(msg)
+            self.warning("The old %s macro library is still available.", name)
         else:
             macros = new_macro_library.get_macros()
             self.output("%s successfully (re)loaded (found %d macros)", name, len(macros))
+
 
 class addmaclib(Macro):
     """Loads a new macro library.
@@ -365,6 +385,7 @@ class addmaclib(Macro):
         old_macros = self.getMacroNames()
         new_macro_library = self.reloadMacroLibrary(macro_library_name)
         if new_macro_library.has_errors():
+            self.warning("%s could not be added", macro_library_name)
             exc_info = new_macro_library.get_error()
             msg = "".join(traceback.format_exception_only(*exc_info[:2]))
             self.error(msg)
@@ -393,15 +414,20 @@ class relmac(Macro):
     def run(self, macro_code):
         name = macro_code.name
         macro_library_name = macro_code.lib.name
-        self.reloadMacro(name)
-        macro_library = self.getMacroLibrary(macro_library_name)
+        macro_library = self.reloadMacro(name)
         if macro_library.has_errors():
+            self.warning("%s could not be (re)loaded", name)
             exc_info = macro_library.get_error()
-            #msg = "".join(traceback.format_exception(*exc_info))
             msg = "".join(traceback.format_exception_only(*exc_info[:2]))
             self.error(msg)
+            self.warning("The old %s macro is still available.", name)
         else:
-            self.output("%s successfully (re)loaded", name)
+            maclibname = macro_library_name
+            self.output("%s macro successfully (re)loaded", name)
+            macros_in_lib = macro_library.get_macros()
+            self.output("\nAll macros from macro library %s have " + \
+                        "been reloaded:", maclibname)
+            self.output([macro.name for macro in macros_in_lib])
 
 
 class sar_info(Macro):

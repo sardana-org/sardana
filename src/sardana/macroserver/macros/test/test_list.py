@@ -162,3 +162,52 @@ class Ls2dTest(LsTest, unittest.TestCase):
     """
     macro_name = "ls2d"
     elem_type = "twodexpchannel"
+
+
+@testRun
+@testRun(macro_params=["w.*"])
+class LsdefTest(RunMacroTestCase, unittest.TestCase):
+
+    macro_name = "lsdef"
+
+
+@testRun
+@testRun(macro_params=["Dummy.*"])
+class LsctrllibTest(RunMacroTestCase, unittest.TestCase):
+
+    macro_name = "lsctrllib"
+
+
+@testRun
+@testRun(macro_params=["mot.*"])
+class LsiTest(RunMacroTestCase, unittest.TestCase):
+
+    macro_name = "lsi"
+
+
+@testRun
+@testRun(macro_params=["mot.*"])
+class LsaTest(RunMacroTestCase, unittest.TestCase):
+
+    macro_name = "lsa"
+
+
+@testRun
+@testRun(macro_params=["mot.*"])
+class LsmeasTest(RunMacroTestCase, unittest.TestCase):
+
+    macro_name = "lsmeas"
+
+
+@testRun
+@testRun(macro_params=["w.*"])
+class LsmacTest(RunMacroTestCase, unittest.TestCase):
+
+    macro_name = "lsmac"
+
+
+@testRun
+@testRun(macro_params=["s.*"])
+class LsmaclibTest(RunMacroTestCase, unittest.TestCase):
+
+    macro_name = "lsmaclib"

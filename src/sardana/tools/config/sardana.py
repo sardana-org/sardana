@@ -38,7 +38,7 @@ import logging
 import types, operator
 import json
 
-from taurus.core.util.codecs import CodecFactory
+from taurus.core.util import CodecFactory
 
 LOG = logging.getLogger()
 
@@ -821,7 +821,7 @@ class DevicePoolServer(TangoServer):
                             continue
                         self.o(".")
                         #pars = [ [axis], [ aliasName, name ] ]
-                        pars = "Motor", name, axis, aliasName
+                        pars = ["Motor", name, axis, aliasName]
                         if deviceName.count('/') == 2:
                             pars.append(deviceName)
                         pars = map(str.strip, pars)
@@ -856,7 +856,7 @@ class DevicePoolServer(TangoServer):
                             self.o('x')
                             continue
                         self.o(".")
-                        pars = "CTExpChannel", name, axis, aliasName
+                        pars = ["CTExpChannel", name, axis, aliasName]
                         if deviceName.count('/') == 2:
                             pars.append(deviceName)
                         pars = map(str.strip, pars)
@@ -891,7 +891,7 @@ class DevicePoolServer(TangoServer):
                             self.o('x')
                             continue
                         self.o(".")
-                        pars = "ZeroDExpChannel", name, axis, aliasName
+                        pars = ["ZeroDExpChannel", name, axis, aliasName]
                         if deviceName.count('/') == 2:
                             pars.append(deviceName)
                         pars = map(str.strip, pars)
@@ -929,7 +929,7 @@ class DevicePoolServer(TangoServer):
                             self.o('x')
                             continue
                         self.o(".")
-                        pars = "OneDExpChannel", name, axis, aliasName
+                        pars = ["OneDExpChannel", name, axis, aliasName]
                         if deviceName.count('/') == 2:
                             pars.append(deviceName)
                         pars = map(str.strip, pars)
@@ -964,7 +964,7 @@ class DevicePoolServer(TangoServer):
                             self.o('x')
                             continue
                         self.o(".")
-                        pars = "TwoDExpChannel", name, axis, aliasName
+                        pars = ["TwoDExpChannel", name, axis, aliasName]
                         if deviceName.count('/') == 2:
                             pars.append(deviceName)
                         pars = map(str.strip, pars)
@@ -999,7 +999,7 @@ class DevicePoolServer(TangoServer):
                             self.o('x')
                             continue
                         self.o(".")
-                        pars = "IORegister", name, axis, aliasName
+                        pars = ["IORegister", name, axis, aliasName]
                         if deviceName.count('/') == 2:
                             pars.append(deviceName)
                         pars = map(str.strip, pars)
@@ -1661,7 +1661,7 @@ class Sardana:
             self._devicePools[serv.getInstanceName()] = serv
 
     def prepareMSs(self):
-        servNodes = self._sarNode.findall("MacroServer")
+        servNodes = self._sarNode.findall("MacroServerServer")
 
         self._macServs = {}
 

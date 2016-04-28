@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ReflectionsEditor</class>
+ <widget class="TaurusWidget" name="ReflectionsEditor">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>801</width>
+    <height>437</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QLabel" name="rl_label1">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>20</y>
+     <width>38</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="layoutDirection">
+    <enum>Qt::RightToLeft</enum>
+   </property>
+   <property name="text">
+    <string>Index</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="rl_label1_2">
+   <property name="geometry">
+    <rect>
+     <x>105</x>
+     <y>20</y>
+     <width>36</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="layoutDirection">
+    <enum>Qt::RightToLeft</enum>
+   </property>
+   <property name="text">
+    <string>H</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="rl_label1_3">
+   <property name="geometry">
+    <rect>
+     <x>190</x>
+     <y>20</y>
+     <width>36</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="layoutDirection">
+    <enum>Qt::RightToLeft</enum>
+   </property>
+   <property name="text">
+    <string>K</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="rl_label1_4">
+   <property name="geometry">
+    <rect>
+     <x>260</x>
+     <y>20</y>
+     <width>36</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="layoutDirection">
+    <enum>Qt::RightToLeft</enum>
+   </property>
+   <property name="text">
+    <string>L</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="ApplyButton">
+   <property name="geometry">
+    <rect>
+     <x>380</x>
+     <y>390</y>
+     <width>106</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Apply</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="ClearButton">
+   <property name="geometry">
+    <rect>
+     <x>250</x>
+     <y>390</y>
+     <width>106</width>
+     <height>26</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Clear</string>
+   </property>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>TaurusWidget</class>
+   <extends>QWidget</extends>
+   <header>taurus.qt.qtgui.container</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

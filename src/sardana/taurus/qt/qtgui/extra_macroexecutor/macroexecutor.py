@@ -39,6 +39,7 @@ from taurus.qt.qtgui.display import TaurusLed
 from taurus.qt.qtgui.dialog import TaurusMessageBox
 from taurus.qt.qtgui.resource import getIcon, getThemeIcon
 
+import sardana
 from sardana.taurus.core.tango.sardana import macro
 from sardana.taurus.core.tango.sardana.macro import MacroRunException
 from sardana.taurus.qt.qtgui.extra_macroexecutor.macroparameterseditor import ParamEditorManager, ParamEditorModel, StandardMacroParametersEditor
@@ -103,17 +104,30 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
         self.connect(self._ctrlUpAction, Qt.SIGNAL("triggered()"), self.controlUpAction)
 
     def setCommand(self):
-        command = self._model.toSpockCommand()
-        command = command.replace("None", "").strip()
+        command = self._model.toSpockCommand().strip()
         if not self.disableSpockCommandUpdate:
             self.setText(command)
+
+    def onDataChanged(self, idx):
+        """
+        If data is changed to nothing set it to the default value.
+        Otherwise update the spock command and check the validation.
+        This is a workaround for bug-451 that clear all input parameters when an
+        empty string parameter is deselected.
+        """
+        if idx.data() == "":
+            defaultvalue = self._model.nodeFromIndex(idx).defValue()
+            if defaultvalue != "":
+                self._model.setData(idx, defaultvalue)
+        else:
+            self.setCommand()
 
     def setModel(self, model):
         enable = bool(model)
         self.disableEditMode = not enable
         self.setEnabled(enable)
         self._model = model
-        self.connect(self._model, Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), self.setCommand)
+        self.connect(self._model, Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), self.onDataChanged)
         self.connect(self._model, Qt.SIGNAL("modelReset()"), self.setCommand)
 
     def model(self):
@@ -810,6 +824,7 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         door = Device(self.doorName())
         doorState = door.state()
         if doorState == PyTango.DevState.ON or doorState == PyTango.DevState.ALARM:
+            self.setFocus()
             paramEditorModel = self.paramEditorModel()
             macroNode = paramEditorModel.root()
             id = macroNode.assignId()
@@ -984,7 +999,7 @@ def main():
     from taurus.qt.qtgui.application import TaurusApplication
     import taurus
 
-    app = TaurusApplication(sys.argv, app_version=taurus.Release.version)
+    app = TaurusApplication(sys.argv, app_version=sardana.Release.version)
     args = app.get_command_line_args()
 
     app.setOrganizationName("Taurus")

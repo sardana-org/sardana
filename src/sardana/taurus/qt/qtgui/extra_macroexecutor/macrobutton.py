@@ -204,6 +204,8 @@ class MacroButton(TaurusWidget):
         :param name: (str) text for the button
         '''
         self.macro_name = str(name)
+        #update tooltip
+        self.setToolTip(self.macro_name + ' ' + ' '.join(self.macro_args))
 
     def updateMacroArgument(self, index, value):
         '''change a given argument
@@ -216,6 +218,8 @@ class MacroButton(TaurusWidget):
             self.macro_args.append('')
         #update the given argument
         self.macro_args[index] = str(value)
+        #update tooltip
+        self.setToolTip(self.macro_name + ' ' + ' '.join(self.macro_args))
     
     def updateMacroArgumentFromSignal(self, index, obj, signal):
         '''deprecated'''

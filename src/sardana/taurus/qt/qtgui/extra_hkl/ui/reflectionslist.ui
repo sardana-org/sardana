@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ReflectionsList</class>
+ <widget class="TaurusWidget" name="ReflectionsList">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>912</width>
+    <height>167</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <widget class="QLabel" name="ReflectionsListLabel">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>20</y>
+     <width>120</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Reflections List</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="rl_label1">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>70</y>
+     <width>38</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Index</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="rl_label1_2">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>70</y>
+     <width>16</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>H</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="rl_label1_3">
+   <property name="geometry">
+    <rect>
+     <x>195</x>
+     <y>70</y>
+     <width>16</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>K</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="rl_label1_4">
+   <property name="geometry">
+    <rect>
+     <x>275</x>
+     <y>70</y>
+     <width>16</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>L</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="rl_label1_5">
+   <property name="geometry">
+    <rect>
+     <x>330</x>
+     <y>70</y>
+     <width>41</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Relev.</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="rl_label1_6">
+   <property name="geometry">
+    <rect>
+     <x>390</x>
+     <y>70</y>
+     <width>41</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Aff.</string>
+   </property>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>TaurusWidget</class>
+   <extends>QWidget</extends>
+   <header>taurus.qt.qtgui.container</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

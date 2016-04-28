@@ -26,4 +26,4 @@
 from macroexecutor import BaseMacroExecutor, MacroExecutorFactory
 from base import (macroTest, BaseMacroTestCase, RunMacroTestCase,
                   RunStopMacroTestCase, testRun, testFail, testStop)
-from sardemoenv import SarDemoEnv
+from sardemoenv import *

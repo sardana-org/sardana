@@ -10,6 +10,7 @@ Developer's Guide
     Overview <overview/index>
     howto_macros/index
     howto_controllers/index
+    Writing recorders <howto_recorders>
     howto_test/index
     API <api/api_sardana>
     Migration guide <guide_migration>
