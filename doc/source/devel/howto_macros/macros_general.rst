@@ -343,7 +343,7 @@ of items.
 ::
 
     @macro([["moveables", [
-                 "moveable", Type.Moveable, None, "moveable to get position"
+                 ["moveable", Type.Moveable, None, "moveable to get position"]
                  ],
                  None, "list of moveables to get positions"]])
     def where_moveables(self, moveables):
