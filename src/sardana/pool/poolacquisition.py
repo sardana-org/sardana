@@ -454,20 +454,18 @@ class Pool0DAcquisition(PoolAction):
                 return True
 
     def action_loop(self):
-        i = 0
-
         states, values = {}, {}
         for element in self._channels:
             states[element] = None
             values[element] = None
 
         nap = self._acq_sleep_time
-        while not (self._stopped or self._aborted):
+        while True:
             self.read_value(ret=values)
             for acquirable, value in values.items():
                 acquirable.put_value(value)
-
-            i += 1
+            if self._stopped or self._aborted:
+                break
             time.sleep(nap)
 
         with ActionContext(self):
