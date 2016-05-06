@@ -368,6 +368,9 @@ class ParamDecoder:
                     value = param_def['default_value']
                 if value is None:
                     raise MissingParam, "'%s' not specified" % name
+                else:
+                    # cast to sting to fulfill with ParamType API
+                    value = str(value)
                 param = param_type.getObj(value)
             except ValueError, e:
                 raise WrongParamType, e.message
