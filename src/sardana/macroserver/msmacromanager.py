@@ -125,13 +125,20 @@ def is_macro(macro, abs_file=None, logger=None):
         return False
     return True
 
-def recur_map(fun, data):
+def recur_map(fun, data, keep_none=False):
     """Recursive map. Similar to map, but maintains the list objects structure
+
+    :param fun: <callable> the same purpose as in map function
+    :param data: <object> the same purpose as in map function
+    :param keep_none: <bool> keep None elements without applying fun
     """
     if hasattr(data, "__iter__"):
-        return [recur_map(fun, elem) for elem in data]
+        return [recur_map(fun, elem, keep_none) for elem in data]
     else:
-        return fun(data)
+        if keep_none is True and data is None:
+            return data
+        else:
+            return fun(data)
 
 
 class MacroManager(MacroServerManager):
@@ -993,7 +1000,8 @@ class MacroExecutor(Logger):
         # or args = ('mv', [[mot01, 0], [mot02, 0]])
 
         # in case parameters were passed as objects cast them to strings
-        pars = recur_map(str, pars)
+        # but maintain None's to be able to discover missing params
+        pars = recur_map(str, pars, keep_none=True)
 
         meta_macro, _, macro_params = self._decodeMacroParameters(pars)
         macro_name = meta_macro.name
