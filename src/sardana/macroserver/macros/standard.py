@@ -472,6 +472,7 @@ class umv(Macro):
             posObj.subscribeEvent(self.positionChanged, motor)
 
     def run(self, motor_pos_list):
+        self.print_pos = True
         self.execMacro('mv', motor_pos_list)
         self.finish()
  
