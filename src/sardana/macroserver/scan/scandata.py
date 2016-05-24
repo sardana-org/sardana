@@ -37,7 +37,7 @@ from sardana.macroserver.scan.recorder import DataHandler
 from threading import RLock
 
 
-class ColumnDesc:
+class ColumnDesc(object):
     """The description of a column for a Record"""
 
     _TYPE_MAP = {"short": "int16",
@@ -229,11 +229,11 @@ class RecordList(dict):
     """  A RecordList is a set of records: for example a scan.
     It is composed of a environment and a list of records"""
 
-    def __init__(self, datahandler, environ=None, applyInterpolation=True):
+    def __init__(self, datahandler, environ=None, apply_interpolation=True):
 
         self.datahandler = datahandler
-        self.applyInterpolation = applyInterpolation
-        if environ == None:
+        self.applyInterpolation = apply_interpolation
+        if environ is None:
             self.environ = RecordEnvironment()
         else:
             self.environ = environ
@@ -385,7 +385,7 @@ class RecordList(dict):
             if self.applyInterpolation:
                 self.applyZeroOrderInterpolation(rc)
             self.datahandler.addRecord(self, rc)
-            self.currentIndex +=1
+            self.currentIndex += 1
         self.datahandler.endRecordList(self)
 
     def getDataHandler(self):
@@ -395,9 +395,9 @@ class RecordList(dict):
 class ScanData(RecordList):
 
     def __init__(self, environment=None, data_handler=None,
-                 applyInterpolation=True):
+                 apply_interpolation=True):
         dh = data_handler or DataHandler()
-        RecordList.__init__(self, dh, environment, applyInterpolation)
+        RecordList.__init__(self, dh, environment, apply_interpolation)
 
 
 class ScanFactory(Singleton):
@@ -415,3 +415,4 @@ class ScanFactory(Singleton):
 
     def getScanData(self, dh):
         return ScanData(data_handler=dh)
+
