@@ -295,7 +295,12 @@ class GScan(Logger):
         data_handler = ScanFactory().getDataHandler()
 
         # The Scan data object
-        data = ScanFactory().getScanData(data_handler)
+        try:
+            applyInterpolation = macro.getEnv('ApplyInterpolation')
+        except UnknownEnv:
+            applyInterpolation = False
+        data = ScanFactory().getScanData(data_handler,
+                                         apply_interpolation=applyInterpolation)
 
         # The Output recorder (if any)
         output_recorder = self._getOutputRecorder()

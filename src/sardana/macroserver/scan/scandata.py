@@ -229,7 +229,7 @@ class RecordList(dict):
     """  A RecordList is a set of records: for example a scan.
     It is composed of a environment and a list of records"""
 
-    def __init__(self, datahandler, environ=None, apply_interpolation=True):
+    def __init__(self, datahandler, environ=None, apply_interpolation=False):
 
         self.datahandler = datahandler
         self.applyInterpolation = apply_interpolation
@@ -395,7 +395,7 @@ class RecordList(dict):
 class ScanData(RecordList):
 
     def __init__(self, environment=None, data_handler=None,
-                 apply_interpolation=True):
+                 apply_interpolation=False):
         dh = data_handler or DataHandler()
         RecordList.__init__(self, dh, environment, apply_interpolation)
 
@@ -413,6 +413,7 @@ class ScanFactory(Singleton):
     def getDataHandler(self):
         return DataHandler()
 
-    def getScanData(self, dh):
-        return ScanData(data_handler=dh)
+    def getScanData(self, dh, apply_interpolation=False):
+        return ScanData(data_handler=dh,
+                        apply_interpolation=apply_interpolation)
 
