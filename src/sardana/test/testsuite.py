@@ -24,7 +24,7 @@
 ##############################################################################
 
 """
-This module defines the test suite for the whole Sardana package
+This module defines the test suite for the whole sardana package
 Usage::
 
   from sardana.test import testsuite
@@ -40,14 +40,15 @@ import sardana
 
 
 def run():
-    '''Runs all tests for the taurus package
+    '''Runs all tests for the sardana package
 
     :returns: the test runner result
     :rtype: unittest.result.TestResult
     '''
     # discover all tests within the sardana/src directory
     loader = unittest.defaultTestLoader
-    suite = loader.discover(os.path.dirname(sardana.__file__))
+    start_dir = os.path.dirname(sardana.__file__)
+    suite = loader.discover(start_dir, top_level_dir=os.path.dirname(start_dir))
     # use the basic text test runner that outputs to sys.stderr
     runner = unittest.TextTestRunner(descriptions=True, verbosity=2)
     # run the test suite

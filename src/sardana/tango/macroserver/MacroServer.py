@@ -26,6 +26,7 @@
 """The MacroServer tango module"""
 
 import os.path
+import sys
 
 from PyTango import Util, Except, DevVoid, DevLong, DevString, DevState, \
     DevEncoded, DevVarStringArray, READ, READ_WRITE, SCALAR, SPECTRUM, DebugIt
@@ -109,7 +110,8 @@ class MacroServer(SardanaDevice):
             self.error("Failed to setup log report to %s",
                        self.LogReportFilename)
             self.debug("Details:", exc_info=1)
-        
+
+        macro_server.set_recorder_path(self.RecorderPath)
         macro_server.set_macro_path(self.MacroPath)
         macro_server.set_pool_names(self.PoolNames)
         
@@ -251,9 +253,12 @@ class MacroServer(SardanaDevice):
         """
         macro_server = self.macro_server
         codec = CodecFactory().getCodec('json')
-        ret = [ codec.encode(('', macro.serialize()))[1]
-            for macro in macro_server.get_macros()
-                if macro.name in macro_names ]
+        ret = [ ]
+       
+        for _, macro in macro_server.get_macros().items():
+            if macro.name in macro_names:
+                ret.append(codec.encode(('', macro.serialize()))[1])
+                
         return ret
     
     def ReloadMacro(self, macro_names):
@@ -334,6 +339,11 @@ class MacroServerClass(SardanaDeviceClass):
         'MacroPath':
             [DevVarStringArray,
             "list of directories to search for macros (path separators "
+            "can be '\n' or ':')",
+            [] ],
+        'RecorderPath':
+            [DevVarStringArray,
+            "list of directories to search for recorders (path separators "
             "can be '\n' or ':')",
             [] ],
         'PythonPath':

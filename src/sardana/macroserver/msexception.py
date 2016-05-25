@@ -28,7 +28,7 @@ manager"""
 
 __all__ = ["MacroServerException", "MacroServerExceptionList", "MissingEnv",
            "UnknownEnv", "UnknownMacro", "UnknownMacroLibrary",
-           "MacroWrongParameterType", "LibraryError",
+           "UnknownRecorder", "MacroWrongParameterType", "LibraryError",
            "InterruptException", "StopException", "AbortException",
            "InputCancelled"]
 
@@ -58,6 +58,10 @@ class UnknownEnv(MacroServerException):
 
 
 class UnknownMacro(UnknownCode):
+    pass
+
+
+class UnknownRecorder(UnknownCode):
     pass
 
 

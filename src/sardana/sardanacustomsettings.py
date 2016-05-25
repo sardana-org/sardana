@@ -46,3 +46,10 @@ LOG_BCK_COUNT = 5
 #: - "CLI": Input via spock command line. This is the default.
 #: - "Qt": Input via Qt dialogs
 SPOCK_INPUT_HANDLER = "CLI"
+
+#: Use this map in order to avoid ambiguity with scan recorders (file) if
+#: extension is intended to be the recorder selector.
+#: dict<str, str>
+#: key   - scan file extension
+#: value - recorder name
+SCAN_RECORDER_MAP = None 

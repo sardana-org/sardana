@@ -6,10 +6,39 @@
 How to write a 0D controller
 ============================
 
-The basics
-----------
+.. todo:: complete 0D controller howto
 
-.. todo:: document 0D controller howto
+Get 0D state
+~~~~~~~~~~~~~~~
+
+To get the state of a 0D, sardana calls the
+:meth:`~sardana.pool.controller.Controller.StateOne` method. During the
+acquisition loop this method is called only once when it is about to
+exit. This method receives an axis as parameter and should return either:
+
+    - state (:obj:`~sardana.sardanadefs.State`) or
+    - a sequence of two elements:
+        - state (:obj:`~sardana.sardanadefs.State`)
+        - status (:obj:`str`)
+
+The state should be a member of :obj:`~sardana.sardanadefs.State` (For backward
+compatibility reasons, it is also supported to return one of
+:class:`PyTango.DevState`). The status could be any string.
+
+If you don't return a status, sardana will compose a status string with:
+
+    <axis name> is in <state name>
+
+The controller could return on of the four states **On**, **Alarm**, **Fault**
+or **Unknown**. Apart of that sardana could set **Moving** or **Fault** state
+to the 0D. The Moving state is set during the acquisition loop to indicate that
+it is acquiring data. The Fault state is set when the controller software is
+not available (impossible to load it).
+The controller should return Fault if a fault is reported from the hardware
+controller or if the controller software returns an unforeseen state.
+The controller should return Unknown state if an exception occurs during the
+communication between the pool and the hardware controller.
+
         
 .. _ALBA: http://www.cells.es/
 .. _ANKA: http://http://ankaweb.fzk.de/

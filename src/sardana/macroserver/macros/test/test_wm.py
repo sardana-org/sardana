@@ -27,26 +27,10 @@
 
 from taurus.external import unittest
 from sardana.macroserver.macros.test import (RunMacroTestCase, testRun,
-                                             SarDemoEnv)
+                                             getMotors)
 
-try:
-    _MOTORS = SarDemoEnv().getMotors()
-    _m1, _m2 = _MOTORS[:2]
-except RuntimeError:
-    import taurus
-    from sardana import sardanacustomsettings
-    door_name = getattr(sardanacustomsettings, 'UNITTEST_DOOR_NAME',
-                        'UNDEFINED')
-    taurus.warning("The door %s is not running. " % (door_name) +
-                   "Ignore this message if you are building the documentation.")
-    _m1 = _m2 = 'motor_not_defined'
-except Exception, e:
-    import taurus
-    taurus.debug(e)
-    taurus.warning("It was not possible to retrieve the motor names. " +
-                 "Ignore this message if you are building the documentation.")
-    _m1 = _m2 = 'motor_not_defined'
-
+#get handy motor names from sardemo
+_m1, _m2 = getMotors()[:2]
 
 class WBase(RunMacroTestCase):
 

@@ -317,6 +317,11 @@ def main():
         'sardana.macroserver.macros.examples',
         'sardana.macroserver.scan',
         'sardana.macroserver.scan.recorder',
+        'sardana.macroserver.recorders',
+        'sardana.macroserver.recorders.examples',
+
+        'sardana.macroserver.test',
+        'sardana.macroserver.test.res',
 
         'sardana.tango',
         'sardana.tango.core',
@@ -335,6 +340,7 @@ def main():
         'sardana.taurus.core',
         'sardana.taurus.core.tango',
         'sardana.taurus.core.tango.sardana',
+        'sardana.taurus.core.tango.sardana.test',
         'sardana.taurus.qt',
         'sardana.taurus.qt.qtcore',
         'sardana.taurus.qt.qtcore.tango',
@@ -348,11 +354,14 @@ def main():
         'sardana.taurus.qt.qtgui.extra_sardana',
         'sardana.taurus.qt.qtgui.extra_sardana.ui',
         'sardana.taurus.qt.qtgui.extra_pool',
+        'sardana.taurus.qt.qtgui.extra_hkl',
     ]
     
     package_data = {'sardana.taurus.qt.qtgui.extra_macroexecutor': ['ui/*.ui'],
                     'sardana.taurus.qt.qtgui.extra_pool': ['ui/*.ui'],
-                    'sardana.taurus.qt.qtgui.extra_sardana': ['ui/*.ui']
+                    'sardana.taurus.qt.qtgui.extra_sardana': ['ui/*.ui'],
+                    'sardana.taurus.qt.qtgui.extra_hkl': ['ui/*.ui'],
+                    'sardana.macroserver.test.res': ['recorders/path*/*'],
                     }
     
     provides = [
@@ -379,7 +388,10 @@ def main():
         "scripts/spectoascii",
         "scripts/spock",
         "scripts/macroexecutor",
-        "scripts/sequencer"
+        "scripts/sequencer",
+        "scripts/ubmatrix",
+        "scripts/diffractometeralignment",
+        "scripts/hklscan"
     ]
 
     classifiers = [

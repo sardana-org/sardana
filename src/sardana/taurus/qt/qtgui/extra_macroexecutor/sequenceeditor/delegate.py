@@ -104,8 +104,8 @@ class MacroParametersProxyDelegate(Qt.QItemDelegate):
     def setEditorData(self, editor, index):
         if index.column() == 1:
             text = Qt.from_qvariant(index.model().data(index, Qt.Qt.DisplayRole), str)
-            if text == "None" or text == "":
-                pass
+            if text in ["None", "", None]:
+                Qt.QItemDelegate.setEditorData(self, editor, index)
             else:
                 node = index.model().mapToSource(index).internalPointer()
                 paramType = node.type()

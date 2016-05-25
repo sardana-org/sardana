@@ -987,21 +987,19 @@ class Pool0DAcquisition(PoolAction):
                 return True
 
     def action_loop(self):
-
         states, values = {}, {}
         for element in self._channels:
             states[element] = None
             values[element] = None
 
         nap = self._acq_sleep_time
-        while not (self._stopped or self._aborted):
+        while True:
             self.read_value(ret=values)
             for acquirable, value in values.items():
-                acquirable.put_value(value, index=self.conf['idx'], propagate=0)
+                acquirable.put_value(value)
+            if self._stopped or self._aborted:
+                break
             time.sleep(nap)
-
-        for element in self._channels:
-            element.propagate_value(priority=1)
 
         with ActionContext(self):
             self.raw_read_state_info(ret=states)

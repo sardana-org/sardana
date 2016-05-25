@@ -463,6 +463,16 @@ class Pool(PyTango.Device_4Impl, Logger):
         for kwargs in kwargs_seq:
             self._create_single_element(kwargs)
 
+    def RenameElement(self, argin):
+        old_name = argin[0]
+        new_name = argin[1]
+        self.pool.rename_element(old_name, new_name)
+        # obtain normal name (without database) and apply new alias
+        element = self.pool.get_element_by_name(new_name)
+        db = PyTango.Util.instance().get_database()
+        normal_name = '/'.join(element.full_name.split('/')[-3:])
+        db.put_device_alias(normal_name, new_name)
+
     def _create_single_element(self, kwargs):
         elem_type_str = kwargs['type']
         ctrl_name = kwargs['ctrl_name']
@@ -515,9 +525,6 @@ class Pool(PyTango.Device_4Impl, Logger):
                 if elem_type == ElementType.Motor:
                     data["position"] = { "abs_change" : "1.0"}
                     data["dialposition"] = { "abs_change" : "5.0"}
-                    if get_tango_version_number() < 80000:
-                        print 20 * "AH! "
-                        data["limit_switches"] = { "abs_change" : "1.0"}
                 elif elem_type == ElementType.CTExpChannel:
                     data["value"] = { "abs_change" : "1.0"}
                 elif elem_type == ElementType.PseudoMotor:
@@ -695,7 +702,7 @@ class Pool(PyTango.Device_4Impl, Logger):
 
         evt_name = evt_type.name.lower()
 
-        if evt_name in ("elementcreated", "elementdeleted"):
+        if evt_name in ("elementcreated", "elementdeleted", "elementchanged"):
             elem = evt_value
             elem_type = elem.get_type()
             td = TYPE_MAP_OBJ[elem_type]
@@ -712,10 +719,12 @@ class Pool(PyTango.Device_4Impl, Logger):
             self.ElementsCache = None
 
             value = { }
-            if "created" in evt_name:
+            if evt_name == "elementcreated":
                 key = 'new'
-            else:
+            elif evt_name == "elementdeleted":
                 key = 'del'
+            else:
+                key = 'change'
             json_elem = elem.serialize(pool=self.pool.full_name)
             value[key] = json_elem,
             value = CodecFactory().getCodec('json').encode(('', value))
@@ -911,7 +920,7 @@ class Pool(PyTango.Device_4Impl, Logger):
             ctrl_class = ctrl_classes[name]
             data = None
             if ctrl_class is not None:
-                data = ctrl_class.toDict()
+                data = ctrl_class.serialize()
             ret.append(data)
         return json.dumps(ret)
 
@@ -1197,6 +1206,23 @@ where the class is described).
     {1}
 """.format(RELOAD_CONTROLLER_CLASS_PAR_IN_DOC, RELOAD_CONTROLLER_CLASS_PAR_OUT_DOC)
 
+RENAME_ELEMENT_PAR_IN_DOC = """
+Two elements sequence of strings: <old element name>, <new element name>
+"""
+
+RENAME_ELEMENT_PAR_OUT_DOC = "None"
+
+RENAME_ELEMENT_CLASS_INFO_DOC = """\
+Tango command to rename the element (rename Pool element and put new alias in
+the Tango Database).
+
+:param argin:
+    {0}
+:type argin: list<str>
+:return:
+    {1}
+""".format(RENAME_ELEMENT_PAR_IN_DOC, RENAME_ELEMENT_PAR_OUT_DOC)
+
 STOP_PAR_IN_DOC = "None"
 STOP_PAR_OUT_DOC = "None"
 
@@ -1247,6 +1273,7 @@ Pool.DeleteElement.__func__.__doc__ = DELETE_ELEMENT_DOC
 Pool.GetControllerClassInfo.__func__.__doc__ = GET_CONTROLLER_CLASS_INFO_DOC
 Pool.ReloadControllerLib.__func__.__doc__ = RELOAD_CONTROLLER_LIB_INFO_DOC
 Pool.ReloadControllerClass.__func__.__doc__ = RELOAD_CONTROLLER_CLASS_INFO_DOC
+Pool.RenameElement.__func__.__doc__ = RENAME_ELEMENT_CLASS_INFO_DOC
 Pool.Stop.__func__.__doc__ = STOP_DOC
 Pool.Abort.__func__.__doc__ = ABORT_DOC
 
@@ -1334,6 +1361,9 @@ class PoolClass(PyTango.DeviceClass):
         'ReloadControllerClass':
             [[PyTango.DevString, RELOAD_CONTROLLER_CLASS_PAR_IN_DOC],
              [PyTango.DevVoid, RELOAD_CONTROLLER_CLASS_PAR_OUT_DOC]],
+        'RenameElement':
+            [[PyTango.DevVarStringArray, RENAME_ELEMENT_PAR_IN_DOC],
+             [PyTango.DevVoid, RENAME_ELEMENT_PAR_OUT_DOC]],
         'GetControllerCode':
             [[PyTango.DevVarStringArray, "<Controller library name> [, <Controller class name>]"],
             [PyTango.DevVarStringArray, "result is a sequence of 3 strings:\n"

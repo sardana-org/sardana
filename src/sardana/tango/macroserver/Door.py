@@ -291,7 +291,20 @@ class Door(SardanaDevice):
     
     def always_executed_hook(self):
         pass
-    
+
+    def dev_status(self):
+        self._status = SardanaDevice.dev_status(self)
+        self._status += '\n Macro stack ([state] macro):'
+        macro = self.getRunningMacro()
+        mstack = ''
+        while macro is not None:
+            mstate = macro.getMacroStatus()['state']
+            mstack = '\n    -[%s]\t%s' % (mstate, macro.getCommand()) + mstack
+            macro = macro.getParentMacro()
+        self._status += mstack
+        return self._status
+
+
     def read_attr_hardware(self,data):
         pass
     
@@ -392,7 +405,8 @@ class Door(SardanaDevice):
         return [etree.tostring(xml_seq, pretty_print=False)]
 
     def is_RunMacro_allowed(self):
-        return self.get_state() in [Macro.Finished, Macro.Abort]
+        return self.get_state() in [Macro.Finished, Macro.Abort,
+                                    Macro.Exception]
 
     def SimulateMacro(self, par_str_list):
         raise Exception("Not implemented yet")
@@ -410,7 +424,8 @@ class Door(SardanaDevice):
         return ret
     
     def is_GetMacroEnv_allowed(self):
-        return self.get_state() in [Macro.Finished, Macro.Abort]
+        return self.get_state() in [Macro.Finished, Macro.Abort,
+                                    Macro.Exception]
 
 
 class DoorClass(SardanaDeviceClass):

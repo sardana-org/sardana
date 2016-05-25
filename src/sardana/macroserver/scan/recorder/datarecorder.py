@@ -25,8 +25,7 @@
 
 """This is the macro server scan data recorder module"""
 
-__all__ = ["DataFormats", "SaveModes", "RecorderStatus", "DataHandler",
-           "DataRecorder", "DumbRecorder"]
+__all__ = ["SaveModes", "RecorderStatus", "DataHandler", "DataRecorder"]
 
 __docformat__ = 'restructuredtext'
 
@@ -35,8 +34,6 @@ import time
 from taurus.core.util.log import Logger
 from taurus.core.util.enumeration import Enumeration
 
-DataFormats = Enumeration('DataFormats', ('Spec', 'CSV', 'XLS', 'w5', 'w4',
-                                          'wx', 'fio'))
 SaveModes = Enumeration('SaveModes', ('Record', 'Block'))
 RecorderStatus = Enumeration('RecorderStatus', ('Idle', 'Active', 'Disable'))
 
@@ -157,24 +154,3 @@ class DataRecorder(Logger):
 
     def _addCustomData(self, value, name, **kwargs):
         pass
-
-
-class DumbRecorder(DataRecorder):
-    def _startRecordList(self, recordlist):
-        print "Starting new recording"
-        print "# Title :     ", recordlist.getEnvironValue('title')
-        env = recordlist.getEnviron()
-        for envky in env.keys():
-            if envky != 'title' and envky != 'labels':
-                print "# %8s :    %s " % (envky, str(env[envky]))
-        print "# Started:    ", time.ctime(env['starttime'])
-        print "# L:  ",
-        print "  ".join(env['labels'])
-
-    def _writeRecord(self, record):
-        print record.data
-
-    def _endRecordList(self, recordlist):
-        print "Ending recording"
-        env = recordlist.getEnviron()
-        print "Recording ended at: ", time.ctime(env['endtime'])

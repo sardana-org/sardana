@@ -53,6 +53,7 @@ import numpy
 from taurus.console import Alignment
 from taurus.console.list import List
 from taurus.console.table import Table
+from taurus.core.util import SafeEvaluator
 
 from sardana.macroserver.msexception import UnknownEnv
 from sardana.macroserver.macro import *
@@ -730,8 +731,7 @@ class dmesh(mesh):
         self.info("Returning to start positions...")
         self._motion.move(self.originalPositions)
 
-
-class fscan(Macro,Hookable):
+class fscan(Macro, Hookable):
     '''N-dimensional scan along user defined paths.
     The motion path for each motor is defined through the evaluation of a
     user-supplied function that is evaluated as a function of the independent
@@ -746,75 +746,84 @@ class fscan(Macro,Hookable):
     (with same length as the paths), fscan will assign a different integration
     time to each acquisition point.
     -If integ_time is positive, it specifies seconds and if negative, specifies
-    monitor counts.   
+    monitor counts.
 
     IMPORTANT Notes:
     -no spaces are allowed in the indepvar string.
     -all funcs must evaluate to the same number of points
-    
-    EXAMPLE: fscan x=[1,3,5,7,9],y=arange(5) motor1 x**2 motor2 sqrt(y*x-3) 0.1
+
+    EXAMPLE: fscan x=[1,3,5,7,9],y=arange(5) 0.1 motor1 x**2 motor2 sqrt(y*x+3)
+             fscan x=[1,3,5,7,9],y=arange(5) [0.1,0.2,0.3,0.4,0.5] motor1 x**2 motor2 sqrt(y*x+3)
     '''
-    
-    hints = { 'scan' : 'fscan', 'allowsHooks': ('pre-scan', 'pre-move', 'post-move', 'pre-acq', 'post-acq', 'post-step', 'post-scan') }
+    # ['integ_time', Type.String,   None, 'Integration time']
+    hints = {'scan': 'fscan',
+             'allowsHooks': ('pre-scan', 'pre-move', 'post-move', 'pre-acq', 'post-acq', 'post-step', 'post-scan')}
     env = ('ActiveMntGrp',)
-    
+
     param_def = [
-       ['indepvars',  Type.String, None, 'Independent Variables'],
-       ['motor_funcs',
-        ParamRepeat(['motor', Type.Moveable, None, 'motor'],
-                    ['func', Type.String, None, 'curve defining path']),
-        None, 'List of motor and path curves'],
-       ['integ_time', Type.String,   None, 'Integration time']
+        ['indepvars', Type.String, None, 'Independent Variables'],
+        ['integ_time', Type.String, None, 'Integration time'],
+        ['motor_funcs',
+         ParamRepeat(['motor', Type.Moveable, None, 'motor'],
+                     ['func', Type.String, None, 'curve defining path']),
+         None, 'List of motor and path curves']
     ]
-    
+
     def prepare(self, *args, **opts):
-        if args[0].lower() in ["!", "*", "none", None]: indepvars={}
-        else: indepvars=SafeEvaluator({'dict':dict}).eval('dict(%s)'%args[0]) #create a dict containing the indepvars
-        self.motors=args[1:-1:2] #get motors
-        sev=SafeEvaluator(indepvars) #create a safe evaluator whitelisting the indepvars
-        self.funcstrings=args[2:-1:2]
-        self.paths = map(sev.eval,self.funcstrings) #evaluate the functions
-        self.integ_time=numpy.array(sev.eval(args[-1]), dtype='d')
+        if args[0].lower() in ["!", "*", "none", None]:
+            indepvars = {}
+        else:
+            indepvars = SafeEvaluator({'dict': dict}).eval(
+                'dict(%s)' % args[0])  # create a dict containing the indepvars
+
+        self.motors = [item[0] for item in args[2:]]
+        self.funcstrings = [item[1] for item in args[2:]]
+
+        globals_lst = [dict(zip(indepvars, values)) for values in zip(*indepvars.values())]
+        self.paths = [[SafeEvaluator(globals).eval(func) for globals in globals_lst] for func in self.funcstrings]
+
+        self.integ_time = numpy.array(eval(args[1]), dtype='d')
+
         self.opts = opts
-        if len(self.motors)==len(self.paths)>0:
-            self.N=len(self.motors)
+        if len(self.motors) == len(self.paths) > 0:
+            self.N = len(self.motors)
         else:
             raise ValueError('Moveable and func lists must be non-empty and same length')
-        npoints=len(self.paths[0])
+        npoints = len(self.paths[0])
         try:
-            #if everything is OK, the following lines should return a 2D array
+            # if everything is OK, the following lines should return a 2D array
             # n which each motor path is a row.
-            #Typical failure is due to shape mismatch due to inconsistent input
-            self.paths=numpy.array(self.paths,dtype='d')
+            # Typical failure is due to shape mismatch due to inconsistent input
+            self.paths = numpy.array(self.paths, dtype='d')
             self.paths.reshape((self.N, npoints))
-        except: #shape mismatch?
-            #try to give a meaningful description of the error
-            for p,fs in zip(self.paths,self.funcstrings):
-                if len(p)!=npoints:
+        except:  # shape mismatch?
+            # try to give a meaningful description of the error
+            for p, fs in zip(self.paths, self.funcstrings):
+                if len(p) != npoints:
                     raise ValueError(
                         '"%s" and "%s" yield different number of points (%i vs %i)'
-                        %(self.funcstrings[0],fs,npoints,len(p)))
-            raise #the problem wasn't a shape mismatch
-        self.nr_points=npoints
-        
-        if self.integ_time.size==1:
-            self.integ_time=self.integ_time*numpy.ones(self.nr_points) #extend integ_time
-        elif self.integ_time.size!=self.nr_points:
-            raise ValueError('time_integ must either be a scalar or length=npoints (%i)'%self.nr_points)
-                
-        self.name=opts.get('name','fscan')
-                
-        generator=self._generator
-        moveables=self.motors
-        env=opts.get('env',{})
-        constrains=[getCallable(cns) for cns in opts.get('constrains',[UNCONSTRAINED])]
-        
-        #Hooks are not always set at this point. We will call getHooks later on in the scan_loop
-        #self.pre_scan_hooks = self.getHooks('pre-scan')
-        #self.post_scan_hooks = self.getHooks('post-scan'
-        
-        self._gScan=SScan(self, generator, moveables, env, constrains)
-        
+                        % (self.funcstrings[0], fs, npoints, len(p)))
+            raise  # the problem wasn't a shape mismatch
+        self.nr_points = npoints
+
+        if self.integ_time.size == 1:
+            self.integ_time = self.integ_time * numpy.ones(self.nr_points)  # extend integ_time
+        elif self.integ_time.size != self.nr_points:
+            raise ValueError('time_integ must either be a scalar or length=npoints (%i)' % self.nr_points)
+
+        self.name = opts.get('name', 'fscan')
+
+        generator = self._generator
+        moveables = self.motors
+        env = opts.get('env', {})
+        constrains = [getCallable(cns) for cns in opts.get('constrains', [UNCONSTRAINED])]
+
+        # Hooks are not always set at this point. We will call getHooks later on in the scan_loop
+        # self.pre_scan_hooks = self.getHooks('pre-scan')
+        # self.post_scan_hooks = self.getHooks('post-scan'
+
+        self._gScan = SScan(self, generator, moveables, env, constrains)
+
     def _generator(self):
         step = {}
         step["pre-move-hooks"] = self.getHooks('pre-move')
@@ -822,22 +831,21 @@ class fscan(Macro,Hookable):
         step["pre-acq-hooks"] = self.getHooks('pre-acq')
         step["post-acq-hooks"] = self.getHooks('post-acq') + self.getHooks('_NOHINTS_')
         step["post-step-hooks"] = self.getHooks('post-step')
-        
+
         step["check_func"] = []
         for i in xrange(self.nr_points):
-            step["positions"] = self.paths[:,i]
+            step["positions"] = self.paths[:, i]
             step["integ_time"] = self.integ_time[i]
-            step["point_id"]= i
+            step["point_id"] = i
             yield step
-    
-    def run(self,*args):
+
+    def run(self, *args):
         for step in self._gScan.step_scan():
             yield step
 
     @property
     def data(self):
         return self._gScan.data
-
 
 class ascanh(aNscan, Macro): 
     """Do an absolute scan of the specified motor.

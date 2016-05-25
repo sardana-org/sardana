@@ -49,6 +49,7 @@ from sardana.macroserver.msbase import MSObject
 from sardana.macroserver.mscontainer import MSContainer
 from sardana.macroserver.msdoor import MSDoor
 from sardana.macroserver.msmacromanager import MacroManager
+from sardana.macroserver.msrecordermanager import RecorderManager
 from sardana.macroserver.mstypemanager import TypeManager
 from sardana.macroserver.msenvmanager import EnvironmentManager
 from sardana.macroserver.msparameter import ParamType
@@ -137,7 +138,7 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
     logReportKlass = NonOverlappingTimedRotatingFileHandler
     
     def __init__(self, full_name, name=None, macro_path=None,
-                 environment_db=None):
+                 environment_db=None, recorder_path=None):
         # dict<str, Pool>
         # key   - device name (case insensitive)
         # value - Pool object representing the device name
@@ -155,6 +156,8 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
         self._environment_manager = EnvironmentManager(self,
                                         environment_db=environment_db)
         self._macro_manager = MacroManager(self, macro_path=macro_path)
+        self._recorder_manager = RecorderManager(self,
+                                                 recorder_path=recorder_path)
 
     def serialize(self, *args, **kwargs):
         kwargs = MSObject.serialize(self, *args, **kwargs)
@@ -204,6 +207,20 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
             seq<str>
         """
         self.macro_manager.setMacroPath(macro_path)
+
+    # --------------------------------------------------------------------------
+    # Recorder path related methods
+    # --------------------------------------------------------------------------
+
+    def set_recorder_path(self, recorder_path):
+        """Sets the recorder path.
+
+        :param recorder_path:
+            recorder path
+        :type recorder_path:
+            seq<str>
+        """
+        self.recorder_manager.setRecorderPath(recorder_path)
 
     # --------------------------------------------------------------------------
     # Report related methods
@@ -399,7 +416,11 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
     @property
     def macro_manager(self):
         return self._macro_manager
-    
+
+    @property
+    def recorder_manager(self):
+        return self._recorder_manager
+
     @property
     def environment_manager(self):
         return self._environment_manager
@@ -426,7 +447,9 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
         new_elements, changed_elements, deleted_elements = [], [], []
         
         new_lib = manager.reloadMacroLib(lib_name)
-        
+        if new_lib.has_errors():
+            return new_lib
+
         if old_lib is None:
             new_elements.extend(new_lib.get_macros())
             new_elements.append(new_lib)
@@ -437,7 +460,7 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
             changed_names = set.intersection(new_names, old_names)
             deleted_names = old_names.difference(new_names)
             new_names = new_names.difference(old_names)
-            
+
             for new_name in new_names:
                 new_elements.append(new_lib.get_macro(new_name))
             for changed_name in changed_names:
@@ -459,7 +482,7 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
     def reload_macro(self, macro_name):
         macro_info = self.macro_manager.getMacro(macro_name)
         lib_name = macro_info.module_name
-        self.reload_macro_lib(lib_name)
+        return self.reload_macro_lib(lib_name)
     
     def reload_macros(self, macro_names):
         lib_names = set()
@@ -676,6 +699,8 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
         
         :param key: the key for the environment to be unset"""
         ret = self.environment_manager.unsetEnv(key)
+        # list is unhashable - convert to a tuple
+        if isinstance(key, list): key = tuple(key)
         evt = { 'del' : { key : None } }
         self.fire_event(EventType("EnvironmentChanged"), evt)
         return ret
@@ -718,7 +743,7 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
         for type_name in type_name_list:
             type_class_name = type_name
             if type_class_name.endswith('*'):
-               type_class_name = type_class_name[:-1]
+                type_class_name = type_class_name[:-1]
             type_inst = self.get_data_type(type_class_name)
             if not type_inst.hasCapability(ParamType.ItemList):
                 continue

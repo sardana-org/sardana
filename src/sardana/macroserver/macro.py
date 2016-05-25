@@ -373,7 +373,10 @@ class Macro(Logger):
     Ready = State.On
 
     #: internal variable
-    Abort = State.Alarm
+    Abort = State.On
+
+    #: internal variable
+    Exception = State.Alarm
 
     #: Constant used to specify all elements in a parameter
     All = ParamType.All
@@ -1046,19 +1049,28 @@ class Macro(Logger):
         Several different parameter formats are supported::
 
             # several parameters:
-            self.createMacro('ascan', 'th', '0', '100', '10', '1.0')
-            self.createMacro('ascan', 'th', 0, 100, 10, 1.0)
+            self.execMacro('ascan', 'th', '0', '100', '10', '1.0')
+            self.execMacro('mv', [[motor.getName(), '0']])
+            self.execMacro('ascan', 'th', 0, 100, 10, 1.0)
+            self.execMacro('mv', [[motor.getName(), 0]])
             th = self.getObj('th')
-            self.createMacro('ascan', th, 0, 100, 10, 1.0)
+            self.execMacro('ascan', th, 0, 100, 10, 1.0)
+            self.execMacro('mv', [th, 0]])
 
             # a sequence of parameters:
-            self.createMacro(['ascan', 'th', '0', '100', '10', '1.0')
-            self.createMacro(('ascan', 'th', 0, 100, 10, 1.0))
+            self.execMacro(['ascan', 'th', '0', '100', '10', '1.0')
+            self.execMacro(['mv', [[motor.getName(), '0']]])
+            self.execMacro(('ascan', 'th', 0, 100, 10, 1.0))
+            self.execMacro(['mv', [[motor.getName(), 0]]])
             th = self.getObj('th')
-            self.createMacro(['ascan', th, 0, 100, 10, 1.0])
+            self.execMacro(['ascan', th, 0, 100, 10, 1.0])
+            self.execMacro(['mv', [[th, 0]]])
 
-            # a space separated string of parameters:
-            self.createMacro('ascan th 0 100 10 1.0')
+            # a space separated string of parameters (this is not compatible
+            # with multiple or nested repeat parameters, furthermore the repeat
+            # parameter must be the last one):
+            self.execMacro('ascan th 0 100 10 1.0')
+            self.execMacro('mv %s 0' % motor.getName())
 
         :param pars: the command parameters as explained above
         :return:
@@ -1094,19 +1106,28 @@ class Macro(Logger):
         Several different parameter formats are supported::
 
             # several parameters:
-            executor.prepareMacro('ascan', 'th', '0', '100', '10', '1.0')
-            executor.prepareMacro('ascan', 'th', 0, 100, 10, 1.0)
+            self.execMacro('ascan', 'th', '0', '100', '10', '1.0')
+            self.execMacro('mv', [[motor.getName(), '0']])
+            self.execMacro('ascan', 'th', 0, 100, 10, 1.0)
+            self.execMacro('mv', [[motor.getName(), 0]])
             th = self.getObj('th')
-            executor.prepareMacro('ascan', th, 0, 100, 10, 1.0)
+            self.execMacro('ascan', th, 0, 100, 10, 1.0)
+            self.execMacro('mv', [th, 0]])
 
             # a sequence of parameters:
-            executor.prepareMacro(['ascan', 'th', '0', '100', '10', '1.0')
-            executor.prepareMacro(('ascan', 'th', 0, 100, 10, 1.0))
+            self.execMacro(['ascan', 'th', '0', '100', '10', '1.0')
+            self.execMacro(['mv', [[motor.getName(), '0']]])
+            self.execMacro(('ascan', 'th', 0, 100, 10, 1.0))
+            self.execMacro(['mv', [[motor.getName(), 0]]])
             th = self.getObj('th')
-            executor.prepareMacro(['ascan', th, 0, 100, 10, 1.0])
+            self.execMacro(['ascan', th, 0, 100, 10, 1.0])
+            self.execMacro(['mv', [[th, 0]]])
 
-            # a space separated string of parameters:
-            executor._prepareMacro('ascan th 0 100 10 1.0')
+            # a space separated string of parameters (this is not compatible
+            # with multiple or nested repeat parameters, furthermore the repeat
+            # parameter must be the last one):
+            self.execMacro('ascan th 0 100 10 1.0')
+            self.execMacro('mv %s 0' % motor.getName())
 
         :param args: the command parameters as explained above
         :param kwargs: keyword optional parameters for prepare
@@ -1168,33 +1189,46 @@ class Macro(Logger):
 
             # several parameters:
             self.execMacro('ascan', 'th', '0', '100', '10', '1.0')
+            self.execMacro('mv', [[motor.getName(), '0']])
             self.execMacro('ascan', 'th', 0, 100, 10, 1.0)
+            self.execMacro('mv', [[motor.getName(), 0]])
             th = self.getObj('th')
             self.execMacro('ascan', th, 0, 100, 10, 1.0)
+            self.execMacro('mv', [th, 0]])
 
             # a sequence of parameters:
             self.execMacro(['ascan', 'th', '0', '100', '10', '1.0')
+            self.execMacro(['mv', [[motor.getName(), '0']]])
             self.execMacro(('ascan', 'th', 0, 100, 10, 1.0))
+            self.execMacro(['mv', [[motor.getName(), 0]]])
             th = self.getObj('th')
             self.execMacro(['ascan', th, 0, 100, 10, 1.0])
+            self.execMacro(['mv', [[th, 0]]])
 
-            # a space separated string of parameters:
+            # a space separated string of parameters (this is not compatible
+            # with multiple or nested repeat parameters, furthermore the repeat
+            # parameter must be the last one):
             self.execMacro('ascan th 0 100 10 1.0')
+            self.execMacro('mv %s 0' % motor.getName())
 
         :param pars: the command parameters as explained above
 
         :return: a macro object"""
-        par0 = args[0]
+        # obtaining macro name
+        macro_name = None
+        arg0 = args[0]
         if len(args) == 1:
-            if type(par0) in types.StringTypes :
-                args = par0.split()
-                
-            elif operator.isSequenceType(par0):
-                args = par0
-        args = map(str, args)
-
-        self.debug("Executing macro: %s" % args[0])
-        macro_obj, prepare_result = self.prepareMacro(*args, **kwargs)
+            if type(arg0) in types.StringTypes :
+                # dealing with sth like args = ('ascan th 0 100 10 1.0',)
+                macro_name = arg0.split()[0]
+            elif operator.isSequenceType(arg0):
+                # dealing with sth like args = (['ascan', 'th', '0', '100', '10', '1.0'],)
+                macro_name = arg0[0]
+        else:
+            # dealing with sth like args = ('ascan', 'th', '0', '100', '10', '1.0')
+            macro_name = args[0]
+        self.debug("Executing macro: %s" % macro_name)
+        macro_obj, _ = self.prepareMacro(*args, **kwargs)
         self.runMacro(macro_obj)
         return macro_obj
 
