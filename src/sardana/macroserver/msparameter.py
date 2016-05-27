@@ -33,6 +33,7 @@ __all__ = ["WrongParam", "MissingParam", "UnknownParamObj", "WrongParamType",
 
 __docformat__ = 'restructuredtext'
 
+from copy import deepcopy
 from lxml import etree
 
 from taurus.core.util.containers import CaselessDict
@@ -321,7 +322,9 @@ class ParamDecoder:
         """Decode raw representation of parameters to parameters as passed
         to the prepare or run methods.
         """
-        raw_params = self.raw_params
+        # make a copy since in case of XML it could be necessary to modify
+        # the raw_params - filter out elements different than params
+        raw_params = deepcopy(self.raw_params)
         params_def = self.params_def
         # ignore other tags than "param" and "paramRepeat"
         # e.g. sequencer may create tags like "hookPlace"
