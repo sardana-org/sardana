@@ -140,7 +140,7 @@ class SoftwareTriggerGateController(TriggerGateController):
     def AddDevice(self, axis):
         self._log.debug('AddDevice(%d): entering...' % axis)
         idx = axis - 1
-        self.time_generator[idx] = RectangularFunctionGenerator()
+        self.time_generator[idx] = self.tg[idx] = RectangularFunctionGenerator()
         self.pos_generator[idx] = PositionFunctionGenerator()
 
     def StateOne(self, axis):
