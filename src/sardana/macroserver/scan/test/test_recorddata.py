@@ -30,7 +30,7 @@ from taurus.external import unittest
 from taurus.test import insertTest
 from sardana.macroserver.scan.scandata import ScanData
 from sardana.macroserver.scan.recorder import DataHandler
-from sardana.macroserver.scan.recorder.storage import NXscan_FileRecorder
+from sardana.macroserver.recorders.storage import NXscan_FileRecorder
 from sardana.macroserver.scan.test.helper import (createScanDataEnvironment,
                                                   DummyEventSource)
 

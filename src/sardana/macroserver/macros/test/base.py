@@ -153,10 +153,6 @@ class BaseMacroTestCase(object):
     def setUp(self):
         """ A macro_executor instance must be created
         """
-        if self.macro_name is None:
-            msg = '%s does not define macro_name' % self.__class__.__name__
-            raise NotImplementedError(msg)
-
         mefact = MacroExecutorFactory()
         self.macro_executor = mefact.getMacroExecutor(self.door_name)
 
