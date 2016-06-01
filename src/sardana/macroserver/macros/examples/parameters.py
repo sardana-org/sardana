@@ -208,7 +208,7 @@ class twice(Macro):
 
     # uncomment the following lines as necessary. Otherwise you may delete them
     param_def = [ [ "value", Type.Float, 23, "value to be doubled" ] ]
-    result_def = [ [ "result", Type.Float, 23, "the double of the given value" ] ]
+    result_def = [ [ "result", Type.Float, None, "the double of the given value" ] ]
     #hints = {}
     #env = (,)
     
