@@ -56,14 +56,6 @@ class DummyCounterTimerController(CounterTimerController):
     MonitorMode = 2
     CounterMode = 3
 
-    axis_attributes ={  "TriggerMode":
-                        {Type : str,
-                         Description : 'TriggerMode: soft or gate',
-                         Access : DataAccess.ReadWrite,
-                         Memorize : NotMemorized
-                        }
-                      }
-
     def __init__(self, inst, props, *args, **kwargs):
         CounterTimerController.__init__(self, inst, props, *args, **kwargs)
         self._trigger_type = AcqTriggerType.Software
@@ -243,16 +235,6 @@ class DummyCounterTimerController(CounterTimerController):
             elapsed_time = now - self.start_time
             self._finish(elapsed_time, ind=ind)
 
-    def GetAxisExtraPar(self, ind, name):
-        self._log.debug("GetAxisExtraPar(%d, %s): Entering...", axis, name)
-        idx = ind - 1
-        if name.lower() == "triggermode":
-            return self.channels[idx].mode        
-
-    def SetAxisExtraPar(self, ind, name, value):
-        idx = ind - 1       
-        if name.lower() == "triggermode":
-            self.channels[idx].mode = value        
            
     def GetCtrlPar(self, par):
         if par == 'trigger_type':            
