@@ -29,5 +29,6 @@ __all__ = ["ControllerAPI", "AcqTriggerType", "AcqMode", "PoolUtil"]
 
 __docformat__ = 'restructuredtext'
 
-from .pooldefs import ControllerAPI, AcqTriggerType, AcqMode
+from .pooldefs import (ControllerAPI, AcqTriggerType, AcqMode, AcqSynch,
+                       AcqSynchType, SynchDomain, SynchParam)
 from .poolutil import PoolUtil

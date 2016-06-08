@@ -27,7 +27,7 @@ from operator import __getitem__
 """This file contains the basic pool definitions."""
 
 __all__ = ["ControllerAPI", "AcqTriggerType", "AcqMode", "SynchDomain",
-           "SynchParam"]
+           "SynchParam", "AcqSynch", "AcqSynchType"]
 
 __docformat__ = 'restructuredtext'
 
@@ -65,6 +65,7 @@ class SynchDomain(SynchEnum):
     Position = 1
     Monitor = 2
 
+
 class SynchParam(SynchEnum):
 
     Delay = 0
@@ -72,3 +73,36 @@ class SynchParam(SynchEnum):
     Active = 2
     Repeats = 3
     Initial = 4
+
+
+class AcqSynchType(IntEnum):
+
+    Trigger = 0
+    Gate = 1
+
+
+class AcqSynch(IntEnum):
+
+    SoftwareTrigger = 0
+    HardwareTrigger = 1
+    SoftwareGate = 2
+    HardwareGate = 3
+
+    @classmethod
+    def from_synch_type(self, software, synch_type):
+        """Helper obtain AcqSynch from information about software/hardware
+        nature of synchronization element and AcqSynchType
+        """
+        if synch_type is AcqSynchType.Trigger:
+            if software:
+                return AcqSynch.SoftwareTrigger
+            else:
+                return AcqSynch.HardwareTrigger
+        elif synch_type is AcqSynchType.Gate: 
+            if software: 
+                return AcqSynch.SoftwareGate
+            else:
+                return AcqSynch.HardwareGate
+        else:
+            raise ValueError("Unable to determine AcqSynch from %s" %
+                             synch_type)
