@@ -134,6 +134,25 @@ def getTGConfiguration(MGcfg):
     #TODO: temporary returning tg_elements
     return TGcfg, _tg_element_list
 
+def extract_integ_time(synchronization):
+    """Extract integration time(s) from synchronization dict. If there is onl 
+    one group in the synchronization than returns float with the integration
+    time. Otherwise a list of floats with different integration times.
+
+    :param synchronization: group(s) where each group is described by
+        SynchParam(s)
+    :type synchronization: list(dict)
+    :return list(float) or float
+    """
+    if len(synchronization) == 1:
+        integ_time = synchronization[0][SynchParam.Active][SynchDomain.Time]
+    else:
+        for group in synchronization:
+            active_time = group[SynchParam.Active][SynchDomain.Time]
+            repeats = group[SynchParam.Repeats]
+            integ_time += [active_time] * repeats
+    return integ_time
+
 
 class PoolAcquisition(PoolAction):
 
