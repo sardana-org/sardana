@@ -30,12 +30,12 @@ import threading
 from taurus.external import unittest
 from taurus.test import insertTest
 
-from sardana.pool import AcqTriggerType
+from sardana.pool import AcqSynch
 from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.pool.pooltggeneration import PoolTGGeneration
 from sardana.pool.pooltriggergate import TGEventType
-from sardana.pool.poolacquisition import (PoolContHWAcquisition,
-                                          PoolContSWCTAcquisition,
+from sardana.pool.poolacquisition import (PoolAcquisitionHardware,
+                                          PoolAcquisitionSoftware,
                                           PoolCTAcquisition)
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool.test import (createPoolTGGenerationConfiguration,
@@ -133,14 +133,14 @@ class AcquisitionTestCase(BasePoolTestCase):
         self.hw_acq_cfg = createCTAcquisitionConfiguration((ct_ctrl,),
                                                            (channels,))
         # creating acquisition actions
-        self.hw_acq = PoolContHWAcquisition(channels[0])
+        self.hw_acq = PoolAcquisitionHardware(channels[0])
         for channel in channels:
             self.hw_acq.add_element(channel)
 
         # get the current number of jobs
         jobs_before = get_thread_pool().qsize
 
-        ct_ctrl.set_ctrl_par('trigger_type', AcqTriggerType.Trigger)
+        ct_ctrl.set_ctrl_par('trigger_type', AcqSynch.HardwareTrigger)
 
         hw_acq_args = ()
         hw_acq_kwargs = {
@@ -185,7 +185,7 @@ class AcquisitionTestCase(BasePoolTestCase):
         for channel in channels:
             self.ct_acq.add_element(channel)
 
-        ct_ctrl.set_ctrl_par('trigger_type', AcqTriggerType.Software)
+        ct_ctrl.set_ctrl_par('trigger_type', AcqSynch.SoftwareTrigger)
 
         ct_acq_args = ()
         ct_acq_kwargs = {
@@ -252,8 +252,8 @@ class AcquisitionTestCase(BasePoolTestCase):
             active_interval=0.001, passive_interval=0.1, repetitions=10,
             integ_time=0.01)
 class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
-    """Integration test of PoolTGGeneration, PoolContHWAcquisition and
-    PoolContSWCTAcquisition actions. This test plays the role of the
+    """Integration test of PoolTGGeneration, PoolAcquisitionHardware and
+    PoolAcquisitionSoftware actions. This test plays the role of the
     PoolAcquisition macro action (it aggregates the sub-actions and assign the
     elements to corresponding sub-actions) and the PoolMeasurementGroup (it
     configures the elements and controllers).
@@ -277,7 +277,6 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
                 args = dict(self.sw_acq_args)
                 kwargs = dict(self.sw_acq_kwargs)
                 kwargs['idx'] = event_id
-                kwargs['synch'] = True
                 get_thread_pool().add(self.sw_acq.run,
                                       None,
                                       *args,
@@ -312,8 +311,8 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         self.sw_acq_cfg = createCTAcquisitionConfiguration((ct_ctrl_2,),
                                                            ((ct_2_1,),))
         # creating acquisition actions
-        self.hw_acq = PoolContHWAcquisition(ct_1_1)
-        self.sw_acq = PoolContSWCTAcquisition(ct_2_1)
+        self.hw_acq = PoolAcquisitionHardware(ct_1_1)
+        self.sw_acq = PoolAcquisitionSoftware(ct_2_1)
         # Since we deposit the software acquisition action on the PoolThread's
         # queue we can not rely on the action's state - one may still wait
         # in the queue (its state has not changed to running yet) and we would
@@ -333,17 +332,19 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
 
         self.sw_acq_args = ()
         self.sw_acq_kwargs = {
+            'synch': True,
             'integ_time': integ_time,
+            'repetitions': 1,
             'config': self.sw_acq_cfg
         }
-        ct_ctrl_1.set_ctrl_par('trigger_type', AcqTriggerType.Trigger)
+        ct_ctrl_1.set_ctrl_par('trigger_type', AcqSynch.HardwareTrigger)
         hw_acq_args = ()
         hw_acq_kwargs = {
             'integ_time': integ_time,
             'repetitions': repetitions,
             'config': self.hw_acq_cfg,
         }
-        self.hw_acq.run(hw_acq_args, **hw_acq_kwargs)    
+        self.hw_acq.run(*hw_acq_args, **hw_acq_kwargs)
         tg_args = ()
         total_interval = active_interval + passive_interval
         synchronization = [{SynchParam.Delay: {SynchDomain.Time: offset},
@@ -355,14 +356,14 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
             'synchronization': synchronization
         }
         self.tggeneration.run(*tg_args, **tg_kwargs)
-        # waiting for acquisition and tggeneration to finish          
-        while self.hw_acq.is_running() or\
-              self.sw_acq.is_running() or\
-              self.tggeneration.is_running():      
+        # waiting for acquisition and tggeneration to finish
+        while (self.hw_acq.is_running() or
+              self.sw_acq.is_running() or
+              self.tggeneration.is_running()):
             time.sleep(1)
         self.do_asserts(self.channel_names, repetitions, jobs_before)
 
     def tearDown(self):
-        AcquisitionTestCase.tearDown(self) 
+        AcquisitionTestCase.tearDown(self)
         unittest.TestCase.tearDown(self)
 

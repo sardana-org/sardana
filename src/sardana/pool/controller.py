@@ -656,7 +656,7 @@ class Loadable(object):
         Default implementation does nothing."""
         pass
 
-    def PreLoadOne(self, axis, value):
+    def PreLoadOne(self, axis, value, repetitions):
         """**Controller API**. Override if necessary.
         Called to prepare loading the master channel axis with the integration
         time / monitor value.
@@ -664,6 +664,7 @@ class Loadable(object):
 
         :param int axis: axis number
         :param float value: integration time /monitor value
+        :param int repetitions: number of repetitions
         :return: True means a successfull PreLoadOne or False for a failure
         :rtype: bool"""
         return True
