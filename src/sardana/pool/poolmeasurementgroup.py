@@ -35,11 +35,12 @@ from taurus.core.taurusvalidator import AttributeNameValidator
 from sardana import State, ElementType, \
     TYPE_EXP_CHANNEL_ELEMENTS, TYPE_TIMERABLE_ELEMENTS
 from sardana.sardanaevent import EventType
-from sardana.pool.pooldefs import AcqMode, AcqTriggerType, SynchParam
+from sardana.pool.pooldefs import AcqMode, AcqSynchType, SynchParam, AcqSynch
 from sardana.pool.poolgroupelement import PoolGroupElement
 from sardana.pool.poolacquisition import PoolAcquisition
 from sardana.pool.poolexternal import PoolExternalObject
 from sardana.pool.pooltggeneration import PoolTGGeneration
+from sardana.pool.poolutil import is_software_tg
 
 from sardana.taurus.core.tango.sardana import PlotType, Normalization
 
@@ -78,10 +79,10 @@ from sardana.taurus.core.tango.sardana import PlotType, Normalization
 
 # Example: 2 NI cards, where channel 1 of card 1 is wired to channel 1 of card 2
 # at configuration time we should set:
-# ni0ctrl.setCtrlPar(0, 'trigger_type', AcqTriggerType.Software)
+# ni0ctrl.setCtrlPar(0, 'trigger_type', AcqSynchType.Software)
 # ni0ctrl.setCtrlPar(0, 'timer', 1) # channel 1 is the timer
 # ni0ctrl.setCtrlPar(0, 'monitor', 4) # channel 4 is the monitor
-# ni1ctrl.setCtrlPar(0, 'trigger_type', AcqTriggerType.ExternalTrigger)
+# ni1ctrl.setCtrlPar(0, 'trigger_type', AcqSynchType.ExternalTrigger)
 # ni1ctrl.setCtrlPar(0, 'master', 0)
 
 # when we count for 1.5 seconds:
@@ -109,12 +110,18 @@ class PoolMeasurementGroup(PoolGroupElement):
         self._moveable = None
         self._moveable_obj = None
         self._synchronization = []
+        # dict with channel and its acquisition synchronization
+        # key: PoolBaseChannel; value: AcqSynch
+        self._channel_to_acq_synch = {}
+        # dict with controller and its acquisition synchronization
+        # key: PoolController; value: AcqSynch
+        self._ctrl_to_acq_synch = {}
         kwargs['elem_type'] = ElementType.MeasurementGroup
         PoolGroupElement.__init__(self, **kwargs)
         self.set_configuration(kwargs.get('configuration'))
 
     def _create_action_cache(self):
-        acq_name = "%s.Acquisition" % self._name        
+        acq_name = "%s.Acquisition" % self._name
         return PoolAcquisition(self, acq_name)
 
     def on_element_changed(self, evt_src, evt_type, evt_value):
@@ -148,11 +155,8 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     def _is_managed_element(self, element):
         element_type = element.get_type()
-        # TODO: TriggerGate elements are treated as managed elements,
-        # this was not yet 100% tested
-        return element_type in TYPE_EXP_CHANNEL_ELEMENTS or\
-               element_type is ElementType.TriggerGate
-                
+        return (element_type in TYPE_EXP_CHANNEL_ELEMENTS or
+                element_type is ElementType.TriggerGate)
 
         """Fills the channel default values for the given channel dictionary"""
     def _build_channel_defaults(self, channel_data, channel):
@@ -253,7 +257,13 @@ class PoolMeasurementGroup(PoolGroupElement):
                         ctrl_data['monitor'] = g_monitor
                     else:
                         ctrl_data['monitor'] = elements[0]
-                    ctrl_data['trigger_type'] = AcqTriggerType.Software
+                    # TODO: trigger_type and trigger_element names are not the best
+                    # synchronization and synchronizer seems to be better choice
+                    ctrl_data['trigger_type'] = AcqSynchType.Trigger
+                    try:
+                        ctrl_data['trigger_element'] = self.pool.get_software_tg()
+                    except:
+                        self.warning("It was not able to assing software synchronizer")
             else:
                 channels = ctrl_data['channels']
             channels[element] = channel_data = {}
@@ -280,6 +290,16 @@ class PoolMeasurementGroup(PoolGroupElement):
             tg_elem_ids = []
             pool = self.pool
             for c, c_data in config['controllers'].items():
+                tg_element = c_data['trigger_element']
+                acq_synch_type = c_data['trigger_type']
+                # for backwards compatibility purposes
+                # protect measurementgroups without trigger_element defined
+                # TODO: otherwise obtain software synchronizer and use it
+                if tg_element:
+                    tg_elem_ids.append(tg_element.id)
+                software = is_software_tg(tg_element)
+                acq_synch = AcqSynch.from_synch_type(software, acq_synch_type)
+                self._ctrl_to_acq_synch[c] = acq_synch
                 external = isinstance(c, (str, unicode))
                 for channel_data in c_data['channels'].values():
                     if external:
@@ -287,14 +307,10 @@ class PoolMeasurementGroup(PoolGroupElement):
                         channel_data['source'] = _id
                     else:
                         element = pool.get_element_by_full_name(channel_data['full_name'])
+                        self._channel_to_acq_synch[element] = acq_synch
                         _id = element.id
                     user_elem_ids[channel_data['index']] = _id
                     channel_data = self._build_channel_defaults(channel_data, element)
-                tg_element = c_data['trigger_element']
-                # for backwards compatibility purposes
-                # protect measurementgroups without trigger_element defined
-                if tg_element:
-                    tg_elem_ids.append(tg_element.id)
             indexes = sorted(user_elem_ids.keys())
             assert indexes == range(len(indexes))
             user_elem_ids_list = [ user_elem_ids[idx] for idx in indexes ]
@@ -441,16 +457,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                 #    ctrl.set_ctrl_par('monitor', g_monitor.axis)
                 ctrl.set_ctrl_par('timer', ctrl_data['timer'].axis)
                 ctrl.set_ctrl_par('monitor', ctrl_data['monitor'].axis)
-                trigger_type = ctrl_data['trigger_type']
-                # TODO: mixing units with ctrl data concepts
-                trigger_element = ctrl_data.get('trigger_element')
-                if trigger_element:
-                    tg_pool_ctrl = trigger_element.get_controller()
-                    tg_ctrl = tg_pool_ctrl._ctrl
-                    # checking if we are using software or hardware trigger
-                    # TODO: this check is not generic !!!
-                    if hasattr(tg_ctrl, 'add_listener'):
-                        trigger_type = AcqTriggerType.Software
+                trigger_type = self._ctrl_to_acq_synch.get(ctrl)
                 self.debug('load_configuration: setting trigger_type: %s to ctrl: %s' % (trigger_type, ctrl))
                 ctrl.set_ctrl_par('trigger_type', trigger_type)
 
@@ -603,23 +610,9 @@ class PoolMeasurementGroup(PoolGroupElement):
                 kwargs['integ_time'] = integration_time
             elif acquisition_mode in (AcqMode.Monitor, AcqMode.ContMonitor):
                 kwargs['monitor'] = self._monitor
-            if acquisition_mode in (AcqMode.ContTimer, AcqMode.ContMonitor):
-                self._action_cache = None
-                # TODO: calculate the active_interval, based on the involved elements
-                # hardcoding the active_interval to 1 us
-#                 active_interval = 1e-6
-#                 if active_interval > integration_time:
-#                     raise ValueError('IntegrationTime must be higher than 1 us')
-#                 passive_interval = integration_time - active_interval
-#                 kwargs['active_interval'] = active_interval
-#                 kwargs['passive_interval'] = passive_interval
-#                 kwargs['offset'] = self._offset
-                kwargs['repetitions'] = self._repetitions
-                kwargs['synchronization'] = self._synchronization
-                kwargs['synchronized'] = True
-                kwargs['moveable'] = self._moveable_obj
-            elif self.acquisition_mode in (AcqMode.Timer, AcqMode.Monitor):
-                kwargs['synchronized'] = False            
+            kwargs['repetitions'] = self._repetitions
+            kwargs['synchronization'] = self._synchronization
+            kwargs['moveable'] = self._moveable_obj
             # start acquisition
             self.acquisition.run(**kwargs)
 
