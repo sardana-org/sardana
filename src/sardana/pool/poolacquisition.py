@@ -41,6 +41,7 @@ from taurus.core.util.enumeration import Enumeration
 from sardana import State, ElementType, TYPE_TIMERABLE_ELEMENTS
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool import AcqTriggerType
+from sardana.pool.poolutil import is_software_tg
 from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
 from sardana.pool.pooltriggergate import TGEventType
 from sardana.pool.pooltggeneration import PoolTGGeneration
@@ -81,15 +82,10 @@ def split_MGConfigurations(mg_cfg_in):
         # splitting rest of the channels based on the assigned trigger
         else:
             tg_element = ctrl_info.get('trigger_element')
-            if tg_element != None:
-                tg_pool_ctrl = tg_element.get_controller() 
-                tg_ctrl = tg_pool_ctrl._ctrl
-                # TODO: filtering software and HW TG controllers on 
-                # add_listener attribute, this is not generic!
-                if hasattr(tg_ctrl, 'add_listener'):
-                    ctrls_sw_out[ctrl] = ctrl_info
-                if not hasattr(tg_ctrl, 'add_listener'):
-                    ctrls_hw_out[ctrl] = ctrl_info
+            if tg_element is None or is_software_tg(tg_element):
+                ctrls_sw_out[ctrl] = ctrl_info
+            else:
+                ctrls_hw_out[ctrl] = ctrl_info
     # TODO: timer and monitor are just random elements!!!
     if len(ctrls_sw_out):
         mg_sw_cfg_out['timer'] = ctrls_sw_out.values()[0]['timer']
