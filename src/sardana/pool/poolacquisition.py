@@ -931,13 +931,6 @@ class Pool0DAcquisition(PoolAction):
             kwargs.pop("nb_states_per_value",
                        pool.acq_loop_states_per_value)
 
-        integ_time = kwargs.get("integ_time")
-        mon_count = kwargs.get("monitor_count")
-        if integ_time is None and mon_count is None:
-            raise Exception("must give integration time or monitor counts")
-        if integ_time is not None and mon_count is not None:
-            raise Exception("must give either integration time or monitor counts (not both)")
-
         items = kwargs.get("items")
         if items is None:
             items = self.get_elements()
