@@ -43,6 +43,8 @@ from sardana.pool.pooltggeneration import PoolTGGeneration
 from sardana.pool.poolutil import is_software_tg
 
 from sardana.taurus.core.tango.sardana import PlotType, Normalization
+from sardana.pool.pooldefs import SynchDomain, SynchParam
+
 
 #----------------------------------------------
 # Measurement Group Configuration information
@@ -100,7 +102,6 @@ class PoolMeasurementGroup(PoolGroupElement):
     DFT_DESC = 'General purpose measurement group'
 
     def __init__(self, **kwargs):
-        self._integration_time = None
         self._monitor_count = None
         self._offset = 0
         self._repetitions = 1
@@ -507,9 +508,20 @@ class PoolMeasurementGroup(PoolGroupElement):
     # --------------------------------------------------------------------------
 
     def get_integration_time(self):
-        return self._integration_time
+        if len(self._synchronization) == 0:
+            raise Exception("The synchronization group has not been"
+                            " initialized")
+        elif len(self._synchronization) > 1:
+            raise Exception("There are more than one synchronization groups")
+        else:
+            return self._synchronization[0][SynchParam.Active][SynchDomain.Time]
 
     def set_integration_time(self, integration_time, propagate=1):
+        synch = [{SynchParam.Delay: {SynchDomain.Time: 0},
+                  SynchParam.Active: {SynchDomain.Time: integration_time},
+                  SynchParam.Total: {SynchDomain.Time: integration_time},
+                  SynchParam.Repeats: 1}]
+        self.set_synchronization(synch)
         self._integration_time = integration_time
         if not propagate:
             return
@@ -563,10 +575,10 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     def set_synchronization(self, synchronization, propagate=1):
         self._synchronization = synchronization
-        repetitions = 0
-        for group in synchronization:
-            repetitions += group[SynchParam.Repeats]
-        self._repetitions = repetitions
+        # repetitions = 0
+        # for group in synchronization:
+        #     repetitions += group[SynchParam.Repeats]
+        # self._repetitions = repetitions
         self._config_dirty = True #acquisition mode goes to configuration
         if not propagate:
             return
@@ -605,9 +617,8 @@ class PoolMeasurementGroup(PoolGroupElement):
             # determining the acquisition parameters
             kwargs = dict(head=self, config=self._config, multiple=multiple)
             acquisition_mode = self.acquisition_mode
-            integration_time = self._integration_time
             if acquisition_mode in (AcqMode.Timer, AcqMode.ContTimer):
-                kwargs['integ_time'] = integration_time
+                kwargs['integ_time'] = self.get_integration_time()
             elif acquisition_mode in (AcqMode.Monitor, AcqMode.ContMonitor):
                 kwargs['monitor'] = self._monitor
             kwargs['repetitions'] = self._repetitions
