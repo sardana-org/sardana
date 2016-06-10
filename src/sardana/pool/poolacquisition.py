@@ -375,7 +375,6 @@ class PoolAcquisition(PoolAction):
         :type copy_of: bool
         :return: a sequence of all elements involved in this action.
         :rtype: seq<sardana.pool.poolelement.PoolElement>"""
-        #TODO: this is broken now - fix it
         return (self._hw_acq.get_elements() + self._hw_acq.get_elements() +
                self._0d_acq.get_elements() + self._tg_gen.get_elements())
 
