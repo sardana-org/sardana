@@ -376,7 +376,8 @@ class PoolAcquisition(PoolAction):
         :return: a sequence of all elements involved in this action.
         :rtype: seq<sardana.pool.poolelement.PoolElement>"""
         #TODO: this is broken now - fix it
-        return self._ct_acq.get_elements() + self._0d_acq.get_elements()
+        return (self._hw_acq.get_elements() + self._hw_acq.get_elements() +
+               self._0d_acq.get_elements() + self._tg_gen.get_elements())
 
     def get_pool_controller_list(self):
         """Returns a list of all controller elements involved in this action.
