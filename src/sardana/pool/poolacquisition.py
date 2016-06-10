@@ -135,7 +135,7 @@ def getTGConfiguration(MGcfg):
     return TGcfg, _tg_element_list
 
 def extract_integ_time(synchronization):
-    """Extract integration time(s) from synchronization dict. If there is onl 
+    """Extract integration time(s) from synchronization dict. If there is only
     one group in the synchronization than returns float with the integration
     time. Otherwise a list of floats with different integration times.
 
@@ -147,6 +147,7 @@ def extract_integ_time(synchronization):
     if len(synchronization) == 1:
         integ_time = synchronization[0][SynchParam.Active][SynchDomain.Time]
     else:
+        integ_time = []
         for group in synchronization:
             active_time = group[SynchParam.Active][SynchDomain.Time]
             repeats = group[SynchParam.Repeats]
