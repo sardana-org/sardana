@@ -237,7 +237,7 @@ class BaseAcquisition(object):
         position = initial + total * repeats
         mot = self.mots[moveable]
         mot.set_base_rate(0)
-        mot.set_velocity(0.1)
+        mot.set_velocity(0.5)
         channel_names = self.prepare_meas(config)
         self.pmg.synchronization = synchronization
         self.pmg.moveable = moveable
@@ -250,8 +250,8 @@ class BaseAcquisition(object):
         acq = self.pmg.acquisition
         # waiting for acquisition 
         while acq.is_running():
-            time.sleep(1)
-        time.sleep(3)
+            time.sleep(0.1)
+        #time.sleep(3)
         self.acq_asserts(channel_names, repetitions)
 
     def tearDown(self):
