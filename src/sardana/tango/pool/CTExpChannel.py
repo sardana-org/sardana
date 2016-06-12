@@ -127,9 +127,15 @@ class CTExpChannel(PoolElementDevice):
                 if event_value.error:
                     error = Except.to_dev_failed(*event_value.exc_info)
                 else:
-                    # TODO: workaround to pass values via two attributes (Data and Value)
-                    value_obj = event_value.get_value_obj()
-                    attr, value = self.prepare_ct_data(value_obj)
+                    value = event_value.value
+                    value_chunk = event_value.value_chunk
+                    if value_chunk:
+                        _attr = self.get_attribute_by_name("data")
+                        _value = self._encode_value_chunk(value_chunk)
+                        self.set_attribute(_attr, value=_value, w_value=w_value,
+                                           timestamp=timestamp, quality=quality,
+                                           priority=priority, error=error,
+                                           synch=False)
                 timestamp = event_value.timestamp
             else:
                 value = event_value
@@ -145,25 +151,21 @@ class CTExpChannel(PoolElementDevice):
                            timestamp=timestamp, quality=quality,
                            priority=priority, error=error, synch=False)
 
-    def prepare_ct_data(self, value_obj):
-        """Prepares value to be passed via communication channel - Tango Events.
+    def _encode_value_chunk(self, value_chunk):
+        """Prepare value chunk to be passed via communication channel.
 
-        :param data: SardanaValue
+        :param value_chunk: value chunk
+        :type value_chunk: seq<SardanaValue>
 
-        :return: (attr,value) attribute and value 
-        :rtype: :(class:`taurus.TaurusAttribute`, object)"""
-        # scalar float data are passed via Value
-        value = value_obj.value
-        if isinstance(value, float):
-            name = 'Value'
-            attr_value = value
-        else:
-            name = 'Data'
-            index = value_obj.idx
-            raw_data = dict(data=value, index=index)
-            _, attr_value = self.codec.encode(('', raw_data))
-        attr = self.get_attribute_by_name(name)
-        return attr, attr_value
+        :return: json string representing value chunk
+        :rtype: str"""
+        value = []; index = []
+        for sv in value_chunk:
+            value.append(sv.value)
+            index.append(sv.idx)
+        data = dict(data=value, index=index)
+        _, encoded_data = self.codec.encode(('', data))
+        return encoded_data
 
     def always_executed_hook(self):
         #state = to_tango_state(self.ct.get_state(cache=False))
