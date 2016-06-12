@@ -174,11 +174,8 @@ class Value(SardanaAttribute):
         value = self._accumulation.value
         # use timestamp of the last acquired sample as timestamp of accumulation
         timestamp = self._accumulation.get_time_buffer()[-1]
-        idx = self._index
-        # TODO: eventually fix when it will be reconsidered if SardanaValue 
-        # stores lists of values and indexes, or a list of SardanaValues will be
-        # used as buffer. 
-        value_obj = SardanaValue(value=[value], idx=[idx], timestamp=timestamp)
+        idx = self._index 
+        value_obj = SardanaValue(value=value, idx=idx, timestamp=timestamp)
         return value_obj
 
     def get_value_buffer(self):

@@ -189,17 +189,20 @@ class DummyCounterTimerController(CounterTimerController):
     def ReadOne(self, ind):
         self._log.debug('ReadOne(%d): entering...' % ind)
         channel = self.read_channels[ind]
+        ret = None
         if channel.mode == AcqSynch.HardwareTrigger:
-            v = copy.deepcopy(channel.buffer_values)
-            sv = SardanaValue(v)
-            sv.idx = range(channel._counter, channel._counter + len(v))
+            values = copy.deepcopy(channel.buffer_values)
+            indexes = range(channel._counter, channel._counter + len(values))
+            ret = []
+            for v, i in zip(values, indexes):
+                ret.append(SardanaValue(v, i))
             channel.buffer_values.__init__()
-            channel._counter = channel._counter + len(v)
+            channel._counter = channel._counter + len(values)
         elif channel.mode == AcqSynch.SoftwareTrigger:
             v = channel.value
-            sv = SardanaValue(v)
-        self._log.debug('ReadOne(%d): returning %s' % (ind, repr(v)))
-        return sv
+            ret = SardanaValue(v)
+        self._log.debug('ReadOne(%d): returning %s' % (ind, repr(ret)))
+        return ret
     
     def PreStartAll(self):
         self.counting_channels = {}

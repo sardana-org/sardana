@@ -37,6 +37,7 @@ from sardana.pool.pooltriggergate import TGEventType
 from sardana.pool.poolacquisition import (PoolAcquisitionHardware,
                                           PoolAcquisitionSoftware,
                                           PoolCTAcquisition)
+from sardana.sardanautils import is_ordered_non_str_seq
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool.test import (createPoolTGGenerationConfiguration,
                                createCTAcquisitionConfiguration,
@@ -57,15 +58,17 @@ class AttributeListener(object):
         # obtaining sardana element e.g. exp. channel (the attribute owner)
         obj = s.get_obj()
         obj_name = obj.name
-        # obtaining the SardanaValue corresponding to read value
-        sdn_value = v.get_value_obj()
-        # value and index pair (ensure they are lists even if they were scalars)      
-        value = sdn_value.value
-        if numpy.isscalar(value):
-            value = [value]
-        idx = sdn_value.idx
-        if numpy.isscalar(idx):
-            idx = [idx]
+        # obtaining the SardanaValue corresponding to read value(s)
+        value_obj = v.get_value_obj()
+        if is_ordered_non_str_seq(value_obj):
+            value = []; idx = []
+            for sardana_value in value_obj:
+                value.append(sardana_value.value)
+                idx.append(sardana_value.idx)
+        else:
+            sardana_value = value_obj
+            value = [sardana_value.value]
+            idx = [sardana_value.idx]
         # filling the measurement records
         with self.data_lock:
             channel_data = self.data.get(obj_name, [])
