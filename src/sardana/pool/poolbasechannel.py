@@ -30,13 +30,13 @@ __all__ = ["Value", "PoolBaseChannel"]
 
 __docformat__ = 'restructuredtext'
 
-from sardana.sardanaattribute import SardanaAttribute
+from sardana.sardanaattribute import BufferedAttribute
 
 from sardana.pool.poolelement import PoolElement
 from sardana.pool.poolacquisition import PoolCTAcquisition
 
 
-class Value(SardanaAttribute):
+class Value(BufferedAttribute):
 
     def __init__(self, *args, **kwargs):
         super(Value, self).__init__(*args, **kwargs)
@@ -104,7 +104,7 @@ class PoolBaseChannel(PoolElement):
             :class:`~sardana.sardanavalue.SardanaValue`"""
         return self.acquisition.read_value()[self]
 
-    def put_value(self, value, propagate=1):
+    def put_value(self, value, propagate=1, extend=False):
         """Sets a value.
 
         :param value:
@@ -114,9 +114,26 @@ class PoolBaseChannel(PoolElement):
         :param propagate:
             0 for not propagating, 1 to propagate, 2 propagate with priority
         :type propagate:
+            int
+        :param extend:
+            True for extending """
+        val_attr = self._value
+        val_attr.set_value(value, propagate=propagate, extend=extend)
+        return val_attr
+
+    def put_value_chunk(self, value_chunk, propagate=1):
+        """Sets a value chunk.
+
+        :param value_chunk:
+            the new value chunk
+        :type value:
+            :class:`~sardana.sardanavalue.SardanaValue`
+        :param propagate:
+            0 for not propagating, 1 to propagate, 2 propagate with priority
+        :type propagate:
             int"""
         val_attr = self._value
-        val_attr.set_value(value, propagate=propagate)
+        val_attr.set_value_chunk(value_chunk, propagate=propagate)
         return val_attr
 
     def get_value(self, cache=True, propagate=1):
