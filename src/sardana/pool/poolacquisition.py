@@ -601,8 +601,7 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
         with ActionContext(self):
             self.raw_read_value_loop(ret=values)
             for acquirable, value in values.items():
-                if len(value.value) > 0:
-                    acquirable.put_value(value, propagate=2)
+                acquirable.put_value_chunk(value, propagate=2)
 
         while True:
             self.read_state_info(ret=states)
@@ -613,8 +612,7 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
             if not i % nb_states_per_value:
                 self.read_value_loop(ret=values)
                 for acquirable, value in values.items():
-                    if len(value.value) > 0:
-                        acquirable.put_value(value)
+                    acquirable.put_value_chunk(value)
 
             time.sleep(nap)
             i += 1
@@ -629,8 +627,8 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
             acquirable.set_state_info(state_info, propagate=0)
             if acquirable in values:
                 value = values[acquirable]
-                if len(value.value) > 0:
-                    acquirable.put_value(value, propagate=2)
+                if len(value) > 0:
+                    acquirable.put_value_chunk(value, propagate=2)
             with acquirable:
                 acquirable.clear_operation()
                 state_info = acquirable._from_ctrl_state_info(state_info)
@@ -685,16 +683,10 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
             acquirable.set_state_info(state_info, propagate=0)
             if acquirable in values:
                 value = values[acquirable]
-                # TODO: workaround in order to pass the value via Tango Data attribute
-                # At this moment experimental channel values are passed via two
-                # different Tango attributes (Value and Data).
-                # The discrimination is  based on type of the value: if the type
-                # is scalar it is passed via Value, and if type is spectrum it 
-                # is passed via Data. 
-                # We want to pass it via Data so we encapsulate value and index in lists.
-                value.value = [value.value]
-                value.idx = [self.index]
-                acquirable.put_value(value, propagate=2)
+                # fill information about the current index
+                value.idx = self.index
+                value_chunk = [value]
+                acquirable.put_value_chunk(value_chunk, propagate=2)
             with acquirable:
                 acquirable.clear_operation()
                 state_info = acquirable._from_ctrl_state_info(state_info)
