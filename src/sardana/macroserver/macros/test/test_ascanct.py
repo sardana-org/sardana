@@ -5,7 +5,7 @@ import PyTango
 from taurus.external import unittest
 from sardana.macroserver.macros.test import (RunStopMacroTestCase, testRun,
                                                         testStop)
-from sardana.pool import AcqTriggerType
+from sardana.pool import AcqSynchType
 #TODO: MeasSarTestTestCase is a util, could be moved to base_sartest or another
 # utils module.
 from sardana.tango.pool.test.test_measurementgroup import MeasSarTestTestCase
@@ -54,15 +54,15 @@ class UtilsForTests():
 # Test for checking that the required number of points is present by doing 
 # an ascanct with a trigger device.
 # Test for checking that the required number of points is present.
-mg_config1 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger)]]
-mg_config2 = [[('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
-               ('_test_ct_1_2', '_test_tg_1_1', AcqTriggerType.Trigger)]
+mg_config1 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger)]]
+mg_config2 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),
+               ('_test_ct_1_2', '_test_tg_1_1', AcqSynchType.Trigger)]
     ]
-mg_config3 = [[('_test_ct_1_1', '_test_stg_1_1', AcqTriggerType.Trigger)],
-              [('_test_ct_2_1', '_test_tg_1_1', AcqTriggerType.Trigger)]
+mg_config3 = [[('_test_ct_1_1', '_test_stg_1_1', AcqSynchType.Trigger)],
+              [('_test_ct_2_1', '_test_tg_1_1', AcqSynchType.Trigger)]
     ]
-mg_config4 = [[('_test_ct_1_1', '_test_stg_1_1', AcqTriggerType.Trigger)],
-              [('_test_ct_2_1', '_test_stg_1_1', AcqTriggerType.Trigger)]
+mg_config4 = [[('_test_ct_1_1', '_test_stg_1_1', AcqSynchType.Trigger)],
+              [('_test_ct_2_1', '_test_stg_1_1', AcqSynchType.Trigger)]
     ]
 macro_params_1 = ['_test_mt_1_1', '0', '10', '100', '0.1']
 

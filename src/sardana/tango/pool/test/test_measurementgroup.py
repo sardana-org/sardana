@@ -31,8 +31,7 @@ import PyTango
 from taurus.external import unittest
 from taurus.test import insertTest
 from taurus.core.util import CodecFactory
-from sardana.pool import AcqTriggerType
-from sardana.pool.pooldefs import SynchDomain, SynchParam
+from sardana.pool import AcqSynchType, SynchDomain, SynchParam
 from sardana.tango.pool.test import SarTestTestCase
 
 # TODO: It will be moved
@@ -177,22 +176,22 @@ params_1 = {
 doc_1 = 'Synchronized acquisition with two channels from the same controller'\
         ' using hardware trigger'
 config_1 = (
-    (('_test_ct_1_1', '_test_tg_1_1', AcqTriggerType.Trigger),
-     ('_test_ct_1_2', '_test_tg_1_1', AcqTriggerType.Trigger)),
+    (('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),
+     ('_test_ct_1_2', '_test_tg_1_1', AcqSynchType.Trigger)),
 )
 doc_2 = 'Synchronized acquisition with two channels from the same controller'\
         ' using software trigger'
 config_2 = (
-    (('_test_ct_1_1', '_test_stg_1_1', AcqTriggerType.Trigger),
-     ('_test_ct_1_2', '_test_stg_1_1', AcqTriggerType.Trigger)),
+    (('_test_ct_1_1', '_test_stg_1_1', AcqSynchType.Trigger),
+     ('_test_ct_1_2', '_test_stg_1_1', AcqSynchType.Trigger)),
 )
 doc_3 = 'Synchronized acquisition with four channels from two different'\
         'controllers using hardware and software triggers'
 config_3 = (
-    (('_test_ct_1_1', '_test_stg_1_1', AcqTriggerType.Trigger),
-     ('_test_ct_1_2', '_test_stg_1_1', AcqTriggerType.Trigger)),
-    (('_test_ct_2_1', '_test_tg_1_1', AcqTriggerType.Trigger),
-     ('_test_ct_2_2', '_test_tg_1_1', AcqTriggerType.Trigger)),
+    (('_test_ct_1_1', '_test_stg_1_1', AcqSynchType.Trigger),
+     ('_test_ct_1_2', '_test_stg_1_1', AcqSynchType.Trigger)),
+    (('_test_ct_2_1', '_test_tg_1_1', AcqSynchType.Trigger),
+     ('_test_ct_2_2', '_test_tg_1_1', AcqSynchType.Trigger)),
 )
 doc_4 = 'Stop of the synchronized acquisition with two channels from the same'\
         ' controller using hardware trigger'
