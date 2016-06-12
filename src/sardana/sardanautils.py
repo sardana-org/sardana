@@ -78,6 +78,14 @@ def is_pure_str(obj):
 def is_non_str_seq(obj):
     return isinstance(obj, collections.Sequence) and not is_pure_str(obj)
 
+def is_ordered_non_str_seq(obj):
+    try:
+        len(obj)
+        obj[0:0]
+        return True
+    except TypeError:
+        return False
+
 def is_integer(obj):
     return isinstance(obj, __int_klasses)
 
