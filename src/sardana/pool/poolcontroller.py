@@ -42,6 +42,7 @@ from taurus.core.util.containers import CaselessDict
 from sardana import State, ElementType, TYPE_TIMERABLE_ELEMENTS
 from sardana.sardanaevent import EventType
 from sardana.sardanavalue import SardanaValue
+from sardana.sardanautils import is_ordered_non_str_seq
 
 from sardana.pool.poolextension import translate_ctrl_value
 from sardana.pool.poolbaseelement import PoolBaseElement
@@ -562,10 +563,13 @@ class PoolController(PoolBaseController):
             axis = element.get_axis()
             ctrl_value = self.ctrl.ReadOne(axis)
             if ctrl_value is None:
-                msg = '%s.ReadOne(%s[%d]) return error: Expected value, ' \
+                msg = '%s.ReadOne(%s[%d]) return error: Expected value(s), ' \
                       'got None instead' % (self.name, element.name, axis)
                 raise ValueError(msg)
-            value = translate_ctrl_value(ctrl_value)
+            if is_ordered_non_str_seq(ctrl_value):
+                value = [translate_ctrl_value(v) for v in ctrl_value]
+            else:
+                value = translate_ctrl_value(ctrl_value)
         except:
             value = SardanaValue(exc_info=sys.exc_info())
         return value
