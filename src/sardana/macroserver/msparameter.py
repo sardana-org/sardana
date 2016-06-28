@@ -436,11 +436,11 @@ class ParamDecoder:
         if min_rep and len_rep < min_rep:
             msg = 'Found %d repetitions of param %s, min is %d' % \
                   (len_rep, name, min_rep)
-            raise RuntimeError, msg
+            raise MissingRepeat, msg
         if  max_rep and len_rep > max_rep:
             msg = 'Found %d repetitions of param %s, max is %d' % \
                   (len_rep, name, max_rep)
-            raise RuntimeError, msg
+            raise SupernumeraryRepeat, msg
         for raw_repeat in raw_param_repeat:
             if len(param_type) > 1:
                 repeat = []
