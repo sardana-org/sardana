@@ -54,7 +54,8 @@ from sardana.sardanautils import is_pure_str, is_non_str_seq
 from sardana.macroserver.msmanager import MacroServerManager
 from sardana.macroserver.msmetamacro import MACRO_TEMPLATE, MacroLibrary, \
     MacroClass, MacroFunction
-from sardana.macroserver.msparameter import ParamDecoder
+from sardana.macroserver.msparameter import ParamDecoder, FlatParamDecoder, \
+    WrongParam
 from sardana.macroserver.macro import Macro, MacroFunc
 from sardana.macroserver.msexception import UnknownMacroLibrary, \
     LibraryError, UnknownMacro, MissingEnv, AbortException, StopException, \
@@ -681,7 +682,20 @@ class MacroManager(MacroServerManager):
         macro_meta = self.getMacro(macro_name)
         params_def = macro_meta.get_parameter()
         type_manager = door.type_manager
-        out_par_list = ParamDecoder(type_manager, params_def, raw_params)
+        try:
+            out_par_list = ParamDecoder(type_manager, params_def, raw_params)
+        except WrongParam, out_e:
+            if FlatParamDecoder.isPossible(params_def):
+                self.debug("Trying flat parameter decoder due to: %s" % out_e)
+                try:
+                    out_par_list = FlatParamDecoder(type_manager, params_def,
+                                                    raw_params)
+                except WrongParam, in_e:
+                    msg = ("Either of: %s or %s made it impossible to decode"
+                           " parameters" % (out_e.message, in_e.message))
+                    raise WrongParam, msg
+            else:
+                raise out_e
         return macro_meta, raw_params, out_par_list
 
     def strMacroParamValues(self, par_list):
