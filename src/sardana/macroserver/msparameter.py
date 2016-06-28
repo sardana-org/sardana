@@ -26,10 +26,11 @@
 """This module contains the definition of the macroserver parameters for
 macros"""
 
-__all__ = ["WrongParam", "MissingParam", "UnknownParamObj", "WrongParamType",
-           "TypeNames", "Type", "ParamType", "ParamRepeat", "ElementParamType",
-           "ElementParamInterface", "AttrParamType", "AbstractParamTypes",
-           "ParamDecoder"]
+__all__ = ["WrongParam", "MissingParam", "SupernumeraryParam",
+           "UnknownParamObj", "WrongParamType", "MissingRepeat",
+           "SupernumeraryRepeat", "TypeNames", "Type", "ParamType",
+           "ParamRepeat", "ElementParamType", "ElementParamInterface",
+           "AttrParamType", "AbstractParamTypes", "ParamDecoder"]
 
 __docformat__ = 'restructuredtext'
 
@@ -58,6 +59,13 @@ class MissingParam(WrongParam):
         self.type = 'Missing parameter'
 
 
+class SupernumeraryParam(WrongParam):
+
+    def __init__(self, *args):
+        WrongParam.__init__(self, *args)
+        self.type = 'Supernumerary parameter'
+
+
 class UnknownParamObj(WrongParam):
 
     def __init__(self, *args):
@@ -70,6 +78,20 @@ class WrongParamType(WrongParam):
     def __init__(self, *args):
         WrongParam.__init__(self, *args)
         self.type = 'Unknown parameter type'
+
+
+class MissingRepeat(WrongParam):
+
+    def __init__(self, *args):
+        WrongParam.__init__(self, *args)
+        self.type = 'Missing repeat'
+
+
+class SupernumeraryRepeat(WrongParam):
+
+    def __init__(self, *args):
+        WrongParam.__init__(self, *args)
+        self.type = 'Supernumerary repeat'
 
 
 class TypeNames:
