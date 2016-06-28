@@ -356,6 +356,12 @@ class ParamDecoder:
                     raw_params.remove(raw_param)
 
         params = []
+        # check if too many parameters were passed
+        len_params_def = len(params_def)
+        if len(raw_params) > len_params_def:
+            msg = ("%r are supernumerary with respect to definition" %
+                   raw_params[len_params_def:])
+            raise SupernumeraryParam, msg
         # iterate over definition since missing values may just mean using
         # the default values
         for i, param_def in enumerate(params_def):
