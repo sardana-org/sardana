@@ -685,7 +685,11 @@ class MacroManager(MacroServerManager):
         try:
             out_par_list = ParamDecoder(type_manager, params_def, raw_params)
         except WrongParam, out_e:
-            if FlatParamDecoder.isPossible(params_def):
+            # only if raw params are passed as a list e.g. using macro API
+            # execMacro("mv", mot01, 0.0) and parameters definition allows to
+            # decode it from a flat list we give it a try
+            if (isinstance(raw_params, list) and
+                FlatParamDecoder.isPossible(params_def)):
                 self.debug("Trying flat parameter decoder due to: %s" % out_e)
                 try:
                     out_par_list = FlatParamDecoder(type_manager, params_def,
