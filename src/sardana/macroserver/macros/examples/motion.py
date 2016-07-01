@@ -28,8 +28,6 @@ __all__ = ["move_async"]
 __docformat__ = 'restructuredtext'
 
 from sardana.macroserver.macro import *
-from sardana import State
-import time
 
 
 class move_async(Macro):
@@ -39,18 +37,20 @@ class move_async(Macro):
     This macro is part of the examples package. It was written for
     demonstration purposes"""
 
-    param_def = [['name', Type.Moveable, None, 'motor name'],
+    param_def = [['moveable', Type.Moveable, None, 'moveable to be moved'],
                  ['pos', Type.Float, None, 'target position'],
                  ]
 
-    def run(self, motor, pos):
+    def run(self, moveable, pos):
         try:
-            self.motor = self.getMotion([motor])
-            self.info('initial position: %s' % self.motor.readPosition())
-            _id = self.motor.startMove([pos])
-            # Do whatever here (while the motor is moving)
-            while self.motor.readState() == State.Moving:
-                time.sleep(0.25)
-            # End Do whatever here #######################
+            motion = self.getMotion([moveable])
+            self.info('initial position: %s' % motion.readPosition())
+            _id = motion.startMove([pos])
+            # Do whatever here (while the moveable is moving)
+            self.info('state: %s' % motion.readState())
+            # End Do whatever here
         finally:
-            self.motor.waitMove(id=_id)
+            motion.waitMove(id=_id)
+            # this line will not be printed in case of abort (Ctrl-C)
+            # due to https://sourceforge.net/p/sardana/tickets/9/
+            self.info('final position: %s' % motion.readPosition())
