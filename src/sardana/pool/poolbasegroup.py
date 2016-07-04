@@ -30,7 +30,12 @@ __all__ = ["PoolBaseGroup"]
 
 __docformat__ = 'restructuredtext'
 
-from taurus.core.taurusvalidator import AttributeNameValidator
+try:
+    from taurus.core.taurusvalidator import AttributeNameValidator as\
+        TangoAttributeNameValidator
+except ImportError:
+    #TODO: For Taurus 4 compatibility
+    from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 
 from sardana import State, ElementType, TYPE_PHYSICAL_ELEMENTS
 from sardana.pool.poolexternal import PoolExternalObject
@@ -168,7 +173,7 @@ class PoolBaseGroup(PoolContainer):
             # a tango channel or non internal element (ex: ioregister or motor
             # in measurement group)
             if not internal:
-                validator = AttributeNameValidator()
+                validator = TangoAttributeNameValidator()
                 params = validator.getParams(user_element_id)
                 params['pool'] = self._get_pool()
                 user_element = PoolExternalObject(**params)
