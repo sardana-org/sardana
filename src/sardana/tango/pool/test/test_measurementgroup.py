@@ -133,7 +133,6 @@ class MeasSarTestTestCase(SarTestTestCase):
         codec = CodecFactory().getCodec('json')
         data = codec.encode(('', synchronization))
         self.meas.write_attribute('synchronization', data[1])
-        self.meas.write_attribute('integrationtime', params["integ_time"])
 
     def _add_attribute_listener(self, config):
         # Subscribe to events
