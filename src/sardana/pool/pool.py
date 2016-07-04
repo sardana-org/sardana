@@ -718,7 +718,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
 
         .. warning:: This is experimental implementation, don't assume it as API
         """
-        tg_elements = self.get_element_by_type(ElementType.TriggerGate)
+        tg_elements = self.get_elements_by_type(ElementType.TriggerGate)
         for tg in tg_elements:
             if is_software_tg(tg):
                 return tg
