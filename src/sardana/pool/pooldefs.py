@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from operator import __getitem__
 
 ##############################################################################
 ##
@@ -31,7 +30,9 @@ __all__ = ["ControllerAPI", "AcqTriggerType", "AcqMode", "SynchDomain",
 
 __docformat__ = 'restructuredtext'
 
+from operator import __getitem__
 from taurus.external.enum import IntEnum
+from taurus.core.util.enumeration import Enumeration
 from sardana.taurus.core.tango.sardana import AcqTriggerType, AcqMode
 
 #: A constant defining the controller API version currently supported
@@ -74,14 +75,17 @@ class SynchParam(SynchEnum):
     Repeats = 3
     Initial = 4
 
-
-class AcqSynchType(IntEnum):
+# TODO: convert to to python enums, but having in ming problems with
+# JSON serialization: https://bugs.python.org/issue18264
+class AcqSynchType(Enumeration):
 
     Trigger = 0
     Gate = 1
 
 
-class AcqSynch(IntEnum):
+# TODO: convert to to python enums, but having in ming problems with
+# JSON serialization: https://bugs.python.org/issue18264
+class AcqSynch(Enumeration):
 
     SoftwareTrigger = 0
     HardwareTrigger = 1
