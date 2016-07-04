@@ -49,7 +49,12 @@ from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
 from taurus import Factory, Device
 from taurus.core.taurusbasetypes import TaurusEventType, TaurusSWDevState, \
     TaurusSerializationMode
-from taurus.core.taurusvalidator import AttributeNameValidator
+try:
+    from taurus.core.taurusvalidator import AttributeNameValidator as\
+        TangoAttributeNameValidator
+except ImportError:
+    #TODO: For Taurus 4 compatibility
+    from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 from taurus.core.util.log import Logger
 from taurus.core.util.singleton import Singleton
 from taurus.core.util.codecs import CodecFactory
@@ -1156,7 +1161,7 @@ class MGConfiguration(object):
         self.non_tango_channels = n_tg_chs = CaselessDict()
         self.cache = cache = {}
 
-        tg_attr_validator = AttributeNameValidator()
+        tg_attr_validator = TangoAttributeNameValidator()
         for channel_name, channel_data in self.channels.items():
             cache[channel_name] = None
             data_source = channel_data['source']

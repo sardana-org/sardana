@@ -297,7 +297,13 @@ class BaseDoor(MacroServerDevice):
         self.call__init__(MacroServerDevice, name, **kw)
 
         self._old_door_state = PyTango.DevState.UNKNOWN
-        self._old_sw_door_state = TaurusSWDevState.Uninitialized
+        try:
+            self._old_sw_door_state = TaurusSWDevState.Uninitialized
+        except RuntimeError:
+            #TODO: For Taurus 4 compatibility
+            from taurus.core import TaurusDevState
+            TaurusDevState.Uninitialized = 0
+            self._old_sw_door_state = TaurusDevState.Uninitialized
 
         self.getStateObj().addListener(self.stateChanged)
 
@@ -543,7 +549,11 @@ class BaseDoor(MacroServerDevice):
 
     def stateChanged(self, s, t, v):
         self._old_door_state = self.getState()
-        self._old_sw_door_state = self.getSWState()
+        try:
+            self._old_sw_door_state = self.getSWState()
+        except:
+            # TODO: For Taurus 4 compatibility
+            self._old_sw_door_state = self.state
 
     def resultReceived(self, log_name, result):
         """Method invoked by the arrival of a change event on the Result attribute"""
@@ -830,7 +840,8 @@ class BaseMacroServer(MacroServerDevice):
         return MacroInfo(from_json=element_info._data)
 
     def _createDeviceObject(self, element_info):
-        return Factory().getDevice(element_info.full_name)
+        name = "tango://%s" % element_info.full_name
+        return Factory().getDevice(name)
 
     def on_elements_changed(self, evt_src, evt_type, evt_value):
         try:
