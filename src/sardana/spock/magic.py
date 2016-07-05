@@ -45,9 +45,12 @@ def expconf(self, parameter_s=''):
         print "Error importing ExpDescriptionEditor " \
               "(hint: is taurus extra_sardana installed?)"
         return
-    doorname = get_door().name()
-
-    # ===========================================================================
+    try:
+        doorname = get_door().name()
+    except TypeError:
+        # TODO: For Taurus 4 adaptation
+        doorname = get_door().fullname
+    #===========================================================================
     ## ugly hack to avoid ipython/qt thread problems #e.g. see
     ## https://sourceforge.net/p/sardana/tickets/10/ 
     ## this hack does not allow inter-process communication and leaves the 
