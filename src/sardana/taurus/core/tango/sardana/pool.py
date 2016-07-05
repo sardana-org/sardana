@@ -1166,7 +1166,8 @@ class MGConfiguration(object):
             cache[channel_name] = None
             data_source = channel_data['source']
             #external = ctrl_name.startswith("__")
-            params = tg_attr_validator.getParams(data_source)
+            # TODO: For Taurus 4 compatibility
+            params = tg_attr_validator.getParams("tango://%s" % data_source)
             if params is None:
                 # Handle NON tango channel
                 n_tg_chs[channel_name] = channel_data
@@ -1654,7 +1655,9 @@ class Pool(TangoDevice, MoveableSource):
             kwargs['_pool_data'] = data
             kwargs['_pool_obj'] = self
             return klass(**kwargs)
-        obj = Factory().getDevice(element_info.full_name, _pool_obj=self,
+        # TODO: For Taurus 4 compatibility
+        fullname = "tango://%s" % element_info.full_name
+        obj = Factory().getDevice(fullname, _pool_obj=self,
                                   _pool_data=data)
         return obj
 
