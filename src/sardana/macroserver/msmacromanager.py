@@ -979,16 +979,20 @@ class MacroExecutor(Logger):
            1. several parameters:
              1.1 executor.prepareMacro('ascan', 'th', '0', '100', '10', '1.0')
                  executor.prepareMacro('mv', [['th', '0']])
+                 executor.prepareMacro('mv', 'th', '0')
              1.2 executor.prepareMacro('ascan', 'th', 0, 100, 10, 1.0)
                  executor.prepareMacro('mv', [['th', 0]])
+                 executor.prepareMacro('mv', 'th', 0)
              1.3 th = self.getObj('th');
                  executor.prepareMacro('ascan', th, 0, 100, 10, 1.0)
                  executor.prepareMacro('mv', [[th, 0]])
            2. a sequence of parameters:
               2.1 executor.prepareMacro(['ascan', 'th', '0', '100', '10', '1.0')
                   executor.prepareMacro(['mv', [['th', '0']]])
+                  executor.prepareMacro(['mv', 'th', '0'])
               2.2 executor.prepareMacro(('ascan', 'th', 0, 100, 10, 1.0))
                   executor.prepareMacro(['mv', [['th', 0]]])
+                  executor.prepareMacro(['mv', 'th', 0])
               2.3 th = self.getObj('th');
                   executor.prepareMacro(['ascan', th, 0, 100, 10, 1.0])
                   executor.prepareMacro(['mv', [[th, 0]]])

@@ -1051,20 +1051,27 @@ class Macro(Logger):
             # several parameters:
             self.execMacro('ascan', 'th', '0', '100', '10', '1.0')
             self.execMacro('mv', [[motor.getName(), '0']])
+            self.execMacro('mv', motor.getName(), '0')
             self.execMacro('ascan', 'th', 0, 100, 10, 1.0)
             self.execMacro('mv', [[motor.getName(), 0]])
+            self.execMacro('mv', motor.getName(), 0)
             th = self.getObj('th')
             self.execMacro('ascan', th, 0, 100, 10, 1.0)
-            self.execMacro('mv', [th, 0]])
+            self.execMacro('mv', [[th, 0]])
+            self.execMacro('mv', th, 0)
 
             # a sequence of parameters:
             self.execMacro(['ascan', 'th', '0', '100', '10', '1.0')
             self.execMacro(['mv', [[motor.getName(), '0']]])
+            self.execMacro(['mv', motor.getName(), '0'])
             self.execMacro(('ascan', 'th', 0, 100, 10, 1.0))
             self.execMacro(['mv', [[motor.getName(), 0]]])
+            self.execMacro(['mv', motor.getName(), 0])
             th = self.getObj('th')
             self.execMacro(['ascan', th, 0, 100, 10, 1.0])
             self.execMacro(['mv', [[th, 0]]])
+            self.execMacro(['mv', th, 0])
+
 
             # a space separated string of parameters (this is not compatible
             # with multiple or nested repeat parameters, furthermore the repeat
@@ -1108,20 +1115,26 @@ class Macro(Logger):
             # several parameters:
             self.execMacro('ascan', 'th', '0', '100', '10', '1.0')
             self.execMacro('mv', [[motor.getName(), '0']])
+            self.execMacro('mv', motor.getName(), '0')
             self.execMacro('ascan', 'th', 0, 100, 10, 1.0)
             self.execMacro('mv', [[motor.getName(), 0]])
+            self.execMacro('mv', motor.getName(), 0) 
             th = self.getObj('th')
             self.execMacro('ascan', th, 0, 100, 10, 1.0)
-            self.execMacro('mv', [th, 0]])
+            self.execMacro('mv', [[th, 0]])
+            self.execMacro('mv', th, 0)
 
             # a sequence of parameters:
             self.execMacro(['ascan', 'th', '0', '100', '10', '1.0')
             self.execMacro(['mv', [[motor.getName(), '0']]])
+            self.execMacro(['mv', motor.getName(), '0'])
             self.execMacro(('ascan', 'th', 0, 100, 10, 1.0))
             self.execMacro(['mv', [[motor.getName(), 0]]])
+            self.execMacro(['mv', motor.getName(), 0])
             th = self.getObj('th')
             self.execMacro(['ascan', th, 0, 100, 10, 1.0])
             self.execMacro(['mv', [[th, 0]]])
+            self.execMacro(['mv', th, 0])
 
             # a space separated string of parameters (this is not compatible
             # with multiple or nested repeat parameters, furthermore the repeat
@@ -1190,20 +1203,26 @@ class Macro(Logger):
             # several parameters:
             self.execMacro('ascan', 'th', '0', '100', '10', '1.0')
             self.execMacro('mv', [[motor.getName(), '0']])
+            self.execMacro('mv', motor.getName(), '0')
             self.execMacro('ascan', 'th', 0, 100, 10, 1.0)
             self.execMacro('mv', [[motor.getName(), 0]])
+            self.execMacro('mv', motor.getName(), 0)
             th = self.getObj('th')
             self.execMacro('ascan', th, 0, 100, 10, 1.0)
             self.execMacro('mv', [th, 0]])
+            self.execMacro('mv', th, 0)
 
             # a sequence of parameters:
             self.execMacro(['ascan', 'th', '0', '100', '10', '1.0')
             self.execMacro(['mv', [[motor.getName(), '0']]])
+            self.execMacro(['mv', motor.getName(), '0'])
             self.execMacro(('ascan', 'th', 0, 100, 10, 1.0))
             self.execMacro(['mv', [[motor.getName(), 0]]])
+            self.execMacro(['mv', motor.getName(), 0])
             th = self.getObj('th')
             self.execMacro(['ascan', th, 0, 100, 10, 1.0])
             self.execMacro(['mv', [[th, 0]]])
+            self.execMacro(['mv', th, 0])
 
             # a space separated string of parameters (this is not compatible
             # with multiple or nested repeat parameters, furthermore the repeat
