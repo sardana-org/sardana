@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from sys import exc_info
 
 ##############################################################################
 ##
@@ -263,8 +264,11 @@ class PoolMeasurementGroup(PoolGroupElement):
                     ctrl_data['trigger_type'] = AcqSynchType.Trigger
                     try:
                         ctrl_data['trigger_element'] = self.pool.get_software_tg()
-                    except:
-                        self.warning("It was not able to assing software synchronizer")
+                    except Exception, e:
+                        msg = "It was not able to assign software synchronizer"
+                        self.debug(msg, exc_info=True)
+                    self._ctrl_to_acq_synch[ctrl] = AcqSynch.SoftwareTrigger
+                    self._channel_to_acq_synch[element] = AcqSynch.SoftwareTrigger
             else:
                 channels = ctrl_data['channels']
             channels[element] = channel_data = {}

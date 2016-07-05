@@ -157,8 +157,9 @@ class MeasSarTestTestCase(SarTestTestCase):
         try:
             # Delete the meas
             self.pool.DeleteElement(self.mg_name)
-        except:
+        except Exception, e:
             print('Impossible to delete MeasurementGroup: %s' % (self.mg_name))
+            print e
         SarTestTestCase.tearDown(self)
 
 synchronization1 = [{SynchParam.Delay: {SynchDomain.Time: 0},

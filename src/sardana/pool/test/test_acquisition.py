@@ -184,7 +184,7 @@ class AcquisitionTestCase(BasePoolTestCase):
                                                         (channels,))
         # creating acquisition actions
         main_element = FakeElement(self.pool)
-        self.ct_acq = PoolCTAcquisition(main_element)
+        self.ct_acq = PoolAcquisitionSoftware(main_element)
         for channel in channels:
             self.ct_acq.add_element(channel)
 
