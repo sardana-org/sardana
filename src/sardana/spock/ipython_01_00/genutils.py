@@ -526,10 +526,10 @@ def _get_dev(dev_type):
     if hasattr(spock_config, taurus_dev_var):
         taurus_dev = getattr(spock_config, taurus_dev_var)
     if taurus_dev is None:
-        # TODO: For Taurus 4 compatibility
-        dev_name = "tango://%s" % getattr(spock_config, dev_type + '_name')
+        dev_name = getattr(spock_config, dev_type + '_name')
         factory = Factory()
-        taurus_dev = factory.getDevice(dev_name)
+        # TODO: For Taurus 4 compatibility
+        taurus_dev = factory.getDevice("tango://%s" % dev_name)
         import PyTango
         dev = PyTango.DeviceProxy(dev_name)
         setattr(spock_config, dev_type, dev)

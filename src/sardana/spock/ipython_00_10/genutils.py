@@ -556,10 +556,10 @@ def _get_dev(dev_type):
         return ret
     
     dev_obj_name = '%s_NAME' % dev_type
-    # TODO: For Taurus 4 compatibility
-    dev_name = "tango://%s" % ip.user_ns[dev_obj_name]
+    dev_name = ip.user_ns[dev_obj_name]
     factory = Factory()
-    dev_obj = factory.getDevice(dev_name)
+    # TODO: For Taurus 4 compatibility
+    dev_obj = factory.getDevice("tango://%s" % dev_name)
     ip.user_ns[dev_type] = PyTango.DeviceProxy(dev_name) 
     ip.user_ns["_" + dev_type] = dev_obj
     setattr(ip, '_%s' % dev_type, dev_obj)
