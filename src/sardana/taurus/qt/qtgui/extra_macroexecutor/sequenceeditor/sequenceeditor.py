@@ -460,7 +460,11 @@ class TaurusSequencerWidget(TaurusWidget):
         about the macro status does not reach the sequencer widget.'''
 
         door = Device(self.doorName())
-        doorState = door.state()
+        try:
+            doorState = door.state()
+        except TypeError:
+            # TODO: For Taurus 4 adaptation
+            doorState = door.getState()
         if doorState == PyTango.DevState.RUNNING:
             self.playSequenceAction.setEnabled(False)
             self.pauseSequenceAction.setEnabled(True)
@@ -604,7 +608,11 @@ class TaurusSequencerWidget(TaurusWidget):
 
     def onPlaySequence(self):
         door = Device(self.doorName())
-        doorState = door.state()
+        try:
+            doorState = door.state()
+        except TypeError:
+            # TODO: For Taurus 4 adaptation
+            doorState = door.getState()
         if doorState == PyTango.DevState.ON or doorState == PyTango.DevState.ALARM:
             first, last, ids = self.tree.prepareMacroIds()
             self.setFirstMacroId(first)
@@ -621,7 +629,11 @@ class TaurusSequencerWidget(TaurusWidget):
 
     def onStopSequence(self):
         door = Device(self.doorName())
-        doorState = door.state()
+        try:
+            doorState = door.state()
+        except TypeError:
+            # TODO: For Taurus 4 adaptation
+            doorState = door.getState()
         if doorState in (PyTango.DevState.RUNNING, PyTango.DevState.STANDBY):
             door.command_inout("StopMacro")
         else:
@@ -630,7 +642,11 @@ class TaurusSequencerWidget(TaurusWidget):
 
     def onPauseSequence(self):
         door = Device(self.doorName())
-        doorState = door.state()
+        try:
+            doorState = door.state()
+        except TypeError:
+            # TODO: For Taurus 4 adaptation
+            doorState = door.getState()
         if doorState == PyTango.DevState.RUNNING:
             door.command_inout("PauseMacro")
         else:
@@ -707,7 +723,12 @@ class TaurusSequencerWidget(TaurusWidget):
             self.doorStateLed.setModel(None)
             return
         self.doorStateLed.setModel(self.doorName() + "/State")
-        doorState = Device(doorName).state()
+        door = Device(doorName)
+        try:
+            doorState = door.state()
+        except TypeError:
+            # TODO: For Taurus 4 adaptation
+            doorState = door.getState()
         if doorState == PyTango.DevState.ON:
             self.playSequenceAction.setText("Start sequence")
             self.playSequenceAction.setToolTip("Start sequence")
