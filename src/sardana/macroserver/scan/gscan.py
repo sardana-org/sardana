@@ -558,7 +558,7 @@ class GScan(Logger):
         instrument = master['instrument']
 
         #add channels from measurement group
-        channels_info = self.measurement_group.getChannelsInfo()
+        channels_info = self.measurement_group.getChannelsEnabledInfo()
         counters = []
         for ci in channels_info:
             instrument = ci.instrument or ''
@@ -592,7 +592,11 @@ class GScan(Logger):
                                 data_units=ci.unit)
             data_desc.append(column)
             counters.append(column.name)
-        counters.remove(master['full_name'])
+        try:
+            counters.remove(master['full_name'])
+        except ValueError:
+            # timer may be disabled
+            pass
         env['counters'] = counters
 
         for extra_column in self._extra_columns:
