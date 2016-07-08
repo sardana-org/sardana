@@ -98,7 +98,12 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self.connect(self.ui.filenameLE, Qt.SIGNAL('textEdited (QString)'), self.onFilenameLEEdited)
         self.connect(self.ui.channelEditor.getQModel(), Qt.SIGNAL('dataChanged (QModelIndex, QModelIndex)'), self._updateButtonBox)
         self.connect(self.ui.channelEditor.getQModel(), Qt.SIGNAL('modelReset ()'), self._updateButtonBox)
-        self.connect(self.ui.preScanList, Qt.SIGNAL('dataChanged'), self.onPreScanSnapshotChanged)
+        preScanList = self.ui.preScanList
+        self.connect(preScanList, Qt.SIGNAL('dataChanged'),
+                     self.onPreScanSnapshotChanged)
+        #TODO: For Taurus 4 compatibility
+        if hasattr(self.ui.preScanList, "dataChangedSignal"):
+            preScanList.dataChangedSignal.connect(self.onPreScanSnapshotChanged)
         self.connect(self.ui.choosePathBT, Qt.SIGNAL('clicked ()'), self.onChooseScanDirButtonClicked)
         
         self.__plotManager = None
