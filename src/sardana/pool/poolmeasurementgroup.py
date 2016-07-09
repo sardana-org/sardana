@@ -579,10 +579,6 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     def set_synchronization(self, synchronization, propagate=1):
         self._synchronization = synchronization
-        # repetitions = 0
-        # for group in synchronization:
-        #     repetitions += group[SynchParam.Repeats]
-        # self._repetitions = repetitions
         self._config_dirty = True #acquisition mode goes to configuration
         if not propagate:
             return
@@ -625,7 +621,6 @@ class PoolMeasurementGroup(PoolGroupElement):
                 kwargs['integ_time'] = self.get_integration_time()
             elif acquisition_mode in (AcqMode.Monitor, AcqMode.ContMonitor):
                 kwargs['monitor'] = self._monitor
-            kwargs['repetitions'] = self._repetitions
             kwargs['synchronization'] = self._synchronization
             kwargs['moveable'] = self._moveable_obj
             # start acquisition
