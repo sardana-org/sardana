@@ -155,6 +155,21 @@ def extract_integ_time(synchronization):
     return integ_time
 
 
+def extract_repetitions(synchronization):
+    """Extract repetitions from synchronization dict.
+
+    :param synchronization: group(s) where each group is described by
+        SynchParam(s)
+    :type synchronization: list(dict)
+    :return: number of repetitions
+    :rtype: int
+    """
+    repetitions = 0
+    for group in synchronization:
+        repetitions += group[SynchParam.Repeats]
+    return repetitions
+
+
 class PoolAcquisition(PoolAction):
 
     def __init__(self, main_element, name="Acquisition"):
@@ -269,6 +284,7 @@ class PoolAcquisition(PoolAction):
         config = kwargs['config']
         synchronization = kwargs["synchronization"]
         integ_time = extract_integ_time(synchronization)
+        repetitions = extract_repetitions(synchronization)
         # TODO: this code splits the global mg configuration into 
         # experimental channels triggered by hw and experimental channels
         # triggered by sw. Refactor it!!!!
@@ -279,6 +295,7 @@ class PoolAcquisition(PoolAction):
             cont_acq_kwargs = dict(kwargs)
             cont_acq_kwargs['config'] = hw_acq_cfg
             cont_acq_kwargs['integ_time'] = integ_time
+            cont_acq_kwargs['repetitions'] = repetitions
             self._hw_acq.run(*args, **cont_acq_kwargs)
         if len(sw_acq_cfg['controllers']) or len(zerod_acq_cfg['controllers']):
             self._tg_gen.add_listener(self)
@@ -286,6 +303,7 @@ class PoolAcquisition(PoolAction):
                 sw_acq_kwargs = dict(kwargs)
                 sw_acq_kwargs['config'] = sw_acq_cfg
                 sw_acq_kwargs['integ_time'] = integ_time
+                sw_acq_kwargs['repetitions'] = repetitions
                 self.set_sw_config(sw_acq_kwargs)
             if len(zerod_acq_cfg['controllers']):
                 zerod_acq_kwargs = dict(kwargs)
