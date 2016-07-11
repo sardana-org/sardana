@@ -302,8 +302,7 @@ class BaseDoor(MacroServerDevice):
         except RuntimeError:
             #TODO: For Taurus 4 compatibility
             from taurus.core import TaurusDevState
-            TaurusDevState.Uninitialized = 0
-            self._old_sw_door_state = TaurusDevState.Uninitialized
+            self._old_sw_door_state = TaurusDevState.Undefined 
 
         self.getStateObj().addListener(self.stateChanged)
 
