@@ -840,6 +840,7 @@ class BaseMacroServer(MacroServerDevice):
         return MacroInfo(from_json=element_info._data)
 
     def _createDeviceObject(self, element_info):
+        # TODO: For Taurus 4 compatibility
         name = "tango://%s" % element_info.full_name
         return Factory().getDevice(name)
 
