@@ -305,6 +305,7 @@ class PoolMotorSlim(TaurusWidget, PoolMotorClient):
         #self.call__init__(TaurusBaseWidget, str(self.objectName()), designMode=designMode)
         PoolMotorClient.__init__(self)
         self.loadUi()
+        self.recheckTaurusParent()
 
         self.show_context_menu = True
 
@@ -1310,10 +1311,10 @@ class PoolMotorTV(TaurusValue):
     '''
     def __init__(self, parent=None, designMode=False):
         TaurusValue.__init__(self, parent=parent, designMode=designMode)
-        self.setLabelWidgetClass('PoolMotorTVLabelWidget')
-        self.setReadWidgetClass('PoolMotorTVReadWidget')
-        self.setWriteWidgetClass('PoolMotorTVWriteWidget')
-        self.setUnitsWidgetClass('PoolMotorTVUnitsWidget')
+        self.setLabelWidgetClass(PoolMotorTVLabelWidget)
+        self.setReadWidgetClass(PoolMotorTVReadWidget)
+        self.setWriteWidgetClass(PoolMotorTVWriteWidget)
+        self.setUnitsWidgetClass(PoolMotorTVUnitsWidget)
 
         self.setLabelConfig('dev_alias')
 
@@ -1537,7 +1538,6 @@ def main():
     import taurus.qt.qtgui.application
     import taurus.core.util.argparse
     from taurus.qt.qtgui.panel import TaurusForm
-
     parser = taurus.core.util.argparse.get_taurus_parser()
     parser.usage = "%prog [options] [<motor1> [<motor2>] ...]"
 
@@ -1561,7 +1561,7 @@ def main():
 
     # 1) Test PoolMotorSlim motor widget
     form_pms = TaurusForm()
-    pms_widget_class = 'taurus.qt.qtgui.extra_pool.PoolMotorSlim'
+    pms_widget_class = 'sardana.taurus.qt.qtgui.extra_pool.PoolMotorSlim'
     pms_tgclass_map = {'SimuMotor':(pms_widget_class, (), {}),
                        'Motor':(pms_widget_class, (), {}),
                        'PseudoMotor':(pms_widget_class, (), {})}
@@ -1573,7 +1573,7 @@ def main():
     # 2) Test PoolMotorTV motor widget
     form_tv = TaurusForm()
     form_tv.setModifiableByUser(True)
-    tv_widget_class = 'taurus.qt.qtgui.extra_pool.PoolMotorTV'
+    tv_widget_class = 'sardana.taurus.qt.qtgui.extra_pool.PoolMotorTV'
     tv_tgclass_map = {'SimuMotor':(tv_widget_class, (), {}),
                       'Motor':(tv_widget_class, (), {}),
                       'PseudoMotor':(tv_widget_class, (), {})}
