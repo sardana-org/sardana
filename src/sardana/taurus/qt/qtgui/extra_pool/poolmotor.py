@@ -1039,9 +1039,14 @@ class PoolMotorTVReadWidget(TaurusWidget):
 #                  WRITE WIDGET                  #
 ##################################################
 class PoolMotorTVWriteWidget(TaurusWidget):
-    
+
     layoutAlignment = Qt.Qt.AlignTop
-    
+    try:
+        # TODO: For Taurus 4 compatibility
+        applied = Qt.pyqtSignal()
+    except AttributeError:
+        pass
+
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
         self.setLayout(Qt.QGridLayout())
