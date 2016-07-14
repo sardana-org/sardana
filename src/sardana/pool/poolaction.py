@@ -37,6 +37,7 @@ import traceback
 import threading
 
 from taurus.core.util.log import Logger
+from taurus.external.ordereddict import OrderedDict
 
 from sardana import State
 from sardana.sardanathreadpool import get_thread_pool
@@ -202,7 +203,7 @@ class PoolAction(Logger):
         self._elements = []
         self._pool_ctrl_dict = {}
         self._pool_ctrl_list = []
-        self._finish_hooks = []
+        self._finish_hooks = OrderedDict()
         self._running = False
         self._state_info = OperationInfo()
         self._value_info = OperationInfo()
@@ -346,29 +347,44 @@ class PoolAction(Logger):
         raise NotImplementedError("start_action must be implemented in "
                                   "subclass")
 
-    def set_finish_hooks(self, hook):
-        """Attaches/Detaches a finish hook
+    def set_finish_hooks(self, hooks):
+        """Set finish hooks for this action.
 
-        :param hook: a list of callable objects or None
-        :type hook: callable or None"""
-        self._finish_hooks = hook
+        :param hooks: an ordered dictionary where keys are the hooks and values
+            is a flag if the hook is permanent (not removed after the execution)
+        :type hooks: OrderedDict or None
+        """
+        self._finish_hooks = hooks
 
-    def add_finish_hook(self, hook):
-        self._finish_hooks.append(hook)
-    
+    def add_finish_hook(self, hook, permanent=True):
+        """Append one finish hook to this action.
+
+        :param hook: hook to be appended
+        :type hook: callable
+        :param permanent: flag if the hook is permanent (not removed after the
+            execution)
+        :type permanent: boolean
+        """
+        self._finish_hooks[hook] = permanent
+
     def remove_finish_hook(self, hook):
-        self._finish_hooks.remove(hook)
+        """Remove finish hook.
+        """
+        self._finish_hooks.pop(hook)
 
     def finish_action(self):
         """Finishes the action execution. If a finish hook is defined it safely
         executes it. Otherwise nothing happens"""
         hooks = self._finish_hooks
-        for hook in hooks:
+        for hook, permanent in hooks.items():
             try:
                 hook()
             except:
                 self.warning("Exception running function finish hook",
                              exc_info=1)
+            finally:
+                if not permanent:
+                    hooks.pop(hook)
 
     def stop_action(self, *args, **kwargs):
         """Stop procedure for this action."""
