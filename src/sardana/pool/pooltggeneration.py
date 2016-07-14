@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import functools
 
 ##############################################################################
 ##
@@ -31,6 +30,7 @@ trigger/gate generation"""
 __all__ = ["PoolTGGeneration", "TGChannel"]
 
 import time
+from functools import partial
 from taurus.core.util.log import DebugIt
 from sardana import State
 from sardana.pool.pooldefs import SynchDomain
@@ -89,33 +89,32 @@ class PoolTGGeneration(PoolAction):
         # loads generation parameters
         for pool_ctrl in pool_ctrls:
             ctrl = pool_ctrl.ctrl
+            # TODO: implement better discovery of software controllers
+            is_sw_ctrl = hasattr(ctrl, 'add_listener')
             pool_ctrl_data = ctrls_config[pool_ctrl]
             elements = pool_ctrl_data['channels']
             for element in elements:
                 axis = element.axis
-                channel = channels[element]
                 ctrl.SetConfiguration(axis, synchronization)
-            # TODO: the attaching of the listeners should be done more generic
-            # attaching listener to the software trigger gate generator
-            if hasattr(ctrl, 'add_listener') and self._listener != None:
-                for element in elements:
-                    axis = element.axis
+                # attaching listener (usually acquisition action)
+                # to the software trigger gate generator
+                if is_sw_ctrl and not self._listener is None:
                     ctrl.add_listener(axis, self._listener)
-                    remove_acq_listener = functools.partial(ctrl.remove_listener,
-                                                        axis, self._listener)
-                    self.add_finish_hook(remove_acq_listener)
-                if moveable is not None:
+                    remove_acq_listener = partial(ctrl.remove_listener,
+                                                  axis, self._listener)
+                    self.add_finish_hook(remove_acq_listener, False)
+                # subscribing to the position change events to generate events
+                # in position domain
+                if is_sw_ctrl and not moveable is None:
                     position = moveable.get_position_attribute()
                     position.add_listener(ctrl)
-                    remove_pos_listener = functools.partial(position.remove_listener,
-                                                    ctrl)
-                    self.add_finish_hook(remove_pos_listener)
-                    for element in elements:
-                        axis = element.axis
-                        ctrl.subscribe_event(axis, position)
-                        unsubscribe_event = functools.partial(ctrl.unsubscribe_event,
-                                                    axis, position)
-                        self.add_finish_hook(unsubscribe_event)
+                    remove_pos_listener = partial(position.remove_listener,
+                                                  ctrl)
+                    self.add_finish_hook(remove_pos_listener, False)
+                    ctrl.subscribe_event(axis, position)
+                    unsubscribe_event = partial(ctrl.unsubscribe_event,
+                                                axis, position)
+                    self.add_finish_hook(unsubscribe_event, False)
 
         with ActionContext(self):
             # PreStartAll on all controllers
