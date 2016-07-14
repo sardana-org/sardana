@@ -1470,7 +1470,9 @@ class MeasurementGroup(PoolElement):
     def getMoveable(self):
         return self._getAttrValue('Moveable')
 
-    def setMoveable(self, moveable):
+    def setMoveable(self, moveable=None):
+        if moveable is None:
+            moveable = 'None' # Tango attribute is of type DevString
         self.getMoveableObj().write(moveable)
 
     def addOnDataChangedListeners(self, listener):
@@ -1543,6 +1545,7 @@ class MeasurementGroup(PoolElement):
         if duration is None or duration == 0:
             return self.getStateEG().readValue(), self.getValues()
         self.putIntegrationTime(duration)
+        self.setMoveable(None)
         PoolElement.go(self, *args, **kwargs)
         ret = self.getStateEG().readValue(), self.getValues()
         self._total_go_time = time.time() - start_time
