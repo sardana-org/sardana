@@ -40,7 +40,8 @@ from taurus.qt.qtgui.panel import TaurusModelChooser
 from taurus.core.taurusbasetypes import TaurusElementType
 
 from sardana.taurus.core.tango.sardana import ChannelView, PlotType, \
-    Normalization, AcqTriggerType
+    Normalization
+from sardana.pool.pooldefs import AcqSynchType
 from sardana.taurus.core.tango.sardana.pool import getChannelConfigs
 
 #===============================================================================
@@ -59,7 +60,7 @@ from sardana.taurus.core.tango.sardana.pool import getChannelConfigs
 #                - 'id' : the unit ID inside the controller
 #                - 'timer' : the timer channel name / timer channel id
 #                - 'monitor' : the monitor channel name / monitor channel id
-#                - 'trigger_type' : a value from AcqTriggerType enum
+#                - 'trigger_type' : a value from AcqSynchType enum
 #                - 'channels' where value is a dict<str, obj> with (at least) keys:
 #                    - 'index' : int indicating the position of the channel in the measurement group
 #                    - 'id' : the channel name ( channel id )
@@ -486,7 +487,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
             ch_name, ch_data = index.internalPointer().itemData()
             unitdict = self.getPyData(ctrlname=ch_data['_controller_name'])
             key = self.data_keys_map[taurus_role]
-            return Qt.QVariant(AcqTriggerType[unitdict.get(key, None)])
+            return Qt.QVariant(AcqSynchType[unitdict.get(key, None)])
         elif taurus_role in (ChannelView.Timer, ChannelView.Monitor):
             ch_name, ch_data = index.internalPointer().itemData()
             ctrlname = ch_data['_controller_name']
@@ -534,7 +535,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
             self.beginResetModel()
             is_settable = ch_info['type'] in ('CTExpChannel', 'OneDExpChannel', 'TwoDExpChannel')
             if taurus_role == ChannelView.Trigger:
-                data = AcqTriggerType[data]
+                data = AcqSynchType[data]
                 if is_settable:
                     ctrl_data[key] = data
             else:
@@ -585,7 +586,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         if not external and chinfo['type'] in ('CTExpChannel', 'OneDExpChannel', 'TwoDExpChannel'):
             ctrl['timer'] = chname
             ctrl['monitor'] = chname
-            ctrl['trigger_type'] = AcqTriggerType.Software
+            ctrl['trigger_type'] = AcqSynchType.Trigger
         channelsdict = ctrl['channels']
         if channelsdict.has_key(chname):
             self.error('Channel "%s" is already in the measurement group. It will not be added again' % chname)
@@ -772,7 +773,7 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
                 current = dataSource.get(key)  # current global timer/monitor
                 editor.setCurrentIndex(editor.findData(Qt.QVariant(current)))
         elif taurus_role == ChannelView.Trigger:
-            editor.addItems(AcqTriggerType.keys())
+            editor.addItems(AcqSynchType.keys())
             current = Qt.from_qvariant(model.data(index), str)
             editor.setCurrentIndex(editor.findText(current))
         elif taurus_role == ChannelView.PlotAxes:
