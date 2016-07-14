@@ -77,10 +77,12 @@ class SynchParam(SynchEnum):
 
 # TODO: convert to to python enums, but having in ming problems with
 # JSON serialization: https://bugs.python.org/issue18264
-class AcqSynchType(Enumeration):
+# class AcqSynchType(Enumeration):
+# 
+#     Trigger = 0
+#     Gate = 1
 
-    Trigger = 0
-    Gate = 1
+AcqSynchType = Enumeration("AcqSynchType", ["Trigger", "Gate"])
 
 
 # TODO: convert to to python enums, but having in ming problems with
