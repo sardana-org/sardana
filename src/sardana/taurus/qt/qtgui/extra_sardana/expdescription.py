@@ -102,7 +102,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self.connect(preScanList, Qt.SIGNAL('dataChanged'),
                      self.onPreScanSnapshotChanged)
         #TODO: For Taurus 4 compatibility
-        if hasattr(self.ui.preScanList, "dataChangedSignal"):
+        if hasattr(preScanList, "dataChangedSignal"):
             preScanList.dataChangedSignal.connect(self.onPreScanSnapshotChanged)
         self.connect(self.ui.choosePathBT, Qt.SIGNAL('clicked ()'), self.onChooseScanDirButtonClicked)
         
