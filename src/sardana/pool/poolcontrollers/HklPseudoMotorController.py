@@ -469,6 +469,9 @@ class DiffracBasis(PseudoMotorController):
             elif engine_name == "eulerians":
                 values = [pseudo_pos[8], pseudo_pos[9], pseudo_pos[10]]
 
+        # getWavelength updates wavelength in the library in case automatic
+        # energy update is set. Needed before computing trajectories.
+
         self.getWavelength()
 
         solutions = self._solutions(values, curr_physical_pos)
@@ -484,6 +487,9 @@ class DiffracBasis(PseudoMotorController):
         # physical values are not equal to the expected len of the
         # geometry axes.
         
+        # getWavelength updates wavelength in the library in case automatic
+        # energy update is set. Needed before computing trajectories.
+
         self.getWavelength()
             
 
@@ -748,6 +754,12 @@ class DiffracBasis(PseudoMotorController):
         #         (len(values),
         #          len(self.engine.pseudo_axis_names_get()),
         #          self.engine.name_get())
+         
+        # getWavelength updates wavelength in the library in case automatic
+        # energy update is set. Needed before computing trajectories.
+     
+        self.getWavelength()
+            
         curr_physical_pos = self.geometry.axis_values_get(USER)
         solutions = self._solutions(values, curr_physical_pos)
         self.trajectorylist = [item.geometry_get().axis_values_get(USER)
@@ -1323,7 +1335,10 @@ class DiffracBasis(PseudoMotorController):
         self._autoenergyupdate = value
 
     def setComputeHKL(self, value):
-              
+         
+        # getWavelength updates wavelength in the library in case automatic
+        # energy update is set. Needed before computing trajectories.
+     
         self.getWavelength()
             
 
