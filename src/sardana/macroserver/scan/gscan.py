@@ -370,14 +370,23 @@ class GScan(Logger):
 
     def _getOutputRecorder(self):
         cols = None
+        output_block = False
         try:
             cols = self.macro.getEnv('OutputCols')
         except InterruptException:
             raise
         except:
             pass
+
+        try:
+            output_block = self.macro.getViewOption('OutputBlock')
+        except InterruptException:
+            raise
+        except:
+            pass
+
         return self._rec_manager.getRecorderClass("OutputRecorder")(
-            self.macro, cols=cols, number_fmt='%g')
+            self.macro, cols=cols, number_fmt='%g', output_block=output_block)
 
     def _getFileRecorders(self):
         macro = self.macro

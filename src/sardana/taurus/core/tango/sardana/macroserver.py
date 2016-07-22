@@ -281,6 +281,7 @@ class BaseDoor(MacroServerDevice):
     def __init__(self, name, **kw):
         self._log_attr = CaselessDict()
         self._block_lines = 0
+        self._in_block = False
         self._macro_server = None
         self._running_macros = None
         self._running_macro = None
@@ -644,14 +645,21 @@ class BaseDoor(MacroServerDevice):
         for line in output:
             if not self._debug:
                 if line == self.BlockStart:
+                    self._in_block = True
                     for i in xrange(self._block_lines):
                         o += '\x1b[2K\x1b[1A\x1b[2K'  #erase current line, up one line, erase current line
                     self._block_lines = 0
                     continue
                 elif line == self.BlockFinish:
+                    self._in_block = False
                     continue
+                else:
+                    if self._in_block:
+                        self._block_lines += 1
+                    else:
+                        self._block_lines = 0
             o += "%s\n" % line
-            self._block_lines += 1
+
         o += self.log_stop[log_name]
         self.write(o)
 
@@ -699,6 +707,7 @@ class MacroPath(object):
         self.macro_path = mp = self._ms().get_property("MacroPath")["MacroPath"]
         self.base_macro_path = osp.commonprefix(self.macro_path)
         self.rel_macro_path = [ osp.relpath for p in mp, self.base_macro_path ]
+
 
 
 class Environment(dict):
