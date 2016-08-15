@@ -754,7 +754,6 @@ class DiffracBasis(PseudoMotorController):
         #         (len(values),
         #          len(self.engine.pseudo_axis_names_get()),
         #          self.engine.name_get())
-         
         # getWavelength updates wavelength in the library in case automatic
         # energy update is set. Needed before computing trajectories.
      
@@ -993,10 +992,6 @@ class DiffracBasis(PseudoMotorController):
                     # Remove all reflections from crystal (there should not be any ... but just in case)
                     for ref in self.sample.reflections_get():
                         self.sample.del_reflection(ref)
-                elif line.find("Wavelength") != -1:
-                    line = line.replace(" ", "")
-                    wavelength = float(line.split("Wavelength",1)[1]) # The value will be set after creating the new geometry with the reflections
-                    self.geometry.wavelength_set(wavelength, USER)
                 elif line.find("A") != -1 and line.find("B") != -1 and line.find("C") != -1:
                     par_line = line.split(" ")
                     avalue = float(par_line[1])
