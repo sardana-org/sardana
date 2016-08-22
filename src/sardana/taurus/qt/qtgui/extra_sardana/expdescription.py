@@ -209,8 +209,14 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
         #set the measurement group ComboBox
         self.ui.activeMntGrpCB.clear()
-        self.ui.activeMntGrpCB.addItems(sorted(self._localConfig['MntGrpConfigs'].keys()))
-        idx = self.ui.activeMntGrpCB.findText(activeMntGrpName)
+        mntGrpLabels = []
+        for _, mntGrpConf in self._localConfig['MntGrpConfigs'].items():
+            # get labels to visualize names with lower and upper case
+            mntGrpLabels.append(mntGrpConf['label'])
+        self.ui.activeMntGrpCB.addItems(sorted(mntGrpLabels))
+        idx = self.ui.activeMntGrpCB.findText(activeMntGrpName,
+                                              # case insensitive find
+                                              flags=Qt.Qt.MatchFixedString)
         self.ui.activeMntGrpCB.setCurrentIndex(idx)
 
         #set the system snapshot list
@@ -279,7 +285,9 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
         self._localConfig['ActiveMntGrp'] = activeMntGrpName
 
-        i = self.ui.activeMntGrpCB.findText(activeMntGrpName, Qt.Qt.MatchExactly)
+        i = self.ui.activeMntGrpCB.findText(activeMntGrpName,
+                                            # case insensitive find
+                                            flags=Qt.Qt.MatchFixedString)
         self.ui.activeMntGrpCB.setCurrentIndex(i)
         mgconfig = self._localConfig['MntGrpConfigs'][activeMntGrpName]
         self.ui.channelEditor.getQModel().setDataSource(mgconfig)
