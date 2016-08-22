@@ -971,9 +971,13 @@ class DiffracBasis(PseudoMotorController):
                 geometry.axis_values_set(values[6:], USER)
                 reflection.geometry_set(geometry)
 
-    def setLoadCrystal(self, value):  # value: complete path of the file with the crystal to set
+    def setLoadCrystal(self, value):
+        """Load crystal information from a file. Ignore wavelength information.
+
+        :param value: complete path of the file with the crystal to set
+        :type value: string
+        """
         # Read the file
-        
         with open(value, 'r') as crystal_file:
             self._loadcrystal = value
 
