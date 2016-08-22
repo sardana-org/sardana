@@ -251,8 +251,9 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         #make sure that no empty measurement groups are written
         for mgname, mgconfig in conf.get('MntGrpConfigs', {}).items():
             if mgconfig is not None and not mgconfig.get('controllers'):
+                mglabel = mgconfig['label']
                 Qt.QMessageBox.information(self, "Empty Measurement group",
-                "The measurement group '%s' is empty. Fill it (or delete it) before applying" % mgname,
+                "The measurement group '%s' is empty. Fill it (or delete it) before applying" % mglabel,
                 Qt.QMessageBox.Ok)
                 self.changeActiveMntGrp(mgname)
                 return False
