@@ -363,7 +363,7 @@ each item is an internal list of the members.
                  None, "list of moveables and positions to be moved to"]])
     def move_multiple(self, m_p_pairs):
         """This macro moves moveables to the specified positions"""
-        for moveable, position in zip(*m_p_pairs):
+        for moveable, position in m_p_pairs:
             moveable.move(position)
             self.output("%s is now at %s", moveable.getName(), moveable.getPosition())
 
