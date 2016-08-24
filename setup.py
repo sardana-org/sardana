@@ -373,6 +373,13 @@ def main():
     ]
 
     requires = [
+        # TODO: requires should include itango if PyTango >= 9.2.0 is in use.
+        # Since it is not possible to have conditional requirements at the
+        # moment the itango is not checked (it can be problematic in some
+        # special pip usage).
+        # Changing requirement to PyTango >= 9.2.0 we could directly
+        # depend on itango or we would need to add itango as another requirement
+        # See: https://sourceforge.net/p/sardana/tickets/487/
         'PyTango (>=7.2.3)',
         'taurus (>= 3.6.0)',
         'lxml (>=2.1)',
