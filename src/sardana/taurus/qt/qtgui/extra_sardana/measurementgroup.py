@@ -950,6 +950,8 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
         if row >= parent.childCount() - 1:
             return
         else:
+            # TODO: optimize it if necessary. Instead of moving one by one,
+            # try to remove the item from the list and insert it at the bottom.
             self.moveDownChannel()
             return self.moveBottomChannel()
 
@@ -961,6 +963,8 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
         if row < 1:
             return
         else:
+            # TODO: optimize it if necessary. Instead of moving one by one,
+            # try to remove the item from the list and insert it at the top.
             self.moveUpChannel()
             return self.moveTopChannel()
 
