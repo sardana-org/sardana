@@ -205,7 +205,7 @@ class CTExpChannel(PoolElementDevice):
 
     def read_Value(self, attr):
         ct = self.ct
-        use_cache = ct.is_in_operation() and not self.Force_HW_Read
+        use_cache = True #ct.is_in_operation() and not self.Force_HW_Read
         value = ct.get_value(cache=use_cache, propagate=0)
         if value.error:
             Except.throw_python_exception(*value.exc_info)
