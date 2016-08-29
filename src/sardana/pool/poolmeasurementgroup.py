@@ -370,6 +370,13 @@ class PoolMeasurementGroup(PoolGroupElement):
         config['controllers'] = controllers = {}
 
         for c_name, c_data in cfg['controllers'].items():
+            # backwards compatibility for measurement groups created before
+            # implementing feature-372: https://sourceforge.net/p/sardana/tickets/372/
+            # WARNING: this is one direction backwards compatibility - it just
+            # reads channels from the units, but does not write channels to the
+            # units back
+            if c_data.has_key('units'):
+                c_data = c_data['units']['0']
             # discard controllers which don't have items (garbage)
             ch_count = len(c_data['channels'])
             if ch_count == 0:
@@ -382,7 +389,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                 ctrl = pool.get_element_by_full_name(c_name)
                 assert ctrl.get_type() == ElementType.Controller
             controllers[ctrl] = ctrl_data = {}
-            if not external:
+            if not external and ctrl.is_timerable():
                 timer_name = c_data['timer']
                 timer = pool.get_element_by_full_name(timer_name)
                 ctrl_data['timer'] = timer
@@ -394,7 +401,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                 # protect measurementgroups without trigger_element defined
                 if tg_name:
                     tg_element = pool.get_element_by_full_name(tg_name)
-                ctrl_data['trigger_element'] = tg_element
+                    ctrl_data['trigger_element'] = tg_element
                 ctrl_data['trigger_type'] = c_data['trigger_type']
             ctrl_data['channels'] = channels = {}
             for ch_name, ch_data in c_data['channels'].items():
