@@ -295,16 +295,17 @@ class PoolMeasurementGroup(PoolGroupElement):
             tg_elem_ids = []
             pool = self.pool
             for c, c_data in config['controllers'].items():
-                tg_element = c_data['trigger_element']
-                acq_synch_type = c_data['trigger_type']
+                tg_element = c_data.get('trigger_element')
+                acq_synch_type = c_data.get('trigger_type')
                 # for backwards compatibility purposes
                 # protect measurementgroups without trigger_element defined
                 # TODO: otherwise obtain software synchronizer and use it
                 if tg_element:
                     tg_elem_ids.append(tg_element.id)
-                software = is_software_tg(tg_element)
-                acq_synch = AcqSynch.from_synch_type(software, acq_synch_type)
-                self._ctrl_to_acq_synch[c] = acq_synch
+                    software = is_software_tg(tg_element)
+                else:
+                    software = True
+                acq_synch = None
                 external = isinstance(c, (str, unicode))
                 for channel_data in c_data['channels'].values():
                     if external:
@@ -312,10 +313,17 @@ class PoolMeasurementGroup(PoolGroupElement):
                         channel_data['source'] = _id
                     else:
                         element = pool.get_element_by_full_name(channel_data['full_name'])
-                        self._channel_to_acq_synch[element] = acq_synch
+                        elem_type = element.get_type()
+                        # only timerable elements are configured with acq_synch
+                        if elem_type in TYPE_TIMERABLE_ELEMENTS:
+                            acq_synch = AcqSynch.from_synch_type(software,
+                                                                 acq_synch_type)
+                            self._channel_to_acq_synch[element] = acq_synch
                         _id = element.id
                     user_elem_ids[channel_data['index']] = _id
                     channel_data = self._build_channel_defaults(channel_data, element)
+                if acq_synch:
+                    self._ctrl_to_acq_synch[c] = acq_synch
             indexes = sorted(user_elem_ids.keys())
             assert indexes == range(len(indexes))
             user_elem_ids_list = [ user_elem_ids[idx] for idx in indexes ]
