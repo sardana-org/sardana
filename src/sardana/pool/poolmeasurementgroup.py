@@ -401,7 +401,9 @@ class PoolMeasurementGroup(PoolGroupElement):
                 # protect measurementgroups without trigger_element defined
                 if tg_name:
                     tg_element = pool.get_element_by_full_name(tg_name)
-                    ctrl_data['trigger_element'] = tg_element
+                else:
+                    tg_element = pool.get_software_tg()
+                ctrl_data['trigger_element'] = tg_element
                 ctrl_data['trigger_type'] = c_data['trigger_type']
             ctrl_data['channels'] = channels = {}
             for ch_name, ch_data in c_data['channels'].items():
