@@ -951,6 +951,8 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
         self.connect(self._editorBar, Qt.SIGNAL("removeTriggered"), self.removeChannels)
         self.connect(self._editorBar, Qt.SIGNAL("moveUpTriggered"), self.moveUpChannel)
         self.connect(self._editorBar, Qt.SIGNAL("moveDownTriggered"), self.moveDownChannel)
+        self.connect(self._editorBar, Qt.SIGNAL("moveTopTriggered"), self.moveTopChannel)
+        self.connect(self._editorBar, Qt.SIGNAL("moveBottomTriggered"), self.moveBottomChannel)
         return tableView
 
     def createToolArea(self):
@@ -993,17 +995,48 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
         chnames = [ch.itemData()[0] for ch in channels]
         self.getQModel().removeChannels(chnames)
 
+    def _getSelectedChannel(self):
+        channels = self.selectedItems()
+        if len(channels) != 1:
+            return None
+        return channels[0]
+
+    def moveBottomChannel(self):
+        channel = self._getSelectedChannel()
+        if channel is None:
+            return
+        row = channel.row()
+        parent = channel.parent()
+        if row >= parent.childCount() - 1:
+            return
+        else:
+            # TODO: optimize it if necessary. Instead of moving one by one,
+            # try to remove the item from the list and insert it at the bottom.
+            self.moveDownChannel()
+            return self.moveBottomChannel()
+
+    def moveTopChannel(self):
+        channel = self._getSelectedChannel()
+        if channel is None:
+            return
+        row = channel.row()
+        if row < 1:
+            return
+        else:
+            # TODO: optimize it if necessary. Instead of moving one by one,
+            # try to remove the item from the list and insert it at the top.
+            self.moveUpChannel()
+            return self.moveTopChannel()
+
     def moveUpChannel(self, channel=None):
         if channel is None:
-            channels = self.selectedItems()
-            if len(channels) != 1:
+            channel = self._getSelectedChannel()
+            if channel is None:
                 return
-            channel = channels[0]
         parent = channel.parent()
         row = channel.row()
         if row < 1:
             return
-
         model = self.getQModel()
         model.swapChannels(parent, row, row - 1)
         idx = model.index(row - 1, 0)
@@ -1011,10 +1044,9 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
 
     def moveDownChannel(self, channel=None):
         if channel is None:
-            channels = self.selectedItems()
-            if len(channels) != 1:
+            channel = self._getSelectedChannel()
+            if channel is None:
                 return
-            channel = channels[0]
         parent = channel.parent()
         row = channel.row()
         if row >= parent.childCount() - 1:

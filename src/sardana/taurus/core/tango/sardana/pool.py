@@ -38,6 +38,7 @@ __docformat__ = 'restructuredtext'
 import os
 import sys
 import time
+import copy
 import weakref
 import operator
 import traceback
@@ -1247,17 +1248,42 @@ class MGConfiguration(object):
                 if ch_info.name.lower() == channel_name:
                     return d_name, a_name, ch_info
 
-    def getChannelsInfo(self):
+    def getChannelsInfo(self, only_enabled=False):
+        """Returns information about the channels present in the measurement
+        group in a form of dictionary, where key is a channel name and value is
+        a tuple of three elements:
+            - device name
+            - attribute name
+            - attribute information or None if there was an error trying to get
+              the information
+
+        :param only_enabled: flag to filter out disabled channels
+        :type only_enabled: bool
+        :return: dictionary with channels info
+        :rtype: dict<str, tuple<str, str, TangoChannelInfo>>
+        """
         self.prepare()
         ret = CaselessDict(self.tango_channels_info)
         ret.update(self.non_tango_channels)
+        for ch_name, (_, _, ch_info) in ret.items():
+            if only_enabled and not ch_info.enabled:
+                ret.pop(ch_name)
         return ret
 
-    def getChannelsInfoList(self):
-        channels_info = self.getChannelsInfo()
-        ret = len(channels_info) * [None]
+    def getChannelsInfoList(self, only_enabled=False):
+        """Returns information about the channels present in the measurement
+        group in a form of ordered, based on the channel index, list.
+
+        :param only_enabled: flag to filter out disabled channels
+        :type only_enabled: bool
+        :return: list with channels info
+        :rtype: list<TangoChannelInfo>
+        """
+        channels_info = self.getChannelsInfo(only_enabled=only_enabled)
+        ret = []
         for _, (_, _, ch_info) in channels_info.items():
-            ret[ch_info.index] = ch_info
+            ret.append(ch_info)
+        ret = sorted(ret, lambda x,y: cmp(x.index, y.index))
         return ret
 
     def getCountersInfoList(self):
@@ -1271,6 +1297,29 @@ class MGConfiguration(object):
             channels_info.pop(idx)
         return channels_info
 
+    def getTangoDevChannels(self, only_enabled=False):
+        """Returns Tango channels (attributes) that could be used to read
+        measurement group results in a form of dict where key is a device name
+        and value is a list with two elements:
+            - A device proxy or None if there was an error building it
+            - A dict where keys are attribute names and value is a reference to
+              a dict representing channel data as received in raw data
+
+        :param only_enabled: flag to filter out disabled channels
+        :type only_enabled: bool
+        :return: dict with Tango channels
+        :rtype: dict<str, list[DeviceProxy, CaselessDict<str, dict>]>
+        """
+        if not only_enabled:
+            return self.tango_dev_channels
+        tango_dev_channels = copy.deepcopy(self.tango_dev_channels)
+        for _, dev_data in tango_dev_channels.items():
+            _, attrs = dev_data
+            for attr_name, channel_data in attrs.items():
+                if not channel_data["enabled"]:
+                    attrs.pop(attr_name)
+        return tango_dev_channels
+
     def read(self, parallel=True):
         if parallel:
             return self._read_parallel()
@@ -1282,7 +1331,8 @@ class MGConfiguration(object):
         dev_replies = {}
 
         # deposit read requests
-        for _, dev_data in self.tango_dev_channels.items():
+        tango_dev_channels = self.getTangoDevChannels(only_enabled=True)
+        for _, dev_data in tango_dev_channels.items():
             dev, attrs = dev_data
             if dev is None:
                 continue
@@ -1312,7 +1362,8 @@ class MGConfiguration(object):
     def _read(self):
         self.prepare()
         ret = CaselessDict(self.cache)
-        for _, dev_data in self.tango_dev_channels.items():
+        tango_dev_channels = self.getTangoDevChannels(only_enabled=True)
+        for _, dev_data in tango_dev_channels.items():
             dev, attrs = dev_data
             try:
                 data = dev.read_attributes(attrs.keys())
@@ -1422,6 +1473,16 @@ class MeasurementGroup(PoolElement):
 
     def getChannelsInfo(self):
         return self.getConfiguration().getChannelsInfoList()
+
+    def getChannelsEnabledInfo(self):
+        """Returns information about **only enabled** channels present in the
+        measurement group in a form of ordered, based on the channel index,
+        list.
+
+        :return: list with channels info
+        :rtype: list<TangoChannelInfo>
+        """
+        return self.getConfiguration().getChannelsInfoList(only_enabled=True)
 
     def getCountersInfo(self):
         return self.getConfiguration().getCountersInfoList()

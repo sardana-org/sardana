@@ -1218,7 +1218,7 @@ class MacroExecutor(Logger):
         except Exception, err:
             exc_info = sys.exc_info()
             exp_pars = {'type'      : err.__class__.__name__,
-                        'msg'       : err.args[0],
+                        'msg'       : str(err),
                         'args'      : err.args,
                         'traceback' : traceback.format_exc() }
             macro_exp = MacroServerException(exp_pars)

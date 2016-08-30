@@ -631,7 +631,11 @@ def create_spock_profile(userdir, dft_profile, profile, door_name=None):
 # door_name = {door_name}
 #
 
-import PyTango.ipython
+try:
+    import itango
+except ImportError:
+    import PyTango.ipython as itango
+
 import sardana.spock.genutils
 from sardana.spock.config import Spock
 
@@ -909,7 +913,14 @@ object?   -> Details about 'object'. ?object also works, ?? prints more.
     # ------------------------------------
     i_app = config.BaseIPythonApplication
     extensions = getattr(i_app, 'extensions', [])
-    extensions.extend(["PyTango.ipython", "sardana.spock"])
+    try:
+        import itango
+        itango = "itango.itango"
+    except ImportError:
+        if get_pytango_version_number() > 90200:
+            raise Exception("itango is not installed")
+        itango = "PyTango.ipython"
+    extensions.extend([itango, "sardana.spock"])
     i_app.extensions = extensions
 
     # ------------------------------------

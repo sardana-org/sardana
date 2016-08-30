@@ -44,6 +44,7 @@ class ViewOption(object):
         'ShowDial' : True,
         'ShowCtrlAxis' : False,
         'PosFormat': -1,
+        'OutputBlock': False
     }
 
     @classmethod
