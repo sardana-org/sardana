@@ -26,10 +26,11 @@
 """This module contains the definition of the macroserver parameters for
 macros"""
 
-__all__ = ["WrongParam", "MissingParam", "UnknownParamObj", "WrongParamType",
-           "TypeNames", "Type", "ParamType", "ParamRepeat", "ElementParamType",
-           "ElementParamInterface", "AttrParamType", "AbstractParamTypes",
-           "ParamDecoder"]
+__all__ = ["WrongParam", "MissingParam", "SupernumeraryParam",
+           "UnknownParamObj", "WrongParamType", "MissingRepeat",
+           "SupernumeraryRepeat", "TypeNames", "Type", "ParamType",
+           "ParamRepeat", "ElementParamType", "ElementParamInterface",
+           "AttrParamType", "AbstractParamTypes", "ParamDecoder"]
 
 __docformat__ = 'restructuredtext'
 
@@ -58,6 +59,13 @@ class MissingParam(WrongParam):
         self.type = 'Missing parameter'
 
 
+class SupernumeraryParam(WrongParam):
+
+    def __init__(self, *args):
+        WrongParam.__init__(self, *args)
+        self.type = 'Supernumerary parameter'
+
+
 class UnknownParamObj(WrongParam):
 
     def __init__(self, *args):
@@ -70,6 +78,20 @@ class WrongParamType(WrongParam):
     def __init__(self, *args):
         WrongParam.__init__(self, *args)
         self.type = 'Unknown parameter type'
+
+
+class MissingRepeat(WrongParam):
+
+    def __init__(self, *args):
+        WrongParam.__init__(self, *args)
+        self.type = 'Missing repeat'
+
+
+class SupernumeraryRepeat(WrongParam):
+
+    def __init__(self, *args):
+        WrongParam.__init__(self, *args)
+        self.type = 'Supernumerary repeat'
 
 
 class TypeNames:
@@ -334,6 +356,12 @@ class ParamDecoder:
                     raw_params.remove(raw_param)
 
         params = []
+        # check if too many parameters were passed
+        len_params_def = len(params_def)
+        if len(raw_params) > len_params_def:
+            msg = ("%r are supernumerary with respect to definition" %
+                   raw_params[len_params_def:])
+            raise SupernumeraryParam, msg
         # iterate over definition since missing values may just mean using
         # the default values
         for i, param_def in enumerate(params_def):
@@ -408,11 +436,11 @@ class ParamDecoder:
         if min_rep and len_rep < min_rep:
             msg = 'Found %d repetitions of param %s, min is %d' % \
                   (len_rep, name, min_rep)
-            raise RuntimeError, msg
+            raise MissingRepeat, msg
         if  max_rep and len_rep > max_rep:
             msg = 'Found %d repetitions of param %s, max is %d' % \
                   (len_rep, name, max_rep)
-            raise RuntimeError, msg
+            raise SupernumeraryRepeat, msg
         for raw_repeat in raw_param_repeat:
             if len(param_type) > 1:
                 repeat = []
@@ -428,6 +456,123 @@ class ParamDecoder:
                 repeat = self.decodeNormal(raw_repeat, param_type[0])
             param_repeat.append(repeat)
         return param_repeat
+
+    def getParamList(self):
+        return self.params
+
+    def __getattr__(self, name):
+        return getattr(self.params, name)
+
+
+class FlatParamDecoder:
+    """Parameter decoder useful for macros with only one repeat parameter
+    located at the very last place. It requires that the raw parameters are
+    passed as a flat list of strings.
+    """
+    def __init__(self, type_manager, params_def, raw_params):
+        self.type_manager = type_manager
+        self.params_def = params_def
+        self.raw_params = raw_params
+        self.params = None
+        if not self.isPossible(params_def):
+            msg = ("%s parameter definition is not compatible with"
+                   " FlatParamDecoder" % params_def)
+            raise AttributeError, msg
+        self.decode()
+
+    @staticmethod
+    def isPossible(params_def):
+        for param_def in params_def:
+            param_type = param_def["type"]
+            if isinstance(param_type, list):
+                if param_def != params_def[-1]:
+                    # repeat parameter is not the last one
+                    # it won't be possible to decode it
+                    return False
+                else:
+                    for sub_param_def in param_type:
+                        if isinstance(sub_param_def, list):
+                            # nested repeat parameter
+                            # it won't be possible to decode it
+                            return False
+        return True
+
+    def decode(self):
+        params_def = self.params_def
+        raw_params = self.raw_params
+        _, self.params = self.decodeNormal(raw_params, params_def)
+        return self.params
+
+    def decodeNormal(self, raw_params, params_def):
+        str_len = len(raw_params)
+        obj_list = []
+        str_idx = 0
+        for i, par_def in enumerate(params_def):
+            name = par_def['name']
+            type_class = par_def['type']
+            def_val = par_def['default_value']
+            if str_idx == str_len:
+                if def_val is None:
+                    if not isinstance(type_class, list):
+                        raise MissingParam, "'%s' not specified" % name
+                    elif isinstance(type_class, list):
+                        min_rep = par_def['min']
+                        if min_rep > 0:
+                            msg = "'%s' demands at least %d values" %\
+                                  (name, min_rep)
+                            raise WrongParam, msg
+                if not def_val is None:
+                    new_obj = def_val
+            else:
+                if isinstance(type_class, list):
+                    data = self.decodeRepeat(raw_params[str_idx:], par_def)
+                    dec_token, new_obj = data
+                else:
+                    type_manager = self.type_manager
+                    type_name = type_class
+                    type_class = type_manager.getTypeClass(type_name)
+                    par_type = type_manager.getTypeObj(type_name)
+                    par_str = raw_params[str_idx]
+                    try:
+                        val = par_type.getObj(par_str)
+                    except ValueError, e:
+                        raise WrongParamType, e.message
+                    except UnknownParamObj, e:
+                        raise WrongParam, e.message
+                    if val is None:
+                        msg = 'Could not create %s parameter "%s" for "%s"' % \
+                              (par_type.getName(), name, par_str)
+                        raise WrongParam, msg
+                    dec_token = 1
+                    new_obj = val
+                str_idx += dec_token
+            obj_list.append(new_obj)
+        return str_idx, obj_list
+
+    def decodeRepeat(self, raw_params, par_def):
+        name = par_def['name']
+        param_def = par_def['type']
+        min_rep = par_def['min']
+        max_rep = par_def['max']
+
+        dec_token = 0
+        obj_list = []
+        rep_nr = 0
+        while dec_token < len(raw_params):
+            if max_rep is not None and rep_nr == max_rep:
+                break
+            new_token, new_obj_list = self.decodeNormal(raw_params[dec_token:],
+                                                        param_def)
+            dec_token += new_token
+            if len(new_obj_list) == 1:
+                new_obj_list = new_obj_list[0]
+            obj_list.append(new_obj_list)
+            rep_nr += 1
+        if rep_nr < min_rep:
+            msg = 'Found %d repetitions of param %s, min is %d' % \
+                  (rep_nr, name, min_rep)
+            raise MissingRepeat, msg
+        return dec_token, obj_list
 
     def getParamList(self):
         return self.params
