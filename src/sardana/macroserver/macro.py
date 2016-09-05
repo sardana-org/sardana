@@ -1051,26 +1051,26 @@ class Macro(Logger):
             # several parameters:
             self.execMacro('ascan', 'th', '0', '100', '10', '1.0')
             self.execMacro('mv', [[motor.getName(), '0']])
-            self.execMacro('mv', motor.getName(), '0')
+            self.execMacro('mv', motor.getName(), '0') # backwards compatibility - see note
             self.execMacro('ascan', 'th', 0, 100, 10, 1.0)
             self.execMacro('mv', [[motor.getName(), 0]])
-            self.execMacro('mv', motor.getName(), 0)
+            self.execMacro('mv', motor.getName(), 0) # backwards compatibility - see note
             th = self.getObj('th')
             self.execMacro('ascan', th, 0, 100, 10, 1.0)
             self.execMacro('mv', [[th, 0]])
-            self.execMacro('mv', th, 0)
+            self.execMacro('mv', th, 0) # backwards compatibility - see note
 
             # a sequence of parameters:
             self.execMacro(['ascan', 'th', '0', '100', '10', '1.0')
             self.execMacro(['mv', [[motor.getName(), '0']]])
-            self.execMacro(['mv', motor.getName(), '0'])
+            self.execMacro(['mv', motor.getName(), '0']) # backwards compatibility - see note
             self.execMacro(('ascan', 'th', 0, 100, 10, 1.0))
             self.execMacro(['mv', [[motor.getName(), 0]]])
-            self.execMacro(['mv', motor.getName(), 0])
+            self.execMacro(['mv', motor.getName(), 0]) # backwards compatibility - see note
             th = self.getObj('th')
             self.execMacro(['ascan', th, 0, 100, 10, 1.0])
             self.execMacro(['mv', [[th, 0]]])
-            self.execMacro(['mv', th, 0])
+            self.execMacro(['mv', th, 0]) # backwards compatibility - see note
 
 
             # a space separated string of parameters (this is not compatible
@@ -1078,6 +1078,13 @@ class Macro(Logger):
             # parameter must be the last one):
             self.execMacro('ascan th 0 100 10 1.0')
             self.execMacro('mv %s 0' % motor.getName())
+
+        .. note:: From Sardana 2.0 the repeat parameter values must be passed
+            as lists of items. An item of a repeat parameter containing more
+            than one member is a list. In case when a macro defines only one
+            repeat parameter and it is the last parameter, for the backwards
+            compatibility reasons, the plain list of items' members is allowed.
+
 
         :param pars: the command parameters as explained above
         :return:
@@ -1115,26 +1122,26 @@ class Macro(Logger):
             # several parameters:
             self.execMacro('ascan', 'th', '0', '100', '10', '1.0')
             self.execMacro('mv', [[motor.getName(), '0']])
-            self.execMacro('mv', motor.getName(), '0')
+            self.execMacro('mv', motor.getName(), '0') # backwards compatibility - see note
             self.execMacro('ascan', 'th', 0, 100, 10, 1.0)
             self.execMacro('mv', [[motor.getName(), 0]])
-            self.execMacro('mv', motor.getName(), 0) 
+            self.execMacro('mv', motor.getName(), 0) # backwards compatibility - see note
             th = self.getObj('th')
             self.execMacro('ascan', th, 0, 100, 10, 1.0)
             self.execMacro('mv', [[th, 0]])
-            self.execMacro('mv', th, 0)
+            self.execMacro('mv', th, 0) # backwards compatibility - see note
 
             # a sequence of parameters:
             self.execMacro(['ascan', 'th', '0', '100', '10', '1.0')
             self.execMacro(['mv', [[motor.getName(), '0']]])
-            self.execMacro(['mv', motor.getName(), '0'])
+            self.execMacro(['mv', motor.getName(), '0']) # backwards compatibility - see note
             self.execMacro(('ascan', 'th', 0, 100, 10, 1.0))
             self.execMacro(['mv', [[motor.getName(), 0]]])
-            self.execMacro(['mv', motor.getName(), 0])
+            self.execMacro(['mv', motor.getName(), 0]) # backwards compatibility - see note
             th = self.getObj('th')
             self.execMacro(['ascan', th, 0, 100, 10, 1.0])
             self.execMacro(['mv', [[th, 0]]])
-            self.execMacro(['mv', th, 0])
+            self.execMacro(['mv', th, 0]) # backwards compatibility - see note
 
             # a space separated string of parameters (this is not compatible
             # with multiple or nested repeat parameters, furthermore the repeat
@@ -1142,11 +1149,18 @@ class Macro(Logger):
             self.execMacro('ascan th 0 100 10 1.0')
             self.execMacro('mv %s 0' % motor.getName())
 
+        .. note:: From Sardana 2.0 the repeat parameter values must be passed
+            as lists of items. An item of a repeat parameter containing more
+            than one member is a list. In case when a macro defines only one
+            repeat parameter and it is the last parameter, for the backwards
+            compatibility reasons, the plain list of items' members is allowed.
+
         :param args: the command parameters as explained above
         :param kwargs: keyword optional parameters for prepare
         :return:
             a sequence of two elements: the macro object and the result of
-            preparing the macro"""
+            preparing the macro
+        """
         # sync our log before calling the child macro prepare in order to avoid
         # mixed outputs between this macro and the child macro
         self.syncLog()
@@ -1203,26 +1217,26 @@ class Macro(Logger):
             # several parameters:
             self.execMacro('ascan', 'th', '0', '100', '10', '1.0')
             self.execMacro('mv', [[motor.getName(), '0']])
-            self.execMacro('mv', motor.getName(), '0')
+            self.execMacro('mv', motor.getName(), '0') # backwards compatibility - see note
             self.execMacro('ascan', 'th', 0, 100, 10, 1.0)
             self.execMacro('mv', [[motor.getName(), 0]])
-            self.execMacro('mv', motor.getName(), 0)
+            self.execMacro('mv', motor.getName(), 0) # backwards compatibility - see note
             th = self.getObj('th')
             self.execMacro('ascan', th, 0, 100, 10, 1.0)
             self.execMacro('mv', [th, 0]])
-            self.execMacro('mv', th, 0)
+            self.execMacro('mv', th, 0) # backwards compatibility - see note
 
             # a sequence of parameters:
             self.execMacro(['ascan', 'th', '0', '100', '10', '1.0')
             self.execMacro(['mv', [[motor.getName(), '0']]])
-            self.execMacro(['mv', motor.getName(), '0'])
+            self.execMacro(['mv', motor.getName(), '0']) # backwards compatibility - see note
             self.execMacro(('ascan', 'th', 0, 100, 10, 1.0))
             self.execMacro(['mv', [[motor.getName(), 0]]])
-            self.execMacro(['mv', motor.getName(), 0])
+            self.execMacro(['mv', motor.getName(), 0]) # backwards compatibility - see note
             th = self.getObj('th')
             self.execMacro(['ascan', th, 0, 100, 10, 1.0])
             self.execMacro(['mv', [[th, 0]]])
-            self.execMacro(['mv', th, 0])
+            self.execMacro(['mv', th, 0]) # backwards compatibility - see note
 
             # a space separated string of parameters (this is not compatible
             # with multiple or nested repeat parameters, furthermore the repeat
@@ -1230,9 +1244,16 @@ class Macro(Logger):
             self.execMacro('ascan th 0 100 10 1.0')
             self.execMacro('mv %s 0' % motor.getName())
 
+        .. note:: From Sardana 2.0 the repeat parameter values must be passed
+            as lists of items. An item of a repeat parameter containing more
+            than one member is a list. In case when a macro defines only one
+            repeat parameter and it is the last parameter, for the backwards
+            compatibility reasons, the plain list of items' members is allowed.
+
         :param pars: the command parameters as explained above
 
-        :return: a macro object"""
+        :return: a macro object
+        """
         # obtaining macro name
         macro_name = None
         arg0 = args[0]

@@ -979,28 +979,36 @@ class MacroExecutor(Logger):
            1. several parameters:
              1.1 executor.prepareMacro('ascan', 'th', '0', '100', '10', '1.0')
                  executor.prepareMacro('mv', [['th', '0']])
-                 executor.prepareMacro('mv', 'th', '0')
+                 executor.prepareMacro('mv', 'th', '0') # backwards compatibility - see note
              1.2 executor.prepareMacro('ascan', 'th', 0, 100, 10, 1.0)
                  executor.prepareMacro('mv', [['th', 0]])
-                 executor.prepareMacro('mv', 'th', 0)
+                 executor.prepareMacro('mv', 'th', 0) # backwards compatibility - see note
              1.3 th = self.getObj('th');
                  executor.prepareMacro('ascan', th, 0, 100, 10, 1.0)
                  executor.prepareMacro('mv', [[th, 0]])
+                 executor.prepareMacro('mv', th, 0) # backwards compatibility - see note
            2. a sequence of parameters:
               2.1 executor.prepareMacro(['ascan', 'th', '0', '100', '10', '1.0')
                   executor.prepareMacro(['mv', [['th', '0']]])
-                  executor.prepareMacro(['mv', 'th', '0'])
+                  executor.prepareMacro(['mv', 'th', '0']) # backwards compatibility - see note
               2.2 executor.prepareMacro(('ascan', 'th', 0, 100, 10, 1.0))
                   executor.prepareMacro(['mv', [['th', 0]]])
-                  executor.prepareMacro(['mv', 'th', 0])
+                  executor.prepareMacro(['mv', 'th', 0]) # backwards compatibility - see note
               2.3 th = self.getObj('th');
                   executor.prepareMacro(['ascan', th, 0, 100, 10, 1.0])
                   executor.prepareMacro(['mv', [[th, 0]]])
+                  executor.prepareMacro(['mv', th, 0]) # backwards compatibility - see note
            3. a space separated string of parameters (this is not compatible
               with multiple or nested repeat parameters, furthermore the repeat
               parameter must be the last one):
               executor.prepareMacro('ascan th 0 100 10 1.0')
               executor.prepareMacro('mv %s 0' % motor.getName())
+
+        .. note:: From Sardana 2.0 the repeat parameter values must be passed
+            as lists of items. An item of a repeat parameter containing more
+            than one member is a list. In case when a macro defines only one
+            repeat parameter and it is the last parameter, for the backwards
+            compatibility reasons, the plain list of items' members is allowed.
 
         :param pars: the command parameters as explained above
         :param opts: keyword optional parameters for prepare
