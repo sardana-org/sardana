@@ -688,7 +688,11 @@ class TaurusMacroExecutorWidget(TaurusWidget):
 
     def checkDoorState(self):
         door = Device(self.doorName())
-        doorState = door.state()
+        try:
+            doorState = door.state()
+        except TypeError:
+            # TODO: For Taurus 4 adaptation
+            doorState = door.getState()
         if doorState == PyTango.DevState.RUNNING:
             self.playMacroAction.setEnabled(False)
             self.pauseMacroAction.setEnabled(True)
@@ -812,7 +816,12 @@ class TaurusMacroExecutorWidget(TaurusWidget):
             self.doorStateLed.setModel(None)
             return
         self.doorStateLed.setModel(self.doorName() + "/State")
-        doorState = Device(doorName).state()
+        door = Device(doorName)
+        try:
+            doorState = door.state()
+        except TypeError:
+            # TODO: For Taurus 4 adaptation
+            doorState = door.getState()
         if doorState == PyTango.DevState.ON:
             self.playMacroAction.setText("Start macro")
             self.playMacroAction.setToolTip("Start macro")
@@ -822,7 +831,11 @@ class TaurusMacroExecutorWidget(TaurusWidget):
 
     def onPlayMacro(self):
         door = Device(self.doorName())
-        doorState = door.state()
+        try:
+            doorState = door.state()
+        except TypeError:
+            # TODO: For Taurus 4 adaptation
+            doorState = door.getState()
         if doorState == PyTango.DevState.ON or doorState == PyTango.DevState.ALARM:
             self.setFocus()
             paramEditorModel = self.paramEditorModel()
@@ -845,7 +858,11 @@ class TaurusMacroExecutorWidget(TaurusWidget):
 
     def onStopMacro(self):
         door = Device(self.doorName())
-        doorState = door.state()
+        try:
+            doorState = door.state()
+        except TypeError:
+            # TODO: For Taurus 4 adaptation
+            doorState = door.getState()
 
         if doorState in (PyTango.DevState.RUNNING, PyTango.DevState.STANDBY):
             door.command_inout("StopMacro")
@@ -855,7 +872,11 @@ class TaurusMacroExecutorWidget(TaurusWidget):
 
     def onPauseMacro(self):
         door = Device(self.doorName())
-        doorState = door.state()
+        try:
+            doorState = door.state()
+        except TypeError:
+            # TODO: For Taurus 4 adaptation
+            doorState = door.getState()
 
         if doorState == PyTango.DevState.RUNNING:
             door.command_inout("PauseMacro")

@@ -49,7 +49,12 @@ from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
 from taurus import Factory, Device
 from taurus.core.taurusbasetypes import TaurusEventType, TaurusSWDevState, \
     TaurusSerializationMode
-from taurus.core.taurusvalidator import AttributeNameValidator
+try:
+    from taurus.core.taurusvalidator import AttributeNameValidator as\
+        TangoAttributeNameValidator
+except ImportError:
+    #TODO: For Taurus 4 compatibility
+    from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 from taurus.core.util.log import Logger
 from taurus.core.util.singleton import Singleton
 from taurus.core.util.codecs import CodecFactory
@@ -1156,12 +1161,13 @@ class MGConfiguration(object):
         self.non_tango_channels = n_tg_chs = CaselessDict()
         self.cache = cache = {}
 
-        tg_attr_validator = AttributeNameValidator()
+        tg_attr_validator = TangoAttributeNameValidator()
         for channel_name, channel_data in self.channels.items():
             cache[channel_name] = None
             data_source = channel_data['source']
             #external = ctrl_name.startswith("__")
-            params = tg_attr_validator.getParams(data_source)
+            # TODO: For Taurus 4 compatibility
+            params = tg_attr_validator.getParams("tango://%s" % data_source)
             if params is None:
                 # Handle NON tango channel
                 n_tg_chs[channel_name] = channel_data
@@ -1649,7 +1655,9 @@ class Pool(TangoDevice, MoveableSource):
             kwargs['_pool_data'] = data
             kwargs['_pool_obj'] = self
             return klass(**kwargs)
-        obj = Factory().getDevice(element_info.full_name, _pool_obj=self,
+        # TODO: For Taurus 4 compatibility
+        fullname = "tango://%s" % element_info.full_name
+        obj = Factory().getDevice(fullname, _pool_obj=self,
                                   _pool_data=data)
         return obj
 

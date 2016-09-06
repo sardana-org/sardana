@@ -888,11 +888,27 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
         tableView.setItemDelegate(self._delegate)
         tableView.setSortingEnabled(False)
         self.connect(self._editorBar, Qt.SIGNAL("addTriggered"), self.addChannel)
+        #TODO: For Taurus 4 compatibility
+        if hasattr(self._editorBar, "addTriggered"):
+            self._editorBar.addTriggered.connect(self.addChannel)
         self.connect(self._editorBar, Qt.SIGNAL("removeTriggered"), self.removeChannels)
+        #TODO: For Taurus 4 compatibility
+        if hasattr(self._editorBar, "removeTriggered"):
+            self._editorBar.removeTriggered.connect(self.removeChannels)
         self.connect(self._editorBar, Qt.SIGNAL("moveUpTriggered"), self.moveUpChannel)
+        #TODO: For Taurus 4 compatibility
+        if hasattr(self._editorBar, "moveUpTriggered"):
+            self._editorBar.moveUpTriggered.connect(self.moveUpChannel)
         self.connect(self._editorBar, Qt.SIGNAL("moveDownTriggered"), self.moveDownChannel)
+        #TODO: For Taurus 4 compatibility
+        if hasattr(self._editorBar, "moveDownTriggered"):
+            self._editorBar.moveDownTriggered.connect(self.moveDownChannel)
         self.connect(self._editorBar, Qt.SIGNAL("moveTopTriggered"), self.moveTopChannel)
+        if hasattr(self._editorBar, "moveTopTriggered"):
+            self._editorBar.moveTopTriggered.connect(self.moveTopChannel)
         self.connect(self._editorBar, Qt.SIGNAL("moveBottomTriggered"), self.moveBottomChannel)
+        if hasattr(self._editorBar, "moveBottomTriggered"):
+            self._editorBar.moveBottomTriggered.connect(self.moveBottomChannel)
         return tableView
 
     def createToolArea(self):

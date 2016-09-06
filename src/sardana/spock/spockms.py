@@ -52,6 +52,12 @@ else:
     from sardana.taurus.core.tango.sardana.macroserver import BaseDoor, BaseMacroServer
     BaseGUIViewer = object
 
+try:
+    RUNNING_STATE = TaurusSWDevState.Running
+except RuntimeError:
+    # TODO: For Taurus 4 compatibility
+    from taurus.core import TaurusDevState
+    RUNNING_STATE = TaurusDevState.Ready
 
 class GUIViewer(BaseGUIViewer):
 
@@ -314,7 +320,7 @@ class SpockBaseDoor(BaseDoor):
 
     def _runMacro(self, xml, **kwargs):
         #kwargs like 'synch' are ignored in this re-implementation
-        if self._spock_state != TaurusSWDevState.Running:
+        if self._spock_state != RUNNING_STATE:
             print "Unable to run macro: No connection to door '%s'" % self.getSimpleName()
             raise Exception("Unable to run macro: No connection")
         if xml is None:
@@ -403,7 +409,7 @@ class SpockBaseDoor(BaseDoor):
 
     def _updateState(self, old_sw_state, new_sw_state, silent=False):
         user_ns = genutils.get_ipapi().user_ns
-        if new_sw_state == TaurusSWDevState.Running:
+        if new_sw_state == RUNNING_STATE:
             user_ns['DOOR_STATE'] = ""
         else:
             user_ns['DOOR_STATE'] = " (OFFLINE)"
@@ -414,9 +420,9 @@ class SpockBaseDoor(BaseDoor):
 
         ss = self._spock_state
         if ss is not None and ss != new_sw_state and not silent:
-            if ss == TaurusSWDevState.Running:
+            if ss == RUNNING_STATE:
                 self.write_asynch("\nConnection to door '%s' was lost.\n" % self.getSimpleName())
-            elif new_sw_state == TaurusSWDevState.Running:
+            elif new_sw_state == RUNNING_STATE:
                 self.write_asynch("\nConnection to the door (%s) has " \
                     "been restablished\n" % self.getSimpleName())
         self._spock_state = new_sw_state

@@ -127,10 +127,10 @@ class PoolIORegisterTV(TaurusValue):
     '''
     def __init__(self, parent=None, designMode=False):
         TaurusValue.__init__(self, parent=parent, designMode=designMode)
-        self.setLabelWidgetClass("LabelWidgetDragsDeviceAndAttribute")
+        self.setLabelWidgetClass(LabelWidgetDragsDeviceAndAttribute)
         self.setLabelConfig('dev_alias')
-        self.setReadWidgetClass('PoolIORegisterReadWidget')
-        self.setWriteWidgetClass('PoolIORegisterWriteWidget')
+        self.setReadWidgetClass(PoolIORegisterReadWidget)
+        self.setWriteWidgetClass(PoolIORegisterWriteWidget)
         self.ioreg_dev = None
 
     def setModel(self, model):
