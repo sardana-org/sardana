@@ -904,8 +904,11 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
         if hasattr(self._editorBar, "moveDownTriggered"):
             self._editorBar.moveDownTriggered.connect(self.moveDownChannel)
         self.connect(self._editorBar, Qt.SIGNAL("moveTopTriggered"), self.moveTopChannel)
+        if hasattr(self._editorBar, "moveTopTriggered"):
+            self._editorBar.moveTopTriggered.connect(self.moveTopChannel)
         self.connect(self._editorBar, Qt.SIGNAL("moveBottomTriggered"), self.moveBottomChannel)
-
+        if hasattr(self._editorBar, "moveBottomTriggered"):
+            self._editorBar.moveBottomTriggered.connect(self.moveBottomChannel)
         return tableView
 
     def createToolArea(self):
