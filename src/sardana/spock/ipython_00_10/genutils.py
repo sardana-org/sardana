@@ -59,13 +59,7 @@ import imp
 import IPython
 import IPython.genutils
 import PyTango
-
-try:
-    from itango import itango
-except ImportError:
-    if PyTango.Release.version_number > 920:
-        raise Exception("itango is not installed")
-    import PyTango.ipython as itango
+import itango
 
 from taurus.core.taurushelper import Factory
 from taurus.core.util.codecs import CodecFactory
