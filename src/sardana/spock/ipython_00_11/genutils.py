@@ -594,19 +594,9 @@ def unexpose_variable(name):
     user_ns = get_shell().user_ns
     del user_ns[name]
 
-def create_spock_profile(userdir, dft_profile, profile, door_name=None):
-    """Create a profile file from a profile template file """
-    if not os.path.isdir(userdir):
-        ProfileDir.create_profile_dir(userdir)
-    p_dir = ProfileDir.create_profile_dir_by_name(userdir, profile)
+def _create_config_file(location, door_name=None):
     config_file_name = BaseIPythonApplication.config_file_name.default_value
-    abs_config_file_name = os.path.join(p_dir.location, config_file_name)
-    create_config = True
-    if os.path.isfile(abs_config_file_name):
-        create_config = ask_yes_no("Spock configuration file already exists. "\
-                                   "Do you wish to replace it?", default='y')
-    if not create_config:
-        return
+    abs_config_file_name = os.path.join(location, config_file_name)
 
     src_data = """\
 \"\"\"Settings for Spock session\"\"\"
@@ -638,7 +628,7 @@ config.IPKernelApp.pylab = 'inline'
     # Discover door name
     #
     if door_name is None:
-        door_name = get_device_from_user("Door", profile)
+        door_name = get_device_from_user("Door")
     else:
         full_door_name, door_name, _ = from_name_to_tango(door_name)
         door_name = full_door_name
@@ -652,7 +642,7 @@ config.IPKernelApp.pylab = 'inline'
                                 macroserver_name=ms_name,
                                 door_name=door_name)
 
-    sys.stdout.write('Storing %s in %s... ' % (config_file_name, p_dir.location))
+    sys.stdout.write('Storing %s in %s... ' % (config_file_name, location))
     sys.stdout.flush()
 
 
@@ -661,18 +651,49 @@ config.IPKernelApp.pylab = 'inline'
         f.close()
     sys.stdout.write(MSG_DONE + '\n')
 
-def check_for_upgrade(ipy_profile_file, ipythondir, session, profile):
-    # Check if the current profile is up to date with the spock version
+def create_spock_profile(userdir, profile, door_name=None):
+    """Create spock profile directory and configuration file from a template
+    file
+
+    :param userdir: directory where the spock profile will be created
+    :param profile: profile name
+    :param door_name: door name, if None, user will be asked for the door name
+    """
+
+    if not os.path.isdir(userdir):
+        ProfileDir.create_profile_dir(userdir)
+    p_dir = ProfileDir.create_profile_dir_by_name(userdir, profile)
+    ipy_profile_dir = p_dir.location
+
+    _create_config_file(ipy_profile_dir)
+
+def upgrade_spock_profile(ipy_profile_dir, door_name):
+    """Upgrade spock profile by recreating configuration file from scratch
+
+    :param ipy_profile_dir: directory with the spock profile
+    :param door_name: door name
+    """
+    _create_config_file(ipy_profile_dir, door_name)
+
+def check_for_upgrade(ipy_profile_dir):
+    """Check if the current profile is up to date with the spock version
+
+    :param ipy_profile_dir: directory with the spock profile
+    """
     spock_profile_ver_str = '0.0.0'
     door_name = None
 
+    config_file_name = BaseIPythonApplication.config_file_name.default_value
+    abs_config_file_name = os.path.join(ipy_profile_dir, config_file_name)
+
     # search for version and door inside the ipy_profile file
-    for i, line in enumerate(ipy_profile_file):
-        if i > 20 : break; # give up after 20 lines
-        if line.startswith('# spock_creation_version = '):
-            spock_profile_ver_str = line[line.index('=')+1:].strip()
-        if line.startswith('# door_name = '):
-            door_name = line[line.index('=')+1:].strip()
+    with file(abs_config_file_name, "r") as ipy_config_file:
+        for i, line in enumerate(ipy_config_file):
+            if i > 20 : break; # give up after 20 lines
+            if line.startswith('# spock_creation_version = '):
+                spock_profile_ver_str = line[line.index('=')+1:].strip()
+            if line.startswith('# door_name = '):
+                door_name = line[line.index('=')+1:].strip()
 
     # convert version from string to numbers
     spocklib_ver = translate_version_str2int(release.version)
@@ -697,7 +718,7 @@ def check_for_upgrade(ipy_profile_file, ipythondir, session, profile):
     prompt = 'Do you wish to upgrade now (warn: this will shutdown the current spock session) ([y]/n)? '
     r = raw_input(prompt) or 'y'
     if r.lower() == 'y':
-        create_spock_profile(ipythondir, session, profile, door_name)
+        upgrade_spock_profile(ipy_profile_dir, door_name)
         sys.exit(0)
 
 def get_args(argv):
@@ -731,7 +752,7 @@ def get_args(argv):
                      'one now ([y]/n)? ' % profile
             r = raw_input(prompt) or 'y'
         if r.lower() == 'y':
-            create_spock_profile(ipython_dir, session, profile)
+            create_spock_profile(ipython_dir, profile)
         else:
             sys.stdout.write('No spock door extension profile was created. Starting normal spock...\n')
             sys.stdout.flush()
@@ -1097,7 +1118,7 @@ def prepare_cmdline(argv=None):
 
     ipython_dir = get_ipython_dir()
     try:
-        ProfileDir.find_profile_dir_by_name(ipython_dir, profile)
+        pd = ProfileDir.find_profile_dir_by_name(ipython_dir, profile)
     except ProfileDirError:
         r = ''
         while not r in ('y', 'n'):
@@ -1105,7 +1126,7 @@ def prepare_cmdline(argv=None):
                      "one now ([y]/n)? " % profile
             r = raw_input(prompt) or 'y'
         if r.lower() == 'y':
-            create_spock_profile(ipython_dir, session, profile)
+            create_spock_profile(ipython_dir, profile)
         else:
             sys.stdout.write('No spock profile was created. '
                              'Starting ipython with default profile...\n')
@@ -1115,6 +1136,9 @@ def prepare_cmdline(argv=None):
                 if arg.startswith('--profile='):
                     argv.remove(arg)
             return
+    else:
+        ipy_profile_dir = pd.location # directory with the spock profile
+        check_for_upgrade(ipy_profile_dir)
 
     if append_profile:
         argv.append("--profile=" + profile)
