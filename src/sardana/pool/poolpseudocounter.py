@@ -40,7 +40,7 @@ from sardana.sardanavalue import SardanaValue
 from sardana.pool.poolexception import PoolException
 from sardana.pool.poolbasechannel import PoolBaseChannel
 from sardana.pool.poolbasegroup import PoolBaseGroup
-from sardana.pool.poolacquisition import PoolAcquisition
+from sardana.pool.poolacquisition import PoolCTAcquisition
 
 
 class Value(SardanaAttribute):
@@ -217,7 +217,7 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
 
     def _create_action_cache(self):
         acq_name = "%s.Acquisition" % self._name
-        return PoolAcquisition(self, acq_name)
+        return PoolCTAcquisition(self, acq_name)
 
     def get_action_cache(self):
         return self._get_action_cache()
