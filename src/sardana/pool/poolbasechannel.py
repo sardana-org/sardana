@@ -104,7 +104,7 @@ class PoolBaseChannel(PoolElement):
             :class:`~sardana.sardanavalue.SardanaValue`"""
         return self.acquisition.read_value()[self]
 
-    def put_value(self, value, propagate=1, extend=False):
+    def put_value(self, value, propagate=1):
         """Sets a value.
 
         :param value:
@@ -115,10 +115,9 @@ class PoolBaseChannel(PoolElement):
             0 for not propagating, 1 to propagate, 2 propagate with priority
         :type propagate:
             int
-        :param extend:
-            True for extending """
+        """
         val_attr = self._value
-        val_attr.set_value(value, propagate=propagate, extend=extend)
+        val_attr.set_value(value, propagate=propagate)
         return val_attr
 
     def put_value_chunk(self, value_chunk, propagate=1):
