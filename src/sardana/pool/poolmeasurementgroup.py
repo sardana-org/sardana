@@ -322,7 +322,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                         _id = element.id
                     user_elem_ids[channel_data['index']] = _id
                     channel_data = self._build_channel_defaults(channel_data, element)
-                if acq_synch:
+                if acq_synch is not None:
                     self._ctrl_to_acq_synch[c] = acq_synch
             indexes = sorted(user_elem_ids.keys())
             assert indexes == range(len(indexes))
