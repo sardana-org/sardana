@@ -287,6 +287,19 @@ class PositionFunctionGenerator(EventGenerator):
                     self.event_conditions = self.event_conditions[idx+1:]
                     self.event_types = self.event_types[idx+1:]
                     self.event_ids = self.event_ids[idx+1:]
+                    # checking if we need to immediatelly emit the last event
+                    # cause there will be no more updates 
+                    if len(self.event_values) == 1:
+                        candidate = self.event_values[-1]
+                        condition = self.event_conditions[-1]
+                        event_id = self.event_ids[-1]
+                        event_type = self.event_types[-1]
+                        if condition(self.last_value, candidate):
+                            self.fire_event(event_type, event_id)
+                            self.event_values = [] 
+                            self.event_conditions = []
+                            self.event_types = []
+                            self.event_ids = []
         except StopException:
             pass
         finally:
