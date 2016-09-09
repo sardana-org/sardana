@@ -79,6 +79,9 @@ def split_MGConfigurations(mg_cfg_in):
         # splitting ZeroD based on the type
         if ctrl.get_ctrl_types()[0] == ElementType.ZeroDExpChannel:
             ctrls_0d_out[ctrl] = ctrl_info
+        # ignoring PseudoCounter
+        elif ctrl.get_ctrl_types()[0] == ElementType.PseudoCounter:
+            pass
         # splitting rest of the channels based on the assigned trigger
         else:
             tg_element = ctrl_info.get('trigger_element')

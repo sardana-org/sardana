@@ -389,7 +389,10 @@ class PoolMeasurementGroup(PoolGroupElement):
                 ctrl = pool.get_element_by_full_name(c_name)
                 assert ctrl.get_type() == ElementType.Controller
             controllers[ctrl] = ctrl_data = {}
-            if not external and ctrl.is_timerable():
+            # exclude external elements and PseudoCounters
+            # TODO: verify if the ZeroD should be also excluded
+            if not external and \
+               ElementType.PseudoCounter not in ctrl.get_ctrl_types():
                 timer_name = c_data['timer']
                 timer = pool.get_element_by_full_name(timer_name)
                 ctrl_data['timer'] = timer
