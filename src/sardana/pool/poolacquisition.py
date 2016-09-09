@@ -218,9 +218,7 @@ class PoolAcquisition(PoolAction):
                     kwargs = self._sw_acq_config
                     kwargs['synch'] = True
                     kwargs['idx'] = event_id
-                    get_thread_pool().add(self._run_ct_continuous,
-                                          *args,
-                                          **kwargs)
+                    get_thread_pool().add(self._sw_acq.run, *args, **kwargs)
             if self._0d_config:
                 if self._0d_acq.is_running():
                     msg = ('Skipping trigger: ZeroD acquisition is still in'
@@ -233,9 +231,7 @@ class PoolAcquisition(PoolAction):
                     kwargs = self._0d_config
                     kwargs['synch'] = True
                     kwargs['idx'] = event_id
-                    get_thread_pool().add(self._run_zerod_acquisition,
-                                          *args,
-                                          **kwargs)
+                    get_thread_pool().add(self._0d_acq.run, *args, **kwargs)
 
         elif event_type == TGEventType.Passive:
             if self._0d_config and self._0d_acq.is_running():
@@ -280,32 +276,6 @@ class PoolAcquisition(PoolAction):
         tg_kwargs = dict(kwargs)
         tg_kwargs['config'] = tg_cfg
         self._tg_gen.run(*args, **tg_kwargs)
-
-    def _run_ct_continuous(self, *args, **kwargs):
-        """Run a single acquisition with the software triggered elements
-        during the continuous acquisition
-        """
-        try:
-            self._sw_acq.run(*args, **kwargs)
-        except:
-            self.error('Continuous Count Acquisition has failed')
-            self.debug('Details:', exc_info=True)
-        finally:
-            # return False indicating that the acquisition is not busy 
-            return False
-
-    def _run_zerod_acquisition(self, *args, **kwargs):
-        """Run a single acquisition with the software triggered elements
-        during the continuous acquisition
-        """
-        try:
-            self._0d_acq.run(*args, **kwargs)
-        except:
-            self.error('ZeroD Acquisition has failed')
-            self.error('Details:', exc_info=True)
-        finally:
-            # return False indicating that the acquisition is not busy 
-            return False
 
     def _get_action_for_element(self, element):
         elem_type = element.get_type()
