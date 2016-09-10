@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from sys import exc_info
 
 ##############################################################################
 ##
@@ -36,15 +35,14 @@ from taurus.core.taurusvalidator import AttributeNameValidator
 from sardana import State, ElementType, \
     TYPE_EXP_CHANNEL_ELEMENTS, TYPE_TIMERABLE_ELEMENTS
 from sardana.sardanaevent import EventType
-from sardana.pool.pooldefs import AcqMode, AcqSynchType, SynchParam, AcqSynch
+from sardana.pool.pooldefs import (AcqMode, AcqSynchType, SynchParam, AcqSynch,
+    SynchDomain)
 from sardana.pool.poolgroupelement import PoolGroupElement
 from sardana.pool.poolacquisition import PoolAcquisition
 from sardana.pool.poolexternal import PoolExternalObject
-from sardana.pool.pooltggeneration import PoolTGGeneration
 from sardana.pool.poolutil import is_software_tg
 
 from sardana.taurus.core.tango.sardana import PlotType, Normalization
-from sardana.pool.pooldefs import SynchDomain, SynchParam
 
 
 #----------------------------------------------
