@@ -153,7 +153,6 @@ class MeasurementGroup(PoolGroupDevice):
         '''Translates synchronization data structure so it uses SynchDomain 
         enums as keys instead of strings.
         '''
-        self.debug('Synchronization: %s' % repr(synchronization))
         for group in synchronization:
             for param, conf in group.iteritems():
                 group.pop(param)

@@ -359,7 +359,6 @@ class PoolMeasurementGroup(PoolGroupElement):
         self.fire_event(EventType("configuration", priority=propagate), config)
 
     def set_configuration_from_user(self, cfg, propagate=1):
-        self.debug('set_configuration_from_user: entering...')
         config = {}
         user_elements = self.get_user_elements()
         pool = self.pool
