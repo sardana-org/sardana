@@ -128,7 +128,6 @@ class MeasSarTestTestCase(SarTestTestCase):
     def prepare_meas(self, params):
         """ Set the measurement group parameters
         """
-        self.meas.write_attribute('acquisitionmode', params["mode"])
         synchronization = params["synchronization"]
         codec = CodecFactory().getCodec('json')
         data = codec.encode(('', synchronization))
@@ -170,8 +169,7 @@ synchronization1 = [{SynchParam.Delay: {SynchDomain.Time: 0},
 params_1 = {
     "synchronization": synchronization1,
     "integ_time": 0.01,
-    "name": '_exp_01',
-    "mode": "ContTimer"
+    "name": '_exp_01'
 }
 doc_1 = 'Synchronized acquisition with two channels from the same controller'\
         ' using hardware trigger'

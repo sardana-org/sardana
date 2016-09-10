@@ -1888,7 +1888,6 @@ class CTScan(CScan):
 
             #configuring measurementGroup
             self.__mntGrpConfigured = True
-            self.measurement_group.setAcquisitionMode('ContTimer')
             self.debug('Setting IntegrationTime: %f' % self.macro.acq_time)
             integ_time = self.macro.acq_time * self.macro.integ_time / 100
             self.measurement_group.write_attribute('IntegrationTime',

@@ -76,10 +76,9 @@ class BaseAcquisition(object):
         for attr in attributes:
             attr.remove_listener(self.attr_listener)
 
-    def acquire(self, mode):
-        """ Run a cont acquisition + asserts
+    def acquire(self):
+        """ Run acquisition
         """
-        self.pmg.set_acquisition_mode(mode)
         self.pmg.start_acquisition()   
         acq = self.pmg.acquisition
         # waiting for acquisition 
@@ -109,11 +108,9 @@ class BaseAcquisition(object):
             self.assertEqual(ch_data_len, repetitions, msg)
 
     def meas_double_acquisition(self, config, synchronization, moveable=None):
-        """ Run two acquisition with the same meas in two different mode: 
-             - ContTimer
-             - Timer
-        """ 
-        # AcqMode.ContTimer
+        """ Run two acquisition with the same measurement group, first with 
+        multiple repetitions and then one repetition.
+        """
         channel_names = self.prepare_meas(config)
         # setting measurement parameters
         self.pmg.set_synchronization(synchronization)
@@ -122,7 +119,7 @@ class BaseAcquisition(object):
         for group in synchronization:
             repetitions += group[SynchParam.Repeats]
         self.prepare_attribute_listener()
-        self.acquire(AcqMode.ContTimer)
+        self.acquire()
         self.acq_asserts(channel_names, repetitions)
         self.remove_attribute_listener()
         synchronization = [{SynchParam.Delay: {SynchDomain.Time: 0},
@@ -130,16 +127,13 @@ class BaseAcquisition(object):
                             SynchParam.Total: {SynchDomain.Time: 0},
                             SynchParam.Repeats: 1}]
         self.pmg.synchronization = synchronization
-        self.acquire(AcqMode.Timer)
+        self.acquire()
         # TODO: implement asserts of Timer acquisition
 
     def meas_double_acquisition_samemode(self, config, synchronization,
                                          moveable=None):
-        """ Run two acquisition with the same meas in two different mode: 
-             - ContTimer
-             - Timer
-        """ 
-        # AcqMode.ContTimer
+        """ Run two acquisition with the same measurement group.
+        """
         channel_names = self.prepare_meas(config)
         self.pmg.set_synchronization(synchronization)
         self.pmg.set_moveable(moveable)
@@ -147,11 +141,11 @@ class BaseAcquisition(object):
         for group in synchronization:
             repetitions += group[SynchParam.Repeats]
         self.prepare_attribute_listener()
-        self.acquire(AcqMode.ContTimer)
+        self.acquire()
         self.acq_asserts(channel_names, repetitions)
         self.remove_attribute_listener()
         self.prepare_attribute_listener()
-        self.acquire(AcqMode.ContTimer)
+        self.acquire()
         self.acq_asserts(channel_names, repetitions)
         self.remove_attribute_listener()
         # TODO: implement asserts of Timer acquisition
@@ -166,7 +160,7 @@ class BaseAcquisition(object):
         for group in synchronization:
             repetitions += group[SynchParam.Repeats]
         self.prepare_attribute_listener()
-        self.acquire(AcqMode.ContTimer)
+        self.acquire()
         self.acq_asserts(channel_names, repetitions)
 
     def meas_cont_acquisition(self, config, synchronization, moveable=None,
@@ -182,7 +176,7 @@ class BaseAcquisition(object):
         for group in synchronization:
             repetitions += group[SynchParam.Repeats]
         self.prepare_attribute_listener()
-        self.acquire(AcqMode.ContTimer)
+        self.acquire()
         self.acq_asserts(channel_names, repetitions)
 
         if second_config is not None:

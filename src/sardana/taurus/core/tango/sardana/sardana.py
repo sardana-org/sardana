@@ -70,10 +70,8 @@ AcqTriggerType = Enumeration("AcqTriggerType", (\
 
 #: an enumeration describing all possible acquisition mode types
 AcqMode = Enumeration("AcqMode", ( \
-    "Timer",        # step scan using timer
-    "Monitor",      # step scan using monitor
-    "ContTimer",    # continuous scan using timer
-    "ContMonitor",  # continuous scan using monitor                                   
+    "Timer",
+    "Monitor",
     "Unknown") )
 
 

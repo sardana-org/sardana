@@ -637,9 +637,9 @@ class PoolMeasurementGroup(PoolGroupElement):
             # determining the acquisition parameters
             kwargs = dict(head=self, config=self._config, multiple=multiple)
             acquisition_mode = self.acquisition_mode
-            if acquisition_mode in (AcqMode.Timer, AcqMode.ContTimer):
+            if acquisition_mode is AcqMode.Timer:
                 kwargs['integ_time'] = self.get_integration_time()
-            elif acquisition_mode in (AcqMode.Monitor, AcqMode.ContMonitor):
+            elif acquisition_mode is AcqMode.Monitor:
                 kwargs['monitor'] = self._monitor
             kwargs['synchronization'] = self._synchronization
             kwargs['moveable'] = self._moveable_obj
