@@ -88,6 +88,8 @@ requirements = {
     "IPython"     : ("0.11.0", "0.12.0"),
     "Python"      : ("2.6.0", "2.6.0"),
     "PyTango"     : ("7.2.0", "7.2.3"),
+    # for the moment just for reference since itango does not provide version
+    "itango"      : ("0.1.4", "0.1.4"),
     "taurus.core" : ("3.0.0", "3.0.0")
 }
 
@@ -470,6 +472,12 @@ def check_requirements():
         else:
             errMsg += "Current version is unknown (most surely too old)\n"
         errPyTango = True
+
+    # TODO: verify the version whenever itango starts to provide it
+    try:
+        import itango
+    except ImportError:
+        errMsg += "Spock needs itango version >= 0.1.4. No itango installation found\n"
 
     if currTaurusCore is None:
         errMsg += "Spock needs taurus.core version >= %s. No taurus.core installation found\n" % requirements["taurus.core"][0]
