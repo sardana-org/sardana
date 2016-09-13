@@ -281,6 +281,7 @@ class BaseDoor(MacroServerDevice):
     def __init__(self, name, **kw):
         self._log_attr = CaselessDict()
         self._block_lines = 0
+        self._in_block = False
         self._macro_server = None
         self._running_macros = None
         self._running_macro = None
@@ -296,7 +297,12 @@ class BaseDoor(MacroServerDevice):
         self.call__init__(MacroServerDevice, name, **kw)
 
         self._old_door_state = PyTango.DevState.UNKNOWN
-        self._old_sw_door_state = TaurusSWDevState.Uninitialized
+        try:
+            self._old_sw_door_state = TaurusSWDevState.Uninitialized
+        except RuntimeError:
+            #TODO: For Taurus 4 compatibility
+            from taurus.core import TaurusDevState
+            self._old_sw_door_state = TaurusDevState.Undefined 
 
         self.getStateObj().addListener(self.stateChanged)
 
@@ -542,7 +548,11 @@ class BaseDoor(MacroServerDevice):
 
     def stateChanged(self, s, t, v):
         self._old_door_state = self.getState()
-        self._old_sw_door_state = self.getSWState()
+        try:
+            self._old_sw_door_state = self.getSWState()
+        except:
+            # TODO: For Taurus 4 compatibility
+            self._old_sw_door_state = self.state
 
     def resultReceived(self, log_name, result):
         """Method invoked by the arrival of a change event on the Result attribute"""
@@ -644,14 +654,21 @@ class BaseDoor(MacroServerDevice):
         for line in output:
             if not self._debug:
                 if line == self.BlockStart:
+                    self._in_block = True
                     for i in xrange(self._block_lines):
                         o += '\x1b[2K\x1b[1A\x1b[2K'  #erase current line, up one line, erase current line
                     self._block_lines = 0
                     continue
                 elif line == self.BlockFinish:
+                    self._in_block = False
                     continue
+                else:
+                    if self._in_block:
+                        self._block_lines += 1
+                    else:
+                        self._block_lines = 0
             o += "%s\n" % line
-            self._block_lines += 1
+
         o += self.log_stop[log_name]
         self.write(o)
 
@@ -699,6 +716,7 @@ class MacroPath(object):
         self.macro_path = mp = self._ms().get_property("MacroPath")["MacroPath"]
         self.base_macro_path = osp.commonprefix(self.macro_path)
         self.rel_macro_path = [ osp.relpath for p in mp, self.base_macro_path ]
+
 
 
 class Environment(dict):
@@ -821,7 +839,9 @@ class BaseMacroServer(MacroServerDevice):
         return MacroInfo(from_json=element_info._data)
 
     def _createDeviceObject(self, element_info):
-        return Factory().getDevice(element_info.full_name)
+        # TODO: For Taurus 4 compatibility
+        name = "tango://%s" % element_info.full_name
+        return Factory().getDevice(name)
 
     def on_elements_changed(self, evt_src, evt_type, evt_value):
         try:

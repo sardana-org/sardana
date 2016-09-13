@@ -264,21 +264,21 @@ def sar_demo_hkl(self):
 
     self.print("Creating hkl controller", hkl_ctrl_name, "...")
     self.defctrl("DiffracE6C", hkl_ctrl_name,
-                 "mu=" + motor_names[0],  # motor role
-                 "omega=" + motor_names[1],
-                 "chi=" + motor_names[2],
-                 "phi=" + motor_names[3],
-                 "gamma=" + motor_names[4],
-                 "delta=" + motor_names[5],
-                 "h=" + pseudo_names[0],  # pseudo role
-                 "k=" + pseudo_names[1],
-                 "l=" + pseudo_names[2],
-                 "psi=" + pseudo_names[3],
-                 "q=" + pseudo_names[4],
-                 "alpha=" + pseudo_names[5],
-                 "qper=" + pseudo_names[6],
-                 "qpar=" + pseudo_names[7],
-                 "diffractometertype", "E6C")
+                 ["mu=" + motor_names[0],  # motor role
+                  "omega=" + motor_names[1],
+                  "chi=" + motor_names[2],
+                  "phi=" + motor_names[3],
+                  "gamma=" + motor_names[4],
+                  "delta=" + motor_names[5],
+                  "h=" + pseudo_names[0],  # pseudo role
+                  "k=" + pseudo_names[1],
+                  "l=" + pseudo_names[2],
+                  "psi=" + pseudo_names[3],
+                  "q=" + pseudo_names[4],
+                  "alpha=" + pseudo_names[5],
+                  "qper=" + pseudo_names[6],
+                  "qpar=" + pseudo_names[7],
+                  "diffractometertype", "E6C"])
 
     controllers = motor_ctrl_name, hkl_ctrl_name
     elements = pseudo_names + motor_names

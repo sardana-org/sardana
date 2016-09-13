@@ -124,7 +124,7 @@ class JsonRecorder(DataRecorder):
 class OutputRecorder(DataRecorder):
 
     def __init__(self, stream, cols=None, number_fmt='%8.4f', col_width=8,
-                 col_sep='  ', **pars):
+                 col_sep='  ', output_block=False, **pars):
         DataRecorder.__init__(self, **pars)
         self._stream = stream
         if not number_fmt.startswith('%'):
@@ -140,6 +140,7 @@ class OutputRecorder(DataRecorder):
         else:
             cols = None
         self._columns = cols
+        self._output_block = output_block
 
     def _startRecordList(self, recordlist):
         starttime = recordlist.getEnvironValue('starttime').ctime()
@@ -259,7 +260,11 @@ class OutputRecorder(DataRecorder):
             cells.append(cell)
         scan_line = self._col_sep.join(cells)
 
-        self._stream.output(scan_line)
+        if self._output_block:
+            self._stream.outputBlock(scan_line)
+        else:
+            self._stream.output(scan_line)
+
         self._stream.flushOutput()
 
     def _addCustomData(self, value, name, **kwargs):

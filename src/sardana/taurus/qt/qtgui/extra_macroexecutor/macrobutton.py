@@ -255,17 +255,15 @@ class MacroButton(TaurusWidget):
         if self.door is None:
             return
 
-        # Thanks to gjover for the hint... :-D
-        #macro_cmd = self.macro_name + ' ' + ' '.join(self.macro_args)
-        self.macro_id = uuid.uuid1()
-        macro_cmd_xml = '<macro name="%s" id="%s">\n' % \
-                        (self.macro_name, self.macro_id)
-        for arg in self.macro_args:
-            macro_cmd_xml += '<param value="%s"/>\n' % arg
-        macro_cmd_xml += '</macro>'
+        # TODO: make macrobutton compatible with macros with advanced usage of
+        # repeat parameters e.g. multiple repeat parameters, nested repeat
+        # parameters, etc.
+        macro_cmd = self.macro_name + ' ' + ' '.join(self.macro_args)
         try:
-            #self.door.runMacro(macro_cmd)
-            self.door.runMacro(macro_cmd_xml)
+            self.door.runMacro(macro_cmd)
+            sec_xml = self.door.getRunningXML()
+            # get the id of the current running macro
+            self.macro_id = sec_xml[0].get("id")
         except Exception, e:
             self.ui.button.setChecked(False)
             raise e

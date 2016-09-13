@@ -80,14 +80,22 @@ class SumAccumulation(BaseAccumulation):
         self.sum = 0.0
 
     def update_value(self, value, timestamp):
-        self.sum += value
+        if not value is None:
+            self.sum += value
+            self.value = self.sum
 
 
 class AverageAccumulation(SumAccumulation):
 
+    def clear(self):
+        SumAccumulation.clear(self)
+        self.nb_valid_points = 0
+
     def update_value(self, value, timestamp):
         SumAccumulation.update_value(self, value, timestamp)
-        self.value = self.sum / self.nb_points
+        if not value is None:
+            self.nb_valid_points += 1
+            self.value = self.sum / self.nb_valid_points
 
 
 class IntegralAccumulation(BaseAccumulation):
@@ -152,7 +160,8 @@ class Value(SardanaAttribute):
     def _get_value(self):
         value = self._accumulation.value
         if value is None:
-            raise Exception("Value not available: no acquisition done so far!")
+            raise Exception("Value not available: no successful acquisition"
+                            " done so far!")
         return value
 
     def get_value_buffer(self):

@@ -59,7 +59,7 @@ import imp
 import IPython
 import IPython.genutils
 import PyTango
-import PyTango.ipython
+import itango
 
 from taurus.core.taurushelper import Factory
 from taurus.core.util.codecs import CodecFactory
@@ -78,6 +78,8 @@ requirements = {
     "IPython"     : ("0.10.0", "0.10.0"),
     "Python"      : ("2.6.0", "2.6.0"),
     "PyTango"     : ("7.1.2", "7.2.0"),
+    # for the moment just for reference since itango does not provide version
+    "itango"      : ("0.1.4", "0.1.4"),
     "taurus.core" : ("2.0.0", "2.1.0")
 }
 
@@ -193,8 +195,8 @@ def get_python_version_number():
 
 def get_ipython_dir():
     """Find the ipython local directory. Usually is <home>/.ipython"""
-    if hasattr(PyTango.ipython, "get_ipython_dir"):
-        return PyTango.ipython.get_ipython_dir()
+    if hasattr(itango, "get_ipython_dir"):
+        return itango.get_ipython_dir()
     
     if hasattr(IPython.iplib, 'get_ipython_dir'):
         # Starting from ipython 0.9 they hadded this method
@@ -215,8 +217,8 @@ def get_ipython_dir():
 
 def get_ipython_profiles():
     """Helper function to find all ipython profiles"""
-    if hasattr(PyTango.ipython, "get_ipython_profiles"):
-        return PyTango.ipython.get_ipython_profiles()
+    if hasattr(itango, "get_ipython_profiles"):
+        return itango.get_ipython_profiles()
 
     ret = []
     ipydir = get_ipython_dir()
@@ -510,6 +512,12 @@ def check_requirements():
             errMsg += "Current version is unknown (most surely too old)\n"
         errPyTango = True
 
+    # TODO: verify the version whenever itango starts to provide it
+    try:
+        import itango
+    except ImportError:
+        errMsg += "Spock needs itango version >= 0.1.4. No itango installation found\n"
+
     if currTaurusCore is None:
         errMsg += "Spock needs taurus.core version >= %s. No taurus.core installation found\n" % requirements["taurus.core"][0]
         errTaurusCore = True
@@ -550,7 +558,8 @@ def _get_dev(dev_type):
         return ret
     
     dev_obj_name = '%s_NAME' % dev_type
-    dev_name = ip.user_ns[dev_obj_name]
+    # TODO: For Taurus 4 compatibility
+    dev_name = "tango://%s" % ip.user_ns[dev_obj_name]
     factory = Factory()
     dev_obj = factory.getDevice(dev_name)
     ip.user_ns[dev_type] = PyTango.DeviceProxy(dev_name) 
@@ -956,7 +965,7 @@ def init_post_spock(ip):
     
 def init_spock(ip, macro_server, door):
     init_pre_spock(ip, macro_server, door)
-    PyTango.ipython.init_ipython(ip)
+    itango.init_ipython(ip)
     init_post_spock(ip)
 
 

@@ -30,7 +30,12 @@ __all__ = ["PoolMeasurementGroup"]
 
 __docformat__ = 'restructuredtext'
 
-from taurus.core.taurusvalidator import AttributeNameValidator
+try:
+    from taurus.core.taurusvalidator import AttributeNameValidator as\
+        TangoAttributeNameValidator
+except ImportError:
+    #TODO: For Taurus 4 compatibility
+    from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 
 from sardana import State, ElementType, \
     TYPE_EXP_CHANNEL_ELEMENTS, TYPE_TIMERABLE_ELEMENTS
@@ -114,21 +119,9 @@ class PoolMeasurementGroup(PoolGroupElement):
         acq_name = "%s.Acquisition" % self._name
         return PoolAcquisition(self, acq_name)
 
-    def _calculate_element_state(self, elem, elem_state_info):
-        if elem.get_type() == ElementType.ZeroDExpChannel:
-            if elem_state_info[0] == State.Moving:
-                elem_state_info = State.On, elem_state_info[1]
-        return PoolGroupElement._calculate_element_state(self, elem,
-                                                         elem_state_info)
-
     def on_element_changed(self, evt_src, evt_type, evt_value):
         name = evt_type.name
         if name == 'state':
-            if evt_src.get_type() == ElementType.ZeroDExpChannel:
-                # 0D channels are "passive", which means they cannot contribute
-                # to set the measurement group into a moving state
-                if evt_value in (State.On, State.Moving):
-                    return
             state, status = self._calculate_states()
             self.set_state(state, propagate=2)
             self.set_status("\n".join(status))
@@ -368,7 +361,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                 unit_data['channels'] = channels = {}
                 for ch_name, ch_data in u_data['channels'].items():
                     if external:
-                        validator = AttributeNameValidator()
+                        validator = TangoAttributeNameValidator()
                         params = validator.getParams(ch_data['full_name'])
                         params['pool'] = self.pool
                         channel = PoolExternalObject(**params)

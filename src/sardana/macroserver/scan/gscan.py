@@ -370,14 +370,23 @@ class GScan(Logger):
 
     def _getOutputRecorder(self):
         cols = None
+        output_block = False
         try:
             cols = self.macro.getEnv('OutputCols')
         except InterruptException:
             raise
         except:
             pass
+
+        try:
+            output_block = self.macro.getViewOption('OutputBlock')
+        except InterruptException:
+            raise
+        except:
+            pass
+
         return self._rec_manager.getRecorderClass("OutputRecorder")(
-            self.macro, cols=cols, number_fmt='%g')
+            self.macro, cols=cols, number_fmt='%g', output_block=output_block)
 
     def _getFileRecorders(self):
         macro = self.macro
@@ -558,7 +567,7 @@ class GScan(Logger):
         instrument = master['instrument']
 
         #add channels from measurement group
-        channels_info = self.measurement_group.getChannelsInfo()
+        channels_info = self.measurement_group.getChannelsEnabledInfo()
         counters = []
         for ci in channels_info:
             instrument = ci.instrument or ''
@@ -592,7 +601,11 @@ class GScan(Logger):
                                 data_units=ci.unit)
             data_desc.append(column)
             counters.append(column.name)
-        counters.remove(master['full_name'])
+        try:
+            counters.remove(master['full_name'])
+        except ValueError:
+            # timer may be disabled
+            pass
         env['counters'] = counters
 
         for extra_column in self._extra_columns:

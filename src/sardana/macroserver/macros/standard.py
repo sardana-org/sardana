@@ -633,7 +633,7 @@ class ct(Macro):
         state, data = self.mnt_grp.count(integ_time)
 
         names, counts = [], []
-        for ch_info in self.mnt_grp.getChannelsInfo():
+        for ch_info in self.mnt_grp.getChannelsEnabledInfo():
             names.append('  %s' % ch_info.label)
             ch_data = data.get(ch_info.full_name)
             if ch_info.shape > [1]:

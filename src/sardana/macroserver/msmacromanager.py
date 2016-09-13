@@ -54,7 +54,8 @@ from sardana.sardanautils import is_pure_str, is_non_str_seq
 from sardana.macroserver.msmanager import MacroServerManager
 from sardana.macroserver.msmetamacro import MACRO_TEMPLATE, MacroLibrary, \
     MacroClass, MacroFunction
-from sardana.macroserver.msparameter import ParamDecoder
+from sardana.macroserver.msparameter import ParamDecoder, FlatParamDecoder, \
+    WrongParam
 from sardana.macroserver.macro import Macro, MacroFunc
 from sardana.macroserver.msexception import UnknownMacroLibrary, \
     LibraryError, UnknownMacro, MissingEnv, AbortException, StopException, \
@@ -681,7 +682,24 @@ class MacroManager(MacroServerManager):
         macro_meta = self.getMacro(macro_name)
         params_def = macro_meta.get_parameter()
         type_manager = door.type_manager
-        out_par_list = ParamDecoder(type_manager, params_def, raw_params)
+        try:
+            out_par_list = ParamDecoder(type_manager, params_def, raw_params)
+        except WrongParam, out_e:
+            # only if raw params are passed as a list e.g. using macro API
+            # execMacro("mv", mot01, 0.0) and parameters definition allows to
+            # decode it from a flat list we give it a try
+            if (isinstance(raw_params, list) and
+                FlatParamDecoder.isPossible(params_def)):
+                self.debug("Trying flat parameter decoder due to: %s" % out_e)
+                try:
+                    out_par_list = FlatParamDecoder(type_manager, params_def,
+                                                    raw_params)
+                except WrongParam, in_e:
+                    msg = ("Either of: %s or %s made it impossible to decode"
+                           " parameters" % (out_e.message, in_e.message))
+                    raise WrongParam, msg
+            else:
+                raise out_e
         return macro_meta, raw_params, out_par_list
 
     def strMacroParamValues(self, par_list):
@@ -961,24 +979,36 @@ class MacroExecutor(Logger):
            1. several parameters:
              1.1 executor.prepareMacro('ascan', 'th', '0', '100', '10', '1.0')
                  executor.prepareMacro('mv', [['th', '0']])
+                 executor.prepareMacro('mv', 'th', '0') # backwards compatibility - see note
              1.2 executor.prepareMacro('ascan', 'th', 0, 100, 10, 1.0)
                  executor.prepareMacro('mv', [['th', 0]])
+                 executor.prepareMacro('mv', 'th', 0) # backwards compatibility - see note
              1.3 th = self.getObj('th');
                  executor.prepareMacro('ascan', th, 0, 100, 10, 1.0)
                  executor.prepareMacro('mv', [[th, 0]])
+                 executor.prepareMacro('mv', th, 0) # backwards compatibility - see note
            2. a sequence of parameters:
               2.1 executor.prepareMacro(['ascan', 'th', '0', '100', '10', '1.0')
                   executor.prepareMacro(['mv', [['th', '0']]])
+                  executor.prepareMacro(['mv', 'th', '0']) # backwards compatibility - see note
               2.2 executor.prepareMacro(('ascan', 'th', 0, 100, 10, 1.0))
                   executor.prepareMacro(['mv', [['th', 0]]])
+                  executor.prepareMacro(['mv', 'th', 0]) # backwards compatibility - see note
               2.3 th = self.getObj('th');
                   executor.prepareMacro(['ascan', th, 0, 100, 10, 1.0])
                   executor.prepareMacro(['mv', [[th, 0]]])
+                  executor.prepareMacro(['mv', th, 0]) # backwards compatibility - see note
            3. a space separated string of parameters (this is not compatible
               with multiple or nested repeat parameters, furthermore the repeat
               parameter must be the last one):
               executor.prepareMacro('ascan th 0 100 10 1.0')
               executor.prepareMacro('mv %s 0' % motor.getName())
+
+        .. note:: From Sardana 2.0 the repeat parameter values must be passed
+            as lists of items. An item of a repeat parameter containing more
+            than one member is a list. In case when a macro defines only one
+            repeat parameter and it is the last parameter, for the backwards
+            compatibility reasons, the plain list of items' members is allowed.
 
         :param pars: the command parameters as explained above
         :param opts: keyword optional parameters for prepare
@@ -1218,7 +1248,7 @@ class MacroExecutor(Logger):
         except Exception, err:
             exc_info = sys.exc_info()
             exp_pars = {'type'      : err.__class__.__name__,
-                        'msg'       : err.args[0],
+                        'msg'       : str(err),
                         'args'      : err.args,
                         'traceback' : traceback.format_exc() }
             macro_exp = MacroServerException(exp_pars)

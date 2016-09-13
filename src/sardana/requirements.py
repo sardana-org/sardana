@@ -77,6 +77,9 @@ def check_requirements(exec_name=None):
         print "%s requires PyTango %s. Installed version is %s" % (exec_name, pytangover_str_, pytangover_str)
         sys.exit(-1)
 
+    # TODO: add itango as runtime dependency of spock
+    # now it is not possible because itango does not provide info about its version
+
     taurusver = None
     try:
         import taurus

@@ -68,10 +68,6 @@ Get motor state
 
 To get the state of a motor, sardana calls the
 :meth:`~sardana.pool.controller.Controller.StateOne` method. This method
-receives an axis as parameter and should return a sequence of three values:
-
-To get the state of a motor, sardana calls the
-:meth:`~sardana.pool.controller.Controller.StateOne` method. This method
 receives an axis as parameter and should return either:
 
     - state (:obj:`~sardana.sardanadefs.State`) or

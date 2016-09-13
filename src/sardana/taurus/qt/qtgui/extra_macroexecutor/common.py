@@ -31,7 +31,7 @@ from taurus.core.taurusbasetypes import TaurusEventType
 from taurus.qt.qtgui.base import TaurusBaseWidget
 from taurus.qt.qtgui.input import TaurusAttrListComboBox
 from taurus.qt.qtgui.container import TaurusMainWindow
-from taurus.qt.qtgui.resource import getThemeIcon
+from taurus.qt.qtgui.resource import getThemeIcon, getIcon
 
 
 def str2bool(text):
@@ -188,11 +188,11 @@ class TaurusMacroConfigurationDialog(Qt.QDialog):
                 pass
             icon = None
             if state == PyTango.DevState.ON:
-                icon = Qt.QIcon(":/leds/images24/ledgreen.png")
+                icon = getIcon(":/leds/images24/ledgreen.png")
             elif state == PyTango.DevState.FAULT:
-                icon = Qt.QIcon(":/leds/images24/ledred.png")
+                icon = getIcon(":/leds/images24/ledred.png")
             elif state == None:
-                icon = Qt.QIcon(":/leds/images24/ledredoff.png")
+                icon = getIcon(":/leds/images24/ledredoff.png")
             ms_stateIcons.append((macroServer, icon))
         return ms_stateIcons
 
@@ -246,7 +246,7 @@ class MacroExecutionWindow(TaurusMainWindow):
         self._customMacroEditorPaths = ""
         self.registerConfigProperty("customMacroEditorPaths", "setCustomMacroEditorPaths", "customMacroEditorPaths")
         self._qDoor = None
-        self.setWindowIcon(Qt.QIcon(":/apps/preferences-system-session.svg"))
+        self.setWindowIcon(getIcon(":/apps/preferences-system-session.svg"))
         toolBar = self.basicTaurusToolbar()
         toolBar.setIconSize(Qt.QSize(24, 24))
         self.configureAction = self.createConfigureAction()

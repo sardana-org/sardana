@@ -31,7 +31,6 @@ __all__ = ['expconf', 'showscan', 'spsplot', 'debug_completer',
            'post_mortem', 'macrodata', 'edmac', 'spock_late_startup_hook',
            'spock_pre_prompt_hook']
 
-
 from .genutils import page, get_door, get_macro_server, ask_yes_no, arg_split
 from .genutils import MSG_DONE, MSG_FAILED
 from .genutils import get_ipapi
@@ -43,11 +42,14 @@ def expconf(self, parameter_s=''):
     try:
         from sardana.taurus.qt.qtgui.extra_sardana import ExpDescriptionEditor
     except:
-        print "Error importing ExpDescriptionEditor "\
+        print "Error importing ExpDescriptionEditor " \
               "(hint: is taurus extra_sardana installed?)"
         return
-    doorname = get_door().name()
-        
+    try:
+        doorname = get_door().name()
+    except TypeError:
+        # TODO: For Taurus 4 adaptation
+        doorname = get_door().fullname
     #===========================================================================
     ## ugly hack to avoid ipython/qt thread problems #e.g. see
     ## https://sourceforge.net/p/sardana/tickets/10/ 
@@ -55,14 +57,15 @@ def expconf(self, parameter_s=''):
     ## widget open after closing spock 
     ## @todo: investigate cause of segfaults when using launching qt widgets from ipython
     # 
-    #w = ExpDescriptionEditor(door=doorname)
-    #w.show() #launching it like this, produces the problem of https://sourceforge.net/p/sardana/tickets/10/
+    # w = ExpDescriptionEditor(door=doorname)
+    # w.show() #launching it like this, produces the problem of https://sourceforge.net/p/sardana/tickets/10/
     import subprocess
     import sys
+
     fname = sys.modules[ExpDescriptionEditor.__module__].__file__
     args = ['python', fname, doorname]
     subprocess.Popen(args)
-    #===========================================================================
+    # ===========================================================================
 
 
 def showscan(self, parameter_s=''):
@@ -122,6 +125,7 @@ def debug(self, parameter_s=''):
 def www(self, parameter_s=''):
     """What went wrong. Prints the error message from the last macro execution"""
     import PyTango
+
     door = get_door()
     try:
         last_macro = door.getLastRunningMacro()
@@ -139,6 +143,7 @@ def www(self, parameter_s=''):
                      stream=door.Error)
         door.writeln(str(e), stream=door.Error)
         import traceback
+
         traceback.print_exc()
 
 
@@ -156,7 +161,7 @@ def post_mortem(self, parameter_s='', from_www=False):
             msg = "\n".join(logger.read(cache=False).value)
         except:
             from_www = True
-            
+
     if from_www:
         msg = "------------------------------\n" \
               "Server is offline.\n" \
@@ -164,6 +169,7 @@ def post_mortem(self, parameter_s='', from_www=False):
               "------------------------------\n"
         msg += "\n".join(logger.getLogBuffer())
     page(msg)
+
 
 def macrodata(self, parameter_s=''):
     """macrodata
@@ -173,10 +179,11 @@ def macrodata(self, parameter_s=''):
     macro_data = door.read_attribute("RecordData")
 
     from taurus.core.util.codecs import CodecFactory
+
     factory = CodecFactory()
-    data = factory.decode(macro_data.value)    
+    data = factory.decode(macro_data.value)
     return data
-    
+
 
 def edmac(self, parameter_s=''):
     """edmac <macro name> [<module>]
@@ -195,13 +202,26 @@ def edmac(self, parameter_s=''):
 
     if len(pars) == 1:
         macro_name = pars[0]
-        macro_info = ms.getMacroInfoObj(macro_name)
-        if macro_info is None:
+        is_new_macro = False
+    else:
+        is_new_macro = True
+        macro_name, macro_lib = pars
+
+    macro_info_obj = ms.getMacroInfoObj(macro_name)
+    if not is_new_macro:
+        if macro_info_obj is None:
             print "Macro '%s' could not be found" % macro_name
             return
-        macro_lib = macro_info.module
-    else:
-        macro_name, macro_lib = pars
+        macro_lib = macro_info_obj.module
+
+    if is_new_macro:
+        if macro_info_obj is not None:
+            msg = ('Do you want to create macro "%s" in module "%s" that will'
+                   ' override the already existing macro in module "%s"'
+                    % (macro_name, macro_lib, macro_info_obj.module))
+            if not ask_yes_no(msg, 'y'):
+                print "Aborting edition..."
+                return
 
     macro_info = (macro_lib, macro_name)
     print 'Opening %s.%s...' % macro_info
@@ -240,7 +260,7 @@ def edmac(self, parameter_s=''):
     else:
         print "Discarding changes..."
 
-    #if os.path.exists(local_fname):
+    # if os.path.exists(local_fname):
     #    if ask_yes_no('Delete temporary file \'%s\'?' % local_fname, 'y'):
     #        os.remove(local_fname)
     #        bkp = '%s~' % local_fname
@@ -257,6 +277,7 @@ def spock_late_startup_hook(self):
         get_door().setConsoleReady(True)
     except:
         import traceback
+
         print "Exception in spock_late_startup_hook:"
         traceback.print_exc()
 
@@ -266,9 +287,10 @@ def spock_pre_prompt_hook(self):
         get_door().pre_prompt_hook(self)
     except:
         import traceback
+
         print "Exception in spock_pre_prompt_hook:"
         traceback.print_exc()
 
-#def spock_pre_runcode_hook(self):
+# def spock_pre_runcode_hook(self):
 #    print "spock_pre_runcode_hook"
 #    return None

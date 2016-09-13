@@ -39,6 +39,19 @@ class QDoor(BaseDoor, Qt.QObject):
 
     __pyqtSignals__ = ["resultUpdated", "recordDataUpdated", "macroStatusUpdated"]
     __pyqtSignals__ += [ "%sUpdated" % l.lower() for l in BaseDoor.log_streams ]
+    # TODO: For Taurus 4 compatibility
+    try:
+        # sometimes we emit None hence the type is object
+        # (but most of the data are passed with type list)
+        resultUpdated = Qt.pyqtSignal(object)
+        recordDataUpdated = Qt.pyqtSignal(object)
+        errorUpdated = Qt.pyqtSignal(object)
+        warningUpdated = Qt.pyqtSignal(object)
+        infoUpdated = Qt.pyqtSignal(object)
+        outputUpdated = Qt.pyqtSignal(object)
+        debugUpdated = Qt.pyqtSignal(object)
+    except AttributeError:
+        pass
 
     def __init__(self, name, qt_parent=None, **kw):
         self.call__init__wo_kw(Qt.QObject, qt_parent)
@@ -47,12 +60,18 @@ class QDoor(BaseDoor, Qt.QObject):
     def resultReceived(self, log_name, result):
         res = BaseDoor.resultReceived(self, log_name, result)
         self.emit(Qt.SIGNAL("resultUpdated"), res)
+        # TODO: For Taurus 4 compatibility
+        if hasattr(self, "resultUpdated"):
+            self.resultUpdated.emit(res)
         return res
 
     def recordDataReceived(self, s, t, v):
         if t not in CHANGE_EVTS: return
         res = BaseDoor.recordDataReceived(self, s, t, v)
         self.emit(Qt.SIGNAL("recordDataUpdated"), res)
+        # TODO: For Taurus 4 compatibility
+        if hasattr(self, "recordDataUpdated"):
+            self.recordDataUpdated.emit(res)
         return res
 
     def macroStatusReceived(self, s, t, v):
@@ -63,11 +82,21 @@ class QDoor(BaseDoor, Qt.QObject):
             macro = self.getRunningMacro()
         if macro is None: return
         self.emit(Qt.SIGNAL("macroStatusUpdated"), (macro, res))
+        # TODO: For Taurus 4 compatibility
+        if hasattr(self, "macroStatusUpdated"):
+            self.macroStatusUpdated.emit(res)
         return res
 
     def logReceived(self, log_name, output):
         res = BaseDoor.logReceived(self, log_name, output)
-        self.emit(Qt.SIGNAL("%sUpdated" % log_name.lower()), output)
+        log_name = log_name.lower()
+        self.emit(Qt.SIGNAL("%sUpdated" % log_name), output)
+        # TODO: For Taurus 4 compatibility
+        try:
+            recordDataUpdated = getattr(self, "%sUpdated" % log_name)
+            recordDataUpdated.emit(output)
+        except AttributeError:
+            pass
         return res
 
 
