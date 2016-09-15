@@ -569,7 +569,7 @@ class SpockMacroServer(BaseMacroServer):
     def _addMacro(self, macro_info):
         macro_name = str(macro_info.name)
 
-        def macro_fn(shell, parameter_s='', name=macro_name):
+        def macro_fn(parameter_s='', name=macro_name):
             parameters = genutils.arg_split(parameter_s, posix=True)
             door = genutils.get_door()
             door.runMacro(macro_name, parameters, synch=True)

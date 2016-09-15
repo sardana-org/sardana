@@ -579,7 +579,7 @@ def _macro_completer(self, event):
 
 def expose_magic(name, fn, completer_func=_macro_completer):
     shell = get_shell()
-    fn.old_magic = shell.define_magic(name, fn)
+    fn.old_magic = shell.register_magic_function(fn, magic_name=name)
     fn.old_completer = completer_func
 
     if completer_func is None:
