@@ -48,8 +48,10 @@ class DoorOutput(Qt.QPlainTextEdit):
         txt = "<font color=\"Black\">"
         if output is None:
             return
-        for line in output:
-            txt += line.replace(' ', '&nbsp;') + "\n"
+        for i, line in enumerate(output):
+            if i > 0:
+                txt += "<br/>"
+            txt += line.replace(' ', '&nbsp;')
         txt += "</font>"
         self.appendHtmlText(txt)
 
@@ -58,9 +60,10 @@ class DoorOutput(Qt.QPlainTextEdit):
         txt = "<font color=\"Blue\">"
         if info is None:
             return
-
-        for line in info:
-            txt += line.replace(' ', '&nbsp;') + "\n"
+        for i, line in enumerate(info):
+            if i > 0:
+                txt += "<br/>"
+            txt += line.replace(' ', '&nbsp;')
         txt += "</font>"
         self.appendHtmlText(txt)
 
@@ -69,8 +72,10 @@ class DoorOutput(Qt.QPlainTextEdit):
         txt = "<font color=\"Orange\">"
         if warning is None:
             return
-        for line in warning:
-            txt += line.replace(' ', '&nbsp;') + "\n"
+        for i, line in enumerate(warning):
+            if i > 0:
+                txt += "<br/>"
+            txt += line.replace(' ', '&nbsp;')
         txt += "</font>"
         self.appendHtmlText(txt)
 
@@ -79,8 +84,10 @@ class DoorOutput(Qt.QPlainTextEdit):
         txt = "<font color=\"Red\">"
         if error is None:
             return
-        for line in error:
-            txt += line.replace(' ', '&nbsp;') + "\n"
+        for i, line in enumerate(error):
+            if i > 0:
+                txt += "<br/>"
+            txt += line.replace(' ', '&nbsp;')
         txt += "</font>"
         self.appendHtmlText(txt)
 
