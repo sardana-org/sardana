@@ -35,7 +35,7 @@ class DoorOutput(Qt.QPlainTextEdit):
     """Widget used for displaying changes of door's attributes: Output, Info, Warning and Error."""
 
     def __init__(self, parent=None):
-        Qt.QTextEdit.__init__(self, parent)
+        Qt.QPlainTextEdit.__init__(self, parent)
         self.setReadOnly(True)
         self.setFont(Qt.QFont("Courier", 9))
         self.stopAction = Qt.QAction("Stop scrolling", self)
@@ -108,7 +108,7 @@ class DoorDebug(Qt.QPlainTextEdit):
     """Widget used for displaying changes of door's Debug attribute."""
 
     def __init__(self, parent=None):
-        Qt.QTextEdit.__init__(self, parent)
+        Qt.QPlainTextEdit.__init__(self, parent)
         self.setReadOnly(True)
         self.setFont(Qt.QFont("Courier", 9))
         self.stopAction = Qt.QAction("Stop scrolling", self)
@@ -145,7 +145,7 @@ class DoorResult(Qt.QPlainTextEdit):
     """Widget used for displaying changes of door's Result attribute."""
 
     def __init__(self, parent=None):
-        Qt.QTextEdit.__init__(self, parent)
+        Qt.QPlainTextEdit.__init__(self, parent)
         self.setReadOnly(True)
         self.setFont(Qt.QFont("Courier", 9))
 
