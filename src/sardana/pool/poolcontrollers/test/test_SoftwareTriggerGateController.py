@@ -46,8 +46,8 @@ synchronization1 = [{SynchParam.Delay: {SynchDomain.Time: 0},
                      SynchParam.Repeats: 0}
                     ]
 synchronization2 = [{SynchParam.Delay: {SynchDomain.Time: 0},
-                     SynchParam.Active: {SynchDomain.Time: .01},
-                     SynchParam.Total: {SynchDomain.Time: .02},
+                     SynchParam.Active: {SynchDomain.Time: .02},
+                     SynchParam.Total: {SynchDomain.Time: .04},
                      SynchParam.Repeats: 10}
                     ]
 synchronization3 = [{SynchParam.Delay: {SynchDomain.Position: 0},
@@ -58,7 +58,7 @@ synchronization3 = [{SynchParam.Delay: {SynchDomain.Position: 0},
                     ]
 synchronization4 = [{SynchParam.Delay: {SynchDomain.Position: 0},
                      SynchParam.Initial: {SynchDomain.Position: 0},
-                     SynchParam.Active: {SynchDomain.Position: -1},
+                     SynchParam.Active: {SynchDomain.Time: 0.1},
                      SynchParam.Total: {SynchDomain.Position: -1.1},
                      SynchParam.Repeats: 10}
                     ]
@@ -115,8 +115,9 @@ class SoftwareTriggerGatePositionControllerTestCase(TriggerGateControllerTestCas
             self.assertEqual(received_triggers, repetitions, msg)
 
 
-@insertTest(helper_name='generation', synchronization=synchronization1)
-@insertTest(helper_name='generation', synchronization=synchronization2)
+@insertTest(helper_name='generation', synchronization=synchronization1,
+            active_domain=SynchDomain.Time)
+@insertTest(helper_name='generation', synchronization=synchronization2,
             active_domain=SynchDomain.Time)
 class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
     """Parameterizable integration test of the PoolTGGeneration action and
@@ -186,7 +187,7 @@ class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
         self.assertEqual(received_triggers, repetitions, msg)
 
         # testing cycle-to-cycle jitter
-        c2c_mean_limit = 0.0005
+        c2c_mean_limit = 0.0006
         c2c_std_limit = 0.00001
         c2c_max_limit = 0.00001
         c2c_mean, c2c_std, c2c_max = self.tg_receiver.calc_cycletocycle()
@@ -202,7 +203,8 @@ class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
 
         # testing characteristics
         characteristics = self.tg_receiver.calc_characteristics()
-        i = 0
+        i = 1
+
         while i < (repetitions - 1):
             intervals = characteristics[i]
             measured_active_interval = intervals[0]
