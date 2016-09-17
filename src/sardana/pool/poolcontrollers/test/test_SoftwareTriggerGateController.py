@@ -69,7 +69,8 @@ class SoftwareTriggerGateControllerTestCase(TriggerGateControllerTestCase):
     KLASS = SoftwareTriggerGateController
 
 
-@insertTest(helper_name='generation', configuration=synchronization3)
+@insertTest(helper_name='generation', configuration=synchronization3,
+            passive_domain=SynchDomain.Position)
 @insertTest(helper_name='abort', configuration=synchronization4, abort=1)
 class SoftwareTriggerGatePositionControllerTestCase(TriggerGateControllerTestCase):
     KLASS = SoftwareTriggerGateController
@@ -116,6 +117,7 @@ class SoftwareTriggerGatePositionControllerTestCase(TriggerGateControllerTestCas
 
 @insertTest(helper_name='generation', synchronization=synchronization1)
 @insertTest(helper_name='generation', synchronization=synchronization2)
+            active_domain=SynchDomain.Time)
 class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
     """Parameterizable integration test of the PoolTGGeneration action and
     the SoftwareTriggerGateController.
@@ -131,15 +133,15 @@ class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
         unittest.TestCase.setUp(self)
         pool = FakePool()
 
-        sw_tg_ctrl = createPoolController(pool, softwarePoolTGCtrlConf01)
-        self.sw_tg = createPoolTriggerGate(pool, sw_tg_ctrl,
+        self.sw_tg_ctrl = createPoolController(pool, softwarePoolTGCtrlConf01)
+        self.sw_tg = createPoolTriggerGate(pool, self.sw_tg_ctrl,
                                               dummyTriggerGateConf01)
         # marrying the element with the controller
-        sw_tg_ctrl.add_element(self.sw_tg)
+        self.sw_tg_ctrl.add_element(self.sw_tg)
 
         # TODO: at the moment of writing this test, the configuration of
         # TGGenerationAction s
-        self.cfg = createPoolTGGenerationConfiguration((sw_tg_ctrl,),
+        self.cfg = createPoolTGGenerationConfiguration((self.sw_tg_ctrl,),
                                                        ((self.sw_tg,),))
 
         # marrying the element with the action
@@ -154,9 +156,15 @@ class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
 
         self.tg_action.add_listener(self.tg_receiver)
 
-    def generation(self, synchronization):
+    def generation(self, synchronization, active_domain=None,
+                   passive_domain=None):
         """Verify that the created PoolTGAction start_action starts correctly
         the involved controller."""
+        axis = dummyTriggerGateConf01["axis"]
+        if active_domain:
+            self.sw_tg_ctrl.set_axis_attr(axis, "active_domain", active_domain)
+        if passive_domain:
+            self.sw_tg_ctrl.set_axis_attr(axis, "passive_domain", passive_domain)
         args = ()
         kwargs = {'config': self.cfg,
                   'synchronization': synchronization

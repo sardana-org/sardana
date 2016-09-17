@@ -115,10 +115,15 @@ class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
         '''
         pass
 
-    def generation(self, configuration):
+    def generation(self, configuration, active_domain=None,
+                   passive_domain=None):
         """ Helper for test a simple generation
         """
         self.configuration = configuration
+        if active_domain:
+            self.ctrl.set_axis_par(self.AXIS, "active_domain", active_domain)
+        if passive_domain:
+            self.ctrl.set_axis_par(self.AXIS, "passive_domain", passive_domain)
         self.ctrl.SetConfiguration(self.AXIS, configuration)
         # execute Hook
         self.post_configuration_hook()
