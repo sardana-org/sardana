@@ -184,9 +184,10 @@ class PoolAcquisition(PoolAction):
 
         self._sw_acq_config = None
         self._0d_config = None
-        self._sw_acq = PoolAcquisitionSoftware(main_element, name=swname)
-        self._hw_acq = PoolAcquisitionHardware(main_element, name=hwname)
         self._0d_acq = Pool0DAcquisition(main_element, name=zerodname)
+        self._sw_acq = PoolAcquisitionSoftware(main_element, name=swname,
+                                               slaves=(self._0d_acq,))
+        self._hw_acq = PoolAcquisitionHardware(main_element, name=hwname)
         self._tg_gen = PoolTGGeneration(main_element, name=tgname)
 
 
@@ -232,11 +233,6 @@ class PoolAcquisition(PoolAction):
                     kwargs['synch'] = True
                     kwargs['idx'] = event_id
                     get_thread_pool().add(self._0d_acq.run, *args, **kwargs)
-
-        elif event_type == TGEventType.Passive:
-            if self._0d_config and self._0d_acq.is_running():
-                self.debug('Stopping ZeroD acquisition.')
-                self._0d_acq.stop_action()
 
     def is_running(self):
         return self._0d_acq.is_running() or\
@@ -593,8 +589,12 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
 
 class PoolAcquisitionSoftware(PoolAcquisitionBase):
 
-    def __init__(self, main_element, name="AcquisitionSoftware"):
+    def __init__(self, main_element, name="AcquisitionSoftware", slaves=None):
         PoolAcquisitionBase.__init__(self, main_element, name)
+
+        if slaves is None:
+            slaves = ()
+        self._slaves = slaves
 
     @DebugIt()
     def start_action(self, *args, **kwargs):
@@ -628,6 +628,14 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
                 break
 
             time.sleep(nap)
+
+        for slave in self._slaves:
+            try:
+                slave.stop_action()
+            except:
+                self.warning("Unable to stop slave acquisition %s",
+                             slave.getLogName())
+                self.debug("Details", exc_info=1)
 
         with ActionContext(self):
             self.raw_read_state_info(ret=states)
