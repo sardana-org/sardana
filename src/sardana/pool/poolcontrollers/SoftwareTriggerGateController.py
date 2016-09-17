@@ -175,4 +175,18 @@ class SoftwareTriggerGateController(TriggerGateController):
         """
         self._log.debug('AbortOne(%d): entering...' % axis)
         idx = axis - 1
-        self.tg[idx].stop()
+        self.tg[idx].stop()    def set_axis_par(self, axis, par, value):
+        idx = axis - 1
+        tg = self.tg[idx]
+        if par == "active_domain":
+            tg.active_domain = value
+        elif par == "passive_domain":
+            tg.passive_domain = value
+
+    def get_axis_par(self, axis, par):
+        idx = axis - 1
+        tg = self.tg[idx]
+        if par == "active_domain":
+            return tg.active_domain
+        elif par == "passive_domain":
+            return tg.passive_domain
