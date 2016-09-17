@@ -61,6 +61,15 @@ class SynchEnum(IntEnum):
             raise ValueError('Can not convert %s to SynchDomain' % string)
 
 class SynchDomain(SynchEnum):
+    """Enumeration with options describing the synchronization domains.
+
+    - Time - describes the synchronization in time domain
+    - Position - describes the synchronization in position domain
+    - Monitor - not used at the moment but foreseen for synchronization on monitor
+    - Default - the controller selects the most appropriate domain:
+        for active events the precedence should be first Position and then Time
+        for passive events the precedence should be first Time and then Position
+    """
 
     Time = 0
     Position = 1
