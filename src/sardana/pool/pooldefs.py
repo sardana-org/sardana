@@ -65,6 +65,7 @@ class SynchDomain(SynchEnum):
     Time = 0
     Position = 1
     Monitor = 2
+    Default = 3
 
 
 class SynchParam(SynchEnum):
