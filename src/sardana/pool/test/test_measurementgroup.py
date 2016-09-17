@@ -335,6 +335,7 @@ config_12 = [[('_test_ct_1_1', '_test_stg_1_1', AcqSynchType.Trigger),
 
 doc_13 = 'Test acquisition of zerod using software gate.'
 config_13 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),],
+             [('_test_ct_2_1', '_test_stg_1_1', AcqSynchType.Trigger),],
              [('_test_0d_1_1', '_test_stg_1_1', AcqSynchType.Gate),]]
 
 
