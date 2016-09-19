@@ -16,21 +16,26 @@ class FunctionGenerator(EventGenerator):
 
     def __init__(self):
         EventGenerator.__init__(self)
-        self._start_time = None
-        self._running = False
-        self._stopped = False
-        self._started = False
+        self.init()
         self._active_domain = SynchDomain.Default
         self._passive_domain = SynchDomain.Default
+        self._position_event = threading.Event()
+
+    def init(self):
+        """Initialize all internals to prepare for the generation.
+        """
         self._active_domain_in_use = None
         self._passive_domain_in_use = None
         self._active_events = list()
         self._passive_events = list()
-        self._position_event = threading.Event()
+        self._started = False
+        self._stopped = False
+        self._running = False
+        self._start_time = None
         self._position = None
-        self._direction = 1
-        self._condition = numpy.greater_equal
         self._id = 0
+        self._direction = None
+        self._condition = None
 
     def set_active_domain(self, domain):
         self._active_domain = domain
@@ -116,13 +121,6 @@ class FunctionGenerator(EventGenerator):
     def stop(self):
         self._stopped = True
 
-    def clean(self):
-        self._started = False
-        self._stopped = False
-        self._running = False
-        self._start_time = None
-        self._id = 0
-
     def is_started(self):
         return self._started
 
@@ -141,7 +139,7 @@ class FunctionGenerator(EventGenerator):
                 self.wait_passive()
                 self.fire_passive()
         finally:
-            self.clean()
+            self.init()
 
     def sleep(self, period):
         if period <= 0:
