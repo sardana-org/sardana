@@ -156,9 +156,10 @@ class FunctionGenerator(EventGenerator):
             time.sleep(nap)
 
     def wait_active(self):
+        candidate = self.active_events[0]
         if self.active_domain_in_use == SynchDomain.Time:
             now = time.time()
-            candidate = self._start_time + self.active_events[0]
+            candidate += self._start_time
             self.sleep(candidate - now)
         else:
             while True:
@@ -166,7 +167,8 @@ class FunctionGenerator(EventGenerator):
                     break
                 if self._position_event.isSet():
                     self._position_event.clear()
-                    if self._condition(self._position, self.active_events[0]):
+                    now = self._position
+                    if self._condition(now, candidate):
                         break
                 else:
                     self._position_event.wait(self.MAX_NAP_TIME)
