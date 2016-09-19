@@ -45,7 +45,7 @@ synchronization1 = [{SynchParam.Delay: {SynchDomain.Time: 0},
                      SynchParam.Total: {SynchDomain.Time: .1},
                      SynchParam.Repeats: 0}
                     ]
-synchronization2 = [{SynchParam.Delay: {SynchDomain.Time: 0},
+synchronization2 = [{SynchParam.Delay: {SynchDomain.Time: 0.1},
                      SynchParam.Active: {SynchDomain.Time: .02},
                      SynchParam.Total: {SynchDomain.Time: .04},
                      SynchParam.Repeats: 10}
