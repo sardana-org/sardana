@@ -20,11 +20,11 @@ configuration_negative = [{SynchParam.Initial: {SynchDomain.Position: 0.},
                            SynchParam.Repeats: 10}]
 
 configuration_positive = [{SynchParam.Initial: {SynchDomain.Position: 0.},
-                           SynchParam.Delay: {SynchDomain.Time: 0.1},
+                           SynchParam.Delay: {SynchDomain.Time: 0.3},
                            SynchParam.Active: {SynchDomain.Position: .1,
-                                               SynchDomain.Time: .1,},
+                                               SynchDomain.Time: .01,},
                            SynchParam.Total: {SynchDomain.Position: .2,
-                                              SynchDomain.Time: .2},
+                                              SynchDomain.Time: .02},
                            SynchParam.Repeats: 10}]
 
 class Position(EventGenerator):
@@ -148,13 +148,28 @@ class FuncGeneratorTestCase(TestCase):
         self.func_generator.passive_domain = SynchDomain.Time
         self.func_generator.set_configuration(configuration_positive)
         active_events = self.func_generator.active_events
-        active_events_ok = numpy.arange(.1, 2.1, 0.2).tolist()
+        active_events_ok = numpy.arange(.3, .5, 0.02).tolist()
         msg = ("Active events mismatch, received: %s, expected: %s" %
                (active_events, active_events_ok))
         for a, b in zip(active_events, active_events_ok):
             self.assertAlmostEqual(a, b, 10, msg)
         passive_events = self.func_generator.passive_events
-        passive_events_ok = numpy.arange(.2, 2.2, 0.2).tolist()
+        passive_events_ok = numpy.arange(.31, 0.51, 0.02).tolist()
+        msg = ("Passive events mismatch, received: %s, expected: %s" %
+            (passive_events, passive_events_ok))
+        for a, b in zip(passive_events, passive_events_ok):
+            self.assertAlmostEqual(a, b, 10, msg)
+
+    def test_configuration_default(self):
+        self.func_generator.set_configuration(configuration_positive)
+        active_events = self.func_generator.active_events
+        active_events_ok = numpy.arange(0, 2, 0.2).tolist()
+        msg = ("Active events mismatch, received: %s, expected: %s" %
+               (active_events, active_events_ok))
+        for a, b in zip(active_events, active_events_ok):
+            self.assertAlmostEqual(a, b, 10, msg)
+        passive_events = self.func_generator.passive_events
+        passive_events_ok = numpy.arange(.31, .51, 0.02).tolist()
         msg = ("Passive events mismatch, received: %s, expected: %s" %
             (passive_events, passive_events_ok))
         for a, b in zip(passive_events, passive_events_ok):
