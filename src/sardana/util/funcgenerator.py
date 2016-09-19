@@ -1,6 +1,7 @@
 import time
 import threading
 import math
+import copy
 import numpy
 import numpy as np
 from sardana.sardanaevent import EventGenerator
@@ -212,54 +213,81 @@ class FunctionGenerator(EventGenerator):
         self.set_passive_events(self.passive_events[1:])
 
     def set_configuration(self, configuration):
+        # make a copy since we may inject the initial time
+        configuration = copy.deepcopy(configuration)
+        # create short variables for commodity
+        Time = SynchDomain.Time
+        Position = SynchDomain.Position
+        Default = SynchDomain.Default
+        Initial = SynchParam.Initial
+        Delay = SynchParam.Delay
+        Active = SynchParam.Active
+        Total = SynchParam.Total
+        Repeats = SynchParam.Repeats
+
         for i, group in enumerate(configuration):
-            initial_param = group.get(SynchParam.Initial)
-            # Initial is mandatory only when Position domain is forced
-            # otherwise fallback to Delay since we will add the absolute
-            # timestamp captured in the start method
-            if initial_param is None:
-                if self.active_domain is SynchDomain.Position:
-                    msg = "no initial position in group %d found" % i
+            # inject delay as initial time - generation will be
+            # relative to the start time
+            initial_param = group.get(Initial)
+            if not initial_param.has_key(Time):
+                delay_param = group.get(Delay)
+                if delay_param.has_key(Time):
+                    initial_param[Time] = delay_param[Time]
+            # determine active domain in use
+            msg = "no initial value in group %d" % i
+            if self.active_domain is Default:
+                if initial_param.has_key(Position):
+                    self.active_domain_in_use = Position
+                elif initial_param.has_key(Time):
+                    self.active_domain_in_use = Time
+                else:
                     raise ValueError(msg)
-                else:
-                    delay = group[SynchParam.Delay][SynchDomain.Time]
-                    initial = delay
-                    self.active_domain_in_use = SynchDomain.Time
+            elif initial_param.has_key(self.active_domain):
+                self.active_domain_in_use = self.active_domain
             else:
-                if self.active_domain is SynchDomain.Default:
-                    initial = initial_param.get(SynchDomain.Position)
-                    if initial is None:
-                        initial = initial_param.get(SynchDomain.Time)
-                        if initial is None:
-                            delay = group[SynchParam.Delay][SynchDomain.Time]
-                            initial = delay
-                        self.active_domain_in_use = SynchDomain.Time
-                    else:
-                        self.active_domain_in_use = SynchDomain.Position
+                raise ValueError(msg)
+            # determine passive domain in use
+            active_param = group.get(Active)
+            msg = "no active value in group %d" % i
+            if self.passive_domain is Default:
+                if active_param.has_key(Time):
+                    self.passive_domain_in_use = Time
+                elif active_param.has_key(Position):
+                    self.passive_domain_in_use = Position
                 else:
-                    initial = initial_param.get(self.active_domain)
-                    if initial is None:
-                        delay = group[SynchParam.Delay][SynchDomain.Time]
-                        initial = delay
-                    self.active_domain_in_use = self.active_domain
-            active_param = group[SynchParam.Active]
-            if self.passive_domain is SynchDomain.Default:
-                active = active_param[SynchDomain.Time]
-                if active is None:
-                    active = active_param[SynchDomain.Position]
-                    self.passive_domain_in_use = SynchDomain.Position
-                else:
-                    self.passive_domain_in_use = SynchDomain.Time
+                    raise ValueError(msg)
+            elif active_param.has_key(self.passive_domain):
+                self.passive_domain_in_use = self.passive_domain
             else:
-                active = active_param[self.passive_domain]
-            total = group[SynchParam.Total][self.active_domain_in_use]
-            repeats = group[SynchParam.Repeats]
-            active_event = initial
+                raise ValueError(msg)
+            # create short variables for commodity
+            active_domain_in_use = self.active_domain_in_use
+            passive_domain_in_use = self.passive_domain_in_use
+            total_param = group[Total]
+            repeats = group[Repeats]
+            active = active_param[passive_domain_in_use]
+            initial_in_active_domain = initial_param[active_domain_in_use]
+            initial_in_passive_domain = initial_param[passive_domain_in_use]
+            total_in_active_domain = total_param[active_domain_in_use]
+            total_in_passive_domain = total_param[passive_domain_in_use]
+
+            active_event_in_active_domain = initial_in_active_domain
+            active_event_in_passive_domain = initial_in_passive_domain
             for _ in xrange(repeats):
-                passive_event = active_event + active
-                self.add_active_event(active_event)
+                passive_event = active_event_in_passive_domain + active
+                self.add_active_event(active_event_in_active_domain)
                 self.add_passive_event(passive_event)
-                active_event += total
+                active_event_in_active_domain += total_in_active_domain
+                active_event_in_passive_domain += total_in_passive_domain
+            # determine direction
+            direction = 1
+            if total_in_active_domain < 0:
+                direction = -1
+            if self.direction is None:
+                self.direction = direction
+            elif self.direction != direction:
+                msg= "active values indicate contradictory directions"
+                raise ValueError(msg)
 
 
 class RectangularFunctionGenerator(EventGenerator):
