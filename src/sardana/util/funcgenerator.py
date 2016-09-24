@@ -17,14 +17,9 @@ class FunctionGenerator(EventGenerator):
 
     def __init__(self):
         EventGenerator.__init__(self)
-        self.init()
         self._active_domain = SynchDomain.Default
         self._passive_domain = SynchDomain.Default
         self._position_event = threading.Event()
-
-    def init(self):
-        """Initialize all internals to prepare for the generation.
-        """
         self._active_domain_in_use = None
         self._passive_domain_in_use = None
         self._active_events = list()
@@ -33,10 +28,9 @@ class FunctionGenerator(EventGenerator):
         self._stopped = False
         self._running = False
         self._start_time = None
-        self._position = None
-        self._id = 0
         self._direction = None
         self._condition = None
+        self._id = None
 
     def set_active_domain(self, domain):
         self._active_domain = domain
@@ -81,7 +75,7 @@ class FunctionGenerator(EventGenerator):
     def get_active_events(self):
         return self._active_events
 
-    active_events = property(get_active_events)
+    active_events = property(get_active_events, set_active_events)
 
     def add_passive_event(self, event):
         self._passive_events.append(event)
@@ -92,7 +86,7 @@ class FunctionGenerator(EventGenerator):
     def get_passive_events(self):
         return self._passive_events
 
-    passive_events = property(get_passive_events)
+    passive_events = property(get_passive_events, set_passive_events)
 
     def set_direction(self, direction):
         self._direction = direction
@@ -109,15 +103,18 @@ class FunctionGenerator(EventGenerator):
     direction = property(get_direction, set_direction)
 
     def event_received(self, *args, **kwargs):
-        _, t, v = args
+        _, _, v = args
         self._position = v.value
         self._position_event.set()
 
     def start(self):
         print self.active_events
         print self.passive_events
-        self._started = True
         self._start_time = time.time()
+        self._started = True
+        self._position = None
+        self._position_event.clear()
+        self._id = 0
 
     def stop(self):
         self._stopped = True
@@ -132,15 +129,17 @@ class FunctionGenerator(EventGenerator):
         return self._running
 
     def run(self):
+        self._running = True
         try:
-            self._running = True
             while len(self.active_events) > 0 and not self.is_stopped():
                 self.wait_active()
                 self.fire_active()
                 self.wait_passive()
                 self.fire_passive()
         finally:
-            self.init()
+            self._started = False
+            self._running = False
+            self._stopped = False
 
     def sleep(self, period):
         if period <= 0:
@@ -190,8 +189,8 @@ class FunctionGenerator(EventGenerator):
         self._id += i
         print "Fire Active %d" % (self._id - 1)
         self.fire_event(TGEventType.Active, self._id - 1)
-        self.set_active_events(self.active_events[i:])
-        self.set_passive_events(self.passive_events[i - 1:])
+        self.active_events = self.active_events[i:]
+        self.passive_events = self.passive_events[i - 1:]
 
     def wait_passive(self):
         if self.passive_domain_in_use == SynchDomain.Time:
@@ -217,6 +216,9 @@ class FunctionGenerator(EventGenerator):
     def set_configuration(self, configuration):
         # make a copy since we may inject the initial time
         configuration = copy.deepcopy(configuration)
+        active_events = []
+        passive_events = []
+        self._direction = None
         # create short variables for commodity
         Time = SynchDomain.Time
         Position = SynchDomain.Position
@@ -231,10 +233,13 @@ class FunctionGenerator(EventGenerator):
             # inject delay as initial time - generation will be
             # relative to the start time
             initial_param = group.get(Initial)
+            if initial_param is None:
+                initial_param = dict()
             if not initial_param.has_key(Time):
                 delay_param = group.get(Delay)
                 if delay_param.has_key(Time):
                     initial_param[Time] = delay_param[Time]
+                group[Initial] = initial_param
             # determine active domain in use
             msg = "no initial value in group %d" % i
             if self.active_domain is Default:
@@ -277,10 +282,12 @@ class FunctionGenerator(EventGenerator):
             active_event_in_passive_domain = initial_in_passive_domain
             for _ in xrange(repeats):
                 passive_event = active_event_in_passive_domain + active
-                self.add_active_event(active_event_in_active_domain)
-                self.add_passive_event(passive_event)
+                active_events.append(active_event_in_active_domain)
+                passive_events.append(passive_event)
                 active_event_in_active_domain += total_in_active_domain
                 active_event_in_passive_domain += total_in_passive_domain
+            self.active_events = active_events
+            self.passive_events = passive_events
             # determine direction
             direction = 1
             if total_in_active_domain < 0:
