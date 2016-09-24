@@ -231,6 +231,7 @@ class BaseAcquisition(object):
         position = initial + total * repeats
         mot = self.mots[moveable]
         mot.set_base_rate(0)
+        mot.set_acceleration(0.1)
         mot.set_velocity(0.5)
         channel_names = self.prepare_meas(config)
         self.pmg.synchronization = synchronization
@@ -263,16 +264,20 @@ synchronization2 = [{SynchParam.Delay: {SynchDomain.Time: 0},
                      SynchParam.Total: {SynchDomain.Time: .02},
                      SynchParam.Repeats: 100}]
 
-synchronization3 = [{SynchParam.Initial: {SynchDomain.Position: 0},
+synchronization3 = [{SynchParam.Delay: {SynchDomain.Time: .1},
+                     SynchParam.Initial: {SynchDomain.Position: 0},
                      SynchParam.Active: {SynchDomain.Position: .1,
                                          SynchDomain.Time: .01,},
-                     SynchParam.Total: {SynchDomain.Position: .2},
+                     SynchParam.Total: {SynchDomain.Position: .2,
+                                        SynchDomain.Time: .1},
                      SynchParam.Repeats: 10}]
 
-synchronization4 = [{SynchParam.Initial: {SynchDomain.Position: 0},
+synchronization4 = [{SynchParam.Delay: {SynchDomain.Time: 0.1},
+                     SynchParam.Initial: {SynchDomain.Position: 0},
                      SynchParam.Active: {SynchDomain.Position: -.1,
                                          SynchDomain.Time: .01,},
-                     SynchParam.Total: {SynchDomain.Position: -.2},
+                     SynchParam.Total: {SynchDomain.Position: -.2,
+                                        SynchDomain.Time: .1},
                      SynchParam.Repeats: 10}]
 
 doc_1 = 'Synchronized acquisition with two channels from the same controller'\

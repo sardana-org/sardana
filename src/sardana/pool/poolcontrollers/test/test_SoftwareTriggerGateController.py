@@ -56,10 +56,11 @@ synchronization3 = [{SynchParam.Delay: {SynchDomain.Position: 0},
                      SynchParam.Total: {SynchDomain.Position: 1},
                      SynchParam.Repeats: 10}
                     ]
-synchronization4 = [{SynchParam.Delay: {SynchDomain.Position: 0},
+synchronization4 = [{SynchParam.Delay: {SynchDomain.Time: .1},
                      SynchParam.Initial: {SynchDomain.Position: 0},
                      SynchParam.Active: {SynchDomain.Time: 0.1},
-                     SynchParam.Total: {SynchDomain.Position: -1.1},
+                     SynchParam.Total: {SynchDomain.Position: -1,
+                                        SynchDomain.Time: 0.1},
                      SynchParam.Repeats: 10}
                     ]
 
