@@ -98,7 +98,12 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self.connect(self.ui.filenameLE, Qt.SIGNAL('textEdited (QString)'), self.onFilenameLEEdited)
         self.connect(self.ui.channelEditor.getQModel(), Qt.SIGNAL('dataChanged (QModelIndex, QModelIndex)'), self._updateButtonBox)
         self.connect(self.ui.channelEditor.getQModel(), Qt.SIGNAL('modelReset ()'), self._updateButtonBox)
-        self.connect(self.ui.preScanList, Qt.SIGNAL('dataChanged'), self.onPreScanSnapshotChanged)
+        preScanList = self.ui.preScanList
+        self.connect(preScanList, Qt.SIGNAL('dataChanged'),
+                     self.onPreScanSnapshotChanged)
+        #TODO: For Taurus 4 compatibility
+        if hasattr(preScanList, "dataChangedSignal"):
+            preScanList.dataChangedSignal.connect(self.onPreScanSnapshotChanged)
         self.connect(self.ui.choosePathBT, Qt.SIGNAL('clicked ()'), self.onChooseScanDirButtonClicked)
         
         self.__plotManager = None
@@ -216,8 +221,12 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
         #set the system snapshot list
         psl = self._localConfig.get('PreScanSnapshot')  #I get it before clearing because clear() changes the _localConfig
+        # TODO: For Taurus 4 compatibility
+        psl_fullname = []
+        for name, display in psl:
+            psl_fullname.append(("tango://%s" % name, display))
         self.ui.preScanList.clear()
-        self.ui.preScanList.addModels(psl)
+        self.ui.preScanList.addModels(psl_fullname)
 
         #other settings
         self.ui.filenameLE.setText(", ".join(self._localConfig['ScanFile']))
@@ -366,9 +375,11 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         for e in items:
             nfo = ms.getElementInfo(e.src)
             if nfo is None:
-                preScanList.append((e.src, e.display))
+                full_name = e.src; display = e.display
             else:
-                preScanList.append((nfo.full_name, nfo.name))
+                full_name = nfo.full_name; display = nfo.name
+            # TODO: For Taurus 4 compatibility
+            preScanList.append((full_name.lstrip("tango://"), display))
         self._localConfig['PreScanSnapshot'] = preScanList
         self._setDirty(True)
         

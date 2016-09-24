@@ -33,7 +33,12 @@ from taurus.external.qt import Qt
 import taurus
 from taurus.core.util.colors import DEVICE_STATE_PALETTE
 from taurus.core.taurusbasetypes import TaurusEventType
-from taurus.core.taurusvalidator import DeviceNameValidator
+try:
+    from taurus.core.taurusvalidator import DeviceNameValidator as \
+        TangoDeviceNameValidator
+except ImportError:
+    # TODO: For Taurus 4 adaptation
+    from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
 import taurus.qt.qtcore.mimetypes
 from taurus.qt.qtgui.base import TaurusBaseWritableWidget
 from taurus.qt.qtgui.compact import TaurusReadWriteSwitcher
@@ -300,6 +305,7 @@ class PoolMotorSlim(TaurusWidget, PoolMotorClient):
         #self.call__init__(TaurusBaseWidget, str(self.objectName()), designMode=designMode)
         PoolMotorClient.__init__(self)
         self.loadUi()
+        self.recheckTaurusParent()
 
         self.show_context_menu = True
 
@@ -647,7 +653,9 @@ class PoolMotorSlim(TaurusWidget, PoolMotorClient):
         # DUE TO A BUG IN TAUGROUPBOX, WE NEED THE FULL MODEL NAME
         try:
             # In case the model is an attribute of a motor, get the device name
-            if not DeviceNameValidator().isValid(model):
+            # TODO: When sardana is moved to Taurus 4 replace this line by
+            # taurushelper.isValidName(model, [TaurusElementType.Device])
+            if not TangoDeviceNameValidator().isValid(model):
                 model = model.rpartition('/')[0]
             model = taurus.Factory().getDevice(model).getFullName()
             self.setMotor(model)
@@ -836,7 +844,6 @@ class PoolMotorTVLabelWidget(TaurusWidget):
         self.lbl_alias.taurusValueBuddy = self.taurusValueBuddy
         self.lbl_alias.setModel(model)
         TaurusWidget.setModel(self, model + '/Status')
-
         self.connect(self.taurusValueBuddy(), Qt.SIGNAL('expertViewChanged(bool)'), self.setExpertView)
         # Handle Power ON/OFF
         self.connect(self.btn_poweron, Qt.SIGNAL('clicked()'), self.setPowerOn)
@@ -881,10 +888,10 @@ class PoolMotorTVLabelWidget(TaurusWidget):
         event.accept()
 
     def mouseMoveEvent(self, event):
-        model = self.lbl_alias.getModelName()
+        model = self.taurusValueBuddy().getModelObj()
         mimeData = Qt.QMimeData()
         mimeData.setText(self.lbl_alias.text())
-        dev_name = model.rpartition('/')[0]
+        dev_name = model.getFullName()
         attr_name = dev_name + '/Position'
         mimeData.setData(TAURUS_DEV_MIME_TYPE, dev_name)
         mimeData.setData(TAURUS_ATTR_MIME_TYPE, attr_name)
@@ -1032,9 +1039,14 @@ class PoolMotorTVReadWidget(TaurusWidget):
 #                  WRITE WIDGET                  #
 ##################################################
 class PoolMotorTVWriteWidget(TaurusWidget):
-    
+
     layoutAlignment = Qt.Qt.AlignTop
-    
+    try:
+        # TODO: For Taurus 4 compatibility
+        applied = Qt.pyqtSignal()
+    except AttributeError:
+        pass
+
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
         self.setLayout(Qt.QGridLayout())
@@ -1141,7 +1153,11 @@ class PoolMotorTVWriteWidget(TaurusWidget):
         self.btn_to_pos_press.setVisible(False)
 
         # IN EXPERT VIEW, WE HAVE TO FORWARD THE ''editingFinished()' SIGNAL FROM TaurusValueLineEdit TO Switcher
-        self.connect(self.le_write_absolute, Qt.SIGNAL(TaurusBaseWritableWidget.appliedSignalSignature), self.emitEditingFinished)
+        try:
+            self.connect(self.le_write_absolute, Qt.SIGNAL(TaurusBaseWritableWidget.appliedSignalSignature), self.emitEditingFinished)
+        except AttributeError:
+            # TODO: For Taurus 4 adaptation
+            self.le_write_absolute.applied.connect(self.emitEditingFinished)
         self.connect(self.btn_step_down, Qt.SIGNAL("clicked()"), self.emitEditingFinished)
         self.connect(self.btn_step_up, Qt.SIGNAL("clicked()"), self.emitEditingFinished)
         self.connect(self.btn_to_neg, Qt.SIGNAL("clicked()"), self.emitEditingFinished)
@@ -1262,7 +1278,11 @@ class PoolMotorTVWriteWidget(TaurusWidget):
         TaurusWidget.keyPressEvent(self, key_event)
 
     def emitEditingFinished(self):
-        self.emit(Qt.SIGNAL(TaurusBaseWritableWidget.appliedSignalSignature))
+        try:
+            self.emit(Qt.SIGNAL(TaurusBaseWritableWidget.appliedSignalSignature))
+        except AttributeError:
+            # TODO: For Taurus 4 adaptation
+            self.applied.emit()
 
 
 ##################################################
@@ -1296,10 +1316,10 @@ class PoolMotorTV(TaurusValue):
     '''
     def __init__(self, parent=None, designMode=False):
         TaurusValue.__init__(self, parent=parent, designMode=designMode)
-        self.setLabelWidgetClass('PoolMotorTVLabelWidget')
-        self.setReadWidgetClass('PoolMotorTVReadWidget')
-        self.setWriteWidgetClass('PoolMotorTVWriteWidget')
-        self.setUnitsWidgetClass('PoolMotorTVUnitsWidget')
+        self.setLabelWidgetClass(PoolMotorTVLabelWidget)
+        self.setReadWidgetClass(PoolMotorTVReadWidget)
+        self.setWriteWidgetClass(PoolMotorTVWriteWidget)
+        self.setUnitsWidgetClass(PoolMotorTVUnitsWidget)
 
         self.setLabelConfig('dev_alias')
 
@@ -1343,7 +1363,6 @@ class PoolMotorTV(TaurusValue):
             if model == '' or model is None:
                 self.motor_dev = None
                 return
-
             self.motor_dev = taurus.Device(model)
 
             # CONFIGURE A LISTENER IN ORDER TO UPDATE LIMIT SWITCHES STATES
@@ -1524,7 +1543,6 @@ def main():
     import taurus.qt.qtgui.application
     import taurus.core.util.argparse
     from taurus.qt.qtgui.panel import TaurusForm
-
     parser = taurus.core.util.argparse.get_taurus_parser()
     parser.usage = "%prog [options] [<motor1> [<motor2>] ...]"
 
@@ -1548,7 +1566,7 @@ def main():
 
     # 1) Test PoolMotorSlim motor widget
     form_pms = TaurusForm()
-    pms_widget_class = 'taurus.qt.qtgui.extra_pool.PoolMotorSlim'
+    pms_widget_class = 'sardana.taurus.qt.qtgui.extra_pool.PoolMotorSlim'
     pms_tgclass_map = {'SimuMotor':(pms_widget_class, (), {}),
                        'Motor':(pms_widget_class, (), {}),
                        'PseudoMotor':(pms_widget_class, (), {})}
@@ -1560,7 +1578,7 @@ def main():
     # 2) Test PoolMotorTV motor widget
     form_tv = TaurusForm()
     form_tv.setModifiableByUser(True)
-    tv_widget_class = 'taurus.qt.qtgui.extra_pool.PoolMotorTV'
+    tv_widget_class = 'sardana.taurus.qt.qtgui.extra_pool.PoolMotorTV'
     tv_tgclass_map = {'SimuMotor':(tv_widget_class, (), {}),
                       'Motor':(tv_widget_class, (), {}),
                       'PseudoMotor':(tv_widget_class, (), {})}

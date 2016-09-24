@@ -419,7 +419,7 @@ Here is the new version of *where_moveable* ::
     @macro([["moveable", Type.Moveable, None, "moveable to get position"]])
     def where_moveable(self, moveable):
         """This macro prints the current moveable position"""
-        self.wm([moveable])
+        self.wm([moveable]) # self.wm(moveable) backwards compatibility - see note
 
 ... and the new version of *move* ::
 
@@ -427,15 +427,19 @@ Here is the new version of *where_moveable* ::
              ["position", Type.Float, None, "absolute position"] ])
     def move(self, moveable, position):
         """This macro moves a moveable to the specified position"""
-        self.mv([[moveable, position]])
+        self.mv([moveable, position]) # self.mv(moveable, position) backwards compatibility - see note
         self.output("%s is now at %s", moveable.getName(), moveable.getPosition())
 
 .. note::
-    Both :class:`~sardana.macroserver.macros.standard.wm` and
-    :class:`~sardana.macroserver.macros.standard.mv`
-    use :ref:`repeat parameters <sardana-macro-repeat-parameters>`.
-    From Sardana 2.0 the repeat parameter values must be passed as lists of
-    items. An item of a repeat parameter containing more than one member is a list.
+   Both :class:`~sardana.macroserver.macros.standard.wm` and
+   :class:`~sardana.macroserver.macros.standard.mv`
+   use :ref:`repeat parameters <sardana-macro-repeat-parameters>`.
+   From Sardana 2.0 the repeat parameter values must be passed as lists of
+   items. An item of a repeat parameter containing more than one member is a
+   list. In case when a macro defines only one repeat parameter
+   and it is the last parameter, for the backwards compatibility reasons, the
+   plain list of items' members is allowed.
+	
 
 .. _sardana-macro-environment:
 
@@ -590,6 +594,7 @@ parameters with different *flavors*:
 
         self.execMacro('ascan', motor.getName(), '0', '100', '10', '0.2')
         self.execMacro('mv', [[motor.getName(), '0']])
+        self.execMacro('mv', motor.getName(), '0') # backwards compatibility - see note
 
     * parameters as space separated string (this is not compatible with multiple
       or nested repeat parameters, furthermore the repeat parameter must be the last one)::
@@ -601,12 +606,17 @@ parameters with different *flavors*:
 
         self.execMacro(['ascan', motor, 0, 100, 10, 0.2])
         self.execMacro(['mv', [[motor, 0]]])
+        self.execMacro(['mv', motor, 0]) # backwards compatibility - see note
 
 .. note::
     Macro :class:`~sardana.macroserver.macros.standard.mv`
     use :ref:`repeat parameters <sardana-macro-repeat-parameters>`.
     From Sardana 2.0 the repeat parameter values must be passed as lists of
-    items. An item of a repeat parameter containing more than one member is a list.
+    items. An item of a repeat parameter containing more than one member is a
+    list. In case when a macro defines only one repeat parameter
+    and it is the last parameter, for the backwards compatibility reasons, the
+    plain list of items' members is allowed.
+
 
 Accessing macro data
 ~~~~~~~~~~~~~~~~~~~~

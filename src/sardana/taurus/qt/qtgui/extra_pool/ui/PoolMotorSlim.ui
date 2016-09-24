@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>PoolMotorSlim</class>
  <widget class="TaurusWidget" name="PoolMotorSlim">
@@ -5,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>487</width>
-    <height>61</height>
+    <width>549</width>
+    <height>212</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -22,12 +23,12 @@
    <item row="0" column="0">
     <widget class="TaurusGroupBox" name="motorGroupBox">
      <property name="sizePolicy">
-      <sizepolicy vsizetype="Fixed" hsizetype="Preferred">
+      <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
        <horstretch>0</horstretch>
        <verstretch>0</verstretch>
       </sizepolicy>
      </property>
-     <property name="showText" stdset="0">
+     <property name="showText">
       <bool>false</bool>
      </property>
      <layout class="QGridLayout" name="gridLayout">
@@ -37,13 +38,19 @@
       <property name="spacing">
        <number>0</number>
       </property>
-      <item row="0" column="0">
-       <widget class="QWidget" native="1" name="taurusValueContainer">
-        <property name="sizePolicy">
-         <sizepolicy vsizetype="Preferred" hsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
+      <item row="0" column="2">
+       <widget class="QPushButton" name="btnStop">
+        <property name="maximumSize">
+         <size>
+          <width>30</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Stops the motor</string>
+        </property>
+        <property name="text">
+         <string>S</string>
         </property>
        </widget>
       </item>
@@ -55,7 +62,7 @@
         <item>
          <widget class="QPushButton" name="btnMin">
           <property name="sizePolicy">
-           <sizepolicy vsizetype="Maximum" hsizetype="Fixed">
+           <sizepolicy hsizetype="Fixed" vsizetype="Maximum">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -83,7 +90,7 @@
         <item>
          <widget class="QPushButton" name="btnGoToNeg">
           <property name="sizePolicy">
-           <sizepolicy vsizetype="Maximum" hsizetype="Fixed">
+           <sizepolicy hsizetype="Fixed" vsizetype="Maximum">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -111,7 +118,7 @@
         <item>
          <widget class="QPushButton" name="btnGoToNegPress">
           <property name="sizePolicy">
-           <sizepolicy vsizetype="Maximum" hsizetype="Fixed">
+           <sizepolicy hsizetype="Fixed" vsizetype="Maximum">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -126,14 +133,14 @@
            <string>Moves the motor towards negative limit while pressed</string>
           </property>
           <property name="text">
-           <string>&#171;</string>
+           <string>«</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="btnGoToNegInc">
           <property name="sizePolicy">
-           <sizepolicy vsizetype="Maximum" hsizetype="Fixed">
+           <sizepolicy hsizetype="Fixed" vsizetype="Maximum">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -171,7 +178,7 @@
         <item>
          <widget class="QPushButton" name="btnGoToPosInc">
           <property name="sizePolicy">
-           <sizepolicy vsizetype="Fixed" hsizetype="Fixed">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -193,7 +200,7 @@
         <item>
          <widget class="QPushButton" name="btnGoToPosPress">
           <property name="sizePolicy">
-           <sizepolicy vsizetype="Fixed" hsizetype="Fixed">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -208,14 +215,14 @@
            <string>Moves the motor towards positive limit while pressed</string>
           </property>
           <property name="text">
-           <string>&#187;</string>
+           <string>»</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QPushButton" name="btnGoToPos">
           <property name="sizePolicy">
-           <sizepolicy vsizetype="Fixed" hsizetype="Fixed">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -237,7 +244,7 @@
         <item>
          <widget class="QPushButton" name="btnMax">
           <property name="sizePolicy">
-           <sizepolicy vsizetype="Fixed" hsizetype="Fixed">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
             <horstretch>0</horstretch>
             <verstretch>0</verstretch>
            </sizepolicy>
@@ -261,35 +268,13 @@
         </item>
        </layout>
       </item>
-      <item row="0" column="2">
-       <widget class="QPushButton" name="btnStop">
-        <property name="maximumSize">
-         <size>
-          <width>30</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>Stops the motor</string>
-        </property>
-        <property name="text">
-         <string>S</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="3">
-       <widget class="QPushButton" name="btnHome">
-        <property name="maximumSize">
-         <size>
-          <width>30</width>
-          <height>16777215</height>
-         </size>
-        </property>
-        <property name="toolTip">
-         <string>Goes Home</string>
-        </property>
-        <property name="text">
-         <string>H</string>
+      <item row="0" column="0">
+       <widget class="QWidget" name="taurusValueContainer" native="true">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
         </property>
        </widget>
       </item>
@@ -310,39 +295,28 @@
        </widget>
       </item>
       <item row="1" column="0" colspan="5">
-       <widget class="TaurusValueLabel" name="lblStatus">
-        <property name="sizePolicy">
-         <sizepolicy vsizetype="Fixed" hsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="font">
-         <font>
-          <pointsize>7</pointsize>
-         </font>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">TauValueLabel {
-            border-style: outset;
-            border-width: 2px;
-            border-color: rgba(255,255,255,128);
-            background-color: transparent; color:black; }</string>
-        </property>
-        <property name="frameShape">
-         <enum>QFrame::StyledPanel</enum>
-        </property>
-        <property name="lineWidth">
-         <number>0</number>
-        </property>
-        <property name="model" stdset="0">
+       <widget class="TaurusLabel" name="lblStatus">
+        <property name="model">
          <string>/Status</string>
         </property>
-        <property name="useParentModel" stdset="0">
+        <property name="useParentModel">
          <bool>true</bool>
         </property>
-        <property name="showQuality" stdset="0">
-         <bool>false</bool>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QPushButton" name="btnHome">
+        <property name="maximumSize">
+         <size>
+          <width>30</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="toolTip">
+         <string>Goes Home</string>
+        </property>
+        <property name="text">
+         <string>H</string>
         </property>
        </widget>
       </item>
@@ -353,14 +327,20 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>TaurusWidget</class>
-   <extends>QWidget</extends>
-   <header>taurus.qt.qtgui.container</header>
-  </customwidget>
-  <customwidget>
    <class>TaurusLauncherButton</class>
    <extends>QPushButton</extends>
    <header>taurus.qt.qtgui.button</header>
+  </customwidget>
+  <customwidget>
+   <class>TaurusWidget</class>
+   <extends>QWidget</extends>
+   <header>taurus.qt.qtgui.container</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>TaurusLabel</class>
+   <extends>QLabel</extends>
+   <header>taurus.qt.qtgui.display</header>
   </customwidget>
   <customwidget>
    <class>TaurusGroupBox</class>
@@ -368,13 +348,7 @@
    <header>taurus.qt.qtgui.container</header>
    <container>1</container>
   </customwidget>
-  <customwidget>
-   <class>TaurusValueLabel</class>
-   <extends>QLabel</extends>
-   <header>taurus.qt.qtgui.display</header>
-  </customwidget>
  </customwidgets>
  <resources/>
  <connections/>
 </ui>
-

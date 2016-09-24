@@ -35,7 +35,12 @@ __docformat__ = 'restructuredtext'
 import os.path
 import logging.handlers
 
-from taurus.core.taurusvalidator import AttributeNameValidator
+try:
+    from taurus.core.taurusvalidator import AttributeNameValidator as\
+        TangoAttributeNameValidator
+except ImportError:
+    #TODO: For Taurus 4 compatibility
+    from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 from taurus.core.util.containers import CaselessDict
 
 from sardana import InvalidId, ElementType, TYPE_ACQUIRABLE_ELEMENTS, \
@@ -516,7 +521,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
             if type(elem_id) is int:
                 self.pool.get_element(id=elem_id)
             else:
-                tg_attr_validator = AttributeNameValidator()
+                tg_attr_validator = TangoAttributeNameValidator()
                 params = tg_attr_validator.getParams(elem_id)
                 if params is None:
                     raise Exception("Invalid channel name %s" % elem_id)

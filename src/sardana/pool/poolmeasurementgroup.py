@@ -30,7 +30,12 @@ __all__ = ["PoolMeasurementGroup"]
 
 __docformat__ = 'restructuredtext'
 
-from taurus.core.taurusvalidator import AttributeNameValidator
+try:
+    from taurus.core.taurusvalidator import AttributeNameValidator as\
+        TangoAttributeNameValidator
+except ImportError:
+    #TODO: For Taurus 4 compatibility
+    from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 
 from sardana import State, ElementType, \
     TYPE_EXP_CHANNEL_ELEMENTS, TYPE_TIMERABLE_ELEMENTS
@@ -386,6 +391,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                 ctrl = pool.get_element_by_full_name(c_name)
                 assert ctrl.get_type() == ElementType.Controller
             controllers[ctrl] = ctrl_data = {}
+
             # exclude external elements and PseudoCounters
             # TODO: verify if the ZeroD should be also excluded
             if not external and \
@@ -408,7 +414,7 @@ class PoolMeasurementGroup(PoolGroupElement):
             ctrl_data['channels'] = channels = {}
             for ch_name, ch_data in c_data['channels'].items():
                 if external:
-                    validator = AttributeNameValidator()
+                    validator = TangoAttributeNameValidator()
                     params = validator.getParams(ch_data['full_name'])
                     params['pool'] = self.pool
                     channel = PoolExternalObject(**params)
