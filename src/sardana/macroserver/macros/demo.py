@@ -70,6 +70,9 @@ def clear_sar_demo(self):
     self.print("Removing measurement groups...")
     for mg in SAR_DEMO.get("measurement_groups", ()):
         self.udefmeas(mg)
+        if mg == _ActiveMntGrp:
+            self.print("Unsetting ActiveMntGrp (was: %s)" % _ActiveMntGrp)
+            self.unsetEnv("ActiveMntGrp")
     
     self.print("Removing elements...")
     elements =  SAR_DEMO.get("elements", ())

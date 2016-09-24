@@ -1940,6 +1940,14 @@ class Pool(TangoDevice, MoveableSource):
         elements_info = self.getElementsInfo()
         return self._wait_for_element_in_container(elements_info, name)
 
+    def renameElement(self, old_name, new_name):
+        self.debug('trying to rename element: %s to: %s', old_name, new_name)
+        self.command_inout('RenameElement', [old_name, new_name])
+        elements_info = self.getElementsInfo()
+        return self._wait_for_element_in_container(elements_info, new_name,
+                                                   contains=True)
+
+
     def deleteElement(self, name):
         self.debug('trying to delete element: %s', name)
         self.command_inout('DeleteElement', name)

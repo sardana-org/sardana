@@ -904,9 +904,9 @@ class Pool(PyTango.Device_4Impl, Logger):
             db = PyTango.Util.instance().get_database()
             props = { 'InstrumentList' : self.InstrumentList }
             db.put_device_property(self.get_name(), props)
-
-        util = PyTango.Util.instance()
-        util.delete_device(type_name, full_name)
+        else:
+            util = PyTango.Util.instance()
+            util.delete_device(type_name, full_name)
 
     #@DebugIt()
     def GetControllerClassInfo(self, names):
