@@ -1,7 +1,7 @@
 import time
 import timeit
 import numpy
-from threading import Event
+from threading import Event, Timer
 
 from taurus.external.unittest import TestCase
 from taurus.core.util import ThreadPool
@@ -43,6 +43,9 @@ class Listener(EventReceiver):
 
     def __init__(self):
         EventReceiver.__init__(self)
+        self.init()
+
+    def init(self):
         self.active_event_ids = list()
         self.passive_event_ids = list()
 
@@ -67,6 +70,7 @@ class FuncGeneratorTestCase(TestCase):
 
     def _done(self, _):
         self.event.set()
+        self.event.clear()
 
     def test_sleep(self):
         for i in [0.01, 0.13, 1.2]:
@@ -90,6 +94,20 @@ class FuncGeneratorTestCase(TestCase):
                                                               active_event_ids_ok)
         self.assertListEqual(active_event_ids, active_event_ids_ok, msg)
 
+    def test_stop_time(self):
+        self.func_generator.active_domain = SynchDomain.Time
+        self.func_generator.set_configuration(configuration_positive)
+        self.func_generator.start()
+        self.thread_pool.add(self.func_generator.run, self._done)
+        while not self.func_generator.is_running():
+            time.sleep(0.01)
+        # starting timer that will stop generation
+        Timer(0.2, self.func_generator.stop).start()
+        self.event.wait(100)
+        self.assertFalse(self.func_generator.is_running(), "Stopping failed")
+        self.listener.init()
+        self.test_run_time()
+
     def test_run_position_negative(self):
         position = Position()
         position.add_listener(self.func_generator)
@@ -97,6 +115,7 @@ class FuncGeneratorTestCase(TestCase):
         self.func_generator.passive_domain = SynchDomain.Position
         self.func_generator.direction = -1
         self.func_generator.set_configuration(configuration_negative)
+        self.func_generator.start()
         self.thread_pool.add(self.func_generator.run, self._done)
         while not self.func_generator.is_running():
             time.sleep(0.1)
@@ -116,6 +135,7 @@ class FuncGeneratorTestCase(TestCase):
         self.func_generator.passive_domain = SynchDomain.Position
         self.func_generator.direction = 1
         self.func_generator.set_configuration(configuration_positive)
+        self.func_generator.start()
         self.thread_pool.add(self.func_generator.run, self._done)
         while not self.func_generator.is_running():
             time.sleep(0.1)
