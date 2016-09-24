@@ -21,11 +21,11 @@
 ##
 ##############################################################################
 
-
 from sardana import State
-from sardana.pool.pooldefs import SynchDomain, SynchParam
-from sardana.util.funcgenerator import RectangularFunctionGenerator
+from sardana.util.funcgenerator import FunctionGenerator
 from sardana.pool.controller import TriggerGateController
+from sardana.sardanathreadpool import get_thread_pool
+from sardana.pool.pooldefs import SynchDomain
 
 class DummyTriggerGateController(TriggerGateController):
     """Basic controller intended for demonstration purposes only.
@@ -38,96 +38,43 @@ class DummyTriggerGateController(TriggerGateController):
         """Constructor"""
         TriggerGateController.__init__(self, inst, props, *args, **kwargs)
         self.tg = {}
-        self.conf = None
-
-#     def add_listener(self, listener):
-#         '''Backdoor method to attach listeners. It will be removed whenever 
-#         a proper EventChannel mechanism will be implemented'''
-#         self.tg[0].add_listener(listener)
+        self.conf = {}
 
     def SetConfiguration(self, axis, conf):
         idx = axis - 1
         tg = self.tg[idx]
-        # TODO: implement nonequidistant triggering
-        conf = conf[0]
-        delay = conf[SynchParam.Delay][SynchDomain.Time]
-        total_time = conf[SynchParam.Total][SynchDomain.Time]
-        active_time = conf[SynchParam.Active][SynchDomain.Time]
-        passive_time = total_time - active_time
-        repeats = conf[SynchParam.Repeats]
-        tg.setOffset(delay)
-        tg.setActiveInterval(active_time)
-        tg.setPassiveInterval(passive_time)
-        tg.setRepetitions(repeats)
+        tg.set_configuration(conf)
+        self.conf[idx] = conf
 
     def GetConfiguration(self, axis):
         idx = axis - 1
-        tg = self.tg[idx]
-        # TODO: implement nonequidistant triggering
-        # TODO: wrong configuration dict. return the same conf.
-        active_time=tg.getActiveInterval(),
-        passive_time=tg.getPassiveInterval()
-        total_time = active_time + passive_time
-        conf = [{SynchParam.Delay: tg.getOffset(),
-                 SynchParam.Total: total_time,
-                 SynchParam.Active: active_time,
-                 SynchParam.Repeats: tg.getRepetitions()}]
+        # TODO: extract configuration from generators
+        conf = self.conf[idx]
         return conf
-
-    def SetAxisPar(self, axis, name, value):
-        idx = axis - 1
-        tg = self.tg[idx]
-        name = name.lower()
-        if name == 'offset':
-            tg.setOffset(value)
-        elif name == 'active_interval':
-            tg.setActiveInterval(value)
-        elif name == 'passive_interval':
-            tg.setPassiveInterval(value)
-        elif name == 'repetitions':
-            tg.setRepetitions(value)
-            
-    def GetAxisPar(self, axis, name):
-        idx = axis - 1
-        tg = self.tg[idx]
-        name = name.lower()
-        if name == 'offset':
-            v = tg.setOffset()
-        elif name == 'active_interval':
-            v = tg.setActiveInterval()
-        elif name == 'passive_interval':
-            v = tg.getPassiveInterval()
-        elif name == "repetitions":
-            v = tg.getRepetitions()
-        return v
 
     def AddDevice(self, axis):
         self._log.debug('AddDevice(%d): entering...' % axis)
         idx = axis - 1
-        self.tg[idx] = RectangularFunctionGenerator()
-
-    def DeleteDevice(self, axis):
-        pass
-
-    def PreStateAll(self):
-        pass
-
-    def StateAll(self):
-        pass
-
-    def PreStateOne(self, axis):
-        pass
+        func_generator = FunctionGenerator()
+        func_generator.active_domain = SynchDomain.Time
+        func_generator.passive_domain = SynchDomain.Time
+        self.tg[idx] = func_generator
 
     def StateOne(self, axis):
         """Get the dummy trigger/gate state"""
-        self._log.debug('StateOne(%d): entering...' % axis)
-        sta = State.On
-        status = "Stopped"
-        idx = axis - 1
-        if self.tg[idx].isGenerating():
-            sta = State.Moving
-            status = "Moving"
-        self._log.debug('StateOne(%d): returning (%s, %s)' % (axis, sta, status))
+        try:
+            self._log.debug('StateOne(%d): entering...' % axis)
+            sta = State.On
+            status = "Stopped"
+            idx = axis - 1
+            tg = self.tg[idx]
+            if tg.is_running() or tg.is_started():
+                sta = State.Moving
+                status = "Moving"
+            self._log.debug('StateOne(%d): returning (%s, %s)' % \
+                            (axis, sta, status))
+        except Exception, e:
+            print e
         return sta, status
 
     def PreStartAll(self):
@@ -137,9 +84,6 @@ class DummyTriggerGateController(TriggerGateController):
         pass
 
     def PreStartOne(self, axis, value=None):
-        self._log.debug('PreStartOne(%d): entering...' % axis)
-        idx = axis - 1
-        self.tg[idx].prepare()
         return True
 
     def StartOne(self, axis):
@@ -147,27 +91,29 @@ class DummyTriggerGateController(TriggerGateController):
         """
         self._log.debug('StartOne(%d): entering...' % axis)
         idx = axis - 1
-        self.tg[idx].start()
+        tg = self.tg[idx]
+        tg.start()
+        get_thread_pool().add(tg.run)
 
     def AbortOne(self, axis):
-        """Abort the specified trigger
+        """Start the specified trigger
         """
         self._log.debug('AbortOne(%d): entering...' % axis)
         idx = axis - 1
         self.tg[idx].stop()
-        self._log.debug('AbortOne(%d): leaving...' % axis)
 
-    def PreReadAll(self):
-        pass
+    def set_axis_par(self, axis, par, value):
+        idx = axis - 1
+        tg = self.tg[idx]
+        if par == "active_domain":
+            tg.active_domain = value
+        elif par == "passive_domain":
+            tg.passive_domain = value
 
-    def ReadAll(self):
-        pass
-
-    def PreReadOne(self,axis):
-        pass
-
-    def ReadOne(self, axis):
-        pass
-
-    def LoadOne(self, axis, value):
-        pass
+    def get_axis_par(self, axis, par):
+        idx = axis - 1
+        tg = self.tg[idx]
+        if par == "active_domain":
+            return tg.active_domain
+        elif par == "passive_domain":
+            return tg.passive_domain
