@@ -2091,16 +2091,14 @@ class CTScan(CScan):
         startTimestamp = time.time()
 
         if self.__mntGrpStarted:
-            self.debug("Stopping measurement group")
+            self.debug("Removing data listeners")
             try:
-                self.measurement_group.stop()
-                # remove listener of the data events
                 self.measurement_group.removeOnDataChangedListeners(self)
             except:
-                msg = "Exception occurred trying to stop the measurement group"
+                msg = "Exception occurred trying to remove data listeners"
                 self.debug(msg)
                 self.debug('Details: ', exc_info = True)
-                raise ScanException('stopping the measurement group failed')
+                raise ScanException('removing data listeners failed')
 
         if hasattr(self.macro, 'getHooks'):
             for hook in self.macro.getHooks('pre-cleanup'):
