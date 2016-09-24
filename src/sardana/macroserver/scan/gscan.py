@@ -1906,7 +1906,7 @@ class CTScan(CScan):
             final = self.macro.finals[MASTER]
             total_position = (final - start) / repeats
             initial_position = start
-            total_time = total_position / path.max_vel
+            total_time = abs(total_position) / path.max_vel
             delay_time = path.max_vel_time
             synch = [{SynchParam.Delay: {SynchDomain.Time:delay_time},
                       SynchParam.Initial: {SynchDomain.Position:initial_position},
