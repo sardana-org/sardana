@@ -33,7 +33,6 @@ __docformat__ = 'restructuredtext'
 from taurus.core.util.enumeration import Enumeration
 
 from sardana import ElementType
-from sardana.sardanaevent import EventType
 
 from sardana.pool.poolelement import PoolElement
 from sardana.sardanaattribute import SardanaAttribute
@@ -58,64 +57,6 @@ class PoolTriggerGate(PoolElement):
         tggen_name = "%s.TGGeneration" % self._name
         self.set_action_cache(PoolTGGeneration(self, name=tggen_name))
         self._index = Index(self)
-
-    # --------------------------------------------------------------------------
-    # offset
-    # --------------------------------------------------------------------------
-
-    def get_offset(self, cache=True, propagate=1):
-        if not cache or self._velocity is None:
-            offset = self.read_offset()
-            self._set_offset(offset, propagate=propagate)
-        return self._offset
-
-    def set_offset(self, offset, propagate=1):
-        self.controller.set_axis_par(self.axis, "offset", offset)
-        self._set_offset(offset, propagate=propagate)
-
-    def _set_offset(self, offset, propagate=1):
-        self._offset = offset
-        if not propagate:
-            return
-        self.fire_event(EventType("offset", priority=propagate), 
-                                                                    offset)
-
-    def read_offset(self):
-        offset = self.controller.get_axis_par(self.axis, "offset")
-        assert_type(int, offset)
-        return offset
-
-    offset = property(get_offset, set_offset,
-                        doc="trigger/gate events offset")
-
-    # --------------------------------------------------------------------------
-    # repetitions
-    # --------------------------------------------------------------------------
-
-    def get_repetitions(self, cache=True, propagate=1):
-        if not cache or self._velocity is None:
-            repetitions = self.read_repetitions()
-            self._set_repetitions(repetitions, propagate=propagate)
-        return self._repetitions
-
-    def set_repetitions(self, repetitions, propagate=1):
-        self.controller.set_axis_par(self.axis, "repetitions", repetitions)
-        self._set_repetitions(repetitions, propagate=propagate)
-
-    def _set_repetitions(self, repetitions, propagate=1):
-        self._repetitions = repetitions
-        if not propagate:
-            return
-        self.fire_event(EventType("repetitions", priority=propagate), 
-                                                                    repetitions)
-
-    def read_repetitions(self):
-        repetitions = self.controller.get_axis_par(self.axis, "repetitions")
-        assert_type(int, repetitions)
-        return repetitions
-
-    repetitions = property(get_repetitions, set_repetitions,
-                        doc="trigger/gate events repetitions")
 
     # --------------------------------------------------------------------------
     # index
