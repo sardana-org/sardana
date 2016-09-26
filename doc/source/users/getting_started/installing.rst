@@ -95,6 +95,32 @@ or spock from the command line)::
          `sardana/src` to your `PYTHONPATH` variable.
 
 
+.. _dependencies:
+
+============
+Dependencies
+============
+
+Sardana has dependencies on some python libraries:
+
+- Sardana uses Tango as the middleware so you need PyTango_ 7 or later
+  installed. You can check it by doing::
+
+    python -c 'import PyTango; print PyTango.Release.version'
+
+- Sardana clients are developed with Taurus so you need Taurus_ 3.6.0 or later
+  installed. You can check it by doing::
+
+      python -c 'import taurus; print taurus.Release.version'
+
+- Sardana operate some data in the XML format and requires lxml_ library 2.1 or
+  later. You can check it by doing::
+
+      python -c 'import lxml.etree; print lxml.etree.LXML_VERSION'
+
+- spock (Sardana CLI) requires itango 0.0.1 or later [3]_.
+
+
 .. rubric:: Footnotes
 
 .. [1] This command requires super user previledges on linux systems. If your
@@ -113,7 +139,10 @@ or spock from the command line)::
        In this case the executables are located at <HOME_DIR>/.local/bin. Make
        sure the PATH is pointing there or you execute from there.
 
+.. [3] PyTango < 9 is compatible with itango >= 0.0.1 and < 0.1.0,
+       while higher versions with itango >= 0.1.6.
 
+.. _lxml: http://lxml.de
 .. _SardanaPypi: http://pypi.python.org/pypi/sardana/
 .. _Tango: http://www.tango-controls.org/
 .. _PyTango: http://pytango.readthedocs.io/
