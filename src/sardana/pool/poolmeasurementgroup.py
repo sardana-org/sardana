@@ -107,7 +107,6 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     def __init__(self, **kwargs):
         self._monitor_count = None
-        self._offset = 0
         self._repetitions = 1
         self._acquisition_mode = AcqMode.Timer
         self._config = None
@@ -512,23 +511,6 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     repetitions = property(get_repetitions, set_repetitions,
                                 doc="repetitions used in synchronized acquisition")
-    
-    # --------------------------------------------------------------------------
-    # offset
-    # --------------------------------------------------------------------------
-
-    def get_offset(self):
-        return self._offset
-
-    def set_offset(self, offset, propagate=1):
-        self._offset = offset
-        if not propagate:
-            return
-        self.fire_event(EventType("offset", priority=propagate),
-                        offset)
-
-    offset = property(get_offset, set_offset,
-                                doc="offset used in synchronized acquisition")
 
     # --------------------------------------------------------------------------
     # integration time
