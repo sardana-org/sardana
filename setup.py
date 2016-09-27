@@ -374,7 +374,9 @@ def main():
 
     requires = [
         'PyTango (>=7.2.3)',
-        'itango (>=0.1.4)',
+        # when using PyTango < 9 the dependency is >= 0.0.1 and < 0.1.0
+        # when using PyTango >= 9 the dependency is >= 0.1.6
+        'itango (>=0.0.1)',
         'taurus (>= 3.6.0)',
         'lxml (>=2.1)',
     ]

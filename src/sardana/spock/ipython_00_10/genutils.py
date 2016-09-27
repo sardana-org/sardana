@@ -79,7 +79,9 @@ requirements = {
     "Python"      : ("2.6.0", "2.6.0"),
     "PyTango"     : ("7.1.2", "7.2.0"),
     # for the moment just for reference since itango does not provide version
-    "itango"      : ("0.1.4", "0.1.4"),
+    # when using PyTango < 9 the dependency is >= 0.0.1 and < 0.1.0
+    # when using PyTango >= 9 the dependency is >= 0.1.6
+    "itango"      : ("0.0.1", "0.0.1"),
     "taurus.core" : ("2.0.0", "2.1.0")
 }
 
@@ -516,7 +518,7 @@ def check_requirements():
     try:
         import itango
     except ImportError:
-        errMsg += "Spock needs itango version >= 0.1.4. No itango installation found\n"
+        errMsg += "Spock needs itango version >= 0.0.1, < 0.1.0 (PyTango < 9) or version >= 0.1.6 (PyTanog >= 9). No itango installation found\n"
 
     if currTaurusCore is None:
         errMsg += "Spock needs taurus.core version >= %s. No taurus.core installation found\n" % requirements["taurus.core"][0]
