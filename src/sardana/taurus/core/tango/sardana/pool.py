@@ -1167,7 +1167,14 @@ class MGConfiguration(object):
             data_source = channel_data['source']
             #external = ctrl_name.startswith("__")
             # TODO: For Taurus 4 compatibility
-            params = tg_attr_validator.getParams("tango://%s" % data_source)
+            # data_source of the sardana channels does not contain the scheme
+            # part but the external tango channels does.
+            # First try to use the original data_source and as the fallback
+            # complete it with the "tango://" part. If it fails, treat it as a
+            # NON tango channel.
+            params = tg_attr_validator.getParams(data_source)
+            if params is None:
+                params = tg_attr_validator.getParams("tango://%s" % data_source)
             if params is None:
                 # Handle NON tango channel
                 n_tg_chs[channel_name] = channel_data
