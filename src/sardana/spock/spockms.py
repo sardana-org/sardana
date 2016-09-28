@@ -569,13 +569,23 @@ class SpockMacroServer(BaseMacroServer):
     def _addMacro(self, macro_info):
         macro_name = str(macro_info.name)
 
-        def macro_fn(parameter_s='', name=macro_name):
-            parameters = genutils.arg_split(parameter_s, posix=True)
-            door = genutils.get_door()
-            door.runMacro(macro_name, parameters, synch=True)
-            macro = door.getLastRunningMacro()
-            if macro is not None:  # maybe none if macro was aborted
-                return macro.getResult()
+        # IPython < 1 magic commands have different API
+        if genutils.get_ipython_version_list() < [1, 0]:
+            def macro_fn(shell, parameter_s='', name=macro_name):
+                parameters = genutils.arg_split(parameter_s, posix=True)
+                door = genutils.get_door()
+                door.runMacro(macro_name, parameters, synch=True)
+                macro = door.getLastRunningMacro()
+                if macro is not None:  # maybe none if macro was aborted
+                    return macro.getResult()
+        else:
+            def macro_fn(parameter_s='', name=macro_name):
+                parameters = genutils.arg_split(parameter_s, posix=True)
+                door = genutils.get_door()
+                door.runMacro(macro_name, parameters, synch=True)
+                macro = door.getLastRunningMacro()
+                if macro is not None:  # maybe none if macro was aborted
+                    return macro.getResult()
 
         macro_fn.func_name = macro_name
         macro_fn.__doc__ = macro_info.doc
