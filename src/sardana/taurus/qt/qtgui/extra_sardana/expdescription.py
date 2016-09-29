@@ -216,7 +216,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self.ui.activeMntGrpCB.addItems(sorted(mntGrpLabels))
         idx = self.ui.activeMntGrpCB.findText(activeMntGrpName,
                                               # case insensitive find
-                                              flags=Qt.Qt.MatchFixedString)
+                                              Qt.Qt.MatchFixedString)
         self.ui.activeMntGrpCB.setCurrentIndex(idx)
 
         #set the system snapshot list
@@ -288,7 +288,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
         i = self.ui.activeMntGrpCB.findText(activeMntGrpName,
                                             # case insensitive find
-                                            flags=Qt.Qt.MatchFixedString)
+                                            Qt.Qt.MatchFixedString)
         self.ui.activeMntGrpCB.setCurrentIndex(i)
         mgconfig = self._localConfig['MntGrpConfigs'][activeMntGrpName]
         self.ui.channelEditor.getQModel().setDataSource(mgconfig)
