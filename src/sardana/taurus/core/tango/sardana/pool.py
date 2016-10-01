@@ -1530,6 +1530,7 @@ class MeasurementGroup(PoolElement):
         codec = CodecFactory().getCodec('json')
         _, data = codec.encode(('', synchronization))
         self.getSynchronizationObj().write(data)
+        self._last_integ_time = None
 
     def getMoveableObj(self):
         return self._getAttrEG('Moveable')
