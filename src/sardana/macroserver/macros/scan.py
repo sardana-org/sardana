@@ -219,7 +219,8 @@ class aNscan(Hookable):
         post_move_hooks = self.getHooks('post-move') + [self.fill_missing_records]
         step["post-move-hooks"] = post_move_hooks
         step["check_func"] = []
-        step["active_time"] = self.nr_of_points * self.integ_time
+        step["active_time"] = self.nr_of_points * (self.integ_time +
+                                                   self.latency_time)
         step["positions"] = []
         step["start_positions"] = []
         starts = self.starts
@@ -1311,17 +1312,15 @@ class ascanct(aNscan, Macro):
                  ['start_pos', Type.Float, None, 'Starting position'],
                  ['end_pos', Type.Float, None, 'Ending pos value'],
                  ['nr_of_points', Type.Integer, None, 'Nr of scan points'],
-                 ['point_time', Type.Float, None, 'Time interval reserved for ' + 
-                                                   'each scan point [s].'],
-                 ['acq_time', Type.Float, 99, 'Acquisition time per scan point. ' +
-                      'Expressed in percentage of point_time. Default: 99 [%]']]
+                 ['integ_time', Type.Float, None, 'Integration time'],
+                 ['latency_time', Type.Float, 0, 'Latency time']]
 
         
     def prepare(self, motor, start_pos, end_pos, nr_of_points, 
-                point_time, acq_time, **opts):
+                integ_time, latency_time, **opts):
         self._prepare([motor], [start_pos], [end_pos], nr_of_points,
-                      point_time, mode=ContinuousHwTimeMode, **opts)
-        self.acq_time = acq_time
+                      integ_time, mode=ContinuousHwTimeMode, **opts)
+        self.latency_time = latency_time
 
 
 class a2scanct(aNscan, Macro):
@@ -1329,8 +1328,8 @@ class a2scanct(aNscan, Macro):
     trigger pulses is programmed by time. The scan active time is calculated from
     nr_of_points * point time. It corresponds to the time while all the involved 
     in the scan moveables are at the constant velocity. Experimental channels are
-    configured to acquire during acquistion time calculated from acq_time [%] of  
-    the point_time. 
+    configured to acquire during acquistion time calculated from latency_time [%] of  
+    the integ_time. 
     Temporary solution used to configure trigger device (pulse train generator): 
     "TriggerDevices" evironment variable must be set to Ni660X device name 
     or any other Tango device name implementing:
@@ -1359,16 +1358,14 @@ class a2scanct(aNscan, Macro):
            ['start_pos2',  Type.Float,   None, 'Scan start position 2'],
            ['final_pos2',  Type.Float,   None, 'Scan final position 2'],
            ["nr_of_points", Type.Integer, None, "Nr of scan points"],
-           ['point_time', Type.Float,   None, 'Time interval reserved for ' + 
-                                              'each scan point [s].'],
-           ["acq_time", Type.Float, 99, 'Acquisition time per scan point. ' + 
-                      'Expressed in percentage of point_time. Default: 99 [%]']]
+           ['integ_time', Type.Float,   None, 'Integration time'],
+           ["latency_time", Type.Float, 0, 'Latency time']]
 
     def prepare(self, m1, s1, f1, m2, s2, f2, nr_of_points, 
-                point_time, acq_time, **opts):
+                integ_time, latency_time, **opts):
         self._prepare([m1, m2], [s1, s2], [f1, f2], nr_of_points,
-                      point_time, mode=ContinuousHwTimeMode, **opts)
-        self.acq_time = acq_time
+                      integ_time, mode=ContinuousHwTimeMode, **opts)
+        self.latency_time = latency_time
 
 
 class a3scanct(aNscan, Macro):
@@ -1376,8 +1373,8 @@ class a3scanct(aNscan, Macro):
     trigger pulses is programmed by time. The scan active time is calculated from
     nr_of_points * point time. It corresponds to the time while all the involved 
     in the scan moveables are at the constant velocity. Experimental channels are
-    configured to acquire during acquistion time calculated from acq_time [%] of  
-    the point_time. 
+    configured to acquire during acquistion time calculated from latency_time [%] of  
+    the integ_time. 
     Temporary solution used to configure trigger device (pulse train generator): 
     "TriggerDevices" evironment variable must be set to Ni660X device name 
     or any other Tango device name implementing:
@@ -1408,16 +1405,14 @@ class a3scanct(aNscan, Macro):
            ['start_pos3',  Type.Float,   None, 'Scan start position 3'],
            ['final_pos3',  Type.Float,   None, 'Scan final position 3'],
            ["nr_of_points", Type.Integer, None, "Nr of scan points"],
-           ['point_time', Type.Float,   None, 'Time interval reserved for ' + 
-                                              'each scan point [s].'],
-           ["acq_time", Type.Float, 99, 'Acquisition time per scan point. ' + 
-                      'Expressed in percentage of point_time. Default: 99 [%]']]
+           ['integ_time', Type.Float,   None, 'Integration time'],
+           ["latency_time", Type.Float, 0, 'Latency time']]
 
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, nr_of_points, 
-                point_time, acq_time, **opts):
+                integ_time, latency_time, **opts):
         self._prepare([m1, m2, m3], [s1, s2, s3], [f1, f2, f3], nr_of_points,
-                      point_time, mode=ContinuousHwTimeMode, **opts)
-        self.acq_time = acq_time
+                      integ_time, mode=ContinuousHwTimeMode, **opts)
+        self.latency_time = latency_time
 
 
 class a4scanct(aNscan, Macro):
@@ -1425,8 +1420,8 @@ class a4scanct(aNscan, Macro):
     trigger pulses is programmed by time. The scan active time is calculated from
     nr_of_points * point time. It corresponds to the time while all the involved 
     in the scan moveables are at the constant velocity. Experimental channels are
-    configured to acquire during acquistion time calculated from acq_time [%] of  
-    the point_time. 
+    configured to acquire during acquistion time calculated from latency_time [%] of  
+    the integ_time. 
     Temporary solution used to configure trigger device (pulse train generator): 
     "TriggerDevices" evironment variable must be set to Ni660X device name 
     or any other Tango device name implementing:
@@ -1461,14 +1456,12 @@ class a4scanct(aNscan, Macro):
            ['start_pos4',  Type.Float,   None, 'Scan start position 4'],
            ['final_pos4',  Type.Float,   None, 'Scan final position 4'],
            ["nr_of_points", Type.Integer, None, "Nr of scan points"],
-           ['point_time', Type.Float,   None, 'Time interval reserved for ' + 
-                                              'each scan point [s].'],
-           ["acq_time", Type.Float, 99, 'Acquisition time per scan point. ' + 
-                      'Expressed in percentage of point_time. Default: 99 [%]']]
+           ['integ_time', Type.Float,   None, 'Integration time'],
+           ["latency_time", Type.Float, 0, 'Latency time']]
 
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, m4, s4, f4, 
-                nr_of_points, point_time, acq_time, **opts):
+                nr_of_points, integ_time, latency_time, **opts):
         self._prepare([m1, m2, m3, m4], [s1, s2, s3, s4], [f1, f2, f3, f4],
-                      nr_of_points, point_time, mode=ContinuousHwTimeMode,
+                      nr_of_points, integ_time, mode=ContinuousHwTimeMode,
                       **opts)
-        self.acq_time = acq_time
+        self.latency_time = latency_time

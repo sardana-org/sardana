@@ -1888,17 +1888,16 @@ class CTScan(CScan):
 
             #configuring measurementGroup
             self.__mntGrpConfigured = True
-            self.debug('Setting IntegrationTime: %f' % self.macro.acq_time)
-            integ_time = self.macro.acq_time * self.macro.integ_time / 100
+            self.debug('Setting IntegrationTime: %f' % self.macro.integ_time)
             self.measurement_group.write_attribute('IntegrationTime',
-                                                                    integ_time)
+                                                   self.macro.integ_time)
             # TODO: let a pseudomotor specify which motor should be used as source
             MASTER = 0
             moveable = moveables[MASTER].full_name
             self.measurement_group.setMoveable(moveable)
             path = motion_paths[MASTER]
             repeats = self.macro.nr_of_points
-            active_time = integ_time
+            active_time = self.macro.integ_time
             active_position = path.max_vel * active_time
             if not path.positive_displacement:
                 active_position *= -1
