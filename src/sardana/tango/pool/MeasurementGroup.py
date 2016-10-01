@@ -33,8 +33,7 @@ import sys
 import time
 
 from PyTango import Except, DevVoid, DevLong, DevDouble, DevString, \
-    DispLevel, DevState, AttrQuality, \
-    READ_WRITE, SCALAR
+    DispLevel, DevState, AttrQuality, READ, READ_WRITE, SCALAR
 
 from taurus.core.util.codecs import CodecFactory
 from taurus.core.util.log import DebugIt
@@ -248,6 +247,10 @@ class MeasurementGroup(PoolGroupDevice):
         synchronization = self.synchronization_str2enum(synchronization)
         self.measurement_group.synchronization = synchronization
 
+    def read_LatencyTime(self, attr):
+        latency_time = self.measurement_group.latency_time
+        attr.set_value(latency_time)
+
     def Start(self):
         try:
             self.wait_for_operation()
@@ -306,6 +309,8 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
         'Synchronization': [ [DevString, SCALAR, READ_WRITE],
                               { 'Memorized'     : "true",
                                 'Display level' : DispLevel.EXPERT } ],
+        'LatencyTime': [ [DevDouble, SCALAR, READ],
+                              { 'Display level' : DispLevel.EXPERT } ],
     }
     attr_list.update(PoolGroupDeviceClass.attr_list)
 

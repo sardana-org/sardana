@@ -576,7 +576,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                                 doc="the current acquisition mode")
 
     # --------------------------------------------------------------------------
-    # acquisition mode
+    # synchronization
     # --------------------------------------------------------------------------
 
     def get_synchronization(self):
@@ -609,6 +609,24 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     moveable = property(get_moveable, set_moveable,
                                 doc="moveable source used in synchronization")
+
+    # --------------------------------------------------------------------------
+    # latency time
+    # --------------------------------------------------------------------------
+
+    def get_latency_time(self):
+        latency_time = 0
+        pool_ctrls = self.acquisition.get_pool_controllers()
+        for pool_ctrl in pool_ctrls:
+            if not pool_ctrl.is_timerable():
+                continue
+            candidate = pool_ctrl.get_ctrl_par("latency_time")
+            if candidate > latency_time:
+                latency_time = candidate
+        return latency_time
+
+    latency_time = property(get_latency_time,
+        doc="latency time between two consecutive acquisitions")
 
     # --------------------------------------------------------------------------
     # acquisition
