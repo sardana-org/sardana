@@ -1314,17 +1314,14 @@ class ascanct(aNscan, Macro):
                  ['point_time', Type.Float, None, 'Time interval reserved for ' + 
                                                    'each scan point [s].'],
                  ['acq_time', Type.Float, 99, 'Acquisition time per scan point. ' +
-                      'Expressed in percentage of point_time. Default: 99 [%]'],
-                 ['samp_freq', Type.Float, -1, 'Sampling frequency. ' + 
-                                        'Default: -1 (means maximum possible)']]
+                      'Expressed in percentage of point_time. Default: 99 [%]']]
 
         
     def prepare(self, motor, start_pos, end_pos, nr_of_points, 
-                point_time, acq_time, samp_freq, **opts):
+                point_time, acq_time, **opts):
         self._prepare([motor], [start_pos], [end_pos], nr_of_points,
                       point_time, mode=ContinuousHwTimeMode, **opts)
         self.acq_time = acq_time
-        self.samp_freq = samp_freq
 
 
 class a2scanct(aNscan, Macro):
@@ -1365,19 +1362,15 @@ class a2scanct(aNscan, Macro):
            ['point_time', Type.Float,   None, 'Time interval reserved for ' + 
                                               'each scan point [s].'],
            ["acq_time", Type.Float, 99, 'Acquisition time per scan point. ' + 
-                      'Expressed in percentage of point_time. Default: 99 [%]'],
-           ["samp_freq", Type.Float, -1, 'Sampling frequency. ' + 
-                                       'Default: -1 (means maximum possible)']]
-           
+                      'Expressed in percentage of point_time. Default: 99 [%]']]
+
     def prepare(self, m1, s1, f1, m2, s2, f2, nr_of_points, 
-                point_time, acq_time, samp_freq, **opts):
+                point_time, acq_time, **opts):
         self._prepare([m1, m2], [s1, s2], [f1, f2], nr_of_points,
                       point_time, mode=ContinuousHwTimeMode, **opts)
         self.acq_time = acq_time
-        self.samp_freq = samp_freq
-        
-        
-        
+
+
 class a3scanct(aNscan, Macro):
     '''Continuous scan controlled by hardware trigger signals. A sequence of 
     trigger pulses is programmed by time. The scan active time is calculated from
@@ -1418,17 +1411,15 @@ class a3scanct(aNscan, Macro):
            ['point_time', Type.Float,   None, 'Time interval reserved for ' + 
                                               'each scan point [s].'],
            ["acq_time", Type.Float, 99, 'Acquisition time per scan point. ' + 
-                      'Expressed in percentage of point_time. Default: 99 [%]'],
-           ["samp_freq", Type.Float, -1, 'Sampling frequency. ' + 
-                                       'Default: -1 (means maximum possible)']]
-           
+                      'Expressed in percentage of point_time. Default: 99 [%]']]
+
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, nr_of_points, 
-                point_time, acq_time, samp_freq, **opts):
+                point_time, acq_time, **opts):
         self._prepare([m1, m2, m3], [s1, s2, s3], [f1, f2, f3], nr_of_points,
                       point_time, mode=ContinuousHwTimeMode, **opts)
         self.acq_time = acq_time
-        self.samp_freq = samp_freq
-        
+
+
 class a4scanct(aNscan, Macro):
     '''Continuous scan controlled by hardware trigger signals. A sequence of 
     trigger pulses is programmed by time. The scan active time is calculated from
@@ -1473,16 +1464,11 @@ class a4scanct(aNscan, Macro):
            ['point_time', Type.Float,   None, 'Time interval reserved for ' + 
                                               'each scan point [s].'],
            ["acq_time", Type.Float, 99, 'Acquisition time per scan point. ' + 
-                      'Expressed in percentage of point_time. Default: 99 [%]'],
-           ["samp_freq", Type.Float, -1, 'Sampling frequency. ' + 
-                                       'Default: -1 (means maximum possible)']]
-   
-           
+                      'Expressed in percentage of point_time. Default: 99 [%]']]
+
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, m4, s4, f4, 
-                nr_of_points, point_time, acq_time, samp_freq, **opts):
+                nr_of_points, point_time, acq_time, **opts):
         self._prepare([m1, m2, m3, m4], [s1, s2, s3, s4], [f1, f2, f3, f4],
                       nr_of_points, point_time, mode=ContinuousHwTimeMode,
                       **opts)
         self.acq_time = acq_time
-        self.samp_freq = samp_freq
-        
