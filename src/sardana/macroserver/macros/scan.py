@@ -88,7 +88,8 @@ class aNscan(Hookable):
     
     """N-dimensional scan. This is **not** meant to be called by the user,
     but as a generic base to construct ascan, a2scan, a3scan,..."""
-    def _prepare(self, motorlist, startlist, endlist, scan_length, integ_time, mode=StepMode, **opts):
+    def _prepare(self, motorlist, startlist, endlist, scan_length, integ_time,
+                 mode=StepMode, latency_time=0, **opts):
 
         self.motors = motorlist
         self.starts = numpy.array(startlist,dtype='d')
@@ -136,6 +137,14 @@ class aNscan(Hookable):
                 self._gScan = CSScan(self, self._waypoint_generator, self._period_generator, moveables, env, constrains, extrainfodesc)
             elif mode == ContinuousHwTimeMode:
                 self.nr_of_points = scan_length
+                mg_name = self.getEnv('ActiveMntGrp')
+                mg = self.getMeasurementGroup(mg_name)
+                mg_latency_time = mg.getLatencyTime()
+                if mg_latency_time > latency_time:
+                    self.info("Choosing measurement group latency time: %f" %
+                              mg_latency_time)
+                    latency_time = mg_latency_time
+                self.latency_time = latency_time
                 self.name = opts.get('name','a%iscanct'%self.N)
                 self._gScan = CTScan(self, self._waypoint_generator_hwtime, 
                                            moveables, 
