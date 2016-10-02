@@ -1965,12 +1965,9 @@ class CTScan(CScan):
 
             self.timestamp_to_start = time.time() + delta_start
 
-            self.motion_event.set()
-
             # move to waypoint end position
             self.macro.debug("Moving to waypoint position: %s" % repr(final_pos))
             motion.move(final_pos)
-            self.motion_event.clear()
 
             if macro.isStopped():
                 self.on_waypoints_end()
@@ -2029,14 +2026,12 @@ class CTScan(CScan):
             self._physical_motion.move(restore_positions)
         self.do_restore()
         self.motion_end_event.set()
-        self.motion_event.set()
         self.cleanup()
 
     def scan_loop(self):
         macro = self.macro
         manager = macro.getManager()
         scream = False
-        motion_event = self.motion_event
         startts = self._env['startts']
 
         sum_delay = 0
