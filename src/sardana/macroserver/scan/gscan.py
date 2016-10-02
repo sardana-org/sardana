@@ -60,7 +60,7 @@ from sardana.macroserver.scan.recorder import (AmbiguousRecorderError,
                                                SharedMemoryRecorder,
                                                FileRecorder)
 from sardana.taurus.core.tango.sardana.pool import Ready
-from sardana.taurus.core.tango.sardana import AcqMode
+from sardana.sardanathreadpool import get_thread_pool
 
 
 class ScanSetupError(Exception):
@@ -1762,7 +1762,7 @@ class CTScan(CScan):
                 # index and its values are of type string for label and
                 # sequence for data, index
                 # e.g. dict(label=str, data=seq<float>, index=seq<int>)
-                self.data.addData(info)
+                get_thread_pool().add(self.data.addData, None, info)
 #                 CTScan.ExtraMntGrp.OnDataChangedCb.count_event += 1
         except Exception, e:
             #TODO: maybe here we should do some cleanup...
