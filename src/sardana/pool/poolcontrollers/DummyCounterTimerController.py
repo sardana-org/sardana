@@ -121,7 +121,8 @@ class DummyCounterTimerController(CounterTimerController):
             if self.integ_time is not None:
                 # counting in time 
                 #if elapsed_time >= self.integ_time*channel.repetitions:
-                if channel.repetitions <= channel._counter:
+                if elapsed_time > channel.repetitions * (self.integ_time +
+                                                         self._latency_time):
                 #if elapsed_time >= self.integ_time:
                     self._finish(elapsed_time)
     
