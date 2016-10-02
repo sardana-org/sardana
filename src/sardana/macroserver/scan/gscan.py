@@ -1941,9 +1941,6 @@ class CTScan(CScan):
                 self.macro.debug("Velocity: %f" % path.max_vel)
                 self.macro.debug("AccTime: %f" % path.max_vel_time)
                 self.macro.debug("DecTime: %f" % path.min_vel_time)
-                #TODO: check why we have 0 here
-                #if 0 in [path.max_vel, path.max_vel_time, path.min_vel_time]:
-                #    continue
                 motor.setVelocity(path.max_vel)
                 motor.setAcceleration(path.max_vel_time)
                 motor.setDeceleration(path.min_vel_time)
