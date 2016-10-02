@@ -1962,11 +1962,10 @@ class CTScan(CScan):
             self.__mntGrpStarted = True
             # add listener of data events
             self.measurement_group.addOnDataChangedListeners(self)
-            # TODO: investigate deadlock if using MG taurus extension start
-            # using taurus extension start (lowercase s!) causes a deadlock
-            self.measurement_group.Start()
+
+            mg_id = self.measurement_group.start()
             ###########
-            
+
             self.timestamp_to_start = time.time() + delta_start
 
             self.motion_event.set()
@@ -1981,11 +1980,8 @@ class CTScan(CScan):
                 return
             ############    
             self.macro.debug("Waiting for measurement group to finish")
-            while self.measurement_group.state() == PyTango.DevState.MOVING:
-                self.macro.checkPoint()
-                time.sleep(0.1)
-#             self.macro.debug("Getting data")                
-#             data_list = self._measurement_group.getDataList()
+            self.measurement_group.waitFinish(mg_id)
+
 #             
 #             def populate_ideal_positions():
 #                 moveables = self.moveables
