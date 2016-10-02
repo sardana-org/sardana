@@ -1291,25 +1291,11 @@ class dmeshc(meshc):
 
 
 class ascanct(aNscan, Macro):
-    '''Continuous scan controlled by hardware trigger signals. A sequence of 
-    trigger pulses is programmed by time. The scan active time is calculated from
-    nr_of_points * point time. It corresponds to the time while all the involved 
-    in the scan moveables are at the constant velocity. Experimental channels are
-    configured to acquire during acquistion time calculated from acq_time [%] of  
-    the point_time. 
-    Temporary solution used to configure trigger device (pulse train generator): 
-    "TriggerDevices" evironment variable must be set to Ni660X device name 
-    or any other Tango device name implementing:
-    +) following attributes: 
-    - InitialDelayTime [s] - delay time from calling Start to generating first pulse 
-    - HighTime [s] - time interval while signal will maintain its high state
-    - LowTime [s] - time interval while signal will maintain its low state
-    - SampPerChan - nr of pulses to be generated
-    - IdleState - state (high or low) which signal will take after the Start command
-      and which will maintain during the InitialDelayTime.  
-    +) following commands:
-    - Start 
-    - Stop)'''
+    """Do an absolute continuous scan of the specified motor.
+    ascanct scans one motor, as specified by motor. The motor starts before the
+    position given by start_pos in order to reach the constant velocity at the
+    start_pos and finishes at the position after the final_pos in order to
+    maintain the constant velocity until the final_pos."""
 
     hints = {'scan' : 'ascanct', 'allowsHooks': ('pre-configuration', 
                                                  'post-configuration', 
@@ -1318,40 +1304,27 @@ class ascanct(aNscan, Macro):
                                                  'post-cleanup') }
 
     param_def = [['motor', Type.Moveable, None, 'Moveable name'],
-                 ['start_pos', Type.Float, None, 'Starting position'],
-                 ['end_pos', Type.Float, None, 'Ending pos value'],
+                 ['start_pos', Type.Float, None, 'Scan start position'],
+                 ['final_pos', Type.Float, None, 'Scan final position'],
                  ['nr_of_points', Type.Integer, None, 'Nr of scan points'],
                  ['integ_time', Type.Float, None, 'Integration time'],
                  ['latency_time', Type.Float, 0, 'Latency time']]
 
-        
-    def prepare(self, motor, start_pos, end_pos, nr_of_points, 
+
+    def prepare(self, motor, start_pos, final_pos, nr_of_points, 
                 integ_time, latency_time, **opts):
-        self._prepare([motor], [start_pos], [end_pos], nr_of_points,
-                      integ_time, mode=ContinuousHwTimeMode, **opts)
-        self.latency_time = latency_time
+        self._prepare([motor], [start_pos], [final_pos], nr_of_points,
+                      integ_time, mode=ContinuousHwTimeMode,
+                      latency_time=latency_time, **opts)
 
 
 class a2scanct(aNscan, Macro):
-    '''Continuous scan controlled by hardware trigger signals. A sequence of 
-    trigger pulses is programmed by time. The scan active time is calculated from
-    nr_of_points * point time. It corresponds to the time while all the involved 
-    in the scan moveables are at the constant velocity. Experimental channels are
-    configured to acquire during acquistion time calculated from latency_time [%] of  
-    the integ_time. 
-    Temporary solution used to configure trigger device (pulse train generator): 
-    "TriggerDevices" evironment variable must be set to Ni660X device name 
-    or any other Tango device name implementing:
-    +) following attributes: 
-    - InitialDelayTime [s] - delay time from calling Start to generating first pulse 
-    - HighTime [s] - time interval while signal will maintain its high state
-    - LowTime [s] - time interval while signal will maintain its low state
-    - SampPerChan - nr of pulses to be generated
-    - IdleState - state (high or low) which signal will take after the Start command
-      and which will maintain during the InitialDelayTime.  
-    +) following commands:
-    - Start 
-    - Stop)'''
+    """Two-motor continuous scan.
+    a2scanct scans two motors, as specified by motor1 and motor2. Each motor
+    starts before the position given by its start_pos in order to reach the
+    constant velocity at its start_pos and finishes at the position after
+    its final_pos in order to maintain the constant velocity until its
+    final_pos."""
 
     hints = {'scan' : 'a2scanct', 'allowsHooks': ('pre-configuration', 
                                                   'post-configuration',
@@ -1373,30 +1346,18 @@ class a2scanct(aNscan, Macro):
     def prepare(self, m1, s1, f1, m2, s2, f2, nr_of_points, 
                 integ_time, latency_time, **opts):
         self._prepare([m1, m2], [s1, s2], [f1, f2], nr_of_points,
-                      integ_time, mode=ContinuousHwTimeMode, **opts)
-        self.latency_time = latency_time
+                      integ_time, mode=ContinuousHwTimeMode,
+                      latency_time=latency_time, **opts)
 
 
 class a3scanct(aNscan, Macro):
-    '''Continuous scan controlled by hardware trigger signals. A sequence of 
-    trigger pulses is programmed by time. The scan active time is calculated from
-    nr_of_points * point time. It corresponds to the time while all the involved 
-    in the scan moveables are at the constant velocity. Experimental channels are
-    configured to acquire during acquistion time calculated from latency_time [%] of  
-    the integ_time. 
-    Temporary solution used to configure trigger device (pulse train generator): 
-    "TriggerDevices" evironment variable must be set to Ni660X device name 
-    or any other Tango device name implementing:
-    +) following attributes: 
-    - InitialDelayTime [s] - delay time from calling Start to generating first pulse 
-    - HighTime [s] - time interval while signal will maintain its high state
-    - LowTime [s] - time interval while signal will maintain its low state
-    - SampPerChan - nr of pulses to be generated
-    - IdleState - state (high or low) which signal will take after the Start command
-      and which will maintain during the InitialDelayTime.  
-    +) following commands:
-    - Start 
-    - Stop)'''
+    """Three-motor continuous scan.
+    a2scanct scans three motors, as specified by motor1, motor2 and motor3.
+    Each motor starts before the position given by its start_pos in order to
+    reach the constant velocity at its start_pos and finishes at the position
+    after its final_pos in order to maintain the constant velocity until its
+    final_pos."""
+
     hints = {'scan' : 'a2scanct', 'allowsHooks': ('pre-configuration', 
                                                   'post-configuration',
                                                   'pre-start',
@@ -1420,30 +1381,17 @@ class a3scanct(aNscan, Macro):
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, nr_of_points, 
                 integ_time, latency_time, **opts):
         self._prepare([m1, m2, m3], [s1, s2, s3], [f1, f2, f3], nr_of_points,
-                      integ_time, mode=ContinuousHwTimeMode, **opts)
-        self.latency_time = latency_time
+                      integ_time, mode=ContinuousHwTimeMode,
+                      latency_time=latency_time, **opts)
 
 
 class a4scanct(aNscan, Macro):
-    '''Continuous scan controlled by hardware trigger signals. A sequence of 
-    trigger pulses is programmed by time. The scan active time is calculated from
-    nr_of_points * point time. It corresponds to the time while all the involved 
-    in the scan moveables are at the constant velocity. Experimental channels are
-    configured to acquire during acquistion time calculated from latency_time [%] of  
-    the integ_time. 
-    Temporary solution used to configure trigger device (pulse train generator): 
-    "TriggerDevices" evironment variable must be set to Ni660X device name 
-    or any other Tango device name implementing:
-    +) following attributes: 
-    - InitialDelayTime [s] - delay time from calling Start to generating first pulse 
-    - HighTime [s] - time interval while signal will maintain its high state
-    - LowTime [s] - time interval while signal will maintain its low state
-    - SampPerChan - nr of pulses to be generated
-    - IdleState - state (high or low) which signal will take after the Start command
-      and which will maintain during the InitialDelayTime.  
-    +) following commands:
-    - Start 
-    - Stop)'''
+    """Four-motor continuous scan.
+    a2scanct scans four motors, as specified by motor1, motor2, motor3 and
+    motor4. Each motor starts before the position given by its start_pos in
+    order to reach the constant velocity at its start_pos and finishes at the
+    position after its final_pos in order to maintain the constant velocity
+    until its final_pos."""
 
     hints = {'scan' : 'a2scanct', 'allowsHooks': ('pre-configuration', 
                                                   'post-configuration',
@@ -1472,5 +1420,6 @@ class a4scanct(aNscan, Macro):
                 nr_of_points, integ_time, latency_time, **opts):
         self._prepare([m1, m2, m3, m4], [s1, s2, s3, s4], [f1, f2, f3, f4],
                       nr_of_points, integ_time, mode=ContinuousHwTimeMode,
+                      latency_time=latency_time
                       **opts)
-        self.latency_time = latency_time
+
