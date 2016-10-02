@@ -1829,7 +1829,6 @@ class CTScan(CScan):
         for _, waypoint in waypoints:
             self.macro.debug("Waypoint iteration...")
             # initializing mntgrp control variables
-            self.__mntGrpConfigured = False
             self.__mntGrpStarted = False
 
             start_positions = waypoint.get('start_positions')
@@ -1886,11 +1885,6 @@ class CTScan(CScan):
                     hook()
             self.macro.checkPoint()
 
-            #configuring measurementGroup
-            self.__mntGrpConfigured = True
-            self.debug('Setting IntegrationTime: %f' % self.macro.integ_time)
-            self.measurement_group.write_attribute('IntegrationTime',
-                                                   self.macro.integ_time)
             # TODO: let a pseudomotor specify which motor should be used as source
             MASTER = 0
             moveable = moveables[MASTER].full_name
@@ -2109,11 +2103,6 @@ class CTScan(CScan):
                     self.debug(msg)
                     self.debug('Details: ', exc_info = True)
                     raise ScanException('pre-cleanup hook failed')
-
-        if self.__mntGrpConfigured:
-            self.debug("Restoring configuration of measurement group")
-            # ct does not work after a ascanct if we do not put it in 'Timer'
-            self.measurement_group.setAcquisitionMode('Timer') 
 
         if hasattr(self.macro, 'getHooks'):
             for hook in self.macro.getHooks('post-cleanup'):
