@@ -1538,6 +1538,12 @@ class MeasurementGroup(PoolElement):
     def getMoveable(self):
         return self._getAttrValue('Moveable')
 
+    def getLatencyTimeObj(self):
+        return self._getAttrEG('LatencyTime')
+
+    def getLatencyTime(self):
+        return self._getAttrValue('LatencyTime')
+
     def setMoveable(self, moveable=None):
         if moveable is None:
             moveable = 'None' # Tango attribute is of type DevString
