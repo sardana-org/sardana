@@ -607,7 +607,7 @@ class PoolAction(Logger):
     def get_read_value_loop_ctrls(self):
         return self._pool_ctrl_dict
 
-    def read_value_loop(self, ret=None, serial=False):
+    def read_value_loop(self, ret=None, serial=False, ctrls=None):
         """Reads value information of all elements involved in this action
 
         :param ret: output map parameter that should be filled with value
@@ -617,29 +617,40 @@ class PoolAction(Logger):
         :param serial: If False (default) perform controller HW value requests
                        in parallel. If True, access is serialized.
         :type serial: bool
+        :param ctrls: a map with controllers and elements to be read. If None
+            is given, use the map already known by the action.
+        :type ctrls: dict<:class:~`sardana.pool.poolcontroller.PoolController,
+            list<:class:~`sardana.pool.poolelement.PoolElement>>
         :return: a map containing value information per element
         :rtype: dict<:class:~`sardana.pool.poolelement.PoolElement`,
                      (value object, Exception or None)>"""
         with ActionContext(self):
-            return self.raw_read_value_loop(ret=ret, serial=serial)
+            return self.raw_read_value_loop(ret=ret, serial=serial, ctrls=ctrls)
 
-    def raw_read_value_loop(self, ret=None, serial=False):
+    def raw_read_value_loop(self, ret=None, serial=False, ctrls=None):
         """**Unsafe**. Reads value information of all elements involved in this
         action
 
         :param ret: output map parameter that should be filled with value
                     information. If None is given (default), a new map is
-                    created an returned
+                    created and returned
         :type ret: dict
         :param serial: If False (default) perform controller HW value requests
                        in parallel. If True, access is serialized.
         :type serial: bool
+        :param ctrls: a map with controllers and elements to be read. If None
+            is given, use the map already known by the action.
+        :type ctrls: dict<:class:~`sardana.pool.poolcontroller.PoolController,
+            list<:class:~`sardana.pool.poolelement.PoolElement>>
         :return: a map containing value information per element
         :rtype: dict<:class:~`sardana.pool.poolelement.PoolElement,
                 :class:`sardana.sardanavalue.SardanaValue` >"""
 
         if ret is None:
             ret = {}
+
+        if ctrls is None:
+            ctrls = self.get_read_value_loop_ctrls()
 
         read = self._raw_read_value_concurrent_loop
         if serial:
@@ -648,20 +659,24 @@ class PoolAction(Logger):
         value_info = self._value_info
 
         with value_info:
-            value_info.init(len(self.get_read_value_loop_ctrls()))
-            read(ret)
+            value_info.init(len(ctrls))
+            read(ret, ctrls=ctrls)
             value_info.wait()
         return ret
 
-    def _raw_read_value_serial_loop(self, ret):
+    def _raw_read_value_serial_loop(self, ret, ctrls=None):
         """Internal method. Read value in a serial mode"""
-        for pool_ctrl in self.get_read_value_loop_ctrls():
+        if ctrls is None:
+            ctrls = self.get_read_value_loop_ctrls()
+        for pool_ctrl in ctrls:
             self._raw_read_ctrl_value(ret, pool_ctrl)
         return ret
 
-    def _raw_read_value_concurrent_loop(self, ret):
+    def _raw_read_value_concurrent_loop(self, ret, ctrls=None):
         """Internal method. Read value in a concurrent mode"""
         th_pool = get_thread_pool()
-        for pool_ctrl in self.get_read_value_loop_ctrls():
+        if ctrls is None:
+            ctrls = self.get_read_value_loop_ctrls()
+        for pool_ctrl in ctrls:
             th_pool.add(self._raw_read_ctrl_value, None, ret, pool_ctrl)
         return ret
