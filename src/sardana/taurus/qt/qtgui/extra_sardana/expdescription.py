@@ -215,8 +215,14 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
         #set the measurement group ComboBox
         self.ui.activeMntGrpCB.clear()
-        self.ui.activeMntGrpCB.addItems(sorted(self._localConfig['MntGrpConfigs'].keys()))
-        idx = self.ui.activeMntGrpCB.findText(activeMntGrpName)
+        mntGrpLabels = []
+        for _, mntGrpConf in self._localConfig['MntGrpConfigs'].items():
+            # get labels to visualize names with lower and upper case
+            mntGrpLabels.append(mntGrpConf['label'])
+        self.ui.activeMntGrpCB.addItems(sorted(mntGrpLabels))
+        idx = self.ui.activeMntGrpCB.findText(activeMntGrpName,
+                                              # case insensitive find
+                                              Qt.Qt.MatchFixedString)
         self.ui.activeMntGrpCB.setCurrentIndex(idx)
 
         #set the system snapshot list
@@ -251,8 +257,9 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         #make sure that no empty measurement groups are written
         for mgname, mgconfig in conf.get('MntGrpConfigs', {}).items():
             if mgconfig is not None and not mgconfig.get('controllers'):
+                mglabel = mgconfig['label']
                 Qt.QMessageBox.information(self, "Empty Measurement group",
-                "The measurement group '%s' is empty. Fill it (or delete it) before applying" % mgname,
+                "The measurement group '%s' is empty. Fill it (or delete it) before applying" % mglabel,
                 Qt.QMessageBox.Ok)
                 self.changeActiveMntGrp(mgname)
                 return False
@@ -285,7 +292,9 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
         self._localConfig['ActiveMntGrp'] = activeMntGrpName
 
-        i = self.ui.activeMntGrpCB.findText(activeMntGrpName, Qt.Qt.MatchExactly)
+        i = self.ui.activeMntGrpCB.findText(activeMntGrpName,
+                                            # case insensitive find
+                                            Qt.Qt.MatchFixedString)
         self.ui.activeMntGrpCB.setCurrentIndex(i)
         mgconfig = self._localConfig['MntGrpConfigs'][activeMntGrpName]
         self.ui.channelEditor.getQModel().setDataSource(mgconfig)
