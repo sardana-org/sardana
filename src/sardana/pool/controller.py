@@ -846,6 +846,8 @@ class CounterTimerController(Controller, Readable, Startable, Stopable, Loadable
         self._monitor = None
         self._master = None
         self._trigger_type = AcqTriggerType.Unknown
+        self._read_when_acq = True
+        self._latency_time = 0
 
     def PreStartAllCT(self):
         """**Counter/Timer Controller API**. Override if necessary.
