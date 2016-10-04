@@ -76,6 +76,10 @@ def split_MGConfigurations(mg_cfg_in):
     mg_0d_cfg_out['controllers'] = ctrls_0d_out = {}
     mg_hw_cfg_out['controllers'] = ctrls_hw_out = {}
     for ctrl, ctrl_info in ctrls_in.items():
+        external = isinstance(ctrl, str) and ctrl.startswith('__')
+        # skipping external controllers e.g. Tango attributes
+        if external:
+            continue
         # splitting ZeroD based on the type
         if ctrl.get_ctrl_types()[0] == ElementType.ZeroDExpChannel:
             ctrls_0d_out[ctrl] = ctrl_info
