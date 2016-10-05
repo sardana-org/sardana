@@ -1631,27 +1631,6 @@ class MeasurementGroup(PoolElement):
         ret = self.getStateEG().readValue(), self.getValues()
         self._total_go_time = time.time() - start_time
         return ret
-    
-    def start_async_acq_sequence(self, *args, **kwargs):
-        '''starts continuous acquisition - a sequence of acquisitions, triggered
-        by external events, could be used e.g. in continuous scans.
-        Expects at least one parameter - integration time per single acquisition.
-        Optionally receives a TaurusListener as a callback for on data changed 
-        events.  
-
-        :param args[0]: (int) integration time per single acquisition
-        :param args[1]: (TaurusListener) listener called on data changed event
-        '''
-        cfg = self.getConfiguration()
-        cfg.prepare()
-        integ_time = args[0]
-        if integ_time is None or integ_time == 0:
-            raise Exception('Integration time must be non zero')
-        self.putIntegrationTime(integ_time)
-        if len(args) > 1:        
-            onDataChangedListener = args[1]
-            self.addOnDataChangedListeners(onDataChangedListener)
-        self.Start()
 
     startCount = PoolElement.start
     waitCount = PoolElement.waitFinish
