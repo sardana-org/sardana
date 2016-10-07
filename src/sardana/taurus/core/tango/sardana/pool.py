@@ -430,7 +430,6 @@ class PoolElement(BaseElement, TangoDevice):
         ts2 = evt_wait.getRecordedEvents().get(DevState.MOVING, ts2)
         return (ts2,)
 
-    @reservedOperation
     def waitFinish(self, timeout=None, id=None):
         if id is not None:
             id = id[0]
