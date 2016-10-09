@@ -1963,9 +1963,9 @@ class Macro(Logger):
                 else:
                     return self.getEnv(kwargs['key'])
             return kwargs['default_value']
-    
+
     def _output(self, msg, *args, **kwargs):
-        """**Macro API**.
+        """****Unofficial Macro API**.
         Record a log message in this object's output. Accepted *args* and
         *kwargs* are the same as :meth:`logging.Logger.log`.
         Example::
@@ -1977,6 +1977,19 @@ class Macro(Logger):
         :param args: list of arguments
         :param kwargs: list of keyword arguments"""
         return Logger.output(self, msg, *args, **kwargs)
+
+    def _outputBlock(self, line):
+        """**Unofficial Macro API**.
+        Sends a line tagged as a block to the output
+
+        :param str line: line to be sent"""
+        if isinstance(line, (str, unicode)):
+            o = line
+        elif operator.isSequenceType(line):
+            o = "\n".join(line)
+        else:
+            o = str(line)
+        self._output("%s\n%s\n%s" % (Macro.BlockStart, o, Macro.BlockFinish))
 
     def _log(self, level, msg, *args, **kwargs):
         """**Unofficial Macro API**.
@@ -2104,6 +2117,11 @@ class Macro(Logger):
         :param args: list of arguments
         :param kwargs: list of keyword arguments"""
         return self.door.report(msg, *args, **kwargs)
+
+    def _flushOutput(self):
+        """**Unofficial Macro API**.
+        Flushes the output buffer."""
+        return Logger.flushOutput(self)
 
     @property
     def executor(self):
