@@ -108,6 +108,7 @@ class FunctionGenerator(EventGenerator):
         print self.active_events
         print self.passive_events
         self._start_time = time.time()
+        self._stopped = False
         self._started = True
         self._position = None
         self._position_event.clear()
