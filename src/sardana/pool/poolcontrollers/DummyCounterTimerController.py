@@ -195,10 +195,9 @@ class DummyCounterTimerController(CounterTimerController):
         ret = None
         if channel.mode == AcqSynch.HardwareTrigger:
             values = copy.deepcopy(channel.buffer_values)
-            indexes = range(channel._counter, channel._counter + len(values))
             ret = []
-            for v, i in zip(values, indexes):
-                ret.append(SardanaValue(v, i))
+            for v in values:
+                ret.append(SardanaValue(v))
             channel.buffer_values.__init__()
             channel._counter = channel._counter + len(values)
         elif channel.mode == AcqSynch.SoftwareTrigger:
