@@ -675,12 +675,14 @@ class Loadable(object):
         Default implementation does nothing."""
         pass
 
-    def LoadOne(self, axis, value):
+    def LoadOne(self, axis, value, repetitions):
         """**Controller API**. Override is MANDATORY!
         Called to load the integration time / monitor value.
         Default implementation raises :exc:`NotImplementedError`.
         
         :param int axis: axis number
+        :param float value: integration time /monitor value
+        :param int repetitions: number of repetitions
         :param float value: integration time /monitor value"""
         raise NotImplementedError("LoadOne must be defined in the controller")
 
