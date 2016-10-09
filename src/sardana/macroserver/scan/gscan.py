@@ -50,6 +50,7 @@ from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
 from sardana.util.tree import BranchNode, LeafNode, Tree
 from sardana.util.motion import Motor as VMotor
 from sardana.util.motion import MotionPath
+from sardana.util.thread import CountLatch
 from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.macroserver.msexception import MacroServerException, UnknownEnv, \
     InterruptException, StopException
@@ -1731,6 +1732,8 @@ class CTScan(CScan):
                        moveables=moveables, env=env, constraints=constraints,
                        extrainfodesc=extrainfodesc)
         self._codec = CodecFactory().getCodec('json')
+        self._thread_pool = get_thread_pool()
+        self._countdown_latch = CountLatch()
 
     def eventReceived(self, event_src, event_type, event_value):
         '''Method which processes the received events. It ignores events
@@ -1761,8 +1764,9 @@ class CTScan(CScan):
                 # index and its values are of type string for label and
                 # sequence for data, index
                 # e.g. dict(label=str, data=seq<float>, index=seq<int>)
-                get_thread_pool().add(self.data.addData, None, info)
-#                 CTScan.ExtraMntGrp.OnDataChangedCb.count_event += 1
+                self._countdown_latch.count_up()
+                self._thread_pool.add(self.data.addData,
+                                      self._countdown_latch.count_down, info)
         except Exception, e:
             #TODO: maybe here we should do some cleanup...
             msg = 'Exception occurred processing the received event'
@@ -2025,6 +2029,9 @@ class CTScan(CScan):
         self.do_restore()
         self.motion_end_event.set()
         self.cleanup()
+        self.macro.debug("Waiting for data events to be processed")
+        self._countdown_latch.wait()
+        self.macro.debug("All data events are processed")
 
     def scan_loop(self):
         macro = self.macro
