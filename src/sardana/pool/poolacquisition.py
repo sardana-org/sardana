@@ -40,6 +40,7 @@ from taurus.core.util.enumeration import Enumeration
 
 from sardana import State, ElementType, TYPE_TIMERABLE_ELEMENTS
 from sardana.sardanathreadpool import get_thread_pool
+from sardana.sardanautils import is_ordered_non_str_seq
 from sardana.pool import SynchParam, SynchDomain, AcqSynch
 from sardana.pool.poolutil import is_software_tg
 from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
@@ -375,11 +376,26 @@ class Channel(PoolActionItem):
 
     def __init__(self, acquirable, info=None):
         PoolActionItem.__init__(self, acquirable)
+        self.idx = 0
         if info:
             self.__dict__.update(info)
 
     def __getattr__(self, name):
         return getattr(self.element, name)
+
+    def fill_idx(self, values):
+        """Fill indexes if they are missing.
+        :param values: values to be filled with the index
+        :type values: list<:class~`sardana.sardanavalue.SardanaValue`> or
+                      <:class~`sardana.sardanavalue.SardanaValue`>
+        """
+        if not is_ordered_non_str_seq(values):
+            values = list(values)
+        if values[0].idx is not None:
+            for v in values:
+                v.idx = self.idx
+                self.idx += 1
+        return values
 
 
 class PoolAcquisitionBase(PoolAction):
@@ -572,7 +588,10 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
                 self.read_value_loop(ret=values,
                                      ctrls=self._pool_ctrls_read_when_acq)
                 for acquirable, value in values.items():
-                    acquirable.put_value_chunk(value)
+                    if len(value) > 0:
+                        channel = self._channels_read_when_acq[acquirable]
+                        channel.fill_idx(value)
+                        acquirable.put_value_chunk(value)
 
             time.sleep(nap)
             i += 1
@@ -593,6 +612,8 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
             if acquirable in values:
                 value = values[acquirable]
                 if len(value) > 0:
+                    channel = self._channels[acquirable]
+                    channel.fill_idx(value)
                     acquirable.put_value_chunk(value, propagate=2)
             with acquirable:
                 acquirable.clear_operation()
