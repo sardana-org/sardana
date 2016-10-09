@@ -90,9 +90,11 @@ class SoftwareTriggerGateController(TriggerGateController):
             status = "Stopped"
             idx = axis - 1
             tg = self.tg[idx]
-            if tg.is_running() or tg.is_started():
+            if tg.is_started():
                 sta = State.Moving
-                status = "Moving"
+                status = "Started"
+            if tg.is_running():
+                status = "Running"
             self._log.debug('StateOne(%d): returning (%s, %s)' % \
                             (axis, sta, status))
         except Exception, e:
