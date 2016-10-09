@@ -1730,8 +1730,7 @@ class CTScan(CScan):
         CScan.__init__(self, macro, generator=generator,
                        moveables=moveables, env=env, constraints=constraints,
                        extrainfodesc=extrainfodesc)
-        # prepare codec for decoding the Data events
-        self.codec = CodecFactory().getCodec('json')
+        self._codec = CodecFactory().getCodec('json')
 
     def eventReceived(self, event_src, event_type, event_value):
         '''Method which processes the received events. It ignores events
@@ -1753,7 +1752,7 @@ class CTScan(CScan):
                 # value is a dictionary with at least keys: data, index
                 # and its values are of type sequence
                 # e.g. dict(data=seq<float>, index=seq<int>) 
-                _, data = self.codec.decode(('json', value),
+                _, data = self._codec.decode(('json', value),
                                             ensure_ascii=True)
                 channelName = event_src.getParentObj().getFullName()
                 info = {'label' : channelName}
