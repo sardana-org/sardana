@@ -1956,25 +1956,24 @@ class CTScan(CScan):
             self.macro.checkPoint()
 
             self.macro.debug("Starting measurement group")
-            self.__mntGrpStarted = True
             # add listener of data events
             self.measurement_group.addOnDataChangedListeners(self)
+            self.__mntGrpStarted = True
 
             mg_id = self.measurement_group.start()
-            ###########
+            try:
+                self.timestamp_to_start = time.time() + delta_start
 
-            self.timestamp_to_start = time.time() + delta_start
-
-            # move to waypoint end position
-            self.macro.debug("Moving to waypoint position: %s" % repr(final_pos))
-            motion.move(final_pos)
+                # move to waypoint end position
+                self.macro.debug("Moving to waypoint position: %s" % repr(final_pos))
+                motion.move(final_pos)
+            finally:
+                self.measurement_group.waitFinish(id=mg_id)
 
             if macro.isStopped():
                 self.on_waypoints_end()
                 return
             ############    
-            self.macro.debug("Waiting for measurement group to finish")
-            self.measurement_group.waitFinish(mg_id)
 
 #             
 #             def populate_ideal_positions():
