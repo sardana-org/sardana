@@ -105,8 +105,6 @@ class FunctionGenerator(EventGenerator):
         self._position_event.set()
 
     def start(self):
-        print self.active_events
-        print self.passive_events
         self._start_time = time.time()
         self._stopped = False
         self._started = True
@@ -179,13 +177,10 @@ class FunctionGenerator(EventGenerator):
                 now = time.time()
             elif self.active_domain_in_use is SynchDomain.Position:
                 now = self._position
-            print 'now', now
-            print 'can', candidate
             if not self._condition(now, candidate):
                 break
             i += 1
         self._id += i
-        print "Fire Active %d" % (self._id - 1)
         self.fire_event(TGEventType.Active, self._id - 1)
         self.active_events = self.active_events[i:]
         self.passive_events = self.passive_events[i - 1:]
@@ -207,7 +202,6 @@ class FunctionGenerator(EventGenerator):
                         break
 
     def fire_passive(self):
-        print "Fire passive %d" % (self._id - 1)
         self.fire_event(TGEventType.Passive, self._id - 1)
         self.set_passive_events(self.passive_events[1:])
 
