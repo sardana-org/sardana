@@ -1783,7 +1783,7 @@ class CTScan(CScan):
         # generate theoretical positions
         moveable_positions = []
         for start, final in zip(starts, finals):
-            moveable_positions.append(np.linspace(start, final, nr_of_points))
+            moveable_positions.append(np.linspace(start, final, nr_of_points+1))
         # prepare table header from moveables names
         dtype_spec = []
         for moveable in moveables:
