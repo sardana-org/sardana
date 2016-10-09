@@ -706,6 +706,9 @@ class Macro(Logger):
         Sends the given data to the RecordData attribute of the Door
 
         :param data: (sequence) the data to be sent"""
+        self._sendRecordData(data, codec)
+
+    def _sendRecordData(self, data, codec=None):
         self.executor.sendRecordData(data, codec=codec)
 
     @mAPI
