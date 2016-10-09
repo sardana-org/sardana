@@ -1774,6 +1774,48 @@ class CTScan(CScan):
             self.debug('Details: ', exc_info = True)
             raise Exception('"data" event callback failed')
 
+    def get_theoretical_positions(self):
+        theoretical_positions = dict()
+        moveables = self.moveables
+        nr_of_points = self.macro.nr_of_points
+        starts = self.macro.starts
+        finals = self.macro.finals
+        # generate theoretical positions
+        moveable_positions = []
+        for start, final in zip(starts, finals):
+            moveable_positions.append(np.linspace(start, final, nr_of_points))
+        # prepare table header from moveables names
+        dtype_spec = []
+        for moveable in moveables:
+            label = moveable.moveable.getName()
+            dtype_spec.append((label, 'float64'))
+        # convert to numpy array for easier handling
+        table = np.array(zip(*moveable_positions), dtype=dtype_spec)
+        n_rows = table.shape[0]
+        for i in xrange(n_rows):
+            row = dict()
+            for label in table.dtype.names:
+                row[label] = table[label][i]
+            theoretical_positions[i] = row
+        return theoretical_positions
+
+    def get_theoretical_timestamps(self, synchronization):
+        timestamps = dict()
+        timestamp = 0
+        index = 0
+        for group in synchronization:
+            delay = group[SynchParam.Delay][SynchDomain.Time]
+            total = group[SynchParam.Total][SynchDomain.Time]
+            repeats = group[SynchParam.Repeats]
+            timestamp += delay
+            timestamps[index] = dict(timestamp=timestamp)
+            index += 1
+            for _ in xrange(1, repeats + 1):
+                timestamp += total
+                timestamps[index] = dict(timestamp=timestamp)
+                index += 1
+        return timestamps
+
     def prepare_waypoint(self, waypoint, start_positions, iterate_only=False):
         '''Prepare list of MotionPath objects per each physical motor.
         :param waypoint: (dict) waypoint dictionary with necessary information
@@ -1951,8 +1993,15 @@ class CTScan(CScan):
             if macro.isStopped():
                 self.on_waypoints_end()
                 return
-            
-            ###########
+
+            # TODO: don't fill theoretical positions but implement the position
+            # capture, both hardware and software
+            initial_data = self.get_theoretical_positions()
+            timestamps = self.get_theoretical_timestamps(synch)
+            for k, v in initial_data.items():
+                initial_data[k].update(timestamps[k])
+            self.data.initial_data = initial_data
+
             if hasattr(macro, 'getHooks'):
                 for hook in macro.getHooks('pre-start'):
                     hook()
@@ -1976,31 +2025,6 @@ class CTScan(CScan):
             if macro.isStopped():
                 self.on_waypoints_end()
                 return
-            ############    
-
-#             
-#             def populate_ideal_positions():
-#                 moveables = self.moveables
-#                 nr_of_points = self.macro.nr_of_points
-#                 starts = self.macro.starts
-#                 finals = self.macro.finals
-#                 positions_records = [{} for i in xrange(nr_of_points)]
-#                 
-#                 for moveable, start, final in zip(moveables, starts, finals):
-#                     name = moveable.moveable.getName()
-#                     for point_nr, position in enumerate(np.linspace(start, \
-#                                                         final, nr_of_points)):
-#                         positions_records[point_nr][name] = position    
-#                     
-#                 return positions_records
-#             
-#             #TODO: decide what to do with moveables
-#             position_list = populate_ideal_positions()
-# 
-#             self.macro.debug("Storing data")
-#             for data_dict, position_dict in zip(data_list,position_list):
-#                 data_dict.update(position_dict)
-#                 self.data.addRecord(data_dict)
             #execute post-move hooks
             for hook in waypoint.get('post-move-hooks',[]):
                 hook()
