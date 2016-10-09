@@ -229,10 +229,12 @@ class RecordList(dict):
     """  A RecordList is a set of records: for example a scan.
     It is composed of a environment and a list of records"""
 
-    def __init__(self, datahandler, environ=None, apply_interpolation=False):
+    def __init__(self, datahandler, environ=None, apply_interpolation=False,
+                 initial_data=None):
 
         self.datahandler = datahandler
         self.applyInterpolation = apply_interpolation
+        self.initial_data = initial_data
         if environ is None:
             self.environ = RecordEnvironment()
         else:
@@ -293,12 +295,18 @@ class RecordList(dict):
            - each column initialized with NaN
            - each moveable initialized with None
         '''
-        rc = Record({'point_nb' : self.recordno,'timestamp': None})
+        recordno = self.recordno
+        if self.initial_data and self.initial_data.has_key(recordno):
+            initial_data = self.initial_data.get(recordno)
+        else:
+            initial_data = dict()
+        rc = Record({'point_nb' : recordno})
+        rc.data['timestamp'] = initial_data.get('timestamp')
         rc.setRecordNo(self.recordno)
-        for _label in self.channelLabels:
-            rc.data[_label] = float('NaN')
-        for refMoveableLabel in self.refMoveablesLabels:
-            rc.data[refMoveableLabel] = None
+        for label in self.channelLabels:
+            rc.data[label] = initial_data.get(label, float('NaN'))
+        for label in self.refMoveablesLabels:
+            rc.data[label] = initial_data.get(label)
         self.records.append(rc)
         self.recordno += 1
 
