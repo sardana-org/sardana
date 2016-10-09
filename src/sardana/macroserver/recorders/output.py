@@ -101,7 +101,7 @@ class JsonRecorder(DataRecorder):
         and then sends it'''
         #data = self._codec.encode(('', kwargs))
         #self._stream.sendRecordData(*data)
-        self._stream.sendRecordData(kwargs, codec='json')
+        self._stream._sendRecordData(kwargs, codec='json')
 
     def _addCustomData(self, value, name, **kwargs):
         '''
