@@ -526,9 +526,10 @@ class PoolMeasurementGroup(PoolGroupElement):
             return self._synchronization[0][SynchParam.Active][SynchDomain.Time]
 
     def set_integration_time(self, integration_time, propagate=1):
+        total_time = integration_time + self.latency_time
         synch = [{SynchParam.Delay: {SynchDomain.Time: 0},
                   SynchParam.Active: {SynchDomain.Time: integration_time},
-                  SynchParam.Total: {SynchDomain.Time: integration_time},
+                  SynchParam.Total: {SynchDomain.Time: total_time},
                   SynchParam.Repeats: 1}]
         self.set_synchronization(synch)
         self._integration_time = integration_time
