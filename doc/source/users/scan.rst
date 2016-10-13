@@ -38,7 +38,7 @@ respectively.
    The line corresponds to the motor position and the blue shaded areas
    correspond to the intervals in which the data acquisition took place.  
 
-
+.. _sardana-users-scan-step:
 
 Step scans
 ----------
@@ -56,7 +56,9 @@ Some examples of step scan macros are:
 :class:`a2scan`, ...
 :class:`dscan`,
 :class:`d2scan`, ...
-:class:`mesh`. 
+:class:`mesh`.
+
+.. _sardana-users-scan-continuous:
 
 Continuous scans
 ----------------
