@@ -20,4 +20,5 @@ Overview
     1D experiment channel <overview_1D>
     2D experiment channel <overview_2D>
     Pseudo counter <overview_pseudocounter>
+    Measurement Group <overview_measurementgroup>
 
