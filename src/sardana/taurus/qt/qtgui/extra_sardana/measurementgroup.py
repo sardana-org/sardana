@@ -360,14 +360,12 @@ class MntGrpUnitItem(TaurusBaseTreeItem):
 
 class BaseMntGrpChannelModel(TaurusBaseModel):
     ColumnNames = ("Channel", "enabled", "output", "Shape", "Data Type", "Plot Type", "Plot Axes", "Timer",
-                  "Monitor", "Synchronization", "Conditioning", "Normalization", "NeXus Path",
-                  "Synchronizer")
+                  "Monitor", "Synchronizer", "Synchronization", "Conditioning", "Normalization", "NeXus Path")
     ColumnRoles = ((ChannelView.Channel, ChannelView.Channel), ChannelView.Enabled,
                   ChannelView.Output, ChannelView.Shape, ChannelView.DataType, ChannelView.PlotType,
                   ChannelView.PlotAxes, ChannelView.Timer, ChannelView.Monitor,
-                  ChannelView.Synchronization, ChannelView.Conditioning,
-                  ChannelView.Normalization, ChannelView.NXPath,
-                  ChannelView.Synchronizer)
+                  ChannelView.Synchronizer, ChannelView.Synchronization, ChannelView.Conditioning,
+                  ChannelView.Normalization, ChannelView.NXPath)
     DftFont = Qt.QFont()
 
     _availableChannels = {}
