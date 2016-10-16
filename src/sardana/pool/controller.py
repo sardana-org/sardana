@@ -977,7 +977,7 @@ class CounterTimerController(Controller, Readable, Startable, Stopable, Loadable
         return self.StartAllCT()
 
 
-class TriggerGateController(Controller, Stopable, Startable):
+class TriggerGateController(Controller, Synchronizer, Stopable, Startable):
     """Base class for a trigger/gate controller. Inherit from this class to
     implement your own trigger/gate controller for the device pool.
     """
@@ -988,13 +988,6 @@ class TriggerGateController(Controller, Stopable, Startable):
     def __init__(self, inst, props, *args, **kwargs):
         Controller.__init__(self, inst, props, *args, **kwargs)
 
-    def SetConfiguration(self, axis, conf):
-        raise NotImplementedError("SetConfiguration must be defined in the "
-                                  "controller")
-
-    def GetConfiguration(self, axis):
-        raise NotImplementedError("GetConfiguration must be defined in the "
-                                  "controller")
 
 class ZeroDController(Controller, Readable, Stopable):
     """Base class for a 0D controller. Inherit from this class to

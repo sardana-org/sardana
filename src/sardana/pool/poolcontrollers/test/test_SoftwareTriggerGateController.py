@@ -106,14 +106,10 @@ class SoftwareTriggerGatePositionControllerTestCase(TriggerGateControllerTestCas
         self.generator.remove_listener(self._device)
         # testing number of received triggers
         received_triggers = self.tg_receiver.count
-        conf = self.ctrl.GetConfiguration(self.AXIS)
-        repetitions = 0
-        for group in conf:
-            repetitions += group[SynchParam.Repeats]
         msg = ('Received triggers: %d does not correspond to generated: %d' %\
-               (received_triggers, repetitions))
+               (received_triggers, self.repetitions))
         if not self.isAborted:
-            self.assertEqual(received_triggers, repetitions, msg)
+            self.assertEqual(received_triggers, self.repetitions, msg)
 
 
 @insertTest(helper_name='generation', synchronization=synchronization1,

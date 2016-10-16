@@ -33,6 +33,7 @@ from taurus.external import unittest
 from sardana import State
 from sardana.pool.pooltriggergate import TGEventType
 from sardana.pool.poolcontrollers.DummyMotorController import Motion
+from sardana.pool.pooldefs import SynchParam
 from sardana.sardanaattribute import SardanaAttribute
 from taurus.core.util.log import Logger
 
@@ -124,7 +125,12 @@ class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
             self.ctrl.set_axis_par(self.AXIS, "active_domain", active_domain)
         if passive_domain:
             self.ctrl.set_axis_par(self.AXIS, "passive_domain", passive_domain)
-        self.ctrl.SetConfiguration(self.AXIS, configuration)
+        repetitions = 0
+        for group in configuration:
+            repetitions += group[SynchParam.Repeats]
+        # store repeats for the assers against received triggers
+        self.repetitions = repetitions
+        self.ctrl.SynchOne(self.AXIS, configuration)
         # execute Hook
         self.post_configuration_hook()
         # PreStartOne the axis

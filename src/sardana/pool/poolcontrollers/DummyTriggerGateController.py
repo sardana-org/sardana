@@ -46,12 +46,6 @@ class DummyTriggerGateController(TriggerGateController):
         tg.set_configuration(conf)
         self.conf[idx] = conf
 
-    def GetConfiguration(self, axis):
-        idx = axis - 1
-        # TODO: extract configuration from generators
-        conf = self.conf[idx]
-        return conf
-
     def AddDevice(self, axis):
         self._log.debug('AddDevice(%d): entering...' % axis)
         idx = axis - 1
