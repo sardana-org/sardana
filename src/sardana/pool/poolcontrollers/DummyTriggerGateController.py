@@ -40,7 +40,7 @@ class DummyTriggerGateController(TriggerGateController):
         self.tg = {}
         self.conf = {}
 
-    def SetConfiguration(self, axis, conf):
+    def SynchOne(self, axis, conf):
         idx = axis - 1
         tg = self.tg[idx]
         tg.set_configuration(conf)

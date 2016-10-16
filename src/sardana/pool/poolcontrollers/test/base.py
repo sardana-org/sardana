@@ -90,7 +90,7 @@ class BaseControllerTestCase(object):
         """
         for key, value in configuration.items():
             self.axisPar(key, value)
-        self.ctrl.SetConfiguration(configuration)
+        self.ctrl.SynchOne(configuration)
     def pre_AddDevice_hook(self):
         pass
 
@@ -142,7 +142,7 @@ class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
         """ Helper for test the abort
         """
         self.configuration = configuration
-        self.ctrl.SetConfiguration(self.AXIS, configuration)
+        self.ctrl.SynchOne(self.AXIS, configuration)
         self.post_configuration_hook()
         # PreStartOne the axis
         self.ctrl.PreStartOne(self.AXIS)

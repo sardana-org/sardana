@@ -95,7 +95,7 @@ class PoolTGGeneration(PoolAction):
             elements = pool_ctrl_data['channels']
             for element in elements:
                 axis = element.axis
-                ctrl.SetConfiguration(axis, synchronization)
+                ctrl.SynchOne(axis, synchronization)
                 # attaching listener (usually acquisition action)
                 # to the software trigger gate generator
                 if is_sw_ctrl and not self._listener is None:
