@@ -687,6 +687,45 @@ class Loadable(object):
         raise NotImplementedError("LoadOne must be defined in the controller")
 
 
+class Synchronizer(object):
+    """A Synchronizer interface. A controller for which its axis are 'Able to
+    Synchronize' should implement this interface
+
+    .. note: Do not inherit directly from Synchronizer."""
+
+    def PreSynchAll(self):
+        """**Controller API**. Override if necessary.
+        Called to prepare loading the synchronization description.
+        Default implementation does nothing."""
+        pass
+
+    def PreSynchOne(self, axis, description):
+        """**Controller API**. Override if necessary.
+        Called to prepare loading the axis with the synchronization description.
+        Default implementation returns True.
+
+        :param int axis: axis number
+        :param list<dict>: synchronization description
+        :return: True means a successfull PreSynchOne or False for a failure
+        :rtype: bool"""
+        return True
+
+    def SynchAll(self):
+        """**Controller API**. Override if necessary.
+        Called to load the synchronization description.
+        Default implementation does nothing."""
+        pass
+
+    def SynchOne(self, axis, description):
+        """**Controller API**. Override is MANDATORY!
+        Called to load the axis with the synchronization description.
+        Default implementation raises :exc:`NotImplementedError`.
+
+        :param int axis: axis number
+        :param list<dict> description: synchronization description"""
+        raise NotImplementedError("SynchOne must be defined in the controller")
+
+
 class MotorController(Controller, Startable, Stopable, Readable):
     """Base class for a motor controller. Inherit from this class to implement
     your own motor controller for the device pool.
