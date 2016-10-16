@@ -203,7 +203,7 @@ def getElementTypeIcon(t):
         return getIcon(":/actions/system-shutdown.svg")
     elif t == ChannelView.NXPath:
         return getThemeIcon("document-save-as")
-    elif t == ChannelView.Synchronization:
+    elif t == ChannelView.Synchronizer:
         return getIcon(":/actions/system-shutdown.svg")
 
     return getIcon(":/tango.png")
@@ -218,7 +218,7 @@ def getElementTypeSize(t):
         return Qt.QSize(50, 24)
     elif t == ChannelView.PlotType:
         return Qt.QSize(50, 24)
-    elif t == ChannelView.Synchronization:
+    elif t == ChannelView.Synchronizer:
         return Qt.QSize(200, 24)
     return Qt.QSize(50, 24)
 
@@ -251,7 +251,7 @@ def getElementTypeToolTip(t):
         return "Normalization mode for the data"
     elif t == ChannelView.NXPath:
         return "Location of the data of this channel within the NeXus tree"
-    if t == ChannelView.Synchronization:
+    if t == ChannelView.Synchronizer:
         return "Trigger element"
     return "Unknown"
 
@@ -361,13 +361,13 @@ class MntGrpUnitItem(TaurusBaseTreeItem):
 class BaseMntGrpChannelModel(TaurusBaseModel):
     ColumnNames = ("Channel", "enabled", "output", "Shape", "Data Type", "Plot Type", "Plot Axes", "Timer",
                   "Monitor", "Trigger", "Conditioning", "Normalization", "NeXus Path",
-                  "Synchronization")
+                  "Synchronizer")
     ColumnRoles = ((ChannelView.Channel, ChannelView.Channel), ChannelView.Enabled,
                   ChannelView.Output, ChannelView.Shape, ChannelView.DataType, ChannelView.PlotType,
                   ChannelView.PlotAxes, ChannelView.Timer, ChannelView.Monitor,
                   ChannelView.Trigger, ChannelView.Conditioning,
                   ChannelView.Normalization, ChannelView.NXPath,
-                  ChannelView.Synchronization)
+                  ChannelView.Synchronizer)
     DftFont = Qt.QFont()
 
     _availableChannels = {}
@@ -375,7 +375,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
     data_keys_map = {ChannelView.Timer:'timer',
                      ChannelView.Monitor:'monitor',
                      ChannelView.Trigger:'trigger_type',
-                     ChannelView.Synchronization: 'trigger_element'
+                     ChannelView.Synchronizer: 'trigger_element'
                      }
 
     def __init__(self, parent=None, data=None):
@@ -506,7 +506,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
             else:
                 master_info = self.getAvailableChannels()[master_full_name]
                 return Qt.QVariant(master_info['name'])
-        elif taurus_role == ChannelView.Synchronization:
+        elif taurus_role == ChannelView.Synchronizer:
             ch_name, ch_data = index.internalPointer().itemData()
             ctrlname = ch_data['_controller_name']
             key = self.data_keys_map[taurus_role]
@@ -547,7 +547,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
                     self._mgconfig[key] = data
             self.endResetModel()
             return True
-        if taurus_role == ChannelView.Synchronization:
+        if taurus_role == ChannelView.Synchronizer:
             ch_name, ch_data = index.internalPointer().itemData()
             ctrlname = ch_data['_controller_name']
             key = self.data_keys_map[taurus_role]
@@ -725,7 +725,7 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
         taurus_role = model.role(index.column())
         if taurus_role in (ChannelView.Channel, ChannelView.PlotType, ChannelView.Normalization,
                            ChannelView.Timer, ChannelView.Monitor, ChannelView.Trigger,
-                           ChannelView.Synchronization):
+                           ChannelView.Synchronizer):
             ret = Qt.QComboBox(parent)
         elif taurus_role == ChannelView.PlotAxes:
             item = index.internalPointer()
@@ -781,7 +781,7 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
             editor.setChoices(selectables)
             current = Qt.from_qvariant(model.data(index), str)
             editor.setCurrentChoices(current)
-        elif taurus_role == ChannelView.Synchronization:
+        elif taurus_role == ChannelView.Synchronizer:
             # add the triggergates to the editor
             all_triggers = model.getAvailableTriggers()
             for full_name, tg_data in all_triggers.items():
@@ -867,7 +867,7 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
         elif taurus_role == ChannelView.PlotAxes:
             data = Qt.QVariant(editor.text())
             model.setData(index, data)
-        elif taurus_role == ChannelView.Synchronization:
+        elif taurus_role == ChannelView.Synchronizer:
             old_value = Qt.from_qvariant(model.data(index), str)
             new_value = str(editor.currentText())
             if new_value == old_value:

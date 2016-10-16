@@ -55,7 +55,7 @@ ChannelView = Enumeration("ChannelView",
     ("Channel", "Enabled", "Output", "PlotType", "PlotAxes", "Timer",
      "Monitor", "Trigger", "Conditioning", "Normalization", "NXPath",
      "Shape", "DataType",
-     "Unknown", "Synchronization"))
+     "Unknown", "Synchronizer"))
 
 PlotType = Enumeration("PlotType", ("No", "Spectrum", "Image"))
 
