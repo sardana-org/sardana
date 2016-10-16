@@ -80,6 +80,8 @@ class SoftwareTriggerGatePositionControllerTestCase(TriggerGateControllerTestCas
         # Configure and run the position generator
         configuration = self.configuration[0]
         repeat = configuration[SynchParam.Repeats]
+        # store repeats for the asserts against received triggers
+        self.repetitions = repeat
         initial = configuration[SynchParam.Initial][SynchDomain.Position]
         total = configuration[SynchParam.Total][SynchDomain.Position]
         final = initial + repeat * total
