@@ -53,7 +53,7 @@ PoolElementType = Enumeration("PoolElementType",
 
 ChannelView = Enumeration("ChannelView",
     ("Channel", "Enabled", "Output", "PlotType", "PlotAxes", "Timer",
-     "Monitor", "Trigger", "Conditioning", "Normalization", "NXPath",
+     "Monitor", "Synchronization", "Conditioning", "Normalization", "NXPath",
      "Shape", "DataType",
      "Unknown", "Synchronizer"))
 
