@@ -391,7 +391,7 @@ class Channel(PoolActionItem):
         """
         if not is_ordered_non_str_seq(values):
             values = list(values)
-        if values[0].idx is not None:
+        if len(values) and values[0].idx is None:
             for v in values:
                 v.idx = self.idx
                 self.idx += 1
