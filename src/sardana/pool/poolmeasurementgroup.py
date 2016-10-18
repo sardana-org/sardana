@@ -122,7 +122,15 @@ class PoolMeasurementGroup(PoolGroupElement):
         self._ctrl_to_acq_synch = {}
         kwargs['elem_type'] = ElementType.MeasurementGroup
         PoolGroupElement.__init__(self, **kwargs)
-        self.set_configuration(kwargs.get('configuration'))
+        configuration = kwargs.get("configuration")
+        self.set_configuration(configuration)
+        # if the configuration was never "really" written e.g. newly created MG
+        # just sets it now so the _channe_to_acq_synch and _ctrl_to_acq_synch
+        # are properly populated
+        # TODO: make it more elegant
+        if configuration is None:
+            configuration = self.get_configuration()
+            self.set_configuration(configuration, propagate=0)
 
     def _create_action_cache(self):
         acq_name = "%s.Acquisition" % self._name
