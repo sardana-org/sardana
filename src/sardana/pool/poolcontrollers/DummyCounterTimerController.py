@@ -117,7 +117,7 @@ class DummyCounterTimerController(CounterTimerController):
                 v = int(elapsed_time*100*ind)
                 if v >= self.monitor_count:
                     self._finish(elapsed_time)
-        elif channel.mode == AcqSynch.HardwareTrigger:
+        elif channel.mode in (AcqSynch.HardwareTrigger, AcqSynch.HardwareGate):
             if self.integ_time is not None:
                 # counting in time 
                 #if elapsed_time >= self.integ_time*channel.repetitions:
@@ -143,7 +143,7 @@ class DummyCounterTimerController(CounterTimerController):
                 if ind == self._monitor:
                     if not channel.is_counting:
                         channel.value = self.monitor_count
-        elif channel.mode == AcqSynch.HardwareTrigger:
+        elif channel.mode in (AcqSynch.HardwareTrigger, AcqSynch.HardwareGate):
             if self.integ_time is not None:
                 t = elapsed_time
                 n = int(t / self.integ_time)
@@ -193,7 +193,7 @@ class DummyCounterTimerController(CounterTimerController):
         self._log.debug('ReadOne(%d): entering...' % ind)
         channel = self.read_channels[ind]
         ret = None
-        if channel.mode == AcqSynch.HardwareTrigger:
+        if channel.mode in (AcqSynch.HardwareTrigger, AcqSynch.HardwareGate):
             values = copy.deepcopy(channel.buffer_values)
             ret = []
             for v in values:
