@@ -21,6 +21,7 @@
 ##
 ##############################################################################
 
+import os
 import time
 import timeit
 import numpy
@@ -96,14 +97,18 @@ class FuncGeneratorTestCase(TestCase):
         self.event.clear()
 
     def test_sleep(self):
+        delta = 0
+        if os.name == "nt":
+            delta = 0.02
         for i in [0.01, 0.13, 1.2]:
             stmt = "fg.sleep(%f)" % i
             setup = "from sardana.util.funcgenerator import FunctionGenerator;\
                      fg = FunctionGenerator()"
             period = timeit.timeit(stmt, setup , number=1)
             period_ok = i
-            msg = "sleep period: %f, expected: >=%f" % (period, period_ok)
-            self.assertGreaterEqual(period, period_ok, msg)
+            msg = "sleep period: %f, expected: %f +/- %f" % (period, period_ok,
+                                                            delta)
+            self.assertAlmostEqual(period, period_ok, delta=0.02, msg=msg)
 
     def test_run_time(self):
         self.func_generator.active_domain = SynchDomain.Time

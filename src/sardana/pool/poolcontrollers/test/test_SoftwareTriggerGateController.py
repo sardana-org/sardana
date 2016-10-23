@@ -23,6 +23,7 @@
 ##
 ##############################################################################
 
+import os
 from taurus.test import insertTest
 from taurus.external import unittest
 
@@ -203,7 +204,9 @@ class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
         # testing characteristics
         characteristics = self.tg_receiver.calc_characteristics()
         i = 1
-
+        delta = .002
+        if os.name == "nt":
+            delta = .01
         while i < (repetitions - 1):
             intervals = characteristics[i]
             measured_active_interval = intervals[0]
@@ -212,12 +215,12 @@ class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
                    'generated: %f' ) % (measured_active_interval,
                                         active_interval)
             self.assertAlmostEqual(measured_active_interval, active_interval,
-                                   delta=.002, msg=msg)
+                                   delta=delta, msg=msg)
             msg = ('Measured passive interval: %f does not correspond to ' +\
                    'generated: %f') % (measured_passive_interval,
                                        passive_interval)
             self.assertAlmostEqual(measured_passive_interval, passive_interval,
-                                   delta=.002, msg=msg)
+                                   delta=delta, msg=msg)
             i += 1
 
     def tearDown(self):
