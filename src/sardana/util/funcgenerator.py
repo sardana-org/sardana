@@ -155,6 +155,7 @@ class FunctionGenerator(EventGenerator):
                 self.fire_active()
                 self.wait_passive()
                 self.fire_passive()
+                self._id += 1
         finally:
             self._started = False
             self._running = False
@@ -192,21 +193,23 @@ class FunctionGenerator(EventGenerator):
                     self._position_event.wait(self.MAX_NAP_TIME)
 
     def fire_active(self):
+        # check if some events needs to be skipped
         i = 0
-        while i < len(self.active_events):
-            candidate = self.active_events[i]
+        while i < len(self.active_events) - 1:
+            candidate = self.active_events[i + 1]
             if self.active_domain_in_use is SynchDomain.Time:
                 candidate += self._start_time
                 now = time.time()
             elif self.active_domain_in_use is SynchDomain.Position:
                 now = self._position
-            if not self._condition(now, candidate):
+            if self._condition(now, candidate):
+                i += 1
+            else:
                 break
-            i += 1
         self._id += i
-        self.fire_event(TGEventType.Active, self._id - 1)
-        self.active_events = self.active_events[i:]
-        self.passive_events = self.passive_events[i - 1:]
+        self.fire_event(TGEventType.Active, self._id)
+        self.active_events = self.active_events[i + 1:]
+        self.passive_events = self.passive_events[i:]
 
     def wait_passive(self):
         if self.passive_domain_in_use == SynchDomain.Time:
@@ -225,7 +228,7 @@ class FunctionGenerator(EventGenerator):
                         break
 
     def fire_passive(self):
-        self.fire_event(TGEventType.Passive, self._id - 1)
+        self.fire_event(TGEventType.Passive, self._id)
         self.set_passive_events(self.passive_events[1:])
 
     def set_configuration(self, configuration):
