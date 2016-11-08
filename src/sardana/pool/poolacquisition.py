@@ -233,34 +233,36 @@ class PoolCTAcquisition(PoolAction):
 
         pool_ctrls_dict = dict(cfg['controllers'])
         pool_ctrls_dict.pop('__tango__', None)
+        # controllers to be started (only enabled) in the right order
         pool_ctrls = []
+        # controllers that will be read in the loop during the action
         self._pool_ctrl_dict_loop = _pool_ctrl_dict_loop = {}
-        for ctrl, v in pool_ctrls_dict.items():
-            if ctrl.is_timerable():
+        # channels that are acquired (only enabled)
+        self._channels = channels = {}
+        for ctrl, pool_ctrl_data in pool_ctrls_dict.items():
+            # skip not timerable controllers e.g. 0D
+            if not ctrl.is_timerable():
+                continue
+            ctrl_enabled = False
+            main_unit_data = pool_ctrl_data['units']['0']
+            elements = main_unit_data['channels']
+            for element, element_info in elements.items():
+                # skip disabled elements
+                if not element_info['enabled']:
+                    continue
+                channel = Channel(element, info=element_info)
+                channels[element] = channel
+                ctrl_enabled = True
+            if ctrl_enabled:
                 pool_ctrls.append(ctrl)
-            if ElementType.CTExpChannel in ctrl.get_ctrl_types():
-                _pool_ctrl_dict_loop[ctrl] = v
+                # only CT will be read in the loop, 1D and 2D not
+                if ElementType.CTExpChannel in ctrl.get_ctrl_types():
+                    _pool_ctrl_dict_loop[ctrl] = pool_ctrl_data
 
         # make sure the controller which has the master channel is the last to
         # be called
         pool_ctrls.remove(master_ctrl)
         pool_ctrls.append(master_ctrl)
-
-        # Determine which channels are active
-        self._channels = channels = {}
-        for pool_ctrl in pool_ctrls:
-            ctrl = pool_ctrl.ctrl
-            pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-            main_unit_data = pool_ctrl_data['units']['0']
-            elements = main_unit_data['channels']
-
-            for element, element_info in elements.items():
-                axis = element.axis
-                channel = Channel(element, info=element_info)
-                channels[element] = channel
-
-        #for channel in channels:
-        #    channel.prepare_to_acquire(self)
 
         with ActionContext(self):
 
@@ -274,7 +276,8 @@ class PoolCTAcquisition(PoolAction):
                 axis = master.axis
                 res = ctrl.PreLoadOne(axis, master_value)
                 if not res:
-                    raise Exception("%s.PreLoadOne(%d) returns False" % (pool_ctrl.name, axis,))
+                    raise Exception("%s.PreLoadOne(%d) returns False" %
+                                    (pool_ctrl.name, axis,))
                 ctrl.LoadOne(axis, master_value)
                 ctrl.LoadAll()
 
@@ -291,12 +294,11 @@ class PoolCTAcquisition(PoolAction):
                 for element in elements:
                     axis = element.axis
                     channel = channels[element]
-                    if channel.enabled:
-                        ret = ctrl.PreStartOne(axis, master_value)
-                        if not ret:
-                            raise Exception("%s.PreStartOne(%d) returns False" \
-                                            % (pool_ctrl.name, axis))
-                        ctrl.StartOne(axis, master_value)
+                    ret = ctrl.PreStartOne(axis, master_value)
+                    if not ret:
+                        raise Exception("%s.PreStartOne(%d) returns False" %
+                                        (pool_ctrl.name, axis))
+                    ctrl.StartOne(axis, master_value)
 
             # set the state of all elements to  and inform their listeners
             for channel in channels:
