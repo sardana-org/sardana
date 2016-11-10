@@ -288,7 +288,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                     if channel_data["enabled"]:
                         user_elem_ids[channel_data['index']] = id
             indexes = sorted(user_elem_ids.keys())
-            assert indexes == range(len(indexes))
+            #assert indexes == range(len(indexes))
             self.set_user_element_ids([ user_elem_ids[idx] for idx in indexes ])
 
         # checks
