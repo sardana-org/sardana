@@ -249,6 +249,7 @@ class PoolCTAcquisition(PoolAction):
             for element, element_info in elements.items():
                 # skip disabled elements
                 if not element_info['enabled']:
+                    elements.pop(element)
                     continue
                 channel = Channel(element, info=element_info)
                 channels[element] = channel
@@ -291,9 +292,10 @@ class PoolCTAcquisition(PoolAction):
                 pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
                 main_unit_data = pool_ctrl_data['units']['0']
                 elements = main_unit_data['channels']
-                for element in elements:
-                    axis = element.axis
-                    channel = channels[element]
+
+                for element in elements:               
+                    #channel = channels[element]
+                    axis = element.axis                        
                     ret = ctrl.PreStartOne(axis, master_value)
                     if not ret:
                         raise Exception("%s.PreStartOne(%d) returns False" %
