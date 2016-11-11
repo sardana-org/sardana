@@ -50,6 +50,7 @@ class BaseAccumulation(object):
     def clear(self):
         self.nb_points = 0
         self.value = None
+        self.timestamp = None
 
     def get_value_buffer(self):
         return self.buffer[0][:self.nb_points]
@@ -68,6 +69,7 @@ class BaseAccumulation(object):
 
     def update_value(self, value, timestamp):
         self.value = value
+        self.timestamp = timestamp
 
 
 LastAccumulation = BaseAccumulation
@@ -80,6 +82,7 @@ class SumAccumulation(BaseAccumulation):
         self.sum = 0.0
 
     def update_value(self, value, timestamp):
+        BaseAccumulation.update_value(self, value, timestamp)
         if not value is None:
             self.sum += value
             self.value = self.sum
@@ -163,6 +166,9 @@ class Value(SardanaAttribute):
             raise Exception("Value not available: no successful acquisition"
                             " done so far!")
         return value
+
+    def _get_timestamp(self):
+        return self.accumulation.timestamp
 
     def get_value_buffer(self):
         return self.accumulation.get_value_buffer()
