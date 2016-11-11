@@ -167,6 +167,15 @@ class Value(SardanaAttribute):
                             " done so far!")
         return value
 
+    def _in_error(self):
+        # for the moment let's assume that 0D is never in error
+        # this could be improved by searching the accumulation buffer
+        # in presence of readout errors
+        return False
+
+    def _has_value(self):
+        return self.accumulation.value is not None
+
     def _get_timestamp(self):
         return self.accumulation.timestamp
 
