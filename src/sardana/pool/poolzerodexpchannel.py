@@ -194,6 +194,10 @@ class Value(SardanaAttribute):
             evt_type = EventType(self.name, priority=propagate)
             self.fire_event(evt_type, self)
 
+    def update(self, cache=True, propagate=1):
+        # it is the Pool0DAcquisition action which is allowed to update
+        raise Exception("0D Value can not be updated from outside"
+                            " of acquisition")
 
 class Pool0DExpChannel(PoolBaseChannel):
 
