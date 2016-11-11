@@ -101,7 +101,7 @@ class Value(SardanaAttribute):
                     # because of a cold start
                     value_attr.update(propagate=0)
                 if value_attr.in_error():
-                    raise PoolException("Cannot get '%' value" % value_attr.obj.name,
+                    raise PoolException("Cannot get '%s' value" % value_attr.obj.name,
                                         exc_info=value_attr.exc_info)
                 value = value_attr.value
             ret.append(value)
@@ -115,7 +115,7 @@ class Value(SardanaAttribute):
             if not value_attr.has_value():
                 value_attr.update(propagate=0)
             if value_attr.in_error():
-                raise PoolException("Cannot get '%' value" % value_attr.obj.name,
+                raise PoolException("Cannot get '%s' value" % value_attr.obj.name,
                                     exc_info=value_attr.exc_info)
             ret.append(value_attr.value)
         return ret
