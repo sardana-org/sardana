@@ -287,8 +287,8 @@ class PoolMeasurementGroup(PoolGroupElement):
                     channel_data = self._build_channel_defaults(channel_data, element)
                     if channel_data["enabled"]:
                         user_elem_ids[channel_data['index']] = id
+            # sorted ids may not be consecutive (if a channel is disabled)
             indexes = sorted(user_elem_ids.keys())
-            #assert indexes == range(len(indexes))
             self.set_user_element_ids([ user_elem_ids[idx] for idx in indexes ])
 
         # checks

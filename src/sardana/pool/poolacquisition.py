@@ -293,9 +293,8 @@ class PoolCTAcquisition(PoolAction):
                 main_unit_data = pool_ctrl_data['units']['0']
                 elements = main_unit_data['channels']
 
-                for element in elements:               
-                    #channel = channels[element]
-                    axis = element.axis                        
+                for element in elements:
+                    axis = element.axis
                     ret = ctrl.PreStartOne(axis, master_value)
                     if not ret:
                         raise Exception("%s.PreStartOne(%d) returns False" %
