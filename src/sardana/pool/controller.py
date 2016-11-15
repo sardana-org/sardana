@@ -1027,6 +1027,10 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable):
 
     #: A :obj:`str` representing the controller gender
     gender = '1D controller'
+
+    def __init__(self, inst, props, *args, **kwargs):
+        Controller.__init__(self, inst, props, *args, **kwargs)
+        self._latency_time = 0
         
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
@@ -1056,6 +1060,10 @@ class TwoDController(Controller, Readable, Startable, Stopable, Loadable):
 
     #: A :obj:`str` representing the controller gender
     gender = '2D controller'
+
+    def __init__(self, inst, props, *args, **kwargs):
+        Controller.__init__(self, inst, props, *args, **kwargs)
+        self._latency_time = 0
 
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
