@@ -420,6 +420,10 @@ class PoolMeasurementGroup(PoolGroupElement):
                 except KeyError:
                     # backwards compatibility for configurations before SEP6
                     synchronization = c_data['trigger_type']
+                    msg = ("trigger_type configuration parameter is deprecated"
+                        " in favor of synchronization. Re-apply configuration"
+                        " in order to upgrade.")
+                    self.warning(msg)
                 ctrl_data['synchronization'] = synchronization
             ctrl_data['channels'] = channels = {}
             for ch_name, ch_data in c_data['channels'].items():

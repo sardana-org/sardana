@@ -489,7 +489,12 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
                 synchronization = unitdict[key]
             except KeyError:
                 # backwards compatibility for configurations before SEP6
-                synchronization = unitdict['trigger_type']
+                synchronization = unitdict.get('trigger_type', None)
+                if synchronization is not None:
+                    msg = ("trigger_type configuration parameter is deprecated"
+                           " in favor of synchronization. Re-apply"
+                           " configuration in order to upgrade.")
+                    self.warning(msg)
             return Qt.QVariant(AcqSynchType[synchronization])
         elif taurus_role in (ChannelView.Timer, ChannelView.Monitor):
             ch_name, ch_data = index.internalPointer().itemData()
