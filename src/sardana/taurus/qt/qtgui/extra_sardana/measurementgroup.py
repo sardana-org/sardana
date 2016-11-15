@@ -60,7 +60,7 @@ from sardana.taurus.core.tango.sardana.pool import getChannelConfigs
 #                - 'id' : the unit ID inside the controller
 #                - 'timer' : the timer channel name / timer channel id
 #                - 'monitor' : the monitor channel name / monitor channel id
-#                - 'trigger_type' : a value from AcqSynchType enum
+#                - 'synchronization' : a value from AcqSynchType enum
 #                - 'channels' where value is a dict<str, obj> with (at least) keys:
 #                    - 'index' : int indicating the position of the channel in the measurement group
 #                    - 'id' : the channel name ( channel id )
@@ -372,7 +372,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
     _availableTriggers = {}
     data_keys_map = {ChannelView.Timer:'timer',
                      ChannelView.Monitor:'monitor',
-                     ChannelView.Synchronization:'trigger_type',
+                     ChannelView.Synchronization:'synchronization',
                      ChannelView.Synchronizer: 'trigger_element'
                      }
 
@@ -485,7 +485,12 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
             ch_name, ch_data = index.internalPointer().itemData()
             unitdict = self.getPyData(ctrlname=ch_data['_controller_name'])
             key = self.data_keys_map[taurus_role]
-            return Qt.QVariant(AcqSynchType[unitdict.get(key, None)])
+            try:
+                synchronization = unitdict[key]
+            except KeyError:
+                # backwards compatibility for configurations before SEP6
+                synchronization = unitdict['trigger_type']
+            return Qt.QVariant(AcqSynchType[synchronization])
         elif taurus_role in (ChannelView.Timer, ChannelView.Monitor):
             ch_name, ch_data = index.internalPointer().itemData()
             ctrlname = ch_data['_controller_name']
@@ -584,7 +589,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         if not external and chinfo['type'] in ('CTExpChannel', 'OneDExpChannel', 'TwoDExpChannel'):
             ctrl['timer'] = chname
             ctrl['monitor'] = chname
-            ctrl['trigger_type'] = AcqSynchType.Trigger
+            ctrl['synchronization'] = AcqSynchType.Trigger
         channelsdict = ctrl['channels']
         if channelsdict.has_key(chname):
             self.error('Channel "%s" is already in the measurement group. It will not be added again' % chname)

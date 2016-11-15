@@ -113,13 +113,13 @@ class MeasSarTestTestCase(SarTestTestCase):
             channels = ctrl_data['channels']
             for chn in channels:
                 name = channels[chn]['name']
-                tg_elem, acqType = exp_dict[name]
+                tg_elem, synchronization = exp_dict[name]
                 tg_dev = PyTango.DeviceProxy(tg_elem)
                 tg_fullname = '%s:%s/%s' % (tg_dev.get_db_host().split('.')[0], 
                                             tg_dev.get_db_port(),
                                             tg_dev.name())
                 ctrl_data['trigger_element'] = tg_fullname
-                ctrl_data['trigger_type'] = acqType
+                ctrl_data['synchronization'] = synchronization
                 self.tg_names.append(tg_elem)
 
         # Write the built configuration

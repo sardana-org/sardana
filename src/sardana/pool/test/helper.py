@@ -174,7 +174,7 @@ def createMGUserConfiguration(pool, channels):
     '''Method to create MeasurementGroup configuration using strings.
 
 
-    :param channels: Each tuple: (expchan, associated_trigger, trigger_type)
+    :param channels: Each tuple: (expchan, associated_trigger, synchronization)
                     First element of the list of lists is the master
                     counter/timer.
                     First element of each list is the master counter/timer
@@ -208,7 +208,7 @@ def createMGUserConfiguration(pool, channels):
         ctrl_data = {}
         ctrl_data['monitor'] = master_channel_str
         ctrl_data['timer'] = master_channel_str
-        ctrl_data['trigger_type'] = channels[i][0][2]
+        ctrl_data['synchronization'] = channels[i][0][2]
         ctrl_data['trigger_element'] = channels[i][0][1]
         channels_d = {}
         for chan_idx in range(len(channels_in_ctrl)):
@@ -247,7 +247,7 @@ def createMGUserConfiguration(pool, channels):
     return (MG_configuration, channel_ids, channel_names)
 
 def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,
-                          ctrl_trigger_elements, ctrl_trigger_types):
+                          ctrl_trigger_elements, synchronizations):
     '''Method to create general MeasurementGroup (and CT) configuration. 
     Order of the sequences is important. For all sequences, the element of a 
     given position refers the same controller. 
@@ -264,8 +264,8 @@ def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,
     :type ctrl_channels_conf: seq<seq<dict>>
     :param trigger_elements: sequence of the sequences of the trigger elements
     :type trigger_elements: seq<seq<sardana.pool.PoolTriggerGate>>
-    :param trigger_types: sequence of the sequences of the trigger elements
-    :type trigger_types: seq<seq<str>>
+    :param synchronizations: sequence of the sequences of the synchronizations
+    :type synchronizations: seq<seq<str>>
     :return: a configuration dictionary
     :rtype: dict<>
     '''
@@ -279,14 +279,14 @@ def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,
     MG_configuration['monitor'] = ctrl_channels[master_ctrl_idx][master_idx]
     for ctrl, ctrl_data, channels, channels_conf, trigger_elements, \
             trigger_types in zip(ctrls, ctrls_conf, ctrl_channels, 
-            ctrl_channels_conf, ctrl_trigger_elements, ctrl_trigger_types):
+            ctrl_channels_conf, ctrl_trigger_elements, synchronizations):
         ctrl_data['channels'] = {}
         index = 0
-        for channel, channel_conf, trigger_element, trigger_type in \
+        for channel, channel_conf, trigger_element, synchronization in \
               zip(channels, channels_conf, trigger_elements, trigger_types):
             ctrl_data['channels'][channel] = channel_conf
-            # this way we are forcing the trigger_type of the last channel
-            ctrl_data['trigger_type'] = trigger_type
+            # this way we are forcing the synchronization of the last channel
+            ctrl_data['synchronization'] = synchronization
             ctrl_data['trigger_element'] = trigger_element
             # TODO: investigate why we need the index!
             # adding a dummy index

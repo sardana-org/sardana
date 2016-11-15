@@ -61,7 +61,7 @@ from sardana.taurus.core.tango.sardana import PlotType, Normalization
 #        - value: dict<str, dict> with (at least) keys:
 #                - 'timer' : the timer channel name / timer channel id
 #                - 'monitor' : the monitor channel name / monitor channel id
-#                - 'trigger_type' : 'Gate'/'Software'
+#                - 'synchronization' : 'Gate'/'Software'
 #                - 'channels' where value is a dict<str, obj> with (at least) keys:
 #                    - 'id' : the channel name ( channel id )
 #                    optional keys:
@@ -85,10 +85,10 @@ from sardana.taurus.core.tango.sardana import PlotType, Normalization
 
 # Example: 2 NI cards, where channel 1 of card 1 is wired to channel 1 of card 2
 # at configuration time we should set:
-# ni0ctrl.setCtrlPar(0, 'trigger_type', AcqSynchType.Software)
+# ni0ctrl.setCtrlPar(0, 'synchronization', AcqSynchType.Software)
 # ni0ctrl.setCtrlPar(0, 'timer', 1) # channel 1 is the timer
 # ni0ctrl.setCtrlPar(0, 'monitor', 4) # channel 4 is the monitor
-# ni1ctrl.setCtrlPar(0, 'trigger_type', AcqSynchType.ExternalTrigger)
+# ni1ctrl.setCtrlPar(0, 'synchronization', AcqSynchType.ExternalTrigger)
 # ni1ctrl.setCtrlPar(0, 'master', 0)
 
 # when we count for 1.5 seconds:
@@ -271,7 +271,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                         ctrl_data['monitor'] = elements[0]
                     # TODO: trigger_type and trigger_element names are not the best
                     # synchronization and synchronizer seems to be better choice
-                    ctrl_data['trigger_type'] = AcqSynchType.Trigger
+                    ctrl_data['synchronization'] = AcqSynchType.Trigger
                     try:
                         ctrl_data['trigger_element'] = self.pool.get_software_tg()
                     except Exception, e:
@@ -306,7 +306,7 @@ class PoolMeasurementGroup(PoolGroupElement):
             pool = self.pool
             for c, c_data in config['controllers'].items():
                 tg_element = c_data.get('trigger_element')
-                acq_synch_type = c_data.get('trigger_type')
+                acq_synch_type = c_data.get('synchronization')
                 # for backwards compatibility purposes
                 # protect measurementgroups without trigger_element defined
                 # TODO: otherwise obtain software synchronizer and use it
@@ -417,7 +417,12 @@ class PoolMeasurementGroup(PoolGroupElement):
                 else:
                     tg_element = pool.get_software_tg()
                 ctrl_data['trigger_element'] = tg_element
-                ctrl_data['trigger_type'] = c_data['trigger_type']
+                try:
+                    synchronization = c_data['synchronization']
+                except KeyError:
+                    # backwards compatibility for configurations before SEP6
+                    synchronization = c_data['trigger_type']
+                ctrl_data['synchronization'] = synchronization
             ctrl_data['channels'] = channels = {}
             for ch_name, ch_data in c_data['channels'].items():
                 if external:
@@ -456,8 +461,8 @@ class PoolMeasurementGroup(PoolGroupElement):
                     ctrl_data['timer'] = c_data['timer'].full_name
                 if c_data.has_key('monitor'):
                     ctrl_data['monitor'] = c_data['monitor'].full_name
-                if c_data.has_key('trigger_type'):
-                    ctrl_data['trigger_type'] = c_data['trigger_type']
+                if c_data.has_key('synchronization'):
+                    ctrl_data['synchronization'] = c_data['synchronization']
                 if c_data.has_key('trigger_element'):
                     # use trigger_element with string instead of objects
                     # otherwise JSON serialization errors are raised
