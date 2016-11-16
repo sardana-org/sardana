@@ -147,7 +147,7 @@ class AcquisitionTestCase(BasePoolTestCase):
         # get the current number of jobs
         jobs_before = get_thread_pool().qsize
 
-        ct_ctrl.set_ctrl_par('trigger_type', AcqSynch.HardwareTrigger)
+        ct_ctrl.set_ctrl_par('synchronization', AcqSynch.HardwareTrigger)
 
         hw_acq_args = ()
         hw_acq_kwargs = {
@@ -192,7 +192,7 @@ class AcquisitionTestCase(BasePoolTestCase):
         for channel in channels:
             self.ct_acq.add_element(channel)
 
-        ct_ctrl.set_ctrl_par('trigger_type', AcqSynch.SoftwareTrigger)
+        ct_ctrl.set_ctrl_par('synchronization', AcqSynch.SoftwareTrigger)
 
         ct_acq_args = ()
         ct_acq_kwargs = {
@@ -344,7 +344,7 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
             'repetitions': 1,
             'config': self.sw_acq_cfg
         }
-        ct_ctrl_1.set_ctrl_par('trigger_type', AcqSynch.HardwareTrigger)
+        ct_ctrl_1.set_ctrl_par('synchronization', AcqSynch.HardwareTrigger)
         hw_acq_args = ()
         hw_acq_kwargs = {
             'integ_time': integ_time,
