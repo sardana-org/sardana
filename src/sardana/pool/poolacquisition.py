@@ -45,7 +45,7 @@ from sardana.pool import SynchParam, SynchDomain, AcqSynch
 from sardana.pool.poolutil import is_software_tg
 from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
 from sardana.pool.pooltriggergate import TGEventType
-from sardana.pool.pooltggeneration import PoolTGGeneration
+from sardana.pool.poolsynchronization import PoolSynchronization
 
 #: enumeration representing possible motion states
 AcquisitionState = Enumeration("AcquisitionState", (\
@@ -193,7 +193,7 @@ class PoolAcquisition(PoolAction):
         self._sw_acq = PoolAcquisitionSoftware(main_element, name=swname,
                                                slaves=(self._0d_acq,))
         self._hw_acq = PoolAcquisitionHardware(main_element, name=hwname)
-        self._tg_gen = PoolTGGeneration(main_element, name=tgname)
+        self._tg_gen = PoolSynchronization(main_element, name=tgname)
 
 
     def set_sw_config(self, config):

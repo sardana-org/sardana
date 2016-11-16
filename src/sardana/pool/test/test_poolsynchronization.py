@@ -28,18 +28,18 @@ from taurus.external import unittest
 #TODO: import mock using taurus.external
 from mock import Mock, call
 
-from sardana.pool.pooltggeneration import PoolTGGeneration
+from sardana.pool.poolsynchronization import PoolSynchronization
 from sardana.sardanadefs import State
 from sardana.pool.test import (FakePool, createPoolController,
                                createPoolTriggerGate, dummyPoolTGCtrlConf01,
                                dummyTriggerGateConf01, 
-                               createPoolTGGenerationConfiguration)
+                               createPoolSynchronizationConfiguration)
 
 class PoolTriggerGateTestCase(unittest.TestCase):
-    """Unittest of PoolTGGeneration class"""
+    """Unittest of PoolSynchronization class"""
 
     def setUp(self):
-        """Create a Controller, TriggerGate and PoolTGGeneration objects from 
+        """Create a Controller, TriggerGate and PoolSynchronization objects from
         dummy configurations
         """
         unittest.TestCase.setUp(self)
@@ -50,7 +50,7 @@ class PoolTriggerGateTestCase(unittest.TestCase):
         dummy_tg_ctrl.add_element(self.dummy_tg)
         pool.add_element(dummy_tg_ctrl)
         pool.add_element(self.dummy_tg)
-        self.cfg = createPoolTGGenerationConfiguration((dummy_tg_ctrl,),
+        self.cfg = createPoolSynchronizationConfiguration((dummy_tg_ctrl,),
                                                        ((self.dummy_tg,),),)
         # Create mock and define its functions
         ctrl_methods = ['PreStartAll', 'StartAll', 'PreStartOne', 'StartOne',
@@ -60,7 +60,7 @@ class PoolTriggerGateTestCase(unittest.TestCase):
         self.mock_tg_ctrl.StateOne.return_value = (State.Moving, 'triggering')
 
         dummy_tg_ctrl.ctrl = self.mock_tg_ctrl
-        self.tgaction = PoolTGGeneration(self.dummy_tg)
+        self.tgaction = PoolSynchronization(self.dummy_tg)
         self.tgaction.add_element(self.dummy_tg)
 
     def stopGeneration(self):

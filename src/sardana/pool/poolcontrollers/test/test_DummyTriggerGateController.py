@@ -1,13 +1,13 @@
 from taurus.test.base import insertTest
 from taurus.external import unittest
 
-from sardana.pool.pooltggeneration import PoolTGGeneration
+from sardana.pool.poolsynchronization import PoolSynchronization
 from sardana.pool.pooldefs import SynchDomain, SynchParam
 
 from sardana.pool.test import (FakePool, createPoolController,
                                createPoolTriggerGate, dummyPoolTGCtrlConf01,
                                dummyTriggerGateConf01, 
-                               createPoolTGGenerationConfiguration)
+                               createPoolSynchronizationConfiguration)
 
 synchronization1 = [{SynchParam.Delay: {SynchDomain.Time: 0},
                      SynchParam.Active: {SynchDomain.Time: .03},
@@ -22,7 +22,7 @@ synchronization2 = [{SynchParam.Delay: {SynchDomain.Time: 0},
 @insertTest(helper_name='generation', synchronization=synchronization1)
 @insertTest(helper_name='generation', synchronization=synchronization2)
 class PoolDummyTriggerGateTestCase(unittest.TestCase):
-    """Parameterizable integration test of the PoolTGGeneration action and
+    """Parameterizable integration test of the PoolSynchronization action and
     the DummTriggerGateController.
 
     Using insertTest decorator, one can add tests of a particular trigger/gate
@@ -30,7 +30,7 @@ class PoolDummyTriggerGateTestCase(unittest.TestCase):
     """
 
     def setUp(self):
-        """Create a Controller, TriggerGate and PoolTGGeneration objects from 
+        """Create a Controller, TriggerGate and PoolSynchronization objects from
         dummy configurations
         """
         unittest.TestCase.setUp(self)
@@ -42,11 +42,11 @@ class PoolDummyTriggerGateTestCase(unittest.TestCase):
         # marrying the element with the controller
         dummy_tg_ctrl.add_element(self.dummy_tg)
 
-        self.cfg = createPoolTGGenerationConfiguration((dummy_tg_ctrl,),
-                                                       ((self.dummy_tg,),))
+        self.cfg = createPoolSynchronizationConfiguration((dummy_tg_ctrl,),
+                                                         ((self.dummy_tg,),))
 
         # marrying the element with the action
-        self.tg_action = PoolTGGeneration(self.dummy_tg)
+        self.tg_action = PoolSynchronization(self.dummy_tg)
         self.tg_action.add_element(self.dummy_tg)
 
     def generation(self, synchronization):

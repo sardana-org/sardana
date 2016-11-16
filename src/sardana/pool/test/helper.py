@@ -26,7 +26,7 @@
 __all__ = ['createPoolController', 'createPoolCounterTimer',
            'createPoolZeroDExpChannel', 'createPoolTriggerGate',
            'createPoolMotor', 'createPoolMeasurementGroup', 
-           'createPoolTGGenerationConfiguration',
+           'createPoolSynchronizationConfiguration',
            'createCTAcquisitionConfiguration', 'createMGConfiguration',
            'createElemConf', 'createCtrlConf', 'createConfbyCtrlKlass', 
            'createMGUserConfiguration']
@@ -112,10 +112,10 @@ def createPoolMeasurementGroup(pool, conf):
     kwargs['pool'] = pool
     return PoolMeasurementGroup(**kwargs)
 
-def createPoolTGGenerationConfiguration(ctrls, ctrl_channels):
-    '''Method to create TGGeneration configuration. Order of the sequences is 
-    important. For all sequences, the element of a given position refers 
-    the same controller. 
+def createPoolSynchronizationConfiguration(ctrls, ctrl_channels):
+    '''Method to create PoolSynchronization configuration. Order of the
+    sequences is important. For all sequences, the element of a given position
+    refers the same controller.
     
     :param ctrls: sequence of the controllers used by the action
     :type ctrls: seq<sardana.pool.PoolController>

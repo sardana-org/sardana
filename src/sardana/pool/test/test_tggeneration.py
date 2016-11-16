@@ -33,15 +33,15 @@ import threading
 from taurus.test import insertTest
 from taurus.external import unittest
 
-from sardana.pool.pooltggeneration import PoolTGGeneration
+from sardana.pool.poolsynchronization import PoolSynchronization
 from sardana.sardanadefs import State
 from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.pool.test import (FakePool, createCtrlConf, createElemConf,
                                createPoolController, createPoolTriggerGate,
-                               createPoolTGGenerationConfiguration)
+                               createPoolSynchronizationConfiguration)
 
 class TGGenerationTestCase(object):
-    """Base class for integration tests of PoolTGGeneration class and any
+    """Base class for integration tests of PoolSynchronization class and any
     PoolTriggerGateController. Test is parameterized using trigger parameters.
 
     .. seealso:: :meth:`taurus.test.base.insertTest`"""
@@ -58,10 +58,10 @@ class TGGenerationTestCase(object):
         self.tg_ctrl.add_element(self.tg_elem)
         self.pool.add_element(self.tg_ctrl)
         self.pool.add_element(self.tg_elem)
-        # create TGGeneration action and its configuration
-        self.tg_cfg = createPoolTGGenerationConfiguration((self.tg_ctrl,),
-                                                       ((self.tg_elem,),),)
-        self.tgaction = PoolTGGeneration(self.tg_elem)
+        # create Synchronization action and its configuration
+        self.tg_cfg = createPoolSynchronizationConfiguration((self.tg_ctrl,),
+                                                            ((self.tg_elem,),),)
+        self.tgaction = PoolSynchronization(self.tg_elem)
         self.tgaction.add_element(self.tg_elem)
 
     def setUp(self):

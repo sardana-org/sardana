@@ -32,14 +32,14 @@ from taurus.test import insertTest
 
 from sardana.pool import AcqSynch
 from sardana.pool.pooldefs import SynchDomain, SynchParam
-from sardana.pool.pooltggeneration import PoolTGGeneration
+from sardana.pool.poolsynchronization import PoolSynchronization
 from sardana.pool.pooltriggergate import TGEventType
 from sardana.pool.poolacquisition import (PoolAcquisitionHardware,
                                           PoolAcquisitionSoftware,
                                           PoolCTAcquisition)
 from sardana.sardanautils import is_ordered_non_str_seq
 from sardana.sardanathreadpool import get_thread_pool
-from sardana.pool.test import (createPoolTGGenerationConfiguration,
+from sardana.pool.test import (createPoolSynchronizationConfiguration,
                                createCTAcquisitionConfiguration,
                                BasePoolTestCase, FakeElement)
 
@@ -98,16 +98,16 @@ class AttributeListener(object):
 
 class AcquisitionTestCase(BasePoolTestCase):
     def setUp(self):
-        """Create a Controller, TriggerGate and PoolTGGeneration objects from
+        """Create a Controller, TriggerGate and PoolSynchronization objects from
         dummy configurations.
         """
         BasePoolTestCase.setUp(self)
         self.l = AttributeListener()
         self.channel_names = []
 
-    def createPoolTGGeneration(self, tg_list):
+    def createPoolSynchronization(self, tg_list):
         main_element = FakeElement(self.pool)
-        self.tggeneration = PoolTGGeneration(main_element)
+        self.tggeneration = PoolSynchronization(main_element)
         for tg in tg_list:
             self.tggeneration.add_element(tg)
         self.tggeneration.add_listener(self)
@@ -122,10 +122,10 @@ class AcquisitionTestCase(BasePoolTestCase):
         tg = self.tgs[self.tg_elem_name]
         tg_ctrl = tg.get_controller()
         # crating configuration for TGGeneration
-        tg_cfg = createPoolTGGenerationConfiguration((tg_ctrl,),
+        tg_cfg = createPoolSynchronizationConfiguration((tg_ctrl,),
                                                      ((tg,),))
-        # creating TGGeneration action
-        self.createPoolTGGeneration([tg])
+        # creating PoolSynchronization action
+        self.createPoolSynchronization([tg])
 
         channels = []
         for name in self.channel_names:
@@ -259,14 +259,14 @@ class AcquisitionTestCase(BasePoolTestCase):
             active_interval=0.001, passive_interval=0.1, repetitions=10,
             integ_time=0.01)
 class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
-    """Integration test of PoolTGGeneration, PoolAcquisitionHardware and
+    """Integration test of PoolSynchronization, PoolAcquisitionHardware and
     PoolAcquisitionSoftware actions. This test plays the role of the
     PoolAcquisition macro action (it aggregates the sub-actions and assign the
     elements to corresponding sub-actions) and the PoolMeasurementGroup (it
     configures the elements and controllers).
     """
     def setUp(self):
-        """Create a Controller, TriggerGate and PoolTGGeneration objects from
+        """Create a Controller, TriggerGate and PoolSynchronization objects from
         dummy configurations.
         """
         unittest.TestCase.setUp(self)
@@ -306,10 +306,10 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         self.channel_names.append('_test_ct_1_1')
         self.channel_names.append('_test_ct_2_1')
         # crating configuration for TGGeneration
-        tg_cfg = createPoolTGGenerationConfiguration((tg_ctrl_1, tg_ctrl_2),
+        tg_cfg = createPoolSynchronizationConfiguration((tg_ctrl_1, tg_ctrl_2),
                                                      ((tg_1_1,), (tg_2_1,)))
         # creating TGGeneration action
-        self.createPoolTGGeneration([tg_1_1, tg_2_1])
+        self.createPoolSynchronization([tg_1_1, tg_2_1])
         # add_listeners
         self.addListeners([ct_1_1, ct_2_1])
         # creating acquisition configurations

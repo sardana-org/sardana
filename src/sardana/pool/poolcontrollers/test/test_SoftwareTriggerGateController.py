@@ -27,13 +27,13 @@ import os
 from taurus.test import insertTest
 from taurus.external import unittest
 
-from sardana.pool.pooltggeneration import PoolTGGeneration
+from sardana.pool.poolsynchronization import PoolSynchronization
 from sardana.pool.pooldefs import SynchDomain, SynchParam
 
 from sardana.pool.test import (FakePool, createPoolController,
                                createPoolTriggerGate, softwarePoolTGCtrlConf01,
                                dummyTriggerGateConf01, 
-                               createPoolTGGenerationConfiguration)
+                               createPoolSynchronizationConfiguration)
 
 from sardana.pool.poolcontrollers.test import (TriggerGateControllerTestCase,
                                                PositionGenerator,
@@ -120,7 +120,7 @@ class SoftwareTriggerGatePositionControllerTestCase(TriggerGateControllerTestCas
 @insertTest(helper_name='generation', synchronization=synchronization2,
             active_domain=SynchDomain.Time)
 class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
-    """Parameterizable integration test of the PoolTGGeneration action and
+    """Parameterizable integration test of the PoolSynchronization action and
     the SoftwareTriggerGateController.
 
     Using insertTest decorator, one can add tests of a particular trigger/gate
@@ -128,7 +128,7 @@ class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
     """
 
     def setUp(self):
-        """Create a Controller, TriggerGate and PoolTGGeneration objects from
+        """Create a Controller, TriggerGate and PoolSynchronization objects from
         dummy configurations
         """
         unittest.TestCase.setUp(self)
@@ -142,11 +142,11 @@ class PoolSoftwareTriggerGateTestCase(unittest.TestCase):
 
         # TODO: at the moment of writing this test, the configuration of
         # TGGenerationAction s
-        self.cfg = createPoolTGGenerationConfiguration((self.sw_tg_ctrl,),
+        self.cfg = createPoolSynchronizationConfiguration((self.sw_tg_ctrl,),
                                                        ((self.sw_tg,),))
 
         # marrying the element with the action
-        self.tg_action = PoolTGGeneration(self.sw_tg)
+        self.tg_action = PoolSynchronization(self.sw_tg)
         self.tg_action.add_element(self.sw_tg)
 
         # creating a dummy trigger gate receiver, it will serve to determine if

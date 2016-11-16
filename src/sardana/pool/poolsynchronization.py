@@ -27,7 +27,7 @@
 """This module is part of the Python Pool libray. It defines the class for the
 trigger/gate generation"""
 
-__all__ = ["PoolTGGeneration", "TGChannel"]
+__all__ = ["PoolSynchronization", "TGChannel"]
 
 import time
 from functools import partial
@@ -50,7 +50,7 @@ class TGChannel(PoolActionItem):
         return getattr(self.element, name)
 
 
-class PoolTGGeneration(PoolAction):
+class PoolSynchronization(PoolAction):
     '''Action class responsible for trigger/gate generation
     '''
     def __init__(self, main_element, name="TGAction"):

@@ -36,7 +36,7 @@ from sardana import ElementType
 
 from sardana.pool.poolelement import PoolElement
 from sardana.sardanaattribute import SardanaAttribute
-from sardana.pool.pooltggeneration import PoolTGGeneration
+from sardana.pool.poolsynchronization import PoolSynchronization
 
 TGEventType = Enumeration(
 'TGEventType', (
@@ -55,7 +55,7 @@ class PoolTriggerGate(PoolElement):
         kwargs['elem_type'] = ElementType.TriggerGate
         PoolElement.__init__(self, **kwargs)
         tggen_name = "%s.TGGeneration" % self._name
-        self.set_action_cache(PoolTGGeneration(self, name=tggen_name))
+        self.set_action_cache(PoolSynchronization(self, name=tggen_name))
         self._index = Index(self)
 
     # --------------------------------------------------------------------------

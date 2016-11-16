@@ -25,7 +25,7 @@
 
 from taurus.external import unittest
 from taurus.test import insertTest
-from sardana.pool.pooltggeneration import PoolTGGeneration
+from sardana.pool.poolsynchronization import PoolSynchronization
 from sardana.pool.test import AcquisitionTestCase
 import logging
 
@@ -38,7 +38,7 @@ class Ni660XTriggerGateCTStepAcqTestCase(AcquisitionTestCase, unittest.TestCase)
     chn_elem_name1 = '_test_ct_1_1'
 
     def setUp(self):
-        """#Create a Controller, TriggerGate and PoolTGGeneration objects from 
+        """#Create a Controller, TriggerGate and PoolSynchronization objects from
         #Ni660XTriggerGateController and Ni660XPositionCTCtrl configurations.
         """
         unittest.TestCase.setUp(self)
