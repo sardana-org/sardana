@@ -58,7 +58,7 @@ class DummyCounterTimerController(CounterTimerController):
 
     def __init__(self, inst, props, *args, **kwargs):
         CounterTimerController.__init__(self, inst, props, *args, **kwargs)
-        self._trigger_type = AcqSynch.SoftwareTrigger
+        self._synchronization = AcqSynch.SoftwareTrigger
         self._latency_time = 0
         self._read_when_acq = True
         self.channels = self.MaxDevice*[None,]
@@ -245,16 +245,16 @@ class DummyCounterTimerController(CounterTimerController):
             self._finish(elapsed_time, ind=ind)
 
     def GetCtrlPar(self, par):
-        if par == 'trigger_type':
-            return self._trigger_type
+        if par == 'synchronization':
+            return self._synchronization
         elif par == 'latency_time':
             return self._latency_time
         elif par == 'read_when_acq':
             return self._read_when_acq
 
     def SetCtrlPar(self, par, value):
-        if par == 'trigger_type':
-            self._trigger_type = value
+        if par == 'synchronization':
+            self._synchronization = value
             for channel in self.channels:
                 if channel:
                     channel.mode = value
