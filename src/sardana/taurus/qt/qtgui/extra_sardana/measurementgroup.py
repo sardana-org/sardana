@@ -373,7 +373,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
     data_keys_map = {ChannelView.Timer:'timer',
                      ChannelView.Monitor:'monitor',
                      ChannelView.Synchronization:'synchronization',
-                     ChannelView.Synchronizer: 'trigger_element'
+                     ChannelView.Synchronizer: 'synchronizer'
                      }
 
     def __init__(self, parent=None, data=None):

@@ -209,7 +209,7 @@ def createMGUserConfiguration(pool, channels):
         ctrl_data['monitor'] = master_channel_str
         ctrl_data['timer'] = master_channel_str
         ctrl_data['synchronization'] = channels[i][0][2]
-        ctrl_data['trigger_element'] = channels[i][0][1]
+        ctrl_data['synchronizer'] = channels[i][0][1]
         channels_d = {}
         for chan_idx in range(len(channels_in_ctrl)):
             channel_name_str = channels_in_ctrl[chan_idx][0]
@@ -270,7 +270,7 @@ def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,
     :rtype: dict<>
     '''
 
-    _tg_elements = []
+    synchronizers = []
     master_ctrl_idx = 0
     master_idx = 0
     MG_configuration = {}
@@ -282,18 +282,18 @@ def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,
             ctrl_channels_conf, ctrl_trigger_elements, synchronizations):
         ctrl_data['channels'] = {}
         index = 0
-        for channel, channel_conf, trigger_element, synchronization in \
+        for channel, channel_conf, synchronizer, synchronization in \
               zip(channels, channels_conf, trigger_elements, trigger_types):
             ctrl_data['channels'][channel] = channel_conf
             # this way we are forcing the synchronization of the last channel
             ctrl_data['synchronization'] = synchronization
-            ctrl_data['trigger_element'] = trigger_element
+            ctrl_data['synchronizer'] = synchronizer
             # TODO: investigate why we need the index!
             # adding a dummy index
             ctrl_data['channels'][channel]['index'] = index
-            if trigger_element not in _tg_elements:
-                _tg_elements.append(trigger_element)
-            index += 1           
+            if synchronizer not in synchronizers:
+                synchronizers.append(synchronizer)
+            index += 1
 
         ctrl_data['timer'] = channels[master_idx]
         ctrl_data['monitor'] = channels[master_idx]

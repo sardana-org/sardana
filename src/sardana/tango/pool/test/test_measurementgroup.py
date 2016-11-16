@@ -91,9 +91,9 @@ class MeasSarTestTestCase(SarTestTestCase):
         exp_dict = {}
         for ctrl in config:
             for elem_tuple in ctrl:
-                exp_chn, tg_elem, AcqTGType = elem_tuple
+                exp_chn, synchronizer, synchronization = elem_tuple
                 self.expchan_names.append(exp_chn)
-                exp_dict[exp_chn] = (tg_elem, AcqTGType )
+                exp_dict[exp_chn] = (synchronizer, synchronization)
 
         self.pool.CreateMeasurementGroup([self.mg_name] + self.expchan_names)
 
@@ -113,14 +113,14 @@ class MeasSarTestTestCase(SarTestTestCase):
             channels = ctrl_data['channels']
             for chn in channels:
                 name = channels[chn]['name']
-                tg_elem, synchronization = exp_dict[name]
-                tg_dev = PyTango.DeviceProxy(tg_elem)
-                tg_fullname = '%s:%s/%s' % (tg_dev.get_db_host().split('.')[0], 
-                                            tg_dev.get_db_port(),
-                                            tg_dev.name())
-                ctrl_data['trigger_element'] = tg_fullname
+                synchronizer, synchronization = exp_dict[name]
+                synchronizer_dev = PyTango.DeviceProxy(synchronizer)
+                synchronizer_fullname = '%s:%s/%s' % (synchronizer_dev.get_db_host().split('.')[0], 
+                                            synchronizer_dev.get_db_port(),
+                                            synchronizer_dev.name())
+                ctrl_data['synchronizer'] = synchronizer_fullname
                 ctrl_data['synchronization'] = synchronization
-                self.tg_names.append(tg_elem)
+                self.tg_names.append(synchronizer)
 
         # Write the built configuration
         self.meas.write_attribute('configuration', json.dumps(cfg))

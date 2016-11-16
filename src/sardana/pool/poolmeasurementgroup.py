@@ -269,13 +269,12 @@ class PoolMeasurementGroup(PoolGroupElement):
                         ctrl_data['monitor'] = g_monitor
                     else:
                         ctrl_data['monitor'] = elements[0]
-                    # TODO: trigger_type and trigger_element names are not the best
-                    # synchronization and synchronizer seems to be better choice
                     ctrl_data['synchronization'] = AcqSynchType.Trigger
                     try:
-                        ctrl_data['trigger_element'] = self.pool.get_software_tg()
-                    except Exception, e:
-                        msg = "It was not able to assign software synchronizer"
+                        ctrl_data['synchronizer'] = self.pool.get_software_tg()
+                    except Exception:
+                        msg = ("It was not possible to assign software"
+                               "synchronizer")
                         self.debug(msg, exc_info=True)
                     self._ctrl_to_acq_synch[ctrl] = AcqSynch.SoftwareTrigger
                     self._channel_to_acq_synch[element] = AcqSynch.SoftwareTrigger
@@ -305,14 +304,14 @@ class PoolMeasurementGroup(PoolGroupElement):
             tg_elem_ids = []
             pool = self.pool
             for c, c_data in config['controllers'].items():
-                tg_element = c_data.get('trigger_element')
+                synchronizer = c_data.get('synchronizer')
                 acq_synch_type = c_data.get('synchronization')
                 # for backwards compatibility purposes
-                # protect measurementgroups without trigger_element defined
+                # protect measurement groups without synchronizer defined
                 # TODO: otherwise obtain software synchronizer and use it
-                if tg_element:
-                    tg_elem_ids.append(tg_element.id)
-                    software = is_software_tg(tg_element)
+                if synchronizer:
+                    tg_elem_ids.append(synchronizer.id)
+                    software = is_software_tg(synchronizer)
                 else:
                     software = True
                 acq_synch = None
@@ -407,14 +406,14 @@ class PoolMeasurementGroup(PoolGroupElement):
                 monitor_name = c_data['monitor']
                 monitor = pool.get_element_by_full_name(monitor_name)
                 ctrl_data['monitor'] = monitor
-                tg_name = c_data.get('trigger_element')
+                synchronizer_name = c_data.get('synchronizer')
                 # for backwards compatibility purposes
-                # protect measurementgroups without trigger_element defined
-                if tg_name:
-                    tg_element = pool.get_element_by_full_name(tg_name)
+                # protect measurementgroups without synchronizer defined
+                if synchronizer_name:
+                    synchronizer = pool.get_element_by_full_name(synchronizer_name)
                 else:
-                    tg_element = pool.get_software_tg()
-                ctrl_data['trigger_element'] = tg_element
+                    synchronizer = pool.get_software_tg()
+                ctrl_data['synchronizer'] = synchronizer
                 try:
                     synchronization = c_data['synchronization']
                 except KeyError:
@@ -465,11 +464,11 @@ class PoolMeasurementGroup(PoolGroupElement):
                     ctrl_data['monitor'] = c_data['monitor'].full_name
                 if c_data.has_key('synchronization'):
                     ctrl_data['synchronization'] = c_data['synchronization']
-                if c_data.has_key('trigger_element'):
-                    # use trigger_element with string instead of objects
+                if c_data.has_key('synchronizer'):
+                    # use synchronizer with string instead of objects
                     # otherwise JSON serialization errors are raised
-                    tg_full_name = c_data['trigger_element'].full_name
-                    ctrl_data['trigger_element'] = tg_full_name
+                    tg_full_name = c_data['synchronizer'].full_name
+                    ctrl_data['synchronizer'] = tg_full_name
             ctrl_data['channels'] = channels = {}
             for ch, ch_data in c_data['channels'].items():
                 channels[ch.full_name] = dict(ch_data)

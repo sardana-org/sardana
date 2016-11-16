@@ -89,7 +89,7 @@ def split_MGConfigurations(mg_cfg_in):
             pass
         # splitting rest of the channels based on the assigned trigger
         else:
-            tg_element = ctrl_info.get('trigger_element')
+            tg_element = ctrl_info.get('synchronizer')
             if tg_element is None or is_software_tg(tg_element):
                 ctrls_sw_out[ctrl] = ctrl_info
             else:
@@ -116,7 +116,7 @@ def getTGConfiguration(MGcfg):
     _tg_element_list = []
 
     for ctrl in MGcfg["controllers"]:
-        tg_element = MGcfg["controllers"][ctrl].get('trigger_element', None)
+        tg_element = MGcfg["controllers"][ctrl].get('synchronizer', None)
         if (tg_element != None and tg_element not in _tg_element_list):
             _tg_element_list.append(tg_element)
 
