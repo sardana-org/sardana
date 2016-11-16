@@ -85,10 +85,11 @@ from sardana.taurus.core.tango.sardana import PlotType, Normalization
 
 # Example: 2 NI cards, where channel 1 of card 1 is wired to channel 1 of card 2
 # at configuration time we should set:
-# ni0ctrl.setCtrlPar(0, 'synchronization', AcqSynchType.Software)
+
+# ni0ctrl.setCtrlPar(0, 'synchronization', AcqSynch.SoftwareTrigger)
 # ni0ctrl.setCtrlPar(0, 'timer', 1) # channel 1 is the timer
 # ni0ctrl.setCtrlPar(0, 'monitor', 4) # channel 4 is the monitor
-# ni1ctrl.setCtrlPar(0, 'synchronization', AcqSynchType.ExternalTrigger)
+# ni1ctrl.setCtrlPar(0, 'synchronization', AcqSynch.HardwareTrigger)
 # ni1ctrl.setCtrlPar(0, 'master', 0)
 
 # when we count for 1.5 seconds:
@@ -498,9 +499,9 @@ class PoolMeasurementGroup(PoolGroupElement):
                 #    ctrl.set_ctrl_par('monitor', g_monitor.axis)
                 ctrl.set_ctrl_par('timer', ctrl_data['timer'].axis)
                 ctrl.set_ctrl_par('monitor', ctrl_data['monitor'].axis)
-                trigger_type = self._ctrl_to_acq_synch.get(ctrl)
-                self.debug('load_configuration: setting trigger_type: %s to ctrl: %s' % (trigger_type, ctrl))
-                ctrl.set_ctrl_par('trigger_type', trigger_type)
+                synchronization = self._ctrl_to_acq_synch.get(ctrl)
+                self.debug('load_configuration: setting trigger_type: %s to ctrl: %s' % (synchronization, ctrl))
+                ctrl.set_ctrl_par('synchronization', synchronization)
 
         self._config_dirty = False
 

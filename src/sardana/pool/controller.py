@@ -42,7 +42,7 @@ from taurus.core.util.log import Logger
 
 from sardana import DataAccess
 from sardana.sardanavalue import SardanaValue
-from sardana.pool.pooldefs import ControllerAPI, AcqTriggerType, AcqMode
+from sardana.pool.pooldefs import ControllerAPI, AcqSynch, AcqMode
 
 
 #: Constant data type (to be used as a *key* in the definition of
@@ -886,9 +886,17 @@ class CounterTimerController(Controller, Readable, Startable, Stopable, Loadable
         self._timer = None
         self._monitor = None
         self._master = None
-        self._trigger_type = AcqTriggerType.Unknown
         self._read_when_acq = True
         self._latency_time = 0
+        self._synchronization = AcqSynch.SoftwareTrigger
+
+    def get_trigger_type(self):
+        msg = "trigger_type is deprecated since SEP6. " +\
+              "Use synchronization instead"
+        self._log.warning(msg)
+        return self._synchronization
+
+    _trigger_type = property(get_trigger_type)
 
     def PreStartAllCT(self):
         """**Counter/Timer Controller API**. Override if necessary.
