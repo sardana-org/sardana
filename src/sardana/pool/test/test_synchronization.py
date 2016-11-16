@@ -40,7 +40,7 @@ from sardana.pool.test import (FakePool, createCtrlConf, createElemConf,
                                createPoolController, createPoolTriggerGate,
                                createPoolSynchronizationConfiguration)
 
-class TGGenerationTestCase(object):
+class SynchronizationTestCase(object):
     """Base class for integration tests of PoolSynchronization class and any
     PoolTriggerGateController. Test is parameterized using trigger parameters.
 
@@ -191,13 +191,14 @@ synchronization2 = [{SynchParam.Delay: {SynchDomain.Time: 0},
             synchronization = synchronization2,
             abort_time=0.5
             )
-class DummyTGGenerationTestCase(TGGenerationTestCase, unittest.TestCase):
-    """Integration TestCase of TGGeneration with DummyTriggerGateController"""
+class DummySynchronizationTestCase(SynchronizationTestCase, unittest.TestCase):
+    """Integration TestCase of Synchronization with \
+       DummyTriggerGateController"""
 
     def setUp(self):
         unittest.TestCase.setUp(self)
-        TGGenerationTestCase.setUp(self)
+        SynchronizationTestCase.setUp(self)
 
     def tearDown(self):
-        TGGenerationTestCase.tearDown(self)
+        SynchronizationTestCase.tearDown(self)
         unittest.TestCase.tearDown(self)
