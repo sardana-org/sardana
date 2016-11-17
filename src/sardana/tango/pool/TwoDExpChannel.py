@@ -164,7 +164,7 @@ class TwoDExpChannel(PoolElementDevice):
 
     def read_Value(self, attr):
         twod = self.twod
-        use_cache = twod.is_in_operation() and not self.Force_HW_Read
+        use_cache = True #twod.is_in_operation() and not self.Force_HW_Read
         value = twod.get_value(cache=use_cache, propagate=0)
         if value.error:
             Except.throw_python_exception(*value.exc_info)

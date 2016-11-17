@@ -163,7 +163,7 @@ class OneDExpChannel(PoolElementDevice):
 
     def read_Value(self, attr):
         oned = self.oned
-        use_cache = oned.is_in_operation() and not self.Force_HW_Read
+        use_cache = True #oned.is_in_operation() and not self.Force_HW_Read
         value = oned.get_value(cache=use_cache, propagate=0)
         if value.error:
             Except.throw_python_exception(*value.exc_info)
