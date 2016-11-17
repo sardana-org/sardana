@@ -24,7 +24,7 @@
 import time
 import numpy
 
-from sardana import State
+from sardana import State, SardanaValue
 from sardana.pool.controller import TwoDController, MaxDimSize
 
 def gauss(x, mean, ymax, fwhm, yoffset=0):
@@ -194,7 +194,8 @@ class DummyTwoDController(TwoDController):
     
     def ReadOne(self, axis):
         self._log.debug("ReadOne(%s)", axis)
-        return self.read_channels[axis].value
+        v = SardanaValue(self.read_channels[axis].value, time.time())
+        return v
     
     def PreStartAll(self):
         self.counting_channels = {}
