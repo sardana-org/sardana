@@ -164,6 +164,10 @@ class TwoDExpChannel(PoolElementDevice):
 
     def read_Value(self, attr):
         twod = self.twod
+        # TODO: decide if we force the controller developers to store the
+        # last acquired value in the controllers or we always will use
+        # cache. This is due to the fact that the clients (MS) read the value
+        # after the acquisition had finished.
         use_cache = True #twod.is_in_operation() and not self.Force_HW_Read
         value = twod.get_value(cache=use_cache, propagate=0)
         if value.error:
