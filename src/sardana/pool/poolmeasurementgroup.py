@@ -463,13 +463,10 @@ class PoolMeasurementGroup(PoolGroupElement):
                     ctrl_data['timer'] = c_data['timer'].full_name
                 if c_data.has_key('monitor'):
                     ctrl_data['monitor'] = c_data['monitor'].full_name
+                if c_data.has_key('synchronizer'):
+                    ctrl_data['synchronizer'] = c_data['synchronizer'].full_name
                 if c_data.has_key('synchronization'):
                     ctrl_data['synchronization'] = c_data['synchronization']
-                if c_data.has_key('synchronizer'):
-                    # use synchronizer with string instead of objects
-                    # otherwise JSON serialization errors are raised
-                    tg_full_name = c_data['synchronizer'].full_name
-                    ctrl_data['synchronizer'] = tg_full_name
             ctrl_data['channels'] = channels = {}
             for ch, ch_data in c_data['channels'].items():
                 channels[ch.full_name] = dict(ch_data)
