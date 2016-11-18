@@ -203,6 +203,8 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
 
     def on_element_clicked(self, item, item_column):
         item_data = item.itemData()
+        if isinstance(item_data, str):
+            return
         interfaces = item_data.interfaces
         if 'MacroCode' in interfaces:
             self.open_macros([item_data])
