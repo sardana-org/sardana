@@ -185,7 +185,7 @@ class PoolAcquisition(PoolAction):
         zerodname = name + ".0DAcquisition"
         hwname = name + ".HardwareAcquisition"
         swname = name + ".SoftwareAcquisition"
-        tgname = name + ".TGGeneration"
+        synchname = name + ".Synchronization"
 
         self._sw_acq_config = None
         self._0d_config = None
@@ -193,7 +193,7 @@ class PoolAcquisition(PoolAction):
         self._sw_acq = PoolAcquisitionSoftware(main_element, name=swname,
                                                slaves=(self._0d_acq,))
         self._hw_acq = PoolAcquisitionHardware(main_element, name=hwname)
-        self._tg_gen = PoolSynchronization(main_element, name=tgname)
+        self._synch = PoolSynchronization(main_element, name=synchname)
 
 
     def set_sw_config(self, config):
@@ -243,7 +243,7 @@ class PoolAcquisition(PoolAction):
         return self._0d_acq.is_running() or\
                self._sw_acq.is_running() or\
                self._hw_acq.is_running() or\
-               self._tg_gen.is_running()
+               self._synch.is_running()
 
     def run(self, *args, **kwargs):
         config = kwargs['config']
@@ -263,7 +263,7 @@ class PoolAcquisition(PoolAction):
             cont_acq_kwargs['repetitions'] = repetitions
             self._hw_acq.run(*args, **cont_acq_kwargs)
         if len(sw_acq_cfg['controllers']) or len(zerod_acq_cfg['controllers']):
-            self._tg_gen.add_listener(self)
+            self._synch.add_listener(self)
             if len(sw_acq_cfg['controllers']):
                 sw_acq_kwargs = dict(kwargs)
                 sw_acq_kwargs['config'] = sw_acq_cfg
@@ -276,7 +276,7 @@ class PoolAcquisition(PoolAction):
                 self.set_0d_config(zerod_acq_kwargs)
         tg_kwargs = dict(kwargs)
         tg_kwargs['config'] = tg_cfg
-        self._tg_gen.run(*args, **tg_kwargs)
+        self._synch.run(*args, **tg_kwargs)
 
     def _get_action_for_element(self, element):
         elem_type = element.get_type()
@@ -296,7 +296,7 @@ class PoolAcquisition(PoolAction):
         elif elem_type == ElementType.ZeroDExpChannel:
             return self._0d_acq
         elif elem_type == ElementType.TriggerGate:
-            return self._tg_gen
+            return self._synch
         else:
             raise RuntimeError("Could not determine action for element %s" %
                                element)
@@ -333,7 +333,7 @@ class PoolAcquisition(PoolAction):
         :return: a sequence of all elements involved in this action.
         :rtype: seq<sardana.pool.poolelement.PoolElement>"""
         return (self._hw_acq.get_elements() + self._hw_acq.get_elements() +
-               self._0d_acq.get_elements() + self._tg_gen.get_elements())
+               self._0d_acq.get_elements() + self._synch.get_elements())
 
     def get_pool_controller_list(self):
         """Returns a list of all controller elements involved in this action.
