@@ -13,7 +13,7 @@ Proposals list
   [SEP0][]    | ACCEPTED     | Introducing Sardana Enhancement Proposal
   [SEP1][]    | ACCEPTED     | Reorganization of code repos
   [SEP2][]    | DRAFT     | Lima integration
-  [SEP3][]    | REJECTED     | Adapt to TEP3 (Tango-independent taurus.core)
+  [SEP3][]    | REJECTED (handled in [TEP3][] and [TEP14][] | Adapt to [TEP3][] (Tango-independent taurus.core)
   [SEP4][]    | ACCEPTED     | HKL integration
   [SEP5][]    | ACCEPTED     | Implementation of tests infrastructure
   [SEP6][]    | DRAFT     | Continuous Scan Implementation
@@ -47,4 +47,9 @@ Proposals list
 [SEP14]: sep/SEP14.md
 [SEP15]: sep/SEP15.md
 
+
+
+
+[TEP3]: http://www.taurus-scada.org/tep/?TEP3.md
 [TEP13]: http://www.taurus-scada.org/tep/?TEP13.md
+[TEP14]: http://www.taurus-scada.org/tep/?TEP14.md
