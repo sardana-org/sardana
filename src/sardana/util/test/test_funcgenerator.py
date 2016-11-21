@@ -29,10 +29,10 @@ from threading import Event, Timer
 
 from taurus.external.unittest import TestCase
 from taurus.core.util import ThreadPool
-from sardana.util.funcgenerator import FunctionGenerator
+
+from sardana.util.funcgenerator import FunctionGenerator, TGEventType
 from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.sardanaevent import EventGenerator, EventType, EventReceiver
-from sardana.pool.pooltriggergate import TGEventType
 
 
 configuration_negative = [{SynchParam.Initial: {SynchDomain.Position: 0.},

@@ -33,7 +33,7 @@ from taurus.test import insertTest
 from sardana.pool import AcqSynch
 from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.pool.poolsynchronization import PoolSynchronization
-from sardana.pool.pooltriggergate import TGEventType
+from sardana.util.funcgenerator import TGEventType
 from sardana.pool.poolacquisition import (PoolAcquisitionHardware,
                                           PoolAcquisitionSoftware,
                                           PoolCTAcquisition)

@@ -26,9 +26,17 @@ import threading
 import math
 import copy
 import numpy
+
+from taurus.core.util.enumeration import Enumeration
+
 from sardana.sardanaevent import EventGenerator
-from sardana.pool.pooltriggergate import TGEventType
 from sardana.pool.pooldefs import SynchParam, SynchDomain
+
+TGEventType = Enumeration(
+'TGEventType', (
+    'Active',
+    'Passive'
+))
 
 
 class FunctionGenerator(EventGenerator):

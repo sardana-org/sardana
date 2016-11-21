@@ -30,19 +30,11 @@ __all__ = ["PoolTriggerGate"]
 
 __docformat__ = 'restructuredtext'
 
-from taurus.core.util.enumeration import Enumeration
-
 from sardana import ElementType
 
 from sardana.pool.poolelement import PoolElement
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.pool.poolsynchronization import PoolSynchronization
-
-TGEventType = Enumeration(
-'TGEventType', (
-    'Active',
-    'Passive'
-))
 
 class Index(SardanaAttribute):
 

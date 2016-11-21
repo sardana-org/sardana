@@ -31,7 +31,7 @@ import numpy
 from taurus.external import unittest
 
 from sardana import State
-from sardana.pool.pooltriggergate import TGEventType
+from sardana.util.funcgenerator import TGEventType
 from sardana.pool.poolcontrollers.DummyMotorController import Motion
 from sardana.pool.pooldefs import SynchParam
 from sardana.sardanaattribute import SardanaAttribute

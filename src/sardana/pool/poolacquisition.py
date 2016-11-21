@@ -44,7 +44,7 @@ from sardana.sardanautils import is_ordered_non_str_seq
 from sardana.pool import SynchParam, SynchDomain, AcqSynch
 from sardana.pool.poolutil import is_software_tg
 from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
-from sardana.pool.pooltriggergate import TGEventType
+from sardana.util.funcgenerator import TGEventType
 from sardana.pool.poolsynchronization import PoolSynchronization
 
 #: enumeration representing possible motion states
