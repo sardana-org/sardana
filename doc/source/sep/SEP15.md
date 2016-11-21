@@ -3,7 +3,7 @@
 	State: DRAFT
 	Date: 2016-11-21
 	Drivers: Marc Rosanes <mrosanes@cells.es>, Zbigniew Reszela <zreszela@cells.es>
-	URL: https://sourceforge.net/p/sardana/wiki/SEP15
+	URL: http://www.sardana-controls.org/sep/?SEP15.md
 	License: http://www.jclark.com/xml/copying.txt
 	Abstract:
 	 Move Sardana project from its current hosting in SourceForge to 
