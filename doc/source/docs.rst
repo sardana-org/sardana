@@ -16,6 +16,7 @@ scientific installations.
 
    users/index
    devel/index
+   sep/index.rst
    Glossary <glossary>
    To do <todo>
    History of changes <revision>
