@@ -33,8 +33,9 @@ import time
 from functools import partial
 from taurus.core.util.log import DebugIt
 from sardana import State
-from sardana.pool.pooldefs import SynchDomain
-from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction 
+from sardana.sardanathreadpool import get_thread_pool
+from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
+from sardana.util.funcgenerator import FunctionGenerator
 
 # The purpose of this class was inspired on the CTAcquisition concept
 class TGChannel(PoolActionItem):
@@ -53,8 +54,9 @@ class TGChannel(PoolActionItem):
 class PoolSynchronization(PoolAction):
     '''Action class responsible for trigger/gate generation
     '''
-    def __init__(self, main_element, name="TGAction"):
+    def __init__(self, main_element, name="Synchronization"):
         PoolAction.__init__(self, main_element, name)
+        self._synch_soft = FunctionGenerator()
         self._listener = None
 
     def add_listener(self, listener):
@@ -89,32 +91,28 @@ class PoolSynchronization(PoolAction):
         # loads generation parameters
         for pool_ctrl in pool_ctrls:
             ctrl = pool_ctrl.ctrl
-            # TODO: implement better discovery of software controllers
-            is_sw_ctrl = hasattr(ctrl, 'add_listener')
             pool_ctrl_data = ctrls_config[pool_ctrl]
             elements = pool_ctrl_data['channels']
             for element in elements:
                 axis = element.axis
                 ctrl.SynchOne(axis, synchronization)
-                # attaching listener (usually acquisition action)
-                # to the software trigger gate generator
-                if is_sw_ctrl and not self._listener is None:
-                    ctrl.add_listener(axis, self._listener)
-                    remove_acq_listener = partial(ctrl.remove_listener,
-                                                  axis, self._listener)
-                    self.add_finish_hook(remove_acq_listener, False)
-                # subscribing to the position change events to generate events
-                # in position domain
-                if is_sw_ctrl and not moveable is None:
-                    position = moveable.get_position_attribute()
-                    position.add_listener(ctrl)
-                    remove_pos_listener = partial(position.remove_listener,
-                                                  ctrl)
-                    self.add_finish_hook(remove_pos_listener, False)
-                    ctrl.subscribe_event(axis, position)
-                    unsubscribe_event = partial(ctrl.unsubscribe_event,
-                                                axis, position)
-                    self.add_finish_hook(unsubscribe_event, False)
+
+        # attaching listener (usually acquisition action)
+        # to the software trigger gate generator
+        if self._listener is not None:
+            self._synch_soft.set_configuration(synchronization)
+            self._synch_soft.add_listener(self._listener)
+            remove_acq_listener = partial(self._synch_soft.remove_listener,
+                                          self._listener)
+            self.add_finish_hook(remove_acq_listener, False)
+        # subscribing to the position change events to generate events
+        # in position domain
+        if moveable is not None:
+            position = moveable.get_position_attribute()
+            position.add_listener(self._synch_soft)
+            remove_pos_listener = partial(position.remove_listener,
+                                          self._synch_soft)
+            self.add_finish_hook(remove_pos_listener, False)
 
         with ActionContext(self):
             # PreStartAll on all controllers
@@ -142,6 +140,10 @@ class PoolSynchronization(PoolAction):
             # StartAll on all controllers
             for pool_ctrl in pool_ctrls:
                 pool_ctrl.ctrl.StartAll()
+
+        if self._listener is not None:
+            self._synch_soft.start()
+            get_thread_pool().add(self._synch_soft.run)
 
     def is_triggering(self, states):
         """Determines if we are triggering or if the triggering has ended
@@ -184,3 +186,12 @@ class PoolSynchronization(PoolAction):
                 triggerelement.clear_operation()
                 state_info = triggerelement._from_ctrl_state_info(state_info)
                 triggerelement.set_state_info(state_info, propagate=2)
+
+        # wait for software synchronizer to finish 
+        if self._listener is not None:
+            while True:
+                if not self._synch_soft.is_running() and \
+                    not self._synch_soft.is_started():
+                    break
+                time.sleep(nap)
+

@@ -309,22 +309,22 @@ config_5 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),
              ('_test_ct_1_2', '_test_tg_2_1', AcqSynchType.Trigger)]]
 
 doc_6 = 'Test using Software Trigger'
-config_6 = [[('_test_ct_1_1', '_test_stg_1_1', AcqSynchType.Trigger)]]
+config_6 = [[('_test_ct_1_1', 'software', AcqSynchType.Trigger)]]
 
 doc_7 = 'Test using both, a Software Trigger and a "Hardware" Trigger'
 config_7 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger)],
-            [('_test_ct_2_1', '_test_stg_1_1', AcqSynchType.Trigger)]]
+            [('_test_ct_2_1', 'software', AcqSynchType.Trigger)]]
 
 doc_8 = 'Test that the acquisition using triggers can be stopped.'
 config_8 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),
-             ('_test_ct_1_2', '_test_stg_1_1', AcqSynchType.Trigger)]] 
+             ('_test_ct_1_2', 'software', AcqSynchType.Trigger)]]
 
 
 doc_11 = 'Acquisition using 2 controllers, with 2 channels in each controller.'
 config_11 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),
              ('_test_ct_1_2', '_test_tg_1_1', AcqSynchType.Trigger)],
-            [('_test_ct_2_1', '_test_stg_1_1', AcqSynchType.Trigger),
-             ('_test_ct_2_2', '_test_stg_1_1', AcqSynchType.Trigger)]] 
+            [('_test_ct_2_1', 'software', AcqSynchType.Trigger),
+             ('_test_ct_2_2', 'software', AcqSynchType.Trigger)]]
 
 doc_9 = 'Test two consecutive synchronous acquisitions with different'\
         ' configuration.'
@@ -333,15 +333,15 @@ doc_10 = 'Test synchronous acquisition followed by asynchronous'\
         ' acquisition using the same configuration.'
 
 doc_12 = 'Acquisition using 2 controllers, with 2 channels in each controller.'
-config_12 = [[('_test_ct_1_1', '_test_stg_1_1', AcqSynchType.Trigger),
-              ('_test_ct_1_2', '_test_stg_1_1', AcqSynchType.Trigger)],
-             [('_test_ct_2_1', '_test_stg_1_1', AcqSynchType.Trigger),
-              ('_test_ct_2_2', '_test_stg_1_1', AcqSynchType.Trigger)]]
+config_12 = [[('_test_ct_1_1', 'software', AcqSynchType.Trigger),
+              ('_test_ct_1_2', 'software', AcqSynchType.Trigger)],
+             [('_test_ct_2_1', 'software', AcqSynchType.Trigger),
+              ('_test_ct_2_2', 'software', AcqSynchType.Trigger)]]
 
 doc_13 = 'Test acquisition of zerod using software gate.'
 config_13 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),],
-             [('_test_ct_2_1', '_test_stg_1_1', AcqSynchType.Trigger),],
-             [('_test_0d_1_1', '_test_stg_1_1', AcqSynchType.Gate),]]
+             [('_test_ct_2_1', 'software', AcqSynchType.Trigger),],
+             [('_test_0d_1_1', 'software', AcqSynchType.Gate),]]
 
 
 @insertTest(helper_name='meas_contpos_acquisition', test_method_doc=doc_12,

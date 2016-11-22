@@ -137,6 +137,15 @@ class PoolMeasurementGroup(PoolGroupElement):
         acq_name = "%s.Acquisition" % self._name
         return PoolAcquisition(self, acq_name)
 
+    def _calculate_states(self, state_info=None):
+        state, status = PoolGroupElement._calculate_states(self, state_info)
+        # in case software synchronization is still in progress modify state
+        # to MOVING
+        if state is State.On and self.acquisition._synch_soft.is_running():
+            state = State.Moving
+            status += "/nSoftware synchronization is in progress"
+        return state, status
+
     def on_element_changed(self, evt_src, evt_type, evt_value):
         name = evt_type.name
         if name == 'state':
@@ -310,9 +319,9 @@ class PoolMeasurementGroup(PoolGroupElement):
                 # for backwards compatibility purposes
                 # protect measurement groups without synchronizer defined
                 # TODO: otherwise obtain software synchronizer and use it
-                if synchronizer:
+                if synchronizer and synchronizer != 'software':
                     tg_elem_ids.append(synchronizer.id)
-                    software = is_software_tg(synchronizer)
+                    software = False
                 else:
                     software = True
                 acq_synch = None
@@ -409,12 +418,10 @@ class PoolMeasurementGroup(PoolGroupElement):
                 ctrl_data['monitor'] = monitor
                 synchronizer_name = c_data.get('synchronizer')
                 # for backwards compatibility purposes
-                # protect measurementgroups without synchronizer defined
-                if synchronizer_name:
+                # protect measurement groups without synchronizer defined
+                if synchronizer_name != 'software':
                     synchronizer = pool.get_element_by_full_name(synchronizer_name)
-                else:
-                    synchronizer = pool.get_software_tg()
-                ctrl_data['synchronizer'] = synchronizer
+                    ctrl_data['synchronizer'] = synchronizer
                 try:
                     synchronization = c_data['synchronization']
                 except KeyError:
@@ -669,3 +676,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         return self.get_action_cache()
 
     acquisition = property(get_acquisition, doc="acquisition object")
+
+    def stop(self):
+        self.acquistion._sych_soft.stop()
+        PoolGroupElement.stop(self)

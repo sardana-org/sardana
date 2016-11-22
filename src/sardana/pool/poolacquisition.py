@@ -33,7 +33,6 @@ __docformat__ = 'restructuredtext'
 
 import time
 import datetime
-import threading
 
 from taurus.core.util.log import DebugIt
 from taurus.core.util.enumeration import Enumeration
@@ -195,7 +194,6 @@ class PoolAcquisition(PoolAction):
         self._hw_acq = PoolAcquisitionHardware(main_element, name=hwname)
         self._synch = PoolSynchronization(main_element, name=synchname)
 
-
     def set_sw_config(self, config):
         self._sw_acq_config = config
 
@@ -254,7 +252,7 @@ class PoolAcquisition(PoolAction):
         # experimental channels triggered by hw and experimental channels
         # triggered by sw. Refactor it!!!!
         (hw_acq_cfg, sw_acq_cfg, zerod_acq_cfg) = split_MGConfigurations(config)
-        tg_cfg, _ = getTGConfiguration(config)
+        synch_cfg, _ = getTGConfiguration(config)
         # starting continuous acquisition only if there are any controllers
         if len(hw_acq_cfg['controllers']):
             cont_acq_kwargs = dict(kwargs)
@@ -274,9 +272,9 @@ class PoolAcquisition(PoolAction):
                 zerod_acq_kwargs = dict(kwargs)
                 zerod_acq_kwargs['config'] = zerod_acq_cfg
                 self.set_0d_config(zerod_acq_kwargs)
-        tg_kwargs = dict(kwargs)
-        tg_kwargs['config'] = tg_cfg
-        self._synch.run(*args, **tg_kwargs)
+        synch_kwargs = dict(kwargs)
+        synch_kwargs['config'] = synch_cfg
+        self._synch.run(*args, **synch_kwargs)
 
     def _get_action_for_element(self, element):
         elem_type = element.get_type()
