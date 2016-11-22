@@ -10,17 +10,17 @@ Proposals list
 
   Link        |  status   |        Title
   ------------| --------- | ---------------------------------------------------------
-  [SEP0][]    | ACCEPTED     | Introducing Sardana Enhancement Proposal
-  [SEP1][]    | ACCEPTED     | Reorganization of code repos
+  [SEP0][]    | OBSOLETE     | Introducing Sardana Enhancement Proposal
+  [SEP1][]    | OBSOLETE     | Reorganization of code repos
   [SEP2][]    | DRAFT     | Lima integration
-  [SEP3][]    | REJECTED (handled in [TEP3][] and [TEP14][] | Adapt to [TEP3][] (Tango-independent taurus.core)
+  [SEP3][]    | REJECTED (handled in [TEP3][] and [TEP14][]) | Adapt to [TEP3][] (Tango-independent taurus.core)
   [SEP4][]    | ACCEPTED     | HKL integration
   [SEP5][]    | ACCEPTED     | Implementation of tests infrastructure
   [SEP6][]    | DRAFT     | Continuous Scan Implementation
-  [SEP7][]    | ACCEPTED     | Code contribution workflow
+  [SEP7][]    | OBSOLETE     | Code contribution workflow
   [SEP8][]    | DRAFT     | Remove from Taurus objects the direct Logger dependence
   [SEP9][]    | ACCEPTED     | Compact Read+Write widgets in Taurus
-  [SEP10][]    | ACCEPTED     | Taurus separation
+  [SEP10][]    | OBSOLETE     | Taurus separation
   [SEP11][]    | ACCEPTED     | Direct load of .ui files
   [SEP12][]    | DRAFT     | Use python Enum instead of taurus Enumeration
   [SEP13][]    | REJECTED (moved to [TEP13][])     | Unified plugins support in Taurus & Sardana

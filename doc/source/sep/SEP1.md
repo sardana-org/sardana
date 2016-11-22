@@ -1,6 +1,9 @@
 	Title: reorganization of code repos
 	SEP: 1
-	State: ACCEPTED
+	State: OBSOLETE
+	Reason: 
+	 SEP15 obsoletes SEP1. SEP1 has references to SourceForge, and
+	 Sardana project has been migrated to GitHub.
 	Date: 2013-08-06
 	Drivers: Carlos Pascual-Izarra cpascual@cells.es
 	URL: http://www.sardana-controls.org/sep/?SEP1.md
@@ -315,6 +318,11 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 Changes
 -------
+
+* 2016-11-22 
+  [mrosanes](https://github.com/sagiss/) 
+  Migrate SEP1 from SF wiki to independent file, modify URL. Change SEP state from ACCEPTED --> OBSOLETE according SEP15.
+
 * 2013-08-06
   [cpascual](https://sourceforge.net/u/cpascual/) changed SEP state from CANDIDATE-->ACCEPTED
 

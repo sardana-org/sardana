@@ -1,6 +1,10 @@
     Title: Introducing Sardana Enhancement Proposals (SEPs)
     SEP: 0
-    State: ACCEPTED
+    State: OBSOLETE
+    Reason: 
+     SEP15 obsoletes TEP0. https://sourceforge.net/p/sardana/wiki/SEP is no 
+     longer the index for SEPs, nor it is a wiki. The "Creating a SEP section" of 
+     SEP0 is superseded by the one with the same name in SEP15.
     Date: 2016-04-07
     Drivers: Carlos Pascual-Izarra <cpascual@cells.es>
     URL: http://www.sardana-controls.org/sep/?SEP0.md
@@ -332,6 +336,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 Changes
 -------
+
+* 2016-11-22: [mrosanes](https://github.com/sagiss/) 
+  Migrate SEP from SF wiki to independent file, 
+  modify URL. Pass from ACCEPTED to OBSOLETE according SEP15.
 
 * 2016-11-22:
   [mrosanes](https://github.com/sagiss/) Create SEP0.md.
