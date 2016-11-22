@@ -13,7 +13,7 @@ and individuals (ALBA_, DESY_, MaxIV_, Solaris_, ESRF_).
 
 You can download Sardana from PyPi_, check its Documentation_ or get support 
 from its community and the latest code from the 
-`project page <http://sourceforge.net/projects/sardana>`_.
+`project page <https://github.com/sardana-org/sardana>`_.
 
 
 Projects related to Sardana
@@ -37,7 +37,7 @@ Projects related to Sardana
     :hidden:
 
     Home Page <http://sardana-controls.org>
-    Project Page <http://sourceforge.net/projects/sardana>
+    Project Page <https://github.com/sardana-org/sardana>
     Download from PyPI <http://pypi.python.org/pypi/sardana>
     docs
 
