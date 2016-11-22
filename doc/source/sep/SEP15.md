@@ -20,7 +20,7 @@ workflow (defined in SEP7) to one based on Pull Requests (PR).
 
 The following reasons are considered in favour of migrating to GH:
 
-- It would alleviate the current saturation of the -devel mailing list (since 
+- It would alleviate the current saturation of the devel mailing list (since 
 the code review would be done via PR)
 - A PR-based workflow for contributions is preferred by all the integrators and 
 most of the current contributors and is expected to attract more new 
@@ -79,6 +79,9 @@ and develop branches pushed to it
 
 - The Travis and Appveyor continuous integration services will be enabled 
 for this repo.
+
+- Moving the third party controllers and macros repositories from SourceForge 
+to GitHub would be appreciated, but SEP15 does not make it mandatory.
 
 ### New contribution policy
 
