@@ -11,4 +11,4 @@
 	Enhancement Proposal #8 [TEP8][] which refactors the taurus logger.
 	See [TEP8][] documentation for more details.
 
-[TEP8]: http://www.taurus-scada.org/tep/?TEP13.md
+[TEP8]: http://www.taurus-scada.org/tep/?TEP8.md
