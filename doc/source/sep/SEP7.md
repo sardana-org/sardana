@@ -1,6 +1,9 @@
 	Title: Code contribution workflow
 	SEP: 7
-	State: ACCEPTED
+	State: OBSOLETE
+	Reason: 
+	 SEP15 obsoletes SEP7. Most of the contribution procedure is 
+	 no longer applicable due to the adoption of a workflow based on Pull Requests.
 	Date: 2013-12-13
 	Drivers: Carlos Pascual-Izarra <cpascual@cells.es>
 	URL: http://www.sardana-controls.org/sep/?SEP7.md
@@ -224,6 +227,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 Changes
 =======
+
+* 2016-11-22: [mrosanes](https://github.com/sagiss/) 
+  Migrate SEP7 from SF wiki to independent file, 
+  modify URL and change SEP state from ACCEPTED to OBSOLETE according SEP15.
 
 * 2015-01-27: [cpascual](https://sourceforge.net/u/cpascual/) 
   Added note in the naming convention for feature branches (about preference of feature-N over feat-N for branches associated to feature-request tickets) 

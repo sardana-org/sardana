@@ -1,6 +1,9 @@
 	Title: Taurus separation
 	SEP: 10
-	State: ACCEPTED
+	State: OBSOLETE
+	Reason: 
+	 SEP15 obsoletes SEP10. SEP10 has references to SourceForge, and
+	 Sardana project has been migrated to GitHub.
 	Date: 2015-03-30
 	Drivers: Tiago Coutinho <coutinho@esrf.fr>, Carlos Pascual-Izarra <cpascual@cells.es>
 	URL: http://www.sardana-controls.org/sep/?SEP10.md
@@ -22,7 +25,7 @@ Motivation
 ==========
 
 Currently, after the acceptance and implementation of [SEP1], taurus became a product of the sardana project. Specifically the taurus code became a sub-directory of the sardana git repository.
-Many potential users of taurus will be drawn away due to the fact that taurus is a sub-product of sardana. Taurus collaborators feel that taurus should have its own life cycle independent from sardana. Taurus should its own web page, repository, Memorandum Of Understanding (MOU), Taurus Enhancement Proposals (TEP), mailing list, ticket tracker, developers and integration managers.
+Many potential users of taurus will be drawn away due to the fact that taurus is a sub-product of sardana. Taurus collaborators feel that taurus should have its own life cycle independent from sardana. Taurus should have its own web page, repository, Memorandum Of Understanding (MOU), Taurus Enhancement Proposals (TEP), mailing list, ticket tracker, developers and integration managers.
 
 The main motivation behind requirement 2 of [SEP1] was to ease development, specifically the tracking of problems in sardana caused by taurus. By having the two libraries (sardana and taurus) in the same repository one could easily identify and revert from revisions that cause problems. While this is a valid requirement it is believed that it can be achieved through a proper code contribution workflow which is already described by the accepted [SEP7].
 
@@ -86,6 +89,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 Changes
 =======
+
+* 2016-11-22: [mrosanes](https://github.com/sagiss/) 
+  Migrate SEP10 from SF wiki to independent file, 
+  modify URL and change SEP state from ACCEPTED to OBSOLETE according SEP15.
 
 * 2015-05-13 [cpascual](https://sourceforge.net/u/tiagocoutinho/)
   Update state to ACCEPTED (the final transition already took place 
