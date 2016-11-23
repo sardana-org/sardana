@@ -126,7 +126,7 @@ softwarePoolTGCtrlConf01 = { 'class_info': None,
                         'role_ids': '',
                         'type': 'TGChannel' }
 
-'''Second minimum configuration to create a Pool TriggerGate controller'''
+'''Minimum configuration to create a Pool TriggerGate controller'''
 dummyPoolTGCtrlConf02 = { 'class_info': None,
                         'full_name': '',
                         'id': 2,

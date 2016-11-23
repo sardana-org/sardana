@@ -170,12 +170,6 @@ def sar_demo(self):
         self.print("Creating trigger element", tg_name, "...")
         self.defelem(tg_name , tg_ctrl_name, axis)
 
-    self.print("Creating software trigger controller", stg_ctrl_name, "...")
-    self.defctrl("SoftwareTriggerGateController", stg_ctrl_name)
-    for axis, stg_name in enumerate(stg_names, 1):
-        self.print("Creating software TG element", stg_name, "...")
-        self.defelem(stg_name , stg_ctrl_name, axis)
-
     self.print("Creating IORegister controller", ior_ctrl_name, "...")
     self.defctrl("DummyIORController", ior_ctrl_name)
     for axis, ior_name in enumerate(ior_names, 1):

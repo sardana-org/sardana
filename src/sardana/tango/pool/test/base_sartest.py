@@ -47,8 +47,6 @@ class SarTestTestCase(BasePoolTestCase):
         ('Motor', 'DummyMotorController', 'DummyMotorController', '_test_mt','1', 5),
         ('CTExpChannel', 'DummyCounterTimerController', 'DummyCounterTimerController', '_test_ct', '1', 5),
         ('CTExpChannel', 'DummyCounterTimerController', 'DummyCounterTimerController', '_test_ct', '2', 5),
-        ('TriggerGate', 'SoftwareTriggerGateController', 'SoftwareTriggerGateController', '_test_stg', '1', 5),
-        ('TriggerGate', 'SoftwareTriggerGateController', 'SoftwareTriggerGateController', '_test_stg', '2', 5),
         ('TriggerGate', 'DummyTriggerGateController', 'DummyTriggerGateController', '_test_tg', '1', 5),
         ('TriggerGate', 'DummyTriggerGateController', 'DummyTriggerGateController', '_test_tg', '2', 5)
     ]
