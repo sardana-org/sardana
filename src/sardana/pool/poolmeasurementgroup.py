@@ -141,7 +141,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         state, status = PoolGroupElement._calculate_states(self, state_info)
         # in case software synchronization is still in progress modify state
         # to MOVING
-        if state is State.On and self.acquisition._synch_soft.is_running():
+        if state is State.On and self.acquisition._synch._synch_soft.is_running():
             state = State.Moving
             status += "/nSoftware synchronization is in progress"
         return state, status
@@ -678,5 +678,5 @@ class PoolMeasurementGroup(PoolGroupElement):
     acquisition = property(get_acquisition, doc="acquisition object")
 
     def stop(self):
-        self.acquistion._sych_soft.stop()
+        self.acquisition._synch._synch_soft.stop()
         PoolGroupElement.stop(self)
