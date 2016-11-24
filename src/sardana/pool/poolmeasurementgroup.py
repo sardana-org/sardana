@@ -314,7 +314,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                 # for backwards compatibility purposes
                 # protect measurement groups without synchronizer defined
                 # TODO: otherwise obtain software synchronizer and use it
-                if synchronizer and synchronizer != 'software':
+                if synchronizer is not None and synchronizer != 'software':
                     tg_elem_ids.append(synchronizer.id)
                     software = False
                 else:
@@ -411,12 +411,12 @@ class PoolMeasurementGroup(PoolGroupElement):
                 monitor_name = c_data['monitor']
                 monitor = pool.get_element_by_full_name(monitor_name)
                 ctrl_data['monitor'] = monitor
-                synchronizer_name = c_data.get('synchronizer')
+                synchronizer = c_data.get('synchronizer')
                 # for backwards compatibility purposes
                 # protect measurement groups without synchronizer defined
-                if synchronizer_name != 'software':
-                    synchronizer = pool.get_element_by_full_name(synchronizer_name)
-                    ctrl_data['synchronizer'] = synchronizer
+                if synchronizer is not None and synchronizer != 'software':
+                    synchronizer = pool.get_element_by_full_name(synchronizer)
+                ctrl_data['synchronizer'] = synchronizer
                 try:
                     synchronization = c_data['synchronization']
                 except KeyError:
