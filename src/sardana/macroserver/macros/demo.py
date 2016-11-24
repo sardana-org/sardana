@@ -105,7 +105,6 @@ def sar_demo(self):
     zerod_ctrl_name = get_free_names(db, "zerodctrl", 1)[0]
     oned_ctrl_name = get_free_names(db, "onedctrl", 1)[0]
     twod_ctrl_name = get_free_names(db, "twodctrl", 1)[0]
-    stg_ctrl_name = get_free_names(db, "stgctrl", 1)[0]
     tg_ctrl_name = get_free_names(db, "tgctrl", 1)[0]
     pm_ctrl_name = get_free_names(db, "slitctrl", 1)[0]
     ior_ctrl_name = get_free_names(db, "iorctrl", 1)[0]
@@ -115,7 +114,6 @@ def sar_demo(self):
     zerod_names = get_free_names(db, "zerod", 4)
     oned_names = get_free_names(db, "oned", 1)
     twod_names = get_free_names(db, "twod", 1)
-    stg_names = get_free_names(db, "stg", 1)
     tg_names = get_free_names(db, "tg", 1)
     gap, offset = get_free_names(db, "gap", 1) + get_free_names(db, "offset", 1)
     ior_names = get_free_names(db, "ior", 2)
@@ -187,10 +185,10 @@ def sar_demo(self):
 
     controllers = pm_ctrl_name, mot_ctrl_name, ct_ctrl_name, \
             zerod_ctrl_name, oned_ctrl_name, twod_ctrl_name, \
-            tg_ctrl_name, stg_ctrl_name, ior_ctrl_name
+            tg_ctrl_name, ior_ctrl_name
     elements = [gap, offset] + motor_names + ct_names + \
             zerod_names + oned_names + twod_names + tg_names + \
-            stg_names + ior_names
+            ior_names
     d = dict(controllers=controllers, elements=elements,
              measurement_groups=[mg_name])
     
