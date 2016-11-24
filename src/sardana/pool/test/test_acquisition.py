@@ -105,8 +105,8 @@ class AcquisitionTestCase(BasePoolTestCase):
         self.channel_names = []
 
     def createPoolSynchronization(self, tg_list):
-        main_element = FakeElement(self.pool)
-        self.tggeneration = PoolSynchronization(main_element)
+        self.main_element = FakeElement(self.pool)
+        self.tggeneration = PoolSynchronization(self.main_element)
         for tg in tg_list:
             self.tggeneration.add_element(tg)
         self.tggeneration.add_listener(self)
@@ -295,9 +295,7 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         according the test parameters. Checks the lengths of the acquired data.
         """
         # obtaining elements created in the BasePoolTestCase.setUp
-        tg_1_1 = self.tgs['_test_stg_1_1']
         tg_2_1 = self.tgs['_test_tg_1_1']
-        tg_ctrl_1 = tg_1_1.get_controller()
         tg_ctrl_2 = tg_2_1.get_controller()
         ct_1_1 = self.cts['_test_ct_1_1'] # hw synchronized
         ct_2_1 = self.cts['_test_ct_2_1'] # sw synchronized
@@ -306,10 +304,10 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         self.channel_names.append('_test_ct_1_1')
         self.channel_names.append('_test_ct_2_1')
         # crating configuration for TGGeneration
-        tg_cfg = createPoolSynchronizationConfiguration((tg_ctrl_1, tg_ctrl_2),
-                                                     ((tg_1_1,), (tg_2_1,)))
+        tg_cfg = createPoolSynchronizationConfiguration((tg_ctrl_2,),
+                                                     ((tg_2_1,),))
         # creating TGGeneration action
-        self.createPoolSynchronization([tg_1_1, tg_2_1])
+        self.createPoolSynchronization([tg_2_1])
         # add_listeners
         self.addListeners([ct_1_1, ct_2_1])
         # creating acquisition configurations

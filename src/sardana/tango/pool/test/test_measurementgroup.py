@@ -181,14 +181,14 @@ config_1 = (
 doc_2 = 'Synchronized acquisition with two channels from the same controller'\
         ' using software trigger'
 config_2 = (
-    (('_test_ct_1_1', '_test_stg_1_1', AcqSynchType.Trigger),
-     ('_test_ct_1_2', '_test_stg_1_1', AcqSynchType.Trigger)),
+    (('_test_ct_1_1', 'software', AcqSynchType.Trigger),
+     ('_test_ct_1_2', 'software', AcqSynchType.Trigger)),
 )
 doc_3 = 'Synchronized acquisition with four channels from two different'\
         'controllers using hardware and software triggers'
 config_3 = (
-    (('_test_ct_1_1', '_test_stg_1_1', AcqSynchType.Trigger),
-     ('_test_ct_1_2', '_test_stg_1_1', AcqSynchType.Trigger)),
+    (('_test_ct_1_1', 'software', AcqSynchType.Trigger),
+     ('_test_ct_1_2', 'software', AcqSynchType.Trigger)),
     (('_test_ct_2_1', '_test_tg_1_1', AcqSynchType.Trigger),
      ('_test_ct_2_2', '_test_tg_1_1', AcqSynchType.Trigger)),
 )

@@ -58,11 +58,11 @@ mg_config1 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger)]]
 mg_config2 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),
                ('_test_ct_1_2', '_test_tg_1_1', AcqSynchType.Trigger)]
     ]
-mg_config3 = [[('_test_ct_1_1', '_test_stg_1_1', AcqSynchType.Trigger)],
+mg_config3 = [[('_test_ct_1_1', 'software', AcqSynchType.Trigger)],
               [('_test_ct_2_1', '_test_tg_1_1', AcqSynchType.Trigger)]
     ]
-mg_config4 = [[('_test_ct_1_1', '_test_stg_1_1', AcqSynchType.Trigger)],
-              [('_test_ct_2_1', '_test_stg_1_1', AcqSynchType.Trigger)]
+mg_config4 = [[('_test_ct_1_1', 'software', AcqSynchType.Trigger)],
+              [('_test_ct_2_1', 'software', AcqSynchType.Trigger)]
     ]
 macro_params_1 = ['_test_mt_1_1', '0', '10', '100', '0.1']
 

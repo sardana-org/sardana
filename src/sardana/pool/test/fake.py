@@ -81,8 +81,11 @@ class FakePool(object):
         self.elements = {}
         self.elements_by_full_name = {}
 
-
+# TODO: this should be a mock
 class FakeElement(object):
     '''Fake pool element'''
     def __init__(self, pool):
         self.pool = pool
+
+    def on_element_changed(self, *args, **kwargs):
+        pass
