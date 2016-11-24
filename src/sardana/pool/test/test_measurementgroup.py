@@ -316,9 +316,6 @@ config_7 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger)],
             [('_test_ct_2_1', 'software', AcqSynchType.Trigger)]]
 
 doc_8 = 'Test that the acquisition using triggers can be stopped.'
-config_8 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),
-             ('_test_ct_1_2', 'software', AcqSynchType.Trigger)]]
-
 
 doc_11 = 'Acquisition using 2 controllers, with 2 channels in each controller.'
 config_11 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),
@@ -371,12 +368,12 @@ config_13 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),],
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_7,
             config=config_7, synchronization=synchronization1)
 @insertTest(helper_name='meas_cont_stop_acquisition', test_method_doc=doc_8,
-            config=config_8, synchronization=synchronization2)
+            config=config_7, synchronization=synchronization2)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_9,
             config=config_1, second_config=config_7,
             synchronization=synchronization1)
 @insertTest(helper_name='meas_double_acquisition', test_method_doc=doc_10,
-            config=config_8, synchronization=synchronization2)
+            config=config_7, synchronization=synchronization2)
 @insertTest(helper_name='meas_double_acquisition', test_method_doc=doc_10,
             config=config_4, synchronization=synchronization1)
 @insertTest(helper_name='meas_double_acquisition_samemode', test_method_doc=doc_11,
