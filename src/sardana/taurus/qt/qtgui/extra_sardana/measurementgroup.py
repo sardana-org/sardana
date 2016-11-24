@@ -594,6 +594,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         if not external and chinfo['type'] in ('CTExpChannel', 'OneDExpChannel', 'TwoDExpChannel'):
             ctrl['timer'] = chname
             ctrl['monitor'] = chname
+            ctrl['synchronizer'] = "software"
             ctrl['synchronization'] = AcqSynchType.Trigger
         channelsdict = ctrl['channels']
         if channelsdict.has_key(chname):
