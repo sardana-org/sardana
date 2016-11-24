@@ -33,7 +33,6 @@ from taurus.test import insertTest
 from sardana.pool import AcqSynch
 from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.pool.poolsynchronization import PoolSynchronization
-from sardana.util.funcgenerator import TGEventType
 from sardana.pool.poolacquisition import (PoolAcquisitionHardware,
                                           PoolAcquisitionSoftware,
                                           PoolCTAcquisition)
@@ -274,8 +273,9 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
 
     def event_received(self, *args, **kwargs):
         """Executes a single software triggered acquisition."""
-        _, event_type, event_id = args
-        if event_type == TGEventType.Active:
+        _, type_, value = args
+        name = type_.name
+        if name == "active":
             if self.sw_acq_busy.is_set():
                 # skipping acquisition cause the previous on is ongoing
                 return
@@ -283,7 +283,7 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
                 self.sw_acq_busy.set()
                 args = dict(self.sw_acq_args)
                 kwargs = dict(self.sw_acq_kwargs)
-                kwargs['idx'] = event_id
+                kwargs['idx'] = value
                 get_thread_pool().add(self.sw_acq.run,
                                       None,
                                       *args,

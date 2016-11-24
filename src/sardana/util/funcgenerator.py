@@ -27,16 +27,10 @@ import math
 import copy
 import numpy
 
-from taurus.core.util.enumeration import Enumeration
 
 from sardana.sardanaevent import EventGenerator
+from sardana.sardanaevent import EventGenerator, EventType
 from sardana.pool.pooldefs import SynchParam, SynchDomain
-
-TGEventType = Enumeration(
-'TGEventType', (
-    'Active',
-    'Passive'
-))
 
 
 class FunctionGenerator(EventGenerator):
@@ -215,7 +209,7 @@ class FunctionGenerator(EventGenerator):
             else:
                 break
         self._id += i
-        self.fire_event(TGEventType.Active, self._id)
+        self.fire_event(EventType("active"), self._id)
         self.active_events = self.active_events[i + 1:]
         self.passive_events = self.passive_events[i:]
 
@@ -236,7 +230,7 @@ class FunctionGenerator(EventGenerator):
                         break
 
     def fire_passive(self):
-        self.fire_event(TGEventType.Passive, self._id)
+        self.fire_event(EventType("passive"), self._id)
         self.set_passive_events(self.passive_events[1:])
 
     def set_configuration(self, configuration):

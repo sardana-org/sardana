@@ -43,7 +43,6 @@ from sardana.sardanautils import is_ordered_non_str_seq
 from sardana.pool import SynchParam, SynchDomain, AcqSynch
 from sardana.pool.poolutil import is_software_tg
 from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
-from sardana.util.funcgenerator import TGEventType
 from sardana.pool.poolsynchronization import PoolSynchronization
 
 #: enumeration representing possible motion states
@@ -202,12 +201,13 @@ class PoolAcquisition(PoolAction):
 
     def event_received(self, *args, **kwargs):
         timestamp = time.time()
-        _, event_type, event_id = args
-        t_fmt = '%Y-%m-%d %H:%M:%S.%f'
-        t_str = datetime.datetime.fromtimestamp(timestamp).strftime(t_fmt)
-        self.debug('%s event with id: %d received at: %s' %\
-                             (TGEventType.whatis(event_type), event_id, t_str))
-        if event_type == TGEventType.Active:
+        _, type_, value = args
+        name = type_.name
+        if name == "active":
+            t_fmt = '%Y-%m-%d %H:%M:%S.%f'
+            t_str = datetime.datetime.fromtimestamp(timestamp).strftime(t_fmt)
+            self.debug('%s event with id: %d received at: %s' %\
+                             (name, value, t_str))
             # this code is not thread safe, but for the moment we assume that
             # only one EventGenerator will work at the same time
             if self._sw_acq_config:
@@ -221,7 +221,7 @@ class PoolAcquisition(PoolAction):
                     args = ()
                     kwargs = self._sw_acq_config
                     kwargs['synch'] = True
-                    kwargs['idx'] = event_id
+                    kwargs['idx'] = value
                     get_thread_pool().add(self._sw_acq.run, *args, **kwargs)
             if self._0d_config:
                 if self._0d_acq.is_running():
@@ -234,7 +234,7 @@ class PoolAcquisition(PoolAction):
                     args = ()
                     kwargs = self._0d_config
                     kwargs['synch'] = True
-                    kwargs['idx'] = event_id
+                    kwargs['idx'] = value
                     get_thread_pool().add(self._0d_acq.run, *args, **kwargs)
 
     def is_running(self):

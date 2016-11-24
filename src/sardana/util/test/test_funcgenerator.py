@@ -30,9 +30,9 @@ from threading import Event, Timer
 from taurus.external.unittest import TestCase
 from taurus.core.util import ThreadPool
 
-from sardana.util.funcgenerator import FunctionGenerator, TGEventType
 from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.sardanaevent import EventGenerator, EventType, EventReceiver
+from sardana.util.funcgenerator import FunctionGenerator
 
 
 configuration_negative = [{SynchParam.Initial: {SynchDomain.Position: 0.},
@@ -74,11 +74,12 @@ class Listener(EventReceiver):
         self.passive_event_ids = list()
 
     def event_received(self, *args, **kwargs):
-        _, t, v = args
-        if t is TGEventType.Active:
-            self.active_event_ids.append(v)
-        elif t is TGEventType.Passive:
-            self.passive_event_ids.append(v)
+        _, type_, value = args
+        name = type_.name
+        if name == "active":
+            self.active_event_ids.append(value)
+        elif name == "passive":
+            self.passive_event_ids.append(value)
         else:
             ValueError("wrong event type")
 

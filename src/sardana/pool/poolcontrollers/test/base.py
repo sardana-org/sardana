@@ -31,7 +31,6 @@ import numpy
 from taurus.external import unittest
 
 from sardana import State
-from sardana.util.funcgenerator import TGEventType
 from sardana.pool.poolcontrollers.DummyMotorController import Motion
 from sardana.pool.pooldefs import SynchParam
 from sardana.sardanaattribute import SardanaAttribute
@@ -247,11 +246,12 @@ class TriggerGateReceiver(object):
     def event_received(self, *args, **kwargs):
         # store also a timestamp of the start event when it will be implemented
         timestamp = time.time()
-        _, t, v = args
-        if t == TGEventType.Active:
-            self.active_events[v] = timestamp
-        elif t == TGEventType.Passive:
-            self.passive_events[v] = timestamp
+        _, type_, value = args
+        name = type.name
+        if name == "active":
+            self.active_events[value] = timestamp
+        elif name == "passive":
+            self.passive_events[value] = timestamp
         else:
             raise ValueError('Unknown EventType')
 
