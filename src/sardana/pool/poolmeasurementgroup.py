@@ -414,7 +414,9 @@ class PoolMeasurementGroup(PoolGroupElement):
                 synchronizer = c_data.get('synchronizer')
                 # for backwards compatibility purposes
                 # protect measurement groups without synchronizer defined
-                if synchronizer is not None and synchronizer != 'software':
+                if synchronizer is None:
+                    synchronizer = 'software'
+                elif synchronizer != 'software':
                     synchronizer = pool.get_element_by_full_name(synchronizer)
                 ctrl_data['synchronizer'] = synchronizer
                 try:
