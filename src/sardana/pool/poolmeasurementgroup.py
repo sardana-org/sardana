@@ -45,7 +45,6 @@ from sardana.pool.pooldefs import (AcqMode, AcqSynchType, SynchParam, AcqSynch,
 from sardana.pool.poolgroupelement import PoolGroupElement
 from sardana.pool.poolacquisition import PoolAcquisition
 from sardana.pool.poolexternal import PoolExternalObject
-from sardana.pool.poolutil import is_software_tg
 
 from sardana.taurus.core.tango.sardana import PlotType, Normalization
 
@@ -141,7 +140,8 @@ class PoolMeasurementGroup(PoolGroupElement):
         state, status = PoolGroupElement._calculate_states(self, state_info)
         # in case software synchronization is still in progress modify state
         # to MOVING
-        if state is State.On and self.acquisition._synch._synch_soft.is_running():
+        if (self.acquisition._synch._synch_soft.is_started() or
+            self.acquisition._synch._synch_soft.is_running()):
             state = State.Moving
             status += "/nSoftware synchronization is in progress"
         return state, status
@@ -280,12 +280,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                     else:
                         ctrl_data['monitor'] = elements[0]
                     ctrl_data['synchronization'] = AcqSynchType.Trigger
-                    try:
-                        ctrl_data['synchronizer'] = self.pool.get_software_tg()
-                    except Exception:
-                        msg = ("It was not possible to assign software"
-                               "synchronizer")
-                        self.debug(msg, exc_info=True)
+                    ctrl_data['synchronizer'] = 'software'
                     self._ctrl_to_acq_synch[ctrl] = AcqSynch.SoftwareTrigger
                     self._channel_to_acq_synch[element] = AcqSynch.SoftwareTrigger
             else:
@@ -471,7 +466,10 @@ class PoolMeasurementGroup(PoolGroupElement):
                 if c_data.has_key('monitor'):
                     ctrl_data['monitor'] = c_data['monitor'].full_name
                 if c_data.has_key('synchronizer'):
-                    ctrl_data['synchronizer'] = c_data['synchronizer'].full_name
+                    synchronizer = c_data['synchronizer']
+                    if synchronizer != 'software':
+                        synchronizer = synchronizer.full_name
+                    ctrl_data['synchronizer'] = synchronizer
                 if c_data.has_key('synchronization'):
                     ctrl_data['synchronization'] = c_data['synchronization']
             ctrl_data['channels'] = channels = {}

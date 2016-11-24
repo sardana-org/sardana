@@ -58,8 +58,3 @@ class _PoolUtil(object):
         get_com_channel = get_ioregister = get_device
 
 PoolUtil = _PoolUtil()
-
-def is_software_tg(tg):
-    controller = tg.controller
-    ctrl = controller.ctrl
-    return hasattr(ctrl, "add_listener")

@@ -54,7 +54,6 @@ from sardana.pool.poolcontroller import PoolController
 from sardana.pool.poolmonitor import PoolMonitor
 from sardana.pool.poolmetacontroller import TYPE_MAP_OBJ
 from sardana.pool.poolcontrollermanager import ControllerManager
-from sardana.pool.poolutil import is_software_tg
 
 
 class Graph(dict):
@@ -717,13 +716,3 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         for moveable in moveable_elems_map.values():
             self._build_element_dependencies(moveable, graph)
         return graph
-
-    def get_software_tg(self):
-        """Return first software TriggerGate element that it found
-
-        .. warning:: This is experimental implementation, don't assume it as API
-        """
-        tg_elements = self.get_elements_by_type(ElementType.TriggerGate)
-        for tg in tg_elements:
-            if is_software_tg(tg):
-                return tg

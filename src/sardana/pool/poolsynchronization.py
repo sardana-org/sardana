@@ -105,6 +105,10 @@ class PoolSynchronization(PoolAction):
             remove_acq_listener = partial(self._synch_soft.remove_listener,
                                           self._listener)
             self.add_finish_hook(remove_acq_listener, False)
+            self._synch_soft.add_listener(self.main_element.on_element_changed)
+            remove_mg_listener = partial(self._synch_soft.remove_listener,
+                                          self.main_element)
+            self.add_finish_hook(remove_mg_listener, False)
         # subscribing to the position change events to generate events
         # in position domain
         if moveable is not None:
@@ -190,8 +194,7 @@ class PoolSynchronization(PoolAction):
         # wait for software synchronizer to finish 
         if self._listener is not None:
             while True:
-                if not self._synch_soft.is_running() and \
-                    not self._synch_soft.is_started():
+                if not self._synch_soft.is_started():
                     break
                 time.sleep(nap)
 

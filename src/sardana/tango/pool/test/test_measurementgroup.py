@@ -114,11 +114,12 @@ class MeasSarTestTestCase(SarTestTestCase):
             for chn in channels:
                 name = channels[chn]['name']
                 synchronizer, synchronization = exp_dict[name]
-                synchronizer_dev = PyTango.DeviceProxy(synchronizer)
-                synchronizer_fullname = '%s:%s/%s' % (synchronizer_dev.get_db_host().split('.')[0], 
-                                            synchronizer_dev.get_db_port(),
-                                            synchronizer_dev.name())
-                ctrl_data['synchronizer'] = synchronizer_fullname
+                if synchronizer != 'software':
+                    synchronizer_dev = PyTango.DeviceProxy(synchronizer)
+                    synchronizer = '%s:%s/%s' % (synchronizer_dev.get_db_host().split('.')[0],
+                                                 synchronizer_dev.get_db_port(),
+                                                 synchronizer_dev.name())
+                ctrl_data['synchronizer'] = synchronizer
                 ctrl_data['synchronization'] = synchronization
                 self.tg_names.append(synchronizer)
 

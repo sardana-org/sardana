@@ -41,7 +41,6 @@ from sardana import State, ElementType, TYPE_TIMERABLE_ELEMENTS
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.sardanautils import is_ordered_non_str_seq
 from sardana.pool import SynchParam, SynchDomain, AcqSynch
-from sardana.pool.poolutil import is_software_tg
 from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
 from sardana.pool.poolsynchronization import PoolSynchronization
 
@@ -87,8 +86,8 @@ def split_MGConfigurations(mg_cfg_in):
             pass
         # splitting rest of the channels based on the assigned trigger
         else:
-            tg_element = ctrl_info.get('synchronizer')
-            if tg_element is None or is_software_tg(tg_element):
+            synchronizer = ctrl_info.get('synchronizer')
+            if synchronizer is None or synchronizer == 'software':
                 ctrls_sw_out[ctrl] = ctrl_info
             else:
                 ctrls_hw_out[ctrl] = ctrl_info
@@ -115,7 +114,9 @@ def getTGConfiguration(MGcfg):
 
     for ctrl in MGcfg["controllers"]:
         tg_element = MGcfg["controllers"][ctrl].get('synchronizer', None)
-        if (tg_element != None and tg_element not in _tg_element_list):
+        if (tg_element != None and
+            tg_element != "software" and 
+            tg_element not in _tg_element_list):
             _tg_element_list.append(tg_element)
 
     # Intermediate dictionary to organize each ctrl with its elements.
