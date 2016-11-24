@@ -28,7 +28,7 @@ import copy
 import numpy
 
 
-from sardana.sardanaevent import EventGenerator
+from sardana import State
 from sardana.sardanaevent import EventGenerator, EventType
 from sardana.pool.pooldefs import SynchParam, SynchDomain
 
@@ -136,6 +136,7 @@ class FunctionGenerator(EventGenerator):
         self._position = None
         self._position_event.clear()
         self._id = 0
+        self.fire_event(EventType("state"), State.Moving)
 
     def stop(self):
         self._stopped = True
@@ -162,6 +163,7 @@ class FunctionGenerator(EventGenerator):
             self._started = False
             self._running = False
             self._stopped = False
+            self.fire_event(EventType("state"), State.On)
 
     def sleep(self, period):
         if period <= 0:
