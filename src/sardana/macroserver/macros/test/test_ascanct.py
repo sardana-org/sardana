@@ -67,15 +67,15 @@ mg_config4 = [[('_test_ct_1_1', '_test_stg_1_1', AcqSynchType.Trigger)],
 macro_params_1 = ['_test_mt_1_1', '0', '10', '100', '0.1']
 
 @testRun(meas_config=mg_config1, macro_params=macro_params_1, 
-         wait_timeout=float("inf"))
+         wait_timeout=30)
 @testRun(meas_config=mg_config2, macro_params=macro_params_1, 
-         wait_timeout=float("inf"))
+         wait_timeout=30)
 @testRun(meas_config=mg_config3, macro_params=macro_params_1, 
-         wait_timeout=float("inf"))
+         wait_timeout=30)
 @testRun(meas_config=mg_config4, macro_params=macro_params_1, 
-         wait_timeout=float("inf"))
+         wait_timeout=30)
 @testStop(meas_config=mg_config1, macro_params=macro_params_1,
-         stop_delay=5, wait_timeout=float("inf"))
+         stop_delay=5, wait_timeout=20)
 class AscanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
                   RunStopMacroTestCase, unittest.TestCase):
     macro_name = 'ascanct'
