@@ -47,32 +47,37 @@ class BaseMacroServerTestCase(object):
     def setUp(self, pool_name):
         """Start MacroServer DS.
         """
-        # Discover the MS launcher script
-        msExec = whichexecutable.whichfile("MacroServer")
-        # register MS server
-        ms_ds_name = "MacroServer/" + self.ms_ds_name
-        ms_free_ds_name = get_free_server(PyTango.Database(), ms_ds_name)
-        self._msstarter = ProcessStarter(msExec, ms_free_ds_name)
-        # register MS device
-        dev_name_parts = self.ms_name.split('/')
-        prefix = '/'.join(dev_name_parts[0:2])
-        start_from = int(dev_name_parts[2])
-        self.ms_name = get_free_device(PyTango.Database(), prefix, start_from)
-        self._msstarter.addNewDevice(self.ms_name, klass='MacroServer')
-        # register Door device
-        dev_name_parts = self.door_name.split('/')
-        prefix = '/'.join(dev_name_parts[0:2])
-        start_from = int(dev_name_parts[2])
-        self.door_name = get_free_device(PyTango.Database(), prefix, 
-                                         start_from)
-        self._msstarter.addNewDevice(self.door_name, klass='Door')
-        # start MS server
-        self._msstarter.startDs()
-        # devices
-        self.macroserver = PyTango.DeviceProxy(self.ms_name)
-        self.macroserver.put_property({'PoolNames':pool_name})
-        self.macroserver.Init()
-        self.door = PyTango.DeviceProxy(self.door_name)
+        try:
+            # Discover the MS launcher script
+            msExec = whichexecutable.whichfile("MacroServer")
+            # register MS server
+            ms_ds_name = "MacroServer/" + self.ms_ds_name
+            ms_free_ds_name = get_free_server(PyTango.Database(), ms_ds_name)
+            self._msstarter = ProcessStarter(msExec, ms_free_ds_name)
+            # register MS device
+            dev_name_parts = self.ms_name.split('/')
+            prefix = '/'.join(dev_name_parts[0:2])
+            start_from = int(dev_name_parts[2])
+            self.ms_name = get_free_device(PyTango.Database(), prefix, start_from)
+            self._msstarter.addNewDevice(self.ms_name, klass='MacroServer')
+            # register Door device
+            dev_name_parts = self.door_name.split('/')
+            prefix = '/'.join(dev_name_parts[0:2])
+            start_from = int(dev_name_parts[2])
+            self.door_name = get_free_device(PyTango.Database(), prefix, 
+                                             start_from)
+            self._msstarter.addNewDevice(self.door_name, klass='Door')
+            # start MS server
+            self._msstarter.startDs()
+            # devices
+            self.macroserver = PyTango.DeviceProxy(self.ms_name)
+            self.macroserver.put_property({'PoolNames':pool_name})
+            self.macroserver.Init()
+            self.door = PyTango.DeviceProxy(self.door_name)
+        except Exception, e:
+            # force tearDown in order to eliminate the MacroServer
+            self.tearDown(self)
+            print e
 
     def tearDown(self):
         """Remove the Pool instance.
