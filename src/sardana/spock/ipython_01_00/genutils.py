@@ -892,6 +892,7 @@ def load_ipython_extension(ipython):
 def unload_ipython_extension(ipython):
     pass
 
+
 def load_config(config):
     spockver = release.version
     pyver = get_python_version()
@@ -965,7 +966,27 @@ object?   -> Details about 'object'. ?object also works, ?? prints more.
     i_shell.deep_reload = True
     i_shell.confirm_exit = False
 
-    if ipy_ver >= 1200:
+    if ipy_ver >= 50000:
+        from IPython.terminal.prompts import (Prompts, Token)
+
+        class SpockPrompts(Prompts):
+            def in_prompt_tokens(self, cli=None):
+                return [
+                    (Token.Prompt, door_alias),
+                    (Token.Prompt, ' ['),
+                    (Token.PromptNum, str(self.shell.execution_count)),
+                    (Token.Prompt, ']: '),
+                ]
+
+            def out_prompt_tokens(self):
+                return [
+                    (Token.OutPrompt, '\tResult ['),
+                    (Token.OutPromptNum, str(self.shell.execution_count)),
+                    (Token.OutPrompt, ']: '),
+                ]
+
+        config.InteractiveShell.prompts_class = SpockPrompts
+    elif ipy_ver >= 1200:
         # ------------------------------------
         # PromptManager (ipython >= 0.12)
         # ------------------------------------
