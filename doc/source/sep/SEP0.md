@@ -229,8 +229,6 @@ official URL for it is <http://www.jclark.com/xml/copying.txt> and
 the license text is:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-:::Text
-
 Copyright (c) <year>  <your names>
 
 Permission is hereby granted, free of charge, to any person obtaining
