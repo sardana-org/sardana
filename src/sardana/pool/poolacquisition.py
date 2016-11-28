@@ -468,6 +468,40 @@ class PoolAcquisitionBase(PoolAction):
 
         pool_ctrls_dict = dict(cfg['controllers'])
         pool_ctrls_dict.pop('__tango__', None)
+
+        # controllers to be started (only enabled) in the right order
+        pool_ctrls = []
+        # controllers that will be read at the end of the action
+        self._pool_ctrl_dict_loop = _pool_ctrl_dict_loop = {}
+        # controllers that will be read in the loop during the action
+        self._pool_ctrls_read_when_acq = _pool_ctrls_read_when_acq = {}
+        # channels that are acquired (only enabled)
+        self._channels = channels = {}
+
+        for ctrl, pool_ctrl_data in pool_ctrls_dict.items():
+            # skip not timerable controllers e.g. 0D
+            if not ctrl.is_timerable():
+                continue
+            ctrl_enabled = False
+            elements = pool_ctrl_data['channels']
+            for element, element_info in elements.items():
+                # skip disabled elements
+                if not element_info['enabled']:
+                    elements.pop(element)
+                    continue
+                channel = Channel(element, info=element_info)
+                channels[element] = channel
+                ctrl_enabled = True
+            if ctrl_enabled:
+                pool_ctrls.append(ctrl)
+                # only CT will be read in the loop, 1D and 2D not
+                if ElementType.CTExpChannel in ctrl.get_ctrl_types():
+                    _pool_ctrl_dict_loop[ctrl] = pool_ctrl_data
+                    # read only the ones which allow that
+                    if ctrl.get_ctrl_par("read_when_acq"):
+                        _pool_ctrls_read_when_acq[ctrl] = pool_ctrl_data
+
+
         pool_ctrls = []
         self._pool_ctrl_dict_loop = _pool_ctrl_dict_loop = {}
         self._pool_ctrls_read_when_acq = _pool_ctrls_read_when_acq = {}
@@ -690,7 +724,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
                 acquirable.set_state_info(state_info, propagate=2)
 
 
-class PoolCTAcquisition(PoolAction):
+class PoolCTAcquisition(PoolAcquisitionBase):
 
     def __init__(self, main_element, name="CTAcquisition", slaves=None):
         self._channels = None
@@ -699,127 +733,12 @@ class PoolCTAcquisition(PoolAction):
             slaves = ()
         self._slaves = slaves
 
-        PoolAction.__init__(self, main_element, name)
+        PoolAcquisitionBase.__init__(self, main_element, name)
 
     def get_read_value_loop_ctrls(self):
         return self._pool_ctrl_dict_loop
 
-    @DebugIt()
-    def start_action(self, *args, **kwargs):
-        """Prepares everything for acquisition and starts it.
-
-           :param: config"""        
-        pool = self.pool
-
-        # prepare data structures
-        self._aborted = False
-        self._stopped = False
-
-        self.conf = kwargs
-
-        self._acq_sleep_time = kwargs.pop("acq_sleep_time",
-                                             pool.acq_loop_sleep_time)
-        self._nb_states_per_value = \
-            kwargs.pop("nb_states_per_value",
-                       pool.acq_loop_states_per_value)
-
-        self._integ_time = integ_time = kwargs.get("integ_time")
-        self._mon_count = mon_count = kwargs.get("monitor_count")
-        if integ_time is None and mon_count is None:
-            raise Exception("must give integration time or monitor counts")
-        if integ_time is not None and mon_count is not None:
-            raise Exception("must give either integration time or monitor counts (not both)")
-
-        _ = kwargs.get("items", self.get_elements())
-        cfg = kwargs['config']
-        # determine which is the controller which holds the master channel
-
-        if integ_time is not None:
-            master_key = 'timer'
-            master_value = integ_time
-        if mon_count is not None:
-            master_key = 'monitor'
-            master_value = -mon_count
-
-        master = cfg[master_key]
-        master_ctrl = master.controller
-
-        pool_ctrls_dict = dict(cfg['controllers'])
-        pool_ctrls_dict.pop('__tango__', None)
-        pool_ctrls = []
-        self._pool_ctrl_dict_loop = _pool_ctrl_dict_loop = {}
-        for ctrl, v in pool_ctrls_dict.items():
-            if ctrl.is_timerable():
-                pool_ctrls.append(ctrl)
-            if ElementType.CTExpChannel in ctrl.get_ctrl_types():
-                _pool_ctrl_dict_loop[ctrl] = v
-
-        # make sure the controller which has the master channel is the last to
-        # be called
-        pool_ctrls.remove(master_ctrl)
-        pool_ctrls.append(master_ctrl)
-
-        # Determine which channels are active
-        self._channels = channels = {}
-        for pool_ctrl in pool_ctrls:
-            ctrl = pool_ctrl.ctrl
-            pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-            elements = pool_ctrl_data['channels']
-
-            for element, element_info in elements.items():
-                axis = element.axis
-                channel = Channel(element, info=element_info)
-                channels[element] = channel
-
-        #for channel in channels:
-        #    channel.prepare_to_acquire(self)
-
-        with ActionContext(self):
-
-            # PreLoadAll, PreLoadOne, LoadOne and LoadAll
-            for pool_ctrl in pool_ctrls:
-                ctrl = pool_ctrl.ctrl
-                pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-                ctrl.PreLoadAll()
-                master = pool_ctrl_data[master_key]
-                axis = master.axis
-                res = ctrl.PreLoadOne(axis, master_value)
-                if not res:
-                    raise Exception("%s.PreLoadOne(%d) returns False" % (pool_ctrl.name, axis,))
-                ctrl.LoadOne(axis, master_value)
-                ctrl.LoadAll()
-
-            # PreStartAll on all controllers
-            for pool_ctrl in pool_ctrls:
-                pool_ctrl.ctrl.PreStartAll()
-
-            # PreStartOne & StartOne on all elements
-            for pool_ctrl in pool_ctrls:
-                ctrl = pool_ctrl.ctrl
-                pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-                elements = pool_ctrl_data['channels'].keys()
-                timer_monitor = pool_ctrl_data[master_key]
-                # make sure that the timer/monitor is started as the last one
-                elements.remove(timer_monitor)
-                elements.append(timer_monitor)
-                for element in elements:
-                    axis = element.axis
-                    channel = channels[element]
-                    if channel.enabled:
-                        ret = ctrl.PreStartOne(axis, master_value)
-                        if not ret:
-                            raise Exception("%s.PreStartOne(%d) returns False" \
-                                            % (pool_ctrl.name, axis))
-                        ctrl.StartOne(axis, master_value)
-
-            # set the state of all elements to  and inform their listeners
-            for channel in channels:
-                channel.set_state(State.Moving, propagate=2)
-
-            # StartAll on all controllers
-            for pool_ctrl in pool_ctrls:
-                pool_ctrl.ctrl.StartAll()
-
+    
     def in_acquisition(self, states):
         """Determines if we are in acquisition or if the acquisition has ended
         based on the current unit trigger modes and states returned by the

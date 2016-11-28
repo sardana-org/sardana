@@ -311,35 +311,32 @@ class PoolMeasurementGroup(PoolGroupElement):
             for c, c_data in config['controllers'].items():
                 synchronizer = c_data.get('synchronizer')
                 acq_synch_type = c_data.get('synchronization')
-                # for backwards compatibility purposes
-                # protect measurement groups without synchronizer defined
-                # TODO: otherwise obtain software synchronizer and use it
-                if synchronizer is not None and synchronizer != 'software':
-                    tg_elem_ids.append(synchronizer.id)
-                    software = False
-                else:
-                    software = True
-                acq_synch = None
+                software = synchronizer == 'software'
                 external = isinstance(c, (str, unicode))
+                # only timerable elements are configured with acq_synch
+                acq_synch = None
+                ctrl_enabled = False
+                if not external and c.is_timerable():
+                    acq_synch = AcqSynch.from_synch_type(software, acq_synch_type)
                 for channel_data in c_data['channels'].values():
                     if external:
                         element = _id = channel_data['full_name']
                         channel_data['source'] = _id
                     else:
                         element = pool.get_element_by_full_name(channel_data['full_name'])
-                        elem_type = element.get_type()
-                        # only timerable elements are configured with acq_synch
-                        if elem_type in TYPE_TIMERABLE_ELEMENTS:
-                            acq_synch = AcqSynch.from_synch_type(software,
-                                                                 acq_synch_type)
-                            self._channel_to_acq_synch[element] = acq_synch
                         _id = element.id
-                    user_elem_ids[channel_data['index']] = _id
                     channel_data = self._build_channel_defaults(channel_data, element)
-                if acq_synch is not None:
+                    if channel_data["enabled"]:
+                        if acq_synch is not None:
+                            ctrl_enabled = True
+                            self._channel_to_acq_synch[element] = acq_synch
+                            if not software:
+                                tg_elem_ids.append(synchronizer.id)
+                        user_elem_ids[channel_data['index']] = _id
+                if ctrl_enabled:
                     self._ctrl_to_acq_synch[c] = acq_synch
+            # sorted ids may not be consecutive (if a channel is disabled)
             indexes = sorted(user_elem_ids.keys())
-            assert indexes == range(len(indexes))
             user_elem_ids_list = [ user_elem_ids[idx] for idx in indexes ]
             user_elem_ids_list.extend(tg_elem_ids)
             self.set_user_element_ids(user_elem_ids_list)
