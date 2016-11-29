@@ -39,8 +39,11 @@ from taurus.external.qt import Qt
 
 from taurus.qt.qtgui.base import TaurusBaseWidget
 from taurus.qt.qtgui.editor import TaurusBaseEditor
-from taurus.qt.qtgui.util import ActionFactory
 from taurus.qt.qtgui.dialog import ProtectTaurusMessageBox
+
+# consider adding an utility in taurusedirot to create actions
+from spyder.utils.qthelpers import create_action
+
 from macrotree import MacroSelectionDialog
 from elementtree import SardanaElementTreeWidget
 
@@ -162,25 +165,30 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
         return self._base_tmp_dir
 
     def createMenuActions(self):
-        af = ActionFactory()
         on_save = functools.partial(self.on_save, apply=False)
         on_save_apply = functools.partial(self.on_save, apply=True)
 
-        self.new_action = af.createAction(self, "New...",
-                icon='document-new', tip="Create a new macro or controller class",
+        self.new_action = create_action(self, "New...",
+                icon=Qt.QIcon.fromTheme('document-new'),
+                tip="Create a new macro or controller class",
                 triggered=self.on_new, shortcut=Qt.QKeySequence.New)
-        self.open_action = af.createAction(self, "Open...",
-                icon='document-open', tip="Open macro(s) or controller(s)",
+
+        self.open_action = create_action(self, "Open...",
+                icon=Qt.QIcon.fromTheme('document-open'),
+                tip="Open macro(s) or controller(s)",
                 triggered=self.on_open, shortcut=Qt.QKeySequence.Open)
-        self.save_action = af.createAction(self, "Save",
-                icon='document-save', tip="Save the current selected item",
+        self.save_action = create_action(self, "Save",
+                icon=Qt.QIcon.fromTheme('document-save'),
+                tip="Save the current selected item",
                 triggered=on_save)
-        self.save_and_apply_action = af.createAction(self, "Save && apply",
-                triggered=on_save_apply, icon='document-save',
+        self.save_and_apply_action = create_action(self, "Save && apply",
+                triggered=on_save_apply,
+                icon=Qt.QIcon.fromTheme('document-save'),
                 tip="Save the current selected item and apply the new code",
                 shortcut=Qt.QKeySequence.Save)
-        self.revert_action = af.createAction(self, "Revert",
-                icon='edit-undo', tip="Revert the current selected item code",
+        self.revert_action = create_action(self, "Revert",
+                icon=Qt.QIcon.fromTheme('edit-undo'),
+                tip="Revert the current selected item code",
                 triggered=self.on_revert)
 
         io_actions = [self.new_action, self.open_action, self.save_action,
@@ -212,7 +220,7 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
             self.open_macro_libraries([item_data])
 
     @ProtectTaurusMessageBox(title="A error occured trying to create a class")
-    def on_new(self):
+    def on_new(self, checked):
 
         elem_types = "Macro function", "Macro class", "Macro library", \
             "Motor controller class", "Counter/Timer controller class", \
@@ -349,7 +357,7 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
         self.editorStack().load(local_filename)
 
     @ProtectTaurusMessageBox(title="An error occured trying to open a macro class")
-    def on_open(self):
+    def on_open(self, checked):
         ms = self.getModelObj()
         ms_tree = MacroSelectionDialog(self, model_name=ms.getNormalName())
         ms_tree.exec_()
@@ -454,7 +462,7 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
                 self.set_current_filename(local_filename)
 
     @ProtectTaurusMessageBox(msg="A error occured trying to save")
-    def on_save(self, apply=True):
+    def on_save(self, checked, apply=True):
         editorstack = self.editorStack()
         # Save the currently edited file
         if not editorstack.get_stack_count():
@@ -471,7 +479,7 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
         remote_filename = local_filename[len(self._tmp_dir):]
         self.set_macro_code(remote_filename, code, apply)
 
-    def on_revert(self):
+    def on_revert(self, checked):
         self.editorStack().revert()
 
     def reload_macro_lib(self, module_name):
