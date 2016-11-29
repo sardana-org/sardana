@@ -11,7 +11,7 @@
 	Abstract:
 	Separate taurus from sardana. Move taurus to a separate SF project.
 	This will allow taurus to have it's own development life cycle.
-	This obsoletes items on [SEP1][].
+	This obsoletes items on SEP1.
 
 
 
@@ -19,7 +19,7 @@ Introduction
 ============
 
 This SEP describes the intention of moving taurus into a separate SF project. 
-It obsoletes requirement 2 of [SEP1]. It does *not* obsolete the *sardana suite* concept. 
+It obsoletes requirement 2 of [SEP1][]. It does *not* obsolete the *sardana suite* concept. 
 
 Motivation
 ==========
@@ -27,7 +27,7 @@ Motivation
 Currently, after the acceptance and implementation of [SEP1], taurus became a product of the sardana project. Specifically the taurus code became a sub-directory of the sardana git repository.
 Many potential users of taurus will be drawn away due to the fact that taurus is a sub-product of sardana. Taurus collaborators feel that taurus should have its own life cycle independent from sardana. Taurus should have its own web page, repository, Memorandum Of Understanding (MOU), Taurus Enhancement Proposals (TEP), mailing list, ticket tracker, developers and integration managers.
 
-The main motivation behind requirement 2 of [SEP1] was to ease development, specifically the tracking of problems in sardana caused by taurus. By having the two libraries (sardana and taurus) in the same repository one could easily identify and revert from revisions that cause problems. While this is a valid requirement it is believed that it can be achieved through a proper code contribution workflow which is already described by the accepted [SEP7].
+The main motivation behind requirement 2 of [SEP1] was to ease development, specifically the tracking of problems in sardana caused by taurus. By having the two libraries (sardana and taurus) in the same repository one could easily identify and revert from revisions that cause problems. While this is a valid requirement it is believed that it can be achieved through a proper code contribution workflow which is already described by the accepted [SEP7][].
 
 Goals
 =====
@@ -110,6 +110,5 @@ Changes
 
 
 
-
-[SEP1]: sep/SEP1.md
-
+[SEP1]: http://www.sardana-controls.org/sep/?SEP1.md
+[SEP7]: http://www.sardana-controls.org/sep/?SEP7.md
