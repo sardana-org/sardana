@@ -92,8 +92,9 @@ The controller attributes appear as Tango Attributes of the device corresponding
 * **ReflectionList**: list of reflections for current sample.  
 * **RemoveReflection**: remove reflection with given index.
 * **SaveCrystal**: saves current crystal name, wavelength, lattice parameters, first and second reflections, engine mode, ub matrix, u vector, psi reference vector and SaveDirectory attribute to two files: one with the name defaultcrystal.txt and other with the name of the current crystal/sample. The files are saved in the directory written in the attribute SaveDirectory.
-Example of a saved file:
 
+Example of a saved file:
+```
 Created at 2015-01-09 11:32
 
 Crystal    default_crystal
@@ -117,8 +118,7 @@ U20 0.000 U21 0.000 U22 4.189
 Ux 0.0 Uy 0.0 Uz 0.0
 
 SaveDirectory /home/tnunez
-
-
+```
 
 * **SaveDirectory**: name of the directory where the files with the crystal information will be saved.
 * **SaveReflections**: saves reflections from current crystal to ascii file. The value written to this attribute is the path to the file, the name of the file is the name of the sample with the termination .ref. If this file already exists a copy will be created adding to the name the current time in seconds.  
@@ -143,7 +143,7 @@ The different diffractometer types covered by the hkl library have been grouped 
 Even if the choose of one of these diffractometer classes is already determined for the type of the diffractometer we are going to use, the property DiffratometerType described in the basis class is still required because several library diffractometer types have the same motors and pseudo motors.
 
 The following diffractometer controller classes are implemented:
-
+```
 * Diffrac6C (covers diffractometer type "PETRA3 P09 EH2")
   pseudo_motor_roles = "h", "k", "l"
   motor_roles = "mu", "th", "chi", "phi", "gamma", "delta"
@@ -153,10 +153,10 @@ The following diffractometer controller classes are implemented:
 * DiffracE4C (covers diffractometer types  "E4CV", "E4CH", "SOLEIL MARS")
   pseudo_motor_roles = "h", "k", "l","psi","q"
   motor_roles = "omega", "chi", "phi", "tth"
-  
+```
 The following diffractometer controller classes were removed from a previous version of the controller, since
 they were no supported or tested any more inside the hkl library. We expect, they will be available in the future:
-  
+```  
 * DiffracK6C (covers diffractometer type "K6C")
   pseudo_motor_roles = "h", "k", "l","psi","q21","q22","qperqpar1","qperpar2","eulerians1", "eulerians2","eulerians3"
   motor_roles = "omega", "chi", "phi", "tth" 
@@ -172,8 +172,8 @@ they were no supported or tested any more inside the hkl library. We expect, the
 * Diffrac2C (default 2 circles diffractometers)
   pseudo_motor_roles = "h", "k", "l"
   motor_roles = "omega","tth"  
-
-
+  ```
+  
 ## Diffractometer GUI
 
 A Graphical User Interface is being developed for controlling the diffractometer.
@@ -214,7 +214,9 @@ The steps to do are:
 `deb-src http://ftp.debian.org/debian jessie-backports main contrib non-free`
 
 2) `apt-get update`
+
 3) `apt-get build-dep hkl`
+
 4) `cd /tmp && apt-get source -b hkl`
 
 It should build a bunch of .deb files and you could install them with
@@ -230,7 +232,7 @@ Known issues & possible improvements
 
 * General
     * Documentation is missing.
-    * Current implementaion of the diffractometer controllers is not generic and requires a new controller class per each geometry. Whenever the following Sardana [feature-request](https://sourceforge.net/p/sardana/tickets/137/) is implemented the diffractometer controllers should take profit of it.
+    * Current implementaion of the diffractometer controllers is not generic and requires a new controller class per each geometry. Whenever the following Sardana [feature-request](https://github.com/sardana-org/sardana/issues/86) is implemented the diffractometer controllers should take profit of it.
 * GUIs
     * As it is now, the hklscan widget "Display Angles" requires all dimensions (H & K & L) to be specified even if one wants to execute less than 3 dimensions scan e.g. to execute the ascan of H axis, the K & L dimensions needs equal the start and the end positions. This could be improved.
     * "ComputeUB" of the ubmatrix widget works only when at least 2 reflexions are defined for the current crystal. If one tries to execute it and this requirement is not fulfield, the widget does silently ignore the requets. It could inform the user about the missing reflexions.
@@ -286,6 +288,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 Changes
 -------
+
+* 2016-11-29: 
+ [mrosanes](https://github.com/sagiss) Migrate SEP4 from SF wiki to independent file, modify URL, fix formatting and correct links.
 
 * 2013-06-28:
   [tere29](https://sourceforge.net/u/tere29/) Implementation started in sep4 branch
