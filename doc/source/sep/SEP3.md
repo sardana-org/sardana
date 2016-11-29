@@ -1,6 +1,6 @@
 	Title: Adapt to TEP3 (Tango-independent taurus.core)
 	SEP: 3
-	State: REJECTED (handled in [TEP3][] and [TEP14][])
+	State: REJECTED (handled in TEP3 and TEP14)
 	Date: 2013-06-26
 	Drivers: Carlos Falcon-Torres <cfalcon@cells.es>, Carlos Pascual-Izarra <cpascual@cells.es>
 	URL: http://www.sardana-controls.org/sep/?SEP3.md
@@ -15,22 +15,22 @@
 REJECTION NOTICE
 =================
 
-This SEP is obsoleted since the scope of the original [TEP3](tauruslib:wiki:TEP3) to which this SEP refers was splitted into [TEP3](tauruslib:wiki:TEP3) and [TEP14](tauruslib:wiki:TEP14) and their implementation into Taurus4.
+This SEP is obsoleted since the scope of the original [TEP3][] to which this SEP refers was splitted into [TEP3][] and [TEP14][] and their implementation into Taurus4.
 
-**The required adaptation of sardana to Taurus4 will be handled in ticket [#452]**
+**The required adaptation of sardana to Taurus4 will be handled in ticket [SF#452][]**
 
 Introduction & Motivation
 =========================
 
-THIS proposal is a consequence of the [TEP3](tauruslib:wiki:TEP3), which 
+THIS proposal is a consequence of the [TEP3][], which 
 describes the refactoring of Taurus to make the Tango dependency optional 
-instead of mandatory. The TEP3 deprecates many APIs and introduces some 
+instead of mandatory. The [TEP3][] deprecates many APIs and introduces some 
 backward incompatibilities. The SEP3 aims to adapt Sardana to the changes 
-imposed by TEP3.
+imposed by [TEP3][].
 
-Note: originally, the TEP3 was started as SEP3 and it only became split 
-after the application of [SEP10]. Most of the requirements initially 
-stated in the SEP3 draft have been moved to the TEP3, and only those 
+Note: originally, the [TEP3][] was started as SEP3 and it only became split 
+after the application of [SEP10][]. Most of the requirements initially 
+stated in the SEP3 draft have been moved to the [TEP3][], and only those 
 requirements specifically affecting the sardana code remain in this SEP.
 
 Requirements
@@ -80,6 +80,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 Changes
 ========
+2016-11-29: 
+[mrosanes](https://github.com/sagiss) Migrate SEP3 from SF wiki to independent file, modify URL, fix formatting and correct links.
 
 2013-06-26
 [cmft](https://sourceforge.net/u/cmft/) First draft based on previous 
@@ -115,7 +117,7 @@ some info about validators
 
 2015-05-06
 [cpascual](https://sf.net/u/cpascual/) Updated to reflect split into SEP3 
-and TEP3 according to [SEP10]
+and TEP3 according to [SEP10][]
 
 2015-05-06
 [cpascual](https://sf.net/u/cpascual/) changed from DRAFT to CANDIDATE
@@ -128,3 +130,5 @@ and TEP3 according to [SEP10]
 
 [TEP3]: http://www.taurus-scada.org/tep/?TEP3.md
 [TEP14]: http://www.taurus-scada.org/tep/?TEP14.md
+[SF#452]: https://github.com/sardana-org/sardana/issues/297
+[SEP10]: http://www.sardana-controls.org/sep/?SEP10.md
