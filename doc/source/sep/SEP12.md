@@ -98,6 +98,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Changes
 =======
 
+* 2016-11-29 [mrosanes](https://github.com/sagiss) 
+  Migrate SEP12 from SF wiki to independent file.
+
 * 2014-03-05 [tiagocoutinho](https://sourceforge.net/u/tiagocoutinho/)
   Changed state to CANDIDATE
 
