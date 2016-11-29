@@ -300,3 +300,6 @@ Changes
 
 2015-05-15
 [cpascual](https://sourceforge.net/u/cpascual/) Another fix in dates (copy-paste error solved)
+
+2016-11-29
+[mrosanes](https://github.com/sagiss) Migrate SEP5 from SF wiki to independent file, modify URL and fix formatting.
