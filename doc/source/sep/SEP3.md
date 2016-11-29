@@ -80,8 +80,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 Changes
 ========
-2016-11-29: 
-[mrosanes](https://github.com/sagiss) Migrate SEP3 from SF wiki to independent file, modify URL, fix formatting and correct links.
 
 2013-06-26
 [cmft](https://sourceforge.net/u/cmft/) First draft based on previous 
@@ -125,7 +123,8 @@ and TEP3 according to [SEP10][]
 2016-04-04
 [cpascual](https://sf.net/u/cpascual/) changed from CANDIDATE to REJECTED (it is obsoleted by Taurus4)
 
-
+2016-11-29: 
+[mrosanes](https://github.com/sagiss) Migrate SEP3 from SF wiki to independent file, modify URL, fix formatting and correct links.
 
 
 [TEP3]: http://www.taurus-scada.org/tep/?TEP3.md
