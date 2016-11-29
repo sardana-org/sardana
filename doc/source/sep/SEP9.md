@@ -102,6 +102,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 Changes
 -------
+
+* 2016-11-29: 
+ [mrosanes](https://github.com/sagiss) Migrate SEP9 from SF wiki to an independent file.
+
 * 2014-07-02:
   [cpascual](https://sourceforge.net/u/cpascual/) Promoting to ACCEPTED
 
