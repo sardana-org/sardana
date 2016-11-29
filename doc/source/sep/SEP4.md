@@ -289,9 +289,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 Changes
 -------
 
-* 2016-11-29: 
- [mrosanes](https://github.com/sagiss) Migrate SEP4 from SF wiki to independent file, modify URL, fix formatting and correct links.
-
 * 2013-06-28:
   [tere29](https://sourceforge.net/u/tere29/) Implementation started in sep4 branch
 
@@ -304,3 +301,5 @@ Changes
 * 2016-11-18 by zreszela:
     Minor change to add info how to install HKL library from jessie-backports
 
+* 2016-11-29: 
+ [mrosanes](https://github.com/sagiss) Migrate SEP4 from SF wiki to independent file, modify URL, fix formatting and correct links.
