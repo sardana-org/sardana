@@ -33,30 +33,30 @@ When someone asks for a variable and it does not exist in the scope the environm
 The Sardana CLI ("Spock"), connects to a door (configurable via profile) and offers a way to read/write the MacroServer environment. Using Spock a user can set or modify the whole environment (on all levels). This is done using the *senv* and *usenv* macros:
 
 Lets see an example:
-
-    #!/usr/bin/python
-    senv ScanDir "/tmp" # global level
-    # or
-    senv DOOR_NAME.ScanDir  "/tmp" # door level
-    # or
-    senv MACRO_NAME.ScanDir "/tmp" # macro level
-    # or
-    senv DOOR_NAME.MACRO_NAME.ScanDir "/tmp" # door.macro level
-
+```python
+#!/usr/bin/python
+senv ScanDir "/tmp" # global level
+# or
+senv DOOR_NAME.ScanDir  "/tmp" # door level
+# or
+senv MACRO_NAME.ScanDir "/tmp" # macro level
+# or
+senv DOOR_NAME.MACRO_NAME.ScanDir "/tmp" # door.macro level
+```
 
 A user friendly access to the environement from outside of the **Spock** has been a requirement for a long time. Nowadays, developers are forced to do complicated scripts for read/write environment variables or simply give up with its use in favor of the intermediate Tango device servers (responsible for configuration) in their applications.
 
 Lets see an example:
+```python
+#!/usr/bin/python
+import taurus
+from taurus.core.util import CodecFactory
 
-    #!/usr/bin/python
-    import taurus
-    from taurus.core.util import CodecFactory
-
-    attr_env = taurus.Attribute('macroserver/cfalcon/1/environment')
-    env_value = attr_env.read().value
-    decoded_env_value = CodecFactory().decode(env_value, 'pickle')
-    print decoded_env_value['new']['ScanDir']
-
+attr_env = taurus.Attribute('macroserver/cfalcon/1/environment')
+env_value = attr_env.read().value
+decoded_env_value = CodecFactory().decode(env_value, 'pickle')
+print decoded_env_value['new']['ScanDir']
+```
 Requirements
 ------------
 This SEP proposes to create a simple taurus scheme for read and write of the MS environment variables. The scheme should use the folowing URI names:
@@ -74,7 +74,7 @@ This SEP proposes to create a simple taurus scheme for read and write of the MS 
 * msenv://Foo:1000/macroserver/Foo/1/door1.ascan.ScanDir
 
 Implementation
---------------------------------
+--------------
 
 * Authority: 
     * Internally it should  use a proxy to a Tango Database.
@@ -91,21 +91,23 @@ Implementation
     * Read of the attribute should fallback to the higher level of the variable in case the specific variable does not exists e. g. if the variable ascan.ScanFile is not defined, attribute readout should return value of the ascan variable.
 
 TODO
+```python
+#!/usr/bin/python
+import taurus, PyTango
+def listener(s, t, v):
+	if isinstance(v, PyTango.DeviceAttribute):
+    	print "Event ", v.value
 
-    #!/usr/bin/python
-    import taurus, PyTango
-    def listener(s, t, v):
-        if isinstance(v, PyTango.DeviceAttribute):
-            print "Event ", v.value
-    
-    env = taurus.Attribute("macroserver/cfalcon/1/environment")
-    env.addListener(listener)
-    # Fist event (get all the environment)
-    Event  ('pickle', '\x80\x02}q\x00U\x03newq\x01}q\x02(U\x06ScanIDq\x03K0U\x08ScanFileq\x04U\x0bmyscans.tx ...)
-    # From spock change the ScanDirq
-    Event  ('pickle', '\x80\x02}q\x00U\x06changeq\x01}q\x02U\x07ScanDirq\x03U\x04/tmpq\x04ss.')
+env = taurus.Attribute("macroserver/cfalcon/1/environment")
+env.addListener(listener)
+# Fist event (get all the environment)
+Event  ('pickle', '\x80\x02}q\x00U\x03newq\x01}q\x02(U\x06ScanIDq\x03K0U\x08ScanFileq\x04U\x0bmyscans.tx ...)
+# From spock change the ScanDirq
+Event  ('pickle', '\x80\x02}q\x00U\x06changeq\x01}q\x02U\x07ScanDirq\x03U\x04/tmpq\x04ss.')
+```
 
-
+License
+-------
 Copyright (c) 2015 Carlos Falcon-Torres
 
 Permission is hereby granted, free of charge, to any person obtaining
@@ -126,6 +128,9 @@ IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
 CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
 TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+
 Changes
-
-
+-------
+2016-11-29: 
+[mrosanes](https://github.com/sagiss) Migrate SEP14 from SF wiki to independent file, modify URL and fix formatting.
