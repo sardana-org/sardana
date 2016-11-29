@@ -47,50 +47,48 @@ Implementation
 The SEP proposes a helper in form of a python decorator that should be used in widgets that are based on .ui files.
 The helper needs to be implemented having into account the fact that many taurus widgets based on .ui files are based on the recipe:
 
-    :::python
+```python
+class MyWidget(QtGui.QWidget):
 
-    class MyWidget(QtGui.QWidget):
+	def __init__(self, parent=None):
+		QtGui.QWidget.__init__(self, parent)
+		from .ui.ui_MyWidget import Ui_MyWidget
+		self._ui = Ui_MyWidget()
+		self._ui.setupUi(self)
 
-        def __init__(self, parent=None):
-            QtGui.QWidget.__init__(self, parent)
-            from .ui.ui_MyWidget import Ui_MyWidget
-            self._ui = Ui_MyWidget()
-            self._ui.setupUi(self)
-            
-            self._ui.mylabel.setText("Here I am")
+		self._ui.mylabel.setText("Here I am")
+```
 
 The helper should have options to allow easy transition into the new system.
 
 Here is a proposal for the API:
 
-    :::python
-
-    def UILoadable(klass=None, filename=None, path=None, with_ui=None):
-        pass
+```python
+def UILoadable(klass=None, filename=None, path=None, with_ui=None):
+	pass
+```
 
 Basic example:
 
-    :::python
+```python
+@UILoadable
+class MyWidget(Qt.QWidget):
 
-    @UILoadable
-    class MyWidget(Qt.QWidget):
-
-        def __init__(self, ...):
-            self.loadUi()
-            self.mylabel.setText("Here I am")
-
+	def __init__(self, ...):
+		self.loadUi()
+		self.mylabel.setText("Here I am")
+```
 
 Another example using a new member *_ui* to avoid polluting the widget namespace:
 
-    :::python
+```python
+@UILoadable(with_ui='_ui')
+class MyWidget(Qt.QWidget):
 
-    @UILoadable(with_ui='_ui')
-    class MyWidget(Qt.QWidget):
-
-        def __init__(self, ...):
-            self.loadUi()
-            self._ui.mylabel.setText("Here I am")
-
+	def __init__(self, ...):
+		self.loadUi()
+		self._ui.mylabel.setText("Here I am")
+```
 
 License
 =======
@@ -118,6 +116,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 Changes
 =======
+
+* 2016-11-29
+[mrosanes](https://github.com/sagiss) Migrate SEP11 from SF wiki to independent file, modify URL and fix formatting.
 
 * 2015-05-13
 [cpascual](https://sourceforge.net/u/cpascual/) Fixed date in header to reflect acceptance date
