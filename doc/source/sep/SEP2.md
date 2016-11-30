@@ -68,3 +68,13 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
+
+
+Changes
+-------
+
+2016-11-30 
+[mrosanes](https://github.com/sagiss) Migrate SEP2 from SF wiki to independent markdown language file and correct formatting.
+
+
+
