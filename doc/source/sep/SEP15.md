@@ -1,6 +1,6 @@
 	Title: Moving Sardana to Github
 	SEP: 15
-	State: DRAFT
+	State: CANDIDATE
 	Date: 2016-11-21
 	Drivers: Marc Rosanes <mrosanes@cells.es>, Zbigniew Reszela <zreszela@cells.es>
 	URL: http://www.sardana-controls.org/sep/?SEP15.md
@@ -187,8 +187,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 ## Changes
 
 - 2016-11-21 [mrosanes][]. Initial version
+- 2016-11-30 [reszelaz][]. DRAFT -> CANDIDATE (review & minor corrections)
 
 
 [TEP16]: http://www.taurus-scada.org/tep/?TEP16.md
 [GitHub Issues]: https://guides.github.com/features/issues/
 [mrosanes]: https://github.com/sagiss/
+[reszelaz]: https://github.com/reszelaz
