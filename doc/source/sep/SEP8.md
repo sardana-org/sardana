@@ -13,3 +13,13 @@
 See [TEP8][] documentation for more details.
 
 [TEP8]: http://www.taurus-scada.org/tep/?TEP8.md
+
+
+
+
+Changes
+-------
+
+2016-11-30 
+[mrosanes](https://github.com/sagiss) Migrate SEP8 from SF wiki to independent markdown language file.
+
