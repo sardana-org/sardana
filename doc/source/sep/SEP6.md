@@ -52,11 +52,11 @@ Transparency
 
 Sardana scans can be executed in the following modes: step, continuous and hybrid. The main difference between them is how the motion and the acquisition phases are executed. The step scans execute motion and acquisition sequentially, accelerating and decelerating the moveables in between each scan point. The acquisition phase is executed while the moveables are stopped. The continuous scans execute all the acquisitions simultanously to the motion of the moveables from the scan start to the end positions. Acquisitions are synchronized to be executed on the scan intervals commanded by the user. In the hybrid scans motion to each scan point is acompanied with the acquisition from the previous scan point, so the acquisition is also executed while moveables are moving, however they stop in between each scan point.
 
-A step scan can be executed with one of the standard macros e.g. ascan, d2scan, mesh. While a continuous scan can be executed with their equivalents terminated with *c* suffix. Parameters of the continuous scans are the same as in the step scans. Also the scan records comprise the same fields as in the step scan. The only difference in the continuous scan records is that the: motor positions and the delta times are filled with the nominal values instead of the real ones. The measurement group configuration should allow to scan in step and continuous modes without the need to reconfigure any parameters, of course if the hardware allows that.
+A step scan can be executed with one of the standard macros e.g. ascan, d2scan, mesh. While the continuous scans developed in this SEP can be executed with their equivalents terminated with *ct* suffix. Parameters of the continuous scans are the same as in the step scans. Also the scan records comprise the same fields as in the step scan. The only difference in the continuous scan records is that the: motor positions and the delta times are filled with the nominal values instead of the real ones. The measurement group configuration should allow to scan in step and continuous modes without the need to reconfigure any parameters, of course if the hardware allows that. For the reference a different type of the continuous scans, terminated with *c* suffix, is also present in Sardana.
 
 Example of a continuous scan - the absolute equidistant continuous scan:
 
-    ascanc <motor> <start_pos> <final_pos> <nr_interv> <integ_time>
+    ascanct <motor> <start_pos> <final_pos> <nr_interv> <integ_time>
 
 Generic Scan Framework (GSF)
 ------------------------------------
@@ -108,15 +108,15 @@ Measurement Group (MG)
 -----------------------------
 MeasurementGroup is a group element. It aggregates other elements of types ExpChannel (these are CounterTimer, 0D, 1D and 2D ExperimentalChannels) and TriggerGate. The MeasurementGroup's role is to execute acquisitions using the aggregated elements.
 
-The acquisition is synchronized by the TriggerGate elements. The hardware synchronized ExpChannel controllers  are configured with the number of acquisitions to be executed while the software synchronized do not know a priori the number of acqusitions.
+The acquisition is synchronized by the TriggerGate elements or by the software synchronizer. The hardware synchronized ExpChannel controllers  are configured with the number of acquisitions to be executed while the software synchronized do not know a priori the number of acqusitions.
 
 Latency time is a new attribute of the measurement group which role is to introduce an extra latency time in between two consecutive acquisitions. Its value corresponds to the maximum latency time of all the ExpChannel controllers present in the measurement group. It may be especially useful for acquisitions involving software synchronized channels. The software overhead may cause acquisitions to be skipped if the previous acquisition is still in progress while the new synchronization event arrives. The *latency time* parameter, by default, has zero value.
 
-On the MeasurementGroup creation, the SoftwareTriggerGate element is assigned by default to the newly added ExperimentalChannel controllers, hence the MeasurementGroup could be used in the continuous scans straight away. 
+On the MeasurementGroup creation, the software synchronizer is assigned by default to the newly added ExperimentalChannel controllers, hence the MeasurementGroup could start measuring without any additional configurations. 
 
 The configuration parameters:
 
-- **Configuration** (type: dictionary) - stores static configuration e.g. which TriggerGate element is associated to which ExperimentalChannel controller and which synchronization type is used (Trigger or Gate)
+- **Configuration** (type: dictionary) - stores static configuration e.g. which synchronizer is associated to which ExperimentalChannel controller and which synchronization type is used (Trigger or Gate)
 - **Synchronization** (type: list of dictionaries) - express the measurement synchronization, it is composed from the groups of equidistant acquisitions described by: the initial point and delay, total and active intervals and the number of repetitions, these information can be expressed in different synchronization domains if necessary (time, position, monitor) 
 - **LatencyTime** (type: float, unit: seconds, access: read only): latency time between two consecutive acquisitions
 - **Moveable** (type: string) - full name of the master moveable element
@@ -133,12 +133,12 @@ dict <str, obj=""> with (at least) keys:
               - 'timer' : the timer channel name / id
               - 'monitor' : the monitor channel name / id
               - 'synchronization' : 'Trigger' / 'Gate'
-              - 'synchronizer': the TriggerGate name / id
+              - 'synchronizer': the TriggerGate name / id or 'software' to indicate software synchronizer
               - 'channels' where value is a dict<str, obj=""> with (at least) keys:
                       - ...
 ~~~~
 
-The configuration parameter had change during the SEP6 developments. First of all the [feature request #372](https://sourceforge.net/p/sardana/tickets/372/) was developed and the units level disappeared from the configuration. Furthermore the controller parameters _trigger_type_ was renamed to _synchroniation_. In both cases one-way backwards compatibility was maintained. That means that the measurement groups created with the previous versions of Sardana are functional. Once their configuration gets saved again (either after modification or simply by re-applying), the configuration is no more reverse compatible.
+The configuration parameter had change during the SEP6 developments. First of all the [feature request #372](https://sourceforge.net/p/sardana/tickets/372/) was developed and the units level disappeared from the configuration. Furthermore the controller parameters _trigger_type_ was renamed to _synchroniation_. In both cases one-way backwards compatibility was maintained. That means that the measurement groups created with the previous versions of Sardana are functional. Once their configuration gets saved again (either after modification or simply by re-applying), the configuration is no more reverse compatible. **IMPORTANT: when deploying the SEP6 consider back-up of the measurement groups configurations in case you would need to rollback**
 
 Format of the synchronization parameter:
 
@@ -213,15 +213,10 @@ TriggerGateController API (**bold** are mandatory):
 - **SetConfiguration** and **GetConfiguration** (see format of MG Synchronization parameter)
 - SetAxisPar and GetAxisPar
 
-Sardana provides two TriggerGate controllers:
+Sardana provides one TriggerGate controllers DummyTriggerGateController which does not synchronize acquisition and just provides dummy behavior. DummyTriggerGateController imitate the behavior of the hardware with trigger and/or gate signal generation capabilities. It emulates the state machine: changes state from On to Moving on start and from Moving to On based on the configuration parameters or when stopped.
 
-- SoftwareTriggerGateController - allows software synchronization of acquisition in both time and distance domains
-- DummyTriggerGateController - does not synchronize acquisition and just provides dummy behavior
-
-SoftwareTriggerGateController generates software events of type: TGEventType.Active and TGEventType.Passive. The acquisition action listens to these events and start or start and stop the acquisition process when they arrive.
+Software synchronizer resides in the core of Sardana and generates software events of type: TGEventType.Active and TGEventType.Passive. The acquisition action listens to these events and start or start and stop the acquisition process when they arrive.
 In case the MeasurementGroup Synchronization contains position domain characteristics this controller is added as a listener to the to the moveable's position attribute. Then the generation of generates the synchronization events is based on these updates.
-
-DummyTriggerGateController imitate the behavior of the hardware with trigger and/or gate signal generation capabilities. It emulates the state machine: changes state from On to Moving on start and from Moving to On based on the configuration parameters or when stopped.
 
 **Pool Synchronization action**
 
@@ -230,7 +225,7 @@ PoolSynchronization is the Pool's action in charge of the control of the Trigger
 Its **start_action** method executes the following:
 
 - load dynamic configuration to the hardware by calling SetConfiguration
-- in case the software TriggerGate element is in use, add the acquisition action as a listener of the SoftwareTriggerGateController
+- in case the software synchronizer is in use, add the acquisition action as a listener of the SoftwareTriggerGateController
 - in case the position domain synchronization is in use it adds the SoftwareTriggerGateController as a listenr of the moveable's position updates
 - start the involved axes
     - for each controller implied in the generation call PreStartAll
@@ -347,10 +342,10 @@ Its **action_loop** method executes the following:
 The action_loop waits some time between interrogating controllers for their states. The wait time by default is 0.01 [s] and is configurable with the AcqLoop_SleepTime property (unit: milliseconds) of the Pool Tango Device.
 The action_loop reads new data every certain number of state readout iterations. This number is by default 10 and is configurable with the AcqLoop_StatesPerValue property of the PoolTangoDevice. 
 
-**SoftwareSynchronizedAcquisition** acts on the ExpChannels synchronized by software TriggerGate elements. 
-Their synchronization mode, whether trigger or gate, affects the flow of action. This action is launched on the active event comming from the software TriggerGate controller, and lasts until all the ExpChannel terminates their acquisitions.
-Channels configured with gate synchronization are stopped on the passive event comming from the software TriggerGate element.
-This action assigns index to the acquired data (returned by the ReadOne). The index originates from the events generated by the software TriggerGate elements. 
+**SoftwareSynchronizedAcquisition** acts on the ExpChannels synchronized by the software synchronizer. 
+Their synchronization mode, whether trigger or gate, affects the flow of action. This action is launched on the active event comming from the software synchronizer, and lasts until all the ExpChannel terminates their acquisitions.
+Channels configured with gate synchronization are stopped on the passive event comming from the software synchronizer.
+This action assigns index to the acquired data (returned by the ReadOne). The index originates from the events generated by the software synchronizer. 
 
 Prior to the action execution load parameters to the involved controllers:
 
@@ -463,7 +458,7 @@ Implementation TODOs
 ==================
 
 * <s>provide backwards compatibility (if possible) with old MGs definitions (mainly [#372])</s>
-* decide if software trigger is a Sardana element or part of the core
+* <s>decide if software trigger is a Sardana element or part of the core</s>
 * ascanct must provide (number of intervals + 1) records
 * the last acqusition must be done on the constant velocity
 * <s>MG configuration: rename trigger_type to synchronization and trigger_element to synchronizer</s>
