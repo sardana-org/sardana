@@ -485,3 +485,12 @@ Out of scope of SEP6
 References
 =========
 1. [WECOAAB03, "Synchronization of Motion and Detectors and Continuous Scans as the Standard Data Acquisition Technique", D.F.C. Fernández-Carreiras et al.](http://accelconf.web.cern.ch/AccelConf/ICALEPCS2013/papers/wecoaab03.pdf)
+
+Changes
+=======
+
+2016-11-30 
+[mrosanes](https://github.com/sagiss) Migrate SEP6 from SF wiki to independent markdown language file.
+
+
+
