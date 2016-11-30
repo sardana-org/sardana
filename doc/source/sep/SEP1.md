@@ -2,8 +2,10 @@
 	SEP: 1
 	State: OBSOLETE
 	Reason: 
-	 SEP15 obsoletes SEP1. SEP1 has references to SourceForge, and
-	 Sardana project has been migrated to GitHub.
+	 SEP15 obsoletes SEP1. Sardana project has been migrated to GitHub.
+	 SEP1 has references to SourceForge for Sardana project.
+	 3rd party repositories of macros and controllers will remain in 
+	 SourceForge until further notice.
 	Date: 2013-08-06
 	Drivers: Carlos Pascual-Izarra cpascual@cells.es
 	URL: http://www.sardana-controls.org/sep/?SEP1.md
