@@ -76,8 +76,7 @@ The implementation steps to accomplish each of the goals are listed below:
 - A sardana project will be created within sardana-org and the current master 
 and develop branches pushed to it
 
-- The Travis and Appveyor continuous integration services will be enabled 
-for this repo.
+- The Travis continuous integration services will be enabled for this repo.
 
 - Moving the third party controllers and macros repositories from SourceForge 
 to GitHub would be appreciated, but SEP15 does not make it mandatory.
