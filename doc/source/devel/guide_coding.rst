@@ -20,7 +20,7 @@ Sardana development is managed with the `Sardana github project
 Apart from directly contributing code, you can contribute to sardana in many
 ways, such as reporting bugs or proposing new features. In all cases you will
 probably need a github account and you are strongly encouragedto subscribe to the
-`sardana-devel and sardana-users mailing lists <https://sourceforge.net/p/sardana/mailman/>_`.
+`sardana-devel and sardana-users mailing lists <https://sourceforge.net/p/sardana/mailman/>`_.
 
 The rest of this document will focus on how to contribute code.
 
@@ -41,16 +41,20 @@ access. This will create a new git repository associated to your personal accoun
 github, so that your changes can be easily shared and eventually merged
 into the official repository.
  
-The old SVN code repository
+The old code repositories
 ---------------------------
 
-After the release of Sardana 1.2 the Sardana code was migrated from its previous
-host in a SVN server to its current Git repository
+With acceptance of `SEP1 <http://www.sardana-controls.org/sep?SEP1.md>`_ the
+code repository was migrated from SVN to Git within the SourceForge platform.
+The old SVN repository is still `accessible for reference <https://sourceforge.net/p/sardana/code/>`_,
+but writing has been disabled and its contents are frozen as of 2013-07-31.
 
-The old SVN repository is still `accessible for reference
-<https://sourceforge.net/p/sardana/code/>`_, but writing has been disabled and
-its contents are frozen as of 2013-07-31. For development, see the instructions
-above on cloning from Git
+Then, with acceptance of `SEP15 <http://www.sardana-controls.org/sep?SEP15.md>`_ the
+code repository was migrated from SourceForge Git to Github Git.
+The old SourceForge Git repository is still `accessible for reference <https://sourceforge.net/p/sardana/sardana.git>`_,
+but writing has been disabled and its contents are frozen as of 2016-12-02.
+
+For development, see the instructions above on cloning from Git
 
 Documentation
 -------------
