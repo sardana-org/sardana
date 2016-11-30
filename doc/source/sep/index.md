@@ -25,7 +25,7 @@ Proposals list
   [SEP12][]    | CANDIDATE     | Use python Enum instead of taurus Enumeration
   [SEP13][]    | REJECTED (moved to [TEP13][])     | Unified plugins support in Taurus & Sardana
   [SEP14][]    | DRAFT     | MSENV taurus schema
-  [SEP15][]   | DRAFT     | Moving Sardana to Github
+  [SEP15][]   | CANDIDATE     | Moving Sardana to Github
 
 
 
