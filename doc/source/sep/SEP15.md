@@ -44,8 +44,7 @@ This SEP obsoletes totally or partially some previous Enhancement Proposals (EP)
 as summarized here:
 
 - SEP0: `https://sourceforge.net/p/sardana/wiki/SEP/` is no longer the index for 
-SEPs, nor it is a wiki. The "Creating a SEP section" of SEP0 is superseded by 
-the one with the same name in this SEP.
+SEPs. The index for the SEPs is now located at http://www.sardana-controls.org/sep. The "Creating a SEP" of SEP0 is superseded by the section "Creating a SEP: New policy for SEPs" of SEP15.
 - SEP1: references to SF
 - SEP7: most of the contribution procedure is no longer applicable due to 
 the adoption of PR-based workflow.
@@ -109,7 +108,7 @@ sardana GH issues URL
 - Prominent notices will be added in the SF ticket tracker indicating that 
 the new GH tracker should be used instead.
 
-### New policy for SEPs
+### Creating a SEP: New policy for SEPs
 
 - All SEPs will be stored as files in `<new_sep_location>` in the repository.
 We propose `<new_sep_location>` to be defined as `doc/source/sep`.
