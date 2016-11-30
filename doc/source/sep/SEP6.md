@@ -451,7 +451,8 @@ TODO: if the transparency between step and continuous scan in terms of the numbe
 
 Some scans require execution of multiple sub-scans e.g. mesh. In this case a sequence of sub-scans will be executed in a loop, substituting the "Move to end position" action with a "Move to pre-start position" (of the next sub-scan). 
  
-[[img src=motion.bmp alt=foobar]]
+![motion diagram](res/sep6_motion.bmp)
+
 More about the motion control could be found in [1](http://accelconf.web.cern.ch/AccelConf/ICALEPCS2013/papers/wecoaab03.pdf).
 
 Implementation TODOs
