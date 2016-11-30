@@ -146,8 +146,11 @@ Which tools/workflows are used for reviewing the proposed contributed code?
 The code review process for contributions to the official sardana **core** repository is as follows:
 
 1- The contributor submits a contribution to the mailing list (see "How should one submit a proposed contribution?" above).
+
 2- The contribution is publicly reviewed in the mailing list (everyone is encouraged to participate in the review). 
+
 3- During this phase, the contributor may be asked for further clarifications and/or corrections to the contributed code (in which case a resubmission may be required).
+
 4- Eventually, an Integration Manager (or a SepX Integration Lieutenant if the contribution is for a *sepX* branch) may either accept the contribution and integrate it into the official repository, or reject it. In both cases, he/she is posts a message in the mailing list informing of the decision.
 
 **Tip**: You can find a set of practical examples on how to integrate contributed code according to the SEP7 specifications in the [sardana git recipes](http://sf.net/p/sardana/wiki/git-recipes/)
