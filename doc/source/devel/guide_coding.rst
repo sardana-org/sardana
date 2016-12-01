@@ -14,13 +14,13 @@ development of sardana. So if you want to help out, read on!
 How to contribute to sardana
 ----------------------------
 
-Sardana development is managed with the `Sardana sourceforge project
-<https://sourceforge.net/projects/sardana/>`_. 
+Sardana development is managed with the `Sardana github project
+<https://github.com/sardana-org/sardana>`_. 
 
 Apart from directly contributing code, you can contribute to sardana in many
 ways, such as reporting bugs or proposing new features. In all cases you will
-probably need a sourceforge account and you are strongly encouragedto subscribe to the
-`sardana-devel and sardana-users mailing lists <https://sourceforge.net/p/sardana/mailman/>_`.
+probably need a github account and you are strongly encouragedto subscribe to the
+`sardana-devel and sardana-users mailing lists <https://sourceforge.net/p/sardana/mailman/>`_.
 
 The rest of this document will focus on how to contribute code.
 
@@ -29,29 +29,32 @@ Cloning and forking sardana from Git
 
 You are welcome to clone the Sardana code from our main Git repository::
 
-    git clone git://git.code.sf.net/p/sardana/sardana.git sardana
+    git clone https://github.com/sardana-org/sardana.git sardana
 
 Code contributions (bug patches, new features) are welcome,
 but the review process/workflow for accepting new code is yet to be discussed. For the
 moment, use the sardana-devel mailing list for proposing patches.
 
-Note that you can also `fork the git repository in sourceforge
-<https://sourceforge.net/p/sardana/sardana.git/fork>`_ to get your own
-sourceforge-hosted clone of the sardana repository to which you will have full
+Note that you can also fork the git repository in github to get your own
+github-hosted clone of the sardana repository to which you will have full
 access. This will create a new git repository associated to your personal account in
-sourceforge, so that your changes can be easily shared and eventually merged
+github, so that your changes can be easily shared and eventually merged
 into the official repository.
  
-The old SVN code repository
+The old code repositories
 ---------------------------
 
-After the release of Sardana 1.2 the Sardana code was migrated from its previous
-host in a SVN server to its current Git repository
+With acceptance of `SEP1 <http://www.sardana-controls.org/sep?SEP1.md>`_ the
+code repository was migrated from SVN to Git within the SourceForge platform.
+The old SVN repository is still `accessible for reference <https://sourceforge.net/p/sardana/code/>`_,
+but writing has been disabled and its contents are frozen as of 2013-07-31.
 
-The old SVN repository is still `accessible for reference
-<https://sourceforge.net/p/sardana/code/>`_, but writing has been disabled and
-its contents are frozen as of 2013-07-31. For development, see the instructions
-above on cloning from Git
+Then, with acceptance of `SEP15 <http://www.sardana-controls.org/sep?SEP15.md>`_ the
+code repository was migrated from SourceForge Git to Github Git.
+The old SourceForge Git repository is still `accessible for reference <https://sourceforge.net/p/sardana/sardana.git>`_,
+but writing has been disabled and its contents are frozen as of 2016-12-02.
+
+For development, see the instructions above on cloning from Git
 
 Documentation
 -------------
