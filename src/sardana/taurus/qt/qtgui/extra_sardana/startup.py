@@ -61,7 +61,8 @@ class UserModuleDeleter(object):
     def __init__(self, namelist=None, pathlist=None):
         if namelist is None:
             namelist = []
-        self.namelist = namelist + ['sitecustomize', 'spyderlib', 'spyderplugins']
+        self.namelist = namelist + ['sitecustomize', 'spyderlib', 'spyderplugins',
+                                    'spyder']
         if pathlist is None:
             pathlist = []
         self.pathlist = pathlist
