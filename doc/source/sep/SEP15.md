@@ -78,8 +78,8 @@ and develop branches pushed to it
 
 - The Travis continuous integration services will be enabled for this repo.
 
-- Moving the third party controllers and macros repositories from SourceForge 
-to GitHub would be appreciated, but SEP15 does not make it mandatory.
+- The third party controllers and macros repositories will stay in SourceForge
+until further notice.
 
 ### New contribution policy
 
