@@ -30,22 +30,22 @@ Proposals list
 
 
 
-[SEP0]: sep/SEP0.md
-[SEP1]: sep/SEP1.md
-[SEP2]: sep/SEP2.md
-[SEP3]: sep/SEP3.md
-[SEP4]: sep/SEP4.md
-[SEP5]: sep/SEP5.md
-[SEP6]: sep/SEP6.md
-[SEP7]: sep/SEP7.md
-[SEP8]: sep/SEP8.md
-[SEP9]: sep/SEP9.md
-[SEP10]: sep/SEP10.md
-[SEP11]: sep/SEP11.md
-[SEP12]: sep/SEP12.md
-[SEP13]: sep/SEP13.md
-[SEP14]: sep/SEP14.md
-[SEP15]: sep/SEP15.md
+[SEP0]: http://www.sardana-controls.org/sep/?SEP0.md
+[SEP1]: http://www.sardana-controls.org/sep/?SEP1.md
+[SEP2]: http://www.sardana-controls.org/sep/?SEP2.md
+[SEP3]: http://www.sardana-controls.org/sep/?SEP3.md
+[SEP4]: http://www.sardana-controls.org/sep/?SEP4.md
+[SEP5]: http://www.sardana-controls.org/sep/?SEP5.md
+[SEP6]: http://www.sardana-controls.org/sep/?SEP6.md
+[SEP7]: http://www.sardana-controls.org/sep/?SEP7.md
+[SEP8]: http://www.sardana-controls.org/sep/?SEP8.md
+[SEP9]: http://www.sardana-controls.org/sep/?SEP9.md
+[SEP10]: http://www.sardana-controls.org/sep/?SEP10.md
+[SEP11]: http://www.sardana-controls.org/sep/?SEP11.md
+[SEP12]: http://www.sardana-controls.org/sep/?SEP12.md
+[SEP13]: http://www.sardana-controls.org/sep/?SEP13.md
+[SEP14]: http://www.sardana-controls.org/sep/?SEP14.md
+[SEP15]: http://www.sardana-controls.org/sep/?SEP15.md
 
 
 [TEP3]: http://www.taurus-scada.org/tep/?TEP3.md
