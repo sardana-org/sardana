@@ -82,7 +82,7 @@ Working directly from Git
 Sometimes it is convenient to work directly from the git source without
 installing. To do so, you can clone sardana from our main git repository::
 
-    git clone git://git.code.sf.net/p/sardana/sardana.git sardana
+    git clone https://github.com/sardana-org/sardana.git sardana
 
 And then you can directly execute sardana binaries (Pool, MacroServer, Sardana
 or spock from the command line)::
