@@ -34,7 +34,7 @@ Usage::
 
 __docformat__ = 'restructuredtext'
 
-import sys, os
+import os
 from taurus.external import unittest
 import sardana
 
@@ -55,9 +55,28 @@ def run():
     result = runner.run(suite)
     return result
 
-if __name__ == '__main__':
-    result = run()
-    exit_code = 0
-    if not result.wasSuccessful():
+def main():
+    import sys
+    from taurus.external import argparse
+    from sardana import Release
+
+    parser = argparse.ArgumentParser(description='Main test suite for Sardana')
+    parser.add_argument('--version', action='store_true', default=False,
+                        help="show program's version number and exit")
+    args = parser.parse_args()
+
+    if args.version:
+        print Release.version
+        sys.exit(0)
+
+    ret = run()
+    # calculate exit code (0 if OK and 1 otherwise)
+    if ret.wasSuccessful():
+        exit_code = 0
+    else:
         exit_code = 1
     sys.exit(exit_code)
+
+
+if __name__ == '__main__':
+    main()

@@ -63,6 +63,7 @@ console_scripts = [
     "MacroServer = sardana.tango.macroserver:main",
     "Pool = sardana.tango.pool:main",
     "Sardana = sardana.tango:main",
+    "sardanatestsuite = sardana.test.testsuite:main",
     "spock = sardana.spock:main",
 ]
 

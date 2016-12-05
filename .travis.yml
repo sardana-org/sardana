@@ -16,4 +16,4 @@ before_install:
 
 script:
   - docker exec sardana-test /bin/bash -c "cd sardana ; python setup.py install"
-  - docker exec sardana-test python /usr/local/lib/python2.7/dist-packages/sardana/test/testsuite.py
+  - docker exec sardana-test /bin/bash -c "sardanatestsuite"
