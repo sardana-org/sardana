@@ -64,9 +64,10 @@ long_description = \
  
 license = 'LGPL'
 
-authors = {'Tiago'          : ('Tiago Coutinho','tiago.coutinho@esrf.fr'),
-           'Pascual-Izarra' : ('Carlos Pascual-Izarra','cpascual@cells.es'),
-           'Reszela'        : ('Zbigniew Reszela','zreszela@cells.es') }
+authors = {'Tiago_et_al': ('Tiago Coutinho et al.', ''),
+           'Community': ('Sardana Community',
+                         'sardana-devel@lists.sourceforge.net'),
+           }
 
 url = 'http://www.sardana-controls.org'
 

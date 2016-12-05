@@ -39,3 +39,7 @@ def main_sardana(args=None, start_time=None, mode=None):
                          mode=mode)
 
 run = main_sardana
+
+def main():
+    import datetime
+    run(start_time=datetime.datetime.now())

@@ -27,4 +27,7 @@
 """This package provides spock"""
 
 from genutils import load_ipython_extension, unload_ipython_extension, \
-    load_config
+    load_config, run
+
+def main():
+    run()

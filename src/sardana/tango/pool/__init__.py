@@ -92,3 +92,8 @@ def main_pool(args=None, start_time=None, mode=None):
                                        start_time=start_time, mode=mode)
 
 run = main_pool
+
+def main():
+    import datetime
+    run(start_time=datetime.datetime.now())
+
