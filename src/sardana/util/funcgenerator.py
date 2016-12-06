@@ -34,6 +34,15 @@ from sardana.pool.pooldefs import SynchParam, SynchDomain
 
 
 class FunctionGenerator(EventGenerator):
+    """Generator of active and passive events describing a rectangular
+    function.
+
+    .. note::
+        The FunctionGenerator class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the module) may occur if
+        deemed necessary by the core developers.
+    """
 
     MAX_NAP_TIME = 0.1
 

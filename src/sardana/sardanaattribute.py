@@ -356,8 +356,14 @@ class ScalarNumberAttribute(SardanaAttribute):
 
 
 class BufferedAttribute(SardanaAttribute):
-    """A :class:`SardanaAttribute` specialized for buffering values"""
+    """A :class:`SardanaAttribute` specialized for buffering values.
 
+    .. note::
+        The BufferedAttribute class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the module) may occur if
+        deemed necessary by the core developers.
+    """
     def __init__(self, *args, **kwargs):
         SardanaAttribute.__init__(self, *args, **kwargs)
         self._r_value_chunk = None

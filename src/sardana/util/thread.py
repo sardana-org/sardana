@@ -25,7 +25,14 @@ from threading import Condition
 
 class CountLatch(object):
     """Synchronization primitive with the capacity to count and latch.
-    Counting up latches, while reaching zero when counting down un-latches."""
+    Counting up latches, while reaching zero when counting down un-latches.
+
+    .. note::
+        The CountLatch class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the module) may occur if
+        deemed necessary by the core developers.
+    """
 
     def __init__(self):
         self.count = 0

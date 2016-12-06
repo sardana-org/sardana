@@ -40,7 +40,14 @@ from sardana.util.funcgenerator import FunctionGenerator
 # The purpose of this class was inspired on the CTAcquisition concept
 class TGChannel(PoolActionItem):
     """An item involved in the trigger/gate generation. 
-    Maps directly to a trigger object"""
+    Maps directly to a trigger object
+
+    .. note::
+        The TGChannel class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the module) may occur if
+        deemed necessary by the core developers.
+    """
 
     def __init__(self, trigger_gate, info=None):
         PoolActionItem.__init__(self, trigger_gate)

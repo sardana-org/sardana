@@ -398,6 +398,14 @@ class Channel(PoolActionItem):
 
 
 class PoolAcquisitionBase(PoolAction):
+    """Base class for acquisitions with a generic start_action method.
+
+    .. note::
+        The PoolAcquisitionBase class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the module) may occur if
+        deemed necessary by the core developers.
+    """
 
     def __init__(self, main_element, name):
         PoolAction.__init__(self, main_element, name)
@@ -595,7 +603,14 @@ class PoolAcquisitionBase(PoolAction):
 
 
 class PoolAcquisitionHardware(PoolAcquisitionBase):
+    """Acquisition action for controllers synchronized by hardware
 
+    .. note::
+        The PoolAcquisitionHardware class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the module) may occur if
+        deemed necessary by the core developers.
+    """
     def __init__(self, main_element, name="AcquisitionHardware"):
         PoolAcquisitionBase.__init__(self, main_element, name)
 
@@ -655,6 +670,14 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
 
 
 class PoolAcquisitionSoftware(PoolAcquisitionBase):
+    """Acquisition action for controllers synchronized by software
+
+    .. note::
+        The PoolAcquisitionSoftware class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the module) may occur if
+        deemed necessary by the core developers.
+    """
 
     def __init__(self, main_element, name="AcquisitionSoftware", slaves=None):
         PoolAcquisitionBase.__init__(self, main_element, name)

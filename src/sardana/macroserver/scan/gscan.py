@@ -1724,7 +1724,14 @@ class CSScan(CScan):
 
 class CTScan(CScan):
     '''Continuous scan controlled by hardware trigger signals.
-    Sequence of trigger signals is programmed in time. '''
+    Sequence of trigger signals is programmed in time.
+
+    .. note::
+        The CTScan class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the module) may occur if
+        deemed necessary by the core developers.
+    '''
 
     def __init__(self, macro, generator=None,
                  moveables=[], env={}, constraints=[], extrainfodesc=[]):
