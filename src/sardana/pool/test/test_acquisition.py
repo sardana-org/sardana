@@ -36,7 +36,7 @@ from sardana.pool.poolsynchronization import PoolSynchronization
 from sardana.pool.poolacquisition import (PoolAcquisitionHardware,
                                           PoolAcquisitionSoftware,
                                           PoolCTAcquisition)
-from sardana.sardanautils import is_ordered_non_str_seq
+from sardana.sardanautils import is_non_str_seq
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool.test import (createPoolSynchronizationConfiguration,
                                createCTAcquisitionConfiguration,
@@ -63,7 +63,7 @@ class AttributeListener(object):
             value_obj = v.value_chunk
         except AttributeError:
             value_obj = v.value_obj
-        if is_ordered_non_str_seq(value_obj):
+        if is_non_str_seq(value_obj):
             value = []; idx = []
             for sardana_value in value_obj:
                 value.append(sardana_value.value)

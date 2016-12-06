@@ -39,7 +39,7 @@ from taurus.core.util.enumeration import Enumeration
 
 from sardana import State, ElementType, TYPE_TIMERABLE_ELEMENTS
 from sardana.sardanathreadpool import get_thread_pool
-from sardana.sardanautils import is_ordered_non_str_seq
+from sardana.sardanautils import is_non_str_seq
 from sardana.pool import SynchParam, SynchDomain, AcqSynch
 from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
 from sardana.pool.poolsynchronization import PoolSynchronization
@@ -404,7 +404,7 @@ class Channel(PoolActionItem):
         :type values: list<:class~`sardana.sardanavalue.SardanaValue`> or
                       <:class~`sardana.sardanavalue.SardanaValue`>
         """
-        if not is_ordered_non_str_seq(values):
+        if not is_non_str_seq(values):
             values = list(values)
         if len(values) and values[0].idx is None:
             for v in values:
