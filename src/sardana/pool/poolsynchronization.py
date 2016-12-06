@@ -95,37 +95,45 @@ class PoolSynchronization(PoolAction):
                 channel = TGChannel(element, info=element_info)
                 channels[element] = channel
 
-        # loads generation parameters
-        for pool_ctrl in pool_ctrls:
-            ctrl = pool_ctrl.ctrl
-            pool_ctrl_data = ctrls_config[pool_ctrl]
-            elements = pool_ctrl_data['channels']
-            for element in elements:
-                axis = element.axis
-                ctrl.SynchOne(axis, synchronization)
-
-        # attaching listener (usually acquisition action)
-        # to the software trigger gate generator
-        if self._listener is not None:
-            self._synch_soft.set_configuration(synchronization)
-            self._synch_soft.add_listener(self._listener)
-            remove_acq_listener = partial(self._synch_soft.remove_listener,
-                                          self._listener)
-            self.add_finish_hook(remove_acq_listener, False)
-            self._synch_soft.add_listener(self.main_element.on_element_changed)
-            remove_mg_listener = partial(self._synch_soft.remove_listener,
-                                          self.main_element)
-            self.add_finish_hook(remove_mg_listener, False)
-        # subscribing to the position change events to generate events
-        # in position domain
-        if moveable is not None:
-            position = moveable.get_position_attribute()
-            position.add_listener(self._synch_soft)
-            remove_pos_listener = partial(position.remove_listener,
-                                          self._synch_soft)
-            self.add_finish_hook(remove_pos_listener, False)
-
         with ActionContext(self):
+
+            # loads synchronization description
+            for pool_ctrl in pool_ctrls:
+                ctrl = pool_ctrl.ctrl
+                pool_ctrl_data = ctrls_config[pool_ctrl]
+                ctrl.PreSynchAll()
+                elements = pool_ctrl_data['channels']
+                for element in elements:
+                    axis = element.axis
+                    ret = ctrl.PreSynchOne(axis, synchronization)
+                    if not ret:
+                        msg = ("%s.PreSynchOne(%d) returns False" %
+                               (pool_ctrl.name, axis))
+                        raise Exception(msg)
+                    ctrl.SynchOne(axis, synchronization)
+                ctrl.SynchAll()
+
+            # attaching listener (usually acquisition action)
+            # to the software trigger gate generator
+            if self._listener is not None:
+                self._synch_soft.set_configuration(synchronization)
+                self._synch_soft.add_listener(self._listener)
+                remove_acq_listener = partial(self._synch_soft.remove_listener,
+                                              self._listener)
+                self.add_finish_hook(remove_acq_listener, False)
+                self._synch_soft.add_listener(self.main_element.on_element_changed)
+                remove_mg_listener = partial(self._synch_soft.remove_listener,
+                                              self.main_element)
+                self.add_finish_hook(remove_mg_listener, False)
+            # subscribing to the position change events to generate events
+            # in position domain
+            if moveable is not None:
+                position = moveable.get_position_attribute()
+                position.add_listener(self._synch_soft)
+                remove_pos_listener = partial(position.remove_listener,
+                                              self._synch_soft)
+                self.add_finish_hook(remove_pos_listener, False)
+
             # PreStartAll on all controllers
             for pool_ctrl in pool_ctrls:
                 pool_ctrl.ctrl.PreStartAll()
@@ -152,9 +160,9 @@ class PoolSynchronization(PoolAction):
             for pool_ctrl in pool_ctrls:
                 pool_ctrl.ctrl.StartAll()
 
-        if self._listener is not None:
-            self._synch_soft.start()
-            get_thread_pool().add(self._synch_soft.run)
+            if self._listener is not None:
+                self._synch_soft.start()
+                get_thread_pool().add(self._synch_soft.run)
 
     def is_triggering(self, states):
         """Determines if we are triggering or if the triggering has ended
