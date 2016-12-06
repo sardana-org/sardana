@@ -64,8 +64,12 @@ AcquisitionMap = {
 
 def split_MGConfigurations(mg_cfg_in):
     """Split MeasurementGroup configuration with channels
-    triggered by SW Trigger and channels triggered by HW trigger"""
-
+    triggered by SW Trigger and channels triggered by HW trigger
+    
+    TODO: (technical debt) All the MeasurementGroup configuration
+    logic should be encapsulate in a dedicated class instead of
+    using a basic data structures like dict or lists...
+    """
     ctrls_in = mg_cfg_in['controllers']
     mg_sw_cfg_out = {}
     mg_0d_cfg_out = {}
@@ -102,6 +106,10 @@ def split_MGConfigurations(mg_cfg_in):
 
 def getTGConfiguration(MGcfg):
     '''Build TG configuration from complete MG configuration.
+    
+    TODO: (technical debt) All the MeasurementGroup configuration
+    logic should be encapsulate in a dedicated class instead of
+    using a basic data structures like dict or lists...
 
     :param MGcfg: configuration dictionary of the whole Measurement Group.
     :type MGcfg: dict<>
@@ -146,6 +154,10 @@ def extract_integ_time(synchronization):
     one group in the synchronization than returns float with the integration
     time. Otherwise a list of floats with different integration times.
 
+    TODO: (technical debt) All the MeasurementGroup synchronization
+    logic should be encapsulate in a dedicated class instead of
+    using a basic data structures like dict or lists...
+
     :param synchronization: group(s) where each group is described by
         SynchParam(s)
     :type synchronization: list(dict)
@@ -164,6 +176,10 @@ def extract_integ_time(synchronization):
 
 def extract_repetitions(synchronization):
     """Extract repetitions from synchronization dict.
+
+    TODO: (technical debt) All the MeasurementGroup synchronization
+    logic should be encapsulate in a dedicated class instead of
+    using a basic data structures like dict or lists...
 
     :param synchronization: group(s) where each group is described by
         SynchParam(s)
