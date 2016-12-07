@@ -61,16 +61,21 @@ class SynchEnum(IntEnum):
             raise ValueError('Can not convert %s to SynchDomain' % string)
 
 class SynchDomain(SynchEnum):
-    """Enumeration with options describing the synchronization domains.
+    """Enumeration of synchronization domains.
 
     - Time - describes the synchronization in time domain
     - Position - describes the synchronization in position domain
     - Monitor - not used at the moment but foreseen for synchronization on monitor
     - Default - the controller selects the most appropriate domain:
-        for active events the precedence should be first Position and then Time
-        for passive events the precedence should be first Time and then Position
-    """
+      for active events the precedence should be first Position and then Time
+      for passive events the precedence should be first Time and then Position
 
+    .. note::
+        The SynchDomain class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the class) may occur if
+        deemed necessary by the core developers.
+    """
     Time = 0
     Position = 1
     Monitor = 2
@@ -78,7 +83,21 @@ class SynchDomain(SynchEnum):
 
 
 class SynchParam(SynchEnum):
+    """Enumeration of synchronization's group parameters.
 
+    - Delay - initial delay (relative to the synchronization start)
+    - Total - total interval
+    - Active - active interval (part of the total interval)
+    - Repeats - number of repetitions within the group
+    - Initial - initial point (absolute)
+
+    .. note::
+        The SynchParam class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the class) may occur if
+        deemed necessary by the core developers.
+
+    """
     Delay = 0
     Total = 1
     Active = 2
