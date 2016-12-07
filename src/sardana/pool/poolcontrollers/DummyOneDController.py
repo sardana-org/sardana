@@ -24,7 +24,7 @@
 import time
 import numpy
 
-from sardana import State, SardanaValue
+from sardana import State
 from sardana.pool.controller import OneDController, MaxDimSize
 from sardana.pool.controller import DefaultValue, Description, FGet, FSet, Type
 
@@ -193,7 +193,7 @@ class DummyOneDController(OneDController):
     
     def ReadOne(self, axis):
         self._log.debug("ReadOne(%s)", axis)
-        v = SardanaValue(self.read_channels[axis].value, time.time())
+        v = self.read_channels[axis].value
         return v
     
     def PreStartAll(self):
