@@ -147,7 +147,7 @@ class MeasurementGroup(PoolGroupDevice):
                            quality=quality, priority=priority, error=error,
                            synch=False)
 
-    def synchronization_str2enum(self, synchronization):
+    def _synchronization_str2enum(self, synchronization):
         '''Translates synchronization data structure so it uses SynchDomain 
         enums as keys instead of strings.
         '''
@@ -244,7 +244,7 @@ class MeasurementGroup(PoolGroupDevice):
         synchronization = CodecFactory().decode(('json', data),
                                                 ensure_ascii=True)
         # translate dictionary keys 
-        synchronization = self.synchronization_str2enum(synchronization)
+        synchronization = self._synchronization_str2enum(synchronization)
         self.measurement_group.synchronization = synchronization
 
     def read_LatencyTime(self, attr):

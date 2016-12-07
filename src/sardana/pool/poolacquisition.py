@@ -398,7 +398,7 @@ class Channel(PoolActionItem):
     def __getattr__(self, name):
         return getattr(self.element, name)
 
-    def fill_idx(self, values):
+    def _fill_idx(self, values):
         """Fill indexes if they are missing.
         :param values: values to be filled with the index
         :type values: list<:class~`sardana.sardanavalue.SardanaValue`> or
@@ -654,7 +654,7 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
                 for acquirable, value in values.items():
                     if len(value) > 0:
                         channel = self._channels_read_when_acq[acquirable]
-                        channel.fill_idx(value)
+                        channel._fill_idx(value)
                         acquirable.put_value_chunk(value)
 
             time.sleep(nap)
@@ -677,7 +677,7 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
                 value = values[acquirable]
                 if len(value) > 0:
                     channel = self._channels[acquirable]
-                    channel.fill_idx(value)
+                    channel._fill_idx(value)
                     acquirable.put_value_chunk(value, propagate=2)
             with acquirable:
                 acquirable.clear_operation()
