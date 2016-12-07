@@ -458,16 +458,10 @@ More about the motion control could be found in [1](http://accelconf.web.cern.ch
 Implementation TODOs
 ==================
 
-* <s>provide backwards compatibility (if possible) with old MGs definitions (mainly [#372])</s>
-* <s>decide if software trigger is a Sardana element or part of the core</s>
 * ascanct must provide (number of intervals + 1) records
 * the last acqusition must be done on the constant velocity
-* <s>MG configuration: rename trigger_type to synchronization and trigger_element to synchronizer</s>
-* <s>rename PoolTGGeneration to PoolSynchronization</s>
-* <s>rename trigger_type controller parameter to synchronization</s>
-* howto write TriggerGate controller
-* howto write CounterTimer controller
 * measurement group documentation
+* complement continuous scan documentation
 
 Out of scope of SEP6
 =================
