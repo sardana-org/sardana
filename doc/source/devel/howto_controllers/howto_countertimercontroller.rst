@@ -488,7 +488,10 @@ This method can return either:
 Sardana assumes that the counter values are returned in the order of acquisition
 and that there are no gaps in between them.
 
-.. todo:: document how to skip the readouts while acquiring
+Some of the hardware does not support data readouts while the acquisition is in
+progress. Sardana may skip readouts of a given controller during the acquisition
+loop and delay it until the acquisition has finished. These controllers just
+need to define the ``read_when_acq`` parameter to ``False``.
 
 
 .. _ALBA: http://www.cells.es/
