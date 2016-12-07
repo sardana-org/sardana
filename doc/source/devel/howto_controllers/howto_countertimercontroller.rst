@@ -239,7 +239,47 @@ Advanced topics
 Timestamp a counter value
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. todo:: document how to timestamp a counter value
+When you read the value of a counter from the hardware sometimes it is
+necessary to associate a timestamp with that value so you can track the
+value of a counter in time.
+
+If sardana is executed as a Tango device server, reading the value
+attribute from the counter device triggers the execution of your controller's
+:meth:`~sardana.pool.controller.Readable.ReadOne` method. Tango responds with
+the value your controller returns from the call to
+:meth:`~sardana.pool.controller.Readable.ReadOne` and automatically assigns
+a timestamp. However this timestamp has a certain delay since the time the
+value was actually read from hardware and the time Tango generates the timestamp.
+
+To avoid this, sardana supports returning in
+:meth:`~sardana.pool.controller.Readable.ReadOne` an object that contains both
+the value and the timestamp instead of the usual :class:`numbers.Number`.
+The object must be an instance of :class:`~sardana.sardanavalue.SardanaValue`.
+
+Here is an example of associating a timestamp in
+:meth:`~sardana.pool.controller.Readable.ReadOne`:
+
+.. code-block:: python
+
+    import time
+    from sardana.pool.controller import SardanaValue
+
+    class SpringfieldCounterTimerController(CounterTimerController):
+
+       def ReadOne(self, axis):
+           return SardanaValue(value=self.springfield.getValue(axis),
+                               timestamp=time.time())
+
+If your controller communicates with a Tango device, Sardana also supports
+returning a :class:`~PyTango.DeviceAttribute` object. Sardana will use this
+object's value and timestamp. Example:
+
+.. code-block:: python
+
+    class TangoCounterTimerController(CounterTimerController):
+
+       def ReadOne(self, axis):
+           return self.device.read_attribute("value")
 
 .. _sardana-countertimercontroller-howto-mutliple-acquisition:
 
