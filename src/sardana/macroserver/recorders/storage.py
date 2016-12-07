@@ -308,14 +308,25 @@ class SPEC_FileRecorder(BaseFileRecorder):
         #store names for performance reason
         labels = []
         names = []
+        oned_labels = []
+        oned_names = []
+        oned_shape = 0
         for e in env['datadesc']:
             dims = len(e.shape)
+            if dims >= 2:
+                continue
+            sanitizedlabel = "".join(x for x in e.label.replace(' ', '_') if x.isalnum() or x == '_')  #substitute whitespaces by underscores and remove other non-alphanumeric characters
             if not dims or (dims == 1 and e.shape[0] == 1):
-                sanitizedlabel = "".join(x for x in e.label.replace(' ', '_') if x.isalnum() or x == '_')  #substitute whitespaces by underscores and remove other non-alphanumeric characters
                 labels.append(sanitizedlabel)
                 names.append(e.name)
+            else:
+                oned_labels.append(sanitizedlabel)
+                oned_names.append(e.name)
+                oned_shape = e.shape[0]
+
         self.names = names
-        
+        self.oned_names = oned_names
+
         # prepare pre-scan snapshot
         snapshot_labels, snapshot_values = self._preparePreScanSnapshot(env)
         # format scan header
@@ -341,6 +352,12 @@ class SPEC_FileRecorder(BaseFileRecorder):
         header += self._prepareMultiLines('O', '  ', snapshot_labels)
         header += self._prepareMultiLines('P', ' ', snapshot_values)
         header += '#N %(nocols)s\n'
+        if len(oned_labels) > 0:
+            header += '#@MCA %sC\n' % oned_shape
+            header += '#@CHANN %s 0 %s 1\n' % (oned_shape, oned_shape-1)
+            header += '#@MCA_NB %s\n' % len(oned_labels)
+            for idx, oned_label in enumerate(oned_labels):
+                header += '#@DET_%s %s\n' %(idx, oned_label)
         header += '#L %(labels)s\n'
         
         self.fd = open(self.filename,'a')
@@ -404,6 +421,19 @@ class SPEC_FileRecorder(BaseFileRecorder):
         nan, names, fd = float('nan'), self.names, self.fd
         
         d = []
+        for oned_name in self.oned_names:
+            data = record.data.get(oned_name)
+            # TODO: The method astype of numpy does not work properly on the
+            # beamline, we found difference between the data saved on h5 and
+            # spec. For that reason we implement the it by hand.
+            #str_data = ' '.join(data.astype(str))
+            str_data = ''
+            for i in data:
+                str_data += '%s ' % i
+            outstr  = '@A %s' % str_data
+            outstr += '\n'
+            fd.write( outstr )
+
         for c in names:
             data = record.data.get(c)
             if data is None: data = nan
@@ -412,6 +442,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
         outstr += '\n'
         
         fd.write( outstr )
+
         fd.flush()
 
     def _endRecordList(self, recordlist):
