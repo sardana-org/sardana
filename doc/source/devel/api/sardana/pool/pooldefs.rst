@@ -14,8 +14,21 @@
 .. hlist::
     :columns: 3
 
+    * :class:`~AcqSynch`
     * :class:`~SynchParam`
     * :class:`~SynchDomain`
+
+AcqSynch
+----------
+
+.. inheritance-diagram:: AcqSynch
+    :parts: 1
+
+.. autoclass:: AcqSynch
+    :show-inheritance:
+    :members:
+    :undoc-members:
+
 
 SynchParam
 ----------
