@@ -223,12 +223,6 @@ this configuration (axis number) via the controller parameter ``timer``
 and ``monitor``. The currently used acquisition mode is set via the controller
 parameter ``acquisition_mode``.
 
-.. seealso::
-
-    :ref:`sardana-countertimercontroller-howto-load`
-
-    How to load the integration time or the monitor counts.
-
 .. _sardana-countertimercontroller-howto-advanced:
 
 Advanced topics
