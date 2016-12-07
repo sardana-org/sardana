@@ -397,28 +397,25 @@ Synchronization type
 """"""""""""""""""""
 
 First of all the controller needs to know which type of synchronization will
-be in use. This is assigned on the measurement group
+be used. This is assigned on the measurement group
 :ref:`sardana-measurementgroup-overview-configuration` level. The controller
-receives one of the :class:`sardana.pool.pooldefs.AcqSynch` values via the
-controller parameter ``synchronization`` which has the following possible values:
-
-    - :attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareTrigger`.
-    - :attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareGate`
-    - :attr:`~sardana.pool.pooldefs.AcqSynch.HardwareTrigger`
-    - :attr:`~sardana.pool.pooldefs.AcqSynch.HardwareGate`
+receives one of the :class:`~sardana.pool.pooldefs.AcqSynch` values via the
+controller parameter ``synchronization``.
 
 The selected mode will change the behavior of the counter after the
 :meth:`~sardana.pool.controller.Startable.StartOne` is invoked. In case one of
 the software modes was selected, the counter will immediately start acquiring.
 In case one of the hardware modes was selected, the counter will immediately
 get armed for the hardware events, and will wait with the acquisition until they
-arrive.
+occur.
 
 Here is an example of the possible implementation of 
 :meth:`~sardana.pool.controller.Controller.SetCtrlPar`:
 
 .. code-block:: python
     :emphasize-lines: 3
+
+    from sardana.pool import AcqSynch
 
     class SpringfieldCounterTimerController(CounterTimerController):
 
@@ -468,22 +465,20 @@ which, apart of asking for the counter state through calls to the
 :meth:`~sardana.pool.controller.Controller.StateOne` method, will try to retrieve
 the counter values using the :meth:`~sardana.pool.controller.Readable.ReadOne` method.
 It will keep the loop running as long as the controller responds with ``State.Moving``.
-
-Sardana exeucte one extra readout after the state has changed in order to retrieve
+Sardana executes one extra readout after the state has changed in order to retrieve
 the final counter values.
 
 The :meth:`~sardana.pool.controller.Readable.ReadOne` method is used indifferently
-of the selected synchronization but its return values should depend on it.
-
-This method can return either:
+of the selected synchronization but its return values should depend on it and
+can be:
 
      - a single counter value: either :class:`float` or :obj:`~sardana.sardanavalue.SardanaValue`
-     in case of the :attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareTrigger` or
-     :attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareGate` synchronization
+       in case of the :attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareTrigger` or
+       :attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareGate` synchronization
 
      - a sequence of counter values: either :class:`float` or :obj:`~sardana.sardanavalue.SardanaValue`
-     in case of the :attr:`~sardana.pool.pooldefs.AcqSynch.HardwareTrigger` or
-     :attr:`~sardana.pool.pooldefs.AcqSynch.HardwareGate` synchronization
+       in case of the :attr:`~sardana.pool.pooldefs.AcqSynch.HardwareTrigger` or
+       :attr:`~sardana.pool.pooldefs.AcqSynch.HardwareGate` synchronization
 
 Sardana assumes that the counter values are returned in the order of acquisition
 and that there are no gaps in between them.
