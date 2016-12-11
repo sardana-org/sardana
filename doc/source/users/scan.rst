@@ -160,6 +160,18 @@ Scans are highly configurable using the environment variables
 
 Following variables are supported:
 
+**ApplyInterpolation**
+    Enable/disable the `zero order hold`_ a.k.a. "constant interpolation"
+    method to fill the missing parts of the scan records in case the software
+    synchronized acquisition could not follow the pace. Can be used only
+    with the *ct* type of scans. Its value is of boolean type.
+    
+    .. note::
+        The ApplyInterpolation environment variable has been included in
+        Sardana on a provisional basis with SEP6_. Backwards incompatible
+        changes (up to and including removal of this variable) may occur if
+        deemed necessary by the core developers.
+
 **JsonRecorder**
     Its value is of boolean type and it indicates whether JSON encoded scan
     records will be emitted by the Door. Online scan plot uses this feature.
@@ -213,3 +225,5 @@ Following variables are supported:
              macros in Sardana, see 
              :ref:`scan framework <sardana-macros-scanframework>`
 
+.. _zero order hold: https://en.wikipedia.org/wiki/Zero-order_hold
+.. _SEP6: http://www.sardana-controls.org/sep/?SEP6.md
