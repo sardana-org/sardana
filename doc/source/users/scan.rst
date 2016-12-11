@@ -68,14 +68,8 @@ therefore takes place while the motors are moving. The most common reason for
 using this type of scan is optimizing the acquisition time by not having to
 wait for motors to accelerate and decelerate between acquisitions.
 
-.. note:: The synchronization of movement and acquisition can be done via
-   hardware or via software. Currently Sardana only provides an interface for
-   software-synchronized continuous scans. An API abstracting the specificities
-   of hardware-synchronized systems is being implemented too but it is not yet
-   available for production.
-
-The (software-synchronized) continuous scans introduce some constraints and
-issues that should be considered.
+The continuous scans introduce some constraints and issues that should be
+considered.
 
 #. If a continuous scan involves moving more than one motor simultaneously
    (as it is done, e.g. in :class:`~sardana.macroserver.macros.scan.a2scan`),
@@ -89,18 +83,11 @@ issues that should be considered.
    pseudo-motors accessing the same physical motors attached to each blade of
    the slit), in a continuous scan the motions cannot be decoupled in a
    synchronized way.
-#. In order to optimize the acquisition time, Sardana attempts to perform as
-   many acquisitions as allowed during the scan time. Due to the uncertainty in
-   the delay times involved, it is not possible to know beforehand how many
-   acquisitions will be completed. In other words, the number of acquired
-   points along a continuous scan is not fixed (but it is guaranteed to be as
-   large as possible).
 #. Backslash correction is incompatible with continuous scans, so you should
    keep in mind that continuous scans should only be done in the backslash-free
    direction of the motor (typically, by convention the positive one for a
    physical motor).
 
-  
 
 In order to address the first two issues, the
 :ref:`scan framework <sardana-macros-scanframework>` attempts the following:
@@ -131,7 +118,6 @@ motors involved in a :class:`~sardana.macroserver.macros.scan.a2scanc`.
    The lines correspond to the motor positions and the blue shaded areas correspond to the intervals in 
    which the data acquisition took place.  
  
-
 Both motors are capable of same velocity and acceleration, but since the
 required scan path for m_cp1_1 is shorter than that for m_cp1_2, its top
 velocity has been adjusted (gentler slope for m_cp1_1) so that both motors go
@@ -142,14 +128,47 @@ The same figure also shows how the paths for both motors have been automatically
 path is followed at constant velocity and that the data acquisition takes place
 also while the motors are running at constant velocity.
 
+The synchronization of movement and acquisition can be done via hardware or
+via software. Currently Sardana provides two different interfaces for
+continuous scans. They can be easily differenciated by the scan name suffix:
 
+* *c* - allows only software synchronization
+* *ct* - allows both software and hardware synchronization (introduced with
+  SEP6_)
 
-Some examples of continuous scan macros are:
+In the *c* type of scans, in order to optimize the acquisition time, Sardana
+attempts to perform as many acquisitions as allowed during the scan time. Due
+to the uncertainty in the delay times involved, it is not possible to know
+beforehand how many acquisitions will be completed. In other words, the number
+of acquired points along a continuous scan is not fixed (but it is guaranteed
+to be as large as possible). Some examples of continuous scan macros are:
 :class:`ascanc`,
 :class:`a2scanc`, ...
 :class:`dscanc`,
 :class:`d2scanc`, ...
 :class:`meshc`. 
+
+
+In the *ct* type of scans, Sardana perform the exact number of acquisitions
+selected by the user by the means of hardware or software synchronization
+configurable on the *measurement group* level. The software synchronized
+channels may not follow the synchronization pace and some acquisitions may need
+to be skipped. In order to mittigate this risk an extra latency time can be 
+spend in between the scan points. Another possibility is to enable data
+interpolation in order to fill the gaps in the scan records. Some examples of
+continuous scan macros are:
+:class:`ascanct`,
+:class:`a2scanct`, ...
+:class:`dscanct`,
+:class:`d2scanct`, ...
+
+.. note::
+    The two distinct types of scans are just the result of the interative
+    development of the :ref:`Scan Framework <sardana-macros-scanframework>`.
+    Ideally they will merge into one based on the *ct* approach. This process
+    may require backwards incompatible changes (up to and including removal of 
+    the affected scan macros) if deemed necessary by the core developers.
+
 
 Configuration
 -------------
@@ -164,7 +183,7 @@ Following variables are supported:
     Enable/disable the `zero order hold`_ a.k.a. "constant interpolation"
     method to fill the missing parts of the scan records in case the software
     synchronized acquisition could not follow the pace. Can be used only
-    with the *ct* type of scans. Its value is of boolean type.
+    with the *ct* type of continuous scans. Its value is of boolean type.
     
     .. note::
         The ApplyInterpolation environment variable has been included in
