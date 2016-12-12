@@ -58,8 +58,13 @@ import imp
 
 import IPython
 import IPython.genutils
-import PyTango
-import itango
+
+try:
+    import PyTango
+    import itango
+except ImportError:
+    # postpone error to check_requirements
+    pass
 
 from taurus.core.taurushelper import Factory
 from taurus.core.util.codecs import CodecFactory
