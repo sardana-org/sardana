@@ -158,6 +158,10 @@ Scans are highly configurable using the environment variables
 
 Following variables are supported:
 
+**JsonRecorder**
+    Its value is of boolean type and it indicates whether JSON encoded scan
+    records will be emitted by the Door. Online scan plot uses this feature.
+
 **ScanDir**
     Its value is of string type and indicates an absolute path to the directory
     where scan data will be stored.
@@ -169,7 +173,6 @@ Following variables are supported:
     For example "myexperiment.spec" will by default store data in SPEC
     compatible format (see more about the extension to recorder map in
     :ref:`sardana-writing-recorders`).
-
 
 **ScanRecorder**
     Its value may be either of type string or of list of strings. If
@@ -196,10 +199,6 @@ Following variables are supported:
         FIO_FileRecorder will write myexperiment.spec file and
         NXscan_FileRecorder will write the myexpriment.h5. The selection of the
         second recorder is based on the extension.
-
-**JsonRecorder**
-    Its value is of boolean type and it indicates whether JSON encoded scan
-    records will be emitted by the Door. Online scan plot uses this feature.
 
 **SharedMemory**
     Its value is of string type and it indicates which shared memory recorder should
