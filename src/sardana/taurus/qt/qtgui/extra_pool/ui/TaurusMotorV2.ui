@@ -1,6 +1,6 @@
 <ui version="4.0">
  <class>TaurusMotorV2</class>
- <widget class="QDialog" name="TaurusMotorV2">
+ <widget class="QWidget" name="TaurusMotorV2">
   <property name="geometry">
    <rect>
     <x>0</x>
