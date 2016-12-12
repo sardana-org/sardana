@@ -130,7 +130,7 @@ also while the motors are running at constant velocity.
 
 The synchronization of movement and acquisition can be done via hardware or
 via software. Currently Sardana provides two different interfaces for
-continuous scans. They can be easily differenciated by the scan name suffix:
+continuous scans. They can be easily differentiated by the scan name suffix:
 
 * *c* - allows only software synchronization
 * *ct* - allows both software and hardware synchronization (introduced with
@@ -153,7 +153,7 @@ In the *ct* type of scans, Sardana perform the exact number of acquisitions
 selected by the user by the means of hardware or software synchronization
 configurable on the *measurement group* level. The software synchronized
 channels may not follow the synchronization pace and some acquisitions may need
-to be skipped. In order to mittigate this risk an extra latency time can be 
+to be skipped. In order to mitigate this risk an extra latency time can be 
 spend in between the scan points. Another possibility is to enable data
 interpolation in order to fill the gaps in the scan records. Some examples of
 continuous scan macros are:
@@ -161,12 +161,17 @@ continuous scan macros are:
 :class:`a2scanct`, ...
 :class:`dscanct`,
 :class:`d2scanct`, ...
+At the time of writing the *ct* types of continuous scans
+still do not support acquiring neither of: :ref:`1D <sardana-1d-overview>`,
+:ref:`2D <sardana-2d-overview>`, :ref:`Pseudo Counter <sardana-pseudocounter-overview>`
+nor external attributes e.g. Tango_ however their support is planned in the
+near future.
 
 .. note::
-    The two distinct types of scans are just the result of the interative
-    development of the :ref:`Scan Framework <sardana-macros-scanframework>`.
+    The creation of two different types of continuous scans is just the result
+    of the iterative development of the :ref:`Scan Framework <sardana-macros-scanframework>`.
     Ideally they will merge into one based on the *ct* approach. This process
-    may require backwards incompatible changes (up to and including removal of 
+    may require backwards incompatible changes (up to and including removal of
     the affected scan macros) if deemed necessary by the core developers.
 
 
@@ -246,3 +251,4 @@ Following variables are supported:
 
 .. _zero order hold: https://en.wikipedia.org/wiki/Zero-order_hold
 .. _SEP6: http://www.sardana-controls.org/sep/?SEP6.md
+.. _Tango: http://www.tango-controls.org
