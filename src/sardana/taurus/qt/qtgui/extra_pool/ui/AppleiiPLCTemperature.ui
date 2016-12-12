@@ -81,7 +81,7 @@
          </spacer>
         </item>
         <item>
-         <widget class="TaurusConfigLabel" name="TemperatureLabel">
+         <widget class="TaurusLabel" name="TemperatureLabel">
           <property name="minimumSize">
            <size>
             <width>50</width>
@@ -131,7 +131,7 @@
          </widget>
         </item>
         <item>
-         <widget class="TaurusConfigLabel" name="TemperatureUnits">
+         <widget class="TaurusLabel" name="TemperatureUnits">
           <property name="minimumSize">
            <size>
             <width>35</width>
@@ -195,7 +195,7 @@
    <header>taurus.qt.qtgui.display</header>
   </customwidget>
   <customwidget>
-   <class>TaurusConfigLabel</class>
+   <class>TaurusLabel</class>
    <extends>QLabel</extends>
    <header>taurus.qt.qtgui.display</header>
   </customwidget>

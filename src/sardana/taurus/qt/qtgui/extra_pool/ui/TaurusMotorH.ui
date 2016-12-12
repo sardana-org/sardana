@@ -113,7 +113,7 @@
          </widget>
         </item>
         <item>
-         <widget class="TaurusConfigLabel" name="positionUnits">
+         <widget class="TaurusLabel" name="positionUnits">
           <property name="minimumSize">
            <size>
             <width>35</width>
@@ -210,7 +210,7 @@
    <header>taurus.qt.qtgui.input</header>
   </customwidget>
   <customwidget>
-   <class>TaurusConfigLabel</class>
+   <class>TaurusLabel</class>
    <extends>QLabel</extends>
    <header>taurus.qt.qtgui.display</header>
   </customwidget>
