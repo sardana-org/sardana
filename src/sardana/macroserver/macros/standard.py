@@ -636,11 +636,13 @@ class ct(Macro):
         for ch_info in self.mnt_grp.getChannelsEnabledInfo():
             names.append('  %s' % ch_info.label)
             ch_data = data.get(ch_info.full_name)
-            if ch_info.shape > [1]:
+            if ch_data is None:
+                counts.append("<nodata>")
+            elif ch_info.shape > [1]:
                 counts.append(list(ch_data.shape))
             else:
                 counts.append(ch_data)
-        
+
         table = Table([counts], row_head_str=names, row_head_fmt='%*s',
                       col_sep='  =  ')
         for line in table.genOutput():
