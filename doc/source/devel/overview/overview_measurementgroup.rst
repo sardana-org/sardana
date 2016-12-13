@@ -38,6 +38,9 @@ hardware triggerring (or gating) can be used by configuring a
 :ref:`Trigger/Gate <sardana-triggergate-overview>` as the controller's
 synchronizer.
 
+The measurement group configuration can by modified with the
+:ref:`expconf widget <expconf_ui>`.
+
 .. seealso::
 
     :ref:`sardana-measurementgroup-api`
