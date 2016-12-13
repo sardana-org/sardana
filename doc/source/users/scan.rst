@@ -151,12 +151,13 @@ to be as large as possible). Some examples of continuous scan macros are:
 
 In the *ct* type of scans, Sardana perform the exact number of acquisitions
 selected by the user by the means of hardware or software synchronization
-configurable on the *measurement group* level. The software synchronized
-channels may not follow the synchronization pace and some acquisitions may need
-to be skipped. In order to mitigate this risk an extra latency time can be 
-spend in between the scan points. Another possibility is to enable data
-interpolation in order to fill the gaps in the scan records. Some examples of
-continuous scan macros are:
+configurable on the
+:ref:`measurement group <sardana-measurementgroup-overview>` level.
+The software synchronized channels may not follow the synchronization pace and
+some acquisitions may need to be skipped. In order to mitigate this risk an
+extra latency time can be spend in between the scan points. Another possibility
+is to enable data interpolation in order to fill the gaps in the scan records.
+Some examples of continuous scan macros are:
 :class:`ascanct`,
 :class:`a2scanct`, ...
 :class:`dscanct`,
