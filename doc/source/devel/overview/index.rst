@@ -15,6 +15,7 @@ Overview
     Motor <overview_motor>
     Pseudo motor <overview_pseudomotor>
     IO register <overview_IOR>
+    Trigger/gate <overview_triggergate>
     Counter/timer <overview_countertimer>
     0D experiment channel <overview_0D>
     1D experiment channel <overview_1D>
