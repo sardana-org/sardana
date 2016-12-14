@@ -115,5 +115,6 @@ setup(name='sardana',
       classifiers=classifiers,
       entry_points=entry_points,
       provides=provides,
-      requires=requires
+      requires=requires,
+      test_suite='sardana.test.testsuite.get_sardana_suite',
 )
