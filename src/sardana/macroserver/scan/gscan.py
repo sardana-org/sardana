@@ -1854,16 +1854,19 @@ class CTScan(CScan):
         acc_time = max_acc_time
         dec_time = max_dec_time
 
-        for moveable, start_position, end_position in \
+        for moveable, start, end in \
                       zip(self._physical_moveables, start_positions, positions):
+            total_displacement = abs(end - start)
+            direction = 1 if end > start else -1
+            interval_displacement = total_displacement / self.macro.nr_interv
+            # move further in order to acquire the last point at constant velocity
+            end = end + direction * interval_displacement
+
             base_vel = moveable.getBaseRate()
             ideal_vmotor = VMotor(accel_time=acc_time,
                                   decel_time=dec_time,
                                   min_vel=base_vel)
-            ideal_path = MotionPath(ideal_vmotor,
-                                    start_position,
-                                    end_position,
-                                    active_time)
+            ideal_path = MotionPath(ideal_vmotor, start, end, active_time)
             ideal_path.moveable = moveable
             ideal_path.apply_correction = True
             ideal_paths.append(ideal_path)

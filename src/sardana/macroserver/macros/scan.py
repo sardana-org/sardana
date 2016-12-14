@@ -136,7 +136,8 @@ class aNscan(Hookable):
                 self.name = opts.get('name','a%iscanc'%self.N)
                 self._gScan = CSScan(self, self._waypoint_generator, self._period_generator, moveables, env, constrains, extrainfodesc)
             elif mode == ContinuousHwTimeMode:
-                self.nr_of_points = scan_length
+                self.nr_interv = scan_length
+                self.nr_of_points = self.nr_interv + 1
                 mg_name = self.getEnv('ActiveMntGrp')
                 mg = self.getMeasurementGroup(mg_name)
                 mg_latency_time = mg.getLatencyTime()
@@ -1306,14 +1307,14 @@ class ascanct(aNscan, Macro):
     param_def = [['motor', Type.Moveable, None, 'Moveable name'],
                  ['start_pos', Type.Float, None, 'Scan start position'],
                  ['final_pos', Type.Float, None, 'Scan final position'],
-                 ['nr_of_points', Type.Integer, None, 'Nr of scan points'],
+                 ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
                  ['integ_time', Type.Float, None, 'Integration time'],
                  ['latency_time', Type.Float, 0, 'Latency time']]
 
 
-    def prepare(self, motor, start_pos, final_pos, nr_of_points, 
+    def prepare(self, motor, start_pos, final_pos, nr_interv, 
                 integ_time, latency_time, **opts):
-        self._prepare([motor], [start_pos], [final_pos], nr_of_points,
+        self._prepare([motor], [start_pos], [final_pos], nr_interv,
                       integ_time, mode=ContinuousHwTimeMode,
                       latency_time=latency_time, **opts)
 
@@ -1339,13 +1340,13 @@ class a2scanct(aNscan, Macro):
            ['motor2',      Type.Moveable,   None, 'Moveable 2 to move'],
            ['start_pos2',  Type.Float,   None, 'Scan start position 2'],
            ['final_pos2',  Type.Float,   None, 'Scan final position 2'],
-           ["nr_of_points", Type.Integer, None, "Nr of scan points"],
+           ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
            ['integ_time', Type.Float,   None, 'Integration time'],
-           ["latency_time", Type.Float, 0, 'Latency time']]
+           ['latency_time', Type.Float, 0, 'Latency time']]
 
-    def prepare(self, m1, s1, f1, m2, s2, f2, nr_of_points, 
+    def prepare(self, m1, s1, f1, m2, s2, f2, nr_interv, 
                 integ_time, latency_time, **opts):
-        self._prepare([m1, m2], [s1, s2], [f1, f2], nr_of_points,
+        self._prepare([m1, m2], [s1, s2], [f1, f2], nr_interv,
                       integ_time, mode=ContinuousHwTimeMode,
                       latency_time=latency_time, **opts)
 
@@ -1374,13 +1375,13 @@ class a3scanct(aNscan, Macro):
            ['motor3',      Type.Moveable,   None, 'Moveable 3 to move'],
            ['start_pos3',  Type.Float,   None, 'Scan start position 3'],
            ['final_pos3',  Type.Float,   None, 'Scan final position 3'],
-           ["nr_of_points", Type.Integer, None, "Nr of scan points"],
+           ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
            ['integ_time', Type.Float,   None, 'Integration time'],
-           ["latency_time", Type.Float, 0, 'Latency time']]
+           ['latency_time', Type.Float, 0, 'Latency time']]
 
-    def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, nr_of_points, 
+    def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, nr_interv, 
                 integ_time, latency_time, **opts):
-        self._prepare([m1, m2, m3], [s1, s2, s3], [f1, f2, f3], nr_of_points,
+        self._prepare([m1, m2, m3], [s1, s2, s3], [f1, f2, f3], nr_interv,
                       integ_time, mode=ContinuousHwTimeMode,
                       latency_time=latency_time, **opts)
 
@@ -1412,14 +1413,14 @@ class a4scanct(aNscan, Macro):
            ['motor4',      Type.Moveable,   None, 'Moveable 4 to move'],
            ['start_pos4',  Type.Float,   None, 'Scan start position 4'],
            ['final_pos4',  Type.Float,   None, 'Scan final position 4'],
-           ["nr_of_points", Type.Integer, None, "Nr of scan points"],
+           ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
            ['integ_time', Type.Float,   None, 'Integration time'],
-           ["latency_time", Type.Float, 0, 'Latency time']]
+           ['latency_time', Type.Float, 0, 'Latency time']]
 
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, m4, s4, f4, 
-                nr_of_points, integ_time, latency_time, **opts):
+                nr_interv, integ_time, latency_time, **opts):
         self._prepare([m1, m2, m3, m4], [s1, s2, s3, s4], [f1, f2, f3, f4],
-                      nr_of_points, integ_time, mode=ContinuousHwTimeMode,
+                      nr_interv, integ_time, mode=ContinuousHwTimeMode,
                       latency_time=latency_time
                       **opts)
 
