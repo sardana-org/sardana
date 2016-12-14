@@ -763,7 +763,7 @@ class DiffracBasis(PseudoMotorController):
         motor_position = []
         for i in range(0, self.nb_ph_axes):
             motor = self.GetMotor(i)
-            motor_position.append(motor.position.value)
+            motor_position.append(motor.get_position(cache=False).value)
         self.geometry.axis_values_set(motor_position, USER)
             
         curr_physical_pos = self.geometry.axis_values_get(USER)
@@ -823,7 +823,7 @@ class DiffracBasis(PseudoMotorController):
         motor_position = []
         for i in range(0, self.nb_ph_axes):
             motor = self.GetMotor(i)
-            motor_position.append(motor.position.value)
+            motor_position.append(motor.get_position(cache=False).value)
         self.geometry.axis_values_set(motor_position, USER)
         newref = self.sample.add_reflection(
             self.geometry, self.detector, value[0], value[1], value[2])
