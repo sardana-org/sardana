@@ -149,7 +149,9 @@ def spock_input(prompt='',  ps2='... '):
 def translate_version_str2int(version_str):
     """Translates a version string in format x[.y[.z[...]]] into a 000000 number"""
     import math
-    parts = version_str.split('.')
+    # Get the current version number ignoring the release part ("-dev")
+    num_version_str = version_str.split('-')[0]
+    parts = num_version_str.split('.')
     i, v, l = 0, 0, len(parts)
     if not l: return v
     while i<3:
@@ -709,7 +711,8 @@ def check_for_upgrade(ipy_profile_dir):
     spocklib_ver = translate_version_str2int(release.version)
     spock_profile_ver = translate_version_str2int(spock_profile_ver_str)
 
-    if spocklib_ver == spock_profile_ver:
+    if spocklib_ver == spock_profile_ver and \
+            spock_profile_ver_str.find("-dev") == -1:
         return
     if spocklib_ver < spock_profile_ver:
         print '%sYour spock profile (%s) is newer than your spock version ' \
