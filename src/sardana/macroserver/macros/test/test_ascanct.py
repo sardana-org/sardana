@@ -107,7 +107,7 @@ class AscanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
         self.assertFinished('Macro %s did not finish' % self.macro_name)
 
         #Checking that the required number of scan points is present.
-        expected_nb_points = macro_params[3]
+        expected_nb_points = int(macro_params[3]) + 1
 
         # Test data from log_output (macro_executor.getLog('output'))
         log_output = self.macro_executor.getLog('output')
@@ -121,7 +121,7 @@ class AscanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
                        "The ascanct execution did not return any scan point.\n"
                        + "Checked using log_output")
 
-        self.assertEqual(int(obtained_nb_points), int(expected_nb_points), 
+        self.assertEqual(obtained_nb_points, expected_nb_points, 
           "The ascanct execution did not return the expected number of " + 
           " points.\n Expected " + str(expected_nb_points) + " points." + 
           "\n Obtained " + str(obtained_nb_points) + " points." 
