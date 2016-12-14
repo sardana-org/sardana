@@ -24,6 +24,11 @@
 ##
 ##############################################################################
 
+#### DEPRECATED MODULE!!!!
+# This module is deprecated avoid to use anything from it.
+# Use sardana.release module instead
+####
+
 """Release data for the Spock project.
 """
 

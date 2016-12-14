@@ -66,7 +66,7 @@ from taurus.core.util.codecs import CodecFactory
 
 from sardana.spock import exception
 from sardana.spock import colors
-from sardana.spock import release
+from sardana import release
 
 arg_split = IPython.iplib.arg_split
 page = IPython.genutils.page
