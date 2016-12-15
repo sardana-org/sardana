@@ -712,7 +712,7 @@ def check_for_upgrade(ipy_profile_dir):
     spock_profile_ver = translate_version_str2int(spock_profile_ver_str)
 
     if spocklib_ver == spock_profile_ver and \
-            spock_profile_ver_str.find("-dev") == -1:
+            spock_profile_ver_str.find("-alpha") == -1:
         return
     if spocklib_ver < spock_profile_ver:
         print '%sYour spock profile (%s) is newer than your spock version ' \
