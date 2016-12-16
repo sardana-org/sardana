@@ -39,7 +39,11 @@ class SarDemoEnv(Singleton):
     the MacroServer (given by :attr:`UNITTEST_DOOR_NAME`)
     """
 
-    def __init__(self, door_name=None):
+    def __init__(self):
+        """ Initialization. Nothing to be done here for now."""
+        pass
+
+    def init(self, door_name=None):
         if door_name is None:
             door_name = getattr(sardanacustomsettings, 'UNITTEST_DOOR_NAME')
         registerExtensions()
