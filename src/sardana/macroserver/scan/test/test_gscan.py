@@ -40,6 +40,17 @@ from sardana.macroserver.msexception import UnknownEnv
                       "final_pos": 15})
 class CTScanTestCase(unittest.TestCase):
 
+    def setUp(self):
+        modules = []
+        for mod in sys.modules.iterkeys():
+            if "sardana" in module:
+                modules.append(mod)
+        for mod in modules:
+            try:
+                del sys.modules[mod]
+            except KeyError:
+                pass
+
     @staticmethod
     def getEnv(name):
         if name == "ActiveMntGrp":
