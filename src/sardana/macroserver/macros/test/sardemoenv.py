@@ -177,8 +177,8 @@ def getElements(elem_type="all", fallback_name="element_not_defined",
     except Exception, e:
         import taurus
         taurus.debug(e)
-        taurus.warning("It was not possible to retrieve the motor names. " +
-                     "Ignore this message if you are building the documentation.")
+        taurus.warning("It was not possible to retrieve the element. " +
+                       "Ignore this message if you are building the documentation.")
         elements = [fallback_name] * fallback_elements_len
     return elements
 
