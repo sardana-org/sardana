@@ -46,7 +46,6 @@ class SarDemoEnv(Singleton):
     def init(self, door_name=None):
         if door_name is None:
             door_name = getattr(sardanacustomsettings, 'UNITTEST_DOOR_NAME')
-        registerExtensions()
 
         # TODO: As a workaround: check with PyTango that the door is running
         # in case of exception raise a RuntimeError. Ideally it should be done
@@ -57,6 +56,8 @@ class SarDemoEnv(Singleton):
             d.ping()
         except:
             raise RuntimeError("Door %s is not running" % door_name)
+
+        registerExtensions()
 
         self.door = Device(door_name)
         self.ms = self.door.macro_server
