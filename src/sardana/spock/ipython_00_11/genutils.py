@@ -149,7 +149,7 @@ def spock_input(prompt='',  ps2='... '):
 def translate_version_str2int(version_str):
     """Translates a version string in format x[.y[.z[...]]] into a 000000 number"""
     import math
-    # Get the current version number ignoring the release part ("-dev")
+    # Get the current version number ignoring the release part ("-alpha")
     num_version_str = version_str.split('-')[0]
     parts = num_version_str.split('.')
     i, v, l = 0, 0, len(parts)
