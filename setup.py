@@ -116,5 +116,5 @@ setup(name='sardana',
       entry_points=entry_points,
       provides=provides,
       requires=requires,
-      test_suite='sardana.test.testsuite.get_sardana_suite',
+      test_suite='sardana.test.testsuite.get_sardana_unitsuite',
 )

@@ -62,6 +62,11 @@ def get_sardana_suite(exclude_pattern='(?!)'):
     suite = loader.discover(start_dir, top_level_dir=os.path.dirname(start_dir))
     return _filter_suite(suite, exclude_pattern)
 
+def get_sardana_unitsuite():
+    """Provide test suite with only unit tests. These exclude:
+        - functional tests of macros that requires the "sar_demo environment"
+    """
+    return get_sardana_suite(exclude_pattern='sardana\.macroserver\.macros\.test*')
 
 def run(exclude_pattern='(?!)'):
     '''Runs all tests for the sardana package
