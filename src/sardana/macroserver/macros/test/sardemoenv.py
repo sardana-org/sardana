@@ -47,11 +47,19 @@ class SarDemoEnv(Singleton):
         if door_name is None:
             door_name = getattr(sardanacustomsettings, 'UNITTEST_DOOR_NAME')
         registerExtensions()
+
+        # TODO: As a workaround: check with PyTango that the door is running
+        # in case of exception raise a RuntimeError. Ideally it should be done
+        # just using taurus
         try:
-            self.door = Device(door_name)
-            self.ms = self.door.macro_server
-        except ValueError:
-            raise ValueError('The  door %s does not exist' % (door_name))
+            import PyTango
+            d = PyTango.DeviceProxy(door_name)
+            d.ping()
+        except:
+            raise RuntimeError("Door %s is not running" % door_name)
+
+        self.door = Device(door_name)
+        self.ms = self.door.macro_server
 
         self.controllers = None
         self.cts = None
