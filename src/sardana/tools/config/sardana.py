@@ -713,12 +713,14 @@ class DevicePoolServer(TangoServer):
 
         intrument_node = node.find("InstrumentRef")
         if not intrument_node is None:
-            try:
-                value = intrument_node.text.strip()
-                dev.write_attribute('Instrument', value)
-            except Exception, ex:
-                print 'SOME PROBLEMS SETTING INSTRUMENT VALUE FOR DEVICE', dev_name, 'VALUE', value
-                print 'EXCEPTION:', ex
+            value = intrument_node.text
+            if value is not None:
+                try:
+                    value = value.strip()
+                    dev.write_attribute('Instrument', value)
+                except Exception, ex:
+                    print 'SOME PROBLEMS SETTING INSTRUMENT VALUE FOR DEVICE', dev_name, 'VALUE', value
+                    print 'EXCEPTION:', ex
 
 
     def loadPool(self):
