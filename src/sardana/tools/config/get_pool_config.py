@@ -1,7 +1,9 @@
+import sys
+import json
+import csv
+
 import PyTango
 import taurus
-import csv
-import sys
 
 def checkPoolElements(pool):
     pool_dev = taurus.Device(pool)
@@ -9,7 +11,8 @@ def checkPoolElements(pool):
     # GET CONTROLLER CLASSES
     pool_ctrl_classes = {}
     for info in pool_dev['ControllerClassList'].value:
-        ctrl_class, library_path, ctrl_type = info.split()
+        info = json.loads(info)
+        ctrl_class, library_path, ctrl_type = info['name'], info['file_path'], info['type']
         pool_ctrl_classes[ctrl_class] = (library_path, ctrl_type)
 
     # GET CONTROLLERS INFO
@@ -17,33 +20,42 @@ def checkPoolElements(pool):
                                 'PseudoMotor': [],
                                 'IORegister': [],
                                 'CounterTimer': [],
+                                'OneDExpChannel': [],
+                                'TwoDExpChannel': [],
                                 'PseudoCounter': [],
                                 'ZeroDExpChannel': []}
 
     pool_controllers = {}
     for info in pool_dev['ControllerList'].value:
-        info_splitted = info.split()
-        ctrl_name = info_splitted[0]
-        ctrl_library = info_splitted[-1].replace('(','').replace(')','')
-        ctrl_class = info_splitted[1].rsplit('.')[1].split('/')[0]
-        ctrl_type = ''
+        info = json.loads(info)
+        ctrl_name = str(info['name'])
+        ctrl_class = str(info['klass'])
+        file_name = str(info['file_name'])
         try:
-            ctrl_type = pool_ctrl_classes[ctrl_class][1]
-            pool_controllers_by_type[ctrl_type].append(ctrl_name)
-        except:
-            pass
+            ctrl_library = pool_ctrl_classes[ctrl_class][0]
+        except KeyError:
+            print ("#WARNING: There is no controller class %s for controller %s" %
+                  (ctrl_class, ctrl_name))
+            continue
+        ctrl_type = str(info['main_type'])
+        # sardana script is not compatible with the new type CTExpChannel
+        # so substitute it by the old type: CounterTimer
+        if ctrl_type == 'CTExpChannel': ctrl_type = 'CounterTimer'
+        pool_controllers_by_type[ctrl_type].append(ctrl_name)
         ctrl_properties = {}
         ctrl_elements = []
         ctrl_pool_elements = []
-        for prop in pool_dev.get_property_list(ctrl_name+'/*'):
-            prop_name = prop.split('/')[1]
-            prop_value = pool_dev.get_property(prop)[prop]
+        ctrl_dev = taurus.Device(ctrl_name)
+        for prop_name in ctrl_dev.get_property_list('*'):
+            if prop_name == '__SubDevices':
+                continue
+            prop_value = ctrl_dev.get_property(prop_name)[prop_name]
             ctrl_properties[prop_name] = ' '.join(prop_value)
         pool_controllers[ctrl_name] = {}
         pool_controllers[ctrl_name]['type'] = ctrl_type
         pool_controllers[ctrl_name]['pool'] = pool
         pool_controllers[ctrl_name]['name'] = ctrl_name
-        pool_controllers[ctrl_name]['file'] = ctrl_library
+        pool_controllers[ctrl_name]['file'] = file_name
         pool_controllers[ctrl_name]['class'] = ctrl_class
         pool_controllers[ctrl_name]['properties'] = ctrl_properties
         pool_controllers[ctrl_name]['elements'] = ctrl_elements
@@ -59,15 +71,10 @@ def checkPoolElements(pool):
 
     pool_measurement_groups = {}
     for info in pool_dev['MeasurementGroupList'].value:
-        info_splitted = info.split()
-        mg_name = info_splitted[0]
-        pool_measurement_groups[mg_name] = []
-        for channel in info_splitted[4:]:
-            if not channel.startswith('('):
-                channel_name = channel.replace(',','')
-                pool_measurement_groups[mg_name].append(channel_name)
-            else:
-                break
+        info_splitted = json.loads(info)
+        mg_name = str(info_splitted["name"])
+        elements = info_splitted["elements"]
+        pool_measurement_groups[mg_name] = elements
 
     ### print '\n'
     ### print '----------------------------------------------------------------'
@@ -82,11 +89,16 @@ def checkPoolElements(pool):
     for element_type in pool_elements.keys():
         elements = pool_elements[element_type]
         for info in elements:
-            info_splitted = info.split()
-            alias = info_splitted[0]
-            dev_name = info_splitted[1].replace('(','').replace(')','')
-            ctrl_name, ctrl_axis = info_splitted[2].replace('(','').replace(')','').split('/')
-            specific_element_type = info_splitted[3]
+            info_splitted = json.loads(info)
+            alias = str(info_splitted["name"])
+            dev_name = info_splitted["full_name"]
+            ctrl_name = info_splitted["parent"]
+            ctrl_axis = info_splitted["axis"]
+            specific_element_type = info_splitted["type"]
+            # sardana script is not compatible with the new type CTExpChannel
+            # so substitute it by the old type: CounterTimer
+            if specific_element_type == 'CTExpChannel':
+                specific_element_type = 'CounterTimer'
 
             element_dev = taurus.Device(alias)
 
@@ -99,7 +111,12 @@ def checkPoolElements(pool):
             pool_elements_detail[alias]['instrument'] = element_dev.Instrument.split('(')[0]
             pool_elements_detail[alias]['attr_dicts'] = {}
             
-            for attr, attr_dict in db.get_device_attribute_property(element_dev.getNormalName(), element_dev.get_attribute_list()).iteritems():
+            normal_name = element_dev.getNormalName()
+            attrs = element_dev.get_attribute_list()
+            for attr, attr_dict in db.get_device_attribute_property(
+                                        normal_name,
+                                        map(str,attrs)
+                                   ).iteritems():
                 if len(attr_dict) > 0:
                     pool_elements_detail[alias]['attr_dicts'][attr] = attr_dict
                 else:
@@ -118,30 +135,23 @@ def checkPoolElements(pool):
         elements = pool_elements[element_type]
         elements_with_no_instrument = []
         for info in elements:
-            info_splitted = info.split()
-            alias = info_splitted[0]
-            dev_name = info_splitted[1]
-            ctrl_name, ctrl_axis = info_splitted[2].replace('(','').replace(')','').split('/')
-            specific_element_type = info_splitted[3]
+            info_splitted = json.loads(info)
+            alias = str(info_splitted["name"])
+            dev_name = info_splitted["full_name"]
+            ctrl_name = info_splitted["parent"]
+            ctrl_axis = info_splitted["axis"]
+            specific_element_type = info_splitted["type"]
 
             # Add info of 'physicals needed' in pseudomotor and pseudocounter controllers
-            pool_controllers[ctrl_name]['ctrl_pool_elements'].append(alias)
+            try:
+                ctrl = pool_controllers[ctrl_name]
+            except KeyError:
+                print ("#WARNING: There is no controller %s for element %s" %
+                  (ctrl_name, alias))
+                continue
+            ctrl['ctrl_pool_elements'].append(alias)
             if specific_element_type in ['PseudoMotor', 'PseudoCounter']:
-                ###########################################################################################
-                # There is a bug in the Pool's ExpChannelList attribute that does not                     #
-                # provide any physical channels for the pseudo channels, this info, is                    #
-                # available in the Pool's PseudoCounterList so, while this bug is not fixed               #
-                # We will have to - INEFFICIENTLY - read the PseudoCounter list again for each pseudo     #
-                # pseudo counter in order to put the info                                                 #
-                if len(pool_controllers[ctrl_name]['elements']) == 0:                                     #
-                    if specific_element_type == 'PseudoCounter':                                          #
-                        for info in pool_dev['PseudoCounterList'].value or []:                            #
-                            info_splitted = info.split()                                                  #
-                            alias_again = info_splitted[0]                                                #
-                            if alias_again == alias:                                                      #
-                                break                                                                     #
-                ###########################################################################################
-                    pool_controllers[ctrl_name]['elements'] = ' '.join(info_splitted[6:])
+                ctrl['elements'] = ';'.join(info_splitted["elements"])
 
 
             element_dev = taurus.Device(alias)
@@ -232,7 +242,7 @@ def checkPoolElements(pool):
                 properties = []
                 for k,v in ctrl_details['properties'].iteritems():
                     properties.append(k+':'+v)
-                ctrl_details['properties'] = '; '.join(properties)
+                ctrl_details['properties'] = ';'.join(properties)
 
             if len(ctrl_details['elements']) == 0:
                 ctrl_details['elements'] = ''
@@ -288,12 +298,13 @@ def checkPoolElements(pool):
                     channels_sheet += row + '\n'
 
     instrument_row_template = '{type}\t{pool}\t{name}\t{class}'
-    for instrument in pool_instruments:
+    for info in pool_instruments:
+        info = json.loads(info)
         instrument_details = {}
         instrument_details['type'] = 'Instrument'
         instrument_details['pool'] = pool
-        instrument_details['name'] = instrument.split('(')[0]
-        instrument_details['class'] = instrument.split('(')[1].replace(')','')
+        instrument_details['name'] = info['name']
+        instrument_details['class'] = info['klass']
         row = instrument_row_template.format(**instrument_details)
         instruments_sheet += row + '\n'
 
