@@ -72,6 +72,7 @@ class BasePoolTestCase(object):
     def tearDown(self):
         """Remove the Pool instance.
         """
+        del self.pool
         unregisterExtensions()
         self._starter.cleanDb(force=True)
 
