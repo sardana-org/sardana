@@ -1653,10 +1653,6 @@ class Pool(TangoDevice, MoveableSource):
         self._elements = BaseSardanaElementContainer()
         self.getAttribute("Elements").addListener(self.on_elements_changed)
 
-    def __del__(self):
-        self.getAttribute("Elements").removeListener(self.on_elements_changed)
-        TangoDevice.__del__(self)
-
     def getObject(self, element_info):
         elem_type = element_info.getType()
         data = element_info._data
