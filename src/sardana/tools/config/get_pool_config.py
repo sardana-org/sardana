@@ -73,8 +73,23 @@ def checkPoolElements(pool):
     for info in pool_dev['MeasurementGroupList'].value:
         info_splitted = json.loads(info)
         mg_name = str(info_splitted["name"])
-        elements = info_splitted["elements"]
-        pool_measurement_groups[mg_name] = elements
+        mg_dev = taurus.Device(mg_name)
+        config = mg_dev.getAttribute('configuration').read().value
+        config = json.loads(config)
+        controllers = config['controllers']
+        elements = {}
+        for ctrl, c_data in controllers.items():
+            if c_data.has_key('units'):
+                c_data = c_data['units']['0']
+            for _, data in c_data['channels'].items():
+                index = int(data['index'])
+                if ctrl == '__tango__':
+                    elements[index] = data['full_name']
+                else:
+                    elements[index] = data['name']
+        indexes = sorted(elements.keys())
+        elements_ordered = [elements[i] for i in indexes]
+        pool_measurement_groups[mg_name] = elements_ordered
 
     ### print '\n'
     ### print '----------------------------------------------------------------'
