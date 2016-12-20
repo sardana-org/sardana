@@ -26,8 +26,8 @@ Main improvements since sardana 2.0.0 (aka Jan16) are:
 
 ### Added
 - Compatibility layer in order to support Taurus v3 and v4.
-- itango dependency to make Sardana compatible with the latest
-PyTango 9.2.0. Sardana CLI client (spock) has been adapted. (SF #487)
+- itango dependency to make Sardana compatible with PyTango 9.2.0. 
+Sardana CLI client (spock) has been adapted. (SF #487)
 - Optional block output of the scan records in spock. The new records
 can be printed on top of the previous ones. (SF #492)
 
