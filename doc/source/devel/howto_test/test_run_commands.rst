@@ -45,7 +45,7 @@ That can be done with more verbosity by indicating the option -v.
 sar_demo test environment
 -------------------------
 
-Some of the Sardana test e.g. the ones that test the macros, require a running Sardana
+Some of the Sardana tests e.g. the ones that test the macros, require a running Sardana
 instance with the sar_demo macro executed previosly. By default the tests will try to
 connect to the `door/demo1/1` door in order to run the macros there. The default door
 name can be changed in the `sardanacustomsettings` module.
