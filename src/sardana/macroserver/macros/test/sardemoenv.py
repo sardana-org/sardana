@@ -39,15 +39,28 @@ class SarDemoEnv(Singleton):
     the MacroServer (given by :attr:`UNITTEST_DOOR_NAME`)
     """
 
-    def __init__(self, door_name=None):
+    def __init__(self):
+        """ Initialization. Nothing to be done here for now."""
+        pass
+
+    def init(self, door_name=None):
         if door_name is None:
             door_name = getattr(sardanacustomsettings, 'UNITTEST_DOOR_NAME')
-        registerExtensions()
+
+        # TODO: As a workaround: check with PyTango that the door is running
+        # in case of exception raise a RuntimeError. Ideally it should be done
+        # just using taurus
         try:
-            self.door = Device(door_name)
-            self.ms = self.door.macro_server
-        except ValueError:
-            raise ValueError('The  door %s does not exist' % (door_name))
+            import PyTango
+            d = PyTango.DeviceProxy(door_name)
+            d.ping()
+        except:
+            raise RuntimeError("Door %s is not running" % door_name)
+
+        registerExtensions()
+
+        self.door = Device(door_name)
+        self.ms = self.door.macro_server
 
         self.controllers = None
         self.cts = None
@@ -173,8 +186,8 @@ def getElements(elem_type="all", fallback_name="element_not_defined",
     except Exception, e:
         import taurus
         taurus.debug(e)
-        taurus.warning("It was not possible to retrieve the motor names. " +
-                     "Ignore this message if you are building the documentation.")
+        taurus.warning("It was not possible to retrieve the element. " +
+                       "Ignore this message if you are building the documentation.")
         elements = [fallback_name] * fallback_elements_len
     return elements
 

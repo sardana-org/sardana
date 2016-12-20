@@ -12,8 +12,8 @@ before_install:
   # run reszelaz/sardana-test docker container (Debian8 with sardana-deps)
   - docker pull reszelaz/sardana-test
   - docker run -d --name=sardana-test -h sardana-test --volume=`pwd`:/sardana reszelaz/sardana-test
-  - sleep 10
+  # wait approx. 20 s = sardana installation + supervisor start
+  - sleep 20
 
 script:
-  - docker exec sardana-test /bin/bash -c "cd sardana ; python setup.py install"
-  - docker exec sardana-test python /usr/local/lib/python2.7/dist-packages/sardana/test/testsuite.py
+  - docker exec sardana-test sardanatestsuite
