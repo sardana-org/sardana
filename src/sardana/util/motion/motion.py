@@ -120,8 +120,8 @@ class MotionPath(object):
             accel_time = motor.getAccelerationTime()
             decel_time = motor.getDecelerationTime()
             base_vel = motor.getMinVelocity()
-            accel_displacement = accel_time * 0.5 * (velocity + base_vel)
-            decel_displacement = decel_time * 0.5 * (velocity + base_vel)
+            accel_displacement = accel_time * 0.5 * (velocity - base_vel)
+            decel_displacement = decel_time * 0.5 * (velocity - base_vel)
             initial_pos -= sign * accel_displacement
             final_pos += sign * decel_displacement
             displacement = abs(final_pos - initial_pos)            
