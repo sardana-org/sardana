@@ -24,33 +24,44 @@
 ##############################################################################
 
 import sys
-from mock import MagicMock, patch
 
 from taurus.external import unittest
 from taurus.test import insertTest
 
-from sardana.taurus.core.tango.sardana.pool import Motor
-from sardana.macroserver.msexception import UnknownEnv
-
+@insertTest(helper_name='prepare_waypoint', conf={"acc_time": 0.5,
+                                                  "dec_time": 0.5,
+                                                  "base_rate": 10,
+                                                  "start_user_pos": 0,
+                                                  "final_user_pos": 50},
+            expected={"initial_pos": -60,
+                      "final_pos": 135})
+@insertTest(helper_name='prepare_waypoint', conf={"acc_time": 0.1,
+                                                  "dec_time": 0.1,
+                                                  "base_rate": 25,
+                                                  "start_user_pos": 0,
+                                                  "final_user_pos": 10},
+            expected={"initial_pos": -1.25,
+                      "final_pos": 16.25})
 @insertTest(helper_name='prepare_waypoint', conf={"acc_time": 0.1,
                                                   "dec_time": 0.1,
                                                   "base_rate": 0,
                                                   "start_user_pos": 0,
                                                   "final_user_pos": 10},
-            expected={"initial_pos": -5,
-                      "final_pos": 15})
+            expected={"initial_pos": -2.5,
+                      "final_pos": 17.5})
 class CTScanTestCase(unittest.TestCase):
 
     def setUp(self):
-        modules = []
-        for mod in sys.modules.iterkeys():
-            if "sardana" in mod:
-                modules.append(mod)
-        for mod in modules:
-            try:
-                del sys.modules[mod]
-            except KeyError:
-                pass
+        self.skipTest("CTScanTest is not ready to be run as part of testsuite")
+#         modules = []
+#         for mod in sys.modules.iterkeys():
+#             if "sardana" in mod:
+#                 modules.append(mod)
+#         for mod in modules:
+#             try:
+#                 del sys.modules[mod]
+#             except KeyError:
+#                 pass
 
     @staticmethod
     def getEnv(name):
@@ -62,32 +73,39 @@ class CTScanTestCase(unittest.TestCase):
             return "/tmp"
         elif name == "ScanFile":
             return "MockFile.dat"
+        from sardana.macroserver.msexception import UnknownEnv
         raise UnknownEnv
 
-    @patch("sardana.macroserver.msparameter.Type")
-    def prepare_waypoint(self, MockType, conf, expected):
-        from sardana.macroserver.scan.gscan import CTScan
-        mock_motor = MagicMock(Motor)
-        mock_motor.getBaseRate = MagicMock(return_value=conf["base_rate"])
+    def prepare_waypoint(self, conf, expected):
+        try:
+            from mock import MagicMock, patch
+        except ImportError:
+            self.skipTest("mock module is not available")
+        with patch("sardana.macroserver.msparameter.Type"):
+            from sardana.taurus.core.tango.sardana.pool import Motor
+            from sardana.macroserver.scan.gscan import CTScan
+            mock_motor = MagicMock(Motor)
+            mock_motor.getBaseRate = MagicMock(return_value=conf["base_rate"])
 
-        macro = MagicMock()
-        macro.getMinAccTime
-        macro.getEnv = self.getEnv
-        scan = CTScan(macro)
-        scan.get_min_acc_time = MagicMock(return_value=conf["acc_time"])
-        scan.get_min_dec_time = MagicMock(return_value=conf["dec_time"])
-        scan._physical_moveables = [mock_motor]
-        waypoint = {
-            "positions": [conf["final_user_pos"]],
-            "active_time": 0.1
-        }
-        start_positions = [conf["start_user_pos"]]
-        ideal_paths, _, _ =  scan.prepare_waypoint(waypoint, start_positions)
-        path = ideal_paths[0]
-        # Asserts
-        msg = 'Initial positions do not math. (expected={0}, got={1})'.format(
-            expected["initial_pos"], path.initial_pos)
-        self.assertEqual(path.initial_pos, expected["initial_pos"], msg)
-        msg = 'Final positions do not math. (expected={0}, got={1})'.format(
-            expected["final_pos"], path.final_pos)
-        self.assertEqual(path.final_pos, expected["final_pos"], msg)
+            macro = MagicMock()
+            macro.getMinAccTime
+            macro.getEnv = self.getEnv
+            macro.nr_interv = 2
+            scan = CTScan(macro)
+            scan.get_min_acc_time = MagicMock(return_value=conf["acc_time"])
+            scan.get_min_dec_time = MagicMock(return_value=conf["dec_time"])
+            scan._physical_moveables = [mock_motor]
+            waypoint = {
+                "positions": [conf["final_user_pos"]],
+                "active_time": 0.3
+            }
+            start_positions = [conf["start_user_pos"]]
+            ideal_paths, _, _ =  scan.prepare_waypoint(waypoint, start_positions)
+            path = ideal_paths[0]
+            # Asserts
+            msg = 'Initial positions do not match. (expected={0}, got={1})'.format(
+                expected["initial_pos"], path.initial_pos)
+            self.assertEqual(path.initial_pos, expected["initial_pos"], msg)
+            msg = 'Final positions do not match. (expected={0}, got={1})'.format(
+                expected["final_pos"], path.final_pos)
+            self.assertEqual(path.final_pos, expected["final_pos"], msg)
