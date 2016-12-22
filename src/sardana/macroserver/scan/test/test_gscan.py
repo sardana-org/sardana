@@ -23,6 +23,7 @@
 ##
 ##############################################################################
 
+import sys
 from mock import MagicMock, patch
 
 from taurus.external import unittest
@@ -43,7 +44,7 @@ class CTScanTestCase(unittest.TestCase):
     def setUp(self):
         modules = []
         for mod in sys.modules.iterkeys():
-            if "sardana" in module:
+            if "sardana" in mod:
                 modules.append(mod)
         for mod in modules:
             try:
