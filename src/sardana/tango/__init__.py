@@ -27,6 +27,8 @@
 
 __docformat__ = 'restructuredtext'
 
+SERVER_NAME = "Sardana"
+
 def prepare_sardana(util):
     import pool
     import macroserver
@@ -35,8 +37,9 @@ def prepare_sardana(util):
 
 def main_sardana(args=None, start_time=None, mode=None):
     import core.util
+    # pass server name so the scripts generated with setuptools work on Windows
     return core.util.run(prepare_sardana, args=args, start_time=start_time,
-                         mode=mode)
+                         mode=mode, name=SERVER_NAME)
 
 run = main_sardana
 
