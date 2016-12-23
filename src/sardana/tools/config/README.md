@@ -72,5 +72,8 @@ the help option in order to discover them:
 
 ## Tips & Tricks
 
-*  if you want to comment some controllers, motors, etc. in the FODS file, 
-   you can do it adding a *#* before the name
+* If you want to comment some controllers, motors, etc. in the FODS file, 
+  you can do it adding a *#* before the name.
+* Some controllers may depend on others e.g. physical axes of one pseudo
+  motor controller may be pseudos from another controller. In this case
+  the order of controllers in the sheet is important.
