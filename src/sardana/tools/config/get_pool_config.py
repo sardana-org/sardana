@@ -276,7 +276,14 @@ def checkPoolElements(pool):
                 for attr in attr_dicts.keys():
                     attr_dict = attr_dicts[attr]
                     if attr_dict.has_key('__value'):
-                        attribute_values.append(attr+':'+attr_dict['__value'][0])
+                        # skip memorized values of DialPosition and Position
+                        # DialPosition because it is read only attribute and the
+                        # current version of sardana script would not be able to se it
+                        # Position is no more a memorized attribute, but the database
+                        # may still contain the __value property for it - from the
+                        # previous versions of Sardana (Pool in C++)
+                        if attr.lower() not in ('dialposition', 'position'):
+                            attribute_values.append(attr+':'+attr_dict['__value'][0])
 
                     elem_params = {}
                     ['Pool', 'Element', 'Parameter', 'Label', 'Format', 'Min Value', 'Min Alarm', 'Min Warning', 'Max Warning', 'Max Alarm', 'Max Value', 'Unit', 'Polling Period', 'Change Event', 'Description']
