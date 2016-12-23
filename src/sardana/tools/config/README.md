@@ -53,6 +53,8 @@ the file is running.
 ### Known limitations
 
 * MeasurementGroup configurations are not dumped
+* Attribute parameters of the same element can not contain the same values
+  e.g. *Min value* or *Min alarm* can not have values 10 and 10.
 
 ## Creating a Sardana system from a FODS file
 
