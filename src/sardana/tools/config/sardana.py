@@ -1037,7 +1037,12 @@ class DevicePoolServer(TangoServer):
                     lib = ctrl.get("lib")
                     kclass = ctrl.get("class")
 
-                    ctrl_class_info = ctrl_classes_info[kclass]
+                    ctrl_class_info = None
+                    try:
+                        ctrl_class_info = ctrl_classes_info[kclass]
+                    except KeyError:
+                        raise Exception("%s controller class is not available"
+                                        % kclass)
                     motor_roles = ctrl_class_info['motor_roles']
                     pseudo_motor_roles = ctrl_class_info['pseudo_motor_roles']
                     pars = [type, lib, kclass, name]
