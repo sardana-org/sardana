@@ -284,10 +284,11 @@ class PoolMeasurementGroup(PoolGroupElement):
                     else:
                         element = pool.get_element_by_full_name(channel_data['full_name'])
                         id = element.id
-                    user_elem_ids[channel_data['index']] = id
                     channel_data = self._build_channel_defaults(channel_data, element)
+                    if channel_data["enabled"]:
+                        user_elem_ids[channel_data['index']] = id
+            # sorted ids may not be consecutive (if a channel is disabled)
             indexes = sorted(user_elem_ids.keys())
-            assert indexes == range(len(indexes))
             self.set_user_element_ids([ user_elem_ids[idx] for idx in indexes ])
 
         # checks

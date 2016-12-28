@@ -30,6 +30,8 @@ __docformat__ = 'restructuredtext'
 from .MacroServer import *
 from .Door import *
 
+SERVER_NAME = "MacroServer"
+
 def prepare_macroserver(util):
     import taurus.core.util.log
     Logger = taurus.core.util.log.Logger
@@ -51,7 +53,13 @@ def prepare_macroserver(util):
     
 def main_macroserver(args=None, start_time=None, mode=None):
     import sardana.tango.core.util
+    # pass server name so the scripts generated with setuptools work on Windows
     return sardana.tango.core.util.run(prepare_macroserver, args=args,
-                                       start_time=start_time, mode=mode)
+                                       start_time=start_time, mode=mode,
+                                       name=SERVER_NAME)
 
 run = main_macroserver
+
+def main():
+    import datetime
+    run(start_time=datetime.datetime.now())

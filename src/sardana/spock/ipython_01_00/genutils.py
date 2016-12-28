@@ -86,7 +86,7 @@ from taurus.external.qt import Qt
 
 from sardana.spock import exception
 from sardana.spock import colors
-from sardana.spock import release
+from sardana import release
 
 SpockTermColors = colors.TermColors
 
@@ -156,7 +156,9 @@ def spock_input(prompt='',  ps2='... '):
 def translate_version_str2int(version_str):
     """Translates a version string in format x[.y[.z[...]]] into a 000000 number"""
     import math
-    parts = version_str.split('.')
+    # Get the current version number ignoring the release part ("-alpha")
+    num_version_str = version_str.split('-')[0]
+    parts = num_version_str.split('.')
     i, v, l = 0, 0, len(parts)
     if not l: return v
     while i<3:
@@ -730,7 +732,8 @@ def check_for_upgrade(ipy_profile_dir):
     spocklib_ver = translate_version_str2int(release.version)
     spock_profile_ver = translate_version_str2int(spock_profile_ver_str)
 
-    if spocklib_ver == spock_profile_ver:
+    if spocklib_ver == spock_profile_ver and \
+            spock_profile_ver_str.find("-alpha") == -1:
         return
     if spocklib_ver < spock_profile_ver:
         print '%sYour spock profile (%s) is newer than your spock version ' \
@@ -892,6 +895,7 @@ def load_ipython_extension(ipython):
 def unload_ipython_extension(ipython):
     pass
 
+
 def load_config(config):
     spockver = release.version
     pyver = get_python_version()
@@ -965,7 +969,27 @@ object?   -> Details about 'object'. ?object also works, ?? prints more.
     i_shell.deep_reload = True
     i_shell.confirm_exit = False
 
-    if ipy_ver >= 1200:
+    if ipy_ver >= 50000:
+        from IPython.terminal.prompts import (Prompts, Token)
+
+        class SpockPrompts(Prompts):
+            def in_prompt_tokens(self, cli=None):
+                return [
+                    (Token.Prompt, door_alias),
+                    (Token.Prompt, ' ['),
+                    (Token.PromptNum, str(self.shell.execution_count)),
+                    (Token.Prompt, ']: '),
+                ]
+
+            def out_prompt_tokens(self):
+                return [
+                    (Token.OutPrompt, '\tResult ['),
+                    (Token.OutPromptNum, str(self.shell.execution_count)),
+                    (Token.OutPrompt, ']: '),
+                ]
+
+        config.InteractiveShell.prompts_class = SpockPrompts
+    elif ipy_ver >= 1200:
         # ------------------------------------
         # PromptManager (ipython >= 0.12)
         # ------------------------------------

@@ -1,0 +1,19 @@
+language: python
+
+sudo: required
+
+services:
+  - docker
+
+python:
+  - "2.7"
+
+before_install:
+  # run reszelaz/sardana-test docker container (Debian8 with sardana-deps)
+  - docker pull reszelaz/sardana-test
+  - docker run -d --name=sardana-test -h sardana-test --volume=`pwd`:/sardana reszelaz/sardana-test
+  # wait approx. 20 s = sardana installation + supervisor start
+  - sleep 20
+
+script:
+  - docker exec sardana-test sardanatestsuite

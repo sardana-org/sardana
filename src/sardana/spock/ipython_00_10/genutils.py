@@ -58,15 +58,20 @@ import imp
 
 import IPython
 import IPython.genutils
-import PyTango
-import itango
+
+try:
+    import PyTango
+    import itango
+except ImportError:
+    # postpone error to check_requirements
+    pass
 
 from taurus.core.taurushelper import Factory
 from taurus.core.util.codecs import CodecFactory
 
 from sardana.spock import exception
 from sardana.spock import colors
-from sardana.spock import release
+from sardana import release
 
 arg_split = IPython.iplib.arg_split
 page = IPython.genutils.page
@@ -133,7 +138,9 @@ def spock_input(prompt='',  ps2='... '):
 def translate_version_str2int(version_str):
     """Translates a version string in format x[.y[.z[...]]] into a 000000 number"""
     import math
-    parts = version_str.split('.')
+    # Get the current version number ignoring the release part ("-alpha")
+    num_version_str = version_str.split('-')[0]
+    parts = num_version_str.split('.')
     i, v, l = 0, 0, len(parts)
     if not l: return v
     while i<3:
@@ -710,7 +717,8 @@ def check_for_upgrade(ipy_profile_file, ipythondir, session, profile):
     spocklib_ver = translate_version_str2int(release.version)
     spock_profile_ver = translate_version_str2int(spock_profile_ver_str)
     
-    if spocklib_ver == spock_profile_ver:
+    if spocklib_ver == spock_profile_ver and \
+            spock_profile_ver_str.find("-alpha") == -1:
         return
     if spocklib_ver < spock_profile_ver:
         print '%sYour spock profile (%s) is newer than your spock version ' \

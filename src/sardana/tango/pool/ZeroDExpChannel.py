@@ -193,18 +193,18 @@ class ZeroDExpChannel(PoolElementDevice):
     def read_TimeBuffer(self, attr):
         attr.set_value(self.zerod.get_time_buffer())
 
-    def read_CumulationType(self, attr):
-        attr.set_value(self.zerod.get_cumulation_type())
+    def read_AccumulationType(self, attr):
+        attr.set_value(self.zerod.get_accumulation_type())
 
-    def write_CumulationType(self, attr):
-        self.zerod.set_cumulation_type(attr.get_write_value())
+    def write_AccumulationType(self, attr):
+        self.zerod.set_accumulation_type(attr.get_write_value())
 
     def _is_allowed(self, req_type):
         return PoolElementDevice._is_allowed(self, req_type)
 
     is_Value_allowed = _is_allowed
     is_CurrentValue_allowed = _is_allowed
-    is_CumulationType_allowed = _is_allowed
+    is_AccumulationType_allowed = _is_allowed
     is_ValueBuffer_allowed = _is_allowed
     is_TimeBuffer_allowed = _is_allowed
 
@@ -234,9 +234,9 @@ class ZeroDExpChannelClass(PoolElementDeviceClass):
     attr_list = {
         'ValueBuffer'    : [ [ DevDouble, SPECTRUM, READ, 16 * 1024 ] ],
         'TimeBuffer'     : [ [ DevDouble, SPECTRUM, READ, 16 * 1024 ] ],
-        'CumulationType' : [ [ DevString, SCALAR, READ_WRITE ],
+        'AccumulationType' : [ [ DevString, SCALAR, READ_WRITE ],
                              { 'Memorized'     : "true",
-                               'label'         : "Cumulation Type",
+                               'label'         : "Accumulation Type",
                                'Display level' : DispLevel.EXPERT } ],
     }
     attr_list.update(PoolElementDeviceClass.attr_list)

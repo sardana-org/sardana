@@ -124,6 +124,21 @@ class PseudoCounter(PoolElementDevice):
             value = self.calculate_tango_state(event_value)
         elif name == "status":
             value = self.calculate_tango_status(event_value)
+        elif name == "value":
+            if isinstance(event_value, SardanaAttribute):
+                # first obtain the value - during this process it may
+                # enter into the error state, either when updating the elements
+                # values or when calculating the pseudo value
+                value = event_value.value
+                if event_value.error:
+                    error = Except.to_dev_failed(*event_value.exc_info)
+                timestamp = event_value.timestamp
+            else:
+                value = event_value
+
+            state = self.pseudo_counter.get_state(propagate=0)
+            if state == State.Moving:
+                quality = AttrQuality.ATTR_CHANGING
         else:
             if isinstance(event_value, SardanaAttribute):
                 if event_value.error:
@@ -131,13 +146,6 @@ class PseudoCounter(PoolElementDevice):
                 else:
                     value = event_value.value
                 timestamp = event_value.timestamp
-            else:
-                value = event_value
-            state = self.pseudo_counter.get_state(propagate=0)
-
-            if name == "value":
-                if state == State.Moving:
-                    quality = AttrQuality.ATTR_CHANGING
 
         self.set_attribute(attr, value=value, w_value=w_value,
                            timestamp=timestamp, quality=quality,
@@ -182,15 +190,20 @@ class PseudoCounter(PoolElementDevice):
     def read_Value(self, attr):
         pseudo_counter = self.pseudo_counter
         use_cache = pseudo_counter.is_in_operation() and not self.Force_HW_Read
-        value = pseudo_counter.get_value(cache=use_cache, propagate=0)
-        if value.error:
-            Except.throw_python_exception(*value.exc_info)
+        value_attr = pseudo_counter.get_value(cache=use_cache, propagate=0)
+        # first obtain the value - during this process it may
+        # enter into the error state, either when updating the elements
+        # values or when calculating the pseudo value
+        value = value_attr.value
+        if value_attr.error:
+            Except.throw_python_exception(*value_attr.exc_info)
         quality = None
         state = pseudo_counter.get_state(cache=use_cache, propagate=0)
         if state == State.Moving:
             quality = AttrQuality.ATTR_CHANGING
-        self.set_attribute(attr, value=value.value, quality=quality,
-                           priority=0, timestamp=value.timestamp)
+        timestamp = value_attr.value
+        self.set_attribute(attr, value=value, quality=quality,
+                           priority=0, timestamp=timestamp)
 
     is_Value_allowed = _is_allowed
 

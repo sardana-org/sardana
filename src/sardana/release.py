@@ -45,13 +45,19 @@ Release data for the taurus project. It contains the following members:
 #: the tarballs and RPMs made by distutils, so it's best to lowercase it.
 name = 'sardana'
 
-#: For versions with substrings (like 0.6.16.svn), use an extra . to separate
-#: the new substring. We have to avoid using either dashes or underscores,
-#: because bdist_rpm does not accept dashes (an RPM) convention, and
-#: bdist_deb does not accept underscores (a Debian convention).
-version_info = (2, 1, 1, 'rc', 0)
-version = '.'.join(map(str, version_info[:3]))
-revision = str(version_info[4])
+# we use semantic versioning (http://semver.org/) and we update it using the
+# bumpversion script (https://github.com/peritus/bumpversion)
+version = '2.2.0'
+
+# generate version_info and revision (**deprecated** since v 2.1.2--alpha).
+if '-' in version:
+    _v, _rel = version.split('-')
+else:
+    _v, _rel = version, ''
+
+_v = tuple([int(n) for n in _v.split('.')])
+version_info = _v + (_rel, 0)   # deprecated, do not use
+revision = str(version_info[4]) # deprecated, do not use
 
 description = "instrument control and data acquisition system"
 
@@ -64,9 +70,10 @@ long_description = \
  
 license = 'LGPL'
 
-authors = {'Tiago'          : ('Tiago Coutinho','tiago.coutinho@esrf.fr'),
-           'Pascual-Izarra' : ('Carlos Pascual-Izarra','cpascual@cells.es'),
-           'Reszela'        : ('Zbigniew Reszela','zreszela@cells.es') }
+authors = {'Tiago_et_al': ('Tiago Coutinho et al.', ''),
+           'Community': ('Sardana Community',
+                         'sardana-devel@lists.sourceforge.net'),
+           }
 
 url = 'http://www.sardana-controls.org'
 

@@ -10,3 +10,5 @@ exclude .project
 exclude .pydevproject
 exclude .ropeproject
 exclude build_*
+
+include CHANGELOG.md
