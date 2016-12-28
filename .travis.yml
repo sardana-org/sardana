@@ -22,6 +22,10 @@ before_install:
   - docker exec sardana-test ps -ef 
   - docker exec sardana-test ls /tmp
   - docker exec sardana-test ls /tmp/tango-root
+  - docker exec sardana-test ls /tmp/tango-root/Pool/
+  - docker exec sardana-test ls /tmp/tango-root/MacroServer/
+  - docker exec sardana-test ls /tmp/tango-root/Pool/demo1
+  - docker exec sardana-test ls /tmp/tango-root/MacroServer/demo1
 
 script:
   # run the full testsuite
