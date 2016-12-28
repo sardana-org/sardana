@@ -7,8 +7,42 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
+-
+
+## [2.2.0] - 2016-12-22
+For a full log of commits between versions run (in your git repo):
+`git log 2.1.1..2.1.2`
+
+### Added
+- Possibility to store data of 1D channels in SPEC files (#360)
+- Pseudo counters documentation (overview and "how to" controllers) (#436)
+- sardanatestsuite script to run sardana tests (#368)
 - bumpversion support
 - This CHANGELOG.md file
+
+### Changed
+- setup.py implementation from distutils to setuptools (#368)
+- waitFinish (used to execute async operations) is not reservedOperation (#362)
+
+### Deprecated
+- sardana.spock.release module
+
+### Removed
+- sardanaeditor widget support to taurus < 4 & spyder < 3 (sardanaeditor
+will become functional from taurus release corresponding to milestone Jan17)
+(#354)
+
+### Fixed
+- Disable/enable experimental channels in measurement group (#367)
+- Pseudo counters based on 0D channels (#370)
+- AccumulationType attribute of 0D channels (#385)
+- Display (now case sensitive) of measurement groups names in expconf widget
+(SF #498)
+- spock prompt in IPython > 5 (#371)
+- renameelem macro (#316)
+- Tango device server scripts on Windows (#350)
+- Use of DirectoryMap environment variable with list of values
+- Other bugs: #271, #338, #341, #345, #351, #353, #357, #358, #359, #364, #386
 
 
 ## [2.1.1] - 2016-09-27
@@ -112,12 +146,10 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.1.1...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.2.0...HEAD
+[2.2.0]: https://github.com/sardana-org/sardana/compare/2.1.1...2.2.0
 [2.1.1]: https://github.com/sardana-org/sardana/compare/2.1.0...2.1.1
 [2.1.0]: https://github.com/sardana-org/sardana/compare/2.0.0...2.1.0
 [2.0.0]: https://github.com/sardana-org/sardana/compare/1.6.1...2.0.0
 [1.6.1]: https://github.com/sardana-org/sardana/compare/1.6.0...1.6.1
 [1.6.0]: https://github.com/sardana-org/sardana/releases/tag/1.6.0
-
-
-

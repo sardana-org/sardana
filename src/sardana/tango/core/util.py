@@ -908,7 +908,8 @@ def run_tango_server(tango_util=None, start_time=None):
         taurus.critical("Server exited with unforeseen exception", exc_info=1)
     taurus.info("Exited")
 
-def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None):
+def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None,
+        name=None):
 
     if mode is None:
         mode = ServerRunMode.SynchPure
@@ -919,7 +920,10 @@ def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None):
                             "'args' must be given")
         args = sys.argv
 
-    name = args[0]
+    if name is None:
+        name = args[0]
+    else:
+        args = [name] + list(args[1:])
 
     if mode != ServerRunMode.SynchPure:
         if mode in (ServerRunMode.SynchThread, ServerRunMode.AsynchThread):

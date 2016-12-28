@@ -31,6 +31,7 @@ from taurus import Device
 from sardana.taurus.core.tango.sardana import registerExtensions
 from taurus.core.util.singleton import Singleton
 from sardana import sardanacustomsettings
+from sardana.sardanautils import is_number
 
 
 class SarDemoEnv(Singleton):
@@ -53,7 +54,8 @@ class SarDemoEnv(Singleton):
         try:
             import PyTango
             d = PyTango.DeviceProxy(door_name)
-            d.ping()
+            # when building docs, in RTD environment, PyTango is a mock
+            assert is_number(d.ping())
         except:
             raise RuntimeError("Door %s is not running" % door_name)
 

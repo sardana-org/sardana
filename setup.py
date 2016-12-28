@@ -71,7 +71,7 @@ gui_scripts = [
     "diffractometeralignment = sardana.taurus.qt.qtgui.extra_hkl.diffractometeralignment:main",
     "hklscan = sardana.taurus.qt.qtgui.extra_hkl.hklscan:main",
     "macroexecutor = sardana.taurus.qt.qtgui.extra_macroexecutor.macroexecutor:main",
-    "sequencer = sardana.taurus.qt.qtgui.extra_macroexecutor.sequencer:main",
+    "sequencer = sardana.taurus.qt.qtgui.extra_macroexecutor.sequenceeditor:main",
     "ubmatrix = sardana.taurus.qt.qtgui.extra_hkl.ubmatrix:main"
 ]
 
