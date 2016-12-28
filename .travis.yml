@@ -17,8 +17,11 @@ before_install:
   # install sardana in order to create the launcher scripts for servers
   - docker exec sardana-test bash -c "cd /sardana && python setup.py install"
   # start Pool and MacroServer necessary for macro tests
-  - docker exec sardana-test supervisorctl start Pool
-  - docker exec sardana-test supervisorctl start MacroServer
+  - docker exec sardana-test which Pool
+  - docker exec -d sardana-test Pool demo1
+  - sleep 3
+  - docker exec -d sardana-test MacroServer demo1
+  - sleep 3
   - docker exec sardana-test ps -ef 
   - docker exec sardana-test ls /tmp
   - docker exec sardana-test ls /tmp/tango-root
