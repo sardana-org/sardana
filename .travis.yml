@@ -19,8 +19,9 @@ before_install:
   # start Pool and MacroServer necessary for macro tests
   - docker exec sardana-test supervisorctl start Pool
   - docker exec sardana-test supervisorctl start MacroServer
-  - docker exec sardana-test ls /tmp/tango-root/Pool/
-  - docker exec sardana-test ls /tmp/tango-root/MacroServer/
+  - docker exec sardana-test ps -ef 
+  - docker exec sardana-test ls /tmp
+  - docker exec sardana-test ls /tmp/tango-root
 
 script:
   # run the full testsuite
