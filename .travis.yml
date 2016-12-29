@@ -19,7 +19,7 @@ before_install:
   # start Pool and MacroServer necessary for macro tests
   - docker exec sardana-test supervisorctl start Pool
   - docker exec sardana-test supervisorctl start MacroServer
- 
+
 script:
   # run the full testsuite
   - docker exec sardana-test sardanatestsuite
