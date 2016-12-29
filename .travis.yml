@@ -24,17 +24,23 @@ before_install:
   #- sleep 3
   #- docker exec -d sardana-test MacroServer demo1
   #- sleep 3
-  - docker exec sardana-test ps -ef 
+  - docker exec sardana-test ps -ef
+  - sleep 3
+  - docker exec sardana-test ps -ef
   - docker exec sardana-test ls /tmp
   - docker exec sardana-test ls /tmp/tango-root
   - docker exec sardana-test ls /tmp/tango-root/Pool/
   - docker exec sardana-test ls /tmp/tango-root/MacroServer/
   - docker exec sardana-test ls /tmp/tango-root/Pool/demo1
   - docker exec sardana-test ls /tmp/tango-root/MacroServer/demo1
-  - docker exec sardana-test cat /var/log/supervisor/Pool-stdout*
-  - docker exec sardana-test cat /var/log/supervisor/Pool-stderr*
-  - docker exec sardana-test cat /var/log/supervisor/MacroServer-stdout*
-  - docker exec sardana-test cat /var/log/supervisor/MacroServer-stderr*
+  - docker exec sardana-test ls /var/log/supervisor/Pool-stdout* | xargs cat
+  - docker exec sardana-test ls /var/log/supervisor/Pool-stderr* | xargs cat
+  - docker exec sardana-test ls /var/log/supervisor/MacroServer-stdout* | xargs cat
+  - docker exec sardana-test ls /var/log/supervisor/MacroServer-stderr* | xargs cat
+  - sleep 3
+  - docker exec sardana-test ps -ef
+  
+  
   
 script:
   # run the full testsuite
