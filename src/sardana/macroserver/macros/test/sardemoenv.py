@@ -39,11 +39,10 @@ class SarDemoEnv(Singleton):
     """Class to get _SAR_DEMO environment variable with cross checking with
     the MacroServer (given by :attr:`UNITTEST_DOOR_NAME`)
     """
+    ready = False
 
-    def __init__(self):
-        """ Initialization. Nothing to be done here for now."""
-        pass
-
+    # when building docs, in RTD environment, init is never called - Singleton
+    # (comming from taurus) is a mock
     def init(self, door_name=None):
         if door_name is None:
             door_name = getattr(sardanacustomsettings, 'UNITTEST_DOOR_NAME')
@@ -79,6 +78,7 @@ class SarDemoEnv(Singleton):
             err = 'sar_demo has not been executed (or door %s not ready)' % \
                   door_name
             raise RuntimeError(err)
+        self.ready = True
 
     def getElements(self, elem_type='all'):
         """Return the name of sardemo element(s) of given elem type
@@ -87,6 +87,8 @@ class SarDemoEnv(Singleton):
 
         :return: (list<str>)
         """
+        if not self.ready:
+            raise RuntimeError('SarDemoEnv instantiation had previously failed')
         if elem_type.lower() == 'all':
             return self.env
         if elem_type.lower() == 'moveable':

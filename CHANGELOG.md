@@ -9,9 +9,16 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Added
 -
 
+## [2.2.1] - 2016-12-30
+For a full log of commits between versions run (in your git repo):
+`git log 2.2.0..2.2.1`
+
+### Fixed
+- Build of documentation on RTD
+
 ## [2.2.0] - 2016-12-22
 For a full log of commits between versions run (in your git repo):
-`git log 2.1.1..2.1.2`
+`git log 2.1.1..2.2.0`
 
 ### Added
 - Possibility to store data of 1D channels in SPEC files (#360)
