@@ -101,7 +101,7 @@ class Value(SardanaAttribute):
                     # because of a cold start
                     value_attr.update(propagate=0)
                 if value_attr.in_error():
-                    raise PoolException("Cannot get '%' value" % value_attr.obj.name,
+                    raise PoolException("Cannot get '%s' value" % value_attr.obj.name,
                                         exc_info=value_attr.exc_info)
                 value = value_attr.value
             ret.append(value)
@@ -115,12 +115,13 @@ class Value(SardanaAttribute):
             if not value_attr.has_value():
                 value_attr.update(propagate=0)
             if value_attr.in_error():
-                raise PoolException("Cannot get '%' value" % value_attr.obj.name,
+                raise PoolException("Cannot get '%s' value" % value_attr.obj.name,
                                     exc_info=value_attr.exc_info)
             ret.append(value_attr.value)
         return ret
 
     def calc(self, physical_values=None):
+        self._exc_info = None
         try:
             obj = self.obj
             if physical_values is None:
@@ -133,12 +134,16 @@ class Value(SardanaAttribute):
             ctrl, axis = obj.controller, obj.axis
             result = ctrl.calc(axis, physical_values)
         except SardanaException as se:
+            self._exc_info = se.exc_info
             result = SardanaValue(exc_info=se.exc_info)
         except:
-            result = SardanaValue(exc_info=sys.exc_info())
+            exc_info = sys.exc_info()
+            result = SardanaValue(exc_info=exc_info)
+            self._exc_info = exc_info
         return result
 
     def calc_all(self, physical_values=None):
+        self._exc_info = None
         try:
             obj = self.obj
             if physical_values is None:
@@ -151,8 +156,10 @@ class Value(SardanaAttribute):
             ctrl, axis = obj.controller, obj.axis
             result = ctrl.calc_all(axis, physical_values)
         except SardanaException as se:
+            self._exc_info = se.exc_info
             result = SardanaValue(exc_info=se.exc_info)
         except:
+            self._exc_info = sys.exc_info()
             result = SardanaValue(exc_info=sys.exc_info())
         return result
 

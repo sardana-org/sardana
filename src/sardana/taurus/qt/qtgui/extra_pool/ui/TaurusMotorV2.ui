@@ -1,6 +1,6 @@
 <ui version="4.0">
  <class>TaurusMotorV2</class>
- <widget class="QDialog" name="TaurusMotorV2">
+ <widget class="QWidget" name="TaurusMotorV2">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -141,7 +141,7 @@
        </widget>
       </item>
       <item row="1" column="0" colspan="2">
-       <widget class="TaurusConfigLabel" name="positionLabel">
+       <widget class="TaurusLabel" name="positionLabel">
         <property name="useParentModel">
          <bool>true</bool>
         </property>
@@ -201,7 +201,7 @@
        </widget>
       </item>
       <item row="1" column="4">
-       <widget class="TaurusConfigLabel" name="positionUnits">
+       <widget class="TaurusLabel" name="positionUnits">
         <property name="sizePolicy">
          <sizepolicy vsizetype="Preferred" hsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -229,7 +229,7 @@
        </widget>
       </item>
       <item row="2" column="0" colspan="2">
-       <widget class="TaurusConfigLabel" name="velocityLabel">
+       <widget class="TaurusLabel" name="velocityLabel">
         <property name="useParentModel">
          <bool>true</bool>
         </property>
@@ -289,7 +289,7 @@
        </widget>
       </item>
       <item row="2" column="4">
-       <widget class="TaurusConfigLabel" name="velocityUnits">
+       <widget class="TaurusLabel" name="velocityUnits">
         <property name="sizePolicy">
          <sizepolicy vsizetype="Preferred" hsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -317,7 +317,7 @@
        </widget>
       </item>
       <item row="3" column="0" colspan="2">
-       <widget class="TaurusConfigLabel" name="accelLabel">
+       <widget class="TaurusLabel" name="accelLabel">
         <property name="useParentModel">
          <bool>true</bool>
         </property>
@@ -377,7 +377,7 @@
        </widget>
       </item>
       <item row="3" column="4">
-       <widget class="TaurusConfigLabel" name="accelUnits">
+       <widget class="TaurusLabel" name="accelUnits">
         <property name="sizePolicy">
          <sizepolicy vsizetype="Preferred" hsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -405,7 +405,7 @@
        </widget>
       </item>
       <item row="4" column="0" colspan="2">
-       <widget class="TaurusConfigLabel" name="decelLabel">
+       <widget class="TaurusLabel" name="decelLabel">
         <property name="useParentModel">
          <bool>true</bool>
         </property>
@@ -465,7 +465,7 @@
        </widget>
       </item>
       <item row="4" column="4">
-       <widget class="TaurusConfigLabel" name="decelUnits">
+       <widget class="TaurusLabel" name="decelUnits">
         <property name="sizePolicy">
          <sizepolicy vsizetype="Preferred" hsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -493,7 +493,7 @@
        </widget>
       </item>
       <item row="5" column="0" colspan="2">
-       <widget class="TaurusConfigLabel" name="offsetLabel">
+       <widget class="TaurusLabel" name="offsetLabel">
         <property name="useParentModel">
          <bool>true</bool>
         </property>
@@ -553,7 +553,7 @@
        </widget>
       </item>
       <item row="5" column="4">
-       <widget class="TaurusConfigLabel" name="offsetUnits">
+       <widget class="TaurusLabel" name="offsetUnits">
         <property name="sizePolicy">
          <sizepolicy vsizetype="Preferred" hsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -581,7 +581,7 @@
        </widget>
       </item>
       <item row="6" column="0" colspan="2">
-       <widget class="TaurusConfigLabel" name="baseRateLabel">
+       <widget class="TaurusLabel" name="baseRateLabel">
         <property name="useParentModel">
          <bool>true</bool>
         </property>
@@ -638,7 +638,7 @@
        </widget>
       </item>
       <item row="6" column="4">
-       <widget class="TaurusConfigLabel" name="baseRateUnits">
+       <widget class="TaurusLabel" name="baseRateUnits">
         <property name="sizePolicy">
          <sizepolicy vsizetype="Preferred" hsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -666,7 +666,7 @@
        </widget>
       </item>
       <item row="7" column="0" colspan="2">
-       <widget class="TaurusConfigLabel" name="stepsUnitLabel">
+       <widget class="TaurusLabel" name="stepsUnitLabel">
         <property name="useParentModel">
          <bool>true</bool>
         </property>
@@ -726,7 +726,7 @@
        </widget>
       </item>
       <item row="7" column="4">
-       <widget class="TaurusConfigLabel" name="stepsUnitUnits">
+       <widget class="TaurusLabel" name="stepsUnitUnits">
         <property name="sizePolicy">
          <sizepolicy vsizetype="Preferred" hsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -754,7 +754,7 @@
        </widget>
       </item>
       <item row="8" column="0" colspan="2">
-       <widget class="TaurusConfigLabel" name="backlashLabel">
+       <widget class="TaurusLabel" name="backlashLabel">
         <property name="useParentModel">
          <bool>true</bool>
         </property>
@@ -811,7 +811,7 @@
        </widget>
       </item>
       <item row="8" column="4">
-       <widget class="TaurusConfigLabel" name="backlashUnits">
+       <widget class="TaurusLabel" name="backlashUnits">
         <property name="sizePolicy">
          <sizepolicy vsizetype="Preferred" hsizetype="Expanding">
           <horstretch>0</horstretch>
@@ -866,7 +866,7 @@
    <header>taurus.qt.qtgui.input</header>
   </customwidget>
   <customwidget>
-   <class>TaurusConfigLabel</class>
+   <class>TaurusLabel</class>
    <extends>QLabel</extends>
    <header>taurus.qt.qtgui.display</header>
   </customwidget>

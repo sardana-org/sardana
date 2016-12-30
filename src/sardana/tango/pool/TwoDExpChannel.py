@@ -129,7 +129,7 @@ class TwoDExpChannel(PoolElementDevice):
                 timestamp = event_value.timestamp
 
             if name == "value":
-                state = self.oned.get_state()
+                state = self.twod.get_state()
                 if state == State.Moving:
                     quality = AttrQuality.ATTR_CHANGING
         self.set_attribute(attr, value=value, w_value=w_value,

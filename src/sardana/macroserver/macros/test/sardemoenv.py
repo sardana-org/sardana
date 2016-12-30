@@ -31,6 +31,7 @@ from taurus import Device
 from sardana.taurus.core.tango.sardana import registerExtensions
 from taurus.core.util.singleton import Singleton
 from sardana import sardanacustomsettings
+from sardana.sardanautils import is_number
 
 
 class SarDemoEnv(Singleton):
@@ -38,16 +39,29 @@ class SarDemoEnv(Singleton):
     """Class to get _SAR_DEMO environment variable with cross checking with
     the MacroServer (given by :attr:`UNITTEST_DOOR_NAME`)
     """
+    ready = False
 
-    def __init__(self, door_name=None):
+    # when building docs, in RTD environment, init is never called - Singleton
+    # (comming from taurus) is a mock
+    def init(self, door_name=None):
         if door_name is None:
             door_name = getattr(sardanacustomsettings, 'UNITTEST_DOOR_NAME')
-        registerExtensions()
+
+        # TODO: As a workaround: check with PyTango that the door is running
+        # in case of exception raise a RuntimeError. Ideally it should be done
+        # just using taurus
         try:
-            self.door = Device(door_name)
-            self.ms = self.door.macro_server
-        except ValueError:
-            raise ValueError('The  door %s does not exist' % (door_name))
+            import PyTango
+            d = PyTango.DeviceProxy(door_name)
+            # when building docs, in RTD environment, PyTango is a mock
+            assert is_number(d.ping())
+        except:
+            raise RuntimeError("Door %s is not running" % door_name)
+
+        registerExtensions()
+
+        self.door = Device(door_name)
+        self.ms = self.door.macro_server
 
         self.controllers = None
         self.cts = None
@@ -64,6 +78,7 @@ class SarDemoEnv(Singleton):
             err = 'sar_demo has not been executed (or door %s not ready)' % \
                   door_name
             raise RuntimeError(err)
+        self.ready = True
 
     def getElements(self, elem_type='all'):
         """Return the name of sardemo element(s) of given elem type
@@ -72,6 +87,8 @@ class SarDemoEnv(Singleton):
 
         :return: (list<str>)
         """
+        if not self.ready:
+            raise RuntimeError('SarDemoEnv instantiation had previously failed')
         if elem_type.lower() == 'all':
             return self.env
         if elem_type.lower() == 'moveable':
@@ -173,8 +190,8 @@ def getElements(elem_type="all", fallback_name="element_not_defined",
     except Exception, e:
         import taurus
         taurus.debug(e)
-        taurus.warning("It was not possible to retrieve the motor names. " +
-                     "Ignore this message if you are building the documentation.")
+        taurus.warning("It was not possible to retrieve the element. " +
+                       "Ignore this message if you are building the documentation.")
         elements = [fallback_name] * fallback_elements_len
     return elements
 

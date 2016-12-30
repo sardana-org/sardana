@@ -44,7 +44,7 @@ This SEP obsoletes totally or partially some previous Enhancement Proposals (EP)
 as summarized here:
 
 - SEP0: `https://sourceforge.net/p/sardana/wiki/SEP/` is no longer the index for 
-SEPs. The index for the SEPs is now located at http://www.sardana-controls.org/sep. The "Creating a SEP" of SEP0 is superseded by the section "Creating a SEP: New policy for SEPs" of SEP15.
+SEPs. The index for the SEPs is now located at http://www.sardana-controls.org/sep/. The "Creating a SEP" of SEP0 is superseded by the section "Creating a SEP: New policy for SEPs" of SEP15.
 - SEP1: references to SF
 - SEP7: most of the contribution procedure is no longer applicable due to 
 the adoption of PR-based workflow.
@@ -144,9 +144,9 @@ location of the SEPs and the index. This service-agnostic URLs should be used
 instead of the SF or GH specific location in all documentation from now on 
 (this allows us to change the location in the future without altering the docs). 
 In the proposed implementation, these URLs are:
-    - `https://www.sardana-controls.org/sep/` (for the SEP index)
-    - `https://www.sardana-controls.org/sep/?<SEP_FILE_NAME>` (e.g., for SEP15, 
-this agnostic URL would be https://www.sardana-controls.org/sep/?SEP15.md)
+    - `http://www.sardana-controls.org/sep/` (for the SEP index)
+    - `http://www.sardana-controls.org/sep/?<SEP_FILE_NAME>` (e.g., for SEP15, 
+this agnostic URL would be http://www.sardana-controls.org/sep/?SEP15.md)
 
 - The wiki pages served under `https://sourceforge.net/p/sardana/wiki/SEP/` 
 should redirect to the new location.

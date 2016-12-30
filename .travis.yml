@@ -12,8 +12,14 @@ before_install:
   # run reszelaz/sardana-test docker container (Debian8 with sardana-deps)
   - docker pull reszelaz/sardana-test
   - docker run -d --name=sardana-test -h sardana-test --volume=`pwd`:/sardana reszelaz/sardana-test
+  # wait approx. 10 s (supervisor starts mysql and Tango DB)
   - sleep 10
+  # install sardana in order to create the launcher scripts for servers
+  - docker exec sardana-test bash -c "cd /sardana && python setup.py install"
+  # start Pool and MacroServer necessary for macro tests
+  - docker exec sardana-test supervisorctl start Pool
+  - docker exec sardana-test supervisorctl start MacroServer
 
 script:
-  - docker exec sardana-test /bin/bash -c "cd sardana ; python setup.py install"
-  - docker exec sardana-test python /usr/local/lib/python2.7/dist-packages/sardana/test/testsuite.py
+  # run the full testsuite
+  - docker exec sardana-test sardanatestsuite

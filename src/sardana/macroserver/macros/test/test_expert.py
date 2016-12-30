@@ -43,17 +43,15 @@ class ExpertTest(RunMacroTestCase, unittest.TestCase):
             self.macro_runs(macro_name="defctrl",
                             macro_params=["DummyMotorController", CTRL_NAME],
                             wait_timeout=1)
-            self.macro_runs(macro_name="defm",
+            self.macro_runs(macro_name="defelem",
                             macro_params=[MOT_NAME1, CTRL_NAME, "1"],
                             wait_timeout=1)
-            self.macro_runs(macro_name="defelem",
-                            macro_params=[MOT_NAME2, CTRL_NAME, "2"],
+            self.macro_runs(macro_name="renameelem",
+                            macro_params=[MOT_NAME1, MOT_NAME2],
                             wait_timeout=1)
-#     add test of renameelem when bug-471 is fixed
-#     https://sourceforge.net/p/sardana/tickets/471/
-#             self.macro_runs(macro_name="renameelem",
-#                             macro_params=[MOT_NAME1, MOT_NAME2],
-#                             wait_timeout=1)
+            self.macro_runs(macro_name="defm",
+                            macro_params=[MOT_NAME1, CTRL_NAME, "2"],
+                            wait_timeout=1)
             self.macro_runs(macro_name="udefelem",
                             macro_params=[MOT_NAME1, MOT_NAME2],
                             wait_timeout=1)

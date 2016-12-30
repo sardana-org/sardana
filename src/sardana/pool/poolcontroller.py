@@ -136,6 +136,27 @@ class PoolBaseController(PoolBaseElement):
             self.fire_event(EventType("elementlist", priority=propagate),
                             elements)
 
+    def rename_element(self, old_name, new_name, propagate=1):
+        """Rename element in the controller.
+
+        :param old_name: old name of the element
+        :type old_name: str
+        :param new_name: new name of the element
+        :type new_name: str
+        :param propagate: 0 for not propagating, 1 to propagate,
+               2 propagate with priority
+        :type propagate: int
+        """
+        element = self._element_names.pop(old_name, None)
+        if element is None:
+            raise KeyError('There is no element with name %s' % old_name)
+        self._element_names[new_name] = element
+        if propagate:
+            elements = self.get_elements()
+            elements = [elements[_id].name for _id in sorted(elements)]
+            self.fire_event(EventType("elementlist", priority=propagate),
+                            elements)
+
     def remove_axis(self, axis, propagate=1):
         f = self._element_axis.has_key(axis)
         if not f:

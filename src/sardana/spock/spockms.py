@@ -124,7 +124,9 @@ class GUIViewer(BaseGUIViewer):
                     local_file = remote_file
         else:
             local_directories = directory_map[scan_dir]
-            if isinstance(scan_file, (str, unicode)):
+            # local_directories may be either a string or a list of strings
+            # the further logic is unified to work on a list, so convert it
+            if isinstance(local_directories, (str, unicode)):
                 local_directories = [local_directories]
             locations = local_directories
             if scan_dir not in locations: locations.append(scan_dir)

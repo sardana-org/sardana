@@ -47,7 +47,7 @@ import taurus.core.util.argparse
 import taurus.qt.qtgui.application
 from taurus.qt.qtgui.util.ui import UILoadable
 
-from taurus.qt.qtgui.extra_macroexecutor import TaurusMacroConfigurationDialog
+from sardana.taurus.qt.qtgui.extra_macroexecutor import TaurusMacroConfigurationDialog
 
 
 from selectsignal import SelectSignal

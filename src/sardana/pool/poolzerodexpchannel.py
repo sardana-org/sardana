@@ -51,6 +51,7 @@ class BaseAccumulation(object):
     def clear(self):
         self.nb_points = 0
         self.value = None
+        self.timestamp = None
 
     def get_value_buffer(self):
         return self.buffer[0][:self.nb_points]
@@ -69,6 +70,7 @@ class BaseAccumulation(object):
 
     def update_value(self, value, timestamp):
         self.value = value
+        self.timestamp = timestamp
 
 
 LastAccumulation = BaseAccumulation
@@ -81,6 +83,7 @@ class SumAccumulation(BaseAccumulation):
         self.sum = 0.0
 
     def update_value(self, value, timestamp):
+        BaseAccumulation.update_value(self, value, timestamp)
         if not value is None:
             self.sum += value
             self.value = self.sum
@@ -178,6 +181,18 @@ class Value(SardanaAttribute):
         value_obj = SardanaValue(value=value, idx=idx, timestamp=timestamp)
         return value_obj
 
+    def _in_error(self):
+        # for the moment let's assume that 0D is never in error
+        # this could be improved by searching the accumulation buffer
+        # in presence of readout errors
+        return False
+
+    def _has_value(self):
+        return self.accumulation.value is not None
+
+    def _get_timestamp(self):
+        return self.accumulation.timestamp
+
     def get_value_buffer(self):
         return self.accumulation.get_value_buffer()
 
@@ -201,6 +216,10 @@ class Value(SardanaAttribute):
         evt_type = EventType(self.name, priority=priority)
         self.fire_event(evt_type, self)
 
+    def update(self, cache=True, propagate=1):
+        # it is the Pool0DAcquisition action which is allowed to update
+        raise Exception("0D Value can not be updated from outside"
+                            " of acquisition")
 
 class Pool0DExpChannel(PoolBaseChannel):
 

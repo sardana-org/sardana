@@ -46,7 +46,7 @@ import taurus.qt.qtgui.application
 from taurus.qt.qtgui.util.ui import UILoadable
 
 from PyTango import *
-from taurus.qt.qtgui.extra_macroexecutor import TaurusMacroExecutorWidget, TaurusSequencerWidget, \
+from sardana.taurus.qt.qtgui.extra_macroexecutor import TaurusMacroExecutorWidget, TaurusSequencerWidget, \
     TaurusMacroConfigurationDialog, \
     TaurusMacroDescriptionViewer, DoorOutput, DoorDebug, DoorResult
 

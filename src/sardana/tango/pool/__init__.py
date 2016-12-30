@@ -28,6 +28,7 @@ from sardana.pool.poolextension import ControllerStateTranslator
 
 __docformat__ = 'restructuredtext'
 
+SERVER_NAME = "Pool"
 
 def prepare_pool(util):
 
@@ -90,7 +91,14 @@ def prepare_pool(util):
 
 def main_pool(args=None, start_time=None, mode=None):
     import sardana.tango.core.util
+    # pass server name so the scripts generated with setuptools work on Windows
     return sardana.tango.core.util.run(prepare_pool, args=args,
-                                       start_time=start_time, mode=mode)
+                                       start_time=start_time, mode=mode,
+                                       name=SERVER_NAME)
 
 run = main_pool
+
+def main():
+    import datetime
+    run(start_time=datetime.datetime.now())
+

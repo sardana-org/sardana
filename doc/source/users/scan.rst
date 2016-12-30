@@ -197,9 +197,14 @@ Following variables are supported:
         changes (up to and including removal of this variable) may occur if
         deemed necessary by the core developers.
 
-**JsonRecorder**
-    Its value is of boolean type and it indicates whether JSON encoded scan
-    records will be emitted by the Door. Online scan plot uses this feature.
+**DirectoryMap**
+    In case that the server and the client do not run on the same host, the scan
+    data may be easily shared between them using the NFS. Since some of the
+    tools e.g. showscan rely on the scan data file the DirectoryMap may help in
+    overcoming the shared directory naming issues between the hosts.
+
+    Its value is a dictionary with keys pointing to the server side directory
+    and values to the client side directory/ies (string or list of strings).
 
 **ScanDir**
     Its value is of string type and indicates an absolute path to the directory
@@ -207,7 +212,7 @@ Following variables are supported:
 
 **ScanFile**
     Its value may be either of type string or of list of strings. In the second
-    case data will be duplicated in mulitple files (different file formats may
+    case data will be duplicated in multiple files (different file formats may
     be used). Recorder class is implicitly selected based on the file extension.
     For example "myexperiment.spec" will by default store data in SPEC
     compatible format (see more about the extension to recorder map in
