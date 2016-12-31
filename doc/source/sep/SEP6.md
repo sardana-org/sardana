@@ -402,6 +402,7 @@ Out of scope of SEP6
 =================
 
 * support software Gate synchronization
+* support of different trigger types: pre-, mid- or post-triggers
 * ascanct does not support
     * pseudocounters 
     * 1D ExpChannel
