@@ -36,7 +36,6 @@ Contents
 - Transparency
 - Generic Scan Framework
 - Measurement Group
-- Controller
 - Trigger/Gate
 - Experimental Channel
 - Data collection, merging and storage
@@ -154,21 +153,14 @@ list of dicts <SynchParam, obj> with the following keys:
 Trigger/Gate
 ----------------
 
-TriggerGate is a new Sardana element type and it represents devices with trigger and/or gate generation capabilities. Their main role is to synchronize acquisition of the ExpChannel. Trigger or gate characteristics could be described in either of three configuration domains: time, position or monitor (TODO: elaborate monitor domain). In the time domain, elements are configured in time units (seconds) and generation of the synchronization signals is based on passing time. The concept of position domain is based on the relation between the TriggerGate and the Moveable element. In the position domain, elements are configured in distance units of the Moveable element configured as the feedback source (this could be mm, mrad, degrees, etc.). In this case generation of the synchronization signals is based on receiving updates from the source.
+TriggerGate is a new Sardana element type and it represents devices with trigger and/or gate generation capabilities. Their main role is to synchronize acquisition of the ExpChannel. Trigger or gate characteristics could be described in either time and/or position configuration domains. In the time domain, elements are configured in time units (seconds) and generation of the synchronization signals is based on passing time. The concept of position domain is based on the relation between the TriggerGate and the Moveable element. In the position domain, elements are configured in distance units of the Moveable element configured as the feedback source (this could be mm, mrad, degrees, etc.). In this case generation of the synchronization signals is based on receiving updates from the source.
 
 Each ExpChannel controller can have one TriggerGate element associated to it. Its role is to control at which moment each single measurement has to start in case of trigger or start and stop in case of gate.
 
 The configuration parameters:
 
 - **active_domain** (type: enumeration, options: *time*, *position* or *default*) - which of the domains to use from the configuration to generate active events. *default* means: first try to use position and only if not available, time should be used. When the selected domain is missing in the configuration an exception should be raised.
-- **passive_domain** (type: enumeration, options: *time*, *position* or *default*) - which of the domains to use from the configuration to generate passive events. *default* means: first try to use time and only if not available, time should be used. When the selected domain is missing in the configuration an exception should be raised.
-
-The configuration parameters out of the SEP6 scope:
-
-- **sign** (type: long, options: -1 or 1) - wheter to invert the positions updates or not 
-- **factor** (type: float) - translation factor from hardware to user units
-- **offset** (type: float) - offset from the hardware to user units
-- **idle_state** (type: enumeration, options: low|high) - state maintained during the offset interval 
+- **passive_domain** (type: enumeration, options: *time*, *position* or *default*) - which of the domains to use from the configuration to generate passive events. *default* means: first try to use time and only if not available, position should be used. When the selected domain is missing in the configuration an exception should be raised.
 
 The allowed states for TriggerGate element are:
 
@@ -182,7 +174,7 @@ Each TriggerGate element is represented in the Tango world by one device of Trig
 
 **TriggerGate controller (plug-in)**
 
-A custom TriggerGate controller must inherit from the TriggerGateController class. The controller class must define the supported domains: time and/or position. The dynamic configuration is accessed via the SetConfiguration and GetConfiguration methods. This configuration has the same format as the MeasurementGroup Synchronization parameter. The static parameters e.g. offset, sign or factor are implemented as axis parameters (see analogy to step_per_unit of the MotorController).
+A custom TriggerGate controller must inherit from the TriggerGateController class. The dynamic configuration is accessed via the Synch methods. This configuration has the same format as the MeasurementGroup Synchronization parameter.
 
 TriggerGateController API (**bold** are mandatory):
 
@@ -192,7 +184,7 @@ TriggerGateController API (**bold** are mandatory):
 - PreStateOne
 - StateAll
 - **StateOne**
-- PreSartOne
+- PreStartOne
 - PreStartAll
 - **StartOne**
 - StartAll
@@ -200,13 +192,16 @@ TriggerGateController API (**bold** are mandatory):
 - StopAll
 - **AbortOne**
 - AbortAll
-- **SetConfiguration** and **GetConfiguration** (see format of MG Synchronization parameter)
+- PreSynchOne
+- PreSynchAll
+- **SynchOne**
+- SynchAll
 - SetAxisPar and GetAxisPar
 
 Sardana provides one TriggerGate controllers DummyTriggerGateController which does not synchronize acquisition and just provides dummy behavior. DummyTriggerGateController imitate the behavior of the hardware with trigger and/or gate signal generation capabilities. It emulates the state machine: changes state from On to Moving on start and from Moving to On based on the configuration parameters or when stopped.
 
-Software synchronizer resides in the core of Sardana and generates software events of type: TGEventType.Active and TGEventType.Passive. The acquisition action listens to these events and start or start and stop the acquisition process when they arrive.
-In case the MeasurementGroup Synchronization contains position domain characteristics this controller is added as a listener to the to the moveable's position attribute. Then the generation of generates the synchronization events is based on these updates.
+Software synchronizer resides in the core of Sardana and generates software events of type: *active* and *passive*. The acquisition action listens to these events and start or start and stop the acquisition process when they arrive.
+In case the MeasurementGroup Synchronization contains position domain characteristics the software synchronizer is added as a listener to the moveable's position attribute. Then the generation of the synchronization events is based on these updates.
 
 **Pool Synchronization action**
 
@@ -214,9 +209,12 @@ PoolSynchronization is the Pool's action in charge of the control of the Trigger
 
 Its **start_action** method executes the following:
 
-- load dynamic configuration to the hardware by calling SetConfiguration
-- in case the software synchronizer is in use, add the acquisition action as a listener of the SoftwareTriggerGateController
-- in case the position domain synchronization is in use it adds the SoftwareTriggerGateController as a listenr of the moveable's position updates
+- load dynamic configuration to the hardware by calling Synch methods
+    - for each controller implied in the generation call PreSynchAll
+    - for each axis implied in the generation call PreSynchOne and SynchOne
+    - for each controller implied in the generation call SynchAll
+- in case the software synchronizer is in use, add the acquisition action as the listener of the software synchronzier
+- in case the position domain synchronization is in use it adds the software synchronizer as the listener of the moveable's position updates
 - start the involved axes
     - for each controller implied in the generation call PreStartAll
     - for each axis implied in the generation call PreStartOne and StartOne
@@ -233,15 +231,7 @@ Its **action_loop** method executes the following:
     - wait some time
 - for each TriggerGate element implied in the generation set state to On
 
-The action_loop waits some time between interrogating controllers for their states. The wait time by default is 0.01 [s] and is configurable with the PoolSynchronization_SleepTime property (unit: milliseconds) of the Pool Tango Device.
-
-**Out of scope of SEP6 but related to TriggerGate**
-
-TriggerGate elements could implement non-equidistant characteristic. In this case the dynamic parameters require arbitrary way of configuration. This could be: initial offset and a sequence of sets of parameters (active_period, passive_period), or initial offset and a generator function.
-
-Each Sardana element type must provide at least one SardanaAttribute. In case of TriggerGate it is the Index which represent the index of the last generated trigger or gate. The minimal necessary implementation is provided in SEP6, but
-it should be extended in the future.
-
+The action_loop waits some time between interrogating controllers for their states. The wait time by default is 0.01 [s].
 
 ExpChannel
 -----------------------------
