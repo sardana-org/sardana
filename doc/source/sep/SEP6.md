@@ -366,13 +366,12 @@ The action_loop reads new data every certain number of state readout iterations.
 Data merging
 -----------------------------------------------
 Every value acquired or read during the continuous scan execution is stamped with an absolute time and the acquisition index. The experimental channels synchronized by hardware (gate or trigger) provide the core part of each scan record.
-The software synchronized channels does not guarantee to provide data for each scan record. The RecordList class, part of the GSF, applies the [zero order hold](http://en.wikipedia.org/wiki/Zero-order_hold) ("constant interpolation") method to fill the missing part of the records. Different interpolation methods could be available to the user end executed as a post-scan processing, however implementation of them is out of scope of this SEP. The real data has to be easily distinguishable from the interpolated one, so each recorder could store/visualize them in its own way.
+The software synchronized channels does not guarantee to provide data for each scan record. The RecordList class, part of the GSF, applies the [zero order hold](http://en.wikipedia.org/wiki/Zero-order_hold) ("constant interpolation") method to fill the missing part of the records. Different interpolation methods could be available to the user end executed as a post-scan processing, however implementation of them is out of scope of this SEP.
 
 Data transfer
 -------------
 
-The data collected by the MG needs to be transferred back to to the GSF for proper organization of scan records, using indexes by the RecordList, and storage by the Data Handler and its servants - recorders. Ideally, different configuration of the Sardana systems use different implementations of the communication channel. Let's imagine a Sardana system composed from one Pool and one MS running in different servers distributed over the network. Another example would be a Pool and a MS running in the same Sardana server. A proper Inter-process Communication method must be used for various possible setups. 
-TODO: elaborate data transfer using Tango events, which attribute is used and who listens to the events
+The data collected by the MG needs to be transferred back to to the GSF for proper organization of scan records, using indexes by the RecordList, and storage by the Data Handler and its servants - recorders. Data are passed with the Tango change events of the Data attribute of the Experimental Channels. 
 
 Motion
 ------
@@ -390,24 +389,14 @@ start position + (velocity * acceleration time) / 2 (scanning in negative direct
 **deceleration time** - is common to all the motors and is determine by the slower accelerating motor involved in the scan. If motors have the deceleration time limits configured, the limit value is used for the comparison, otherwise, the current value is used.
 
 **post-end position** - is calculated for each motor separately: 
-end position + (velocity * deceleration time) / 2 + (velocity * integration time) (scanning in positive direction)
-end position - (velocity * deceleration time) / 2 - (velocity * integration time) (scanning in negative direction
-
-TODO: if the transparency between step and continuous scan in terms of the number of scan points wants to be achieved, to the post-end position should be added the distance necessary for the end position acquisition (velocity * integration time)
+end position + (velocity * integration time) + (velocity * deceleration time) / 2 (scanning in positive direction)
+end position - (velocity * integration time) - (velocity * deceleration time) / 2 (scanning in negative direction
 
 Some scans require execution of multiple sub-scans e.g. mesh. In this case a sequence of sub-scans will be executed in a loop, substituting the "Move to end position" action with a "Move to pre-start position" (of the next sub-scan). 
  
 ![motion diagram](res/sep6_motion.bmp)
 
 More about the motion control could be found in [1](http://accelconf.web.cern.ch/AccelConf/ICALEPCS2013/papers/wecoaab03.pdf).
-
-Implementation TODOs
-==================
-
-* ascanct must provide (number of intervals + 1) records
-* the last acqusition must be done on the constant velocity
-* measurement group documentation
-* complement continuous scan documentation
 
 Out of scope of SEP6
 =================
