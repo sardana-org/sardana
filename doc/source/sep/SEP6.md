@@ -91,7 +91,7 @@ Calculation outputs:
 
 Formulas:
 
-* pre-start, post-end positions, acceleration, deceleration and velocity - see Motion chapter
+* pre-start, post-end positions, acceleration time, deceleration time and velocity - see Motion chapter
 * Synchronization structure (this example describes an equidistant scan of a single physical motor):
 * The maximum of the user input latency time and the active measurement group latency time is used.
 
@@ -100,7 +100,7 @@ Parameter | Time | Position
 Offset | acceleration time | velocity * acceleration time / 2
 Initial | None | start position
 Active | integration time | integration time * velocity
-Total | velcity / scan intervals | end - start / number of intervals
+Total | integration time + latency time | end - start / number of intervals
 
 Repeats = number of intervals + 1
 
@@ -110,17 +110,16 @@ MeasurementGroup is a group element. It aggregates other elements of types ExpCh
 
 The acquisition is synchronized by the TriggerGate elements or by the software synchronizer. The hardware synchronized ExpChannel controllers  are configured with the number of acquisitions to be executed while the software synchronized do not know a priori the number of acqusitions.
 
-Latency time is a new attribute of the measurement group which role is to introduce an extra latency time in between two consecutive acquisitions. Its value corresponds to the maximum latency time of all the ExpChannel controllers present in the measurement group. It may be especially useful for acquisitions involving software synchronized channels. The software overhead may cause acquisitions to be skipped if the previous acquisition is still in progress while the new synchronization event arrives. The *latency time* parameter, by default, has zero value.
+Latency time is a new attribute of the measurement group and it introduces an extra dead time in between two consecutive acquisitions. Its value corresponds to the maximum latency time of all the ExpChannel controllers present in the measurement group. It may be especially useful for acquisitions involving software synchronized channels. The software overhead may cause acquisitions to be skipped if the previous acquisition is still in progress while the new synchronization event arrives. The *latency time* parameter, by default, has zero value.
 
-On the MeasurementGroup creation, the software synchronizer is assigned by default to the newly added ExperimentalChannel controllers, hence the MeasurementGroup could start measuring without any additional configurations. 
+On the MeasurementGroup creation, the software synchronizer is assigned by default to the newly added ExperimentalChannel controllers, so the MeasurementGroup could start measuring without any additional configurations. 
 
 The configuration parameters:
 
 - **Configuration** (type: dictionary) - stores static configuration e.g. which synchronizer is associated to which ExperimentalChannel controller and which synchronization type is used (Trigger or Gate)
-- **Synchronization** (type: list of dictionaries) - express the measurement synchronization, it is composed from the groups of equidistant acquisitions described by: the initial point and delay, total and active intervals and the number of repetitions, these information can be expressed in different synchronization domains if necessary (time, position, monitor) 
+- **Synchronization** (type: list of dictionaries) - express the measurement synchronization, it is composed from the groups of equidistant acquisitions described by: the initial point and delay, total and active intervals and the number of repetitions, these information can be expressed in different synchronization domains if necessary (time and/or position) 
 - **LatencyTime** (type: float, unit: seconds, access: read only): latency time between two consecutive acquisitions
 - **Moveable** (type: string) - full name of the master moveable element
-- **Monitor** (type: string) - full name of the monitor channel element - TODO: elaborate it
 
 Format of the configuration parameter:
 
@@ -138,7 +137,7 @@ dict <str, obj=""> with (at least) keys:
                       - ...
 ~~~~
 
-The configuration parameter had change during the SEP6 developments. First of all the [feature request #372](https://sourceforge.net/p/sardana/tickets/372/) was developed and the units level disappeared from the configuration. Furthermore the controller parameters _trigger_type_ was renamed to _synchroniation_. In both cases one-way backwards compatibility was maintained. That means that the measurement groups created with the previous versions of Sardana are functional. Once their configuration gets saved again (either after modification or simply by re-applying), the configuration is no more reverse compatible. **IMPORTANT: when deploying the SEP6 consider back-up of the measurement groups configurations in case you would need to rollback**
+The configuration parameter had changed during the SEP6 developments. First of all the [feature request #372](https://sourceforge.net/p/sardana/tickets/372/) was developed and the units level disappeared from the configuration. Furthermore the controller parameters _trigger_type_ was renamed to _synchronization_. In both cases one-way backwards compatibility was maintained. That means that the measurement groups created with the previous versions of Sardana are functional. Once their configuration gets saved again (either after modification or simply by re-applying), the configuration is no more reverse compatible. **IMPORTANT: when deploying the SEP6 consider back-up of the measurement groups configurations in case you would need to rollback**
 
 Format of the synchronization parameter:
 
@@ -151,15 +150,6 @@ list of dicts <SynchParam, obj> with the following keys:
       - SynchParam.Repeats: <long> - how many times the group has to be repeated
 * Position domain is optional - lack of it implicitly forces synchronization in the Time domain e.g. timescan
 ~~~~
-
-TODO: decide what to do with the following configuration parameters (together with their corresponding Tango attributes and commands). Do we need a backwards compatibility layer for them? All of them are redundant with the information present in the Synchronization parameter.
-
-- **integration_time** (type: float, units: seconds) - integration time of each acquisition
-- **monitor_count** (type: long) - monitor count of each acquisition
-- **acquisition_mode** (type: string) - wheter timer or monitor acquisition
-- **StartMultiple** - execute multiple acquisitions
-
-Parameters validation is out of the SEP6 scope.
 
 Trigger/Gate
 ----------------
