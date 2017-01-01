@@ -379,18 +379,18 @@ Motion
 This SEP will deal only with the linear motion. Any combination of Sardana motors and pseudomotors could be used as a scan moveable. The following attributes: acceleration time, velocity and deceleration time are configured, so all the motors reach and leave the constant velocity region at the same time. 
 
 **pre-start position** - is calculated for each motor separately: 
-start position - (velocity * acceleration time) / 2 (scanning in positive direction)
-start position + (velocity * acceleration time) / 2 (scanning in negative direction)
+- start position - (velocity * acceleration time) / 2 (scanning in positive direction)
+- start position + (velocity * acceleration time) / 2 (scanning in negative direction)
 
 **acceleration time** - is common to all the motors and is determine by the slower accelerating motor involved in the scan. If motors have the acceleration time limits configured, the limit value is used for the comparison, otherwise, the current value is used.
 
-**velocity** - is calculated for each motor separately from the following parameters: the scan range = abs(end position - start position) and the scan time. The scan time is equal to number of intervals * (integration time + latency time). If the result of calculation is lower or higher than the velocity limit, this one is used, properly notifying user about the incident - TODO.
+**velocity** - is calculated for each motor separately from the following parameters: the scan range = abs(end position - start position) and the scan time. The scan time is equal to number of intervals * (integration time + latency time).
 
 **deceleration time** - is common to all the motors and is determine by the slower accelerating motor involved in the scan. If motors have the deceleration time limits configured, the limit value is used for the comparison, otherwise, the current value is used.
 
 **post-end position** - is calculated for each motor separately: 
-end position + (velocity * integration time) + (velocity * deceleration time) / 2 (scanning in positive direction)
-end position - (velocity * integration time) - (velocity * deceleration time) / 2 (scanning in negative direction
+- end position + (velocity * integration time) + (velocity * deceleration time) / 2 (scanning in positive direction)
+- end position - (velocity * integration time) - (velocity * deceleration time) / 2 (scanning in negative direction
 
 Some scans require execution of multiple sub-scans e.g. mesh. In this case a sequence of sub-scans will be executed in a loop, substituting the "Move to end position" action with a "Move to pre-start position" (of the next sub-scan). 
  
