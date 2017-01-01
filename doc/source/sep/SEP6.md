@@ -19,13 +19,7 @@
 
 Current situation
 =================
-In the present situation, step scans can be executed using the software synchronization mode. The software-synchronized continuous scans are already implemented in Sardana as well and are described [here](http://www.sardana-controls.org/en/latest/users/scan.html#continuous-scans). A reduced API abstracts some specifics of the totally hardware-synchronized systems, however requires some generalization. 
-
-A set of scan macros with the "ct" suffix allow to execute continuous scans. The Experimental Channel *pseudo-API* is based on the following extra attributes: "NrOfTriggers", "AcquisitionTime", "TriggerMode" and "Data". Control over start and stop of the experimental channels is achieved via "SendToCtrl" method of the controllers. The following string arguments should be understandable by the controller: "pre-start <axis\>", "start <axis\>", "pre-stop <axis\>", "stop <axis\>". Configuration of the hardware-triggering objects is done via "TriggerDevice" environment variable. It accepts a list of the Tango device names, where the first one is the master trigger. The *pseudo-API* of the triggering-object is based on the following attributes: InitialDelayTime, HighTime, LowTime (all in seconds), SampPerChan (used to configure number of triggers) and IdleState (Low or High). This interface is also based on two commands: "Start" and "Stop". Current implementation extracts the acquired data at the end of the scan.
-
-A proof of concept of the "online data visualization and storage" was implemented in the "ASCANCT" branch of the old Sardana SVN repository (SorceForge), what later was renamed to the "sep6" branch in the old GIT repository (SourceFortge). Previously required be the Experimental Channel *pseudo-API* "AcquisitionTime" attribute was replaced by the "IntegrationTime" attribute of the Measurement Group. Its value gets passed to the controller via a sequence of Load\[One,All\] calls. "TriggerMode" attribute was substituted by the Measurement Group configuration parameter "Trigger". Calls to the "SendToCtrl" method were substituted by calls to the \[Pre\]Start\[One,All\] controller methods. During scan execution, poolacquisition action extracts the already available data (using sequence of \[Pre\]Read\[One,All\] calls) and pushes Tango CHANGE_EVENTs of "Data" attributes. The Measurement Group representative on the Macroserver side is subscribed to these events. The callback execution feeds this data to the DataHandler, which decides if a complete record is ready. If so, it gets passed to the registered recorders.
-
-Both of this approaches supports the following hook places: "pre-scan", "pre-configuration", "post-configuration", "pre-start", "pre-cleanup" and "post-cleanup"
+In the present situation, step scans can be executed using the software synchronization mode. The software-synchronized continuous scans are already implemented in Sardana as well and are described [here](http://www.sardana-controls.org/en/latest/users/scan.html#continuous-scans). As a proof-of-concept, very limited scan macros that abstracts some specifics of the totally hardware-synchronized systems were added to Sardana in 2013. They require generalization and this SEP aims to provide it.
 
 Specification
 ==========
@@ -41,9 +35,6 @@ Contents
 - Data collection, merging and storage
 - Data transfer
 - Motion
-- Activity diagram
-- Example of usage
-- Implementation status
 
 
 Transparency
