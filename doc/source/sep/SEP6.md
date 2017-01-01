@@ -247,8 +247,6 @@ Configuration parameters implemented as controller parameters: SetCtrlPar and Ge
 - **monitor** (type: monitor) - corresponds to the axis number of the monitor assigned to this controller *
 - **acquisition_mode** (type: enumeration, options: Timer|Monitor) - corresponds to the selected acquisition mode * 
 
-\* TODO: decide if timer, monitor and acquisition_mode are necessary configuration parameters
-
 Configuration parameters pass in LoadOne method:
 
 - **value** (type: float, unit: seconds or counts) - integration time or monitor counts of each single acquisition
