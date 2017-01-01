@@ -408,10 +408,8 @@ References
 Changes
 =======
 
-2016-11-30 
-[mrosanes](https://github.com/sagiss) Migrate SEP6 from SF wiki to independent markdown language file.
-2017-01-01 
-[reszelaz](https://github.com/reszelaz) Remove last pending TODOs and fix the scope in order to open for final discussions.
+- 2016-11-30 [mrosanes](https://github.com/sagiss) Migrate SEP6 from SF wiki to independent markdown language file.
+- 2017-01-01 [reszelaz](https://github.com/reszelaz) Remove last pending TODOs and fix the scope in order to open for final discussions.
 
 
 
