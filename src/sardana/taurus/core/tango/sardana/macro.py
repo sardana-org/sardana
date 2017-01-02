@@ -1166,13 +1166,31 @@ def ParamFactory(paramInfo):
         param = SingleParamNode(param=paramInfo)
     return param
 
+def check_member_node(rest_raw, param_node, mem, rep, params_info_len):
+
+    for member_raw in rest_raw:
+        repeat_node = param_node.child(rep)
+        if repeat_node is None:
+            repeat_node = param_node.addRepeat()
+        member_node = repeat_node.child(mem)
+        if isinstance(member_node, RepeatParamNode):
+            params_info_nested = member_node.paramsInfo()
+            params_info_len_nested = len(params_info_nested)
+            rep_nested = 0; mem_nested = 0
+            check_member_node(member_raw, member_node, mem_nested, rep_nested, params_info_len_nested)
+        else:
+            member_node.setValue(str(member_raw))
+        mem += 1
+        mem %= params_info_len
+        if mem == 0:
+            rep += 1
+            
 def createMacroNode(macro_name, params_def, macro_params):
     """The best effort creation of the macro XML object. It tries to
     convert flat list of string parameter values to the correct macro XML
-    object. The cases that can not be converted are:
-        * repeat parameter containing repeat parameters
-        * two repeat parameters
-        * repeat parameter that is not the last parameter
+    object. 
+
+    Default values allow in ParamRepeat parameters or the last single ones
 
     :param macro_name: (str) macro name
     :param params_def: (list<dict>) list of param definitions
@@ -1191,44 +1209,94 @@ def createMacroNode(macro_name, params_def, macro_params):
         macro_node.addParam(ParamFactory(param_info))
     # obtain just the first level parameters
     param_nodes = macro_node.params()
-    # validate if creating XML is possible (two last cases) 
-    contain_param_repeat = False
-    len_param_nodes = len(param_nodes)
-    for i, param_node in enumerate(param_nodes):
-        if isinstance(param_node, RepeatParamNode):
-            if contain_param_repeat:
-                msg = "Only one repeat parameter is allowed"
-                raise Exception(msg)
-            if i < len_param_nodes - 1:
-                msg = "Repeat parameter must be the last one"
-                raise Exception(msg)
-            contain_param_repeat = True
-    # this ignores raw_parameters which exceeds the param_def  
-    for param_node, param_raw in zip(param_nodes, macro_params):
-        if isinstance(param_node, SingleParamNode):
-            param_node.setValue(param_raw)
-        # the rest of the values are interpreted as repeat parameter
-        elif isinstance(param_node, RepeatParamNode):
-            params_info = param_node.paramsInfo()
-            params_info_len = len(params_info)
-            rep = 0; mem = 0
-            rest_raw = macro_params[i:]
-            for member_raw in rest_raw:
-                repeat_node = param_node.child(rep)
-                # add a new repeat node (this is needed when the raw values
-                # fill more repeat nodes that the minimum number of 
-                # repetitions e.g. min=0
-                if repeat_node is None:
-                    repeat_node = param_node.addRepeat()
-                member_node = repeat_node.child(mem)
-                if isinstance(member_node, RepeatParamNode):
-                    msg = ("Nested repeat parameters are not allowed")
+    
+    # Check if ParamRepeat used in advanced interface
+    open_bracks = 0
+    close_bracks = 0
+    new_interface = False
+    for param in macro_params:
+        if param.find('[') > -1:
+            open_bracks = open_bracks + 1
+        if param.find(']') > -1:
+            close_bracks = close_bracks + 1
+    
+    # open_bracks and close_bracks don't have to be equal because several closes or opens can be in the same param
+    if open_bracks and close_bracks:
+        new_interface = True
+        if len(param_nodes) == 1: # without this the strings are seen as strings of characters
+            for i, el in enumerate(macro_params):
+                macro_params[i] = el.replace('[','').replace(']','')
+            new_interface = False
+
+    # Close the character strings into ''
+    if new_interface:
+        for i, el in enumerate(macro_params):
+            el_tmp = el.replace('[','').replace(']','')
+            if el_tmp.isdigit() == 0:
+                extra1 = ""
+                extra2 = ""
+                if el.find('[') > -1:
+                    extra1 = '['
+                if el.find(']') > -1:
+                    extra2 = ']'
+                macro_params[i] = extra1 + '\'' + macro_params[i].replace('[','').replace(']','') + '\'' + extra2
+
+        macro_params = ", ".join(macro_params)
+        macro_params = eval(macro_params)
+        macro_params = tuple(macro_params)
+   
+    if not new_interface:
+        contain_param_repeat = False
+        len_param_nodes = len(param_nodes)
+        for i, param_node in enumerate(param_nodes):
+            if isinstance(param_node, RepeatParamNode):
+                if contain_param_repeat:
+                    msg = "Only one repeat parameter is allowed"
                     raise Exception(msg)
-                member_node.setValue(member_raw)
-                mem += 1
-                mem %= params_info_len
-                if mem == 0:
-                    rep += 1
-            break
+                if i < len_param_nodes - 1:
+                    msg = "Repeat parameter must be the last one"
+                    raise Exception(msg)
+        # If ParamRepeat only one and as last parameter
+        # this ignores raw_parameters which exceeds the param_def  
+        for param_node, param_raw in zip(param_nodes, macro_params):
+            if isinstance(param_node, SingleParamNode):
+                param_node.setValue(param_raw)
+            # the rest of the values are interpreted as repeat parameter
+            elif isinstance(param_node, RepeatParamNode):
+                params_info = param_node.paramsInfo()
+                params_info_len = len(params_info)
+                rep = 0; mem = 0
+                rest_raw = macro_params[i:]
+                for member_raw in rest_raw:
+                    repeat_node = param_node.child(rep)
+                    # add a new repeat node (this is needed when the raw values
+                    # fill more repeat nodes that the minimum number of 
+                    # repetitions e.g. min=0
+                    if repeat_node is None:
+                        repeat_node = param_node.addRepeat()
+                    member_node = repeat_node.child(mem)
+                    if isinstance(member_node, RepeatParamNode):
+                        msg = ("Nested repeat parameters are not allowed")
+                        raise Exception(msg)
+                    member_node.setValue(member_raw)
+                    mem += 1
+                    mem %= params_info_len
+                    if mem == 0:
+                        rep += 1
+                break
+    else:
+        for i, param_node in enumerate(param_nodes):
+            if isinstance(param_node, RepeatParamNode):
+                params_info = param_node.paramsInfo()
+                params_info_len = len(params_info)
+                rep = 0; mem = 0
+                rest_raw = macro_params[i]
+                check_member_node(rest_raw, param_node, mem, rep, params_info_len)
+            else:
+                try: # last parameters can have default values
+                    param_raw = macro_params[i]
+                    param_node.setValue(str(param_raw))
+                except:
+                    pass  
     return macro_node
 
