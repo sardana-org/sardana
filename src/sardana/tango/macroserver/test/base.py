@@ -76,7 +76,7 @@ class BaseMacroServerTestCase(object):
             self.door = PyTango.DeviceProxy(self.door_name)
         except Exception, e:
             # force tearDown in order to eliminate the MacroServer
-            self.tearDown(self)
+            self.tearDown()
             print e
 
     def tearDown(self):
