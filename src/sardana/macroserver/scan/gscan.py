@@ -1946,13 +1946,14 @@ class CTScan(CScan):
             self.measurement_group.setMoveable(moveable)
             path = motion_paths[MASTER]
             repeats = self.macro.nr_of_points
+            intervals = self.macro.nr_interv
             active_time = self.macro.integ_time
             active_position = path.max_vel * active_time
             if not path.positive_displacement:
                 active_position *= -1
             start = self.macro.starts[MASTER]
             final = self.macro.finals[MASTER]
-            total_position = (final - start) / repeats
+            total_position = (final - start) / intervals
             initial_position = start
             total_time = abs(total_position) / path.max_vel
             delay_time = path.max_vel_time
