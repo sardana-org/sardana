@@ -729,15 +729,18 @@ def check_for_upgrade(ipy_profile_dir):
                 door_name = line[line.index('=')+1:].strip()
 
     # convert version from string to numbers
-    spocklib_ver = translate_version_str2int(release.version)
+    spock_lib_ver_str = release.version
+    spocklib_ver = translate_version_str2int(spock_lib_ver_str)
     spock_profile_ver = translate_version_str2int(spock_profile_ver_str)
 
+    alpha_in_spock_profile = "-alpha" in spock_profile_ver_str
+    alpha_in_spock_lib = "-alpha" in spock_lib_ver_str  
     if spocklib_ver == spock_profile_ver and \
-            spock_profile_ver_str.find("-alpha") == -1:
+       alpha_in_spock_profile == alpha_in_spock_lib: 
         return
     if spocklib_ver < spock_profile_ver:
         print '%sYour spock profile (%s) is newer than your spock version ' \
-              '(%s)!' % (SpockTermColors.Brown, spock_profile_ver_str, release.version)
+              '(%s)!' % (SpockTermColors.Brown, spock_profile_ver_str, spock_lib_ver_str)
         print 'Please upgrade spock or delete the current profile %s' % SpockTermColors.Normal
         sys.exit(1)
 
@@ -747,7 +750,7 @@ def check_for_upgrade(ipy_profile_dir):
         spock_profile_ver_str = '<= 0.2.0'
     msg = 'Your current spock door extension profile has been created with spock %s.\n' \
           'Your current spock door extension version is %s, therefore a profile upgrade is needed.\n' \
-          % (spock_profile_ver_str, release.version)
+          % (spock_profile_ver_str, spock_lib_ver_str)
     print msg
     prompt = 'Do you wish to upgrade now (warn: this will shutdown the current spock session) ([y]/n)? '
     r = raw_input(prompt) or 'y'
