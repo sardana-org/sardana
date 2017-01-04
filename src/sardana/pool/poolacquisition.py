@@ -37,7 +37,7 @@ import datetime
 from taurus.core.util.log import DebugIt
 from taurus.core.util.enumeration import Enumeration
 
-from sardana import State, ElementType, TYPE_TIMERABLE_ELEMENTS
+from sardana import SardanaValue, State, ElementType, TYPE_TIMERABLE_ELEMENTS
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.sardanautils import is_non_str_seq
 from sardana.pool import SynchParam, SynchDomain, AcqSynch
@@ -652,7 +652,10 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
                 self.read_value_loop(ret=values,
                                      ctrls=self._pool_ctrls_read_when_acq)
                 for acquirable, value in values.items():
-                    if len(value) > 0:
+                    if isinstance(value, SardanaValue) and value.error:
+                        self.warning("Error when reading value: %r" %
+                                     value.exc_info)
+                    elif len(value) > 0:
                         channel = self._channels_read_when_acq[acquirable]
                         channel._fill_idx(value)
                         acquirable.put_value_chunk(value)
@@ -675,7 +678,10 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
             acquirable.set_state_info(state_info, propagate=0)
             if acquirable in values:
                 value = values[acquirable]
-                if len(value) > 0:
+                if isinstance(value, SardanaValue) and value.error:
+                        self.warning("Error when reading value: %r" %
+                                     value.exc_info)
+                elif len(value) > 0:
                     channel = self._channels[acquirable]
                     channel._fill_idx(value)
                     acquirable.put_value_chunk(value, propagate=2)
