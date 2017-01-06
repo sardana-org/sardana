@@ -1247,7 +1247,7 @@ def createMacroNode(macro_name, params_def, macro_params):
         for par in macro_params:
             params_str = params_str + str(par) + ","
         params_str = params_str[:-1] 
-
+        params_str = params_str.replace("[,", "[").replace(",]","]").replace("][", "],[")
         macro_params = eval(params_str, globals(), Reflector())
         if type(macro_params) == list:
             new_params = []
