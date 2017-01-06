@@ -1166,25 +1166,42 @@ def ParamFactory(paramInfo):
         param = SingleParamNode(param=paramInfo)
     return param
 
-def check_member_node(rest_raw, param_node, mem, rep, params_info_len):
-
-    for member_raw in rest_raw:
-        repeat_node = param_node.child(rep)
+def check_member_node(macro_param, param_node):
+    for j, param in enumerate(macro_param):
+        repeat_node = param_node.child(j)
         if repeat_node is None:
             repeat_node = param_node.addRepeat()
-        member_node = repeat_node.child(mem)
-        if isinstance(member_node, RepeatParamNode):
-            params_info_nested = member_node.paramsInfo()
-            params_info_len_nested = len(params_info_nested)
-            rep_nested = 0; mem_nested = 0
-            check_member_node(member_raw, member_node, mem_nested, rep_nested, params_info_len_nested)
+        for k, par in enumerate(param):
+            member_node = repeat_node.child(k)
+            if isinstance(member_node, RepeatParamNode):
+                check_member_node(par, member_node)
+            else:
+                try: # last parameters can have default values
+                    param_raw = macro_param[j]
+                    member_node.setValue(str(par))
+                except:
+                    pass
+     
+class Reflector(object):
+    def __getitem__(self, name):
+        return name
+  
+def recur_map(fun, data, keep_none=False):
+    """Recursive map. Similar to map, but maintains the list objects structure
+
+    :param fun: <callable> the same purpose as in map function
+    :param data: <object> the same purpose as in map function
+    :param keep_none: <bool> keep None elements without applying fun
+    """
+    if hasattr(data, "__iter__"):
+        return [recur_map(fun, elem, keep_none) for elem in data]
+    else:
+        if keep_none is True and data is None:
+            return data
         else:
-            member_node.setValue(str(member_raw))
-        mem += 1
-        mem %= params_info_len
-        if mem == 0:
-            rep += 1
-            
+            return fun(data)
+
+        
 def createMacroNode(macro_name, params_def, macro_params):
     """The best effort creation of the macro XML object. It tries to
     convert flat list of string parameter values to the correct macro XML
@@ -1219,32 +1236,27 @@ def createMacroNode(macro_name, params_def, macro_params):
             open_bracks = open_bracks + 1
         if param.find(']') > -1:
             close_bracks = close_bracks + 1
-    
+
     # open_bracks and close_bracks don't have to be equal because several closes or opens can be in the same param
     if open_bracks and close_bracks:
         new_interface = True
-        if len(param_nodes) == 1: # without this the strings are seen as strings of characters
-            for i, el in enumerate(macro_params):
-                macro_params[i] = el.replace('[','').replace(']','')
-            new_interface = False
+        
+    if new_interface:        
+        # Create a string
+        params_str = ''
+        for par in macro_params:
+            params_str = params_str + str(par) + ","
+        params_str = params_str[:-1] 
 
-    # Close the character strings into ''
-    if new_interface:
-        for i, el in enumerate(macro_params):
-            el_tmp = el.replace('[','').replace(']','')
-            if el_tmp.isdigit() == 0:
-                extra1 = ""
-                extra2 = ""
-                if el.find('[') > -1:
-                    extra1 = '['
-                if el.find(']') > -1:
-                    extra2 = ']'
-                macro_params[i] = extra1 + '\'' + macro_params[i].replace('[','').replace(']','') + '\'' + extra2
-
-        macro_params = ", ".join(macro_params)
-        macro_params = eval(macro_params)
-        macro_params = tuple(macro_params)
-   
+        macro_params = eval(params_str, globals(), Reflector())
+        if type(macro_params) == list:
+            new_params = []
+            new_params.append(macro_params)
+            macro_params = new_params
+        # Convert tuple to list
+        macro_params = list(macro_params)
+        macro_params = recur_map(str, macro_params)
+        
     if not new_interface:
         contain_param_repeat = False
         len_param_nodes = len(param_nodes)
@@ -1287,16 +1299,12 @@ def createMacroNode(macro_name, params_def, macro_params):
     else:
         for i, param_node in enumerate(param_nodes):
             if isinstance(param_node, RepeatParamNode):
-                params_info = param_node.paramsInfo()
-                params_info_len = len(params_info)
-                rep = 0; mem = 0
-                rest_raw = macro_params[i]
-                check_member_node(rest_raw, param_node, mem, rep, params_info_len)
+                check_member_node(macro_params[i], param_node)
             else:
                 try: # last parameters can have default values
                     param_raw = macro_params[i]
                     param_node.setValue(str(param_raw))
                 except:
-                    pass  
+                    pass
     return macro_node
 
