@@ -366,7 +366,7 @@ class BufferedAttribute(SardanaAttribute):
     """
     def __init__(self, *args, **kwargs):
         SardanaAttribute.__init__(self, *args, **kwargs)
-        self._r_value_chunk = None
+        self._r_value_chunk = []
         self._r_value_buffer = []
 
     def get_value_buffer(self):
@@ -415,13 +415,13 @@ class BufferedAttribute(SardanaAttribute):
         self.clear_value_chunk()
 
     def _clear_value_chunk(self):
-        self._r_value_chunk = None
+        self._r_value_chunk = []
 
     def clear_buffer(self):
         self._clear_buffer()
 
     def _clear_buffer(self):
-        self._r_value = None
+        self._r_value_buffer = []
 
     value_chunk = property(get_value_chunk, set_value_chunk,
                            "temporarily stored last value chunk")
