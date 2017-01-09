@@ -52,6 +52,9 @@ class BaseMacroExecutor(object):
         the necessary cleanups. Extend if you need to clean your particular
         setups.
         """
+        self._result = None
+        self._exception = None
+        self._state_buffer = []
         for level in self.log_levels:
             log_buffer = getattr(self, '_%s' % level)
             if not log_buffer is None:
