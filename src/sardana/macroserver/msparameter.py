@@ -442,18 +442,11 @@ class ParamDecoder:
                   (len_rep, name, max_rep)
             raise SupernumeraryRepeat, msg
         for raw_repeat in raw_param_repeat:
-            if len(param_type) > 1:
-                repeat = []
-                for i, member_raw in enumerate(raw_repeat):
-                    member_type = param_type[i]
-                    member = self.decodeNormal(member_raw, member_type)
-                    repeat.append(member)
-            else:
-                # if the repeat parameter is composed of just one member
-                # do not encapsulate it in list and pass directly the item
-                if isinstance(raw_repeat, etree._Element):
-                    raw_repeat = raw_repeat[0]
-                repeat = self.decodeNormal(raw_repeat, param_type[0])
+            repeat = []
+            for i, member_raw in enumerate(raw_repeat):
+                member_type = param_type[i]
+                member = self.decodeNormal(member_raw, member_type)
+                repeat.append(member)
             param_repeat.append(repeat)
         return param_repeat
 
