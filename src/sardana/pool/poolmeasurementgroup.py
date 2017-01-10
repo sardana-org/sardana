@@ -30,6 +30,8 @@ __all__ = ["PoolMeasurementGroup"]
 
 __docformat__ = 'restructuredtext'
 
+import threading
+
 try:
     from taurus.core.taurusvalidator import AttributeNameValidator as\
         TangoAttributeNameValidator
@@ -106,6 +108,7 @@ class PoolMeasurementGroup(PoolGroupElement):
     DFT_DESC = 'General purpose measurement group'
 
     def __init__(self, **kwargs):
+        self._state_lock = threading.Lock()
         self._monitor_count = None
         self._repetitions = 1
         self._acquisition_mode = AcqMode.Timer
@@ -149,9 +152,10 @@ class PoolMeasurementGroup(PoolGroupElement):
     def on_element_changed(self, evt_src, evt_type, evt_value):
         name = evt_type.name
         if name == 'state':
-            state, status = self._calculate_states()
-            self.set_state(state, propagate=2)
-            self.set_status("\n".join(status))
+            with self._state_lock:
+                state, status = self._calculate_states()
+                self.set_state(state, propagate=2)
+                self.set_status("\n".join(status))
 
     def get_pool_controllers(self):
         return self.get_acquisition().get_pool_controllers()
