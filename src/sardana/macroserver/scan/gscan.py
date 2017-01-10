@@ -2011,6 +2011,10 @@ class CTScan(CScan):
             for k, v in initial_data.items():
                 initial_data[k].update(timestamps[k])
             self.data.initial_data = initial_data
+            self.macro.warning(
+                "Motor positions and relative timestamp (dt) columns contains"
+                " theoretical values"
+            )
 
             if hasattr(macro, 'getHooks'):
                 for hook in macro.getHooks('pre-start'):
