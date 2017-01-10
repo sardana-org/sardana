@@ -1177,7 +1177,6 @@ def check_member_node(macro_param, param_node):
                 check_member_node(par, member_node)
             else:
                 try: # last parameters can have default values
-                    param_raw = macro_param[j]
                     member_node.setValue(str(par))
                 except:
                     pass
