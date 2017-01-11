@@ -15,6 +15,7 @@ For a full log of commits between versions run (in your git repo):
 
 ### Fixed
 - saving of PreScanSnapshot environment variable from expconf widget (#411)
+- travis-ci build failures due to configuration file not adapted to setuptools
 
 ## [2.2.1] - 2016-12-30
 For a full log of commits between versions run (in your git repo):
