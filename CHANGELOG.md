@@ -9,6 +9,14 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Added
 -
 
+## [2.2.2] - 2017-01-10
+For a full log of commits between versions run (in your git repo):
+`git log 2.2.1..2.2.2`
+
+### Fixed
+- saving of PreScanSnapshot environment variable from expconf widget (#411)
+- travis-ci build failures due to configuration file not adapted to setuptools
+
 ## [2.2.1] - 2016-12-30
 For a full log of commits between versions run (in your git repo):
 `git log 2.2.0..2.2.1`
