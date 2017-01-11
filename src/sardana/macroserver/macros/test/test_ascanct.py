@@ -51,9 +51,6 @@ class UtilsForTests():
                 break
         return ordered_points_data
 
-# Test for checking that the required number of points is present by doing 
-# an ascanct with a trigger device.
-# Test for checking that the required number of points is present.
 mg_config1 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger)]]
 mg_config2 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),
                ('_test_ct_1_2', '_test_tg_1_1', AcqSynchType.Trigger)]
@@ -78,6 +75,11 @@ macro_params_1 = ['_test_mt_1_1', '0', '10', '100', '0.1']
          stop_delay=5, wait_timeout=20)
 class AscanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
                   RunStopMacroTestCase, unittest.TestCase):
+    """Checks that ascanct works and generates the exact number of records
+    by parsing the door output.
+
+    .. todo:: check the macro data instead of the door output
+    """
     macro_name = 'ascanct'
 
     utils = UtilsForTests()
