@@ -25,8 +25,6 @@
 import threading
 
 from taurus.external import unittest
-#TODO: import mock using taurus.external
-from mock import Mock, call
 
 from sardana.pool.poolsynchronization import PoolSynchronization
 from sardana.sardanadefs import State
@@ -43,6 +41,10 @@ class PoolTriggerGateTestCase(unittest.TestCase):
         dummy configurations
         """
         unittest.TestCase.setUp(self)
+        try:
+            from mock import Mock
+        except ImportError:
+            self.skipTest("mock module is not available")
         pool = FakePool()
         dummy_tg_ctrl = createPoolController(pool, dummyPoolTGCtrlConf01)
         self.dummy_tg = createPoolTriggerGate(pool, dummy_tg_ctrl, 
@@ -69,6 +71,7 @@ class PoolTriggerGateTestCase(unittest.TestCase):
 
     def test_tggeneration(self):
         """Verify trigger element states before and after action_loop."""
+        from mock import call
         args = ()
         kwargs = {'config': self.cfg}
         # starting action
