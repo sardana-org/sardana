@@ -1166,8 +1166,8 @@ def ParamFactory(paramInfo):
         param = SingleParamNode(param=paramInfo)
     return param
 
-def check_member_node(macro_param, param_node):
-    for j, param in enumerate(macro_param):
+def check_member_node(param_raw, param_node):
+    for j, param in enumerate(param_raw):
         repeat_node = param_node.child(j)
         if repeat_node is None:
             repeat_node = param_node.addRepeat()
@@ -1225,7 +1225,7 @@ def createMacroNode(macro_name, params_def, macro_params):
         macro_node.addParam(ParamFactory(param_info))
     # obtain just the first level parameters
     param_nodes = macro_node.params()
-    
+
     # Check if ParamRepeat used in advanced interface
     open_bracks = 0
     close_bracks = 0
@@ -1295,13 +1295,12 @@ def createMacroNode(macro_name, params_def, macro_params):
                     if mem == 0:
                         rep += 1
                 break
-    else:
-        for i, param_node in enumerate(param_nodes):
+    else: 
+        for param_node, param_raw in zip(param_nodes, macro_params):
             if isinstance(param_node, RepeatParamNode):
-                check_member_node(macro_params[i], param_node)
+                check_member_node(param_raw, param_node)
             else:
                 try: # last parameters can have default values
-                    param_raw = macro_params[i]
                     param_node.setValue(str(param_raw))
                 except:
                     pass
