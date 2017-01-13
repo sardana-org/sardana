@@ -395,6 +395,11 @@ class ParamDecoder:
                     value = raw_param.get("value")
                 else:
                     value = raw_param
+                if type(value) == list:
+                    if len(value) == 0:
+                        value = param_def['default_value']
+                    else:
+                        value = value[0]
                 if value is None:
                     value = param_def['default_value']
                 if value is None:
