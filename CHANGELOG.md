@@ -9,6 +9,13 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Added
 -
 
+## [2.2.3] - 2017-01-12
+For a full log of commits between versions run (in your git repo):
+`git log 2.2.3..2.2.3`
+
+### Fixed
+- Avoid to run sardana.tango.pool tests in sardana_unitsuite (related to #402)
+
 ## [2.2.2] - 2017-01-10
 For a full log of commits between versions run (in your git repo):
 `git log 2.2.1..2.2.2`
