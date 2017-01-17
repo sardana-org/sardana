@@ -1167,7 +1167,6 @@ def ParamFactory(paramInfo):
     return param
 
 def check_member_node_simple(rest_raw, param_node, mem, rep, params_info_len):
-
     for member_raw in rest_raw:
         repeat_node = param_node.child(rep)
         if repeat_node is None:
@@ -1179,7 +1178,8 @@ def check_member_node_simple(rest_raw, param_node, mem, rep, params_info_len):
             rep_nested = 0; mem_nested = 0
             check_member_node_simple(member_raw, member_node, mem_nested, rep_nested, params_info_len_nested)
         else:
-            member_node.setValue(str(member_raw))
+            if not isinstance(member_raw, list):
+                member_node.setValue(str(member_raw))
         mem += 1
         mem %= params_info_len
         if mem == 0:
