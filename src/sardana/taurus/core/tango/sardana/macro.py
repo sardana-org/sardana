@@ -1166,6 +1166,39 @@ def ParamFactory(paramInfo):
         param = SingleParamNode(param=paramInfo)
     return param
 
+def check_member_node_simple(rest_raw, param_node, mem, rep, params_info_len):
+
+    for member_raw in rest_raw:
+        repeat_node = param_node.child(rep)
+        if repeat_node is None:
+            repeat_node = param_node.addRepeat()
+        member_node = repeat_node.child(mem)
+        if isinstance(member_node, RepeatParamNode):
+            params_info_nested = member_node.paramsInfo()
+            params_info_len_nested = len(params_info_nested)
+            rep_nested = 0; mem_nested = 0
+            check_member_node_simple(member_raw, member_node, mem_nested, rep_nested, params_info_len_nested)
+        else:
+            member_node.setValue(str(member_raw))
+        mem += 1
+        mem %= params_info_len
+        if mem == 0:
+            rep += 1
+  
+
+def check_interface(param_raw, param_node):
+    repeat_node = param_node.child(0)
+    for j, param in enumerate(param_raw):
+        if(isinstance(param,str)):
+            return 0
+        for k, par in enumerate(param):
+            member_node = repeat_node.child(k)
+            if isinstance(member_node, RepeatParamNode):
+                ret = check_interface(par, member_node)
+                if ret ==0:
+                    return ret
+    return 1
+            
 def check_member_node(param_raw, param_node):
     for j, param in enumerate(param_raw):
         repeat_node = param_node.child(j)
@@ -1180,7 +1213,7 @@ def check_member_node(param_raw, param_node):
                     member_node.setValue(str(par))
                 except:
                     pass
-     
+       
 class Reflector(object):
     def __getitem__(self, name):
         return name
@@ -1200,7 +1233,7 @@ def recur_map(fun, data, keep_none=False):
         else:
             return fun(data)
 
-        
+                
 def createMacroNode(macro_name, params_def, macro_params):
     """The best effort creation of the macro XML object. It tries to
     convert flat list of string parameter values to the correct macro XML
@@ -1226,6 +1259,7 @@ def createMacroNode(macro_name, params_def, macro_params):
     # obtain just the first level parameters
     param_nodes = macro_node.params()
 
+    param_nodes_copy = copy.copy(param_nodes)
     # Check if ParamRepeat used in advanced interface
     open_bracks = 0
     close_bracks = 0
@@ -1239,8 +1273,9 @@ def createMacroNode(macro_name, params_def, macro_params):
     # open_bracks and close_bracks don't have to be equal because several closes or opens can be in the same param
     if open_bracks and close_bracks:
         new_interface = True
-        
-    if new_interface:        
+
+    # Close the character strings into ''
+    if new_interface:       
         # Create a string
         params_str = ''
         for par in macro_params:
@@ -1255,7 +1290,8 @@ def createMacroNode(macro_name, params_def, macro_params):
         # Convert tuple to list
         macro_params = list(macro_params)
         macro_params = recur_map(str, macro_params)
-        
+
+    
     if not new_interface:
         contain_param_repeat = False
         len_param_nodes = len(param_nodes)
@@ -1295,14 +1331,36 @@ def createMacroNode(macro_name, params_def, macro_params):
                     if mem == 0:
                         rep += 1
                 break
-    else: 
+    else:
+        ret = 1
         for param_node, param_raw in zip(param_nodes, macro_params):
             if isinstance(param_node, RepeatParamNode):
-                check_member_node(param_raw, param_node)
-            else:
-                try: # last parameters can have default values
-                    param_node.setValue(str(param_raw))
-                except:
-                    pass
+                ret = check_interface(param_raw, param_node)
+                if ret == 0:
+                    break
+                
+        if ret:
+            for param_node, param_raw in zip(param_nodes, macro_params):
+                if isinstance(param_node, RepeatParamNode):
+                    check_member_node(param_raw, param_node)
+                else:
+                    try: # last parameters can have default values
+                        param_node.setValue(str(param_raw))
+                    except:
+                        pass
+        else:
+            for param_node, param_raw in zip(param_nodes, macro_params):
+                if isinstance(param_node, RepeatParamNode):
+                    params_info = param_node.paramsInfo()
+                    params_info_len = len(params_info)
+                    rep = 0; mem = 0
+                    check_member_node_simple(param_raw, param_node, mem, rep, params_info_len)
+                else:
+                    try: # last parameters can have default values
+                        param_node.setValue(str(param_raw))
+                    except:
+                        pass              
+            
+                        
     return macro_node
 
