@@ -1180,6 +1180,10 @@ def check_member_node_simple(rest_raw, param_node, mem, rep, params_info_len):
         else:
             if not isinstance(member_raw, list):
                 member_node.setValue(str(member_raw))
+            else:
+                if len(member_raw) == 1:
+                    member_raw = member_raw[0]
+                    member_node.setValue(str(member_raw))
         mem += 1
         mem %= params_info_len
         if mem == 0:
