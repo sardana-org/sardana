@@ -333,8 +333,8 @@ execution time.
 The repeat parameter definition allows to:
 
     - restrict the minimum and/or maximum number of repetitions
-    - nest repeat parameters inside of another repeat parameters [#f3]_
-    - define multiple repeat parameters in the same macro [#f3]_
+    - nest repeat parameters inside of another repeat parameters
+    - define multiple repeat parameters in the same macro
 
 Repeat parameter values are passed to the macro function in the form of a list.
 If the repeat parameter definition contains just one member it is a plain list
@@ -596,12 +596,16 @@ parameters with different *flavors*:
         self.execMacro('mv', [[motor.getName(), '0']])
         self.execMacro('mv', motor.getName(), '0') # backwards compatibility - see note
 
-    * parameters as space separated string (this is not compatible with multiple
-      or nested repeat parameters, furthermore the repeat parameter must be the last one)::
+    * parameters as space separated string::
 
         self.execMacro('ascan %s 0 100 10 0.2' % motor.getName())
-        self.execMacro('mv %s 0' % motor.getName())
-
+        self.execMacro('mv [[%s 0]]' % motor.getName()) 
+        self.execMacro('mv [%s 0]' % motor.getName()) # simplified interface
+        self.execMacro('mv %s 0' % motor.getName()) # backwards compatibility - see note
+        self.execMacro('mv [[%s 0][%s 20]]' % (motor.getName(), motor2.getName()))
+        self.execMacro('mv [%s 0 %s 20]' % (motor.getName(), motor2.getName())) # simplified interface
+        self.execMacro('mv %s 0 %s 20' % (motor.getName(), motor2.getName())) # backwards compatibility - see note
+      
     * parameters as concrete types::
 
         self.execMacro(['ascan', motor, 0, 100, 10, 0.2])
@@ -613,7 +617,9 @@ parameters with different *flavors*:
     use :ref:`repeat parameters <sardana-macro-repeat-parameters>`.
     From Sardana 2.0 the repeat parameter values must be passed as lists of
     items. An item of a repeat parameter containing more than one member is a
-    list. In case when a macro defines only one repeat parameter
+    list. In order to simplify the interface the use of the brackets closing each
+    repetition of a ParamRepeat can be skipped.
+    In case when a macro defines only one repeat parameter
     and it is the last parameter, for the backwards compatibility reasons, the
     plain list of items' members is allowed.
 
@@ -1249,9 +1255,6 @@ value but also the ranges so it is safe to change them if necessary.
 
 .. [#f2] To check which version of Python_ you are using type on the command
          line ``python -c "import sys; sys.stdout.write(sys.version)"``
-
-.. [#f3] Currently only GUI macro clients (*macroexecutor* or *sequencer*)
-       are compatible with this kind of repeat parameters usage.
 
 .. |input_integer| image:: ../../_static/macro_input_integer.png
     :align: middle
