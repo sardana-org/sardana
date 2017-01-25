@@ -951,7 +951,9 @@ class TaurusMacroExecutorWidget(TaurusWidget):
             self.disconnect(oldModelObj, Qt.SIGNAL("macrosUpdated"), self.macroComboBox.onMacrosUpdated)
         TaurusWidget.setModel(self, model)
         newModelObj = self.getModelObj()
-        self.connect(newModelObj, Qt.SIGNAL("macrosUpdated"), self.macroComboBox.onMacrosUpdated)
+        if newModelObj is not None:
+            self.connect(newModelObj, Qt.SIGNAL("macrosUpdated"),
+                         self.macroComboBox.onMacrosUpdated)
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
