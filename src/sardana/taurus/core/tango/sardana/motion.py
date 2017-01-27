@@ -70,7 +70,7 @@ class Moveable:
     def getLastMotionTime(self):
         raise NotImplementedError
 
-    def getTotalLastMotionTime():
+    def getTotalLastMotionTime(self):
         raise NotImplementedError
 
     def abort(self, wait_ready=True, timeout=None):
