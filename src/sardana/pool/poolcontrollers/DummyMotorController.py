@@ -22,7 +22,7 @@
 ##############################################################################
 
 import time
-from math import pow, sqrt
+from math import pow, sqrt, isinf
 
 from sardana import State, SardanaValue
 from sardana.pool.controller import MotorController
@@ -151,11 +151,15 @@ class Motion(BaseMotion):
     def setAccelerationTime(self,at):
         """Sets the time to go from minimum velocity to maximum velocity in seconds"""
         at = float(at)
-        if at <= 0:
-            raise "Acceleration time must be > 0"
-
+        if at < 0:
+            at = 0
+            
         self.accel_time = at
-        self.accel = (self.max_vel - self.min_vel) / at
+        if at != 0:
+            self.accel = (self.max_vel - self.min_vel) / at
+        else:
+            self.accel = float('INF')
+            
 
         self.__recalculate_acc_constants()
 
@@ -165,12 +169,15 @@ class Motion(BaseMotion):
     def setDecelerationTime(self,dt):
         """Sets the time to go from maximum velocity to minimum velocity in seconds"""
         dt = float(dt)
-        if dt <= 0:
-            raise "Deceleration time must be > 0"
+        if dt < 0:
+            dt = 0
 
         self.decel_time = dt
-        self.decel = (self.min_vel - self.max_vel) / dt
-
+        if dt != 0:
+            self.decel = (self.min_vel - self.max_vel) / dt
+        else:
+            self.decel = float ('INF')
+            
         self.__recalculate_acc_constants()
 
     def getDecelerationTime(self):
@@ -215,11 +222,17 @@ class Motion(BaseMotion):
     def __recalculate_acc_constants(self):
         """pre-computations assuming maximum speed can be reached in a motion"""
 
-        self.dsplmnt_reach_max_vel = 0.5 * self.accel * pow(self.accel_time,2)
-        self.dsplmnt_reach_max_vel += self.min_vel * self.accel_time
+        if isinf(self.accel):
+            self.dsplmnt_reach_max_vel = 0
+        else:
+            self.dsplmnt_reach_max_vel = 0.5 * self.accel * pow(self.accel_time,2)
+            self.dsplmnt_reach_max_vel += self.min_vel * self.accel_time
 
-        self.dsplmnt_reach_min_vel = 0.5 * self.decel * pow(self.decel_time,2)
-        self.dsplmnt_reach_min_vel += self.max_vel * self.decel_time
+        if isinf(self.decel):
+            self.dsplmnt_reach_min_vel = 0
+        else:
+            self.dsplmnt_reach_min_vel = 0.5 * self.decel * pow(self.decel_time,2)
+            self.dsplmnt_reach_min_vel += self.max_vel * self.decel_time
 
     def startMotion(self, initial_user_pos, final_user_pos, start_instant=None):
         """starts a new motion"""
@@ -306,10 +319,16 @@ class Motion(BaseMotion):
             self.curr_at_max_vel_dsplmnt = 0.0
 
         # time to reach maximum velocity
-        self.curr_max_vel_time = abs((self.curr_max_vel - self.curr_min_vel) / self.curr_accel)
+        if isinf(self.curr_accel):
+            self.curr_max_vel_time = 0
+        else:
+            self.curr_max_vel_time = abs((self.curr_max_vel - self.curr_min_vel) / self.curr_accel)
 
         # time to reach minimum velocity
-        self.curr_min_vel_time = abs((self.curr_min_vel - self.curr_max_vel) / self.curr_decel)
+        if isinf(self.curr_decel):
+            self.curr_min_vel_time = 0
+        else:
+            self.curr_min_vel_time = abs((self.curr_min_vel - self.curr_max_vel) / self.curr_decel)
 
         # time at maximum velocity
         self.curr_at_max_vel_time = abs(self.curr_at_max_vel_dsplmnt / self.curr_max_vel)
@@ -346,9 +365,9 @@ class Motion(BaseMotion):
         assert(self.start_instant <= self.curr_max_vel_instant)
         assert(self.final_instant >= self.curr_min_vel_instant)
 
-        assert(self.curr_max_vel_time > 0.0)
-        assert(self.curr_min_vel_time > 0.0)
-        assert(self.duration > 0.0)
+        assert(self.curr_max_vel_time >= 0.0)
+        assert(self.curr_min_vel_time >= 0.0)
+        assert(self.duration >= 0.0)
 
         if self.small_motion:
             assert(self.curr_max_vel_instant == self.curr_min_vel_instant)
@@ -507,7 +526,7 @@ class BasicDummyMotorController(MotorController):
             raise Exception("Invalid axis %d" % axis)
         if self.m[idx] is None:
             m = Motion()
-            m.setMinVelocity(2)
+            m.setMinVelocity(0)
             m.setMaxVelocity(100)
             m.setAccelerationTime(2)
             m.setDecelerationTime(2)
@@ -569,8 +588,9 @@ class BasicDummyMotorController(MotorController):
     def StartOne(self, axis, pos):
         #raise Exception("Cannot move on StartOne")
         idx = axis - 1
+        m = self.m[idx]
         self.motions[self.m[idx]] = pos
-
+        
     def StartAll(self):
         #raise Exception("Cannot move on StartAll")
         t = time.time()
