@@ -444,8 +444,11 @@ class ParamDecoder:
         for raw_repeat in raw_param_repeat:
             if len(param_type) > 1:
                 repeat = []
-                for i, member_raw in enumerate(raw_repeat):
-                    member_type = param_type[i]
+                for i, member_type in enumerate(param_type):
+                    try:
+                        member_raw = raw_repeat[i]
+                    except IndexError:
+                        member_raw = None
                     member = self.decodeNormal(member_raw, member_type)
                     repeat.append(member)
             else:

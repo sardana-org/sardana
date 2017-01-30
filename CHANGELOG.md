@@ -9,12 +9,20 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Added
 -
 
+## [2.2.3] - 2017-01-12
+For a full log of commits between versions run (in your git repo):
+`git log 2.2.3..2.2.3`
+
+### Fixed
+- Avoid to run sardana.tango.pool tests in sardana_unitsuite (related to #402)
+
 ## [2.2.2] - 2017-01-10
 For a full log of commits between versions run (in your git repo):
 `git log 2.2.1..2.2.2`
 
 ### Fixed
 - saving of PreScanSnapshot environment variable from expconf widget (#411)
+- travis-ci build failures due to configuration file not adapted to setuptools
 
 ## [2.2.1] - 2016-12-30
 For a full log of commits between versions run (in your git repo):
@@ -161,6 +169,9 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 [keepachangelog.com]: http://keepachangelog.com
 [Unreleased]: https://github.com/sardana-org/sardana/compare/2.2.0...HEAD
+[2.2.3]: https://github.com/sardana-org/sardana/compare/2.2.2...2.2.3
+[2.2.2]: https://github.com/sardana-org/sardana/compare/2.2.1...2.2.2
+[2.2.1]: https://github.com/sardana-org/sardana/compare/2.2.0...2.2.1
 [2.2.0]: https://github.com/sardana-org/sardana/compare/2.1.1...2.2.0
 [2.1.1]: https://github.com/sardana-org/sardana/compare/2.1.0...2.1.1
 [2.1.0]: https://github.com/sardana-org/sardana/compare/2.0.0...2.1.0

@@ -66,7 +66,9 @@ def get_sardana_unitsuite():
     """Provide test suite with only unit tests. These exclude:
         - functional tests of macros that requires the "sar_demo environment"
     """
-    return get_sardana_suite(exclude_pattern='sardana\.macroserver\.macros\.test*')
+    pattern = 'sardana\.macroserver\.macros\.test*|' +\
+              'sardana\.tango\.pool\.test*'
+    return get_sardana_suite(exclude_pattern=pattern)
 
 def run(exclude_pattern='(?!)'):
     '''Runs all tests for the sardana package

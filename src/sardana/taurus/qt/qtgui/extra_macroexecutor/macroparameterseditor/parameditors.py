@@ -43,6 +43,7 @@ class ParamBase:
 
     def __init__(self, paramModel=None):
         self.setParamModel(paramModel)
+        self.setToolTip(paramModel.description())
 
     def paramModel(self):
         return self._paramModel
@@ -71,8 +72,8 @@ class ParamBase:
 
 class ComboBoxBoolean(ParamBase, Qt.QComboBox):
     def __init__(self, parent=None, paramModel=None):
-        ParamBase.__init__(self, paramModel)
         Qt.QComboBox.__init__(self, parent)
+        ParamBase.__init__(self, paramModel)
 
         self.addItems(['True', 'False'])
         self.connect(self, Qt.SIGNAL("currentIndexChanged(int)"), self.onCurrentIndexChanged)
@@ -94,8 +95,8 @@ class ComboBoxBoolean(ParamBase, Qt.QComboBox):
 class ComboBoxParam(ParamBase, Qt.QComboBox):
 
     def __init__(self, parent=None, paramModel=None):
-        ParamBase.__init__(self, paramModel)
         Qt.QComboBox.__init__(self, parent)
+        ParamBase.__init__(self, paramModel)
         self.connect(self, Qt.SIGNAL("currentIndexChanged(int)"), self.onCurrentIndexChanged)
 
     def getValue(self):
@@ -115,8 +116,8 @@ class ComboBoxParam(ParamBase, Qt.QComboBox):
 class MSAttrListComboBoxParam(ParamBase, MSAttrListComboBox):
 
     def __init__(self, parent=None, paramModel=None):
-        ParamBase.__init__(self, paramModel)
         MSAttrListComboBox.__init__(self, parent)
+        ParamBase.__init__(self, paramModel)
 #        self.setUseParentModel(True)
 #        self.setModel("/" + self.paramModel().type() + "List")
         self.connect(self, Qt.SIGNAL("currentIndexChanged(int)"), self.onCurrentIndexChanged)
@@ -134,10 +135,9 @@ class MSAttrListComboBoxParam(ParamBase, MSAttrListComboBox):
 class AttrListComboBoxParam(ParamBase, TaurusAttrListComboBox):
 
     def __init__(self, parent=None, paramModel=None):
-        ParamBase.__init__(self, paramModel)
         TaurusAttrListComboBox.__init__(self, parent)
+        ParamBase.__init__(self, paramModel)
         self.setModel("/" + self.paramModel().type() + "List")
-#        self.setToolTip(self.paramModel().description())
 
 
     def handleEvent(self, src, type, value):
@@ -164,10 +164,9 @@ class AttrListComboBoxParam(ParamBase, TaurusAttrListComboBox):
 
 class LineEditParam(ParamBase, Qt.QLineEdit):
     def __init__(self, parent=None, paramModel=None):
-        ParamBase.__init__(self, paramModel)
         Qt.QLineEdit.__init__(self, parent)
+        ParamBase.__init__(self, paramModel)
         self.connect(self, Qt.SIGNAL("textChanged(const QString&)"), self.onTextChanged)
-#        self.setToolTip(self.paramModel().description())
 
     def onTextChanged(self):
         self.emit(Qt.SIGNAL("modelChanged()"))
@@ -190,8 +189,8 @@ class LineEditParam(ParamBase, Qt.QLineEdit):
 class CheckBoxParam(ParamBase, Qt.QCheckBox):
 
     def __init__(self, parent=None, paramModel=None):
-        ParamBase.__init__(self, paramModel)
         Qt.QCheckBox.__init__(self, parent)
+        ParamBase.__init__(self, paramModel)
         self.connect(self, Qt.SIGNAL("stateChanged(int)"), self.onStateChanged)
 
     def getValue(self):
@@ -206,11 +205,10 @@ class CheckBoxParam(ParamBase, Qt.QCheckBox):
 
 class SpinBoxParam(ParamBase, Qt.QSpinBox):
     def __init__(self, parent=None, paramModel=None):
-        ParamBase.__init__(self, paramModel)
         Qt.QSpinBox.__init__(self, parent)
+        ParamBase.__init__(self, paramModel)
         self.setRange(-999999999, 999999999)
         self.setAccelerated(True)
-#        self.setToolTip(self.paramModel().description())
 
     def getValue(self):
         return str(self.value())
@@ -224,13 +222,12 @@ class SpinBoxParam(ParamBase, Qt.QSpinBox):
 
 class DoubleSpinBoxParam(ParamBase, Qt.QDoubleSpinBox):
     def __init__(self, parent=None, paramModel=None):
-        ParamBase.__init__(self, paramModel)
         Qt.QDoubleSpinBox.__init__(self, parent)
+        ParamBase.__init__(self, paramModel)
         self.setRange(-999999999.999999, 999999999.999999)
         self.setAccelerated(True)
         self.setDecimals(6)
         self.setSingleStep(0.000001)
-#        self.setToolTip(self.paramModel().description())
 
     def getValue(self):
         return str(self.value())
@@ -254,9 +251,8 @@ class DoubleSpinBoxParam(ParamBase, Qt.QDoubleSpinBox):
 
 class FileDialogParam(ParamBase, Qt.QWidget):
     def __init__(self, parent=None, paramModel=None):
-        ParamBase.__init__(self, paramModel)
         Qt.QWidget.__init__(self, parent)
-        self.setToolTip(self.paramModel().description())
+        ParamBase.__init__(self, paramModel)
         self.layout = Qt.QHBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.filePath = Qt.QLineEdit(self)
@@ -297,8 +293,8 @@ class FileDialogParam(ParamBase, Qt.QWidget):
 class DirPathParam(ParamBase, Qt.QWidget):
 
     def __init__(self, parent=None, paramModel=None):
-        ParamBase.__init__(self, paramModel)
         Qt.QWidget.__init__(self, parent)
+        ParamBase.__init__(self, paramModel)
 
         self.layout = Qt.QHBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
