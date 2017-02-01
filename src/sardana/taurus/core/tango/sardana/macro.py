@@ -1153,8 +1153,6 @@ class SequenceNode(BranchNode):
 #        return descendant
 
 
-
-
 def ParamFactory(paramInfo):
     """Factory method returning param element, depends of the paramInfo argument."""
 
@@ -1166,7 +1164,44 @@ def ParamFactory(paramInfo):
         param = SingleParamNode(param=paramInfo)
     return param
 
+  
+
+def check_interface(param_raw, param_node):
+    """Check which interface is being used: complete (brackets for each
+    ParamRepeat and each repetition inside) or partial (brackets only for
+    each ParamRepeat)""".
+    
+    repeat_node = param_node.child(0)
+    for j, param in enumerate(param_raw):
+        if(isinstance(param,str)):
+            return 0
+        for k, par in enumerate(param):
+            member_node = repeat_node.child(k)
+            if isinstance(member_node, RepeatParamNode):
+                ret = check_interface(par, member_node)
+                if ret ==0:
+                    return ret
+    return 1
+            
+def check_member_node(param_raw, param_node):
+    """Fill the ParamNode checking each repetition node asuming the complete interface"""
+    
+    for j, param in enumerate(param_raw):
+        repeat_node = param_node.child(j)
+        if repeat_node is None:
+            repeat_node = param_node.addRepeat()
+        for k, par in enumerate(param):
+            member_node = repeat_node.child(k)
+            if isinstance(member_node, RepeatParamNode):
+                check_member_node(par, member_node)
+            else:
+                try: # last parameters can have default values
+                    member_node.setValue(str(par))
+                except:
+                    pass
+
 def check_member_node_simple(rest_raw, param_node, mem, rep, params_info_len):
+    """Fill the ParamNode checking each repetition node asuming the partial interface"""
     for member_raw in rest_raw:
         repeat_node = param_node.child(rep)
         if repeat_node is None:
@@ -1188,36 +1223,7 @@ def check_member_node_simple(rest_raw, param_node, mem, rep, params_info_len):
         mem %= params_info_len
         if mem == 0:
             rep += 1
-  
-
-def check_interface(param_raw, param_node):
-    repeat_node = param_node.child(0)
-    for j, param in enumerate(param_raw):
-        if(isinstance(param,str)):
-            return 0
-        for k, par in enumerate(param):
-            member_node = repeat_node.child(k)
-            if isinstance(member_node, RepeatParamNode):
-                ret = check_interface(par, member_node)
-                if ret ==0:
-                    return ret
-    return 1
-            
-def check_member_node(param_raw, param_node):
-    for j, param in enumerate(param_raw):
-        repeat_node = param_node.child(j)
-        if repeat_node is None:
-            repeat_node = param_node.addRepeat()
-        for k, par in enumerate(param):
-            member_node = repeat_node.child(k)
-            if isinstance(member_node, RepeatParamNode):
-                check_member_node(par, member_node)
-            else:
-                try: # last parameters can have default values
-                    member_node.setValue(str(par))
-                except:
-                    pass
-       
+                
 class Reflector(object):
     def __getitem__(self, name):
         return name
