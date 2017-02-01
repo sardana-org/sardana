@@ -1169,7 +1169,14 @@ def ParamFactory(paramInfo):
 def check_interface(param_raw, param_node):
     """Check which interface is being used: complete (brackets for each
     ParamRepeat and each repetition inside) or partial (brackets only for
-    each ParamRepeat)""".
+    each ParamRepeat)
+    
+    :param param_raw: element of the raw parameters list
+    :param param_node: element of the parameters node list
+ 
+    :return: (int) 1 if complete interface, 0 if partial
+
+    """
     
     repeat_node = param_node.child(0)
     for j, param in enumerate(param_raw):
@@ -1184,7 +1191,12 @@ def check_interface(param_raw, param_node):
     return 1
             
 def check_member_node(param_raw, param_node):
-    """Fill the ParamNode checking each repetition node asuming the complete interface"""
+    """Fill the ParamNode checking each repetition node asuming the complete interface
+  
+    :param param_raw: element of the raw parameters list
+    :param param_node: element of the parameters node list
+
+    """
     
     for j, param in enumerate(param_raw):
         repeat_node = param_node.child(j)
@@ -1201,7 +1213,15 @@ def check_member_node(param_raw, param_node):
                     pass
 
 def check_member_node_simple(rest_raw, param_node, mem, rep, params_info_len):
-    """Fill the ParamNode checking each repetition node asuming the partial interface"""
+    """Fill the ParamNode checking each repetition node asuming the partial interface
+  
+    :param rest_raw: raw parameters still not included in the macro parameteres node 
+    :param param_node: element of the parameters node list
+    :param mem: iterator on repetitions inside a ParamRepeat
+    :param rep: iterator on param nodes
+    :param params_info_len: number of nodes
+
+    """
     for member_raw in rest_raw:
         repeat_node = param_node.child(rep)
         if repeat_node is None:
@@ -1268,8 +1288,7 @@ def createMacroNode(macro_name, params_def, macro_params):
         macro_node.addParam(ParamFactory(param_info))
     # obtain just the first level parameters
     param_nodes = macro_node.params()
-
-    param_nodes_copy = copy.copy(param_nodes)
+    
     # Check if ParamRepeat used in advanced interface
     open_bracks = 0
     close_bracks = 0
