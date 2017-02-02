@@ -30,7 +30,7 @@ This module provides a button for executing macros
 __all__ = ['MacroButton']
 
 import functools
-import uuid
+import shlex
 
 import PyTango
 
@@ -258,9 +258,9 @@ class MacroButton(TaurusWidget):
         # TODO: make macrobutton compatible with macros with advanced usage of
         # repeat parameters e.g. multiple repeat parameters, nested repeat
         # parameters, etc.
-        macro_cmd = self.macro_name + ' ' + ' '.join(self.macro_args)
+        macro_args = shlex.split(' '.join(self.macro_args))
         try:
-            self.door.runMacro(macro_cmd)
+            self.door.runMacro(self.macro_name, macro_args)
             sec_xml = self.door.getRunningXML()
             # get the id of the current running macro
             self.macro_id = sec_xml[0].get("id")
