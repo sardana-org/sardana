@@ -141,10 +141,11 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     def _calculate_states(self, state_info=None):
         state, status = PoolGroupElement._calculate_states(self, state_info)
-        # in case software synchronization is still in progress modify state
-        # to MOVING
-        if (self.acquisition._synch._synch_soft.is_started() or
-            self.acquisition._synch._synch_soft.is_running()):
+        # check if software synchronizer is occupied
+        synch_soft = self.acquisition._synch._synch_soft
+        if state in (State.On, State.Unknown) \
+            and (synch_soft.is_started() or synch_soft.is_running()):
+            print "calculate_states state = Moving"
             state = State.Moving
             status += "/nSoftware synchronization is in progress"
         return state, status
