@@ -565,28 +565,34 @@ class PoolAcquisitionBase(PoolAction):
 
             # PreLoadAll, PreLoadOne, LoadOne and LoadAll
             for pool_ctrl in pool_ctrls:
-                ctrl = pool_ctrl.ctrl
-                pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-                ctrl.PreLoadAll()
-                master = pool_ctrl_data[master_key]
-                axis = master.axis
                 try:
-                    res = ctrl.PreLoadOne(axis, master_value, repetitions)
-                except TypeError:
-                    #TODO: raise correctly deprecation warning
-                    self.warning("PreLoadOne API has changed")
-                    res = ctrl.PreLoadOne(axis, master_value)
-                if not res:
-                    msg = ("%s.PreLoadOne(%d) returned False" %
-                           (pool_ctrl.name, axis))
+                    ctrl = pool_ctrl.ctrl
+                    pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
+                    ctrl.PreLoadAll()
+                    master = pool_ctrl_data[master_key]
+                    axis = master.axis
+                    try:
+                        res = ctrl.PreLoadOne(axis, master_value, repetitions)
+                    except TypeError:
+                        #TODO: raise correctly deprecation warning
+                        self.warning("PreLoadOne API has changed")
+                        res = ctrl.PreLoadOne(axis, master_value)
+                    if not res:
+                        msg = ("%s.PreLoadOne(%d) returned False" %
+                               (pool_ctrl.name, axis))
+                        raise Exception(msg)
+                    try:
+                        ctrl.LoadOne(axis, master_value, repetitions)
+                    except TypeError:
+                        #TODO: raise correctly deprecation warning
+                        self.warning("LoadOne API has changed")
+                        ctrl.LoadOne(axis, master_value)
+                    ctrl.LoadAll()
+                except Exception, e:
+                    self.debug(e)
+                    master.set_state(State.Fault, propagate=2)
+                    msg = ("Load sequence of %s failed" % pool_ctrl.name)
                     raise Exception(msg)
-                try:
-                    ctrl.LoadOne(axis, master_value, repetitions)
-                except TypeError:
-                    #TODO: raise correctly deprecation warning
-                    self.warning("LoadOne API has changed")
-                    ctrl.LoadOne(axis, master_value)
-                ctrl.LoadAll()
 
             # PreStartAll on all controllers
             for pool_ctrl in pool_ctrls:
@@ -610,7 +616,14 @@ class PoolAcquisitionBase(PoolAction):
                             msg = ("%s.PreStartOne(%d) returns False" %
                                    (pool_ctrl.name, axis))
                             raise Exception(msg)
-                        ctrl.StartOne(axis, master_value)
+                        try:
+                            ctrl.StartOne(axis, master_value)
+                        except Exception, e:
+                            self.debug(e)
+                            element.set_state(State.Fault, propagate=2)
+                            msg = ("%s.StartOne(%d) failed" %
+                                   (pool_ctrl.name, axis))
+                            raise Exception(msg)
 
             # set the state of all elements to  and inform their listeners
             for channel in channels:
@@ -618,7 +631,15 @@ class PoolAcquisitionBase(PoolAction):
 
             # StartAll on all controllers
             for pool_ctrl in pool_ctrls:
-                pool_ctrl.ctrl.StartAll()
+                try:
+                    pool_ctrl.ctrl.StartAll()
+                except Exception, e:
+                    self.debug(e)
+                    elements = pool_ctrl_data['channels'].keys()
+                    for element in elements:
+                        element.set_state(State.Fault, propagate=2)
+                    msg = ("%s.StartAll() failed" % pool_ctrl.name)
+                    raise Exception(msg)
 
 
 class PoolAcquisitionHardware(PoolAcquisitionBase):
