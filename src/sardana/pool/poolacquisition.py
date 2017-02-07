@@ -262,7 +262,6 @@ class PoolAcquisition(PoolAction):
 
     def run(self, *args, **kwargs):
         for elem in self.get_elements():
-            print "Resetting state to None for eleme %r" % elem
             elem.put_state(None)
         config = kwargs['config']
         synchronization = kwargs["synchronization"]
