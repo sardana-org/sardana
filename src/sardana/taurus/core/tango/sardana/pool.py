@@ -1627,7 +1627,12 @@ class MeasurementGroup(PoolElement):
         self.putIntegrationTime(duration)
         self.setMoveable(None)
         PoolElement.go(self, *args, **kwargs)
-        ret = self.getStateEG().readValue(), self.getValues()
+        state = self.getStateEG().readValue()
+        if state == Fault:
+            msg = "Measurement group ended acquisition with Fault state"
+            raise Exception(msg)
+        values = self.getValues()
+        ret = state, values
         self._total_go_time = time.time() - start_time
         return ret
 
