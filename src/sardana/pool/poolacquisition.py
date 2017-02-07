@@ -347,7 +347,7 @@ class PoolAcquisition(PoolAction):
         :type copy_of: bool
         :return: a sequence of all elements involved in this action.
         :rtype: seq<sardana.pool.poolelement.PoolElement>"""
-        return (self._hw_acq.get_elements() + self._hw_acq.get_elements() +
+        return (self._hw_acq.get_elements() + self._sw_acq.get_elements() +
                self._0d_acq.get_elements() + self._synch.get_elements())
 
     def get_pool_controller_list(self):
