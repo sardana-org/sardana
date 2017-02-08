@@ -7,7 +7,14 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
--
+- Tooltip with parameters description in the macro execution widgets:
+  MacroExecutor and Sequencer (#302)
+
+### Fixed
+- Macro execution widgets connecting to the MacroServer in a Tango database
+  different than the default one e.g. using `--tango-host` option
+- macrobutton widget working with the string parameters containing white spaces
+  (#423)
 
 ## [2.2.3] - 2017-01-12
 For a full log of commits between versions run (in your git repo):
