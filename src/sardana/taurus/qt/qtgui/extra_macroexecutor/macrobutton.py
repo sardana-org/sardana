@@ -339,12 +339,17 @@ if __name__ == '__main__':
 
     args = app.get_command_line_args()
 
-    if len(args) < 2:
+    nargs = len(args)
+
+    if nargs == 1:
+        macro_name = 'lsmac'
+    elif nargs == 2:
+        macro_name = args[1]
+    else:
         parser.print_help(sys.stderr)
         sys.exit(1)
-
     door_name = args[0]
-    macro_name = args[1]
+
 
     class TestWidget(Qt.QWidget):
         def __init__(self, door, macro):
