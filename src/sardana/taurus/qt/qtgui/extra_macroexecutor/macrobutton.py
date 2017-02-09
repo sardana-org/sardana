@@ -329,6 +329,9 @@ if __name__ == '__main__':
     import sys
     from taurus.qt.qtgui.application import TaurusApplication
     from taurus.core.util.argparse import get_taurus_parser
+    from sardana.taurus.qt.qtcore.tango.sardana.macroserver import \
+        registerExtensions
+    registerExtensions()
 
     parser = get_taurus_parser()
     parser.set_usage("python macrobutton.py [door_name] [macro_name]")
@@ -355,8 +358,6 @@ if __name__ == '__main__':
         def __init__(self, door, macro):
             Qt.QWidget.__init__(self)
 
-            from sardana.taurus.qt.qtcore.tango.sardana.macroserver import registerExtensions
-            registerExtensions()
             self.door_name = door
             self.macro_name = macro
             self.w_macro_name = None
@@ -374,8 +375,6 @@ if __name__ == '__main__':
     
         def getMacroInfo(self, macro_name):
     
-            from sardana.taurus.qt.qtcore.tango.sardana.macroserver import registerExtensions
-            registerExtensions()
             door = taurus.Device(self.door_name)
             try:
                 pars = door.macro_server.getMacroInfoObj(macro_name).parameters
