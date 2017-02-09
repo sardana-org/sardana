@@ -332,10 +332,12 @@ if __name__ == '__main__':
     import sys
     from taurus.qt.qtgui.application import TaurusApplication
     from taurus.core.util.argparse import get_taurus_parser
-    from sardana.macroserver.macros.test import SarDemoEnv
+    from sardana.taurus.qt.qtcore.tango.sardana.macroserver import \
+        registerExtensions
+    registerExtensions()
 
     parser = get_taurus_parser()
-    parser.set_usage("python macrobutton.py [door_name]")
+    parser.set_usage("python macrobutton.py [door_name] [macro_name]")
     parser.set_description("Macro button for macro execution")
 
     app = TaurusApplication(app_name="macrobutton",
@@ -343,86 +345,136 @@ if __name__ == '__main__':
 
     args = app.get_command_line_args()
 
-    if len(args) < 1:
+    nargs = len(args)
+
+    if nargs == 1:
+        macro_name = 'lsmac'
+    elif nargs == 2:
+        macro_name = args[1]
+    else:
         parser.print_help(sys.stderr)
         sys.exit(1)
-
     door_name = args[0]
 
-    w = Qt.QWidget()
-    w.setLayout(Qt.QGridLayout())
 
-    col = 0
-    w.layout().addWidget(Qt.QLabel('macro name'), 0, col)
-    macro_name = Qt.QLineEdit()
-    w.layout().addWidget(macro_name, 1, col)
+    class TestWidget(Qt.QWidget):
+        def __init__(self, door, macro):
+            Qt.QWidget.__init__(self)
 
-    _argEditors = []
-    for a in range(5):
-        col += 1
-        w.layout().addWidget(Qt.QLabel('arg%d' % a), 0, col)
-        argEdit = Qt.QLineEdit()
-        w.layout().addWidget(argEdit, 1, col)
-        _argEditors.append(argEdit)
+            self.door_name = door
+            self.macro_name = macro
+            self.w_macro_name = None
+            self.create_layout(macro)
 
+        def update_macro_name(self, macro_name):
+            self.macro_name = macro_name
 
-    from sardana.taurus.qt.qtcore.tango.sardana.macroserver import registerExtensions
-    registerExtensions()
-    mb = MacroButton()
+        def update_result(self, result):
+            self.result_label.setText(str(result))
 
-    mb.setModel(door_name)
-
-    w.layout().addWidget(mb, 2, 0, 2, 7)
-
-    w.layout().addWidget(Qt.QLabel('Result:'), 4, 0)
-
-    result_label = Qt.QLabel()
-    w.layout().addWidget(result_label, 4, 1, 1, 5)
-
-    show_progress = Qt.QCheckBox('Progress')
-    show_progress.setChecked(True)
-    w.layout().addWidget(show_progress, 5, 0)
-
-    mb_abort = TaurusCommandButton(command = 'StopMacro',
-                                   icon=':/actions/media_playback_stop.svg')
-    mb_abort.setModel(door_name)
-
-    w.layout().addWidget(mb_abort, 5, 1)
-
-    # Change macro name
-    Qt.QObject.connect(macro_name, Qt.SIGNAL('textChanged(QString)'), mb.setMacroName)
-    Qt.QObject.connect(macro_name, Qt.SIGNAL('textChanged(QString)'), mb.setButtonText)
+        def toggle_progress(self, toggle):
+            visible = self.show_progress.isChecked()
+            self.mb.toggleProgress(visible or toggle)
     
-    # connect the argument editors
-    signals = [(e, 'textChanged(QString)') for e in _argEditors]
-    mb.connectArgEditors(signals)
+        def getMacroInfo(self, macro_name):
+    
+            door = taurus.Device(self.door_name)
+            try:
+                pars = door.macro_server.getMacroInfoObj(macro_name).parameters
+            except AttributeError as e:
+                print "Macro %s does not exists!" % macro_name
+                return None
 
-    def update_result(result):
-        result_label.setText(str(result))
+            param_names = []
+            default_values = []
+            for p in pars:
+                ptype = p['type']
 
-    def toggle_progress(showProgress):
-        visible = show_progress.isChecked()
-        mb.toggleProgress(visible)
+                if isinstance(ptype, list):
+                    for pr in ptype:
+                        param_names.append(pr['name'])
+                        default_values.append(pr['default_value'])
+                else:
+                    param_names.append(p['name'])
+                    default_values.append(p['default_value'])
 
-    # Toggle progressbar
-    Qt.QObject.connect(show_progress, Qt.SIGNAL('stateChanged(int)'), toggle_progress)
-    # Update possible macro result
-    Qt.QObject.connect(mb, Qt.SIGNAL('resultUpdated'), update_result)
+            self.macro_name = macro_name 
+            return param_names, default_values  
 
-    # Obtain a demo motor
-    try:
-        demo_motor_name = SarDemoEnv(door_name).getMotors()[0]
-    except Exception, e:
-        from taurus.core.util.log import warning, debug
-        warning('It was unable to obtain a demo motor')
-        debug('Details: %s' % e.message)
-        demo_motor_name = ''
+        def clean_layout(self, layout):
+            
+            while layout.count():
+                child = layout.takeAt(0)
+                if child.widget():
+                    child.widget().deleteLater()
 
-    # Since everything is now connected, the parameters will be updated
-    macro_name.setText('ascan')
-    macro_params = [demo_motor_name, '0', '1', '5', '.1']
-    for e,v in zip(_argEditors, macro_params):
-        e.setText(v)
+        def create_layout(self, macro_name):
+            p_names, d_values = self.getMacroInfo(macro_name)
+            # Create TOP layout
+            self.w_arg = Qt.QWidget()
+            self.w_arg.setLayout(Qt.QGridLayout())
+            col = 0
+            self.w_arg.layout().addWidget(Qt.QLabel('macro name'), 0, col)
+            self.w_macro_name = Qt.QLineEdit()
+            self.w_arg.layout().addWidget(self.w_macro_name, 1, col)
 
+            _argEditors = []
+            for name in p_names:
+                col += 1
+                self.w_arg.layout().addWidget(Qt.QLabel(name), 0, col)
+                self.argEdit = Qt.QLineEdit()
+                self.w_arg.layout().addWidget(self.argEdit, 1, col)
+                _argEditors.append(self.argEdit)
+
+            for e, v in zip(_argEditors, d_values):
+                e.setText(v)
+
+            # Create bottom layout
+            self.mb = MacroButton()
+            self.mb.setModel(door_name)
+            self.w_bottom = Qt.QWidget()
+            self.w_bottom.setLayout(Qt.QGridLayout())
+            self.w_bottom.layout().addWidget(self.mb, 0, 0, 2, 7)
+            self.w_bottom.layout().addWidget(Qt.QLabel('Result:'), 2, 0)
+
+            self.result_label = Qt.QLabel()
+            self.w_bottom.layout().addWidget(self.result_label, 2, 1, 1, 5)
+
+            self.show_progress = Qt.QCheckBox('Progress')
+            self.show_progress.setChecked(True)
+            self.w_bottom.layout().addWidget(self.show_progress, 3, 0)
+
+            mb_abort = TaurusCommandButton(command='StopMacro',
+                                           icon=':/actions/media_playback_stop.svg')
+            mb_abort.setModel(door_name)
+            self.w_bottom.layout().addWidget(mb_abort, 3, 1)
+
+            # Toggle progressbar
+            Qt.QObject.connect(self.show_progress, Qt.SIGNAL('stateChanged(int)'), self.toggle_progress)
+            # connect the argument editors
+            signals = [(e, 'textChanged(QString)') for e in _argEditors]
+            self.mb.connectArgEditors(signals)
+
+            self.setLayout(Qt.QVBoxLayout())
+            self.layout().addWidget(self.w_arg)
+            self.layout().addWidget(self.w_bottom)
+
+            # Update possible macro result
+            Qt.QObject.connect(self.mb, Qt.SIGNAL('resultUpdated'), self.update_result)
+
+            Qt.QObject.connect(self.w_macro_name, Qt.SIGNAL('textEdited(QString)'), self.update_macro_name)
+            Qt.QObject.connect(self.w_macro_name, Qt.SIGNAL('editingFinished()'), self.update_layout)
+            Qt.QObject.connect(self.w_macro_name, Qt.SIGNAL('textChanged(QString)'), self.mb.setMacroName)
+            Qt.QObject.connect(self.w_macro_name, Qt.SIGNAL('textChanged(QString)'), self.mb.setButtonText)
+
+            # Since everything is now connected, the parameters will be updated
+            self.w_macro_name.setText(macro_name)
+
+        def update_layout(self):
+            if self.getMacroInfo(self.macro_name):
+                self.clean_layout(self.layout())
+                self.create_layout(self.macro_name)
+
+    w = TestWidget(door_name, macro_name)
     w.show()
     sys.exit(app.exec_())
