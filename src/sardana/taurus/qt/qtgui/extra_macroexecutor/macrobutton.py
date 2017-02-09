@@ -385,8 +385,15 @@ if __name__ == '__main__':
             param_names = []
             default_values = []
             for p in pars:
-                param_names.append(p['name'])
-                default_values.append(p['default_value'])
+                ptype = p['type']
+
+                if isinstance(ptype, list):
+                    for pr in ptype:
+                        param_names.append(pr['name'])
+                        default_values.append(pr['default_value'])
+                else:
+                    param_names.append(p['name'])
+                    default_values.append(p['default_value'])
 
             self.macro_name = macro_name 
             return param_names, default_values  
