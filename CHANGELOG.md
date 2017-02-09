@@ -9,6 +9,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Added
 - Tooltip with parameters description in the macro execution widgets:
   MacroExecutor and Sequencer (#302)
+- Generic main to the macrobutton widget that allows to execute "any" macro
 
 ### Fixed
 - Macro execution widgets connecting to the MacroServer in a Tango database
