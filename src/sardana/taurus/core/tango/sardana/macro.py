@@ -757,7 +757,7 @@ class MacroNode(BranchNode):
     """Class to represent macro element."""
     count = 0
 
-    def __init__(self, parent=None, name=None):
+    def __init__(self, parent=None, name=None, params_def=None):
         BranchNode.__init__(self, parent)
         self.setId(None)
         self.setName(name)
@@ -768,6 +768,11 @@ class MacroNode(BranchNode):
         self.setHooks([])
         self.setHookPlaces([])
         self.setAllowedHookPlaces([])
+        # create parameter nodes (it is recursive for repeat parameters
+        # containing repeat parameters)
+        if params_def is not None:
+            for param_info in params_def:
+                self.addParam(ParamFactory(param_info))
 
     def id(self):
         """
