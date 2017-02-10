@@ -534,6 +534,19 @@ class SingleParamNode(ParamNode):
     def toList(self):
         return self._value
 
+    def fromList(self, v):
+        if isinstance(v, list):
+            if not isinstance(self.parent(), RepeatNode):
+                msg = "Only members of repeat parameter allow list values"
+                raise ValueError(msg)
+            if len(v) == 0:
+                v = self.defValue()
+            elif len(v) == 1:
+                v = v[0]
+            else:
+                raise ValueError("Too many elements in list value")
+        self.setValue(v)
+
 class RepeatParamNode(ParamNode, BranchNode):
     """Repeat parameter class."""
 
@@ -654,6 +667,13 @@ class RepeatParamNode(ParamNode, BranchNode):
     def toList(self):
         return [child.toList() for child in self.children()]
 
+    def fromList(self, repeats):
+        for j, repeat in enumerate(repeats):
+            repeat_node = self.child(j)
+            if repeat_node is None:
+                repeat_node = self.addRepeat()
+            repeat_node.fromList(repeat)
+
 #    def isAllowedMoveUp(self):
 #        return self is not self.parent().child(0)
 #
@@ -726,6 +746,12 @@ class RepeatNode(BranchNode):
             return self.child(0).toList()
         else:
             return [child.toList() for child in self.children()]
+
+    def fromList(self, params):
+        for k, par in enumerate(params):
+            member_node = self.child(k)
+            member_node.fromList(par)
+
 
 class MacroNode(BranchNode):
     """Class to represent macro element."""
@@ -1092,6 +1118,15 @@ class MacroNode(BranchNode):
         list_ = [param.toList() for param in self.params()]
         list_.insert(0, self.name())
         return list_
+
+    def fromList(self, values):
+        params = self.params()
+        for i, node in enumerate(params):
+            try:
+                raw = values[i]
+            except IndexError:
+                continue
+            node.fromList(raw)
 
 
 class SequenceNode(BranchNode):
