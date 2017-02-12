@@ -183,7 +183,8 @@ class TaurusMacroConfigurationDialog(Qt.QDialog):
             #state = Device(macroServer).getState()
             state = None
             try:
-                state = PyTango.DeviceProxy(macroServer).state()
+                ms_name = "{0}/{1}".format(db.getNormalName(), macroServer)
+                state = PyTango.DeviceProxy(ms_name).state()
             except:
                 pass
             icon = None
