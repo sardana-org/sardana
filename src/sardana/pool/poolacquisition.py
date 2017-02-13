@@ -205,8 +205,7 @@ class PoolAcquisition(PoolAction):
         self._sw_acq_config = None
         self._0d_config = None
         self._0d_acq = Pool0DAcquisition(main_element, name=zerodname)
-        self._sw_acq = PoolAcquisitionSoftware(main_element, name=swname,
-                                               slaves=(self._0d_acq,))
+        self._sw_acq = PoolAcquisitionSoftware(main_element, name=swname)
         self._hw_acq = PoolAcquisitionHardware(main_element, name=hwname)
         self._synch = PoolSynchronization(main_element, name=synchname)
 
@@ -220,11 +219,13 @@ class PoolAcquisition(PoolAction):
         timestamp = time.time()
         _, type_, value = args
         name = type_.name
+        if name == "state":
+            return
+        t_fmt = '%Y-%m-%d %H:%M:%S.%f'
+        t_str = datetime.datetime.fromtimestamp(timestamp).strftime(t_fmt)
+        msg = '%s event with id: %d received at: %s' % (name, value, t_str)
+        self.debug(msg)
         if name == "active":
-            t_fmt = '%Y-%m-%d %H:%M:%S.%f'
-            t_str = datetime.datetime.fromtimestamp(timestamp).strftime(t_fmt)
-            self.debug('%s event with id: %d received at: %s' %\
-                             (name, value, t_str))
             # this code is not thread safe, but for the moment we assume that
             # only one EventGenerator will work at the same time
             if self._sw_acq_config:
@@ -253,6 +254,10 @@ class PoolAcquisition(PoolAction):
                     kwargs['synch'] = True
                     kwargs['idx'] = value
                     get_thread_pool().add(self._0d_acq.run, *args, **kwargs)
+        elif name == "passive":
+            if self._0d_config and self._0d_acq.is_running():
+                self.debug('Stopping ZeroD acquisition.')
+                self._0d_acq.stop_action()
 
     def is_running(self):
         return self._0d_acq.is_running() or\
