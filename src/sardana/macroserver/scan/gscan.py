@@ -1880,6 +1880,16 @@ class CTScan(CScan):
         macro, motion, waypoints = self.macro, self._physical_motion, self.steps
         self.macro.debug("_go_through_waypoints() entering...")
 
+        # check if measurement group is compatible
+        tango_channels = []
+        for channel in self.measurement_group.getChannels():
+            if channel['_controller_name'] == '__tango__':
+                tango_channels.append(channel['name'])
+        if len(tango_channels) > 0:
+            raise ScanException('Tango channels %r are not supported. Hint: '
+                'change measurement group or remove them from the group.' %
+                tango_channels)
+
         last_positions = None
         for _, waypoint in waypoints:
             self.macro.debug("Waypoint iteration...")
