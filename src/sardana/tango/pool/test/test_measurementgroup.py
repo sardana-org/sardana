@@ -80,12 +80,12 @@ class MeasSarTestTestCase(SarTestTestCase):
     def setUp(self):
         SarTestTestCase.setUp(self)
         self.event_ids = {}
+        self.mg_name = '_test_mg_1'
 
     def create_meas(self, config):
         """ Create a meas with the given configuration
         """
         # creating mg 
-        self.mg_name = '_test_mg_1'
         self.expchan_names = []
         self.tg_names = []
         exp_dict = {}
