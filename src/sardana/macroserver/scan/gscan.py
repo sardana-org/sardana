@@ -1880,11 +1880,15 @@ class CTScan(CScan):
         macro, motion, waypoints = self.macro, self._physical_motion, self.steps
         self.macro.debug("_go_through_waypoints() entering...")
 
-        # check if measurement group is compatible
+        # check if measurement group is compatible - external channels
+        # (tango attributes) are not supported
         tango_channels = []
         for channel in self.measurement_group.getChannels():
-            if channel['_controller_name'] == '__tango__':
-                tango_channels.append(channel['name'])
+            full_name = channel["full_name"]
+            try:
+                taurus.Device(full_name)
+            except Exception:
+                tango_channels.append(full_name)
         if len(tango_channels) > 0:
             raise ScanException('Tango channels %r are not supported. Hint: '
                 'change measurement group or remove them from the group.' %
