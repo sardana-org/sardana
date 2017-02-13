@@ -31,6 +31,7 @@ from taurus.test import insertTest
 from sardana.taurus.core.tango.sardana.macro import MacroNode
 from sardana.taurus.core.tango.sardana.test.res.params_definitions import *
 
+"""
 @insertTest(helper_name='verifyEncoding', macro_name="mv_like_macro",
             param_def=params_definition_move, macro_params=move_parameters_1,
             expected_params_list=expected_result_1)
@@ -69,7 +70,24 @@ from sardana.taurus.core.tango.sardana.test.res.params_definitions import *
             expected_params_list=expected_result_12)
 @insertTest(helper_name='verifyEncoding', macro_name="float_macro",
             param_def=params_definition_float, macro_params=float_parameters_13,
-            expected_params_list=expected_result_13)
+            expected_params_list=expected_result_13)"""
+
+"""@insertTest(helper_name='verifyEncoding', macro_name="floats_motors_macro",
+            param_def=paramsrepdef_floats_motors,
+            macro_params=floatlist_motorlist_parameters_14,
+            expected_params_list=expected_result_14)
+@insertTest(helper_name='verifyEncoding', macro_name="floats_motors_macro",
+            param_def=paramsrepdef_floats_motors,
+            macro_params=floatlist_motorlist_parameters_15,
+            expected_params_list=expected_result_15)
+@insertTest(helper_name='verifyEncoding', macro_name="floats_motors_macro",
+            param_def=paramsrepdef_floats_motors,
+            macro_params=floatlist_motorlist_parameters_16,
+            expected_params_list=expected_result_16)"""
+@insertTest(helper_name='verifyEncoding', macro_name="floats_motors_macro",
+            param_def=paramsrepdef_floats_motors,
+            macro_params=floatlist_motorlist_parameters_17,
+            expected_params_list=expected_result_17)
 class ParamsTestCase(unittest.TestCase):
 
     def verifyEncoding(self, macro_name, param_def, macro_params,
@@ -87,10 +105,22 @@ class ParamsTestCase(unittest.TestCase):
 
         # Create the MacroNode with the inputs
         node = MacroNode(name=macro_name, params_def=param_def)
+        #print(macro_name)
+        #print(param_def)
+        #print(macro_params)
+        #print(expected_params_list)
         node.fromList(macro_params)
 
+        #import lxml
+        #xml = node.toXml(withId=False)
+        #print lxml.etree.tostring(xml, pretty_print=True)
+
+
+
         output_params_list = node.toList()
-        output_params_list = [output_params_list[1]]
+        #print(output_params_list)
+        print(output_params_list)
+        output_params_list.pop(0)
         print(output_params_list)
 
         msg = ("Parameters list is not encoded/decoded correctly. \n"

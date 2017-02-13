@@ -114,6 +114,52 @@ expected_result_13 = [["3", "100", "4"]]
 ################################################################################
 
 
+paramsrepdef_floats_motors = [
+    {'name': 'floats_list',
+     'default_value': None,
+     'type': [
+        {'name': 'float',
+         'default_value': 100,
+         'type': 'Float'}]
+     },
+    {'name': 'motors_list',
+     'default_value': None,
+     'type': [
+        {'name': 'motor',
+         'default_value': 'mot99',
+         'type': 'Moveable'}]
+    }
+    ]
+
+floatlist_motorlist_parameters_14 = [[["1"], ["3"], ["4"]], [["mot1"],["mot2"]]]
+expected_result_14 = [["1", "3", "4"], ["mot1", "mot2"]]
+
+floatlist_motorlist_parameters_15 = [["1", "3", "4"], ["mot1", "mot2"]]
+expected_result_15 = [["1", "3", "4"], ["mot1", "mot2"]]
+
+floatlist_motorlist_parameters_16 = [["1", [], "4"], [[], "mot2"]]
+expected_result_16 = [["1", "3", "4"], ["mot1", "mot2"]]
+
+floatlist_motorlist_parameters_17 = [[["1"], "3", "4"], ["mot1", ["mot2"]]]
+expected_result_17 = [["1", "3", "4"], ["mot1", "mot2"]]
+
+################################################################################
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
