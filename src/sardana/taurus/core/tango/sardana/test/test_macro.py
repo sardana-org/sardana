@@ -32,11 +32,13 @@ from taurus.test import insertTest
 from sardana.taurus.core.tango.sardana.macro import MacroNode
 from sardana.taurus.core.tango.sardana.macro import createMacroNode
 from sardana.macroserver.macro import Type
-from sardana.taurus.core.tango.sardana.test import (pt3_param_def_d1,
-                                                    pt5_param_def_d1,
-                                                    pt7_param_def_d1,
-                                                    pt10_param_def_d1,
-                                                    pt12_param_def_d1)
+from sardana.taurus.core.tango.sardana.test import (pt3d_param_def,
+                                                    pt5d_param_def,
+                                                    pt7d_param_def,
+                                                    pt10d_param_def,
+                                                    pt12d_param_def,
+                                                    pt13d_param_def,
+                                                    pt14d_param_def)
 # TODO: Use unittest.mock instead of this fake class.
 from sardana.macroserver.mstypemanager import TypeManager
 class FakeMacroServer(object):
@@ -124,17 +126,17 @@ class MacroNodeTestCase(unittest.TestCase):
 
 #### Testing a list of elements (floats) ####
 @insertTest(helper_name='verifyEncoding',
-            param_def=pt3_param_def_d1,
+            param_def=pt3d_param_def,
             macro_params=[["1", "3", "15"]],
             expected_params_list=[["1", "3", "15"]]
             )
 @insertTest(helper_name='verifyEncoding',
-            param_def=pt3_param_def_d1,
+            param_def=pt3d_param_def,
             macro_params=[["3", [], "4"]],
             expected_params_list=[["3", "100", "4"]]
             )
 @insertTest(helper_name='verifyEncoding',
-            param_def=pt3_param_def_d1,
+            param_def=pt3d_param_def,
             macro_params=[[[], [], []]],
             expected_params_list=[["100", "100", "100"]]
             )
@@ -143,101 +145,121 @@ class MacroNodeTestCase(unittest.TestCase):
 ############ list of elements (floats). ##############
 
 @insertTest(helper_name='verifyEncoding',
-            param_def=pt5_param_def_d1,
+            param_def=pt5d_param_def,
             macro_params=["mot01", ["1", "3", "15"]],
             expected_params_list=["mot01", ["1", "3", "15"]]
             )
 @insertTest(helper_name='verifyEncoding',
-            param_def=pt5_param_def_d1,
+            param_def=pt5d_param_def,
             macro_params=[[], ["1", "3", "15"]],
             expected_params_list=["mot99", ["1", "3", "15"]]
             )
 @insertTest(helper_name='verifyEncoding',
-            param_def=pt5_param_def_d1,
+            param_def=pt5d_param_def,
             macro_params=["mot01", [[], "3", "15"]],
             expected_params_list=["mot01", ["100", "3", "15"]]
             )
 @insertTest(helper_name='verifyEncoding',
-            param_def=pt5_param_def_d1,
+            param_def=pt5d_param_def,
             macro_params=[[], ["1", [], "15"]],
             expected_params_list=["mot99", ["1", "100", "15"]]
             )
 
 #### Testing a list of pairs of elements (moveable, float). ####
 @insertTest(helper_name='verifyEncoding',
-            param_def=pt7_param_def_d1,
+            param_def=pt7d_param_def,
             macro_params=[[["mot01", "0"]]],
             expected_params_list=[[['mot01', "0"]]]
             )
 @insertTest(helper_name='verifyEncoding',
-            param_def=pt7_param_def_d1,
+            param_def=pt7d_param_def,
             macro_params=[[["mot01"]]],
             expected_params_list=[[['mot01', "100"]]]
             )
 @insertTest(helper_name='verifyEncoding',
-            param_def=pt7_param_def_d1,
+            param_def=pt7d_param_def,
             macro_params=[[[]]],
             expected_params_list=[[['mot99', "100"]]]
             )
 @insertTest(helper_name='verifyEncoding',
-            param_def=pt7_param_def_d1,
+            param_def=pt7d_param_def,
             macro_params=[[[[], "50"]]],
             expected_params_list=[[['mot99', "50"]]]
             )
 @insertTest(helper_name='verifyEncoding',
-            param_def=pt7_param_def_d1,
+            param_def=pt7d_param_def,
             macro_params=[[['mot99', []]]],
             expected_params_list=[[['mot99', "100"]]]
             )
 @insertTest(helper_name='verifyEncoding',
-            param_def=pt7_param_def_d1,
+            param_def=pt7d_param_def,
             macro_params=[[["mot01", "0"], ["mot02", "5"], ["mot03", "10"]]],
             expected_params_list=[[["mot01", "0"], ["mot02", "5"],
                                    ["mot03", "10"]]]
             )
 @insertTest(helper_name='verifyEncoding',
-            param_def=pt7_param_def_d1,
+            param_def=pt7d_param_def,
             macro_params=[[["mot01", "0"], [], ["mot03"]]],
             expected_params_list=[[["mot01", "0"], ["mot99", "100"],
                                    ["mot03", "100"]]]
+            )
+@insertTest(helper_name='verifyEncoding',
+            param_def=pt7d_param_def,
+            macro_params=[[[]]],
+            expected_params_list=[[['mot01', "50"]]]
+            )
+
+#### Testing list of elements (moveables) followed by a ####
+################# single parameter (float). ################
+@insertTest(helper_name='verifyEncoding',
+            param_def=pt10d_param_def,
+            macro_params=[["1", "3", "15"], "mot01"],
+            expected_params_list=[["1", "3", "15"], "mot01"]
+            )
+@insertTest(helper_name='verifyEncoding',
+            param_def=pt10d_param_def,
+            macro_params=[["1", "3", []], "mot01"],
+            expected_params_list=[["1", "3", "100"], "mot01"]
+            )
+@insertTest(helper_name='verifyEncoding',
+            param_def=pt10d_param_def,
+            macro_params=[["1", "3", "15"], []],
+            expected_params_list=[["1", "3", "15"], "mot99"]
+            )
+@insertTest(helper_name='verifyEncoding',
+            param_def=pt10d_param_def,
+            macro_params=[["1", [], "15"], []],
+            expected_params_list=[["1", "100", "15"], "mot99"],
             )
 
 #### Testing lists of elements (floats), followed by another list of ####
 ######################### elements (moveables). #########################
 @insertTest(helper_name='verifyEncoding',
-            param_def=pt12_param_def_d1,
+            param_def=pt12d_param_def,
             macro_params=[["1", "3", "4"], ["mot1", "mot2"]],
             expected_params_list=[["1", "3", "4"], ["mot1", "mot2"]]
             )
 @insertTest(helper_name='verifyEncoding',
-            param_def=pt12_param_def_d1,
+            param_def=pt12d_param_def,
             macro_params=[["1", [], "4"], [[], "mot2"]],
             expected_params_list=[["1", "100", "4"], ["mot99", "mot2"]]
             )
 
+########################### Testing nested paramRepeats ########################
+############## Groups of motors, where each group is a motor list ##############
+@insertTest(helper_name='verifyEncoding',
+            param_def=pt13d_param_def,
+            macro_params=[["mot2", "mot3"], ["mot4", "mot5", "mot6"]],
+            expected_params_list=[["mot2", "mot3"], ["mot4", "mot5", "mot6"]]
+            )
 
-#### Testing list of elements (moveables) followed by a ####
-################# single parameter (float). ################
-
+########################### Testing nested paramRepeats ########################
+## Groups of motors, where each group is a motor list followed by a number #####
 @insertTest(helper_name='verifyEncoding',
-            param_def=pt10_param_def_d1,
-            macro_params=[["1", "3", "15"], "mot01"],
-            expected_params_list=[["1", "3", "15"], "mot01"]
-            )
-@insertTest(helper_name='verifyEncoding',
-            param_def=pt10_param_def_d1,
-            macro_params=[["1", "3", []], "mot01"],
-            expected_params_list=[["1", "3", "100"], "mot01"]
-            )
-@insertTest(helper_name='verifyEncoding',
-            param_def=pt10_param_def_d1,
-            macro_params=[["1", "3", "15"], []],
-            expected_params_list=[["1", "3", "15"], "mot99"]
-            )
-@insertTest(helper_name='verifyEncoding',
-            param_def=pt10_param_def_d1,
-            macro_params=[["1", [], "15"], []],
-            expected_params_list=[["1", "100", "15"], "mot99"],
+            param_def=pt14d_param_def,
+            macro_params=[[["mot2", "mot3"], 4], [["mot4", "mot5", "mot6"], 5]],
+            expected_params_list=[[["mot2", "mot3"], 4],
+                                  [["mot4", "mot5", "mot6"], 5]]
             )
 
 class ParamsTestCase(unittest.TestCase):

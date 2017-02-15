@@ -24,5 +24,6 @@
 ##############################################################################
 
 
-from .paramdef import (pt3_param_def_d1, pt5_param_def_d1, pt7_param_def_d1,
-                       pt10_param_def_d1, pt12_param_def_d1)
+from .paramdef import (pt3d_param_def, pt5d_param_def, pt7d_param_def,
+                       pt10d_param_def, pt12d_param_def, pt13d_param_def,
+                       pt14d_param_def)

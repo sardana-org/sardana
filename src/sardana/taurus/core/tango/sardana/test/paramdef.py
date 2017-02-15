@@ -29,10 +29,10 @@ The following parameter definitions are based in the macro examples present in
 the module sardana.macroserver.macros.examples.parameters"""
 
 
-# pt3 like parameter definition, but using default values.
-pt3_param_def_d1 = [
+# pt3 like parameter definition, using default values.
+pt3d_param_def = [
     {'name': 'numb_list',
-     'default_value': None,
+     'default_value': 100,
      'type': [
         {'name': 'float',
          'default_value': 100
@@ -41,8 +41,8 @@ pt3_param_def_d1 = [
     ]
 
 
-# pt5 like parameter definition, but using default values.
-pt5_param_def_d1 = [
+# pt5 like parameter definition, using default values.
+pt5d_param_def = [
     {'name': 'motor',
      'default_value': "mot99"
      },
@@ -56,10 +56,10 @@ pt5_param_def_d1 = [
     ]
 
 
-# pt7 like parameter definition, but using default values.
-pt7_param_def_d1 = [
+# pt7 like parameter definition, using default values.
+pt7d_param_def = [
     {'name': 'motor_pos_list',
-     'default_value': None,
+     'default_value': ["mot01", 50],
      'type': [
         {'name': 'motor',
          'default_value': "mot99"
@@ -71,8 +71,8 @@ pt7_param_def_d1 = [
     ]
 
 
-# pt10 like parameter definition, but using default values.
-pt10_param_def_d1 = [
+# pt10 like parameter definition, using default values.
+pt10d_param_def = [
     {'name': 'float_list',
      'default_value': None,
      'type': [
@@ -86,8 +86,8 @@ pt10_param_def_d1 = [
     ]
 
 
-# pt12 like parameter definition, but using default values.
-pt12_param_def_d1 = [
+# pt12 like parameter definition, using default values.
+pt12d_param_def = [
     {'name': 'numb_list',
      'default_value': None,
      'type': [
@@ -101,6 +101,35 @@ pt12_param_def_d1 = [
         {'name': 'motor',
          'default_value': 'mot99'
          }]
-    }
+     }
     ]
+
+
+# pt13 like parameter definition, using default values.
+pt13d_param_def = [
+    {'name': 'motor_group_list',
+     'default_value': None,
+     'type': [
+        {'name': 'motor_list',
+         'default_value': None,
+         'type': [{'name': 'motor',
+                   'default_value': 'mot99'}]
+         }]
+     }]
+
+
+# pt14 like parameter definition, using default values.
+pt14d_param_def = [
+    {'name': 'motor_group_list',
+     'default_value': None,
+     'type': [
+         {'name': 'motor_list',
+          'default_value': None,
+          'type': [{'name': 'motor',
+                   'default_value': 'mot99'}]
+          },
+         {'name': 'motor',
+          'default_value': "mot99"}
+     ]
+     }]
 
