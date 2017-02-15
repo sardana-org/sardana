@@ -24,58 +24,68 @@
 ##############################################################################
 
 """Resource file containing parameter definitions, to be used in
-test_macro for testing encoding and decoding of macro parameters."""
+test_macro for testing encoding and decoding of macro parameters.
+The following parameter definitions are based in the macro examples present in
+the module sardana.macroserver.macros.examples.parameters"""
 
-pt3_like_param_def = [
+
+# pt3 like parameter definition, but using default values.
+pt3_param_def_d1 = [
     {'name': 'numb_list',
      'default_value': None,
      'type': [
         {'name': 'float',
-         'default_value': 100,
-         'type': 'Float'}
+         'default_value': 100
+         }
         ]}
     ]
 
-pt5_like_param_def = [
+
+# pt5 like parameter definition, but using default values.
+pt5_param_def_d1 = [
     {'name': 'motor',
-     'default_value': "mot99",
-     'type': 'Moveable'},
+     'default_value': "mot99"
+     },
     {'name': 'float_list',
      'default_value': None,
      'type': [
         {'name': 'float',
-         'default_value': 100,
-         'type': 'Float'}
+         'default_value': 100
+         }
         ]}
     ]
 
-pt7_like_paramdef = [
+
+# pt7 like parameter definition, but using default values.
+pt7_param_def_d1 = [
     {'name': 'motor_pos_list',
      'default_value': None,
      'type': [
         {'name': 'motor',
-         'default_value': "mot99",
-         'type': 'Moveable'},
+         'default_value': "mot99"
+         },
         {'name': 'pos',
-         'default_value': 100,
-         'type': 'Float'}
+         'default_value': 100
+         }
         ]}
     ]
 
-pt12_like_param_def = [
+
+# pt12 like parameter definition, but using default values.
+pt12_param_def_d1 = [
     {'name': 'numb_list',
      'default_value': None,
      'type': [
         {'name': 'float',
-         'default_value': 100,
-         'type': 'Float'}]
+         'default_value': 100
+         }]
      },
     {'name': 'motors_list',
      'default_value': None,
      'type': [
         {'name': 'motor',
-         'default_value': 'mot99',
-         'type': 'Moveable'}]
+         'default_value': 'mot99'
+         }]
     }
     ]
 
