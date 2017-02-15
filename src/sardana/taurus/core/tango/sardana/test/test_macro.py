@@ -40,7 +40,7 @@ class FakeMacroServer(object):
 macro_server = FakeMacroServer()
 tm = TypeManager(macro_server)
 
-
+# TODO: Move the parameter definition to res/paramdef.py module
 pt8_params_def = [
     {
         "name" : "m_p_pair",
@@ -65,7 +65,7 @@ pt8_params_def = [
 ]
 pt8_params_value = ["mot73", "5.0", "mot74", "8.0"]
 
-# 
+#
 pt8_xml = \
 '''<macro name="pt8">
   <paramrepeat name="m_p_pair">
@@ -114,3 +114,5 @@ class MacroNodeTestCase(unittest.TestCase):
         expected_xml = etree.fromstring(expected_xml_rep)
         # Validate the XML tree
         self._validateXML(macronode_xml, expected_xml)
+
+
