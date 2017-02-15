@@ -536,11 +536,11 @@ class SingleParamNode(ParamNode):
 
     def fromList(self, v):
         if isinstance(v, list):
-            if not isinstance(self.parent(), RepeatNode):
-                msg = "Only members of repeat parameter allow list values"
-                raise ValueError(msg)
             if len(v) == 0:
                 v = self.defValue()
+            elif not isinstance(self.parent(), RepeatNode):
+                msg = "Only members of repeat parameter allow list values"
+                raise ValueError(msg)
             elif len(v) == 1:
                 v = v[0]
             else:
