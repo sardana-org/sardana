@@ -541,8 +541,6 @@ class SingleParamNode(ParamNode):
             elif not isinstance(self.parent(), RepeatNode):
                 msg = "Only members of repeat parameter allow list values"
                 raise ValueError(msg)
-            elif len(v) == 1:
-                v = v[0]
             else:
                 raise ValueError("Too many elements in list value")
         self.setValue(v)
