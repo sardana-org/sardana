@@ -71,6 +71,21 @@ pt7_param_def_d1 = [
     ]
 
 
+# pt10 like parameter definition, but using default values.
+pt10_param_def_d1 = [
+    {'name': 'float_list',
+     'default_value': None,
+     'type': [
+        {'name': 'float',
+         'default_value': 100
+         }]
+     },
+    {'name': 'motor',
+     'default_value': "mot99"
+     }
+    ]
+
+
 # pt12 like parameter definition, but using default values.
 pt12_param_def_d1 = [
     {'name': 'numb_list',

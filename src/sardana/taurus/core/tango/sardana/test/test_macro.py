@@ -35,6 +35,7 @@ from sardana.macroserver.macro import Type
 from sardana.taurus.core.tango.sardana.test import (pt3_param_def_d1,
                                                     pt5_param_def_d1,
                                                     pt7_param_def_d1,
+                                                    pt10_param_def_d1,
                                                     pt12_param_def_d1)
 # TODO: Use unittest.mock instead of this fake class.
 from sardana.macroserver.mstypemanager import TypeManager
@@ -212,6 +213,31 @@ class MacroNodeTestCase(unittest.TestCase):
             param_def=pt12_param_def_d1,
             macro_params=[["1", [], "4"], [[], "mot2"]],
             expected_params_list=[["1", "100", "4"], ["mot99", "mot2"]]
+            )
+
+
+#### Testing list of elements (moveables) followed by a ####
+################# single parameter (float). ################
+
+@insertTest(helper_name='verifyEncoding',
+            param_def=pt10_param_def_d1,
+            macro_params=[["1", "3", "15"], "mot01"],
+            expected_params_list=[["1", "3", "15"], "mot01"]
+            )
+@insertTest(helper_name='verifyEncoding',
+            param_def=pt10_param_def_d1,
+            macro_params=[["1", "3", []], "mot01"],
+            expected_params_list=[["1", "3", "100"], "mot01"]
+            )
+@insertTest(helper_name='verifyEncoding',
+            param_def=pt10_param_def_d1,
+            macro_params=[["1", "3", "15"], []],
+            expected_params_list=[["1", "3", "15"], "mot99"]
+            )
+@insertTest(helper_name='verifyEncoding',
+            param_def=pt10_param_def_d1,
+            macro_params=[["1", [], "15"], []],
+            expected_params_list=[["1", "100", "15"], "mot99"],
             )
 
 class ParamsTestCase(unittest.TestCase):
