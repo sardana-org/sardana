@@ -122,13 +122,6 @@ class MacroNodeTestCase(unittest.TestCase):
 
 
 #### Testing a list of elements (floats) ####
-# Old interface
-@insertTest(helper_name='verifyEncoding',
-            macro_name="numb_list_macro",
-            param_def=pt3_param_def_d1,
-            macro_params=["1", "3", "15"],
-            expected_params_list=[["1", "3", "15"]]
-            )
 @insertTest(helper_name='verifyEncoding',
             macro_name="numb_list_macro",
             param_def=pt3_param_def_d1,
@@ -156,13 +149,7 @@ class MacroNodeTestCase(unittest.TestCase):
 
 #### Testing one element (moveable) followed by a ####
 ############ list of elements (floats). ##############
-# It should be possible to do so?
-@insertTest(helper_name='verifyEncoding',
-            macro_name="motor_floats_macro",
-            param_def=pt5_param_def_d1,
-            macro_params=["mot01", "1", "3", "15"],
-            expected_params_list=["mot01", ["1", "3", "15"]]
-            )
+
 @insertTest(helper_name='verifyEncoding',
             macro_name="motor_floats_macro",
             param_def=pt5_param_def_d1,
@@ -191,19 +178,19 @@ class MacroNodeTestCase(unittest.TestCase):
             macro_name="motor_floats_macro",
             param_def=pt5_param_def_d1,
             macro_params=[[], ["1", "3", "15"]],
-            expected_params_list=["mot01", ["1", "3", "100"]]
+            expected_params_list=["mot99", ["1", "3", "15"]]
             )
 @insertTest(helper_name='verifyEncoding',
             macro_name="motor_floats_macro",
             param_def=pt5_param_def_d1,
             macro_params=[[], ["1", [], "15"]],
-            expected_params_list=["mot01", ["1", "100", "15"]]
+            expected_params_list=["mot99", ["1", "100", "15"]]
             )
 @insertTest(helper_name='verifyEncoding',
             macro_name="motor_floats_macro",
             param_def=pt5_param_def_d1,
             macro_params=[[], [["1"], [], ["15"]]],
-            expected_params_list=["mot01", ["1", "100", "15"]]
+            expected_params_list=["mot99", ["1", "100", "15"]]
             )
 
 #### Testing a list of pairs of elements (moveable, float). ####
@@ -225,28 +212,19 @@ class MacroNodeTestCase(unittest.TestCase):
             macro_params=[[[]]],
             expected_params_list=[[['mot99', "100"]]]
             )
-# TODO: These case maybe should not be allowed. It introduces benefits but can
-# contain some ambiguity.
 @insertTest(helper_name='verifyEncoding',
             macro_name="mv_like_macro",
             param_def=pt7_param_def_d1,
             macro_params=[[[[], "50"]]],
             expected_params_list=[[['mot99', "50"]]]
             )
-# TODO: These case maybe should not be allowed. It introduces benefits but can
-# contain some ambiguity.
 @insertTest(helper_name='verifyEncoding',
             macro_name="mv_like_macro",
             param_def=pt7_param_def_d1,
             macro_params=[[['mot99', []]]],
             expected_params_list=[[['mot99', "100"]]]
             )
-# TODO: These case most probably should not be allowed. It introduces benefits
-# but can contain some ambiguity. To be studied in detail: it is important
-# that the information interpreted by Sardana is the one that the user
-# has the intention to give to Sardana. If a user can 'write' two different
-# behaviors in the same exact way, maybe Sardana will not execute the
-# user intention.
+# TODO: This should fail - the motor & position pair is separated by brackets
 @insertTest(helper_name='verifyEncoding',
             macro_name="mv_like_macro",
             param_def=pt7_param_def_d1,
@@ -286,7 +264,7 @@ class MacroNodeTestCase(unittest.TestCase):
             macro_name="floats_motors_macro",
             param_def=pt12_param_def_d1,
             macro_params=[["1", [], "4"], [[], "mot2"]],
-            expected_params_list=[["1", "3", "4"], ["mot1", "mot2"]]
+            expected_params_list=[["1", "100", "4"], ["mot99", "mot2"]]
             )
 @insertTest(helper_name='verifyEncoding',
             macro_name="floats_motors_macro",
@@ -316,7 +294,6 @@ class ParamsTestCase(unittest.TestCase):
 
         output_params_list = node.toList()
         output_params_list.pop(0)
-        print(output_params_list)
 
         msg = ("Parameters list is not encoded/decoded correctly. \n"
                "expected: %s \n"
