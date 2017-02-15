@@ -32,7 +32,7 @@ from taurus.test import insertTest
 from sardana.taurus.core.tango.sardana.macro import MacroNode
 from sardana.taurus.core.tango.sardana.macro import createMacroNode
 from sardana.macroserver.macro import Type
-from sardana.taurus.core.tango.sardana.test.res.paramdef import (
+from sardana.taurus.core.tango.sardana.test.paramdef import (
     pt3_param_def_d1, pt5_param_def_d1, pt7_param_def_d1,
     pt12_param_def_d1)
 
