@@ -536,13 +536,11 @@ class SingleParamNode(ParamNode):
 
     def fromList(self, v):
         if isinstance(v, list):
-            if not isinstance(self.parent(), RepeatNode):
-                msg = "Only members of repeat parameter allow list values"
-                raise ValueError(msg)
             if len(v) == 0:
                 v = self.defValue()
-            elif len(v) == 1:
-                v = v[0]
+            elif not isinstance(self.parent(), RepeatNode):
+                msg = "Only members of repeat parameter allow list values"
+                raise ValueError(msg)
             else:
                 raise ValueError("Too many elements in list value")
         self.setValue(v)
@@ -748,9 +746,15 @@ class RepeatNode(BranchNode):
             return [child.toList() for child in self.children()]
 
     def fromList(self, params):
-        for k, par in enumerate(params):
-            member_node = self.child(k)
-            member_node.fromList(par)
+        if len(self.children()) == 1:
+            self.child(0).fromList(params)
+        else:
+            for k, member_node in enumerate(self.children()):
+                try:
+                    param = params[k]
+                except IndexError:
+                    param = []
+                member_node.fromList(param)
 
 
 class MacroNode(BranchNode):
