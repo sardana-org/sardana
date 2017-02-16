@@ -610,15 +610,20 @@ class Reflector(object):
 def split_macro_parameters(parameters_s):
     macro_params = genutils.arg_split(parameters_s, posix=True)
     params_str = ''
-    for par in macro_params:
-        params_str = params_str + str(par) + ","
-    params_str = params_str[:-1] 
-    params_str = params_str.replace("[,", "[").replace(",]","]").replace("][", "],[")
-    macro_params = eval(params_str, globals(), Reflector())
-    if type(macro_params) == list:
-        new_params = []
-        new_params.append(macro_params)
-        macro_params = new_params
+
+    if len(macro_params) != 0:
+        for par in macro_params:
+            print(par)
+            params_str = params_str + str(par) + ","
+        params_str = params_str[:-1]
+        params_str = params_str.replace("[,", "[").replace(",]", "]").replace(
+            "][", "],[")
+        macro_params = eval(params_str, globals(), Reflector())
+        if type(macro_params) == list:
+            new_params = []
+            new_params.append(macro_params)
+            macro_params = new_params
+            
     # Convert tuple to list
     macro_params = list(macro_params)
     return macro_params
