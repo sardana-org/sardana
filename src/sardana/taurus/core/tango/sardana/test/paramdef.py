@@ -34,10 +34,10 @@ pt3d_param_def = [
     {'name': 'numb_list',
      'default_value': 100,
      'type': [
-        {'name': 'float',
-         'default_value': 100
-         }
-        ]}
+         {'name': 'float',
+          'default_value': 100
+          }
+     ]}
     ]
 
 
@@ -110,11 +110,11 @@ pt13d_param_def = [
     {'name': 'motor_group_list',
      'default_value': None,
      'type': [
-        {'name': 'motor_list',
-         'default_value': None,
-         'type': [{'name': 'motor',
+         {'name': 'motor_list',
+          'default_value': None,
+          'type': [{'name': 'motor',
                    'default_value': 'mot99'}]
-         }]
+          }]
      }]
 
 
@@ -128,8 +128,8 @@ pt14d_param_def = [
           'type': [{'name': 'motor',
                    'default_value': 'mot99'}]
           },
-         {'name': 'motor',
-          'default_value': "mot99"}
+         {'name': 'numb',
+          'default_value': 100}
      ]
      }]
 

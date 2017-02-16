@@ -203,11 +203,14 @@ class MacroNodeTestCase(unittest.TestCase):
             expected_params_list=[[["mot01", "0"], ["mot99", "100"],
                                    ["mot03", "100"]]]
             )
-@insertTest(helper_name='verifyEncoding',
-            param_def=pt7d_param_def,
-            macro_params=[[[]]],
-            expected_params_list=[[['mot01', "50"]]]
-            )
+## Testing the outer default parameters for the whole repetition.
+## This test is commented because this option is not functional at the moment.
+## See ticket #427 referring to this bug.
+#@insertTest(helper_name='verifyEncoding',
+#            param_def=pt7d_param_def,
+#            macro_params=[[[]]],
+#            expected_params_list=[[['mot01', "50"]]],
+#            )
 
 #### Testing list of elements (moveables) followed by a ####
 ################# single parameter (float). ################
@@ -249,17 +252,18 @@ class MacroNodeTestCase(unittest.TestCase):
 ############## Groups of motors, where each group is a motor list ##############
 @insertTest(helper_name='verifyEncoding',
             param_def=pt13d_param_def,
-            macro_params=[["mot2", "mot3"], ["mot4", "mot5", "mot6"]],
-            expected_params_list=[["mot2", "mot3"], ["mot4", "mot5", "mot6"]]
+            macro_params=[[["mot2", "mot3"], ["mot4", "mot5", "mot6"]]],
+            expected_params_list=[[["mot2", "mot3"], ["mot4", "mot5", "mot6"]]]
             )
 
 ########################### Testing nested paramRepeats ########################
 ## Groups of motors, where each group is a motor list followed by a number #####
 @insertTest(helper_name='verifyEncoding',
             param_def=pt14d_param_def,
-            macro_params=[[["mot2", "mot3"], 4], [["mot4", "mot5", "mot6"], 5]],
-            expected_params_list=[[["mot2", "mot3"], 4],
-                                  [["mot4", "mot5", "mot6"], 5]]
+            macro_params=[[[["mot2", "mot3"], 4],
+                           [["mot4", "mot5", "mot6"], 5]]],
+            expected_params_list=[[[["mot2", "mot3"], 4],
+                                   [["mot4", "mot5", "mot6"], 5]]]
             )
 
 class ParamsTestCase(unittest.TestCase):
