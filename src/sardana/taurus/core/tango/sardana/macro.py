@@ -1208,64 +1208,6 @@ def ParamFactory(paramInfo):
         param = SingleParamNode(param=paramInfo)
     return param
 
-  
-
-def check_interface(param_raw, param_node):
-    """Check which interface is being used: complete (brackets for each
-    ParamRepeat and each repetition inside) or partial (brackets only for
-    each ParamRepeat)
-    
-    :param param_raw: element of the raw parameters list
-    :param param_node: element of the parameters node list
- 
-    :return: (int) 1 if complete interface, 0 if partial
-
-    """
-    
-    repeat_node = param_node.child(0)
-    for j, param in enumerate(param_raw):
-        if(isinstance(param,str)):
-            return 0
-        for k, par in enumerate(param):
-            member_node = repeat_node.child(k)
-            if isinstance(member_node, RepeatParamNode):
-                ret = check_interface(par, member_node)
-                if ret ==0:
-                    return ret
-    return 1
-
-def check_member_node_simple(rest_raw, param_node, mem, rep, params_info_len):
-    """Fill the ParamNode checking each repetition node asuming the partial interface
-  
-    :param rest_raw: raw parameters still not included in the macro parameteres node 
-    :param param_node: element of the parameters node list
-    :param mem: iterator on repetitions inside a ParamRepeat
-    :param rep: iterator on param nodes
-    :param params_info_len: number of nodes
-
-    """
-    for member_raw in rest_raw:
-        repeat_node = param_node.child(rep)
-        if repeat_node is None:
-            repeat_node = param_node.addRepeat()
-        member_node = repeat_node.child(mem)
-        if isinstance(member_node, RepeatParamNode):
-            params_info_nested = member_node.paramsInfo()
-            params_info_len_nested = len(params_info_nested)
-            rep_nested = 0; mem_nested = 0
-            check_member_node_simple(member_raw, member_node, mem_nested, rep_nested, params_info_len_nested)
-        else:
-            if not isinstance(member_raw, list):
-                member_node.setValue(str(member_raw))
-            else:
-                if len(member_raw) == 1:
-                    member_raw = member_raw[0]
-                    member_node.setValue(str(member_raw))
-        mem += 1
-        mem %= params_info_len
-        if mem == 0:
-            rep += 1
-
 def createMacroNode(macro_name, params_def, macro_params):
     """The best effort creation of the macro XML object. It tries to
     convert flat list of string parameter values to the correct macro XML
