@@ -537,7 +537,9 @@ class SingleParamNode(ParamNode):
     def fromList(self, v):
         """fromList method converts the parameters, into a tree of
         objects. This tree represents the structure of the parameters.
-        In this specific case, it converts a single parameter."""
+        In this specific case, it converts a single parameter.
+        :param v: (str_or_list) single parameter. Only empty list are allowed.
+        Empty list indicates default value."""
         if isinstance(v, list):
             if len(v) == 0:
                 v = self.defValue()
@@ -671,7 +673,13 @@ class RepeatParamNode(ParamNode, BranchNode):
     def fromList(self, repeats):
         """fromList method convert the parameters, into a tree of
         objects. This tree represents the structure of the parameters.
-        In this case case, it converts repeat parameters."""
+        In this case case, it converts repeat parameters.
+        :param repeats: (list<str>_or_list<list>). Parameters.
+        It is a list of strings in case of repetitions of single
+        parameters.
+        It is a list of lists in case of repetitions of more than one element
+        for each repetition.
+        """
         for j, repeat in enumerate(repeats):
             repeat_node = self.child(j)
             if repeat_node is None:
@@ -754,7 +762,13 @@ class RepeatNode(BranchNode):
     def fromList(self, params):
         """fromList method convert the parameters, into a tree of
         objects. This tree represents the structure of the parameters.
-        In this case case, it converts repeat parameters."""
+        In this case case, it converts repeat parameters.
+        :param params: (list<str>_or_<str>). Parameters.
+        It is a list of strings in case of param repeat of more than one
+        element for each repetition.
+        It is a string or empty list in case of repetitions of
+        single elements.
+        """
         if len(self.children()) == 1:
             self.child(0).fromList(params)
         else:
@@ -1140,7 +1154,12 @@ class MacroNode(BranchNode):
     def fromList(self, values):
         """fromList method convert the parameters, into a tree of
         objects. This tree represents the structure of the parameters.
-        This will allow to pass the parameters to the macroserver"""
+        This will allow to pass the parameters to the macroserver.
+        :param values: (list<str>_list<list<str>>). Parameters.
+        It is a list of strings in case of single parameters.
+        In the rest of cases, values are list of objects
+        where the objects can be strings or lists in a recursive mode.
+        """
         params = self.params()
         for i, node in enumerate(params):
             try:
