@@ -574,7 +574,7 @@ class SpockMacroServer(BaseMacroServer):
         # IPython < 1 magic commands have different API
         if genutils.get_ipython_version_list() < [1, 0]:
             def macro_fn(shell, parameter_s='', name=macro_name):
-                parameters = genutils.arg_split(parameter_s, posix=True)
+                parameters = split_macro_parameters(parameter_s)
                 door = genutils.get_door()
                 door.runMacro(macro_name, parameters, synch=True)
                 macro = door.getLastRunningMacro()
@@ -582,7 +582,7 @@ class SpockMacroServer(BaseMacroServer):
                     return macro.getResult()
         else:
             def macro_fn(parameter_s='', name=macro_name):
-                parameters = genutils.arg_split(parameter_s, posix=True)
+                parameters = split_macro_parameters(parameter_s)
                 door = genutils.get_door()
                 door.runMacro(macro_name, parameters, synch=True)
                 macro = door.getLastRunningMacro()
@@ -602,3 +602,23 @@ class SpockMacroServer(BaseMacroServer):
         macro_name = macro_info.name
         genutils.unexpose_magic(macro_name)
         del self._local_magic[macro_name]
+
+class Reflector(object):
+    def __getitem__(self, name):
+        return name
+
+def split_macro_parameters(parameters_s):
+    macro_params = genutils.arg_split(parameters_s, posix=True)
+    params_str = ''
+    for par in macro_params:
+        params_str = params_str + str(par) + ","
+    params_str = params_str[:-1] 
+    params_str = params_str.replace("[,", "[").replace(",]","]").replace("][", "],[")
+    macro_params = eval(params_str, globals(), Reflector())
+    if type(macro_params) == list:
+        new_params = []
+        new_params.append(macro_params)
+        macro_params = new_params
+    # Convert tuple to list
+    macro_params = list(macro_params)
+    return macro_params
