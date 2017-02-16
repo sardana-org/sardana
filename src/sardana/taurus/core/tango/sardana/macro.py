@@ -535,6 +535,9 @@ class SingleParamNode(ParamNode):
         return self._value
 
     def fromList(self, v):
+        """fromList method converts the parameters, into a tree of
+        objects. This tree represents the structure of the parameters.
+        In this specific case, it converts a single parameter."""
         if isinstance(v, list):
             if len(v) == 0:
                 v = self.defValue()
@@ -666,6 +669,9 @@ class RepeatParamNode(ParamNode, BranchNode):
         return [child.toList() for child in self.children()]
 
     def fromList(self, repeats):
+        """fromList method convert the parameters, into a tree of
+        objects. This tree represents the structure of the parameters.
+        In this case case, it converts repeat parameters."""
         for j, repeat in enumerate(repeats):
             repeat_node = self.child(j)
             if repeat_node is None:
@@ -746,6 +752,9 @@ class RepeatNode(BranchNode):
             return [child.toList() for child in self.children()]
 
     def fromList(self, params):
+        """fromList method convert the parameters, into a tree of
+        objects. This tree represents the structure of the parameters.
+        In this case case, it converts repeat parameters."""
         if len(self.children()) == 1:
             self.child(0).fromList(params)
         else:
@@ -1129,6 +1138,9 @@ class MacroNode(BranchNode):
         return list_
 
     def fromList(self, values):
+        """fromList method convert the parameters, into a tree of
+        objects. This tree represents the structure of the parameters.
+        This will allow to pass the parameters to the macroserver"""
         params = self.params()
         for i, node in enumerate(params):
             try:
