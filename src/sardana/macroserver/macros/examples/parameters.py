@@ -154,7 +154,7 @@ class pt6(Macro):
 class pt7(Macro):
     """Macro with a list of pair Motor,Float.
     Usages from Spock, ex.:
-    pt7 [[mot1 1][mot2 3]]
+    pt7 [[mot1 1] [mot2 3]]
     pt7 mot1 1 mot2 3
     """
 
@@ -170,10 +170,10 @@ class pt7(Macro):
 class pt7d1(Macro):
     """Macro with a list of pair Motor,Float. Default value for last ParamRepeat element.
     Usages from Spock, ex.:
-    pt7d1 [[mot1 1][mot2 3]]
+    pt7d1 [[mot1 1] [mot2 3]]
     pt7d1 mot1 1 mot2 3
     Using default value, ex.:
-    pt7d1 [[mot1][mot2 3]] # at any repetition
+    pt7d1 [[mot1] [mot2 3]] # at any repetition
     
     """
 
@@ -190,10 +190,10 @@ class pt7d1(Macro):
 class pt7d2(Macro):
     """Macro with a list of pair Motor,Float. Default value for both ParamRepeat elements.
     Usages from Spock, ex.:
-    pt7d2 [[mot1 1][mot2 3]]
+    pt7d2 [[mot1 1] [mot2 3]]
     pt7d2 mot1 1 mot2 3
     Using both default values, ex.:
-    pt7d2 [[][mot2 3][]] # at any repetition
+    pt7d2 [[] [mot2 3] []] # at any repetition
     """
 
     param_def = [
@@ -209,7 +209,7 @@ class pt8(Macro):
     """Macro with a list of pair Motor,Float. The min and max elements have been
     explicitly stated.
     Usages from Spock, ex.:
-    pt8 [[mot1 1][mot2 3]]
+    pt8 [[mot1 1] [mot2 3]]
     pt8 mot1 1 mot2 3    
     """
     
@@ -262,7 +262,6 @@ class pt11(Macro):
     """Macro with list of numbers followed by a motor parameter. The repeat
     parameter may be defined as first one.
     Usages from Spock, ex.:
-    pt11 ct1 [[1][3]] mot1
     pt11 ct1 [1 3] mot1
     """
 
@@ -296,7 +295,7 @@ class pt13(Macro):
     """Macro with list of motors groups, where each motor group is a list of 
     motors. Repeat parameters may be defined as nested.
     Usage from Spock, ex.:
-    pt13 [[mot1 mot2][mot3 mot4]]
+    pt13 [[mot1 mot2] [mot3 mot4]]
 """
 
     param_def = [
