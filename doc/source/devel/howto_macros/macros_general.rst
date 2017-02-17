@@ -600,10 +600,8 @@ parameters with different *flavors*:
 
         self.execMacro('ascan %s 0 100 10 0.2' % motor.getName())
         self.execMacro('mv [[%s 0]]' % motor.getName()) 
-        self.execMacro('mv [%s 0]' % motor.getName()) # simplified interface
         self.execMacro('mv %s 0' % motor.getName()) # backwards compatibility - see note
         self.execMacro('mv [[%s 0][%s 20]]' % (motor.getName(), motor2.getName()))
-        self.execMacro('mv [%s 0 %s 20]' % (motor.getName(), motor2.getName())) # simplified interface
         self.execMacro('mv %s 0 %s 20' % (motor.getName(), motor2.getName())) # backwards compatibility - see note
       
     * parameters as concrete types::
@@ -617,8 +615,7 @@ parameters with different *flavors*:
     use :ref:`repeat parameters <sardana-macro-repeat-parameters>`.
     From Sardana 2.0 the repeat parameter values must be passed as lists of
     items. An item of a repeat parameter containing more than one member is a
-    list. In order to simplify the interface the use of the brackets closing each
-    repetition of a ParamRepeat can be skipped.
+    list.
     In case when a macro defines only one repeat parameter
     and it is the last parameter, for the backwards compatibility reasons, the
     plain list of items' members is allowed.
