@@ -313,7 +313,7 @@ class pt14(Macro):
     """Macro with list of motors groups, where each motor group is a list of 
     motors and a float. Repeat parameters may be defined as nested.
     Usage from Spock, ex.:
-    pt14 [[[mot61 mot62] 3] [[mot63] 5]]
+    pt14 [[[mot1 mot2] 3] [[mot3] 5]]
     """
 
     param_def = [
@@ -331,14 +331,14 @@ class pt14d(Macro):
     motors and a float. Repeat parameters may be defined as nested.
     Default values can be used.
     Usages taken default values, ex.:
-    pt14d [[[mot61 mot62] 3] [[mot63] []]]
-    pt14d [[[mot61 []] 3] [[mot63] []]]
-    pt14d [[[[]] 3] [[mot03] []]]
+    pt14d [[[mot1 mot2] 3] [[mot3] []]]
+    pt14d [[[mot1 []] 3] [[mot3] []]]
+    pt14d [[[[]] 3] [[mot3] []]]
     """
 
     param_def = [
        ['motor_group_list',
-        [['motor_list', [['motor', Type.Motor, 'exp_dmy01', 'Motor to move']], None, 'List of motors'],
+        [['motor_list', [['motor', Type.Motor, 'mot1', 'Motor to move']], None, 'List of motors'],
          ['float', Type.Float, 33, 'Number']],
         None, 'Motor groups']
     ]
