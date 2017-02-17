@@ -613,7 +613,6 @@ def split_macro_parameters(parameters_s):
 
     if len(macro_params) != 0:
         for par in macro_params:
-            print(par)
             params_str = params_str + str(par) + ","
         params_str = params_str[:-1]
         params_str = params_str.replace("[,", "[").replace(",]", "]").replace(
@@ -623,7 +622,7 @@ def split_macro_parameters(parameters_s):
             new_params = []
             new_params.append(macro_params)
             macro_params = new_params
-            
+
     # Convert tuple to list
     macro_params = list(macro_params)
     return macro_params
