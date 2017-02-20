@@ -610,8 +610,12 @@ class Reflector(object):
 def split_macro_parameters(parameters_s):
     macro_params = genutils.arg_split(parameters_s, posix=True)
 
+    list_of_pars = 0
+    if len(macro_params) == 1:
+        if  macro_params[0].find('[') > -1:
+            list_of_pars = 1
     # skip empty strings and just one parameter
-    if len(macro_params) > 1:
+    if len(macro_params) > 1 or list_of_pars:
         params_str = ''
         for par in macro_params:
             params_str = params_str + str(par) + ","
