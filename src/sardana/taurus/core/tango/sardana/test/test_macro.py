@@ -273,7 +273,6 @@ class ParamsTestCase(unittest.TestCase):
         Helper to verify the correct building of the parameters objects tree.
         Verify that the list is recreated correctly from the parameters
         objects tree.
-        :param macro_name: (str) name of the macro
         :param param_def:   (list<dict>) macro parameters definition
         :param macro_params: (list<str>) list of strings representing macro
             parameters values.
