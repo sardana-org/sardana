@@ -211,5 +211,5 @@ class PoolSynchronization(PoolAction):
             while True:
                 if not self._synch_soft.is_started():
                     break
-                time.sleep(nap)
+                time.sleep(0.01)
 
