@@ -608,6 +608,22 @@ class Reflector(object):
         return name
 
 def split_macro_parameters(parameters_s):
+    """Split string with macro parameters into a list with macro parameters.
+    Whitespaces are the separators between the parameters.
+    
+    When the input string contains square brackets it indicates an advanced
+    syntax for representing repeat parameters. Repeat parameters are encapsulated
+    in square brackets and its internal repetitions, if composed from more than
+    one item are also encapsulated in brackets. In this case the output list
+    contains lists internally.
+    
+    :param parameters_s (string): input string containing parameters
+    :returns (list): parameters represented as a list (may contain internal lists)
+    
+    ..todo:: This function is quite hard to understand and may be optimized by
+        implementing it in a form of parser. If it causes problems in the future
+        it is recommended to refactor it.
+    """
     macro_params = genutils.arg_split(parameters_s, posix=True)
 
     list_of_pars = 0
