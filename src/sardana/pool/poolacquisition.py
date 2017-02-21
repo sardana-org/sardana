@@ -229,7 +229,7 @@ class PoolAcquisition(PoolAction):
             # this code is not thread safe, but for the moment we assume that
             # only one EventGenerator will work at the same time
             if self._sw_acq_config:
-                if self._sw_acq.is_running():
+                if self._sw_acq._is_started() or self._sw_acq.is_running():
                     msg = ('Skipping trigger: software acquisition is still'
                            ' in progress.')
                     self.debug(msg)
@@ -240,9 +240,10 @@ class PoolAcquisition(PoolAction):
                     kwargs = self._sw_acq_config
                     kwargs['synch'] = True
                     kwargs['idx'] = value
+                    self._sw_acq._started = True
                     get_thread_pool().add(self._sw_acq.run, *args, **kwargs)
             if self._0d_config:
-                if self._0d_acq.is_running():
+                if self._0d_acq._is_started() or self._0d_acq.is_running():
                     msg = ('Skipping trigger: ZeroD acquisition is still in'
                            ' progress.')
                     self.debug(msg)
@@ -253,9 +254,13 @@ class PoolAcquisition(PoolAction):
                     kwargs = self._0d_config
                     kwargs['synch'] = True
                     kwargs['idx'] = value
+                    self._0d_acq._started = True
+                    self._0d_acq._stopped = False
+                    self._0d_acq._aborted = False
                     get_thread_pool().add(self._0d_acq.run, *args, **kwargs)
         elif name == "passive":
-            if self._0d_config and self._0d_acq.is_running():
+            if self._0d_config and (self._0d_acq._is_started() or
+                                    self._0d_acq.is_running()):
                 self.debug('Stopping ZeroD acquisition.')
                 self._0d_acq.stop_action()
 
@@ -900,8 +905,11 @@ class Pool0DAcquisition(PoolAction):
         self.conf = kwargs
 
         # prepare data structures
-        self._aborted = False
-        self._stopped = False
+        # TODO: rollback this change when a proper synchronization between
+        # acquisition actions will be develop.
+        # Now the meta acquisition action is resettung them to 0.
+#         self._aborted = False
+#         self._stopped = False
 
         self._acq_sleep_time = kwargs.pop("acq_sleep_time",
                                           pool.acq_loop_sleep_time)

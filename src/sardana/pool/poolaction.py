@@ -204,6 +204,7 @@ class PoolAction(Logger):
         self._pool_ctrl_dict = {}
         self._pool_ctrl_list = []
         self._finish_hooks = OrderedDict()
+        self._started = False
         self._running = False
         self._state_info = OperationInfo()
         self._value_info = OperationInfo()
@@ -315,6 +316,17 @@ class PoolAction(Logger):
         :rtype: bool"""
         return self._running
 
+    def _is_started(self):
+        """Determines if this action is started or not.
+
+        :return: True if action is started or False otherwise
+        :rtype: bool
+
+        ..warning:: This method was added as a workaround for the lack of proper
+        synchronization between the software synchronizer and the acquisition
+        actions."""
+        return self._started
+
     def run(self, *args, **kwargs):
         """Runs this action"""
 
@@ -325,8 +337,10 @@ class PoolAction(Logger):
             try:
                 with OperationContext(self) as context:
                     self.start_action(*args, **kwargs)
+                    self._started = False
                     self.action_loop()
             finally:
+                self._started = False
                 self._running = False
         else:
             context = OperationContext(self)
@@ -337,6 +351,8 @@ class PoolAction(Logger):
                 context.exit()
                 self._running = False
                 raise
+            finally:
+                self._started = False
             get_thread_pool().add(self._asynch_action_loop, None, context)
 
     def start_action(self, *args, **kwargs):

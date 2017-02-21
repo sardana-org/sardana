@@ -143,9 +143,12 @@ class PoolMeasurementGroup(PoolGroupElement):
         state, status = PoolGroupElement._calculate_states(self, state_info)
         # check if software synchronizer is occupied
         synch_soft = self.acquisition._synch._synch_soft
+        acq_sw = self.acquisition._sw_acq
+        acq_0d = self.acquisition._0d_acq
         if state in (State.On, State.Unknown) \
-            and (synch_soft.is_started() or synch_soft.is_running()):
-            print "calculate_states state = Moving"
+            and (synch_soft.is_started() or
+                 acq_sw._is_started() or
+                 acq_0d._is_started()):
             state = State.Moving
             status += "/nSoftware synchronization is in progress"
         return state, status
