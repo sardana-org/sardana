@@ -336,7 +336,14 @@ class DuplicateTestCase(unittest.TestCase):
         msg = "Number of nodes after repeat node duplication is not correct"
         self.assertEqual(num_final_nodes, expected_number_of_nodes, msg)
 
-        msg = "Name of duplicated node is not correct"
-        expected_name = '#' + str(expected_number_of_nodes)
-        new_node_name = node.child(0).child(-1).name()
-        self.assertEqual(new_node_name, expected_name, msg)
+        for i in range(expected_number_of_nodes):
+            node_num = i+1
+
+            expected_name = '#' + str(node_num)
+            new_node_name = node.child(0).child(i).name()
+            msg = ("Name of node %d is not correct\n"
+                   "expected name: %s \n"
+                   "received name: %s" % (node_num,
+                                                expected_name,
+                                                new_node_name))
+            self.assertEqual(new_node_name, expected_name, msg)
