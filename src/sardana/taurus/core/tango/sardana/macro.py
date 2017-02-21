@@ -738,6 +738,13 @@ class RepeatNode(BranchNode):
             param.fromXml(paramElement)
             self.insertChild(param)
 
+    def duplicateNode(self):
+        """Method for duplicating a RepeatNode. The new node is
+        appended as the last element of the ParamRepeatNode containing the
+        RepeatNode being duplicated.
+        """
+        pass
+
     def allMotors(self):
         motors = []
         for child in self.children():
