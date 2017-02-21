@@ -7,6 +7,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
+- New spock syntax based on the square brackets to use repeat parameters
+  without limitations (#405)
 - Tooltip with parameters description in the macro execution widgets:
   MacroExecutor and Sequencer (#302)
 - Generic main to the macrobutton widget that allows to execute "any" macro
