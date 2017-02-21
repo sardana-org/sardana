@@ -399,7 +399,8 @@ class ParamDecoder:
                     if len(value) == 0:
                         value = param_def['default_value']
                     else:
-                        value = value[0]
+                        msg = 'API not allowed'
+                        raise WrongParam, msg
                 if value is None:
                     value = param_def['default_value']
                 if value is None:
