@@ -534,6 +534,22 @@ class SingleParamNode(ParamNode):
     def toList(self):
         return self._value
 
+    def fromList(self, v):
+        """fromList method converts the parameters, into a tree of
+        objects. This tree represents the structure of the parameters.
+        In this specific case, it converts a single parameter.
+        :param v: (str_or_list) single parameter. Only empty list are allowed.
+        Empty list indicates default value."""
+        if isinstance(v, list):
+            if len(v) == 0:
+                v = self.defValue()
+            elif not isinstance(self.parent(), RepeatNode):
+                msg = "Only members of repeat parameter allow list values"
+                raise ValueError(msg)
+            else:
+                raise ValueError("Too many elements in list value")
+        self.setValue(v)
+
 class RepeatParamNode(ParamNode, BranchNode):
     """Repeat parameter class."""
 
@@ -654,6 +670,22 @@ class RepeatParamNode(ParamNode, BranchNode):
     def toList(self):
         return [child.toList() for child in self.children()]
 
+    def fromList(self, repeats):
+        """fromList method convert the parameters, into a tree of
+        objects. This tree represents the structure of the parameters.
+        In this case case, it converts repeat parameters.
+        :param repeats: (list<str>_or_list<list>). Parameters.
+        It is a list of strings in case of repetitions of single
+        parameters.
+        It is a list of lists in case of repetitions of more than one element
+        for each repetition.
+        """
+        for j, repeat in enumerate(repeats):
+            repeat_node = self.child(j)
+            if repeat_node is None:
+                repeat_node = self.addRepeat()
+            repeat_node.fromList(repeat)
+
 #    def isAllowedMoveUp(self):
 #        return self is not self.parent().child(0)
 #
@@ -727,11 +759,32 @@ class RepeatNode(BranchNode):
         else:
             return [child.toList() for child in self.children()]
 
+    def fromList(self, params):
+        """fromList method convert the parameters, into a tree of
+        objects. This tree represents the structure of the parameters.
+        In this case case, it converts repeat parameters.
+        :param params: (list<str>_or_<str>). Parameters.
+        It is a list of strings in case of param repeat of more than one
+        element for each repetition.
+        It is a string or empty list in case of repetitions of
+        single elements.
+        """
+        if len(self.children()) == 1:
+            self.child(0).fromList(params)
+        else:
+            for k, member_node in enumerate(self.children()):
+                try:
+                    param = params[k]
+                except IndexError:
+                    param = []
+                member_node.fromList(param)
+
+
 class MacroNode(BranchNode):
     """Class to represent macro element."""
     count = 0
 
-    def __init__(self, parent=None, name=None):
+    def __init__(self, parent=None, name=None, params_def=None):
         BranchNode.__init__(self, parent)
         self.setId(None)
         self.setName(name)
@@ -742,6 +795,11 @@ class MacroNode(BranchNode):
         self.setHooks([])
         self.setHookPlaces([])
         self.setAllowedHookPlaces([])
+        # create parameter nodes (it is recursive for repeat parameters
+        # containing repeat parameters)
+        if params_def is not None:
+            for param_info in params_def:
+                self.addParam(ParamFactory(param_info))
 
     def id(self):
         """
@@ -1093,6 +1151,23 @@ class MacroNode(BranchNode):
         list_.insert(0, self.name())
         return list_
 
+    def fromList(self, values):
+        """fromList method convert the parameters, into a tree of
+        objects. This tree represents the structure of the parameters.
+        This will allow to pass the parameters to the macroserver.
+        :param values: (list<str>_list<list<str>>). Parameters.
+        It is a list of strings in case of single parameters.
+        In the rest of cases, values are list of objects
+        where the objects can be strings or lists in a recursive mode.
+        """
+        params = self.params()
+        for i, node in enumerate(params):
+            try:
+                raw = values[i]
+            except IndexError:
+                continue
+            node.fromList(raw)
+
 
 class SequenceNode(BranchNode):
     """Class to represent sequence element."""
@@ -1153,8 +1228,6 @@ class SequenceNode(BranchNode):
 #        return descendant
 
 
-
-
 def ParamFactory(paramInfo):
     """Factory method returning param element, depends of the paramInfo argument."""
 
@@ -1169,10 +1242,9 @@ def ParamFactory(paramInfo):
 def createMacroNode(macro_name, params_def, macro_params):
     """The best effort creation of the macro XML object. It tries to
     convert flat list of string parameter values to the correct macro XML
-    object. The cases that can not be converted are:
-        * repeat parameter containing repeat parameters
-        * two repeat parameters
-        * repeat parameter that is not the last parameter
+    object. 
+
+    Default values allow in ParamRepeat parameters or the last single ones
 
     :param macro_name: (str) macro name
     :param params_def: (list<dict>) list of param definitions
@@ -1184,51 +1256,55 @@ def createMacroNode(macro_name, params_def, macro_params):
     `sardana.taurus.core.tango.sardana.macroserver.BaseDoor._createMacroXmlFromStr`
     unify them and place in some common location.
     """
-    macro_node = MacroNode(name=macro_name)
-    # create parameter nodes (it is recursive for repeat parameters containing
-    # repeat parameters)
-    for param_info in params_def:
-        macro_node.addParam(ParamFactory(param_info))
-    # obtain just the first level parameters
-    param_nodes = macro_node.params()
-    # validate if creating XML is possible (two last cases) 
-    contain_param_repeat = False
-    len_param_nodes = len(param_nodes)
-    for i, param_node in enumerate(param_nodes):
-        if isinstance(param_node, RepeatParamNode):
-            if contain_param_repeat:
-                msg = "Only one repeat parameter is allowed"
-                raise Exception(msg)
-            if i < len_param_nodes - 1:
-                msg = "Repeat parameter must be the last one"
-                raise Exception(msg)
-            contain_param_repeat = True
-    # this ignores raw_parameters which exceeds the param_def  
-    for param_node, param_raw in zip(param_nodes, macro_params):
-        if isinstance(param_node, SingleParamNode):
-            param_node.setValue(param_raw)
-        # the rest of the values are interpreted as repeat parameter
-        elif isinstance(param_node, RepeatParamNode):
-            params_info = param_node.paramsInfo()
-            params_info_len = len(params_info)
-            rep = 0; mem = 0
-            rest_raw = macro_params[i:]
-            for member_raw in rest_raw:
-                repeat_node = param_node.child(rep)
-                # add a new repeat node (this is needed when the raw values
-                # fill more repeat nodes that the minimum number of 
-                # repetitions e.g. min=0
-                if repeat_node is None:
-                    repeat_node = param_node.addRepeat()
-                member_node = repeat_node.child(mem)
-                if isinstance(member_node, RepeatParamNode):
-                    msg = ("Nested repeat parameters are not allowed")
-                    raise Exception(msg)
-                member_node.setValue(member_raw)
-                mem += 1
-                mem %= params_info_len
-                if mem == 0:
-                    rep += 1
+    macro_node = MacroNode(name=macro_name, params_def=params_def)
+    # Check if ParamRepeat used in advanced interface
+    new_interface = False
+    for param in macro_params:
+        if isinstance(param, list):
+            new_interface = True
             break
+
+    if not new_interface:
+        param_nodes = macro_node.params()
+        contain_param_repeat = False
+        len_param_nodes = len(param_nodes)
+        for i, param_node in enumerate(param_nodes):
+            if isinstance(param_node, RepeatParamNode):
+                if contain_param_repeat:
+                    msg = "Only one repeat parameter is allowed"
+                    raise Exception(msg)
+                if i < len_param_nodes - 1:
+                    msg = "Repeat parameter must be the last one"
+                    raise Exception(msg)
+        # If ParamRepeat only one and as last parameter
+        # this ignores raw_parameters which exceeds the param_def  
+        for param_node, param_raw in zip(param_nodes, macro_params):
+            if isinstance(param_node, SingleParamNode):
+                param_node.setValue(param_raw)
+            # the rest of the values are interpreted as repeat parameter
+            elif isinstance(param_node, RepeatParamNode):
+                params_info = param_node.paramsInfo()
+                params_info_len = len(params_info)
+                rep = 0; mem = 0
+                rest_raw = macro_params[i:]
+                for member_raw in rest_raw:
+                    repeat_node = param_node.child(rep)
+                    # add a new repeat node (this is needed when the raw values
+                    # fill more repeat nodes that the minimum number of 
+                    # repetitions e.g. min=0
+                    if repeat_node is None:
+                        repeat_node = param_node.addRepeat()
+                    member_node = repeat_node.child(mem)
+                    if isinstance(member_node, RepeatParamNode):
+                        msg = ("Nested repeat parameters are not allowed")
+                        raise Exception(msg)
+                    member_node.setValue(member_raw)
+                    mem += 1
+                    mem %= params_info_len
+                    if mem == 0:
+                        rep += 1
+                break
+    else:
+        macro_node.fromList(macro_params)
     return macro_node
 

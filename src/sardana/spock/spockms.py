@@ -574,7 +574,7 @@ class SpockMacroServer(BaseMacroServer):
         # IPython < 1 magic commands have different API
         if genutils.get_ipython_version_list() < [1, 0]:
             def macro_fn(shell, parameter_s='', name=macro_name):
-                parameters = genutils.arg_split(parameter_s, posix=True)
+                parameters = split_macro_parameters(parameter_s)
                 door = genutils.get_door()
                 door.runMacro(macro_name, parameters, synch=True)
                 macro = door.getLastRunningMacro()
@@ -582,7 +582,7 @@ class SpockMacroServer(BaseMacroServer):
                     return macro.getResult()
         else:
             def macro_fn(parameter_s='', name=macro_name):
-                parameters = genutils.arg_split(parameter_s, posix=True)
+                parameters = split_macro_parameters(parameter_s)
                 door = genutils.get_door()
                 door.runMacro(macro_name, parameters, synch=True)
                 macro = door.getLastRunningMacro()
@@ -602,3 +602,48 @@ class SpockMacroServer(BaseMacroServer):
         macro_name = macro_info.name
         genutils.unexpose_magic(macro_name)
         del self._local_magic[macro_name]
+
+class Reflector(object):
+    def __getitem__(self, name):
+        return name
+
+def split_macro_parameters(parameters_s):
+    """Split string with macro parameters into a list with macro parameters.
+    Whitespaces are the separators between the parameters.
+    
+    When the input string contains square brackets it indicates an advanced
+    syntax for representing repeat parameters. Repeat parameters are encapsulated
+    in square brackets and its internal repetitions, if composed from more than
+    one item are also encapsulated in brackets. In this case the output list
+    contains lists internally.
+    
+    :param parameters_s (string): input string containing parameters
+    :returns (list): parameters represented as a list (may contain internal lists)
+    
+    ..todo:: This function is quite hard to understand and may be optimized by
+        implementing it in a form of parser. If it causes problems in the future
+        it is recommended to refactor it.
+    """
+    macro_params = genutils.arg_split(parameters_s, posix=True)
+
+    list_of_pars = 0
+    if len(macro_params) == 1:
+        if  macro_params[0].find('[') > -1:
+            list_of_pars = 1
+    # skip empty strings and just one parameter
+    if len(macro_params) > 1 or list_of_pars:
+        params_str = ''
+        for par in macro_params:
+            params_str = params_str + str(par) + ","
+        params_str = params_str[:-1]
+        params_str = params_str.replace("[,", "[").replace(",]", "]").replace(
+            "][", "],[")
+        macro_params = eval(params_str, globals(), Reflector())
+        if type(macro_params) == list:
+            new_params = []
+            new_params.append(macro_params)
+            macro_params = new_params
+
+    # Convert tuple to list
+    macro_params = list(macro_params)
+    return macro_params

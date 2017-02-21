@@ -22,3 +22,8 @@
 ## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
+
+
+from .paramdef import (pt3d_param_def, pt5d_param_def, pt7d_param_def,
+                       pt10d_param_def, pt12d_param_def, pt13d_param_def,
+                       pt14d_param_def)

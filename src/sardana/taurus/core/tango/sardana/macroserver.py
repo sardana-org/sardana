@@ -60,6 +60,20 @@ from .macro import createMacroNode
 
 CHANGE_EVT_TYPES = TaurusEventType.Change, TaurusEventType.Periodic
 
+def recur_map(fun, data, keep_none=False):
+    """Recursive map. Similar to map, but maintains the list objects structure
+
+    :param fun: <callable> the same purpose as in map function
+    :param data: <object> the same purpose as in map function
+    :param keep_none: <bool> keep None elements without applying fun
+    """
+    if hasattr(data, "__iter__"):
+        return [recur_map(fun, elem, keep_none) for elem in data]
+    else:
+        if keep_none is True and data is None:
+            return data
+        else:
+            return fun(data)
 
 class Attr(Logger, EventGenerator):
 
@@ -497,7 +511,7 @@ class BaseDoor(MacroServerDevice):
                         pars = m.split()
                         macros.append((pars[0], pars[1:]))
                 else:
-                    parameters = map(str, parameters)
+                    parameters = recur_map(str, parameters)
                     macros.append((obj, parameters))
                 xml_root = xml_seq = etree.Element('sequence')
                 for m in macros:
