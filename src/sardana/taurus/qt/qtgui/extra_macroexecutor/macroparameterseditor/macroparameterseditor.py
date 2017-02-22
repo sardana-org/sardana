@@ -53,6 +53,7 @@ class MacroParametersEditor(object):
 #    def onModelReset(self):
 #        self.onDataChanged()
 
+
 class StandardMacroParametersEditor(Qt.QWidget, MacroParametersEditor):
 
     def __init__(self, parent=None, macroNode=None):
@@ -101,6 +102,7 @@ class StandardMacroParametersEditor(Qt.QWidget, MacroParametersEditor):
     def setMacroNode(self, macroNode):
         self.tree.setMacroNode(macroNode)
 
+
 class MacroParametersTree(Qt.QTreeView):
 
     def __init__(self, parent=None, designMode=False):
@@ -135,7 +137,6 @@ class MacroParametersTree(Qt.QTreeView):
 
         self.disableActions()
 
-
     def disableActions(self):
         self.addAction.setEnabled(False)
         self.deleteAction.setEnabled(False)
@@ -158,7 +159,6 @@ class MacroParametersTree(Qt.QTreeView):
             self.addAction.setEnabled(not node.isReachedMax())
             self.deleteAction.setEnabled(False)
             self.duplicateAction.setEnabled(False)
-
 
     def currentChanged(self, current, previous):
         self.manageActions(current)
