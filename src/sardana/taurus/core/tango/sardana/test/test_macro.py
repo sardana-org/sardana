@@ -303,6 +303,9 @@ class DuplicateTestCase(unittest.TestCase):
         """
         Helper to verify the correct duplication of a RepeatNode. Duplication
         of parameters.
+        
+        ..todo:: To be more unit test the use of MacroNode class should be
+        avoided. Use of RepeatParamNode and its children should be enough.
         """
 
         # Create the MacroNode
