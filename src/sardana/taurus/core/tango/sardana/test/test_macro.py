@@ -292,3 +292,61 @@ class ParamsTestCase(unittest.TestCase):
         self.assertEqual(output_params_list, expected_params_list, msg)
 
 
+
+class DuplicateTestCase(unittest.TestCase):
+
+    """
+    Duplicate a RepeatNode and check that it has been correctly duplicated.
+    """
+
+    def testDuplication(self):
+        """
+        Helper to verify the correct duplication of a RepeatNode. Duplication
+        of parameters.
+        
+        ..todo:: To be more unit test the use of MacroNode class should be
+        avoided. Use of RepeatParamNode and its children should be enough.
+        """
+
+        # Create the MacroNode
+        node = MacroNode(name="macro_name", params_def=pt7d_param_def)
+        repeat_node_params = [['mot01', '0'], ['mot02', '2'], ['mot03', '4']]
+        node.fromList([repeat_node_params])
+
+        # Number of nodes before duplication
+        num_initial_nodes = len(node.child(0))
+
+        # Duplicate one RepeatNode
+        num_node_to_duplicate = 1
+        node_to_duplicate = node.child(0).child(num_node_to_duplicate)
+        node_to_duplicate.duplicateNode()
+
+        # Number of nodes after duplication
+        num_final_nodes = len(node.child(0))
+
+        # We get the last element RepeatNode.
+        output_params_list = node.child(0).toList()
+        repeat_node = node_to_duplicate.toList()
+        expected_params_list = repeat_node_params + [repeat_node]
+
+        msg = ("Repeat Node has not been correctly duplicated\n"
+               "expected parameters: %s \n"
+               "received parameters: %s" % (expected_params_list,
+                                            output_params_list))
+        self.assertEqual(output_params_list, expected_params_list, msg)
+
+        expected_number_of_nodes = num_initial_nodes + 1
+        msg = "Number of nodes after repeat node duplication is not correct"
+        self.assertEqual(num_final_nodes, expected_number_of_nodes, msg)
+
+        for i in range(expected_number_of_nodes):
+            node_num = i+1
+
+            expected_name = '#' + str(node_num)
+            new_node_name = node.child(0).child(i).name()
+            msg = ("Name of node %d is not correct\n"
+                   "expected name: %s \n"
+                   "received name: %s" % (node_num,
+                                                expected_name,
+                                                new_node_name))
+            self.assertEqual(new_node_name, expected_name, msg)
