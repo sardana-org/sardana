@@ -1030,6 +1030,8 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable):
         'Value'       : { 'type' : (float,),
                           'description' : 'Value',
                           'maxdimsize' : (16*1024,) },
+        'Data'       : { 'type' : str,
+                          'description' : 'Data', },
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 
@@ -1040,6 +1042,7 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable):
         Controller.__init__(self, inst, props, *args, **kwargs)
         self._latency_time = 0
         self._read_when_acq = True
+        self._synchronization = AcqSynch.SoftwareTrigger
         
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
