@@ -686,8 +686,8 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
                                      ctrls=self._pool_ctrls_read_when_acq)
                 for acquirable, value in values.items():
                     if isinstance(value, SardanaValue) and value.error:
-                        self.warning("Error when reading value: %r" %
-                                     value.exc_info)
+                        self.warning("Error when reading value: %s" %
+                                     repr(value.exc_info))
                     elif len(value) > 0:
                         channel = self._channels_read_when_acq[acquirable]
                         channel._fill_idx(value)
