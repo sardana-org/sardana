@@ -22,9 +22,11 @@
 ##############################################################################
 
 import time
+import copy
 import numpy
 
 from sardana import State
+from sardana.pool import AcqSynch
 from sardana.pool.controller import OneDController, MaxDimSize
 from sardana.pool.controller import DefaultValue, Description, FGet, FSet, Type
 
@@ -39,6 +41,7 @@ class Channel:
         self.is_counting = False
         self.active = True
         self.amplitude = BaseValue('1.0')
+        self._counter = 0
 
 
 class BaseValue(object):
@@ -89,6 +92,7 @@ class DummyOneDController(OneDController):
     
     def __init__(self, inst, props, *args, **kwargs):
         OneDController.__init__(self, inst, props, *args, **kwargs)
+        self._repetitions = 1
         self.channels = self.MaxDevice*[None,]
         self.reset()
 
@@ -139,26 +143,47 @@ class DummyOneDController(OneDController):
         return sta, status
         
     def _updateChannelState(self, axis, elapsed_time):
-        channel = self.channels[axis-1]
-        if self.integ_time is not None:
-            # counting in time
-            if elapsed_time >= self.integ_time:
-                self._finish(elapsed_time)
-        elif self.monitor_count is not None:
-            # monitor counts
-            v = int(elapsed_time*100*axis)
-            if v >= self.monitor_count:
-                self._finish(elapsed_time)
+        if self._synchronization == AcqSynch.SoftwareTrigger:
+            if self.integ_time is not None:
+                # counting in time
+                if elapsed_time >= self.integ_time:
+                    self._finish(elapsed_time)
+            elif self.monitor_count is not None:
+                # monitor counts
+                v = int(elapsed_time*100*axis)
+                if v >= self.monitor_count:
+                    self._finish(elapsed_time)
+        elif self._synchronization in (AcqSynch.HardwareTrigger,
+                                       AcqSynch.HardwareGate):
+            if self.integ_time is not None:
+                if elapsed_time > self._repetitions * (self.integ_time +
+                                                         self._latency_time):
+                    self._finish(elapsed_time)
+        
     
     def _updateChannelValue(self, axis, elapsed_time):
         channel = self.channels[axis-1]
         t = elapsed_time
-        if self.integ_time is not None and not channel.is_counting:
-            t = self.integ_time
-        x = numpy.linspace(-10, 10, self.BufferSize[0])
-        amplitude = axis * t * channel.amplitude.get()
-        channel.value = gauss(x, 0, amplitude, 4)
-    
+        if self._synchronization == AcqSynch.SoftwareTrigger:
+            if self.integ_time is not None and not channel.is_counting:
+                t = self.integ_time
+            x = numpy.linspace(-10, 10, self.BufferSize[0])
+            amplitude = axis * t * channel.amplitude.get()
+            channel.value = gauss(x, 0, amplitude, 4)
+        elif self._synchronization in (AcqSynch.HardwareTrigger,
+                                       AcqSynch.HardwareGate):
+            if self.integ_time is not None:
+                n = int(t / self.integ_time)
+                cp = 0
+                if n > self._repetitions:
+                    cp = n - self._repetitions
+                n = n - channel._counter -cp
+                t = self.integ_time
+                x = numpy.linspace(-10, 10, self.BufferSize[0])
+                amplitude = axis * t * channel.amplitude.get()
+                value = gauss(x, 0, amplitude, 4)
+                channel.buffer_values = [value] * n
+
     def _finish(self, elapsed_time, axis=None):
         if axis is None:
             for axis, channel in self.counting_channels.items():
@@ -193,7 +218,16 @@ class DummyOneDController(OneDController):
     
     def ReadOne(self, axis):
         self._log.debug("ReadOne(%s)", axis)
-        v = self.read_channels[axis].value
+        channel = self.read_channels[axis]
+        if self._synchronization == AcqSynch.SoftwareTrigger:
+            v = channel.value
+        elif self._synchronization in (AcqSynch.HardwareTrigger,
+                                       AcqSynch.HardwareGate):
+            v = copy.deepcopy(channel.buffer_values)
+            v = map(numpy.ndarray.tolist, v)
+            channel._counter = channel._counter + len(v)
+            channel.buffer_values.__init__()
+        self._log.debug("DummyOneDController.ReadOne: returns %r" % v)
         return v
     
     def PreStartAll(self):
@@ -203,6 +237,8 @@ class DummyOneDController(OneDController):
         idx = axis - 1
         channel = self.channels[idx]
         channel.value = 0.0
+        channel._counter = 0
+        channel.buffer_values = []
         self.counting_channels[axis] = channel
         return True
     
@@ -212,7 +248,7 @@ class DummyOneDController(OneDController):
     def StartAll(self):
         self.start_time = time.time()
     
-    def LoadOne(self, axis, value):
+    def LoadOne(self, axis, value, repetitions):
         idx = axis - 1
         if value > 0:
             self.integ_time = value
@@ -220,6 +256,7 @@ class DummyOneDController(OneDController):
         else:
             self.integ_time = None
             self.monitor_count = -value
+        self._repetitions = repetitions
     
     def AbortOne(self, axis):
         now = time.time()
