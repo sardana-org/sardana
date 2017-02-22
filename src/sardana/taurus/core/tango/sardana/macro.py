@@ -757,6 +757,9 @@ class RepeatNode(BranchNode):
     def isAllowedDel(self):
         pass
 
+    def isAllowedDuplicate(self):
+        pass
+
     def isAllowedMoveUp(self):
         return self is not self.parent().child(0)
 
