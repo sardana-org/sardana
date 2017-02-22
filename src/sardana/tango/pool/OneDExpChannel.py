@@ -173,9 +173,9 @@ class OneDExpChannel(PoolElementDevice):
         # buffer so the cached value will be returned only at the first readout
         # after the acquisition. This is a workaround for the step scans which
         # read the value after the acquisition.
-        if not use_cache and len(ct.value.value_buffer) > 0:
+        if not use_cache and len(oned.value.value_buffer) > 0:
             use_cache = True
-            ct.value.clear_buffer()
+            oned.value.clear_buffer()
         value = oned.get_value(cache=use_cache, propagate=0)
         if value.error:
             Except.throw_python_exception(*value.exc_info)
