@@ -399,7 +399,7 @@ class ParamDecoder:
                     if len(value) == 0:
                         value = param_def['default_value']
                     else:
-                        msg = 'API not allowed'
+                        msg = 'Brackets not allowed for single element repetitions'
                         raise WrongParam, msg
                 if value is None:
                     value = param_def['default_value']
