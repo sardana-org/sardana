@@ -126,7 +126,7 @@ class MacroParametersTree(Qt.QTreeView):
         self.connect(self.moveDownAction, Qt.SIGNAL("triggered()"), self.onDownRepeat)
         self.moveDownAction.setToolTip("Clicking this button will move current repetition down.")
 
-        self.duplicateAction = Qt.QAction(getThemeIcon("gtk-copy"),
+        self.duplicateAction = Qt.QAction(getThemeIcon("edit-copy"),
                                           "Duplicate", self)
         self.connect(self.duplicateAction, Qt.SIGNAL("triggered()"),
                      self.onDuplicateRepeat)
