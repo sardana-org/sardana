@@ -27,6 +27,7 @@
 model.py: 
 """
 
+import copy
 from lxml import etree
 
 from taurus.external.qt import Qt
@@ -126,6 +127,15 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         if isinstance(parentNode, macro.RepeatParamNode):
             parentNode.arrangeIndexes()
         return newIndex
+
+    def _duplicateNode(self, index):
+        node_to_duplicate = self.nodeFromIndex(index)
+        parentIndex = index.parent()
+        parentNode = self.nodeFromIndex(parentIndex)
+        node = copy.deepcopy(node_to_duplicate)
+        self._insertRow(parentIndex, node, -1)
+        if isinstance(parentNode, macro.RepeatParamNode):
+            parentNode.arrangeIndexes()
 
     def _leftRow(self, index):
         """This method is used to move selected macro (pased via index)
