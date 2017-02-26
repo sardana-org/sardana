@@ -507,8 +507,6 @@ class PoolAcquisitionBase(PoolAction):
         pool_ctrls = []
         # controllers that will be read at the end of the action
         self._pool_ctrl_dict_loop = _pool_ctrl_dict_loop = {}
-        # controllers that will be read in the loop during the action
-        self._pool_ctrls_read_when_acq = _pool_ctrls_read_when_acq = {}
         # channels that are acquired (only enabled)
         self._channels = channels = {}
 
@@ -531,10 +529,6 @@ class PoolAcquisitionBase(PoolAction):
                 # only CT will be read in the loop, 1D and 2D not
                 if ElementType.CTExpChannel in ctrl.get_ctrl_types():
                     _pool_ctrl_dict_loop[ctrl] = pool_ctrl_data
-                    # read only the ones which allow that
-                    if ctrl.get_ctrl_par("read_when_acq"):
-                        _pool_ctrls_read_when_acq[ctrl] = pool_ctrl_data
-
 
         pool_ctrls = []
         self._pool_ctrl_dict_loop = _pool_ctrl_dict_loop = {}
@@ -685,7 +679,7 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
                         self.warning("Error when reading value: %r" %
                                      value.exc_info)
                     elif len(value) > 0:
-                        channel = self._channels_read_when_acq[acquirable]
+                        channel = self._channels[acquirable]
                         channel._fill_idx(value)
                         acquirable.put_value_chunk(value)
 
