@@ -659,12 +659,18 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
         i = 0
 
         states, values = {}, {}
-        for element in self._channels_read_when_acq:
+        for element in self._channels:
             states[element] = None
             values[element] = None
 
         nap = self._acq_sleep_time
         nb_states_per_value = self._nb_states_per_value
+
+        # read values to send a first event when starting to acquire
+        with ActionContext(self):
+            self.raw_read_value_loop(ret=values)
+            for acquirable, value in values.items():
+                acquirable.put_value_chunk(value, propagate=2)
 
         while True:
             self.read_state_info(ret=states)
@@ -673,8 +679,7 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
 
             # read value every n times
             if not i % nb_states_per_value:
-                self.read_value_loop(ret=values,
-                                     ctrls=self._pool_ctrls_read_when_acq)
+                self.read_value_loop(ret=values)
                 for acquirable, value in values.items():
                     if isinstance(value, SardanaValue) and value.error:
                         self.warning("Error when reading value: %r" %
@@ -686,11 +691,6 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
 
             time.sleep(nap)
             i += 1
-
-        states, values = {}, {}
-        for element in self._channels:
-            states[element] = None
-            values[element] = None
 
         with ActionContext(self):
             self.raw_read_state_info(ret=states)
