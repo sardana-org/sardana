@@ -886,7 +886,6 @@ class CounterTimerController(Controller, Readable, Startable, Stopable, Loadable
         self._timer = None
         self._monitor = None
         self._master = None
-        self._read_when_acq = True
         self._latency_time = 0
         self._synchronization = AcqSynch.SoftwareTrigger
 
@@ -1039,7 +1038,6 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable):
     def __init__(self, inst, props, *args, **kwargs):
         Controller.__init__(self, inst, props, *args, **kwargs)
         self._latency_time = 0
-        self._read_when_acq = True
         
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
@@ -1073,7 +1071,6 @@ class TwoDController(Controller, Readable, Startable, Stopable, Loadable):
     def __init__(self, inst, props, *args, **kwargs):
         Controller.__init__(self, inst, props, *args, **kwargs)
         self._latency_time = 0
-        self._read_when_acq = True
 
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
