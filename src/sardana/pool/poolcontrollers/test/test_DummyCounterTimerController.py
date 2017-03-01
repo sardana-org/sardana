@@ -26,12 +26,12 @@
 from taurus.external import unittest
 from taurus.test import insertTest
 from sardana.pool.poolsynchronization import PoolSynchronization
-from sardana.pool.test import AcquisitionTestCase
+from sardana.pool.test.test_acquisition import AcquisitionTestCase
 import logging
 
 @insertTest(helper_name='hw_step_acquisition', repetitions=1,
             integ_time=0.4)
-class Ni660XTriggerGateCTStepAcqTestCase(AcquisitionTestCase, unittest.TestCase):
+class DummyCounterTimerControllerTestCase(AcquisitionTestCase, unittest.TestCase):
     """Integration test.
     """
     chn_ctrl_name = '_test_ct_ctrl_1'
