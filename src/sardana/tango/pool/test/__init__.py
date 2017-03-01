@@ -26,3 +26,6 @@
 from base import (BasePoolTestCase, ControllerLoadsTestCase,
                   ControllerCreationTestCase, ElementCreationTestCase)
 from base_sartest import SarTestTestCase
+from .test_measurementgroup import *
+from .test_Motor import *
+from .test_persistence import *
