@@ -660,12 +660,6 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
         nap = self._acq_sleep_time
         nb_states_per_value = self._nb_states_per_value
 
-        # read values to send a first event when starting to acquire
-        with ActionContext(self):
-            self.raw_read_value_loop(ret=values)
-            for acquirable, value in values.items():
-                acquirable.put_value_chunk(value, propagate=2)
-
         while True:
             self.read_state_info(ret=states)
             if not self.in_acquisition(states):
