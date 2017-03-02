@@ -30,3 +30,10 @@ from .helper import *
 from .dummyconfs import *
 from .base import *
 from .test_acquisition import *
+from .test_ctacquisition import *
+from .test_measurementgroup import *
+from .test_poolcontroller import *
+from .test_poolcontrollermanager import *
+from .test_poolcountertimer import *
+from .test_poolsynchronization import *
+from .test_synchronization import *

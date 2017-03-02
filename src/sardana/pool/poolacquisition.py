@@ -438,8 +438,6 @@ class PoolAcquisitionBase(PoolAction):
     def __init__(self, main_element, name):
         PoolAction.__init__(self, main_element, name)
         self._channels = None
-        self._channels_read_when_acq = None
-        self._pool_ctrls_read_when_acq = None
 
     def in_acquisition(self, states):
         """Determines if we are in acquisition or if the acquisition has ended
@@ -509,8 +507,6 @@ class PoolAcquisitionBase(PoolAction):
         pool_ctrls = []
         # controllers that will be read at the end of the action
         self._pool_ctrl_dict_loop = _pool_ctrl_dict_loop = {}
-        # controllers that will be read in the loop during the action
-        self._pool_ctrls_read_when_acq = _pool_ctrls_read_when_acq = {}
         # channels that are acquired (only enabled)
         self._channels = channels = {}
 
@@ -533,19 +529,12 @@ class PoolAcquisitionBase(PoolAction):
                 # only CT will be read in the loop, 1D and 2D not
                 if ElementType.CTExpChannel in ctrl.get_ctrl_types():
                     _pool_ctrl_dict_loop[ctrl] = pool_ctrl_data
-                    # read only the ones which allow that
-                    if ctrl.get_ctrl_par("read_when_acq"):
-                        _pool_ctrls_read_when_acq[ctrl] = pool_ctrl_data
-
 
         pool_ctrls = []
         self._pool_ctrl_dict_loop = _pool_ctrl_dict_loop = {}
-        self._pool_ctrls_read_when_acq = _pool_ctrls_read_when_acq = {}
         for ctrl, v in pool_ctrls_dict.items():
             if ctrl.is_timerable():
                 pool_ctrls.append(ctrl)
-                if ctrl.get_ctrl_par("read_when_acq"):
-                    _pool_ctrls_read_when_acq[ctrl] = v
             if ElementType.CTExpChannel in ctrl.get_ctrl_types():
                 _pool_ctrl_dict_loop[ctrl] = v
 
@@ -556,10 +545,8 @@ class PoolAcquisitionBase(PoolAction):
 
         # Determine which channels are active
         self._channels = channels = {}
-        self._channels_read_when_acq = channels_read_when_acq = {}
         for pool_ctrl in pool_ctrls:
             ctrl = pool_ctrl.ctrl
-            read_when_acq = pool_ctrl in _pool_ctrls_read_when_acq
             pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
             elements = pool_ctrl_data['channels']
 
@@ -567,8 +554,6 @@ class PoolAcquisitionBase(PoolAction):
                 axis = element.axis
                 channel = Channel(element, info=element_info)
                 channels[element] = channel
-                if read_when_acq:
-                    channels_read_when_acq[element] = channel
 
         with ActionContext(self):
 
@@ -668,7 +653,7 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
         i = 0
 
         states, values = {}, {}
-        for element in self._channels_read_when_acq:
+        for element in self._channels:
             states[element] = None
             values[element] = None
 
@@ -682,24 +667,18 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
 
             # read value every n times
             if not i % nb_states_per_value:
-                self.read_value_loop(ret=values,
-                                     ctrls=self._pool_ctrls_read_when_acq)
+                self.read_value_loop(ret=values)
                 for acquirable, value in values.items():
                     if isinstance(value, SardanaValue) and value.error:
                         self.warning("Error when reading value: %r" %
                                      value.exc_info)
                     elif len(value) > 0:
-                        channel = self._channels_read_when_acq[acquirable]
+                        channel = self._channels[acquirable]
                         channel._fill_idx(value)
                         acquirable.put_value_chunk(value)
 
             time.sleep(nap)
             i += 1
-
-        states, values = {}, {}
-        for element in self._channels:
-            states[element] = None
-            values[element] = None
 
         with ActionContext(self):
             self.raw_read_state_info(ret=states)

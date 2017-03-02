@@ -245,7 +245,6 @@ Configuration parameters pass in LoadOne method:
 
 Defines static characteristics of the hardware, implemented as controller parameters: GetCtrlPar
 
-- **read_when_acq** (type: boolean) - whether it is possible to read the data while the acquisition is in progress, if not data will be read, only once, at the end of the acquisition process
 - **latency_time** (type: float, unit: seconds) - time required to prepare the hardware for the next hardware trigger or gate 
 
 The *Read* methods usually implement the data retrieval from the device and return the acquired data. The same method is foreseen for software and hardware synchronized acquisitions, both by trigger and gate. In case that access to the data in a device differenciate between the synchronization mode, the *Read* methods would need to implement different cases based on the confiugured synchronization. 
@@ -294,7 +293,7 @@ Its **action_loop** method executes the following:
     - for each controller implied in the acquisition call StartAll
     - for each axis implied in the acquisition call StartOne
     - wait some time
-    - every certain number of iterations read new data (only if read_when_acq == True):
+    - every certain number of iterations read new data:
         - for each controller implied in the acquisition call PreReadAll
         - for each axis implied in the acquisition call PreReadOne
         - for each controller implied in the acquisition call ReadAll
