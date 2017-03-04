@@ -121,9 +121,9 @@ class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
         """
         self.configuration = configuration
         if active_domain:
-            self.ctrl.set_axis_par(self.AXIS, "active_domain", active_domain)
+            self.ctrl.SetAxisPar(self.AXIS, "active_domain", active_domain)
         if passive_domain:
-            self.ctrl.set_axis_par(self.AXIS, "passive_domain", passive_domain)
+            self.ctrl.SetAxisPar(self.AXIS, "passive_domain", passive_domain)
         repetitions = 0
         for group in configuration:
             repetitions += group[SynchParam.Repeats]

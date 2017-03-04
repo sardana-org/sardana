@@ -96,7 +96,7 @@ class DummyTriggerGateController(TriggerGateController):
         idx = axis - 1
         self.tg[idx].stop()
 
-    def set_axis_par(self, axis, par, value):
+    def SetAxisPar(self, axis, par, value):
         idx = axis - 1
         tg = self.tg[idx]
         if par == "active_domain":
@@ -104,7 +104,7 @@ class DummyTriggerGateController(TriggerGateController):
         elif par == "passive_domain":
             tg.passive_domain = value
 
-    def get_axis_par(self, axis, par):
+    def GetAxisPar(self, axis, par):
         idx = axis - 1
         tg = self.tg[idx]
         if par == "active_domain":
