@@ -184,6 +184,8 @@ TriggerGateController API (**bold** are mandatory):
 - SynchAll
 - SetAxisPar and GetAxisPar
 
+In case that the sychronization description contains information in both domains (position and time), the Synch methods should configure the trigger on position and only if not supported by the hardware on time. Similarly the gate duration should be configured on time and only if not supported by the hardware on position. This are only the recommendations to the controllers developers. In some special cases it may be needed to ignore this recommendation. In this case an extra axis attributes could be defined in the controller to control the domain selection.
+
 Sardana provides one TriggerGate controllers DummyTriggerGateController which does not synchronize acquisition and just provides dummy behavior. DummyTriggerGateController imitate the behavior of the hardware with trigger and/or gate signal generation capabilities. It emulates the state machine: changes state from On to Moving on start and from Moving to On based on the configuration parameters or when stopped.
 
 Software synchronizer resides in the core of Sardana and generates software events of type: *active* and *passive*. The acquisition action listens to these events and start or start and stop the acquisition process when they arrive.
