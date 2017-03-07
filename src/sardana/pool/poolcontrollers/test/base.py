@@ -115,15 +115,10 @@ class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
         '''
         pass
 
-    def generation(self, configuration, initial_domain=None,
-                   active_domain=None):
+    def generation(self, configuration):
         """ Helper for test a simple generation
         """
         self.configuration = configuration
-        if initial_domain:
-            self.ctrl.SetAxisPar(self.AXIS, "initial_domain", initial_domain)
-        if active_domain:
-            self.ctrl.SetAxisPar(self.AXIS, "active_domain", active_domain)
         repetitions = 0
         for group in configuration:
             repetitions += group[SynchParam.Repeats]
