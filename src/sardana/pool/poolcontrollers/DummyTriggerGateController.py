@@ -50,8 +50,8 @@ class DummyTriggerGateController(TriggerGateController):
         self._log.debug('AddDevice(%d): entering...' % axis)
         idx = axis - 1
         func_generator = FunctionGenerator()
+        func_generator.initial_domain = SynchDomain.Time
         func_generator.active_domain = SynchDomain.Time
-        func_generator.passive_domain = SynchDomain.Time
         self.tg[idx] = func_generator
 
     def StateOne(self, axis):
@@ -99,15 +99,15 @@ class DummyTriggerGateController(TriggerGateController):
     def SetAxisPar(self, axis, par, value):
         idx = axis - 1
         tg = self.tg[idx]
-        if par == "active_domain":
+        if par == "initial_domain":
+            tg.initial_domain = value
+        elif par == "active_domain":
             tg.active_domain = value
-        elif par == "passive_domain":
-            tg.passive_domain = value
 
     def GetAxisPar(self, axis, par):
         idx = axis - 1
         tg = self.tg[idx]
-        if par == "active_domain":
+        if par == "initial_domain":
+            return tg.initial_domain
+        elif par == "active_domain":
             return tg.active_domain
-        elif par == "passive_domain":
-            return tg.passive_domain
