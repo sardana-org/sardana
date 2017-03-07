@@ -95,19 +95,3 @@ class DummyTriggerGateController(TriggerGateController):
         self._log.debug('AbortOne(%d): entering...' % axis)
         idx = axis - 1
         self.tg[idx].stop()
-
-    def SetAxisPar(self, axis, par, value):
-        idx = axis - 1
-        tg = self.tg[idx]
-        if par == "initial_domain":
-            tg.initial_domain = value
-        elif par == "active_domain":
-            tg.active_domain = value
-
-    def GetAxisPar(self, axis, par):
-        idx = axis - 1
-        tg = self.tg[idx]
-        if par == "initial_domain":
-            return tg.initial_domain
-        elif par == "active_domain":
-            return tg.active_domain
