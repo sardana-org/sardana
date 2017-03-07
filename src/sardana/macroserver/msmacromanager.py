@@ -141,6 +141,14 @@ def recur_map(fun, data, keep_none=False):
         else:
             return fun(data)
 
+def is_flat_list(obj):
+    """Check if a given object is a flat list."""
+    if not isinstance(obj, list):
+        return False
+    for item in obj:
+        if isinstance(item, list):
+            return False
+    return True
 
 class MacroManager(MacroServerManager):
 
@@ -688,10 +696,7 @@ class MacroManager(MacroServerManager):
             # only if raw params are passed as a list e.g. using macro API
             # execMacro("mv", mot01, 0.0) and parameters definition allows to
             # decode it from a flat list we give it a try
-            for param in raw_params:
-                if (isinstance(param, list)):
-                    raise out_e
-            if (isinstance(raw_params, list) and
+            if (is_flat_list(raw_params) and
                 FlatParamDecoder.isPossible(params_def)):
                 self.debug("Trying flat parameter decoder due to: %s" % out_e)
                 try:

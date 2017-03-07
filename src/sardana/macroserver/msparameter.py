@@ -395,13 +395,8 @@ class ParamDecoder:
                     value = raw_param.get("value")
                 else:
                     value = raw_param
-                if type(value) == list:
-                    if len(value) == 0:
-                        value = param_def['default_value']
-                    else:
-                        msg = 'Brackets not allowed for single element repetitions'
-                        raise WrongParam, msg
-                if value is None:
+                # None or [] indicates default value
+                if value is None or (type(value) == list and len(value) == 0):
                     value = param_def['default_value']
                 if value is None:
                     raise MissingParam, "'%s' not specified" % name
@@ -462,6 +457,12 @@ class ParamDecoder:
                 # do not encapsulate it in list and pass directly the item
                 if isinstance(raw_repeat, etree._Element):
                     raw_repeat = raw_repeat[0]
+                # check if one tries to decode repeat parameter of just one
+                # member encapsulated in a list, empty lists are still allowed
+                # to indicate default value
+                elif isinstance(raw_repeat , list) and len(raw_repeat) > 0:
+                    msg = 'Repetitions of just one member must not be lists'
+                    raise WrongParam, msg
                 repeat = self.decodeNormal(raw_repeat, param_type[0])
             param_repeat.append(repeat)
         return param_repeat
