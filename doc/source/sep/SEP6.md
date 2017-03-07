@@ -148,11 +148,6 @@ TriggerGate is a new Sardana element type and it represents devices with trigger
 
 Each ExpChannel controller can have one TriggerGate element associated to it. Its role is to control at which moment each single measurement has to start in case of trigger or start and stop in case of gate.
 
-The configuration parameters:
-
-- **active_domain** (type: enumeration, options: *time*, *position* or *default*) - which of the domains to use from the configuration to generate active events. *default* means: first try to use position and only if not available, time should be used. When the selected domain is missing in the configuration an exception should be raised.
-- **passive_domain** (type: enumeration, options: *time*, *position* or *default*) - which of the domains to use from the configuration to generate passive events. *default* means: first try to use time and only if not available, position should be used. When the selected domain is missing in the configuration an exception should be raised.
-
 The allowed states for TriggerGate element are:
 
 - On - the element is ready to generate synchronization signals
