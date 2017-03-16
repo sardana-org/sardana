@@ -259,8 +259,9 @@ class pt10(Macro):
   
 
 class pt11(Macro):
-    """Macro with list of numbers followed by a motor parameter. The repeat
-    parameter may be defined as first one.
+    """Macro with counter parameter followed by a list of numbers, followed by
+    a motor parameter. The repeat parameter may be defined in between other
+    parameters.
     Usages from Spock, ex.:
     pt11 ct1 [1 3] mot1
     """
@@ -337,7 +338,7 @@ class pt14d(Macro):
 
     param_def = [
        ['motor_group_list',
-        [['motor_list', [['motor', Type.Motor, 'mot1', 'Motor to move']], None, 'List of motors'],
+        [['motor_list', [['motor', Type.Motor, 'mot16', 'Motor to move']], None, 'List of motors'],
          ['float', Type.Float, 33, 'Number']],
         None, 'Motor groups']
     ]
