@@ -338,7 +338,7 @@ class pt14d(Macro):
 
     param_def = [
        ['motor_group_list',
-        [['motor_list', [['motor', Type.Motor, 'mot16', 'Motor to move']], None, 'List of motors'],
+        [['motor_list', [['motor', Type.Motor, 'mot1', 'Motor to move']], None, 'List of motors'],
          ['float', Type.Float, 33, 'Number']],
         None, 'Motor groups']
     ]
