@@ -83,6 +83,9 @@ class StandardMacroParametersEditor(Qt.QWidget, MacroParametersEditor):
         moveDownButton = Qt.QToolButton()
         moveDownButton.setDefaultAction(self.tree.moveDownAction)
         actionLayout.addWidget(moveDownButton)
+        duplicateButton = Qt.QToolButton()
+        duplicateButton.setDefaultAction(self.tree.duplicateAction)
+        actionLayout.addWidget(duplicateButton)
         spacerItem = Qt.QSpacerItem(0, 0, Qt.QSizePolicy.Fixed, Qt.QSizePolicy.Expanding)
         actionLayout.addItem(spacerItem)
 
@@ -123,6 +126,13 @@ class MacroParametersTree(Qt.QTreeView):
         self.connect(self.moveDownAction, Qt.SIGNAL("triggered()"), self.onDownRepeat)
         self.moveDownAction.setToolTip("Clicking this button will move current repetition down.")
 
+        self.duplicateAction = Qt.QAction(getThemeIcon("edit-copy"),
+                                          "Duplicate", self)
+        self.connect(self.duplicateAction, Qt.SIGNAL("triggered()"),
+                     self.onDuplicateRepeat)
+        msg = "Clicking this button will duplicate the given node."
+        self.duplicateAction.setToolTip(msg)
+
         self.disableActions()
 
 
@@ -131,6 +141,7 @@ class MacroParametersTree(Qt.QTreeView):
         self.deleteAction.setEnabled(False)
         self.moveUpAction.setEnabled(False)
         self.moveDownAction.setEnabled(False)
+        self.duplicateAction.setEnabled(False)
 
     def manageActions(self, currentIndex):
         self.disableActions()
@@ -142,9 +153,11 @@ class MacroParametersTree(Qt.QTreeView):
             self.addAction.setEnabled(False)
             self.moveUpAction.setEnabled(node.isAllowedMoveUp())
             self.moveDownAction.setEnabled(node.isAllowedMoveDown())
+            self.duplicateAction.setEnabled(True)
         elif isinstance(node, macro.RepeatParamNode):
             self.addAction.setEnabled(not node.isReachedMax())
             self.deleteAction.setEnabled(False)
+            self.duplicateAction.setEnabled(False)
 
 
     def currentChanged(self, current, previous):
@@ -327,6 +340,16 @@ class MacroParametersTree(Qt.QTreeView):
             newIndex = self.model()._downRow(index)
         self.setCurrentIndex(newIndex)
         self.expandAll()
+
+    def onDuplicateRepeat(self):
+        index = self.currentIndex()
+        if isinstance(self.model(), Qt.QSortFilterProxyModel):
+            sourceIndex = self.model().mapToSource(index)
+            self.model()._duplicateNode(sourceIndex)
+        else:
+            self.model()._duplicateNode(index)
+        self.expandAll()
+
 
 class ParamEditorManager(Singleton):
 
