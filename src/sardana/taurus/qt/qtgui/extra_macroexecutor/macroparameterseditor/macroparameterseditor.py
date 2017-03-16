@@ -345,9 +345,9 @@ class MacroParametersTree(Qt.QTreeView):
         index = self.currentIndex()
         if isinstance(self.model(), Qt.QSortFilterProxyModel):
             sourceIndex = self.model().mapToSource(index)
-            self.model()._duplicateNode(sourceIndex)
+            self.model().duplicateNode(sourceIndex)
         else:
-            self.model()._duplicateNode(index)
+            self.model().duplicateNode(index)
         self.expandAll()
 
 

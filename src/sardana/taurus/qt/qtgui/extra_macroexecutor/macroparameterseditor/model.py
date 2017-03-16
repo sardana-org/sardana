@@ -107,7 +107,7 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         parentNode.arrangeIndexes()
         return newIndex
 
-    def _duplicateNode(self, index):
+    def duplicateNode(self, index):
         node_to_duplicate = self.nodeFromIndex(index)
         parentIndex = index.parent()
         parentNode = self.nodeFromIndex(parentIndex)
