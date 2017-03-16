@@ -48,8 +48,8 @@ class FunctionGenerator(EventGenerator):
 
     def __init__(self):
         EventGenerator.__init__(self)
-        self._initial_domain = SynchDomain.Default
-        self._active_domain = SynchDomain.Default
+        self._initial_domain = None
+        self._active_domain = None
         self._position_event = threading.Event()
         self._initial_domain_in_use = None
         self._active_domain_in_use = None
@@ -253,7 +253,6 @@ class FunctionGenerator(EventGenerator):
         # create short variables for commodity
         Time = SynchDomain.Time
         Position = SynchDomain.Position
-        Default = SynchDomain.Default
         Initial = SynchParam.Initial
         Delay = SynchParam.Delay
         Active = SynchParam.Active
@@ -273,7 +272,7 @@ class FunctionGenerator(EventGenerator):
                 group[Initial] = initial_param
             # determine active domain in use
             msg = "no initial value in group %d" % i
-            if self.initial_domain is Default:
+            if self.initial_domain is None:
                 if initial_param.has_key(Position):
                     self.initial_domain_in_use = Position
                 elif initial_param.has_key(Time):
@@ -287,7 +286,7 @@ class FunctionGenerator(EventGenerator):
             # determine passive domain in use
             active_param = group.get(Active)
             msg = "no active value in group %d" % i
-            if self.active_domain is Default:
+            if self.active_domain is None:
                 if active_param.has_key(Time):
                     self.active_domain_in_use = Time
                 elif active_param.has_key(Position):
