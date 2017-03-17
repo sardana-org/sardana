@@ -259,8 +259,9 @@ class pt10(Macro):
   
 
 class pt11(Macro):
-    """Macro with list of numbers followed by a motor parameter. The repeat
-    parameter may be defined as first one.
+    """Macro with counter parameter followed by a list of numbers, followed by
+    a motor parameter. The repeat parameter may be defined in between other
+    parameters.
     Usages from Spock, ex.:
     pt11 ct1 [1 3] mot1
     """
