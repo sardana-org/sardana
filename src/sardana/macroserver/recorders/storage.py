@@ -137,11 +137,11 @@ class FIO_FileRecorder(BaseFileRecorder):
             all_motors = self.macro.findObjs('.*', type_class=Type.Motor)
             all_motors.sort()
             for mot in all_motors:
-                pos = mot.getPosition()
+                pos = mot.getPosition(force=True)
                 if pos is None:
                     record = "%s = nan\n" % (mot)
                 else:
-                    record = "%s = %g\n" % (mot, mot.getPosition())
+                    record = "%s = %g\n" % (mot, mot.getPosition(force=True))
                     
                 self.fd.write( record)
             self.fd.flush()
