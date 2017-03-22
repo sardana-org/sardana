@@ -1366,6 +1366,23 @@ class CScan(GScan):
             max_pos = float('Inf')
         return max_pos
 
+    def configure_motor(self, motor, attributes):
+        """Configure motor with a given attribute values.
+
+        :param motor: (Motor or Moveable) motor to be configured
+        :param attributes: (OrderedDict) dictionary with attribute names (keys)
+            and attribute values (values)
+        """
+        for param, value in attributes.items():
+            try:
+                motor._getAttrEG(param).write(value)
+            except:
+                self.macro.debug("Error when setting %s of %s" %
+                                 (param, motor.name), exc_info = True)
+                msg = "setting %s of %s to %r failed" %\
+                    (param, motor.name, value)
+                raise ScanException(msg)
+
 
 class CSScan(CScan):
     """Continuous scan controlled by software"""
