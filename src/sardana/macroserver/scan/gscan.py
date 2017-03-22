@@ -1885,9 +1885,13 @@ class CTScan(CScan):
         tango_channels = []
         for channel in self.measurement_group.getChannels():
             full_name = channel["full_name"]
+            # for taurus 4 compatibility
+            if not full_name.startswith("tango://"):
+                full_name = "tango://" + full_name
             try:
                 taurus.Device(full_name)
             except Exception:
+                # external channels are attributes so Device constructor fails
                 tango_channels.append(full_name)
         if len(tango_channels) > 0:
             raise ScanException('Tango channels %r are not supported. Hint: '
