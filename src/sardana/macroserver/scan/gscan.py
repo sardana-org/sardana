@@ -1963,7 +1963,7 @@ class CTScan(CScan):
             #validation of parameters
             for start, end in zip(self.macro.starts, self.macro.finals):
                 if start == end:
-                    raise Exception("Start and End can not be equal.")
+                    raise ScanException("Scan start and end must be different.")
 
             startTimestamp = time.time()
 
