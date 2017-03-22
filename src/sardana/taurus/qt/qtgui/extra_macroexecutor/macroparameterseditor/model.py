@@ -27,6 +27,7 @@
 model.py:
 """
 
+import copy
 from lxml import etree
 
 from taurus.external.qt import Qt
@@ -106,6 +107,14 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         parentNode.arrangeIndexes()
         return newIndex
 
+    def duplicateNode(self, index):
+        node_to_duplicate = self.nodeFromIndex(index)
+        parentIndex = index.parent()
+        parentNode = self.nodeFromIndex(parentIndex)
+        node = copy.deepcopy(node_to_duplicate)
+        self._insertRow(parentIndex, node, -1)
+        if isinstance(parentNode, macro.RepeatParamNode):
+            parentNode.arrangeIndexes()
 
     def addRepeat(self, index, callReset=True):
         paramRepeatNode = self.nodeFromIndex(index)
@@ -130,6 +139,14 @@ class ParamEditorModel(Qt.QAbstractItemModel):
             self.reset()
 
     def downRepeat(self, index, callReset=True):
+        branchIndex = self.parent(index)
+        branch = self.nodeFromIndex(branchIndex)
+        child = self.nodeFromIndex(index)
+        branch.downChild(child)
+        if callReset:
+            self.reset()
+
+    def DuplicateRepeat(self, index, callReset=True):
         branchIndex = self.parent(index)
         branch = self.nodeFromIndex(branchIndex)
         child = self.nodeFromIndex(index)
