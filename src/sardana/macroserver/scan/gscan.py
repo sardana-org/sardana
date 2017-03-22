@@ -45,6 +45,7 @@ from taurus.core import TaurusListener, TaurusEventType
 from taurus.core.util.log import Logger
 from taurus.core.util.user import USER_NAME
 from taurus.core.util.codecs import CodecFactory
+from taurus.external.ordereddict import OrderedDict
 from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
 
 from sardana.util.tree import BranchNode, LeafNode, Tree
@@ -1256,17 +1257,15 @@ class CScan(GScan):
         for motor_backup in self._backup:
             if motor_backup is None:
                 continue
+            motor = motor_backup['moveable']
+            attributes = OrderedDict(velocity=motor_backup["velocity"],
+                                 acceleration=motor_backup["acceleration"],
+                                 deceleration=motor_backup["deceleration"])
             try:
-                motor = motor_backup['moveable']
-                motor.setVelocity(motor_backup['velocity'])
-                motor.setAcceleration(motor_backup['acceleration'])
-                motor.setDeceleration(motor_backup['deceleration'])
-                self.debug("Restored backup of the %s motor.", motor)
-            except:
-                msg = 'Failed to restore a backup of the %s motor' % motor
-                self.macro.debug(msg)
-                self.macro.debug('Details: ', exc_info = True)
-                raise ScanException("error while restoring the motor's backup")
+                self.configure_motor(motor, attributes)
+            except ScanException, e:
+                msg = "Error when restoring motor's backup (%s)" % e
+                raise ScanException(msg)
 
     def _setFastMotions(self, motors=None):
         '''make given motors go at their max speed and accel'''
@@ -1274,16 +1273,15 @@ class CScan(GScan):
             motors = [b.get('moveable') for b in self._backup if b is not None]
 
         for motor in motors:
+            attributes = OrderedDict(velocity=self.get_max_top_velocity(motor),
+                                     acceleration=self.get_min_acc_time(motor),
+                                     deceleration=self.get_min_dec_time(motor))
             try:
-                motor.setVelocity(self.get_max_top_velocity(motor))
-                motor.setAcceleration(self.get_min_acc_time(motor))
-                motor.setDeceleration(self.get_min_dec_time(motor))
-                self.debug("%s put into fast motion", motor)
-            except:                
-                self.macro.debug("Failed to put %s into fast motion", motor)
-                self.macro.debug('Details: ', exc_info = True)
-                raise ScanException('error while configuring the motion parameters')
-                
+                self.configure_motor(motor, attributes)
+            except ScanException, e:
+                msg = "Error when setting fast motion (%s)" % e
+                raise ScanException(msg)
+
     def get_max_top_velocity(self, motor):
         """Helper method to find the maximum top velocity for the motor.
         If the motor doesn't have a defined range for top velocity,
@@ -2028,12 +2026,14 @@ class CTScan(CScan):
                                  'start: %f; ' % path.initial_pos + 
                                  'end: %f; ' % path.final_pos +
                                  'ds: %f' % (path.final_pos - path.initial_pos))
-                self.macro.debug("Velocity: %f" % path.max_vel)
-                self.macro.debug("AccTime: %f" % path.max_vel_time)
-                self.macro.debug("DecTime: %f" % path.min_vel_time)
-                motor.setVelocity(path.max_vel)
-                motor.setAcceleration(path.max_vel_time)
-                motor.setDeceleration(path.min_vel_time)
+                attributes = OrderedDict(velocity=path.max_vel,
+                                                acceleration=path.max_vel_time,
+                                                deceleration=path.min_vel_time)
+                try:
+                    self.configure_motor(motor, attributes)
+                except ScanException, e:
+                    msg = "Error when configuring scan motion (%s)" % e
+                    raise ScanException(msg)
 
             if macro.isStopped():
                 self.on_waypoints_end()
