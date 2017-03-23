@@ -141,7 +141,7 @@ class FIO_FileRecorder(BaseFileRecorder):
                 if pos is None:
                     record = "%s = nan\n" % (mot)
                 else:
-                    record = "%s = %g\n" % (mot, mot.getPosition(force=True))
+                    record = "%s = %g\n" % (mot, pos)
                     
                 self.fd.write( record)
             self.fd.flush()
