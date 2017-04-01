@@ -29,6 +29,9 @@ from taurus.external import unittest
 from taurus.test import insertTest
 from sardana.spock.parser import ParamParser
 
+@insertTest(helper_name="parse",
+            params_str='ScanFile "[\\"file.nxs\\", \\"file.dat\\"]"',
+            params=["ScanFile", '["file.nxs", "file.dat"]'])
 @insertTest(helper_name="parse", params_str="[1 [] 3]",
             params=[["1", [], "3"]])
 @insertTest(helper_name="parse",
