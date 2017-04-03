@@ -1,6 +1,6 @@
 	Title: Continuous Scan Implementation
 	SEP: 6
-	State: CANDIDATE
+	State: ACCEPTED
 	Date: 2013-07-29
 	Drivers: Zbigniew Reszela <zreszela@cells.es>
 	URL: http://www.sardana-controls.org/sep/?SEP6.md
@@ -406,6 +406,7 @@ Changes
 
 - 2016-11-30 [mrosanes](https://github.com/sagiss) Migrate SEP6 from SF wiki to independent markdown language file.
 - 2017-01-01 [reszelaz](https://github.com/reszelaz) Remove last pending TODOs and fix the scope in order to open for final discussions.
+- 2017-04-03 [reszelaz](https://github.com/reszelaz) Accept SEP6 after positive votes from DESY, MAXIV, SOLARIS and ALBA.
 
 
 
