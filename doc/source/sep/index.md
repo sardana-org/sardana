@@ -16,7 +16,7 @@ Proposals list
   [SEP3][]    | REJECTED (handled in [#297][]) | Adapt to [TEP3][] (Tango-independent taurus.core)
   [SEP4][]    | ACCEPTED     | HKL integration
   [SEP5][]    | ACCEPTED     | Implementation of tests infrastructure
-  [SEP6][]    | CANDIDATE     | Continuous Scan Implementation
+  [SEP6][]    | ACCEPTED     | Continuous Scan Implementation
   [SEP7][]    | OBSOLETE     | Code contribution workflow
   [SEP8][]    | CANDIDATE     | Remove from Taurus objects the direct Logger dependence
   [SEP9][]    | ACCEPTED     | Compact Read+Write widgets in Taurus
