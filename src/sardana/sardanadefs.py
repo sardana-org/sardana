@@ -279,6 +279,7 @@ ElementType = Enumeration("ElementType", (\
     "TwoDExpChannel",
     "ComChannel",
     "IORegister",
+    "TriggerGate",
     "PseudoMotor",
     "PseudoCounter",
     "Constraint",
@@ -304,7 +305,7 @@ ET = ElementType
 #: a set containning all "controllable" element types.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
 TYPE_ELEMENTS = set((ET.Motor, ET.CTExpChannel, ET.ZeroDExpChannel, \
-    ET.OneDExpChannel, ET.TwoDExpChannel, \
+    ET.OneDExpChannel, ET.TwoDExpChannel, ET.TriggerGate, \
     ET.ComChannel, ET.IORegister, ET.PseudoMotor, \
     ET.PseudoCounter, ET.Constraint))
 
@@ -319,7 +320,7 @@ TYPE_MOVEABLE_ELEMENTS = set((ET.Motor, ET.PseudoMotor, ET.MotorGroup))
 #: a set containing the possible types of physical elements.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
 TYPE_PHYSICAL_ELEMENTS = set((ET.Motor, ET.CTExpChannel, ET.ZeroDExpChannel, \
-    ET.OneDExpChannel, ET.TwoDExpChannel, \
+    ET.OneDExpChannel, ET.TwoDExpChannel, ET.TriggerGate,\
     ET.ComChannel, ET.IORegister))
 
 #: a set containing the possible types of acquirable elements.
@@ -404,6 +405,7 @@ INTERFACES = {
     "ZeroDExpChannel" : (set(("ExpChannel",)), "A 0D experimental channel"),
     "OneDExpChannel" : (set(("ExpChannel",)), "A 1D experimental channel"),
     "TwoDExpChannel" : (set(("ExpChannel",)), "A 2D experimental channel"),
+    "TriggerGate" : (set(("PoolElement",)), "A trigger/gate"),
     "PseudoCounter" : (set(("ExpChannel",)), "A pseudo counter"),
     "ComChannel" : (set(("PoolElement",)), "A communication channel"),
     "MotorGroup" : (set(("PoolElement",),), "A motor group"),

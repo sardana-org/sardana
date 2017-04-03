@@ -40,7 +40,7 @@ from sardana.sardanavalue import SardanaValue
 from sardana.pool.poolexception import PoolException
 from sardana.pool.poolbasechannel import PoolBaseChannel
 from sardana.pool.poolbasegroup import PoolBaseGroup
-from sardana.pool.poolacquisition import PoolAcquisition
+from sardana.pool.poolacquisition import PoolCTAcquisition
 
 
 class Value(SardanaAttribute):
@@ -224,7 +224,7 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
 
     def _create_action_cache(self):
         acq_name = "%s.Acquisition" % self._name
-        return PoolAcquisition(self, acq_name)
+        return PoolCTAcquisition(self, acq_name)
 
     def get_action_cache(self):
         return self._get_action_cache()
@@ -352,8 +352,7 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
             action_cache = self.get_action_cache()
             ctrl_state_infos = action_cache.read_state_info(serial=True)
             for obj, ctrl_state_info in ctrl_state_infos.items():
-                state_info[obj] = state_info = \
-                    obj._from_ctrl_state_info(ctrl_state_info)
+                state_info = obj._from_ctrl_state_info(ctrl_state_info)
                 obj.put_state_info(state_info)
         for user_element in self.get_user_elements():
             if user_element.get_type() not in TYPE_PHYSICAL_ELEMENTS:

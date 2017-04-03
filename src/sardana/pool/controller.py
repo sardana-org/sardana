@@ -42,7 +42,7 @@ from taurus.core.util.log import Logger
 
 from sardana import DataAccess
 from sardana.sardanavalue import SardanaValue
-from sardana.pool.pooldefs import ControllerAPI, AcqTriggerType, AcqMode
+from sardana.pool.pooldefs import ControllerAPI, AcqSynch, AcqMode
 
 
 #: Constant data type (to be used as a *key* in the definition of
@@ -389,7 +389,6 @@ class Controller(object):
         Default implementation raises :exc:`NotImplementedError`."""
         raise NotImplementedError("StateOne must be defined in the controller")
 
-    #def SetCtrlPar(self, unit, parameter, value):
     def SetCtrlPar(self, parameter, value):
         """**Controller API**. Override if necessary.
         Called to set a parameter with a value. Default implementation sets
@@ -398,7 +397,6 @@ class Controller(object):
         .. versionadded:: 1.0"""
         setattr(self, '_' + parameter, value)
 
-    #def GetCtrlPar(self, unit, parameter):
     def GetCtrlPar(self, parameter):
         """**Controller API**. Override if necessary.
         Called to set a parameter with a value. Default implementation returns
@@ -407,7 +405,6 @@ class Controller(object):
         .. versionadded:: 1.0"""
         return getattr(self, '_' + parameter)
 
-    #def SetAxisPar(self, unit, axis, parameter, value):
     def SetAxisPar(self, axis, parameter, value):
         """**Controller API**. Override is MANDATORY.
         Called to set a parameter with a value on the given axis. Default
@@ -417,7 +414,6 @@ class Controller(object):
         .. versionadded:: 1.0"""
         return self.SetPar(axis, parameter, value)
 
-    #def GetAxisPar(self, unit, axis, parameter):
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
         Called to get a parameter value on the given axis. Default
@@ -660,7 +656,7 @@ class Loadable(object):
         Default implementation does nothing."""
         pass
 
-    def PreLoadOne(self, axis, value):
+    def PreLoadOne(self, axis, value, repetitions):
         """**Controller API**. Override if necessary.
         Called to prepare loading the master channel axis with the integration
         time / monitor value.
@@ -668,6 +664,7 @@ class Loadable(object):
 
         :param int axis: axis number
         :param float value: integration time /monitor value
+        :param int repetitions: number of repetitions
         :return: True means a successfull PreLoadOne or False for a failure
         :rtype: bool"""
         return True
@@ -678,14 +675,55 @@ class Loadable(object):
         Default implementation does nothing."""
         pass
 
-    def LoadOne(self, axis, value):
+    def LoadOne(self, axis, value, repetitions):
         """**Controller API**. Override is MANDATORY!
         Called to load the integration time / monitor value.
         Default implementation raises :exc:`NotImplementedError`.
         
         :param int axis: axis number
+        :param float value: integration time /monitor value
+        :param int repetitions: number of repetitions
         :param float value: integration time /monitor value"""
         raise NotImplementedError("LoadOne must be defined in the controller")
+
+
+class Synchronizer(object):
+    """A Synchronizer interface. A controller for which its axis are 'Able to
+    Synchronize' should implement this interface
+
+    .. note: Do not inherit directly from Synchronizer."""
+
+    def PreSynchAll(self):
+        """**Controller API**. Override if necessary.
+        Called to prepare loading the synchronization description.
+        Default implementation does nothing."""
+        pass
+
+    def PreSynchOne(self, axis, description):
+        """**Controller API**. Override if necessary.
+        Called to prepare loading the axis with the synchronization description.
+        Default implementation returns True.
+
+        :param int axis: axis number
+        :param list<dict>: synchronization description
+        :return: True means a successfull PreSynchOne or False for a failure
+        :rtype: bool"""
+        return True
+
+    def SynchAll(self):
+        """**Controller API**. Override if necessary.
+        Called to load the synchronization description.
+        Default implementation does nothing."""
+        pass
+
+    def SynchOne(self, axis, description):
+        """**Controller API**. Override is MANDATORY!
+        Called to load the axis with the synchronization description.
+        Default implementation raises :exc:`NotImplementedError`.
+
+        :param int axis: axis number
+        :param list<dict> description: synchronization description"""
+        raise NotImplementedError("SynchOne must be defined in the controller")
 
 
 class MotorController(Controller, Startable, Stopable, Readable):
@@ -835,6 +873,8 @@ class CounterTimerController(Controller, Readable, Startable, Stopable, Loadable
     standard_axis_attributes = {
         'Value'       : { 'type' : float,
                           'description' : 'Value', },
+        'Data'       : { 'type' : str,
+                          'description' : 'Data', },
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 
@@ -846,7 +886,16 @@ class CounterTimerController(Controller, Readable, Startable, Stopable, Loadable
         self._timer = None
         self._monitor = None
         self._master = None
-        self._trigger_type = AcqTriggerType.Unknown
+        self._latency_time = 0
+        self._synchronization = AcqSynch.SoftwareTrigger
+
+    def get_trigger_type(self):
+        msg = "trigger_type is deprecated since SEP6. " +\
+              "Use synchronization instead"
+        self._log.warning(msg)
+        return self._synchronization
+
+    _trigger_type = property(get_trigger_type)
 
     def PreStartAllCT(self):
         """**Counter/Timer Controller API**. Override if necessary.
@@ -935,6 +984,18 @@ class CounterTimerController(Controller, Readable, Startable, Stopable, Loadable
         return self.StartAllCT()
 
 
+class TriggerGateController(Controller, Synchronizer, Stopable, Startable):
+    """Base class for a trigger/gate controller. Inherit from this class to
+    implement your own trigger/gate controller for the device pool.
+    """
+    
+    #: A :obj:`str` representing the controller gender
+    gender = 'Trigger/Gate controller'
+
+    def __init__(self, inst, props, *args, **kwargs):
+        Controller.__init__(self, inst, props, *args, **kwargs)
+
+
 class ZeroDController(Controller, Readable, Stopable):
     """Base class for a 0D controller. Inherit from this class to
     implement your own 0D controller for the device pool."""
@@ -973,6 +1034,10 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable):
 
     #: A :obj:`str` representing the controller gender
     gender = '1D controller'
+
+    def __init__(self, inst, props, *args, **kwargs):
+        Controller.__init__(self, inst, props, *args, **kwargs)
+        self._latency_time = 0
         
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
@@ -1002,6 +1067,10 @@ class TwoDController(Controller, Readable, Startable, Stopable, Loadable):
 
     #: A :obj:`str` representing the controller gender
     gender = '2D controller'
+
+    def __init__(self, inst, props, *args, **kwargs):
+        Controller.__init__(self, inst, props, *args, **kwargs)
+        self._latency_time = 0
 
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.

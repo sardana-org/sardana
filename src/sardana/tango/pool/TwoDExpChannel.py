@@ -164,7 +164,19 @@ class TwoDExpChannel(PoolElementDevice):
 
     def read_Value(self, attr):
         twod = self.twod
+        # TODO: decide if we force the controller developers to store the
+        # last acquired value in the controllers or we always will use
+        # cache. This is due to the fact that the clients (MS) read the value
+        # after the acquisition had finished.
         use_cache = twod.is_in_operation() and not self.Force_HW_Read
+        # For the moment we just check if the previous acquisition was
+        # synchronized by hardware and in this case, we use cache and clean the
+        # buffer so the cached value will be returned only at the first readout
+        # after the acquisition. This is a workaround for the step scans which
+        # read the value after the acquisition.
+        if not use_cache and len(ct.value.value_buffer) > 0:
+            use_cache = True
+            ct.value.clear_buffer()
         value = twod.get_value(cache=use_cache, propagate=0)
         if value.error:
             Except.throw_python_exception(*value.exc_info)

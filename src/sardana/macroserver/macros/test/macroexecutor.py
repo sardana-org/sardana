@@ -24,7 +24,7 @@
 ##############################################################################
 
 from taurus.core.util.singleton import Singleton
-
+import time
 
 class BaseMacroExecutor(object):
 
@@ -52,6 +52,9 @@ class BaseMacroExecutor(object):
         the necessary cleanups. Extend if you need to clean your particular
         setups.
         """
+        self._result = None
+        self._exception = None
+        self._state_buffer = []
         for level in self.log_levels:
             log_buffer = getattr(self, '_%s' % level)
             if not log_buffer is None:
@@ -107,6 +110,8 @@ class BaseMacroExecutor(object):
             timeout = float("inf")
 
         self._wait(timeout)
+        #TODO: workaround: this sleep is necessary to perform multiple tests.
+        time.sleep(2)
 
     def _wait(self, timeout):
         """Method responsible for waiting until macro is done. Must be

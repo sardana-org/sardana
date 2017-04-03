@@ -178,6 +178,12 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         for ch_info in door.macro_server.getExpChannelElements().values():
             avail_channels[ch_info.full_name] = ch_info.getData()
         self.ui.channelEditor.getQModel().setAvailableChannels(avail_channels)
+        #set a list of available triggers
+        avail_triggers = {'software': {"name": "software"}}
+        tg_elements = door.macro_server.getElementsOfType('TriggerGate')
+        for tg_info in tg_elements.values():
+            avail_triggers[tg_info.full_name] = tg_info.getData()
+        self.ui.channelEditor.getQModel().setAvailableTriggers(avail_triggers)
 
     def _setDirty(self, dirty):
         self._dirty = dirty

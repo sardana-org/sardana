@@ -62,7 +62,7 @@ class SardanaAttribute(EventGenerator):
     def has_value(self):
         """Determines if the attribute's read value has been read at least once
         in the lifetime of the attribute.
-        
+
         :return: True if the attribute has a read value stored or False otherwise
         :rtype: bool"""
         return self._has_value()
@@ -73,7 +73,7 @@ class SardanaAttribute(EventGenerator):
     def has_write_value(self):
         """Determines if the attribute's write value has been read at least once
         in the lifetime of the attribute.
-        
+
         :return: True if the attribute has a write value stored or False otherwise
         :rtype: bool"""
         return self._has_write_value()
@@ -83,7 +83,7 @@ class SardanaAttribute(EventGenerator):
 
     def get_obj(self):
         """Returns the object which *owns* this attribute
-        
+
         :return: the object which *owns* this attribute
         :rtype: obj"""
         return self._get_obj()
@@ -96,7 +96,7 @@ class SardanaAttribute(EventGenerator):
 
     def in_error(self):
         """Determines if this attribute is in error state.
-        
+
         :return: True if the attribute is in error state or False otherwise
         :rtype: bool"""
         return self._in_error()
@@ -107,7 +107,7 @@ class SardanaAttribute(EventGenerator):
     def set_value(self, value, exc_info=None, timestamp=None, propagate=1):
         """Sets the current read value and propagates the event (if
         propagate > 0).
-        
+
         :param value: the new read value for this attribute. If a SardanaValue
                       is given, exc_info and timestamp are ignored (if given)
         :type value: obj or SardanaValue
@@ -134,10 +134,10 @@ class SardanaAttribute(EventGenerator):
 
     def get_value(self):
         """Returns the last read value for this attribute.
-        
+
         :return: the last read value for this attribute
         :rtype: obj
-        
+
         :raises: :exc:`Exception` if no read value has been set yet"""
         return self._get_value()
 
@@ -146,10 +146,10 @@ class SardanaAttribute(EventGenerator):
 
     def get_value_obj(self):
         """Returns the last read value for this attribute.
-        
+
         :return: the last read value for this attribute
         :rtype: :class:`~sardana.sardanavalue.SardanaValue`
-        
+
         :raises: :exc:`Exception` if no read value has been set yet"""
         return self._get_value_obj()
 
@@ -161,7 +161,7 @@ class SardanaAttribute(EventGenerator):
 
     def set_write_value(self, w_value, timestamp=None, propagate=1):
         """Sets the current write value.
-        
+
         :param value: the new write value for this attribute. If a SardanaValue
                       is given, timestamp is ignored (if given)
         :type value: obj or SardanaValue
@@ -184,7 +184,7 @@ class SardanaAttribute(EventGenerator):
 
     def get_write_value(self):
         """Returns the last write value for this attribute.
-        
+
         :return: the last write value for this attribute or None if value has
                  not been written yet
         :rtype: obj"""
@@ -197,7 +197,7 @@ class SardanaAttribute(EventGenerator):
 
     def get_write_value_obj(self):
         """Returns the last write value object for this attribute.
-        
+
         :return: the last write value for this attribute or None if value has
                  not been written yet
         :rtype: :class:`~sardana.sardanavalue.SardanaValue`"""
@@ -211,7 +211,7 @@ class SardanaAttribute(EventGenerator):
         """Returns the exception information (like :func:`sys.exc_info`) about
         last attribute readout or None if last read did not generate an
         exception.
-        
+
         :return: exception information or None
         :rtype: tuple<3> or None"""
         return self._get_exc_info()
@@ -232,7 +232,7 @@ class SardanaAttribute(EventGenerator):
     def get_timestamp(self):
         """Returns the timestamp of the last readout or None if the attribute 
         has never been read before
-        
+
         :return: timestamp of the last readout or None
         :rtype: float or None"""
         return self._get_timestamp()
@@ -244,7 +244,7 @@ class SardanaAttribute(EventGenerator):
     def get_write_timestamp(self):
         """Returns the timestamp of the last write or None if the attribute 
         has never been written before
-        
+
         :return: timestamp of the last write or None
         :rtype: float or None"""
         return self._get_write_timestamp()
@@ -256,7 +256,7 @@ class SardanaAttribute(EventGenerator):
     def fire_write_event(self, propagate=1):
         """Fires an event to the listeners of the object which owns this
         attribute.
-        
+
         :param propagate:
             0 for not propagating, 1 to propagate, 2 propagate with priority
         :type propagate: int"""
@@ -268,7 +268,7 @@ class SardanaAttribute(EventGenerator):
     def fire_read_event(self, propagate=1):
         """Fires an event to the listeners of the object which owns this
         attribute.
-        
+
         :param propagate:
             0 for not propagating, 1 to propagate, 2 propagate with priority
         :type propagate: int"""
@@ -327,7 +327,7 @@ class SardanaSoftwareAttribute(SardanaAttribute):
     def set_value(self, value, exc_info=None, timestamp=None, propagate=1):
         """Sets the current read value and propagates the event (if
         propagate > 0).
-        
+
         :param value: the new read value for this attribute
         :type value: obj
         :param exc_info: exception information as returned by
@@ -353,6 +353,79 @@ class ScalarNumberAttribute(SardanaAttribute):
     def __init__(self, *args, **kwargs):
         SardanaAttribute.__init__(self, *args, **kwargs)
         self.filter = ScalarNumberFilter()
+
+
+class BufferedAttribute(SardanaAttribute):
+    """A :class:`SardanaAttribute` specialized for buffering values.
+
+    .. note::
+        The BufferedAttribute class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the module) may occur if
+        deemed necessary by the core developers.
+    """
+    def __init__(self, *args, **kwargs):
+        SardanaAttribute.__init__(self, *args, **kwargs)
+        self._r_value_chunk = []
+        self._r_value_buffer = []
+
+    def get_value_buffer(self):
+        """Returns buffer of the read values for this attribute.
+
+        :return: the last read value for this attribute
+        :rtype: :class:`~sardana.sardanavalue.SardanaValue`"""
+        return self._get_value_buffer()
+
+    def _get_value_buffer(self):
+        return self._r_value_buffer
+
+    def set_value_chunk(self, value_chunk, append=False, propagate=1):
+        """Sets or appends read values to buffer and propagate the event
+        (if porpagate > 0)
+
+        :param value_chunk: the new read values for this attribute
+        :type value_chunnk: seq<SardanaValue>
+        :param append: True for appending value_chunk to the already existing
+            ones, False for replacing it
+        :type append: boolean
+        :param propagate:
+            0 for not propagating, 1 to propagate, 2 propagate with priority
+        :type propagate: int"""
+        self._set_value_chunk(value_chunk, append, propagate)
+
+    def _set_value_chunk(self, value_chunk, append=False, propagate=1):
+        if len(value_chunk) == 0:
+            return
+        self._r_value_chunk = value_chunk
+        if append:
+            self._r_value_buffer += value_chunk
+        else:
+            self._r_value_buffer = value_chunk
+        self._set_value(value_chunk[-1])
+        # clear value chunk cause the listeners were already notified
+        self._clear_value_chunk()
+
+    def get_value_chunk(self):
+        return self._get_value_chunk()
+
+    def _get_value_chunk(self):
+        return self._r_value_chunk
+
+    def clear_value_chunk(self):
+        self.clear_value_chunk()
+
+    def _clear_value_chunk(self):
+        self._r_value_chunk = []
+
+    def clear_buffer(self):
+        self._clear_buffer()
+
+    def _clear_buffer(self):
+        self._r_value_buffer = []
+
+    value_chunk = property(get_value_chunk, set_value_chunk,
+                           "temporarily stored last value chunk")
+    value_buffer = property(get_value_buffer, "buffer with read values")
 
 
 class SardanaAttributeConfiguration(object):

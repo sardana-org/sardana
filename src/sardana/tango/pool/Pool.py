@@ -195,6 +195,11 @@ class Pool(PyTango.Device_4Impl, Logger):
         info = self.pool.get_elements_str_info(ElementType.Motor)
         info.extend(self.pool.get_elements_str_info(ElementType.PseudoMotor))
         attr.set_value(info)
+        
+    #@DebugIt()
+    def read_TriggerGateList(self, attr):
+        info = self.pool.get_elements_str_info(ElementType.TriggerGate)
+        attr.set_value(info)
 
     #@DebugIt()
     def read_MeasurementGroupList(self, attr):
@@ -235,6 +240,7 @@ class Pool(PyTango.Device_4Impl, Logger):
     is_ControllerList_allowed = \
     is_InstrumentList_allowed = \
     is_ExpChannelList_allowed = \
+    is_TriggerGateList_allowed = \
     is_AcqChannelList_allowed = \
     is_MotorGroupList_allowed = \
     is_MotorList_allowed = \
@@ -1456,6 +1462,14 @@ class PoolClass(PyTango.DeviceClass):
             {
                 'label':"Motor list",
                 'description':"the list of motors (a JSON encoded dict)",
+            } ],
+        'TriggerGateList':
+            [[PyTango.DevString,
+            PyTango.SPECTRUM,
+            PyTango.READ, 4096],
+            {
+                'label':"TriggerGate list",
+                'description':"the list of trigger/gates (a JSON encoded dict)",
             } ],
         'MeasurementGroupList':
             [[PyTango.DevString,

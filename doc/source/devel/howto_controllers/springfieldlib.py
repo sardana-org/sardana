@@ -631,7 +631,7 @@ class SpringfieldCounterHW(object):
         
     def getState(self, axis):
         channel = self.getChannel(axis)
-        channel.getCurrentUserValue()
+        channel.getCurrentValue()
         if channel.isAcquiring():
             return 2
         if not channel.hasPower():
@@ -640,7 +640,7 @@ class SpringfieldCounterHW(object):
     
     def getStatus(self, axis):
         channel = self.getChannel(axis)
-        channel.getCurrentUserValue()
+        channel.getCurrentValue()
         status = "Counter HW is ON"
         if channel.isAcquiring():
             status = "Counter HW is ACQUIRING"
@@ -649,5 +649,25 @@ class SpringfieldCounterHW(object):
         return status
 
     def getValue(self, axis):
-        motion = self.getMotion(axis)
-        return motion.getCurrentUserPosition()    
+        channel = self.getChannel(axis)
+        return channel.getCurrentValue()
+
+    def StartChannel(self, axis):
+        # TODO
+        pass
+
+    def StartChannels(self, axes):
+        # TODO
+        pass
+
+    def StopChannel(self, axis):
+        # TODO
+        pass
+
+    def AbortChannel(self, axis):
+        # TODO
+        pass
+
+    def LoadChannel(self, axis, value):
+        # TODO
+        pass

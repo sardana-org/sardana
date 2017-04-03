@@ -31,9 +31,9 @@ from sardana.macroserver.macros.test import testRun
 from sardana.macroserver.macros.test import testStop
 
 
-@testRun(macro_name="ct", macro_params=['.1'], wait_timeout=2)
-@testRun(macro_name="ct", macro_params=['.3'], wait_timeout=2)
-@testStop(macro_name="ct", macro_params=['1'], stop_delay=.1, wait_timeout=3)
+@testRun(macro_name="ct", macro_params=['.1'], wait_timeout=2.5)
+@testRun(macro_name="ct", macro_params=['.3'], wait_timeout=2.5)
+@testStop(macro_name="ct", macro_params=['1'], stop_delay=.1, wait_timeout=3.5)
 # TODO: uncomment these test when bug-474 is fixed:
 # https://sourceforge.net/p/sardana/tickets/474/
 #@testRun(macro_name="uct", macro_params=['.1'], wait_timeout=2)

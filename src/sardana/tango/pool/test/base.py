@@ -28,14 +28,10 @@
 __all__ = ['BasePoolTestCase', 'ControllerLoadsTestCase',
            'ControllerCreationTestCase', 'ElementCreationTestCase']
 
-import os
 import PyTango
-from taurus import Device
 from taurus.external import unittest
 from taurus.core.tango.starter import ProcessStarter
 from sardana import sardanacustomsettings
-from sardana.taurus.core.tango.sardana import (registerExtensions,
-                                              unregisterExtensions)
 from sardana.tango.core.util import (get_free_server, get_free_device,
                                      get_free_alias)
 from taurus.core.util import whichexecutable
@@ -66,14 +62,15 @@ class BasePoolTestCase(object):
         # start Pool server
         self._starter.startDs()
         # register extensions so the test methods can use them
-        registerExtensions()
-        self.pool = Device(self.pool_name)
+        self.pool = PyTango.DeviceProxy(self.pool_name)
 
     def tearDown(self):
         """Remove the Pool instance.
         """
-        unregisterExtensions()
         self._starter.cleanDb(force=True)
+        self._starter = None
+        self.pool = None
+        self.pool_name = None
 
 
 # TODO: Currently test inputs are implemented as class members, it would be

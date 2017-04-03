@@ -46,6 +46,7 @@ from sardana.pool.poolpseudomotor import PoolPseudoMotor
 from sardana.pool.poolmotorgroup import PoolMotorGroup
 from sardana.pool.poolmeasurementgroup import PoolMeasurementGroup
 from sardana.pool.poolcountertimer import PoolCounterTimer
+from sardana.pool.pooltriggergate import PoolTriggerGate
 from sardana.pool.poolzerodexpchannel import Pool0DExpChannel
 from sardana.pool.poolonedexpchannel import Pool1DExpChannel
 from sardana.pool.pooltwodexpchannel import Pool2DExpChannel
@@ -56,7 +57,8 @@ from sardana.pool.poolcontroller import PoolController, \
     PoolPseudoMotorController, PoolPseudoCounterController
 from sardana.pool.controller import Controller, MotorController, \
     CounterTimerController, ZeroDController, OneDController, TwoDController, \
-    PseudoMotorController, PseudoCounterController, IORegisterController
+    PseudoMotorController, PseudoCounterController, IORegisterController, \
+    TriggerGateController
 from sardana.pool.controller import Type, Access, Description, DefaultValue, \
     FGet, FSet, Memorize, Memorized, MaxDimSize
 
@@ -77,6 +79,7 @@ CTRL_TYPE_MAP = {
     ET.CTExpChannel   : PoolController,
     ET.OneDExpChannel : PoolController,
     ET.TwoDExpChannel : PoolController,
+    ET.TriggerGate    : PoolController,
     ET.PseudoMotor    : PoolPseudoMotorController,
     ET.PseudoCounter  : PoolPseudoCounterController,
     ET.IORegister     : PoolController,
@@ -95,6 +98,7 @@ TYPE_MAP = {
     ET.Instrument       : ("Instrument", "Instrument", PoolInstrument, "{full_name}", None),
     ET.Motor            : ("Motor", "Motor", PoolMotor, "motor/{ctrl_name}/{axis}", MotorController),
     ET.CTExpChannel     : ("CTExpChannel", "ExpChannel", PoolCounterTimer, "expchan/{ctrl_name}/{axis}", CounterTimerController),
+    ET.TriggerGate      : ("TriggerGate", "TriggerGate", PoolTriggerGate, "triggergate/{ctrl_name}/{axis}", TriggerGateController),
     ET.ZeroDExpChannel  : ("ZeroDExpChannel", "ExpChannel", Pool0DExpChannel, "expchan/{ctrl_name}/{axis}", ZeroDController),
     ET.OneDExpChannel   : ("OneDExpChannel", "ExpChannel", Pool1DExpChannel, "expchan/{ctrl_name}/{axis}", OneDController),
     ET.TwoDExpChannel   : ("TwoDExpChannel", "ExpChannel", Pool2DExpChannel, "expchan/{ctrl_name}/{axis}", TwoDController),

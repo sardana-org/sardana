@@ -85,7 +85,9 @@ class MotionPath(object):
                             otherwise motor constant velocity
                             will be selected as high as possible"""
         self.motor = motor
+        self._initial_user_pos = initial_user_pos
         self.initial_user_pos = initial_user_pos
+        self._final_user_pos = final_user_pos
         self.final_user_pos = final_user_pos
         self.active_time = active_time
         self._calculateMotionPath()
@@ -107,10 +109,10 @@ class MotionPath(object):
         final_pos = final_user_pos * motor.step_per_unit
 
         displacement = abs(final_pos - initial_pos)
-
+                    
         # in this case active_time forces that the user range
         # correspond to the constant velocity
-        # and
+        # and 
         if self.active_time != None:
             velocity = displacement / self.active_time
             self.motor.setMaxVelocity(velocity)
@@ -118,11 +120,11 @@ class MotionPath(object):
             accel_time = motor.getAccelerationTime()
             decel_time = motor.getDecelerationTime()
             base_vel = motor.getMinVelocity()
-            accel_displacement = accel_time * 0.5 * (velocity + base_vel)
-            decel_displacement = decel_time * 0.5 * (velocity + base_vel)
+            accel_displacement = accel_time * 0.5 * (velocity - base_vel)
+            decel_displacement = decel_time * 0.5 * (velocity - base_vel)
             initial_pos -= sign * accel_displacement
             final_pos += sign * decel_displacement
-            displacement = abs(final_pos - initial_pos)
+            displacement = abs(final_pos - initial_pos)            
             self.initial_user_pos = initial_pos
             self.final_user_pos = final_pos
 
@@ -206,7 +208,7 @@ class MotionPath(object):
 
             # time to reach maximum velocity
             if accel == 0 or delta_vel == float('inf'):
-                max_vel_time = 0
+                max_vel_time = 0             
             else:
                 max_vel_time = abs(delta_vel / accel)
 
@@ -560,8 +562,10 @@ class Motor(BaseMotor):
     def setMaxVelocity(self, vf):
         """ Sets the maximum velocity in ms^-1."""
         vf = float(vf)
-        if vf <= 0:
-            raise Exception("Maximum velocity must be > 0")
+        # jmoldes replaced <= by <, because otherwise failed
+        # (check if this is correct)
+        if vf < 0: 
+            raise Exception("Maximum velocity must be >= 0")
 
         self.max_vel = vf
 
@@ -591,8 +595,8 @@ class Motor(BaseMotor):
             self.accel = (self.max_vel - self.min_vel) / at
         except ZeroDivisionError:
             self.accel = float('inf')
-
         self.__recalculate_acc_constants()
+       
 
 
     def getAccelerationTime(self):

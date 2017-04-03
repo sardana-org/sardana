@@ -42,6 +42,7 @@ from taurus.core.util.containers import CaselessDict
 from sardana import State, ElementType, TYPE_TIMERABLE_ELEMENTS
 from sardana.sardanaevent import EventType
 from sardana.sardanavalue import SardanaValue
+from sardana.sardanautils import is_non_str_seq, is_number
 
 from sardana.pool.poolextension import translate_ctrl_value
 from sardana.pool.poolbaseelement import PoolBaseElement
@@ -399,8 +400,11 @@ class PoolController(PoolBaseController):
 
     def get_ctrl(self):
         return self._ctrl
+    
+    def set_ctrl(self, ctrl):
+        self._ctrl = ctrl
 
-    ctrl = property(fget=get_ctrl, doc="actual controller object")
+    ctrl = property(fget=get_ctrl, fset=set_ctrl, doc="actual controller object")
 
     def get_ctrl_info(self):
         return self._ctrl_info
@@ -480,22 +484,18 @@ class PoolController(PoolBaseController):
 
     @check_ctrl
     def set_ctrl_par(self, name, value):
-        #return self.ctrl.setCtrlPar(unit, name, value)
         return self.ctrl.SetCtrlPar(name, value)
 
     @check_ctrl
     def get_ctrl_par(self, name):
-        #return self.ctrl.getCtrlPar(unit, name, value)
         return self.ctrl.GetCtrlPar(name)
 
     @check_ctrl
     def set_axis_par(self, axis, name, value):
-        #return self.ctrl.SetAxisPar(unit, axis, name, value)
         return self.ctrl.SetAxisPar(axis, name, value)
 
     @check_ctrl
     def get_axis_par(self, axis, name):
-        #return self.ctrl.GetAxisPar(unit, axis, name, value)
         return self.ctrl.GetAxisPar(axis, name)
 
 
@@ -582,12 +582,18 @@ class PoolController(PoolBaseController):
     def _read_axis_value(self, element):
         try:
             axis = element.get_axis()
+            type_ = element.get_type()
             ctrl_value = self.ctrl.ReadOne(axis)
             if ctrl_value is None:
-                msg = '%s.ReadOne(%s[%d]) return error: Expected value, ' \
+                msg = '%s.ReadOne(%s[%d]) return error: Expected value(s), ' \
                       'got None instead' % (self.name, element.name, axis)
                 raise ValueError(msg)
-            value = translate_ctrl_value(ctrl_value)
+            if (type_ == ElementType.CTExpChannel and is_non_str_seq(ctrl_value) or\
+                type_ == ElementType.OneDExpChannel and not is_number(ctrl_value[0]) or\
+                type_ == ElementType.TwoDExpChannel and not is_number(ctrl_value[0][0])):
+                value = [translate_ctrl_value(v) for v in ctrl_value]
+            else:
+                value = translate_ctrl_value(ctrl_value)
         except:
             value = SardanaValue(exc_info=sys.exc_info())
         return value

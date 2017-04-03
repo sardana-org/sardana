@@ -36,19 +36,19 @@ class SpringfieldBaseCounterTimerController(CounterTimerController):
     This is the absolute minimum you have to implement to set a proper counter
     controller able to get a counter value, get a counter state and do an
     acquisition.
-    
+
     This example is so basic that it is not even directly described in the
     documentation"""
-    
+
     def __init__(self, inst, props, *args, **kwargs):
         """Constructor"""
         super(SpringfieldBaseCounterTimerController, self).__init__(inst, props, *args, **kwargs)
         self.springfield = springfieldlib.SpringfieldCounterHW()
-        
+
     def ReadOne(self, axis):
         """Get the specified counter value"""
         return self.springfield.getValue(axis)
-        
+
     def StateOne(self, axis):
         """Get the specified counter state"""
         springfield = self.springfield
@@ -60,19 +60,16 @@ class SpringfieldBaseCounterTimerController(CounterTimerController):
         elif state == 3:
             return State.Fault, "Counter has an error"
 
-    def StartAll(self):
-        self.springfield.start_count()
-            
     def StartOne(self, axis, value=None):
         """acquire the specified counter"""
-        self.springfield.activate_channel(axis)              
+        self.springfield.StartChannel(axis)
 
-    def LoadOne(self, axis, value):
-        self.springfield.set_master(axis, value)
-        
+    def LoadOne(self, axis, value, repetitions):
+        self.springfield.LoadChannel(axis, value)
+
     def StopOne(self, axis):
         """Stop the specified counter"""
-        self.springfield.stop(axis)        
+        self.springfield.stop(axis)
 
 
 from sardana import DataAccess
@@ -110,13 +107,15 @@ class SpringfieldCounterTimerController(CounterTimerController):
     def ReadOne(self, axis):
         value = self.springfield.getValue(axis)
         return value
-        
+
+    def LoadOne(self, axis, value, repetitions):
+        self.springfield.LoadChannel(axis, value)
+
     def StartOne(self, axis, position):
-        self.springfield.move(axis, position)        
+        self.springfield.StartChennel(axis, position)
 
     def StopOne(self, axis):
-        self.springfield.stop(axis)  
+        self.springfield.stop(axis)
 
     def AbortOne(self, axis):
         self.springfield.abort(axis)
-        

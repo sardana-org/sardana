@@ -29,7 +29,7 @@ __all__ = ["InterruptException", "StopException", "AbortException",
            "BaseElement", "ControllerClass", "ControllerLibrary",
            "PoolElement", "Controller", "ComChannel", "ExpChannel",
            "CTExpChannel", "ZeroDExpChannel", "OneDExpChannel", "TwoDExpChannel",
-           "PseudoCounter", "Motor", "PseudoMotor", "MotorGroup",
+           "PseudoCounter", "Motor", "PseudoMotor", "MotorGroup", "TriggerGate",
            "MeasurementGroup", "IORegister", "Instrument", "Pool",
            "registerExtensions", "getChannelConfigs"]
 
@@ -46,7 +46,7 @@ import traceback
 from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
     DeviceProxy
 
-from taurus import Factory, Device
+from taurus import Factory, Device, Attribute
 from taurus.core.taurusbasetypes import TaurusEventType, TaurusSWDevState, \
     TaurusSerializationMode
 try:
@@ -614,6 +614,10 @@ class PseudoCounter(ExpChannel):
     pass
 
 
+class TriggerGate(PoolElement):
+    """ Class encapsulating TriggerGate functionality."""
+    pass
+
 class Motor(PoolElement, Moveable):
     """ Class encapsulating Motor functionality."""
 
@@ -1055,17 +1059,14 @@ class TangoChannelInfo(BaseChannelInfo):
         raise AttributeError("'%s' has no attribute '%s'" % (cls_name, name))
 
 
-def getChannelConfigs(mgconfig, ctrls=None, units=None, sort=True):
+def getChannelConfigs(mgconfig, ctrls=None, sort=True):
     '''
-    gets a list of channel configurations by flattening the controllers and
-    units levels of the given measurement group configuration. It optionally
-    filters to those channels matching given lists of controller and unit
-    names.
+    gets a list of channel configurations of the controllers of the given
+    measurement group configuration. It optionally filters to those channels
+    matching given lists of controller.
 
     :param ctrls: (seq<str> or None) a sequence of strings to filter the
                   controllers. If None given, all controllers will be used
-    :param units: (seq<str>) a sequence of strings to filter the units. If
-                  None given, all controllers will be used
     :param sort: (bool) If True (default) the returned list will be sorted
                  according to channel index (if given in channeldata) and
                  then by channelname.
@@ -1076,11 +1077,9 @@ def getChannelConfigs(mgconfig, ctrls=None, units=None, sort=True):
     if not mgconfig: return []
     for ctrl_name, ctrl_data in mgconfig['controllers'].items():
         if ctrls is None or ctrl_name in ctrls:
-            for unit_id, unit_data in ctrl_data['units'].items():
-                if units is None or unit_id in units:
-                    for ch_name, ch_data in unit_data['channels'].items():
-                        ch_data.update({'_controller_name':ctrl_name, '_unit_id':unit_id})  #add controller and unit ids
-                        chconfigs.append((ch_name, ch_data))
+            for ch_name, ch_data in ctrl_data['channels'].items():
+                    ch_data.update({'_controller_name': ctrl_name})
+                    chconfigs.append((ch_name, ch_data))
     if sort:
         #sort the channel configs by index (primary sort) and then by channel name.
         chconfigs = sorted(chconfigs, key=lambda c:c[0])  #sort by channel_name
@@ -1103,9 +1102,8 @@ class MGConfiguration(object):
         self.channels = channels = CaselessDict()
 
         for _, ctrl_data in self.controllers.items():
-            for _, unit_data in ctrl_data['units'].items():
-                for channel_name, channel_data in unit_data['channels'].items():
-                    channels[channel_name] = channel_data
+            for channel_name, channel_data in ctrl_data['channels'].items():
+                channels[channel_name] = channel_data
 
         #####################
         #@todo: the for-loops above could be replaced by something like:
@@ -1519,6 +1517,66 @@ class MeasurementGroup(PoolElement):
         self._last_integ_time = ctime
         self.getIntegrationTimeObj().write(ctime)
 
+    def getAcquisitionModeObj(self):
+        return self._getAttrEG('AcquisitionMode')
+
+    def getAcquisitionMode(self):
+        return self._getAttrValue('AcquisitionMode')
+
+    def setAcquisitionMode(self, acqMode):
+        self.getAcquisitionModeObj().write(acqMode)
+
+    def getSynchronizationObj(self):
+        return self._getAttrEG('Synchronization')
+
+    def getSynchronization(self):
+        return self._getAttrValue('Synchronization')
+
+    def setSynchronization(self, synchronization):
+        codec = CodecFactory().getCodec('json')
+        _, data = codec.encode(('', synchronization))
+        self.getSynchronizationObj().write(data)
+        self._last_integ_time = None
+
+    def getMoveableObj(self):
+        return self._getAttrEG('Moveable')
+
+    def getMoveable(self):
+        return self._getAttrValue('Moveable')
+
+    def getLatencyTimeObj(self):
+        return self._getAttrEG('LatencyTime')
+
+    def getLatencyTime(self):
+        return self._getAttrValue('LatencyTime')
+
+    def setMoveable(self, moveable=None):
+        if moveable is None:
+            moveable = 'None' # Tango attribute is of type DevString
+        self.getMoveableObj().write(moveable)
+
+    def addOnDataChangedListeners(self, listener):
+        '''Adds listener which receives data events. Used in online data 
+        collection while acquiring.'''
+        for channel in self.getChannels():
+            attrName = '%s/%s' % (channel['full_name'], "data")
+            self.addAttrListener(attrName, listener)        
+
+    def removeOnDataChangedListeners(self, listener):
+        '''Removes listener which receives data events. Used in online data 
+        collection while acquiring.'''
+        for channel in self.getChannels():
+            attrName = '%s/%s' % (channel['full_name'], "data")
+            self.removeAttrListener(attrName, listener)        
+
+    def addAttrListener(self, attrName, listener):
+        attr = Attribute(attrName)
+        attr.addListener(listener)
+
+    def removeAttrListener(self, attrName, listener):
+        attr = Attribute(attrName)    
+        attr.removeListener(listener)
+
     def enableChannels(self, channels):
         '''Enable acquisition of the indicated channels.
 
@@ -1555,6 +1613,7 @@ class MeasurementGroup(PoolElement):
             raise Exception(msg)
         self.setConfiguration(cfg.raw_data)
 
+
     def _start(self, *args, **kwargs):
         self.Start()
 
@@ -1566,8 +1625,14 @@ class MeasurementGroup(PoolElement):
         if duration is None or duration == 0:
             return self.getStateEG().readValue(), self.getValues()
         self.putIntegrationTime(duration)
+        self.setMoveable(None)
         PoolElement.go(self, *args, **kwargs)
-        ret = self.getStateEG().readValue(), self.getValues()
+        state = self.getStateEG().readValue()
+        if state == Fault:
+            msg = "Measurement group ended acquisition with Fault state"
+            raise Exception(msg)
+        values = self.getValues()
+        ret = state, values
         self._total_go_time = time.time() - start_time
         return ret
 
@@ -1575,6 +1640,7 @@ class MeasurementGroup(PoolElement):
     waitCount = PoolElement.waitFinish
     count = go
     stopCount = PoolElement.abort
+    stop = PoolElement.stop
 
 
 class IORegister(PoolElement):
@@ -1907,7 +1973,7 @@ def registerExtensions():
 
     hw_type_names = [
         'Controller',
-        'ComChannel', 'Motor', 'PseudoMotor',
+        'ComChannel', 'Motor', 'PseudoMotor', 'TriggerGate',
         'CTExpChannel', 'ZeroDExpChannel', 'OneDExpChannel', 'TwoDExpChannel',
         'PseudoCounter', 'IORegister', 'MotorGroup', 'MeasurementGroup']
 
@@ -1922,7 +1988,7 @@ def unregisterExtensions():
 
     hw_type_names = [
         'Controller',
-        'ComChannel', 'Motor', 'PseudoMotor',
+        'ComChannel', 'Motor', 'PseudoMotor', 'TriggerGate',
         'CTExpChannel', 'ZeroDExpChannel', 'OneDExpChannel', 'TwoDExpChannel',
         'PseudoCounter', 'IORegister', 'MotorGroup', 'MeasurementGroup']
 

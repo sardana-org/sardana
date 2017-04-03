@@ -12,12 +12,42 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Tooltip with parameters description in the macro execution widgets:
   MacroExecutor and Sequencer (#302)
 - Generic main to the macrobutton widget that allows to execute "any" macro
+- TriggerGate element and its controller to plug in hardware with
+  the synchronization capabilities (SEP6)
+- software synchronizer that emulate hardware TriggerGate elements (SEP6)
+- possibility to execute multiple, synchronized by hardware or software, 
+  in time or position domain (also non equidistant) acquisitions with the
+  Measurement Group (SEP6)
+- CTExpChannel may report data in chunks when hardware synchronization is
+  in use (SEP6)
+- `synchronizer` parameter to the Measurement Group configuration (SEP6)
+- `latency_time` parameter to the experimental channel controllers (SEP6)
+- `ApplyInterpolation` enviroment variable, applicable to `ascanct` & co.
+  (SEP6)
+- "How to write a counter/timer controller" documentation (SEP6)
+- "How to write a trigger/gate controller" documentation (SEP6)
+
+### Changed
+- `ascanct` & co. macro parameters to more resamble parameters of step scans
+  (SEP6)
+- `trigger_type` was renamed to `synchronization` in Measurement Group
+  configuration and as the experimental channel controller parameter (SEP6)
+
+### Deprecated
+- `LoadOne` API had changed - `repetitions` was added as a mandatory argument
+  and the old API is deprecated (SEP6)
+
+### Removed
+- units level from the Measurement Group configuration (#218)
+- intermediate events being emitted by the CTExpChannel Value attribute while
+  acquiring with the count updates (SEP6)
 
 ### Fixed
 - Macro execution widgets connecting to the MacroServer in a Tango database
   different than the default one e.g. using `--tango-host` option
 - macrobutton widget working with the string parameters containing white spaces
   (#423)
+
 
 ## [2.2.3] - 2017-01-12
 For a full log of commits between versions run (in your git repo):
@@ -188,3 +218,4 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 [2.0.0]: https://github.com/sardana-org/sardana/compare/1.6.1...2.0.0
 [1.6.1]: https://github.com/sardana-org/sardana/compare/1.6.0...1.6.1
 [1.6.0]: https://github.com/sardana-org/sardana/releases/tag/1.6.0
+>>>>>>> origin/develop

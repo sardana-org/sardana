@@ -38,18 +38,16 @@ class ReadMotorPositionOutsideLim(BasePoolTestCase, unittest.TestCase):
         """Create dummy motor controller and dummy motor element
         """
         super(ReadMotorPositionOutsideLim, self).setUp()
+        sar_type = 'Motor'
+        lib = 'DummyMotorController'
         cls = 'DummyMotorController'
         self.ctrl_name = get_free_alias(PyTango.Database(), "readposctrl")
-        props = ()
-        ctrl = self.pool.createController(cls, self.ctrl_name, *props)
-        #Add extra timeout of 3 seconds.
-        if ctrl is None:
-            elements_info = self.pool.getElementsInfo()
-            ctrl = self.pool._wait_for_element_in_container(elements_info,
-                                                  self.ctrl_name, timeout = 3)
+        self.pool.CreateController([sar_type, lib, cls, self.ctrl_name])
         self.elem_name = get_free_alias(PyTango.Database(), "mot_test")
-        elem_axis = 1
-        self.elem = self.pool.createElement(self.elem_name, ctrl, elem_axis)
+        axis = 1
+        self.pool.CreateElement([sar_type, self.ctrl_name, str(axis),
+                                                               self.elem_name])
+        self.elem = PyTango.DeviceProxy(self.elem_name)
         self.elem.DefinePosition(0)
 
     def test_read_position_outside_sw_lim(self):

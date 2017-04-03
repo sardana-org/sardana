@@ -29,13 +29,15 @@ __all__ = ["ColumnDesc", "MoveableDesc", "Record", "RecordEnvironment",
            "ScanDataEnvironment", "RecordList", "ScanData", "ScanFactory"]
 
 import copy
+import math
 
 from taurus.core.util.singleton import Singleton
 
 from sardana.macroserver.scan.recorder import DataHandler
+from threading import RLock
 
 
-class ColumnDesc:
+class ColumnDesc(object):
     """The description of a column for a Record"""
 
     _TYPE_MAP = {"short": "int16",
@@ -159,7 +161,7 @@ class MoveableDesc(ColumnDesc):
         return self.__class__(moveable=self.moveable, **self.toDict())
 
 
-class Record:
+class Record(object):
     """ One record is a set of values measured at the same time.
 
     The Record.data member will be
@@ -189,7 +191,8 @@ class RecordEnvironment(dict):
     """  A RecordEnvironment is a set of arbitrary pairs of type
     label/value in the form of a dictionary.
     """
-    __needed = ['title', 'labels']
+    __needed = ['title', 'labels'] #@TODO: it seems that this has changed
+                                   #now labels are separated in moveables and counters 
 
     def isValid(self):
         """ Check valid environment = all needed keys present """
@@ -226,14 +229,21 @@ class RecordList(dict):
     """  A RecordList is a set of records: for example a scan.
     It is composed of a environment and a list of records"""
 
-    def __init__(self, datahandler, environ=None):
+    def __init__(self, datahandler, environ=None, apply_interpolation=False,
+                 initial_data=None):
 
         self.datahandler = datahandler
-        if environ == None:
+        self.applyInterpolation = apply_interpolation
+        self.initial_data = initial_data
+        if environ is None:
             self.environ = RecordEnvironment()
         else:
             self.environ = environ
         self.records = []
+        self.rlock = RLock()
+        # currentIndex indicates the place in the records list
+        # where the next completed record will be written
+        self.currentIndex = 0
 
     # make it pickable
     def __getstate__(self):
@@ -256,7 +266,55 @@ class RecordList(dict):
 
     def start(self):
         self.recordno = 0
-        self.datahandler.startRecordList(self)
+        ####@TODO: it is necessary only by continuous scan
+        ####       think how to separate this two cases
+        self.columnIndexDict = {}
+        self.labels = []
+        self.refMoveablesLabels = []
+        self.channelLabels = []
+        self.currentIndex = 0
+        self._mylabel = []
+
+        for dataDesc in self.getEnvironValue('datadesc'):
+            if isinstance(dataDesc, MoveableDesc):
+                self.refMoveablesLabels.append(dataDesc.name)
+            else:
+                name = dataDesc.name
+                if not name in ('point_nb', 'timestamp'):
+                    self.channelLabels.append(name)
+            self.labels.append(dataDesc.name)
+        for label in self.labels:
+            self.columnIndexDict[label] = 0
+        ####
+        self.datahandler.startRecordList(self) 
+
+    def initRecord(self):
+        '''Init a dummy record and add it to the records list.
+        A dummy record has:
+           - point_nb of the consecutive record
+           - each column initialized with NaN
+           - each moveable initialized with None
+        '''
+        recordno = self.recordno
+        if self.initial_data and self.initial_data.has_key(recordno):
+            initial_data = self.initial_data.get(recordno)
+        else:
+            initial_data = dict()
+        rc = Record({'point_nb' : recordno})
+        rc.data['timestamp'] = initial_data.get('timestamp')
+        rc.setRecordNo(self.recordno)
+        for label in self.channelLabels:
+            rc.data[label] = initial_data.get(label, float('NaN'))
+        for label in self.refMoveablesLabels:
+            rc.data[label] = initial_data.get(label)
+        self.records.append(rc)
+        self.recordno += 1
+
+    def initRecords(self, nb_records):
+        '''Call nb_records times initRecord method
+        '''
+        for _ in range(nb_records):
+            self.initRecord()
 
     def addRecord(self, record):
         rc = Record(record)
@@ -264,13 +322,78 @@ class RecordList(dict):
         self.records.append(rc)
         self[self.recordno] = rc
         self.recordno += 1
-
         self.datahandler.addRecord(self, rc)
+        self.currentIndex +=1
+
+    def applyZeroOrderInterpolation(self, record):
+        ''' Apply a zero order interpolation to the given record
+        '''
+        if self.currentIndex > 0:
+            data = record.data
+            prev_data = self.records[self.currentIndex - 1].data
+            for k, v in data.items():
+                if v is None:
+                    continue
+                if math.isnan(v):
+                    data[k] = prev_data[k]
+
+    def addData(self, data):
+        """Adds data to the record list
+
+        :param data: dictionary with two mandatory elements: label - string 
+                     and data - list of values
+        :type data:  dict"""
+        with self.rlock:
+            label = data['label']
+            rawData = data['data']
+            idxs = data['index']
+
+            maxIdx = max(idxs)
+            recordsLen = len(self.records)
+            # Calculate missing records
+            missingRecords = recordsLen - (maxIdx + 1)
+            #TODO: implement proper handling of timestamps and moveables
+            if missingRecords < 0:
+                missingRecords = abs(missingRecords)
+                self.initRecords(missingRecords)
+            for idx, value in zip(idxs, rawData):
+                rc = self.records[idx]
+                rc.setRecordNo(idx)
+                rc.data[label] = value
+                self.columnIndexDict[label] = idx + 1
+            self.tryToAdd(idx, label)
+
+    def tryToAdd(self, idx, label):
+        start = self.currentIndex
+        for i in range(start, idx+1):
+            if self.isRecordCompleted(i):
+                rc = self.records[i]
+                self[self.currentIndex] = rc
+                if self.applyInterpolation:
+                    self.applyZeroOrderInterpolation(rc)
+                self.datahandler.addRecord(self, rc)
+                self.currentIndex +=1
+
+    def isRecordCompleted(self, recordno):
+        rc = self.records[recordno]
+        for label in self.channelLabels:
+            if self.columnIndexDict[label] <= self.currentIndex:
+                return False
+        rc.completed = 1
+        return True
 
     def addRecords(self, records):
         map(self.addRecord, records)
 
     def end(self):
+        start = self.currentIndex
+        for i in range(start, len(self.records)):
+            rc = self.records[i]
+            self[self.currentIndex] = rc
+            if self.applyInterpolation:
+                self.applyZeroOrderInterpolation(rc)
+            self.datahandler.addRecord(self, rc)
+            self.currentIndex += 1
         self.datahandler.endRecordList(self)
 
     def getDataHandler(self):
@@ -279,9 +402,10 @@ class RecordList(dict):
 
 class ScanData(RecordList):
 
-    def __init__(self, environment=None, data_handler=None):
+    def __init__(self, environment=None, data_handler=None,
+                 apply_interpolation=False):
         dh = data_handler or DataHandler()
-        RecordList.__init__(self, dh, environment)
+        RecordList.__init__(self, dh, environment, apply_interpolation)
 
 
 class ScanFactory(Singleton):
@@ -297,5 +421,7 @@ class ScanFactory(Singleton):
     def getDataHandler(self):
         return DataHandler()
 
-    def getScanData(self, dh):
-        return ScanData(data_handler=dh)
+    def getScanData(self, dh, apply_interpolation=False):
+        return ScanData(data_handler=dh,
+                        apply_interpolation=apply_interpolation)
+

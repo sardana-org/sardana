@@ -33,9 +33,10 @@ import sys
 import time
 
 from PyTango import DevFailed, DevVoid, DevDouble, DevState, AttrQuality, \
-    Except, READ, SCALAR
+    DevString, Except, READ, SCALAR, ErrSeverity
 
 from taurus.core.util.log import DebugIt
+from taurus.core.util.codecs import CodecFactory
 
 from sardana import State, SardanaServer
 from sardana.sardanaattribute import SardanaAttribute
@@ -49,6 +50,7 @@ class CTExpChannel(PoolElementDevice):
 
     def __init__(self, dclass, name):
         PoolElementDevice.__init__(self, dclass, name)
+        self.codec = CodecFactory().getCodec('json')
 
     def init(self, name):
         PoolElementDevice.init(self, name)
@@ -120,25 +122,50 @@ class CTExpChannel(PoolElementDevice):
             value = self.calculate_tango_state(event_value)
         elif name == "status":
             value = self.calculate_tango_status(event_value)
-        else:
+        elif name == "value":
             if isinstance(event_value, SardanaAttribute):
                 if event_value.error:
                     error = Except.to_dev_failed(*event_value.exc_info)
                 else:
                     value = event_value.value
+                    value_chunk = event_value.value_chunk
+                    if value_chunk:
+                        _attr = self.get_attribute_by_name("data")
+                        _value = self._encode_value_chunk(value_chunk)
+                        self.set_attribute(_attr, value=_value, w_value=w_value,
+                                           timestamp=timestamp, quality=quality,
+                                           priority=priority, error=error,
+                                           synch=False)
                 timestamp = event_value.timestamp
             else:
                 value = event_value
+            w_value = event_source.get_value_attribute().w_value
 
-            if name == "value":
-                w_value = event_source.get_value_attribute().w_value
-                state = self.ct.get_state()
-                if state == State.Moving:
-                    quality = AttrQuality.ATTR_CHANGING
+            state = self.ct.get_state()
+            if state == State.Moving:
+                quality = AttrQuality.ATTR_CHANGING
+            if attr == None:
+                return
 
         self.set_attribute(attr, value=value, w_value=w_value,
                            timestamp=timestamp, quality=quality,
                            priority=priority, error=error, synch=False)
+
+    def _encode_value_chunk(self, value_chunk):
+        """Prepare value chunk to be passed via communication channel.
+
+        :param value_chunk: value chunk
+        :type value_chunk: seq<SardanaValue>
+
+        :return: json string representing value chunk
+        :rtype: str"""
+        value = []; index = []
+        for sv in value_chunk:
+            value.append(sv.value)
+            index.append(sv.idx)
+        data = dict(data=value, index=index)
+        _, encoded_data = self.codec.encode(('', data))
+        return encoded_data
 
     def always_executed_hook(self):
         #state = to_tango_state(self.ct.get_state(cache=False))
@@ -167,7 +194,7 @@ class CTExpChannel(PoolElementDevice):
         attrs = PoolElementDevice.initialize_dynamic_attributes(self)
 
         detect_evts = "value",
-        non_detect_evts = ()
+        non_detect_evts = "data",
 
         for attr_name in detect_evts:
             if attr_name in attrs:
@@ -178,7 +205,19 @@ class CTExpChannel(PoolElementDevice):
 
     def read_Value(self, attr):
         ct = self.ct
+        # TODO: decide if we force the controller developers to store the
+        # last acquired value in the controllers or we always will use
+        # cache. This is due to the fact that the clients (MS) read the value
+        # after the acquisition had finished.
         use_cache = ct.is_in_operation() and not self.Force_HW_Read
+        # For the moment we just check if the previous acquisition was
+        # synchronized by hardware and in this case, we use cache and clean the
+        # buffer so the cached value will be returned only at the first readout
+        # after the acquisition. This is a workaround for the step scans which
+        # read the value after the acquisition.
+        if not use_cache and len(ct.value.value_buffer) > 0:
+            use_cache = True
+            ct.value.clear_buffer()
         value = ct.get_value(cache=use_cache, propagate=0)
         if value.error:
             Except.throw_python_exception(*value.exc_info)
@@ -188,6 +227,14 @@ class CTExpChannel(PoolElementDevice):
             quality = AttrQuality.ATTR_CHANGING
         self.set_attribute(attr, value=value.value, quality=quality,
                            timestamp=value.timestamp, priority=0)
+
+    def read_Data(self, attr):
+        desc = 'Data attribute is not foreseen for reading. It is used ' + \
+            'only as the communication channel for the continuous acquisitions.'
+        Except.throw_exception('UnsupportedFeature',
+                               desc,
+                               'CTExpChannel.read_Data',
+                               ErrSeverity.WARN)
 
     def is_Value_allowed(self, req_type):
         if self.get_state() in [DevState.FAULT, DevState.UNKNOWN]:
@@ -218,8 +265,9 @@ class CTExpChannelClass(PoolElementDeviceClass):
     attr_list.update(PoolElementDeviceClass.attr_list)
 
     standard_attr_list = {
-        'Value'     : [ [ DevDouble, SCALAR, READ ],
-                        { 'abs_change' : '1.0', } ],
+            'Value'     : [ [ DevDouble, SCALAR, READ ],
+                            { 'abs_change' : '1.0', } ],
+            'Data' : [ [ DevString, SCALAR, READ ] ] #@TODO: think about DevEncoded
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
 

@@ -105,6 +105,7 @@ def sar_demo(self):
     zerod_ctrl_name = get_free_names(db, "zerodctrl", 1)[0]
     oned_ctrl_name = get_free_names(db, "onedctrl", 1)[0]
     twod_ctrl_name = get_free_names(db, "twodctrl", 1)[0]
+    tg_ctrl_name = get_free_names(db, "tgctrl", 1)[0]
     pm_ctrl_name = get_free_names(db, "slitctrl", 1)[0]
     ior_ctrl_name = get_free_names(db, "iorctrl", 1)[0]
 
@@ -113,6 +114,7 @@ def sar_demo(self):
     zerod_names = get_free_names(db, "zerod", 4)
     oned_names = get_free_names(db, "oned", 1)
     twod_names = get_free_names(db, "twod", 1)
+    tg_names = get_free_names(db, "tg", 1)
     gap, offset = get_free_names(db, "gap", 1) + get_free_names(db, "offset", 1)
     ior_names = get_free_names(db, "ior", 2)
     mg_name = get_free_names(db, "mntgrp", 1)[0]
@@ -160,12 +162,18 @@ def sar_demo(self):
     self.defctrl("Slit", pm_ctrl_name, ["sl2t="+sl2t, "sl2b="+sl2b,
                  "Gap="+gap, "Offset="+offset])
 
+    self.print("Creating trigger controller", tg_ctrl_name, "...")
+    self.defctrl("DummyTriggerGateController", tg_ctrl_name)
+    for axis, tg_name in enumerate(tg_names, 1):
+        self.print("Creating trigger element", tg_name, "...")
+        self.defelem(tg_name , tg_ctrl_name, axis)
+
     self.print("Creating IORegister controller", ior_ctrl_name, "...")
     self.defctrl("DummyIORController", ior_ctrl_name)
     for axis, ior_name in enumerate(ior_names, 1):
         self.print("Creating IORegister", ior_name, "...")
         self.defelem(ior_name, ior_ctrl_name, axis)
-
+   
     self.print("Creating measurement group", mg_name, "...")
     self.defmeas(mg_name, ct_names)
 
@@ -176,9 +184,11 @@ def sar_demo(self):
         self.setEnv("ActiveMntGrp", mg_name)
 
     controllers = pm_ctrl_name, mot_ctrl_name, ct_ctrl_name, \
-            zerod_ctrl_name, oned_ctrl_name, twod_ctrl_name, ior_ctrl_name
+            zerod_ctrl_name, oned_ctrl_name, twod_ctrl_name, \
+            tg_ctrl_name, ior_ctrl_name
     elements = [gap, offset] + motor_names + ct_names + \
-            zerod_names + oned_names + twod_names + ior_names
+            zerod_names + oned_names + twod_names + tg_names + \
+            ior_names
     d = dict(controllers=controllers, elements=elements,
              measurement_groups=[mg_name])
     

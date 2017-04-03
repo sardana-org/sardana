@@ -24,6 +24,7 @@
 ##############################################################################
 
 import copy
+import time
 import threading
 import PyTango
 from sardana.macroserver.macros.test import BaseMacroExecutor
@@ -91,7 +92,10 @@ class TangoStatusCb(TangoAttrCb):
             self._tango_macro_executor._done_event.set()
         # make sure we get it as string since PyTango 7.1.4 returns a buffer
         # object and json.loads doesn't support buffer objects (only str)
-        attr_value = event_data.attr_value
+        
+        attr_value = getattr(event_data, 'attr_value')
+        if attr_value is None:
+            return
         v = map(str, attr_value.value)
         if not len(v[1]):
             return
@@ -158,6 +162,14 @@ class TangoMacroExecutor(BaseMacroExecutor):
         # Pending to remove this comment when Sardana resolves the bug.
         if self._done_event:
             self._done_event.wait(timeout)
+            # add an extra sleep time for the following cases:
+            # - macro executing another macro - internal macro may finish but
+            #   the external may still not
+            # - in case of stopping a macro, the events are emitted: first
+            #   finish and then stop
+            # TODO: base the wait condition on the events from door state
+            # attribute 
+            time.sleep(3)
             self._door.unsubscribe_event(self._status_id)
 
     def _stop(self, started_event_timeout=3.0):

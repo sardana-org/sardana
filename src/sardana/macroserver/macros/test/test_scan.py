@@ -157,7 +157,7 @@ class DscanTest(DNscanTest, unittest.TestCase):
 @testRun(macro_params=[_m1, '-1', '1', '3', _m2, '-1', '0', '2', '.1'], 
          wait_timeout=30)
 @testRun(macro_params=[_m1, '-2', '2', '3', _m2, '-2', '-1', '2', '.1'], 
-         wait_timeout=30)
+         wait_timeout=40)
 @testStop(macro_params=[_m1, '-3', '0', '3', _m2, '-3', '0', '2', '.1'], 
           wait_timeout=30)
 class MeshTest(RunStopMacroTestCase, unittest.TestCase):

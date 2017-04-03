@@ -54,6 +54,7 @@ class PoolMeasurementGroupTestCase(unittest.TestCase):
         pool.add_element(pct)
 
         self.pmg = createPoolMeasurementGroup(pool, dummyMeasurementGroupConf01)
+        pool.add_element(self.pmg)
         self._pct = pct # keep a reference to use it in test_acquisition
 
     def test_init(self):
@@ -62,20 +63,22 @@ class PoolMeasurementGroupTestCase(unittest.TestCase):
               'PoolMeasurementGroup instance'
         self.assertIsInstance(self.pmg, PoolMeasurementGroup, msg)
 
+    # TODO: until the measurement group does not have a default software
+    # synchronizer mark this test as expected failure.
+    @unittest.expectedFailure
     def test_acquisition(self):
         """Test acquisition using the created measurement group without
         using a Sardana pool."""
         msg = 'Pool Measurement Group does not acquire'
-        integ_time = 1
-        self.pmg.set_integration_time(integ_time)
+        integ_time = .1
+        self.pmg.integration_time = integ_time
         self.pmg.start_acquisition()
 
-        acq = self.pmg.get_acquisition()._ct_acq
+        acq = self.pmg.acquisition
         # 'acquiring..'
         while acq.is_running():
             time.sleep(0.05)
-        values = acq.raw_read_value_loop()
-        self.assertEqual(values[self._pct].value, integ_time, msg)
+        self.assertEqual(self._pct.value, integ_time, msg)
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)

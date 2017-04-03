@@ -49,13 +49,13 @@ from taurus.core.util.codecs import CodecFactory
 
 PoolElementType = Enumeration("PoolElementType",
     ("0D", "1D", "2D", "Communication", "CounterTimer", "IORegister",
-      "Motor", "PseudoCounter", "PseudoMotor"))
+      "Motor", "PseudoCounter", "PseudoMotor", "TriggerGate"))
 
 ChannelView = Enumeration("ChannelView",
     ("Channel", "Enabled", "Output", "PlotType", "PlotAxes", "Timer",
-     "Monitor", "Trigger", "Conditioning", "Normalization", "NXPath",
+     "Monitor", "Synchronization", "Conditioning", "Normalization", "NXPath",
      "Shape", "DataType",
-     "Unknown"))
+     "Unknown", "Synchronizer"))
 
 PlotType = Enumeration("PlotType", ("No", "Spectrum", "Image"))
 
@@ -64,14 +64,15 @@ Normalization = Enumeration("Normalization", ("No", "Avg", "Integ"))
 #: an enumeration describing all possible acquisition trigger types
 AcqTriggerType = Enumeration("AcqTriggerType", (\
     "Software",  # channel triggered by software - start and stop by software
+    "Trigger", # channel triggered by HW - start by external
     "Gate",  # channel triggered by HW - start and stop by external
     "Unknown"))
 
 #: an enumeration describing all possible acquisition mode types
-AcqMode = Enumeration("AcqMode", (\
+AcqMode = Enumeration("AcqMode", ( \
     "Timer",
     "Monitor",
-    "Unknown"))
+    "Unknown") )
 
 
 class BaseSardanaElement(object):

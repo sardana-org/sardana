@@ -507,7 +507,7 @@ class BasicDummyMotorController(MotorController):
             raise Exception("Invalid axis %d" % axis)
         if self.m[idx] is None:
             m = Motion()
-            m.setMinVelocity(2)
+            m.setMinVelocity(0)
             m.setMaxVelocity(100)
             m.setAccelerationTime(2)
             m.setDecelerationTime(2)

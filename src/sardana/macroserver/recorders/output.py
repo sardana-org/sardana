@@ -101,7 +101,7 @@ class JsonRecorder(DataRecorder):
         and then sends it'''
         #data = self._codec.encode(('', kwargs))
         #self._stream.sendRecordData(*data)
-        self._stream.sendRecordData(kwargs, codec='json')
+        self._stream._sendRecordData(kwargs, codec='json')
 
     def _addCustomData(self, value, name, **kwargs):
         '''
@@ -215,11 +215,11 @@ class OutputRecorder(DataRecorder):
         self._scan_line_t = [(col_names[0], '%%(%s)8d' % col_names[0])]
         self._scan_line_t += [(name, cell_t_number % name) for name in col_names[1:]]
 
-        self._stream.output(header)
-        self._stream.flushOutput()
+        self._stream._output(header)
+        self._stream._flushOutput()
 
     def _endRecordList(self, recordlist):
-        self._stream.flushOutput()
+        self._stream._flushOutput()
         starttime = recordlist.getEnvironValue('starttime')
         endtime = recordlist.getEnvironValue('endtime')
         deadtime = recordlist.getEnvironValue('deadtime')
@@ -261,11 +261,11 @@ class OutputRecorder(DataRecorder):
         scan_line = self._col_sep.join(cells)
 
         if self._output_block:
-            self._stream.outputBlock(scan_line)
+            self._stream._outputBlock(scan_line)
         else:
-            self._stream.output(scan_line)
+            self._stream._output(scan_line)
 
-        self._stream.flushOutput()
+        self._stream._flushOutput()
 
     def _addCustomData(self, value, name, **kwargs):
         '''
@@ -276,5 +276,5 @@ class OutputRecorder(DataRecorder):
             v = 'Array(%s)' % str(numpy.shape(value))
         else:
             v = str(value)
-        self._stream.output('Custom data: %s : %s' % (name, v))
-        self._stream.flushOutput()
+        self._stream._output('Custom data: %s : %s' % (name, v))
+        self._stream._flushOutput()
