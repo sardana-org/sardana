@@ -73,7 +73,7 @@ class Position(SardanaAttribute):
         for position_attr in self.obj.get_physical_position_attribute_iterator():
             if position_attr.error:
                 return True
-        return self._exc_info != None
+        return self._exc_info is not None
 
     def _has_value(self):
         for position_attr in self.obj.get_physical_position_attribute_iterator():

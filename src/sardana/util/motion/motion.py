@@ -113,7 +113,7 @@ class MotionPath(object):
         # in this case active_time forces that the user range
         # correspond to the constant velocity
         # and
-        if self.active_time != None:
+        if self.active_time is not None:
             velocity = displacement / self.active_time
             self.motor.setMaxVelocity(velocity)
             sign = final_pos > initial_pos and 1 or -1

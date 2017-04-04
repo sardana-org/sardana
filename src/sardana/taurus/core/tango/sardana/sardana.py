@@ -198,7 +198,7 @@ class BaseSardanaElementContainer:
         return [e.name for e in self.getElementsWithInterface(interface).values()]
 
     def hasElementName(self, elem_name):
-        return self.getElement(elem_name) != None
+        return self.getElement(elem_name) is not None
 
     def getElement(self, elem_name):
         elem_name = elem_name.lower()

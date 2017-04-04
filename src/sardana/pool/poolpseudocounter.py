@@ -55,7 +55,7 @@ class Value(SardanaAttribute):
         for value_attr in self.obj.get_physical_value_attribute_iterator():
             if value_attr.error:
                 return True
-        return self._exc_info != None
+        return self._exc_info is not None
 
     def _has_value(self):
         for value_attr in self.obj.get_physical_value_attribute_iterator():

@@ -55,7 +55,7 @@ class ComputeU(TaurusWidget):
         return ret
 
     def setModel(self, model):
-        if model != None:
+        if model is not None:
             self.device = taurus.Device(model)
 
     def compute_u(self):

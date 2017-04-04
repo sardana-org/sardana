@@ -113,7 +113,7 @@ def createPoolMeasurementGroup(pool, conf):
     '''
     kwargs = copy.deepcopy(conf)
     id = kwargs.get('id')
-    if id == None:
+    if id is None:
         kwargs['id'] = pool.get_free_id()
     kwargs['pool'] = pool
     return PoolMeasurementGroup(**kwargs)

@@ -57,7 +57,7 @@ class ReflectionsEditor(TaurusWidget):
         return ret
 
     def setModel(self, model):
-        if model != None:
+        if model is not None:
             self.device = taurus.Device(model)
 
         xhkl = []
@@ -80,7 +80,7 @@ class ReflectionsEditor(TaurusWidget):
         # Find number of real motors
         self.nb_angles = len(self.device.motorlist)
 
-        if reflections != None:
+        if reflections is not None:
             self.nb_reflections = len(reflections)
         else:
             self.nb_reflections = 0
@@ -186,7 +186,7 @@ class ReflectionsEditor(TaurusWidget):
             iref_angles.append(icount)
 
         # Remove all reflections
-        if self.device.reflectionlist != None:
+        if self.device.reflectionlist is not None:
             self.nb_reflections = len(self.device.reflectionlist)
         else:
             self.nb_reflections = 0
@@ -227,7 +227,7 @@ class ReflectionsEditor(TaurusWidget):
                 self.angle_values[i][jref].setText('')
 
         # Add the reflections
-        if reflections != None:
+        if reflections is not None:
             self.nb_reflections = len(reflections)
             for jref in range(0, len(reflections)):
                 # Fill the index

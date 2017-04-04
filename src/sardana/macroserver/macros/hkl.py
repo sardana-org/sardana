@@ -135,7 +135,7 @@ class _diffrac:
             pass
 
         hkl = []
-        if reflections != None:
+        if reflections is not None:
             for i in range(1, 4):
                 hkl.append(reflections[0][i])
 
@@ -150,7 +150,7 @@ class _diffrac:
             pass
 
         hkl = []
-        if reflections != None:
+        if reflections is not None:
             if len(reflections) > 1:
                 for i in range(1, 4):
                     hkl.append(reflections[1][i])
@@ -425,7 +425,7 @@ class pa(Macro, _diffrac):
         reflections = self.diffrac.reflectionlist
 
         nb_ref = 0
-        if reflections != None:
+        if reflections is not None:
             for ref in reflections:
                 if nb_ref < len(self.suffix):
                     sf = self.suffix[nb_ref]
@@ -527,7 +527,7 @@ class wh(Macro, _diffrac):
 
         parameter_names = self.diffrac.modeparametersnames
 
-        if parameter_names != None:
+        if parameter_names is not None:
             i = 0
             for par in parameter_names:
                 if par == "psi":
@@ -865,7 +865,7 @@ class setorn(iMacro, _diffrac):
                 pass
             tmp_ref = {}
             hkl_names = ["h", "k", "l"]
-            if reflections != None:
+            if reflections is not None:
                 if len(reflections) > ref_id:
                     for i in range(1, 4):
                         tmp_ref[hkl_names[i - 1]] = reflections[ref_id][i]
@@ -1015,7 +1015,7 @@ class computeub(Macro, _diffrac):
     def run(self):
 
         reflections = self.diffrac.reflectionlist
-        if reflections != None:
+        if reflections is not None:
             if len(reflections) > 1:
                 self.output("Computing UB with reflections 0 and 1")
                 values = [0, 1]

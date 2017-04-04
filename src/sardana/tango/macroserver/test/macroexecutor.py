@@ -73,7 +73,7 @@ class TangoLogCb(TangoAttrCb):
             log_buffer = getattr(self._tango_macro_executor, log_buffer_name)
             log_buffer.append(log)
             common_buffer = self._tango_macro_executor._common
-            if common_buffer != None:
+            if common_buffer is not None:
                 common_buffer.append(log)
 
 
@@ -130,7 +130,7 @@ class TangoMacroExecutor(BaseMacroExecutor):
 
     def __init__(self, door_name=None):
         super(TangoMacroExecutor, self).__init__()
-        if door_name == None:
+        if door_name is None:
             door_name = getattr(sardanacustomsettings, 'UNITTEST_DOOR_NAME')
         self._door = PyTango.DeviceProxy(door_name)
         self._done_event = None

@@ -103,7 +103,7 @@ class DiffractometerAlignment(TaurusWidget):
         return ret
 
     def setModel(self, model):
-        if model != None:
+        if model is not None:
             self.device = taurus.Device(model)
 
         self.pseudo_motor_names = []
@@ -288,7 +288,7 @@ class DiffractometerAlignment(TaurusWidget):
         # TODO: the string parsing should be eliminated and the sardana
         # generic "goto_peak" feature should be used instead - when available
         output_values = self.door_device.read_attribute("Output").value
-        if output_values != None:
+        if output_values is not None:
             for i in range(len(output_values)):
                 if output_values[i] == "Position to move":
                     self.tomax_buttons[imot].setText(QtGui.QApplication.translate(

@@ -80,7 +80,7 @@ class BaseMacroExecutor(object):
             In asyncrhonous execution method :meth:`~wait` has to be explicitly
             called.
         """
-        if macro_params == None:
+        if macro_params is None:
             macro_params = []
 
         self._clean()
@@ -291,7 +291,7 @@ class MacroExecutorFactory(Singleton):
         Returns a macro executor instance (a subclass of
         :class:`BaseMacroExecutor`) depending on the door being used.
         """
-        if door_name == None:
+        if door_name is None:
             from sardana import sardanacustomsettings
             door_name = getattr(sardanacustomsettings, 'UNITTEST_DOOR_NAME')
 

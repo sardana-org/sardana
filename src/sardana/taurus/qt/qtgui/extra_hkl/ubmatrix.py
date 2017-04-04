@@ -102,7 +102,7 @@ class UBMatrixBase(TaurusWidget):
 
         self.model = model
 
-        if model != None:
+        if model is not None:
             self.device = taurus.Device(model)
 
         self.update_values()
@@ -259,7 +259,7 @@ class UBMatrixBase(TaurusWidget):
         self.taurusValueAngle5 = []
         self.taurusValueAngle6 = []
 
-        if reflections != None:
+        if reflections is not None:
             for ref in reflections:
                 if nb_ref == 0:
                     self.rl_label1_7 = QtGui.QLabel(w)

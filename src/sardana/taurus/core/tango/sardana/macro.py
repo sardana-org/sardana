@@ -926,7 +926,7 @@ class MacroNode(BranchNode):
         self._params.append(param)
 
     def popParam(self, index=None):
-        if index == None:
+        if index is None:
             return self._params.pop()
         else:
             return self._params.pop(index)

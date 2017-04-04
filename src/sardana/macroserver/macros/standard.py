@@ -90,7 +90,7 @@ class _wm(Macro):
                     attrs = motor.read_attributes_reply(_id)
                     for attr in attrs:
                         value = attr.value
-                        if value == None:
+                        if value is None:
                             value = float('NaN')
                         data[name].append(value)
                     req2delete.append(name)

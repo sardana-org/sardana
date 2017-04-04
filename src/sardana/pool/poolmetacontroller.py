@@ -175,7 +175,7 @@ class DataInfo(object):
         self.memorized = memorized
         self.fget = fget or "get%s" % name
         self.fset = fset or "set%s" % name
-        if maxdimsize == None:
+        if maxdimsize is None:
             if dformat == DataFormat.Scalar:
                 maxdimsize = ()
             elif dformat == DataFormat.OneD:

@@ -637,7 +637,7 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     def set_moveable(self, moveable, propagate=1):
         self._moveable = moveable
-        if self._moveable != 'None' and self._moveable != None:
+        if self._moveable != 'None' and self._moveable is not None:
             self._moveable_obj = self.pool.get_element_by_full_name(moveable)
         self.fire_event(EventType("moveable", priority=propagate),
                         moveable)

@@ -209,7 +209,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
 
     def addMacro(self, macroNode):
         node, proxyIndex = self.selectedNodeAndIndex()
-        if node == None or not node.isAllowedHooks():
+        if node is None or not node.isAllowedHooks():
             proxyIndex = self.rootIndex()
         sourceIndex = self.model().mapToSource(proxyIndex)
         newSourceIndex = self.model()._insertRow(sourceIndex, macroNode)
@@ -286,7 +286,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
 
     def setProgressForMacro(self, macroId, progress):
         persistentIndex = self._idIndexDict.get(macroId, None)
-        if persistentIndex == None:
+        if persistentIndex is None:
             return
         progressIndex = persistentIndex.sibling(persistentIndex.row(), 2)
         index = Qt.QModelIndex(progressIndex)
@@ -294,7 +294,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
 
     def setRangeForMacro(self, macroId, range):
         persistentIndex = self._idIndexDict.get(macroId, None)
-        if persistentIndex == None:
+        if persistentIndex is None:
             return
         index = Qt.QModelIndex(persistentIndex)
         node = self.model().nodeFromIndex(index)

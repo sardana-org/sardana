@@ -53,7 +53,7 @@ class Vct6Controller(CounterTimerController.CounterTimerController):
     def StateOne(self, ind):
         # print "PYTHON -> Vct6Controller/",self.inst_name,": In StateOne
         # method for index",ind
-        if self.simu_ctrl != None:
+        if self.simu_ctrl is not None:
             if self.started == True:
                 now = time.time()
                 delta_t = now - self.start_time
@@ -88,14 +88,14 @@ class Vct6Controller(CounterTimerController.CounterTimerController):
         # print "PYTHON -> Vct6Controller/",self.inst_name,": In ReadOne method
         # for index",ind
         pass
-        if self.simu_ctrl != None:
+        if self.simu_ctrl is not None:
             return self.simu_ctrl.command_inout("GetCounterValue", ind)
         else:
             raise RuntimeError, "Ctrl Tango's proxy null!!!"
 
     def AbortOne(self, ind):
         print "PYTHON -> Vct6Controller/", self.inst_name, ": In AbortOne method for index", ind
-        if self.simu_ctrl != None:
+        if self.simu_ctrl is not None:
             self.simu_ctrl.command_inout("Stop", ind)
             self.started = False
         else:
@@ -122,7 +122,7 @@ class Vct6Controller(CounterTimerController.CounterTimerController):
     def LoadOne(self, ind, value):
         # print "PYTHON -> Vct6Controller/",self.inst_name,": In LoadOne method
         # for index",ind," with value",value
-        if self.simu_ctrl != None:
+        if self.simu_ctrl is not None:
             self.simu_ctrl.command_inout("Clear", ind)
         else:
             raise RuntimeError, "Ctrl Tango's proxy null!!!"

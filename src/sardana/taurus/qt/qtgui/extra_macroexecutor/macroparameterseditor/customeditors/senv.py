@@ -189,7 +189,7 @@ class ExtraColumnsTable(Qt.QTableView):
         self.setSelectionMode(Qt.QAbstractItemView.ExtendedSelection)
 
     def setColumns(self, columns):
-        if columns == None:
+        if columns is None:
             columns = []
         self.model().setColumns(columns)
         self.resizeColumnsToContents()

@@ -355,7 +355,7 @@ class SimpleEditorBasePage(wiz.SardanaBasePage):
         return True
 
     def addItem(self, item):
-        if item.getLevel() == None:
+        if item.getLevel() is None:
             item.setLevel("1")
         item.setHostName(self._getHostList()[0])
         self.listOfItems.append(item)
@@ -364,7 +364,7 @@ class SimpleEditorBasePage(wiz.SardanaBasePage):
         return True
 
     def editItem(self, item, id):
-        if item.getLevel() == None:
+        if item.getLevel() is None:
             item.setLevel("1")
         self.listOfItems[id] = item
         self._fillList()
@@ -433,7 +433,7 @@ class SimpleEditorBasePage(wiz.SardanaBasePage):
                 "valueChanged(int)"), self.levelChanged)
             self.tableWidget.setCellWidget(i, 2, self._spinList[i])
 
-            if (item.getHostName() == "") or (item.getHostName() == None):
+            if (item.getHostName() == "") or (item.getHostName() is None):
                 self._spinList[i].setDisabled(True)
                 self._spinList[i].setValue(0)
             else:
@@ -753,7 +753,7 @@ class PoolEditor(object):
             return True
 
     def _createPool(self):
-        if self._item_id == None:
+        if self._item_id is None:
             if self._validate():
                 self._parent.addItem(self._pool.copy())
         else:
@@ -762,7 +762,7 @@ class PoolEditor(object):
 
     def showEditor(self, item=None, item_id=None):
         self._pool = Pool()
-        if item == None:
+        if item is None:
             self._pool.setPoolPath(SardanaManager.get_default_pool_path())
             self._refreshPathList()
             self.poolEditor.setWindowTitle("Create New Pool")
@@ -952,7 +952,7 @@ class MSEditor(object):
     def fillPoolNameCB(self, selected=None):
         self.ui.poolNameComboBox.clear()
         i = 0
-        if selected != None:
+        if selected is not None:
             if selected == "":
                 selected = "None"
             self.ui.poolNameComboBox.addItem(selected)
@@ -1087,7 +1087,7 @@ class MSEditor(object):
             return True
 
     def _createMS(self):
-        if self._item_id == None:
+        if self._item_id is None:
             if self._validate():
                 self._parent.addItem(self._ms.copy())
         else:
@@ -1096,7 +1096,7 @@ class MSEditor(object):
 
     def showEditor(self, item=None, item_id=None):
         self._ms = MS()
-        if item == None:
+        if item is None:
             self._ms.setMSPath(SardanaManager.get_default_ms_path())
             self._refreshPathList()
             self.msEditor.setWindowTitle("Create New Macro Server")

@@ -376,7 +376,7 @@ class SpockBaseDoor(BaseDoor):
 
                 commit_cmd = macro.info.hints['commit_cmd']
 
-                if commit_cmd == None:
+                if commit_cmd is None:
                     return ret
 
                 local_f_name = ret[0]

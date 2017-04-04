@@ -46,7 +46,7 @@ class Vct6Controller(CounterTimerController.CounterTimerController):
 
     def StateOne(self, ind):
         print "PYTHON -> Vct6Controller/", self.inst_name, ": In StateOne method for index", ind
-        if self.simu_ctrl != None:
+        if self.simu_ctrl is not None:
             sta = self.simu_ctrl.command_inout("GetCounterState", ind)
             print "State in controller =", sta
             tup = (sta, "Status error string from controller")

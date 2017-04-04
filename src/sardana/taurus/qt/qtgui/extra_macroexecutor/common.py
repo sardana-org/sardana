@@ -55,7 +55,7 @@ class MSAttrListComboBox(TaurusAttrListComboBox):
         text = str(self.currentText())
         self.clear()
         parentModelObj = self.getParentModelObj()
-        if parentModelObj == None:
+        if parentModelObj is None:
             return
         items = parentModelObj.getElementNamesWithInterface(self._elementType)
         items.sort()
@@ -107,7 +107,7 @@ class MacroComboBox(Qt.QComboBox, TaurusBaseWidget):
     def __loadMacroNames(self):
         self.clear()
         ms = self.getModelObj()
-        if ms == None:
+        if ms is None:
             return
         macros = ms.getElementsWithInterface('MacroCode')
         macroNames = [macro.name for macro in macros.values()]
@@ -206,7 +206,7 @@ class TaurusMacroConfigurationDialog(Qt.QDialog):
                 icon = getIcon(":/leds/images24/ledgreen.png")
             elif state == PyTango.DevState.FAULT:
                 icon = getIcon(":/leds/images24/ledred.png")
-            elif state == None:
+            elif state is None:
                 icon = getIcon(":/leds/images24/ledredoff.png")
             ms_stateIcons.append((macroServer, icon))
         return ms_stateIcons

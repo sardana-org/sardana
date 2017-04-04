@@ -48,7 +48,7 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         return self._root
 
     def setRoot(self, node=None):
-        if node == None:
+        if node is None:
             node = macro.MacroNode()
         self._root = node
         self.reset()
@@ -71,7 +71,7 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         if row == -1:
             row = len(parentNode)
 
-        if node == None:
+        if node is None:
             node = parentNode.newRepeat()
 
         self.beginInsertRows(parentIndex, row, row)

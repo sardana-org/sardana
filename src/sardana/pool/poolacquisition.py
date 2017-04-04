@@ -124,7 +124,7 @@ def getTGConfiguration(MGcfg):
 
     for ctrl in MGcfg["controllers"]:
         tg_element = MGcfg["controllers"][ctrl].get('synchronizer', None)
-        if (tg_element != None and
+        if (tg_element is not None and
                 tg_element != "software" and
                 tg_element not in _tg_element_list):
             _tg_element_list.append(tg_element)

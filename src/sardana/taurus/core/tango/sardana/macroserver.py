@@ -1041,20 +1041,20 @@ class BaseMacroServer(MacroServerDevice):
             int(value)
             min = singleParamNode.min()
             max = singleParamNode.max()
-            if min != None and value < min:
+            if min is not None and value < min:
                 raise Exception(
                     "%s parameter value: %s is below minimum allowed value." % (name, value))
-            if max != None and value > max:
+            if max is not None and value > max:
                 raise Exception(
                     "%s parameter value: %s is above maximum allowed value." % (name, value))
         elif type == "Float":
             float(value)
             min = singleParamNode.min()
             max = singleParamNode.max()
-            if min != None and value < min:
+            if min is not None and value < min:
                 raise Exception(
                     "%s parameter value: %s is below minimum allowed value." % (name, value))
-            if max != None and value > max:
+            if max is not None and value > max:
                 raise Exception(
                     "%s parameter value: %s is above maximum allowed value." % (name, value))
         else:

@@ -61,7 +61,7 @@ class FIO_FileRecorder(BaseFileRecorder):
             self.setFileName(self.base_filename)
 
     def setFileName(self, filename):
-        if self.fd != None:
+        if self.fd is not None:
             self.fd.close()
 
         dirname = os.path.dirname(filename)
@@ -284,7 +284,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
         self._expectedlabels = labels
 
     def setFileName(self, filename):
-        if self.fd != None:
+        if self.fd is not None:
             self.fd.close()
 
         dirname = os.path.dirname(filename)

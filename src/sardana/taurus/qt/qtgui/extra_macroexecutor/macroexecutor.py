@@ -300,7 +300,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
                         return
 
                 repeatNode = None
-            if repeatNode == None:
+            if repeatNode is None:
                 problems.append("Too many values.")
 
         elif counter - len(mlist) >= 1:

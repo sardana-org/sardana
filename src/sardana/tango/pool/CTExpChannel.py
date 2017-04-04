@@ -144,7 +144,7 @@ class CTExpChannel(PoolElementDevice):
             state = self.ct.get_state()
             if state == State.Moving:
                 quality = AttrQuality.ATTR_CHANGING
-            if attr == None:
+            if attr is None:
                 return
 
         self.set_attribute(attr, value=value, w_value=w_value,

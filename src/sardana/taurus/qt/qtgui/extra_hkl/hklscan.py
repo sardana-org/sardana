@@ -97,7 +97,7 @@ class HKLScan(TaurusWidget):
         return ret
 
     def setModel(self, model):
-        if model != None:
+        if model is not None:
             self.device = taurus.Device(model)
 
         self.pseudo_motor_names = []
@@ -205,7 +205,7 @@ class HKLScan(TaurusWidget):
         macro_name = ["ascan", "a2scan", "a3scan"]
         macro_command = []
         index_to_scan = []
-        if self.door_device != None:
+        if self.door_device is not None:
             for i in range(0, 3):
                 if start_hkl[i] != stop_hkl[i]:
                     dim = dim + 1

@@ -345,7 +345,7 @@ class SardanaLibrary(SardanaBaseObject):
 
         :return: True if this library has syntax errors or False otherwise
         :rtype: bool"""
-        return self.exc_info != None
+        return self.exc_info is not None
 
     def set_error(self, exc_info):
         """Sets the error information for this library

@@ -540,7 +540,7 @@ class DiffracBasis(PseudoMotorController):
     def getWavelength(self):
         if self._energydevice != " " and self._autoenergyupdate:
             try:
-                if self.energy_device == None:
+                if self.energy_device is None:
                     self.energy_device = PyTango.DeviceProxy(
                         self._energydevice)
                 energy = self.energy_device.Position

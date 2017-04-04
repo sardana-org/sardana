@@ -140,7 +140,7 @@ class SimpleTreeView(QtGui.QTreeView):
         self.emit(QtCore.SIGNAL("activated"), self.model().asRecord(index))
 
     def expanded(self):
-        if not self.model() == None:
+        if not self.model() is None:
             for column in range(self.model().columnCount(
                                 QtCore.QModelIndex())):
                 self.resizeColumnToContents(column)

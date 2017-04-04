@@ -92,7 +92,7 @@ class SelectSignal(TaurusWidget):
             self.door_device = taurus.Device(self.doorName)
             print "Create door_device with name " + str(self.doorName)
 
-        if self.doorName != None:
+        if self.doorName is not None:
             signals = []
             conf = self.door_device.getExperimentConfiguration()
             mg_name = conf['ActiveMntGrp']

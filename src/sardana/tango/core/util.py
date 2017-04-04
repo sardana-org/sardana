@@ -1039,7 +1039,7 @@ def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None,
     log_messages.extend(prepare_environment(args, tango_args, ORB_args))
     log_messages.extend(prepare_server(args, tango_args))
 
-    if tango_util == None:
+    if tango_util is None:
         tango_util = Util(tango_args)
 
     prepare_func(tango_util)

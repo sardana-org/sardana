@@ -89,7 +89,7 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
             row = len(parentNode)
 
         if isinstance(parentNode, macro.RepeatParamNode):
-            if node == None:
+            if node is None:
                 node = parentNode.newRepeat()
 
         self.beginInsertRows(parentIndex, row, row)
@@ -411,7 +411,7 @@ class MacroParametersProxyModel(Qt.QSortFilterProxyModel):
         return self.columns
 
     def filterAcceptsRow(self, row, parentIndex):
-        if self.macroIndex() == None:
+        if self.macroIndex() is None:
             return False
         if self.macroIndex() == parentIndex:
             child = self.sourceModel().index(row, 0, parentIndex)
