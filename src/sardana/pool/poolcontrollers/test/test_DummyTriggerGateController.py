@@ -6,7 +6,7 @@ from sardana.pool.pooldefs import SynchDomain, SynchParam
 
 from sardana.pool.test import (FakePool, createPoolController,
                                createPoolTriggerGate, dummyPoolTGCtrlConf01,
-                               dummyTriggerGateConf01, 
+                               dummyTriggerGateConf01,
                                createPoolSynchronizationConfiguration)
 
 synchronization1 = [{SynchParam.Delay: {SynchDomain.Time: 0},
@@ -18,6 +18,7 @@ synchronization2 = [{SynchParam.Delay: {SynchDomain.Time: 0},
                      SynchParam.Active: {SynchDomain.Time: .01},
                      SynchParam.Total: {SynchDomain.Time: .02},
                      SynchParam.Repeats: 10}]
+
 
 @insertTest(helper_name='generation', synchronization=synchronization1)
 @insertTest(helper_name='generation', synchronization=synchronization2)
@@ -43,7 +44,7 @@ class PoolDummyTriggerGateTestCase(unittest.TestCase):
         dummy_tg_ctrl.add_element(self.dummy_tg)
 
         self.cfg = createPoolSynchronizationConfiguration((dummy_tg_ctrl,),
-                                                         ((self.dummy_tg,),))
+                                                          ((self.dummy_tg,),))
 
         # marrying the element with the action
         self.tg_action = PoolSynchronization(self.dummy_tg)
@@ -55,10 +56,10 @@ class PoolDummyTriggerGateTestCase(unittest.TestCase):
         args = ()
         kwargs = {'config': self.cfg,
                   'synchronization': synchronization
-                 }
+                  }
         self.tg_action.start_action(*args, **kwargs)
         self.tg_action.action_loop()
-        # TODO: add asserts applicable to a dummy controller e.g. listen to 
+        # TODO: add asserts applicable to a dummy controller e.g. listen to
         # state changes and verify if the change ON->MOVING-ON was emitted
 
     def tearDown(self):

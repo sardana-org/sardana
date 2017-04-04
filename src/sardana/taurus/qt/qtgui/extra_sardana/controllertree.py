@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -40,7 +40,9 @@ from taurus.qt.qtcore.model import TaurusBaseTreeItem, TaurusBaseModel, TaurusBa
 from taurus.qt.qtgui.tree import TaurusBaseTreeWidget
 from taurus.qt.qtgui.resource import getThemeIcon, getIcon
 
-PoolControllerView = Enumeration("PoolControllerView", ("ControllerModule", "ControllerClass", "Unknown"))
+PoolControllerView = Enumeration(
+    "PoolControllerView", ("ControllerModule", "ControllerClass", "Unknown"))
+
 
 def getElementTypeIcon(t):
     if t == PoolControllerView.ControllerModule:
@@ -49,8 +51,10 @@ def getElementTypeIcon(t):
         return getIcon(":/python.png")
     return getIcon(":/tango.png")
 
+
 def getElementTypeSize(t):
     return Qt.QSize(200, 24)
+
 
 def getElementTypeToolTip(t):
     """Wrapper to prevent loading qtgui when this module is imported"""
@@ -65,7 +69,7 @@ class ControllerBaseTreeItem(TaurusBaseTreeItem):
 
     def data(self, index):
         """Returns the data of this node for the given index
-        
+
         :return: (object) the data for the given index
         """
         return self._itemData
@@ -73,10 +77,10 @@ class ControllerBaseTreeItem(TaurusBaseTreeItem):
     def role(self):
         """Returns the prefered role for the item.
         This implementation returns taurus.core.taurusbasetypes.TaurusElementType.Unknown
-        
+
         This method should be able to return any kind of python object as long
         as the model that is used is compatible.
-        
+
         :return: (PoolControllerView) the role in form of element type"""
         return PoolControllerView.Unknown
 
@@ -97,7 +101,7 @@ class ControllerTreeItem(ControllerBaseTreeItem):
 
     def data(self, index):
         """Returns the data of this node for the given index
-        
+
         :return: (object) the data for the given index
         """
         return self._itemData.name
@@ -115,13 +119,16 @@ class ControllerTreeItem(ControllerBaseTreeItem):
 class ControllerBaseModel(TaurusBaseModel):
 
     ColumnNames = "Controllers",
-    ColumnRoles = (PoolControllerView.ControllerModule, PoolControllerView.ControllerModule, PoolControllerView.ControllerClass),
+    ColumnRoles = (PoolControllerView.ControllerModule,
+                   PoolControllerView.ControllerModule, PoolControllerView.ControllerClass),
 
     def setDataSource(self, pool):
         if self._data_src is not None:
-            Qt.QObject.disconnect(self._data_src, Qt.SIGNAL('controllerClassesUpdated'), self.controllerClassesUpdated)
+            Qt.QObject.disconnect(self._data_src, Qt.SIGNAL(
+                'controllerClassesUpdated'), self.controllerClassesUpdated)
         if pool is not None:
-            Qt.QObject.connect(pool, Qt.SIGNAL('controllerClassesUpdated'), self.controllerClassesUpdated)
+            Qt.QObject.connect(pool, Qt.SIGNAL(
+                'controllerClassesUpdated'), self.controllerClassesUpdated)
         TaurusBaseModel.setDataSource(self, pool)
 
     def controllerClassesUpdated(self):
@@ -157,7 +164,8 @@ class ControllerBaseModel(TaurusBaseModel):
         ret = Qt.QMimeData()
         data = []
         for index in indexes:
-            if not index.isValid(): continue
+            if not index.isValid():
+                continue
             tree_item = index.internalPointer()
             mime_data_item = tree_item.mimeData(index)
             if mime_data_item is None:
@@ -184,7 +192,7 @@ class ControllerBaseModel(TaurusBaseModel):
             ret = item.icon()
         elif role == Qt.Qt.ToolTipRole:
             ret = item.toolTip()
-        #elif role == Qt.Qt.SizeHintRole:
+        # elif role == Qt.Qt.SizeHintRole:
         #    ret = self.columnSize(column)
         elif role == Qt.Qt.FontRole:
             ret = self.DftFont
@@ -198,7 +206,7 @@ class ControllerBaseModel(TaurusBaseModel):
         ctrl_modules = {}
         # TODO
         #ctrl_class_dict = pool.getControllerClasses()
-        #for ctrl_class_name, ctrl_class in ctrl_class_dict.items():
+        # for ctrl_class_name, ctrl_class in ctrl_class_dict.items():
         #    module_name = ctrl_class.module_name
         #    moduleNode = ctrl_modules.get(module_name)
         #    if moduleNode is None:
@@ -216,7 +224,8 @@ class ControllerModuleModel(ControllerBaseModel):
 class PlainControllerModel(ControllerBaseModel):
 
     ColumnNames = "Controller classes",
-    ColumnRoles = (PoolControllerView.ControllerClass, PoolControllerView.ControllerClass),
+    ColumnRoles = (PoolControllerView.ControllerClass,
+                   PoolControllerView.ControllerClass),
 
     def setupModelData(self, data):
         pool = self.dataSource()
@@ -226,9 +235,9 @@ class PlainControllerModel(ControllerBaseModel):
         # TODO
         #ctrl_class_dict = pool.getControllerClasses()
         #ctrl_classes = ctrl_class_dict.keys()
-        #ctrl_classes.sort()
+        # ctrl_classes.sort()
         #self.debug("Found %d controller classes", len(ctrl_classes))
-        #for ctrl_class_name in ctrl_classes:
+        # for ctrl_class_name in ctrl_classes:
         #    ctrl_class = ctrl_class_dict[ctrl_class_name]
         #    ctrlNode = ControllerTreeItem(self, ctrl_class, root)
         #    root.appendChild(ctrlNode)
@@ -248,18 +257,18 @@ class PlainControllerModelProxy(ControllerBaseModelProxy):
 
 class ControllerClassTreeWidget(TaurusBaseTreeWidget):
 
-    KnownPerspectives = { PoolControllerView.ControllerModule : {
-                            "label" : "By module",
-                            "icon" : ":/python-file.png",
-                            "tooltip" : "View by controller module",
-                            "model" : [ControllerModuleModelProxy, ControllerModuleModel],
-                          },
-                          PoolControllerView.ControllerClass : {
-                            "label" : "By controller",
-                            "icon" : ":/python.png",
-                            "tooltip" : "View by controller class",
-                            "model" : [PlainControllerModelProxy, PlainControllerModel],
-                          }
+    KnownPerspectives = {PoolControllerView.ControllerModule: {
+        "label": "By module",
+        "icon": ":/python-file.png",
+        "tooltip": "View by controller module",
+        "model": [ControllerModuleModelProxy, ControllerModuleModel],
+    },
+        PoolControllerView.ControllerClass: {
+        "label": "By controller",
+        "icon": ":/python.png",
+        "tooltip": "View by controller class",
+        "model": [PlainControllerModelProxy, PlainControllerModel],
+    }
     }
     DftPerspective = PoolControllerView.ControllerModule
 
@@ -295,26 +304,32 @@ class ControllerClassSelectionDialog(Qt.QDialog):
         return self._panel.selectedItems()
 
     def getSelectedMacros(self):
-        return [ i.itemData() for i in self.selectedItems() ]
+        return [i.itemData() for i in self.selectedItems()]
 
 
 def main_ControllerClassSelecionDialog(pool, perspective=PoolControllerView.ControllerClass):
-    w = ControllerClassSelectionDialog(model_name=pool, perspective=perspective)
+    w = ControllerClassSelectionDialog(
+        model_name=pool, perspective=perspective)
 
     if w.result() == Qt.QDialog.Accepted:
         print w.getSelectedMacros()
     return w
 
+
 def main_ControllerClassTreeWidget(pool, perspective=PoolControllerView.ControllerClass):
-    w = ControllerClassTreeWidget(perspective=perspective, with_navigation_bar=False)
+    w = ControllerClassTreeWidget(
+        perspective=perspective, with_navigation_bar=False)
     w.setModel(pool)
     w.show()
     return w
 
+
 def demo(poolname="Pool_BL98"):
     """ControllerClassTreeWidget"""
-    w = main_ControllerClassSelecionDialog(poolname, PoolControllerView.ControllerClass)
+    w = main_ControllerClassSelecionDialog(
+        poolname, PoolControllerView.ControllerClass)
     return w
+
 
 def main():
     import sys

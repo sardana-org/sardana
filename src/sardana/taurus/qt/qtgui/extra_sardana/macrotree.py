@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -44,6 +44,7 @@ from sardana.taurus.core.tango.sardana.macro import MacroInfo
 
 MacroView = Enumeration("MacroView", ("MacroModule", "Macro", "Unknown"))
 
+
 def getElementTypeIcon(t):
     if t == MacroView.MacroModule:
         return getIcon(":/python-file.png")
@@ -51,8 +52,10 @@ def getElementTypeIcon(t):
         return getIcon(":/python.png")
     return getIcon(":/tango.png")
 
+
 def getElementTypeSize(t):
     return Qt.QSize(200, 24)
+
 
 def getElementTypeToolTip(t):
     """Wrapper to prevent loading qtgui when this module is imported"""
@@ -68,7 +71,7 @@ class MacroTreeBaseItem(TaurusBaseTreeItem):
 
     def data(self, index):
         """Returns the data of this node for the given index
-        
+
         :return: (object) the data for the given index
         """
         return self._itemData
@@ -76,10 +79,10 @@ class MacroTreeBaseItem(TaurusBaseTreeItem):
     def role(self):
         """Returns the prefered role for the item.
         This implementation returns taurus.core.taurusbasetypes.TaurusElementType.Unknown
-        
+
         This method should be able to return any kind of python object as long
         as the model that is used is compatible.
-        
+
         :return: (MacroView) the role in form of element type"""
         return MacroView.Unknown
 
@@ -100,7 +103,7 @@ class MacroTreeItem(MacroTreeBaseItem):
 
     def data(self, index):
         """Returns the data of this node for the given index
-        
+
         :return: (object) the data for the given index
         """
         return self._itemData.name
@@ -118,13 +121,16 @@ class MacroTreeItem(MacroTreeBaseItem):
 class MacroBaseModel(TaurusBaseModel):
 
     ColumnNames = "Macros",
-    ColumnRoles = (MacroView.MacroModule, MacroView.MacroModule, MacroView.Macro),
+    ColumnRoles = (MacroView.MacroModule,
+                   MacroView.MacroModule, MacroView.Macro),
 
     def setDataSource(self, ms):
         if self._data_src is not None:
-            Qt.QObject.disconnect(self._data_src, Qt.SIGNAL('macrosUpdated'), self.macrosUpdated)
+            Qt.QObject.disconnect(self._data_src, Qt.SIGNAL(
+                'macrosUpdated'), self.macrosUpdated)
         if ms is not None:
-            Qt.QObject.connect(ms, Qt.SIGNAL('macrosUpdated'), self.macrosUpdated)
+            Qt.QObject.connect(ms, Qt.SIGNAL(
+                'macrosUpdated'), self.macrosUpdated)
         TaurusBaseModel.setDataSource(self, ms)
 
     def macrosUpdated(self):
@@ -160,7 +166,8 @@ class MacroBaseModel(TaurusBaseModel):
         ret = Qt.QMimeData()
         data = []
         for index in indexes:
-            if not index.isValid(): continue
+            if not index.isValid():
+                continue
             tree_item = index.internalPointer()
             mime_data_item = tree_item.mimeData(index)
             if mime_data_item is None:
@@ -171,8 +178,6 @@ class MacroBaseModel(TaurusBaseModel):
         if len(data) == 1:
             ret.setData(TAURUS_MODEL_MIME_TYPE, str(data[0]))
         return ret
-
-
 
     def setupModelData(self, data):
         ms = self.dataSource()
@@ -230,18 +235,18 @@ class MacroPlainMacroModelProxy(MacroBaseModelProxy):
 
 class MacroTreeWidget(TaurusBaseTreeWidget):
 
-    KnownPerspectives = { MacroView.MacroModule : {
-                            "label" : "By module",
-                            "icon" : ":/python-file.png",
-                            "tooltip" : "View by macro module",
-                            "model" : [MacroModuleModelProxy, MacroModuleModel],
-                          },
-                          MacroView.Macro : {
-                            "label" : "By macro",
-                            "icon" : ":/python.png",
-                            "tooltip" : "View by macro",
-                            "model" : [MacroPlainMacroModelProxy, MacroPlainMacroModel],
-                          }
+    KnownPerspectives = {MacroView.MacroModule: {
+        "label": "By module",
+        "icon": ":/python-file.png",
+        "tooltip": "View by macro module",
+        "model": [MacroModuleModelProxy, MacroModuleModel],
+    },
+        MacroView.Macro: {
+        "label": "By macro",
+        "icon": ":/python.png",
+        "tooltip": "View by macro",
+        "model": [MacroPlainMacroModelProxy, MacroPlainMacroModel],
+    }
     }
     DftPerspective = MacroView.MacroModule
 
@@ -276,7 +281,7 @@ class MacroSelectionDialog(Qt.QDialog):
         return self._panel.selectedItems()
 
     def getSelectedMacros(self):
-        return [ i.itemData() for i in self.selectedItems() ]
+        return [i.itemData() for i in self.selectedItems()]
 
 
 def main_MacroSelecionDialog(ms, perspective=MacroView.MacroModule):
@@ -286,16 +291,19 @@ def main_MacroSelecionDialog(ms, perspective=MacroView.MacroModule):
         print w.getSelectedMacros()
     return w
 
+
 def main_MacroTreeWidget(ms, perspective=MacroView.MacroModule):
     w = MacroTreeWidget(perspective=perspective, with_navigation_bar=False)
     w.setModel(ms)
     w.show()
     return w
 
+
 def demo():
     """MacroTreeWidget"""
     w = main_MacroSelecionDialog("MS_BL98", MacroView.Macro)
     return w
+
 
 def main():
     import sys

@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -47,6 +47,7 @@ from taurus.qt.qtgui.util.ui import UILoadable
 global flag_update
 flag_update = 0
 
+
 class PrivateComboBox(Qt.QComboBox, TaurusBaseWidget):
     """ComboBox"""
 
@@ -63,6 +64,7 @@ class PrivateComboBox(Qt.QComboBox, TaurusBaseWidget):
         for crys in items:
             if crys not in all_items:
                 self.addItem(crys)
+
 
 @UILoadable(with_ui="_ui")
 class UBMatrixBase(TaurusWidget):
@@ -104,7 +106,7 @@ class UBMatrixBase(TaurusWidget):
             self.device = taurus.Device(model)
 
         self.update_values()
-        
+
         uxmodel = model + "/ux"
         self._ui.taurusuxvalue.setModel(uxmodel)
         self._ui.taurusuxeditvalue.setModel(uxmodel)
@@ -183,8 +185,7 @@ class UBMatrixBase(TaurusWidget):
 
         self.connect(self.crystalscombobox, Qt.SIGNAL(
             "currentIndexChanged(QString)"), self.onCrystalChanged)
-        
-        
+
     def onEngineChanged(self, enginename):
         self.device.write_attribute("engine", str(enginename))
 
@@ -194,7 +195,6 @@ class UBMatrixBase(TaurusWidget):
     def onCrystalChanged(self, crystalname):
         if str(crystalname) != "":
             self.device.write_attribute("crystal", str(crystalname))
-
 
     def update_values(self):
         ub_values = self.device.ubmatrix
@@ -210,7 +210,8 @@ class UBMatrixBase(TaurusWidget):
 
         global flag_update
         if flag_update:
-            all_items = [self.crystalscombobox.itemText(i) for i in range(self.crystalscombobox.count())]
+            all_items = [self.crystalscombobox.itemText(
+                i) for i in range(self.crystalscombobox.count())]
             for crys in self.device.crystallist:
                 if crys not in all_items:
                     self.crystalscombobox.addItem(crys)
@@ -218,13 +219,13 @@ class UBMatrixBase(TaurusWidget):
                 if self.crystalscombobox.itemText(i) not in self.device.crystallist:
                     self.crystalscombobox.removeItem(i)
         flag_update = 1
-            
+
     def compute_ub(self):
         index = [0, 1]
 
         self.device.write_attribute("computeub", index)
         self.update_values()
-        
+
     def reflections_list_window(self):
 
         reflections = self.device.reflectionlist
@@ -461,6 +462,7 @@ class UBMatrixBase(TaurusWidget):
     def affine(self):
         self.device.write_attribute("affinecrystal", 1)
 
+
 def main():
 
     parser = taurus.core.util.argparse.get_taurus_parser()
@@ -469,7 +471,7 @@ def main():
         "a taurus application for setting diffractometer parameters: ubmatrix, lattice, reflections, ...")
 
     app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser,
-            app_version=sardana.Release.version)
+                                                        app_version=sardana.Release.version)
     app.setApplicationName("ubmatrix")
     args = app.get_command_line_args()
     if len(args) < 1:

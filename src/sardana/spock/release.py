@@ -3,28 +3,28 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
-## 
-## http://www.sardana-controls.org/
+# This file is part of Sardana
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
-## 
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-## 
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
-## 
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# http://www.sardana-controls.org/
+##
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+##
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+##
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+##
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
-#### DEPRECATED MODULE!!!!
+# DEPRECATED MODULE!!!!
 # This module is deprecated avoid to use anything from it.
 # Use sardana.release module instead
 ####
@@ -49,7 +49,7 @@ version = '2.1.1'
 description = "An enhanced interactive Macro Server shell."
 
 long_description = \
-"""
+    """
 Spock provides an interactive environment for interacting with the Tango
 MacroServer Device. It is completely based on IPython which itself provides a 
 replacement for the interactive Python interpreter with extra functionality.
@@ -57,14 +57,14 @@ replacement for the interactive Python interpreter with extra functionality.
 
 license = 'GNU'
 
-authors = {'Tiago'          : ('Tiago Coutinho','tiago.coutinho@esrf.fr'),
-           'Reszela'        : ('Zbigniew Reszela','zreszela@cells.es') ,
-           'Pascual-Izarra' : ('Carlos Pascual-Izarra','cpascual@cells.es') }
+authors = {'Tiago': ('Tiago Coutinho', 'tiago.coutinho@esrf.fr'),
+           'Reszela': ('Zbigniew Reszela', 'zreszela@cells.es'),
+           'Pascual-Izarra': ('Carlos Pascual-Izarra', 'cpascual@cells.es')}
 
 url = ''
 
 download_url = ''
 
-platforms = ['Linux','Windows XP/2000/NT','Windows 95/98/ME']
+platforms = ['Linux', 'Windows XP/2000/NT', 'Windows 95/98/ME']
 
 keywords = ['Sardana', 'Interactive', 'MacroServer', 'Tango', 'Shell']

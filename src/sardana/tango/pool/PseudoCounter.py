@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -82,8 +82,8 @@ class PseudoCounter(PoolElementDevice):
             name = self.alias or full_name
             self.pseudo_counter = pseudo_counter = \
                 self.pool.create_element(type="PseudoCounter", name=name,
-                    full_name=full_name, id=self.Id, axis=self.Axis,
-                    ctrl_id=self.Ctrl_id, user_elements=self.Elements)
+                                         full_name=full_name, id=self.Id, axis=self.Axis,
+                                         ctrl_id=self.Ctrl_id, user_elements=self.Elements)
             if self.instrument is not None:
                 pseudo_counter.set_instrument(self.instrument)
         pseudo_counter.add_listener(self.on_pseudo_counter_changed)
@@ -234,20 +234,20 @@ class PseudoCounterClass(PoolElementDeviceClass):
 
     #    Device Properties
     device_property_list = {
-        "Elements" :    [ DevVarStringArray, "elements used by the pseudo", [ ] ],
+        "Elements":    [DevVarStringArray, "elements used by the pseudo", []],
     }
     device_property_list.update(PoolElementDeviceClass.device_property_list)
 
     #    Command definitions
     cmd_list = {
-        'CalcPseudo'      : [ [DevVarDoubleArray, "physical values"], [DevDouble, "pseudo counter"] ],
-        'CalcAllPseudo'   : [ [DevVarDoubleArray, "physical positions"], [DevVarDoubleArray, "pseudo counter values"] ],
+        'CalcPseudo': [[DevVarDoubleArray, "physical values"], [DevDouble, "pseudo counter"]],
+        'CalcAllPseudo': [[DevVarDoubleArray, "physical positions"], [DevVarDoubleArray, "pseudo counter values"]],
     }
     cmd_list.update(PoolElementDeviceClass.cmd_list)
 
     #    Attribute definitions
     standard_attr_list = {
-        'Value'     : [ [ DevDouble, SCALAR, READ ] ],
+        'Value': [[DevDouble, SCALAR, READ]],
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
 

@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -41,6 +41,8 @@ from sardana.taurus.core.tango.sardana.test import (pt3d_param_def,
                                                     pt14d_param_def)
 # TODO: Use unittest.mock instead of this fake class.
 from sardana.macroserver.mstypemanager import TypeManager
+
+
 class FakeMacroServer(object):
     name = "FakeMacroServer"
 
@@ -50,7 +52,7 @@ tm = TypeManager(macro_server)
 # TODO: Move the parameter definition to res/paramdef.py module
 pt8_params_def = [
     {
-        "name" : "m_p_pair",
+        "name": "m_p_pair",
         "type": [
             {
                 "name": "motor",
@@ -74,7 +76,7 @@ pt8_params_value = ["mot73", "5.0", "mot74", "8.0"]
 
 #
 pt8_xml = \
-'''<macro name="pt8">
+    '''<macro name="pt8">
   <paramrepeat name="m_p_pair">
     <repeat nr="1">
       <param name="motor" value="mot73"/>
@@ -86,6 +88,7 @@ pt8_xml = \
     </repeat>
   </paramrepeat>
 </macro>'''
+
 
 @insertTest(helper_name='verifyXML', macro_name="pt8", param_def=pt8_params_def,
             param_value=pt8_params_value, expected_xml_rep=pt8_xml)
@@ -99,7 +102,7 @@ class MacroNodeTestCase(unittest.TestCase):
         expected_str = etree.tostring(expected_xml)
         macronode_str = etree.tostring(macronode_xml, pretty_print=True)
         msg = "XML encodings are not equal"
-        # TODO: check why macronode_str has an extra whitespace charactger 
+        # TODO: check why macronode_str has an extra whitespace charactger
         # at the end. strips should not be necessary
         self.assertEquals(expected_str.strip(), macronode_str.strip(), msg)
 
@@ -123,7 +126,6 @@ class MacroNodeTestCase(unittest.TestCase):
         self._validateXML(macronode_xml, expected_xml)
 
 
-
 #### Testing a list of elements (floats) ####
 @insertTest(helper_name='verifyEncoding',
             param_def=pt3d_param_def,
@@ -140,10 +142,8 @@ class MacroNodeTestCase(unittest.TestCase):
             macro_params=[[[], [], []]],
             expected_params_list=[["100", "100", "100"]]
             )
-
 #### Testing one element (moveable) followed by a ####
 ############ list of elements (floats). ##############
-
 @insertTest(helper_name='verifyEncoding',
             param_def=pt5d_param_def,
             macro_params=["mot01", ["1", "3", "15"]],
@@ -164,7 +164,6 @@ class MacroNodeTestCase(unittest.TestCase):
             macro_params=[[], ["1", [], "15"]],
             expected_params_list=["mot99", ["1", "100", "15"]]
             )
-
 #### Testing a list of pairs of elements (moveable, float). ####
 @insertTest(helper_name='verifyEncoding',
             param_def=pt7d_param_def,
@@ -203,15 +202,14 @@ class MacroNodeTestCase(unittest.TestCase):
             expected_params_list=[[["mot01", "0"], ["mot99", "100"],
                                    ["mot03", "100"]]]
             )
-## Testing the outer default parameters for the whole repetition.
-## This test is commented because this option is not functional at the moment.
-## See ticket #427 referring to this bug.
+# Testing the outer default parameters for the whole repetition.
+# This test is commented because this option is not functional at the moment.
+# See ticket #427 referring to this bug.
 #@insertTest(helper_name='verifyEncoding',
 #            param_def=pt7d_param_def,
 #            macro_params=[[[]]],
 #            expected_params_list=[[['mot01', "50"]]],
 #            )
-
 #### Testing list of elements (moveables) followed by a ####
 ################# single parameter (float). ################
 @insertTest(helper_name='verifyEncoding',
@@ -234,7 +232,6 @@ class MacroNodeTestCase(unittest.TestCase):
             macro_params=[["1", [], "15"], []],
             expected_params_list=[["1", "100", "15"], "mot99"],
             )
-
 #### Testing lists of elements (floats), followed by another list of ####
 ######################### elements (moveables). #########################
 @insertTest(helper_name='verifyEncoding',
@@ -247,17 +244,15 @@ class MacroNodeTestCase(unittest.TestCase):
             macro_params=[["1", [], "4"], [[], "mot2"]],
             expected_params_list=[["1", "100", "4"], ["mot99", "mot2"]]
             )
-
-########################### Testing nested paramRepeats ########################
-############## Groups of motors, where each group is a motor list ##############
+########################### Testing nested paramRepeats ##################
+############## Groups of motors, where each group is a motor list ########
 @insertTest(helper_name='verifyEncoding',
             param_def=pt13d_param_def,
             macro_params=[[["mot2", "mot3"], ["mot4", "mot5", "mot6"]]],
             expected_params_list=[[["mot2", "mot3"], ["mot4", "mot5", "mot6"]]]
             )
-
-########################### Testing nested paramRepeats ########################
-## Groups of motors, where each group is a motor list followed by a number #####
+########################### Testing nested paramRepeats ##################
+## Groups of motors, where each group is a motor list followed by a number
 @insertTest(helper_name='verifyEncoding',
             param_def=pt14d_param_def,
             macro_params=[[[["mot2", "mot3"], 4],
@@ -265,7 +260,6 @@ class MacroNodeTestCase(unittest.TestCase):
             expected_params_list=[[[["mot2", "mot3"], 4],
                                    [["mot4", "mot5", "mot6"], 5]]]
             )
-
 class ParamsTestCase(unittest.TestCase):
 
     def verifyEncoding(self, param_def, macro_params, expected_params_list):
@@ -292,7 +286,6 @@ class ParamsTestCase(unittest.TestCase):
         self.assertEqual(output_params_list, expected_params_list, msg)
 
 
-
 class DuplicateTestCase(unittest.TestCase):
 
     """
@@ -303,7 +296,7 @@ class DuplicateTestCase(unittest.TestCase):
         """
         Helper to verify the correct duplication of a RepeatNode. Duplication
         of parameters.
-        
+
         ..todo:: To be more unit test the use of MacroNode class should be
         avoided. Use of RepeatParamNode and its children should be enough.
         """
@@ -340,13 +333,13 @@ class DuplicateTestCase(unittest.TestCase):
         self.assertEqual(num_final_nodes, expected_number_of_nodes, msg)
 
         for i in range(expected_number_of_nodes):
-            node_num = i+1
+            node_num = i + 1
 
             expected_name = '#' + str(node_num)
             new_node_name = node.child(0).child(i).name()
             msg = ("Name of node %d is not correct\n"
                    "expected name: %s \n"
                    "received name: %s" % (node_num,
-                                                expected_name,
-                                                new_node_name))
+                                          expected_name,
+                                          new_node_name))
             self.assertEqual(new_node_name, expected_name, msg)

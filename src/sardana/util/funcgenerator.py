@@ -1,23 +1,23 @@
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -86,7 +86,7 @@ class FunctionGenerator(EventGenerator):
         return self._initial_domain_in_use
 
     initial_domain_in_use = property(get_initial_domain_in_use,
-                                    set_initial_domain_in_use)
+                                     set_initial_domain_in_use)
 
     def set_active_domain_in_use(self, domain):
         self._active_domain_in_use = domain
@@ -95,7 +95,7 @@ class FunctionGenerator(EventGenerator):
         return self._active_domain_in_use
 
     active_domain_in_use = property(get_active_domain_in_use,
-                                     set_active_domain_in_use)
+                                    set_active_domain_in_use)
 
     def add_active_event(self, event):
         self._active_events.append(event)
@@ -177,11 +177,11 @@ class FunctionGenerator(EventGenerator):
     def sleep(self, period):
         if period <= 0:
             return
-        necessary_naps = int(math.ceil(period/self.MAX_NAP_TIME))
-        if necessary_naps == 0: # avoid zero ZeroDivisionError
+        necessary_naps = int(math.ceil(period / self.MAX_NAP_TIME))
+        if necessary_naps == 0:  # avoid zero ZeroDivisionError
             nap = 0
         else:
-            nap = period/necessary_naps
+            nap = period / necessary_naps
         for _ in xrange(necessary_naps):
             if self.is_stopped():
                 break
@@ -325,5 +325,5 @@ class FunctionGenerator(EventGenerator):
             if self.direction is None:
                 self.direction = direction
             elif self.direction != direction:
-                msg= "active values indicate contradictory directions"
+                msg = "active values indicate contradictory directions"
                 raise ValueError(msg)

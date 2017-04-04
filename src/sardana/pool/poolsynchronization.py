@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+# http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -38,6 +38,8 @@ from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
 from sardana.util.funcgenerator import FunctionGenerator
 
 # The purpose of this class was inspired on the CTAcquisition concept
+
+
 class TGChannel(PoolActionItem):
     """An item involved in the trigger/gate generation. 
     Maps directly to a trigger object
@@ -61,6 +63,7 @@ class TGChannel(PoolActionItem):
 class PoolSynchronization(PoolAction):
     '''Action class responsible for trigger/gate generation
     '''
+
     def __init__(self, main_element, name="Synchronization"):
         PoolAction.__init__(self, main_element, name)
         self._synch_soft = FunctionGenerator()
@@ -121,9 +124,10 @@ class PoolSynchronization(PoolAction):
                 remove_acq_listener = partial(self._synch_soft.remove_listener,
                                               self._listener)
                 self.add_finish_hook(remove_acq_listener, False)
-                self._synch_soft.add_listener(self.main_element.on_element_changed)
+                self._synch_soft.add_listener(
+                    self.main_element.on_element_changed)
                 remove_mg_listener = partial(self._synch_soft.remove_listener,
-                                              self.main_element)
+                                             self.main_element)
                 self.add_finish_hook(remove_mg_listener, False)
             # subscribing to the position change events to generate events
             # in position domain
@@ -148,7 +152,7 @@ class PoolSynchronization(PoolAction):
                     channel = channels[element]
                     ret = ctrl.PreStartOne(axis)
                     if not ret:
-                        raise Exception("%s.PreStartOne(%d) returns False" \
+                        raise Exception("%s.PreStartOne(%d) returns False"
                                         % (pool_ctrl.name, axis))
                     ctrl.StartOne(axis)
 
@@ -206,10 +210,9 @@ class PoolSynchronization(PoolAction):
                 state_info = triggerelement._from_ctrl_state_info(state_info)
                 triggerelement.set_state_info(state_info, propagate=2)
 
-        # wait for software synchronizer to finish 
+        # wait for software synchronizer to finish
         if self._listener is not None:
             while True:
                 if not self._synch_soft.is_started():
                     break
                 time.sleep(0.01)
-

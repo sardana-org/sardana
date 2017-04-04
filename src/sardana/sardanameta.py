@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -57,6 +57,7 @@ def findsource(obj):
         linecache.checkcache(filename)
     return inspect.findsource(obj)
 
+
 def getsourcelines(object):
     """Return a list of source lines and starting line number for an object.
 
@@ -67,8 +68,11 @@ def getsourcelines(object):
     raised if the source code cannot be retrieved."""
     lines, lnum = findsource(object)
 
-    if inspect.ismodule(object): return lines, 0
-    else: return inspect.getblock(lines[lnum:]), lnum + 1
+    if inspect.ismodule(object):
+        return lines, 0
+    else:
+        return inspect.getblock(lines[lnum:]), lnum + 1
+
 
 def getsource(object):
     """Return the text of the source code for an object.
@@ -252,7 +256,7 @@ class SardanaLibrary(SardanaBaseObject):
             library or False otherwise
         :rtype: bool"""
         return self.has_meta_class(meta_name) or \
-               self.has_meta_function(meta_name)
+            self.has_meta_function(meta_name)
 
     def has_metas(self):
         """Returns True if any meta object exists in the library
@@ -264,8 +268,8 @@ class SardanaLibrary(SardanaBaseObject):
         :rtype: bool
         """
         has_metas_bool = False
-        if (len(self.get_meta_classes()) > 0 or 
-            len(self.get_meta_functions()) > 0):
+        if (len(self.get_meta_classes()) > 0 or
+                len(self.get_meta_functions()) > 0):
             has_metas_bool = True
         return has_metas_bool
 
@@ -375,13 +379,16 @@ class SardanaLibrary(SardanaBaseObject):
         kwargs['file_name'] = self.file_name
         kwargs['path'] = self.path
         kwargs['description'] = self.description
-        kwargs['elements'] = self.meta_classes.keys() + self.meta_functions.keys()
+        kwargs['elements'] = self.meta_classes.keys() + \
+            self.meta_functions.keys()
         if self.exc_info is None:
             kwargs['exc_summary'] = None
             kwargs['exc_info'] = None
         else:
-            kwargs['exc_summary'] = "".join(traceback.format_exception_only(*self.exc_info[:2]))
-            kwargs['exc_info'] = "".join(traceback.format_exception(*self.exc_info))
+            kwargs['exc_summary'] = "".join(
+                traceback.format_exception_only(*self.exc_info[:2]))
+            kwargs['exc_info'] = "".join(
+                traceback.format_exception(*self.exc_info))
         return kwargs
 
 
@@ -522,4 +529,3 @@ class SardanaFunction(SardanaCode):
     @property
     def function(self):
         return self.code_object
-

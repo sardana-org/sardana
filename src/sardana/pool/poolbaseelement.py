@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -43,7 +43,7 @@ from sardana.pool.poolobject import PoolObject
 class PoolBaseElement(PoolObject):
     """A Pool object that besides the name, reference to the pool, ID, full_name
     and user_full_name has:
-       
+
        - _simulation_mode : boolean telling if in simulation mode
        - _state : element state
        - _status : element status"""
@@ -80,7 +80,7 @@ class PoolBaseElement(PoolObject):
 
     def lock(self, blocking=True):
         """Acquires the this element lock
-        
+
         :param blocking:
             whether or not to block if lock is already acquired [default: True]
         :type blocking: bool"""
@@ -105,7 +105,7 @@ class PoolBaseElement(PoolObject):
 
     def get_simulation_mode(self, cache=True, propagate=1):
         """Returns the simulation mode for this object.
-        
+
         :param cache: not used [default: True]
         :type cache: bool
         :param propagate: [default: 1]
@@ -139,7 +139,7 @@ class PoolBaseElement(PoolObject):
         returns the current state stored in cache (it will force an update if
         cache is empty). If propagate > 0 and if the state changed since last
         read, it will propagate the state event to all listeners.
-        
+
         :param cache:
             tells if return value from local cache or update from HW read
             [default: True]
@@ -197,7 +197,7 @@ class PoolBaseElement(PoolObject):
         returns the current status stored in cache (it will force an update if
         cache is empty). If propagate > 0 and if the status changed since last
         read, it will propagate the status event to all listeners.
-        
+
         :param cache:
             tells if return value from local cache or update from HW read
             [default: True]
@@ -238,6 +238,7 @@ class PoolBaseElement(PoolObject):
     # --------------------------------------------------------------------------
 
     _STD_STATUS = "{name} is {state}\n{ctrl_status}"
+
     def calculate_state_info(self, status_info=None):
         """Transforms the given state information. This specific base
         implementation transforms the given state,status tuple into a
@@ -245,7 +246,7 @@ class PoolBaseElement(PoolObject):
         plus the given status.
         It is assumed that the given status comes directly from the controller
         status information.
-        
+
         :param status_info:
             given status information [default: None, meaning use current state status.
         :type status_info: tuple<State, str>

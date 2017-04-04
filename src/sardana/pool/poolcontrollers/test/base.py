@@ -2,30 +2,31 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+# http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 __all__ = ['BaseControllerTestCase', 'TriggerGateControllerTestCase',
            'PositionGenerator', 'TriggerGateReceiver']
 
-import time, threading
+import time
+import threading
 import numpy
 
 from taurus.external import unittest
@@ -35,6 +36,7 @@ from sardana.pool.poolcontrollers.DummyMotorController import Motion
 from sardana.pool.pooldefs import SynchParam
 from sardana.sardanaattribute import SardanaAttribute
 from taurus.core.util.log import Logger
+
 
 class BaseControllerTestCase(object):
     """ Base test case for unit testing arbitrary controllers.
@@ -74,7 +76,7 @@ class BaseControllerTestCase(object):
         self.ctrl.SetAxisPar(axis, name, value)
         r_value = self.ctrl.GetAxisPar(axis, name)
         msg = ('The %s value is %s, and the expected value is %s'
-               %(name, r_value, expected_value))
+               % (name, r_value, expected_value))
         self.assertEqual(r_value, expected_value, msg)
 
     def stateOne(self, expected_state=State.On):
@@ -82,7 +84,7 @@ class BaseControllerTestCase(object):
         """
         sta, status = self.ctrl.StateOne(self.AXIS)
         msg = ('The current state of axis(%d) is %d when expected, %d'
-               %(self.AXIS, sta, expected_state))
+               % (self.AXIS, sta, expected_state))
         self.assertEqual(sta, expected_state, msg)
 
     def start_action(self, configuration):
@@ -91,8 +93,10 @@ class BaseControllerTestCase(object):
         for key, value in configuration.items():
             self.axisPar(key, value)
         self.ctrl.SynchOne(configuration)
+
     def pre_AddDevice_hook(self):
         pass
+
 
 class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
 
@@ -135,7 +139,7 @@ class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
         self.post_generation_hook()
         state, status = self.ctrl.StateOne(self.AXIS)
         msg = ('The axis %d is not Stopped, its status is %s'
-               %(self.AXIS, status))
+               % (self.AXIS, status))
         self.assertEqual(state, State.get('On'), msg)
 
     def abort(self, configuration, abort):
@@ -154,13 +158,15 @@ class TriggerGateControllerTestCase(unittest.TestCase, BaseControllerTestCase):
         self.post_generation_hook()
         state, status = self.ctrl.StateOne(self.AXIS)
         msg = ('The axis %d is not Stopped, its status is %s'
-               %(self.AXIS, status))
+               % (self.AXIS, status))
         self.assertEqual(state, State.get('On'), msg)
+
 
 class PositionGenerator(threading.Thread):
     """ It is a position generator. A Sardana Motion class is used for simulate
     the motor. The attribute value has the current user position of the motor.
     """
+
     def __init__(self, start_pos, end_pos, period):
         """
         :param start_pos: start position for the motion
@@ -227,7 +233,8 @@ class TriggerGateReceiver(object):
     comes. Provides useful methods for calculating the event generation
     performance
     '''
-    #TODO: add more jitter measurements e.g. drift
+    # TODO: add more jitter measurements e.g. drift
+
     def __init__(self):
         self.active_events = {}
         self.passive_events = {}
@@ -251,7 +258,7 @@ class TriggerGateReceiver(object):
             raise ValueError('Unknown EventType')
 
     def calc_characteristics(self):
-        #TODO: refactor the characteristics calculation method to use numpy
+        # TODO: refactor the characteristics calculation method to use numpy
         i = 0
         count = self.count
         characteristics = {}
@@ -260,7 +267,7 @@ class TriggerGateReceiver(object):
         while i < (count - 1):
             t1 = self.active_events[i]
             t2 = self.passive_events[i]
-            t3 = self.active_events[i+1]
+            t3 = self.active_events[i + 1]
             active_period = t2 - t1
             passive_period = t3 - t2
             characteristics[i] = (active_period, passive_period)
@@ -285,7 +292,7 @@ class TriggerGateReceiver(object):
         # calculate characteristics until (count - 1)
         while i < (count - 1):
             t1 = self.active_events[i]
-            t2 = self.active_events[i+1]
+            t2 = self.active_events[i + 1]
             period = t2 - t1
             periods.append(period)
             i += 1

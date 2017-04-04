@@ -10,13 +10,16 @@
 """
 
 
-import sys, os, types
+import sys
+import os
+import types
 from lxml import etree
+
 
 def transform(f):
     directory = os.path.dirname(os.path.abspath(__file__))
     xslt_filename = os.path.join(directory, "FODS_TO_SAR.xslt")
-    
+
     t = etree.XSLT(etree.parse(xslt_filename))
     if type(f) in types.StringTypes:
         doc = etree.parse(f)
@@ -24,11 +27,12 @@ def transform(f):
         doc = f
     return t(doc)
 
+
 def main():
     if len(sys.argv) < 2:
         print __doc__
         sys.exit(1)
-        
+
     filename = sys.argv[1]
     t = transform(filename)
     print etree.tostring(t, pretty_print=True)

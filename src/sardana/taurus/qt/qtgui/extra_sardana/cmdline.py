@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -35,12 +35,14 @@ from taurus.qt.qtgui.resource import getIcon, getThemeIcon
 class CommandLineHistory(list):
     pass
 
+
 class CommandLine(Qt.QComboBox):
 
     def __init__(self, qt_parent=None, designMode=False):
         Qt.QComboBox.__init__(self, qt_parent)
         self.setEditable(True)
         self.setFrame(False)
+
 
 class TaurusCommandLineWidget(Qt.QWidget):
 
@@ -61,7 +63,8 @@ class TaurusCommandLineWidget(Qt.QWidget):
         self._cmdLine.setEditable(True)
 
         self._applyButton = Qt.QToolButton()
-        self._applyButton.setIcon(getIcon(":/actions/media_playback_start.svg"))
+        self._applyButton.setIcon(
+            getIcon(":/actions/media_playback_start.svg"))
 
         self._stopButton = Qt.QToolButton()
         self._stopButton.setIcon(getIcon(":/actions/media_playback_stop.svg"))
@@ -75,13 +78,13 @@ class TaurusCommandLineWidget(Qt.QWidget):
         l.addWidget(self._stopButton, 0)
         l.addWidget(self._clearButton, 0)
 
-
-
     def run(self):
         pass
 
+
 def demo():
     pass
+
 
 def main():
     import sys

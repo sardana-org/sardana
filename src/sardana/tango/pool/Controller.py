@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -93,8 +93,8 @@ class Controller(PoolDevice):
             ctrl.add_listener(self.on_controller_changed)
             self.ctrl = ctrl
             self.set_state(DevState.ON)
-            #self.set_state(to_tango_state(ctrl.get_state()))
-            #self.set_status(ctrl.get_status())
+            # self.set_state(to_tango_state(ctrl.get_state()))
+            # self.set_status(ctrl.get_status())
         else:
             ctrl.re_init()
 
@@ -102,9 +102,11 @@ class Controller(PoolDevice):
         db = Util.instance().get_database()
         if db is None:
             return []
-        role_ids = db.get_device_property(self.get_name(), ['motor_role_ids'])['motor_role_ids']
+        role_ids = db.get_device_property(self.get_name(), ['motor_role_ids'])[
+            'motor_role_ids']
         if len(role_ids) == 0:
-            role_ids = db.get_device_property(self.get_name(), ['counter_role_ids'])['counter_role_ids']
+            role_ids = db.get_device_property(self.get_name(), ['counter_role_ids'])[
+                'counter_role_ids']
             if len(role_ids) == 0:
                 role_ids = self.Role_ids
         role_ids = map(int, role_ids)
@@ -124,9 +126,11 @@ class Controller(PoolDevice):
 
         props = {}
         if prop_infos:
-            props.update(db.get_device_property(self.get_name(), prop_infos.keys()))
+            props.update(db.get_device_property(
+                self.get_name(), prop_infos.keys()))
         for p in props.keys():
-            if len(props[p]) == 0: props[p] = None
+            if len(props[p]) == 0:
+                props[p] = None
 
         ret = {}
         missing_props = []
@@ -189,7 +193,7 @@ class Controller(PoolDevice):
 
     def get_element_names(self):
         elements = self.ctrl.get_elements()
-        return [ elements[id].get_name() for id in sorted(elements) ]
+        return [elements[id].get_name() for id in sorted(elements)]
 
     def on_controller_changed(self, event_src, event_type, event_value):
         # during server startup and shutdown avoid processing element
@@ -226,7 +230,8 @@ class Controller(PoolDevice):
             return self._standard_attributes_cache, self._dynamic_attributes_cache
         info = self.ctrl.ctrl_info
         if info is None:
-            self.warning("Controller %s doesn't have any information", self.ctrl)
+            self.warning(
+                "Controller %s doesn't have any information", self.ctrl)
             return PoolDevice.get_dynamic_attributes(self)
         self._dynamic_attributes_cache = dyn_attrs = CaselessDict()
         self._standard_attributes_cache = std_attrs = CaselessDict()
@@ -262,28 +267,28 @@ class ControllerClass(PoolDeviceClass):
 
     #    Device Properties
     device_property_list = {
-        'Type':           [DevString, "", None ],
-        'Library':        [DevString, "", None ],
-        'Klass':          [DevString, "", None ],
-        'Role_ids':       [DevVarLongArray, "", [] ],
+        'Type':           [DevString, "", None],
+        'Library':        [DevString, "", None],
+        'Klass':          [DevString, "", None],
+        'Role_ids':       [DevVarLongArray, "", []],
     }
     device_property_list.update(PoolDeviceClass.device_property_list)
 
     #    Command definitions
     cmd_list = {
-        'CreateElement': [ [DevVarStringArray, ""], [DevVoid, ""] ],
-        'DeleteElement': [ [DevString, ""], [DevVoid, ""] ],
+        'CreateElement': [[DevVarStringArray, ""], [DevVoid, ""]],
+        'DeleteElement': [[DevString, ""], [DevVoid, ""]],
     }
     cmd_list.update(PoolDeviceClass.cmd_list)
 
     #    Attribute definitions
     attr_list = {
-        'ElementList':   [ [DevString, SPECTRUM, READ, 4096] ],
-        'LogLevel':      [ [DevLong, SCALAR, READ_WRITE],
-                           { 'Memorized'     : "true",
-                             'label'         : "Log level",
-                             'Display level' : DispLevel.EXPERT } ],
-        }
+        'ElementList':   [[DevString, SPECTRUM, READ, 4096]],
+        'LogLevel':      [[DevLong, SCALAR, READ_WRITE],
+                          {'Memorized': "true",
+                           'label': "Log level",
+                           'Display level': DispLevel.EXPERT}],
+    }
     attr_list.update(PoolDeviceClass.attr_list)
 
     def _get_class_properties(self):
@@ -291,4 +296,3 @@ class ControllerClass(PoolDeviceClass):
         ret['Description'] = "Controller device class"
         ret['InheritedFrom'].insert(0, 'PoolDevice')
         return ret
-

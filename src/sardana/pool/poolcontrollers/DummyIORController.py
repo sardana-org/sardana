@@ -1,23 +1,23 @@
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -30,13 +30,13 @@ class DummyIORController(IORegisterController):
     1024)."""
 
     gender = "Simulation"
-    model  = "Basic"
+    model = "Basic"
     organization = "Sardana team"
 
     MaxDevice = 1024
-    
-    predefined_values = "0", "Online", "1" , "Offline", "2", "Standby"
-    
+
+    predefined_values = "0", "Online", "1", "Offline", "2", "Standby"
+
     def __init__(self, inst, props, *args, **kwargs):
         IORegisterController.__init__(self, inst, props, *args, **kwargs)
         self.myvalue = 1
@@ -48,13 +48,13 @@ class DummyIORController(IORegisterController):
         pass
 
     def StateOne(self, axis):
-        return (State.On,"Device in On state")
+        return (State.On, "Device in On state")
 
     def ReadOne(self, axis):
         return self.myvalue
 
     def WriteOne(self, axis, value):
         self.myvalue = value
-        
-    def SendToCtrl(self,in_data):
+
+    def SendToCtrl(self, in_data):
         return ""

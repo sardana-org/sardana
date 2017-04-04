@@ -1,23 +1,23 @@
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -39,11 +39,11 @@ from sardana.macroserver.msexception import UnknownMacroLibrary
 from sardana.macroserver.msparameter import WrongParam
 from sardana.macroserver.macro import Macro, Type, ParamRepeat, Table, LibraryError
 
-################################################################################
+##########################################################################
 #
 # Configuration related macros
 #
-################################################################################
+##########################################################################
 
 
 class defm(Macro):
@@ -51,7 +51,7 @@ class defm(Macro):
 
     param_def = [['motor name', Type.String, None, 'motor name'],
                  ['controller', Type.Controller, None, 'Controller name'],
-                 ['axis', Type.Integer, None, 'motor axis'],]
+                 ['axis', Type.Integer, None, 'motor axis'], ]
 
     def run(self, name, controller, axis):
         pool = controller.getPoolObj()
@@ -60,6 +60,7 @@ class defm(Macro):
         elem = pool.createElement(name, controller, axis)
         self.print("Created %s" % str(elem))
 
+
 class defmeas(Macro):
     """Create a new measurement group. First channel in channel_list MUST
     be an internal sardana channel. At least one channel MUST be a
@@ -67,9 +68,10 @@ class defmeas(Macro):
     become the master)."""
 
     param_def = [
-       ['name',  Type.String, None, 'Measurement group name'],
-       ['channel_list',
-            ParamRepeat(['channel', Type.String, None, 'Measurement Channel'],),
+        ['name',  Type.String, None, 'Measurement group name'],
+        ['channel_list',
+            ParamRepeat(['channel', Type.String, None,
+                         'Measurement Channel'],),
             None, 'List of measurement channels'],
     ]
 
@@ -78,7 +80,8 @@ class defmeas(Macro):
         mntgrp_list = self.findObjs(name, type_class=Type.MeasurementGroup)
 
         if len(mntgrp_list) != 0:
-            raise Exception('A measurement group with that name already exists')
+            raise Exception(
+                'A measurement group with that name already exists')
 
     def run(self, name, channel_list):
         channel0 = self.getObj(channel_list[0])
@@ -90,7 +93,8 @@ class defmeas(Macro):
 class udefmeas(Macro):
     """Deletes an existing measurement group"""
 
-    param_def = [ ['name', Type.MeasurementGroup, None, 'Measurement group name'],]
+    param_def = [['name', Type.MeasurementGroup,
+                  None, 'Measurement group name'], ]
 
     def run(self, mntgrp):
         pool = mntgrp.getPoolObj()
@@ -100,9 +104,9 @@ class udefmeas(Macro):
 class defelem(Macro):
     """Creates an element on a controller with an axis"""
 
-    param_def = [ ['name', Type.String, None, 'new element name'],
-                  ['ctrl', Type.Controller, None, 'existing controller'],
-                  ['axis', Type.Integer, -1, 'axis in the controller (default is -1, meaning add to the end)'],]
+    param_def = [['name', Type.String, None, 'new element name'],
+                 ['ctrl', Type.Controller, None, 'existing controller'],
+                 ['axis', Type.Integer, -1, 'axis in the controller (default is -1, meaning add to the end)'], ]
 
     def run(self, name, ctrl, axis):
         pool = ctrl.getPoolObj()
@@ -115,8 +119,8 @@ class defelem(Macro):
 class renameelem(Macro):
     """Renames any type of Pool elements apart of Pools."""
 
-    param_def = [ ['element', Type.PoolElement, None, 'element to be renamed'],
-                  ['new_name', Type.String, None, 'new name']]
+    param_def = [['element', Type.PoolElement, None, 'element to be renamed'],
+                 ['new_name', Type.String, None, 'new name']]
 
     def prepare(self, elem, new_name):
         if elem.getType() == "Pool":
@@ -133,9 +137,9 @@ class udefelem(Macro):
     """Deletes an existing element(s)"""
 
     param_def = [
-       ['elements',
-        ParamRepeat(['element', Type.Element, None, 'element name'], min=1),
-        None, 'List of element(s) name'],
+        ['elements',
+         ParamRepeat(['element', Type.Element, None, 'element name'], min=1),
+         None, 'List of element(s) name'],
     ]
 
     def run(self, elements):
@@ -144,31 +148,30 @@ class udefelem(Macro):
             pool.deleteElement(element.getName())
 
 
-
 class defctrl(Macro):
     """Creates a new controller
     'role_prop' is a sequence of roles and/or properties.
     - A role is defined as <role name>=<role value> (only applicable to pseudo controllers)
     - A property is defined as <property name> <property value>
-    
+
     If both roles and properties are supplied, all roles must come before properties.
     All controller properties that don't have default values must be given.
-    
+
     Example of creating a motor controller (with a host and port properties):
-    
+
     [1]: defctrl SuperMotorController myctrl host homer.springfield.com port 5000
-    
+
     Example of creating a Slit pseudo motor (sl2t and sl2b motor roles, Gap and 
     Offset pseudo motor roles):
-    
+
     [1]: defctrl Slit myslit sl2t=mot01 sl2b=mot02 Gap=gap01 Offset=offset01"""
 
-    param_def = [ ['class',  Type.ControllerClass, None, 'controller class'],
-                  ['name',  Type.String, None, 'new controller name'],
-                  ['roles_props',
-                   ParamRepeat(['role_prop', Type.String, None, 
-                   'a role or property item'],min=0),
-                   None, 'roles and/or properties'] ]
+    param_def = [['class',  Type.ControllerClass, None, 'controller class'],
+                 ['name',  Type.String, None, 'new controller name'],
+                 ['roles_props',
+                  ParamRepeat(['role_prop', Type.String, None,
+                               'a role or property item'], min=0),
+                  None, 'roles and/or properties']]
 
     def run(self, ctrl_class, name, props):
         pool = ctrl_class.getPoolObj()
@@ -179,17 +182,18 @@ class defctrl(Macro):
 class udefctrl(Macro):
     """Deletes an existing controller"""
 
-    param_def = [ ['controller', Type.Controller, None, 'existing controller'],]
+    param_def = [['controller', Type.Controller,
+                  None, 'existing controller'], ]
 
     def run(self, controller):
         pool = controller.getPoolObj()
         pool.deleteController(controller.getName())
 
-################################################################################
+##########################################################################
 #
 # Controller related macros
 #
-################################################################################
+##########################################################################
 
 
 class send2ctrl(Macro):
@@ -197,21 +201,23 @@ class send2ctrl(Macro):
 
     param_def = [['controller', Type.Controller, None, 'Controller name'],
                  ['data',
-                  ParamRepeat(['string item', Type.String, None, 'a string item'],),
+                  ParamRepeat(['string item', Type.String,
+                               None, 'a string item'],),
                   None, 'data to be sent']]
 
     def run(self, controller, data):
         name = controller.getName()
         pool = controller.getPoolObj()
         str_data = " ".join(data)
-        res = pool.SendToController([name,str_data])
+        res = pool.SendToController([name, str_data])
         self.output(res)
 
-################################################################################
+##########################################################################
 #
 # Library handling related macros
 #
-################################################################################
+##########################################################################
+
 
 class edctrl(Macro):
     """Returns the contents of the library file which contains the given
@@ -225,27 +231,28 @@ class edctrl(Macro):
         ['filedata',  Type.File, None, 'The file data object.']
     ]
 
-    hints = { 'commit_cmd' : 'commit_ctrllib' }
+    hints = {'commit_cmd': 'commit_ctrllib'}
 
-    def run(self,ctrlclass):
+    def run(self, ctrlclass):
         f_name = ctrlclass.file
         pool = ctrlclass.getPool()
         data = pool.GetFile(f_name)
-        data = array.array('B',data).tostring()
+        data = array.array('B', data).tostring()
         line_nb = 1
         for line in data.splitlines():
             line = line.strip(' \t')
-            if line.startswith('class') and line.find(ctrlclass.name)>0 and \
-                line.endswith(":"):
+            if line.startswith('class') and line.find(ctrlclass.name) > 0 and \
+                    line.endswith(":"):
                 break
             line_nb = line_nb + 1
-        return [f_name,data,line_nb]
+        return [f_name, data, line_nb]
+
 
 class edctrllib(Macro):
     """Returns the contents of the given library file"""
 
     param_def = [
-        ['filename',  Type.Filename, None, 'Absolute path and file name or '\
+        ['filename',  Type.Filename, None, 'Absolute path and file name or '
          'simple filename. Relative paths are not allowed.']
     ]
 
@@ -253,12 +260,13 @@ class edctrllib(Macro):
         ['filedata',  Type.File, None, 'The file data object']
     ]
 
-    hints = { 'commit_cmd' : 'commit_ctrllib' }
+    hints = {'commit_cmd': 'commit_ctrllib'}
 
-    def run(self,filename):
+    def run(self, filename):
         pool = self.getManager().getPool()
         data = pool.GetFile(filename)
-        return [filename,array.array('B',data).tostring(),0]
+        return [filename, array.array('B', data).tostring(), 0]
+
 
 class commit_ctrllib(Macro):
     """Puts the contents of the given data in a file inside the pool"""
@@ -266,42 +274,42 @@ class commit_ctrllib(Macro):
     param_def = [
         ['filename',  Type.Filename, None, 'Absolute path and file name'],
         ['username',  Type.User, None, 'The user name'],
-        ['comment',  Type.String, None, 'A description of the changes made to '\
+        ['comment',  Type.String, None, 'A description of the changes made to '
          'the file'],
         ['filedata',  Type.File, None, 'The file data object']
     ]
 
-    def run(self,filename,username,comment,filedata):
+    def run(self, filename, username, comment, filedata):
         pool = self.getManager().getPool()
         meta = filename + '\0' + username + '\0' + comment + '\0'
-        data = array.array('B',meta)
-        data.extend(array.array('B',filedata))
+        data = array.array('B', meta)
+        data.extend(array.array('B', filedata))
         pool.PutFile(data.tolist())
 
-################################################################################
+##########################################################################
 #
 # Macro handling related macros
 #
-################################################################################
+##########################################################################
 
 
 class prdef(Macro):
     """Returns the the macro code for the given macro name."""
 
     param_def = [
-         ['macro_name', Type.MacroCode, None, 'macro name']
+        ['macro_name', Type.MacroCode, None, 'macro name']
     ]
 
-    def run(self,macro_data):
+    def run(self, macro_data):
         code_lines, _ = macro_data.code
         for code_line in code_lines:
             self.output(code_line.strip('\n'))
 
 
 class rellib(Macro):
-    
+
     """Reloads the given python library code from the macro server filesystem.
-    
+
     .. warning:: use with extreme care! Accidentally reloading a system
                  module or an installed python module may lead to unpredictable
                  behavior
@@ -332,12 +340,12 @@ class rellib(Macro):
             self.reloadLibrary(module_name)
             self.output("%s successfully (re)loaded", module_name)
         except LibraryError:
-            self.error("Cannot use rellib to reload a macro library. " \
+            self.error("Cannot use rellib to reload a macro library. "
                        "Use 'relmaclib' instead")
         except ImportError:
             msg = "".join(traceback.format_exception_only(*sys.exc_info()[:2]))
             self.error(msg)
-            
+
 
 class relmaclib(Macro):
     """Reloads the given macro library code from the macro server filesystem."""
@@ -358,7 +366,8 @@ class relmaclib(Macro):
             self.warning("The old %s macro library is still available.", name)
         else:
             macros = new_macro_library.get_macros()
-            self.output("%s successfully (re)loaded (found %d macros)", name, len(macros))
+            self.output(
+                "%s successfully (re)loaded (found %d macros)", name, len(macros))
 
 
 class addmaclib(Macro):
@@ -370,7 +379,7 @@ class addmaclib(Macro):
     param_def = [
         ['macro_library_name', Type.String, None,
          'The module name to be loaded (without extension)']
-        ]
+    ]
 
     def prepare(self, macro_library_name):
         try:
@@ -399,7 +408,7 @@ class addmaclib(Macro):
             overridden_macros = list(set(old_macros) & set(new_macros))
             if len(overridden_macros) > 0:
                 msg = ('%s macro library has overridden the following ' +
-                       'macros: %s' ) % (macro_library_name, overridden_macros)
+                       'macros: %s') % (macro_library_name, overridden_macros)
                 self.warning(msg)
 
 
@@ -425,7 +434,7 @@ class relmac(Macro):
             maclibname = macro_library_name
             self.output("%s macro successfully (re)loaded", name)
             macros_in_lib = macro_library.get_macros()
-            self.output("\nAll macros from macro library %s have " + \
+            self.output("\nAll macros from macro library %s have " +
                         "been reloaded:", maclibname)
             self.output([macro.name for macro in macros_in_lib])
 
@@ -439,8 +448,8 @@ class sar_info(Macro):
 
     def run(self, obj):
         self.dump_properties(obj)
-        #self.output("")
-        #self.dump_attributes(obj)
+        # self.output("")
+        # self.dump_attributes(obj)
 
     def dump_properties(self, obj):
         data = obj.serialize()
@@ -476,4 +485,3 @@ class sar_info(Macro):
         self.output("-----------")
         for line in table.genOutput():
             self.output(line)
-

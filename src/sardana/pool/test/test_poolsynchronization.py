@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+# http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 import threading
@@ -30,8 +30,9 @@ from sardana.pool.poolsynchronization import PoolSynchronization
 from sardana.sardanadefs import State
 from sardana.pool.test import (FakePool, createPoolController,
                                createPoolTriggerGate, dummyPoolTGCtrlConf01,
-                               dummyTriggerGateConf01, 
+                               dummyTriggerGateConf01,
                                createPoolSynchronizationConfiguration)
+
 
 class PoolTriggerGateTestCase(unittest.TestCase):
     """Unittest of PoolSynchronization class"""
@@ -47,13 +48,13 @@ class PoolTriggerGateTestCase(unittest.TestCase):
             self.skipTest("mock module is not available")
         pool = FakePool()
         dummy_tg_ctrl = createPoolController(pool, dummyPoolTGCtrlConf01)
-        self.dummy_tg = createPoolTriggerGate(pool, dummy_tg_ctrl, 
-                                                        dummyTriggerGateConf01)
+        self.dummy_tg = createPoolTriggerGate(pool, dummy_tg_ctrl,
+                                              dummyTriggerGateConf01)
         dummy_tg_ctrl.add_element(self.dummy_tg)
         pool.add_element(dummy_tg_ctrl)
         pool.add_element(self.dummy_tg)
         self.cfg = createPoolSynchronizationConfiguration((dummy_tg_ctrl,),
-                                                       ((self.dummy_tg,),),)
+                                                          ((self.dummy_tg,),),)
         # Create mock and define its functions
         ctrl_methods = ['PreStartAll', 'StartAll', 'PreStartOne', 'StartOne',
                         'PreStateAll', 'StateAll', 'PreStateOne', 'StateOne',
@@ -78,13 +79,13 @@ class PoolTriggerGateTestCase(unittest.TestCase):
         self.tgaction.start_action(*args, **kwargs)
         # verifying that the action correctly started the involved controller
         self.mock_tg_ctrl.assert_has_calls([call.PreStartAll(),
-                                           (call.PreStartOne(1,)),
-                                           (call.StartOne(1,)),
-                                           (call.StartAll())])
+                                            (call.PreStartOne(1,)),
+                                            (call.StartOne(1,)),
+                                            (call.StartAll())])
         # verifying that the elements involved in action changed its state
         element_state = self.dummy_tg.get_state()
-        msg = ("State after start_action is '%s'. (Expected: '%s')" % 
-                                    (State.get(element_state), "Moving"))
+        msg = ("State after start_action is '%s'. (Expected: '%s')" %
+               (State.get(element_state), "Moving"))
         self.assertEqual(element_state, State.Moving, msg)
         # starting timer (1 s) which will change the controller state
         threading.Timer(1, self.stopGeneration).start()
@@ -93,7 +94,7 @@ class PoolTriggerGateTestCase(unittest.TestCase):
         # verifying that the action checked the controller states
         self.mock_tg_ctrl.assert_has_calls([call.PreStateAll(),
                                             call.PreStateOne(1,),
-                                            call.StateAll(), 
+                                            call.StateAll(),
                                             call.StateOne(1,)])
         # verifying that the elements involved in action changed its state
         element_state = self.dummy_tg.get_state()

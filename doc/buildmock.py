@@ -3,24 +3,24 @@
 
 #############################################################################
 ##
-## This file is part of Taurus
+# This file is part of Taurus
 ##
-## http://taurus-scada.org
+# http://taurus-scada.org
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Taurus is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Taurus is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Taurus is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Taurus is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Taurus.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Taurus.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ###########################################################################
 
@@ -105,9 +105,11 @@ def abspath(*path):
     this_dir = os.path.dirname(os.path.abspath(__file__))
     return os.path.abspath(os.path.join(this_dir, *path))
 
+
 def _import(name):
     __import__(name)
     return sys.modules[name]
+
 
 def _is_pseudo_enum(obj):
     if not isinstance(obj, int):
@@ -118,15 +120,18 @@ def _is_pseudo_enum(obj):
     except:
         return True
 
+
 def _is_special_float(obj):
     if not isinstance(obj, float):
         return False
     return repr(obj) in ('inf', 'nan', '-inf')
 
+
 def _discard_element(name, exclude, include):
     if name in include:
         return False
     return name in exclude or name.startswith("__")
+
 
 def build_class(k_name, k, exclude=(), include=()):
     '''return the source text for a mock class based on a given class'''
@@ -144,9 +149,9 @@ def build_class(k_name, k, exclude=(), include=()):
             members.append(specialfloats_template.format(name=element_name,
                                                          value=element))
         elif isinstance(element, (int, float, bool, str, unicode)):
-            try: # make sure that the repr makes sense
+            try:  # make sure that the repr makes sense
                 type(element)(repr(element))
-            except: # skip it (the _Mock.__getattr__ will deal with it)
+            except:  # skip it (the _Mock.__getattr__ will deal with it)
                 continue
             members.append(member_template.format(name=element_name,
                                                   value=element))
@@ -156,6 +161,7 @@ def build_class(k_name, k, exclude=(), include=()):
                                       super_klass='_Mock',
                                       members=members)
     return klass_str
+
 
 def build_module(module_name, imports=(), out_prefix='mock',
                  exclude=(), include=()):
@@ -178,7 +184,7 @@ def build_module(module_name, imports=(), out_prefix='mock',
         element = getattr(module, element_name)
         # internal imports (from the same package)
         if (inspect.ismodule(element) and
-            element.__name__.split('.')[0] == module_name.split('.')[0]):
+                element.__name__.split('.')[0] == module_name.split('.')[0]):
             # add the module to the imports set
             full_name = element.__name__
             name = full_name.split('.')[-1]
@@ -197,7 +203,7 @@ def build_module(module_name, imports=(), out_prefix='mock',
             # was not working due to the metaclass problems
             # TODO: when moving back this utils to taurus check if the circular
             #       import errors are still present
-            #mocks.append(mock_template.format(name=element_name))
+            # mocks.append(mock_template.format(name=element_name))
 
             # make sure that the module is built
             build_module(element.__name__, imports=(),
@@ -216,7 +222,7 @@ def build_module(module_name, imports=(), out_prefix='mock',
             constants.append(mock_template.format(name=element_name))
         # constants
         elif isinstance(element, (int, float, bool, str, unicode)):
-            try: # make sure that the repr makes sense
+            try:  # make sure that the repr makes sense
                 type(element)(repr(element))
             except:  # cannot write anything better than a mock
                 constants.append(mock_template.format(name=element_name))
@@ -226,7 +232,6 @@ def build_module(module_name, imports=(), out_prefix='mock',
         # that aren't caught by any of the above
         elif (element_name not in imports):
             mocks.append(mock_template.format(name=element_name))
-
 
     imports = "\n".join(sorted(imports))
 
@@ -244,6 +249,7 @@ def build_module(module_name, imports=(), out_prefix='mock',
         f.write(klasses)
         f.write("\n\n")
 
+
 def guess_submodules_from_package(module_name, exclude=(), include=()):
     '''returns a list of submodule names found in a given package name.
     If module_name is not implemented as a package, it returns an empty list'''
@@ -255,7 +261,7 @@ def guess_submodules_from_package(module_name, exclude=(), include=()):
     except TypeError:
         return []
     if not (modulefile.endswith('__init__.py') or
-            modulefile.endswith('__init__.pyc') ):
+            modulefile.endswith('__init__.pyc')):
         return []
 
     pkgdir, _ = os.path.split(modulefile)
@@ -271,13 +277,14 @@ def guess_submodules_from_package(module_name, exclude=(), include=()):
     # explore pkgdir to find .so files
     g = glob.glob(os.path.join(pkgdir, '*.so'))
     names += [re.findall(r".+\/(.*).so", s)[0] for s in g]
-    # build list with full module names and filter out non-importable submodules
+    # build list with full module names and filter out non-importable
+    # submodules
     full_module_names = []
     for sm_name in names:
         name = '.'.join((module_name, sm_name))
         # skip __main__ and __init__, etc and excluded (unless included)
-        if ( name not in include and
-             (name in exclude or sm_name.startswith('__')) ):
+        if (name not in include and
+                (name in exclude or sm_name.startswith('__'))):
             continue
         # check if the module is indeed importable
         try:
@@ -288,6 +295,7 @@ def guess_submodules_from_package(module_name, exclude=(), include=()):
             print '!'
             pass
     return full_module_names
+
 
 def build_full_module(module_name, exclude=(), include=(), out_prefix='mock'):
     '''build a full mocked package (modules and submodules, recursively) for the
@@ -300,10 +308,11 @@ def build_full_module(module_name, exclude=(), include=(), out_prefix='mock'):
     build_module(module_name, imports=(), exclude=exclude, include=include,
                  out_prefix=out_prefix)
 
-    #recursive call for submodules
+    # recursive call for submodules
     for name in guess_submodules_from_package(module_name, exclude=exclude):
         build_full_module(name, exclude=exclude, include=include,
                           out_prefix=out_prefix)
+
 
 def _zipdir(basedir, archivename):
     '''function to zip directories. Adapted from:
@@ -314,11 +323,12 @@ def _zipdir(basedir, archivename):
     assert os.path.isdir(basedir)
     with closing(ZipFile(archivename, "w", ZIP_DEFLATED)) as z:
         for root, dirs, files in os.walk(basedir):
-            #NOTE: ignore empty directories
+            # NOTE: ignore empty directories
             for fn in files:
                 absfn = os.path.join(root, fn)
-                zfn = absfn[len(basedir)+len(os.sep):] #XXX: relative path
+                zfn = absfn[len(basedir) + len(os.sep):]  # XXX: relative path
                 z.write(absfn, zfn)
+
 
 def build_mocks_for_sardana(output='mock.zip'):
     '''builds mocks for the packages required by taurus. The mocks are written
@@ -350,10 +360,9 @@ def build_mocks_for_sardana(output='mock.zip'):
         build_full_module(module_name, exclude=exclude, include=include,
                           out_prefix=outdir)
     if zfile:
-        _zipdir(outdir, zfile) # compress the dir into the zip file
-        shutil.rmtree(outdir) # delete the dir
+        _zipdir(outdir, zfile)  # compress the dir into the zip file
+        shutil.rmtree(outdir)  # delete the dir
     print '\nMocks written in %s' % output
-
 
 
 if __name__ == "__main__":

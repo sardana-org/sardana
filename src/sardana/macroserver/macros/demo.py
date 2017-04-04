@@ -1,23 +1,23 @@
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
-## 
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-## 
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
-## 
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+##
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+##
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+##
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -36,6 +36,7 @@ _ENV = "_SAR_DEMO"
 
 _ENV_HKL = "_SAR_DEMO_HKL"
 
+
 def get_free_names(db, prefix, nb, start_at=1):
     ret = []
     i = start_at
@@ -52,6 +53,7 @@ def get_free_names(db, prefix, nb, start_at=1):
         raise Exception("Too many sardana demos registered on this system.\n"
                         "Please try using a different tango system")
     return ret
+
 
 @macro()
 def clear_sar_demo(self):
@@ -73,33 +75,34 @@ def clear_sar_demo(self):
         if mg == _ActiveMntGrp:
             self.print("Unsetting ActiveMntGrp (was: %s)" % _ActiveMntGrp)
             self.unsetEnv("ActiveMntGrp")
-    
+
     self.print("Removing elements...")
-    elements =  SAR_DEMO.get("elements", ())
+    elements = SAR_DEMO.get("elements", ())
     if len(elements) > 0:
         self.udefelem(elements)
-    
+
     self.print("Removing controllers...")
     for ctrl in SAR_DEMO.get("controllers", ()):
         self.udefctrl(ctrl)
-    
+
     self.unsetEnv(_ENV)
-    
+
     self.print("DONE!")
-    
+
+
 @macro()
 def sar_demo(self):
     """Sets up a demo environment. It creates many elements for testing"""
-    
+
     try:
         SAR_DEMO = self.getEnv(_ENV)
         self.error("A demo has already been prepared on this sardana")
         return
     except:
         pass
-    
+
     db = PyTango.Database()
-    
+
     mot_ctrl_name = get_free_names(db, "motctrl", 1)[0]
     ct_ctrl_name = get_free_names(db, "ctctrl", 1)[0]
     zerod_ctrl_name = get_free_names(db, "zerodctrl", 1)[0]
@@ -115,10 +118,11 @@ def sar_demo(self):
     oned_names = get_free_names(db, "oned", 1)
     twod_names = get_free_names(db, "twod", 1)
     tg_names = get_free_names(db, "tg", 1)
-    gap, offset = get_free_names(db, "gap", 1) + get_free_names(db, "offset", 1)
+    gap, offset = get_free_names(db, "gap", 1) + \
+        get_free_names(db, "offset", 1)
     ior_names = get_free_names(db, "ior", 2)
     mg_name = get_free_names(db, "mntgrp", 1)[0]
-    
+
     pools = self.getPools()
     if not len(pools):
         self.error('This is not a valid sardana demonstration system.\n'
@@ -126,54 +130,54 @@ def sar_demo(self):
                    'one Pool')
         return
     pool = pools[0]
-    
+
     self.print("Creating motor controller", mot_ctrl_name, "...")
     self.defctrl("DummyMotorController", mot_ctrl_name)
     for axis, motor_name in enumerate(motor_names, 1):
         self.print("Creating motor", motor_name, "...")
-        self.defelem(motor_name , mot_ctrl_name, axis)
-        
+        self.defelem(motor_name, mot_ctrl_name, axis)
+
     self.print("Creating counter controller", ct_ctrl_name, "...")
     self.defctrl("DummyCounterTimerController", ct_ctrl_name)
     for axis, ct_name in enumerate(ct_names, 1):
         self.print("Creating counter channel", ct_name, "...")
-        self.defelem(ct_name , ct_ctrl_name, axis)
-    
+        self.defelem(ct_name, ct_ctrl_name, axis)
+
     self.print("Creating 0D controller", zerod_ctrl_name, "...")
     self.defctrl("DummyZeroDController", zerod_ctrl_name)
     for axis, zerod_name in enumerate(zerod_names, 1):
         self.print("Creating 0D channel", zerod_name, "...")
-        self.defelem(zerod_name , zerod_ctrl_name, axis)
+        self.defelem(zerod_name, zerod_ctrl_name, axis)
 
     self.print("Creating 1D controller", oned_ctrl_name, "...")
     self.defctrl("DummyOneDController", oned_ctrl_name)
     for axis, oned_name in enumerate(oned_names, 1):
         self.print("Creating 1D channel", oned_name, "...")
-        self.defelem(oned_name , oned_ctrl_name, axis)
+        self.defelem(oned_name, oned_ctrl_name, axis)
 
     self.print("Creating 2D controller", twod_ctrl_name, "...")
     self.defctrl("DummyTwoDController", twod_ctrl_name)
     for axis, twod_name in enumerate(twod_names, 1):
         self.print("Creating 2D channel", twod_name, "...")
-        self.defelem(twod_name , twod_ctrl_name, axis)
-    
+        self.defelem(twod_name, twod_ctrl_name, axis)
+
     self.print("Creating Slit", pm_ctrl_name, "with", gap, ",", offset, "...")
     sl2t, sl2b = motor_names[:2]
-    self.defctrl("Slit", pm_ctrl_name, ["sl2t="+sl2t, "sl2b="+sl2b,
-                 "Gap="+gap, "Offset="+offset])
+    self.defctrl("Slit", pm_ctrl_name, ["sl2t=" + sl2t, "sl2b=" + sl2b,
+                                        "Gap=" + gap, "Offset=" + offset])
 
     self.print("Creating trigger controller", tg_ctrl_name, "...")
     self.defctrl("DummyTriggerGateController", tg_ctrl_name)
     for axis, tg_name in enumerate(tg_names, 1):
         self.print("Creating trigger element", tg_name, "...")
-        self.defelem(tg_name , tg_ctrl_name, axis)
+        self.defelem(tg_name, tg_ctrl_name, axis)
 
     self.print("Creating IORegister controller", ior_ctrl_name, "...")
     self.defctrl("DummyIORController", ior_ctrl_name)
     for axis, ior_name in enumerate(ior_names, 1):
         self.print("Creating IORegister", ior_name, "...")
         self.defelem(ior_name, ior_ctrl_name, axis)
-   
+
     self.print("Creating measurement group", mg_name, "...")
     self.defmeas(mg_name, ct_names)
 
@@ -184,17 +188,18 @@ def sar_demo(self):
         self.setEnv("ActiveMntGrp", mg_name)
 
     controllers = pm_ctrl_name, mot_ctrl_name, ct_ctrl_name, \
-            zerod_ctrl_name, oned_ctrl_name, twod_ctrl_name, \
-            tg_ctrl_name, ior_ctrl_name
+        zerod_ctrl_name, oned_ctrl_name, twod_ctrl_name, \
+        tg_ctrl_name, ior_ctrl_name
     elements = [gap, offset] + motor_names + ct_names + \
-            zerod_names + oned_names + twod_names + tg_names + \
-            ior_names
+        zerod_names + oned_names + twod_names + tg_names + \
+        ior_names
     d = dict(controllers=controllers, elements=elements,
              measurement_groups=[mg_name])
-    
+
     self.setEnv(_ENV, d)
-    
+
     self.print("DONE!")
+
 
 @macro([["motor", Type.Moveable, None, '']])
 def mym2(self, pm):
@@ -203,7 +208,7 @@ def mym2(self, pm):
     self.output(elements)
     self.output(type(pm))
     self.output(type(elements[0]))
- 
+
 
 @macro()
 def clear_sar_demo_hkl(self):

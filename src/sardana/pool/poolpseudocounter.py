@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -85,7 +85,8 @@ class Value(SardanaAttribute):
         return exc_info
 
     def _get_timestamp(self):
-        timestamps = [ value_attr.timestamp for value_attr in self.obj.get_physical_value_attribute_iterator() ]
+        timestamps = [
+            value_attr.timestamp for value_attr in self.obj.get_physical_value_attribute_iterator()]
         if not len(timestamps):
             timestamps = self._local_timestamp,
         return max(timestamps)
@@ -129,7 +130,7 @@ class Value(SardanaAttribute):
             else:
                 l_v, l_u = len(physical_values), len(obj.get_user_elements())
                 if l_v != l_u:
-                    raise IndexError("CalcPseudo(%s): must give %d physical " \
+                    raise IndexError("CalcPseudo(%s): must give %d physical "
                                      "values (you gave %d)" % (obj.name, l_u, l_v))
             ctrl, axis = obj.controller, obj.axis
             result = ctrl.calc(axis, physical_values)
@@ -151,7 +152,7 @@ class Value(SardanaAttribute):
             else:
                 l_v, l_u = len(physical_values), len(obj.get_user_elements())
                 if l_v != l_u:
-                    raise IndexError("CalcAllPseudo(%s): must give %d physical " \
+                    raise IndexError("CalcAllPseudo(%s): must give %d physical "
                                      "values (you gave %d)" % (obj.name, l_u, l_v))
             ctrl, axis = obj.controller, obj.axis
             result = ctrl.calc_all(axis, physical_values)
@@ -197,7 +198,7 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
 
     def serialize(self, *args, **kwargs):
         kwargs = PoolBaseChannel.serialize(self, *args, **kwargs)
-        elements = [ elem.name for elem in self.get_user_elements() ]
+        elements = [elem.name for elem in self.get_user_elements()]
         physical_elements = []
         for elem_list in self.get_physical_elements().values():
             for elem in elem_list:
@@ -287,7 +288,7 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
 
     def get_siblings_values(self, use=None):
         """Get the last values for all siblings.
-        
+
         :param use: the already calculated values. If a sibling is in this
                     dictionary, the value stored here is used instead
         :type use: dict <PoolElement, :class:`~sardana.sardanavalue.SardanaValue` >
@@ -306,7 +307,7 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
 
     def get_value(self, cache=True, propagate=1):
         """Returns the pseudo counter value.
-        
+
         :param cache:
             if ``True`` (default) return value in cache, otherwise read value
             from hardware
@@ -334,6 +335,7 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
     # --------------------------------------------------------------------------
 
     _STD_STATUS = "{name} is {state}\n{ctrl_status}"
+
     def calculate_state_info(self, status_info=None):
         if status_info is None:
             status_info = self._state, self._status
@@ -361,4 +363,3 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
 
         ret = self._calculate_states()
         return ret
-

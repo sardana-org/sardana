@@ -14,7 +14,9 @@ try:
 except AttributeError:
     _fromUtf8 = lambda s: s
 
+
 class Ui_Form(object):
+
     def setupUi(self, Form):
         Form.setObjectName(_fromUtf8("Form"))
         Form.resize(501, 414)
@@ -155,7 +157,8 @@ class Ui_Form(object):
         self.taurusLabel_30.setObjectName(_fromUtf8("taurusLabel_30"))
         self.gridLayout_5.addWidget(self.taurusLabel_30, 2, 1, 1, 1)
         self.taurusValueLineEdit_2 = TaurusValueLineEdit(self.groupBox_4)
-        self.taurusValueLineEdit_2.setObjectName(_fromUtf8("taurusValueLineEdit_2"))
+        self.taurusValueLineEdit_2.setObjectName(
+            _fromUtf8("taurusValueLineEdit_2"))
         self.gridLayout_5.addWidget(self.taurusValueLineEdit_2, 2, 2, 1, 1)
         self.taurusLabel_33 = TaurusLabel(self.groupBox_4)
         self.taurusLabel_33.setObjectName(_fromUtf8("taurusLabel_33"))
@@ -164,7 +167,8 @@ class Ui_Form(object):
         self.taurusLabel_34.setObjectName(_fromUtf8("taurusLabel_34"))
         self.gridLayout_5.addWidget(self.taurusLabel_34, 3, 1, 1, 1)
         self.taurusValueLineEdit_4 = TaurusValueLineEdit(self.groupBox_4)
-        self.taurusValueLineEdit_4.setObjectName(_fromUtf8("taurusValueLineEdit_4"))
+        self.taurusValueLineEdit_4.setObjectName(
+            _fromUtf8("taurusValueLineEdit_4"))
         self.gridLayout_5.addWidget(self.taurusValueLineEdit_4, 3, 2, 1, 1)
         self.taurusLabel_37 = TaurusLabel(self.groupBox_4)
         self.taurusLabel_37.setObjectName(_fromUtf8("taurusLabel_37"))
@@ -173,12 +177,14 @@ class Ui_Form(object):
         self.taurusLabel_38.setObjectName(_fromUtf8("taurusLabel_38"))
         self.gridLayout_5.addWidget(self.taurusLabel_38, 4, 1, 1, 1)
         self.taurusValueLineEdit_6 = TaurusValueLineEdit(self.groupBox_4)
-        self.taurusValueLineEdit_6.setObjectName(_fromUtf8("taurusValueLineEdit_6"))
+        self.taurusValueLineEdit_6.setObjectName(
+            _fromUtf8("taurusValueLineEdit_6"))
         self.gridLayout_5.addWidget(self.taurusValueLineEdit_6, 4, 2, 1, 1)
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setObjectName(_fromUtf8("horizontalLayout_2"))
         self.taurusCommandButton_2 = TaurusCommandButton(self.groupBox_4)
-        self.taurusCommandButton_2.setObjectName(_fromUtf8("taurusCommandButton_2"))
+        self.taurusCommandButton_2.setObjectName(
+            _fromUtf8("taurusCommandButton_2"))
         self.horizontalLayout_2.addWidget(self.taurusCommandButton_2)
         self.cfgMg2 = QtGui.QToolButton(self.groupBox_4)
         self.cfgMg2.setObjectName(_fromUtf8("cfgMg2"))
@@ -200,7 +206,8 @@ class Ui_Form(object):
         self.taurusLabel_28.setObjectName(_fromUtf8("taurusLabel_28"))
         self.gridLayout_4.addWidget(self.taurusLabel_28, 2, 0, 1, 1)
         self.taurusValueLineEdit = TaurusValueLineEdit(self.groupBox_3)
-        self.taurusValueLineEdit.setObjectName(_fromUtf8("taurusValueLineEdit"))
+        self.taurusValueLineEdit.setObjectName(
+            _fromUtf8("taurusValueLineEdit"))
         self.gridLayout_4.addWidget(self.taurusValueLineEdit, 2, 2, 1, 1)
         self.taurusLed = TaurusLed(self.groupBox_3)
         self.taurusLed.setObjectName(_fromUtf8("taurusLed"))
@@ -212,7 +219,8 @@ class Ui_Form(object):
         self.taurusLabel_32.setObjectName(_fromUtf8("taurusLabel_32"))
         self.gridLayout_4.addWidget(self.taurusLabel_32, 3, 1, 1, 1)
         self.taurusValueLineEdit_3 = TaurusValueLineEdit(self.groupBox_3)
-        self.taurusValueLineEdit_3.setObjectName(_fromUtf8("taurusValueLineEdit_3"))
+        self.taurusValueLineEdit_3.setObjectName(
+            _fromUtf8("taurusValueLineEdit_3"))
         self.gridLayout_4.addWidget(self.taurusValueLineEdit_3, 3, 2, 1, 1)
         self.taurusLabel_35 = TaurusLabel(self.groupBox_3)
         self.taurusLabel_35.setObjectName(_fromUtf8("taurusLabel_35"))
@@ -221,12 +229,14 @@ class Ui_Form(object):
         self.taurusLabel_36.setObjectName(_fromUtf8("taurusLabel_36"))
         self.gridLayout_4.addWidget(self.taurusLabel_36, 4, 1, 1, 1)
         self.taurusValueLineEdit_5 = TaurusValueLineEdit(self.groupBox_3)
-        self.taurusValueLineEdit_5.setObjectName(_fromUtf8("taurusValueLineEdit_5"))
+        self.taurusValueLineEdit_5.setObjectName(
+            _fromUtf8("taurusValueLineEdit_5"))
         self.gridLayout_4.addWidget(self.taurusValueLineEdit_5, 4, 2, 1, 1)
         self.horizontalLayout_3 = QtGui.QHBoxLayout()
         self.horizontalLayout_3.setObjectName(_fromUtf8("horizontalLayout_3"))
         self.taurusCommandButton = TaurusCommandButton(self.groupBox_3)
-        self.taurusCommandButton.setObjectName(_fromUtf8("taurusCommandButton"))
+        self.taurusCommandButton.setObjectName(
+            _fromUtf8("taurusCommandButton"))
         self.horizontalLayout_3.addWidget(self.taurusCommandButton)
         self.cfgMg1 = QtGui.QToolButton(self.groupBox_3)
         self.cfgMg1.setObjectName(_fromUtf8("cfgMg1"))
@@ -238,95 +248,184 @@ class Ui_Form(object):
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def retranslateUi(self, Form):
-        Form.setWindowTitle(QtGui.QApplication.translate("Form", "Form", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox.setTitle(QtGui.QApplication.translate("Form", "CTs of CTRL1", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl1/1/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel.setBgRole(QtGui.QApplication.translate("Form", "none", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_2.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl1/1/value", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLed_2.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl1/1/state", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_3.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl1/2/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_3.setBgRole(QtGui.QApplication.translate("Form", "none", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_4.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl1/2/value", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLed_3.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl1/2/state", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_5.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl1/3/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_5.setBgRole(QtGui.QApplication.translate("Form", "none", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_6.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl1/3/value", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLed_4.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl1/3/state", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_7.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl1/4/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_7.setBgRole(QtGui.QApplication.translate("Form", "none", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_8.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl1/4/value", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLed_5.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl1/4/state", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_9.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl1/5/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_9.setBgRole(QtGui.QApplication.translate("Form", "none", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_10.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl1/5/value", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLed_6.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl1/5/state", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_11.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl1/6/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_11.setBgRole(QtGui.QApplication.translate("Form", "none", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_12.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl1/6/value", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLed_7.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl1/6/state", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_2.setTitle(QtGui.QApplication.translate("Form", "CTs of CTRL2", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_13.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl2/1/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_13.setBgRole(QtGui.QApplication.translate("Form", "none", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_14.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl2/1/value", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLed_8.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl2/1/state", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_15.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl2/2/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_15.setBgRole(QtGui.QApplication.translate("Form", "none", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_16.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl2/2/value", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLed_9.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl2/2/state", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_17.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl2/3/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_17.setBgRole(QtGui.QApplication.translate("Form", "none", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_18.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl2/3/value", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLed_10.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl2/3/state", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_19.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl2/4/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_19.setBgRole(QtGui.QApplication.translate("Form", "none", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_20.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl2/4/value", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLed_11.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl2/4/state", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_21.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl2/5/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_21.setBgRole(QtGui.QApplication.translate("Form", "none", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_22.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl2/5/value", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLed_12.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl2/5/state", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_23.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl2/6/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_23.setBgRole(QtGui.QApplication.translate("Form", "none", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_24.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl2/6/value", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLed_13.setModel(QtGui.QApplication.translate("Form", "expchan/dummyctctrl2/6/state", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_4.setTitle(QtGui.QApplication.translate("Form", "MG2", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_26.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg2/elementlist", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_26.setBgRole(QtGui.QApplication.translate("Form", "none", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLed_14.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg2/state", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_29.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg2/integrationtime?configuration=label", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_29.setBgRole(QtGui.QApplication.translate("Form", "none", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_30.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg2/integrationtime", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusValueLineEdit_2.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg2/integrationtime", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_33.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg2/monitorcount?configuration=label", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_33.setBgRole(QtGui.QApplication.translate("Form", "none", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_34.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg2/monitorcount", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusValueLineEdit_4.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg2/monitorcount", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_37.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg2/acquisitionmode?configuration=label", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_37.setBgRole(QtGui.QApplication.translate("Form", "none", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_38.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg2/acquisitionmode", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusValueLineEdit_6.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg2/acquisitionmode", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusCommandButton_2.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg2", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusCommandButton_2.setCommand(QtGui.QApplication.translate("Form", "start", None, QtGui.QApplication.UnicodeUTF8))
-        self.cfgMg2.setText(QtGui.QApplication.translate("Form", "...", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_3.setTitle(QtGui.QApplication.translate("Form", "MG1", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_25.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg1/elementlist", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_25.setBgRole(QtGui.QApplication.translate("Form", "none", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_27.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg1/integrationtime", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_28.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg1/integrationtime?configuration=label", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_28.setBgRole(QtGui.QApplication.translate("Form", "none", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusValueLineEdit.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg1/integrationtime", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLed.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg1/state", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_31.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg1/monitorcount?configuration=label", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_31.setBgRole(QtGui.QApplication.translate("Form", "none", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_32.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg1/monitorcount", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusValueLineEdit_3.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg1/monitorcount", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_35.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg1/acquisitionmode?configuration=label", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_35.setBgRole(QtGui.QApplication.translate("Form", "none", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusLabel_36.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg1/acquisitionmode", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusValueLineEdit_5.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg1/acquisitionmode", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusCommandButton.setModel(QtGui.QApplication.translate("Form", "mntgrp/v3/mg1", None, QtGui.QApplication.UnicodeUTF8))
-        self.taurusCommandButton.setCommand(QtGui.QApplication.translate("Form", "start", None, QtGui.QApplication.UnicodeUTF8))
-        self.cfgMg1.setText(QtGui.QApplication.translate("Form", "...", None, QtGui.QApplication.UnicodeUTF8))
+        Form.setWindowTitle(QtGui.QApplication.translate(
+            "Form", "Form", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setTitle(QtGui.QApplication.translate(
+            "Form", "CTs of CTRL1", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl1/1/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel.setBgRole(QtGui.QApplication.translate(
+            "Form", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_2.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl1/1/value", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLed_2.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl1/1/state", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_3.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl1/2/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_3.setBgRole(QtGui.QApplication.translate(
+            "Form", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_4.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl1/2/value", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLed_3.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl1/2/state", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_5.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl1/3/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_5.setBgRole(QtGui.QApplication.translate(
+            "Form", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_6.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl1/3/value", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLed_4.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl1/3/state", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_7.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl1/4/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_7.setBgRole(QtGui.QApplication.translate(
+            "Form", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_8.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl1/4/value", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLed_5.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl1/4/state", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_9.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl1/5/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_9.setBgRole(QtGui.QApplication.translate(
+            "Form", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_10.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl1/5/value", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLed_6.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl1/5/state", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_11.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl1/6/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_11.setBgRole(QtGui.QApplication.translate(
+            "Form", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_12.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl1/6/value", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLed_7.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl1/6/state", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_2.setTitle(QtGui.QApplication.translate(
+            "Form", "CTs of CTRL2", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_13.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl2/1/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_13.setBgRole(QtGui.QApplication.translate(
+            "Form", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_14.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl2/1/value", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLed_8.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl2/1/state", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_15.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl2/2/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_15.setBgRole(QtGui.QApplication.translate(
+            "Form", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_16.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl2/2/value", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLed_9.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl2/2/state", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_17.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl2/3/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_17.setBgRole(QtGui.QApplication.translate(
+            "Form", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_18.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl2/3/value", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLed_10.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl2/3/state", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_19.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl2/4/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_19.setBgRole(QtGui.QApplication.translate(
+            "Form", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_20.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl2/4/value", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLed_11.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl2/4/state", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_21.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl2/5/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_21.setBgRole(QtGui.QApplication.translate(
+            "Form", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_22.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl2/5/value", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLed_12.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl2/5/state", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_23.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl2/6/value?configuration=dev_alias", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_23.setBgRole(QtGui.QApplication.translate(
+            "Form", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_24.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl2/6/value", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLed_13.setModel(QtGui.QApplication.translate(
+            "Form", "expchan/dummyctctrl2/6/state", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_4.setTitle(QtGui.QApplication.translate(
+            "Form", "MG2", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_26.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg2/elementlist", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_26.setBgRole(QtGui.QApplication.translate(
+            "Form", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLed_14.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg2/state", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_29.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg2/integrationtime?configuration=label", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_29.setBgRole(QtGui.QApplication.translate(
+            "Form", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_30.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg2/integrationtime", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusValueLineEdit_2.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg2/integrationtime", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_33.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg2/monitorcount?configuration=label", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_33.setBgRole(QtGui.QApplication.translate(
+            "Form", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_34.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg2/monitorcount", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusValueLineEdit_4.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg2/monitorcount", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_37.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg2/acquisitionmode?configuration=label", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_37.setBgRole(QtGui.QApplication.translate(
+            "Form", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_38.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg2/acquisitionmode", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusValueLineEdit_6.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg2/acquisitionmode", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusCommandButton_2.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg2", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusCommandButton_2.setCommand(QtGui.QApplication.translate(
+            "Form", "start", None, QtGui.QApplication.UnicodeUTF8))
+        self.cfgMg2.setText(QtGui.QApplication.translate(
+            "Form", "...", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_3.setTitle(QtGui.QApplication.translate(
+            "Form", "MG1", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_25.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg1/elementlist", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_25.setBgRole(QtGui.QApplication.translate(
+            "Form", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_27.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg1/integrationtime", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_28.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg1/integrationtime?configuration=label", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_28.setBgRole(QtGui.QApplication.translate(
+            "Form", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusValueLineEdit.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg1/integrationtime", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLed.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg1/state", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_31.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg1/monitorcount?configuration=label", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_31.setBgRole(QtGui.QApplication.translate(
+            "Form", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_32.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg1/monitorcount", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusValueLineEdit_3.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg1/monitorcount", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_35.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg1/acquisitionmode?configuration=label", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_35.setBgRole(QtGui.QApplication.translate(
+            "Form", "none", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusLabel_36.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg1/acquisitionmode", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusValueLineEdit_5.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg1/acquisitionmode", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusCommandButton.setModel(QtGui.QApplication.translate(
+            "Form", "mntgrp/v3/mg1", None, QtGui.QApplication.UnicodeUTF8))
+        self.taurusCommandButton.setCommand(QtGui.QApplication.translate(
+            "Form", "start", None, QtGui.QApplication.UnicodeUTF8))
+        self.cfgMg1.setText(QtGui.QApplication.translate(
+            "Form", "...", None, QtGui.QApplication.UnicodeUTF8))
 
 from taurus.qt.qtgui.display import TaurusLabel, TaurusLed
 from taurus.qt.qtgui.input import TaurusValueLineEdit
@@ -340,4 +439,3 @@ if __name__ == "__main__":
     ui.setupUi(Form)
     Form.show()
     sys.exit(app.exec_())
-

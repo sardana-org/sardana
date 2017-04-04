@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -38,9 +38,11 @@ from sardana.taurus.core.tango.sardana import AcqTriggerType, AcqMode
 #: A constant defining the controller API version currently supported
 ControllerAPI = 1.1
 
-# synchronization domain: Time means that the configuration parameter will be 
+# synchronization domain: Time means that the configuration parameter will be
 # expressed in the time domain, Position means the motor position domain and
-# Monitor means the count to monitor domain  
+# Monitor means the count to monitor domain
+
+
 class SynchEnum(IntEnum):
 
     @classmethod
@@ -59,6 +61,7 @@ class SynchEnum(IntEnum):
             return __getitem__(cls, domain[1])
         else:
             raise ValueError('Can not convert %s to SynchDomain' % string)
+
 
 class SynchDomain(SynchEnum):
     """Enumeration of synchronization domains.
@@ -107,7 +110,7 @@ class SynchParam(SynchEnum):
 # TODO: convert to to python enums, but having in ming problems with
 # JSON serialization: https://bugs.python.org/issue18264
 # class AcqSynchType(Enumeration):
-# 
+#
 #     Trigger = 0
 #     Gate = 1
 
@@ -133,8 +136,8 @@ class AcqSynch(Enumeration):
                 return AcqSynch.SoftwareTrigger
             else:
                 return AcqSynch.HardwareTrigger
-        elif synch_type is AcqSynchType.Gate: 
-            if software: 
+        elif synch_type is AcqSynchType.Gate:
+            if software:
                 return AcqSynch.SoftwareGate
             else:
                 return AcqSynch.HardwareGate

@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -79,11 +79,11 @@ class ZeroDExpChannel(PoolElementDevice):
             name = self.alias or full_name
             self.zerod = zerod = \
                 self.pool.create_element(type="ZeroDExpChannel", name=name,
-                    full_name=full_name, id=self.Id, axis=self.Axis,
-                    ctrl_id=self.Ctrl_id)
+                                         full_name=full_name, id=self.Id, axis=self.Axis,
+                                         ctrl_id=self.Ctrl_id)
         zerod.add_listener(self.on_zerod_changed)
 
-        ## force a state read to initialize the state attribute
+        # force a state read to initialize the state attribute
         #state = zerod.state
         self.set_state(DevState.ON)
 
@@ -168,7 +168,8 @@ class ZeroDExpChannel(PoolElementDevice):
         quality = None
         if self.get_state() == State.Moving:
             quality = AttrQuality.ATTR_CHANGING
-        self.set_attribute(attr, value=value.value, quality=quality, priority=0)
+        self.set_attribute(attr, value=value.value,
+                           quality=quality, priority=0)
 
     def read_CurrentValue(self, attr):
         zerod = self.zerod
@@ -210,7 +211,8 @@ class ZeroDExpChannel(PoolElementDevice):
 
 
 _DFT_VALUE_INFO = ZeroDController.standard_axis_attributes['Value']
-_DFT_VALUE_TYPE, _DFT_VALUE_FORMAT = to_tango_type_format(_DFT_VALUE_INFO[Type], DataFormat.Scalar)
+_DFT_VALUE_TYPE, _DFT_VALUE_FORMAT = to_tango_type_format(
+    _DFT_VALUE_INFO[Type], DataFormat.Scalar)
 
 
 class ZeroDExpChannelClass(PoolElementDeviceClass):
@@ -226,24 +228,24 @@ class ZeroDExpChannelClass(PoolElementDeviceClass):
 
     #    Command definitions
     cmd_list = {
-        'Start' :   [ [DevVoid, ""], [DevVoid, ""] ],
+        'Start':   [[DevVoid, ""], [DevVoid, ""]],
     }
     cmd_list.update(PoolElementDeviceClass.cmd_list)
 
     #    Attribute definitions
     attr_list = {
-        'ValueBuffer'    : [ [ DevDouble, SPECTRUM, READ, 16 * 1024 ] ],
-        'TimeBuffer'     : [ [ DevDouble, SPECTRUM, READ, 16 * 1024 ] ],
-        'AccumulationType' : [ [ DevString, SCALAR, READ_WRITE ],
-                             { 'Memorized'     : "true",
-                               'label'         : "Accumulation Type",
-                               'Display level' : DispLevel.EXPERT } ],
+        'ValueBuffer': [[DevDouble, SPECTRUM, READ, 16 * 1024]],
+        'TimeBuffer': [[DevDouble, SPECTRUM, READ, 16 * 1024]],
+        'AccumulationType': [[DevString, SCALAR, READ_WRITE],
+                             {'Memorized': "true",
+                              'label': "Accumulation Type",
+                              'Display level': DispLevel.EXPERT}],
     }
     attr_list.update(PoolElementDeviceClass.attr_list)
 
     standard_attr_list = {
-        'Value'          : [ [ _DFT_VALUE_TYPE, SCALAR, READ, ],
-                             { 'abs_change' : '1.0', } ],
+        'Value': [[_DFT_VALUE_TYPE, SCALAR, READ, ],
+                  {'abs_change': '1.0', }],
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
 

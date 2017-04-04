@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -35,7 +35,8 @@ from taurus.qt.qtgui.util.ui import UILoadable
 
 def showDialogConfigureMotor(parent):
     Dialog = Qt.QDialog(parent)
-    Dialog.resize((Qt.QSize(Qt.QRect(0, 0, 310, 309).size()).expandedTo(Dialog.minimumSizeHint())))
+    Dialog.resize((Qt.QSize(Qt.QRect(0, 0, 310, 309).size()
+                            ).expandedTo(Dialog.minimumSizeHint())))
     motorV2 = TaurusMotorV2(Dialog)
     motorV2.setModel(parent.model)
     motorV2.setGeometry(Qt.QRect(10, 10, 291, 291))
@@ -49,9 +50,11 @@ class TaurusMotorH(Qt.QWidget, TaurusBaseWidget):
 
     def __init__(self, parent=None, designMode=False):
         self.call__init__wo_kw(Qt.QWidget, parent)
-        self.call__init__(TaurusBaseWidget, str(self.objectName()), designMode=designMode)
+        self.call__init__(TaurusBaseWidget, str(
+            self.objectName()), designMode=designMode)
         self.loadUi()
-        Qt.QObject.connect(self.ui.config, Qt.SIGNAL("clicked()"), self.configureMotor)
+        Qt.QObject.connect(self.ui.config, Qt.SIGNAL(
+            "clicked()"), self.configureMotor)
 
     def sizeHint(self):
         return Qt.QSize(330, 50)
@@ -83,7 +86,6 @@ class TaurusMotorH(Qt.QWidget, TaurusBaseWidget):
     def resetModel(self):
         self.ui.TaurusGroupBox.resetModel()
 
-
     @Qt.pyqtSignature("getShowText()")
     def getShowText(self):
         return self.ui.TaurusGroupBox.getShowText()
@@ -107,9 +109,11 @@ class TaurusMotorH2(Qt.QWidget, TaurusBaseWidget):
 
     def __init__(self, parent=None, designMode=False):
         self.call__init__wo_kw(Qt.QWidget, parent)
-        self.call__init__(TaurusBaseWidget, str(self.objectName()), designMode=designMode)
+        self.call__init__(TaurusBaseWidget, str(
+            self.objectName()), designMode=designMode)
         self.loadUi()
-        Qt.QObject.connect(self.ui.config, Qt.SIGNAL("clicked()"), self.configureMotor)
+        Qt.QObject.connect(self.ui.config, Qt.SIGNAL(
+            "clicked()"), self.configureMotor)
 
     def sizeHint(self):
         return Qt.QSize(215, 85)
@@ -141,7 +145,6 @@ class TaurusMotorH2(Qt.QWidget, TaurusBaseWidget):
     def resetModel(self):
         self.ui.TaurusGroupBox.resetModel()
 
-
     @Qt.pyqtSignature("getShowText()")
     def getShowText(self):
         return self.ui.TaurusGroupBox.getShowText()
@@ -154,7 +157,6 @@ class TaurusMotorH2(Qt.QWidget, TaurusBaseWidget):
     def resetShowText(self):
         self.ui.TaurusGroupBox.resetShowText()
 
-
     model = Qt.pyqtProperty("QString", getModel, setModel, resetModel)
     showText = Qt.pyqtProperty("bool", getShowText, setShowText, resetShowText)
 
@@ -166,9 +168,11 @@ class TaurusMotorV(Qt.QWidget, TaurusBaseWidget):
 
     def __init__(self, parent=None, designMode=False):
         self.call__init__wo_kw(Qt.QWidget, parent)
-        self.call__init__(TaurusBaseWidget, str(self.objectName()), designMode=designMode)
-        self.loadUi()        
-        Qt.QObject.connect(self.ui.config, Qt.SIGNAL("clicked()"), self.configureMotor)
+        self.call__init__(TaurusBaseWidget, str(
+            self.objectName()), designMode=designMode)
+        self.loadUi()
+        Qt.QObject.connect(self.ui.config, Qt.SIGNAL(
+            "clicked()"), self.configureMotor)
 
     def sizeHint(self):
         return Qt.QSize(120, 145)
@@ -200,7 +204,6 @@ class TaurusMotorV(Qt.QWidget, TaurusBaseWidget):
     def resetModel(self):
         self.ui.TaurusGroupBox.resetModel()
 
-
     @Qt.pyqtSignature("getShowText()")
     def getShowText(self):
         return self.ui.TaurusGroupBox.getShowText()
@@ -213,7 +216,6 @@ class TaurusMotorV(Qt.QWidget, TaurusBaseWidget):
     def resetShowText(self):
         self.ui.TaurusGroupBox.resetShowText()
 
-
     model = Qt.pyqtProperty("QString", getModel, setModel, resetModel)
     showText = Qt.pyqtProperty("bool", getShowText, setShowText, resetShowText)
 
@@ -225,7 +227,8 @@ class TaurusMotorV2(Qt.QWidget, TaurusBaseWidget):
 
     def __init__(self, parent=None, designMode=False):
         self.call__init__wo_kw(Qt.QWidget, parent)
-        self.call__init__(TaurusBaseWidget, str(self.objectName()), designMode=designMode)
+        self.call__init__(TaurusBaseWidget, str(
+            self.objectName()), designMode=designMode)
         self.loadUi()
 
     def sizeHint(self):
@@ -255,7 +258,6 @@ class TaurusMotorV2(Qt.QWidget, TaurusBaseWidget):
     def resetModel(self):
         self.ui.TaurusGroupBox.resetModel()
 
-
     @Qt.pyqtSignature("getShowText()")
     def getShowText(self):
         return self.ui.TaurusGroupBox.getShowText()
@@ -267,7 +269,6 @@ class TaurusMotorV2(Qt.QWidget, TaurusBaseWidget):
     @Qt.pyqtSignature("resetShowText()")
     def resetShowText(self):
         self.ui.TaurusGroupBox.resetShowText()
-
 
     model = Qt.pyqtProperty("QString", getModel, setModel, resetModel)
     showText = Qt.pyqtProperty("bool", getShowText, setShowText, resetShowText)

@@ -20,8 +20,9 @@ import os
 from sardana.macroserver.scan.recorder import DataHandler
 from sardana.macroserver.recorders.storage import NXscan_FileRecorder
 
-from sardana.macroserver.scan.scandata import (ScanData, ScanDataEnvironment, 
+from sardana.macroserver.scan.scandata import (ScanData, ScanDataEnvironment,
                                                ColumnDesc)
+
 
 class DummyEventSource(threading.Thread):
 
@@ -33,18 +34,18 @@ class DummyEventSource(threading.Thread):
 
     def run(self):
         i = 0
-        for v,t in zip(self.values, self.intervals):
+        for v, t in zip(self.values, self.intervals):
             try:
-                idx = range(i, i+len(v))
+                idx = range(i, i + len(v))
                 i += len(v)
                 skip = float('NaN') in v
-            except TypeError: # if v is not a list
+            except TypeError:  # if v is not a list
                 idx = [i]
                 i += 1
                 v = [v]
                 skip = float('NaN') in v
             if skip:
-                continue 
+                continue
             time.sleep(t)
             _dict = dict(data=v, index=idx, label=self.name)
             self.scan_data.addData(_dict)
@@ -52,15 +53,16 @@ class DummyEventSource(threading.Thread):
     def get_obj(self):
         return self
 
-def createScanDataEnvironment(columns, scanDir='/tmp/', 
+
+def createScanDataEnvironment(columns, scanDir='/tmp/',
                               scanFile='data_nxs.hdf5'):
 
     serialno = 1
     env = ScanDataEnvironment(
-            { 'serialno' : serialno,
-                  'user' : "USER_NAME",
-                 'title' : "title_macro" } )
-    
+        {'serialno': serialno,
+         'user': "USER_NAME",
+         'title': "title_macro"})
+
     env['name'] = "env_name"
     env['estimatedtime'] = -1.0
     env['ScanDir'] = scanDir
@@ -74,7 +76,7 @@ def createScanDataEnvironment(columns, scanDir='/tmp/',
 
     # Initialize the data_desc list (and add the point number column)
     data_desc = []
-    column_master = ColumnDesc(name='point_nb', 
+    column_master = ColumnDesc(name='point_nb',
                                label='#Pt No', dtype='int64')
     data_desc.append(column_master)
 
@@ -91,7 +93,7 @@ def main():
     data_handler = DataHandler()
     file_name = "/tmp/data_nxs.hdf5"
     nx_recorder = NXscan_FileRecorder(filename=file_name,
-                                     macro="dscan", overwrite=True)
+                                      macro="dscan", overwrite=True)
     data_handler.addRecorder(nx_recorder)
     scan_dir, scan_file = os.path.split(file_name)
     columns = ['ch1', 'ch2']
@@ -119,6 +121,5 @@ def main():
     ch1 = m['ch1']
     print ch1.nxdata
 
-if __name__=="__main__":
+if __name__ == "__main__":
     main()
-

@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -42,7 +42,8 @@ master_pat = re.compile("|".join([QUOTEDPARAM, SINGQUOTEDPARAM, PARAM, LPAREN,
                                   RPAREN, WS]))
 
 # Tokenizer
-Token = collections.namedtuple("Token", ["type","value"])
+Token = collections.namedtuple("Token", ["type", "value"])
+
 
 def generate_tokens(text):
     scanner = master_pat.scanner(text)
@@ -66,7 +67,7 @@ class ParamParser:
     Inspired on Python Cookbook 3 (chapter 2.19)
     """
 
-    def parse(self,text):
+    def parse(self, text):
         self.tokens = generate_tokens(text)
         self.tok = None             # Last symbol consumed
         self.nexttok = None         # Next symbol tokenized
@@ -77,7 +78,7 @@ class ParamParser:
         """Advance one token ahead"""
         self.tok, self.nexttok = self.nexttok, next(self.tokens, None)
 
-    def _accept(self,toktype):
+    def _accept(self, toktype):
         """Test and consume the next token if it matches toktype"""
         if self.nexttok and self.nexttok.type == toktype:
             self._advance()
@@ -85,7 +86,7 @@ class ParamParser:
         else:
             return False
 
-    def _expect(self,toktype):
+    def _expect(self, toktype):
         """Consume next token if it matches toktype or raise SyntaxError"""
         if not self._accept(toktype):
             raise SyntaxError("Expected " + toktype)

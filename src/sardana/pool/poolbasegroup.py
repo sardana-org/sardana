@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -34,7 +34,7 @@ try:
     from taurus.core.taurusvalidator import AttributeNameValidator as\
         TangoAttributeNameValidator
 except ImportError:
-    #TODO: For Taurus 4 compatibility
+    # TODO: For Taurus 4 compatibility
     from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 
 from sardana import State, ElementType, TYPE_PHYSICAL_ELEMENTS
@@ -57,8 +57,8 @@ class PoolBaseGroup(PoolContainer):
         try:
             self._build_elements()
         except KeyError:
-            self.info("failed to build element information. No problem. " \
-                      "Probably one or more underlying elements have not " \
+            self.info("failed to build element information. No problem. "
+                      "Probably one or more underlying elements have not "
                       "been constructed yet")
 
     def _get_pool(self):
@@ -109,14 +109,16 @@ class PoolBaseGroup(PoolContainer):
             for elem in user_elements:
                 if elem.get_type() == ElementType.External:
                     continue
-                # cannot call get_state(us) here since it may lead to dead lock!
+                # cannot call get_state(us) here since it may lead to dead
+                # lock!
                 si = elem.inspect_state(), elem.inspect_status()
                 state_info[elem] = si
         for elem, elem_state_info in state_info.items():
             elem_type = elem.get_type()
             if elem_type == ElementType.External:
                 continue
-            u_state, u_status = self._calculate_element_state(elem, elem_state_info)
+            u_state, u_status = self._calculate_element_state(
+                elem, elem_state_info)
             if u_state == State.Moving:
                 moving.add(elem)
             elif u_state == State.On:
@@ -139,9 +141,9 @@ class PoolBaseGroup(PoolContainer):
             state = State.Alarm
         elif moving:
             state = State.Moving
-        self._state_statistics = { State.On : on, State.Fault : fault,
-                                   State.Alarm : alarm, State.Moving : moving,
-                                   State.Unknown : unknown, None : none }
+        self._state_statistics = {State.On: on, State.Fault: fault,
+                                  State.Alarm: alarm, State.Moving: moving,
+                                  State.Unknown: unknown, None: none}
         status = "\n".join(status)
         return state, status
 
@@ -189,7 +191,7 @@ class PoolBaseGroup(PoolContainer):
 
     def get_user_element_ids(self):
         """Returns the sequence of user element IDs
-        
+
         :return: the sequence of user element IDs
         :rtype: sequence< :obj:`int`>"""
         return self._user_element_ids
@@ -198,7 +200,7 @@ class PoolBaseGroup(PoolContainer):
 
     def get_user_elements(self):
         """Returns the sequence of user elements
-        
+
         :return: the sequence of user elements
         :rtype: sequence< :class:`~sardana.pool.poolelement.PoolElement`>"""
         if self._pending:
@@ -207,7 +209,7 @@ class PoolBaseGroup(PoolContainer):
 
     def get_user_elements_attribute_iterator(self):
         """Returns an iterator over the main attribute of each user element.
-        
+
         :return: an iterator over the main attribute of each user element.
         :rtype: iter< :class:`~sardana.sardanaattribute.SardanaAttribute` >"""
         for element in self.get_user_elements():
@@ -218,17 +220,17 @@ class PoolBaseGroup(PoolContainer):
 
     def get_user_elements_attribute_sequence(self):
         """Returns a sequence of main attribute of each user element.
-        
+
         In loops use preferably :meth:`get_user_elements_attribute_iterator` for
         performance and memory reasons.
-        
+
         :return: a sequence of main attribute of each user element.
         :rtype: sequence< :class:`~sardana.sardanaattribute.SardanaAttribute` >"""
         return list(self.get_user_elements_attribute_iterator())
 
     def get_user_elements_attribute_map(self):
         """Returns a dictionary of main attribute of each user element.
-        
+
         :return: a dictionary of main attribute of each user element.
         :rtype: dict< :class:`~sardana.pool.poolelement.PoolElement`, 
                 :class:`~sardana.sardanaattribute.SardanaAttribute` >"""
@@ -240,7 +242,7 @@ class PoolBaseGroup(PoolContainer):
     def get_physical_elements(self):
         """Returns a dictionary or physical elements where key is a controller
         object and value is a sequence of pool elements
-        
+
         :return: a dictionary of physical elements
         :rtype: dict< :class:`~sardana.pool.poolcontroller.PoolController,
                 sequence<:class:`~sardana.pool.poolelement.PoolElement`>"""
@@ -250,9 +252,9 @@ class PoolBaseGroup(PoolContainer):
 
     def get_physical_elements_iterator(self):
         """Returns an iterator over the physical elements.
-        
+
         .. warning:: The order is non deterministic.
-        
+
         :return: an iterator over the physical elements.
         :rtype: iter<:class:`~sardana.pool.poolelement.PoolElement` >"""
         for _, elements in self.get_physical_elements().items():
@@ -261,9 +263,9 @@ class PoolBaseGroup(PoolContainer):
 
     def get_physical_elements_attribute_iterator(self):
         """Returns an iterator over the main attribute of each physical element.
-        
+
         .. warning:: The order is non deterministic.
-        
+
         :return: an iterator over the main attribute of each physical element.
         :rtype: iter< :class:`~sardana.sardanaattribute.SardanaAttribute` >"""
         for element in self.get_physical_elements_iterator():
@@ -348,7 +350,6 @@ class PoolBaseGroup(PoolContainer):
         self._user_elements = None
         self._user_element_ids = None
         self._physical_elements = None
-
 
     # --------------------------------------------------------------------------
     # stop

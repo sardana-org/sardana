@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -48,31 +48,31 @@ from taurus.core.util.containers import CaselessDict
 from taurus.core.util.codecs import CodecFactory
 
 PoolElementType = Enumeration("PoolElementType",
-    ("0D", "1D", "2D", "Communication", "CounterTimer", "IORegister",
-      "Motor", "PseudoCounter", "PseudoMotor", "TriggerGate"))
+                              ("0D", "1D", "2D", "Communication", "CounterTimer", "IORegister",
+                               "Motor", "PseudoCounter", "PseudoMotor", "TriggerGate"))
 
 ChannelView = Enumeration("ChannelView",
-    ("Channel", "Enabled", "Output", "PlotType", "PlotAxes", "Timer",
-     "Monitor", "Synchronization", "Conditioning", "Normalization", "NXPath",
-     "Shape", "DataType",
-     "Unknown", "Synchronizer"))
+                          ("Channel", "Enabled", "Output", "PlotType", "PlotAxes", "Timer",
+                           "Monitor", "Synchronization", "Conditioning", "Normalization", "NXPath",
+                           "Shape", "DataType",
+                           "Unknown", "Synchronizer"))
 
 PlotType = Enumeration("PlotType", ("No", "Spectrum", "Image"))
 
 Normalization = Enumeration("Normalization", ("No", "Avg", "Integ"))
 
 #: an enumeration describing all possible acquisition trigger types
-AcqTriggerType = Enumeration("AcqTriggerType", (\
+AcqTriggerType = Enumeration("AcqTriggerType", (
     "Software",  # channel triggered by software - start and stop by software
-    "Trigger", # channel triggered by HW - start by external
+    "Trigger",  # channel triggered by HW - start by external
     "Gate",  # channel triggered by HW - start and stop by external
     "Unknown"))
 
 #: an enumeration describing all possible acquisition mode types
-AcqMode = Enumeration("AcqMode", ( \
+AcqMode = Enumeration("AcqMode", (
     "Timer",
     "Monitor",
-    "Unknown") )
+    "Unknown"))
 
 
 class BaseSardanaElement(object):
@@ -119,8 +119,8 @@ class BaseSardanaElement(object):
         return kwargs
 
     def str(self, *args, **kwargs):
-        #TODO change and check which is the active protocol to serialize
-        #acordingly
+        # TODO change and check which is the active protocol to serialize
+        # acordingly
         return CodecFactory().encode(('json', self.serialize(*args, **kwargs)))
 
     def getObj(self):
@@ -128,7 +128,6 @@ class BaseSardanaElement(object):
         if obj is None:
             self._object = obj = self._manager.getObject(self)
         return obj
-
 
 
 class BaseSardanaElementContainer:
@@ -147,7 +146,7 @@ class BaseSardanaElementContainer:
         elem_type = elem.getType()
         elem_full_name = elem.full_name
 
-        #update type_elems
+        # update type_elems
         type_elems = self._type_elems_dict.get(elem_type)
         if type_elems is None:
             self._type_elems_dict[elem_type] = type_elems = CaselessDict()
@@ -157,7 +156,8 @@ class BaseSardanaElementContainer:
         for interface in elem.interfaces:
             interface_elems = self._interfaces_dict.get(interface)
             if interface_elems is None:
-                self._interfaces_dict[interface] = interface_elems = CaselessDict()
+                self._interfaces_dict[
+                    interface] = interface_elems = CaselessDict()
             interface_elems[elem_full_name] = elem
 
     def removeElement(self, e):
@@ -236,7 +236,10 @@ class BaseSardanaElementContainer:
 #
 # THIS IS USED FOR TEST PURPOSES ONLY. DO NOT USE IT OUTSIDE SARDANA TESTS
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+
+
 class PropertyInfo():
+
     def __init__(self, name, type, format, default_value=None):
         self._name = name
         self._type = type
@@ -303,22 +306,32 @@ class ControllerClassInfo(object):
     def get_properties(self):
         properties = []
         # fake data ######################
-        properties.append(PropertyInfo("my parameter", "string", "0D", "deviceName"))
+        properties.append(PropertyInfo(
+            "my parameter", "string", "0D", "deviceName"))
         properties.append(PropertyInfo("asdsadasd", "integer", "0D", 5))
         properties.append(PropertyInfo("boollll0", "boolean", "0D", False))
         properties.append(PropertyInfo("boollll0", "boolean", "0D", True))
         properties.append(PropertyInfo("boollll0", "boolean", "0D", False))
         properties.append(PropertyInfo("number1", "float", "0D", 3.5))
         properties.append(PropertyInfo("string2", "string", "0D", "hehe"))
-        properties.append(PropertyInfo("tableIntegerD1", "integer", "1D", [1, 2, 3]))
-        properties.append(PropertyInfo("tablestringD1", "string", "1D", ["aaaa", "bbb", "ccc"]))
-        properties.append(PropertyInfo("tablefloatD1", "float", "1D", [1.0, 2.5, 3.6]))
-        properties.append(PropertyInfo("tablebooleanD1", "boolean", "1D", [True, False, True, False]))
-        properties.append(PropertyInfo("tablebleintegerD1", "integer", "1D", [1, 2, 3]))
-        properties.append(PropertyInfo("tablebooleanD2", "boolean", "2D", [ [True, False, True], [True, True, True], [False, False, False] ]))
-        properties.append(PropertyInfo("tableinteger2", "integer", "2D", [ [1, 2, 3], [11, 22, 33], [-10, -20, -30] ]))
-        properties.append(PropertyInfo("tablefloatD2", "float", "2D", [ [0.5, 0.6, 0.8], [0.4, 0.0, 0.333333], [-0.1111, 1, 123123.6] ]))
-        properties.append(PropertyInfo("tablestringD2", "string", "2D", [ ["aaaa", "bbb", "ccc"], ["aaaa2", "bbb2", "ccc2"], ["aaaa3", "bbb3", "ccc3"] ]))
+        properties.append(PropertyInfo(
+            "tableIntegerD1", "integer", "1D", [1, 2, 3]))
+        properties.append(PropertyInfo(
+            "tablestringD1", "string", "1D", ["aaaa", "bbb", "ccc"]))
+        properties.append(PropertyInfo(
+            "tablefloatD1", "float", "1D", [1.0, 2.5, 3.6]))
+        properties.append(PropertyInfo("tablebooleanD1",
+                                       "boolean", "1D", [True, False, True, False]))
+        properties.append(PropertyInfo(
+            "tablebleintegerD1", "integer", "1D", [1, 2, 3]))
+        properties.append(PropertyInfo("tablebooleanD2", "boolean", "2D", [
+                          [True, False, True], [True, True, True], [False, False, False]]))
+        properties.append(PropertyInfo("tableinteger2", "integer", "2D", [
+                          [1, 2, 3], [11, 22, 33], [-10, -20, -30]]))
+        properties.append(PropertyInfo("tablefloatD2", "float", "2D", [
+                          [0.5, 0.6, 0.8], [0.4, 0.0, 0.333333], [-0.1111, 1, 123123.6]]))
+        properties.append(PropertyInfo("tablestringD2", "string", "2D", [
+                          ["aaaa", "bbb", "ccc"], ["aaaa2", "bbb2", "ccc2"], ["aaaa3", "bbb3", "ccc3"]]))
 
         return properties
 
@@ -350,14 +363,14 @@ class ControllerInfo(object):
         return self._ctrl_class_info.get_max_elements()
 
     def is_axis_free(self, axis):
-        #fake data
+        # fake data
         if axis == 3:
             return False
         else:
             return True
 
     def is_name_free(self, name):
-        #fake data
+        # fake data
         if name == "asd":
             return False
         else:
@@ -371,6 +384,8 @@ class ControllerInfo(object):
 #
 # THIS IS USED FOR TEST PURPOSES ONLY. DO NOT USE IT OUTSIDE SARDANA TESTS
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+
+
 class Pool(object):
 
     def __init__(self, sardana, name, poolpath, version, alias=None, device_name=None):
@@ -397,9 +412,11 @@ class Pool(object):
         #fake data ########################
         data = []
         for i in range(5):
-            data.append(ControllerClassInfo("motorController" + str(i), PoolElementType.Motor, None))
+            data.append(ControllerClassInfo("motorController" +
+                                            str(i), PoolElementType.Motor, None))
         for i in range(5):
-            data.append(ControllerClassInfo("counterTimerController" + str(i), PoolElementType.CounterTimer, None))
+            data.append(ControllerClassInfo(
+                "counterTimerController" + str(i), PoolElementType.CounterTimer, None))
 
         return data
 
@@ -407,9 +424,11 @@ class Pool(object):
         ctrl_classes = self.get_controller_class_infos()
         data = []
         for i in range(2):
-            data.append(ControllerInfo("My_motor_ctrl_" + str(i), ctrl_classes[i]))
+            data.append(ControllerInfo(
+                "My_motor_ctrl_" + str(i), ctrl_classes[i]))
         for i in range(2):
-            data.append(ControllerInfo("My_ct_ctrl_" + str(i), ctrl_classes[i + 5]))
+            data.append(ControllerInfo(
+                "My_ct_ctrl_" + str(i), ctrl_classes[i + 5]))
         return data
 
     def create_controller(self, controller_class_info, name, properties):
@@ -474,6 +493,8 @@ class MacroServer(object):
 #
 # THIS IS USED FOR TEST PURPOSES ONLY. DO NOT USE IT OUTSIDE SARDANA TESTS
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+
+
 class Door(object):
 
     def __init__(self, alias=None, device_name=None):
@@ -488,7 +509,7 @@ class Door(object):
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 class Sardana(object):
 
-    def __init__(self, sardana_db , name, device_name=None):
+    def __init__(self, sardana_db, name, device_name=None):
         self._sardana_db = sardana_db
         self._name = name
         self._device_name = device_name
@@ -510,7 +531,8 @@ class Sardana(object):
             pass
         elif dev_class_name == "MacroServer":
             ms_dev_name = dev_name
-            ms_prop_list = map(str.lower, db.get_device_property_list(ms_dev_name, "*"))
+            ms_prop_list = map(
+                str.lower, db.get_device_property_list(ms_dev_name, "*"))
             ms_props = db.get_device_property(ms_dev_name, ms_prop_list)
             ms_name = dev_info.server().serverInstance()
             ms_alias = dev_info.alias()
@@ -518,12 +540,15 @@ class Sardana(object):
                              ms_props.get("version"), ms_alias, ms_dev_name)
             self._macroservers.append(ms)
             for pool_dev_name in ms_props.get("poolnames", ()):
-                pool_prop_list = map(str.lower, db.get_device_property_list(pool_dev_name, "*"))
-                pool_props = db.get_device_property(pool_dev_name, pool_prop_list)
+                pool_prop_list = map(
+                    str.lower, db.get_device_property_list(pool_dev_name, "*"))
+                pool_props = db.get_device_property(
+                    pool_dev_name, pool_prop_list)
                 pool_dev_info = cache.devices()[pool_dev_name]
                 pool_name = pool_dev_info.server().serverInstance()
                 pool_alias = pool_dev_info.alias()
-                pool = Pool(self, pool_name, pool_props.get("poolpath"), pool_props.get("version"), pool_alias, pool_dev_name)
+                pool = Pool(self, pool_name, pool_props.get(
+                    "poolpath"), pool_props.get("version"), pool_alias, pool_dev_name)
                 self._pools.append(pool)
 
     def get_name(self):
@@ -560,8 +585,10 @@ class Sardana(object):
         if alias:
             db.put_device_alias(device_name, alias)
 
-        db.put_device_property(device_name, {"PoolPath" : poolpath, "Version": version})
-        pool = Pool(self, name, poolpath, version, alias=alias, device_name=device_name)
+        db.put_device_property(
+            device_name, {"PoolPath": poolpath, "Version": version})
+        pool = Pool(self, name, poolpath, version,
+                    alias=alias, device_name=device_name)
         self._pools.append(pool)
         db.cache().refresh()
         return pool
@@ -584,8 +611,10 @@ class Sardana(object):
         if alias:
             db.put_device_alias(device_name, alias)
 
-        db.put_device_property(device_name, {"MacroPath" : macropath, "Version": version, "PoolNames":pool_names})
-        ms = MacroServer(self, name, macropath, pool_names, version, alias=alias, device_name=device_name)
+        db.put_device_property(device_name, {
+                               "MacroPath": macropath, "Version": version, "PoolNames": pool_names})
+        ms = MacroServer(self, name, macropath, pool_names,
+                         version, alias=alias, device_name=device_name)
         self._macroservers.append(ms)
         db.cache().refresh()
         return ms
@@ -604,6 +633,8 @@ class Sardana(object):
 #
 # THIS IS USED FOR TEST PURPOSES ONLY. DO NOT USE IT OUTSIDE SARDANA TESTS
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+
+
 class DatabaseSardana(object):
     """A class containning all sardanas for a single database"""
 
@@ -618,7 +649,8 @@ class DatabaseSardana(object):
         for service, dev in services.items():
             service_type, service_instance = service.split("/", 1)
             try:
-                sardanas[service_instance] = Sardana(self, service_instance, dev)
+                sardanas[service_instance] = Sardana(
+                    self, service_instance, dev)
             except:
                 pass
 
@@ -651,6 +683,8 @@ class DatabaseSardana(object):
 #
 # THIS IS USED FOR TEST PURPOSES ONLY. DO NOT USE IT OUTSIDE SARDANA TESTS
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+
+
 class SardanaManager(Singleton, Logger):
 
     def __init__(self):
@@ -699,16 +733,13 @@ class SardanaManager(Singleton, Logger):
     def get_default_pool_path(cls):
         pathList = []
         pathList.append("/homelocal/sicilia/lib/poolcontrollers")
-        pathList.append("/homelocal/sicilia/lib/python/site-packages/poolcontrollers")
+        pathList.append(
+            "/homelocal/sicilia/lib/python/site-packages/poolcontrollers")
         return pathList
 
     @classmethod
     def get_default_ms_path(cls):
         pathList = []
-        pathList.append("/homelocal/sicilia/lib/python/site-packages/macroserver/macros")
+        pathList.append(
+            "/homelocal/sicilia/lib/python/site-packages/macroserver/macros")
         return pathList
-
-
-
-
-

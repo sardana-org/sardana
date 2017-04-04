@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -92,7 +92,7 @@ class TangoStatusCb(TangoAttrCb):
             self._tango_macro_executor._done_event.set()
         # make sure we get it as string since PyTango 7.1.4 returns a buffer
         # object and json.loads doesn't support buffer objects (only str)
-        
+
         attr_value = getattr(event_data, 'attr_value')
         if attr_value is None:
             return
@@ -111,13 +111,13 @@ class TangoStatusCb(TangoAttrCb):
             self._tango_macro_executor._exception = macro_status.get(
                 'exc_type')
             if state in self.START_STATES:
-                #print 'TangoStatusCb.push_event: setting _started_event'
+                # print 'TangoStatusCb.push_event: setting _started_event'
                 self._tango_macro_executor._started_event.set()
             elif state in self.DONE_STATES:
                 # print 'TangoStatusCb.push_event: setting _done_event %s'
                 # %(state)
                 self._tango_macro_executor._done_event.set()
-            #else:
+            # else:
             #    print 'State %s' %(state)
             self._tango_macro_executor._state_buffer.append(state)
 
@@ -157,7 +157,7 @@ class TangoMacroExecutor(BaseMacroExecutor):
 
     def _wait(self, timeout):
         '''reimplemented from :class:`BaseMacroExecutor`'''
-        #TODO: In case of timeout = inf if the macro excecutor run a macro
+        # TODO: In case of timeout = inf if the macro excecutor run a macro
         # with wrong parameters it'll never awake of the done_event wait
         # Pending to remove this comment when Sardana resolves the bug.
         if self._done_event:
@@ -168,7 +168,7 @@ class TangoMacroExecutor(BaseMacroExecutor):
             # - in case of stopping a macro, the events are emitted: first
             #   finish and then stop
             # TODO: base the wait condition on the events from door state
-            # attribute 
+            # attribute
             time.sleep(3)
             self._door.unsubscribe_event(self._status_id)
 

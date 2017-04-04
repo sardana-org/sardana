@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -62,10 +62,11 @@ def @macro_name@(self):
 
 """
 
+
 class MacroLibrary(SardanaLibrary):
     """Object representing a python module containing macro classes and/or 
     macro functions. Public members:
-        
+
         - module - reference to python module
         - file_path - complete (absolute) path (with file name at the end)
         - file_name - file name (including file extension)
@@ -289,7 +290,7 @@ class MacroFunction(SardanaFunction, Parameterizable):
                     i -= 1
         else:
             param_def.append(
-                (varargs , [[ varargs, Type.Any, None, varargs + " parameter"]],
+                (varargs, [[varargs, Type.Any, None, varargs + " parameter"]],
                  None, "list of " + varargs))
         return param_def
 
@@ -305,4 +306,3 @@ class MacroFunction(SardanaFunction, Parameterizable):
 
     def get_hints_definition(self):
         return self.function.hints or ()
-

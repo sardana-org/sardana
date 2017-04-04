@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -32,9 +32,11 @@ from sardana.macroserver.macros.test import RunMacroTestCase, testRun, getCTs,\
 CTRL_NAME1 = getControllers()[0]
 CT_NAME1, CT_NAME2 = getCTs()[:2]
 
+
 class ExpertTest(RunMacroTestCase, unittest.TestCase):
     """Test case for some of the expert macros.
     """
+
     def test_expert(self):
         CTRL_NAME = "unittestmotctrl01"
         MOT_NAME1 = "unittestmot01"
@@ -56,7 +58,7 @@ class ExpertTest(RunMacroTestCase, unittest.TestCase):
                             macro_params=[MOT_NAME1, MOT_NAME2],
                             wait_timeout=1)
             self.macro_runs(macro_name="udefctrl",
-                            macro_params = [CTRL_NAME],
+                            macro_params=[CTRL_NAME],
                             wait_timeout=1)
         except Exception, e:
             import taurus
@@ -68,6 +70,7 @@ class ExpertTest(RunMacroTestCase, unittest.TestCase):
 class MeasTest(RunMacroTestCase, unittest.TestCase):
     """Test case for measurement group related expert macros.
     """
+
     def test_meas(self):
         MNTGRP_NAME = "unittestmntgrp01"
         try:
@@ -81,7 +84,7 @@ class MeasTest(RunMacroTestCase, unittest.TestCase):
                            " exception during the test.")
             raise e
 
-#TODO: improve this test: not all sardana controller implement SendToCtrl
+# TODO: improve this test: not all sardana controller implement SendToCtrl
 # @testRun(macro_params=[CTRL_NAME1, "blabla"], wait_timeout=1)
 # class Send2ctrlTest(RunMacroTestCase, unittest.TestCase):
 #     """Test case for send2ctrl macro.

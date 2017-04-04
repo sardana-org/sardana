@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -39,7 +39,7 @@ try:
     from taurus.core.taurusvalidator import AttributeNameValidator as\
         TangoAttributeNameValidator
 except ImportError:
-    #TODO: For Taurus 4 compatibility
+    # TODO: For Taurus 4 compatibility
     from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 from taurus.core.util.containers import CaselessDict
 
@@ -142,7 +142,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         PoolObject.__init__(self, full_name=full_name, name=name, id=InvalidId,
                             pool=self, elem_type=ElementType.Pool)
         self._monitor = PoolMonitor(self, "PMonitor", auto_start=False)
-        #self.init_local_logging()
+        # self.init_local_logging()
         ControllerManager().set_pool(self)
 
     # TODO: not ready to use. path must be the same as the one calculated in
@@ -232,9 +232,9 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         return self._motion_loop_states_per_position
 
     motion_loop_states_per_position = property(get_motion_loop_states_per_position,
-        set_motion_loop_states_per_position,
-        doc="Number of State reads done before doing a position read in the "
-            "motion loop")
+                                               set_motion_loop_states_per_position,
+                                               doc="Number of State reads done before doing a position read in the "
+                                               "motion loop")
 
     def set_acq_loop_sleep_time(self, acq_loop_sleep_time):
         self._acq_loop_sleep_time = acq_loop_sleep_time
@@ -253,9 +253,9 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         return self._acq_loop_states_per_value
 
     acq_loop_states_per_value = property(get_acq_loop_states_per_value,
-        set_acq_loop_states_per_value,
-        doc="Number of State reads done before doing a value read in the "
-            "acquisition loop")
+                                         set_acq_loop_states_per_value,
+                                         doc="Number of State reads done before doing a value read in the "
+                                         "acquisition loop")
 
     def set_drift_correction(self, drift_correction):
         self._drift_correction = drift_correction
@@ -266,6 +266,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
     drift_correction = property(get_drift_correction,
                                 set_drift_correction,
                                 doc="drift correction")
+
     @property
     def monitor(self):
         return self._monitor
@@ -305,7 +306,8 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         libs = self.get_controller_libs()
         ret = []
         for ctrl_lib_info in libs:
-            elem = "%s (%s)" % (ctrl_lib_info.getName(), ctrl_lib_info.getFileName())
+            elem = "%s (%s)" % (ctrl_lib_info.getName(),
+                                ctrl_lib_info.getFileName())
             ret.append(elem)
         return ret
 
@@ -314,9 +316,11 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         ret = []
         for ctrl_class_info in ctrl_classes:
             types = ctrl_class_info.getTypes()
-            types_str = [ TYPE_MAP_OBJ[t].name for t in types if t != ElementType.Controller ]
+            types_str = [TYPE_MAP_OBJ[
+                t].name for t in types if t != ElementType.Controller]
             types_str = ", ".join(types_str)
-            elem = "%s (%s) %s" % (ctrl_class_info.getName(), ctrl_class_info.getFileName(), types_str)
+            elem = "%s (%s) %s" % (ctrl_class_info.getName(),
+                                   ctrl_class_info.getFileName(), types_str)
             ret.append(elem)
         return ret
 
@@ -332,7 +336,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         else:
             objs = self.get_elements_by_type(obj_type)
         name = self.full_name
-        return [ obj.str(pool=name) for obj in objs ]
+        return [obj.str(pool=name) for obj in objs]
 
     def get_elements_info(self, obj_type=None):
         if obj_type is None:
@@ -347,7 +351,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         else:
             objs = self.get_elements_by_type(obj_type)
         name = self.full_name
-        return [ obj.serialize(pool=name) for obj in objs ]
+        return [obj.serialize(pool=name) for obj in objs]
 
     def get_acquisition_elements_info(self):
         ret = []
@@ -454,9 +458,9 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
                 raise Exception("Cannot create %s in %s controller"
                                 % (etype, ctrl_type_str))
 
-        #check if controller is online
-        #check if axis is allowed
-        #create the element in the controller
+        # check if controller is online
+        # check if axis is allowed
+        # create the element in the controller
 
         eid = kwargs.get('id')
         if eid is None:
@@ -648,8 +652,8 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
             new_elements.extend(new_lib.get_controllers())
             new_elements.append(new_lib)
         else:
-            new_names = set([ ctrl.name for ctrl in new_lib.get_controllers() ])
-            old_names = set([ ctrl.name for ctrl in old_lib.get_controllers() ])
+            new_names = set([ctrl.name for ctrl in new_lib.get_controllers()])
+            old_names = set([ctrl.name for ctrl in old_lib.get_controllers()])
             changed_names = set.intersection(new_names, old_names)
             deleted_names = old_names.difference(new_names)
             new_names = new_names.difference(old_names)
@@ -661,8 +665,8 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
             for deleted_name in deleted_names:
                 deleted_elements.append(old_lib.get_controller(deleted_name))
 
-        evt = { "new" : new_elements, "change" : changed_elements,
-                "del" : deleted_elements }
+        evt = {"new": new_elements, "change": changed_elements,
+               "del": deleted_elements}
 
         self.fire_event(EventType("ElementsChanged"), evt)
 
@@ -680,7 +684,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         elem_type_map = self.get_element_type_map()
         for elem_type in TYPE_PHYSICAL_ELEMENTS:
             physical_elems_id_map.update(elem_type_map[elem_type])
-        #TODO
+        # TODO
 
     def _build_element_id_dependencies(self, elem_id, graph=None):
         if graph is None:

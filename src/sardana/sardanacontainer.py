@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -65,7 +65,7 @@ class SardanaContainer(object):
 
     def add_element(self, e):
         """Adds a new :class:`pool.PoolObject` to this container
-           
+
            :param e: the pool element to be added
            :type e: :class:`pool.PoolObject`
         """
@@ -82,10 +82,10 @@ class SardanaContainer(object):
 
     def remove_element(self, e):
         """Removes the :class:`pool.PoolObject` from this container
-           
+
            :param e: the pool object to be removed
            :type e: :class:`pool.PoolObject`
-           
+
            :throw: KeyError
         """
         name, full_name, id = e.get_name(), e.get_full_name(), e.get_id()
@@ -98,7 +98,7 @@ class SardanaContainer(object):
 
     def get_element_id_map(self):
         """Returns a reference to the internal pool object ID map
-           
+
            :return: the internal pool object ID map
            :rtype: dict<id, pool.PoolObject>
         """
@@ -106,7 +106,7 @@ class SardanaContainer(object):
 
     def get_element_name_map(self):
         """Returns a reference to the internal pool object name map
-           
+
            :return: the internal pool object name map
            :rtype: dict<str, pool.PoolObject>
         """
@@ -114,7 +114,7 @@ class SardanaContainer(object):
 
     def get_element_type_map(self):
         """Returns a reference to the internal pool object type map
-           
+
            :return: the internal pool object type map
            :rtype: dict<pool.ElementType, dict<id, pool.PoolObject>>
         """
@@ -122,14 +122,14 @@ class SardanaContainer(object):
 
     def get_element(self, **kwargs):
         """Returns a reference to the requested pool object
-           
+
            :param kwargs: if key 'id' given: search by ID
                           else if key 'full_name' given: search by full name
                           else if key 'name' given: search by name
-           
+
            :return: the pool object 
            :rtype: pool.PoolObject
-           
+
            :throw: KeyError
         """
         if kwargs.has_key("id"):
@@ -145,13 +145,13 @@ class SardanaContainer(object):
 
     def get_element_by_name(self, name, **kwargs):
         """Returns a reference to the requested pool object
-           
+
            :param name: pool object name
            :type name: str
-           
+
            :return: the pool object 
            :rtype: pool.PoolObject
-           
+
            :throw: KeyError
         """
         ret = self._element_names.get(name)
@@ -161,29 +161,30 @@ class SardanaContainer(object):
 
     def get_element_by_full_name(self, full_name, **kwargs):
         """Returns a reference to the requested pool object
-           
+
            :param name: pool object full name
            :type name: str
-           
+
            :return: the pool object 
            :rtype: pool.PoolObject
-           
+
            :throw: KeyError
         """
         ret = self._element_full_names.get(full_name)
         if ret is None:
-            raise KeyError("There is no element with full name '%s'" % full_name)
+            raise KeyError(
+                "There is no element with full name '%s'" % full_name)
         return ret
 
     def get_element_by_id(self, id, **kwargs):
         """Returns a reference to the requested pool object
-           
+
            :param id: pool object ID
            :type id: int
-           
+
            :return: the pool object 
            :rtype: pool.PoolObject
-           
+
            :throw: KeyError
         """
         ret = self._element_ids.get(id)
@@ -193,32 +194,32 @@ class SardanaContainer(object):
 
     def get_elements_by_type(self, t):
         """Returns a list of all pool objects of the given type
-           
+
            :param t: element type
            :type t: pool.ElementType
-           
+
            :return: list of pool objects
            :rtype: seq<pool.PoolObject>
         """
         elem_types_dict = self._element_types.get(t)
         if elem_types_dict is None:
-            return  []
+            return []
         return elem_types_dict.values()
 
     def get_element_names_by_type(self, t):
         """Returns a list of all pool object names of the given type
-           
+
            :param t: element type
            :type t: pool.ElementType
-           
+
            :return: list of pool object names
            :rtype: seq<str>
         """
-        return [ elem.get_name() for elem in self.get_elements_by_type(t) ]
+        return [elem.get_name() for elem in self.get_elements_by_type(t)]
 
     def rename_element(self, old_name, new_name):
         """Rename an object
-           
+
            :param old_name: old object name
            :type old_name: str
            :param new_name: new object name

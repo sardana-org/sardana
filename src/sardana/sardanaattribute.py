@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -128,7 +128,8 @@ class SardanaAttribute(EventGenerator):
         if isinstance(value, SardanaValue):
             rvalue = value
         else:
-            rvalue = SardanaValue(value=value, exc_info=exc_info, timestamp=timestamp)
+            rvalue = SardanaValue(
+                value=value, exc_info=exc_info, timestamp=timestamp)
         self._r_value = rvalue
         self.fire_read_event(propagate=propagate)
 
@@ -282,7 +283,8 @@ class SardanaAttribute(EventGenerator):
     obj = property(get_obj, "container object for this attribute")
     value_obj = property(get_value_obj)
     write_value_obj = property(get_write_value_obj)
-    value = property(get_value, set_value, "current read value for this attribute")
+    value = property(get_value, set_value,
+                     "current read value for this attribute")
     w_value = property(get_write_value, set_write_value,
                        "current write value for this attribute")
     timestamp = property(get_timestamp, doc="the read timestamp")
@@ -300,11 +302,13 @@ class SardanaAttribute(EventGenerator):
 
     def __str__(self):
         if self.has_value():
-            value = "{0} at {1}".format(self.value, datetime.datetime.fromtimestamp(self.timestamp))
+            value = "{0} at {1}".format(
+                self.value, datetime.datetime.fromtimestamp(self.timestamp))
         else:
             value = "-----"
         if self.has_write_value():
-            w_value = "{0} at {1}".format(self.w_value, datetime.datetime.fromtimestamp(self.w_timestamp))
+            w_value = "{0} at {1}".format(
+                self.w_value, datetime.datetime.fromtimestamp(self.w_timestamp))
         else:
             w_value = "-----"
 
@@ -364,6 +368,7 @@ class BufferedAttribute(SardanaAttribute):
         (up to and including removal of the module) may occur if
         deemed necessary by the core developers.
     """
+
     def __init__(self, *args, **kwargs):
         SardanaAttribute.__init__(self, *args, **kwargs)
         self._r_value_chunk = []
@@ -436,4 +441,3 @@ class SardanaAttributeConfiguration(object):
         self.range = self.NoRange
         self.alarm = self.NoRange
         self.warning = self.NoRange
-

@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -44,13 +44,13 @@ from taurus.core.util.singleton import Singleton
 from .sardanamanager import SardanaIDManager
 
 _MINIMUM_EXCLUDE = [
-'sys',
-'os.path',
-'__builtin__',
-'__main__',
-'sardana',
-'taurus',
-'PyTango'
+    'sys',
+    'os.path',
+    '__builtin__',
+    '__main__',
+    'sardana',
+    'taurus',
+    'PyTango'
 ]
 
 
@@ -86,7 +86,7 @@ class PathManager(SardanaIDManager):
 
     def add_python_path(self, path):
         """Adds a new path to the python path.
-        
+
         :param path:
             a sequence of strings each string may contain an absolute path or a
             list of ":" or "\n" separated absolute paths
@@ -111,7 +111,7 @@ class PathManager(SardanaIDManager):
 
     def remove_python_path(self, path_id):
         """Removes the path given by the path_id
-        
+
         :param path_id:
             a path id identifying specific changes that were made to sys.path
         :type path_id: int"""
@@ -258,13 +258,13 @@ class ModuleManager(Singleton, Logger):
     def loadModule(self, module_name, path=None):
         """Loads the given module name. If the module has been already loaded
         into this python interpreter, nothing is done.
-        
+
         :param module_name: the module to be loaded.
         :type module_name: str
         :param path: list of paths to look for modules [default: None]
         :type path: seq<str> or None
         :return: python module
-        
+
         :raises: ImportError"""
 
         if module_name in sys.modules:
@@ -308,4 +308,3 @@ class ModuleManager(Singleton, Logger):
         module_names = self._modules.keys()
         module_names.sort()
         return module_names
-

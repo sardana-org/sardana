@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+# http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -40,6 +40,7 @@ from sardana.pool.test import (FakePool, createCtrlConf, createElemConf,
                                createPoolController, createPoolTriggerGate,
                                createPoolSynchronizationConfiguration)
 
+
 class SynchronizationTestCase(object):
     """Base class for integration tests of PoolSynchronization class and any
     PoolTriggerGateController. Test is parameterized using trigger parameters.
@@ -53,14 +54,14 @@ class SynchronizationTestCase(object):
         elem_conf = createElemConf(self.pool, 1, 'tg01')
         self.tg_ctrl = createPoolController(self.pool, ctrl_conf)
         self.tg_elem = createPoolTriggerGate(self.pool, self.tg_ctrl,
-                                                        elem_conf)
+                                             elem_conf)
         # add controller and elements to containers
         self.tg_ctrl.add_element(self.tg_elem)
         self.pool.add_element(self.tg_ctrl)
         self.pool.add_element(self.tg_elem)
         # create Synchronization action and its configuration
         self.tg_cfg = createPoolSynchronizationConfiguration((self.tg_ctrl,),
-                                                            ((self.tg_elem,),),)
+                                                             ((self.tg_elem,),),)
         self.tgaction = PoolSynchronization(self.tg_elem)
         self.tgaction.add_element(self.tg_elem)
 
@@ -91,17 +92,17 @@ class SynchronizationTestCase(object):
         # create controller and trigger element
         self.createElements(ctrl_klass, ctrl_lib, ctrl_props)
 
-        #create start_action arguments
+        # create start_action arguments
         args = ()
         kwargs = {'config': self.tg_cfg,
                   'synchronization': synchronization
-                 }
+                  }
         # starting action
         self.tgaction.start_action(*args, **kwargs)
         # verifying that the elements involved in action changed its state
         element_state = self.tg_elem.get_state()
-        msg = ("State after start_action is '%s'. (Expected: '%s')" % 
-                                    (State.get(element_state), "Moving"))
+        msg = ("State after start_action is '%s'. (Expected: '%s')" %
+               (State.get(element_state), "Moving"))
         self.assertEqual(element_state, State.Moving, msg)
         # entering action loop
         self.tgaction.action_loop()
@@ -142,13 +143,13 @@ class SynchronizationTestCase(object):
         args = ()
         kwargs = {'config': self.tg_cfg,
                   'synchronization': synchronization
-                 }
+                  }
         # starting action
         self.tgaction.start_action(*args, **kwargs)
         # verifying that the elements involved in action changed its state
         element_state = self.tg_elem.get_state()
-        msg = ("State after start_action is '%s'. (Expected: '%s')" % 
-                                    (State.get(element_state), "Moving"))
+        msg = ("State after start_action is '%s'. (Expected: '%s')" %
+               (State.get(element_state), "Moving"))
         self.assertEqual(element_state, State.Moving, msg)
 
         # starting timer (abort_time) stop the trigger generation
@@ -178,17 +179,18 @@ synchronization2 = [{SynchParam.Delay: {SynchDomain.Time: 0},
                      SynchParam.Total: {SynchDomain.Time: .02},
                      SynchParam.Repeats: 100}]
 
+
 @insertTest(helper_name='tggeneration',
-            ctrl_lib = 'DummyTriggerGateController',
-            ctrl_klass = 'DummyTriggerGateController',
-            ctrl_props = {},
-            synchronization = synchronization1
+            ctrl_lib='DummyTriggerGateController',
+            ctrl_klass='DummyTriggerGateController',
+            ctrl_props={},
+            synchronization=synchronization1
             )
 @insertTest(helper_name='abort_tggeneration',
-            ctrl_lib = 'DummyTriggerGateController',
-            ctrl_klass = 'DummyTriggerGateController',
-            ctrl_props = {},
-            synchronization = synchronization2,
+            ctrl_lib='DummyTriggerGateController',
+            ctrl_klass='DummyTriggerGateController',
+            ctrl_props={},
+            synchronization=synchronization2,
             abort_time=0.5
             )
 class DummySynchronizationTestCase(SynchronizationTestCase, unittest.TestCase):

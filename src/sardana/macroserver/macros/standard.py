@@ -1,30 +1,30 @@
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
-## 
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-## 
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
-## 
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+##
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+##
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+##
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
 """This is the standard macro module"""
 
 __all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "set_lim", "set_lm",
-           "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm", "tw"] 
+           "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm", "tw"]
 
 __docformat__ = 'restructuredtext'
 
@@ -38,11 +38,12 @@ from sardana.macroserver.msexception import StopException
 
 import numpy as np
 
-################################################################################
+##########################################################################
 #
 # Motion related macros
 #
-################################################################################
+##########################################################################
+
 
 class _wm(Macro):
     """Show motor positions"""
@@ -58,9 +59,9 @@ class _wm(Macro):
         show_ctrlaxis = self.getViewOption(ViewOption.ShowCtrlAxis)
         pos_format = self.getViewOption(ViewOption.PosFormat)
         motor_width = 9
-        motors = {} # dict(motor name: motor obj)
-        requests = {} # dict(motor name: request id)
-        data = {} # dict(motor name: list of motor data)
+        motors = {}  # dict(motor name: motor obj)
+        requests = {}  # dict(motor name: request id)
+        data = {}  # dict(motor name: list of motor data)
         # sending asynchronous requests: neither Taurus nor Sardana extensions
         # allow asynchronous requests - use PyTango asynchronous request model
         for motor in motor_list:
@@ -125,7 +126,7 @@ class _wm(Macro):
         col_headers = []
         values = []
         for mot_name, mot_values in sorted(data.items()):
-            col_headers.append([mot_name]) # convert name to list
+            col_headers.append([mot_name])  # convert name to list
             values.append(mot_values)
         # create and print table
         table = Table(values, elem_fmt=t_format,
@@ -133,6 +134,7 @@ class _wm(Macro):
                       row_head_str=row_headers)
         for line in table.genOutput():
             self.output(line)
+
 
 class _wum(Macro):
     """Show user motor positions"""
@@ -145,12 +147,12 @@ class _wum(Macro):
 
     def prepare(self, motor_list, **opts):
         self.table_opts = {}
-    
+
     def run(self, motor_list):
         show_dial = self.getViewOption(ViewOption.ShowDial)
         motor_width = 9
         motor_names = []
-        motor_pos   = []
+        motor_pos = []
         motor_list = list(motor_list)
         motor_list.sort()
         for motor in motor_list:
@@ -160,58 +162,64 @@ class _wum(Macro):
             if pos is None:
                 pos = float('NAN')
             motor_pos.append((pos,))
-            motor_width = max(motor_width,len(name))
+            motor_width = max(motor_width, len(name))
 
-        fmt = '%c*.%df' % ('%',motor_width - 5)
+        fmt = '%c*.%df' % ('%', motor_width - 5)
 
         table = Table(motor_pos, elem_fmt=[fmt],
                       col_head_str=motor_names, col_head_width=motor_width,
                       **self.table_opts)
         for line in table.genOutput():
             self.output(line)
-            
+
+
 class wu(Macro):
     """Show all user motor positions"""
 
     def prepare(self, **opts):
         self.all_motors = self.findObjs('.*', type_class=Type.Moveable)
         self.table_opts = {}
-    
+
     def run(self):
         nr_motors = len(self.all_motors)
         if nr_motors == 0:
             self.output('No motor defined')
             return
-        
-        self.output('Current positions (user) on %s'%datetime.datetime.now().isoformat(' '))
+
+        self.output('Current positions (user) on %s' %
+                    datetime.datetime.now().isoformat(' '))
         self.output('')
-        
-        self.execMacro('_wum',self.all_motors, **self.table_opts)
+
+        self.execMacro('_wum', self.all_motors, **self.table_opts)
+
 
 class wa(Macro):
     """Show all motor positions"""
 
     param_def = [
         ['filter',
-         ParamRepeat(['filter', Type.String, '.*', 'a regular expression filter'], min=1),
+         ParamRepeat(['filter', Type.String, '.*',
+                      'a regular expression filter'], min=1),
          '.*', 'a regular expression filter'],
     ]
 
     def prepare(self, filter, **opts):
         self.all_motors = self.findObjs(filter, type_class=Type.Moveable)
         self.table_opts = {}
-    
+
     def run(self, filter):
         nr_motors = len(self.all_motors)
         if nr_motors == 0:
             self.output('No motor defined')
             return
-        
+
         show_dial = self.getViewOption(ViewOption.ShowDial)
         if show_dial:
-            self.output('Current positions (user, dial) on %s'%datetime.datetime.now().isoformat(' '))
+            self.output('Current positions (user, dial) on %s' %
+                        datetime.datetime.now().isoformat(' '))
         else:
-            self.output('Current positions (user) on %s'%datetime.datetime.now().isoformat(' '))
+            self.output('Current positions (user) on %s' %
+                        datetime.datetime.now().isoformat(' '))
         self.output('')
         self.execMacro('_wm', self.all_motors, **self.table_opts)
 
@@ -221,12 +229,14 @@ class pwa(Macro):
 
     param_def = [
         ['filter',
-         ParamRepeat(['filter', Type.String, '.*', 'a regular expression filter'], min=1),
+         ParamRepeat(['filter', Type.String, '.*',
+                      'a regular expression filter'], min=1),
          '.*', 'a regular expression filter'],
     ]
 
     def run(self, filter):
         self.execMacro('wa', filter, **Table.PrettyOpts)
+
 
 class set_lim(Macro):
     """Sets the software limits on the specified motor hello"""
@@ -235,12 +245,14 @@ class set_lim(Macro):
         ['low',   Type.Float, None, 'lower limit'],
         ['high',   Type.Float, None, 'upper limit']
     ]
-    
+
     def run(self, motor, low, high):
         name = motor.getName()
         self.debug("Setting user limits for %s" % name)
-        motor.getPositionObj().setLimits(low,high)
-        self.output("%s limits set to %.4f %.4f (user units)" % (name, low, high))
+        motor.getPositionObj().setLimits(low, high)
+        self.output("%s limits set to %.4f %.4f (user units)" %
+                    (name, low, high))
+
 
 class set_lm(Macro):
     """Sets the dial limits on the specified motor"""
@@ -249,35 +261,38 @@ class set_lm(Macro):
         ['low',   Type.Float, None, 'lower limit'],
         ['high',   Type.Float, None, 'upper limit']
     ]
-    
+
     def run(self, motor, low, high):
         name = motor.getName()
         self.debug("Setting dial limits for %s" % name)
-        motor.getDialPositionObj().setLimits(low,high)
-        self.output("%s limits set to %.4f %.4f (dial units)" % (name, low, high))
-        
+        motor.getDialPositionObj().setLimits(low, high)
+        self.output("%s limits set to %.4f %.4f (dial units)" %
+                    (name, low, high))
+
+
 class set_pos(Macro):
     """Sets the position of the motor to the specified value"""
-    
+
     param_def = [
         ['motor', Type.Motor, None, 'Motor name'],
         ['pos',   Type.Float, None, 'Position to move to']
     ]
-    
+
     def run(self, motor, pos):
         name = motor.getName()
         old_pos = motor.getPosition(force=True)
         motor.definePosition(pos)
         self.output("%s reset from %.4f to %.4f" % (name, old_pos, pos))
 
+
 class set_user_pos(Macro):
     """Sets the USER position of the motor to the specified value (by changing OFFSET and keeping DIAL)"""
-    
+
     param_def = [
         ['motor', Type.Motor, None, 'Motor name'],
         ['pos',   Type.Float, None, 'Position to move to']
     ]
-    
+
     def run(self, motor, pos):
         name = motor.getName()
         old_pos = motor.getPosition(force=True)
@@ -285,31 +300,34 @@ class set_user_pos(Macro):
         old_offset = offset_attr.read().value
         new_offset = pos - (old_pos - old_offset)
         offset_attr.write(new_offset)
-        self.output("%s reset from %.4f (offset %.4f) to %.4f (offset %.4f)" % (name, old_pos, old_offset, pos, new_offset))
+        self.output("%s reset from %.4f (offset %.4f) to %.4f (offset %.4f)" % (
+            name, old_pos, old_offset, pos, new_offset))
+
 
 class wm(Macro):
     """Show the position of the specified motors."""
 
     param_def = [
         ['motor_list',
-         ParamRepeat(['motor', Type.Moveable, None, 'Motor to see where it is']),
+         ParamRepeat(['motor', Type.Moveable, None,
+                      'Motor to see where it is']),
          None, 'List of motor to show'],
     ]
 
     def prepare(self, motor_list, **opts):
         self.table_opts = {}
-        
+
     def run(self, motor_list):
         motor_width = 10
         motor_names = []
-        motor_pos   = []
+        motor_pos = []
 
         show_dial = self.getViewOption(ViewOption.ShowDial)
         show_ctrlaxis = self.getViewOption(ViewOption.ShowCtrlAxis)
         pos_format = self.getViewOption(ViewOption.PosFormat)
- 
+
         for motor in motor_list:
-                   
+
             max_len = 0
             if show_ctrlaxis:
                 axis_nb = getattr(motor, "axis")
@@ -320,7 +338,7 @@ class wm(Macro):
 
             max_len = max_len + 5
             if max_len < 14:
-                max_len = 14 # Length of 'Not specified'
+                max_len = 14  # Length of 'Not specified'
 
             str_fmt = "%c%ds" % ('%', int(max_len))
 
@@ -336,10 +354,9 @@ class wm(Macro):
                 val1 = str_fmt % val1
             except:
                 val1 = str_fmt % motor.getPosition(force=True)
-      
 
-            val2 =  str_fmt % posObj.getMaxValue()
-            val3 =  str_fmt % posObj.getMinValue()
+            val2 = str_fmt % posObj.getMaxValue()
+            val3 = str_fmt % posObj.getMinValue()
 
             if show_ctrlaxis:
                 valctrl = str_fmt % (ctrl_name)
@@ -347,21 +364,21 @@ class wm(Macro):
                 upos = map(str, [valctrl, valaxis, ' ', val2, val1, val3])
             else:
                 upos = map(str, ['', val2, val1, val3])
-            pos_data =  upos
+            pos_data = upos
             if show_dial:
                 try:
                     val1 = fmt % motor.getDialPosition(force=True)
                     val1 = str_fmt % val1
                 except:
                     val1 = str_fmt % motor.getDialPosition(force=True)
-     
-                dPosObj = motor.getDialPositionObj() 
-                val2 =  str_fmt % dPosObj.getMaxValue()
-                val3 =  str_fmt % dPosObj.getMinValue()
+
+                dPosObj = motor.getDialPositionObj()
+                val2 = str_fmt % dPosObj.getMaxValue()
+                val3 = str_fmt % dPosObj.getMinValue()
 
                 dpos = map(str, [val2, val1, val3])
                 pos_data += [''] + dpos
-            
+
             motor_pos.append(pos_data)
 
         elem_fmt = (['%*s'] + ['%*s'] * 5) * 2
@@ -377,40 +394,44 @@ class wm(Macro):
         for line in table.genOutput():
             self.output(line)
 
+
 class wum(Macro):
     """Show the user position of the specified motors."""
 
     param_def = [
         ['motor_list',
-         ParamRepeat(['motor', Type.Moveable, None, 'Motor to see where it is']),
+         ParamRepeat(['motor', Type.Moveable, None,
+                      'Motor to see where it is']),
          None, 'List of motor to show'],
     ]
 
     def prepare(self, motor_list, **opts):
         self.table_opts = {}
-        
+
     def run(self, motor_list):
         motor_width = 10
         motor_names = []
-        motor_pos   = []
-        
+        motor_pos = []
+
         for motor in motor_list:
             name = motor.getName()
             motor_names.append([name])
             posObj = motor.getPositionObj()
-            upos = map(str, [posObj.getMaxValue(), motor.getPosition(force=True), posObj.getMinValue()])
+            upos = map(str, [posObj.getMaxValue(), motor.getPosition(
+                force=True), posObj.getMinValue()])
             pos_data = [''] + upos
-            
+
             motor_pos.append(pos_data)
 
         elem_fmt = (['%*s'] + ['%*s'] * 3) * 2
-        row_head_str = ['User', ' High', ' Current', ' Low',]
+        row_head_str = ['User', ' High', ' Current', ' Low', ]
         table = Table(motor_pos, elem_fmt=elem_fmt, row_head_str=row_head_str,
                       col_head_str=motor_names, col_head_width=motor_width,
                       **self.table_opts)
         for line in table.genOutput():
             self.output(line)
-            
+
+
 class pwm(Macro):
     """Show the position of the specified motors in a pretty table"""
 
@@ -423,14 +444,15 @@ class pwm(Macro):
     def run(self, motor_list):
         self.execMacro('wm', motor_list, **Table.PrettyOpts)
 
+
 class mv(Macro):
     """Move motor(s) to the specified position(s)"""
 
     param_def = [
-       ['motor_pos_list',
-        ParamRepeat(['motor', Type.Moveable, None, 'Motor to move'],
-                    ['pos',   Type.Float, None, 'Position to move to']),
-        None, 'List of motor/position pairs'],
+        ['motor_pos_list',
+         ParamRepeat(['motor', Type.Moveable, None, 'Motor to move'],
+                     ['pos',   Type.Float, None, 'Position to move to']),
+         None, 'List of motor/position pairs'],
     ]
 
     def run(self, motor_pos_list):
@@ -448,13 +470,15 @@ class mv(Macro):
                 msg.append(motor.information())
             self.info("\n".join(msg))
 
+
 class mstate(Macro):
     """Prints the state of a motor"""
-    
+
     param_def = [['motor', Type.Moveable, None, 'Motor to check state']]
 
     def run(self, motor):
         self.info("Motor %s" % str(motor.getState()))
+
 
 class umv(Macro):
     """Move motor(s) to the specified position(s) and update"""
@@ -475,14 +499,14 @@ class umv(Macro):
         self.print_pos = True
         self.execMacro('mv', motor_pos_list)
         self.finish()
- 
+
     def finish(self):
         self._clean()
         self.printAllPos()
- 
+
     def on_abort(self):
         self.finish()
-        
+
     def _clean(self):
         for motor, pos in self.getParameters()[0]:
             posObj = motor.getPositionObj()
@@ -491,13 +515,13 @@ class umv(Macro):
             except Exception, e:
                 print str(e)
                 raise e
-    
+
     def positionChanged(self, motor, position):
         idx = self.all_names.index([motor.getName()])
         self.all_pos[idx] = [position]
         if self.print_pos:
             self.printAllPos()
-    
+
     def printAllPos(self):
         motor_width = 10
         table = Table(self.all_pos, elem_fmt=['%*.4f'],
@@ -505,20 +529,21 @@ class umv(Macro):
         self.outputBlock(table.genOutput())
         self.flushOutput()
 
+
 class mvr(Macro):
     """Move motor(s) relative to the current position(s)"""
 
     param_def = [
-       ['motor_disp_list',
-        ParamRepeat(['motor', Type.Moveable, None, 'Motor to move'],
-                    ['disp',  Type.Float, None, 'Relative displacement']),
-        None, 'List of motor/displacement pairs'],
+        ['motor_disp_list',
+         ParamRepeat(['motor', Type.Moveable, None, 'Motor to move'],
+                     ['disp',  Type.Float, None, 'Relative displacement']),
+         None, 'List of motor/displacement pairs'],
     ]
-    
+
     def run(self, motor_disp_list):
         motor_pos_list = []
         for motor, disp in motor_disp_list:
-            pos = motor.getPosition(force=True) 
+            pos = motor.getPosition(force=True)
             if pos is None:
                 self.error("Cannot get %s position" % motor.getName())
                 return
@@ -526,6 +551,7 @@ class mvr(Macro):
                 pos += disp
             motor_pos_list.append([motor, pos])
         self.execMacro('mv', motor_pos_list)
+
 
 class umvr(Macro):
     """Move motor(s) relative to the current position(s) and update"""
@@ -535,7 +561,7 @@ class umvr(Macro):
     def run(self, motor_disp_list):
         motor_pos_list = []
         for motor, disp in motor_disp_list:
-            pos = motor.getPosition(force=True) 
+            pos = motor.getPosition(force=True)
             if pos is None:
                 self.error("Cannot get %s position" % motor.getName())
                 return
@@ -546,8 +572,11 @@ class umvr(Macro):
 
 # TODO: implement tw macro with param repeats in order to be able to pass
 # multiple motors and multiple deltas. Also allow to pass the integration time
-# in order to execute the measurement group acquisition after each move and 
-# print the results. Basically follow the SPEC's API: https://certif.com/spec_help/tw.html
+# in order to execute the measurement group acquisition after each move and
+# print the results. Basically follow the SPEC's API:
+# https://certif.com/spec_help/tw.html
+
+
 class tw(iMacro):
     """Tweak motor by variable delta"""
 
@@ -586,7 +615,7 @@ class tw(iMacro):
                 elif a == "n":
                     a = "-"
                 # the sign is already correct, just continue
-                elif a  in ("+", "-"):
+                elif a in ("+", "-"):
                     pass
                 else:
                     msg = "Typing '%s' caused 'tw' macro to stop." % a
@@ -600,11 +629,11 @@ class tw(iMacro):
             self.mv(motor, pos)
 
 
-################################################################################
+##########################################################################
 #
 # Data acquisition related macros
 #
-################################################################################
+##########################################################################
 
 
 class ct(Macro):
@@ -613,12 +642,13 @@ class ct(Macro):
     env = ('ActiveMntGrp',)
 
     param_def = [
-       ['integ_time', Type.Float, 1.0, 'Integration time']
+        ['integ_time', Type.Float, 1.0, 'Integration time']
     ]
 
     def prepare(self, integ_time, **opts):
         mnt_grp_name = self.getEnv('ActiveMntGrp')
-        self.mnt_grp = self.getObj(mnt_grp_name, type_class=Type.MeasurementGroup)
+        self.mnt_grp = self.getObj(
+            mnt_grp_name, type_class=Type.MeasurementGroup)
 
     def run(self, integ_time):
         if self.mnt_grp is None:
@@ -655,23 +685,24 @@ class uct(Macro):
     env = ('ActiveMntGrp',)
 
     param_def = [
-       ['integ_time', Type.Float, 1.0, 'Integration time']
+        ['integ_time', Type.Float, 1.0, 'Integration time']
     ]
 
     def prepare(self, integ_time, **opts):
-        
+
         self.print_value = False
-        
+
         mnt_grp_name = self.getEnv('ActiveMntGrp')
-        self.mnt_grp = self.getObj(mnt_grp_name, type_class=Type.MeasurementGroup)
+        self.mnt_grp = self.getObj(
+            mnt_grp_name, type_class=Type.MeasurementGroup)
 
         if self.mnt_grp is None:
             return
 
         names, nan = self.mnt_grp.getChannelLabels(), float('nan')
-        self.names    = [ [n] for n in names ]
-        
-        self.values   = len(names)*[ [nan] ]
+        self.names = [[n] for n in names]
+
+        self.values = len(names) * [[nan]]
         self.channels = self.mnt_grp.getChannelAttrExs()
 
         for ch_attr_ex in self.channels:
@@ -679,24 +710,24 @@ class uct(Macro):
 
     def printAllValues(self):
         ch_width = 10
-        table = Table(self.values, elem_fmt=['%*.4f'], col_head_str=self.names, 
+        table = Table(self.values, elem_fmt=['%*.4f'], col_head_str=self.names,
                       col_head_width=ch_width)
         self.outputBlock(table.genOutput())
         self.flushOutput()
-    
+
     def counterChanged(self, ch_attr, value):
         idx = self.channels.index(ch_attr)
         self.values[idx] = [value]
         if self.print_value:
             self.printAllValues()
-        
+
     def run(self, integ_time):
         if self.mnt_grp is None:
             self.error('ActiveMntGrp is not defined or has invalid value')
             return
-        
+
         self.print_value = True
-        
+
         state, data = self.mnt_grp.count(integ_time)
 
         for ch_attr_ex in self.mnt_grp.getChannelAttrExs():
@@ -706,31 +737,32 @@ class uct(Macro):
 
 class settimer(Macro):
     """Defines the timer channel for the active measurement group"""
-    
+
     env = ('ActiveMntGrp',)
-    
+
     param_def = [
-       ['timer', Type.ExpChannel,   None, 'Timer'],
+        ['timer', Type.ExpChannel,   None, 'Timer'],
     ]
-    
-    def run(self,timer):
+
+    def run(self, timer):
         mnt_grp_name = self.getEnv('ActiveMntGrp')
         mnt_grp = self.getObj(mnt_grp_name, type_class=Type.MeasurementGroup)
 
         if mnt_grp is None:
-            self.error('ActiveMntGrp is not defined or has invalid value.\n' \
-                       'please define a valid active measurement group ' \
+            self.error('ActiveMntGrp is not defined or has invalid value.\n'
+                       'please define a valid active measurement group '
                        'before setting a timer')
             return
-        
+
         try:
             mnt_grp.setTimer(timer.getName())
-        except Exception,e:
+        except Exception, e:
             self.output(str(e))
-            self.output("%s is not a valid channel in the active measurement group" % timer)
+            self.output(
+                "%s is not a valid channel in the active measurement group" % timer)
+
 
 @macro([['message', ParamRepeat(['message_item', Type.String, None, 'message item to be reported']), None, 'message to be reported']])
 def report(self, message):
     """Logs a new record into the message report system (if active)"""
     self.report(' '.join(message))
-

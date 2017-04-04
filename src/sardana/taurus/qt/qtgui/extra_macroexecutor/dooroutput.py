@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -105,11 +105,13 @@ class DoorOutput(Qt.QPlainTextEdit):
             clearAction.setEnabled(False)
 
         Qt.QObject.connect(clearAction, Qt.SIGNAL("triggered()"), self.clear)
-        Qt.QObject.connect(self.stopAction, Qt.SIGNAL("toggled(bool)"), self.stopScrolling)
+        Qt.QObject.connect(self.stopAction, Qt.SIGNAL(
+            "toggled(bool)"), self.stopScrolling)
         menu.exec_(event.globalPos())
 
     def stopScrolling(self, stop):
         self._isStopped = stop
+
 
 class DoorDebug(Qt.QPlainTextEdit):
     """Widget used for displaying changes of door's Debug attribute."""
@@ -142,11 +144,13 @@ class DoorDebug(Qt.QPlainTextEdit):
             clearAction.setEnabled(False)
 
         Qt.QObject.connect(clearAction, Qt.SIGNAL("triggered()"), self.clear)
-        Qt.QObject.connect(self.stopAction, Qt.SIGNAL("toggled(bool)"), self.stopScrolling)
+        Qt.QObject.connect(self.stopAction, Qt.SIGNAL(
+            "toggled(bool)"), self.stopScrolling)
         menu.exec_(event.globalPos())
 
     def stopScrolling(self, stop):
         self._isStopped = stop
+
 
 class DoorResult(Qt.QPlainTextEdit):
     """Widget used for displaying changes of door's Result attribute."""
@@ -175,7 +179,6 @@ class DoorResult(Qt.QPlainTextEdit):
         menu.exec_(event.globalPos())
 
 
-
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 # Door attributes listeners
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
@@ -195,7 +198,7 @@ class DoorAttrListener(Qt.QObject):
 
     def eventReceived(self, src, type, value):
         if (type == taurus.core.taurusbasetypes.TaurusEventType.Error or
-            type == taurus.core.taurusbasetypes.TaurusEventType.Config):
+                type == taurus.core.taurusbasetypes.TaurusEventType.Config):
             return
         self.emit(Qt.SIGNAL('door%sChanged' % self.attrName), value.value)
 
@@ -210,10 +213,13 @@ if __name__ == "__main__":
     doorOutput = DoorOutput()
     if len(args) == 1:
         door = taurus.Device(args[0])
-        Qt.QObject.connect(door, Qt.SIGNAL("outputUpdated"), doorOutput.onDoorOutputChanged)
-        Qt.QObject.connect(door, Qt.SIGNAL("infoUpdated"), doorOutput.onDoorInfoChanged)
-        Qt.QObject.connect(door, Qt.SIGNAL("warningUpdated"), doorOutput.onDoorWarningChanged)
-        Qt.QObject.connect(door, Qt.SIGNAL("errorUpdated"), doorOutput.onDoorErrorChanged)
+        Qt.QObject.connect(door, Qt.SIGNAL("outputUpdated"),
+                           doorOutput.onDoorOutputChanged)
+        Qt.QObject.connect(door, Qt.SIGNAL("infoUpdated"),
+                           doorOutput.onDoorInfoChanged)
+        Qt.QObject.connect(door, Qt.SIGNAL("warningUpdated"),
+                           doorOutput.onDoorWarningChanged)
+        Qt.QObject.connect(door, Qt.SIGNAL("errorUpdated"),
+                           doorOutput.onDoorErrorChanged)
     doorOutput.show()
     sys.exit(app.exec_())
-

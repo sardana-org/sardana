@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -53,12 +53,15 @@ class MacroProgressBar(Qt.QProgressBar):
     def __init__(self, parent=None):
         Qt.QProgressBar.__init__(self, parent)
 
+
 class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
+
     def __init__(self, name, parent=None, designMode=False):
-        #self.newValue - is used as a flag to indicate whether a controlUp controlDown actions are used to iterate existing element or put new one
-        #self.disableEditMode - flag, used to disable edition, when user enters name of the macro which is not valid (not allowed to edit in the yellow line)
+        # self.newValue - is used as a flag to indicate whether a controlUp controlDown actions are used to iterate existing element or put new one
+        # self.disableEditMode - flag, used to disable edition, when user enters name of the macro which is not valid (not allowed to edit in the yellow line)
         #                   switches off validation
-        #disableSpockCommandUpdate - flag, it disables updates of the model when macro is edited by macroEditor
+        # disableSpockCommandUpdate - flag, it disables updates of the model
+        # when macro is edited by macroEditor
 
         Qt.QLineEdit.__init__(self, parent)
         TaurusBaseContainer.__init__(self, name, parent, designMode)
@@ -75,7 +78,8 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
         self.setEnabled(False)
 
         self.setActions()
-        self.connect(self, Qt.SIGNAL("textChanged(const QString &)"), self.textChanged)
+        self.connect(self, Qt.SIGNAL(
+            "textChanged(const QString &)"), self.textChanged)
         self.connect(self, Qt.SIGNAL("returnPressed()"), self.returnPressed)
 
     def setActions(self):
@@ -84,24 +88,29 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
         self._ctrlDownAction = Qt.QAction("controlDownAction", self)
         self._ctrlUpAction = Qt.QAction("controlUpAction", self)
 
-        self._ctrlDownAction.setShortcut(Qt.QKeySequence(Qt.Qt.CTRL + Qt.Qt.Key_Down))
-        self._ctrlUpAction.setShortcut(Qt.QKeySequence(Qt.Qt.CTRL + Qt.Qt.Key_Up))
+        self._ctrlDownAction.setShortcut(
+            Qt.QKeySequence(Qt.Qt.CTRL + Qt.Qt.Key_Down))
+        self._ctrlUpAction.setShortcut(
+            Qt.QKeySequence(Qt.Qt.CTRL + Qt.Qt.Key_Up))
         self._downAction.setShortcuts([Qt.Qt.Key_Down])
         self._upAction.setShortcuts([Qt.Qt.Key_Up])
 
-        self._ctrlDownAction.setShortcutContext (Qt.Qt.WidgetShortcut)
-        self._ctrlUpAction.setShortcutContext (Qt.Qt.WidgetShortcut)
-        self._downAction.setShortcutContext (Qt.Qt.WidgetShortcut)
-        self._upAction.setShortcutContext (Qt.Qt.WidgetShortcut)
+        self._ctrlDownAction.setShortcutContext(Qt.Qt.WidgetShortcut)
+        self._ctrlUpAction.setShortcutContext(Qt.Qt.WidgetShortcut)
+        self._downAction.setShortcutContext(Qt.Qt.WidgetShortcut)
+        self._upAction.setShortcutContext(Qt.Qt.WidgetShortcut)
 
         self.addAction(self._ctrlDownAction)
         self.addAction(self._ctrlUpAction)
         self.addAction(self._downAction)
         self.addAction(self._upAction)
-        self.connect(self._downAction, Qt.SIGNAL("triggered()"), self.downAction)
+        self.connect(self._downAction, Qt.SIGNAL(
+            "triggered()"), self.downAction)
         self.connect(self._upAction, Qt.SIGNAL("triggered()"), self.upAction)
-        self.connect(self._ctrlDownAction, Qt.SIGNAL("triggered()"), self.controlDownAction)
-        self.connect(self._ctrlUpAction, Qt.SIGNAL("triggered()"), self.controlUpAction)
+        self.connect(self._ctrlDownAction, Qt.SIGNAL(
+            "triggered()"), self.controlDownAction)
+        self.connect(self._ctrlUpAction, Qt.SIGNAL(
+            "triggered()"), self.controlUpAction)
 
     def setCommand(self):
         command = self._model.toSpockCommand().strip()
@@ -127,14 +136,17 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
         self.disableEditMode = not enable
         self.setEnabled(enable)
         self._model = model
-        self.connect(self._model, Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), self.onDataChanged)
+        self.connect(self._model, Qt.SIGNAL(
+            "dataChanged(QModelIndex,QModelIndex)"), self.onDataChanged)
         self.connect(self._model, Qt.SIGNAL("modelReset()"), self.setCommand)
 
     def model(self):
         return self._model
 
     def getIndex(self, elementNumber=-1):
-        #Returns QModelIndex of the required element (number of single parameter). If the elementNumber == -1 next single parameter index is returned.
+        # Returns QModelIndex of the required element (number of single
+        # parameter). If the elementNumber == -1 next single parameter index is
+        # returned.
         if elementNumber == -1:
             ix = self.currentIndex
             elementNumber = 1
@@ -144,11 +156,12 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
             ix = Qt.QModelIndex()
 
         (col, row, parentIdx) = (ix.column(), ix.row(), ix.parent())
-        #to start from second column
+        # to start from second column
         if col == -1 and row == -1:
             ix = self.forwardIdx(0, 1, ix)
-        for i in range (0, elementNumber):
-            #This condition in case we start tabbing with cursor on first column
+        for i in range(0, elementNumber):
+            # This condition in case we start tabbing with cursor on first
+            # column
             if col == 0:
                 currentNode = self.model().nodeFromIndex(ix)
                 if isinstance(currentNode, macro.SingleParamNode):
@@ -157,8 +170,8 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
                     nextIdx = self.forwardIdx(0, 1, ix)
             else:
                 nextIdx = self.forwardIdx(row + 1, 1, parentIdx)
-            #this condition in case there is no next index and we want to pass focus
-            #to next widget in parent obj
+            # this condition in case there is no next index and we want to pass focus
+            # to next widget in parent obj
             if nextIdx == "term":
                 return Qt.QModelIndex()
             ix = nextIdx
@@ -166,7 +179,8 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
         return ix
 
     def forwardIdx(self, row, col, parentIdx):
-        #This method is moving down the tree to get next SingleParamNode index.
+        # This method is moving down the tree to get next SingleParamNode
+        # index.
         try:
             proposalIdx = self.model().index(row, col, parentIdx)
         except AssertionError:
@@ -204,17 +218,18 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
             return proposalIdx
 
     def validateAllExpresion(self, secValidation=False):
-        #This method is responsible for full validation of the macro. It is executed whenever the text is changed (when user edits values).
-        #Validation starts with checking if the macro (name) is valid.
-        #Next steps:
-        #1. Validates every SingleParamNode and counts how many there are in the macro.
-        #2. If there are more SingleParamNodes than entered values it will check if there is RepeatParamNode.
+        # This method is responsible for full validation of the macro. It is executed whenever the text is changed (when user edits values).
+        # Validation starts with checking if the macro (name) is valid.
+        # Next steps:
+        # 1. Validates every SingleParamNode and counts how many there are in the macro.
+        # 2. If there are more SingleParamNodes than entered values it will check if there is RepeatParamNode.
         #   If there is RepeatParamNode it will check if its RepeatNodes can be deleted.
-        #3. If there are more values entered than SingleParamNodes in macro it will check if there is RepeatParamNode.
+        # 3. If there are more values entered than SingleParamNodes in macro it will check if there is RepeatParamNode.
         #   If there is it will try to add new RepeatNode.
 
         if self.model() is None:
-            raise RuntimeError('Door must be set in order to use the macroexecutor.')
+            raise RuntimeError(
+                'Door must be set in order to use the macroexecutor.')
 
         self.currentIndex = Qt.QModelIndex()
         mlist = str(self.text()).split()
@@ -237,10 +252,10 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
                     problems.append(message)
 
         except IndexError:
-                problems.append("<b>Macro<\b> is missing!")
-                self.setStyleSheet("")
-                self.setToolTip('<br>'.join(problems))
-                return
+            problems.append("<b>Macro<\b> is missing!")
+            self.setStyleSheet("")
+            self.setToolTip('<br>'.join(problems))
+            return
 
         self.currentIndex = Qt.QModelIndex()
         ix = self.getIndex()
@@ -254,11 +269,13 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
                     self.model().setData(self.currentIndex, Qt.QVariant(propValue))
                 except Exception as e:
                     self.model().setData(self.currentIndex, Qt.QVariant('None'))
-                    txt = str(Qt.from_qvariant(ix.sibling(ix.row(), 0).data(), str))
+                    txt = str(Qt.from_qvariant(
+                        ix.sibling(ix.row(), 0).data(), str))
                     message = "<b>" + txt + "</b> " + e[0]
                     problems.append(message)
             except IndexError:
-                txt = str(Qt.from_qvariant(ix.sibling(ix.row(), 0).data(), str))
+                txt = str(Qt.from_qvariant(
+                    ix.sibling(ix.row(), 0).data(), str))
                 problems.append("<b>" + txt + "</b> is missing!")
 
                 data = str(Qt.from_qvariant(ix.data(), str))
@@ -268,7 +285,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
             ix = self.getIndex()
             self.currentIndex = ix
 
-        if len(mlist) > counter:  #if there are more values than parameters
+        if len(mlist) > counter:  # if there are more values than parameters
             repeatNode = None
             for i in self.model().root().params():
                 repeatNode = i
@@ -310,7 +327,8 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
                     return
 
         if len(problems) == 0:
-            self.setStyleSheet('SpockCommandWidget {background-color: %s; color: %s; border: %s; border-radius: %s}' % ('yellow', 'black', '3px solid green', '5px'))
+            self.setStyleSheet('SpockCommandWidget {background-color: %s; color: %s; border: %s; border-radius: %s}' % (
+                'yellow', 'black', '3px solid green', '5px'))
             self.setToolTip("")
         else:
             self.setStyleSheet("")
@@ -318,30 +336,31 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
         return
 
     def findParamRepeat(self, repeatNode):
-        #Method which finds index of given ParamRepeatNode in the macro.
+        # Method which finds index of given ParamRepeatNode in the macro.
         children = self.model().root().children()
         occ = children.count(repeatNode)
         idx = 0
         for i in range(0, occ):
             idx = children.index(repeatNode, idx)
-        index = self.model().index(idx , 0, Qt.QModelIndex())
+        index = self.model().index(idx, 0, Qt.QModelIndex())
         return index
 
     def validateOneValue(self, value):
-        #Validates value of a SingleParamNode of a currentIndex
+        # Validates value of a SingleParamNode of a currentIndex
         paramNode = deepcopy(self.model().nodeFromIndex(self.currentIndex))
         paramNode.setValue(value)
         return self.getModelObj().validateSingleParam(paramNode)
 
     def returnPressed(self):
-        #SLOT called when return is pressed
+        # SLOT called when return is pressed
         if self.toolTip() == "":
             self.emit(Qt.SIGNAL("pressedReturn"))
         else:
-            raise Exception("Cannot start macro. Please correct following mistakes: <br>" + self.toolTip())
+            raise Exception(
+                "Cannot start macro. Please correct following mistakes: <br>" + self.toolTip())
 
     def textChanged(self, strs):
-        #SLOT called when QLineEdit text is changed
+        # SLOT called when QLineEdit text is changed
         if strs == "":
             self.updateMacroEditor("")
 
@@ -358,31 +377,37 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
                 self.setToolTip("Read Mode")
 
     def validateMacro(self, value):
-        #Method which ivestigates if the macro can be edited using yellow line.
-        #It cannot be executed when: 1. there are more than 1 ParamRepeatNodes,
-        #2. There is a ParamRepeatNode inside ParamRepeatNodem
-        #3. After ParamRepeatNode there are other nodes
+        # Method which ivestigates if the macro can be edited using yellow line.
+        # It cannot be executed when: 1. there are more than 1 ParamRepeatNodes,
+        # 2. There is a ParamRepeatNode inside ParamRepeatNodem
+        # 3. After ParamRepeatNode there are other nodes
 
         macroNode = self.getModelObj().getMacroNodeObj(str(value))
-        if macroNode is None: return False
-        t = [child for child in macroNode.children() if isinstance(child, macro.RepeatParamNode)]
+        if macroNode is None:
+            return False
+        t = [child for child in macroNode.children() if isinstance(child,
+                                                                   macro.RepeatParamNode)]
         if len(t) > 1:
             self.disableEditMode = True
-            raise Exception('Macro <b> %s </b> cannot be edited using yellow line.<br>It contains more than 1 paramRepeat node. <br>Please use Macro Editor Widget to edit and execute this macro.' % str(value))
+            raise Exception(
+                'Macro <b> %s </b> cannot be edited using yellow line.<br>It contains more than 1 paramRepeat node. <br>Please use Macro Editor Widget to edit and execute this macro.' % str(value))
         elif len(t) == 1:
             if len([child for child in t[0].children() if isinstance(child, macro.RepeatParamNode)]) > 0:
                 self.disableEditMode = True
-                raise Exception('Macro <b> %s </b> cannot be edited using yellow line.<br>It contains paramRepeat node inside paramRepeat node. <br>Please use Macro Editor Widget to edit and execute this macro.' % str(value))
+                raise Exception(
+                    'Macro <b> %s </b> cannot be edited using yellow line.<br>It contains paramRepeat node inside paramRepeat node. <br>Please use Macro Editor Widget to edit and execute this macro.' % str(value))
             else:
-                if macroNode.children().index(t[0]) != len(macroNode.children()) - 1 :
+                if macroNode.children().index(t[0]) != len(macroNode.children()) - 1:
                     self.disableEditMode = True
-                    raise Exception('Macro <b> %s </b> cannot be edited using yellow line.<br>It contains paramRepeat node but not as a last parameter. <br>Please use Macro Editor Widget to edit and execute this macro.' % str(value))
+                    raise Exception(
+                        'Macro <b> %s </b> cannot be edited using yellow line.<br>It contains paramRepeat node but not as a last parameter. <br>Please use Macro Editor Widget to edit and execute this macro.' % str(value))
         self.disableEditMode = False
         return True
 
     def downAction(self):
-        #Goes down in the history list of executed macros.
-        #self.disableSpockCommandUpdate flag is used to allow updating yellow line when model is changed. (when new row in history is chosen)
+        # Goes down in the history list of executed macros.
+        # self.disableSpockCommandUpdate flag is used to allow updating yellow
+        # line when model is changed. (when new row in history is chosen)
 
         self.disableSpockCommandUpdate = False
         self.emit(Qt.SIGNAL("elementDown"))
@@ -484,7 +509,8 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
             self.model().setData(self.currentIndex, Qt.QVariant(value))
 
     def getParamItems(self, index):
-        #Returns list of items that can be chosen for the node corresponding to the given index. Used by {next,prev}Value methods
+        # Returns list of items that can be chosen for the node corresponding
+        # to the given index. Used by {next,prev}Value methods
 
         node = self.model().nodeFromIndex(index)
         if isinstance(node, macro.MacroNode):
@@ -551,9 +577,9 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
         return str(value)
 
     def updateMacroEditor(self, macroName):
-        #I had to make the macroname lowered as macros in comboBox (with macros), has names with all letter low.
-        #Because of that sometimes it was not loading macros in MacroEditor
-        #TO FIX
+        # I had to make the macroname lowered as macros in comboBox (with macros), has names with all letter low.
+        # Because of that sometimes it was not loading macros in MacroEditor
+        # TO FIX
         self.emit(Qt.SIGNAL("spockComboBox"), str(macroName).lower())
 
     def measureSelection(self, position):
@@ -567,7 +593,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
         beg = s.rfind(' ', 0, position + 1)
         if end == -1:
             end = s.length() - 1
-        return beg + 1, end - beg - 1  #returns the start and length of the value
+        return beg + 1, end - beg - 1  # returns the start and length of the value
 
     def focusInEvent(self, event):
         self.disableSpockCommandUpdate = True
@@ -576,6 +602,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
     def focusOutEvent(self, event):
         self.disableSpockCommandUpdate = False
         Qt.QLineEdit.focusOutEvent(self, event)
+
 
 class TaurusMacroExecutorWidget(TaurusWidget):
 
@@ -588,17 +615,25 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         self.setLayout(Qt.QVBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
 
-        self.addToFavouritesAction = Qt.QAction(getThemeIcon("software-update-available"), "Add to favourites", self)
-        self.connect(self.addToFavouritesAction, Qt.SIGNAL("triggered()"), self.onAddToFavourites)
+        self.addToFavouritesAction = Qt.QAction(getThemeIcon(
+            "software-update-available"), "Add to favourites", self)
+        self.connect(self.addToFavouritesAction, Qt.SIGNAL(
+            "triggered()"), self.onAddToFavourites)
         self.addToFavouritesAction.setToolTip("Add to favourites")
-        self.stopMacroAction = Qt.QAction(getIcon(":/actions/media_playback_stop.svg"), "Stop macro", self)
-        self.connect(self.stopMacroAction, Qt.SIGNAL("triggered()"), self.onStopMacro)
+        self.stopMacroAction = Qt.QAction(
+            getIcon(":/actions/media_playback_stop.svg"), "Stop macro", self)
+        self.connect(self.stopMacroAction, Qt.SIGNAL(
+            "triggered()"), self.onStopMacro)
         self.stopMacroAction.setToolTip("Stop macro")
-        self.pauseMacroAction = Qt.QAction(getIcon(":/actions/media_playback_pause.svg"), "Pause macro", self)
-        self.connect(self.pauseMacroAction, Qt.SIGNAL("triggered()"), self.onPauseMacro)
+        self.pauseMacroAction = Qt.QAction(
+            getIcon(":/actions/media_playback_pause.svg"), "Pause macro", self)
+        self.connect(self.pauseMacroAction, Qt.SIGNAL(
+            "triggered()"), self.onPauseMacro)
         self.pauseMacroAction.setToolTip("Pause macro")
-        self.playMacroAction = Qt.QAction(getIcon(":/actions/media_playback_start.svg"), "Start macro", self)
-        self.connect(self.playMacroAction, Qt.SIGNAL("triggered()"), self.onPlayMacro)
+        self.playMacroAction = Qt.QAction(
+            getIcon(":/actions/media_playback_start.svg"), "Start macro", self)
+        self.connect(self.playMacroAction, Qt.SIGNAL(
+            "triggered()"), self.onPlayMacro)
         self.playMacroAction.setToolTip("Start macro")
         actionsLayout = Qt.QHBoxLayout()
         actionsLayout.setContentsMargins(0, 0, 0, 0)
@@ -631,7 +666,8 @@ class TaurusMacroExecutorWidget(TaurusWidget):
 
         self._paramEditorModel = ParamEditorModel()
         self.stackedWidget = Qt.QStackedWidget()
-        self.standardMacroParametersEditor = StandardMacroParametersEditor(self.stackedWidget)
+        self.standardMacroParametersEditor = StandardMacroParametersEditor(
+            self.stackedWidget)
         self.stackedWidget.addWidget(self.standardMacroParametersEditor)
         self.customMacroParametersEditor = None
         splitter.addWidget(self.stackedWidget)
@@ -649,8 +685,10 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         self.historyMacrosViewer.setFocusPolicy(Qt.Qt.NoFocus)
 
         self.tabMacroListsWidget = Qt.QTabWidget(self)
-        self.tabMacroListsWidget.addTab(self.favouritesMacrosEditor, "Favourite list")
-        self.tabMacroListsWidget.addTab(self.historyMacrosViewer, "History Viewer")
+        self.tabMacroListsWidget.addTab(
+            self.favouritesMacrosEditor, "Favourite list")
+        self.tabMacroListsWidget.addTab(
+            self.historyMacrosViewer, "History Viewer")
         splitter.addWidget(self.tabMacroListsWidget)
 
         self._isHistoryMacro = False
@@ -658,32 +696,43 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         self.layout().addWidget(self.macroProgressBar)
 
         #spockCommandLabel = Qt.QLabel("Spock command:", self)
-        #spockCommandLabel.setFont(Qt.QFont("Courier",9))
+        # spockCommandLabel.setFont(Qt.QFont("Courier",9))
         self.spockCommand = SpockCommandWidget("Spock", self)
-        self.spockCommand.setSizePolicy(Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Minimum)
+        self.spockCommand.setSizePolicy(
+            Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Minimum)
         self.spockCommand.setUseParentModel(True)
         spockCommandLayout = Qt.QHBoxLayout()
         spockCommandLayout.setContentsMargins(0, 0, 0, 0)
-        #spockCommandLayout.addWidget(spockCommandLabel)
+        # spockCommandLayout.addWidget(spockCommandLabel)
         spockCommandLayout.addWidget(self.spockCommand)
         self.layout().addLayout(spockCommandLayout)
-        self.connect(self.macroComboBox, Qt.SIGNAL("currentIndexChanged(QString)"), self.onMacroComboBoxChanged)
-        self.connect(self.favouritesMacrosEditor.list, Qt.SIGNAL("favouriteSelected"), self.onFavouriteSelected)
-        self.connect(self.historyMacrosViewer.list, Qt.SIGNAL("historySelected"), self.onHistorySelected)
+        self.connect(self.macroComboBox, Qt.SIGNAL(
+            "currentIndexChanged(QString)"), self.onMacroComboBoxChanged)
+        self.connect(self.favouritesMacrosEditor.list, Qt.SIGNAL(
+            "favouriteSelected"), self.onFavouriteSelected)
+        self.connect(self.historyMacrosViewer.list, Qt.SIGNAL(
+            "historySelected"), self.onHistorySelected)
 
-        self.connect(self.spockCommand, Qt.SIGNAL("pressedReturn"), self.onPlayMacro)
-        self.connect(self.spockCommand, Qt.SIGNAL("spockComboBox"), self.setComboBoxItem)
-        self.connect(self.spockCommand, Qt.SIGNAL("elementUp"), self.setHistoryUp)
-        self.connect(self.spockCommand, Qt.SIGNAL("elementDown"), self.setHistoryDown)
-        self.connect(self.spockCommand, Qt.SIGNAL("setHistoryFocus"), self.setHistoryFocus)
-        self.connect(self.spockCommand, Qt.SIGNAL("expandTree"), self.standardMacroParametersEditor.tree.expandAll)
+        self.connect(self.spockCommand, Qt.SIGNAL(
+            "pressedReturn"), self.onPlayMacro)
+        self.connect(self.spockCommand, Qt.SIGNAL(
+            "spockComboBox"), self.setComboBoxItem)
+        self.connect(self.spockCommand, Qt.SIGNAL(
+            "elementUp"), self.setHistoryUp)
+        self.connect(self.spockCommand, Qt.SIGNAL(
+            "elementDown"), self.setHistoryDown)
+        self.connect(self.spockCommand, Qt.SIGNAL(
+            "setHistoryFocus"), self.setHistoryFocus)
+        self.connect(self.spockCommand, Qt.SIGNAL("expandTree"),
+                     self.standardMacroParametersEditor.tree.expandAll)
 
     def macroId(self):
         return self._macroId
 
     def contextMenuEvent(self, event):
         menu = Qt.QMenu()
-        action = menu.addAction(getThemeIcon("view-refresh"), "Check door state", self.checkDoorState)
+        action = menu.addAction(getThemeIcon(
+            "view-refresh"), "Check door state", self.checkDoorState)
         menu.exec_(event.globalPos())
 
     def checkDoorState(self):
@@ -718,7 +767,7 @@ class TaurusMacroExecutorWidget(TaurusWidget):
     def setFavouritesBuffer(self, favouritesMacro):
         self._favouritesBuffer = favouritesMacro
 
-    #History Widget
+    # History Widget
     def setHistoryUp(self):
         self.setHistoryFocus()
         self.historyMacrosViewer.listElementUp()
@@ -729,7 +778,7 @@ class TaurusMacroExecutorWidget(TaurusWidget):
 
     def setHistoryFocus(self):
         self.tabMacroListsWidget.setCurrentWidget(self.historyMacrosViewer)
-        #self.historyMacrosViewer.setFocus()
+        # self.historyMacrosViewer.setFocus()
 
     def historyBuffer(self):
         return self._historyBuffer
@@ -778,13 +827,16 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         if self.stackedWidget.count() == 2:
             self.stackedWidget.removeWidget(self.customMacroParametersEditor)
             self.customMacroParametersEditor.setParent(None)
-        self.customMacroParametersEditor = ParamEditorManager().getMacroEditor(macroName, self.stackedWidget)
+        self.customMacroParametersEditor = ParamEditorManager(
+        ).getMacroEditor(macroName, self.stackedWidget)
         if self.customMacroParametersEditor:
             self.customMacroParametersEditor.setModel(self.paramEditorModel())
             self.stackedWidget.addWidget(self.customMacroParametersEditor)
-            self.stackedWidget.setCurrentWidget(self.customMacroParametersEditor)
+            self.stackedWidget.setCurrentWidget(
+                self.customMacroParametersEditor)
         else:
-            self.standardMacroParametersEditor.setModel(self.paramEditorModel())
+            self.standardMacroParametersEditor.setModel(
+                self.paramEditorModel())
 
         self.emit(Qt.SIGNAL("macroNameChanged"), macroName)
 
@@ -805,10 +857,12 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         self.macroComboBox.selectMacro(name)
 
     def onAddToFavourites(self):
-        self.favouritesMacrosEditor.addMacro(deepcopy(self.paramEditorModel().root()))
+        self.favouritesMacrosEditor.addMacro(
+            deepcopy(self.paramEditorModel().root()))
 
     def addToHistory(self):
-        self.historyMacrosViewer.addMacro(deepcopy(self.paramEditorModel().root()))
+        self.historyMacrosViewer.addMacro(
+            deepcopy(self.paramEditorModel().root()))
 
     def onDoorChanged(self, doorName):
         self.setDoorName(doorName)
@@ -845,7 +899,8 @@ class TaurusMacroExecutorWidget(TaurusWidget):
             params, alerts = macroNode.toRun()
             xmlString = paramEditorModel.toXmlString()
             if len(alerts) > 0:
-                Qt.QMessageBox.warning(self, "Macro parameters warning", alerts)
+                Qt.QMessageBox.warning(
+                    self, "Macro parameters warning", alerts)
                 return
             door.runMacro(xmlString)
             self.addToHistory()
@@ -886,12 +941,16 @@ class TaurusMacroExecutorWidget(TaurusWidget):
 
     def onMacroStatusUpdated(self, data):
         macro = data[0]
-        if macro is None: return
+        if macro is None:
+            return
         data = data[1][0]
-        state, range, step, id = data["state"], data["range"], data["step"], data["id"]
-        if id is None: return
+        state, range, step, id = data["state"], data[
+            "range"], data["step"], data["id"]
+        if id is None:
+            return
         id = int(id)
-        if id != self.macroId(): return
+        if id != self.macroId():
+            return
         macroName = macro.name
         shortMessage = ""
         if state == "start":
@@ -901,7 +960,8 @@ class TaurusMacroExecutorWidget(TaurusWidget):
             self.pauseMacroAction.setEnabled(True)
             self.stopMacroAction.setEnabled(True)
             self.emit(Qt.SIGNAL("plotablesFilterChanged"), None)
-            self.emit(Qt.SIGNAL("plotablesFilterChanged"), standardPlotablesFilter)
+            self.emit(Qt.SIGNAL("plotablesFilterChanged"),
+                      standardPlotablesFilter)
             shortMessage = "Macro %s started." % macroName
         elif state == "pause":
             self.playMacroAction.setText("Resume macro")
@@ -926,7 +986,8 @@ class TaurusMacroExecutorWidget(TaurusWidget):
             self.stopMacroAction.setEnabled(False)
             shortMessage = "Macro %s error." % macroName
             exc_value, exc_stack = data['exc_value'], data['exc_stack']
-            exceptionDialog = TaurusMessageBox(MacroRunException, exc_value, exc_stack)
+            exceptionDialog = TaurusMessageBox(
+                MacroRunException, exc_value, exc_stack)
             exceptionDialog.exec_()
         elif state == "abort":
             self.playMacroAction.setText("Start macro")
@@ -948,10 +1009,12 @@ class TaurusMacroExecutorWidget(TaurusWidget):
     def setModel(self, model):
         oldModelObj = self.getModelObj()
         if oldModelObj is not None:
-            self.disconnect(oldModelObj, Qt.SIGNAL("macrosUpdated"), self.macroComboBox.onMacrosUpdated)
+            self.disconnect(oldModelObj, Qt.SIGNAL(
+                "macrosUpdated"), self.macroComboBox.onMacrosUpdated)
         TaurusWidget.setModel(self, model)
         newModelObj = self.getModelObj()
-        self.connect(newModelObj, Qt.SIGNAL("macrosUpdated"), self.macroComboBox.onMacrosUpdated)
+        self.connect(newModelObj, Qt.SIGNAL("macrosUpdated"),
+                     self.macroComboBox.onMacrosUpdated)
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
@@ -971,11 +1034,13 @@ class TaurusMacroExecutor(MacroExecutionWindow):
         self.registerConfigDelegate(self.taurusMacroExecutorWidget)
         self.taurusMacroExecutorWidget.setUseParentModel(True)
         self.setCentralWidget(self.taurusMacroExecutorWidget)
-        self.connect(self.taurusMacroExecutorWidget, Qt.SIGNAL('shortMessageEmitted'), self.onShortMessage)
+        self.connect(self.taurusMacroExecutorWidget, Qt.SIGNAL(
+            'shortMessageEmitted'), self.onShortMessage)
         self.statusBar().showMessage("MacroExecutor ready")
 
     def setCustomMacroEditorPaths(self, customMacroEditorPaths):
-        MacroExecutionWindow.setCustomMacroEditorPaths(self, customMacroEditorPaths)
+        MacroExecutionWindow.setCustomMacroEditorPaths(
+            self, customMacroEditorPaths)
         ParamEditorManager().parsePaths(customMacroEditorPaths)
         ParamEditorManager().browsePaths()
 
@@ -986,10 +1051,13 @@ class TaurusMacroExecutor(MacroExecutionWindow):
     def onDoorChanged(self, doorName):
         MacroExecutionWindow.onDoorChanged(self, doorName)
         if self._qDoor:
-            Qt.QObject.disconnect(self._qDoor, Qt.SIGNAL("macroStatusUpdated"), self.taurusMacroExecutorWidget.onMacroStatusUpdated)
-        if doorName == "": return
+            Qt.QObject.disconnect(self._qDoor, Qt.SIGNAL(
+                "macroStatusUpdated"), self.taurusMacroExecutorWidget.onMacroStatusUpdated)
+        if doorName == "":
+            return
         self._qDoor = Device(doorName)
-        Qt.QObject.connect(self._qDoor, Qt.SIGNAL("macroStatusUpdated"), self.taurusMacroExecutorWidget.onMacroStatusUpdated)
+        Qt.QObject.connect(self._qDoor, Qt.SIGNAL(
+            "macroStatusUpdated"), self.taurusMacroExecutorWidget.onMacroStatusUpdated)
         self.taurusMacroExecutorWidget.onDoorChanged(doorName)
 
     @classmethod
@@ -1000,21 +1068,25 @@ class TaurusMacroExecutor(MacroExecutionWindow):
 def createMacroExecutorWidget(args):
     macroExecutor = TaurusMacroExecutorWidget()
     macroExecutor.setModelInConfig(True)
-    Qt.QObject.connect(macroExecutor, Qt.SIGNAL("doorChanged"), macroExecutor.onDoorChanged)
+    Qt.QObject.connect(macroExecutor, Qt.SIGNAL(
+        "doorChanged"), macroExecutor.onDoorChanged)
     if len(args) == 2:
         macroExecutor.setModel(args[0])
         macroExecutor.emit(Qt.SIGNAL('doorChanged'), args[1])
     return macroExecutor
 
+
 def createMacroExecutor(args):
     macroExecutor = TaurusMacroExecutor()
     macroExecutor.setModelInConfig(True)
-    Qt.QObject.connect(macroExecutor, Qt.SIGNAL("doorChanged"), macroExecutor.onDoorChanged)
+    Qt.QObject.connect(macroExecutor, Qt.SIGNAL(
+        "doorChanged"), macroExecutor.onDoorChanged)
     if len(args) == 2:
         macroExecutor.setModel(args[0])
         macroExecutor.emit(Qt.SIGNAL('doorChanged'), args[1])
     macroExecutor.loadSettings()
     return macroExecutor
+
 
 def main():
     from taurus.qt.qtgui.application import TaurusApplication

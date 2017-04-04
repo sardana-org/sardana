@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+# http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -27,6 +27,7 @@ import sys
 
 from taurus.external import unittest
 from taurus.test import insertTest
+
 
 @insertTest(helper_name='prepare_waypoint', conf={"acc_time": 0.5,
                                                   "dec_time": 0.5,
@@ -100,7 +101,8 @@ class CTScanTestCase(unittest.TestCase):
                 "active_time": 0.3
             }
             start_positions = [conf["start_user_pos"]]
-            ideal_paths, _, _ =  scan.prepare_waypoint(waypoint, start_positions)
+            ideal_paths, _, _ = scan.prepare_waypoint(
+                waypoint, start_positions)
             path = ideal_paths[0]
             # Asserts
             msg = 'Initial positions do not match. (expected={0}, got={1})'.format(

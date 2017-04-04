@@ -72,6 +72,7 @@ logger.info("The diffractometer controller is at early stage. Controller attribu
 
 
 class AxisPar(object):
+
     def __init__(self, engine, name):
         self.engine = engine
         self.name = name
@@ -97,9 +98,9 @@ class AxisPar(object):
 
     @property
     def modeparametersvalues(self):
-         return [p.value_get(USER)
-                 for p in [self.engine.parameter_get(n)
-                           for n in self.modeparameters]]
+        return [p.value_get(USER)
+                for p in [self.engine.parameter_get(n)
+                          for n in self.modeparameters]]
 
     @modeparametersvalues.setter
     def modeparametersvalues(self, value):
@@ -109,7 +110,9 @@ class AxisPar(object):
             p.value_set(v, USER)
             self.engine.parameter_set(parameter, p)
 
-# TODO: all the fit attributes (AFit or GammaFit)should change its type to bool 
+# TODO: all the fit attributes (AFit or GammaFit)should change its type to bool
+
+
 class DiffracBasis(PseudoMotorController):
 
     """ The PseudoMotor controller for the diffractometer"""
@@ -132,7 +135,8 @@ class DiffracBasis(PseudoMotorController):
                                       Memorize: MemorizedNoInit,
                                       Access: ReadWrite},
                        'EngineModeList': {Type: (str,), Access: ReadOnly},
-                       'HKLModeList': {Type: (str,), Access: ReadOnly},  # TODO delete
+                       # TODO delete
+                       'HKLModeList': {Type: (str,), Access: ReadOnly},
                        'UBMatrix': {Type: ((float,), ),
                                     Description: "The reflection matrix",
                                     Access: ReadOnly},
@@ -256,7 +260,7 @@ class DiffracBasis(PseudoMotorController):
                        'ReflectionAngles': {Type: ((float,), (float,)),
                                             Description: "Angles between reflections",  # noqa
                                             Access: ReadOnly},
-                       'ModeParametersNames': {Type: (str,), # TODO delete
+                       'ModeParametersNames': {Type: (str,),  # TODO delete
                                                Description: "Name of the parameters of the current mode (if any)",  # noqa
                                                Access: ReadOnly},
                        'ModeParametersValues': {Type: (float,),  # TODO delete
@@ -323,7 +327,7 @@ class DiffracBasis(PseudoMotorController):
         return getattr(self.axispar[axis - 1], name.lower())
 
     def SetAxisExtraPar(self, axis, name, value):
-         setattr(self.axispar[axis - 1], name.lower(), value)
+        setattr(self.axispar[axis - 1], name.lower(), value)
 
     MaxDevice = 1
 
@@ -386,30 +390,30 @@ class DiffracBasis(PseudoMotorController):
         self._substitutereflection = [-1.]
         self._swapreflections01 = -1
         self._loadreflections = " "  # Only to create the member, the
-                                     # value will be overwritten by
-                                     # the one in stored in the
-                                     # database
+        # value will be overwritten by
+        # the one in stored in the
+        # database
         self._savereflections = " "  # Only to create the member, the
-                                     # value will be overwritten by
-                                     # the one in stored in the
-                                     # database
+        # value will be overwritten by
+        # the one in stored in the
+        # database
         self._loadcrystal = " "  # Only to create the member, the
-                                 # value will be overwritten by the
-                                 # one in stored in the database
+        # value will be overwritten by the
+        # one in stored in the database
         self._savecrystal = -1
         self._savedirectory = " "  # Only to create the member, the
-                                   # value will be overwritten by the
-                                   # one in stored in the database
+        # value will be overwritten by the
+        # one in stored in the database
         self._energydevice = " "  # Only to create the member, the
-                                   # value will be overwritten by the
-                                   # one in stored in the database
+        # value will be overwritten by the
+        # one in stored in the database
         self._autoenergyupdate = 0  # Only to create the member, the
-                                   # value will be overwritten by the
-                                   # one in stored in the database
+        # value will be overwritten by the
+        # one in stored in the database
         self._computehkl = []
 
         self.energy_device = None
-        self.lambda_to_e = 12398.424 # Amstrong * eV
+        self.lambda_to_e = 12398.424  # Amstrong * eV
 
     def _solutions(self, values, curr_physical_position):
         # set all the motor min and max to restrain the solutions
@@ -486,12 +490,11 @@ class DiffracBasis(PseudoMotorController):
         # TODO howto avoid this nb_ph_axes, does the length of the
         # physical values are not equal to the expected len of the
         # geometry axes.
-        
+
         # getWavelength updates wavelength in the library in case automatic
         # energy update is set. Needed before computing trajectories.
 
         self.getWavelength()
-            
 
         # write the physical motor into the geometry
         self.geometry.axis_values_set(physical_pos[:self.nb_ph_axes], USER)
@@ -510,10 +513,10 @@ class DiffracBasis(PseudoMotorController):
     def setCrystal(self, value):
         self.sample = self.samples[value]
         # Used this part and comment the above one out if memorized crystal (memcrystal)
-        #if self.first_crystal_set == 0:
+        # if self.first_crystal_set == 0:
         #    if value in self.samples:
         #        self.sample = self.samples[value]
-        #else:
+        # else:
         #    self.samples[value] = Hkl.Sample.new(
         #        value)  # By default a crystal is created with lattice parameters 1.54, 1.54, 1.54, 90., 90., 90.
         #    self.sample = self.samples[value]
@@ -538,9 +541,10 @@ class DiffracBasis(PseudoMotorController):
         if self._energydevice != " " and self._autoenergyupdate:
             try:
                 if self.energy_device == None:
-                    self.energy_device = PyTango.DeviceProxy(self._energydevice)
+                    self.energy_device = PyTango.DeviceProxy(
+                        self._energydevice)
                 energy = self.energy_device.Position
-                wavelength = self.lambda_to_e/energy
+                wavelength = self.lambda_to_e / energy
                 self.setWavelength(wavelength)
             except:
                 self._log.warning("Not able to get energy from energy device")
@@ -574,6 +578,7 @@ class DiffracBasis(PseudoMotorController):
         new_engines.init(self.geometry, self.detector, self.sample)
         hkl_engine = new_engines.engine_get_by_name("hkl")
         return hkl_engine.modes_names_get()
+
     def getUBMatrix(self):
         UB = self.sample.UB_get()
         return [[UB.get(i, j) for j in range(3)] for i in range(3)]
@@ -756,16 +761,16 @@ class DiffracBasis(PseudoMotorController):
         #          self.engine.name_get())
         # getWavelength updates wavelength in the library in case automatic
         # energy update is set. Needed before computing trajectories.
-     
+
         self.getWavelength()
-        
+
         # Read current motor positions
         motor_position = []
         for i in range(0, self.nb_ph_axes):
             motor = self.GetMotor(i)
             motor_position.append(motor.get_position(cache=False).value)
         self.geometry.axis_values_set(motor_position, USER)
-            
+
         curr_physical_pos = self.geometry.axis_values_get(USER)
         solutions = self._solutions(values, curr_physical_pos)
         self.trajectorylist = [item.geometry_get().axis_values_get(USER)
@@ -879,7 +884,8 @@ class DiffracBasis(PseudoMotorController):
         nb_ref = len(reflections)
 
         if nb_ref < 2:
-            self._log.warning("Only %d reflection(s) defined. Swap not possible" % (nb_ref,))
+            self._log.warning(
+                "Only %d reflection(s) defined. Swap not possible" % (nb_ref,))
             return
 
         hkla = []
@@ -923,7 +929,6 @@ class DiffracBasis(PseudoMotorController):
         self.setSubstituteReflection(hkla[0])
         self.setAdjustAnglesToReflection(angles[0])
 
-
     def getReflectionList(self):
         reflectionslist = []
         i = 0
@@ -947,7 +952,8 @@ class DiffracBasis(PseudoMotorController):
                 self.sample.del_reflection(ref)
             i = i + 1
 
-    def setLoadReflections(self, value):  # value: complete path of the file with the reflections to set
+    # value: complete path of the file with the reflections to set
+    def setLoadReflections(self, value):
         # Read the file
         with open(value, 'r') as f:
             self._loadreflections = value
@@ -989,18 +995,20 @@ class DiffracBasis(PseudoMotorController):
             self._loadcrystal = value
 
             nb_ref = 0
-    
+
             for line in crystal_file:
-                line = line.replace("\n","")
+                line = line.replace("\n", "")
                 if line.find("Crystal") != -1:
                     # Add crystal
                     line = line.replace(" ", "")
-                    crystal = line.split("Crystal",1)[1]
+                    crystal = line.split("Crystal", 1)[1]
                     self.setAddCrystal(crystal)
                     # Set crystal
                     self.sample = self.samples[crystal]
-                    self.engines.init(self.geometry, self.detector, self.sample)
-                    # Remove all reflections from crystal (there should not be any ... but just in case)
+                    self.engines.init(
+                        self.geometry, self.detector, self.sample)
+                    # Remove all reflections from crystal (there should not be
+                    # any ... but just in case)
                     for ref in self.sample.reflections_get():
                         self.sample.del_reflection(ref)
                 elif line.find("A") != -1 and line.find("B") != -1 and line.find("C") != -1:
@@ -1010,7 +1018,8 @@ class DiffracBasis(PseudoMotorController):
                     cvalue = float(par_line[5])
                     lattice = self.sample.lattice_get()
                     a, b, c, alpha, beta, gamma = lattice.get(USER)
-                    lattice.set(avalue,bvalue,cvalue, alpha, beta, gamma, USER)
+                    lattice.set(avalue, bvalue, cvalue,
+                                alpha, beta, gamma, USER)
                     # For getting the UB matrix changing
                     self.sample.lattice_set(lattice)
                     self._a = avalue
@@ -1023,7 +1032,8 @@ class DiffracBasis(PseudoMotorController):
                     gammavalue = float(par_line[5])
                     lattice = self.sample.lattice_get()
                     a, b, c, alpha, beta, gamma = lattice.get(USER)
-                    lattice.set(a,b,c, alphavalue, betavalue, gammavalue, USER)
+                    lattice.set(a, b, c, alphavalue,
+                                betavalue, gammavalue, USER)
                     # For getting the UB matrix changing
                     self.sample.lattice_set(lattice)
                     self._alpha = alphavalue
@@ -1046,15 +1056,18 @@ class DiffracBasis(PseudoMotorController):
                         try:
                             self.setPsiRefH(psirefh)
                         except:
-                            self._log.warning("PsiRefH not set. Psi not available in current mode")
+                            self._log.warning(
+                                "PsiRefH not set. Psi not available in current mode")
                         try:
                             self.setPsiRefK(psirefk)
                         except:
-                            self._log.warning("PsiRefK not set. Psi not available in current mode")
+                            self._log.warning(
+                                "PsiRefK not set. Psi not available in current mode")
                         try:
                             self.setPsiRefL(psirefl)
                         except:
-                            self._log.warning("PsiRefL not set. Psi not available in current mode")
+                            self._log.warning(
+                                "PsiRefL not set. Psi not available in current mode")
                 elif line.find("R0") != -1 or line.find("R1") != -1:
                     if line.find("R0") != -1:
                         line = line.split("R0 ")[1]
@@ -1064,7 +1077,10 @@ class DiffracBasis(PseudoMotorController):
                     ref_values = []
                     for value in line.split(' '):
                         try:
-                            ref_values.append(float(value))  # index 0 -> reflec. index; index 1,2, 3 hkl; 4 relevance; 5 affinement; last ones (2, 4 or 6) angles
+                            # index 0 -> reflec. index; index 1,2, 3 hkl; 4
+                            # relevance; 5 affinement; last ones (2, 4 or 6)
+                            # angles
+                            ref_values.append(float(value))
                         except:
                             pass
                     # Set hkl values to the reflection
@@ -1089,11 +1105,11 @@ class DiffracBasis(PseudoMotorController):
                     self._autoenergyupdate = int(line[1])
 
         if nb_ref > 1:
-            values = [0,1]
+            values = [0, 1]
             self.setComputeUB(values)
 
-
-    def setSaveReflections(self, value):  # value: directory, the file would be given by the name of the sample
+    # value: directory, the file would be given by the name of the sample
+    def setSaveReflections(self, value):
         complete_file_name = value + str(self.sample.name_get()) + ".ref"
         complete_file_name = complete_file_name.replace(' ', '')
         complete_file_name = complete_file_name.replace('(', '_')
@@ -1121,23 +1137,22 @@ class DiffracBasis(PseudoMotorController):
 
         with open(default_file_name, 'w') as crys_file:
             # date
-    
+
             date_str = "Created at " + time.strftime("%Y-%m-%d %H:%M") + "\n\n"
             crys_file.write(date_str)
-    
+
             # write crystal name
-    
+
             crystal_name = self.sample.name_get()
-            crys_str = "Crystal    " +   crystal_name + "\n\n"
+            crys_str = "Crystal    " + crystal_name + "\n\n"
             crys_file.write(crys_str)
-    
+
             # write wavelength
-    
+
             wavelength = self.geometry.wavelength_get(USER)
             wl_str = "Wavelength " + str(wavelength) + "\n\n"
             crys_file.write(wl_str)
-    
-    
+
             # write lattice parameters
             apar = self.sample.lattice_get().a_get()
             a = apar.value_get(USER)
@@ -1153,9 +1168,10 @@ class DiffracBasis(PseudoMotorController):
             gamma = gammapar.value_get(USER)
             par_str = "A " + str(a) + " B " + str(b) + " C " + str(c) + "\n"
             crys_file.write(par_str)
-            par_str = "Alpha " + str(alpha) + " Beta " + str(beta) + " Gamma " + str(gamma) + "\n\n"
+            par_str = "Alpha " + str(alpha) + " Beta " + \
+                str(beta) + " Gamma " + str(gamma) + "\n\n"
             crys_file.write(par_str)
-    
+
             # write reflections
             reflections = self.getReflectionList()
             ref_in = 0
@@ -1172,50 +1188,56 @@ class DiffracBasis(PseudoMotorController):
                 ref_str = "No reflections\n"
                 crys_file.write(ref_str)
             crys_file.write("\n")
-    
+
             # write engine
-            engine_str = "Engine " + self.engine.name_get() +  "\n\n"
+            engine_str = "Engine " + self.engine.name_get() + "\n\n"
             crys_file.write(engine_str)
-    
+
             # write mode
-            mode_str = "Mode " + self.engine.current_mode_get() +  "\n\n"
+            mode_str = "Mode " + self.engine.current_mode_get() + "\n\n"
             crys_file.write(mode_str)
-    
+
             # write psiref (if available in mode)
-    
+
             psirefh = self.getPsiRefH()
             psirefk = self.getPsiRefK()
             psirefl = self.getPsiRefL()
             if psirefh != -999 or psirefk != -999 or psirefl != -999:
-                psi_str = "PsiRef " + str(psirefh) + " " + str(psirefk) + " " + str(psirefl) + "\n\n"
+                psi_str = "PsiRef " + \
+                    str(psirefh) + " " + str(psirefk) + \
+                    " " + str(psirefl) + "\n\n"
             else:
                 psi_str = "PsiRef not available in current engine mode\n\n"
-    
+
             crys_file.write(psi_str)
-    
+
             # write autoenergyupdate value
-     
-            autoenergyupdate_str = "AutoEnergyUpdate " + str(self._autoenergyupdate) + "\n\n" 
+
+            autoenergyupdate_str = "AutoEnergyUpdate " + \
+                str(self._autoenergyupdate) + "\n\n"
             crys_file.write(autoenergyupdate_str)
-    
+
             # Only for info in the file but not for loading:
-    
+
             # write ub matrix
-            for i in range(0,3):
+            for i in range(0, 3):
                 ub_str = ""
-                for j in range(0,3):
+                for j in range(0, 3):
                     #ub_str = ub_str + "U" + str(i) + str(j) + " " + str(self.sample.UB_get().get(i, j)) + " "
-                    ub_str = ub_str + "U" + str(i) + str(j) + " %.3f" % self.sample.UB_get().get(i, j) + " "
+                    ub_str = ub_str + "U" + \
+                        str(i) + str(j) + \
+                        " %.3f" % self.sample.UB_get().get(i, j) + " "
                 ub_str = ub_str + "\n"
                 crys_file.write(ub_str)
             crys_file.write("\n")
-    
+
             # write u vector
-            u_str = "Ux " + str(self.sample.ux_get().value_get(USER)) + " Uy " + str(self.sample.uy_get().value_get(USER)) + " Uz " + str(self.sample.uz_get().value_get(USER)) + "\n\n"
+            u_str = "Ux " + str(self.sample.ux_get().value_get(USER)) + " Uy " + str(self.sample.uy_get(
+            ).value_get(USER)) + " Uz " + str(self.sample.uz_get().value_get(USER)) + "\n\n"
             crys_file.write(u_str)
-    
+
             # write directory where the file is saved
-    
+
             dir_str = "SaveDirectory " + self._savedirectory + "\n"
             crys_file.write(dir_str)
 
@@ -1225,7 +1247,8 @@ class DiffracBasis(PseudoMotorController):
     def setSaveDirectory(self, value):
         self._savedirectory = value
 
-    def setAdjustAnglesToReflection(self, value):  # value: reflexion index + new angles
+    # value: reflexion index + new angles
+    def setAdjustAnglesToReflection(self, value):
         ref_index = value[0]
         new_angles = value[1:]
         i = 0
@@ -1257,7 +1280,6 @@ class DiffracBasis(PseudoMotorController):
 
     def getModeParametersNames(self):
         return self.engine.parameters_names_get()
-    
 
     def getModeParametersValues(self):
         return [p.value_get(USER)
@@ -1341,28 +1363,26 @@ class DiffracBasis(PseudoMotorController):
         self._autoenergyupdate = value
 
     def setComputeHKL(self, value):
-         
+
         # getWavelength updates wavelength in the library in case automatic
         # energy update is set. Needed before computing trajectories.
-     
+
         self.getWavelength()
-            
 
         # write the physical motor into the geometry
-        if len(value) >=  self.nb_ph_axes:
+        if len(value) >= self.nb_ph_axes:
             self.geometry.axis_values_set(value[:self.nb_ph_axes], USER)
             self.engines.get()
-        else:            
-            raise Exception("Not enough arguments. %d are need " % (self.nb_ph_axes))
+        else:
+            raise Exception("Not enough arguments. %d are need " %
+                            (self.nb_ph_axes))
 
         # extract hkl  values
         values = []
         engine = self.engines.engine_get_by_name("hkl")
         values = engine.pseudo_axis_values_get(USER)
-    
-        self._computehkl = values
 
-        
+        self._computehkl = values
 
 
 # 6C Diffractometers ####################

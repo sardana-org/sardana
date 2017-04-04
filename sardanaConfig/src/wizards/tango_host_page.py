@@ -1,22 +1,26 @@
-import sys, os
+import sys
+import os
 
 from PyQt4 import QtGui, QtCore, Qt
 
 import taurus
 import wiz
 
+
 def get_default_tango_host():
-    tg = os.environ.get('TANGO_HOST','')
-    if not tg or tg.count(':') != 1: return '',''
+    tg = os.environ.get('TANGO_HOST', '')
+    if not tg or tg.count(':') != 1:
+        return '', ''
     return tg.split(':')
 
+
 class SelectTangoHostBasePage(wiz.SardanaBasePage):
-    
-    def __init__(self, parent = None):
+
+    def __init__(self, parent=None):
         wiz.SardanaBasePage.__init__(self, parent)
-        
+
         self.setSubTitle('Please select the Tango Host')
-        
+
         panel = self.getPanelWidget()
         layout = QtGui.QFormLayout()
         self.hostEdit = QtGui.QLineEdit()
@@ -26,21 +30,21 @@ class SelectTangoHostBasePage(wiz.SardanaBasePage):
         layout.addRow("&Port", self.portEdit)
 
         host, port = get_default_tango_host()
-        
+
         self.hostEdit.setText(host)
         self.portEdit.setText(port)
-        
+
         panel.setLayout(layout)
 
         self['db'] = self._getDatabase
-        
-        self.connect(self.hostEdit, 
-                     QtCore.SIGNAL('textEdited(const QString &)'), 
+
+        self.connect(self.hostEdit,
+                     QtCore.SIGNAL('textEdited(const QString &)'),
                      QtCore.SIGNAL('completeChanged()'))
-        self.connect(self.portEdit, 
-                     QtCore.SIGNAL('textEdited(const QString &)'), 
+        self.connect(self.portEdit,
+                     QtCore.SIGNAL('textEdited(const QString &)'),
                      QtCore.SIGNAL('completeChanged()'))
-                         
+
     def _getDatabase(self):
         host = str(self.hostEdit.text()).lower()
         port = str(self.portEdit.text())
@@ -48,7 +52,7 @@ class SelectTangoHostBasePage(wiz.SardanaBasePage):
 
     def db(self):
         return self.wizard()['db']
-        
+
     def isComplete(self):
         try:
             db = self.db()
@@ -59,7 +63,8 @@ class SelectTangoHostBasePage(wiz.SardanaBasePage):
             pass
         self.setStatus('Invalid database')
         return False
-        
+
+
 def t1():
     app = QtGui.QApplication([])
     QtCore.QResource.registerResource(wiz.get_resources())
@@ -71,10 +76,9 @@ def t1():
     w.show()
     sys.exit(app.exec_())
 
+
 def main():
     t1()
 
 if __name__ == '__main__':
     main()
-
-
