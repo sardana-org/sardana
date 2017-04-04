@@ -152,7 +152,7 @@ class ControllerManager(Singleton, Logger):
         pool_dir = os.path.dirname(os.path.abspath(__file__))
         for ctrl_dir in self.DEFAULT_CONTROLLER_DIRECTORIES:
             ctrl_dir = os.path.join(pool_dir, ctrl_dir)
-            if not ctrl_dir in p:
+            if ctrl_dir not in p:
                 p.append(ctrl_dir)
 
         self._controller_path = p

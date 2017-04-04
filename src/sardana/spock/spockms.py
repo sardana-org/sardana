@@ -388,7 +388,7 @@ class SpockBaseDoor(BaseDoor):
                 editor = genutils.get_editor()
 
                 cmd = 'edit -x -n %s %s' % (line_nb, local_f_name)
-                if not editor in self.console_editors:
+                if editor not in self.console_editors:
                     cmd = 'bg _ip.magic("' + cmd + '")'
                 ip.magic(cmd)
                 # The return value of the macro was saved in a file and opened

@@ -428,7 +428,7 @@ class EnvironmentManager(MacroServerManager):
         d[key] = value
 
     def _unsetOneEnv(self, key):
-        if not key in self._env:
+        if key not in self._env:
             raise UnknownEnv("Unknown environment %s" % key)
         del self._env[key]
         self._env.sync()

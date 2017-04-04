@@ -311,7 +311,7 @@ class Pool(PyTango.Device_4Impl, Logger):
                             % (class_name, lib))
 
         # check that class type matches the required type
-        if not elem_type in ctrl_class.types:
+        if elem_type not in ctrl_class.types:
             raise Exception("Controller class '%s' does not implement '%s' "
                             "interface" % (class_name, type_str))
 
@@ -340,7 +340,7 @@ class Pool(PyTango.Device_4Impl, Logger):
                                    ", ".join(klass_pseudo_roles)))
             motor_ids = []
             for klass_role in klass_roles:
-                if not klass_role in roles:
+                if klass_role not in roles:
                     raise Exception("Pseudo motor controller class '%s' needs "
                                     "motor(s) for role(s) %s"
                                     % (class_name, klass_role))
@@ -351,7 +351,7 @@ class Pool(PyTango.Device_4Impl, Logger):
             pseudo_motor_infos = {}
             pseudo_motor_ids = []
             for i, klass_pseudo_role in enumerate(klass_pseudo_roles):
-                if not klass_pseudo_role in roles:
+                if klass_pseudo_role not in roles:
                     raise Exception("Pseudo motor controller class '%s' needs "
                                     "pseudo motor name for role '%s'"
                                     % (class_name, klass_pseudo_role))
@@ -380,7 +380,7 @@ class Pool(PyTango.Device_4Impl, Logger):
                                    ", ".join(klass_pseudo_roles)))
             counter_ids = []
             for klass_role in klass_roles:
-                if not klass_role in roles:
+                if klass_role not in roles:
                     raise Exception("Pseudo counter controller class '%s' "
                                     "needs counter name for role '%s'"
                                     % (class_name, klass_role))
@@ -391,7 +391,7 @@ class Pool(PyTango.Device_4Impl, Logger):
             pseudo_counter_infos = {}
             pseudo_counter_ids = []
             for i, klass_pseudo_role in enumerate(klass_pseudo_roles):
-                if not klass_pseudo_role in roles:
+                if klass_pseudo_role not in roles:
                     raise Exception("Pseudo counter controller class %s needs "
                                     "pseudo motor name for role %s"
                                     % (class_name, klass_pseudo_role))

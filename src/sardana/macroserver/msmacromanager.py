@@ -217,7 +217,7 @@ class MacroManager(MacroServerManager):
 
         # add basic macro directories
         for macro_dir in self.DEFAULT_MACRO_DIRECTORIES:
-            if not macro_dir in p:
+            if macro_dir not in p:
                 p.append(macro_dir)
 
         self._macro_path = p
@@ -1399,7 +1399,7 @@ class MacroExecutor(Logger):
         # Fill _reserved_macro_objs
         objs = self._reserved_macro_objs[macro_obj] = \
             self._reserved_macro_objs.get(macro_obj, list())
-        if not obj in objs:
+        if obj not in objs:
             if priority:
                 objs.insert(0, obj)
             else:

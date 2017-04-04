@@ -1313,7 +1313,7 @@ class CScan(GScan):
             try:
                 # hack to avoid recursive velocity reduction
                 self._maxVelDict = getattr(self, '_maxVelDict', {})
-                if not motor in self._maxVelDict:
+                if motor not in self._maxVelDict:
                     self._maxVelDict[motor] = motor.getVelocity()
                 max_top_vel = self._maxVelDict[motor]
             except AttributeError:

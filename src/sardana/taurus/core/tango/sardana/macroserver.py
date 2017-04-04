@@ -1059,11 +1059,11 @@ class BaseMacroServer(MacroServerDevice):
                     "%s parameter value: %s is above maximum allowed value." % (name, value))
         else:
             allowedInterfaces = self.getInterfaces().keys()
-            if not type in allowedInterfaces:
+            if type not in allowedInterfaces:
                 raise Exception(
                     "No element with %s interface exist in this sardana system." % type)
             allowedValues = self.getElementNamesWithInterface(type)
-            if not value in allowedValues:
+            if value not in allowedValues:
                 raise Exception(
                     "%s element with %s interface does not exist in this sardana system." % (value, type))
         return True

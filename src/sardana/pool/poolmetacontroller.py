@@ -314,7 +314,7 @@ class ControllerClass(SardanaClass):
         types = []
         klass = self.klass
         for _type, type_data in TYPE_MAP_OBJ.items():
-            if not _type in TYPE_ELEMENTS:
+            if _type not in TYPE_ELEMENTS:
                 continue
             if issubclass(klass, type_data.ctrl_klass):
                 types.append(_type)
