@@ -32,7 +32,7 @@ import collections
 
 # Token specification
 PARAM = r"(?P<PARAM>[^\[\]\s]+)"
-QUOTEDPARAM = r"\"(?P<QUOTEDPARAM>.*?)\""
+QUOTEDPARAM = r'"(?P<QUOTEDPARAM>.*?)(?<!\\)"'
 SINGQUOTEDPARAM = r"'(?P<SINGQUOTEDPARAM>.*?)'"
 LPAREN = r"(?P<LPAREN>\[)"
 RPAREN = r"(?P<RPAREN>\])"
@@ -47,7 +47,12 @@ Token = collections.namedtuple("Token", ["type","value"])
 def generate_tokens(text):
     scanner = master_pat.scanner(text)
     for m in iter(scanner.match, None):
-        tok = Token(m.lastgroup, m.group())
+        # quoted parameters must be returned without the quotes that's why we
+        # extract a given group, otherwise we would extract the whole match
+        group = (m.group("QUOTEDPARAM") or
+                 m.group("SINGQUOTEDPARAM") or
+                 m.group())
+        tok = Token(m.lastgroup, group)
         if tok.type != "WS":
             yield tok
 
@@ -94,9 +99,12 @@ class ParamParser:
         params = []
         while True:
             if self._accept("QUOTEDPARAM"):
-                params.append(self.tok.value[1:-1])
+                # quoted parameters allows using quotes escaped by \\
+                string = self.tok.value
+                string = string.replace('\\"', '"')
+                params.append(string)
             elif self._accept("SINGQUOTEDPARAM"):
-                params.append(self.tok.value[1:-1])
+                params.append(self.tok.value)
             elif self._accept("PARAM"):
                 params.append(self.tok.value)
             elif self._accept("LPAREN"):
