@@ -450,7 +450,7 @@ class MacroManager(MacroServerManager):
 
         :param module_name: module name
         :param path:
-            a list of absolute path to search for libraries [default: None. 
+            a list of absolute path to search for libraries [default: None.
             Search in sys.path.]
         :return: the reloaded python module object"""
         if module_name in self._modules:

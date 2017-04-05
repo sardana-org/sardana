@@ -2,8 +2,8 @@
 import sys
 
 """
-ControllerTemplate.py: Create a basic controller's template. 
-Its parameters are  the file name plus .py, 
+ControllerTemplate.py: Create a basic controller's template.
+Its parameters are  the file name plus .py,
     the class inherited if it had (optional)
     and "yes" if you want to use the obsolete convention.
 The necessary "defs" are marked as #TODO

@@ -33,7 +33,7 @@ from sardana.macroserver.macro import *
 
 class loop(Macro, Hookable):
     """A macro that executes a for loop. It accepts hooks.
-    This macro is part of the examples package. It was written for 
+    This macro is part of the examples package. It was written for
     demonstration purposes"""
 
     hints = {'allowsHooks': ('pre-move', 'post-move', 'pre-acq', 'post-acq')}
@@ -59,9 +59,9 @@ class loop(Macro, Hookable):
 
 
 class captain_hook(Macro):
-    """A macro that executes a loop macro. A hook was attached so that in each 
+    """A macro that executes a loop macro. A hook was attached so that in each
     step of the loop this hook is executed.
-    This macro is part of the examples package. It was written for 
+    This macro is part of the examples package. It was written for
     demonstration purposes"""
 
     param_def = [['start', Type.Integer, None, 'start point'],
@@ -78,9 +78,9 @@ class captain_hook(Macro):
 
 
 class captain_hook2(Macro):
-    """A macro that executes a loop macro. A hook was attached so that in each 
+    """A macro that executes a loop macro. A hook was attached so that in each
     step of the loop this hook is executed.
-    This macro is part of the examples package. It was written for 
+    This macro is part of the examples package. It was written for
     demonstration purposes"""
 
     param_def = [['start', Type.Integer, None, 'start point'],
@@ -100,7 +100,7 @@ class captain_hook2(Macro):
 
 class hooked_scan(Macro):
     """An example on how to attach hooks to the various hook points of a scan.
-    This macro is part of the examples package. It was written for 
+    This macro is part of the examples package. It was written for
     demonstration purposes"""
 
     param_def = [
@@ -144,7 +144,7 @@ class hooked_scan(Macro):
 
 class hooked_dummyscan(Macro):
     """An example on how to attach hooks to the various hook points of a scan.
-    This macro is part of the examples package. It was written for 
+    This macro is part of the examples package. It was written for
     demonstration purposes"""
 
     param_def = [

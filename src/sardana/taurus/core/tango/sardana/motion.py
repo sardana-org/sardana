@@ -57,7 +57,7 @@ class Moveable:
         pass
 
     def move(self, new_pos, timeout=None):
-        """ move(list<double> new_pos, timeout=None) -> None 
+        """ move(list<double> new_pos, timeout=None) -> None
 
         Triggers a movement and waits for it to end.
 
@@ -97,9 +97,9 @@ class MoveableSource:
         pass
 
     def getMoveable(self, names):
-        """ getMoveable(list<string> names) -> Moveable 
+        """ getMoveable(list<string> names) -> Moveable
 
-        Returns a Moveable object that handles all the moveable items given in 
+        Returns a Moveable object that handles all the moveable items given in
         names.
         """
         pass
@@ -307,12 +307,12 @@ class Motion(BaseMotion):
     def getElemNamesByMoveableSource(self, names, moveable_sources,
                                      allow_repeat,
                                      allow_unknown):
-        """ getElemNamesByMoveableSource(list<str>names, 
-                                        list<MoveableSource> moveable_sources, 
+        """ getElemNamesByMoveableSource(list<str>names,
+                                        list<MoveableSource> moveable_sources,
                                         bool allow_repeat, bool allow_unknown)
 
         Organizes the elements by moveable source. The result is a dictionary
-        with key being the MoveableSource and data a list of the names that 
+        with key being the MoveableSource and data a list of the names that
         belong to the that motion source.
         """
 

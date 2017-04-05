@@ -127,7 +127,7 @@ class SardanaContainer(object):
                           else if key 'full_name' given: search by full name
                           else if key 'name' given: search by name
 
-           :return: the pool object 
+           :return: the pool object
            :rtype: pool.PoolObject
 
            :throw: KeyError
@@ -149,7 +149,7 @@ class SardanaContainer(object):
            :param name: pool object name
            :type name: str
 
-           :return: the pool object 
+           :return: the pool object
            :rtype: pool.PoolObject
 
            :throw: KeyError
@@ -165,7 +165,7 @@ class SardanaContainer(object):
            :param name: pool object full name
            :type name: str
 
-           :return: the pool object 
+           :return: the pool object
            :rtype: pool.PoolObject
 
            :throw: KeyError
@@ -182,7 +182,7 @@ class SardanaContainer(object):
            :param id: pool object ID
            :type id: int
 
-           :return: the pool object 
+           :return: the pool object
            :rtype: pool.PoolObject
 
            :throw: KeyError

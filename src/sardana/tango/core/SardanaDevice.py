@@ -67,7 +67,7 @@ def get_thread_pool():
 
 
 class SardanaDevice(Device_4Impl, Logger):
-    """SardanaDevice represents the base class for all Sardana 
+    """SardanaDevice represents the base class for all Sardana
     :class:`PyTango.DeviceImpl` classes"""
 
     def __init__(self, dclass, name):
@@ -252,7 +252,7 @@ class SardanaDevice(Device_4Impl, Logger):
         If priority is > 1, the event filter is temporarily disabled so the event
         is sent for sure. If synch is set to True, wait for fire event to finish
 
-        :param attr: 
+        :param attr:
             the tango attribute
         :type attr: :class:`PyTango.Attribute`
         :param value:
@@ -492,7 +492,7 @@ class SardanaDeviceClass(DeviceClass):
                     InheritedFrom=["Device_4Impl"])
 
     def write_class_property(self):
-        """Write class properties ``ProjectTitle``, ``Description``, 
+        """Write class properties ``ProjectTitle``, ``Description``,
         ``doc_url``, ``InheritedFrom`` and ``__icon``"""
         db = self.get_database()
         if db is None:

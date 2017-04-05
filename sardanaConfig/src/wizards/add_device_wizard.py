@@ -147,7 +147,7 @@ class SimpleTreeView(QtGui.QTreeView):
 
 
 class AxisSteper(Qt.QSpinBox):
-    """ Object of this class is a Spin box that can jumps from 1 to the total number 
+    """ Object of this class is a Spin box that can jumps from 1 to the total number
         of axis while skipping busy values
     """
 
@@ -201,7 +201,7 @@ class AxisSteper(Qt.QSpinBox):
 
 class SingleAxisWidget(Qt.QWidget):
     """
-        Widget for selecting name and axis for the device 
+        Widget for selecting name and axis for the device
     """
 
     def __init__(self, parent=None):
@@ -517,7 +517,7 @@ class MultipleAxisWidget(Qt.QWidget):
     """
     Wizard for selecting multiple axis
     Method getValue() returns two dimensional array
-        where the first column is name and the second is axis 
+        where the first column is name and the second is axis
     """
 
     def __init__(self, parent=None):

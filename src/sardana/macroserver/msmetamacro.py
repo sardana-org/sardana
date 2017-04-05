@@ -64,7 +64,7 @@ def @macro_name@(self):
 
 
 class MacroLibrary(SardanaLibrary):
-    """Object representing a python module containing macro classes and/or 
+    """Object representing a python module containing macro classes and/or
     macro functions. Public members:
 
         - module - reference to python module
@@ -73,7 +73,7 @@ class MacroLibrary(SardanaLibrary):
         - path - complete (absolute) path
         - name - (=module name) module name (without file extension)
         - macros - dict<str, MacroClass>
-        - exc_info - exception information if an error occurred when loading 
+        - exc_info - exception information if an error occurred when loading
                     the module"""
 
     def __init__(self, **kwargs):
@@ -144,7 +144,7 @@ class Parameterizable(object):
         '''Builds a list of parameters, each of them represented by a dictionary
         containing information: name, type, default_value, description, min and
         max values. In case of simple parameters, type is the parameter type.
-        In case of ParamRepeat, type is a list containing definition of the 
+        In case of ParamRepeat, type is a list containing definition of the
         param repeat.
         '''
         ret = []

@@ -700,14 +700,14 @@ class PoolElementDevice(PoolDevice):
         ctrl.set_axis_attr(self.element.axis, name, value)
 
     def read_SimulationMode(self, attr):
-        """Read the current simulation mode. 
+        """Read the current simulation mode.
 
         :param attr: tango attribute
         :type attr: :class:`~PyTango.Attribute`"""
         attr.set_value(self.element.simulation_mode)
 
     def write_SimulationMode(self, attr):
-        """Sets the simulation mode. 
+        """Sets the simulation mode.
 
         :param attr: tango attribute
         :type attr: :class:`~PyTango.Attribute`"""
@@ -765,14 +765,14 @@ class PoolGroupDevice(PoolDevice):
     """Base Tango Pool Group Device class"""
 
     def read_ElementList(self, attr):
-        """Read the element list. 
+        """Read the element list.
 
         :param attr: tango attribute
         :type attr: :class:`~PyTango.Attribute`"""
         attr.set_value(self.get_element_names())
 
     def get_element_names(self):
-        """Returns the list of element names. 
+        """Returns the list of element names.
 
         :return: a list of attribute names"""
         elements = self.element.get_user_elements()

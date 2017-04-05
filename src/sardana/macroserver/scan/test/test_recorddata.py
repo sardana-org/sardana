@@ -100,7 +100,7 @@ class ScanDataTestCase(unittest.TestCase):
             self.inputs[name] = dat + [float('Nan')] * diff
 
     def recorddata(self, data, apply_interpolation):
-        """Verify that the data sent for storage is equal 
+        """Verify that the data sent for storage is equal
            to the actual data present in the created NeXus file.
         """
         self.prepareScandData(data, apply_interpolation)

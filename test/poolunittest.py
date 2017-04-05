@@ -1,4 +1,4 @@
-""" An extension to the original PyUnit providing specific Device Pool test 
+""" An extension to the original PyUnit providing specific Device Pool test
     utilities """
 
 from taurus.external import unittest
@@ -72,7 +72,7 @@ class PoolTestCase(unittest.TestCase):
     def check_empty_attribute(self, dev, att_name):
         """ check_empty_attribute(PyTango.DeviceProxy dev, string att_name) -> None
 
-            Reads the given attribute from the given device and checks that the 
+            Reads the given attribute from the given device and checks that the
             received value is empty.
 
             Paramaters:
@@ -97,7 +97,7 @@ class PoolTestCase(unittest.TestCase):
             Reads the given attribute from the given device and checks that this
             operation generates a PyTango.DevFailed exception with its 'reason'
             being equal to the given err string. If pr is set to True then the
-            exception description is sent to the output. 
+            exception description is sent to the output.
         """
         try:
             c_list = dev.read_attribute(att_name)
@@ -112,11 +112,11 @@ class PoolTestCase(unittest.TestCase):
     def wr_attribute_error(self, dev, att_val, err, pr=False):
         """ wr_attribute_error(PyTango.DeviceProxy dev, PyTango.AttributeValue att_value, string err, bool pr = False)
 
-            Writes the given attribute from the given device with the given 
-            value and checks that this operation generates a PyTango.DevFailed 
-            exception with its 'reason' being equal to the given err string. 
-            If pr is set to True then the exception description is sent to the 
-            output. 
+            Writes the given attribute from the given device with the given
+            value and checks that this operation generates a PyTango.DevFailed
+            exception with its 'reason' being equal to the given err string.
+            If pr is set to True then the exception description is sent to the
+            output.
         """
         try:
             dev.write_attribute(att_val)
@@ -131,11 +131,11 @@ class PoolTestCase(unittest.TestCase):
     def wrong_argument(self, dev, cmd_name, arg_list, err, pr=False):
         """ wrong_argument(PyTango.DeviceProxy dev, string cmd_name, list arg_list, string err, bool pr = False)
 
-            Executes the given command with the given arguments on the given 
+            Executes the given command with the given arguments on the given
             device and expects a PyTango.DevFailed exception to be raised with
             its 'reason' being equal to the given err string.
-            If pr is set to True then the exception description is sent to the 
-            output. 
+            If pr is set to True then the exception description is sent to the
+            output.
         """
         try:
             dev.command_inout(cmd_name, arg_list)
@@ -150,8 +150,8 @@ class PoolTestCase(unittest.TestCase):
     def _write_attribute(self, dev, att_name, att_val):
         """ _write_attribute(PyTango.DeviceProxy dev, string att_name, object attr_val)
 
-            Writes the given attribute from the given device with the given 
-            value. 
+            Writes the given attribute from the given device with the given
+            value.
         """
         val = PyTango.AttributeValue()
         val.name = att_name

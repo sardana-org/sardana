@@ -24,7 +24,7 @@
 ##############################################################################
 
 """
-poolioregister.py: 
+poolioregister.py:
 """
 
 __all__ = ["PoolIORegisterTV", "PoolIORegister", 'PoolIORegisterButtons']

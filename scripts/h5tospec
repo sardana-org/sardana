@@ -29,7 +29,7 @@ Script for extracting "scans" from Sardana NeXus files into Sardana Spec Files.
 Usage:
 h5spec <nexusfilename> [> <your_spec_file_name>] [2><your error/log file]
 
-Note: only scalar values are extracted, Images and 1D (MCA..) are ignored (notified to stderr)   
+Note: only scalar values are extracted, Images and 1D (MCA..) are ignored (notified to stderr)
 '''
 
 import nxs
@@ -51,7 +51,7 @@ def h52spectime(mydate):
 
 def _getMovables(mystr):
     '''
-    this internal function gets the movables from the "scan/mesh" command. 
+    this internal function gets the movables from the "scan/mesh" command.
     Movables should go first in SPEC columns
     '''
     # gets the movables from the command line (starting not with a number)
@@ -66,8 +66,8 @@ def _getMovables(mystr):
 
 def getMetadata(fd, entry):
     '''
-    This gets the metatdata from the Sardana h5 file. Format is kind of free, 
-    but nevertheless is very convenient the user/scientist makes sure all motors 
+    This gets the metatdata from the Sardana h5 file. Format is kind of free,
+    but nevertheless is very convenient the user/scientist makes sure all motors
     (and motor positions) are there
     '''
     _mdata = {}
@@ -86,8 +86,8 @@ def getMetadata(fd, entry):
 def processEntry(fd, entry):
     '''
     process one entry from a hdf5 file
-    it creates a string with all the data and prints it to the stdout in the end. 
-    It could be evenually easily modified to return the values and to be introduced 
+    it creates a string with all the data and prints it to the stdout in the end.
+    It could be evenually easily modified to return the values and to be introduced
     in a class (to get it out from this simple script)
 
     '''
@@ -190,9 +190,9 @@ def processEntry(fd, entry):
 
 def measurement2spec(fd):
     """
-    Takes a file (hdf5) as an inputProcess a hdf5 file and outputs the result to the stdout. 
+    Takes a file (hdf5) as an inputProcess a hdf5 file and outputs the result to the stdout.
     One can redirect the output to create the file.
-    Information and error messages are output to stderr, in order not to pollute the file 
+    Information and error messages are output to stderr, in order not to pollute the file
 
     """
 

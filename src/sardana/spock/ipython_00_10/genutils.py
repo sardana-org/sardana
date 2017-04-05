@@ -717,7 +717,7 @@ def create_spock_profile(userdir, dft_profile, profile, door_name=None):
 \"\"\"Settings for Spock session\"\"\"
 
 #
-# Please do not delete the next lines has they are used to check the version 
+# Please do not delete the next lines has they are used to check the version
 # number for possible upgrades
 # spock_creation_version = {version}
 # door_name = {door_name}

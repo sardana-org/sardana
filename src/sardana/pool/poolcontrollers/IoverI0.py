@@ -32,7 +32,7 @@ from sardana.pool.controller import PseudoCounterController
 
 
 class IoverI0(PseudoCounterController):
-    """ A simple pseudo counter which receives two counter values (I and I0) 
+    """ A simple pseudo counter which receives two counter values (I and I0)
         and returns I/I0"""
 
     gender = "IoverI0"

@@ -24,7 +24,7 @@
 ##############################################################################
 
 """
-sequenceeditor.py: 
+sequenceeditor.py:
 """
 import os
 import sys
@@ -301,7 +301,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
         node.setRange(range)
 
     def selectedNodeAndIndex(self):
-        """Returns a tuple with selected internal model node object and QModelIndex 
+        """Returns a tuple with selected internal model node object and QModelIndex
         from current model."""
         for idx in self.selectedIndexes():
             if idx.column() == 0:

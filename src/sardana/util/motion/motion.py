@@ -74,13 +74,13 @@ class MotionPath(object):
                  initial_user_pos,
                  final_user_pos,
                  active_time=None):
-        """MotionPath constructor - creates and calculates 
+        """MotionPath constructor - creates and calculates
         motion path parameters.
-        :param initial_user_pos: position at which constant vel 
+        :param initial_user_pos: position at which constant vel
                                  should be reached
-        :param final_user_pos: position at which deceleration should 
+        :param final_user_pos: position at which deceleration should
                                start
-        :param active_time: if passed, will fix the constant velocity 
+        :param active_time: if passed, will fix the constant velocity
                             (abs(final_user_pos - initial_user_pos)/active_time)
                             otherwise motor constant velocity
                             will be selected as high as possible"""

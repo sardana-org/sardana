@@ -182,10 +182,10 @@ class BaseNAPI_FileRecorder(BaseNEXUS_FileRecorder):
 
     def _makedata(self, name, dtype=None, shape=None, mode='lzw', chunks=None, comprank=None):
         '''
-        combines :meth:`nxs.NeXus.makedata` and :meth:`nxs.NeXus.compmakedata` by selecting between 
+        combines :meth:`nxs.NeXus.makedata` and :meth:`nxs.NeXus.compmakedata` by selecting between
         using compression or not based on the comprank parameter and the rank of the data.
-        Compression will be used only if the shape of the data is given and its length is larger 
-        than comprank. If comprank is not passed (or None is passed) the default dataCompressionRank 
+        Compression will be used only if the shape of the data is given and its length is larger
+        than comprank. If comprank is not passed (or None is passed) the default dataCompressionRank
         will be used
         '''
         if comprank is None:
@@ -209,8 +209,8 @@ class BaseNAPI_FileRecorder(BaseNEXUS_FileRecorder):
         '''
         convenience method that creates datasets (calling self._makedata), opens
         it (napi.opendata) and writes the data (napi.putdata).
-        It also writes attributes (napi.putattr) if passed in a dictionary and 
-        it returns the data Id (useful for linking). The dataset is left closed. 
+        It also writes attributes (napi.putattr) if passed in a dictionary and
+        it returns the data Id (useful for linking). The dataset is left closed.
         '''
         if shape is None:
             if dtype == 'char':
@@ -263,7 +263,7 @@ class BaseNAPI_FileRecorder(BaseNEXUS_FileRecorder):
 
     def _createBranch(self, path):
         """
-        Navigates the nexus tree starting in / and finishing in path. 
+        Navigates the nexus tree starting in / and finishing in path.
 
         If path does not start with `/<something>:NXentry`, the current entry is
         prepended to it.

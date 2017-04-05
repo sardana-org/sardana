@@ -22,7 +22,7 @@
 ##############################################################################
 
 """
-    Macro library containning scan macros for the macros server Tango device 
+    Macro library containning scan macros for the macros server Tango device
     server as part of the Sardana project.
    
    Available Macros are:
@@ -204,9 +204,9 @@ class aNscan(Hookable):
     def _waypoint_generator_hwtime(self):
         # TODO: remove starts
         def calculate_positions(moveable_node, start, end):
-            '''Function to calculate starting and ending positions on the physical 
-            motors level. 
-            :param moveable_node: (BaseNode) node representing a moveable. 
+            '''Function to calculate starting and ending positions on the physical
+            motors level.
+            :param moveable_node: (BaseNode) node representing a moveable.
                                   Can be a BranchNode representing a PseudoMotor,
                                   or a LeafNode representing a PhysicalMotor).
             :param start: (float) starting position of the moveable

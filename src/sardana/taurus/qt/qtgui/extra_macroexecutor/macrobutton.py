@@ -66,7 +66,7 @@ class MacroButton(TaurusWidget):
 
     .. todo:: Not implemented but will be needed: set an icon
 
-    .. todo:: It may be useful to have all the streams from qdoor available 
+    .. todo:: It may be useful to have all the streams from qdoor available
              somehow (right-click?)
     '''
 
@@ -96,13 +96,13 @@ class MacroButton(TaurusWidget):
     def showProgress(self, visible):
         '''Set whether the progress bar is shown
 
-        :param visible: (bool) If True, the progress bar is shown. Otherwise it 
+        :param visible: (bool) If True, the progress bar is shown. Otherwise it
                         is hidden'''
         self.ui.progress.setVisible(visible)
 
     def setModel(self, model):
         '''
-        reimplemented from :class:`TaurusWidget`. A door device name is 
+        reimplemented from :class:`TaurusWidget`. A door device name is
         expected as the model
         '''
         TaurusWidget.setModel(self, model)
@@ -243,10 +243,10 @@ class MacroButton(TaurusWidget):
                      functools.partial(self.updateMacroArgument, index))
 
     def connectArgEditors(self, signals):
-        '''Associate signals to argument changes. 
+        '''Associate signals to argument changes.
 
-        :param signals: (seq<tuple>) An ordered sequence of (`obj`, `sig`) 
-                        tuples , where `obj` is a parameter editor object and 
+        :param signals: (seq<tuple>) An ordered sequence of (`obj`, `sig`)
+                        tuples , where `obj` is a parameter editor object and
                         `sig` is a signature for a signal emitted by `obj` which
                         provides the value of a parameter as its argument.
                         Each (`obj`, `sig`) tuple is associated to parameter

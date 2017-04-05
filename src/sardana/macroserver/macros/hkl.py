@@ -1,6 +1,6 @@
 
 """
-    Macro library containning diffractometer related macros for the macros 
+    Macro library containning diffractometer related macros for the macros
     server Tango device server as part of the Sardana project.
     
 """
@@ -175,9 +175,9 @@ class _diffrac:
 
 
 class br(Macro, _diffrac):
-    """Move the diffractometer to the reciprocal space coordinates given by 
-    H, K and L. 
-    If a fourth parameter is given, the combination of angles to be set is 
+    """Move the diffractometer to the reciprocal space coordinates given by
+    H, K and L.
+    If a fourth parameter is given, the combination of angles to be set is
     the correspondig to the given index. The index of the
     angles combinations are then changed."""
 
@@ -247,7 +247,7 @@ class br(Macro, _diffrac):
 
 
 class ubr(Macro, _diffrac):
-    """Move the diffractometer to the reciprocal space coordinates given by 
+    """Move the diffractometer to the reciprocal space coordinates given by
     H, K and L und update.
     """
 
@@ -471,9 +471,9 @@ class pa(Macro, _diffrac):
 class wh(Macro, _diffrac):
     """Show principal axes and reciprocal space positions.
 
-    Prints the current reciprocal space coordinates (H K L) and the user 
-    positions of the principal motors. Depending on the diffractometer geometry, 
-    other parameters such as the angles of incidence and reflection (ALPHA and 
+    Prints the current reciprocal space coordinates (H K L) and the user
+    positions of the principal motors. Depending on the diffractometer geometry,
+    other parameters such as the angles of incidence and reflection (ALPHA and
     BETA) and the incident wavelength (LAMBDA) may be displayed."""
 
     def prepare(self):
@@ -1051,9 +1051,9 @@ class addreflection(Macro, _diffrac):
 
 class affine(Macro, _diffrac):
     """Affine current crystal.
-    Fine tunning of lattice parameters and UB matrix based on 
-    current crystal reflections. Reflections with affinement 
-    set to 0 are not used. A new crystal with the post fix 
+    Fine tunning of lattice parameters and UB matrix based on
+    current crystal reflections. Reflections with affinement
+    set to 0 are not used. A new crystal with the post fix
     (affine) is created and set as current crystal"""
 
     def prepare(self):
@@ -1225,7 +1225,7 @@ class hklscan(aNscan, Macro, _diffrac):
 class th2th(Macro):
     """th2th - scan:
 
-    Relative scan around current position in del and th with d_th=2*d_delta    
+    Relative scan around current position in del and th with d_th=2*d_delta
     """
 
     param_def = [
@@ -1272,7 +1272,7 @@ class luppsi(Macro, _diffrac):
 
     Relative scan psi angle
 
-    [TODO] Still not tested    
+    [TODO] Still not tested
     """
 
     param_def = [

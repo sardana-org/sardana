@@ -542,7 +542,7 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
 
     def get_or_create_macro_lib(self, lib_name, macro_name=None):
         """Gets the exiting macro lib or creates a new macro lib file. If
-        name is not None, a macro template code for the given macro name is 
+        name is not None, a macro template code for the given macro name is
         appended to the end of the file.
 
         :param lib_name:

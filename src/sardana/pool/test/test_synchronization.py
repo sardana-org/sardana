@@ -23,7 +23,7 @@
 ##
 ##############################################################################
 
-"""This module contains tests for trigger gate generation using a 
+"""This module contains tests for trigger gate generation using a
 given controller"""
 
 __docformat__ = "restructuredtext"
@@ -72,7 +72,7 @@ class SynchronizationTestCase(object):
 
     def tggeneration(self, ctrl_lib, ctrl_klass, ctrl_props,
                      synchronization):
-        """Helper method to verify trigger element states before and after 
+        """Helper method to verify trigger element states before and after
         trigger/gate generation.
 
        :param ctrl_lib: controller library used for the test
@@ -117,7 +117,7 @@ class SynchronizationTestCase(object):
 
     def abort_tggeneration(self, ctrl_lib, ctrl_klass, ctrl_props,
                            synchronization, abort_time):
-        """Helper method to verify trigger element states before and after 
+        """Helper method to verify trigger element states before and after
         trigger/gate generation when aborting the trigger generation.
 
        :param ctrl_lib: controller library used for the test

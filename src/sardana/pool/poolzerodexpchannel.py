@@ -172,7 +172,7 @@ class Value(SardanaAttribute):
         return value
 
     def _get_value_obj(self):
-        '''Override superclass method and compose a SardanaValue object from 
+        '''Override superclass method and compose a SardanaValue object from
         the present values.
         '''
         value = self._accumulation.value

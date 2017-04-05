@@ -48,7 +48,7 @@ class MacroRunException(Exception):
 
 
 class MacroInfo(object):
-    """Contains all information about a macro: name, documentation, parameters, 
+    """Contains all information about a macro: name, documentation, parameters,
     result, etc"""
 
     def __init__(self, from_json_str=None, from_json=None):
@@ -150,7 +150,7 @@ class MacroInfo(object):
 
         :param idx: (int) the index (default is 0)
 
-        :return: (object) the parameter or None if the macro does not have the 
+        :return: (object) the parameter or None if the macro does not have the
                  desired parameter
         """
         if not self.hasParams():
@@ -161,7 +161,7 @@ class MacroInfo(object):
         """Gets the possible parameters for the given index
 
         :param idx: (int) parameter index
-        :param parameters: (sequence) sequence of parameter information (default 
+        :param parameters: (sequence) sequence of parameter information (default
                            is None which means use the macro parameters
         :return: (sequence) list of possible parameters
         """
@@ -236,7 +236,7 @@ class MacroInfo(object):
 
         :param idx: (int) the index (default is 0)
 
-        :return: (object) the result or None if the macro does not have the 
+        :return: (object) the result or None if the macro does not have the
                  desired result
         """
         return self.result[idx]
@@ -1044,7 +1044,7 @@ class MacroNode(BranchNode):
         return self.parent().parent() is not None
 
     def moveLeft(self):
-        """This method moves macro to grandparent's hook list 
+        """This method moves macro to grandparent's hook list
         and place it right after its ex-parent,
         it also returns newRow"""
         oldParent = self.parent()
@@ -1111,7 +1111,7 @@ class MacroNode(BranchNode):
 
         :param withId: (bool) if we want to export also macro id (default: True)
 
-        See Also: fromXml 
+        See Also: fromXml
         """
 
         macroElement = etree.Element("macro", name=self.name())
@@ -1270,7 +1270,7 @@ def ParamFactory(paramInfo):
 def createMacroNode(macro_name, params_def, macro_params):
     """The best effort creation of the macro XML object. It tries to
     convert flat list of string parameter values to the correct macro XML
-    object. 
+    object.
 
     Default values allow in ParamRepeat parameters or the last single ones
 

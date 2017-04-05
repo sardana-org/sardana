@@ -40,7 +40,7 @@ RecorderStatus = Enumeration('RecorderStatus', ('Idle', 'Active', 'Disable'))
 
 class DataHandler:
     """ The data handler is the data recording center of a system. It contains
-    one or several recorders.  All data transit through the handler, then 
+    one or several recorders.  All data transit through the handler, then
     given to recorders for final saving """
 
     def __init__(self):
@@ -70,7 +70,7 @@ class DataHandler:
                 pass
 
     def addCustomData(self, value, name, **kwargs):
-        '''Write data other than a record. 
+        '''Write data other than a record.
 
         :param value: The value to be written
         :param name: An identification for this value

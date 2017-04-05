@@ -45,7 +45,7 @@ _NOT_PASSED = __NotPassedType()
 def macroTest(klass=None, helper_name=None, test_method_name=None,
               test_method_doc=None, **helper_kwargs):
     """This decorator is an specialization of :function::`taurus.test.insertTest`
-    for macro testing. It inserts test methods from a helper method that may 
+    for macro testing. It inserts test methods from a helper method that may
     accept arguments.
 
     macroTest provides a very economic API for creating new tests for a given

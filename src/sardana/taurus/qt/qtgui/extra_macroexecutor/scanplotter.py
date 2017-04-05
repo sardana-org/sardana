@@ -24,7 +24,7 @@
 ##############################################################################
 
 """
-scanplotter.py: 
+scanplotter.py:
     module containing the widget: scanplotter,
     to be used in the Taurus app "scanner.py"
 """

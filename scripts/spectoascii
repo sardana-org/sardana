@@ -29,11 +29,11 @@ When data from multiple scans are extracted from a file, each table is stored in
 The output files for a given input file are stored in a directory whose name matches the input scan ID
 
 Usage:
-python spectoascii.py <specfile> [<scan_ID_1> [<scan_ID_2>] ...]  
+python spectoascii.py <specfile> [<scan_ID_1> [<scan_ID_2>] ...]
 
 If no scan IDs are provided, all scans from the given Spec file will be extracted.
 
-Note that this is not a generic Spec conversor. Spec files created by means other than the Sardana 
+Note that this is not a generic Spec conversor. Spec files created by means other than the Sardana
 SPEC_FileRecorder may not be converted properly.
  
 '''

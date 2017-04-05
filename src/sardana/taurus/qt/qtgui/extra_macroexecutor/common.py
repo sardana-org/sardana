@@ -339,10 +339,10 @@ class MacroExecutionWindow(TaurusMainWindow):
             return
 
     def onShortMessage(self, msg):
-        ''' Slot to be called when there is a new short message. Currently, the only action 
+        ''' Slot to be called when there is a new short message. Currently, the only action
         taken when there is a new message is to display it in the main window status bar.
 
-        :param msg: (str) the short descriptive message to be handled 
+        :param msg: (str) the short descriptive message to be handled
         '''
         self.statusBar().showMessage(msg)
 

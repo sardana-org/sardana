@@ -974,7 +974,7 @@ class PoolMotorTVLabelWidget(TaurusWidget):
 class PoolMotorTVReadWidget(TaurusWidget):
     '''
     @TODO on the 'expert' row, there should be an Indexer/Encoder radiobuttongroup to show units from raw dial/indx/enc
-    @TODO TaurusLCD may be used but, now it does not display the sign, and color is WHITE... 
+    @TODO TaurusLCD may be used but, now it does not display the sign, and color is WHITE...
     '''
 
     layoutAlignment = Qt.Qt.AlignTop

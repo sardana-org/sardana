@@ -406,14 +406,14 @@ class SPEC_FileRecorder(BaseFileRecorder):
         return multi_lines
 
     def _preparePreScanSnapshot(self, env):
-        '''Extract pre-scan snapshot, filters elements of shape different 
+        '''Extract pre-scan snapshot, filters elements of shape different
         than scalar and split labels and values into chunks of 8 items.
 
         :param: env (dict) scan environment
 
         :return: labels, values (tuple<list,list>)
-                 labels - list of chunks with 8 elements containing labels 
-                 values - list of chunks with 8 elements containing values    
+                 labels - list of chunks with 8 elements containing labels
+                 values - list of chunks with 8 elements containing values
         '''
         # preScanSnapShot is a list o ColumnDesc objects
         pre_scan_snapshot = env.get('preScanSnapShot', [])
@@ -486,7 +486,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
 
     def _addCustomData(self, value, name, **kwargs):
         '''
-        The custom data will be added as a comment line in the form:: 
+        The custom data will be added as a comment line in the form::
 
         #C name : value
 
@@ -796,7 +796,7 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
                         "Could not create link to '%s' in '%s'. Reason: %s", datapath, dd.instrument, repr(e))
 
     def _createNXData(self):
-        '''Creates groups of type NXdata by making links to the corresponding datasets 
+        '''Creates groups of type NXdata by making links to the corresponding datasets
         '''
         # classify by type of plot:
         plots1d = {}
@@ -853,7 +853,7 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
                        the group names). See the rules for automatic nxclass
                        resolution used by
                        :meth:`NXscan_FileRecorder._createBranch`.
-                       If None given, it defaults to 
+                       If None given, it defaults to
                        nxpath='custom_data:NXcollection'
 
         :param dtype: name of data type (it is inferred from value if not given)

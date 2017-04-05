@@ -232,7 +232,7 @@ class PoolBaseGroup(PoolContainer):
         """Returns a dictionary of main attribute of each user element.
 
         :return: a dictionary of main attribute of each user element.
-        :rtype: dict< :class:`~sardana.pool.poolelement.PoolElement`, 
+        :rtype: dict< :class:`~sardana.pool.poolelement.PoolElement`,
                 :class:`~sardana.sardanaattribute.SardanaAttribute` >"""
         ret = {}
         for element in self.get_user_elements():

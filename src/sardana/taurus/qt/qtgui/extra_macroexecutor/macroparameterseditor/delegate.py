@@ -24,7 +24,7 @@
 ##############################################################################
 
 """
-delegate.py: 
+delegate.py:
 """
 
 from taurus.external.qt import Qt

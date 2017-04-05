@@ -41,7 +41,7 @@ from sardana.util.funcgenerator import FunctionGenerator
 
 
 class TGChannel(PoolActionItem):
-    """An item involved in the trigger/gate generation. 
+    """An item involved in the trigger/gate generation.
     Maps directly to a trigger object
 
     .. note::

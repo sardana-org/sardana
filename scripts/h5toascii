@@ -29,11 +29,11 @@ When data from multiple entries are extracted from a file, each table is stored 
 The output files for a given input file are stored in a directory whose name matches the input file name (minus extension)
 
 Usage:
-python h52ascii.py <nexusfilename> [<entryname1> [<entryname2>] ...] 
+python h52ascii.py <nexusfilename> [<entryname1> [<entryname2>] ...]
 
 If no entry names are provided, all entries from the given nexus file name will be extracted.
 
-Note: only scalar values are extracted   
+Note: only scalar values are extracted
 '''
 
 import nxs

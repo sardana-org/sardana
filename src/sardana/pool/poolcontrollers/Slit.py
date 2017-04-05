@@ -34,7 +34,7 @@ from sardana.pool.controller import DefaultValue, Description, Access, Type
 
 
 class Slit(PseudoMotorController):
-    """A Slit pseudo motor controller for handling gap and offset pseudo 
+    """A Slit pseudo motor controller for handling gap and offset pseudo
        motors. The system uses to real motors sl2t (top slit) and sl2b (bottom
        slit)"""
 
@@ -77,7 +77,7 @@ class Slit(PseudoMotorController):
         return ret
 
     def CalcAllPseudo(self, physical_pos, curr_pseudo_pos):
-        """Calculates the positions of all pseudo motors that belong to the 
+        """Calculates the positions of all pseudo motors that belong to the
            pseudo motor system from the positions of the physical motors."""
         gap = physical_pos[1] + physical_pos[0]
         return (self.sign * gap,

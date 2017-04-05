@@ -55,7 +55,7 @@ def __remove_from_syspath__():
 
 class UserModuleDeleter(object):
     """
-    User Module Deleter (UMD) aims at deleting user modules 
+    User Module Deleter (UMD) aims at deleting user modules
     to force Python to deeply reload them during import
 
     pathlist [list]: blacklist in terms of module path
@@ -83,7 +83,7 @@ class UserModuleDeleter(object):
         """
         Del user modules to force Python to deeply reload them
 
-        Do not del modules which are considered as system modules, i.e. 
+        Do not del modules which are considered as system modules, i.e.
         modules installed in subdirectories of Python interpreter's binary
         Do not del C modules
         """

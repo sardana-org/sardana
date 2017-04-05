@@ -268,7 +268,7 @@ def memorize_write_attribute(write_attr_func):
            - only memorize if write doesn't throw exception
            - also memorize the timestamp
 
-       :param write_attr_func: the write method 
+       :param write_attr_func: the write method
        :type write_attr_func: callable
        :return: a write method safely wrapping the given write method
        :rtype: callable"""
@@ -738,7 +738,7 @@ def register_server_with_devices(db, server_name, server_instance, devices):
        :type server_name: str
        :param server_instance: server instance name
        :type server_instance: str
-       :param devices: map of devices to create. 
+       :param devices: map of devices to create.
        :type devices: dict<str, seq<tuple<str, str, dict>>>
     """
     info = DbDevInfo()

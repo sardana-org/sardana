@@ -43,8 +43,8 @@ class pt0(Macro):
 
 
 class pt1(Macro):
-    """Macro with one float parameter: Each parameter is described in the 
-    param_def sequence as being a sequence of four elements: name, type, 
+    """Macro with one float parameter: Each parameter is described in the
+    param_def sequence as being a sequence of four elements: name, type,
     default value and description.
     Usage from Spock, ex.:
     pt1 1
@@ -57,8 +57,8 @@ class pt1(Macro):
 
 
 class pt2(Macro):
-    """Macro with one Motor parameter: Each parameter is described in the 
-    param_def sequence as being a sequence of four elements: name, type, 
+    """Macro with one Motor parameter: Each parameter is described in the
+    param_def sequence as being a sequence of four elements: name, type,
     default value and description.
     Usage from Spock, ex.
     pt2 mot1
@@ -72,7 +72,7 @@ class pt2(Macro):
 
 class pt3(Macro):
     """Macro with a list of numbers as parameter: the type is a sequence of
-    parameter types which is repeated. In this case it is a repetition of a 
+    parameter types which is repeated. In this case it is a repetition of a
     float so only one parameter is defined.
     By default the repetition as a semantics of 'at least one'
     Usages from Spock, ex.:
@@ -90,7 +90,7 @@ class pt3(Macro):
 
 class pt3d(Macro):
     """Macro with a list of numbers as parameter: the type is a sequence of
-    parameter types which is repeated. In this case it is a repetition of a 
+    parameter types which is repeated. In this case it is a repetition of a
     float so only one parameter is defined. The parameter has a default value.
     By default the repetition as a semantics of 'at least one'
     Usages from Spock, ex.:
@@ -110,7 +110,7 @@ class pt3d(Macro):
 
 class pt4(Macro):
     """Macro with a list of motors as parameter: the type is a sequence of
-    parameter types which is repeated. In this case it is a repetition of a 
+    parameter types which is repeated. In this case it is a repetition of a
     motor so only one parameter is defined.
     By default the repetition as a semantics of 'at least one'.
     Usages from Spock, ex.:
@@ -223,7 +223,7 @@ class pt8(Macro):
     explicitly stated.
     Usages from Spock, ex.:
     pt8 [[mot1 1] [mot2 3]]
-    pt8 mot1 1 mot2 3    
+    pt8 mot1 1 mot2 3
     """
 
     param_def = [
@@ -309,7 +309,7 @@ class pt12(Macro):
 
 
 class pt13(Macro):
-    """Macro with list of motors groups, where each motor group is a list of 
+    """Macro with list of motors groups, where each motor group is a list of
     motors. Repeat parameters may be defined as nested.
     Usage from Spock, ex.:
     pt13 [[mot1 mot2] [mot3 mot4]]
@@ -327,7 +327,7 @@ class pt13(Macro):
 
 
 class pt14(Macro):
-    """Macro with list of motors groups, where each motor group is a list of 
+    """Macro with list of motors groups, where each motor group is a list of
     motors and a float. Repeat parameters may be defined as nested.
     Usage from Spock, ex.:
     pt14 [[[mot1 mot2] 3] [[mot3] 5]]
@@ -345,7 +345,7 @@ class pt14(Macro):
 
 
 class pt14d(Macro):
-    """Macro with list of motors groups, where each motor group is a list of 
+    """Macro with list of motors groups, where each motor group is a list of
     motors and a float. Repeat parameters may be defined as nested.
     Default values can be used.
     Usages taken default values, ex.:
@@ -366,8 +366,8 @@ class pt14d(Macro):
 
 
 class twice(Macro):
-    """A macro that returns a float that is twice its input. It also sets its 
-    data to be a dictionary with 'in','out' as keys and value,result 
+    """A macro that returns a float that is twice its input. It also sets its
+    data to be a dictionary with 'in','out' as keys and value,result
     as values, respectively"""
 
     # uncomment the following lines as necessary. Otherwise you may delete them

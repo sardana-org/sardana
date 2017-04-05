@@ -24,7 +24,7 @@
 ##############################################################################
 
 """
-__init__.py: 
+__init__.py:
 """
 from .macroexecutor import TaurusMacroExecutorWidget, TaurusMacroExecutor
 from .sequenceeditor import TaurusSequencerWidget, TaurusSequencer

@@ -26,7 +26,7 @@ from sardana.pool.controller import IORegisterController
 
 
 class DummyIORController(IORegisterController):
-    """This controller offers as many IORegisters as the user wants (up to 
+    """This controller offers as many IORegisters as the user wants (up to
     1024)."""
 
     gender = "Simulation"

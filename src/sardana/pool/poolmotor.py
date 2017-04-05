@@ -98,7 +98,7 @@ class Position(SardanaAttribute):
     def calc_position(self, dial=None):
         """Returns the computed position from last the dial position from the
         given parameter or (if None), the last dial position obtained from
-        hardware read. 
+        hardware read.
 
         :param dial: the new dial position [default: None, meaning use the
                      current dial position.

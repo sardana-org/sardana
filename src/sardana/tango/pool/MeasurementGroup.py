@@ -149,7 +149,7 @@ class MeasurementGroup(PoolGroupDevice):
                            synch=False)
 
     def _synchronization_str2enum(self, synchronization):
-        '''Translates synchronization data structure so it uses SynchDomain 
+        '''Translates synchronization data structure so it uses SynchDomain
         enums as keys instead of strings.
         '''
         for group in synchronization:

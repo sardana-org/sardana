@@ -71,12 +71,12 @@ Init, State and Status commands. These commands are summarized in the
 following table:
 
 ==============  ================  ================
-Command name    Input data type   Output data type  
+Command name    Input data type   Output data type
 ==============  ================  ================
-Stop            void              void              
-Abort           void              void              
-DefinePosition  Tango::DevDouble  void              
-SaveConfig      void              void              
+Stop            void              void
+Abort           void              void
+DefinePosition  Tango::DevDouble  void
+SaveConfig      void              void
 ==============  ================  ================
 
 - **Stop** : It stops a running motion. This command does not have input or
@@ -96,7 +96,7 @@ SaveConfig      void              void
   database as motor device properties. It is allowed only in the ON or ALARM
   states
 
-The classical Tango Init command destroys the motor and re-create it. 
+The classical Tango Init command destroys the motor and re-create it.
 
 .. rubric:: The attributes
 
@@ -104,19 +104,19 @@ The motor interface supports several attributes which are summarized
 in the following table:
 
 ==============  =================  ===========  ========  =========  ===============
-Name            Data type          Data format  Writable  Memorized  Operator/Expert  
+Name            Data type          Data format  Writable  Memorized  Operator/Expert
 ==============  =================  ===========  ========  =========  ===============
-Position        Tango::DevDouble   Scalar       R/W       No *       Operator         
-DialPosition    Tango::DevDouble   Scalar       R         No         Expert         
-Offset          Tango::DevDouble   Scalar       R/W       Yes        Expert         
-Acceleration    Tango::DevDouble   Scalar       R/W       No         Expert         
-Base_rate       Tango::DevDouble   Scalar       R/W       No         Expert         
-Deceleration    Tango::DevDouble   Scalar       R/W       No         Expert         
-Velocity        Tango::DevDouble   Scalar       R/W       No         Expert         
-Limit_Switches  Tango::DevBoolean  Spectrum     R         No         Expert         
-SimulationMode  Tango::DevBoolean  Scalar       R         No         Expert         
-Step_per_unit   Tango::DevDouble   Scalar       R/W       Yes        Expert         
-Backlash        Tango::DevLong     Scalar       R/W       Yes        Expert         
+Position        Tango::DevDouble   Scalar       R/W       No *       Operator
+DialPosition    Tango::DevDouble   Scalar       R         No         Expert
+Offset          Tango::DevDouble   Scalar       R/W       Yes        Expert
+Acceleration    Tango::DevDouble   Scalar       R/W       No         Expert
+Base_rate       Tango::DevDouble   Scalar       R/W       No         Expert
+Deceleration    Tango::DevDouble   Scalar       R/W       No         Expert
+Velocity        Tango::DevDouble   Scalar       R/W       No         Expert
+Limit_Switches  Tango::DevBoolean  Spectrum     R         No         Expert
+SimulationMode  Tango::DevBoolean  Scalar       R         No         Expert
+Step_per_unit   Tango::DevDouble   Scalar       R/W       Yes        Expert
+Backlash        Tango::DevLong     Scalar       R/W       Yes        Expert
 ==============  =================  ===========  ========  =========  ===============
 
 - **Position** : This is read-write scalar double attribute. With the classical
@@ -125,7 +125,7 @@ Backlash        Tango::DevLong     Scalar       R/W       Yes        Expert
   DialPosition and Offset attributes to get a precise definition of the
   meaning of this attribute. It is not allowed to read or write this
   attribute when the motor is in FAULT or UNKNOWN state. It is also not
-  possible to write this attribute when the motor is already MOVING. 
+  possible to write this attribute when the motor is already MOVING.
   The unit used for this attribute is the physical unit: millimeters or
   milli-radian. It is always an **absolute position** .
 
@@ -224,10 +224,10 @@ attributes specified on the controller with
 
 .. rubric:: The properties
 
-- **Sleep_before_last_read** : This property exposes the motor 
+- **Sleep_before_last_read** : This property exposes the motor
   *instability time*. It defines the time in milli-second that the software
   managing a motor movement will wait between it detects the end of the
-  motion and the last motor position reading. 
+  motion and the last motor position reading.
 
 .. rubric:: Getting motor state and limit switches using event
 
@@ -241,7 +241,7 @@ starts a motion, its state is changed to MOVING and an event is sent.
 As soon as the motion is over, the motor state is updated ans another
 event is sent. In the same way, as soon as a change in the limit
 switches value is detected, a change event is sent to client(s) which
-have subscribed to change event on the Limit_Switches attribute. 
+have subscribed to change event on the Limit_Switches attribute.
 
 
 .. rubric:: Reading the motor position attribute
@@ -264,7 +264,7 @@ property. Anyway, not more than 10 events could be sent by second.
 Once the motion is over, the motor position is made unavailable from
 the Tango polling buffer and is read a last time after a tunable
 waiting time (Sleep_bef_last_read property). A forced change event
-with this value is sent to clients using events. 
+with this value is sent to clients using events.
     """
 
     def __init__(self, dclass, name):

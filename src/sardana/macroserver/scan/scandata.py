@@ -340,7 +340,7 @@ class RecordList(dict):
     def addData(self, data):
         """Adds data to the record list
 
-        :param data: dictionary with two mandatory elements: label - string 
+        :param data: dictionary with two mandatory elements: label - string
                      and data - list of values
         :type data:  dict"""
         with self.rlock:

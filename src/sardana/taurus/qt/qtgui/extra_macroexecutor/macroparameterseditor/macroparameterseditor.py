@@ -24,7 +24,7 @@
 ##############################################################################
 
 """
-macroparameterseditor.py: 
+macroparameterseditor.py:
 """
 import sys
 import inspect

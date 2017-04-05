@@ -1358,7 +1358,7 @@ class CScan(GScan):
 
     def get_min_pos(self, motor):
         '''Helper method to find the minimum position for a given motor.
-        If the motor doesn't define its minimum position, then the negative 
+        If the motor doesn't define its minimum position, then the negative
         infinite float representation is returned.
         '''
         pos_obj = motor.getPositionObj()

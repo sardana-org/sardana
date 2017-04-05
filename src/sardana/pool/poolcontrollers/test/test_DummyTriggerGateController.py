@@ -27,7 +27,7 @@ class PoolDummyTriggerGateTestCase(unittest.TestCase):
     the DummTriggerGateController.
 
     Using insertTest decorator, one can add tests of a particular trigger/gate
-    characteristic.    
+    characteristic.
     """
 
     def setUp(self):
@@ -51,7 +51,7 @@ class PoolDummyTriggerGateTestCase(unittest.TestCase):
         self.tg_action.add_element(self.dummy_tg)
 
     def generation(self, synchronization):
-        """Verify that the created PoolTGAction start_action starts correctly 
+        """Verify that the created PoolTGAction start_action starts correctly
         the involved controller."""
         args = ()
         kwargs = {'config': self.cfg,

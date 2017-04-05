@@ -231,7 +231,7 @@ class SardanaAttribute(EventGenerator):
         return propagate > 1 or self.filter(self.get_value(), self._last_event_value.value)
 
     def get_timestamp(self):
-        """Returns the timestamp of the last readout or None if the attribute 
+        """Returns the timestamp of the last readout or None if the attribute
         has never been read before
 
         :return: timestamp of the last readout or None
@@ -243,7 +243,7 @@ class SardanaAttribute(EventGenerator):
             return self._r_value.timestamp
 
     def get_write_timestamp(self):
-        """Returns the timestamp of the last write or None if the attribute 
+        """Returns the timestamp of the last write or None if the attribute
         has never been written before
 
         :return: timestamp of the last write or None

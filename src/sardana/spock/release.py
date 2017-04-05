@@ -51,7 +51,7 @@ description = "An enhanced interactive Macro Server shell."
 long_description = \
     """
 Spock provides an interactive environment for interacting with the Tango
-MacroServer Device. It is completely based on IPython which itself provides a 
+MacroServer Device. It is completely based on IPython which itself provides a
 replacement for the interactive Python interpreter with extra functionality.
  """
 

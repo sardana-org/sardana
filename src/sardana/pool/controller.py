@@ -101,7 +101,7 @@ class Controller(object):
     :param str inst: controller instance name
     :param dict props: a dictionary containning pairs of property name,
                        property value
-    :arg args: 
+    :arg args:
     :keyword kwargs:"""
 
     #: .. deprecated:: 1.0
@@ -1042,8 +1042,8 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable):
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
         Called to get a parameter value on the given axis.
-        If parameter == 'data_source', default implementation returns None, 
-        meaning let sardana decide the proper URI for accessing the axis value. 
+        If parameter == 'data_source', default implementation returns None,
+        meaning let sardana decide the proper URI for accessing the axis value.
         Otherwise, default implementation calls deprecated
         :meth:`~Controller.GetPar` which, by default, raises
         :exc:`NotImplementedError`.
@@ -1075,8 +1075,8 @@ class TwoDController(Controller, Readable, Startable, Stopable, Loadable):
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
         Called to get a parameter value on the given axis.
-        If parameter == 'data_source', default implementation returns None, 
-        meaning let sardana decide the proper URI for accessing the axis value. 
+        If parameter == 'data_source', default implementation returns None,
+        meaning let sardana decide the proper URI for accessing the axis value.
         Otherwise, default implementation calls deprecated
         :meth:`~Controller.GetPar` which, by default, raises
         :exc:`NotImplementedError`.

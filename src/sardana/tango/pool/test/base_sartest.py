@@ -32,7 +32,7 @@ __all__ = ['SarTestTestCase']
 
 class SarTestTestCase(BasePoolTestCase):
     """ Base class to setup sardana test environment.
-        It creates the controllers defined in cls_list 
+        It creates the controllers defined in cls_list
         with the given 'n' elements.
 
         - cls_list is a list of tuples: (ctrl_class, prefix, subfix, num_elem)

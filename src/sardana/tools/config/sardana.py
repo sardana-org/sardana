@@ -21,7 +21,7 @@
     
     --cleanup=<True|False> either or not to perform a cleanup at the end. Default
                            is True.
-                           If cleanup is True the database will be cleaned at 
+                           If cleanup is True the database will be cleaned at
                            shutdown time.
                            Valid True values are: 'yes', 'Yes', 'true', 'True', 'y', 'Y', '1'
                            Any other value will be interpreted as False

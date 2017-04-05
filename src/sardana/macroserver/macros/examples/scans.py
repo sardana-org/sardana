@@ -102,7 +102,7 @@ class ascan_demo(Macro):
 
 class ascanr(Macro, Hookable):
     """This is an example of how to handle adding extra info columns in a scan.
-    Does the same than ascan but repeats the acquisitions "repeat" times for each step. 
+    Does the same than ascan but repeats the acquisitions "repeat" times for each step.
     It could be implemented deriving from aNscan, but I do it like this for clarity.
     Look for the comments with "!!!" for tips specific to the extra info columns
     I do not support constrains in this one for simplicity (see ascan for that)
@@ -597,7 +597,7 @@ class ascan_with_addcustomdata(ascan_demo):
     example of an ascan-like macro where we demonstrate how to pass custom data to the data handler.
     This is an extension of the ascan_demo macro. Wemake several calls to `:meth:DataHandler.addCustomData`
     exemplifying different features.
-    At least the following recorders will act on custom data: 
+    At least the following recorders will act on custom data:
       - OutputRecorder (this will ignore array data)
       - NXscan_FileRecorder
       - SPEC_FileRecorder (this will ignore array data)

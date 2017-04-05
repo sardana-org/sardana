@@ -172,7 +172,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                 return ctrl
 
     def add_user_element(self, element, index=None):
-        '''Override the base behavior, so the TriggerGate elements are silently 
+        '''Override the base behavior, so the TriggerGate elements are silently
         skipped if used multiple times in the group'''
         user_elements = self._user_elements
         if element in user_elements:

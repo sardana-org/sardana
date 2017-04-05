@@ -1578,14 +1578,14 @@ class MeasurementGroup(PoolElement):
         self.getMoveableObj().write(moveable)
 
     def addOnDataChangedListeners(self, listener):
-        '''Adds listener which receives data events. Used in online data 
+        '''Adds listener which receives data events. Used in online data
         collection while acquiring.'''
         for channel in self.getChannels():
             attrName = '%s/%s' % (channel['full_name'], "data")
             self.addAttrListener(attrName, listener)
 
     def removeOnDataChangedListeners(self, listener):
-        '''Removes listener which receives data events. Used in online data 
+        '''Removes listener which receives data events. Used in online data
         collection while acquiring.'''
         for channel in self.getChannels():
             attrName = '%s/%s' % (channel['full_name'], "data")

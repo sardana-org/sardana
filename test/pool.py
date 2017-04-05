@@ -1,6 +1,6 @@
 """
   Pool Test cases like start, stop and kill the device server, checking for
-  emptyness, checking creation of elements with wrong arguments 
+  emptyness, checking creation of elements with wrong arguments
 """
 
 import os

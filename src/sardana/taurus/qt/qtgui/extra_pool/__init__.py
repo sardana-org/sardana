@@ -24,7 +24,7 @@
 ##############################################################################
 
 """
-__init__.py: 
+__init__.py:
 """
 
 from motor import TaurusMotorH, TaurusMotorH2, TaurusMotorV, TaurusMotorV2

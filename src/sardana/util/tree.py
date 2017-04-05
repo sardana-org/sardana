@@ -6,7 +6,7 @@ class BaseNode:
 
 
 class BranchNode(BaseNode):
-    """BranchNode, apart of reference to data, stores a list of 
+    """BranchNode, apart of reference to data, stores a list of
     children Nodes."""
 
     def __init__(self, data):

@@ -161,7 +161,7 @@ class defctrl(Macro):
 
     [1]: defctrl SuperMotorController myctrl host homer.springfield.com port 5000
 
-    Example of creating a Slit pseudo motor (sl2t and sl2b motor roles, Gap and 
+    Example of creating a Slit pseudo motor (sl2t and sl2b motor roles, Gap and
     Offset pseudo motor roles):
 
     [1]: defctrl Slit myslit sl2t=mot01 sl2b=mot02 Gap=gap01 Offset=offset01"""

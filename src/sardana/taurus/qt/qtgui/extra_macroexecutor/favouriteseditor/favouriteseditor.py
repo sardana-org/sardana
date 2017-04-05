@@ -24,7 +24,7 @@
 ##############################################################################
 
 """
-favouriteseditor.py: 
+favouriteseditor.py:
 """
 import copy
 

@@ -22,9 +22,9 @@ ATTRIBUTE_MIN = 'min'
 
 
 class sequence(Macro):
-    """This macro executes a sequence of macros. As a parameter 
+    """This macro executes a sequence of macros. As a parameter
     it receives a string which is a xml structure. These macros which allow
-    hooks can nest another sequence (xml structure). In such a case, 
+    hooks can nest another sequence (xml structure). In such a case,
     this macro is executed recursively."""
 
     param_def = [

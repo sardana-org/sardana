@@ -126,8 +126,8 @@ def createPoolSynchronizationConfiguration(ctrls, ctrl_channels):
 
     :param ctrls: sequence of the controllers used by the action
     :type ctrls: seq<sardana.pool.PoolController>
-    :param ctrl_channels: sequence of the sequences of the channels 
-    corresponding to the controllers 
+    :param ctrl_channels: sequence of the sequences of the channels
+    corresponding to the controllers
     :type ctrl_channels: seq<seq<sardana.pool.PoolTriggerGate>>
 
     :return: a configuration dictionary
@@ -146,14 +146,14 @@ def createPoolSynchronizationConfiguration(ctrls, ctrl_channels):
 
 
 def createCTAcquisitionConfiguration(ctrls, ctrl_channels):
-    '''Method to create CTAcquisition configuration. Order of the sequences is 
-    important. For all sequences, the element of a given position refers 
-    the same controller. 
+    '''Method to create CTAcquisition configuration. Order of the sequences is
+    important. For all sequences, the element of a given position refers
+    the same controller.
 
     :param ctrls: sequence of the controllers used by the action
     :type ctrls: seq<sardana.pool.PoolController>
-    :param ctrl_channels: sequence of the sequences of the channels 
-    corresponding to the controllers 
+    :param ctrl_channels: sequence of the sequences of the channels
+    corresponding to the controllers
     :type ctrl_channels: seq<seq<sardana.pool.PoolCounterTimer>>
 
     :return: a configuration dictionary
@@ -256,18 +256,18 @@ def createMGUserConfiguration(pool, channels):
 
 def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,
                           ctrl_trigger_elements, synchronizations):
-    '''Method to create general MeasurementGroup (and CT) configuration. 
-    Order of the sequences is important. For all sequences, the element of a 
-    given position refers the same controller. 
+    '''Method to create general MeasurementGroup (and CT) configuration.
+    Order of the sequences is important. For all sequences, the element of a
+    given position refers the same controller.
 
     :param ctrls: sequence of the controllers used by the action
     :type ctrls: seq<sardana.pool.PoolController>
     :param ctrls_conf: sequence of the controllers configuration dictionaries
     :type ctrls_conf: dict
-    :param ctrl_channels: sequence of the sequences of the channels 
-    corresponding to the controllers 
+    :param ctrl_channels: sequence of the sequences of the channels
+    corresponding to the controllers
     :type ctrl_channels: seq<seq<sardana.pool.PoolCounterTimer>>
-    :param ctrl_channels_conf: sequence of the sequences of the channels 
+    :param ctrl_channels_conf: sequence of the sequences of the channels
     configuration dictionaries
     :type ctrl_channels_conf: seq<seq<dict>>
     :param trigger_elements: sequence of the sequences of the trigger elements

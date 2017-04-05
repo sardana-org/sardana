@@ -24,7 +24,7 @@
 ##############################################################################
 
 """
-macrodescriptionviewer.py: 
+macrodescriptionviewer.py:
 """
 
 import taurus.core
@@ -54,7 +54,7 @@ class TaurusMacroDescriptionViewer(Qt.QTextEdit, TaurusBaseWidget):
 
     def onMacroNameChanged(self, macroName):
         """Can be connected to an event emitted after macro name was changed.
-           As an argument receives macroName and ask BaseMacroServer object 
+           As an argument receives macroName and ask BaseMacroServer object
            about already prepared and stored in MacroInfoObj object macro description"""
         macroServer = self.getModelObj()
 

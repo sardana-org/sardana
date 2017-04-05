@@ -144,9 +144,9 @@ class EventGenerator(object):
 
 
 class EventReceiver(object):
-    """A simple class that implements useful features for a class which is 
+    """A simple class that implements useful features for a class which is
     an event receiver. The actual class may inherit from this EventReceiver class
-    and may choose to use just a part of the API provided by this class, the 
+    and may choose to use just a part of the API provided by this class, the
     whole API or none of the API."""
 
     def __init__(self):

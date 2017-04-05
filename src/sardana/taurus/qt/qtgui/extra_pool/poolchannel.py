@@ -24,7 +24,7 @@
 ##############################################################################
 
 """
-channelWidgets.py: 
+channelWidgets.py:
 """
 
 __all__ = ["PoolChannel", "PoolChannelTV"]
@@ -37,7 +37,7 @@ from poolmotor import LabelWidgetDragsDeviceAndAttribute
 
 
 class _ParentDevButton(TaurusDevButton):
-    '''A TaurusDevButton that receives an attribute name but sets 
+    '''A TaurusDevButton that receives an attribute name but sets
     the corresponding device as model. **For internal use only** '''
 
     def __init__(self, **kwargs):
@@ -57,7 +57,7 @@ class _ParentDevButton(TaurusDevButton):
 
 class PoolChannelTV(TaurusValue):
     ''' A widget that displays and controls a pool channel device.
-    It differs from :class:`PoolChannel` in that it behaves as a TaurusValue 
+    It differs from :class:`PoolChannel` in that it behaves as a TaurusValue
     (i.e., it allows its subwidgets to be aligned in columns in a TaurusForm)`
     '''
 

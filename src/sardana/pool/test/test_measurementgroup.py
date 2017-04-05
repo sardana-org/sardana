@@ -109,7 +109,7 @@ class BaseAcquisition(object):
             self.assertEqual(ch_data_len, repetitions, msg)
 
     def meas_double_acquisition(self, config, synchronization, moveable=None):
-        """ Run two acquisition with the same measurement group, first with 
+        """ Run two acquisition with the same measurement group, first with
         multiple repetitions and then one repetition.
         """
         channel_names = self.prepare_meas(config)
@@ -167,7 +167,7 @@ class BaseAcquisition(object):
 
     def meas_cont_acquisition(self, config, synchronization, moveable=None,
                               second_config=None):
-        """Executes measurement using the measurement group. 
+        """Executes measurement using the measurement group.
         Checks the lengths of the acquired data.
         """
         jobs_before = get_thread_pool().qsize
@@ -197,7 +197,7 @@ class BaseAcquisition(object):
 
     def meas_cont_stop_acquisition(self, config, synchronization,
                                    moveable=None):
-        """Executes measurement using the measurement group and tests that the 
+        """Executes measurement using the measurement group and tests that the
         acquisition can be stopped.
         """
         self.prepare_meas(config)

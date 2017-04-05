@@ -334,7 +334,7 @@ class ControllerManager(Singleton, Logger):
                  the reload process is not successfull
 
         :param str controller_name: controller class name
-        :param seq<str> path: a list of absolute path to search for libraries 
+        :param seq<str> path: a list of absolute path to search for libraries
                               [default: None, meaning the current ControllerPath
                               will be used]"""
         self.reloadControllers([controller_name], path=path)

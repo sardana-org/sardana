@@ -24,7 +24,7 @@
 ##############################################################################
 
 """
-__init__.py: 
+__init__.py:
 """
 
 from sequenceeditor import TaurusSequencer, TaurusSequencerWidget, main

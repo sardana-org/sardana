@@ -751,7 +751,7 @@ class Macro(Logger):
     @mAPI
     def getData(self):
         """**Macro API**.
-        Returns the data produced by the macro. 
+        Returns the data produced by the macro.
 
         :raises: Exception if no data has been set before on this macro
 
@@ -805,7 +805,7 @@ class Macro(Logger):
         newline. The function then reads a line from input, converts it to a
         string (stripping a trailing newline), and returns that.
 
-        Depending on which type of application you are running, some of the 
+        Depending on which type of application you are running, some of the
         keywords may have no effect (ex.: spock ignores decimals when a number
         is asked).
 
@@ -815,7 +815,7 @@ class Macro(Logger):
               specify a sequence of strings with possible values (use
               allow_multiple=True to say multiple values can be selected)
             - key : [default: no default] variable/label to assign to this input
-            - unit: [default: no default] units (useful for GUIs) 
+            - unit: [default: no default] units (useful for GUIs)
             - timeout : [default: None, meaning wait forever for input]
             - default_value : [default: None, meaning no default value]
               When given, it must be compatible with data_type
@@ -1909,7 +1909,7 @@ class Macro(Logger):
         return vo
 
     def _getViewOption(self, name):
-        '''Gets _ViewOption of a given name. If it is not defined in 
+        '''Gets _ViewOption of a given name. If it is not defined in
         the environment, sets it to a default value and returns it.
         '''
         view_options = self._getViewOptions()
@@ -1924,7 +1924,7 @@ class Macro(Logger):
         newline. The function then reads a line from input, converts it to a
         string (stripping a trailing newline), and returns that.
 
-        Depending on which type of application you are running, some of the 
+        Depending on which type of application you are running, some of the
         keywords may have no effect (ex.: spock ignores decimals when a number
         is asked).
 
@@ -1934,7 +1934,7 @@ class Macro(Logger):
               specify a sequence of strings with possible values (use
               allow_multiple=True to say multiple values can be selected)
             - key : [default: no default] variable/label to assign to this input
-            - unit: [default: no default] units (useful for GUIs) 
+            - unit: [default: no default] units (useful for GUIs)
             - timeout : [default: None, meaning wait forever for input]
             - default_value : [default: None, meaning no default value]
               When given, it must be compatible with data_type
