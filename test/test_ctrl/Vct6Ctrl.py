@@ -54,7 +54,7 @@ class Vct6Controller(CounterTimerController.CounterTimerController):
         # print "PYTHON -> Vct6Controller/",self.inst_name,": In StateOne
         # method for index",ind
         if self.simu_ctrl is not None:
-            if self.started == True:
+            if self.started:
                 now = time.time()
                 delta_t = now - self.start_time
                 print "delta_t =", delta_t

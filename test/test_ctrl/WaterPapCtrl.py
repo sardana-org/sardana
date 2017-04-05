@@ -150,7 +150,7 @@ class IcePapController(MotorController.MotorController):
 # Reset IcePap FIFO
 #
 
-        if (self.socket_connected == True):
+        if (self.socket_connected):
             print "PYTHON -> Closing connection"
             self.IceResetFifo()
             self.sock.close()

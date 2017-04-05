@@ -1324,7 +1324,7 @@ class SardanaCommitBasePage(wiz.SardanaIntroBasePage):
 
         for item in self.wizard()["poolList"] + self.wizard()["msList"]:
             if item.getHostName() == "localhost":
-                if SardanaManager().has_localhost_starter() == True:
+                if SardanaManager().has_localhost_starter():
                     self._checkBox.setVisible(True)
                     break
 

@@ -105,7 +105,7 @@ class PoolTestCase(unittest.TestCase):
                 False, "The %s attribute is not in fault!!" % (att_name))
         except PyTango.DevFailed, e:
             except_value = sys.exc_info()[1]
-            if pr == True:
+            if pr:
                 self._printException(except_value)
             self.assertEqual(except_value[0]["reason"], err)
 
@@ -124,7 +124,7 @@ class PoolTestCase(unittest.TestCase):
                          (att_val.name))
         except PyTango.DevFailed, e:
             except_value = sys.exc_info()[1]
-            if pr == True:
+            if pr:
                 self._printException(except_value)
             self.assertEqual(except_value[0]["reason"], err)
 
@@ -143,7 +143,7 @@ class PoolTestCase(unittest.TestCase):
                 False, "The %s command succeed with wrong arguments!!" % (cmd_name))
         except PyTango.DevFailed, e:
             except_value = sys.exc_info()[1]
-            if pr == True:
+            if pr:
                 self._printException(except_value)
             self.assertEqual(except_value[0]["reason"], err)
 

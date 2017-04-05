@@ -485,7 +485,7 @@ class TangoServer:
         else:
             self._logfile = None
 
-        if createProc == True:
+        if createProc:
             self._proc = self._createProcess()
         else:
             self._proc = None
