@@ -1097,7 +1097,7 @@ class PseudoController(Controller):
         elem = local_cache.get(index_or_role)
         if elem is None:
             pool = self._getPoolController().pool
-            if type(index_or_role) == int:
+            if isinstance(index_or_role, int):
                 index = index_or_role
                 role = roles[index]
             else:

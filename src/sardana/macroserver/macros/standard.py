@@ -153,8 +153,7 @@ class _wum(Macro):
         motor_width = 9
         motor_names = []
         motor_pos = []
-        motor_list = list(motor_list)
-        motor_list.sort()
+        motor_list = sorted(motor_list)
         for motor in motor_list:
             name = motor.getName()
             motor_names.append([name])

@@ -80,8 +80,7 @@ class PoolIORegisterReadWidget(TaurusLabel):
         try:
             display_value = int(self.getDisplayValue())
             extended_tooltip = ''
-            value_keys = self.readEventValueMap.keys()
-            value_keys.sort()
+            value_keys = sorted(self.readEventValueMap.keys())
             for value in value_keys:
                 label = self.readEventValueMap[value]
                 value_label_info = '%d: %s' % (value, label)

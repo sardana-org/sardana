@@ -99,7 +99,7 @@ def get_supported_upgrades():
             continue
         m = imp.load_module(mod_name, *imp.find_module(mod_name))
         for s in m.__dict__.values():
-            if type(s) == type(Upgrade):
+            if isinstance(s, type(Upgrade)):
                 if s == Upgrade:
                     continue
                 if issubclass(s, Upgrade):

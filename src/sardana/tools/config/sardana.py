@@ -580,7 +580,7 @@ class TangoServer:
 
     def run(self, step=True, timeout=0):
         """Run"""
-        while 1:
+        while True:
             self._proc.run(timeout=timeout)
             if step:
                 return
@@ -1827,7 +1827,7 @@ class Sardana:
         servs = self._getServsStartupOrder()
         self.o("Running ")
         count = 0
-        while 1:
+        while True:
             count += 1
             if count % 10 == 0:
                 self.o(":")

@@ -239,14 +239,14 @@ def to_dtype_dformat(data):
     elif operator.isSequenceType(data):
         dformat = DataFormat.OneD
         dtype = data[0]
-        if type(dtype) == str:
+        if isinstance(dtype, str):
             dtype, dformat2 = from_dtype_str(dtype)
             if dformat2 == DataFormat.OneD:
                 dformat = DataFormat.TwoD
         elif operator.isSequenceType(dtype):
             dformat = DataFormat.TwoD
             dtype = dtype[0]
-            if type(dtype) == str:
+            if isinstance(dtype, str):
                 dtype, _ = from_dtype_str(dtype)
     dtype = DTYPE_MAP.get(dtype, DataType.Invalid)
     return dtype, dformat

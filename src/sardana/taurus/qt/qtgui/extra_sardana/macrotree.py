@@ -212,8 +212,7 @@ class MacroPlainMacroModel(MacroBaseModel):
             return
         root = self._rootItem
         macro_dict = ms.getMacros()
-        macros = macro_dict.keys()
-        macros.sort()
+        macros = sorted(macro_dict.keys())
         self.debug("Found %d macros", len(macros))
         for macro_name in macros:
             macro = macro_dict[macro_name]

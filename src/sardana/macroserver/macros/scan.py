@@ -967,7 +967,7 @@ class scanhist(Macro):
         user = h['user']
         store = "Not stored!"
         if scan_dir is not None and scan_file is not None:
-            if type(scan_file) is str:
+            if isinstance(scan_file, str):
                 store = os.path.join(scan_dir, scan_file)
             else:
                 store = scan_dir + os.path.sep + str(scan_file)

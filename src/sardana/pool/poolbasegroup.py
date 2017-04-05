@@ -158,7 +158,7 @@ class PoolBaseGroup(PoolContainer):
         pool = self._get_pool()
         for user_element_id in self._user_element_ids:
             # an internal element
-            internal = type(user_element_id) is int
+            internal = isinstance(user_element_id, int)
             if internal:
                 try:
                     user_element = pool.get_element(id=user_element_id)

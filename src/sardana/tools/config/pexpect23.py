@@ -232,7 +232,7 @@ def run(command, timeout=-1, withexitstatus=False, events=None, extra_args=None,
         responses = None
     child_result_list = []
     event_count = 0
-    while 1:
+    while True:
         try:
             index = child.expect(patterns)
             if type(child.after) in types.StringTypes:
@@ -241,7 +241,7 @@ def run(command, timeout=-1, withexitstatus=False, events=None, extra_args=None,
                 child_result_list.append(child.before)
             if type(responses[index]) in types.StringTypes:
                 child.send(responses[index])
-            elif type(responses[index]) is types.FunctionType:
+            elif isinstance(responses[index], types.FunctionType):
                 callback_result = responses[index](locals())
                 sys.stdout.flush()
                 if type(callback_result) in types.StringTypes:
@@ -510,11 +510,11 @@ class spawn (object):
         # that performs some task; creates no stdout output; and then dies.
 
         # If command is an int type then it may represent a file descriptor.
-        if type(command) == type(0):
+        if isinstance(command, type(0)):
             raise ExceptionPexpect(
                 'Command is an int type. If this is a file descriptor then maybe you want to use fdpexpect.fdspawn which takes an existing file descriptor instead of a command string.')
 
-        if type(args) != type([]):
+        if not isinstance(args, type([])):
             raise TypeError('The argument, args, must be a list.')
 
         if args == []:
@@ -1216,7 +1216,7 @@ class spawn (object):
 
         if patterns is None:
             return []
-        if type(patterns) is not types.ListType:
+        if not isinstance(patterns, types.ListType):
             patterns = [patterns]
 
         compile_flags = re.DOTALL  # Allow dot to match \n
@@ -1230,7 +1230,7 @@ class spawn (object):
                 compiled_pattern_list.append(EOF)
             elif p is TIMEOUT:
                 compiled_pattern_list.append(TIMEOUT)
-            elif type(p) is type(re.compile('')):
+            elif isinstance(p, type(re.compile(''))):
                 compiled_pattern_list.append(p)
             else:
                 raise TypeError(

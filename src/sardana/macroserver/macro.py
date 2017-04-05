@@ -1501,8 +1501,7 @@ class Macro(Logger):
             objects
         :rtype: seq<:class:`~sardana.macroserver.msmetamacro.MacroClass`
                 /:class:`~sardana.macroserver.msmetamacro.MacroFunction`\>"""
-        ret = self.door.get_macros(filter=filter).values()
-        ret.sort()
+        ret = sorted(self.door.get_macros(filter=filter).values())
         return ret
 
     @mAPI
@@ -1518,8 +1517,7 @@ class Macro(Logger):
             a sequence of :class:`~sardana.macroserver.msmetamacro.MacroLibrary`
             objects
         :rtype: seq<:class:`~sardana.macroserver.msmetamacro.MacroLibrary`\>"""
-        ret = self.door.get_macro_libs(filter=filter).values()
-        ret.sort()
+        ret = sorted(self.door.get_macro_libs(filter=filter).values())
         return ret
 
     @mAPI
@@ -2271,7 +2269,7 @@ class Macro(Logger):
 
         # If macro returns a generator then running the macro means go through
         # the generator steps, otherwise the macro has already ran
-        if type(res) == types.GeneratorType:
+        if isinstance(res, types.GeneratorType):
             it = iter(res)
             for i in it:
                 if operator.isMappingType(i):

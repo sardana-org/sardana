@@ -254,8 +254,7 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
         msg = "Please select the library where you want to place the new macro"
 
         macro_libraries = macro_server.getElementsOfType("MacroLibrary")
-        macro_lib_names = macro_libraries.keys()
-        macro_lib_names.sort()
+        macro_lib_names = sorted(macro_libraries.keys())
         macro_lib_name, ok = Qt.QInputDialog.getItem(self, "Macro library", msg,
                                                      macro_lib_names, current=0, editable=False)
         if not ok:

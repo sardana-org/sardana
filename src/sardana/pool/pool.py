@@ -521,7 +521,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         self.check_element(name, full_name)
 
         for elem_id in elem_ids:
-            if type(elem_id) is int:
+            if isinstance(elem_id, int):
                 self.pool.get_element(id=elem_id)
             else:
                 tg_attr_validator = TangoAttributeNameValidator()

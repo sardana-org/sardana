@@ -91,6 +91,6 @@ class SardanaIDManager(object):
 
         :param id: the ID to be reserved
         :type id: int"""
-        assert type(nid) == int
+        assert isinstance(nid, int)
         if nid > self._last_id:
             self._last_id = nid

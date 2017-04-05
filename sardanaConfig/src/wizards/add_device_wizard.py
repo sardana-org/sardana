@@ -688,8 +688,7 @@ class NewDeviceBasePage(wiz.SardanaBasePage):
             self.model.addRecord(["Controller", PoolElementType[
                                  item.get_controller_type()], item.get_name()], item, False)
 
-        elementTypeList = PoolElementType.keys()
-        elementTypeList.sort()
+        elementTypeList = sorted(PoolElementType.keys())
         for type in elementTypeList:
             self.model.addNodes([type], False)
         for item in controllers:
@@ -777,7 +776,7 @@ class NewDeviceBasePage(wiz.SardanaBasePage):
                 self._currentItem = self.picked()
                 self._currentItemIndex = self._treeView.currentIndex()
 
-                if type(self._currentItem) == taurus.core.tango.sardana.sardana.ControllerClassInfo:
+                if isinstance(self._currentItem, taurus.core.tango.sardana.sardana.ControllerClassInfo):
 
                     self._gridLayout_2.addWidget(self._settings)
                     self._settings.setVisible(True)
@@ -799,7 +798,7 @@ class NewDeviceBasePage(wiz.SardanaBasePage):
                         self.picked().get_description())
                     self._description.setImage(None)
 
-                if type(self._currentItem) == taurus.core.tango.sardana.sardana.ControllerInfo:
+                if isinstance(self._currentItem, taurus.core.tango.sardana.sardana.ControllerInfo):
 
                     self._gridLayout_2.removeWidget(self._settings)
                     self._settings.setVisible(False)
@@ -951,9 +950,9 @@ class DescriptionWidget(QtGui.QWidget):
         self._descriptionLabelText.setText(text)
 
     def setImage(self, image):
-        if type(image) == QtGui.QPixmap:
+        if isinstance(image, QtGui.QPixmap):
             self._deviceLogo.setPixmap(image.scaled(*self._imageSize))
-        elif type(image) == QtGui.QImage:
+        elif isinstance(image, QtGui.QImage):
             self._deviceLogo.setPixmap(
                 QtGui.QPixmap().fromImage(image).scaled(*self._imageSize))
         else:

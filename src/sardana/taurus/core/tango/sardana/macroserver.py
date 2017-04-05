@@ -1212,7 +1212,7 @@ class BaseMacroServer(MacroServerDevice):
         paramNode.setMax(max)
         paramNode.setDescription(str(paramInfo.get("description")))
 
-        if type(paramType) == list:
+        if isinstance(paramType, list):
             paramNode.setParamsInfo(paramType)
             for repeatNode in paramNode.children():
                 for internalParamNode, internalParamInfo in zip(repeatNode.children(), paramType):

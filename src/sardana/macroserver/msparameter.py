@@ -397,7 +397,7 @@ class ParamDecoder:
                 else:
                     value = raw_param
                 # None or [] indicates default value
-                if value is None or (type(value) == list and len(value) == 0):
+                if value is None or (isinstance(value, list) and len(value) == 0):
                     value = param_def['default_value']
                 if value is None:
                     raise MissingParam, "'%s' not specified" % name

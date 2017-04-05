@@ -502,7 +502,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         g_timer, g_monitor = cfg['timer'], cfg['monitor']
         for ctrl, ctrl_data in cfg['controllers'].items():
             # skip external channels
-            if type(ctrl) is str:
+            if isinstance(ctrl, str):
                 continue
             # telling controller in which acquisition mode it will participate
             ctrl.set_ctrl_par('acquisition_mode', self.acquisition_mode)

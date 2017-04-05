@@ -492,9 +492,8 @@ class ControllerManager(Singleton, Logger):
             return sorted(self._controller_dict.values())
         expr = re.compile(filter, re.IGNORECASE)
 
-        ret = [kls for n, kls in self._controller_dict.iteritems()
-               if not expr.match(n) is None]
-        ret.sort()
+        ret = sorted([kls for n, kls in self._controller_dict.iteritems()
+               if not expr.match(n) is None])
         return ret
 
     def getControllerMetaClass(self, controller_name):

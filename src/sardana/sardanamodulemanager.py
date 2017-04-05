@@ -305,6 +305,5 @@ class ModuleManager(Singleton, Logger):
         return m
 
     def getModuleNames(self):
-        module_names = self._modules.keys()
-        module_names.sort()
+        module_names = sorted(self._modules.keys())
         return module_names

@@ -697,7 +697,7 @@ class PoolTestCase(unittest.TestCase):
                     "Was not able to grab Pool output")
 
         self.pool_start_time = time.time()
-        while 1:
+        while True:
             delta_time = time.time() - self.pool_start_time
 
             self.failIf(delta_time >= PoolTestCase.PoolMaxStartupTime,
@@ -747,7 +747,7 @@ class PoolTestCase(unittest.TestCase):
                     "Was not able to grab Motor Simulator output")
 
         self.motsim_start_time = time.time()
-        while 1:
+        while True:
             delta_time = time.time() - self.motsim_start_time
 
             self.failIf(delta_time >= PoolTestCase.MotorSimulatorMaxStartupTime,
@@ -799,7 +799,7 @@ class PoolTestCase(unittest.TestCase):
                     "Was not able to grab CounterTimer Simulator output")
 
         self.ctsim_start_time = time.time()
-        while 1:
+        while True:
             delta_time = time.time() - self.ctsim_start_time
 
             self.failIf(delta_time >= PoolTestCase.CounterTimerSimulatorMaxStartupTime,

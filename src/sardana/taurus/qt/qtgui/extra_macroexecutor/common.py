@@ -57,8 +57,7 @@ class MSAttrListComboBox(TaurusAttrListComboBox):
         parentModelObj = self.getParentModelObj()
         if parentModelObj is None:
             return
-        items = parentModelObj.getElementNamesWithInterface(self._elementType)
-        items.sort()
+        items = sorted(parentModelObj.getElementNamesWithInterface(self._elementType))
         self.addItems(items)
         if text in items:
             self.setCurrentText(text)
@@ -110,8 +109,7 @@ class MacroComboBox(Qt.QComboBox, TaurusBaseWidget):
         if ms is None:
             return
         macros = ms.getElementsWithInterface('MacroCode')
-        macroNames = [macro.name for macro in macros.values()]
-        macroNames.sort()
+        macroNames = sorted([macro.name for macro in macros.values()])
         macroNames.insert(0, '')  # adding blank item
         self.addItems(macroNames)
         self.updateStyle()
