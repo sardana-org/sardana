@@ -24,7 +24,7 @@
 """
     Macro library containning scan macros for the macros server Tango device
     server as part of the Sardana project.
-   
+
    Available Macros are:
      ascan family: ascan, a2scan, a3scan, a4scan and amultiscan
      dscan family: dscan, d2scan, d3scan, d4scan and dmultiscan

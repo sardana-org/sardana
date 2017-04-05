@@ -22,7 +22,7 @@
 ##############################################################################
 
 """Library of specific macros for performing specific experimental techniques
-     
+
 """
 
 __all__ = ["xas_acq"]

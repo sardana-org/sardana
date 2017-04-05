@@ -3,9 +3,9 @@
 """ The sardana transformation tool.
     Syntax:
         python fods_to_sar.py <file.fods>
-        
+
     This tool outputs a sardana XML file from an FODS XML file.
-    
+
     file.xml must be a valid XML file comming from an OpenOffice spreadsheet in FODS format.
 """
 

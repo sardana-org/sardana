@@ -24,11 +24,11 @@
 """
     Macro library containning examples demonstrating specific features or tricks
     for programming macros for Sardana.
-   
+
    Available Macros are:
      ascanr
      toothedtriangle
-     
+
 """
 
 __all__ = ["ascan_demo", "ascanr", "toothedtriangle",

@@ -3,22 +3,22 @@
 """ The sardana execution tool.
     Syntax:
         python sardana.py [-v] [-l] [--simulation=<mode>] [--cleanup=<True|False>] <file.xml>
-        
+
     This tool creates and executes a sardana system from the given file.
-    
+
     file.xml can be either:
         - a valid XML file coming from an EXCEL spreadsheet.
         - a valid XML file from the sardana schema.
-        
+
     -v  prints an output of the generated XML file and exits
     -l  if given, this parameter activates logging
-    
+
     --simulation=<mode>  supported modes are 'Basic', 'Best' or 'Off'. Default mode is Best.
                          Basic mode will create Dummy* controllers on the Pool
                          Best mode will create Simu* controllers and Simu like device servers
                          Off mode will create the original controllers on the Pool
     WARNING: Any other string will deactivate simulation mode and use REAL mode
-    
+
     --cleanup=<True|False> either or not to perform a cleanup at the end. Default
                            is True.
                            If cleanup is True the database will be cleaned at

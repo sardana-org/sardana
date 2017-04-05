@@ -45,11 +45,11 @@ MACRO_TEMPLATE = """class @macro_name@(Macro):
     #result_def = []
     #hints = {}
     #env = (,)
-    
+
     # uncomment the following lines if need prepare. Otherwise you may delete them
     #def prepare(self):
     #    pass
-        
+
     def run(self):
         pass
 

@@ -2,7 +2,7 @@
 """
     Macro library containning diffractometer related macros for the macros
     server Tango device server as part of the Sardana project.
-    
+
 """
 
 # TODO: use taurus instead of PyTango API e.g. read_attribute,

@@ -990,12 +990,12 @@ Must give either:
           [, <role_name>'='<element name>] [, <property name>, <property value>]
 
     Examples::
-              
+
         data = dict(type='Motor', library='DummyMotorController',
                     klass='DummyMotorController',
                     name='my_motor_ctrl_1')
         pool.CreateController([json.dumps(data)])
-              
+
         pool.CreateController(['Motor', 'DummyMotorController', 'DummyMotorController',
                                'my_motor_ctrl_2'])
 """
@@ -1020,7 +1020,7 @@ Must give either:
               strings).
             * optional keys:
                 * 'full_name' : a string representing the full tango device name
-                
+
         * a sequence of strings: <type>, <ctrl_name>, <axis>, <name> [, <full_name>]
 
     Examples::
@@ -1028,7 +1028,7 @@ Must give either:
         data = dict(type='Motor', ctrl_name='my_motor_ctrl_1', axis='4', name='theta',
                     full_name='BL99/EH/THETA')
         pool.CreateElement([json.dumps(data)])
-        
+
         pool.CreateElement(['Motor', 'my_motor_ctrl_1', '1', 'phi', 'BL99/EH/PHI'])
 """
 
@@ -1050,9 +1050,9 @@ Must give either:
         * A JSON encoded dict as first string with:
             * mandatory keys: 'full_name', 'klass' (values are strings).
         * a sequence of strings: <full_name>, <class>
-        
+
     Examples::
-        
+
         pool.CreateInstrument(['/OH', 'NXhutch'])
         pool.CreateInstrument(['/OH/Mono', 'NXmonochromator'])
         pool.CreateInstrument(['/EH', 'NXhutch'])
@@ -1078,14 +1078,14 @@ Must give either:
             * mandatory keys: 'name', 'elements' (with value being a list of moveables)
             * optional keys:
                 * 'full_name': with value being a full tango device name
-        
+
         * a sequence of strings: <motor group name> [, <element> ]"
 
     Examples::
 
         data = dict(name='diffrac_motor_group', elements=['theta', 'theta2', 'phi'])
         pool.CreateMotorGroup([json.dumps(data)])
-        
+
         pool.CreateMotorGroup(['diffrac_mg', 'theta', 'theta2' ])
 """
 
@@ -1110,7 +1110,7 @@ Must give either:
             * mandatory keys: 'name', 'elements' (with value being a list of acquirables)"
             * optional keys:
                 * 'full_name': with value being a full tango device name
-        
+
         * a sequence of strings: <motor group name> [, <element> ]"
 
     An acquirable is either a sardana element (counter/timer, 0D, 1D, 2D, motor) or
@@ -1120,7 +1120,7 @@ Must give either:
 
         data = dict(name='my_exp_01', elements=['timer', 'C1', 'sys/tg_test/1/double_scalar'])
         pool.CreateMeasurementGroup([json.dumps(data)])
-        
+
         pool.CreateMeasurementGroup(['my_exp_02', 'timer', 'CCD1', 'sys/tg_test/1/short_spectrum_ro'])
 """
 
@@ -1157,9 +1157,9 @@ Must give either:
 
         * A JSON encoded list of controller class names
         * a controller class name
-    
+
     Examples::
-    
+
         data = "DummyMotorController", "DummyCounterTimerController"
         pool.GetControllerClassInfo(json.dumps(data))
         pool.GetControllerClassInfo("DummyMotorController")

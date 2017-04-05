@@ -3,9 +3,9 @@
 """ The sardana transformation tool.
     Syntax:
         python xls_to_sar.py <file.xml>
-        
+
     This tool outputs a sardana XML file from an Excel XML file.
-    
+
     file.xml must be a valid XML file comming from an EXCEL spreadsheet.
 """
 

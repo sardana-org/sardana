@@ -35,7 +35,7 @@ If no scan IDs are provided, all scans from the given Spec file will be extracte
 
 Note that this is not a generic Spec conversor. Spec files created by means other than the Sardana
 SPEC_FileRecorder may not be converted properly.
- 
+
 '''
 
 
