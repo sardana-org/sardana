@@ -493,7 +493,7 @@ class ControllerManager(Singleton, Logger):
         expr = re.compile(filter, re.IGNORECASE)
 
         ret = sorted([kls for n, kls in self._controller_dict.iteritems()
-               if not expr.match(n) is None])
+                      if not expr.match(n) is None])
         return ret
 
     def getControllerMetaClass(self, controller_name):
