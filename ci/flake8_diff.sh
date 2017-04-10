@@ -7,21 +7,20 @@
 #   - computing a similar diff to what github is showing in a PR. The
 #     diff is done between:
 #       1. the common ancestor of the local branch and the
-   #       joblib/joblib remote
+#          sardana-org/sardana remote
 #       2. the local branch
 #   - run flake8 --diff on the computed diff
 #
 # Additional features:
 #   - the line numbers in Travis match the local branch on the PR
 #     author machine.
-#   - bash continuous_integration/travis/flake8_diff.sh can be run
-#     locally for quick turn-around
+#   - bash ci/flake8_diff.sh can be run locally for quick turn-around
 
 set -e
 # pipefail is necessary to propagate exit codes
 set -o pipefail
 
-PROJECT=joblib/joblib
+PROJECT=sardana-org/sardana
 PROJECT_URL=https://github.com/$PROJECT.git
 
 # Find the remote with the project name (upstream in most cases)
@@ -42,7 +41,7 @@ git remote --verbose
 
 # Travis does the git clone with a limited depth (50 at the time of
 # writing). This may not be enough to find the common ancestor with
-# $REMOTE/master so we unshallow the git checkout
+# $REMOTE/develop so we unshallow the git checkout
 if [[ -a .git/shallow ]]; then
     echo -e '\nTrying to unshallow the repo:'
     echo '--------------------------------------------------------------------------------'
@@ -63,7 +62,7 @@ if [[ "$TRAVIS" == "true" ]]; then
         fi
     else
         # We want to fetch the code as it is in the PR branch and not
-        # the result of the merge into master. This way line numbers
+        # the result of the merge into develop. This way line numbers
         # reported by Travis will match with the local code.
         LOCAL_BRANCH_REF=travis_pr_$TRAVIS_PULL_REQUEST
         # In Travis the PR target is always origin
@@ -72,7 +71,7 @@ if [[ "$TRAVIS" == "true" ]]; then
 fi
 
 # If not using the commit range from Travis we need to find the common
-# ancestor between $LOCAL_BRANCH_REF and $REMOTE/master
+# ancestor between $LOCAL_BRANCH_REF and $REMOTE/develop
 if [[ -z "$COMMIT_RANGE" ]]; then
     if [[ -z "$LOCAL_BRANCH_REF" ]]; then
         LOCAL_BRANCH_REF=$(git rev-parse --abbrev-ref HEAD)
@@ -81,18 +80,18 @@ if [[ -z "$COMMIT_RANGE" ]]; then
     echo '--------------------------------------------------------------------------------'
     git log -2 $LOCAL_BRANCH_REF
 
-    REMOTE_MASTER_REF="$REMOTE/master"
-    # Make sure that $REMOTE_MASTER_REF is a valid reference
-    echo -e "\nFetching $REMOTE_MASTER_REF"
+    REMOTE_DEVELOP_REF="$REMOTE/develop"
+    # Make sure that $REMOTE_DEVELOP_REF is a valid reference
+    echo -e "\nFetching $REMOTE_DEVELOP_REF"
     echo '--------------------------------------------------------------------------------'
-    git fetch $REMOTE master:refs/remotes/$REMOTE_MASTER_REF
+    git fetch $REMOTE develop:refs/remotes/$REMOTE_DEVELOP_REF
     LOCAL_BRANCH_SHORT_HASH=$(git rev-parse --short $LOCAL_BRANCH_REF)
-    REMOTE_MASTER_SHORT_HASH=$(git rev-parse --short $REMOTE_MASTER_REF)
+    REMOTE_DEVELOP_SHORT_HASH=$(git rev-parse --short $REMOTE_DEVELOP_REF)
 
     # Very confusing: need to use '..' i.e. two dots for 'git
     # rev-list' but '...' i.e. three dots for 'git diff'
-    DIFF_RANGE="$REMOTE_MASTER_SHORT_HASH...$LOCAL_BRANCH_SHORT_HASH"
-    REV_RANGE="$REMOTE_MASTER_SHORT_HASH..$LOCAL_BRANCH_SHORT_HASH"
+    DIFF_RANGE="$REMOTE_DEVELOP_SHORT_HASH...$LOCAL_BRANCH_SHORT_HASH"
+    REV_RANGE="$REMOTE_DEVELOP_SHORT_HASH..$LOCAL_BRANCH_SHORT_HASH"
 
     echo -e '\nRunning flake8 on the diff in the range'\
          "$DIFF_RANGE ($(git rev-list $REV_RANGE | wc -l) commit(s)):"
@@ -105,21 +104,18 @@ else
     echo "Got the commit range from Travis: $COMMIT_RANGE"
 fi
 
-# We ignore files from doc/sphintext. Unfortunately there is no
-# way to do it with flake8 directly (the --exclude does not seem to
-# work with --diff). We could use the exclude magic in the git pathspec
-# ':!doc/sphintext' but it is only available on git 1.9 and Travis
-# uses git 1.8.
+# We ignore all non python files.
 # We need the following command to exit with 0 hence the echo in case
 # there is no match
 MODIFIED_FILES=$(git diff --name-only $DIFF_RANGE | \
-                     grep -v 'doc/sphinxext' || echo "no_match")
+                     grep -e "\.py$" || echo "no_match")
 
 if [[ "$MODIFIED_FILES" == "no_match" ]]; then
-    echo "No file outside doc/sphinxext has been modified"
+    echo "No python files have been modified"
 else
     # Conservative approach: diff without context so that code that
     # was not changed does not create failures
     git diff --unified=0 $DIFF_RANGE -- $MODIFIED_FILES | flake8 --diff --show-source
 fi
 echo -e "No problem detected by flake8\n"
+
