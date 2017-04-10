@@ -15,6 +15,14 @@
 #   - the line numbers in Travis match the local branch on the PR
 #     author machine.
 #   - bash ci/flake8_diff.sh can be run locally for quick turn-around
+#
+# Known problems:
+#   - Adding a new line on top of the standard two lines between two functions
+#     won't result in a failure. The reason for this is that we do a diff
+#     without a context to avoid getting failures for PEP8 violations that
+#     already exist. Without seeing the context you can not tell that the
+#     additional new line is a PEP8 violation. This happens only if the
+#     offending line was added on the boundary of the diff chunk.
 
 set -e
 # pipefail is necessary to propagate exit codes
