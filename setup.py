@@ -28,7 +28,7 @@ import imp
 from setuptools import setup, find_packages
 
 
-def get_release_info():
+def get_release_info(): 
     name = "release"
     setup_dir = os.path.dirname(os.path.abspath(__file__))
     release_dir = os.path.join(setup_dir, "src", "sardana")
