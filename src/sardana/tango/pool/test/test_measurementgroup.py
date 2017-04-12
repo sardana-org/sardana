@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+# http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -36,6 +36,7 @@ from sardana.tango.pool.test import SarTestTestCase
 
 # TODO: It will be moved
 from sardana.pool.test.test_acquisition import AttributeListener
+
 
 class TangoAttributeListener(AttributeListener):
 
@@ -60,19 +61,20 @@ class TangoAttributeListener(AttributeListener):
             value = _value['data']
             idx = _value['index']
             dev = event.device
-            obj_fullname = '%s:%s/%s' % (dev.get_db_host().split('.')[0], 
-                                        dev.get_db_port(),
-                                        dev.name())
+            obj_fullname = '%s:%s/%s' % (dev.get_db_host().split('.')[0],
+                                         dev.get_db_port(),
+                                         dev.name())
             # filling the measurement records
             with self.data_lock:
                 channel_data = self.data.get(obj_fullname, [])
                 expected_idx = len(channel_data)
-                pad = [None] * (idx[0]-expected_idx)
-                channel_data.extend(pad+value)
+                pad = [None] * (idx[0] - expected_idx)
+                channel_data.extend(pad + value)
                 self.data[obj_fullname] = channel_data
         except Exception, e:
             print e
             raise Exception('"data" event callback failed')
+
 
 class MeasSarTestTestCase(SarTestTestCase):
     """ Helper class to setup the need environmet for execute """
@@ -85,7 +87,7 @@ class MeasSarTestTestCase(SarTestTestCase):
     def create_meas(self, config):
         """ Create a meas with the given configuration
         """
-        # creating mg 
+        # creating mg
         self.expchan_names = []
         self.tg_names = []
         exp_dict = {}
@@ -100,16 +102,16 @@ class MeasSarTestTestCase(SarTestTestCase):
         try:
             self.meas = PyTango.DeviceProxy(self.mg_name)
         except:
-            raise Exception('Could not create the MeasurementGroup: %s' %\
-                                                                (self.mg_name))
+            raise Exception('Could not create the MeasurementGroup: %s' %
+                            (self.mg_name))
 
-        # When measurement group gets created it fills the configuration with 
-        # the default values. Reusing read configuration in order to set test 
+        # When measurement group gets created it fills the configuration with
+        # the default values. Reusing read configuration in order to set test
         # parameters.
         jcfg = self.meas.read_attribute('configuration').value
         cfg = json.loads(jcfg)
         for ctrl in cfg['controllers']:
-            ctrl_data =  cfg['controllers'][ctrl]
+            ctrl_data = cfg['controllers'][ctrl]
             channels = ctrl_data['channels']
             for chn in channels:
                 name = channels[chn]['name']
@@ -141,11 +143,11 @@ class MeasSarTestTestCase(SarTestTestCase):
             for ch_tg in ctrl:
                 channel = ch_tg[0]
                 dev = PyTango.DeviceProxy(channel)
-                ch_fullname = '%s:%s/%s' % (dev.get_db_host().split('.')[0], 
+                ch_fullname = '%s:%s/%s' % (dev.get_db_host().split('.')[0],
                                             dev.get_db_port(),
                                             dev.name())
-                event_id = dev.subscribe_event('Data', 
-                                               PyTango.EventType.CHANGE_EVENT, 
+                event_id = dev.subscribe_event('Data',
+                                               PyTango.EventType.CHANGE_EVENT,
                                                self.attr_listener)
                 self.event_ids[dev] = event_id
                 chn_names.append(ch_fullname)
@@ -199,13 +201,14 @@ doc_5 = 'Stop of the synchronized acquisition with two channels from the same'\
 doc_6 = 'Stop of the synchronized acquisition with four channels from two'\
         ' different controllers using hardware and software triggers'
 
+
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_1,
             params=params_1, config=config_1)
 # TODO: implement dedicated asserts/test for only software synchronized
 #       acquisition.
-#       Until this TODO gets implemented we comment the test since it may 
+#       Until this TODO gets implemented we comment the test since it may
 #       fail (last acquisitions may not be executed - the previous one could
-#       still be in progress, so the shape of data will not correspond to the 
+#       still be in progress, so the shape of data will not correspond to the
 #       number of repetitions
 # @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_2,
 #             params=params_1, config=config_2)
@@ -244,7 +247,7 @@ class TangoAcquisitionTestCase(MeasSarTestTestCase, unittest.TestCase):
         for ch_name in header:
             ch_data_len = len(table[ch_name])
             msg = 'length of data for channel %s is %d and should be %d' %\
-                                            (ch_name, ch_data_len, repetitions)
+                (ch_name, ch_data_len, repetitions)
             self.assertEqual(ch_data_len, repetitions, msg)
 
     def meas_cont_acquisition(self, params, config):
@@ -278,13 +281,13 @@ class TangoAcquisitionTestCase(MeasSarTestTestCase, unittest.TestCase):
         state = self.meas.State()
         desired_state = PyTango.DevState.ON
         msg = 'mg state after stop is %s (should be %s)' %\
-                                                         (state, desired_state)
+            (state, desired_state)
         self.assertEqual(state, desired_state, msg)
         for name in chn_names:
             channel = PyTango.DeviceProxy(name)
             state = channel.state()
             msg = 'channel %s state after stop is %s (should be %s)' %\
-                                                   (name, state, desired_state)
+                (name, state, desired_state)
             self.assertEqual(state, desired_state, msg)
 
     def stopMeas(self):

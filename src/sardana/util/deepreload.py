@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -54,10 +54,10 @@ original_import = __builtin__.__import__
 
 
 class DeepReload(object):
-    
+
     def __enter__(self):
-        __builtin__.reload = reload        
-    
+        __builtin__.reload = reload
+
     def __exit__(self, etype, evalue, etraceback):
         __builtin__.reload = original_reload
 
@@ -70,6 +70,7 @@ def replace_import_hook(new_import):
         yield
     finally:
         __builtin__.__import__ = saved_import
+
 
 def get_parent(globals, level):
     """
@@ -144,6 +145,7 @@ def get_parent(globals, level):
     # If this is violated...  Who cares?
     return parent, name
 
+
 def load_next(mod, altmod, name, buf):
     """
     mod, name, buf = load_next(mod, altmod, name, buf)
@@ -165,7 +167,7 @@ def load_next(mod, altmod, name, buf):
         next = None
     else:
         subname = name[:dot]
-        next = name[dot+1:]
+        next = name[dot + 1:]
 
     if buf != '':
         buf += '.'
@@ -184,6 +186,7 @@ def load_next(mod, altmod, name, buf):
 
 # Need to keep track of what we've already reloaded to prevent cyclic evil
 found_now = {}
+
 
 def import_submodule(mod, subname, fullname):
     """m = import_submodule(mod, subname, fullname)"""
@@ -224,16 +227,18 @@ def import_submodule(mod, subname, fullname):
                 sys.modules[fullname] = oldm
             raise
         finally:
-            if fp: fp.close()
+            if fp:
+                fp.close()
 
         add_submodule(mod, m, fullname, subname)
 
     return m
 
+
 def add_submodule(mod, submod, fullname, subname):
     """mod.{subname} = submod"""
     if mod is None:
-        return #Nothing to do here.
+        return  # Nothing to do here.
 
     if submod is None:
         submod = sys.modules[fullname]
@@ -241,6 +246,7 @@ def add_submodule(mod, submod, fullname, subname):
     setattr(mod, subname, submod)
 
     return
+
 
 def ensure_fromlist(mod, fromlist, buf, recursive):
     """Handle 'from module import a, b, c' imports."""
@@ -251,7 +257,7 @@ def ensure_fromlist(mod, fromlist, buf, recursive):
             raise TypeError("Item in ``from list'' not a string")
         if item == '*':
             if recursive:
-                continue # avoid endless recursion
+                continue  # avoid endless recursion
             try:
                 all = mod.__all__
             except AttributeError:
@@ -263,11 +269,13 @@ def ensure_fromlist(mod, fromlist, buf, recursive):
         elif not hasattr(mod, item):
             import_submodule(mod, item, buf + '.' + item)
 
+
 def deep_import_hook(name, globals=None, locals=None, fromlist=None, level=-1):
     """Replacement for __import__()"""
     parent, buf = get_parent(globals, level)
 
-    head, name, buf = load_next(parent, None if level < 0 else parent, name, buf)
+    head, name, buf = load_next(
+        parent, None if level < 0 else parent, name, buf)
 
     tail = head
     while name:
@@ -286,6 +294,7 @@ def deep_import_hook(name, globals=None, locals=None, fromlist=None, level=-1):
     return tail
 
 modules_reloading = {}
+
 
 def deep_reload_hook(m):
     """Replacement for reload()."""
@@ -312,8 +321,9 @@ def deep_reload_hook(m):
             parent = sys.modules[name[:dot]]
         except KeyError:
             modules_reloading.clear()
-            raise ImportError("reload(): parent %.200s not in sys.modules" % name[:dot])
-        subname = name[dot+1:]
+            raise ImportError(
+                "reload(): parent %.200s not in sys.modules" % name[:dot])
+        subname = name[dot + 1:]
         path = getattr(parent, "__path__", None)
 
     try:
@@ -321,7 +331,7 @@ def deep_reload_hook(m):
         # tries to import standard libraries (like io) itself, and we don't
         # want them to be processed by our deep_import_hook.
         with replace_import_hook(original_import):
-            fp, filename, stuff  = imp.find_module(subname, path)
+            fp, filename, stuff = imp.find_module(subname, path)
     finally:
         modules_reloading.clear()
 
@@ -333,7 +343,8 @@ def deep_reload_hook(m):
         sys.modules[name] = m
         raise
     finally:
-        if fp: fp.close()
+        if fp:
+            fp.close()
 
     modules_reloading.clear()
     return newm
@@ -345,6 +356,8 @@ except AttributeError:
     original_reload = imp.reload    # Python 3
 
 # Replacement for reload()
+
+
 def reload(module, exclude=['sys', 'os.path', '__builtin__', '__main__']):
     """Recursively reload all modules used in the given module.  Optionally
     takes a list of modules to exclude from reloading.  The default exclude

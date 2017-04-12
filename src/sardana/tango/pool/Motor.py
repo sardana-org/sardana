@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -51,7 +51,7 @@ from sardana.tango.pool.PoolDevice import PoolElementDevice, \
 class Motor(PoolElementDevice):
     """The tango motor device class. This class exposes through a tango device
 the sardana motor (:class:`~sardana.pool.poolmotor.PoolMotor`).
-    
+
 .. rubric:: The states
 
 The motor interface knows five states which are ON, MOVING, ALARM,
@@ -71,12 +71,12 @@ Init, State and Status commands. These commands are summarized in the
 following table:
 
 ==============  ================  ================
-Command name    Input data type   Output data type  
+Command name    Input data type   Output data type
 ==============  ================  ================
-Stop            void              void              
-Abort           void              void              
-DefinePosition  Tango::DevDouble  void              
-SaveConfig      void              void              
+Stop            void              void
+Abort           void              void
+DefinePosition  Tango::DevDouble  void
+SaveConfig      void              void
 ==============  ================  ================
 
 - **Stop** : It stops a running motion. This command does not have input or
@@ -96,7 +96,7 @@ SaveConfig      void              void
   database as motor device properties. It is allowed only in the ON or ALARM
   states
 
-The classical Tango Init command destroys the motor and re-create it. 
+The classical Tango Init command destroys the motor and re-create it.
 
 .. rubric:: The attributes
 
@@ -104,19 +104,19 @@ The motor interface supports several attributes which are summarized
 in the following table:
 
 ==============  =================  ===========  ========  =========  ===============
-Name            Data type          Data format  Writable  Memorized  Operator/Expert  
+Name            Data type          Data format  Writable  Memorized  Operator/Expert
 ==============  =================  ===========  ========  =========  ===============
-Position        Tango::DevDouble   Scalar       R/W       No *       Operator         
-DialPosition    Tango::DevDouble   Scalar       R         No         Expert         
-Offset          Tango::DevDouble   Scalar       R/W       Yes        Expert         
-Acceleration    Tango::DevDouble   Scalar       R/W       No         Expert         
-Base_rate       Tango::DevDouble   Scalar       R/W       No         Expert         
-Deceleration    Tango::DevDouble   Scalar       R/W       No         Expert         
-Velocity        Tango::DevDouble   Scalar       R/W       No         Expert         
-Limit_Switches  Tango::DevBoolean  Spectrum     R         No         Expert         
-SimulationMode  Tango::DevBoolean  Scalar       R         No         Expert         
-Step_per_unit   Tango::DevDouble   Scalar       R/W       Yes        Expert         
-Backlash        Tango::DevLong     Scalar       R/W       Yes        Expert         
+Position        Tango::DevDouble   Scalar       R/W       No *       Operator
+DialPosition    Tango::DevDouble   Scalar       R         No         Expert
+Offset          Tango::DevDouble   Scalar       R/W       Yes        Expert
+Acceleration    Tango::DevDouble   Scalar       R/W       No         Expert
+Base_rate       Tango::DevDouble   Scalar       R/W       No         Expert
+Deceleration    Tango::DevDouble   Scalar       R/W       No         Expert
+Velocity        Tango::DevDouble   Scalar       R/W       No         Expert
+Limit_Switches  Tango::DevBoolean  Spectrum     R         No         Expert
+SimulationMode  Tango::DevBoolean  Scalar       R         No         Expert
+Step_per_unit   Tango::DevDouble   Scalar       R/W       Yes        Expert
+Backlash        Tango::DevLong     Scalar       R/W       Yes        Expert
 ==============  =================  ===========  ========  =========  ===============
 
 - **Position** : This is read-write scalar double attribute. With the classical
@@ -125,15 +125,15 @@ Backlash        Tango::DevLong     Scalar       R/W       Yes        Expert
   DialPosition and Offset attributes to get a precise definition of the
   meaning of this attribute. It is not allowed to read or write this
   attribute when the motor is in FAULT or UNKNOWN state. It is also not
-  possible to write this attribute when the motor is already MOVING. 
+  possible to write this attribute when the motor is already MOVING.
   The unit used for this attribute is the physical unit: millimeters or
   milli-radian. It is always an **absolute position** .
 
 - **DialPosition** : This attribute is the motor dial position. The following
   formula links together the Position, DialPosition, Sign and Offset attributes:
-  
+
       Position = Sign * DialPosition + Offset
-  
+
   This allows to have the motor position centered around any position
   defined by the Offset attribute (classically the X ray beam position).
   It is a read only attribute. To set the motor position, the user has
@@ -174,11 +174,11 @@ Backlash        Tango::DevLong     Scalar       R/W       Yes        Expert
   spectrum attribute with 3 values which are:
 
     - Data[0] : The Home switch value
-    
+
     - Data[1] : The Upper switch value
-    
+
     - Data[2] : The Lower switch value
-    
+
 - **SimulationMode** : This is a read only scalar boolean attribute. When set,
   all motion requests are not forwarded to the software controller and then to
   the hardware. When set, the motor position is simulated and is immediately
@@ -213,7 +213,7 @@ Backlash        Tango::DevLong     Scalar       R/W       Yes        Expert
   MOVING. Some hardware motor controllers are able to manage this
   backlash feature. If it is not the case, the motor interface will
   implement this behavior.
-  
+
 All the motor devices will have the already described attributes but
 some hardware motor controller supports other features which are not
 covered by this list of pre-defined attributes. Using Tango dynamic
@@ -224,10 +224,10 @@ attributes specified on the controller with
 
 .. rubric:: The properties
 
-- **Sleep_before_last_read** : This property exposes the motor 
+- **Sleep_before_last_read** : This property exposes the motor
   *instability time*. It defines the time in milli-second that the software
   managing a motor movement will wait between it detects the end of the
-  motion and the last motor position reading. 
+  motion and the last motor position reading.
 
 .. rubric:: Getting motor state and limit switches using event
 
@@ -241,7 +241,7 @@ starts a motion, its state is changed to MOVING and an event is sent.
 As soon as the motion is over, the motor state is updated ans another
 event is sent. In the same way, as soon as a change in the limit
 switches value is detected, a change event is sent to client(s) which
-have subscribed to change event on the Limit_Switches attribute. 
+have subscribed to change event on the Limit_Switches attribute.
 
 
 .. rubric:: Reading the motor position attribute
@@ -264,7 +264,7 @@ property. Anyway, not more than 10 events could be sent by second.
 Once the motion is over, the motor position is made unavailable from
 the Tango polling buffer and is read a last time after a tunable
 waiting time (Sleep_bef_last_read property). A forced change event
-with this value is sent to clients using events. 
+with this value is sent to clients using events.
     """
 
     def __init__(self, dclass, name):
@@ -289,14 +289,16 @@ with this value is sent to clients using events.
     def set_write_dial_position_to_db(self):
         dial = self.motor.get_dial_position_attribute()
         if dial.has_write_value():
-            data = dict(DialPosition=dict(__value=dial.w_value, __value_ts=dial.w_timestamp))
+            data = dict(DialPosition=dict(
+                __value=dial.w_value, __value_ts=dial.w_timestamp))
             db = self.get_database()
             db.put_device_attribute_property(self.get_name(), data)
 
     def get_write_dial_position_from_db(self):
         name = 'DialPosition'
         db = self.get_database()
-        pos_props = db.get_device_attribute_property(self.get_name(), name)[name]
+        pos_props = db.get_device_attribute_property(
+            self.get_name(), name)[name]
         w_pos = pos_props["__value"][0]
 
         _, _, attr_info = self.get_dynamic_attributes()[0][name]
@@ -323,8 +325,8 @@ with this value is sent to clients using events.
             name = self.alias or full_name
             self.motor = motor = \
                 self.pool.create_element(type="Motor", name=name,
-                    full_name=full_name, id=self.Id, axis=self.Axis,
-                    ctrl_id=self.Ctrl_id)
+                                         full_name=full_name, id=self.Id, axis=self.Axis,
+                                         ctrl_id=self.Ctrl_id)
             if self.instrument is not None:
                 motor.set_instrument(self.instrument)
             # if in constructor, for all memorized no init attributes (position)
@@ -365,7 +367,8 @@ with this value is sent to clients using events.
         name = event_type.name.lower()
 
         if name == "w_position" and not self.in_write_position:
-            self.debug("Storing dial set point: %s", self.motor.dial_position.w_value)
+            self.debug("Storing dial set point: %s",
+                       self.motor.dial_position.w_value)
             self.set_write_dial_position_to_db()
             return
 
@@ -614,21 +617,21 @@ class MotorClass(PoolElementDeviceClass):
 
     #    Device Properties
     device_property_list = {
-        'Sleep_bef_last_read' : [DevLong,
-            "Number of mS to sleep before the last read during a motor "
-            "movement", 0],
-        '_Acceleration' : [DevDouble, "", -1],
-        '_Deceleration' : [DevDouble, "", -1],
-        '_Velocity'     : [DevDouble, "", -1],
-        '_Base_rate'    : [DevDouble, "", -1],
+        'Sleep_bef_last_read': [DevLong,
+                                "Number of mS to sleep before the last read during a motor "
+                                "movement", 0],
+        '_Acceleration': [DevDouble, "", -1],
+        '_Deceleration': [DevDouble, "", -1],
+        '_Velocity': [DevDouble, "", -1],
+        '_Base_rate': [DevDouble, "", -1],
     }
     device_property_list.update(PoolElementDeviceClass.device_property_list)
 
     #    Command definitions
     cmd_list = {
-        'DefinePosition' : [ [DevDouble, "New position"], [DevVoid, ""] ],
-        'SaveConfig'     : [ [DevVoid, ""], [DevVoid, ""] ],
-        'MoveRelative'   : [ [DevDouble, "amount to move"], [DevVoid, ""] ],
+        'DefinePosition': [[DevDouble, "New position"], [DevVoid, ""]],
+        'SaveConfig': [[DevVoid, ""], [DevVoid, ""]],
+        'MoveRelative': [[DevDouble, "amount to move"], [DevVoid, ""]],
     }
     cmd_list.update(PoolElementDeviceClass.cmd_list)
 
@@ -637,42 +640,42 @@ class MotorClass(PoolElementDeviceClass):
     attr_list.update(PoolElementDeviceClass.attr_list)
 
     standard_attr_list = {
-        'Position'     : [ [ DevDouble, SCALAR, READ_WRITE ],
-                           { 'abs_change' : '1.0', } ],
-        'Acceleration' : [ [ DevDouble, SCALAR, READ_WRITE ],
-                           { 'Memorized'     : "true", } ],
-        'Deceleration' : [ [ DevDouble, SCALAR, READ_WRITE ],
-                           { 'Memorized'     : "true", } ],
-        'Base_rate'    : [ [ DevDouble, SCALAR, READ_WRITE ],
-                           { 'Memorized'     : "true",
-                             'label'         : 'Base rate', } ],
-        'Velocity'     : [ [ DevDouble, SCALAR, READ_WRITE ],
-                           { 'Memorized'     : "true", } ],
-        'Offset'       : [ [ DevDouble, SCALAR, READ_WRITE ],
-                           { 'Memorized'     : "true",
-                             'Display level' : DispLevel.EXPERT } ],
-        'DialPosition' : [ [ DevDouble, SCALAR, READ ],
-                           { 'label'         : "Dial position",
-                             'Display level' : DispLevel.EXPERT } ],
-        'Step_per_unit': [ [ DevDouble, SCALAR, READ_WRITE],
-                           { 'Memorized'     : "true",
-                             'label'         : "Steps p/ unit",
-                             'Display level' : DispLevel.EXPERT } ],
-        'Backlash'     : [ [ DevLong, SCALAR, READ_WRITE],
-                           { 'Memorized'     : "true",
-                             'Display level' : DispLevel.EXPERT } ],
-        'Sign'         : [ [ DevShort, SCALAR, READ_WRITE],
-                           { 'Memorized'     : "true",
-                             'Display level' : DispLevel.EXPERT } ],
-        'Limit_switches': [ [ DevBoolean, SPECTRUM, READ, 3],
-                            { 'label'       : "Limit switches (H,U,L)",
-                              'description' : "This attribute is the motor "\
-                              "limit switches state. It's an array with 3 \n"\
-                              "elements which are:\n"\
-                              "0 - The home switch\n"\
-                              "1 - The upper limit switch\n"\
-                              "2 - The lower limit switch\n"\
-                              "False means not active. True means active" } ],
+        'Position': [[DevDouble, SCALAR, READ_WRITE],
+                     {'abs_change': '1.0', }],
+        'Acceleration': [[DevDouble, SCALAR, READ_WRITE],
+                         {'Memorized': "true", }],
+        'Deceleration': [[DevDouble, SCALAR, READ_WRITE],
+                         {'Memorized': "true", }],
+        'Base_rate': [[DevDouble, SCALAR, READ_WRITE],
+                      {'Memorized': "true",
+                       'label': 'Base rate', }],
+        'Velocity': [[DevDouble, SCALAR, READ_WRITE],
+                     {'Memorized': "true", }],
+        'Offset': [[DevDouble, SCALAR, READ_WRITE],
+                   {'Memorized': "true",
+                    'Display level': DispLevel.EXPERT}],
+        'DialPosition': [[DevDouble, SCALAR, READ],
+                         {'label': "Dial position",
+                          'Display level': DispLevel.EXPERT}],
+        'Step_per_unit': [[DevDouble, SCALAR, READ_WRITE],
+                          {'Memorized': "true",
+                           'label': "Steps p/ unit",
+                           'Display level': DispLevel.EXPERT}],
+        'Backlash': [[DevLong, SCALAR, READ_WRITE],
+                     {'Memorized': "true",
+                      'Display level': DispLevel.EXPERT}],
+        'Sign': [[DevShort, SCALAR, READ_WRITE],
+                 {'Memorized': "true",
+                  'Display level': DispLevel.EXPERT}],
+        'Limit_switches': [[DevBoolean, SPECTRUM, READ, 3],
+                           {'label': "Limit switches (H,U,L)",
+                            'description': "This attribute is the motor "
+                            "limit switches state. It's an array with 3 \n"
+                            "elements which are:\n"
+                            "0 - The home switch\n"
+                            "1 - The upper limit switch\n"
+                            "2 - The lower limit switch\n"
+                            "False means not active. True means active"}],
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
 

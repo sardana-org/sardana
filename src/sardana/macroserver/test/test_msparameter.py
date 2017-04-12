@@ -6,6 +6,7 @@ from sardana.macroserver.msparameter import ParamDecoder, WrongParamType
 
 from sardana.macroserver.mstypemanager import TypeManager
 
+
 class FakeMacroServer(object):
     name = "FakeMacroServer"
 
@@ -59,6 +60,7 @@ doc1 = "Decode macro with one single parameter with correct value"
 doc2 = "Decode macro with one single parameter with wrong value"
 doc3 = "Decode macro with one simple repeat parameter with correct value"
 doc4 = "Decode macro with one simple repeat parameter with min=0 and no values"
+
 
 @insertTest(helper_name="decode", test_method_name="test_decode1",
             test_method_doc=doc1, params_def=params_def1,
@@ -118,7 +120,7 @@ class TestParamDecoder(unittest.TestCase):
         if expected_exception:
             msg = ("decoding exception type (%s) does not match with the"
                    " expected exception type (%s)" % (type(exception),
-                                                     expected_exception))
+                                                      expected_exception))
             self.assertIsInstance(exception, expected_exception, msg)
 
     def tearDown(self):

@@ -2,29 +2,29 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
 """
-delegate.py: 
+delegate.py:
 """
 
 from taurus.external.qt import Qt
@@ -34,6 +34,7 @@ from sardana.taurus.core.tango.sardana import macro
 
 from .parameditors import MSAttrListComboBoxParam, SpinBoxParam, \
     DoubleSpinBoxParam, LineEditParam, FileDialogParam, ComboBoxParam, ComboBoxBoolean
+
 
 class ParamEditorDelegate(Qt.QStyledItemDelegate):
 
@@ -52,8 +53,8 @@ class ParamEditorDelegate(Qt.QStyledItemDelegate):
                     ##################
                     # The setUseParentModel mechanism is not working
                     # we do it manually here as a hack
-                    #comboBox.setUseParentModel(True)
-                    #comboBox.setModel('/elements')
+                    # comboBox.setUseParentModel(True)
+                    # comboBox.setModel('/elements')
                     w = parent
                     while w is not None:
                         if hasattr(w, 'getModelName'):
@@ -78,7 +79,8 @@ class ParamEditorDelegate(Qt.QStyledItemDelegate):
 
     def setEditorData(self, editor, index):
         if index.column() == 1:
-            text = Qt.from_qvariant(index.model().data(index, Qt.Qt.DisplayRole), str)
+            text = Qt.from_qvariant(index.model().data(
+                index, Qt.Qt.DisplayRole), str)
             if text == "None" or text == "" or text is None:
                 Qt.QStyledItemDelegate.setEditorData(self, editor, index)
             else:
@@ -107,7 +109,8 @@ class ParamEditorDelegate(Qt.QStyledItemDelegate):
     def sizeHint(self, option, index):
         if index.column() == 0:
             fm = option.fontMetrics
-            text = Qt.from_qvariant(index.model().data(index, Qt.Qt.DisplayRole), str)
+            text = Qt.from_qvariant(index.model().data(
+                index, Qt.Qt.DisplayRole), str)
             document = Qt.QTextDocument()
             document.setDefaultFont(option.font)
             document.setHtml(text)

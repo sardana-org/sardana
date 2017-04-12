@@ -3,24 +3,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
-## 
-## http://www.sardana-controls.org/
+# This file is part of Sardana
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
-## 
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-## 
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
-## 
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# http://www.sardana-controls.org/
+##
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+##
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+##
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+##
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -29,8 +29,8 @@ import os
 
 # declare some useful absolute paths
 _this_dir = os.path.dirname(os.path.abspath(__file__))
-_setup_dir = os.path.abspath(os.path.join(_this_dir, os.path.pardir, 
-                             os.path.pardir))
+_setup_dir = os.path.abspath(os.path.join(_this_dir, os.path.pardir,
+                                          os.path.pardir))
 _src_dir = os.path.join(_setup_dir, 'src')
 _mock_path = os.path.join(_setup_dir, 'doc', 'mock.zip')
 # append mock dir to the sys path (mocks will be used if needed)
@@ -49,6 +49,7 @@ if not isinstance(taurus.Release.version_info, tuple):
     # otherwise the mocked version of the decorator returns mock objects,
     # this is causing problems with inheritance diagrams
     import taurus.test
+
     def insertTest(klass, *args, **kwargs):
         return klass
     taurus.test.insertTest = insertTest
@@ -58,6 +59,8 @@ sys.path.insert(0, _src_dir)
 
 import sardana
 # TODO: check if it is still necessary to fix_sardana_for_doc
+
+
 def fix_sardana_for_doc():
 
     def type_getattr(self, name):
@@ -75,7 +78,7 @@ fix_sardana_for_doc()
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.append(os.path.abspath('sphinxext'))
 
-# -- General configuration -----------------------------------------------------
+# -- General configuration -----------------------------------------------
 
 #autosummary_generate = True
 
@@ -93,14 +96,14 @@ extensions = ['sphinx.ext.pngmath',
               'sardanaextension',
               'ipython_console_highlighting',
               'spock_console_highlighting',
-]
+              ]
 
 try:
     import rst2pdf.pdfbuilder
     extensions.append('rst2pdf.pdfbuilder')
 except:
     pass
-    
+
 # Add any paths that contain templates here, relative to this directory.
 #templates_path = ['_templates']
 
@@ -119,7 +122,8 @@ copyright = u'2012, ALBA - CELLS, Creative Commons Attribution-Share Alike 3.0'
 copyright = u"""Except where otherwise noted, content on this site is
 licensed under a Creative Commons Attribution 3.0 License"""
 
-#Ideally we would like to put the following html code for copyright... but how?
+# Ideally we would like to put the following html code for copyright...
+# but how?
 '''<a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/es/"><img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-sa/3.0/es/88x31.png" /></a><br /><span xmlns:dc="http://purl.org/dc/elements/1.1/" href="http://purl.org/dc/dcmitype/Text" property="dc:title" rel="dc:type">Taurus Documentation</span> by <span xmlns:cc="http://creativecommons.org/ns#" property="cc:attributionName">CELLS - ALBA</span> is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/3.0/es/">Creative Commons Attribution-Share Alike 3.0 Spain License</a>.'''
 
 # The version info for the project you're documenting, acts as replacement for
@@ -170,7 +174,7 @@ pygments_style = 'spock_console_highlighting.SpockStyle'
 #modindex_common_prefix = []
 
 
-# -- Options for HTML output ---------------------------------------------------
+# -- Options for HTML output ---------------------------------------------
 
 # The theme to use for HTML and HTML Help pages.  Major themes that come with
 # Sphinx are currently 'default' and 'sphinxdoc'.
@@ -196,7 +200,7 @@ html_theme_path = []
 
 # The name of an image file (relative to this directory) to place at the top
 # of the sidebar.
-html_logo = os.path.join(os.pardir,os.pardir,"logo.png")
+html_logo = os.path.join(os.pardir, os.pardir, "logo.png")
 
 # The name of an image file (within the static path) to use as favicon of the
 # docs.  This file should be a Windows icon file (.ico) being 16x16 or 32x32
@@ -247,7 +251,7 @@ html_static_path = ['_static']
 htmlhelp_basename = 'sardanadoc'
 
 
-# -- Options for LaTeX output --------------------------------------------------
+# -- Options for LaTeX output --------------------------------------------
 
 # The paper size ('letter' or 'a4').
 latex_paper_size = 'a4'
@@ -258,8 +262,8 @@ latex_font_size = '10pt'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'sardana.tex', u'Sardana Documentation',
-   u'Sardana team', 'manual'),
+    ('index', 'sardana.tex', u'Sardana Documentation',
+     u'Sardana team', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of
@@ -288,30 +292,29 @@ todo_include_todos = True
 
 autodoc_member_order = "bysource"
 
-# -- Options for Graphviz  -----------------------------------------------------
+# -- Options for Graphviz  -----------------------------------------------
 
-inheritance_node_attrs = dict(shape='box', fontcolor='black', 
+inheritance_node_attrs = dict(shape='box', fontcolor='black',
                               height=0.4,
                               color='brown', style='rounded')
 
 inheritance_graph_attrs = dict(rankdir="UD", ratio='compress')
 
-graphviz_output_format = 'png' # 'svg'
+graphviz_output_format = 'png'  # 'svg'
 
-#inheritance_graph_attrs = dict(rankdir="LR", size='"6.0, 8.0"',
+# inheritance_graph_attrs = dict(rankdir="LR", size='"6.0, 8.0"',
 #                               fontsize=14, ratio='compress')
 
-# -- Options for reference to other documentation ------------------------------
+# -- Options for reference to other documentation ------------------------
 
 intersphinx_mapping = {
     'http://docs.python.org/dev': None,
-    'http://docs.scipy.org/doc/scipy/reference' : None,
-    'http://docs.scipy.org/doc/numpy' : None,
-    'http://ipython.org/ipython-doc/stable/' : None,
+    'http://docs.scipy.org/doc/scipy/reference': None,
+    'http://docs.scipy.org/doc/numpy': None,
+    'http://ipython.org/ipython-doc/stable/': None,
     'http://www.esrf.fr/computing/cs/tango/tango_doc/kernel_doc/pytango/latest/': None,
-    'http://www.taurus-scada.org' : None,
-    'http://pyqt.sourceforge.net/Docs/PyQt4/' : None,
-    'http://matplotlib.sourceforge.net/' : None,
-    'http://packages.python.org/guiqwt/' : None,
+    'http://www.taurus-scada.org': None,
+    'http://pyqt.sourceforge.net/Docs/PyQt4/': None,
+    'http://matplotlib.sourceforge.net/': None,
+    'http://packages.python.org/guiqwt/': None,
 }
-

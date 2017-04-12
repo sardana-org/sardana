@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+# http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 import time
@@ -35,8 +35,9 @@ from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.pool.test import (BasePoolTestCase, createPoolMeasurementGroup,
                                dummyMeasurementGroupConf01,
                                createMGUserConfiguration)
-#TODO Import AttributeListener from the right location.
+# TODO Import AttributeListener from the right location.
 from sardana.pool.test.test_acquisition import AttributeListener
+
 
 class BaseAcquisition(object):
 
@@ -53,7 +54,7 @@ class BaseAcquisition(object):
         pool = self.pool
         # creating mg user configuration and obtaining channel ids
         mg_conf, channel_ids, channel_names = \
-                                        createMGUserConfiguration(pool, config)
+            createMGUserConfiguration(pool, config)
         conf = copy.deepcopy(dummyMeasurementGroupConf01)
         conf["name"] = 'mg1'
         conf["full_name"] = 'mg1'
@@ -64,51 +65,51 @@ class BaseAcquisition(object):
         return channel_names
 
     def prepare_attribute_listener(self):
-        self.attr_listener = AttributeListener()        
-        ## Add listeners
-        attributes = self.pmg.get_user_elements_attribute_sequence()                
+        self.attr_listener = AttributeListener()
+        # Add listeners
+        attributes = self.pmg.get_user_elements_attribute_sequence()
         for attr in attributes:
             attr.add_listener(self.attr_listener)
 
     def remove_attribute_listener(self):
-        ## Remove listeners
-        attributes = self.pmg.get_user_elements_attribute_sequence()                
+        # Remove listeners
+        attributes = self.pmg.get_user_elements_attribute_sequence()
         for attr in attributes:
             attr.remove_listener(self.attr_listener)
 
     def acquire(self):
         """ Run acquisition
         """
-        self.pmg.start_acquisition()   
+        self.pmg.start_acquisition()
         acq = self.pmg.acquisition
-        # waiting for acquisition 
-        while acq.is_running():            
-            time.sleep(1)  
+        # waiting for acquisition
+        while acq.is_running():
+            time.sleep(1)
 
     def acq_asserts(self, channel_names, repetitions):
         # printing acquisition records
         table = self.attr_listener.get_table()
         header = table.dtype.names
-        print header        
+        print header
         n_rows = table.shape[0]
         for row in xrange(n_rows):
-            print row, table[row]        
-        # checking if any of data was acquired        
-        self.assertTrue(self.attr_listener.data, 'no data were acquired')        
-        # checking if all channels produced data        
+            print row, table[row]
+        # checking if any of data was acquired
+        self.assertTrue(self.attr_listener.data, 'no data were acquired')
+        # checking if all channels produced data
         for channel in channel_names:
             msg = 'data from channel %s were not acquired' % channel
             self.assertIn(channel, header, msg)
-                    
+
         # checking if all the data were acquired
         for ch_name in header:
             ch_data_len = len(table[ch_name])
             msg = 'length of data for channel %s is %d and should be %d' %\
-                                            (ch_name, ch_data_len, repetitions)
+                (ch_name, ch_data_len, repetitions)
             self.assertEqual(ch_data_len, repetitions, msg)
 
     def meas_double_acquisition(self, config, synchronization, moveable=None):
-        """ Run two acquisition with the same measurement group, first with 
+        """ Run two acquisition with the same measurement group, first with
         multiple repetitions and then one repetition.
         """
         channel_names = self.prepare_meas(config)
@@ -152,7 +153,8 @@ class BaseAcquisition(object):
 
     def consecutive_acquisitions(self, pool, config, synchronization):
         # creating mg user configuration and obtaining channel ids
-        mg_conf, channel_ids, channel_names = createMGUserConfiguration(pool, config)
+        mg_conf, channel_ids, channel_names = createMGUserConfiguration(
+            pool, config)
 
         # setting mg configuration - this cleans the action cache!
         self.pmg.set_configuration_from_user(mg_conf)
@@ -165,7 +167,7 @@ class BaseAcquisition(object):
 
     def meas_cont_acquisition(self, config, synchronization, moveable=None,
                               second_config=None):
-        """Executes measurement using the measurement group. 
+        """Executes measurement using the measurement group.
         Checks the lengths of the acquired data.
         """
         jobs_before = get_thread_pool().qsize
@@ -180,13 +182,14 @@ class BaseAcquisition(object):
         self.acq_asserts(channel_names, repetitions)
 
         if second_config is not None:
-            self.consecutive_acquisitions(self.pool, second_config, synchronization)
+            self.consecutive_acquisitions(
+                self.pool, second_config, synchronization)
 
         # checking if there are no pending jobs
         jobs_after = get_thread_pool().qsize
         msg = ('there are %d jobs pending to be done after the acquisition ' +
-                               '(before: %d)') % (jobs_after, jobs_before)
-        self.assertEqual(jobs_before, jobs_after, msg)                
+               '(before: %d)') % (jobs_after, jobs_before)
+        self.assertEqual(jobs_before, jobs_after, msg)
 
     def stopAcquisition(self):
         """Method used to abort a running acquisition"""
@@ -194,34 +197,34 @@ class BaseAcquisition(object):
 
     def meas_cont_stop_acquisition(self, config, synchronization,
                                    moveable=None):
-        """Executes measurement using the measurement group and tests that the 
+        """Executes measurement using the measurement group and tests that the
         acquisition can be stopped.
-        """  
+        """
         self.prepare_meas(config)
         self.pmg.synchronization = synchronization
         self.pmg.moveable = moveable
         self.prepare_attribute_listener()
-        
+
         self.pmg.start_acquisition()
-        # retrieving the acquisition since it was cleaned when applying mg conf        
+        # retrieving the acquisition since it was cleaned when applying mg conf
         acq = self.pmg.acquisition
-        
+
         # starting timer (0.05 s) which will stop the acquisiton
-        threading.Timer(0.2, self.stopAcquisition).start() 
-        # waiting for acquisition and tggeneration to be stoped by thread 
+        threading.Timer(0.2, self.stopAcquisition).start()
+        # waiting for acquisition and tggeneration to be stoped by thread
         while acq.is_running():
             time.sleep(0.05)
         msg = "acquisition shall NOT be running after stopping it"
-        self.assertEqual(acq.is_running(), False, msg) 
+        self.assertEqual(acq.is_running(), False, msg)
 
         tp = get_thread_pool()
-        numBW= tp.getNumOfBusyWorkers()
+        numBW = tp.getNumOfBusyWorkers()
         msg = "The number of busy workers is not zero; numBW = %s" % (numBW)
         self.assertEqual(numBW, 0, msg)
         # print the acquisition records
         for i, record in enumerate(zip(*self.attr_listener.data.values())):
             print i, record
-            
+
     def meas_contpos_acquisition(self, config, synchronization, moveable,
                                  second_config=None):
         # TODO: this code is ready only for one group configuration
@@ -243,10 +246,10 @@ class BaseAcquisition(object):
         self.pmg.start_acquisition()
         mot.set_position(position)
         acq = self.pmg.acquisition
-        # waiting for acquisition 
+        # waiting for acquisition
         while acq.is_running():
             time.sleep(0.1)
-        #time.sleep(3)
+        # time.sleep(3)
         self.acq_asserts(channel_names, repetitions)
 
     def tearDown(self):
@@ -267,7 +270,7 @@ synchronization2 = [{SynchParam.Delay: {SynchDomain.Time: 0},
 synchronization3 = [{SynchParam.Delay: {SynchDomain.Time: .1},
                      SynchParam.Initial: {SynchDomain.Position: 0},
                      SynchParam.Active: {SynchDomain.Position: .1,
-                                         SynchDomain.Time: .01,},
+                                         SynchDomain.Time: .01, },
                      SynchParam.Total: {SynchDomain.Position: .2,
                                         SynchDomain.Time: .1},
                      SynchParam.Repeats: 10}]
@@ -275,7 +278,7 @@ synchronization3 = [{SynchParam.Delay: {SynchDomain.Time: .1},
 synchronization4 = [{SynchParam.Delay: {SynchDomain.Time: 0.1},
                      SynchParam.Initial: {SynchDomain.Position: 0},
                      SynchParam.Active: {SynchDomain.Position: -.1,
-                                         SynchDomain.Time: .01,},
+                                         SynchDomain.Time: .01, },
                      SynchParam.Total: {SynchDomain.Position: -.2,
                                         SynchDomain.Time: .1},
                      SynchParam.Repeats: 10}]
@@ -284,14 +287,14 @@ doc_1 = 'Synchronized acquisition with two channels from the same controller'\
         ' using the same trigger'
 config_1 = (
     (('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),
-     ('_test_ct_1_2', '_test_tg_1_1', AcqSynchType.Trigger)),  
+     ('_test_ct_1_2', '_test_tg_1_1', AcqSynchType.Trigger)),
 )
 
 doc_2 = 'Synchronized acquisition with two channels from different controllers'\
         ' using two different triggers'
 config_2 = (
     (('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),),
-    (('_test_ct_2_1', '_test_tg_2_1', AcqSynchType.Trigger),)  
+    (('_test_ct_2_1', '_test_tg_2_1', AcqSynchType.Trigger),)
 )
 
 doc_3 = 'Use the same trigger in 2 channels of different controllers'
@@ -319,15 +322,15 @@ doc_8 = 'Test that the acquisition using triggers can be stopped.'
 
 doc_11 = 'Acquisition using 2 controllers, with 2 channels in each controller.'
 config_11 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),
-             ('_test_ct_1_2', '_test_tg_1_1', AcqSynchType.Trigger)],
-            [('_test_ct_2_1', 'software', AcqSynchType.Trigger),
-             ('_test_ct_2_2', 'software', AcqSynchType.Trigger)]]
+              ('_test_ct_1_2', '_test_tg_1_1', AcqSynchType.Trigger)],
+             [('_test_ct_2_1', 'software', AcqSynchType.Trigger),
+              ('_test_ct_2_2', 'software', AcqSynchType.Trigger)]]
 
 doc_9 = 'Test two consecutive synchronous acquisitions with different'\
         ' configuration.'
 
 doc_10 = 'Test synchronous acquisition followed by asynchronous'\
-        ' acquisition using the same configuration.'
+    ' acquisition using the same configuration.'
 
 doc_12 = 'Acquisition using 2 controllers, with 2 channels in each controller.'
 config_12 = [[('_test_ct_1_1', 'software', AcqSynchType.Trigger),
@@ -336,9 +339,9 @@ config_12 = [[('_test_ct_1_1', 'software', AcqSynchType.Trigger),
               ('_test_ct_2_2', 'software', AcqSynchType.Trigger)]]
 
 doc_13 = 'Test acquisition of zerod using software gate.'
-config_13 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),],
-             [('_test_ct_2_1', 'software', AcqSynchType.Trigger),],
-             [('_test_0d_1_1', 'software', AcqSynchType.Gate),]]
+config_13 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger), ],
+             [('_test_ct_2_1', 'software', AcqSynchType.Trigger), ],
+             [('_test_0d_1_1', 'software', AcqSynchType.Gate), ]]
 
 
 @insertTest(helper_name='meas_contpos_acquisition', test_method_doc=doc_12,
@@ -359,9 +362,9 @@ config_13 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),],
             config=config_5, synchronization=synchronization1)
 # TODO: implement dedicated asserts/test for only software synchronized
 #       acquisition.
-#       Until this TODO gets implemented we comment the test since it may 
+#       Until this TODO gets implemented we comment the test since it may
 #       fail (last acquisitions may not be executed - the previous one could
-#       still be in progress, so the shape of data will not correspond to the 
+#       still be in progress, so the shape of data will not correspond to the
 #       number of repetitions
 # @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_6,
 #             params=params_1, config=config_6)

@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+# http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -28,6 +28,7 @@ from sardana.pool.test import (FakePool, createPoolController, createCtrlConf,
                                createPoolMotor, createElemConf,
                                createPoolZeroDExpChannel)
 import logging
+
 
 class BasePoolTestCase(object):
     """Base pool test for setting the environment."""
@@ -90,8 +91,8 @@ class BasePoolTestCase(object):
         for ctrl in range(1, self.nctctrls + 1):
             name = '_test_ct_ctrl_%s' % ctrl
             ctrl_obj = self.createController(name,
-                                'DummyCounterTimerController',
-                                'DummyCounterTimerController.py')
+                                             'DummyCounterTimerController',
+                                             'DummyCounterTimerController.py')
             # Create nelems CT elements for each ctrl
             for axis in range(1, self.nctelems + 1):
                 name = '_test_ct_%s_%s' % (ctrl, axis)
@@ -100,8 +101,8 @@ class BasePoolTestCase(object):
         for ctrl in range(1, self.nzerodctrls + 1):
             name = '_test_0d_ctrl_%s' % ctrl
             ctrl_obj = self.createController(name,
-                                'DummyZeroDController',
-                                'DummyZeroDController.py')
+                                             'DummyZeroDController',
+                                             'DummyZeroDController.py')
             # Create nelems ZeroD elements for each ctrl
             for axis in range(1, self.nzerodelems + 1):
                 name = '_test_0d_%s_%s' % (ctrl, axis)
@@ -110,8 +111,8 @@ class BasePoolTestCase(object):
         for ctrl in range(1, self.ntgctrls + 1):
             name = '_test_tg_ctrl_%s' % ctrl
             ctrl_obj = self.createController(name,
-                            'DummyTriggerGateController',
-                            'DummyTriggerGateController.py')
+                                             'DummyTriggerGateController',
+                                             'DummyTriggerGateController.py')
             # Create nelems CT elements for each ctrl
             for axis in range(1, self.ntgelems + 1):
                 name = '_test_tg_%s_%s' % (ctrl, axis)
@@ -120,8 +121,8 @@ class BasePoolTestCase(object):
         for ctrl in range(1, self.nctctrls + 1):
             name = '_test_mot_ctrl_%s' % ctrl
             ctrl_obj = self.createController(name,
-                                'DummyMotorController',
-                                'DummyMotorController.py')
+                                             'DummyMotorController',
+                                             'DummyMotorController.py')
             # Create nelems CT elements for each ctrl
             for axis in range(1, self.nctelems + 1):
                 name = '_test_mot_%s_%s' % (ctrl, axis)

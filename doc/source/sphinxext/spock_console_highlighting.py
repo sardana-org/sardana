@@ -3,24 +3,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
-## 
-## http://www.sardana-controls.org/
+# This file is part of Sardana
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
-## 
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-## 
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
-## 
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# http://www.sardana-controls.org/
+##
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+##
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+##
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+##
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -36,7 +36,7 @@ import copy
 
 # Third party
 from pygments.lexer import Lexer, do_insertions
-from pygments.lexers.agile import (PythonConsoleLexer, PythonLexer, 
+from pygments.lexers.agile import (PythonConsoleLexer, PythonLexer,
                                    PythonTracebackLexer)
 from pygments.token import Token, Comment, Generic
 from pygments.style import Style
@@ -49,10 +49,12 @@ line_re = re.compile('.*?\n')
 
 DftStyle = pygments.styles.get_style_by_name("default")
 
+
 class SpockStyle(DftStyle):
-    
+
     styles = copy.copy(DftStyle.styles)
     styles[Generic.Prompt] = 'bold #00AA00'
+
 
 class SpockConsoleLexer(Lexer):
     """
@@ -76,11 +78,12 @@ class SpockConsoleLexer(Lexer):
 
       - It assumes the default spock prompts, not customized ones.
     """
-    
+
     name = 'Spock console session'
     aliases = ['spock']
     mimetypes = ['text/x-spock-console']
-    input_prompt = re.compile("([a-zA-Z0-9_\-]+ \[(?P<N>[0-9]+)\]: )|(   \.\.\.+:)")
+    input_prompt = re.compile(
+        "([a-zA-Z0-9_\-]+ \[(?P<N>[0-9]+)\]: )|(   \.\.\.+:)")
     output_prompt = re.compile("(\s*Result \[(?P<N>[0-9]+)\]: )|(   \.\.\.+:)")
     continue_prompt = re.compile("   \.\.\.+:")
     tb_start = re.compile("\-+")

@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -53,49 +53,59 @@ class MacroEditor(Qsci.QsciScintilla):
         self.newAction.setToolTip("Create new file")
         self.newAction.setShortcut("Ctrl+N")
 
-        self.openAction = Qt.QAction(getThemeIcon("document-open"), "Open", self)
+        self.openAction = Qt.QAction(
+            getThemeIcon("document-open"), "Open", self)
         self.connect(self.openAction, Qt.SIGNAL("triggered()"), self.openFile)
         self.openAction.setToolTip("Open existing file")
         self.openAction.setShortcut("Ctrl+O")
 
-        self.saveAction = Qt.QAction(getThemeIcon("document-save"), "Save", self)
+        self.saveAction = Qt.QAction(
+            getThemeIcon("document-save"), "Save", self)
         self.connect(self.saveAction, Qt.SIGNAL("triggered()"), self.saveFile)
         self.saveAction.setToolTip("Save document to disk")
         self.saveAction.setShortcut("Ctrl+S")
 
-        self.saveAsAction = Qt.QAction(getThemeIcon("document-save-as"), "Save as...", self)
-        self.connect(self.saveAsAction, Qt.SIGNAL("triggered()"), self.saveFile)
+        self.saveAsAction = Qt.QAction(getThemeIcon(
+            "document-save-as"), "Save as...", self)
+        self.connect(self.saveAsAction, Qt.SIGNAL(
+            "triggered()"), self.saveFile)
         self.saveAsAction.setToolTip("Save document under a new name")
 
         self.cutAction = Qt.QAction(getThemeIcon("edit-cut"), "Cut", self)
         self.connect(self.cutAction, Qt.SIGNAL("triggered()"), self.cut)
-        self.cutAction.setToolTip("Cut current selection's contents to the clipboard")
+        self.cutAction.setToolTip(
+            "Cut current selection's contents to the clipboard")
         self.cutAction.setShortcut("Ctrl+X")
         self.cutAction.setEnabled(False)
 
         self.copyAction = Qt.QAction(getThemeIcon("edit-copy"), "Copy", self)
         self.connect(self.copyAction, Qt.SIGNAL("triggered()"), self.copy)
-        self.copyAction.setToolTip("Copy current selection's contents to the clipboard")
+        self.copyAction.setToolTip(
+            "Copy current selection's contents to the clipboard")
         self.copyAction.setShortcut("Ctrl+C")
         self.copyAction.setEnabled(False)
 
-        self.pasteAction = Qt.QAction(getThemeIcon("edit-paste"), "Paste", self)
+        self.pasteAction = Qt.QAction(
+            getThemeIcon("edit-paste"), "Paste", self)
         self.connect(self.pasteAction, Qt.SIGNAL("triggered()"), self.paste)
-        self.pasteAction.setToolTip("Paste the clipboard's contents into the current selection")
+        self.pasteAction.setToolTip(
+            "Paste the clipboard's contents into the current selection")
         self.pasteAction.setShortcut("Ctrl+V")
 
         self.aboutAction = Qt.QAction("About", self)
         self.connect(self.aboutAction, Qt.SIGNAL("triggered()"), self.about)
         self.aboutAction.setToolTip("Show the application's About box")
 
-        self.connect(self.textEdit, Qt.SIGNAL("copyAvailable(bool)"), self.cutAction.setEnabled)
-        self.connect(self.textEdit, Qt.SIGNAL("copyAvailable(bool)"), self.copyAction.setEnabled)
+        self.connect(self.textEdit, Qt.SIGNAL(
+            "copyAvailable(bool)"), self.cutAction.setEnabled)
+        self.connect(self.textEdit, Qt.SIGNAL(
+            "copyAvailable(bool)"), self.copyAction.setEnabled)
 
         self.setCurrentFile("")
 
     def closeEvent(self, event):
         if self.maybeSave():
-#            self.writeSettings()
+            #            self.writeSettings()
             event.accept()
         else:
             event.ignore()
@@ -124,7 +134,8 @@ class MacroEditor(Qsci.QsciScintilla):
         return self.__saveFile(self.fileName)
 
     def about(self):
-        Qt.QMessageBox.about(self, "About MacroEditor", "The MacroEditor by Zbigniew Reszela")
+        Qt.QMessageBox.about(self, "About MacroEditor",
+                             "The MacroEditor by Zbigniew Reszela")
 
     def documentWasModified(self):
         self.setWindowModified(self.textEdit.isModified())
@@ -166,10 +177,10 @@ class MacroEditor(Qsci.QsciScintilla):
     def maybeSave(self):
         if self.textEdit.isModified():
             ret = Qt.QMessageBox.warning(self, "MacroEditor",
-                     "The document has been modified\nDo you want to save your changes?",
-                     Qt.QMessageBox.Yes | Qt.QMessageBox.Default,
-                     Qt.QMessageBox.No,
-                     Qt.QMessageBox.Cancel | Qt.QMessageBox.Escape)
+                                         "The document has been modified\nDo you want to save your changes?",
+                                         Qt.QMessageBox.Yes | Qt.QMessageBox.Default,
+                                         Qt.QMessageBox.No,
+                                         Qt.QMessageBox.Cancel | Qt.QMessageBox.Escape)
             if ret == Qt.QMessageBox.Yes:
                 return self.save()
             elif ret == Qt.QMessageBox.Cancel:
@@ -180,7 +191,8 @@ class MacroEditor(Qsci.QsciScintilla):
         try:
             fileHandle = open(fileName, 'r')
         except IOError, e:
-            Qt.QMessageBox.warning(self, "MacroEditor", "Cannot read file %s:\n%s." % (fileName, e))
+            Qt.QMessageBox.warning(self, "MacroEditor",
+                                   "Cannot read file %s:\n%s." % (fileName, e))
             return False
         fileContents = fileHandle.read()
         Qt.QApplication.setOverrideCursor(Qt.Qt.WaitCursor)
@@ -194,7 +206,8 @@ class MacroEditor(Qsci.QsciScintilla):
         try:
             file = open(fileName, 'w')
         except IOError, e:
-            Qt.QMessageBox.warning(self, "MacroEditor", "Cannot write file %s:\n%s." % (fileName, e))
+            Qt.QMessageBox.warning(
+                self, "MacroEditor", "Cannot write file %s:\n%s." % (fileName, e))
             return False
         Qt.QApplication.setOverrideCursor(Qt.Qt.WaitCursor)
         file.write(self.textEdit.text())

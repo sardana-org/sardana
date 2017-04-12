@@ -2,29 +2,29 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
 """
-delegate.py: 
+delegate.py:
 """
 
 from taurus.external.qt import Qt
@@ -35,6 +35,7 @@ from sardana.taurus.qt.qtgui.extra_macroexecutor.macroparameterseditor.paramedit
     DoubleSpinBoxParam, LineEditParam, FileDialogParam
 
 from sardana.taurus.qt.qtgui.extra_macroexecutor import globals
+
 
 class SequenceEditorDelegate(Qt.QItemDelegate):
 
@@ -59,7 +60,6 @@ class SequenceEditorDelegate(Qt.QItemDelegate):
         else:
             Qt.QItemDelegate.paint(self, painter, option, index)
 
-
     def createEditor(self, parent, option, index):
         if index.column() == 3:
             return Qt.QCheckBox(parent)
@@ -68,7 +68,7 @@ class SequenceEditorDelegate(Qt.QItemDelegate):
 
     def setEditorData(self, editor, index):
         node = index.model().mapToSource(index).internalPointer()
-        if index.column() == 3:  #and isinstance(node, MacroNode):
+        if index.column() == 3:  # and isinstance(node, MacroNode):
             editor.setChecked(node.isPause())
         else:
             Qt.QItemDelegate.setEditorData(self, editor, index)
@@ -76,6 +76,7 @@ class SequenceEditorDelegate(Qt.QItemDelegate):
     def setModelData(self, editor, model, index):
         if index.column() == 3:
             model.setData(index, Qt.QVariant(editor.isChecked()))
+
 
 class MacroParametersProxyDelegate(Qt.QItemDelegate):
 
@@ -103,13 +104,14 @@ class MacroParametersProxyDelegate(Qt.QItemDelegate):
 
     def setEditorData(self, editor, index):
         if index.column() == 1:
-            text = Qt.from_qvariant(index.model().data(index, Qt.Qt.DisplayRole), str)
+            text = Qt.from_qvariant(index.model().data(
+                index, Qt.Qt.DisplayRole), str)
             if text in ["None", "", None]:
                 Qt.QItemDelegate.setEditorData(self, editor, index)
             else:
                 node = index.model().mapToSource(index).internalPointer()
                 paramType = node.type()
-                if paramType in globals.EDITOR_COMBOBOX_PARAMS :
+                if paramType in globals.EDITOR_COMBOBOX_PARAMS:
                     i = editor.findText(text)
                     if i == -1:
                         i = 0
@@ -134,7 +136,8 @@ class MacroParametersProxyDelegate(Qt.QItemDelegate):
     def sizeHint(self, option, index):
         if index.column() == 0:
             fm = option.fontMetrics
-            text = Qt.from_qvariant(index.model().data(index, Qt.Qt.DisplayRole), str)
+            text = Qt.from_qvariant(index.model().data(
+                index, Qt.Qt.DisplayRole), str)
             document = Qt.QTextDocument()
             document.setDefaultFont(option.font)
             document.setHtml(text)
@@ -151,5 +154,3 @@ class MacroParametersProxyDelegate(Qt.QItemDelegate):
         else:
             size = Qt.QItemDelegate.sizeHint(self, option, index)
         return size
-
-

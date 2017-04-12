@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -69,14 +69,16 @@ class IORegister(PoolElementDevice):
     def set_write_value_to_db(self):
         value_attr = self.ior.get_value_attribute()
         if value_attr.has_write_value():
-            data = dict(Value=dict(__value=value_attr.w_value, __value_ts=value_attr.w_timestamp))
+            data = dict(Value=dict(__value=value_attr.w_value,
+                                   __value_ts=value_attr.w_timestamp))
             db = self.get_database()
             db.put_device_attribute_property(self.get_name(), data)
 
     def get_write_value_from_db(self):
         name = 'Value'
         db = self.get_database()
-        val_props = db.get_device_attribute_property(self.get_name(), name)[name]
+        val_props = db.get_device_attribute_property(
+            self.get_name(), name)[name]
         w_val = val_props["__value"][0]
 
         _, _, attr_info = self.get_dynamic_attributes()[0][name]
@@ -104,13 +106,13 @@ class IORegister(PoolElementDevice):
             name = self.alias or full_name
             self.ior = ior = \
                 self.pool.create_element(type="IORegister", name=name,
-                    full_name=full_name, id=self.Id, axis=self.Axis,
-                    ctrl_id=self.Ctrl_id)
+                                         full_name=full_name, id=self.Id, axis=self.Axis,
+                                         ctrl_id=self.Ctrl_id)
             if self.instrument is not None:
                 ior.set_instrument(self.instrument)
         ior.add_listener(self.on_ior_changed)
 
-        ## force a state read to initialize the state attribute
+        # force a state read to initialize the state attribute
         #state = ior.get_state(cache=False)
         self.set_state(DevState.ON)
 
@@ -231,7 +233,7 @@ class IORegisterClass(PoolElementDeviceClass):
 
     #    Command definitions
     cmd_list = {
-        'Start' :   [ [DevVoid, ""], [DevVoid, ""] ],
+        'Start':   [[DevVoid, ""], [DevVoid, ""]],
     }
     cmd_list.update(PoolElementDeviceClass.cmd_list)
 
@@ -240,8 +242,8 @@ class IORegisterClass(PoolElementDeviceClass):
     attr_list.update(PoolElementDeviceClass.attr_list)
 
     standard_attr_list = {
-        'Value'     : [ [ DevLong, SCALAR, READ_WRITE ],
-                        { 'Memorized'     : "true_without_hard_applied", }, ],
+        'Value': [[DevLong, SCALAR, READ_WRITE],
+                  {'Memorized': "true_without_hard_applied", }, ],
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
 

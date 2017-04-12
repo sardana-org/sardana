@@ -2,29 +2,30 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
 from taurus.core.util.singleton import Singleton
 import time
+
 
 class BaseMacroExecutor(object):
 
@@ -37,7 +38,7 @@ class BaseMacroExecutor(object):
     def __init__(self):
         # macro result
         self._result = None
-        #macro exception status
+        # macro exception status
         self._exception = None
         # buffer for state history
         self._state_buffer = []
@@ -79,7 +80,7 @@ class BaseMacroExecutor(object):
             In asyncrhonous execution method :meth:`~wait` has to be explicitly
             called.
         """
-        if macro_params == None:
+        if macro_params is None:
             macro_params = []
 
         self._clean()
@@ -110,7 +111,7 @@ class BaseMacroExecutor(object):
             timeout = float("inf")
 
         self._wait(timeout)
-        #TODO: workaround: this sleep is necessary to perform multiple tests.
+        # TODO: workaround: this sleep is necessary to perform multiple tests.
         time.sleep(2)
 
     def _wait(self, timeout):
@@ -290,11 +291,11 @@ class MacroExecutorFactory(Singleton):
         Returns a macro executor instance (a subclass of
         :class:`BaseMacroExecutor`) depending on the door being used.
         """
-        if door_name == None:
+        if door_name is None:
             from sardana import sardanacustomsettings
             door_name = getattr(sardanacustomsettings, 'UNITTEST_DOOR_NAME')
 
-        #=======================================================================
+        #======================================================================
         # TODO: Once SEP3 is done, it will define a better way to get the scheme
         # from a model name (including customized default schemes)
         # For the moment I implement it by calling an internal member of

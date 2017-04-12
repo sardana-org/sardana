@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -141,7 +141,8 @@ class Value(SardanaAttribute):
     DefaultAccumulationType = "Average"
 
     def __init__(self, *args, **kwargs):
-        accumulation_type = kwargs.pop('accumulation_type', self.DefaultAccumulationType)
+        accumulation_type = kwargs.pop(
+            'accumulation_type', self.DefaultAccumulationType)
         super(Value, self).__init__(*args, **kwargs)
         self.set_accumulation_type(accumulation_type)
         # member to store the acquisition index
@@ -162,7 +163,7 @@ class Value(SardanaAttribute):
         return self._accumulation
 
     accumulation = property(get_accumulation)
-    
+
     def _get_value(self):
         value = self._accumulation.value
         if value is None:
@@ -171,13 +172,14 @@ class Value(SardanaAttribute):
         return value
 
     def _get_value_obj(self):
-        '''Override superclass method and compose a SardanaValue object from 
+        '''Override superclass method and compose a SardanaValue object from
         the present values.
         '''
         value = self._accumulation.value
-        # use timestamp of the last acquired sample as timestamp of accumulation
+        # use timestamp of the last acquired sample as timestamp of
+        # accumulation
         timestamp = self._accumulation.get_time_buffer()[-1]
-        idx = self._index 
+        idx = self._index
         value_obj = SardanaValue(value=value, idx=idx, timestamp=timestamp)
         return value_obj
 
@@ -219,7 +221,8 @@ class Value(SardanaAttribute):
     def update(self, cache=True, propagate=1):
         # it is the Pool0DAcquisition action which is allowed to update
         raise Exception("0D Value can not be updated from outside"
-                            " of acquisition")
+                        " of acquisition")
+
 
 class Pool0DExpChannel(PoolBaseChannel):
 
@@ -252,14 +255,14 @@ class Pool0DExpChannel(PoolBaseChannel):
 
     def get_accumulated_value_attribute(self):
         """Returns the accumulated value attribute object for this 0D.
-        
+
         :return: the accumulated value attribute
         :rtype: :class:`~sardana.sardanaattribute.SardanaAttribute`"""
         return self.get_value_attribute()
 
     def get_current_value_attribute(self):
         """Returns the current value attribute object for this 0D.
-        
+
         :return: the current value attribute
         :rtype: :class:`~sardana.sardanaattribute.SardanaAttribute`"""
         return self._current_value
@@ -272,7 +275,7 @@ class Pool0DExpChannel(PoolBaseChannel):
             value
         :rtype:
             :class:`~sardana.sardanaattribute.SardanaAttribute`
-        
+
         :raises: Exception if no acquisition has been done yet on this 0D"""
         return self.get_accumulated_value_attribute()
 
@@ -332,7 +335,8 @@ class Pool0DExpChannel(PoolBaseChannel):
         cumulation.append_value(value, timestamp)
         if not propagate:
             return
-        self.fire_event(EventType("value", priority=propagate), cumulation.value)
+        self.fire_event(EventType("value", priority=propagate),
+                        cumulation.value)
 
     def propagate_value(self, priority=2):
         '''Propagate value attribute to its listeners.
@@ -365,6 +369,7 @@ class Pool0DExpChannel(PoolBaseChannel):
         self._aborted = False
         self.clear_buffer()
         if value is None:
-            raise Exception("Invalid integration_time '%s'. Hint set a new value for 'value' first" % value)
+            raise Exception(
+                "Invalid integration_time '%s'. Hint set a new value for 'value' first" % value)
         if not self._simulation_mode:
             acq = self.acquisition.run()

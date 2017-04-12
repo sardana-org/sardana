@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -45,27 +45,28 @@ from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
 from sardana.pool.poolsynchronization import PoolSynchronization
 
 #: enumeration representing possible motion states
-AcquisitionState = Enumeration("AcquisitionState", (\
+AcquisitionState = Enumeration("AcquisitionState", (
     "Stopped",
-#    "StoppedOnError",
-#    "StoppedOnAbort",
+    #    "StoppedOnError",
+    #    "StoppedOnAbort",
     "Acquiring",
     "Invalid"))
 
 AS = AcquisitionState
 AcquiringStates = AS.Acquiring,
-StoppedStates = AS.Stopped,  #MS.StoppedOnError, MS.StoppedOnAbort
+StoppedStates = AS.Stopped,  # MS.StoppedOnError, MS.StoppedOnAbort
 
 AcquisitionMap = {
-    #AS.Stopped           : State.On,
-    AS.Acquiring         : State.Moving,
-    AS.Invalid           : State.Invalid,
+    # AS.Stopped           : State.On,
+    AS.Acquiring: State.Moving,
+    AS.Invalid: State.Invalid,
 }
+
 
 def split_MGConfigurations(mg_cfg_in):
     """Split MeasurementGroup configuration with channels
     triggered by SW Trigger and channels triggered by HW trigger
-    
+
     TODO: (technical debt) All the MeasurementGroup configuration
     logic should be encapsulate in a dedicated class instead of
     using a basic data structures like dict or lists...
@@ -104,9 +105,10 @@ def split_MGConfigurations(mg_cfg_in):
         mg_hw_cfg_out['monitor'] = ctrls_hw_out.values()[0]['monitor']
     return (mg_hw_cfg_out, mg_sw_cfg_out, mg_0d_cfg_out)
 
+
 def getTGConfiguration(MGcfg):
     '''Build TG configuration from complete MG configuration.
-    
+
     TODO: (technical debt) All the MeasurementGroup configuration
     logic should be encapsulate in a dedicated class instead of
     using a basic data structures like dict or lists...
@@ -122,9 +124,9 @@ def getTGConfiguration(MGcfg):
 
     for ctrl in MGcfg["controllers"]:
         tg_element = MGcfg["controllers"][ctrl].get('synchronizer', None)
-        if (tg_element != None and
-            tg_element != "software" and 
-            tg_element not in _tg_element_list):
+        if (tg_element is not None and
+                tg_element != "software" and
+                tg_element not in _tg_element_list):
             _tg_element_list.append(tg_element)
 
     # Intermediate dictionary to organize each ctrl with its elements.
@@ -145,9 +147,10 @@ def getTGConfiguration(MGcfg):
         ctrls['channels'] = {}
         for tg_elem in ctrl_tgelem_dict[ctrl]:
             ch = ctrls['channels'][tg_elem] = {}
-            ch['full_name']= tg_elem.full_name
-    #TODO: temporary returning tg_elements
+            ch['full_name'] = tg_elem.full_name
+    # TODO: temporary returning tg_elements
     return TGcfg, _tg_element_list
+
 
 def extract_integ_time(synchronization):
     """Extract integration time(s) from synchronization dict. If there is only
@@ -266,9 +269,9 @@ class PoolAcquisition(PoolAction):
 
     def is_running(self):
         return self._0d_acq.is_running() or\
-               self._sw_acq.is_running() or\
-               self._hw_acq.is_running() or\
-               self._synch.is_running()
+            self._sw_acq.is_running() or\
+            self._hw_acq.is_running() or\
+            self._synch.is_running()
 
     def run(self, *args, **kwargs):
         for elem in self.get_elements():
@@ -277,7 +280,7 @@ class PoolAcquisition(PoolAction):
         synchronization = kwargs["synchronization"]
         integ_time = extract_integ_time(synchronization)
         repetitions = extract_repetitions(synchronization)
-        # TODO: this code splits the global mg configuration into 
+        # TODO: this code splits the global mg configuration into
         # experimental channels triggered by hw and experimental channels
         # triggered by sw. Refactor it!!!!
         (hw_acq_cfg, sw_acq_cfg, zerod_acq_cfg) = split_MGConfigurations(config)
@@ -348,7 +351,7 @@ class PoolAcquisition(PoolAction):
 
         :raises: ValueError"""
         for action in self._get_acq_for_element(element):
-            action.remove_element(element)        
+            action.remove_element(element)
 
     def get_elements(self, copy_of=False):
         """Returns a sequence of all elements involved in this action.
@@ -360,7 +363,7 @@ class PoolAcquisition(PoolAction):
         :return: a sequence of all elements involved in this action.
         :rtype: seq<sardana.pool.poolelement.PoolElement>"""
         return (self._hw_acq.get_elements() + self._sw_acq.get_elements() +
-               self._0d_acq.get_elements() + self._synch.get_elements())
+                self._0d_acq.get_elements() + self._synch.get_elements())
 
     def get_pool_controller_list(self):
         """Returns a list of all controller elements involved in this action.
@@ -393,7 +396,7 @@ class PoolAcquisition(PoolAction):
         :return: a map containing value information per element
         :rtype: dict<:class:~`sardana.pool.poolelement.PoolElement`,
                      :class:~`sardana.sardanavalue.SardanaValue`>"""
-        #TODO: this is broken now - fix it
+        # TODO: this is broken now - fix it
         ret = self._ct_acq.read_value(ret=ret, serial=serial)
         ret.update(self._0d_acq.read_value(ret=ret, serial=serial))
         return ret
@@ -568,7 +571,7 @@ class PoolAcquisitionBase(PoolAction):
                     try:
                         res = ctrl.PreLoadOne(axis, master_value, repetitions)
                     except TypeError:
-                        #TODO: raise correctly deprecation warning
+                        # TODO: raise correctly deprecation warning
                         self.warning("PreLoadOne API has changed")
                         res = ctrl.PreLoadOne(axis, master_value)
                     if not res:
@@ -578,7 +581,7 @@ class PoolAcquisitionBase(PoolAction):
                     try:
                         ctrl.LoadOne(axis, master_value, repetitions)
                     except TypeError:
-                        #TODO: raise correctly deprecation warning
+                        # TODO: raise correctly deprecation warning
                         self.warning("LoadOne API has changed")
                         ctrl.LoadOne(axis, master_value)
                     ctrl.LoadAll()
@@ -645,6 +648,7 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
         (up to and including removal of the module) may occur if
         deemed necessary by the core developers.
     """
+
     def __init__(self, main_element, name="AcquisitionHardware"):
         PoolAcquisitionBase.__init__(self, main_element, name)
 
@@ -691,8 +695,8 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
             if acquirable in values:
                 value = values[acquirable]
                 if isinstance(value, SardanaValue) and value.error:
-                        self.warning("Error when reading value: %r" %
-                                     value.exc_info)
+                    self.warning("Error when reading value: %r" %
+                                 value.exc_info)
                 elif len(value) > 0:
                     channel = self._channels[acquirable]
                     channel._fill_idx(value)
@@ -795,7 +799,6 @@ class PoolCTAcquisition(PoolAcquisitionBase):
     def get_read_value_loop_ctrls(self):
         return self._pool_ctrl_dict_loop
 
-    
     def in_acquisition(self, states):
         """Determines if we are in acquisition or if the acquisition has ended
         based on the current unit trigger modes and states returned by the
@@ -826,7 +829,7 @@ class PoolCTAcquisition(PoolAcquisitionBase):
         # read values to send a first event when starting to acquire
         with ActionContext(self):
             self.raw_read_value_loop(ret=values)
-            for acquirable, value in values.items():                
+            for acquirable, value in values.items():
                 acquirable.put_value(value, propagate=2)
 
         while True:
@@ -837,7 +840,7 @@ class PoolCTAcquisition(PoolAcquisitionBase):
             # read value every n times
             if not i % nb_states_per_value:
                 self.read_value_loop(ret=values)
-                for acquirable, value in values.items():                    
+                for acquirable, value in values.items():
                     acquirable.put_value(value)
 
             time.sleep(nap)
@@ -950,7 +953,8 @@ class Pool0DAcquisition(PoolAction):
         while True:
             self.read_value(ret=values)
             for acquirable, value in values.items():
-                acquirable.put_value(value, index=self.conf['idx'], propagate=0)
+                acquirable.put_value(value, index=self.conf[
+                                     'idx'], propagate=0)
             if self._stopped or self._aborted:
                 break
             time.sleep(nap)

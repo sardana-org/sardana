@@ -1,23 +1,23 @@
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -31,6 +31,7 @@ import springfieldlib
 from sardana import State
 from sardana.pool.controller import TriggerGateController
 
+
 class SpringfieldBaseTriggerGateController(TriggerGateController):
     """The most basic controller intended from demonstration purposes only.
     This is the absolute minimum you have to implement to set a proper trigger
@@ -42,7 +43,8 @@ class SpringfieldBaseTriggerGateController(TriggerGateController):
 
     def __init__(self, inst, props, *args, **kwargs):
         """Constructor"""
-        super(SpringfieldBaseTriggerGateController, self).__init__(inst, props, *args, **kwargs)
+        super(SpringfieldBaseTriggerGateController, self).__init__(
+            inst, props, *args, **kwargs)
         self.springfield = springfieldlib.SpringfieldTriggerHW()
 
     def ReadOne(self, axis):
@@ -75,10 +77,12 @@ class SpringfieldBaseTriggerGateController(TriggerGateController):
 from sardana import DataAccess
 from sardana.pool.controller import Type, Description, DefaultValue, Access, FGet, FSet
 
+
 class SpringfieldTriggerGateController(TriggerGateController):
 
     def __init__(self, inst, props, *args, **kwargs):
-        super(SpringfieldTriggerGateController, self).__init__(inst, props, *args, **kwargs)
+        super(SpringfieldTriggerGateController, self).__init__(
+            inst, props, *args, **kwargs)
 
         # initialize hardware communication
         self.springfield = springfieldlib.SpringfieldTriggerHW()
@@ -87,20 +91,20 @@ class SpringfieldTriggerGateController(TriggerGateController):
         self._triggers = {}
 
     def AddDevice(self, axis):
-        self._triggers[axis] = True 
+        self._triggers[axis] = True
 
     def DeleteDevice(self, axis):
         del self._triggers[axis]
 
     StateMap = {
-        1 : State.On,
-        2 : State.Moving,
-        3 : State.Fault,
+        1: State.On,
+        2: State.Moving,
+        3: State.Fault,
     }
 
     def StateOne(self, axis):
         springfield = self.springfield
-        state = self.StateMap[ springfield.getState(axis) ]
+        state = self.StateMap[springfield.getState(axis)]
         status = springfield.getStatus(axis)
         return state, status
 

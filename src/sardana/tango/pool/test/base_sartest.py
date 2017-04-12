@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+# http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -29,9 +29,10 @@ from sardana.tango.core.util import get_free_alias
 
 __all__ = ['SarTestTestCase']
 
+
 class SarTestTestCase(BasePoolTestCase):
     """ Base class to setup sardana test environment.
-        It creates the controllers defined in cls_list 
+        It creates the controllers defined in cls_list
         with the given 'n' elements.
 
         - cls_list is a list of tuples: (ctrl_class, prefix, subfix, num_elem)
@@ -42,15 +43,18 @@ class SarTestTestCase(BasePoolTestCase):
         - The ctrl_name will be prefix + _ctrl_ + postfix.
         - The elem_name will be prefix + _ + postfix + _ + axis
     """
-    #TODO: Formating PEP8 
+    # TODO: Formating PEP8
     cls_list = [
-        ('Motor', 'DummyMotorController', 'DummyMotorController', '_test_mt','1', 5),
-        ('CTExpChannel', 'DummyCounterTimerController', 'DummyCounterTimerController', '_test_ct', '1', 5),
-        ('CTExpChannel', 'DummyCounterTimerController', 'DummyCounterTimerController', '_test_ct', '2', 5),
-        ('TriggerGate', 'DummyTriggerGateController', 'DummyTriggerGateController', '_test_tg', '1', 5),
-        ('TriggerGate', 'DummyTriggerGateController', 'DummyTriggerGateController', '_test_tg', '2', 5)
+        ('Motor', 'DummyMotorController', 'DummyMotorController', '_test_mt', '1', 5),
+        ('CTExpChannel', 'DummyCounterTimerController',
+         'DummyCounterTimerController', '_test_ct', '1', 5),
+        ('CTExpChannel', 'DummyCounterTimerController',
+         'DummyCounterTimerController', '_test_ct', '2', 5),
+        ('TriggerGate', 'DummyTriggerGateController',
+         'DummyTriggerGateController', '_test_tg', '1', 5),
+        ('TriggerGate', 'DummyTriggerGateController',
+         'DummyTriggerGateController', '_test_tg', '2', 5)
     ]
-
 
     def setUp(self):
         BasePoolTestCase.setUp(self)
@@ -69,13 +73,15 @@ class SarTestTestCase(BasePoolTestCase):
                     raise Exception('Aborting SartestTesCase: %s' % (msg))
                 self.ctrl_list.append(ctrl_name)
                 # Create 5 elemens
-                for axis in range(1,nelem+1):
+                for axis in range(1, nelem + 1):
                     elem_name = prefix + "_" + postfix + '_%s' % (axis)
                     try:
-                        self.pool.createElement([sar_type, ctrl_name, str(axis), elem_name])
+                        self.pool.createElement(
+                            [sar_type, ctrl_name, str(axis), elem_name])
                     except Exception, e:
                         print e
-                        msg = 'Impossible to create element: "%s"' % (elem_name)
+                        msg = 'Impossible to create element: "%s"' % (
+                            elem_name)
                         raise Exception('Aborting SartestTesCase: %s' % (msg))
                     self.elem_list.append(elem_name)
         except Exception, e:
@@ -100,17 +106,17 @@ class SarTestTestCase(BasePoolTestCase):
             except:
                 dirty_ctrls.append(ctrl_name)
 
-        BasePoolTestCase.tearDown(self) 
+        BasePoolTestCase.tearDown(self)
 
-        if dirty_elems or dirty_ctrls :
+        if dirty_elems or dirty_ctrls:
             msg = "Cleanup failed. Database may be left dirty." + \
-                     "\n\tCtrls : %s\n\tElems : %s" % (dirty_ctrls, dirty_elems)
+                "\n\tCtrls : %s\n\tElems : %s" % (dirty_ctrls, dirty_elems)
             raise Exception(msg)
-      
+
 
 if __name__ == "__main__":
-     stc = SarTestTestCase()
-     stc.setUp()
-     import time
-     time.sleep(15)
-     stc.tearDown()
+    stc = SarTestTestCase()
+    stc.setUp()
+    import time
+    time.sleep(15)
+    stc.tearDown()

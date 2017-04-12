@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -90,8 +90,8 @@ class MeasurementGroup(PoolGroupDevice):
             name = self.alias or full_name
             self.measurement_group = mg = \
                 self.pool.create_measurement_group(name=name,
-                    full_name=full_name, id=self.Id,
-                    user_elements=self.Elements)
+                                                   full_name=full_name, id=self.Id,
+                                                   user_elements=self.Elements)
         mg.add_listener(self.on_measurement_group_changed)
 
         # force a state read to initialize the state attribute
@@ -100,7 +100,8 @@ class MeasurementGroup(PoolGroupDevice):
 
     def on_measurement_group_changed(self, event_source, event_type, event_value):
         try:
-            self._on_measurement_group_changed(event_source, event_type, event_value)
+            self._on_measurement_group_changed(
+                event_source, event_type, event_value)
         except:
             msg = 'Error occured "on_measurement_group_changed(%s.%s): %s"'
             exc_info = sys.exc_info()
@@ -148,7 +149,7 @@ class MeasurementGroup(PoolGroupDevice):
                            synch=False)
 
     def _synchronization_str2enum(self, synchronization):
-        '''Translates synchronization data structure so it uses SynchDomain 
+        '''Translates synchronization data structure so it uses SynchDomain
         enums as keys instead of strings.
         '''
         for group in synchronization:
@@ -200,7 +201,7 @@ class MeasurementGroup(PoolGroupDevice):
         try:
             acq_mode = AcqMode.lookup[acq_mode_str]
         except KeyError:
-            raise Exception("Invalid acquisition mode. Must be one of " + \
+            raise Exception("Invalid acquisition mode. Must be one of " +
                             ", ".join(AcqMode.keys()))
         self.measurement_group.acquisition_mode = acq_mode
 
@@ -243,7 +244,7 @@ class MeasurementGroup(PoolGroupDevice):
         data = attr.get_write_value()
         synchronization = CodecFactory().decode(('json', data),
                                                 ensure_ascii=True)
-        # translate dictionary keys 
+        # translate dictionary keys
         synchronization = self._synchronization_str2enum(synchronization)
         self.measurement_group.synchronization = synchronization
 
@@ -268,6 +269,7 @@ class MeasurementGroup(PoolGroupDevice):
             raise Exception("Cannot acquire: already involved in an operation")
         self.measurement_group.start_acquisition(multiple=n)
 
+
 class MeasurementGroupClass(PoolGroupDeviceClass):
 
     #    Class Properties
@@ -281,36 +283,36 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
 
     #    Command definitions
     cmd_list = {
-        'Start': [ [DevVoid, ""], [DevVoid, ""] ],
-        'StartMultiple': [ [DevLong, ""], [DevVoid, ""] ],
+        'Start': [[DevVoid, ""], [DevVoid, ""]],
+        'StartMultiple': [[DevLong, ""], [DevVoid, ""]],
     }
     cmd_list.update(PoolGroupDeviceClass.cmd_list)
 
     #    Attribute definitions
     attr_list = {
-        'IntegrationTime': [ [DevDouble, SCALAR, READ_WRITE],
-                              { 'Memorized'     : "true",
-                                'Display level' : DispLevel.OPERATOR } ],
-        'MonitorCount': [ [DevLong, SCALAR, READ_WRITE],
-                              { 'Memorized'     : "true",
-                                'Display level' : DispLevel.OPERATOR } ],
-        'AcquisitionMode': [ [DevString, SCALAR, READ_WRITE],
-                              { 'Memorized'     : "true",
-                                'Display level' : DispLevel.OPERATOR } ],
-        'Configuration': [ [DevString, SCALAR, READ_WRITE],
-                              { 'Memorized'     : "true",
-                                'Display level' : DispLevel.EXPERT } ],
-        'Repetitions': [ [DevLong, SCALAR, READ_WRITE],
-                              { 'Memorized'     : "true",
-                                'Display level' : DispLevel.OPERATOR } ],
-        'Moveable': [ [DevString, SCALAR, READ_WRITE],
-                              { 'Memorized'     : "true",
-                                'Display level' : DispLevel.EXPERT } ],
-        'Synchronization': [ [DevString, SCALAR, READ_WRITE],
-                              { 'Memorized'     : "true",
-                                'Display level' : DispLevel.EXPERT } ],
-        'LatencyTime': [ [DevDouble, SCALAR, READ],
-                              { 'Display level' : DispLevel.EXPERT } ],
+        'IntegrationTime': [[DevDouble, SCALAR, READ_WRITE],
+                            {'Memorized': "true",
+                             'Display level': DispLevel.OPERATOR}],
+        'MonitorCount': [[DevLong, SCALAR, READ_WRITE],
+                         {'Memorized': "true",
+                          'Display level': DispLevel.OPERATOR}],
+        'AcquisitionMode': [[DevString, SCALAR, READ_WRITE],
+                            {'Memorized': "true",
+                             'Display level': DispLevel.OPERATOR}],
+        'Configuration': [[DevString, SCALAR, READ_WRITE],
+                          {'Memorized': "true",
+                           'Display level': DispLevel.EXPERT}],
+        'Repetitions': [[DevLong, SCALAR, READ_WRITE],
+                        {'Memorized': "true",
+                         'Display level': DispLevel.OPERATOR}],
+        'Moveable': [[DevString, SCALAR, READ_WRITE],
+                     {'Memorized': "true",
+                      'Display level': DispLevel.EXPERT}],
+        'Synchronization': [[DevString, SCALAR, READ_WRITE],
+                            {'Memorized': "true",
+                             'Display level': DispLevel.EXPERT}],
+        'LatencyTime': [[DevDouble, SCALAR, READ],
+                        {'Display level': DispLevel.EXPERT}],
     }
     attr_list.update(PoolGroupDeviceClass.attr_list)
 

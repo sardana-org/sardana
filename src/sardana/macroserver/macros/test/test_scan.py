@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -29,8 +29,9 @@ from taurus.external import unittest
 from sardana.macroserver.macros.test import (RunStopMacroTestCase,
                                              testRun, testStop, getMotors)
 
-#get handy motor names from sardemo
+# get handy motor names from sardemo
 _m1, _m2 = getMotors()[:2]
+
 
 def parsing_log_output(log_output):
     """A helper method to parse log output of an executed scan macro.
@@ -98,7 +99,7 @@ class AscanTest(ANscanTest, unittest.TestCase):
             - Intervals in terms of motor position between one point and
               the next one are equidistant.
         """
-        #call the parent class implementation
+        # call the parent class implementation
         ANscanTest.macro_runs(self, macro_params=macro_params,
                               wait_timeout=wait_timeout)
 
@@ -154,11 +155,11 @@ class DscanTest(DNscanTest, unittest.TestCase):
     macro_name = 'dscan'
 
 
-@testRun(macro_params=[_m1, '-1', '1', '3', _m2, '-1', '0', '2', '.1'], 
+@testRun(macro_params=[_m1, '-1', '1', '3', _m2, '-1', '0', '2', '.1'],
          wait_timeout=30)
-@testRun(macro_params=[_m1, '-2', '2', '3', _m2, '-2', '-1', '2', '.1'], 
+@testRun(macro_params=[_m1, '-2', '2', '3', _m2, '-2', '-1', '2', '.1'],
          wait_timeout=40)
-@testStop(macro_params=[_m1, '-3', '0', '3', _m2, '-3', '0', '2', '.1'], 
+@testStop(macro_params=[_m1, '-3', '0', '3', _m2, '-3', '0', '2', '.1'],
           wait_timeout=30)
 class MeshTest(RunStopMacroTestCase, unittest.TestCase):
 
