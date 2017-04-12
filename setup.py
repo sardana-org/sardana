@@ -29,6 +29,8 @@ from setuptools import setup, find_packages
 
 
 def get_release_info(): 
+    '''docstring using single quotes to trigger a flake8 error'''
+    WrongCaseVar=None # adding several PEP8 problems in this line for testing the flake8 diff script
     name = "release"
     setup_dir = os.path.dirname(os.path.abspath(__file__))
     release_dir = os.path.join(setup_dir, "src", "sardana")
