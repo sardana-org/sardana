@@ -809,9 +809,10 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
                 editor.setCurrentIndex(editor.findText(current))
             else:
                 for ctrl_data in dataSource['controllers'].values():
-                    for channel in ctrl_data['channels']:
-                        editor.addItem(channel['name'], Qt.QVariant(
-                            channel['full_name']))
+                    if key in ctrl_data:
+                        channel = all_channels[ctrl_data[key]]
+                        editor.addItem(channel['name'],
+                                       Qt.QVariant(channel['full_name']))
                 current = dataSource.get(key)  # current global timer/monitor
                 editor.setCurrentIndex(editor.findData(Qt.QVariant(current)))
         elif taurus_role == ChannelView.Synchronization:
