@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -76,10 +76,10 @@ class MessageHandler(Qt.QObject):
         self._conn = conn
         self._dialog = None
         self.connect(self, Qt.SIGNAL("messageArrived"), self.on_message)
-        
+
     def handle_message(self, input_data):
         self.emit(Qt.SIGNAL("messageArrived"), input_data)
-    
+
     def on_message(self, input_data):
         msg_type = input_data['type']
         if msg_type == 'input':
@@ -103,18 +103,18 @@ class MessageHandler(Qt.QObject):
 
 
 class InputHandler(Singleton, BaseInputHandler):
-    
+
     def __init__(self):
         # don't call super __init__ on purpose
         pass
-            
+
     def init(self, *args, **kwargs):
         self._conn, child_conn = Pipe()
         self._proc = proc = Process(target=self.safe_run,
-            name="SpockInputHandler", args=(child_conn,))
+                                    name="SpockInputHandler", args=(child_conn,))
         proc.daemon = True
         proc.start()
-    
+
     def input(self, input_data=None):
         # parent process
         data_type = input_data.get('data_type', 'String')
@@ -122,7 +122,8 @@ class InputHandler(Singleton, BaseInputHandler):
             ms = genutils.get_macro_server()
             interfaces = ms.getInterfaces()
             if data_type in interfaces:
-                input_data['data_type'] = [ elem.name for elem in interfaces[data_type].values() ]
+                input_data['data_type'] = [
+                    elem.name for elem in interfaces[data_type].values()]
         self._conn.send(input_data)
         ret = self._conn.recv()
         return ret
@@ -130,7 +131,7 @@ class InputHandler(Singleton, BaseInputHandler):
     def input_timeout(self, input_data):
         # parent process
         self._conn.send(input_data)
-        
+
     def safe_run(self, conn):
         # child process
         try:
@@ -139,7 +140,7 @@ class InputHandler(Singleton, BaseInputHandler):
             msgbox = TaurusMessageBox(*sys.exc_info())
             conn.send((e, False))
             msgbox.exec_()
-    
+
     def run(self, conn):
         # child process
         self._conn = conn
@@ -152,7 +153,7 @@ class InputHandler(Singleton, BaseInputHandler):
         app.exec_()
         conn.close()
         print "Quit input handler"
-                
+
     def run_forever(self):
         # child process
         message, conn = True, self._conn
@@ -164,4 +165,3 @@ class InputHandler(Singleton, BaseInputHandler):
         app = Qt.QApplication.instance()
         if app:
             app.quit()
-

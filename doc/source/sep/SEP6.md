@@ -1,6 +1,6 @@
 	Title: Continuous Scan Implementation
 	SEP: 6
-	State: CANDIDATE
+	State: ACCEPTED
 	Date: 2013-07-29
 	Drivers: Zbigniew Reszela <zreszela@cells.es>
 	URL: http://www.sardana-controls.org/sep/?SEP6.md
@@ -148,11 +148,6 @@ TriggerGate is a new Sardana element type and it represents devices with trigger
 
 Each ExpChannel controller can have one TriggerGate element associated to it. Its role is to control at which moment each single measurement has to start in case of trigger or start and stop in case of gate.
 
-The configuration parameters:
-
-- **active_domain** (type: enumeration, options: *time*, *position* or *default*) - which of the domains to use from the configuration to generate active events. *default* means: first try to use position and only if not available, time should be used. When the selected domain is missing in the configuration an exception should be raised.
-- **passive_domain** (type: enumeration, options: *time*, *position* or *default*) - which of the domains to use from the configuration to generate passive events. *default* means: first try to use time and only if not available, position should be used. When the selected domain is missing in the configuration an exception should be raised.
-
 The allowed states for TriggerGate element are:
 
 - On - the element is ready to generate synchronization signals
@@ -188,6 +183,8 @@ TriggerGateController API (**bold** are mandatory):
 - **SynchOne**
 - SynchAll
 - SetAxisPar and GetAxisPar
+
+In case that the sychronization description contains information in both domains (position and time), the Synch methods should configure the trigger on position and only if not supported by the hardware on time. Similarly the gate duration should be configured on time and only if not supported by the hardware on position. This are only the recommendations to the controllers developers. In some special cases it may be needed to ignore this recommendation. In this case an extra axis attributes could be defined in the controller to control the domain selection.
 
 Sardana provides one TriggerGate controllers DummyTriggerGateController which does not synchronize acquisition and just provides dummy behavior. DummyTriggerGateController imitate the behavior of the hardware with trigger and/or gate signal generation capabilities. It emulates the state machine: changes state from On to Moving on start and from Moving to On based on the configuration parameters or when stopped.
 
@@ -245,7 +242,6 @@ Configuration parameters pass in LoadOne method:
 
 Defines static characteristics of the hardware, implemented as controller parameters: GetCtrlPar
 
-- **read_when_acq** (type: boolean) - whether it is possible to read the data while the acquisition is in progress, if not data will be read, only once, at the end of the acquisition process
 - **latency_time** (type: float, unit: seconds) - time required to prepare the hardware for the next hardware trigger or gate 
 
 The *Read* methods usually implement the data retrieval from the device and return the acquired data. The same method is foreseen for software and hardware synchronized acquisitions, both by trigger and gate. In case that access to the data in a device differenciate between the synchronization mode, the *Read* methods would need to implement different cases based on the confiugured synchronization. 
@@ -294,7 +290,7 @@ Its **action_loop** method executes the following:
     - for each controller implied in the acquisition call StartAll
     - for each axis implied in the acquisition call StartOne
     - wait some time
-    - every certain number of iterations read new data (only if read_when_acq == True):
+    - every certain number of iterations read new data:
         - for each controller implied in the acquisition call PreReadAll
         - for each axis implied in the acquisition call PreReadOne
         - for each controller implied in the acquisition call ReadAll
@@ -410,6 +406,7 @@ Changes
 
 - 2016-11-30 [mrosanes](https://github.com/sagiss) Migrate SEP6 from SF wiki to independent markdown language file.
 - 2017-01-01 [reszelaz](https://github.com/reszelaz) Remove last pending TODOs and fix the scope in order to open for final discussions.
+- 2017-04-03 [reszelaz](https://github.com/reszelaz) Accept SEP6 after positive votes from DESY, MAXIV, SOLARIS and ALBA.
 
 
 

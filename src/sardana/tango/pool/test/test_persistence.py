@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+# http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -31,13 +31,15 @@ from sardana.tango.core.util import get_free_alias
 
 info1 = ('Motor', 'DummyMotorController', 'DummyMotorController')
 info2 = ('TriggerGate', 'DummyTriggerGateController',
-                                                  'DummyTriggerGateController')
-@insertTest(helper_name='check_elems_presistence', 
+         'DummyTriggerGateController')
+
+
+@insertTest(helper_name='check_elems_presistence',
             test_method_doc='Test persistence of dummy Motor elements',
-            info = info1)
-@insertTest(helper_name='check_elems_presistence', 
+            info=info1)
+@insertTest(helper_name='check_elems_presistence',
             test_method_doc='Test persistence of dummy TriggerGate elements',
-            info = info2)
+            info=info2)
 class PersistenceTestCase(BasePoolTestCase, unittest.TestCase):
     """ Test the persistence of the Sardana Tango elements.
     """
@@ -63,7 +65,7 @@ class PersistenceTestCase(BasePoolTestCase, unittest.TestCase):
         self.elem_name = get_free_alias(PyTango.Database(), base_name)
         axis = 1
         self.pool.CreateElement([sar_type, self.ctrl_name, str(axis),
-                                                               self.elem_name])
+                                 self.elem_name])
         # Restart Pool
         self._starter.stopDs(hard_kill=True)
         self._starter.startDs()
@@ -75,7 +77,7 @@ class PersistenceTestCase(BasePoolTestCase, unittest.TestCase):
         except:
             obj = None
         msg = 'The element "%s" does not exist after restarting the Pool' %\
-                                                               (self.elem_name)
+            (self.elem_name)
         self.assertIsNotNone(obj, msg)
 
     def tearDown(self):

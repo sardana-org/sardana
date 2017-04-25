@@ -2,29 +2,29 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
 """
-favouriteseditor.py: 
+favouriteseditor.py:
 """
 import copy
 
@@ -33,13 +33,15 @@ from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtcore.configuration import BaseConfigurableClass
 from model import MacrosListModel
 
+
 class FavouritesMacrosEditor(TaurusWidget):
     __pyqtSignals__ = ("modelChanged(const QString &)",)
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
         self.setObjectName(self.__class__.__name__)
-        self.registerConfigProperty("toXmlString", "fromXmlString", "favourites")
+        self.registerConfigProperty(
+            "toXmlString", "fromXmlString", "favourites")
         self.initComponents()
 
     def initComponents(self):
@@ -71,7 +73,8 @@ class FavouritesMacrosEditor(TaurusWidget):
         moveDownButton = Qt.QToolButton()
         moveDownButton.setDefaultAction(self.list.moveDownAction)
         layout.addWidget(moveDownButton)
-        spacerItem = Qt.QSpacerItem(0, 0, Qt.QSizePolicy.Fixed, Qt.QSizePolicy.Expanding)
+        spacerItem = Qt.QSpacerItem(
+            0, 0, Qt.QSizePolicy.Fixed, Qt.QSizePolicy.Expanding)
         layout.addItem(spacerItem)
         return layout
 
@@ -104,21 +107,32 @@ class FavouritesMacrosList(Qt.QListView, BaseConfigurableClass):
 
         self.setSelectionMode(Qt.QListView.ExtendedSelection)
 
-        self.removeAction = Qt.QAction(Qt.QIcon(":/actions/list-remove.svg"), "Remove from favourites", self)
-        self.connect(self.removeAction, Qt.SIGNAL("triggered()"), self.removeMacros)
-        self.removeAction.setToolTip("Clicking this button will remov selected macros from favourites.")
+        self.removeAction = Qt.QAction(
+            Qt.QIcon(":/actions/list-remove.svg"), "Remove from favourites", self)
+        self.connect(self.removeAction, Qt.SIGNAL(
+            "triggered()"), self.removeMacros)
+        self.removeAction.setToolTip(
+            "Clicking this button will remov selected macros from favourites.")
 
-        self.removeAllAction = Qt.QAction(Qt.QIcon(":/places/user-trash.svg"), "Remove all from favourites", self)
-        self.connect(self.removeAllAction, Qt.SIGNAL("triggered()"), self.removeAllMacros)
-        self.removeAllAction.setToolTip("Clicking this button will remove all macros from favourites.")
+        self.removeAllAction = Qt.QAction(
+            Qt.QIcon(":/places/user-trash.svg"), "Remove all from favourites", self)
+        self.connect(self.removeAllAction, Qt.SIGNAL(
+            "triggered()"), self.removeAllMacros)
+        self.removeAllAction.setToolTip(
+            "Clicking this button will remove all macros from favourites.")
 
-        self.moveUpAction = Qt.QAction(Qt.QIcon(":/actions/go-up.svg"), "Move up", self)
+        self.moveUpAction = Qt.QAction(
+            Qt.QIcon(":/actions/go-up.svg"), "Move up", self)
         self.connect(self.moveUpAction, Qt.SIGNAL("triggered()"), self.upMacro)
-        self.moveUpAction.setToolTip("Clicking this button will move the macro up in the favourites hierarchy.")
+        self.moveUpAction.setToolTip(
+            "Clicking this button will move the macro up in the favourites hierarchy.")
 
-        self.moveDownAction = Qt.QAction(Qt.QIcon(":/actions/go-down.svg"), "Move up", self)
-        self.connect(self.moveDownAction, Qt.SIGNAL("triggered()"), self.downMacro)
-        self.moveDownAction.setToolTip("Clicking this button will move the macro down in the favourites hierarchy.")
+        self.moveDownAction = Qt.QAction(
+            Qt.QIcon(":/actions/go-down.svg"), "Move up", self)
+        self.connect(self.moveDownAction, Qt.SIGNAL(
+            "triggered()"), self.downMacro)
+        self.moveDownAction.setToolTip(
+            "Clicking this button will move the macro down in the favourites hierarchy.")
 
         self.disableActions()
 
@@ -142,8 +156,10 @@ class FavouritesMacrosList(Qt.QListView, BaseConfigurableClass):
     def isIndexSelected(self):
         if len(self.selectedIndexes()) > 0:
             self.removeAction.setEnabled(True)
-            self.moveUpAction.setEnabled(self.model().isUpRowAllowed(self.currentIndex()))
-            self.moveDownAction.setEnabled(self.model().isDownRowAllowed(self.currentIndex()))
+            self.moveUpAction.setEnabled(
+                self.model().isUpRowAllowed(self.currentIndex()))
+            self.moveDownAction.setEnabled(
+                self.model().isDownRowAllowed(self.currentIndex()))
         else:
             self.removeAction.setEnabled(False)
             self.moveUpAction.setEnabled(False)
@@ -167,7 +183,8 @@ class FavouritesMacrosList(Qt.QListView, BaseConfigurableClass):
         self.setCurrentIndex(idx)
 
     def removeMacros(self):
-        slist = sorted(self.selectedIndexes(), key=lambda index: index.row(), reverse=True)
+        slist = sorted(self.selectedIndexes(),
+                       key=lambda index: index.row(), reverse=True)
         for index in slist:
             row = index.row()
             idx = self.model().removeRow(row)
@@ -175,7 +192,8 @@ class FavouritesMacrosList(Qt.QListView, BaseConfigurableClass):
 
     def removeAllMacros(self):
         self.selectAll()
-        slist = sorted(self.selectedIndexes(), key=lambda index: index.row(), reverse=True)
+        slist = sorted(self.selectedIndexes(),
+                       key=lambda index: index.row(), reverse=True)
         for index in slist:
             self.model().removeRow(index.row())
 
@@ -197,8 +215,10 @@ class FavouritesMacrosList(Qt.QListView, BaseConfigurableClass):
 
 
 def test():
-    import sys, taurus, time
-    from  taurus.qt.qtgui.application import TaurusApplication
+    import sys
+    import taurus
+    import time
+    from taurus.qt.qtgui.application import TaurusApplication
 
     app = TaurusApplication(sys.argv)
 

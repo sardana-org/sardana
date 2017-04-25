@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -40,7 +40,7 @@ RecorderStatus = Enumeration('RecorderStatus', ('Idle', 'Active', 'Disable'))
 
 class DataHandler:
     """ The data handler is the data recording center of a system. It contains
-    one or several recorders.  All data transit through the handler, then 
+    one or several recorders.  All data transit through the handler, then
     given to recorders for final saving """
 
     def __init__(self):
@@ -70,11 +70,11 @@ class DataHandler:
                 pass
 
     def addCustomData(self, value, name, **kwargs):
-        '''Write data other than a record. 
-        
+        '''Write data other than a record.
+
         :param value: The value to be written
         :param name: An identification for this value
-        
+
         Optional keyword arguments can be passed with information that some
         recorders may need in order to record this value. For example: the NeXus
         recorder will make use of "nxpath" info if available to place the value
@@ -87,8 +87,10 @@ class DataHandler:
 # Recorders
 #
 
+
 class DataRecorder(Logger):
     """ Generic class for data recorder. Does nothing"""
+
     def __init__(self, **pars):
         name = self.__class__.__name__
         self.call__init__(Logger, name)

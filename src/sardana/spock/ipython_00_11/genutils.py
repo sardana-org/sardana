@@ -3,24 +3,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -84,15 +84,15 @@ from sardana import release
 SpockTermColors = colors.TermColors
 
 requirements = {
-#     module     minimum  recommended
-    "IPython"     : ("0.11.0", "0.12.0"),
-    "Python"      : ("2.6.0", "2.6.0"),
-    "PyTango"     : ("7.2.0", "7.2.3"),
+    #     module     minimum  recommended
+    "IPython": ("0.11.0", "0.12.0"),
+    "Python": ("2.6.0", "2.6.0"),
+    "PyTango": ("7.2.0", "7.2.3"),
     # for the moment just for reference since itango does not provide version
     # when using PyTango < 9 the dependency is >= 0.0.1 and < 0.1.0
     # when using PyTango >= 9 the dependency is >= 0.1.6
-    "itango"      : ("0.0.1", "0.0.1"),
-    "taurus.core" : ("3.0.0", "3.0.0")
+    "itango": ("0.0.1", "0.0.1"),
+    "taurus.core": ("3.0.0", "3.0.0")
 }
 
 ENV_NAME = "_E"
@@ -101,34 +101,43 @@ ENV_NAME = "_E"
 # IPython utilities
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
+
 def get_gui_mode():
     return 'qt'
+
 
 def get_pylab_mode():
     return get_app().pylab
 
+
 def get_color_mode():
     return get_config().InteractiveShell.colors
 
+
 def get_app():
-    #return TerminalIPythonApp.instance()
+    # return TerminalIPythonApp.instance()
     return Application.instance()
+
 
 def get_shell():
     """Get the global InteractiveShell instance."""
     return get_app().shell
 
+
 def get_ipapi():
     """Get the global InteractiveShell instance."""
     return InteractiveShell.instance()
 
+
 def get_config():
     return get_app().config
+
 
 def get_editor():
     return get_ipapi().editor
 
-def ask_yes_no(prompt,default=None):
+
+def ask_yes_no(prompt, default=None):
     """Asks a question and returns a boolean (y/n) answer.
 
     If default is given (one of 'y','n'), it is used if the user input is
@@ -143,8 +152,10 @@ def ask_yes_no(prompt,default=None):
         prompt = '%s [%s]' % (prompt, default)
     return _ask_yes_no(prompt, default)
 
+
 def spock_input(prompt='',  ps2='... '):
     return _raw_input_ext(prompt=prompt, ps2=ps2)
+
 
 def translate_version_str2int(version_str):
     """Translates a version string in format x[.y[.z[...]]] into a 000000 number"""
@@ -153,37 +164,43 @@ def translate_version_str2int(version_str):
     num_version_str = version_str.split('-')[0]
     parts = num_version_str.split('.')
     i, v, l = 0, 0, len(parts)
-    if not l: return v
-    while i<3:
+    if not l:
+        return v
+    while i < 3:
         try:
-            v += int(parts[i])*int(math.pow(10,(2-i)*2))
+            v += int(parts[i]) * int(math.pow(10, (2 - i) * 2))
             l -= 1
             i += 1
         except ValueError:
             return v
-        if not l: return v
+        if not l:
+            return v
     return v
 
     try:
-        v += 10000*int(parts[0])
+        v += 10000 * int(parts[0])
         l -= 1
     except ValueError:
         return v
-    if not l: return v
+    if not l:
+        return v
 
     try:
-        v += 100*int(parts[1])
+        v += 100 * int(parts[1])
         l -= 1
     except ValueError:
         return v
-    if not l: return v
+    if not l:
+        return v
 
     try:
         v += int(parts[0])
         l -= 1
     except ValueError:
         return v
-    if not l: return v
+    if not l:
+        return v
+
 
 def get_ipython_version():
     """Returns the current IPython version"""
@@ -200,18 +217,23 @@ def get_ipython_version():
         print e3
     return v
 
+
 def get_ipython_version_number():
     """Returns the current IPython version number"""
     ipyver_str = get_ipython_version()
-    if ipyver_str is None: return None
+    if ipyver_str is None:
+        return None
     return translate_version_str2int(ipyver_str)
 
+
 def get_python_version():
-    return '.'.join(map(str,sys.version_info[:3]))
+    return '.'.join(map(str, sys.version_info[:3]))
+
 
 def get_python_version_number():
     pyver_str = get_python_version()
     return translate_version_str2int(pyver_str)
+
 
 def get_ipython_profiles(path=None):
     """list profiles in a given root directory"""
@@ -222,12 +244,13 @@ def get_ipython_profiles(path=None):
     for f in files:
         full_path = os.path.join(path, f)
         if os.path.isdir(full_path) and f.startswith('profile_'):
-            profiles.append(f.split('_',1)[-1])
+            profiles.append(f.split('_', 1)[-1])
     return profiles
 
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 # PyTango utilities
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+
 
 def get_pytango_version():
     try:
@@ -239,10 +262,13 @@ def get_pytango_version():
     except:
         return None
 
+
 def get_pytango_version_number():
     tgver_str = get_pytango_version()
-    if tgver_str is None: return None
+    if tgver_str is None:
+        return None
     return translate_version_str2int(tgver_str)
+
 
 def get_server_for_device(device_name):
     db = get_tango_db()
@@ -253,6 +279,7 @@ def get_server_for_device(device_name):
             if dev.lower() == device_name:
                 return server
     return None
+
 
 def get_macroserver_for_door(door_name):
     """Returns the MacroServer device name in the same DeviceServer as the
@@ -274,7 +301,8 @@ def get_macroserver_for_door(door_name):
     else:
         return None
 
-def get_device_from_user(expected_class, dft = None):
+
+def get_device_from_user(expected_class, dft=None):
     """Gets a device of the given device class from user input"""
     dft = print_dev_from_class(expected_class, dft)
     prompt = "%s name from the list" % expected_class
@@ -295,11 +323,12 @@ def get_device_from_user(expected_class, dft = None):
         cl_name = db.get_class_for_device(name)
         class_correct = cl_name == expected_class
         if not class_correct:
-            print "Warning: the given name is not a %s (it is a %s)"%(expected_class,cl_name)
+            print "Warning: the given name is not a %s (it is a %s)" % (expected_class, cl_name)
     except Exception as e:
         print "Warning: unable to confirm if '%s' is valid" % name
         print str(e)
     return full_name
+
 
 def get_tango_db():
     import PyTango
@@ -307,8 +336,8 @@ def get_tango_db():
 
     db = None
     if tg_host is None:
-        host,port = get_tango_host_from_user()
-        tg_host = "%s:%d" % (host,port)
+        host, port = get_tango_host_from_user()
+        tg_host = "%s:%d" % (host, port)
         os.environ["TANGO_HOST"] = tg_host
         db = PyTango.Database()
     else:
@@ -316,12 +345,13 @@ def get_tango_db():
             db = PyTango.Database()
         except:
             # tg host is not valid. Find a valid one
-            host,port = get_tango_host_from_user()
-            tg_host = "%s:%d" % (host,port)
+            host, port = get_tango_host_from_user()
+            tg_host = "%s:%d" % (host, port)
             os.environ["TANGO_HOST"] = tg_host
 
             db = PyTango.Database()
     return db
+
 
 def get_tango_host_from_user():
     import PyTango
@@ -349,7 +379,8 @@ def get_tango_host_from_user():
         exp = "Invalid tango host. %s " % exp
         print exp
 
-def print_dev_from_class(classname, dft = None):
+
+def print_dev_from_class(classname, dft=None):
 
     db = get_tango_db()
     pytg_ver = get_pytango_version_number()
@@ -364,22 +395,26 @@ def print_dev_from_class(classname, dft = None):
         exp_dev_list = []
 
     res = None
-    dev_list = db.get_device_name(server_wildcard,classname)
-    tg_host = "%s:%s" % (db.get_db_host(),db.get_db_port())
-    print "Available",classname,"devices from",tg_host,":"
+    dev_list = db.get_device_name(server_wildcard, classname)
+    tg_host = "%s:%s" % (db.get_db_host(), db.get_db_port())
+    print "Available", classname, "devices from", tg_host, ":"
     for dev in dev_list:
         _, name, alias = from_name_to_tango(dev)
         out = alias or name
-        if alias: out += ' (a.k.a. %s)' % name
+        if alias:
+            out += ' (a.k.a. %s)' % name
         out = "%-25s" % out
         if dev in exp_dev_list:
             out += " (running)"
         print out
         if dft:
-            if dft.lower() == name.lower(): res = name
-            elif not alias is None and dft.lower() == alias.lower(): res = alias
+            if dft.lower() == name.lower():
+                res = name
+            elif not alias is None and dft.lower() == alias.lower():
+                res = alias
 
     return res
+
 
 def from_name_to_tango(name):
 
@@ -390,7 +425,7 @@ def from_name_to_tango(name):
     c = name.count('/')
     # if the db prefix is there, remove it first
     if c == 3 or c == 1:
-        name = name[name.index("/")+1:]
+        name = name[name.index("/") + 1:]
 
     elems = name.split('/')
     l = len(elems)
@@ -415,8 +450,10 @@ def from_name_to_tango(name):
 # taurus utilities
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
+
 def clean_up():
     Manager().cleanUp()
+
 
 def get_taurus_core_version():
     try:
@@ -427,21 +464,25 @@ def get_taurus_core_version():
         traceback.print_exc()
         return '0.0.0'
 
+
 def get_taurus_core_version_number():
     tgver_str = get_taurus_core_version()
-    if tgver_str is None: return None
+    if tgver_str is None:
+        return None
     return translate_version_str2int(tgver_str)
 
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 # Requirements checking
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
+
 def check_requirements():
     r = requirements
     minPyTango, recPyTango = map(translate_version_str2int, r["PyTango"])
     minIPython, recIPython = map(translate_version_str2int, r["IPython"])
     minPython, recPython = map(translate_version_str2int, r["Python"])
-    minTaurusCore, recTaurusCore = map(translate_version_str2int, r["taurus.core"])
+    minTaurusCore, recTaurusCore = map(
+        translate_version_str2int, r["taurus.core"])
 
     currPython = get_python_version_number()
     currIPython = get_ipython_version_number()
@@ -453,24 +494,30 @@ def check_requirements():
 
     errPython, errIPython, errPyTango, errTaurusCore = False, False, False, False
     if currPython is None:
-        errMsg += "Spock needs Python version >= %s. No python installation found\n" % requirements["Python"][0]
+        errMsg += "Spock needs Python version >= %s. No python installation found\n" % requirements[
+            "Python"][0]
         errPython = True
     elif currPython < minPython:
-        errMsg += "Spock needs Python version >= %s. Current version is %s\n" % (requirements["Python"][0], get_python_version())
+        errMsg += "Spock needs Python version >= %s. Current version is %s\n" % (
+            requirements["Python"][0], get_python_version())
         errPython = True
 
     if currIPython is None:
-        errMsg += "Spock needs IPython version >= %s. No IPython installation found\n" % requirements["IPython"][0]
+        errMsg += "Spock needs IPython version >= %s. No IPython installation found\n" % requirements[
+            "IPython"][0]
         errIPython = True
     elif currIPython < minIPython:
-        errMsg += "Spock needs IPython version >= %s. Current version is %s\n" % (requirements["IPython"][0], get_ipython_version())
+        errMsg += "Spock needs IPython version >= %s. Current version is %s\n" % (
+            requirements["IPython"][0], get_ipython_version())
         errIPython = True
 
     if currPyTango is None:
-        errMsg += "Spock needs PyTango version >= %s. No PyTango installation found\n" % requirements["IPython"][0]
+        errMsg += "Spock needs PyTango version >= %s. No PyTango installation found\n" % requirements[
+            "IPython"][0]
         errPyTango = True
     elif currPyTango < minPyTango:
-        errMsg += "Spock needs PyTango version >= %s. " % requirements["PyTango"][0]
+        errMsg += "Spock needs PyTango version >= %s. " % requirements[
+            "PyTango"][0]
         if currPyTango > 0:
             errMsg += "Current version is %s\n" % get_pytango_version()
         else:
@@ -484,10 +531,12 @@ def check_requirements():
         errMsg += "Spock needs itango version >= 0.0.1, < 0.1.0 (PyTango < 9) or version >= 0.1.6 (PyTanog >= 9). No itango installation found\n"
 
     if currTaurusCore is None:
-        errMsg += "Spock needs taurus.core version >= %s. No taurus.core installation found\n" % requirements["taurus.core"][0]
+        errMsg += "Spock needs taurus.core version >= %s. No taurus.core installation found\n" % requirements[
+            "taurus.core"][0]
         errTaurusCore = True
     elif currTaurusCore < minTaurusCore:
-        errMsg += "Spock needs taurus.core version >= %s. " % requirements["taurus.core"][0]
+        errMsg += "Spock needs taurus.core version >= %s. " % requirements[
+            "taurus.core"][0]
         if currTaurusCore > 0:
             errMsg += "Current version is %s\n" % get_taurus_core_version()
         else:
@@ -524,6 +573,7 @@ def check_requirements():
 
     return True
 
+
 def _get_dev(dev_type):
     spock_config = get_config().Spock
     taurus_dev = None
@@ -545,11 +595,14 @@ def _get_dev(dev_type):
         shell.user_ns["_" + dev_type_upper] = taurus_dev
     return taurus_dev
 
+
 def get_door():
     return _get_dev('door')
 
+
 def get_macro_server():
     return _get_dev('macro_server')
+
 
 def _macro_completer(self, event):
     """Method called by the IPython autocompleter. It will determine possible
@@ -560,11 +613,13 @@ def _macro_completer(self, event):
     macro_name = event.command.lstrip('%')
     # calculate parameter index
     param_idx = len(event.line.split()) - 1
-    if not event.line.endswith(' '): param_idx -= 1
+    if not event.line.endswith(' '):
+        param_idx -= 1
     # get macro info
     info = ms.getMacroInfoObj(macro_name)
     # if macro doesn't have parameters return
-    if param_idx < 0 or not info.hasParams() : return
+    if param_idx < 0 or not info.hasParams():
+        return
     # get the parameter info
     possible_params = info.getPossibleParams(param_idx)
     # return the existing elements for the given parameter type
@@ -573,6 +628,7 @@ def _macro_completer(self, event):
         for param in possible_params:
             res.extend(ms.getElementNamesWithInterface(param['type']))
         return res
+
 
 def expose_magic(name, fn, completer_func=_macro_completer):
     shell = get_shell()
@@ -584,27 +640,32 @@ def expose_magic(name, fn, completer_func=_macro_completer):
 
     # enable macro param completion
     if completer_func is not None:
-        shell.set_hook('complete_command', completer_func, str_key = name)
-        shell.set_hook('complete_command', completer_func, str_key = '%'+name)
+        shell.set_hook('complete_command', completer_func, str_key=name)
+        shell.set_hook('complete_command', completer_func, str_key='%' + name)
+
 
 def unexpose_magic(name):
     shell = get_shell()
     mg_name = 'magic_' + name
     if hasattr(shell, mg_name):
-        magic_fn  = getattr(shell, mg_name)
+        magic_fn = getattr(shell, mg_name)
         delattr(shell, mg_name)
         if hasattr(magic_fn, 'old_magic') and magic_fn.old_magic is not None:
             expose_magic(name, magic_fn.old_magic, magic_fn.old_completer)
 
+
 def expose_variable(name, value):
     get_shell().user_ns[name] = value
+
 
 def expose_variables(d):
     get_shell().user_ns.update(d)
 
+
 def unexpose_variable(name):
     user_ns = get_shell().user_ns
     del user_ns[name]
+
 
 def _create_config_file(location, door_name=None):
     config_file_name = BaseIPythonApplication.config_file_name.default_value
@@ -657,11 +718,11 @@ config.IPKernelApp.pylab = 'inline'
     sys.stdout.write('Storing %s in %s... ' % (config_file_name, location))
     sys.stdout.flush()
 
-
     with file(abs_config_file_name, "w") as f:
         f.write(dest_data)
         f.close()
     sys.stdout.write(MSG_DONE + '\n')
+
 
 def create_spock_profile(userdir, profile, door_name=None):
     """Create spock profile directory and configuration file from a template
@@ -679,6 +740,7 @@ def create_spock_profile(userdir, profile, door_name=None):
 
     _create_config_file(ipy_profile_dir)
 
+
 def upgrade_spock_profile(ipy_profile_dir, door_name):
     """Upgrade spock profile by recreating configuration file from scratch
 
@@ -686,6 +748,7 @@ def upgrade_spock_profile(ipy_profile_dir, door_name):
     :param door_name: door name
     """
     _create_config_file(ipy_profile_dir, door_name)
+
 
 def check_for_upgrade(ipy_profile_dir):
     """Check if the current profile is up to date with the spock version
@@ -701,11 +764,12 @@ def check_for_upgrade(ipy_profile_dir):
     # search for version and door inside the ipy_profile file
     with file(abs_config_file_name, "r") as ipy_config_file:
         for i, line in enumerate(ipy_config_file):
-            if i > 20 : break; # give up after 20 lines
+            if i > 20:
+                break  # give up after 20 lines
             if line.startswith('# spock_creation_version = '):
-                spock_profile_ver_str = line[line.index('=')+1:].strip()
+                spock_profile_ver_str = line[line.index('=') + 1:].strip()
             if line.startswith('# door_name = '):
-                door_name = line[line.index('=')+1:].strip()
+                door_name = line[line.index('=') + 1:].strip()
 
     # convert version from string to numbers
     spock_lib_ver_str = release.version
@@ -713,13 +777,14 @@ def check_for_upgrade(ipy_profile_dir):
     spock_profile_ver = translate_version_str2int(spock_profile_ver_str)
 
     alpha_in_spock_profile = "-alpha" in spock_profile_ver_str
-    alpha_in_spock_lib = "-alpha" in spock_lib_ver_str 
+    alpha_in_spock_lib = "-alpha" in spock_lib_ver_str
     if spocklib_ver == spock_profile_ver and \
        alpha_in_spock_profile == alpha_in_spock_lib:
         return
     if spocklib_ver < spock_profile_ver:
         print '%sYour spock profile (%s) is newer than your spock version ' \
-              '(%s)!' % (SpockTermColors.Brown, spock_profile_ver_str, spock_lib_ver_str)
+              '(%s)!' % (SpockTermColors.Brown,
+                         spock_profile_ver_str, spock_lib_ver_str)
         print 'Please upgrade spock or delete the current profile %s' % SpockTermColors.Normal
         sys.exit(1)
 
@@ -737,6 +802,7 @@ def check_for_upgrade(ipy_profile_dir):
         upgrade_spock_profile(ipy_profile_dir, door_name)
         sys.exit(0)
 
+
 def get_args(argv):
 
     script_name = argv[0]
@@ -751,7 +817,7 @@ def get_args(argv):
     try:
         for _, arg in enumerate(argv[1:]):
             if arg.startswith('--profile='):
-                profile=arg[10:]
+                profile = arg[10:]
                 break
         else:
             argv.append("--profile=" + profile)
@@ -763,14 +829,15 @@ def get_args(argv):
         ProfileDir.find_profile_dir_by_name(ipython_dir, profile)
     except ProfileDirError:
         r = ''
-        while not r in ('y','n'):
+        while not r in ('y', 'n'):
             prompt = 'Profile \'%s\' does not exist. Do you want to create '\
                      'one now ([y]/n)? ' % profile
             r = raw_input(prompt) or 'y'
         if r.lower() == 'y':
             create_spock_profile(ipython_dir, profile)
         else:
-            sys.stdout.write('No spock door extension profile was created. Starting normal spock...\n')
+            sys.stdout.write(
+                'No spock door extension profile was created. Starting normal spock...\n')
             sys.stdout.flush()
             profile = ''
 
@@ -778,9 +845,9 @@ def get_args(argv):
     if not '--profile=' in argv and profile:
         argv.append('--profile=' + profile)
 
-    user_ns = { 'MACRO_SERVER_NAME' : macro_server,
-                'DOOR_NAME'         : door,
-                'PROFILE'           : profile }
+    user_ns = {'MACRO_SERVER_NAME': macro_server,
+               'DOOR_NAME': door,
+               'PROFILE': profile}
 
     return user_ns
 
@@ -792,13 +859,14 @@ MSG_G = '[%s%%s%s]' % (SpockTermColors.Green, SpockTermColors.Normal)
 MSG_R = '[%s%%s%s]' % (SpockTermColors.Red, SpockTermColors.Normal)
 MSG_FAILED = MSG_R % 'FAILED'
 MSG_FAILED_WR = MSG_R % 'FAILED: %s'
-MSG_ERROR  = MSG_R % 'ERROR'
-MSG_DONE   = MSG_G % 'DONE'
-MSG_OK     = MSG_G % 'OK'
+MSG_ERROR = MSG_R % 'ERROR'
+MSG_DONE = MSG_G % 'DONE'
+MSG_OK = MSG_G % 'OK'
 
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 # initialization methods
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+
 
 def init_taurus():
     # the CodecFactory is not thread safe. There are two attributes who will
@@ -837,7 +905,7 @@ def load_ipython_extension(ipython):
     #shell.set_hook('late_startup_hook', magic.spock_late_startup_hook)
     ipython.set_hook('pre_prompt_hook', magic.spock_pre_prompt_hook)
 
-    #if ip.IP.alias_table.has_key('mv'):
+    # if ip.IP.alias_table.has_key('mv'):
     #    del ip.IP.alias_table['mv']
 
     door = get_door()
@@ -845,9 +913,10 @@ def load_ipython_extension(ipython):
 
     # Initialize the environment
     expose_variable(ENV_NAME, macro_server.getEnvironment())
-    
-    new_style_magics = hasattr(IPython.core.magic, 'Magics') and hasattr(IPython.core.magic, 'magics_class')
-    
+
+    new_style_magics = hasattr(IPython.core.magic, 'Magics') and hasattr(
+        IPython.core.magic, 'magics_class')
+
     if new_style_magics:
         @IPython.core.magic.magics_class
         class Sardana(IPython.core.magic.Magics):
@@ -859,7 +928,7 @@ def load_ipython_extension(ipython):
             edmac = IPython.core.magic.line_magic(magic.edmac)
             showscan = IPython.core.magic.line_magic(magic.showscan)
             expconf = IPython.core.magic.line_magic(magic.expconf)
-        
+
         ipython.register_magics(Sardana)
     else:
         expose_magic('debug', magic.debug, magic.debug_completer)
@@ -873,8 +942,10 @@ def load_ipython_extension(ipython):
 
     door.setConsoleReady(True)
 
+
 def unload_ipython_extension(ipython):
     pass
+
 
 def load_config(config):
     spockver = release.version
@@ -900,13 +971,13 @@ def load_config(config):
     config.Spock.macro_server_alias = ms_alias
     config.Spock.door_alias = door_alias
 
-    d = { "version" : spockver,
-          "pyver" : pyver,
-          "ipyver" : ipyver,
-          "pytangover" : pytangover,
-          "taurusver" : tauruscorever,
-          #"profile" : ip.user_ns["PROFILE"],
-          "door" : door_alias }
+    d = {"version": spockver,
+         "pyver": pyver,
+         "ipyver": ipyver,
+         "pytangover": pytangover,
+         "taurusver": tauruscorever,
+         #"profile" : ip.user_ns["PROFILE"],
+         "door": door_alias}
 
     d.update(TermColors.__dict__)
 
@@ -990,7 +1061,7 @@ object?   -> Details about 'object'. ?object also works, ?? prints more.
     term_app = config.TerminalIPythonApp
     term_app.display_banner = True
     term_app.gui = gui_mode
-    term_app.pylab='qt'
+    term_app.pylab = 'qt'
     #term_app.nosep = False
     #term_app.classic = True
 
@@ -999,7 +1070,7 @@ object?   -> Details about 'object'. ?object also works, ?? prints more.
     # ------------------------------------
     #kernel_app = config.IPKernelApp
     ipython_widget = config.IPythonWidget
-    ipython_widget.in_prompt  = ' Spock [<span class="in-prompt-number">%i</span>]: '
+    ipython_widget.in_prompt = ' Spock [<span class="in-prompt-number">%i</span>]: '
     ipython_widget.out_prompt = 'Result [<span class="out-prompt-number">%i</span>]: '
     ipython_widget.input_sep = '\n'
     ipython_widget.output_sep = ''
@@ -1068,6 +1139,7 @@ object?   -> Details about 'object'. ?object also works, ?? prints more.
     config.Spock.ready = True
     return config
 
+
 def start(user_ns=None):
     # Make sure the log level is changed to warning
     CodecFactory()
@@ -1099,10 +1171,12 @@ def start(user_ns=None):
     #config = get_config()
     return app
 
+
 def mainloop(app=None, user_ns=None):
     if app is None:
         app = start(user_ns)
     app.start()
+
 
 def prepare_input_handler():
     # initialize input handler as soon as possible
@@ -1122,11 +1196,11 @@ def prepare_cmdline(argv=None):
     profile, append_profile = "spockdoor", True
     try:
         # in ipython the last option in the list takes precedence
-        # so reversing order for searching of the profile 
+        # so reversing order for searching of the profile
         reversed_argv = reversed(argv[1:])
         for _, arg in enumerate(reversed_argv):
             if arg.startswith('--profile='):
-                profile=arg[10:]
+                profile = arg[10:]
                 append_profile = False
                 break
     except:
@@ -1153,7 +1227,7 @@ def prepare_cmdline(argv=None):
                     argv.remove(arg)
             return
     else:
-        ipy_profile_dir = pd.location # directory with the spock profile
+        ipy_profile_dir = pd.location  # directory with the spock profile
         check_for_upgrade(ipy_profile_dir)
 
     if append_profile:
@@ -1165,7 +1239,7 @@ def run():
     try:
         from IPython.utils.traitlets import Unicode
         from IPython.frontend.qt.console.rich_ipython_widget import RichIPythonWidget
-        
+
         class SpockConsole(RichIPythonWidget):
 
             banner = Unicode(config=True)
@@ -1188,9 +1262,8 @@ def run():
         sys.exit(-1)
     except exception.SpockMissingRecommended, recommended:
         print str(recommended)
-    
+
     prepare_input_handler()
     prepare_cmdline()
 
     launch_new_instance()
-

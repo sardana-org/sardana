@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -31,6 +31,7 @@ from sardana.pool.test import (FakePool, createPoolController,
                                createPoolCounterTimer, dummyCounterTimerConf01,
                                dummyPoolCTCtrlConf01,
                                dummyMeasurementGroupConf01)
+
 
 class PoolMeasurementGroupTestCase(unittest.TestCase):
     """Class used for an acquisition done by a Measurement Group with a
@@ -53,9 +54,10 @@ class PoolMeasurementGroupTestCase(unittest.TestCase):
         pool.add_element(pc)
         pool.add_element(pct)
 
-        self.pmg = createPoolMeasurementGroup(pool, dummyMeasurementGroupConf01)
+        self.pmg = createPoolMeasurementGroup(
+            pool, dummyMeasurementGroupConf01)
         pool.add_element(self.pmg)
-        self._pct = pct # keep a reference to use it in test_acquisition
+        self._pct = pct  # keep a reference to use it in test_acquisition
 
     def test_init(self):
         """check that the PoolMeasurementGroup is correctly instantiated"""

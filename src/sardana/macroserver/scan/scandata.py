@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -55,13 +55,13 @@ class ColumnDesc(object):
 
         Any keyword not in the previous list will be converted to a member of
         the :class:`ColumnDesc`"""
-        #enforce that the mandatory arguments are present
+        # enforce that the mandatory arguments are present
         try:
             self.name = kwargs.pop('name')
         except:
             raise TypeError('"name" parameter is mandatory')
 
-        #make sure that at least the required members exist
+        # make sure that at least the required members exist
         self.label = kwargs.pop('label', self.name)
         self.setDtype(kwargs.pop('dtype', self.__class__._dtype))
         self.setShape(kwargs.pop('shape', self.__class__._shape))
@@ -119,7 +119,7 @@ class ColumnDesc(object):
 
     def clone(self):
         return copy.deepcopy(self)
-        #return self.__class__(**self.toDict())
+        # return self.__class__(**self.toDict())
 
 
 class MoveableDesc(ColumnDesc):
@@ -191,8 +191,8 @@ class RecordEnvironment(dict):
     """  A RecordEnvironment is a set of arbitrary pairs of type
     label/value in the form of a dictionary.
     """
-    __needed = ['title', 'labels'] #@TODO: it seems that this has changed
-                                   #now labels are separated in moveables and counters 
+    __needed = ['title', 'labels']  # @TODO: it seems that this has changed
+    # now labels are separated in moveables and counters
 
     def isValid(self):
         """ Check valid environment = all needed keys present """
@@ -266,8 +266,8 @@ class RecordList(dict):
 
     def start(self):
         self.recordno = 0
-        ####@TODO: it is necessary only by continuous scan
-        ####       think how to separate this two cases
+        # @TODO: it is necessary only by continuous scan
+        # think how to separate this two cases
         self.columnIndexDict = {}
         self.labels = []
         self.refMoveablesLabels = []
@@ -286,7 +286,7 @@ class RecordList(dict):
         for label in self.labels:
             self.columnIndexDict[label] = 0
         ####
-        self.datahandler.startRecordList(self) 
+        self.datahandler.startRecordList(self)
 
     def initRecord(self):
         '''Init a dummy record and add it to the records list.
@@ -300,7 +300,7 @@ class RecordList(dict):
             initial_data = self.initial_data.get(recordno)
         else:
             initial_data = dict()
-        rc = Record({'point_nb' : recordno})
+        rc = Record({'point_nb': recordno})
         rc.data['timestamp'] = initial_data.get('timestamp')
         rc.setRecordNo(self.recordno)
         for label in self.channelLabels:
@@ -323,7 +323,7 @@ class RecordList(dict):
         self[self.recordno] = rc
         self.recordno += 1
         self.datahandler.addRecord(self, rc)
-        self.currentIndex +=1
+        self.currentIndex += 1
 
     def applyZeroOrderInterpolation(self, record):
         ''' Apply a zero order interpolation to the given record
@@ -340,7 +340,7 @@ class RecordList(dict):
     def addData(self, data):
         """Adds data to the record list
 
-        :param data: dictionary with two mandatory elements: label - string 
+        :param data: dictionary with two mandatory elements: label - string
                      and data - list of values
         :type data:  dict"""
         with self.rlock:
@@ -352,7 +352,7 @@ class RecordList(dict):
             recordsLen = len(self.records)
             # Calculate missing records
             missingRecords = recordsLen - (maxIdx + 1)
-            #TODO: implement proper handling of timestamps and moveables
+            # TODO: implement proper handling of timestamps and moveables
             if missingRecords < 0:
                 missingRecords = abs(missingRecords)
                 self.initRecords(missingRecords)
@@ -365,14 +365,14 @@ class RecordList(dict):
 
     def tryToAdd(self, idx, label):
         start = self.currentIndex
-        for i in range(start, idx+1):
+        for i in range(start, idx + 1):
             if self.isRecordCompleted(i):
                 rc = self.records[i]
                 self[self.currentIndex] = rc
                 if self.applyInterpolation:
                     self.applyZeroOrderInterpolation(rc)
                 self.datahandler.addRecord(self, rc)
-                self.currentIndex +=1
+                self.currentIndex += 1
 
     def isRecordCompleted(self, recordno):
         rc = self.records[recordno]
@@ -424,4 +424,3 @@ class ScanFactory(Singleton):
     def getScanData(self, dh, apply_interpolation=False):
         return ScanData(data_handler=dh,
                         apply_interpolation=apply_interpolation)
-

@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -50,6 +50,7 @@ from sardana.pool.poolbaseelement import PoolBaseElement
 
 class PoolBaseController(PoolBaseElement):
     """Base class for all controllers"""
+
     def __init__(self, **kwargs):
         self._ctrl = None
         self._ctrl_error = None
@@ -102,13 +103,13 @@ class PoolBaseController(PoolBaseElement):
             self._element_axis[axis] = elem
             self._element_names[name] = elem
         else:
-            #TODO: raise exception
+            # TODO: raise exception
             self._pending_element_ids[eid] = elem
             self._pending_element_axis[axis] = elem
             self._pending_element_names[name] = elem
         if propagate:
             elements = self.get_elements()
-            elements = [ elements[_id].name for _id in sorted(elements) ]
+            elements = [elements[_id].name for _id in sorted(elements)]
             self.fire_event(EventType("elementlist", priority=propagate),
                             elements)
 
@@ -132,7 +133,7 @@ class PoolBaseController(PoolBaseElement):
                 self.error("Unable to delete %s(%s)", name, axis, exc_info=1)
         if propagate:
             elements = self.get_elements()
-            elements = [ elements[_id].name for _id in sorted(elements) ]
+            elements = [elements[_id].name for _id in sorted(elements)]
             self.fire_event(EventType("elementlist", priority=propagate),
                             elements)
 
@@ -199,7 +200,7 @@ class PoolBaseController(PoolBaseElement):
     def read_axis_states(self, axes=None):
         """Reads the state for the given axes. If axes is None, reads the
         state of all active axes.
-        
+
         :param axes: the list of axis to get the state. Default is None meaning
                        all active axis in this controller
         :type axes: seq<int> or None
@@ -211,7 +212,7 @@ class PoolBaseController(PoolBaseElement):
     def read_axis_values(self, axes=None):
         """Reads the value for the given axes. If axes is None, reads the
         value of all active axes.
-        
+
         :param axes: the list of axis to get the value. Default is None meaning
                        all active axis in this controller
         :type axes: seq<int> or None
@@ -243,6 +244,7 @@ class PoolBaseController(PoolBaseElement):
         return self._status
 
     _STD_STATUS = '{name} is {state}'
+
     def calculate_state_info(self, status_info=None):
         """Transforms the given state information. This specific base
         implementation transforms the given state,status tuple into a
@@ -265,10 +267,11 @@ def check_ctrl(fn):
     @functools.wraps(fn)
     def wrapper(pool_ctrl, *args, **kwargs):
         if not pool_ctrl.is_online():
-            raise Exception("Cannot execute '%s' because '%s' is offline" % \
+            raise Exception("Cannot execute '%s' because '%s' is offline" %
                             (fn.__name__, pool_ctrl.name))
         return fn(pool_ctrl, *args, **kwargs)
     return wrapper
+
 
 def ctrl_access(fn):
     @functools.wraps(fn)
@@ -346,7 +349,8 @@ class PoolController(PoolBaseController):
 
     def re_init(self):
         self.set_state(State.Init, propagate=2)
-        status = "{0} is Initializing (temporarily unavailable)".format(self.name)
+        status = "{0} is Initializing (temporarily unavailable)".format(
+            self.name)
         self.set_status(status, propagate=2)
         manager = self.pool.ctrl_manager
         old_e_ids = self._element_ids
@@ -400,22 +404,24 @@ class PoolController(PoolBaseController):
 
     def get_ctrl(self):
         return self._ctrl
-    
+
     def set_ctrl(self, ctrl):
         self._ctrl = ctrl
 
-    ctrl = property(fget=get_ctrl, fset=set_ctrl, doc="actual controller object")
+    ctrl = property(fget=get_ctrl, fset=set_ctrl,
+                    doc="actual controller object")
 
     def get_ctrl_info(self):
         return self._ctrl_info
 
-    ctrl_info = property(fget=get_ctrl_info, doc="controller information object")
+    ctrl_info = property(fget=get_ctrl_info,
+                         doc="controller information object")
 
     def set_operator(self, operator):
         """Defines the current operator object for this controller.
            For example, in acquisition, it should be a :class:`PoolMeasurementGroup`
            object.
-           
+
            :param operator: the new operator object
            :type operator: object"""
         self._operator = operator
@@ -423,9 +429,10 @@ class PoolController(PoolBaseController):
     def get_operator(self):
         return self._operator
 
-    operator = property(fget=get_operator, fset=set_operator, doc="current controller operator")
+    operator = property(fget=get_operator, fset=set_operator,
+                        doc="current controller operator")
 
-    # START API WHICH ACCESSES CONTROLLER API ----------------------------------
+    # START API WHICH ACCESSES CONTROLLER API --------------------------------
 
     @check_ctrl
     def set_log_level(self, level):
@@ -498,10 +505,9 @@ class PoolController(PoolBaseController):
     def get_axis_par(self, axis, name):
         return self.ctrl.GetAxisPar(axis, name)
 
+    # END API WHICH ACCESSES CONTROLLER API ----------------------------------
 
-    # END API WHICH ACCESSES CONTROLLER API ------------------------------------
-
-    # START API WHICH ACCESSES CRITICAL CONTROLLER API (like StateOne) ---------
+    # START API WHICH ACCESSES CRITICAL CONTROLLER API (like StateOne) -------
 
     def __build_exc_info(self, ctrl_states, axes, exc_info):
         status = "".join(traceback.format_exception(*exc_info))
@@ -521,7 +527,7 @@ class PoolController(PoolBaseController):
     def raw_read_axis_states(self, axes=None, ctrl_states=None):
         """**Unsafe method**. Reads the state for the given axes. If axes
         is None, reads the state of all active axes.
-        
+
         :param axes: the list of axis to get the state. Default is None meaning
                        all active axis in this controller
         :type axes: seq<int> or None
@@ -571,7 +577,7 @@ class PoolController(PoolBaseController):
     def read_axis_states(self, axes=None):
         """Reads the state for the given axes. If axes is None, reads the
         state of all active axes.
-        
+
         :param axes: the list of axis to get the state. Default is None
                        meaning all active axis in this controller
         :type axes: seq<int> or None
@@ -602,6 +608,7 @@ class PoolController(PoolBaseController):
                 msg = '%s.ReadOne(%s[%d]) return error: Expected value(s), ' \
                       'got None instead' % (self.name, element.name, axis)
                 raise ValueError(msg)
+
             if is_chunk(type_, ctrl_value):
                 value = [translate_ctrl_value(v) for v in ctrl_value]
             else:
@@ -613,7 +620,7 @@ class PoolController(PoolBaseController):
     def raw_read_axis_values(self, axes=None, ctrl_values=None):
         """**Unsafe method**. Reads the value for the given axes. If axes
         is None, reads the value of all active axes.
-        
+
         :param axes: the list of axis to get the value. Default is None
                        meaning all active axis in this controller
         :type axes: seq<int> or None
@@ -648,7 +655,7 @@ class PoolController(PoolBaseController):
     def read_axis_values(self, axes=None):
         """Reads the value for the given axes. If axes is None, reads the
         value of all active axes.
-        
+
         :param axes: the list of axis to get the value. Default is None meaning
                        all active axis in this controller
         :type axes: seq<int> or None
@@ -697,7 +704,7 @@ class PoolController(PoolBaseController):
     @check_ctrl
     def stop_axes(self, axes=None):
         """Stops the given axes. If axes is None, stops all active axes.
-        
+
         :param axes: the list of axis to stop. Default is None
                        meaning all active axis in this controller
         :type axes: seq<int> or None
@@ -711,7 +718,7 @@ class PoolController(PoolBaseController):
     @check_ctrl
     def stop_elements(self, elements=None):
         """Stops the given elements. If axes is None, stops all active axes.
-        
+
         :param elements: the list of elements to stop. Default is None
                          meaning all active axis in this controller
         :type axes: seq<PoolElement> or None
@@ -761,7 +768,7 @@ class PoolController(PoolBaseController):
     @check_ctrl
     def abort_axes(self, axes=None):
         """Aborts the given axes. If axes is None, aborts all active axes.
-        
+
         :param axes: the list of axis to abort. Default is None
                        meaning all active axis in this controller
         :type axes: seq<int> or None
@@ -775,7 +782,7 @@ class PoolController(PoolBaseController):
     @check_ctrl
     def abort_elements(self, elements=None):
         """Aborts the given elements. If axes is None, aborts all active axes.
-        
+
         :param elements: the list of elements to abort. Default is None
                          meaning all active axis in this controller
         :type axes: seq<PoolElement> or None
@@ -792,7 +799,7 @@ class PoolController(PoolBaseController):
     def emergency_break(self, elements=None):
         """Stops the given elements. If axes is None, stops all active axes.
         If stop raises exception, an abort is attempted.
-        
+
         :param elements: the list of elements to stop. Default is None
                          meaning all active axis in this controller
         :type axes: seq<PoolElement> or None
@@ -813,9 +820,9 @@ class PoolController(PoolBaseController):
     def send_to_controller(self, stream):
         return self.ctrl.SendToCtrl(stream)
 
-    # END API WHICH ACCESSES CRITICAL CONTROLLER API (like StateOne) -----------
+    # END API WHICH ACCESSES CRITICAL CONTROLLER API (like StateOne) ---------
 
-    # START SPECIFIC TO MOTOR CONTROLLER ---------------------------------------
+    # START SPECIFIC TO MOTOR CONTROLLER -------------------------------------
 
     def raw_move(self, axis_pos):
         ctrl = self.ctrl
@@ -823,7 +830,7 @@ class PoolController(PoolBaseController):
         for axis, dial_position in axis_pos.items():
             ret = ctrl.PreStartOne(axis, dial_position)
             if not ret:
-                raise Exception("%s.PreStartOne(%d, %f) returns False" \
+                raise Exception("%s.PreStartOne(%d, %f) returns False"
                                 % (self.name, axis, dial_position))
 
         for axis, dial_position in axis_pos.items():
@@ -845,14 +852,14 @@ class PoolController(PoolBaseController):
     def define_position(self, axis, position):
         return self.ctrl.DefinePosition(axis, position)
 
-    # END SPECIFIC TO MOTOR CONTROLLER -----------------------------------------
+    # END SPECIFIC TO MOTOR CONTROLLER ---------------------------------------
 
-    # START SPECIFIC TO IOR CONTROLLER -----------------------------------------
+    # START SPECIFIC TO IOR CONTROLLER ---------------------------------------
 
     def write_one(self, axis, value):
         self.ctrl.WriteOne(axis, value)
 
-    # END SPECIFIC TO IOR CONTROLLER -------------------------------------------
+    # END SPECIFIC TO IOR CONTROLLER -----------------------------------------
 
 
 class PoolPseudoMotorController(PoolController):

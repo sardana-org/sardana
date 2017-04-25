@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -31,7 +31,7 @@ from sardana.macroserver.macros.test import RunMacroTestCase, testRun,\
 
 MOT_NAME1, MOT_NAME2 = getMotors()[:2]
 
-#TODO: these tests randomly causes segfaults. fix it!
+# TODO: these tests randomly causes segfaults. fix it!
 # @testRun(macro_name="wu", wait_timeout=1)
 # @testRun(macro_name="wa", wait_timeout=1)
 # @testRun(macro_name="wa", macro_params=["mot.*"], wait_timeout=1)
@@ -46,6 +46,7 @@ MOT_NAME1, MOT_NAME2 = getMotors()[:2]
 #     """Test case for where macros
 #     """
 #     pass
+
 
 @testRun(macro_name="set_lim", macro_params=[MOT_NAME1, "-100", "100"],
          wait_timeout=1)
@@ -70,6 +71,7 @@ class PosTest(RunMacroTestCase, unittest.TestCase):
 class MoveTest(RunMacroTestCase, unittest.TestCase):
     """Test case for position macros
     """
+
     def test_move(self):
         self.macro_runs("set_user_pos", macro_params=[MOT_NAME1, "0"],
                         wait_timeout=1)

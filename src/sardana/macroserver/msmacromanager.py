@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -44,7 +44,7 @@ from PyTango import DevFailed
 
 from taurus.external.ordereddict import OrderedDict
 from taurus.core.util.log import Logger
-from taurus.core.util.codecs import  CodecFactory
+from taurus.core.util.codecs import CodecFactory
 
 from sardana.sardanadefs import ElementType
 from sardana.sardanamodulemanager import ModuleManager
@@ -62,7 +62,8 @@ from sardana.macroserver.msexception import UnknownMacroLibrary, \
     MacroServerException, UnknownEnv
 
 # These classes are imported from the "client" part of sardana, if finally
-# both the client and the server side needs them, place them in some common location 
+# both the client and the server side needs them, place them in some
+# common location
 from sardana.taurus.core.tango.sardana.macro import createMacroNode
 
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -71,7 +72,8 @@ _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 def islambda(f):
     """inspect doesn't come with islambda so I create one :-P"""
     return inspect.isfunction(f) and \
-           f.__name__ == (lambda: True).__name__
+        f.__name__ == (lambda: True).__name__
+
 
 def is_macro(macro, abs_file=None, logger=None):
     """Helper function to determine if a certain python object is a valid
@@ -126,6 +128,7 @@ def is_macro(macro, abs_file=None, logger=None):
         return False
     return True
 
+
 def recur_map(fun, data, keep_none=False):
     """Recursive map. Similar to map, but maintains the list objects structure
 
@@ -140,6 +143,16 @@ def recur_map(fun, data, keep_none=False):
             return data
         else:
             return fun(data)
+
+
+def is_flat_list(obj):
+    """Check if a given object is a flat list."""
+    if not isinstance(obj, list):
+        return False
+    for item in obj:
+        if isinstance(item, list):
+            return False
+    return True
 
 
 class MacroManager(MacroServerManager):
@@ -180,7 +193,7 @@ class MacroManager(MacroServerManager):
         if self.is_cleaned():
             return
 
-        #if self._modules:
+        # if self._modules:
         #    ModuleManager().unloadModules(self._modules.keys())
 
         self._macro_path = None
@@ -200,11 +213,11 @@ class MacroManager(MacroServerManager):
             p.extend(item.split(":"))
 
         # filter empty and commented paths
-        p = [ i for i in p if i and not i.startswith("#") ]
+        p = [i for i in p if i and not i.startswith("#")]
 
         # add basic macro directories
         for macro_dir in self.DEFAULT_MACRO_DIRECTORIES:
-            if not macro_dir in p:
+            if macro_dir not in p:
                 p.append(macro_dir)
 
         self._macro_path = p
@@ -299,13 +312,14 @@ class MacroManager(MacroServerManager):
                 code = f.read()
                 f.close()
         else:
-        # if given macro name
+            # if given macro name
             if macro_lib is None:
                 f_name, code, line_nb = self.createMacro(lib_name, macro_name)
             else:
                 macro = macro_lib.get_macro(macro_name)
                 if macro is None:
-                    f_name, code, line_nb = self.createMacro(lib_name, macro_name)
+                    f_name, code, line_nb = self.createMacro(
+                        lib_name, macro_name)
                 else:
                     _, line_nb = macro.code
                     f_name = macro.file_path
@@ -313,7 +327,7 @@ class MacroManager(MacroServerManager):
                     code = f.read()
                     f.close()
 
-        return [ f_name, code, line_nb ]
+        return [f_name, code, line_nb]
 
     def setMacroLib(self, lib_name, code, auto_reload=True):
         f_name = self._fromNameToFileName(lib_name)
@@ -332,7 +346,8 @@ class MacroManager(MacroServerManager):
         f_name = self._fromNameToFileName(lib_name, path)
 
         if os.path.exists(f_name):
-            raise Exception("Unable to create macro lib: '%s' already exists" % f_name)
+            raise Exception(
+                "Unable to create macro lib: '%s' already exists" % f_name)
 
         f = open(f_name, 'w')
         f.close()
@@ -351,7 +366,8 @@ class MacroManager(MacroServerManager):
             template += '\n'
             t = open(f_name, 'rU')
             line_nb = -1
-            for line_nb, _ in enumerate(t): pass
+            for line_nb, _ in enumerate(t):
+                pass
             line_nb += 3
             t.close()
 
@@ -366,7 +382,8 @@ class MacroManager(MacroServerManager):
             template += f_templ.read()
             f_templ.close()
         except:
-            self.debug("Failed to open template macro file. Using simplified template")
+            self.debug(
+                "Failed to open template macro file. Using simplified template")
             template += MACRO_TEMPLATE
             if f_templ:
                 f_templ.close()
@@ -421,7 +438,8 @@ class MacroManager(MacroServerManager):
         ret = []
         for module_name in module_names:
             m = self.reloadMacroLib(module_name, path=path)
-            if m: ret.append(m)
+            if m:
+                ret.append(m)
         return ret
 
     def reloadLib(self, module_name, path=None):
@@ -432,13 +450,13 @@ class MacroManager(MacroServerManager):
 
         :param module_name: module name
         :param path:
-            a list of absolute path to search for libraries [default: None. 
+            a list of absolute path to search for libraries [default: None.
             Search in sys.path.]
         :return: the reloaded python module object"""
         if module_name in self._modules:
             raise LibraryError("Cannot use simple " +
                                "reload to reload a Macro Library")
-        
+
         mod_manager = ModuleManager()
         return mod_manager.reloadModule(module_name, path=None)
 
@@ -570,7 +588,7 @@ class MacroManager(MacroServerManager):
                 continue
             ret[name] = macro
         return ret
-    
+
     def getMacroClasses(self, filter=None):
         """Returns a :obj:`dict` containing information about macro classes.
 
@@ -604,7 +622,7 @@ class MacroManager(MacroServerManager):
             if macro.get_type() == ElementType.MacroFunction:
                 macro_classes[name] = macro
         return macro_classes
-        
+
     def getMacroNames(self):
         return sorted(self._macro_dict.keys())
 
@@ -658,7 +676,7 @@ class MacroManager(MacroServerManager):
             macro_meta = self.getMacro(macro_name)
             ret.append(json_codec.encode(('', macro_meta.serialize()))[1])
         return ret
-    
+
     def _createMacroNode(self, macro_name, macro_params):
         macro = self.getMacro(macro_name)
         params_def = macro.get_parameter()
@@ -688,8 +706,8 @@ class MacroManager(MacroServerManager):
             # only if raw params are passed as a list e.g. using macro API
             # execMacro("mv", mot01, 0.0) and parameters definition allows to
             # decode it from a flat list we give it a try
-            if (isinstance(raw_params, list) and
-                FlatParamDecoder.isPossible(params_def)):
+            if (is_flat_list(raw_params) and
+                    FlatParamDecoder.isPossible(params_def)):
                 self.debug("Trying flat parameter decoder due to: %s" % out_e)
                 try:
                     out_par_list = FlatParamDecoder(type_manager, params_def,
@@ -724,7 +742,8 @@ class MacroManager(MacroServerManager):
            The return value is a tuple (MacroObject, return value of prepare)
         """
         macro = self.createMacroObj(macro_class, par_list, init_opts=init_opts)
-        prepare_result = self.prepareMacroObj(macro, par_list, prepare_opts=prepare_opts)
+        prepare_result = self.prepareMacroObj(
+            macro, par_list, prepare_opts=prepare_opts)
         return macro, prepare_result
 
     def createMacroObj(self, macro_class, par_list, init_opts={}):
@@ -738,14 +757,14 @@ class MacroManager(MacroServerManager):
             if not environment.has_env(env):
                 r.append(env)
         if r:
-            raise MissingEnv("The macro %s requires the following missing " \
+            raise MissingEnv("The macro %s requires the following missing "
                              "environment to be defined: %s"
                              % (macro_name, str(r)))
 
         macro_opts = {
             'no_exec': True,
-            'create_thread' : True,
-            'external_prepare' : True
+            'create_thread': True,
+            'external_prepare': True
         }
 
         macro_opts.update(init_opts)
@@ -767,7 +786,7 @@ class MacroManager(MacroServerManager):
                 r.append(env)
         if r:
             macro_name = meta.name
-            raise MissingEnv("The macro %s requires the following missing " \
+            raise MissingEnv("The macro %s requires the following missing "
                              "environment to be defined: %s"
                              % (macro_name, str(r)))
 
@@ -793,6 +812,7 @@ class MacroExecutor(Logger):
     """ """
 
     class RunSubXMLHook:
+
         def __init__(self, me, xml):
             self._me = me
             self._xml = xml
@@ -846,7 +866,7 @@ class MacroExecutor(Logger):
     def getNewMacroID(self):
         self._macro_counter -= 1
         return self._macro_counter
-    
+
     def _createMacroNode(self, macro_name, macro_params):
         return self.macro_manager._createMacroNode(macro_name, macro_params)
 
@@ -901,7 +921,7 @@ class MacroExecutor(Logger):
 
     def _decodeMacroParameters(self, params):
         return self.macro_manager.decodeMacroParameters(self.door, params)
-    
+
     def _composeMacroLine(self, macro_name, macro_params, macro_id):
         # recursive map to maintain the list objects structure
         params_str_list = recur_map(str, macro_params)
@@ -909,7 +929,8 @@ class MacroExecutor(Logger):
         params_str_list = map(str, params_str_list)
         params_str = ', '.join(params_str_list)
         macro_id = macro_id
-        # create macro_line - string representation of macro, its parameters and id
+        # create macro_line - string representation of macro, its parameters
+        # and id
         macro_line = "%s(%s) -> %s" % (macro_name, params_str, macro_id)
         return macro_line
 
@@ -919,9 +940,9 @@ class MacroExecutor(Logger):
         macro_id = xml_macro.get("id")
         macro_line = self._composeMacroLine(macro_name, macro_params, macro_id)
         init_opts = {
-            'id'           : macro_id,
-            'macro_line'   : macro_line,
-            'parent_macro' : parent_macro,
+            'id': macro_id,
+            'macro_line': macro_line,
+            'parent_macro': parent_macro,
         }
 
         macro_obj = self._createMacroObj(macro_meta, macro_params, init_opts)
@@ -929,10 +950,10 @@ class MacroExecutor(Logger):
             hook = MacroExecutor.RunSubXMLHook(self, macro)
             hook_hints = macro.findall('hookPlace')
             if hook_hints is None:
-                macro_obj.hooks = [ hook ]
+                macro_obj.hooks = [hook]
             else:
-                hook_places = [ h.text for h in hook_hints ]
-                macro_obj.hooks = [ (hook, hook_places) ]
+                hook_places = [h.text for h in hook_hints]
+                macro_obj.hooks = [(hook, hook_places)]
         prepare_result = self._prepareMacroObj(macro_obj, macro_params)
         return macro_obj, prepare_result
 
@@ -942,8 +963,8 @@ class MacroExecutor(Logger):
             macro_meta = self.macro_manager.getMacro(macro_meta)
 
         macro_opts = {
-            'executor'    : self,
-            'environment' : self.macro_server
+            'executor': self,
+            'environment': self.macro_server
         }
         macro_opts.update(init_opts)
         if not macro_opts.has_key('id'):
@@ -969,8 +990,10 @@ class MacroExecutor(Logger):
         :param prepare_opts: keyword parameters for the macro prepare
 
         :return: a tuple of two elements: macro object, the result of preparing the macro"""
-        macroObj = self._createMacroObj(macro_name_or_meta, pars, init_opts=init_opts)
-        prepare_result = self._prepareMacroObj(macroObj, pars, prepare_opts=prepare_opts)
+        macroObj = self._createMacroObj(
+            macro_name_or_meta, pars, init_opts=init_opts)
+        prepare_result = self._prepareMacroObj(
+            macroObj, pars, prepare_opts=prepare_opts)
         return macroObj, prepare_result
 
     def prepareMacro(self, pars, init_opts={}, prepare_opts={}):
@@ -1043,7 +1066,7 @@ class MacroExecutor(Logger):
 
         init_opts['macro_line'] = macro_line
 
-        return self.prepareMacroObj(meta_macro, macro_params, init_opts, 
+        return self.prepareMacroObj(meta_macro, macro_params, init_opts,
                                     prepare_opts)
 
     def getRunningMacro(self):
@@ -1153,11 +1176,11 @@ class MacroExecutor(Logger):
         if asynch:
             # start the job of actually running the macro
             self.macro_server.add_job(self.__runXML, self._jobEnded)
-            #return the proper xml
+            # return the proper xml
             return self._xml
         else:
             self.__runXML()
-            #return self._macro_pointer.getResult()
+            # return self._macro_pointer.getResult()
 
     def _jobEnded(self, *args, **kw):
         self.debug("Job ended (stopped=%s, aborted=%s)",
@@ -1240,17 +1263,17 @@ class MacroExecutor(Logger):
                 mse.traceback = traceback.format_exc()
         except DevFailed as df:
             exc_info = sys.exc_info()
-            exp_pars = {'type'      : df[0].reason,
-                        'msg'       : df[0].desc,
-                        'args'      : df.args,
-                        'traceback' : traceback.format_exc() }
+            exp_pars = {'type': df[0].reason,
+                        'msg': df[0].desc,
+                        'args': df.args,
+                        'traceback': traceback.format_exc()}
             macro_exp = MacroServerException(exp_pars)
         except Exception, err:
             exc_info = sys.exc_info()
-            exp_pars = {'type'      : err.__class__.__name__,
-                        'msg'       : str(err),
-                        'args'      : err.args,
-                        'traceback' : traceback.format_exc() }
+            exp_pars = {'type': err.__class__.__name__,
+                        'msg': str(err),
+                        'args': err.args,
+                        'traceback': traceback.format_exc()}
             macro_exp = MacroServerException(exp_pars)
         finally:
             self.returnObjs(self._macro_pointer)
@@ -1270,24 +1293,26 @@ class MacroExecutor(Logger):
         if macro_exp is not None:
             if not self._stopped and not self._aborted:
                 self.sendMacroStatusException(exc_info)
-            self.debug("[ENDEX] (%s) runMacro %s" % (macro_exp.__class__.__name__, name))
+            self.debug("[ENDEX] (%s) runMacro %s" %
+                       (macro_exp.__class__.__name__, name))
             if isinstance(macro_exp, MacroServerException) and macro_obj.parent_macro is None:
                 door.debug(macro_exp.traceback)
-                door.error("An error occurred while running %s:\n%s" % (macro_obj.description, macro_exp.msg))
+                door.error("An error occurred while running %s:\n%s" %
+                           (macro_obj.description, macro_exp.msg))
             self._popMacro()
             raise macro_exp
         self.debug("[ END ] runMacro %s" % desc)
         self._popMacro()
-        
+
         # decide whether to preserve the macro data
-        env_var_name = 'PreserveMacroData' 
+        env_var_name = 'PreserveMacroData'
         try:
             preserve_macro_data = macro_obj.getEnv(env_var_name)
         except UnknownEnv:
             preserve_macro_data = True
         if not preserve_macro_data:
-            self.debug('Macro data will not be preserved. ' + \
-                       'Set "%s" environment variable ' % env_var_name + \
+            self.debug('Macro data will not be preserved. ' +
+                       'Set "%s" environment variable ' % env_var_name +
                        'to True in order to change it.')
             self._macro_pointer = None
 
@@ -1298,7 +1323,7 @@ class MacroExecutor(Logger):
         length = len(self._macro_stack)
         if length > 0:
             self._macro_pointer = self._macro_stack[-1]
-        
+
     def sendState(self, state):
         return self.door.set_state(state)
 
@@ -1368,12 +1393,13 @@ class MacroExecutor(Logger):
         return self.door.set_record_data(data, codec=codec)
 
     def reserveObj(self, obj, macro_obj, priority=0):
-        if obj is None or macro_obj is None: return
+        if obj is None or macro_obj is None:
+            return
 
         # Fill _reserved_macro_objs
         objs = self._reserved_macro_objs[macro_obj] = \
             self._reserved_macro_objs.get(macro_obj, list())
-        if not obj in objs:
+        if obj not in objs:
             if priority:
                 objs.insert(0, obj)
             else:
@@ -1384,13 +1410,16 @@ class MacroExecutor(Logger):
         macros.add(macro_obj)
 
         # Tell the object that it is reserved by a new macro
-        if hasattr(obj, 'reserve'): obj.reserve(macro_obj)
+        if hasattr(obj, 'reserve'):
+            obj.reserve(macro_obj)
 
     def returnObjs(self, macro_obj):
         """Free the macro reserved objects"""
-        if macro_obj is None: return
+        if macro_obj is None:
+            return
         objs = self._reserved_macro_objs.get(macro_obj)
-        if objs is None: return
+        if objs is None:
+            return
 
         # inside returnObj we change the list so we have to iterate with a copy
         for obj in copy.copy(objs):
@@ -1398,9 +1427,11 @@ class MacroExecutor(Logger):
 
     def returnObj(self, obj, macro_obj):
         """Free an object reserved by a macro"""
-        if obj is None or macro_obj is None: return
+        if obj is None or macro_obj is None:
+            return
 
-        if hasattr(obj, 'unreserve'): obj.unreserve()
+        if hasattr(obj, 'unreserve'):
+            obj.unreserve()
         objs = self._reserved_macro_objs.get(macro_obj)
         if objs is None:
             return

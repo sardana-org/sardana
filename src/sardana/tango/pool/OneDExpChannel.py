@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -80,13 +80,13 @@ class OneDExpChannel(PoolElementDevice):
             name = self.alias or full_name
             self.oned = oned = \
                 self.pool.create_element(type="OneDExpChannel",
-                    name=name, full_name=full_name, id=self.Id, axis=self.Axis,
-                    ctrl_id=self.Ctrl_id)
+                                         name=name, full_name=full_name, id=self.Id, axis=self.Axis,
+                                         ctrl_id=self.Ctrl_id)
             if self.instrument is not None:
                 oned.set_instrument(self.instrument)
         oned.add_listener(self.on_oned_changed)
 
-        ## force a state read to initialize the state attribute
+        # force a state read to initialize the state attribute
         #state = ct.state
         self.set_state(DevState.ON)
 
@@ -132,9 +132,13 @@ class OneDExpChannel(PoolElementDevice):
                     if value_chunk:
                         _attr = self.get_attribute_by_name("data")
                         _value = self._encode_value_chunk(value_chunk)
-                        self.set_attribute(_attr, value=_value, w_value=w_value,
-                                           timestamp=timestamp, quality=quality,
-                                           priority=priority, error=error,
+                        self.set_attribute(_attr,
+                                           value=_value,
+                                           w_value=w_value,
+                                           timestamp=timestamp,
+                                           quality=quality,
+                                           priority=priority,
+                                           error=error,
                                            synch=False)
                 timestamp = event_value.timestamp
             else:
@@ -144,7 +148,7 @@ class OneDExpChannel(PoolElementDevice):
             state = self.oned.get_state()
             if state == State.Moving:
                 quality = AttrQuality.ATTR_CHANGING
-            if attr == None:
+            if attr is None:
                 return
         self.set_attribute(attr, value=value, w_value=w_value,
                            timestamp=timestamp, quality=quality,
@@ -158,7 +162,8 @@ class OneDExpChannel(PoolElementDevice):
 
         :return: json string representing value chunk
         :rtype: str"""
-        value = []; index = []
+        value = []
+        index = []
         for sv in value_chunk:
             value.append(sv.value)
             index.append(sv.idx)
@@ -226,8 +231,9 @@ class OneDExpChannel(PoolElementDevice):
                            timestamp=value.timestamp, priority=0)
 
     def read_Data(self, attr):
-        desc = 'Data attribute is not foreseen for reading. It is used ' + \
-            'only as the communication channel for the continuous acquisitions.'
+        desc = ('Data attribute is not foreseen for reading. '
+                'It is used only as the communication channel '
+                'for the continuous acquisitions.')
         Except.throw_exception('UnsupportedFeature',
                                desc,
                                '1DExpChannel.read_Data',
@@ -250,7 +256,8 @@ class OneDExpChannel(PoolElementDevice):
 
 _DFT_VALUE_INFO = OneDController.standard_axis_attributes['Value']
 _DFT_VALUE_MAX_SHAPE = _DFT_VALUE_INFO[MaxDimSize]
-_DFT_VALUE_TYPE, _DFT_VALUE_FORMAT = to_tango_type_format(_DFT_VALUE_INFO[Type], DataFormat.OneD)
+_DFT_VALUE_TYPE, _DFT_VALUE_FORMAT = to_tango_type_format(
+    _DFT_VALUE_INFO[Type], DataFormat.OneD)
 
 
 class OneDExpChannelClass(PoolElementDeviceClass):
@@ -266,21 +273,21 @@ class OneDExpChannelClass(PoolElementDeviceClass):
 
     #    Command definitions
     cmd_list = {
-        'Start' :   [ [DevVoid, ""], [DevVoid, ""] ],
+        'Start':   [[DevVoid, ""], [DevVoid, ""]],
     }
     cmd_list.update(PoolElementDeviceClass.cmd_list)
 
     #    Attribute definitions
     attr_list = {
-        'DataSource' : [ [ DevString, SCALAR, READ ] ],
+        'DataSource': [[DevString, SCALAR, READ]],
     }
     attr_list.update(PoolElementDeviceClass.attr_list)
 
     standard_attr_list = {
-        'Value'     : [ [ _DFT_VALUE_TYPE, _DFT_VALUE_FORMAT, READ,
-                          _DFT_VALUE_MAX_SHAPE[0] ],
-                        { 'abs_change' : '1.0', } ],
-        'Data' : [ [ DevString, SCALAR, READ ] ] #@TODO: think about DevEncoded
+        'Value': [[_DFT_VALUE_TYPE, _DFT_VALUE_FORMAT, READ,
+                   _DFT_VALUE_MAX_SHAPE[0]],
+                   {'abs_change': '1.0', }],
+        'Data' : [[DevString, SCALAR, READ]] #@TODO: think about DevEncoded
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
 

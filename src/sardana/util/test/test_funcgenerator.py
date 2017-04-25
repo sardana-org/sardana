@@ -1,23 +1,23 @@
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+# http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -38,7 +38,7 @@ from sardana.util.funcgenerator import FunctionGenerator
 configuration_negative = [{SynchParam.Initial: {SynchDomain.Position: 0.},
                            SynchParam.Delay: {SynchDomain.Time: 0.1},
                            SynchParam.Active: {SynchDomain.Position: -.1,
-                                               SynchDomain.Time: .01,},
+                                               SynchDomain.Time: .01, },
                            SynchParam.Total: {SynchDomain.Position: -.2,
                                               SynchDomain.Time: 0.1},
                            SynchParam.Repeats: 10}]
@@ -46,10 +46,11 @@ configuration_negative = [{SynchParam.Initial: {SynchDomain.Position: 0.},
 configuration_positive = [{SynchParam.Initial: {SynchDomain.Position: 0.},
                            SynchParam.Delay: {SynchDomain.Time: 0.3},
                            SynchParam.Active: {SynchDomain.Position: .1,
-                                               SynchDomain.Time: .01,},
+                                               SynchDomain.Time: .01, },
                            SynchParam.Total: {SynchDomain.Position: .2,
                                               SynchDomain.Time: .02},
                            SynchParam.Repeats: 10}]
+
 
 class Position(EventGenerator):
 
@@ -62,6 +63,7 @@ class Position(EventGenerator):
             self.value = position
             self.fire_event(EventType("Position"), self)
             time.sleep(sleep)
+
 
 class Listener(EventReceiver):
 
@@ -105,26 +107,26 @@ class FuncGeneratorTestCase(TestCase):
             stmt = "fg.sleep(%f)" % i
             setup = "from sardana.util.funcgenerator import FunctionGenerator;\
                      fg = FunctionGenerator()"
-            period = timeit.timeit(stmt, setup , number=1)
+            period = timeit.timeit(stmt, setup, number=1)
             period_ok = i
             msg = "sleep period: %f, expected: %f +/- %f" % (period, period_ok,
-                                                            delta)
+                                                             delta)
             self.assertAlmostEqual(period, period_ok, delta=0.02, msg=msg)
 
     def test_run_time(self):
-        self.func_generator.active_domain = SynchDomain.Time
+        self.func_generator.initial_domain = SynchDomain.Time
         self.func_generator.set_configuration(configuration_positive)
         self.func_generator.start()
         self.thread_pool.add(self.func_generator.run, self._done)
         self.event.wait(100)
         active_event_ids = self.listener.active_event_ids
-        active_event_ids_ok = range(0,10)
+        active_event_ids_ok = range(0, 10)
         msg = "Received active event ids: %s, expected: %s" % (active_event_ids,
-                                                              active_event_ids_ok)
+                                                               active_event_ids_ok)
         self.assertListEqual(active_event_ids, active_event_ids_ok, msg)
 
     def test_stop_time(self):
-        self.func_generator.active_domain = SynchDomain.Time
+        self.func_generator.initial_domain = SynchDomain.Time
         self.func_generator.set_configuration(configuration_positive)
         self.func_generator.start()
         self.thread_pool.add(self.func_generator.run, self._done)
@@ -140,8 +142,8 @@ class FuncGeneratorTestCase(TestCase):
     def test_run_position_negative(self):
         position = Position()
         position.add_listener(self.func_generator)
+        self.func_generator.initial_domain = SynchDomain.Position
         self.func_generator.active_domain = SynchDomain.Position
-        self.func_generator.passive_domain = SynchDomain.Position
         self.func_generator.direction = -1
         self.func_generator.set_configuration(configuration_negative)
         self.func_generator.start()
@@ -152,16 +154,16 @@ class FuncGeneratorTestCase(TestCase):
         self.event.wait(3)
         position.remove_listener(self.func_generator)
         active_event_ids = self.listener.active_event_ids
-        active_event_ids_ok = range(0,10)
+        active_event_ids_ok = range(0, 10)
         msg = "Received active event ids: %s, expected: %s" % (active_event_ids,
-                                                              active_event_ids_ok)
+                                                               active_event_ids_ok)
         self.assertListEqual(active_event_ids, active_event_ids_ok, msg)
 
     def test_run_position_positive(self):
         position = Position()
         position.add_listener(self.func_generator)
+        self.func_generator.initial_domain = SynchDomain.Position
         self.func_generator.active_domain = SynchDomain.Position
-        self.func_generator.passive_domain = SynchDomain.Position
         self.func_generator.direction = 1
         self.func_generator.set_configuration(configuration_positive)
         self.func_generator.start()
@@ -172,14 +174,14 @@ class FuncGeneratorTestCase(TestCase):
         self.event.wait(3)
         position.remove_listener(self.func_generator)
         active_event_ids = self.listener.active_event_ids
-        active_event_ids_ok = range(0,10)
+        active_event_ids_ok = range(0, 10)
         msg = "Received active event ids: %s, expected: %s" % (active_event_ids,
-                                                              active_event_ids_ok)
+                                                               active_event_ids_ok)
         self.assertListEqual(active_event_ids, active_event_ids_ok, msg)
 
     def test_configuration_position(self):
+        self.func_generator.initial_domain = SynchDomain.Position
         self.func_generator.active_domain = SynchDomain.Position
-        self.func_generator.passive_domain = SynchDomain.Position
         self.func_generator.set_configuration(configuration_negative)
         active_events = self.func_generator.active_events
         active_events_ok = numpy.arange(0, -2, -0.2).tolist()
@@ -193,8 +195,8 @@ class FuncGeneratorTestCase(TestCase):
             self.assertAlmostEqual(a, b, 10, msg)
 
     def test_configuration_time(self):
+        self.func_generator.initial_domain = SynchDomain.Time
         self.func_generator.active_domain = SynchDomain.Time
-        self.func_generator.passive_domain = SynchDomain.Time
         self.func_generator.set_configuration(configuration_positive)
         active_events = self.func_generator.active_events
         active_events_ok = numpy.arange(.3, .5, 0.02).tolist()
@@ -205,7 +207,7 @@ class FuncGeneratorTestCase(TestCase):
         passive_events = self.func_generator.passive_events
         passive_events_ok = numpy.arange(.31, 0.51, 0.02).tolist()
         msg = ("Passive events mismatch, received: %s, expected: %s" %
-            (passive_events, passive_events_ok))
+               (passive_events, passive_events_ok))
         for a, b in zip(passive_events, passive_events_ok):
             self.assertAlmostEqual(a, b, 10, msg)
 
@@ -220,7 +222,7 @@ class FuncGeneratorTestCase(TestCase):
         passive_events = self.func_generator.passive_events
         passive_events_ok = numpy.arange(.31, .51, 0.02).tolist()
         msg = ("Passive events mismatch, received: %s, expected: %s" %
-            (passive_events, passive_events_ok))
+               (passive_events, passive_events_ok))
         for a, b in zip(passive_events, passive_events_ok):
             self.assertAlmostEqual(a, b, 10, msg)
 

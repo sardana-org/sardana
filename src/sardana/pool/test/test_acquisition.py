@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+# http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 import time
@@ -42,6 +42,7 @@ from sardana.pool.test import (createPoolSynchronizationConfiguration,
                                createCTAcquisitionConfiguration,
                                BasePoolTestCase, FakeElement)
 
+
 class AttributeListener(object):
 
     def __init__(self):
@@ -57,14 +58,16 @@ class AttributeListener(object):
         # obtaining sardana element e.g. exp. channel (the attribute owner)
         obj = s.get_obj()
         obj_name = obj.name
-        # obtaining the SardanaValue(s) either from the value_chunk (in case 
-        # of buffered attributes) or from the value in case of normal attributes
+        # obtaining the SardanaValue(s) either from the value_chunk (in case
+        # of buffered attributes) or from the value in case of normal
+        # attributes
         try:
             value_obj = v.value_chunk
         except AttributeError:
             value_obj = v.value_obj
         if is_non_str_seq(value_obj):
-            value = []; idx = []
+            value = []
+            idx = []
             for sardana_value in value_obj:
                 value.append(sardana_value.value)
                 idx.append(sardana_value.idx)
@@ -76,8 +79,8 @@ class AttributeListener(object):
         with self.data_lock:
             channel_data = self.data.get(obj_name, [])
             expected_idx = len(channel_data)
-            pad = [None] * (idx[0]-expected_idx)
-            channel_data.extend(pad+value)
+            pad = [None] * (idx[0] - expected_idx)
+            channel_data.extend(pad + value)
             self.data[obj_name] = channel_data
 
     def get_table(self):
@@ -89,13 +92,15 @@ class AttributeListener(object):
             table = []
             for k in sorted(self.data.keys()):
                 v = self.data[k]
-                v.extend([None]*(max_len-len(v)))
+                v.extend([None] * (max_len - len(v)))
                 table.append(v)
                 dtype_spec.append((k, 'float64'))
             a = numpy.array(zip(*table), dtype=dtype_spec)
             return a
 
+
 class AcquisitionTestCase(BasePoolTestCase):
+
     def setUp(self):
         """Create a Controller, TriggerGate and PoolSynchronization objects from
         dummy configurations.
@@ -122,7 +127,7 @@ class AcquisitionTestCase(BasePoolTestCase):
         tg_ctrl = tg.get_controller()
         # crating configuration for TGGeneration
         tg_cfg = createPoolSynchronizationConfiguration((tg_ctrl,),
-                                                     ((tg,),))
+                                                        ((tg,),))
         # creating PoolSynchronization action
         self.createPoolSynchronization([tg])
 
@@ -131,7 +136,6 @@ class AcquisitionTestCase(BasePoolTestCase):
             channels.append(self.cts[name])
 
         ct_ctrl = self.ctrls[self.chn_ctrl_name]
-
 
         # add_listeners
         self.addListeners(channels)
@@ -154,7 +158,7 @@ class AcquisitionTestCase(BasePoolTestCase):
             'repetitions': repetitions,
             'config': self.hw_acq_cfg,
         }
-        self.hw_acq.run(hw_acq_args, **hw_acq_kwargs)    
+        self.hw_acq.run(hw_acq_args, **hw_acq_kwargs)
         tg_args = ()
         tg_kwargs = {
             'offset': offset,
@@ -164,8 +168,8 @@ class AcquisitionTestCase(BasePoolTestCase):
             'config': tg_cfg
         }
         self.tggeneration.run(*tg_args, **tg_kwargs)
-        # waiting for acquisition and tggeneration to finish              
-        while self.hw_acq.is_running() or self.tggeneration.is_running():          
+        # waiting for acquisition and tggeneration to finish
+        while self.hw_acq.is_running() or self.tggeneration.is_running():
             time.sleep(1)
 
         self.do_asserts(self.channel_names, repetitions, jobs_before)
@@ -200,7 +204,7 @@ class AcquisitionTestCase(BasePoolTestCase):
             'config': self.acq_cfg,
         }
         self.ct_acq.run(ct_acq_args, **ct_acq_kwargs)
-        # waiting for acquisition 
+        # waiting for acquisition
         while self.ct_acq.is_running():
             time.sleep(0.02)
 
@@ -209,9 +213,8 @@ class AcquisitionTestCase(BasePoolTestCase):
             value = channel.value.value
             print 'channel: %s = %s' % (name, value)
             msg = ('Value for channel %s is of type %s, should be <float>' %
-                    (name, type(value)))
+                   (name, type(value)))
             self.assertIsInstance(value, float, msg)
-
 
     def addListeners(self, chn_list):
         for chn in chn_list:
@@ -233,18 +236,19 @@ class AcquisitionTestCase(BasePoolTestCase):
         for ch_name in header:
             ch_data_len = len(table[ch_name])
             msg = 'length of data for channel %s is %d and should be %d' %\
-                                            (ch_name, ch_data_len, repetitions)
+                (ch_name, ch_data_len, repetitions)
             self.assertEqual(ch_data_len, repetitions, msg)
         # checking if there are no pending jobs
         jobs_after = get_thread_pool().qsize
         msg = ('there are %d jobs pending to be done after the acquisition ' +
-               '(before: %d)') %(jobs_after, jobs_before)
+               '(before: %d)') % (jobs_after, jobs_before)
         self.assertEqual(jobs_before, jobs_after, msg)
 
     def tearDown(self):
         BasePoolTestCase.tearDown(self)
         self.l = None
         self.channel_names = None
+
 
 @insertTest(helper_name='continuous_acquisition', offset=0, active_interval=0.1,
             passive_interval=0.2, repetitions=10, integ_time=0.2)
@@ -264,6 +268,7 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
     elements to corresponding sub-actions) and the PoolMeasurementGroup (it
     configures the elements and controllers).
     """
+
     def setUp(self):
         """Create a Controller, TriggerGate and PoolSynchronization objects from
         dummy configurations.
@@ -297,22 +302,22 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         # obtaining elements created in the BasePoolTestCase.setUp
         tg_2_1 = self.tgs['_test_tg_1_1']
         tg_ctrl_2 = tg_2_1.get_controller()
-        ct_1_1 = self.cts['_test_ct_1_1'] # hw synchronized
-        ct_2_1 = self.cts['_test_ct_2_1'] # sw synchronized
+        ct_1_1 = self.cts['_test_ct_1_1']  # hw synchronized
+        ct_2_1 = self.cts['_test_ct_2_1']  # sw synchronized
         ct_ctrl_1 = ct_1_1.get_controller()
         ct_ctrl_2 = ct_2_1.get_controller()
         self.channel_names.append('_test_ct_1_1')
         self.channel_names.append('_test_ct_2_1')
         # crating configuration for TGGeneration
         tg_cfg = createPoolSynchronizationConfiguration((tg_ctrl_2,),
-                                                     ((tg_2_1,),))
+                                                        ((tg_2_1,),))
         # creating TGGeneration action
         self.createPoolSynchronization([tg_2_1])
         # add_listeners
         self.addListeners([ct_1_1, ct_2_1])
         # creating acquisition configurations
         self.hw_acq_cfg = createCTAcquisitionConfiguration((ct_ctrl_1,),
-                                                             ((ct_1_1,),))
+                                                           ((ct_1_1,),))
         self.sw_acq_cfg = createCTAcquisitionConfiguration((ct_ctrl_2,),
                                                            ((ct_2_1,),))
         # creating acquisition actions
@@ -363,12 +368,11 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         self.tggeneration.run(*tg_args, **tg_kwargs)
         # waiting for acquisition and tggeneration to finish
         while (self.hw_acq.is_running() or
-              self.sw_acq.is_running() or
-              self.tggeneration.is_running()):
+               self.sw_acq.is_running() or
+               self.tggeneration.is_running()):
             time.sleep(1)
         self.do_asserts(self.channel_names, repetitions, jobs_before)
 
     def tearDown(self):
         AcquisitionTestCase.tearDown(self)
         unittest.TestCase.tearDown(self)
-

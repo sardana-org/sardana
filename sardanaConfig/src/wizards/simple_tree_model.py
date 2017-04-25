@@ -13,13 +13,14 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 from future_builtins import *
-import sys, os
+import sys
+import os
 import bisect
 import codecs
 import taurus.qt.qtgui.resource
 import PyQt4.QtGui
 from PyQt4.QtCore import (QAbstractItemModel, QModelIndex, QString,
-        QVariant, Qt, SIGNAL)
+                          QVariant, Qt, SIGNAL)
 
 KEY, NODE = range(2)
 
@@ -44,7 +45,7 @@ class BranchNode(object):
     def childAtRow(self, row):
         assert 0 <= row < len(self.children)
         return self.children[row][NODE]
-        
+
     def rowOfChild(self, child):
         for i, item in enumerate(self.children):
             if item[NODE] == child:
@@ -95,17 +96,17 @@ class LeafNode(object):
         self.data = data
 
     def orderKey(self):
-        return "\t"+self.name.lower()
-    
+        return "\t" + self.name.lower()
+
     def getName(self):
         return self.name
 
     def asRecord(self):
         return self.getName()
-    
-    def asData(self):        
+
+    def asData(self):
         return self.data
-    
+
 
 class SimpleTreeModel(QAbstractItemModel):
 
@@ -114,13 +115,13 @@ class SimpleTreeModel(QAbstractItemModel):
         self.columns = 1
         self.root = BranchNode("")
         self.headers = ["Type"]
-        
+
     def setHeaders(self, headers):
         self.headers = headers
-        
+
     def getHeaders(self):
         return self.headers
-        
+
     def addNodes(self, fields, callReset=True):
         root = self.root
         branch = None
@@ -134,13 +135,13 @@ class SimpleTreeModel(QAbstractItemModel):
                 root.insertChild(branch)
                 root = branch
         if callReset:
-            self.reset()   
+            self.reset()
         self.headers = ["Type"]
-            
+
     def addRecord(self, fields, data, callReset=True):
         root = self.root
         branch = None
-        for i in range(len(fields)-1):
+        for i in range(len(fields) - 1):
             key = fields[i].lower()
             branch = root.childWithKey(key)
             if branch is not None:
@@ -150,10 +151,10 @@ class SimpleTreeModel(QAbstractItemModel):
                 root.insertChild(branch)
                 root = branch
         assert branch is not None
-        item = fields[len(fields)-1]
+        item = fields[len(fields) - 1]
         branch.insertChild(LeafNode(item, data, branch))
         if callReset:
-            self.reset()   
+            self.reset()
         self.headers = ["Type"]
 
     def asRecord(self, index):
@@ -180,8 +181,8 @@ class SimpleTreeModel(QAbstractItemModel):
 
     def data(self, index, role):
         if role == Qt.TextAlignmentRole:
-            return QVariant(int(Qt.AlignTop|Qt.AlignLeft))
-        
+            return QVariant(int(Qt.AlignTop | Qt.AlignLeft))
+
         if role == Qt.DecorationRole:
             node = self.nodeFromIndex(index)
             assert node is not None
@@ -189,13 +190,13 @@ class SimpleTreeModel(QAbstractItemModel):
                 return QVariant(node.asData().get_icon())
             else:
                 return QVariant()
-        
+
         if role != Qt.DisplayRole:
             return QVariant()
-        
+
         node = self.nodeFromIndex(index)
         assert node is not None
-        
+
         if isinstance(node, BranchNode):
             if index.column() == 0:
                 return QVariant(node.toString())
@@ -207,11 +208,10 @@ class SimpleTreeModel(QAbstractItemModel):
 
     def headerData(self, section, orientation, role):
         if (orientation == Qt.Horizontal and
-            role == Qt.DisplayRole):
+                role == Qt.DisplayRole):
             #assert 0 <= section <= len(self.headers)
             return QVariant(self.headers[section])
         return QVariant()
-
 
     def index(self, row, column, parent):
         assert self.root
@@ -234,14 +234,11 @@ class SimpleTreeModel(QAbstractItemModel):
         assert row != -1
         return self.createIndex(row, 0, parent)
 
-
     def nodeFromIndex(self, index):
         if index.isValid():
             return index.internalPointer()
         else:
             return self.root
-        
-        #return (index.internalPointer()
+
+        # return (index.internalPointer()
         #        if index.isValid() else self.root)######################
-        
-        

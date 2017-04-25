@@ -9,8 +9,13 @@ python:
   - "2.7"
 
 before_install:
+  - sudo apt-get update -qq
+  # install flake8 to perform python code style check in the script part
+  - sudo apt-get install -qq python-flake8
+
+install:
   # run reszelaz/sardana-test docker container (Debian8 with sardana-deps)
-  - docker pull reszelaz/sardana-test:sep6
+  - docker pull reszelaz/sardana-test
   - docker run -d --name=sardana-test -h sardana-test --volume=`pwd`:/sardana reszelaz/sardana-test
   # wait approx. 10 s (supervisor starts mysql and Tango DB)
   - sleep 10
@@ -21,5 +26,7 @@ before_install:
   - docker exec sardana-test supervisorctl start MacroServer
 
 script:
+  # run flake8 check on all python files in the project
+  - ci/flake8_diff.sh
   # run the full testsuite
   - docker exec sardana-test sardanatestsuite

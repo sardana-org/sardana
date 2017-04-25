@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+# http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -58,20 +58,21 @@ class BaseMacroServerTestCase(object):
             dev_name_parts = self.ms_name.split('/')
             prefix = '/'.join(dev_name_parts[0:2])
             start_from = int(dev_name_parts[2])
-            self.ms_name = get_free_device(PyTango.Database(), prefix, start_from)
+            self.ms_name = get_free_device(
+                PyTango.Database(), prefix, start_from)
             self._msstarter.addNewDevice(self.ms_name, klass='MacroServer')
             # register Door device
             dev_name_parts = self.door_name.split('/')
             prefix = '/'.join(dev_name_parts[0:2])
             start_from = int(dev_name_parts[2])
-            self.door_name = get_free_device(PyTango.Database(), prefix, 
+            self.door_name = get_free_device(PyTango.Database(), prefix,
                                              start_from)
             self._msstarter.addNewDevice(self.door_name, klass='Door')
             # start MS server
             self._msstarter.startDs()
             # devices
             self.macroserver = PyTango.DeviceProxy(self.ms_name)
-            self.macroserver.put_property({'PoolNames':pool_name})
+            self.macroserver.put_property({'PoolNames': pool_name})
             self.macroserver.Init()
             self.door = PyTango.DeviceProxy(self.door_name)
         except Exception, e:

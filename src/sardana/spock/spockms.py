@@ -3,24 +3,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -37,6 +37,7 @@ from taurus.core import TaurusEventType, TaurusSWDevState
 
 from sardana.sardanautils import is_pure_str, is_non_str_seq
 from sardana.spock import genutils
+from sardana.spock.parser import ParamParser
 from sardana.spock.inputhandler import SpockInputHandler, InputHandler
 from sardana import sardanacustomsettings
 
@@ -59,6 +60,7 @@ except RuntimeError:
     from taurus.core import TaurusDevState
     RUNNING_STATE = TaurusDevState.Ready
 
+
 class GUIViewer(BaseGUIViewer):
 
     def __init__(self, door=None):
@@ -70,17 +72,17 @@ class GUIViewer(BaseGUIViewer):
 
     def show_scan(self, scan_nb=None, scan_history_info=None, directory_map=None):
         if scan_nb is None and scan_history_info is None:
-            #===================================================================
-            ##Hack to avoid ipython-qt issues. See similar workaround in expconf magic command
-            ## @todo: do this in a better way
+            #==================================================================
+            # Hack to avoid ipython-qt issues. See similar workaround in expconf magic command
+            # @todo: do this in a better way
             #import taurus.qt.qtgui.plot
             #w = taurus.qt.qtgui.plot.TaurusTrend()
             #w.model = "scan://" + self._door.getNormalName()
-            #w.show()
+            # w.show()
             import subprocess
             args = ['taurustrend', 'scan://%s' % self._door.getNormalName()]
             subprocess.Popen(args)
-            #===================================================================
+            #==================================================================
             return
 
         scan_dir, scan_file = None, None
@@ -129,7 +131,8 @@ class GUIViewer(BaseGUIViewer):
             if isinstance(local_directories, (str, unicode)):
                 local_directories = [local_directories]
             locations = local_directories
-            if scan_dir not in locations: locations.append(scan_dir)
+            if scan_dir not in locations:
+                locations.append(scan_dir)
             for local_directory in local_directories:
                 if os.path.isdir(local_directory):
                     if scan_file in os.listdir(local_directory):
@@ -156,11 +159,13 @@ class GUIViewer(BaseGUIViewer):
 
         try:
             #entry_index = taurus_nexus_widget.findNodeIndex(local_file, entry_name)
-            measurement_index = taurus_nexus_widget.findNodeIndex(local_file, measurement_name)
-            #nexus_widget.setRootIndex(entry_index)
+            measurement_index = taurus_nexus_widget.findNodeIndex(
+                local_file, measurement_name)
+            # nexus_widget.setRootIndex(entry_index)
             nexus_widget.setCurrentIndex(measurement_index)
             nexus_widget.expand(measurement_index)
-            title_index = taurus_nexus_widget.findNodeIndex(local_file, title_name)
+            title_index = taurus_nexus_widget.findNodeIndex(
+                local_file, title_name)
             file_model = nexus_widget.model()
             title = file_model.getNodeFromIndex(title_index)[0]
             windowTitle += " - " + title
@@ -194,7 +199,8 @@ class GUIViewer(BaseGUIViewer):
 
         program = door.getNormalName().replace('/', '').replace('_', '')
         try:
-            array = env['ActiveMntGrp'].replace('/', '').replace('_', '').upper() + "0D"
+            array = env['ActiveMntGrp'].replace(
+                '/', '').replace('_', '').upper() + "0D"
             array_ENV = '%s_ENV' % array
         except:
             print 'ActiveMntGrp not defined. No plotting'
@@ -227,7 +233,6 @@ class GUIViewer(BaseGUIViewer):
             k, v = line[:eq], line[eq + 1:end]
             env[k] = v
             i += 1
-
 
         labels = env['axistitles'].split(' ')
 
@@ -272,7 +277,8 @@ class SpockBaseDoor(BaseDoor):
 
     def __init__(self, name, **kw):
         self._consoleReady = kw.get("consoleReady", False)
-        if not kw.has_key('silent'): kw['silent'] = False
+        if not kw.has_key('silent'):
+            kw['silent'] = False
         self._lines = []
         self._spock_state = None
         self._plotter = GUIViewer(self)
@@ -309,7 +315,8 @@ class SpockBaseDoor(BaseDoor):
                         par = ''
                 else:
                     par += c
-            if par: pars.append(par)
+            if par:
+                pars.append(par)
             return pars
         elif is_non_str_seq(parameters):
             return parameters
@@ -321,7 +328,7 @@ class SpockBaseDoor(BaseDoor):
         return BaseDoor.runMacro(self, obj, parameters=parameters, synch=synch)
 
     def _runMacro(self, xml, **kwargs):
-        #kwargs like 'synch' are ignored in this re-implementation
+        # kwargs like 'synch' are ignored in this re-implementation
         if self._spock_state != RUNNING_STATE:
             print "Unable to run macro: No connection to door '%s'" % self.getSimpleName()
             raise Exception("Unable to run macro: No connection")
@@ -351,7 +358,8 @@ class SpockBaseDoor(BaseDoor):
                 elif reason == 'MissingEnv':
                     print "Missing environment:", desc
                 elif reason in ('API_CantConnectToDevice', 'API_DeviceNotExported'):
-                    self._updateState(self._old_sw_door_state, TaurusSWDevState.Shutdown, silent=True)
+                    self._updateState(self._old_sw_door_state,
+                                      TaurusSWDevState.Shutdown, silent=True)
                     print "Unable to run macro: No connection to door '%s'" % self.getSimpleName()
                 else:
                     print "Unable to run macro:", reason, desc
@@ -368,19 +376,19 @@ class SpockBaseDoor(BaseDoor):
 
                 commit_cmd = macro.info.hints['commit_cmd']
 
-                if commit_cmd == None:
+                if commit_cmd is None:
                     return ret
 
                 local_f_name = ret[0]
                 remote_f_name = ret[1]
                 line_nb = ret[3]
                 commit = CommitFile(commit_cmd, local_f_name, remote_f_name)
-                self.pending_commits.update({ remote_f_name : commit })
+                self.pending_commits.update({remote_f_name: commit})
                 ip = genutils.get_ipapi()
                 editor = genutils.get_editor()
 
                 cmd = 'edit -x -n %s %s' % (line_nb, local_f_name)
-                if not editor in self.console_editors:
+                if editor not in self.console_editors:
                     cmd = 'bg _ip.magic("' + cmd + '")'
                 ip.magic(cmd)
                 # The return value of the macro was saved in a file and opened
@@ -423,10 +431,11 @@ class SpockBaseDoor(BaseDoor):
         ss = self._spock_state
         if ss is not None and ss != new_sw_state and not silent:
             if ss == RUNNING_STATE:
-                self.write_asynch("\nConnection to door '%s' was lost.\n" % self.getSimpleName())
+                self.write_asynch(
+                    "\nConnection to door '%s' was lost.\n" % self.getSimpleName())
             elif new_sw_state == RUNNING_STATE:
-                self.write_asynch("\nConnection to the door (%s) has " \
-                    "been restablished\n" % self.getSimpleName())
+                self.write_asynch("\nConnection to the door (%s) has "
+                                  "been restablished\n" % self.getSimpleName())
         self._spock_state = new_sw_state
 
     def write_asynch(self, msg):
@@ -452,7 +461,8 @@ class SpockBaseDoor(BaseDoor):
         return BaseDoor.write(self, msg, stream=stream)
 
     def processRecordData(self, data):
-        if data is None: return
+        if data is None:
+            return
         data = data[1]
         if data['type'] == 'function':
             func_name = data['func_name']
@@ -472,12 +482,14 @@ class SpockBaseDoor(BaseDoor):
             try:
                 func(*args, **kwargs)
             except Exception as e:
-                self.logReceived(self.Warning, ['Unable to execute %s: ' % func_name, str(e)])
+                self.logReceived(
+                    self.Warning, ['Unable to execute %s: ' % func_name, str(e)])
 
     _RECORD_DATA_THRESOLD = 4 * 1024 * 1024  # 4Mb
 
     def _processInput(self, input_data):
-        pyos_inputhook_ptr = ctypes.c_void_p.in_dll(ctypes.pythonapi, "PyOS_InputHook")
+        pyos_inputhook_ptr = ctypes.c_void_p.in_dll(
+            ctypes.pythonapi, "PyOS_InputHook")
         old_pyos_inputhook_ptr = pyos_inputhook_ptr.value
         pyos_inputhook_ptr.value = ctypes.c_void_p(None).value
         ret = BaseDoor._processInput(self, input_data)
@@ -485,17 +497,19 @@ class SpockBaseDoor(BaseDoor):
         return ret
 
     def _processRecordData(self, data):
-        if data is None: return
+        if data is None:
+            return
         value = data.value
         size = len(value[1])
         if size > self._RECORD_DATA_THRESOLD:
             sizekb = size / 1024
             self.logReceived(self.Info, ['Received long data record (%d Kb)' % sizekb,
-                'It may take some time to process. Please wait...'])
+                                         'It may take some time to process. Please wait...'])
         return BaseDoor._processRecordData(self, data)
 
 
 from taurus.external.qt import Qt
+
 
 class QSpockDoor(SpockBaseDoor):
 
@@ -507,7 +521,8 @@ class QSpockDoor(SpockBaseDoor):
 
     def recordDataReceived(self, s, t, v):
         if genutils.get_pylab_mode() == "inline":
-            if t not in CHANGE_EVTS: return
+            if t not in CHANGE_EVTS:
+                return
             res = BaseDoor.recordDataReceived(self, s, t, v)
             self.processRecordData(res)
         else:
@@ -603,47 +618,20 @@ class SpockMacroServer(BaseMacroServer):
         genutils.unexpose_magic(macro_name)
         del self._local_magic[macro_name]
 
-class Reflector(object):
-    def __getitem__(self, name):
-        return name
 
 def split_macro_parameters(parameters_s):
     """Split string with macro parameters into a list with macro parameters.
     Whitespaces are the separators between the parameters.
-    
+
     When the input string contains square brackets it indicates an advanced
     syntax for representing repeat parameters. Repeat parameters are encapsulated
     in square brackets and its internal repetitions, if composed from more than
     one item are also encapsulated in brackets. In this case the output list
     contains lists internally.
-    
+
     :param parameters_s (string): input string containing parameters
-    :returns (list): parameters represented as a list (may contain internal lists)
-    
-    ..todo:: This function is quite hard to understand and may be optimized by
-        implementing it in a form of parser. If it causes problems in the future
-        it is recommended to refactor it.
+    :returns (list): parameters represented as a list (may contain internal
+        lists)
     """
-    macro_params = genutils.arg_split(parameters_s, posix=True)
-
-    list_of_pars = 0
-    if len(macro_params) == 1:
-        if  macro_params[0].find('[') > -1:
-            list_of_pars = 1
-    # skip empty strings and just one parameter
-    if len(macro_params) > 1 or list_of_pars:
-        params_str = ''
-        for par in macro_params:
-            params_str = params_str + str(par) + ","
-        params_str = params_str[:-1]
-        params_str = params_str.replace("[,", "[").replace(",]", "]").replace(
-            "][", "],[")
-        macro_params = eval(params_str, globals(), Reflector())
-        if type(macro_params) == list:
-            new_params = []
-            new_params.append(macro_params)
-            macro_params = new_params
-
-    # Convert tuple to list
-    macro_params = list(macro_params)
-    return macro_params
+    parser = ParamParser()
+    return parser.parse(parameters_s)

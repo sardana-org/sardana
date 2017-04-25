@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -31,15 +31,18 @@ __docformat__ = 'restructuredtext'
 
 import sys
 
+
 def __run_pythonstartup_script():
     import os
     filename = os.environ.get('PYTHONSTARTUP')
     if filename and os.path.isfile(filename):
         execfile(filename)
 
+
 def __run_init_commands():
     import os
     return os.environ.get('PYTHONINITCOMMANDS')
+
 
 def __remove_from_syspath__():
     """Remove this module's path from sys.path"""
@@ -52,12 +55,13 @@ def __remove_from_syspath__():
 
 class UserModuleDeleter(object):
     """
-    User Module Deleter (UMD) aims at deleting user modules 
+    User Module Deleter (UMD) aims at deleting user modules
     to force Python to deeply reload them during import
-    
+
     pathlist [list]: blacklist in terms of module path
     namelist [list]: blacklist in terms of module name
     """
+
     def __init__(self, namelist=None, pathlist=None):
         if namelist is None:
             namelist = []
@@ -78,8 +82,8 @@ class UserModuleDeleter(object):
     def run(self, verbose=False):
         """
         Del user modules to force Python to deeply reload them
-        
-        Do not del modules which are considered as system modules, i.e. 
+
+        Do not del modules which are considered as system modules, i.e.
         modules installed in subdirectories of Python interpreter's binary
         Do not del C modules
         """
@@ -100,6 +104,7 @@ class UserModuleDeleter(object):
                                                      ": " + ", ".join(log))
 
 __umd__ = None
+
 
 def runfile(filename, args=None, wdir=None):
     """

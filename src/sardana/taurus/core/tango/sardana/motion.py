@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -33,6 +33,7 @@ import time
 
 from taurus.core.util.containers import CaselessDict
 
+
 class Moveable:
     """ An item that can 'move'. In order to move it you need to provide a list
     of values (normally interpreted as motor positions).
@@ -43,23 +44,23 @@ class Moveable:
 
     def startMove(self, new_pos, timeout=None):
         """ startMove(sequence<float> new_pos, double timeout=None) -> sequence<id>
-        
+
         Calling this method will trigger a movement off all components of
         the movement."""
         pass
 
     def waitMove(self, timeout=None, id=None):
         """ waitMove(float timeout=None, sequence<id> id=None) -> None
-        
+
         Waits for the movement to end. If no movement is active the method
         returns immediately."""
         pass
 
     def move(self, new_pos, timeout=None):
-        """ move(list<double> new_pos, timeout=None) -> None 
-        
+        """ move(list<double> new_pos, timeout=None) -> None
+
         Triggers a movement and waits for it to end.
-        
+
         """
         self.waitMove(id=self.startMove(new_pos, timeout=timeout))
 
@@ -96,9 +97,9 @@ class MoveableSource:
         pass
 
     def getMoveable(self, names):
-        """ getMoveable(list<string> names) -> Moveable 
+        """ getMoveable(list<string> names) -> Moveable
 
-        Returns a Moveable object that handles all the moveable items given in 
+        Returns a Moveable object that handles all the moveable items given in
         names.
         """
         pass
@@ -143,12 +144,13 @@ class MotionGroup(BaseMotion):
         self.moveable_list = elements
 
     def init_by_names(self, names, moveable_srcs, allow_repeat, allow_unknown):
-        moveables = [ self.getMoveable(moveable_srcs, name) for name in names ]
+        moveables = [self.getMoveable(moveable_srcs, name) for name in names]
         self.init_by_movables(moveables, moveable_srcs, allow_repeat,
                               allow_unknown)
 
     def getLastMotionTime(self):
-        times = [ moveable.getLastMotionTime() for moveable in self.moveable_list ]
+        times = [moveable.getLastMotionTime()
+                 for moveable in self.moveable_list]
         return max(times)
 
     def getTotalLastMotionTime(self):
@@ -197,22 +199,22 @@ class MotionGroup(BaseMotion):
         raise NotImplementedError
 
     def getStatus(self):
-#        res = []
-#        for moveable in self.moveable_list:
-#            status = moveable.status.split('\n')
-#            res.append(moveable.getName() + ":")
-#            for st in status:
-#                res.append("    " + st)
-#        return "\n".join(res)
-        return "\n".join([ m.status() for m in self.moveable_list ])
+        #        res = []
+        #        for moveable in self.moveable_list:
+        #            status = moveable.status.split('\n')
+        #            res.append(moveable.getName() + ":")
+        #            for st in status:
+        #                res.append("    " + st)
+        #        return "\n".join(res)
+        return "\n".join([m.status() for m in self.moveable_list])
 
     def readState(self, force=False):
         if len(self.moveable_list) == 1:
             return self.moveable_list[0].getState()
-        return [ m.getState() for m in self.moveable_list ]
+        return [m.getState() for m in self.moveable_list]
 
     def readPosition(self, force=False):
-        return [ m.readPosition(force=force) for m in self.moveable_list ]
+        return [m.readPosition(force=force) for m in self.moveable_list]
 
     def abort(self, wait_ready=True, timeout=None):
         for moveable in self.moveable_list:
@@ -245,13 +247,13 @@ class Motion(BaseMotion):
     def init_by_movables(self, elements, moveable_srcs, allow_repeat, allow_unknown):
         # TODO: Optimize this. Dont call init_by_names. It its possible to do it
         # manually with some performance gain
-        names = [ elem.getName() for elem in elements]
+        names = [elem.getName() for elem in elements]
         self.init_by_names(names, moveable_srcs, allow_repeat, allow_unknown)
 
     def init_by_names(self, names, moveable_srcs, allow_repeat, allow_unknown):
 
         ms_elem_names = self.getElemNamesByMoveableSource(names, moveable_srcs,
-            allow_repeat=allow_repeat, allow_unknown=allow_unknown)
+                                                          allow_repeat=allow_repeat, allow_unknown=allow_unknown)
 
         # map<MoveableSource, Moveable>
         ms_moveables = {}
@@ -289,8 +291,8 @@ class Motion(BaseMotion):
         self.ms_moveables = ms_moveables
 
         # a buffer for positions for performance reasons
-        #list<list<double>> index of outer list is the moveable index. The
-        #contents of the list are the ordered positions for that moveable
+        # list<list<double>> index of outer list is the moveable index. The
+        # contents of the list are the ordered positions for that moveable
         pos_buff = []
         total_count = 0
         for m in moveable_list:
@@ -303,14 +305,14 @@ class Motion(BaseMotion):
         assert(total_count == len(self.names))
 
     def getElemNamesByMoveableSource(self, names, moveable_sources,
-                                    allow_repeat,
-                                    allow_unknown):
-        """ getElemNamesByMoveableSource(list<str>names, 
-                                        list<MoveableSource> moveable_sources, 
+                                     allow_repeat,
+                                     allow_unknown):
+        """ getElemNamesByMoveableSource(list<str>names,
+                                        list<MoveableSource> moveable_sources,
                                         bool allow_repeat, bool allow_unknown)
-        
+
         Organizes the elements by moveable source. The result is a dictionary
-        with key being the MoveableSource and data a list of the names that 
+        with key being the MoveableSource and data a list of the names that
         belong to the that motion source.
         """
 
@@ -320,24 +322,25 @@ class Motion(BaseMotion):
             moveable = None
 
             for moveable_source in moveable_sources:
-                 moveable = moveable_source.getMoveable([name])
-                 if not moveable is None:
-                     if not ms_elems.has_key(moveable_source):
-                         ms_elems[moveable_source] = []
-                     moveable_source_moveables = ms_elems.get(moveable_source)
-                     present = name in moveable_source_moveables
-                     if not present or (present and allow_repeat):
-                         moveable_source_moveables.append(name)
-                         break
-                     elif present and not allow_repeat:
-                         raise Exception("Moveable item %s appears more "
-                                         "than once" % name)
+                moveable = moveable_source.getMoveable([name])
+                if not moveable is None:
+                    if not ms_elems.has_key(moveable_source):
+                        ms_elems[moveable_source] = []
+                    moveable_source_moveables = ms_elems.get(moveable_source)
+                    present = name in moveable_source_moveables
+                    if not present or (present and allow_repeat):
+                        moveable_source_moveables.append(name)
+                        break
+                    elif present and not allow_repeat:
+                        raise Exception("Moveable item %s appears more "
+                                        "than once" % name)
             if moveable is None and not allow_unknown:
-                 raise Exception("Moveable item %s not found" % name)
+                raise Exception("Moveable item %s not found" % name)
         return ms_elems
 
     def getLastMotionTime(self):
-        times = [ moveable.getLastMotionTime() for moveable in self.moveable_list ]
+        times = [moveable.getLastMotionTime()
+                 for moveable in self.moveable_list]
         return max(times)
 
     def getTotalLastMotionTime():
@@ -398,23 +401,26 @@ class Motion(BaseMotion):
 
     def iterMove(self, new_pos, timeout=None):
         """ generator for motor positions"""
-        assert len(self.moveable_list) == 1, "for now we support only 'simple' motions!!!!"
+        assert len(
+            self.moveable_list) == 1, "for now we support only 'simple' motions!!!!"
 
         moveable = self.moveable_list[0]
         for p in moveable.iterMove(new_pos, timeout=timeout):
             yield p
 
     def getStatus(self):
-        return "\n".join([ m.status() for m in self.moveable_list ])
+        return "\n".join([m.status() for m in self.moveable_list])
 
     def readState(self, force=False):
         if len(self.moveable_list) == 1:
             return self.moveable_list[0].getState()
-        return [ m.getState() for m in self.moveable_list ]
+        return [m.getState() for m in self.moveable_list]
 
     def readPosition(self, force=False):
-        moveable_pos_list = [ m.readPosition(force=force) for m in self.moveable_list ]
-        pos = [ moveable_pos_list[pair[0]][pair[1]] for pair in self.pos_to_moveable ]
+        moveable_pos_list = [m.readPosition(
+            force=force) for m in self.moveable_list]
+        pos = [moveable_pos_list[pair[0]][pair[1]]
+               for pair in self.pos_to_moveable]
         return pos
 
     def abort(self, wait_ready=True, timeout=None):
@@ -428,11 +434,13 @@ class Motion(BaseMotion):
     def read(self):
         pass
 
-#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------
 # Small test framework
-#-------------------------------------------------------------------------------
+#-------------------------------------------------------------------------
+
 
 class PoolMoveableTest(Moveable):
+
     def __init__(self, name, elems, moveable_src, mov_items=None):
         self.name = name
         self.elem_names = elems
@@ -465,6 +473,7 @@ class PoolMoveableTest(Moveable):
         except:
             return -1
 
+
 class PoolMSTest(MoveableSource):
 
     def __init__(self, initial_elems):
@@ -474,16 +483,19 @@ class PoolMSTest(MoveableSource):
 
         self.motors = CaselessDict()
         for elem_name in initial_elems:
-            self.motors[elem_name] = PoolMoveableTest(elem_name, [elem_name], self)
+            self.motors[elem_name] = PoolMoveableTest(
+                elem_name, [elem_name], self)
         self.motor_group = None
 
     def getMoveable(self, names):
         if len(names) == 1:
             return self.motors.get(names[0])
         l = [name for name in self.elem_names if name in names]
-        self.motor_group = PoolMoveableTest("moveable %d" % self.moveable_inc, l, self)
+        self.motor_group = PoolMoveableTest(
+            "moveable %d" % self.moveable_inc, l, self)
         self.moveable_inc += 1
         return self.motor_group
+
 
 def test():
     ms1 = PoolMSTest(["m1", "m2", "m3", "m4"])
@@ -563,5 +575,3 @@ def test():
 
 if __name__ == "__main__":
     test()
-
-

@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -27,6 +27,7 @@
 model.py:
 """
 
+import copy
 from lxml import etree
 
 from taurus.external.qt import Qt
@@ -47,7 +48,8 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         return self._root
 
     def setRoot(self, node=None):
-        if node == None: node = macro.MacroNode()
+        if node is None:
+            node = macro.MacroNode()
         self._root = node
         self.reset()
 
@@ -58,17 +60,19 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         node = self.nodeFromIndex(index)
 
         if (index.column() == 1 and
-            isinstance(node, macro.SingleParamNode) and
-            not node.type() in globals.EDITOR_NONEDITABLE_PARAMS):
+                isinstance(node, macro.SingleParamNode) and
+                not node.type() in globals.EDITOR_NONEDITABLE_PARAMS):
             return Qt.Qt.ItemIsEnabled | Qt.Qt.ItemIsEditable
         return Qt.Qt.ItemIsEnabled
 
     def _insertRow(self, parentIndex, node=None, row=-1):
         parentNode = self.nodeFromIndex(parentIndex)
 
-        if row == -1: row = len(parentNode)
+        if row == -1:
+            row = len(parentNode)
 
-        if node == None: node = parentNode.newRepeat()
+        if node is None:
+            node = parentNode.newRepeat()
 
         self.beginInsertRows(parentIndex, row, row)
         row = parentNode.insertChild(node, row)
@@ -106,6 +110,14 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         parentNode.arrangeIndexes()
         return newIndex
 
+    def duplicateNode(self, index):
+        node_to_duplicate = self.nodeFromIndex(index)
+        parentIndex = index.parent()
+        parentNode = self.nodeFromIndex(parentIndex)
+        node = copy.deepcopy(node_to_duplicate)
+        self._insertRow(parentIndex, node, -1)
+        if isinstance(parentNode, macro.RepeatParamNode):
+            parentNode.arrangeIndexes()
 
     def addRepeat(self, index, callReset=True):
         paramRepeatNode = self.nodeFromIndex(index)
@@ -137,6 +149,14 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         if callReset:
             self.reset()
 
+    def DuplicateRepeat(self, index, callReset=True):
+        branchIndex = self.parent(index)
+        branch = self.nodeFromIndex(branchIndex)
+        child = self.nodeFromIndex(index)
+        branch.downChild(child)
+        if callReset:
+            self.reset()
+
     def rowCount(self, index):
         node = self.nodeFromIndex(index)
         if node is None or isinstance(node, macro.SingleParamNode):
@@ -159,13 +179,13 @@ class ParamEditorModel(Qt.QAbstractItemModel):
 
         return Qt.QVariant()
 
-
-    def setData (self, index, value, role=Qt.Qt.EditRole):
+    def setData(self, index, value, role=Qt.Qt.EditRole):
         node = self.nodeFromIndex(index)
 #        if index.isValid() and 0 <= index.row() < len(node.parent()):
         if index.column() == 1:
             node.setValue(Qt.from_qvariant(value, str))
-            self.emit(Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index)
+            self.emit(
+                Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index)
             return True
         return False
 
@@ -176,15 +196,14 @@ class ParamEditorModel(Qt.QAbstractItemModel):
 
     def index(self, row, column, parent):
         if not parent.isValid():
-            parentNode = self.root();
+            parentNode = self.root()
         else:
             parentNode = parent.internalPointer()
         childNode = parentNode.child(row)
         if childNode is None:
-            return Qt.QModelIndex();
+            return Qt.QModelIndex()
         else:
-            return self.createIndex(row, column, childNode);
-
+            return self.createIndex(row, column, childNode)
 
     def parent(self, child):
         node = self.nodeFromIndex(child)

@@ -148,11 +148,23 @@ centrally. It provides a controlled environment for these procedures. They can
 be edited, run, debugged under its supervision. This allows for example to
 automatically roll back changes made in case of problems, log access and grant
 permissions. The procedures executed in the macro server provided by the
-current Sardana system are Python_ classes. A class is a way to group the
-different methods which concerns this procedure. As an example, in some
-procedures it could be possible to do very specific things in case the user
-orders an emergency abort of the procedure. The following example shows the
-procedure to move a motor.
+current Sardana system are Python_ functions or classes. Writing a procedure as
+a function is more straightforward and recommended for the beginners. Writing it
+is a class is a way to group the different methods which concerns this
+procedure. As an example, in some procedures it could be possible to do very
+specific things in case the user orders an emergency abort of the procedure.
+The following example shows the procedure to move a motor.
+
+::
+
+    from sardana.macroserver.macro import macro, Type
+
+    @macro([ ["moveable", Type.Moveable, None, "moveable to move"],
+             ["position", Type.Float, None, "absolute position"] ])
+    def move(self, moveable, position):
+        """This macro moves a moveable to the specified position"""
+        moveable.move(position)
+        self.output("%s is now at %s", moveable.getName(), moveable.getPosition())
 
 As you can see in the example, the procedure must be documented and the input
 parameters described. From this information, the graphical user interface is

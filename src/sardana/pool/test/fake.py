@@ -2,30 +2,31 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
 __all__ = ['FakePool', 'FakeElement']
 
 from sardana.pool.poolcontrollermanager import ControllerManager
+
 
 class FakePool(object):
     ''' Fake class to simulate the behavior of the Pool class
@@ -51,7 +52,7 @@ class FakePool(object):
 
     def get_element(self, id):
         return self.elements[id]
-    
+
     def get_element_by_full_name(self, full_name):
         return self.elements_by_full_name[full_name]
 
@@ -67,10 +68,10 @@ class FakePool(object):
         num = 1
         while True:
             try:
-                self.get_element_by_full_name(base_name+"%s" % num)
+                self.get_element_by_full_name(base_name + "%s" % num)
                 num += 1
             except KeyError:
-                return base_name+"%s" % num
+                return base_name + "%s" % num
 
     def get_manager(self):
         return self.ctrl_manager
@@ -82,8 +83,11 @@ class FakePool(object):
         self.elements_by_full_name = {}
 
 # TODO: this should be a mock
+
+
 class FakeElement(object):
     '''Fake pool element'''
+
     def __init__(self, pool):
         self.pool = pool
 
