@@ -286,8 +286,8 @@ class OneDExpChannelClass(PoolElementDeviceClass):
     standard_attr_list = {
         'Value': [[_DFT_VALUE_TYPE, _DFT_VALUE_FORMAT, READ,
                    _DFT_VALUE_MAX_SHAPE[0]],
-                   {'abs_change': '1.0', }],
-        'Data' : [[DevString, SCALAR, READ]] #@TODO: think about DevEncoded
+                  {'abs_change': '1.0', }],
+        'Data': [[DevString, SCALAR, READ]]  # TODO: think about DevEncoded
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
 
