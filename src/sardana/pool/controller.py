@@ -1442,6 +1442,6 @@ class IORegisterController(Controller, Readable):
     def __init__(self, inst, props, *args, **kwargs):
         Controller.__init__(self, inst, props, *args, **kwargs)
 
-    def WriteOne(self):
+    def WriteOne(self, axis, value):
         """**IORegister Controller API**. Override if necessary."""
         pass
