@@ -1435,6 +1435,7 @@ class IORegisterController(Controller, Readable):
         'Value': {'type': float,
                   'description': 'Value', },
     }
+    standard_axis_attributes.update(Controller.standard_axis_attributes)
 
     #: A :obj:`str` representing the controller gender
     gender = 'I/O register controller'
