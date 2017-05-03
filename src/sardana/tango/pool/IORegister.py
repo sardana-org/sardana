@@ -33,7 +33,7 @@ import sys
 import time
 
 from PyTango import DevFailed, Except
-from PyTango import DevVoid, DevLong
+from PyTango import DevVoid, DevLong, DevDouble
 from PyTango import DevState, AttrQuality
 from PyTango import READ_WRITE, SCALAR
 
@@ -242,7 +242,7 @@ class IORegisterClass(PoolElementDeviceClass):
     attr_list.update(PoolElementDeviceClass.attr_list)
 
     standard_attr_list = {
-        'Value': [[DevLong, SCALAR, READ_WRITE],
+        'Value': [[DevDouble, SCALAR, READ_WRITE],
                   {'Memorized': "true_without_hard_applied", }, ],
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
