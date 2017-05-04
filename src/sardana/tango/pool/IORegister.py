@@ -33,7 +33,7 @@ import sys
 import time
 
 from PyTango import DevFailed, Except
-from PyTango import DevVoid, DevLong, DevDouble
+from PyTango import DevVoid, DevDouble
 from PyTango import DevState, AttrQuality
 from PyTango import READ_WRITE, SCALAR
 
