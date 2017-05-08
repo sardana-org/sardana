@@ -876,6 +876,7 @@ class GScan(Logger):
             if not ex is None:
                 raise e
         finally:
+            self.end()
             self.do_restore()
 
     def scan_loop(self):
