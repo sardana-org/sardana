@@ -863,6 +863,7 @@ class GScan(Logger):
 
     def step_scan(self):
         self.start()
+        self.scan_notend = 1
         try:
             ex = None
             try:
@@ -873,10 +874,12 @@ class GScan(Logger):
                 # self.macro.warning(e.msg)
                 ex = e
             self.end()
+            self.scan_notend = 0
             if not ex is None:
                 raise e
         finally:
-            self.end()
+            if self.scan_notend:
+                self.end()
             self.do_restore()
 
     def scan_loop(self):
