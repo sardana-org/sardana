@@ -835,6 +835,11 @@ class GScan(Logger):
         elif 'motiontime' in env:
             env['delaytime'] = total_time - acq_time - env['motiontime']
 
+        if self.scan_notend:
+            env['endstatus'] = "Interrupted"
+        else:
+            env['endstatus'] = "Normal"
+            
         self.data.end()
         try:
             scan_history = self.macro.getEnv('ScanHistory')
@@ -851,6 +856,7 @@ class GScan(Logger):
                        deadtime=env['deadtime'], title=env['title'],
                        serialno=env['serialno'], user=env['user'],
                        ScanFile=scan_file, ScanDir=env['ScanDir'],
+                       endstatus=env['endstatus'],
                        channels=names)
         scan_history.append(history)
         while len(scan_history) > self.MAX_SCAN_HISTORY:
@@ -873,8 +879,8 @@ class GScan(Logger):
             except ScanException, e:
                 # self.macro.warning(e.msg)
                 ex = e
-            self.end()
             self.scan_notend = 0
+            self.end()
             if not ex is None:
                 raise e
         finally:
