@@ -47,6 +47,7 @@ from taurus.core.util.user import USER_NAME
 from taurus.core.util.codecs import CodecFactory
 from taurus.external.ordereddict import OrderedDict
 from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
+from taurus.core.util.enumeration import Enumeration
 
 from sardana.util.tree import BranchNode, LeafNode, Tree
 from sardana.util.motion import Motor as VMotor
@@ -63,6 +64,11 @@ from sardana.macroserver.scan.recorder import (AmbiguousRecorderError,
                                                FileRecorder)
 from sardana.taurus.core.tango.sardana.pool import Ready
 from sardana.sardanathreadpool import get_thread_pool
+
+
+# ScanEndStatus enumeration indicates the reason of the scan end.
+ScanEndStatus = Enumeration("ScanEndStatus",
+                            ["Normal", "Stop", "Abort", "Exception"])
 
 
 class ScanSetupError(Exception):
