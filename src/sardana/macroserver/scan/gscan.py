@@ -55,7 +55,7 @@ from sardana.util.motion import MotionPath
 from sardana.util.thread import CountLatch
 from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.macroserver.msexception import MacroServerException, UnknownEnv, \
-    InterruptException, StopException
+    InterruptException, StopException, AbortException
 from sardana.macroserver.msparameter import Type
 from sardana.macroserver.scan.scandata import ColumnDesc, MoveableDesc, \
     ScanFactory, ScanDataEnvironment
@@ -841,11 +841,6 @@ class GScan(Logger):
         elif 'motiontime' in env:
             env['delaytime'] = total_time - acq_time - env['motiontime']
 
-        if self.scan_notend:
-            env['endstatus'] = "Interrupted"
-        else:
-            env['endstatus'] = "Normal"
-            
         self.data.end()
         try:
             scan_history = self.macro.getEnv('ScanHistory')
@@ -862,7 +857,7 @@ class GScan(Logger):
                        deadtime=env['deadtime'], title=env['title'],
                        serialno=env['serialno'], user=env['user'],
                        ScanFile=scan_file, ScanDir=env['ScanDir'],
-                       endstatus=env['endstatus'],
+                       endstatus=ScanEndStatus.whatis(env['endstatus']),
                        channels=names)
         scan_history.append(history)
         while len(scan_history) > self.MAX_SCAN_HISTORY:
@@ -875,24 +870,23 @@ class GScan(Logger):
 
     def step_scan(self):
         self.start()
-        self.scan_notend = 1
         try:
-            ex = None
-            try:
-                for i in self.scan_loop():
-                    self.macro.pausePoint()
-                    yield i
-            except ScanException, e:
-                # self.macro.warning(e.msg)
-                ex = e
-            self.scan_notend = 0
-            self.end()
-            if not ex is None:
-                raise e
+            for i in self.scan_loop():
+                self.macro.pausePoint()
+                yield i
+            endstatus = ScanEndStatus.Normal
+        except StopException, e:
+            endstatus = ScanEndStatus.Stop
+        except AbortException, e:
+            endstatus = ScanEndStatus.Abort
+        except Exception, e:
+            endstatus = ScanEndStatus.Exception
         finally:
-            if self.scan_notend:
-                self.end()
+            self._env["endstatus"] = endstatus
+            self.end()
             self.do_restore()
+            if endstatus != ScanEndStatus.Normal:
+                raise e
 
     def scan_loop(self):
         raise NotImplementedError('Scan method cannot be called by '
