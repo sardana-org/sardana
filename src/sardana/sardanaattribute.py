@@ -36,9 +36,12 @@ __docformat__ = 'restructuredtext'
 import weakref
 import datetime
 
+from taurus.external.ordereddict import OrderedDict
+
 from .sardanaevent import EventGenerator, EventType
 from .sardanadefs import ScalarNumberFilter
 from .sardanavalue import SardanaValue
+from .sardanaexception import SardanaException
 
 
 class SardanaAttribute(EventGenerator):
@@ -358,6 +361,87 @@ class ScalarNumberAttribute(SardanaAttribute):
         SardanaAttribute.__init__(self, *args, **kwargs)
         self.filter = ScalarNumberFilter()
 
+class Buffer(OrderedDict):
+    """Buffer for objects which are identified by a unique idx and are ordered
+    """
+
+    def __init__(self, objs=None):
+        OrderedDict.__init__(self)
+        self._next_idx = 0
+        self._last_chunk = None
+        if objs is not None:
+            self.extend(objs)
+
+    def append(self, obj, idx=None, persistent=True):
+        """Append a single object at the end of the buffer with a given index.
+
+        :param obj: object to be appened to the buffer
+        :type param: object
+        :param idx: at which index append obj, None means assign at the end of
+            the buffer
+        :type idx: int
+        :param persistent: whether object should be added to a persistent
+            buffer or just as a last chunk
+        :type param: bool
+        """
+        if idx is None:
+            idx = self._next_idx
+        self._last_chunk = OrderedDict()
+        self._last_chunk[idx] = obj
+        if persistent:
+            self[idx] = obj
+        self._next_idx = idx + 1
+
+    def extend(self, objs, initial_idx=None, persistent=True):
+        """Extend buffer with a list of objects assigning them consecutive
+        indexes.
+
+        :param objs: objects that extend the buffer
+        :type param: list<object>
+        :param initial_idx: at which index append the first object,
+            the rest of them will be assigned the next consecutive indexes,
+            None means assign at the end of the buffer
+        :type idx: int
+        :param persistent: whether object should be added to a persistent
+            buffer or just as a last chunk
+        :type param: bool
+        """
+        if initial_idx is None:
+            initial_idx = self._next_idx
+        self._last_chunk = OrderedDict()
+        for idx, obj in enumerate(objs, initial_idx):
+            self._last_chunk[idx] = obj
+            if persistent:
+                self[idx] = obj
+        self._next_idx = idx + 1
+
+    def get_last_chunk(self):
+        return self._last_chunk
+
+    def get_next_idx(self):
+        return self._next_idx
+
+    last_chunk = property(get_last_chunk,
+        doc="chunk with last value(s) added to the buffer")
+    next_idx = property(get_next_idx,
+        doc="index that will be automatically assigned to the next value "\
+            "added to the buffer (if not explicitly assigned by the user)")
+
+
+class LateValueException(SardanaException):
+    """Exception indicating that a given value is not present in the buffer and
+    will not arrive yet (a newer value(s) were already added to the buffer).
+    """
+    pass
+
+
+class EarlyValueException(SardanaException):
+    """Exception indicating that a given value is not present in the buffer but
+    there is still a chance that it will arrive (new newer values were added to
+    the buffer yet.)
+    """
+    pass
+
 
 class BufferedAttribute(SardanaAttribute):
     """A :class:`SardanaAttribute` specialized for buffering values.
@@ -370,9 +454,22 @@ class BufferedAttribute(SardanaAttribute):
     """
 
     def __init__(self, *args, **kwargs):
+        self._buffered_attribute_listeners = []
         SardanaAttribute.__init__(self, *args, **kwargs)
-        self._r_value_chunk = []
-        self._r_value_buffer = []
+        self._r_value_buffer = Buffer()
+
+    def get_last_value_chunk(self):
+        """Returns buffer of the read values added to the buffer as the last
+        ones.
+
+        :return: the last values add to this attribute
+        :rtype: OrderedDict`"""
+
+        return self._get_last_value_chunk()
+
+    def _get_last_value_chunk(self):
+        return self.value_buffer.last_chunk
+
 
     def get_value_buffer(self):
         """Returns buffer of the read values for this attribute.
@@ -384,54 +481,161 @@ class BufferedAttribute(SardanaAttribute):
     def _get_value_buffer(self):
         return self._r_value_buffer
 
-    def set_value_chunk(self, value_chunk, append=False, propagate=1):
-        """Sets or appends read values to buffer and propagate the event
-        (if porpagate > 0)
+    def get_next_idx(self):
+        return self._get_next_idx()
 
-        :param value_chunk: the new read values for this attribute
-        :type value_chunnk: seq<SardanaValue>
-        :param append: True for appending value_chunk to the already existing
-            ones, False for replacing it
-        :type append: boolean
+    def _get_next_idx(self):
+        return self.value_buffer.next_idx
+
+    def add_listener(self, listener):
+        """Add listener
+
+        :param listener: callable or object implementing event_received method
+        """
+        if not SardanaAttribute.add_listener(self, listener):
+            return
+        if isinstance(listener, BufferedAttribute) or\
+            (hasattr(listener, "im_self") and
+             isinstance(listener.im_self, BufferedAttribute)):
+            self._buffered_attribute_listeners.append(listener)
+
+    def remove_listener(self, listener):
+        """Remove listener
+
+        :param listener: callable or object implementing event_received method
+        """
+        if not SardanaAttribute.remove_listener(self, listener):
+            return
+        if isinstance(listener, BufferedAttribute) or\
+            (hasattr(listener, "im_self") and
+             isinstance(listener.im_self, BufferedAttribute)):
+            self._buffered_attribute_listeners.remove(listener)
+
+    def get_buffered_attribute_listeners(self):
+        return self._buffered_attribute_listeners
+
+    def has_buffered_attribute_listeners(self):
+        return len(self.buffered_attribute_listeners) > 0
+
+    def is_value_required(self, idx):
+        """Check whether any of buffered attribute listeners still requires
+        this value.
+
+        :param idx: value's index
+        :type idx: int
+        """
+        for listener in self.buffered_attribute_listeners:
+            if hasattr(listener, "im_self"):
+                listener = listener.im_self
+            if listener.next_idx <= idx:
+                return True
+        return False
+
+    def get_value(self, idx=None):
+        """Get value
+
+        :param idx: value's index
+        :type idx: int
+        """
+        if idx is None:
+            value = SardanaAttribute.get_value(self)
+        else:
+            try:
+                value_obj = self._r_value_buffer[idx]
+                value = value_obj.value
+            except KeyError:
+                msg = "value with %s index is not in buffer"
+                if self.next_idx > idx:
+                    raise LateValueException(msg)
+                else:
+                    raise EarlyValueException(msg)
+        return value
+
+    def remove_value(self, idx):
+        """Remove value
+
+        :param idx: value's index
+        :type idx: int
+        """
+        try:
+            self._r_value_buffer.pop(idx)
+        except KeyError:
+            pass
+
+    def append_value_buffer(self, value, idx=None, propagate=1):
+        """Append value to the value buffer and propagate the event
+        (if porpagate > 0). The new value will be assigned index passed as idx
+        or the next index in the buffer.
+
+        :param values: the new read values for this attribute
+        :type values: seq<SardanaValue>
+        :param idx: the starting index
+        :type idx: int
         :param propagate:
             0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate: int"""
-        self._set_value_chunk(value_chunk, append, propagate)
+        :type propagate: int
+        """
 
-    def _set_value_chunk(self, value_chunk, append=False, propagate=1):
-        if len(value_chunk) == 0:
+        self._append_value_buffer(value, idx, propagate)
+
+    def _append_value_buffer(self, value, idx=None, propagate=1):
+        persistent = self.has_buffered_attribute_listeners()
+        self._r_value_buffer.append(value, idx, persistent)
+        self.fire_read_buffer_event(propagate)
+
+    def extend_value_buffer(self, values, idx=None, propagate=1):
+        """Extend value buffer with values and propagate the event
+        (if porpagate > 0). The new values will be assigned consecutive indexes
+        starting from idx or in continuation to the last value in the buffer if
+        idx is None.
+
+        :param values: the new read values for this attribute
+        :type values: seq<SardanaValue>
+        :param idx: the starting index
+        :type idx: int
+        :param propagate:
+            0 for not propagating, 1 to propagate, 2 propagate with priority
+        :type propagate: int
+        """
+        self._extend_value_buffer(values, idx, propagate)
+
+    def _extend_value_buffer(self, values, idx=None, propagate=1):
+        if len(values) == 0:
             return
-        self._r_value_chunk = value_chunk
-        if append:
-            self._r_value_buffer += value_chunk
-        else:
-            self._r_value_buffer = value_chunk
-        self._set_value(value_chunk[-1])
-        # clear value chunk cause the listeners were already notified
-        self._clear_value_chunk()
+        persistent = self.has_buffered_attribute_listeners()
+        self._r_value_buffer.extend(values, idx, persistent)
+        self.fire_read_buffer_event(propagate)
 
-    def get_value_chunk(self):
-        return self._get_value_chunk()
+    def fire_read_buffer_event(self, propagate=1):
+        """Fires an event to the listeners of the object which owns this
+        attribute.
 
-    def _get_value_chunk(self):
-        return self._r_value_chunk
+        :param propagate:
+            0 for not propagating, 1 to propagate, 2 propagate with priority
+        :type propagate: int
 
-    def clear_value_chunk(self):
-        self.clear_value_chunk()
+        .. todo:: implement filtering depending on propagate value
+        """
+        obj = self.obj
+        if obj is not None:
+            evt_type = EventType(self.name + "_buffer", priority=propagate)
+            self.fire_event(evt_type, self)
 
-    def _clear_value_chunk(self):
-        self._r_value_chunk = []
+    def clear_value_buffer(self):
+        """Clear value buffer."""
+        self._clear_value_buffer()
 
-    def clear_buffer(self):
-        self._clear_buffer()
+    def _clear_value_buffer(self):
+        self._r_value_buffer = Buffer()
 
-    def _clear_buffer(self):
-        self._r_value_buffer = []
-
-    value_chunk = property(get_value_chunk, set_value_chunk,
-                           "temporarily stored last value chunk")
+    last_value_chunk = property(get_last_value_chunk,
+        doc="chunk with the last added read values")
     value_buffer = property(get_value_buffer, "buffer with read values")
-
+    buffered_attribute_listeners = property(get_buffered_attribute_listeners,
+        doc="list of listeners of BufferedAttribute type")
+    next_idx = property(get_next_idx,
+        doc="index that will be automatically assigned to the next value "\
+            " appended to the buffer if not explicitly assigned")
 
 class SardanaAttributeConfiguration(object):
     """Storage class for :class:`SardanaAttribute` information (like ranges)"""
