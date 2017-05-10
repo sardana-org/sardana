@@ -441,6 +441,7 @@ class PoolAcquisitionBase(PoolAction):
     def __init__(self, main_element, name):
         PoolAction.__init__(self, main_element, name)
         self._channels = None
+        self.add_finish_hook(self.clear_value_buffers, True)
 
     def in_acquisition(self, states):
         """Determines if we are in acquisition or if the acquisition has ended
@@ -637,6 +638,10 @@ class PoolAcquisitionBase(PoolAction):
                         element.set_state(State.Fault, propagate=2)
                     msg = ("%s.StartAll() failed" % pool_ctrl.name)
                     raise Exception(msg)
+
+    def clear_value_buffers(self):
+        for channel in self._channels:
+            channel.clear_value_buffer()
 
 
 class PoolAcquisitionHardware(PoolAcquisitionBase):
