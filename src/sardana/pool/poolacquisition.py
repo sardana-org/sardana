@@ -406,26 +406,11 @@ class Channel(PoolActionItem):
 
     def __init__(self, acquirable, info=None):
         PoolActionItem.__init__(self, acquirable)
-        self.idx = 0
         if info:
             self.__dict__.update(info)
 
     def __getattr__(self, name):
         return getattr(self.element, name)
-
-    def _fill_idx(self, values):
-        """Fill indexes if they are missing.
-        :param values: values to be filled with the index
-        :type values: list<:class~`sardana.sardanavalue.SardanaValue`> or
-                      <:class~`sardana.sardanavalue.SardanaValue`>
-        """
-        if not is_non_str_seq(values):
-            values = list(values)
-        if len(values) and values[0].idx is None:
-            for v in values:
-                v.idx = self.idx
-                self.idx += 1
-        return values
 
 
 class PoolAcquisitionBase(PoolAction):
@@ -681,10 +666,7 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
                     if isinstance(value, SardanaValue) and value.error:
                         self.warning("Error when reading value: %r" %
                                      value.exc_info)
-                    elif len(value) > 0:
-                        channel = self._channels[acquirable]
-                        channel._fill_idx(value)
-                        acquirable.put_value_chunk(value)
+                    acquirable.extend_value_buffer(value)
 
             time.sleep(nap)
             i += 1
@@ -702,10 +684,7 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
                 if isinstance(value, SardanaValue) and value.error:
                     self.warning("Error when reading value: %r" %
                                  value.exc_info)
-                elif len(value) > 0:
-                    channel = self._channels[acquirable]
-                    channel._fill_idx(value)
-                    acquirable.put_value_chunk(value, propagate=2)
+                acquirable.extend_value_buffer(value, propagate=2)
             with acquirable:
                 acquirable.clear_operation()
                 state_info = acquirable._from_ctrl_state_info(state_info)
@@ -780,10 +759,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
             acquirable.set_state_info(state_info, propagate=0)
             if acquirable in values:
                 value = values[acquirable]
-                # fill information about the current index
-                value.idx = self.index
-                value_chunk = [value]
-                acquirable.put_value_chunk(value_chunk, propagate=2)
+                acquirable.append_value_buffer(value, self.index, propagate=2)
             with acquirable:
                 acquirable.clear_operation()
                 state_info = acquirable._from_ctrl_state_info(state_info)
