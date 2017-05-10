@@ -120,21 +120,6 @@ class PoolBaseChannel(PoolElement):
         val_attr.set_value(value, propagate=propagate)
         return val_attr
 
-    def put_value_chunk(self, value_chunk, propagate=1):
-        """Sets a value chunk.
-
-        :param value_chunk:
-            the new value chunk
-        :type value:
-            :class:`~sardana.sardanavalue.SardanaValue`
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate:
-            int"""
-        val_attr = self._value
-        val_attr.set_value_chunk(value_chunk, propagate=propagate)
-        return val_attr
-
     def get_value(self, cache=True, propagate=1):
         """Returns the channel value.
 
@@ -169,6 +154,50 @@ class PoolBaseChannel(PoolElement):
 
     def _set_value(self, value):
         self.start_acquisition(value)
+
+    def extend_value_buffer(self, values, idx=None, propagate=1):
+        """Extend value buffer with new values assigning them consecutive
+        indexes starting with idx. If idx is omitted, then the new values will
+        be added right after the last value in the buffer. Also update the read
+        value of the attribute with the last element of values.
+
+        :param values:
+            values to be added to the buffer
+        :type values:
+            :class:`~sardana.sardanavalue.SardanaValue`
+        :param propagate:
+            0 for not propagating, 1 to propagate, 2 propagate with priority
+        :type propagate: int
+        """
+        if len(values) == 0:
+            return
+        val_attr = self._value
+        val_attr.extend_value_buffer(values, idx, propagate=propagate)
+        val_attr.set_value(values[-1], propagate=propagate)
+        return val_attr
+
+    def append_value_buffer(self, value, idx=None, propagate=1):
+        """Extend value buffer with new values assigning them consecutive
+        indexes starting with idx. If idx is omitted, then the new value will
+        be added with right after the last value in the buffer. Also update
+        the read value.
+
+        :param value:
+            value to be added to the buffer
+        :type value:
+            :class:`~sardana.sardanavalue.SardanaValue`
+        :param propagate:
+            0 for not propagating, 1 to propagate, 2 propagate with priority
+        :type propagate: int
+        """
+        val_attr = self._value
+        val_attr.append_value_buffer(value, idx, propagate=propagate)
+        val_attr.set_value(value, propagate=propagate)
+        return val_attr
+
+    def clear_value_buffer(self):
+        val_attr = self._value
+        val_attr.clear_value_buffer()
 
     value = property(get_value, set_value, doc="channel value")
 
