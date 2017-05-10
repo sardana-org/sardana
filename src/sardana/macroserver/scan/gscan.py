@@ -974,6 +974,7 @@ class SScan(GScan):
         try:
             state, positions = motion.move(step['positions'])
             self._sum_motion_time += time.time() - move_start_time
+            self._env['motiontime'] = self._sum_motion_time
         except InterruptException:
             raise
         except:
@@ -1021,6 +1022,7 @@ class SScan(GScan):
             data_line[ec.getName()] = ec.read()
         self.debug("[ END ] acquisition")
         self._sum_acq_time += integ_time
+        self._env['acqtime'] = self._sum_acq_time
 
         # post-acq hooks
         for hook in step.get('post-acq-hooks', ()):
