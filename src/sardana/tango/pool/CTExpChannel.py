@@ -159,12 +159,12 @@ class CTExpChannel(PoolElementDevice):
 
         :return: json string representing value chunk
         :rtype: str"""
-        value = []
+        data = []
         index = []
-        for sv in value_chunk:
-            value.append(sv.value)
-            index.append(sv.idx)
-        data = dict(data=value, index=index)
+        for idx, value in value_chunk.iteritems():
+            index.append(idx)
+            data.append(value.value)
+        data = dict(data=data, index=index)
         _, encoded_data = self.codec.encode(('', data))
         return encoded_data
 
