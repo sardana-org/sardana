@@ -108,9 +108,14 @@ class CTExpChannel(PoolElementDevice):
 
         timestamp = time.time()
         name = event_type.name.lower()
+        attr_name = name
+        # TODO: remove this condition when Data attribute will be substituted
+        # by ValueBuffer
+        if name == "value_buffer":
+            attr_name = "data"
 
         try:
-            attr = self.get_attribute_by_name(name)
+            attr = self.get_attribute_by_name(attr_name)
         except DevFailed:
             return
 
@@ -122,30 +127,23 @@ class CTExpChannel(PoolElementDevice):
             value = self.calculate_tango_state(event_value)
         elif name == "status":
             value = self.calculate_tango_status(event_value)
-        elif name == "value":
+        elif name == "value_buffer":
+            value_chunk = event_value.last_value_chunk
+            value = self._encode_value_chunk(value_chunk)
+        else:
             if isinstance(event_value, SardanaAttribute):
                 if event_value.error:
                     error = Except.to_dev_failed(*event_value.exc_info)
                 else:
                     value = event_value.value
-                    value_chunk = event_value.value_chunk
-                    if value_chunk:
-                        _attr = self.get_attribute_by_name("data")
-                        _value = self._encode_value_chunk(value_chunk)
-                        self.set_attribute(_attr, value=_value, w_value=w_value,
-                                           timestamp=timestamp, quality=quality,
-                                           priority=priority, error=error,
-                                           synch=False)
                 timestamp = event_value.timestamp
             else:
                 value = event_value
-            w_value = event_source.get_value_attribute().w_value
-
-            state = self.ct.get_state()
-            if state == State.Moving:
-                quality = AttrQuality.ATTR_CHANGING
-            if attr is None:
-                return
+            if name == "value":
+                w_value = event_source.get_value_attribute().w_value
+                state = self.ct.get_state()
+                if state == State.Moving:
+                    quality = AttrQuality.ATTR_CHANGING
 
         self.set_attribute(attr, value=value, w_value=w_value,
                            timestamp=timestamp, quality=quality,
