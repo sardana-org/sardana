@@ -205,9 +205,8 @@ class Value(SardanaAttribute):
         self._index = None
         self.accumulation.clear()
 
-    def append_value(self, value, index=None, propagate=1):
-        self.accumulation.append_value(value.value, value.timestamp)
-        self._index = index
+    def append_buffer(self, value, propagate=1):
+        self.accumulation.append(value.value, value.timestamp)
         if propagate > 0:
             evt_type = EventType(self.name, priority=propagate)
             self.fire_event(evt_type, self)
