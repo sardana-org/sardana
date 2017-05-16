@@ -27,6 +27,7 @@
 
 __all__ = ["PoolDevice", "PoolDeviceClass",
            "PoolElementDevice", "PoolElementDeviceClass",
+           "PoolExpChannelDevice", "PoolExpChannelDeviceClass",
            "PoolGroupDevice", "PoolGroupDeviceClass"]
 
 __docformat__ = 'restructuredtext'
@@ -35,9 +36,11 @@ import time
 
 from PyTango import Util, DevVoid, DevLong64, DevBoolean, DevString, \
     DevVarStringArray, DispLevel, DevState, SCALAR, SPECTRUM, \
-    IMAGE, READ_WRITE, READ, AttrData, CmdArgType, DevFailed, seqStr_2_obj
+    IMAGE, READ_WRITE, READ, AttrData, CmdArgType, DevFailed, seqStr_2_obj, \
+    Except, ErrSeverity
 
 from taurus.core.util.containers import CaselessDict
+from taurus.core.util.codecs import CodecFactory
 
 from sardana import InvalidId, InvalidAxis, ElementType
 from sardana.pool.poolmetacontroller import DataInfo
@@ -820,3 +823,44 @@ class PoolGroupDeviceClass(PoolDeviceClass):
         ret['Description'] = "Generic Pool group device class"
         ret['InheritedFrom'].insert(0, 'PoolDevice')
         return ret
+
+
+class PoolExpChannelDevice(PoolElementDevice):
+
+    def __init__(self, dclass, name):
+        """Constructor"""
+        PoolElementDevice.__init__(self, dclass, name)
+        self._codec = CodecFactory().getCodec('json')
+
+    def _encode_value_chunk(self, value_chunk):
+        """Prepare value chunk to be passed via communication channel.
+
+        :param value_chunk: value chunk
+        :type value_chunk: seq<SardanaValue>
+
+        :return: json string representing value chunk
+        :rtype: str"""
+        data = []
+        index = []
+        for idx, value in value_chunk.iteritems():
+            index.append(idx)
+            data.append(value.value)
+        data = dict(data=data, index=index)
+        _, encoded_data = self._codec.encode(('', data))
+        return encoded_data
+
+    def read_Data(self, attr):
+        desc = 'Data attribute is not foreseen for reading. It is used ' + \
+            'only as the communication channel for the continuous acquisitions.'
+        Except.throw_exception('UnsupportedFeature',
+                               desc,
+                               'PoolExpChannelDevice.read_Data',
+                               ErrSeverity.WARN)
+
+
+class PoolExpChannelDeviceClass(PoolElementDeviceClass):
+
+    standard_attr_list = {
+        'Data': [[DevString, SCALAR, READ]]  # TODO: think about DevEncoded
+    }
+    standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
