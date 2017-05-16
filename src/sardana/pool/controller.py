@@ -1369,6 +1369,8 @@ class PseudoCounterController(Controller):
     standard_axis_attributes = {
         'Value': {'type': float,
                   'description': 'Value', },
+        'Data': {'type': str,
+                 'description': 'Data', },
     }
 
     #: A :obj:`str` representing the controller gender
