@@ -59,7 +59,7 @@ class BaseAccumulation(object):
     def get_time_buffer(self):
         return self.buffer[1][:self.nb_points]
 
-    def append_value(self, value, timestamp=None):
+    def append(self, value, timestamp=None):
         if timestamp is None:
             timestamp = time.time()
         idx = self.nb_points
