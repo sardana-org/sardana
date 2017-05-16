@@ -881,7 +881,7 @@ class Pool0DAcquisition(PoolAction):
 
         pool = self.pool
 
-        self.conf = kwargs
+        self._index = kwargs.get("idx")
 
         # prepare data structures
         # TODO: rollback this change when a proper synchronization between
@@ -950,14 +950,14 @@ class Pool0DAcquisition(PoolAction):
         while True:
             self.read_value(ret=values)
             for acquirable, value in values.items():
-                acquirable.put_value(value, index=self.conf[
-                                     'idx'], propagate=0)
+                acquirable.put_current_value(value, propagate=0)
             if self._stopped or self._aborted:
                 break
             time.sleep(nap)
 
         for element in self._channels:
-            element.propagate_value(priority=1)
+            value = element.accumulated_value.value_obj
+            element.append_value_buffer(value, self._index, propagate=2)
 
         with ActionContext(self):
             self.raw_read_state_info(ret=states)
