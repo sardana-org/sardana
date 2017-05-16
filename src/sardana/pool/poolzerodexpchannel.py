@@ -207,12 +207,6 @@ class Value(BufferedAttribute):
             evt_type = EventType(self.name, priority=propagate)
             self.fire_event(evt_type, self)
 
-    def propagate(self, priority=1):
-        '''Propagate event to listeners
-        '''
-        evt_type = EventType(self.name, priority=priority)
-        self.fire_event(evt_type, self)
-
     def update(self, cache=True, propagate=1):
         # it is the Pool0DAcquisition action which is allowed to update
         raise Exception("0D Value can not be updated from outside"
@@ -315,25 +309,6 @@ class Pool0DExpChannel(PoolBaseChannel):
     current_value = property(get_current_value, doc="0D value")
     accumulated_value = property(get_accumulated_value, doc="0D value")
 
-    def put_value(self, value, index=None, propagate=1):
-        return self.put_current_value(value, index=index, propagate=propagate)
-
-    def _get_value(self):
-        return self.get_current_value()
-
-    def append_value(self, value, timestamp=None, propagate=1):
-        cumulation = self.cumulation
-        cumulation.append_value(value, timestamp)
-        if not propagate:
-            return
-        self.fire_event(EventType("value", priority=propagate),
-                        cumulation.value)
-
-    def propagate_value(self, priority=2):
-        '''Propagate value attribute to its listeners.
-        '''
-        value = self.get_value_attribute()
-        value.propagate(priority=priority)
     def clear_buffer(self):
         self.get_accumulated_value_attribute().clear_buffer()
 
