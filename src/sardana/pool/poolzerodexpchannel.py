@@ -35,7 +35,7 @@ import time
 
 from sardana import ElementType
 from sardana.sardanaevent import EventType
-from sardana.sardanaattribute import SardanaAttribute
+from sardana.sardanaattribute import SardanaAttribute, BufferedAttribute
 from sardana.sardanavalue import SardanaValue
 
 from sardana.pool.poolbasechannel import PoolBaseChannel
@@ -136,7 +136,7 @@ class CurrentValue(SardanaAttribute):
             self.set_value(value, propagate=propagate)
 
 
-class Value(SardanaAttribute):
+class Value(BufferedAttribute):
 
     DefaultAccumulationType = "Average"
 
@@ -145,8 +145,6 @@ class Value(SardanaAttribute):
             'accumulation_type', self.DefaultAccumulationType)
         super(Value, self).__init__(*args, **kwargs)
         self.set_accumulation_type(accumulation_type)
-        # member to store the acquisition index
-        self._index = None
 
     def get_val(self):
         return self.obj.get_value_attribute()
@@ -179,8 +177,7 @@ class Value(SardanaAttribute):
         # use timestamp of the last acquired sample as timestamp of
         # accumulation
         timestamp = self._accumulation.get_time_buffer()[-1]
-        idx = self._index
-        value_obj = SardanaValue(value=value, idx=idx, timestamp=timestamp)
+        value_obj = SardanaValue(value=value, timestamp=timestamp)
         return value_obj
 
     def _in_error(self):
@@ -202,7 +199,6 @@ class Value(SardanaAttribute):
         return self.accumulation.get_time_buffer()
 
     def clear_buffer(self):
-        self._index = None
         self.accumulation.clear()
 
     def append_buffer(self, value, propagate=1):
@@ -288,17 +284,13 @@ class Pool0DExpChannel(PoolBaseChannel):
             :class:`~sardana.sardanavalue.SardanaValue`"""
         return self.acquisition.read_value()[self]
 
-    def put_current_value(self, value, index=None, propagate=1):
-        """Sets a value.
+    def put_current_value(self, value, propagate=1):
+        """Put a current value.
 
         :param value:
             the new value
         :type value:
             :class:`~sardana.sardanavalue.SardanaValue`
-        :param index:
-            acquisition index to which the current value belongs
-        :type index:
-            :class:`int`
         :param propagate:
             0 for not propagating, 1 to propagate, 2 propagate with priority
         :type propagate:
@@ -307,7 +299,7 @@ class Pool0DExpChannel(PoolBaseChannel):
         curr_val_attr.set_value(value, propagate=propagate)
         if self.is_in_operation():
             acc_val_attr = self.get_accumulated_value_attribute()
-            acc_val_attr.append_value(value, index=index, propagate=propagate)
+            acc_val_attr.append_buffer(value, propagate=propagate)
 
     def get_current_value(self, cache=True, propagate=1):
         """Returns the counter value.
