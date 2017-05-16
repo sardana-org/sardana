@@ -195,7 +195,7 @@ class Value(SardanaAttribute):
     def _get_timestamp(self):
         return self.accumulation.timestamp
 
-    def get_value_buffer(self):
+    def get_accumulation_buffer(self):
         return self.accumulation.get_value_buffer()
 
     def get_time_buffer(self):
@@ -343,18 +343,17 @@ class Pool0DExpChannel(PoolBaseChannel):
         '''
         value = self.get_value_attribute()
         value.propagate(priority=priority)
-
     def clear_buffer(self):
         self.get_accumulated_value_attribute().clear_buffer()
 
     # -------------------------------------------------------------------------
-    # value buffer
+    # accumulation buffer
     # -------------------------------------------------------------------------
 
-    def get_value_buffer(self):
-        return self.get_accumulated_value_attribute().get_value_buffer()
+    def get_accumulation_buffer(self):
+        return self.get_accumulated_value_attribute().get_accumulation_buffer()
 
-    value_buffer = property(get_value_buffer)
+    accumulation_buffer = property(get_accumulation_buffer)
 
     # -------------------------------------------------------------------------
     # time buffer
