@@ -49,6 +49,7 @@ class CTExpChannel(PoolExpChannelDevice):
 
     def __init__(self, dclass, name):
         PoolExpChannelDevice.__init__(self, dclass, name)
+        self._first_read_cache = False
 
     def init(self, name):
         PoolExpChannelDevice.init(self, name)
@@ -128,6 +129,7 @@ class CTExpChannel(PoolExpChannelDevice):
         elif name == "value_buffer":
             value_chunk = event_value.last_value_chunk
             value = self._encode_value_chunk(value_chunk)
+            self._first_read_cache = True
         else:
             if isinstance(event_value, SardanaAttribute):
                 if event_value.error:
@@ -190,14 +192,15 @@ class CTExpChannel(PoolExpChannelDevice):
         # cache. This is due to the fact that the clients (MS) read the value
         # after the acquisition had finished.
         use_cache = ct.is_in_operation() and not self.Force_HW_Read
-        # For the moment we just check if the previous acquisition was
-        # synchronized by hardware and in this case, we use cache and clean the
-        # buffer so the cached value will be returned only at the first readout
-        # after the acquisition. This is a workaround for the step scans which
-        # read the value after the acquisition.
-        if not use_cache and len(ct.value.value_buffer) > 0:
+        # For the moment we just check if we recently receive value_buffer.
+        # event. In this case, we use cache and clean the flag
+        # so the cached value will be returned only at the first readout
+        # after the acquisition. This is a workaround for the count executed
+        # by the MacroServer e.g. step scans or ct which read the value after
+        # the acquisition.
+        if not use_cache and self._first_read_cache:
             use_cache = True
-            ct.value.clear_buffer()
+            self._first_read_cache = False
         value = ct.get_value(cache=use_cache, propagate=0)
         if value.error:
             Except.throw_python_exception(*value.exc_info)
