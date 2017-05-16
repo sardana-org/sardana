@@ -34,7 +34,8 @@ import sys
 import time
 
 from sardana import State, ElementType, TYPE_PHYSICAL_ELEMENTS
-from sardana.sardanaattribute import SardanaAttribute
+from sardana.sardanaattribute import BufferedAttribute, EarlyValueException,\
+    LateValueException
 from sardana.sardanaexception import SardanaException
 from sardana.sardanavalue import SardanaValue
 from sardana.pool.poolexception import PoolException
@@ -43,7 +44,7 @@ from sardana.pool.poolbasegroup import PoolBaseGroup
 from sardana.pool.poolacquisition import PoolCTAcquisition
 
 
-class Value(SardanaAttribute):
+class Value(BufferedAttribute):
 
     def __init__(self, *args, **kwargs):
         self._exc_info = None
@@ -108,6 +109,11 @@ class Value(SardanaAttribute):
             ret.append(value)
         return ret
 
+    def remove_physical_values(self, idx, force=False):
+        for value_attr in self.obj.get_physical_value_attribute_iterator():
+            if force or not value_attr.is_value_required(idx):
+                value_attr.remove_value(idx)
+
     def get_physical_values(self):
         ret = []
         for value_attr in self.obj.get_physical_value_attribute_iterator():
@@ -164,8 +170,28 @@ class Value(SardanaAttribute):
             result = SardanaValue(exc_info=sys.exc_info())
         return result
 
+    def on_value_buffer_change(self, evt_src, evt_type, evt_value):
+        chunk = evt_src.last_value_chunk
+        for idx in chunk.iterkeys():
+            physical_values = []
+            for value_attr in self.obj.get_physical_value_attribute_iterator():
+                try:
+                    value = value_attr.get_value(idx)
+                except EarlyValueException:
+                    return
+                except LateValueException:
+                    self.remove_physical_values(idx)
+                    return
+                physical_values.append(value)
+            value = self.calc(physical_values)
+            self.append_value_buffer(value, idx, evt_type.priority)
+            self.remove_physical_values(idx)
+
     def on_change(self, evt_src, evt_type, evt_value):
-        self.fire_read_event(propagate=evt_type.priority)
+        if evt_type.name.lower() == "value_buffer":
+            self.on_value_buffer_change(evt_src, evt_type, evt_value)
+        else:
+            self.fire_read_event(propagate=evt_type.priority)
 
     def update(self, cache=True, propagate=1):
         if cache:
