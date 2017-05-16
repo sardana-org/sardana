@@ -25,7 +25,8 @@
 
 from taurus.external.unittest import TestCase
 
-from sardana.pool.test.base import BasePoolTestCase 
+from sardana import SardanaValue as SV
+from sardana.pool.test.base import BasePoolTestCase
 
 class PseudoCounterTestCase(BasePoolTestCase, TestCase):
     """TestCase with PseudoCounter integration tests."""
@@ -46,23 +47,23 @@ class PseudoCounterTestCase(BasePoolTestCase, TestCase):
         and test that the last_value_chunk of the pseudo counter is correctly
         filled.
         """
-        self.ct1.extend_value_buffer([1., 2., 3.])
-        self.ct2.append_value_buffer(10.)
+        self.ct1.extend_value_buffer([SV(1.), SV(2.), SV(3.)])
+        self.ct2.append_value_buffer(SV(10.))
         self.assertEqual(len(self.pc.value.last_value_chunk), 1)
         self.assertEqual(self.pc.value.last_value_chunk[0].value, 0.1)
-        self.ct1.extend_value_buffer([4., 5., 6.])
-        self.ct2.append_value_buffer(10., idx=3)
+        self.ct1.extend_value_buffer([SV(4.), SV(5.), SV(6.)])
+        self.ct2.append_value_buffer(SV(10.), idx=3)
         self.assertEqual(len(self.pc.value.last_value_chunk), 1)
         self.assertEqual(self.pc.value.last_value_chunk[3].value, 0.4)
-        self.ct2.append_value_buffer(10., idx=5)
+        self.ct2.append_value_buffer(SV(10.), idx=5)
         self.assertEqual(len(self.pc.value.last_value_chunk), 1)
         self.assertEqual(self.pc.value.last_value_chunk[5].value, 0.6)
-        self.ct1.extend_value_buffer([7., 8.])
-        self.ct1.extend_value_buffer([9.])
-        self.ct1.extend_value_buffer([10.])
-        self.ct2.append_value_buffer(10., idx=8)
+        self.ct1.extend_value_buffer([SV(7.), SV(8.)])
+        self.ct1.extend_value_buffer([SV(9.)])
+        self.ct1.extend_value_buffer([SV(10.)])
+        self.ct2.append_value_buffer(SV(10.), idx=8)
         self.assertEqual(len(self.pc.value.last_value_chunk), 1)
         self.assertEqual(self.pc.value.last_value_chunk[8].value, 0.9)
-        self.ct2.append_value_buffer(10., idx=9)
+        self.ct2.append_value_buffer(SV(10.), idx=9)
         self.assertEqual(len(self.pc.value.last_value_chunk), 1)
         self.assertEqual(self.pc.value.last_value_chunk[9].value, 1)
