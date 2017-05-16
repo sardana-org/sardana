@@ -276,6 +276,14 @@ class PoolAcquisition(PoolAction):
     def run(self, *args, **kwargs):
         for elem in self.get_elements():
             elem.put_state(None)
+            # TODO: temporarily clear value buffers at the beginning of the
+            # acquisition instead of doing it in the finish hook of each
+            # acquisition sub-actions. See extensive explanation in the
+            # constructor of PoolAcquisitionBase.
+            try:
+                elem.clear_value_buffer()
+            except AttributeError:
+                pass
         config = kwargs['config']
         synchronization = kwargs["synchronization"]
         integ_time = extract_integ_time(synchronization)
@@ -426,7 +434,15 @@ class PoolAcquisitionBase(PoolAction):
     def __init__(self, main_element, name):
         PoolAction.__init__(self, main_element, name)
         self._channels = None
-        self.add_finish_hook(self.clear_value_buffers, True)
+        # TODO: for the moment we can not clear value buffers at the end of
+        # the acquisition. This is because of the pseudo counters that are
+        # based on channels synchronized by hardware and software.
+        # These two acquisition actions finish at different moment so the
+        # pseudo counter will loose the value buffer of some of its physicals
+        # if we clear the buffer at the end.
+        # Whenever there will be solution for that, after refactoring of the
+        # acquisition actions, uncomment this line 
+        # self.add_finish_hook(self.clear_value_buffers, True)
 
     def in_acquisition(self, states):
         """Determines if we are in acquisition or if the acquisition has ended
