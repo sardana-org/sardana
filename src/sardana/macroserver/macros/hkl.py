@@ -1,8 +1,8 @@
 
 """
-    Macro library containning diffractometer related macros for the macros
+    Macro library containning diffractometer related macros for the macros 
     server Tango device server as part of the Sardana project.
-
+    
 """
 
 # TODO: use taurus instead of PyTango API e.g. read_attribute,
@@ -75,7 +75,7 @@ class _diffrac:
                 self.angle_names.append("omega")
                 self.angle_names.append("chi")
                 self.angle_names.append("phi")
-                self.angle_names.append("theta")
+                self.angle_names.append("tth")
             elif self.nb_motors == 6:
                 self.angle_names.append("mu")
                 self.angle_names.append("omega")
@@ -86,7 +86,7 @@ class _diffrac:
 
         if self.nb_motors == 4:
             self.labelmotor = {'Omega': "omega",
-                               'Chi': "chi", 'Phi': "phi", 'Theta': "theta"}
+                               'Chi': "chi", 'Phi': "phi", 'Tth': "tth"}
         elif self.nb_motors == 6:
             self.labelmotor = {'Mu': "mu", 'Theta': "omega", 'Chi': "chi",
                                'Phi': "phi", 'Gamma': "gamma", 'Delta': "delta"}
@@ -173,11 +173,10 @@ class _diffrac:
         if mat:
             return regx.sub(repl, ch)
 
-
 class br(Macro, _diffrac):
-    """Move the diffractometer to the reciprocal space coordinates given by
-    H, K and L.
-    If a fourth parameter is given, the combination of angles to be set is
+    """Move the diffractometer to the reciprocal space coordinates given by 
+    H, K and L. 
+    If a fourth parameter is given, the combination of angles to be set is 
     the correspondig to the given index. The index of the
     angles combinations are then changed."""
 
@@ -196,9 +195,7 @@ class br(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self, H, K, L, AnglesIndex, FlagNotBlocking, FlagPrinting):
-        h_idx = 0
-        k_idx = 1
-        l_idx = 2
+        h_idx = 0; k_idx = 1; l_idx = 2
 
         if AnglesIndex != -1:
             sel_tr = AnglesIndex
@@ -247,7 +244,7 @@ class br(Macro, _diffrac):
 
 
 class ubr(Macro, _diffrac):
-    """Move the diffractometer to the reciprocal space coordinates given by
+    """Move the diffractometer to the reciprocal space coordinates given by 
     H, K and L und update.
     """
 
@@ -294,7 +291,7 @@ class _ca(Macro, _diffrac):
         else:
             start_range = Trajectory
             end_range = Trajectory + 1
-
+            
         for i in range(int(start_range), int(end_range)):
             angles_list = self.diffrac.trajectorylist[i]
             self.output("")
@@ -310,7 +307,7 @@ class _ca(Macro, _diffrac):
             except:
                 self.warning(
                     "Not able to read psi. Check if environment Psi is defined")
-
+                
             self.output("Wavelength =  %7.5f" % (self.diffrac.WaveLength))
             self.output("")
 
@@ -320,12 +317,19 @@ class _ca(Macro, _diffrac):
                 str_pos[name] = "%7.5f" % angles_list[j]
                 j = j + 1
 
-            self.output("%10s %11s %12s %11s %10s %11s" %
-                        ("Delta", "Theta", "Chi", "Phi", "Mu", "Gamma"))
-            self.output("%10s %11s %12s %11s %10s %11s" %
-                        (str_pos[self.labelmotor["Delta"]], str_pos[self.labelmotor["Theta"]], str_pos[self.labelmotor["Chi"]], str_pos[self.labelmotor["Phi"]], str_pos[self.labelmotor["Mu"]], str_pos[self.labelmotor["Gamma"]]))
+            if self.nb_motors == 6:
+                self.output("%10s %11s %12s %11s %10s %11s" %
+                            ("Delta", "Theta", "Chi", "Phi", "Mu", "Gamma"))
+                self.output("%10s %11s %12s %11s %10s %11s" %
+                            (str_pos[self.labelmotor["Delta"]], str_pos[self.labelmotor["Theta"]], str_pos[self.labelmotor["Chi"]], str_pos[self.labelmotor["Phi"]], str_pos[self.labelmotor["Mu"]], str_pos[self.labelmotor["Gamma"]]))
+            elif self.nb_motors == 4:
+                self.output("%10s %11s %12s %11s" %
+                            ("Tth", "Omega", "Chi", "Phi"))
+                self.output("%10s %11s %12s %11s" %
+                            (str_pos[self.labelmotor["Tth"]], str_pos[self.labelmotor["Omega"]], str_pos[self.labelmotor["Chi"]], str_pos[self.labelmotor["Phi"]]))
+                
 
-
+            
 class ca(Macro, _diffrac):
     """Calculate motor positions for given H K L according to the current
     operation mode (trajectory 0)."""
@@ -406,7 +410,7 @@ class pa(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self):
-
+        
         str_type = "Eulerian 6C"
         if self.type == 'E4CV':
             str_type = "Eulerian 4C Vertical"
@@ -471,9 +475,9 @@ class pa(Macro, _diffrac):
 class wh(Macro, _diffrac):
     """Show principal axes and reciprocal space positions.
 
-    Prints the current reciprocal space coordinates (H K L) and the user
-    positions of the principal motors. Depending on the diffractometer geometry,
-    other parameters such as the angles of incidence and reflection (ALPHA and
+    Prints the current reciprocal space coordinates (H K L) and the user 
+    positions of the principal motors. Depending on the diffractometer geometry, 
+    other parameters such as the angles of incidence and reflection (ALPHA and 
     BETA) and the incident wavelength (LAMBDA) may be displayed."""
 
     def prepare(self):
@@ -539,23 +543,36 @@ class wh(Macro, _diffrac):
         self.output("%s %7.5f" % ("Wavelength = ", self.diffrac.WaveLength))
         self.output("")
 
-        str_pos1 = "%7.5f" % self.getDevice(
-            self.angle_device_names[self.labelmotor["Delta"]]).Position
-        str_pos2 = "%7.5f" % self.getDevice(
-            self.angle_device_names[self.labelmotor["Theta"]]).Position
-        str_pos3 = "%7.5f" % self.getDevice(
-            self.angle_device_names[self.labelmotor["Chi"]]).Position
-        str_pos4 = "%7.5f" % self.getDevice(
-            self.angle_device_names[self.labelmotor["Phi"]]).Position
-        str_pos5 = "%7.5f" % self.getDevice(
-            self.angle_device_names[self.labelmotor["Mu"]]).Position
-        str_pos6 = "%7.5f" % self.getDevice(
-            self.angle_device_names[self.labelmotor["Gamma"]]).Position
-
-        self.output("%10s %11s %12s %11s %10s %11s" %
-                    ("Delta", "Theta", "Chi", "Phi", "Mu", "Gamma"))
-        self.output("%10s %11s %12s %11s %10s %11s" %
-                    (str_pos1, str_pos2, str_pos3, str_pos4, str_pos5, str_pos6))
+        if self.nb_motors == 6:
+            str_pos1 = "%7.5f" % self.getDevice(
+                self.angle_device_names[self.labelmotor["Delta"]]).Position
+            str_pos2 = "%7.5f" % self.getDevice(
+                self.angle_device_names[self.labelmotor["Theta"]]).Position
+            str_pos3 = "%7.5f" % self.getDevice(
+                self.angle_device_names[self.labelmotor["Chi"]]).Position
+            str_pos4 = "%7.5f" % self.getDevice(
+                self.angle_device_names[self.labelmotor["Phi"]]).Position
+            str_pos5 = "%7.5f" % self.getDevice(
+                self.angle_device_names[self.labelmotor["Mu"]]).Position
+            str_pos6 = "%7.5f" % self.getDevice(
+                self.angle_device_names[self.labelmotor["Gamma"]]).Position
+            self.output("%10s %11s %12s %11s %10s %11s" %
+                        ("Delta", "Theta", "Chi", "Phi", "Mu", "Gamma"))
+            self.output("%10s %11s %12s %11s %10s %11s" %
+                        (str_pos1, str_pos2, str_pos3, str_pos4, str_pos5, str_pos6))
+        elif self.nb_motors == 4:
+            str_pos1 = "%7.5f" % self.getDevice(
+                self.angle_device_names[self.labelmotor["Tth"]]).Position
+            str_pos2 = "%7.5f" % self.getDevice(
+                self.angle_device_names[self.labelmotor["Omega"]]).Position
+            str_pos3 = "%7.5f" % self.getDevice(
+                self.angle_device_names[self.labelmotor["Chi"]]).Position
+            str_pos4 = "%7.5f" % self.getDevice(
+                self.angle_device_names[self.labelmotor["Phi"]]).Position
+            self.output("%10s %11s %12s %11s" %
+                        ("Tth", "Omega", "Chi", "Phi"))
+            self.output("%10s %11s %12s %11s" %
+                        (str_pos1, str_pos2, str_pos3, str_pos4))
 
         self.setEnv('Q', [self.h_device.position, self.k_device.position,
                           self.l_device.position, self.diffrac.WaveLength])
@@ -608,6 +625,7 @@ class setmode(iMacro, _diffrac):
     param_def = [
         ['new_mode', Type.Integer, -1, "Mode to be set"]
     ]
+
 
     def prepare(self, new_mode):
         _diffrac.prepare(self)
@@ -677,6 +695,7 @@ class setlat(iMacro, _diffrac):
         ['beta',  Type.Float, -999, "Lattice 'beta' parameter"],
         ['gamma', Type.Float, -999, "Lattice 'gamma' parameter"]
     ]
+
 
     def prepare(self, a, b, c, alpha, beta, gamma):
         _diffrac.prepare(self)
@@ -857,7 +876,7 @@ class setorn(iMacro, _diffrac):
 
     def run(self, ref_id, H, K, L, mu, theta, chi, phi, gamma, delta):
 
-        if delta == -999:
+        if (delta == -999 and self.nb_motors == 6) or (phi == -999 and self.nb_motors == 4):
             reflections = []
             try:
                 reflections = self.diffrac.reflectionlist
@@ -869,18 +888,17 @@ class setorn(iMacro, _diffrac):
                 if len(reflections) > ref_id:
                     for i in range(1, 4):
                         tmp_ref[hkl_names[i - 1]] = reflections[ref_id][i]
-                    for i in range(6, 12):
-                        tmp_ref[self.angle_names[i - 6]
-                                ] = reflections[ref_id][i]
+                    for i in range(6, 6 + self.nb_motors):
+                        tmp_ref[self.angle_names[i - 6]] = reflections[ref_id][i]
                 else:
                     for i in range(0, 3):
                         tmp_ref[hkl_names[i]] = 0
-                    for i in range(0, 6):
+                    for i in range(0, self.nb_motors):
                         tmp_ref[self.angle_names[i]] = 0
             else:
                 for i in range(0, 3):
                     tmp_ref[hkl_names[i]] = 0
-                for i in range(0, 6):
+                for i in range(0, self.nb_motors):
                     tmp_ref[self.angle_names[i]] = 0
 
             self.output("")
@@ -892,19 +910,32 @@ class setorn(iMacro, _diffrac):
                 ref_txt = "reflection " + str(ref_id)
 
             self.output("Enter %s angles" % ref_txt)
-            delta = float(self.input(" Delta?", default_value=tmp_ref[
-                          "delta"], data_type=Type.String))
-            theta = float(self.input(" Theta? ", default_value=tmp_ref[
+            if self.nb_motors == 6:
+                delta = float(self.input(" Delta?", default_value=tmp_ref[
+                    "delta"], data_type=Type.String))
+                
+                theta = float(self.input(" Theta? ", default_value=tmp_ref[
                           "omega"], data_type=Type.String))
-            chi = float(self.input(" Chi?", default_value=tmp_ref[
-                        "chi"], data_type=Type.String))
-            phi = float(self.input(" Phi?", default_value=tmp_ref[
-                        "phi"], data_type=Type.String))
-            gamma = float(self.input(" Gamma?", default_value=tmp_ref[
-                          "gamma"], data_type=Type.String))
-            mu = float(self.input(" Mu?", default_value=tmp_ref[
-                       "mu"], data_type=Type.String))
-
+                chi = float(self.input(" Chi?", default_value=tmp_ref[
+                    "chi"], data_type=Type.String))
+                phi = float(self.input(" Phi?", default_value=tmp_ref[
+                    "phi"], data_type=Type.String))
+                gamma = float(self.input(" Gamma?", default_value=tmp_ref[
+                    "gamma"], data_type=Type.String))
+                mu = float(self.input(" Mu?", default_value=tmp_ref[
+                    "mu"], data_type=Type.String))
+            if self.nb_motors == 4:
+                
+                omega = float(self.input(" Omega?", default_value=tmp_ref[
+                    "omega"], data_type=Type.String))
+                chi = float(self.input(" Chi?", default_value=tmp_ref[
+                    "chi"], data_type=Type.String))
+                phi = float(self.input(" Phi?", default_value=tmp_ref[
+                    "phi"], data_type=Type.String))
+                tth = float(self.input(" Tth?", default_value=tmp_ref[
+                    "omega"], data_type=Type.String))
+                
+                
             self.output("")
             self.output("Enter %s HKL coordinates" % ref_txt)
             H = float(self.input(" H?", default_value=tmp_ref[
@@ -937,8 +968,13 @@ class setorn(iMacro, _diffrac):
 
         # Adjust angles
 
-        self.angle_values = {"mu": mu, "omega": theta,
-                             "chi": chi, "phi": phi, "gamma": gamma, "delta": delta}
+        if self.nb_motors == 6:
+            self.angle_values = {"mu": mu, "omega": theta,
+                                 "chi": chi, "phi": phi, "gamma": gamma, "delta": delta}
+        elif self.nb_motors == 4:
+            self.angle_values = {"omega": omega, "chi": chi,
+                                 "phi": phi, "tth": tth}
+            
 
         values = []
         values.append(ref_id)
@@ -1018,7 +1054,7 @@ class computeub(Macro, _diffrac):
         if reflections is not None:
             if len(reflections) > 1:
                 self.output("Computing UB with reflections 0 and 1")
-                values = [0, 1]
+                values = [0,1]
                 self.diffrac.write_attribute("ComputeUB", values)
                 self.execMacro('savecrystal')
             else:
@@ -1051,9 +1087,9 @@ class addreflection(Macro, _diffrac):
 
 class affine(Macro, _diffrac):
     """Affine current crystal.
-    Fine tunning of lattice parameters and UB matrix based on
-    current crystal reflections. Reflections with affinement
-    set to 0 are not used. A new crystal with the post fix
+    Fine tunning of lattice parameters and UB matrix based on 
+    current crystal reflections. Reflections with affinement 
+    set to 0 are not used. A new crystal with the post fix 
     (affine) is created and set as current crystal"""
 
     def prepare(self):
@@ -1083,6 +1119,7 @@ class newcrystal(iMacro, _diffrac):
     param_def = [
         ['crystal_name',  Type.String, "", 'Name of the crystal to add and select']
     ]
+
 
     def prepare(self, crystal_name):
         _diffrac.prepare(self)
@@ -1166,8 +1203,7 @@ class hscan(aNscan, Macro, _diffrac):
 
     def prepare(self, start_pos, final_pos, nr_interv, integ_time):
         _diffrac.prepare(self)
-        aNscan._prepare(self, [self.h_device], [start_pos], [
-                        final_pos], nr_interv, integ_time)
+        aNscan._prepare(self, [self.h_device], [start_pos], [final_pos], nr_interv, integ_time)
 
 
 class kscan(aNscan, Macro, _diffrac):
@@ -1182,8 +1218,7 @@ class kscan(aNscan, Macro, _diffrac):
 
     def prepare(self, start_pos, final_pos, nr_interv, integ_time):
         _diffrac.prepare(self)
-        aNscan._prepare(self, [self.k_device], [start_pos], [
-                        final_pos], nr_interv, integ_time)
+        aNscan._prepare(self, [self.k_device], [start_pos], [final_pos], nr_interv, integ_time)
 
 
 class lscan(aNscan, Macro, _diffrac):
@@ -1198,8 +1233,7 @@ class lscan(aNscan, Macro, _diffrac):
 
     def prepare(self, start_pos, final_pos, nr_interv, integ_time):
         _diffrac.prepare(self)
-        aNscan._prepare(self, [self.l_device], [start_pos], [
-                        final_pos], nr_interv, integ_time)
+        aNscan._prepare(self, [self.l_device], [start_pos], [final_pos], nr_interv, integ_time)
 
 
 class hklscan(aNscan, Macro, _diffrac):
@@ -1218,14 +1252,14 @@ class hklscan(aNscan, Macro, _diffrac):
 
     def prepare(self, h_start_pos, h_final_pos, k_start_pos, k_final_pos, l_start_pos, l_final_pos, nr_interv, integ_time):
         _diffrac.prepare(self)
-        aNscan._prepare(self, [self.h_device, self.k_device, self.l_device], [
-                        h_start_pos, k_start_pos, l_start_pos], [h_final_pos, k_final_pos, l_final_pos], nr_interv, integ_time)
+        aNscan._prepare(self, [self.h_device, self.k_device, self.l_device], [h_start_pos, k_start_pos, l_start_pos], [h_final_pos, k_final_pos, l_final_pos], nr_interv, integ_time)
+        
 
 
 class th2th(Macro):
     """th2th - scan:
 
-    Relative scan around current position in del and th with d_th=2*d_delta
+    Relative scan around current position in del and th with d_th=2*d_delta    
     """
 
     param_def = [
@@ -1272,7 +1306,7 @@ class luppsi(Macro, _diffrac):
 
     Relative scan psi angle
 
-    [TODO] Still not tested
+    [TODO] Still not tested    
     """
 
     param_def = [
@@ -1390,7 +1424,7 @@ class loadcrystal(iMacro, _diffrac):
         if len(res) == 0:
             self.output("No crystals available in set directory. Nothing done")
             return
-
+        
         i = 1
         for filename in res:
             filename = filename.split('.')[0]
@@ -1488,7 +1522,7 @@ class _blockprintmove(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self, flagprint):
-
+        
         moving = 1
         tmp_dev = {}
         for angle in self.angle_names:
@@ -1515,18 +1549,18 @@ class _diff_scan(Macro):
     This macro is internal and reserved to the hkl infrastucture.
     """
     param_def = [
-        ['motor',      Type.Motor,   None, 'Motor to move'],
-        ['start_pos',  Type.Float,   None, 'Scan start position'],
-        ['final_pos',  Type.Float,   None, 'Scan final position'],
-        ['nr_interv',  Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time', Type.Float,   None, 'Integration time'],
-        ['channel',    Type.ExpChannel,   None, 'Channel to analize']
+       ['motor',      Type.Motor,   None, 'Motor to move'],
+       ['start_pos',  Type.Float,   None, 'Scan start position'],
+       ['final_pos',  Type.Float,   None, 'Scan final position'],
+       ['nr_interv',  Type.Integer, None, 'Number of scan intervals'],
+       ['integ_time', Type.Float,   None, 'Integration time'],
+       ['channel',    Type.ExpChannel,   None, 'Channel to analize']
     ]
 
     def run(self, motor, start_pos, final_pos, nr_interv, integ_time, channel):
 
-        ascan, pars = self.createMacro(
-            "ascan", motor, start_pos, final_pos, nr_interv, integ_time)
+        ascan, pars= self.createMacro(
+            "ascan",motor, start_pos, final_pos, nr_interv, integ_time)
         self.runMacro(ascan)
 
         channel_fullname = channel.getFullName()
