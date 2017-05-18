@@ -470,12 +470,12 @@ class pa(Macro, _diffrac):
                                  _diffrac.fl(self, str(ref[9]))))
                 nb_ref = nb_ref + 1
                 self.output(" %33s  %s %s %s" % ("H K L =",
-                                                 _diffrac.fl(self, str(ref[1])
-                                                         ),
-                                                 _diffrac.fl(self, str(ref[2])
-                                                         ),
-                                                 _diffrac.fl(self, str(ref[3])
-                                                         )))
+                                                 _diffrac.fl(
+                                                     self, str(ref[1])),
+                                                 _diffrac.fl(
+                                                     self, str(ref[2])),
+                                                 _diffrac.fl(
+                                                     self, str(ref[3]))))
                 self.output("")
 
 
@@ -1295,7 +1295,8 @@ class hklscan(aNscan, Macro, _diffrac):
         _diffrac.prepare(self)
         aNscan._prepare(self, [self.h_device, self.k_device, self.l_device],
                         [h_start_pos, k_start_pos, l_start_pos], [h_final_pos,
-                                                                  k_final_pos, l_final_pos],
+                                                                  k_final_pos,
+                                                                  l_final_pos],
                         nr_interv, integ_time)
         
 
