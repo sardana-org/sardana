@@ -470,9 +470,12 @@ class pa(Macro, _diffrac):
                                  _diffrac.fl(self, str(ref[9]))))
                 nb_ref = nb_ref + 1
                 self.output(" %33s  %s %s %s" % ("H K L =",
-                                                 _diffrac.fl(self, str(ref[1])),
-                                                 _diffrac.fl(self, str(ref[2])),
-                                                 _diffrac.fl(self, str(ref[3]))))
+                                                 _diffrac.fl(self, str(ref[1])
+                                                         ),
+                                                 _diffrac.fl(self, str(ref[2])
+                                                         ),
+                                                 _diffrac.fl(self, str(ref[3])
+                                                         )))
                 self.output("")
 
 
@@ -480,9 +483,11 @@ class pa(Macro, _diffrac):
         self.output("  Lattice Constants (lengths / angles):")
         self.output("%32s = %s %s %s / %s %s %s" % ("real space", self.diffrac.a,
                                                     self.diffrac.b, self.diffrac.c, _diffrac.fl(
-                                                    self, str(self.diffrac.alpha)),
-                                                    _diffrac.fl(self, str(self.diffrac.beta)),
-                                                    _diffrac.fl(self, str(self.diffrac.gamma))))
+                                                        self, str(self.diffrac.alpha)),
+                                                    _diffrac.fl(self, str(
+                                                        self.diffrac.beta)),
+                                                    _diffrac.fl(self, str(
+                                                        self.diffrac.gamma))))
 
         self.output("")
         self.output("  Azimuthal reference:")
@@ -906,8 +911,8 @@ class setorn(iMacro, _diffrac):
 
     def run(self, ref_id, H, K, L, mu, theta, chi, phi, gamma, delta):
 
-        if (delta == -999 and self.nb_motors == 6
-        ) or (phi == -999 and self.nb_motors == 4):
+        if (delta == -999 and self.nb_motors == 6) or (
+                phi == -999 and self.nb_motors == 4):
             reflections = []
             try:
                 reflections = self.diffrac.reflectionlist
@@ -920,8 +925,8 @@ class setorn(iMacro, _diffrac):
                     for i in range(1, 4):
                         tmp_ref[hkl_names[i - 1]] = reflections[ref_id][i]
                     for i in range(6, 6 + self.nb_motors):
-                        tmp_ref[self.angle_names[i - 6]
-                        ] = reflections[ref_id][i]
+                        tmp_ref[
+                            self.angle_names[i - 6]] = reflections[ref_id][i]
                 else:
                     for i in range(0, 3):
                         tmp_ref[hkl_names[i]] = 0
@@ -1002,7 +1007,7 @@ class setorn(iMacro, _diffrac):
 
         if self.nb_motors == 6:
             self.angle_values = {"mu": mu, "omega": theta,
-                                 "chi": chi, "phi": phi, "gamma": gamma, \
+                                 "chi": chi, "phi": phi, "gamma": gamma,
                                  "delta": delta}
         elif self.nb_motors == 4:
             self.angle_values = {"omega": omega, "chi": chi,
@@ -1290,7 +1295,8 @@ class hklscan(aNscan, Macro, _diffrac):
         _diffrac.prepare(self)
         aNscan._prepare(self, [self.h_device, self.k_device, self.l_device],
                         [h_start_pos, k_start_pos, l_start_pos], [h_final_pos,
-                                                                  k_final_pos, l_final_pos], nr_interv, integ_time)
+                                                                  k_final_pos, l_final_pos],
+                        nr_interv, integ_time)
         
 
 
