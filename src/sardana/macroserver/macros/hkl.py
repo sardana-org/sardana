@@ -1,8 +1,8 @@
 
 """
-    Macro library containning diffractometer related macros for the macros 
+    Macro library containning diffractometer related macros for the macros
     server Tango device server as part of the Sardana project.
-    
+
 """
 
 # TODO: use taurus instead of PyTango API e.g. read_attribute,
@@ -174,9 +174,9 @@ class _diffrac:
             return regx.sub(repl, ch)
 
 class br(Macro, _diffrac):
-    """Move the diffractometer to the reciprocal space coordinates given by 
-    H, K and L. 
-    If a fourth parameter is given, the combination of angles to be set is 
+    """Move the diffractometer to the reciprocal space coordinates given by
+    H, K and L.
+    If a fourth parameter is given, the combination of angles to be set is
     the correspondig to the given index. The index of the
     angles combinations are then changed."""
 
@@ -246,7 +246,7 @@ class br(Macro, _diffrac):
 
 
 class ubr(Macro, _diffrac):
-    """Move the diffractometer to the reciprocal space coordinates given by 
+    """Move the diffractometer to the reciprocal space coordinates given by
     H, K and L und update.
     """
 
@@ -293,7 +293,7 @@ class _ca(Macro, _diffrac):
         else:
             start_range = Trajectory
             end_range = Trajectory + 1
-            
+
         for i in range(int(start_range), int(end_range)):
             angles_list = self.diffrac.trajectorylist[i]
             self.output("")
@@ -309,7 +309,7 @@ class _ca(Macro, _diffrac):
             except:
                 self.warning(
                     "Not able to read psi. Check if environment Psi is defined")
-                
+
             self.output("Wavelength =  %7.5f" % (self.diffrac.WaveLength))
             self.output("")
 
@@ -338,9 +338,9 @@ class _ca(Macro, _diffrac):
                              str_pos[self.labelmotor["Omega"]],
                              str_pos[self.labelmotor["Chi"]],
                              str_pos[self.labelmotor["Phi"]]))
-                
 
-            
+
+
 class ca(Macro, _diffrac):
     """Calculate motor positions for given H K L according to the current
     operation mode (trajectory 0)."""
@@ -421,7 +421,7 @@ class pa(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self):
-        
+
         str_type = "Eulerian 6C"
         if self.type == 'E4CV':
             str_type = "Eulerian 4C Vertical"
@@ -507,10 +507,10 @@ class pa(Macro, _diffrac):
 class wh(Macro, _diffrac):
     """Show principal axes and reciprocal space positions.
 
-    Prints the current reciprocal space coordinates (H K L) and the user 
-    positions of the principal motors. Depending on the diffractometer 
-    geometry, other parameters such as the angles of incidence and 
-    reflection (ALPHA and BETA) and the incident wavelength (LAMBDA) 
+    Prints the current reciprocal space coordinates (H K L) and the user
+    positions of the principal motors. Depending on the diffractometer
+    geometry, other parameters such as the angles of incidence and
+    reflection (ALPHA and BETA) and the incident wavelength (LAMBDA)
     may be displayed."""
 
     def prepare(self):
@@ -950,7 +950,7 @@ class setorn(iMacro, _diffrac):
             if self.nb_motors == 6:
                 delta = float(self.input(" Delta?", default_value=tmp_ref[
                     "delta"], data_type=Type.String))
-                
+
                 theta = float(self.input(" Theta? ", default_value=tmp_ref[
                           "omega"], data_type=Type.String))
                 chi = float(self.input(" Chi?", default_value=tmp_ref[
@@ -962,7 +962,7 @@ class setorn(iMacro, _diffrac):
                 mu = float(self.input(" Mu?", default_value=tmp_ref[
                     "mu"], data_type=Type.String))
             if self.nb_motors == 4:
-                
+
                 omega = float(self.input(" Omega?", default_value=tmp_ref[
                     "omega"], data_type=Type.String))
                 chi = float(self.input(" Chi?", default_value=tmp_ref[
@@ -971,8 +971,8 @@ class setorn(iMacro, _diffrac):
                     "phi"], data_type=Type.String))
                 tth = float(self.input(" Tth?", default_value=tmp_ref[
                     "omega"], data_type=Type.String))
-                
-                
+
+
             self.output("")
             self.output("Enter %s HKL coordinates" % ref_txt)
             H = float(self.input(" H?", default_value=tmp_ref[
@@ -1012,7 +1012,7 @@ class setorn(iMacro, _diffrac):
         elif self.nb_motors == 4:
             self.angle_values = {"omega": omega, "chi": chi,
                                  "phi": phi, "tth": tth}
-            
+
 
         values = []
         values.append(ref_id)
@@ -1125,9 +1125,9 @@ class addreflection(Macro, _diffrac):
 
 class affine(Macro, _diffrac):
     """Affine current crystal.
-    Fine tunning of lattice parameters and UB matrix based on 
-    current crystal reflections. Reflections with affinement 
-    set to 0 are not used. A new crystal with the post fix 
+    Fine tunning of lattice parameters and UB matrix based on
+    current crystal reflections. Reflections with affinement
+    set to 0 are not used. A new crystal with the post fix
     (affine) is created and set as current crystal"""
 
     def prepare(self):
@@ -1298,13 +1298,13 @@ class hklscan(aNscan, Macro, _diffrac):
                                                                   k_final_pos,
                                                                   l_final_pos],
                         nr_interv, integ_time)
-        
+
 
 
 class th2th(Macro):
     """th2th - scan:
 
-    Relative scan around current position in del and th with d_th=2*d_delta    
+    Relative scan around current position in del and th with d_th=2*d_delta
     """
 
     param_def = [
@@ -1351,7 +1351,7 @@ class luppsi(Macro, _diffrac):
 
     Relative scan psi angle
 
-    [TODO] Still not tested    
+    [TODO] Still not tested
     """
 
     param_def = [
@@ -1469,7 +1469,7 @@ class loadcrystal(iMacro, _diffrac):
         if len(res) == 0:
             self.output("No crystals available in set directory. Nothing done")
             return
-        
+
         i = 1
         for filename in res:
             filename = filename.split('.')[0]
@@ -1567,7 +1567,7 @@ class _blockprintmove(Macro, _diffrac):
         _diffrac.prepare(self)
 
     def run(self, flagprint):
-        
+
         moving = 1
         tmp_dev = {}
         for angle in self.angle_names:
