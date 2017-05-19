@@ -52,24 +52,6 @@ class TestBufferedAttribute(TestCase):
         self.element = MagicMock()
         self.attr = BufferedAttribute(self.element)
 
-    def test_buffered_attribute_listeners(self):
-        """Test if calling add_listener and remove_listener is consistent
-        with the buffered_attribute_listener property.
-
-        Use pseudocounter's Value attribute, which is a buffered attribute,
-        as a dummy listener.
-        """
-        pc1_value = Value(MagicMock())
-        pc2_value = Value(MagicMock())
-        self.attr.add_listener(pc1_value.on_change)
-        self.assertEqual(len(self.attr.buffered_attribute_listeners), 1)
-        self.attr.add_listener(pc2_value.on_change)
-        self.assertEqual(len(self.attr.buffered_attribute_listeners), 2)
-        self.attr.remove_listener(pc1_value.on_change)
-        self.assertEqual(len(self.attr.buffered_attribute_listeners), 1)
-        self.attr.remove_listener(pc2_value.on_change)
-        self.assertEqual(len(self.attr.buffered_attribute_listeners), 0)
-
     def test_append_value_buffer(self):
         """Test if append_value_buffer correctly fills the last_value_chunk
         as well as permanently adds the value to the value_buffer (a buffered
@@ -94,16 +76,13 @@ class TestBufferedAttribute(TestCase):
         self.assertIs(len(self.attr.value_buffer), 3)
         self.assertIs(len(self.attr.last_value_chunk), 3)
 
-    def test_extend_value_buffer_no_buffered_attribute_listener(self):
+    def test_extend_value_buffer_no_pseudo_elements(self):
         """Test if extend_value_buffer correctly fills the last_value_chunk
-        but does not add the value to the value_buffer (a non-buffered
-        attribute listener was added previously so a non-persistent append
-        should take place).
+        but does not add the value to the value_buffer (no pseudo elements
+        are based on this channel so a non-persistent append should take
+        place).
         """
-        def listener(*args):
-            return
         self.element.has_pseudo_elements = MagicMock(return_value=False)
-        self.attr.add_listener(listener)
         self.attr.extend_value_buffer([1, 2, 3])
         self.assertIs(len(self.attr.last_value_chunk), 3)
         self.assertIs(len(self.attr.value_buffer), 0)

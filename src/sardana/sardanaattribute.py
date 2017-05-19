@@ -454,7 +454,6 @@ class BufferedAttribute(SardanaAttribute):
     """
 
     def __init__(self, *args, **kwargs):
-        self._buffered_attribute_listeners = []
         SardanaAttribute.__init__(self, *args, **kwargs)
         self._r_value_buffer = Buffer()
 
@@ -486,36 +485,6 @@ class BufferedAttribute(SardanaAttribute):
 
     def _get_next_idx(self):
         return self.value_buffer.next_idx
-
-    def add_listener(self, listener):
-        """Add listener
-
-        :param listener: callable or object implementing event_received method
-        """
-        if not SardanaAttribute.add_listener(self, listener):
-            return
-        if isinstance(listener, BufferedAttribute) or\
-            (hasattr(listener, "im_self") and
-             isinstance(listener.im_self, BufferedAttribute)):
-            self._buffered_attribute_listeners.append(listener)
-
-    def remove_listener(self, listener):
-        """Remove listener
-
-        :param listener: callable or object implementing event_received method
-        """
-        if not SardanaAttribute.remove_listener(self, listener):
-            return
-        if isinstance(listener, BufferedAttribute) or\
-            (hasattr(listener, "im_self") and
-             isinstance(listener.im_self, BufferedAttribute)):
-            self._buffered_attribute_listeners.remove(listener)
-
-    def get_buffered_attribute_listeners(self):
-        return self._buffered_attribute_listeners
-
-    def has_buffered_attribute_listeners(self):
-        return len(self.buffered_attribute_listeners) > 0
 
     def is_value_required(self, idx):
         """Check whether any of buffered attribute listeners still requires
@@ -630,8 +599,6 @@ class BufferedAttribute(SardanaAttribute):
     last_value_chunk = property(get_last_value_chunk,
         doc="chunk with the last added read values")
     value_buffer = property(get_value_buffer, "buffer with read values")
-    buffered_attribute_listeners = property(get_buffered_attribute_listeners,
-        doc="list of listeners of BufferedAttribute type")
     next_idx = property(get_next_idx,
         doc="index that will be automatically assigned to the next value "\
             " appended to the buffer if not explicitly assigned")
