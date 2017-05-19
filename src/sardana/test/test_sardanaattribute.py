@@ -49,7 +49,8 @@ class TestBufferedAttribute(TestCase):
     """Unit tests for BufferedAttribute class"""
 
     def setUp(self):
-        self.attr = BufferedAttribute(MagicMock())
+        self.element = MagicMock()
+        self.attr = BufferedAttribute(self.element)
 
     def test_buffered_attribute_listeners(self):
         """Test if calling add_listener and remove_listener is consistent
@@ -101,7 +102,7 @@ class TestBufferedAttribute(TestCase):
         """
         def listener(*args):
             return
-
+        self.element.has_pseudo_elements = MagicMock(return_value=False)
         self.attr.add_listener(listener)
         self.attr.extend_value_buffer([1, 2, 3])
         self.assertIs(len(self.attr.last_value_chunk), 3)

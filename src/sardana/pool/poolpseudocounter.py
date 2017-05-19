@@ -235,6 +235,11 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
         kwargs['physical_elements'] = physical_elements
         return kwargs
 
+    def add_user_element(self, element, index=None):
+        index = PoolBaseGroup.add_user_element(self, element, index)
+        element.add_pseudo_element(self)
+        return index
+
     def on_element_changed(self, evt_src, evt_type, evt_value):
         name = evt_type.name.lower()
         # always calculate state.

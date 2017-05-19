@@ -55,9 +55,47 @@ class PoolBaseChannel(PoolElement):
     def __init__(self, **kwargs):
         PoolElement.__init__(self, **kwargs)
         self._value = self.ValueAttributeClass(self, listeners=self.on_change)
+        self._pseudo_elements = []
         if not self.AcquisitionClass is None:
             acq_name = "%s.Acquisition" % self._name
             self.set_action_cache(self.AcquisitionClass(self, name=acq_name))
+
+    def has_pseudo_elements(self):
+        """Informs whether this channel forms part of any pseudo element
+        e.g. pseudo counter.
+
+        :return: has pseudo elements
+        :rtype: bool
+        """
+        return len(self._pseudo_elements) > 0
+
+    def get_pseudo_elements(self):
+        """Returns list of pseudo elements e.g. pseudo counters that this
+        channel belongs to.
+
+        :return: pseudo elements
+        :rtype: seq<:class:`~sardana.pool.poolpseudocounter.PoolPseudoCounter`>
+        """
+        return self._pseudo_elements
+
+    def add_pseudo_element(self, element):
+        """Adds pseudo element e.g. pseudo counter that this channel
+        belongs to.
+
+        :param element: pseudo element
+        :type element: :class:`~sardana.pool.poolpseudocounter.PoolPseudoCounter`
+        """
+        self._pseudo_elements.append(element)
+
+    def remove_pseudo_element(self, element):
+        """Removes pseudo element e.g. pseudo counters that this channel
+        belongs to.
+
+        :param element: pseudo element
+        :type element: :class:`~sardana.pool.poolpseudocounter.PoolPseudoCounter`
+        """
+
+        self._pseudo_elements.remove(element)
 
     def get_value_attribute(self):
         """Returns the value attribute object for this experiment channel

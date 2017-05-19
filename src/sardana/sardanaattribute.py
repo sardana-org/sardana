@@ -524,10 +524,9 @@ class BufferedAttribute(SardanaAttribute):
         :param idx: value's index
         :type idx: int
         """
-        for listener in self.buffered_attribute_listeners:
-            if hasattr(listener, "im_self"):
-                listener = listener.im_self
-            if listener.next_idx <= idx:
+        for element in self.obj.get_pseudo_elements():
+            value_attr = element.get_value_attribute()
+            if value_attr.next_idx <= idx:
                 return True
         return False
 
@@ -579,7 +578,7 @@ class BufferedAttribute(SardanaAttribute):
         self._append_value_buffer(value, idx, propagate)
 
     def _append_value_buffer(self, value, idx=None, propagate=1):
-        persistent = self.has_buffered_attribute_listeners()
+        persistent = self.obj.has_pseudo_elements()
         self._r_value_buffer.append(value, idx, persistent)
         self.fire_read_buffer_event(propagate)
 
@@ -602,7 +601,7 @@ class BufferedAttribute(SardanaAttribute):
     def _extend_value_buffer(self, values, idx=None, propagate=1):
         if len(values) == 0:
             return
-        persistent = self.has_buffered_attribute_listeners()
+        persistent = self.obj.has_pseudo_elements()
         self._r_value_buffer.extend(values, idx, persistent)
         self.fire_read_buffer_event(propagate)
 
