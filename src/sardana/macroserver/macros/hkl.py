@@ -88,13 +88,8 @@ class _diffrac:
             self.labelmotor = {'Omega': "omega",
                                'Chi': "chi", 'Phi': "phi", 'Tth': "tth"}
         elif self.nb_motors == 6:
-            self.labelmotor = {
-                'Mu': "mu",
-                'Theta': "omega",
-                'Chi': "chi",
-                'Phi': "phi",
-                'Gamma': "gamma",
-                'Delta': "delta"}
+            self.labelmotor = {'Mu': "mu", 'Theta': "omega", 'Chi': "chi",
+                               'Phi': "phi", 'Gamma': "gamma", 'Delta': "delta"}
 
         prop = self.diffrac.get_property(['DiffractometerType'])
         for v in prop['DiffractometerType']:
@@ -178,7 +173,6 @@ class _diffrac:
         if mat:
             return regx.sub(repl, ch)
 
-
 class br(Macro, _diffrac):
     """Move the diffractometer to the reciprocal space coordinates given by
     H, K and L.
@@ -191,9 +185,9 @@ class br(Macro, _diffrac):
         ['K', Type.String, None, "K value"],
         ['L', Type.String, None, "L value"],
         ['AnglesIndex', Type.Integer, -1, "Angles index"],
-        ['FlagNotBlocking', Type.Integer, 0,
+        ['FlagNotBlocking', Type.Integer,  0,
          "If 1 not block. Return without finish movement"],
-        ['FlagPrinting', Type.Integer, 0,
+        ['FlagPrinting', Type.Integer,  0,
          "If 1 printing. Used by ubr"]
     ]
 
@@ -346,6 +340,7 @@ class _ca(Macro, _diffrac):
                              str_pos[self.labelmotor["Phi"]]))
 
 
+
 class ca(Macro, _diffrac):
     """Calculate motor positions for given H K L according to the current
     operation mode (trajectory 0)."""
@@ -486,27 +481,18 @@ class pa(Macro, _diffrac):
 
 #        self.output("")
         self.output("  Lattice Constants (lengths / angles):")
-        self.output(
-            "%32s = %s %s %s / %s %s %s" %
-            ("real space", self.diffrac.a, self.diffrac.b, self.diffrac.c, _diffrac.fl(
-                self, str(
-                    self.diffrac.alpha)), _diffrac.fl(
-                self, str(
-                    self.diffrac.beta)), _diffrac.fl(
-                        self, str(
-                            self.diffrac.gamma))))
+        self.output("%32s = %s %s %s / %s %s %s" % ("real space", self.diffrac.a,
+                                                    self.diffrac.b, self.diffrac.c, _diffrac.fl(
+                                                        self, str(self.diffrac.alpha)),
+                                                    _diffrac.fl(self, str(
+                                                        self.diffrac.beta)),
+                                                    _diffrac.fl(self, str(
+                                                        self.diffrac.gamma))))
 
         self.output("")
         self.output("  Azimuthal reference:")
-        self.output(
-            "%34s %s %s %s " %
-            ("H K L =", _diffrac.fl(
-                self, str(
-                    self.diffrac.psirefh)), _diffrac.fl(
-                self, str(
-                    self.diffrac.psirefk)), _diffrac.fl(
-                        self, str(
-                            self.diffrac.psirefl))))
+        self.output("%34s %s %s %s " %
+                    ("H K L =", _diffrac.fl(self, str(self.diffrac.psirefh)), _diffrac.fl(self, str(self.diffrac.psirefk)), _diffrac.fl(self, str(self.diffrac.psirefl))))
 
         self.output("")
         self.output("  Lambda = %s" % (self.diffrac.WaveLength))
@@ -545,12 +531,8 @@ class wh(Macro, _diffrac):
         if self.diffrac.psirefh == -999:
             self.output("")
         else:
-            self.output(
-                "%8s %9.5f %9.5f %9.5f " %
-                ("Ref   = ",
-                 self.diffrac.psirefh,
-                 self.diffrac.psirefk,
-                 self.diffrac.psirefl))
+            self.output("%8s %9.5f %9.5f %9.5f " %
+                        ("Ref   = ", self.diffrac.psirefh, self.diffrac.psirefk, self.diffrac.psirefl))
 
             psirefh_in = self.diffrac.psirefh
             psirefk_in = self.diffrac.psirefk
@@ -570,9 +552,8 @@ class wh(Macro, _diffrac):
             if psirefh_in != psirefh_psi or psirefk_in != psirefk_psi or psirefl_in != psirefl_psi:
                 self.warning(
                     "Psiref vector missmatch. Calculated value corresponds to:")
-                self.warning(
-                    "%8s %9.5f %9.5f %9.5f " %
-                    ("Ref   = ", psirefh_psi, psirefk_psi, psirefl_psi))
+                self.warning("%8s %9.5f %9.5f %9.5f " %
+                             ("Ref   = ", psirefh_psi, psirefk_psi, psirefl_psi))
                 self.warning("Use setaz for setting it consistently")
 
         try:
@@ -637,7 +618,7 @@ class freeze(Macro, _diffrac):
 
     param_def = [
         ['parameter', Type.String, None, "Parameter to freeze"],
-        ['value', Type.Float, None, "Value to be frozen"]
+        ['value',     Type.Float,  None, "Value to be frozen"]
     ]
 
     def prepare(self, parameter, value):
@@ -679,6 +660,7 @@ class setmode(iMacro, _diffrac):
     param_def = [
         ['new_mode', Type.Integer, -1, "Mode to be set"]
     ]
+
 
     def prepare(self, new_mode):
         _diffrac.prepare(self)
@@ -745,9 +727,10 @@ class setlat(iMacro, _diffrac):
         ['b', Type.Float, -999, "Lattice 'b' parameter"],
         ['c', Type.Float, -999, "Lattice 'c' parameter"],
         ['alpha', Type.Float, -999, "Lattice 'alpha' parameter"],
-        ['beta', Type.Float, -999, "Lattice 'beta' parameter"],
+        ['beta',  Type.Float, -999, "Lattice 'beta' parameter"],
         ['gamma', Type.Float, -999, "Lattice 'gamma' parameter"]
     ]
+
 
     def prepare(self, a, b, c, alpha, beta, gamma):
         _diffrac.prepare(self)
@@ -815,8 +798,7 @@ class or0(Macro, _diffrac):
                 self, H, K, L, hkl_ref1[0], hkl_ref1[1], hkl_ref1[2])
             if check:
                 self.warning(
-                    "Can not orient: or0 %9.5f %9.5f %9.5f are parallel to or1" %
-                    (H, K, L))
+                    "Can not orient: or0 %9.5f %9.5f %9.5f are parallel to or1" % (H, K, L))
                 return
 
         values = [0, H, K, L]
@@ -847,8 +829,7 @@ class or1(Macro, _diffrac):
                 self, hkl_ref0[0], hkl_ref0[1], hkl_ref0[2], H, K, L)
             if check:
                 self.warning(
-                    "Can not orient: or0 is parallel to or1 %9.5f %9.5f %9.5f" %
-                    (H, K, L))
+                    "Can not orient: or0 is parallel to or1 %9.5f %9.5f %9.5f" % (H, K, L))
                 return
 
         values = [1, H, K, L]
@@ -971,7 +952,7 @@ class setorn(iMacro, _diffrac):
                     "delta"], data_type=Type.String))
 
                 theta = float(self.input(" Theta? ", default_value=tmp_ref[
-                    "omega"], data_type=Type.String))
+                          "omega"], data_type=Type.String))
                 chi = float(self.input(" Chi?", default_value=tmp_ref[
                     "chi"], data_type=Type.String))
                 phi = float(self.input(" Phi?", default_value=tmp_ref[
@@ -990,6 +971,7 @@ class setorn(iMacro, _diffrac):
                     "phi"], data_type=Type.String))
                 tth = float(self.input(" Tth?", default_value=tmp_ref[
                     "omega"], data_type=Type.String))
+
 
             self.output("")
             self.output("Enter %s HKL coordinates" % ref_txt)
@@ -1013,8 +995,7 @@ class setorn(iMacro, _diffrac):
                     self, hkl_ref[0], hkl_ref[1], hkl_ref[2], H, K, L)
                 if check:
                     self.warning(
-                        "Can not orient: ref0 is parallel to ref1 %9.5f %9.5f %9.5f" %
-                        (H, K, L))
+                        "Can not orient: ref0 is parallel to ref1 %9.5f %9.5f %9.5f" % (H, K, L))
                     return
 
         # Set reflection
@@ -1031,6 +1012,7 @@ class setorn(iMacro, _diffrac):
         elif self.nb_motors == 4:
             self.angle_values = {"omega": omega, "chi": chi,
                                  "phi": phi, "tth": tth}
+
 
         values = []
         values.append(ref_id)
@@ -1172,8 +1154,10 @@ class orswap(Macro, _diffrac):
 class newcrystal(iMacro, _diffrac):
     """ Create a new crystal (if it does not exist) and select it. """
 
-    param_def = [['crystal_name', Type.String, "",
-                  'Name of the crystal to add and select']]
+    param_def = [
+        ['crystal_name',  Type.String, "", 'Name of the crystal to add and select']
+    ]
+
 
     def prepare(self, crystal_name):
         _diffrac.prepare(self)
@@ -1249,10 +1233,10 @@ class hscan(aNscan, Macro, _diffrac):
     "Scan h axis"
 
     param_def = [
-        ['start_pos', Type.Float, None, 'Scan start position'],
-        ['final_pos', Type.Float, None, 'Scan final position'],
-        ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time', Type.Float, None, 'Integration time'],
+        ['start_pos',  Type.Float,   None, 'Scan start position'],
+        ['final_pos',  Type.Float,   None, 'Scan final position'],
+        ['nr_interv',  Type.Integer, None, 'Number of scan intervals'],
+        ['integ_time', Type.Float,   None, 'Integration time'],
     ]
 
     def prepare(self, start_pos, final_pos, nr_interv, integ_time):
@@ -1265,10 +1249,10 @@ class kscan(aNscan, Macro, _diffrac):
     "Scan k axis"
 
     param_def = [
-        ['start_pos', Type.Float, None, 'Scan start position'],
-        ['final_pos', Type.Float, None, 'Scan final position'],
-        ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time', Type.Float, None, 'Integration time'],
+        ['start_pos',  Type.Float,   None, 'Scan start position'],
+        ['final_pos',  Type.Float,   None, 'Scan final position'],
+        ['nr_interv',  Type.Integer, None, 'Number of scan intervals'],
+        ['integ_time', Type.Float,   None, 'Integration time'],
     ]
 
     def prepare(self, start_pos, final_pos, nr_interv, integ_time):
@@ -1281,10 +1265,10 @@ class lscan(aNscan, Macro, _diffrac):
     "Scan l axis"
 
     param_def = [
-        ['start_pos', Type.Float, None, 'Scan start position'],
-        ['final_pos', Type.Float, None, 'Scan final position'],
-        ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time', Type.Float, None, 'Integration time'],
+        ['start_pos',  Type.Float,   None, 'Scan start position'],
+        ['final_pos',  Type.Float,   None, 'Scan final position'],
+        ['nr_interv',  Type.Integer, None, 'Number of scan intervals'],
+        ['integ_time', Type.Float,   None, 'Integration time'],
     ]
 
     def prepare(self, start_pos, final_pos, nr_interv, integ_time):
@@ -1297,32 +1281,24 @@ class hklscan(aNscan, Macro, _diffrac):
     "Scan h k l axes"
 
     param_def = [
-        ['h_start_pos', Type.Float, None, 'Scan h start position'],
-        ['h_final_pos', Type.Float, None, 'Scan h final position'],
-        ['k_start_pos', Type.Float, None, 'Scan k start position'],
-        ['k_final_pos', Type.Float, None, 'Scan k final position'],
-        ['l_start_pos', Type.Float, None, 'Scan l start position'],
-        ['l_final_pos', Type.Float, None, 'Scan l final position'],
-        ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time', Type.Float, None, 'Integration time'],
+        ['h_start_pos',  Type.Float,   None, 'Scan h start position'],
+        ['h_final_pos',  Type.Float,   None, 'Scan h final position'],
+        ['k_start_pos',  Type.Float,   None, 'Scan k start position'],
+        ['k_final_pos',  Type.Float,   None, 'Scan k final position'],
+        ['l_start_pos',  Type.Float,   None, 'Scan l start position'],
+        ['l_final_pos',  Type.Float,   None, 'Scan l final position'],
+        ['nr_interv',  Type.Integer, None, 'Number of scan intervals'],
+        ['integ_time', Type.Float,   None, 'Integration time'],
     ]
 
-    def prepare(
-            self,
-            h_start_pos,
-            h_final_pos,
-            k_start_pos,
-            k_final_pos,
-            l_start_pos,
-            l_final_pos,
-            nr_interv,
-            integ_time):
+    def prepare(self, h_start_pos, h_final_pos, k_start_pos, k_final_pos, l_start_pos, l_final_pos, nr_interv, integ_time):
         _diffrac.prepare(self)
         aNscan._prepare(self, [self.h_device, self.k_device, self.l_device],
                         [h_start_pos, k_start_pos, l_start_pos], [h_final_pos,
                                                                   k_final_pos,
                                                                   l_final_pos],
                         nr_interv, integ_time)
+
 
 
 class th2th(Macro):
@@ -1332,10 +1308,10 @@ class th2th(Macro):
     """
 
     param_def = [
-        ['rel_start_pos', Type.Float, -999, 'Scan start position'],
-        ['rel_final_pos', Type.Float, -999, 'Scan final position'],
-        ['nr_interv', Type.Integer, -999, 'Number of scan intervals'],
-        ['integ_time', Type.Float, -999, 'Integration time']
+        ['rel_start_pos',  Type.Float,   -999, 'Scan start position'],
+        ['rel_final_pos',  Type.Float,   -999, 'Scan final position'],
+        ['nr_interv',  Type.Integer, -999, 'Number of scan intervals'],
+        ['integ_time', Type.Float,   -999, 'Integration time']
     ]
 
     def run(self, rel_start_pos, rel_final_pos, nr_interv, integ_time):
@@ -1363,7 +1339,7 @@ class HookPars:
 def hook_pre_move(self, hook_pars):
     global count_scan
 
-    self.execMacro('freeze', 'psi', hook_pars.psi_save + + \
+    self.execMacro('freeze', 'psi', hook_pars.psi_save + +
                    hook_pars.angle_start + (count_scan - 1) * hook_pars.angle_interv)
     self.execMacro('ubr', hook_pars.h, hook_pars.k, hook_pars.l)
 
@@ -1379,10 +1355,10 @@ class luppsi(Macro, _diffrac):
     """
 
     param_def = [
-        ['rel_start_angle', Type.Float, -999, 'Relative start scan angle'],
-        ['rel_final_angle', Type.Float, -999, 'Relative final scan angle'],
-        ['nr_interv', Type.Integer, -999, 'Number of scan intervals'],
-        ['integ_time', Type.Float, -999, 'Integration time']
+        ['rel_start_angle',  Type.Float,   -999, 'Relative start scan angle'],
+        ['rel_final_angle',  Type.Float,   -999, 'Relative final scan angle'],
+        ['nr_interv',  Type.Integer, -999, 'Number of scan intervals'],
+        ['integ_time', Type.Float,   -999, 'Integration time']
     ]
 
     def prepare(self, H, K, L, AnglesIndex):
@@ -1417,9 +1393,8 @@ class luppsi(Macro, _diffrac):
             psi_motor = self.getMotor(self.psidevice.alias())
             self.output(psi_motor)
 
-            macro, pars = self.createMacro(
-                'dscan %s %f %f %d %f ' %
-                (self.psidevice.alias(), rel_start_angle, rel_final_angle, nr_interv, integ_time))
+            macro, pars = self.createMacro('dscan %s %f %f %d %f ' %
+                                           (self.psidevice.alias(), rel_start_angle, rel_final_angle, nr_interv, integ_time))
 
             # Parameters for scan hook function
 
@@ -1481,8 +1456,7 @@ class loadcrystal(iMacro, _diffrac):
             active_dir = os.path.expanduser('~') + '/crystals/'
         except:
             self.output(
-                "Directory for loading files %s/crystals does not exist" %
-                os.path.expanduser('~'))
+                "Directory for loading files %s/crystals does not exist" % os.path.expanduser('~'))
             newdir = self.input("Type new directory")
             try:
                 files = os.listdir(newdir)
@@ -1604,20 +1578,14 @@ class _blockprintmove(Macro, _diffrac):
                 if tmp_dev[angle].state() == 6:
                     moving = 1
             if flagprint == 1:
-                self.outputBlock(
-                    " %7.5f  %7.5f  %7.5f" %
-                    (self.h_device.position,
-                     self.k_device.position,
-                     self.l_device.position))
+                self.outputBlock(" %7.5f  %7.5f  %7.5f" % (
+                    self.h_device.position, self.k_device.position, self.l_device.position))
                 self.flushOutput()
             self.checkPoint()
             time.sleep(1.0)
         if flagprint == 1:
-            self.outputBlock(
-                " %7.5f  %7.5f  %7.5f" %
-                (self.h_device.position,
-                 self.k_device.position,
-                 self.l_device.position))
+            self.outputBlock(" %7.5f  %7.5f  %7.5f" % (
+                self.h_device.position, self.k_device.position, self.l_device.position))
             self.flushOutput()
 
 
@@ -1626,12 +1594,12 @@ class _diff_scan(Macro):
     This macro is internal and reserved to the hkl infrastucture.
     """
     param_def = [
-        ['motor', Type.Motor, None, 'Motor to move'],
-        ['start_pos', Type.Float, None, 'Scan start position'],
-        ['final_pos', Type.Float, None, 'Scan final position'],
-        ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time', Type.Float, None, 'Integration time'],
-        ['channel', Type.ExpChannel, None, 'Channel to analize']
+        ['motor',      Type.Motor,   None, 'Motor to move'],
+        ['start_pos',  Type.Float,   None, 'Scan start position'],
+        ['final_pos',  Type.Float,   None, 'Scan final position'],
+        ['nr_interv',  Type.Integer, None, 'Number of scan intervals'],
+        ['integ_time', Type.Float,   None, 'Integration time'],
+        ['channel',    Type.ExpChannel,   None, 'Channel to analize']
     ]
 
     def run(self, motor, start_pos, final_pos, nr_interv, integ_time, channel):
