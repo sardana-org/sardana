@@ -34,8 +34,8 @@ import sys
 import time
 
 from sardana import State, ElementType, TYPE_PHYSICAL_ELEMENTS
-from sardana.sardanaattribute import BufferedAttribute, EarlyValueException,\
-    LateValueException
+from sardana.sardanaattribute import BufferedAttribute
+from sardana.sardanabuffer import EarlyValueException, LateValueException
 from sardana.sardanaexception import SardanaException
 from sardana.sardanavalue import SardanaValue
 from sardana.pool.poolexception import PoolException

@@ -30,7 +30,23 @@ from __future__ import absolute_import
 
 from taurus.external.ordereddict import OrderedDict
 
-from sardana.sardanaevent import EventGenerator, EventType
+from .sardanaevent import EventGenerator, EventType
+from .sardanaexception import SardanaException
+
+
+class LateValueException(SardanaException):
+    """Exception indicating that a given value is not present in the buffer and
+    will not arrive yet (newer value(s) were already added to the buffer).
+    """
+    pass
+
+
+class EarlyValueException(SardanaException):
+    """Exception indicating that a given value is not present in the buffer but
+    there is still a chance that it will arrive (no newer values were added to
+    the buffer yet.)
+    """
+    pass
 
 
 class SardanaBuffer(EventGenerator):
@@ -47,7 +63,14 @@ class SardanaBuffer(EventGenerator):
             self.extend(objs)
 
     def get(self, idx):
-        return self._buffer[idx]
+        try:
+            return self._buffer[idx]
+        except KeyError:
+            msg = "value with %s index is not in buffer"
+            if self.next_idx > idx:
+                raise LateValueException(msg)
+            else:
+                raise EarlyValueException(msg)
 
     def append(self, obj, idx=None, persistent=True):
         """Append a single object at the end of the buffer with a given index.

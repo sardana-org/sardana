@@ -36,13 +36,10 @@ __docformat__ = 'restructuredtext'
 import weakref
 import datetime
 
-from taurus.external.ordereddict import OrderedDict
-
 from .sardanaevent import EventGenerator, EventType
 from .sardanadefs import ScalarNumberFilter
 from .sardanavalue import SardanaValue
 from .sardanabuffer import SardanaBuffer
-from .sardanaexception import SardanaException
 
 
 class SardanaAttribute(EventGenerator):
@@ -363,21 +360,6 @@ class ScalarNumberAttribute(SardanaAttribute):
         self.filter = ScalarNumberFilter()
 
 
-class LateValueException(SardanaException):
-    """Exception indicating that a given value is not present in the buffer and
-    will not arrive yet (a newer value(s) were already added to the buffer).
-    """
-    pass
-
-
-class EarlyValueException(SardanaException):
-    """Exception indicating that a given value is not present in the buffer but
-    there is still a chance that it will arrive (new newer values were added to
-    the buffer yet.)
-    """
-    pass
-
-
 class BufferedAttribute(SardanaAttribute):
     """A :class:`SardanaAttribute` specialized for buffering values.
 
@@ -443,15 +425,8 @@ class BufferedAttribute(SardanaAttribute):
         if idx is None:
             value = SardanaAttribute.get_value(self)
         else:
-            try:
-                value_obj = self._r_value_buffer.get(idx)
-                value = value_obj.value
-            except KeyError:
-                msg = "value with %s index is not in buffer"
-                if self.next_idx > idx:
-                    raise LateValueException(msg)
-                else:
-                    raise EarlyValueException(msg)
+            value_obj = self._r_value_buffer.get(idx)
+            value = value_obj.value
         return value
 
     def remove_value(self, idx):
