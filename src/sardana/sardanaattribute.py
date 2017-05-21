@@ -524,12 +524,12 @@ class BufferedAttribute(SardanaAttribute):
             evt_type = EventType(self.name + "_buffer", priority=propagate)
             self.fire_event(evt_type, self)
 
-    def clear_value_buffer(self):
+    def reset_value_buffer(self):
         """Clear value buffer."""
-        self._clear_value_buffer()
+        self._reset_value_buffer()
 
-    def _clear_value_buffer(self):
-        self._r_value_buffer = Buffer()
+    def _reset_value_buffer(self):
+        self._r_value_buffer.reset()
 
     last_value_chunk = property(get_last_value_chunk,
         doc="chunk with the last added read values")

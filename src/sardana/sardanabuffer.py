@@ -105,6 +105,8 @@ class SardanaBuffer(EventGenerator):
         self.fire_event(evt_type, self.last_chunk)
 
     def reset(self):
+        self._next_idx = 0
+        self._buffer = OrderedDict()
 
     def get_last_chunk(self):
         return self._last_chunk

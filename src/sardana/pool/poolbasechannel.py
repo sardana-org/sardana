@@ -233,9 +233,9 @@ class PoolBaseChannel(PoolElement):
         val_attr.set_value(value, propagate=propagate)
         return val_attr
 
-    def clear_value_buffer(self):
+    def reset_value_buffer(self):
         val_attr = self._value
-        val_attr.clear_value_buffer()
+        val_attr.reset_value_buffer()
 
     value = property(get_value, set_value, doc="channel value")
 
