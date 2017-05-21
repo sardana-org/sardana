@@ -33,16 +33,21 @@ from taurus.external.ordereddict import OrderedDict
 from sardana.sardanaevent import EventGenerator, EventType
 
 
-class SardanaBuffer(OrderedDict):
+class SardanaBuffer(EventGenerator):
     """Buffer for objects which are identified by a unique idx and are ordered
     """
 
-    def __init__(self, objs=None):
-        OrderedDict.__init__(self)
+    def __init__(self, objs=None, name=None, **kwargs):
+        super(SardanaBuffer, self).__init__(**kwargs)
+        self.name = name or self.__class__.__name__
+        self._buffer = OrderedDict()
         self._next_idx = 0
         self._last_chunk = None
         if objs is not None:
             self.extend(objs)
+
+    def get(self, idx):
+        return self._buffer[idx]
 
     def append(self, obj, idx=None, persistent=True):
         """Append a single object at the end of the buffer with a given index.
@@ -61,8 +66,9 @@ class SardanaBuffer(OrderedDict):
         self._last_chunk = OrderedDict()
         self._last_chunk[idx] = obj
         if persistent:
-            self[idx] = obj
+            self._buffer[idx] = obj
         self._next_idx = idx + 1
+        self.fire_add_event()
 
     def extend(self, objs, initial_idx=None, persistent=True):
         """Extend buffer with a list of objects assigning them consecutive
@@ -84,8 +90,21 @@ class SardanaBuffer(OrderedDict):
         for idx, obj in enumerate(objs, initial_idx):
             self._last_chunk[idx] = obj
             if persistent:
-                self[idx] = obj
+                self._buffer[idx] = obj
         self._next_idx = idx + 1
+        self.fire_add_event()
+
+    def fire_add_event(self, propagate=1):
+        """Fires an event to the listeners of the object which owns this
+        buffer.
+
+        :param propagate:
+            0 for not propagating, 1 to propagate, 2 propagate with priority
+        :type propagate: int"""
+        evt_type = EventType(self.name, priority=propagate)
+        self.fire_event(evt_type, self.last_chunk)
+
+    def reset(self):
 
     def get_last_chunk(self):
         return self._last_chunk

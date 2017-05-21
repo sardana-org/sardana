@@ -444,7 +444,7 @@ class BufferedAttribute(SardanaAttribute):
             value = SardanaAttribute.get_value(self)
         else:
             try:
-                value_obj = self._r_value_buffer[idx]
+                value_obj = self._r_value_buffer.get(idx)
                 value = value_obj.value
             except KeyError:
                 msg = "value with %s index is not in buffer"
