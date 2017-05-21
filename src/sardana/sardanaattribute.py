@@ -41,6 +41,7 @@ from taurus.external.ordereddict import OrderedDict
 from .sardanaevent import EventGenerator, EventType
 from .sardanadefs import ScalarNumberFilter
 from .sardanavalue import SardanaValue
+from .sardanabuffer import SardanaBuffer
 from .sardanaexception import SardanaException
 
 
@@ -361,72 +362,6 @@ class ScalarNumberAttribute(SardanaAttribute):
         SardanaAttribute.__init__(self, *args, **kwargs)
         self.filter = ScalarNumberFilter()
 
-class Buffer(OrderedDict):
-    """Buffer for objects which are identified by a unique idx and are ordered
-    """
-
-    def __init__(self, objs=None):
-        OrderedDict.__init__(self)
-        self._next_idx = 0
-        self._last_chunk = None
-        if objs is not None:
-            self.extend(objs)
-
-    def append(self, obj, idx=None, persistent=True):
-        """Append a single object at the end of the buffer with a given index.
-
-        :param obj: object to be appened to the buffer
-        :type param: object
-        :param idx: at which index append obj, None means assign at the end of
-            the buffer
-        :type idx: int
-        :param persistent: whether object should be added to a persistent
-            buffer or just as a last chunk
-        :type param: bool
-        """
-        if idx is None:
-            idx = self._next_idx
-        self._last_chunk = OrderedDict()
-        self._last_chunk[idx] = obj
-        if persistent:
-            self[idx] = obj
-        self._next_idx = idx + 1
-
-    def extend(self, objs, initial_idx=None, persistent=True):
-        """Extend buffer with a list of objects assigning them consecutive
-        indexes.
-
-        :param objs: objects that extend the buffer
-        :type param: list<object>
-        :param initial_idx: at which index append the first object,
-            the rest of them will be assigned the next consecutive indexes,
-            None means assign at the end of the buffer
-        :type idx: int
-        :param persistent: whether object should be added to a persistent
-            buffer or just as a last chunk
-        :type param: bool
-        """
-        if initial_idx is None:
-            initial_idx = self._next_idx
-        self._last_chunk = OrderedDict()
-        for idx, obj in enumerate(objs, initial_idx):
-            self._last_chunk[idx] = obj
-            if persistent:
-                self[idx] = obj
-        self._next_idx = idx + 1
-
-    def get_last_chunk(self):
-        return self._last_chunk
-
-    def get_next_idx(self):
-        return self._next_idx
-
-    last_chunk = property(get_last_chunk,
-        doc="chunk with last value(s) added to the buffer")
-    next_idx = property(get_next_idx,
-        doc="index that will be automatically assigned to the next value "\
-            "added to the buffer (if not explicitly assigned by the user)")
-
 
 class LateValueException(SardanaException):
     """Exception indicating that a given value is not present in the buffer and
@@ -455,7 +390,7 @@ class BufferedAttribute(SardanaAttribute):
 
     def __init__(self, *args, **kwargs):
         SardanaAttribute.__init__(self, *args, **kwargs)
-        self._r_value_buffer = Buffer()
+        self._r_value_buffer = SardanaBuffer()
 
     def get_last_value_chunk(self):
         """Returns buffer of the read values added to the buffer as the last
