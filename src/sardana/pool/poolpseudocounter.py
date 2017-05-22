@@ -188,7 +188,7 @@ class Value(BufferedAttribute):
             self.remove_physical_values(idx)
 
     def on_change(self, evt_src, evt_type, evt_value):
-        if evt_type.name.lower() == "value_buffer":
+        if evt_type.name.lower() == "valuebuffer":
             self.on_value_buffer_change(evt_src, evt_type, evt_value)
         else:
             self.fire_read_event(propagate=evt_type.priority)

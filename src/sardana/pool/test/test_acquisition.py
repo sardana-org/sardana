@@ -55,7 +55,7 @@ class AttributeListener(object):
         # v - type: sardana.sardanaattribute.SardanaAttribute e.g.
         #           sardana.pool.poolbasechannel.Value
         s, t, v = args
-        if t.name.lower() != "value_buffer":
+        if t.name.lower() != "valuebuffer":
             return
         # obtaining sardana element e.g. exp. channel (the attribute owner)
         obj = s.get_obj()

@@ -103,7 +103,7 @@ class ZeroDExpChannel(PoolExpChannelDevice):
         attr_name = name
         # TODO: remove this condition when Data attribute will be substituted
         # by ValueBuffer
-        if name == "value_buffer":
+        if name == "valuebuffer":
             attr_name = "data"
         attr = self.get_device_attr().get_attr_by_name(attr_name)
 
@@ -111,7 +111,7 @@ class ZeroDExpChannel(PoolExpChannelDevice):
             value = self.calculate_tango_state(event_value)
         elif name == "status":
             value = self.calculate_tango_status(event_value)
-        elif name == "value_buffer":
+        elif name == "valuebuffer":
             value_chunk = event_value.last_value_chunk
             value = self._encode_value_chunk(value_chunk)
         elif name == "value":
