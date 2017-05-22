@@ -27,22 +27,8 @@ from mock import MagicMock
 
 from taurus.external.unittest import TestCase
 
-from sardana.sardanaattribute import Buffer, BufferedAttribute
+from sardana.sardanaattribute import BufferedAttribute
 from sardana.pool.poolpseudocounter import Value
-
-
-class TestBuffer(TestCase):
-    """Unit tests for Buffer class"""
-
-    def setUp(self):
-        self.buffer = Buffer([1, 2, 3])
-
-    def test_extend(self):
-        """Test extend method with a simple case of a list."""
-        chunk = [4, 5, 6]
-        self.buffer.extend(chunk)
-        self.assertEqual(self.buffer[0], 1)
-        self.assertEqual(self.buffer[5], 6)
 
 
 class TestBufferedAttribute(TestCase):
