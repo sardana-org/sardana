@@ -50,17 +50,28 @@ class EarlyValueException(SardanaException):
 
 
 class SardanaBuffer(EventGenerator):
-    """Buffer for objects which are identified by a unique idx and are ordered
+    """Buffer for objects which are identified by an unique idx and are ordered
     """
 
-    def __init__(self, objs=None, name=None, **kwargs):
+    def __init__(self, name=None, persistent=False, **kwargs):
+        """Construct SardanaBuffer object
+
+        :param name: object name
+        :type name: str
+        :param persistent: whether objects should stay in the buffer until
+            being explicitly removed (True) or just until firing next event
+            (False)
+        :type persistent: bool
+        """
         super(SardanaBuffer, self).__init__(**kwargs)
         self.name = name or self.__class__.__name__
+        self._persistent = persistent
         self._buffer = OrderedDict()
         self._next_idx = 0
         self._last_chunk = None
-        if objs is not None:
-            self.extend(objs)
+
+    def __len__(self):
+        return self._buffer.__len__()
 
     def get(self, idx):
         try:
@@ -72,7 +83,7 @@ class SardanaBuffer(EventGenerator):
             else:
                 raise EarlyValueException(msg)
 
-    def append(self, obj, idx=None, persistent=True):
+    def append(self, obj, idx=None):
         """Append a single object at the end of the buffer with a given index.
 
         :param obj: object to be appened to the buffer
@@ -88,12 +99,12 @@ class SardanaBuffer(EventGenerator):
             idx = self._next_idx
         self._last_chunk = OrderedDict()
         self._last_chunk[idx] = obj
-        if persistent:
+        if self._persistent:
             self._buffer[idx] = obj
         self._next_idx = idx + 1
         self.fire_add_event()
 
-    def extend(self, objs, initial_idx=None, persistent=True):
+    def extend(self, objs, initial_idx=None):
         """Extend buffer with a list of objects assigning them consecutive
         indexes.
 
@@ -103,16 +114,13 @@ class SardanaBuffer(EventGenerator):
             the rest of them will be assigned the next consecutive indexes,
             None means assign at the end of the buffer
         :type idx: int
-        :param persistent: whether object should be added to a persistent
-            buffer or just as a last chunk
-        :type param: bool
         """
         if initial_idx is None:
             initial_idx = self._next_idx
         self._last_chunk = OrderedDict()
         for idx, obj in enumerate(objs, initial_idx):
             self._last_chunk[idx] = obj
-            if persistent:
+            if self._persistent:
                 self._buffer[idx] = obj
         self._next_idx = idx + 1
         self.fire_add_event()
