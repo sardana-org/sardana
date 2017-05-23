@@ -505,9 +505,6 @@ class umv(Macro):
         self._clean()
         self.printAllPos()
 
-    def on_abort(self):
-        self.finish()
-
     def _clean(self):
         for motor, pos in self.getParameters()[0]:
             posObj = motor.getPositionObj()
