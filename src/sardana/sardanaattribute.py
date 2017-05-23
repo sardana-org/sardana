@@ -372,7 +372,15 @@ class BufferedAttribute(SardanaAttribute):
 
     def __init__(self, *args, **kwargs):
         SardanaAttribute.__init__(self, *args, **kwargs)
-        self._r_value_buffer = SardanaBuffer()
+        self._r_value_buffer = None
+
+    # --------------------------------------------------------------------------
+    # Event forwarding
+    # --------------------------------------------------------------------------
+
+    def on_change(self, evt_src, evt_type, evt_value):
+        # forward all events coming from attributes to the listeners
+        self.fire_event(evt_type, evt_value)
 
     def get_last_value_chunk(self):
         """Returns buffer of the read values added to the buffer as the last
@@ -386,12 +394,16 @@ class BufferedAttribute(SardanaAttribute):
     def _get_last_value_chunk(self):
         return self.value_buffer.last_chunk
 
+    def create_value_buffer(self):
+        raise NotImplementedError
 
     def get_value_buffer(self):
         """Returns buffer of the read values for this attribute.
 
         :return: the last read value for this attribute
         :rtype: :class:`~sardana.sardanavalue.SardanaValue`"""
+        if self._r_value_buffer is None:
+            self._r_value_buffer = self.create_value_buffer()
         return self._get_value_buffer()
 
     def _get_value_buffer(self):
@@ -425,7 +437,7 @@ class BufferedAttribute(SardanaAttribute):
         if idx is None:
             value = SardanaAttribute.get_value(self)
         else:
-            value_obj = self._r_value_buffer.get(idx)
+            value_obj = self.value_buffer.get(idx)
             value = value_obj.value
         return value
 
@@ -436,7 +448,7 @@ class BufferedAttribute(SardanaAttribute):
         :type idx: int
         """
         try:
-            self._r_value_buffer.pop(idx)
+            self.value_buffer.pop(idx)
         except KeyError:
             pass
 
@@ -453,13 +465,7 @@ class BufferedAttribute(SardanaAttribute):
             0 for not propagating, 1 to propagate, 2 propagate with priority
         :type propagate: int
         """
-
-        self._append_value_buffer(value, idx, propagate)
-
-    def _append_value_buffer(self, value, idx=None, propagate=1):
-        persistent = self.obj.has_pseudo_elements()
-        self._r_value_buffer.append(value, idx, persistent)
-        self.fire_read_buffer_event(propagate)
+        self.value_buffer.append(value, idx)
 
     def extend_value_buffer(self, values, idx=None, propagate=1):
         """Extend value buffer with values and propagate the event
@@ -475,14 +481,12 @@ class BufferedAttribute(SardanaAttribute):
             0 for not propagating, 1 to propagate, 2 propagate with priority
         :type propagate: int
         """
+        if len(values) == 0:
+            return
         self._extend_value_buffer(values, idx, propagate)
 
     def _extend_value_buffer(self, values, idx=None, propagate=1):
-        if len(values) == 0:
-            return
-        persistent = self.obj.has_pseudo_elements()
-        self._r_value_buffer.extend(values, idx, persistent)
-        self.fire_read_buffer_event(propagate)
+        self.value_buffer.extend(values, idx)
 
     def fire_read_buffer_event(self, propagate=1):
         """Fires an event to the listeners of the object which owns this
@@ -504,7 +508,7 @@ class BufferedAttribute(SardanaAttribute):
         self._reset_value_buffer()
 
     def _reset_value_buffer(self):
-        self._r_value_buffer.reset()
+        self._r_value_buffer = self.create_value_buffer()
 
     last_value_chunk = property(get_last_value_chunk,
         doc="chunk with the last added read values")

@@ -44,8 +44,7 @@ class TestBufferedAttribute(TestCase):
         attribute listener was added previously in order to provoke a
         persistent append).
         """
-        pc_value = Value(MagicMock())
-        self.attr.add_listener(pc_value.on_change)
+        self.attr.obj.has_pseudo_elements = MagicMock(return_value=True)
         self.attr.append_value_buffer(1)
         self.assertIs(len(self.attr.value_buffer), 1)
         self.assertIs(len(self.attr.last_value_chunk), 1)
@@ -56,8 +55,7 @@ class TestBufferedAttribute(TestCase):
         attribute listener was added previously in order to provoke a
         persistent append).
         """
-        pc_value = Value(MagicMock())
-        self.attr.add_listener(pc_value.on_change)
+        self.attr.obj.has_pseudo_elements = MagicMock(return_value=True)
         self.attr.extend_value_buffer([1, 2, 3])
         self.assertIs(len(self.attr.value_buffer), 3)
         self.assertIs(len(self.attr.last_value_chunk), 3)

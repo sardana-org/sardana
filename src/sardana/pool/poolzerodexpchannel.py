@@ -35,6 +35,7 @@ import time
 
 from sardana import ElementType
 from sardana.sardanaevent import EventType
+from sardana.sardanabuffer import SardanaBuffer
 from sardana.sardanaattribute import SardanaAttribute, BufferedAttribute
 from sardana.sardanavalue import SardanaValue
 
@@ -134,6 +135,10 @@ class CurrentValue(SardanaAttribute):
         if not cache or not self.has_value():
             value = self.obj.read_current_value()
             self.set_value(value, propagate=propagate)
+
+
+class ValueBuffer(SardanaBuffer):
+    pass
 
 
 class Value(BufferedAttribute):

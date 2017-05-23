@@ -67,13 +67,13 @@ class BaseAcquisition(object):
     def prepare_attribute_listener(self):
         self.attr_listener = AttributeListener()
         # Add listeners
-        attributes = self.pmg.get_user_elements_attribute_sequence()
+        attributes = self.pmg.get_user_elements()
         for attr in attributes:
             attr.add_listener(self.attr_listener)
 
     def remove_attribute_listener(self):
         # Remove listeners
-        attributes = self.pmg.get_user_elements_attribute_sequence()
+        attributes = self.pmg.get_user_elements()
         for attr in attributes:
             attr.remove_listener(self.attr_listener)
 

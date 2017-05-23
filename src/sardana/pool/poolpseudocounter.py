@@ -242,6 +242,9 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
 
     def on_element_changed(self, evt_src, evt_type, evt_value):
         name = evt_type.name.lower()
+        if name == "valuebuffer":
+            self.on_physical_value_buffer_changed(evt_src, evt_type, evt_value)
+            return
         # always calculate state.
         status_info = self._calculate_states()
         state, status = self.calculate_state_info(status_info=status_info)
@@ -253,6 +256,27 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
             status_propagate = evt_type.priority
         self.set_state(state, propagate=state_propagate)
         self.set_status(status, propagate=status_propagate)
+
+    def on_physical_value_buffer_changed(self, evt_src, evt_type, evt_value):
+        for idx in evt_value.iterkeys():
+            physical_values = []
+            for value_attr in self.get_physical_value_attribute_iterator():
+                try:
+                    value = value_attr.get_value(idx)
+                except EarlyValueException:
+                    return
+                except LateValueException:
+                    self.remove_physical_values(idx)
+                    return
+                physical_values.append(value)
+            value = self.calc(physical_values)
+            self.append_value_buffer(value, idx, evt_type.priority)
+            self.remove_physical_values(idx)
+
+    def remove_physical_values(self, idx, force=False):
+        for value_attr in self.obj.get_physical_value_attribute_iterator():
+            if force or not value_attr.is_value_required(idx):
+                value_attr.remove_value(idx)
 
     def _create_action_cache(self):
         acq_name = "%s.Acquisition" % self._name

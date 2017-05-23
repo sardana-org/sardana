@@ -58,12 +58,11 @@ class AttributeListener(object):
         if t.name.lower() != "valuebuffer":
             return
         # obtaining sardana element e.g. exp. channel (the attribute owner)
-        obj = s.get_obj()
-        obj_name = obj.name
+        obj_name = s.name
         # obtaining the SardanaValue(s) either from the value_chunk (in case
         # of buffered attributes) or from the value in case of normal
         # attributes
-        chunk = v.last_value_chunk
+        chunk = v#.last_value_chunk
         idx = chunk.keys()
         value = [sardana_value.value for sardana_value in chunk.values()]
         # filling the measurement records
@@ -209,7 +208,7 @@ class AcquisitionTestCase(BasePoolTestCase):
 
     def addListeners(self, chn_list):
         for chn in chn_list:
-            chn._value.add_listener(self.l)
+            chn.add_listener(self.l)
 
     def do_asserts(self, channel_names, repetitions, jobs_before):
         # print acquisition records
