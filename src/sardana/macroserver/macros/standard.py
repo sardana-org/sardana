@@ -496,15 +496,14 @@ class umv(Macro):
 
     def run(self, motor_pos_list):
         self.print_pos = True
-        self.execMacro('mv', motor_pos_list)
-        self.finish()
+        try:
+            self.execMacro('mv', motor_pos_list)
+        finally:
+            self.finish()
 
     def finish(self):
         self._clean()
         self.printAllPos()
-
-    def on_abort(self):
-        self.finish()
 
     def _clean(self):
         for motor, pos in self.getParameters()[0]:
