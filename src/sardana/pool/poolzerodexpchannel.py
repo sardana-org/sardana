@@ -35,11 +35,10 @@ import time
 
 from sardana import ElementType
 from sardana.sardanaevent import EventType
-from sardana.sardanabuffer import SardanaBuffer
-from sardana.sardanaattribute import SardanaAttribute, BufferedAttribute
+from sardana.sardanaattribute import SardanaAttribute
 from sardana.sardanavalue import SardanaValue
 
-from sardana.pool.poolbasechannel import PoolBaseChannel
+from sardana.pool.poolbasechannel import PoolBaseChannel, ValueBuffer
 from sardana.pool.poolacquisition import Pool0DAcquisition
 
 
@@ -137,11 +136,7 @@ class CurrentValue(SardanaAttribute):
             self.set_value(value, propagate=propagate)
 
 
-class ValueBuffer(SardanaBuffer):
-    pass
-
-
-class Value(BufferedAttribute):
+class Value(SardanaAttribute):
 
     DefaultAccumulationType = "Average"
 
