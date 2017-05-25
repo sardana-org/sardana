@@ -132,8 +132,7 @@ class PseudoCounter(PoolExpChannelDevice):
         elif name == "status":
             value = self.calculate_tango_status(event_value)
         elif name == "valuebuffer":
-            value_chunk = event_value.last_value_chunk
-            value = self._encode_value_chunk(value_chunk)
+            value = self._encode_value_chunk(event_value)
             self._first_read_cache = True
         elif name == "value":
             if isinstance(event_value, SardanaAttribute):
