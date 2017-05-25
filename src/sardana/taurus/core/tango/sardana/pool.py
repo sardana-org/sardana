@@ -510,6 +510,8 @@ class PoolElement(BaseElement, TangoDevice):
             else:
                 e_info = sys.exc_info()[:2]
                 state = traceback.format_exception_only(*e_info)
+        except TypeError:  # we assume state is a TaurusDevState
+            state = str(self.state).capitalize()
         except:
             e_info = sys.exc_info()[:2]
             state = traceback.format_exception_only(*e_info)
