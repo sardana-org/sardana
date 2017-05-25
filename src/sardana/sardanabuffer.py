@@ -29,8 +29,10 @@ for Sardana buffers"""
 from __future__ import absolute_import
 
 import weakref
+
 from taurus.external.ordereddict import OrderedDict
 
+from .sardanavalue import SardanaValue
 from .sardanaevent import EventGenerator, EventType
 from .sardanaexception import SardanaException
 
@@ -89,6 +91,11 @@ class SardanaBuffer(EventGenerator):
         if obj is not None:
             obj = obj()
         return obj
+
+    def get_value(self, idx):
+        return self.get_value_obj(idx).value
+
+    def get_value_obj(self, idx):
         try:
             return self._buffer[idx]
         except KeyError:
@@ -98,28 +105,37 @@ class SardanaBuffer(EventGenerator):
             else:
                 raise EarlyValueException(msg)
 
-    def append(self, obj, idx=None):
-        """Append a single object at the end of the buffer with a given index.
+    def remove(self, idx):
+        try:
+            return self._buffer.pop(idx)
+        except KeyError:
+            msg = "value with %s index is not in buffer"
+            raise KeyError(msg)
 
-        :param obj: object to be appened to the buffer
-        :type param: object
-        :param idx: at which index append obj, None means assign at the end of
-            the buffer
+    def append(self, value, idx=None):
+        """Append a single value at the end of the buffer with a given index.
+
+        :param value: value to be appended to the buffer
+        :type param: SardanaValue or any object
+        :param idx: at which index append the value, None means append at the
+            end of the buffer
         :type idx: int
-        :param persistent: whether object should be added to a persistent
+        :param persistent: whether value should be added to a persistent
             buffer or just as a last chunk
         :type param: bool
         """
         if idx is None:
             idx = self._next_idx
         self._last_chunk = OrderedDict()
-        self._last_chunk[idx] = obj
+        if not isinstance(value, SardanaValue):
+            value = SardanaValue(value)
+        self._last_chunk[idx] = value
         if self._persistent:
-            self._buffer[idx] = obj
+            self._buffer[idx] = value
         self._next_idx = idx + 1
         self.fire_add_event()
 
-    def extend(self, objs, initial_idx=None):
+    def extend(self, values, initial_idx=None):
         """Extend buffer with a list of objects assigning them consecutive
         indexes.
 
@@ -133,10 +149,12 @@ class SardanaBuffer(EventGenerator):
         if initial_idx is None:
             initial_idx = self._next_idx
         self._last_chunk = OrderedDict()
-        for idx, obj in enumerate(objs, initial_idx):
-            self._last_chunk[idx] = obj
+        for idx, value in enumerate(values, initial_idx):
+            if not isinstance(value, SardanaValue):
+                value = SardanaValue(value)
+            self._last_chunk[idx] = value
             if self._persistent:
-                self._buffer[idx] = obj
+                self._buffer[idx] = value
         self._next_idx = idx + 1
         self.fire_add_event()
 
@@ -162,7 +180,7 @@ class SardanaBuffer(EventGenerator):
 
     obj = property(get_obj, "container object for this buffer")
     last_chunk = property(get_last_chunk,
-        doc="chunk with last value(s) added to the buffer")
+        doc="chunk with last value(s) added to this buffer")
     next_idx = property(get_next_idx,
         doc="index that will be automatically assigned to the next value "\
-            "added to the buffer (if not explicitly assigned by the user)")
+            "added to this buffer (if not explicitly assigned by the user)")
