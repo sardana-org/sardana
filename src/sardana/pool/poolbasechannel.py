@@ -102,6 +102,8 @@ class PoolBaseChannel(PoolElement):
         :param element: pseudo element
         :type element: :class:`~sardana.pool.poolpseudocounter.PoolPseudoCounter`
         """
+        if not self.has_pseudo_elements():
+            self.get_value_buffer().persistent = True
         self._pseudo_elements.append(element)
 
     def remove_pseudo_element(self, element):
@@ -113,6 +115,8 @@ class PoolBaseChannel(PoolElement):
         """
 
         self._pseudo_elements.remove(element)
+        if not self.has_pseudo_elements():
+            self.get_value_buffer().persistent = False
 
     def get_value_attribute(self):
         """Returns the value attribute object for this experiment channel
