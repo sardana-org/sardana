@@ -178,7 +178,15 @@ class SardanaBuffer(EventGenerator):
     def get_next_idx(self):
         return self._next_idx
 
+    def get_persistent(self):
+        return self._persistent
+
+    def set_persistent(self, persistent):
+        self._persistent = persistent
+
     obj = property(get_obj, "container object for this buffer")
+    persistent = property(get_persistent, set_persistent, "flag whether this "\
+        "buffer stores objects persistently")
     last_chunk = property(get_last_chunk,
         doc="chunk with last value(s) added to this buffer")
     next_idx = property(get_next_idx,
