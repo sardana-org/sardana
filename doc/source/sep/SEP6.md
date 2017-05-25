@@ -390,6 +390,7 @@ Out of scope of SEP6
 * support of different trigger types: pre-, mid- or post-triggers
 * ascanct does not support
     * pseudocounters 
+    * 0D ExpChannel
     * 1D ExpChannel
     * 2D ExpChannel
     * external channels (Tango attributes)
@@ -407,6 +408,7 @@ Changes
 - 2016-11-30 [mrosanes](https://github.com/sagiss) Migrate SEP6 from SF wiki to independent markdown language file.
 - 2017-01-01 [reszelaz](https://github.com/reszelaz) Remove last pending TODOs and fix the scope in order to open for final discussions.
 - 2017-04-03 [reszelaz](https://github.com/reszelaz) Accept SEP6 after positive votes from DESY, MAXIV, SOLARIS and ALBA.
+- 2017-05-25 [reszelaz](https://github.com/reszelaz) Correction: reflect 0D non-support in ascanct (Out of scope of SEP6 section).
 
 
 
