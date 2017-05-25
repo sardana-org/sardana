@@ -510,7 +510,10 @@ class PoolElement(BaseElement, TangoDevice):
         except:
             e_info = sys.exc_info()[:2]
             state = traceback.format_exception_only(*e_info)
-        msg.append(tab + "   State: " + state)
+        try:
+            msg.append(tab + "   State: " + state)
+        except TypeError:
+            msg.append(tab + "   State: " + state[0])
 
         try:
             e_info = sys.exc_info()[:2]
