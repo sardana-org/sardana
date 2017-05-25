@@ -28,6 +28,7 @@ for Sardana buffers"""
 
 from __future__ import absolute_import
 
+import weakref
 from taurus.external.ordereddict import OrderedDict
 
 from .sardanaevent import EventGenerator, EventType
@@ -53,7 +54,7 @@ class SardanaBuffer(EventGenerator):
     """Buffer for objects which are identified by an unique idx and are ordered
     """
 
-    def __init__(self, name=None, persistent=False, **kwargs):
+    def __init__(self, obj=None, name=None, persistent=False, **kwargs):
         """Construct SardanaBuffer object
 
         :param name: object name
@@ -64,6 +65,9 @@ class SardanaBuffer(EventGenerator):
         :type persistent: bool
         """
         super(SardanaBuffer, self).__init__(**kwargs)
+        if obj is not None:
+            obj = weakref.ref(obj)
+        self._obj = obj
         self.name = name or self.__class__.__name__
         self._persistent = persistent
         self._buffer = OrderedDict()
@@ -73,7 +77,18 @@ class SardanaBuffer(EventGenerator):
     def __len__(self):
         return self._buffer.__len__()
 
-    def get(self, idx):
+    def get_obj(self):
+        """Returns the object which *owns* this buffer
+
+        :return: the object which *owns* this buffer
+        :rtype: obj"""
+        return self._get_obj()
+
+    def _get_obj(self):
+        obj = self._obj
+        if obj is not None:
+            obj = obj()
+        return obj
         try:
             return self._buffer[idx]
         except KeyError:
@@ -145,6 +160,7 @@ class SardanaBuffer(EventGenerator):
     def get_next_idx(self):
         return self._next_idx
 
+    obj = property(get_obj, "container object for this buffer")
     last_chunk = property(get_last_chunk,
         doc="chunk with last value(s) added to the buffer")
     next_idx = property(get_next_idx,
