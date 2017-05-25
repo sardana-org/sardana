@@ -28,35 +28,34 @@
 __all__ = ["InterruptException", "StopException", "AbortException",
            "BaseElement", "ControllerClass", "ControllerLibrary",
            "PoolElement", "Controller", "ComChannel", "ExpChannel",
-           "CTExpChannel", "ZeroDExpChannel", "OneDExpChannel", "TwoDExpChannel",
+           "CTExpChannel", "ZeroDExpChannel", "OneDExpChannel",
+           "TwoDExpChannel",
            "PseudoCounter", "Motor", "PseudoMotor", "MotorGroup", "TriggerGate",
            "MeasurementGroup", "IORegister", "Instrument", "Pool",
            "registerExtensions", "getChannelConfigs"]
 
 __docformat__ = 'restructuredtext'
 
+import copy
+import operator
 import os
 import sys
 import time
-import copy
-import weakref
-import operator
 import traceback
+import weakref
 
 from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
     DeviceProxy
-
 from taurus import Factory, Device, Attribute
-from taurus.core.taurusbasetypes import TaurusEventType, TaurusSWDevState, \
-    TaurusSerializationMode
+from taurus.core.taurusbasetypes import TaurusEventType
+
 try:
-    from taurus.core.taurusvalidator import AttributeNameValidator as\
+    from taurus.core.taurusvalidator import AttributeNameValidator as \
         TangoAttributeNameValidator
 except ImportError:
     # TODO: For Taurus 4 compatibility
     from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 from taurus.core.util.log import Logger
-from taurus.core.util.singleton import Singleton
 from taurus.core.util.codecs import CodecFactory
 from taurus.core.util.containers import CaselessDict
 from taurus.core.util.event import EventGenerator, AttributeEventWait, \
@@ -123,7 +122,8 @@ class BaseElement(object):
         return self._str_tuple[:n]
 
     def __cmp__(self, o):
-        return cmp(self.getPoolData()['full_name'], o.getPoolData()['full_name'])
+        return cmp(self.getPoolData()['full_name'],
+                   o.getPoolData()['full_name'])
 
     def getName(self):
         return self.getPoolData()['name']
@@ -140,7 +140,6 @@ class BaseElement(object):
 
 
 class ControllerClass(BaseElement):
-
     def __init__(self, **kw):
         self.__dict__.update(kw)
         self.path, self.f_name = os.path.split(self.file_name)
@@ -188,7 +187,6 @@ class ControllerClass(BaseElement):
 
 
 class ControllerLibrary(BaseElement):
-
     def __init__(self, **kw):
         self.__dict__.update(kw)
 
@@ -258,9 +256,11 @@ def reservedOperation(fn):
         try:
             return fn(*args, **kwargs)
         except:
-            print "Exception occured in reserved operation: clearing events..."
+            print
+            "Exception occured in reserved operation: clearing events..."
             self._clearEventWait()
             raise
+
     return new_fn
 
 
@@ -412,7 +412,7 @@ class PoolElement(BaseElement, TangoDevice):
         instr_name = self._getAttrValue('instrument', force=force)
         if not instr_name:
             return ''
-        #instr_name = instr_name[:instr_name.index('(')]
+        # instr_name = instr_name[:instr_name.index('(')]
         return instr_name
 
     def getInstrument(self):
@@ -501,7 +501,7 @@ class PoolElement(BaseElement, TangoDevice):
         msg = [self.getName() + ":"]
         try:
             state = str(self.state()).capitalize()
-        except DevFailed, df:
+        except DevFailed as df:
             if len(df.args):
                 state = df.args[0].desc
             else:
@@ -516,7 +516,7 @@ class PoolElement(BaseElement, TangoDevice):
             e_info = sys.exc_info()[:2]
             status = self.status()
             status = status.replace('\n', indent)
-        except DevFailed, df:
+        except DevFailed as df:
             if len(df.args):
                 status = df.args[0].desc
             else:
@@ -731,7 +731,7 @@ class Motor(PoolElement, Moveable):
     def setSign(self, value):
         return self.getSignObj().write(value)
 
-    #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+    # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
     # Moveable interface
     #
 
@@ -772,7 +772,7 @@ class Motor(PoolElement, Moveable):
         evt_wait.connect(state)
         evt_wait.lock()
         try:
-            #evt_wait.waitEvent(DevState.MOVING, equal=False)
+            # evt_wait.waitEvent(DevState.MOVING, equal=False)
             time_stamp = time.time()
             try:
                 self.getPositionObj().write(new_pos)
@@ -817,9 +817,10 @@ class Motor(PoolElement, Moveable):
         if name.lower() == self.getName().lower():
             return 0
         return -1
+
     #
     # End of Moveable interface
-    #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+    # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
     def _information(self, tab='    '):
         msg = PoolElement._information(self, tab=tab)
@@ -862,7 +863,7 @@ class PseudoMotor(PoolElement, Moveable):
     def getDialPositionObj(self):
         return self.getPositionObj()
 
-    #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+    # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
     # Moveable interface
     #
 
@@ -906,9 +907,10 @@ class PseudoMotor(PoolElement, Moveable):
         if name.lower() == self.getName().lower():
             return 0
         return -1
+
     #
     # End of Moveable interface
-    #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+    # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
     def _information(self, tab='    '):
         msg = PoolElement._information(self, tab=tab)
@@ -955,7 +957,7 @@ class MotorGroup(PoolElement, Moveable):
     def getPositionObj(self):
         return self._getAttrEG('position')
 
-    #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+    # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
     # Moveable interface
     #
 
@@ -1002,7 +1004,7 @@ class MotorGroup(PoolElement, Moveable):
 
     #
     # End of Moveable interface
-    #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+    # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
     def _information(self, tab='    '):
         msg = PoolElement._information(self, tab=tab)
@@ -1026,7 +1028,6 @@ class MotorGroup(PoolElement, Moveable):
 
 
 class BaseChannelInfo(object):
-
     def __init__(self, data):
         # dict<str, obj>
         # channel data
@@ -1035,7 +1036,6 @@ class BaseChannelInfo(object):
 
 
 class TangoChannelInfo(BaseChannelInfo):
-
     def __init__(self, data, info):
         BaseChannelInfo.__init__(self, data)
         # PyTango.AttributeInfoEx
@@ -1099,14 +1099,13 @@ def getChannelConfigs(mgconfig, ctrls=None, sort=True):
         # sort the channel configs by index (primary sort) and then by channel
         # name.
         chconfigs = sorted(chconfigs, key=lambda c: c[
-                           0])  # sort by channel_name
+            0])  # sort by channel_name
         # sort by index (give a very large index for those which don't have it)
         chconfigs = sorted(chconfigs, key=lambda c: c[1].get('index', 1e16))
     return chconfigs
 
 
 class MGConfiguration(object):
-
     def __init__(self, mg, data):
         self._mg = weakref.ref(mg)
         if isinstance(data, (str, unicode)):
@@ -1124,8 +1123,8 @@ class MGConfiguration(object):
                 channels[channel_name] = channel_data
 
         #####################
-        #@todo: the for-loops above could be replaced by something like:
-        #self.channels = channels = CaselessDict(getChannelConfigs(data,sort=False))
+        # @todo: the for-loops above could be replaced by something like:
+        # self.channels = channels = CaselessDict(getChannelConfigs(data,sort=False))
         #####################
 
         # seq<dict> each element is the channel data in form of a dict as
@@ -1180,7 +1179,7 @@ class MGConfiguration(object):
         for channel_name, channel_data in self.channels.items():
             cache[channel_name] = None
             data_source = channel_data['source']
-            #external = ctrl_name.startswith("__")
+            # external = ctrl_name.startswith("__")
             # TODO: For Taurus 4 compatibility
             # data_source of the sardana channels does not contain the scheme
             # part but the external tango channels does.
@@ -1427,7 +1426,8 @@ class MeasurementGroup(PoolElement):
         cfg_attr.addListener(self.on_configuration_changed)
 
     def _create_str_tuple(self):
-        return self.getName(), self.getTimerName(), ", ".join(self.getChannelNames())
+        return self.getName(), self.getTimerName(), ", ".join(
+            self.getChannelNames())
 
     def getConfigurationAttrEG(self):
         return self._getAttrEG('Configuration')
@@ -1631,7 +1631,7 @@ class MeasurementGroup(PoolElement):
                 wrong_channels.append(ch)
         if len(wrong_channels) > 0:
             msg = 'channels: %s are not present in measurement group' % \
-                wrong_channels
+                  wrong_channels
             raise Exception(msg)
         self.setConfiguration(cfg.raw_data)
 
@@ -1701,7 +1701,6 @@ class IORegister(PoolElement):
 
 
 class Instrument(BaseElement):
-
     def __init__(self, **kw):
         self.__dict__.update(kw)
 
@@ -1762,7 +1761,8 @@ class Pool(TangoDevice, MoveableSource):
                 # skip configuration errors
                 if d.reason == "API_BadConfigurationProperty":
                     return
-                if d.reason in ("API_DeviceNotExported", "API_CantConnectToDevice"):
+                if d.reason in (
+                "API_DeviceNotExported", "API_CantConnectToDevice"):
                     msg = "Pool was shutdown or is inacessible"
                 else:
                     msg = "{0}: {1}".format(d.reason, d.desc)
@@ -1825,7 +1825,8 @@ class Pool(TangoDevice, MoveableSource):
         return self.getElementsInfo().getElementsWithInterface(interface)
 
     def getElementWithInterface(self, elem_name, interface):
-        return self.getElementsInfo().getElementWithInterface(elem_name, interface)
+        return self.getElementsInfo().getElementWithInterface(elem_name,
+                                                              interface)
 
     def getObj(self, name, elem_type=None):
         if elem_type is None:
@@ -1850,7 +1851,7 @@ class Pool(TangoDevice, MoveableSource):
     def __str__(self):
         return repr(self)
 
-    #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+    # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
     # MoveableSource interface
     #
 
@@ -1904,7 +1905,7 @@ class Pool(TangoDevice, MoveableSource):
 
     #
     # End of MoveableSource interface
-    #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+    # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
     def _wait_for_element_in_container(self, container, elem_name, timeout=0.5,
                                        contains=True):
