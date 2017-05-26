@@ -28,12 +28,14 @@ This file follows the formats and conventions from [keepachangelog.com]
   (SEP6)
 - "How to write a counter/timer controller" documentation (SEP6)
 - "How to write a trigger/gate controller" documentation (SEP6)
+- Flake8 check-on-push for CI (#451)
 
 ### Changed
 - `ascanct` & co. macro parameters to more resamble parameters of step scans
   (SEP6)
 - `trigger_type` was renamed to `synchronization` in Measurement Group
   configuration and as the experimental channel controller parameter (SEP6)
+- Applied AutoPEP8 to whole project (#446)
 
 ### Deprecated
 - `LoadOne` API had changed - `repetitions` was added as a mandatory argument
