@@ -287,7 +287,7 @@ class PoolAcquisition(PoolAction):
             # acquisition sub-actions. See extensive explanation in the
             # constructor of PoolAcquisitionBase.
             try:
-                elem.reset_value_buffer()
+                elem.clear_value_buffer()
             except AttributeError:
                 pass
         config = kwargs['config']
@@ -448,7 +448,7 @@ class PoolAcquisitionBase(PoolAction):
         # if we clear the buffer at the end.
         # Whenever there will be solution for that, after refactoring of the
         # acquisition actions, uncomment this line 
-        # self.add_finish_hook(self.reset_value_buffers, True)
+        # self.add_finish_hook(self.clear_value_buffers, True)
 
     def in_acquisition(self, states):
         """Determines if we are in acquisition or if the acquisition has ended
@@ -646,9 +646,9 @@ class PoolAcquisitionBase(PoolAction):
                     msg = ("%s.StartAll() failed" % pool_ctrl.name)
                     raise Exception(msg)
 
-    def reset_value_buffers(self):
+    def clear_value_buffers(self):
         for channel in self._channels:
-            channel.reset_value_buffer()
+            channel.clear_value_buffer()
 
 
 class PoolAcquisitionHardware(PoolAcquisitionBase):

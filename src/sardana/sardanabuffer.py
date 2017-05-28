@@ -202,7 +202,7 @@ class SardanaBuffer(EventGenerator):
         evt_type = EventType(self.name, priority=propagate)
         self.fire_event(evt_type, self.last_chunk)
 
-    def reset(self):
+    def clear(self):
         self._next_idx = 0
         self._buffer = OrderedDict()
 
