@@ -28,6 +28,8 @@ for Sardana buffers"""
 
 from __future__ import absolute_import
 
+__all__ = ["SardanaBuffer", "LateValueException", "EarlyValueException"]
+
 import weakref
 
 from taurus.external.ordereddict import OrderedDict
@@ -39,7 +41,7 @@ from .sardanaexception import SardanaException
 
 class LateValueException(SardanaException):
     """Exception indicating that a given value is not present in the buffer and
-    will not arrive yet (newer value(s) were already added to the buffer).
+    will not arrive any more (newer value(s) were already added to the buffer).
     """
     pass
 
@@ -47,22 +49,31 @@ class LateValueException(SardanaException):
 class EarlyValueException(SardanaException):
     """Exception indicating that a given value is not present in the buffer but
     there is still a chance that it will arrive (no newer values were added to
-    the buffer yet.)
+    the buffer yet).
     """
     pass
 
 
 class SardanaBuffer(EventGenerator):
-    """Buffer for objects which are identified by an unique idx and are ordered
+    """Buffer for SardanaValue objects. Each value is identified by an unique
+    idx and all values are organized based on the order of addition to the
+    buffer
+
+    ..todo:: Eliminate the last_chunk - it is not really necessary and just
+     consumes memory.
+    ..todo:: It is better to fire events in form of a list with tuples
+    of idx and value objects.
     """
 
     def __init__(self, obj=None, name=None, persistent=False, **kwargs):
         """Construct SardanaBuffer object
 
+        :param obj: the object which owns this buffer
+        :type obj: obj
         :param name: object name
         :type name: str
-        :param persistent: whether objects should stay in the buffer until
-            being explicitly removed (True) or just until firing next event
+        :param persistent: whether values are kept in the buffer until
+            being explicitly removed (True) or just until firing the next event
             (False)
         :type persistent: bool
         """
@@ -80,9 +91,9 @@ class SardanaBuffer(EventGenerator):
         return self._buffer.__len__()
 
     def get_obj(self):
-        """Returns the object which *owns* this buffer
+        """Returns the object which owns this buffer
 
-        :return: the object which *owns* this buffer
+        :return: the object which owns this buffer
         :rtype: obj"""
         return self._get_obj()
 
@@ -93,9 +104,23 @@ class SardanaBuffer(EventGenerator):
         return obj
 
     def get_value(self, idx):
+        """Return value of a given index.
+
+        :param idx: index of the value to be returned
+        :type idx: int
+        :return: the value corresponding to the idx
+        :rtype: object
+        """
         return self.get_value_obj(idx).value
 
     def get_value_obj(self, idx):
+        """Return the value object of a given index.
+
+        :param idx: index of the value to be returned
+        :type idx: int
+        :return: the value object corresponding to the idx
+        :rtype: SardanaValue
+        """
         try:
             return self._buffer[idx]
         except KeyError:
@@ -104,13 +129,6 @@ class SardanaBuffer(EventGenerator):
                 raise LateValueException(msg)
             else:
                 raise EarlyValueException(msg)
-
-    def remove(self, idx):
-        try:
-            return self._buffer.pop(idx)
-        except KeyError:
-            msg = "value with %s index is not in buffer"
-            raise KeyError(msg)
 
     def append(self, value, idx=None):
         """Append a single value at the end of the buffer with a given index.
@@ -158,13 +176,29 @@ class SardanaBuffer(EventGenerator):
         self._next_idx = idx + 1
         self.fire_add_event()
 
+    def remove(self, idx):
+        """Remove value object of a given index.
+
+        :param idx: index of the value to be returned
+        :type idx: int
+        :return: the value object corresponding to the idx
+        :rtype: object
+        """
+        try:
+            return self._buffer.pop(idx)
+        except KeyError:
+            msg = "value with %s index is not in buffer"
+            raise KeyError(msg)
+
+
     def fire_add_event(self, propagate=1):
         """Fires an event to the listeners of the object which owns this
         buffer.
 
         :param propagate:
             0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate: int"""
+        :type propagate: int
+        """
         evt_type = EventType(self.name, priority=propagate)
         self.fire_event(evt_type, self.last_chunk)
 

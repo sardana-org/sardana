@@ -40,12 +40,12 @@ from sardana.sardanaexception import SardanaException
 from sardana.sardanavalue import SardanaValue
 from sardana.pool.poolexception import PoolException
 from sardana.pool.poolbasechannel import PoolBaseChannel
-from sardana.pool.poolbasechannel import ValueBuffer as BaseChannelValueBuffer
+from sardana.pool.poolbasechannel import ValueBuffer as ValueBuffer_
 from sardana.pool.poolbasegroup import PoolBaseGroup
 from sardana.pool.poolacquisition import PoolCTAcquisition
 
 
-class ValueBuffer(BaseChannelValueBuffer):
+class ValueBuffer(ValueBuffer_):
 
     def __init__(self, *args, **kwargs):
         super(ValueBuffer, self).__init__(*args, **kwargs)

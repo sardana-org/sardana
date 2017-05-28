@@ -39,11 +39,13 @@ from sardana.pool.poolacquisition import PoolCTAcquisition
 class ValueBuffer(SardanaBuffer):
 
     def is_value_required(self, idx):
-        """Check whether any of buffered attribute listeners still requires
+        """Check whether any of pseudo elements still still requires
         this value.
 
         :param idx: value's index
         :type idx: int
+        :return: whether value is required or can be freely removed
+        :rtype: bool
         """
         for element in self.obj.get_pseudo_elements():
             if element.get_value_buffer().next_idx <= idx:
