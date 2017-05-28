@@ -196,6 +196,12 @@ def extract_repetitions(synchronization):
     return repetitions
 
 
+def is_value_error(value):
+    if isinstance(value, SardanaValue) and value.error:
+        return True
+    return False
+
+
 class PoolAcquisition(PoolAction):
 
     def __init__(self, main_element, name="Acquisition"):
@@ -679,10 +685,12 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
             if not i % nb_states_per_value:
                 self.read_value_loop(ret=values)
                 for acquirable, value in values.items():
-                    if isinstance(value, SardanaValue) and value.error:
-                        self.warning("Error when reading value: %r" %
-                                     value.exc_info)
-                    acquirable.extend_value_buffer(value)
+                    if is_value_error(value):
+                        self.error("Loop read value error for %s" %
+                                   acquirable.name)
+                        acquirable.put_value(value)
+                    else:
+                        acquirable.extend_value_buffer(value)
 
             time.sleep(nap)
             i += 1
@@ -697,10 +705,12 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
             acquirable.set_state_info(state_info, propagate=0)
             if acquirable in values:
                 value = values[acquirable]
-                if isinstance(value, SardanaValue) and value.error:
-                    self.warning("Error when reading value: %r" %
-                                 value.exc_info)
-                acquirable.extend_value_buffer(value, propagate=2)
+                if is_value_error(value):
+                    self.error("Loop final read value error for: %s" %
+                                 acquirable.name)
+                    acquirable.put_value(value)
+                else:
+                    acquirable.extend_value_buffer(value, propagate=2)
             with acquirable:
                 acquirable.clear_operation()
                 state_info = acquirable._from_ctrl_state_info(state_info)
@@ -775,7 +785,12 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
             acquirable.set_state_info(state_info, propagate=0)
             if acquirable in values:
                 value = values[acquirable]
-                acquirable.append_value_buffer(value, self.index, propagate=2)
+                if is_value_error(value):
+                    self.error("Loop final read value error for: %s" %
+                                 acquirable.name)
+                    acquirable.put_value(value)
+                else:
+                    acquirable.append_value_buffer(value, self.index)
             with acquirable:
                 acquirable.clear_operation()
                 state_info = acquirable._from_ctrl_state_info(state_info)
