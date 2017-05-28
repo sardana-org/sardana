@@ -38,7 +38,7 @@ import time
 class SardanaValue(object):
 
     def __init__(self, value=None, exc_info=None, timestamp=None,
-                 dtype=None, dformat=None, idx=None):
+                 dtype=None, dformat=None):
         self.value = value
         self.error = exc_info is not None
         self.exc_info = exc_info
@@ -47,7 +47,6 @@ class SardanaValue(object):
         self.timestamp = timestamp
         self.dtype = dtype
         self.dformat = dformat
-        self.idx = idx
 
     def __repr__(self):
         v = None
