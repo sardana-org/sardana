@@ -27,6 +27,7 @@ from taurus.external.unittest import TestCase
 
 from sardana.pool.test.base import BasePoolTestCase
 
+
 class PseudoCounterTestCase(BasePoolTestCase, TestCase):
     """TestCase with PseudoCounter integration tests."""
 

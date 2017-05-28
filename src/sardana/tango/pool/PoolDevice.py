@@ -850,11 +850,11 @@ class PoolExpChannelDevice(PoolElementDevice):
         return encoded_data
 
     def read_Data(self, attr):
-        desc = 'Data attribute is not foreseen for reading. It is used ' + \
-            'only as the communication channel for the continuous acquisitions.'
-        Except.throw_exception('UnsupportedFeature',
+        desc = "Data attribute is not foreseen for reading. It is used only "\
+               "as the communication channel for the continuous acquisitions."
+        Except.throw_exception("UnsupportedFeature",
                                desc,
-                               'PoolExpChannelDevice.read_Data',
+                               "PoolExpChannelDevice.read_Data",
                                ErrSeverity.WARN)
 
 

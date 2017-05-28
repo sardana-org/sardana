@@ -38,7 +38,7 @@ from sardana.sardanaevent import EventType
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.sardanavalue import SardanaValue
 
-from sardana.pool.poolbasechannel import PoolBaseChannel, ValueBuffer
+from sardana.pool.poolbasechannel import PoolBaseChannel
 from sardana.pool.poolacquisition import Pool0DAcquisition
 
 

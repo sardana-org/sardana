@@ -190,7 +190,6 @@ class SardanaBuffer(EventGenerator):
             msg = "value with %s index is not in buffer"
             raise KeyError(msg)
 
-
     def fire_add_event(self, propagate=1):
         """Fires an event to the listeners of the object which owns this
         buffer.
@@ -219,10 +218,11 @@ class SardanaBuffer(EventGenerator):
         self._persistent = persistent
 
     obj = property(get_obj, "container object for this buffer")
-    persistent = property(get_persistent, set_persistent, "flag whether this "\
-        "buffer stores objects persistently")
+    persistent = property(get_persistent, set_persistent, "flag whether this "
+                          "buffer stores objects persistently")
     last_chunk = property(get_last_chunk,
-        doc="chunk with last value(s) added to this buffer")
+                          doc="chunk with last value(s) added to this buffer")
     next_idx = property(get_next_idx,
-        doc="index that will be automatically assigned to the next value "\
-            "added to this buffer (if not explicitly assigned by the user)")
+                        doc="index that will be automatically assigned to the "
+                            "next value added to this buffer (if not "
+                            "explicitly assigned by the user)")

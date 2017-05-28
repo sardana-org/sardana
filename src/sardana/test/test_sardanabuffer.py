@@ -27,6 +27,7 @@ from taurus.external.unittest import TestCase
 
 from sardana.sardanabuffer import SardanaBuffer
 
+
 class TestPersistentBuffer(TestCase):
     """Unit tests for Buffer class"""
 
@@ -50,4 +51,3 @@ class TestPersistentBuffer(TestCase):
         self.buffer.append(1)
         self.assertEqual(len(self.buffer), 4)
         self.assertEqual(len(self.buffer.last_chunk), 1)
-

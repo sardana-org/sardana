@@ -447,7 +447,7 @@ class PoolAcquisitionBase(PoolAction):
         # pseudo counter will loose the value buffer of some of its physicals
         # if we clear the buffer at the end.
         # Whenever there will be solution for that, after refactoring of the
-        # acquisition actions, uncomment this line 
+        # acquisition actions, uncomment this line
         # self.add_finish_hook(self.clear_value_buffers, True)
 
     def in_acquisition(self, states):
@@ -707,7 +707,7 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
                 value = values[acquirable]
                 if is_value_error(value):
                     self.error("Loop final read value error for: %s" %
-                                 acquirable.name)
+                               acquirable.name)
                     acquirable.put_value(value)
                 else:
                     acquirable.extend_value_buffer(value, propagate=2)
@@ -787,7 +787,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
                 value = values[acquirable]
                 if is_value_error(value):
                     self.error("Loop final read value error for: %s" %
-                                 acquirable.name)
+                               acquirable.name)
                     acquirable.put_value(value)
                 else:
                     acquirable.append_value_buffer(value, self.index)

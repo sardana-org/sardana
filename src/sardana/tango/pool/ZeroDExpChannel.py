@@ -253,7 +253,7 @@ class ZeroDExpChannelClass(PoolExpChannelDeviceClass):
 
     #    Attribute definitions
     attr_list = {
-        'ValueBuffer': [[DevDouble, SPECTRUM, READ, 16 * 1024]], # deprecated
+        'ValueBuffer': [[DevDouble, SPECTRUM, READ, 16 * 1024]],  # deprecated
         'AccumulationBuffer': [[DevDouble, SPECTRUM, READ, 16 * 1024]],
         'TimeBuffer': [[DevDouble, SPECTRUM, READ, 16 * 1024]],
         'AccumulationType': [[DevString, SCALAR, READ_WRITE],

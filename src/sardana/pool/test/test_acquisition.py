@@ -62,7 +62,7 @@ class AttributeListener(object):
         # obtaining the SardanaValue(s) either from the value_chunk (in case
         # of buffered attributes) or from the value in case of normal
         # attributes
-        chunk = v#.last_value_chunk
+        chunk = v
         idx = chunk.keys()
         value = [sardana_value.value for sardana_value in chunk.values()]
         # filling the measurement records

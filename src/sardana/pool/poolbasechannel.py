@@ -52,6 +52,7 @@ class ValueBuffer(SardanaBuffer):
                 return True
         return False
 
+
 class Value(SardanaAttribute):
 
     def __init__(self, *args, **kwargs):
@@ -102,7 +103,8 @@ class PoolBaseChannel(PoolElement):
         belongs to.
 
         :param element: pseudo element
-        :type element: :class:`~sardana.pool.poolpseudocounter.PoolPseudoCounter`
+        :type element:
+            :class:`~sardana.pool.poolpseudocounter.PoolPseudoCounter`
         """
         if not self.has_pseudo_elements():
             self.get_value_buffer().persistent = True
@@ -113,7 +115,8 @@ class PoolBaseChannel(PoolElement):
         belongs to.
 
         :param element: pseudo element
-        :type element: :class:`~sardana.pool.poolpseudocounter.PoolPseudoCounter`
+        :type element:
+            :class:`~sardana.pool.poolpseudocounter.PoolPseudoCounter`
         """
 
         self._pseudo_elements.remove(element)

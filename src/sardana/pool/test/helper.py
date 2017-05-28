@@ -117,6 +117,7 @@ def createPoolMotor(pool, poolcontroller, conf):
     kwargs['ctrl'] = poolcontroller
     return PoolMotor(**kwargs)
 
+
 def createPoolPseudoCounter(pool, poolcontroller, conf, elements=()):
     '''Method to create a PoolMotor using a configuration dictionary
     '''
