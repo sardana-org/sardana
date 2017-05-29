@@ -8,6 +8,12 @@ services:
 python:
   - "2.7"
 
+env:
+  # run flake8 check on all python files in the project
+  - TEST_CMD="ci/flake8_diff.sh"
+  # run the full testsuite
+  - TEST_CMD="docker exec sardana-test sardanatestsuite"
+
 before_install:
   - sudo apt-get update -qq
   # install flake8 to perform python code style check in the script part
@@ -26,7 +32,4 @@ install:
   - docker exec sardana-test supervisorctl start MacroServer
 
 script:
-  # run flake8 check on all python files in the project
-  - ci/flake8_diff.sh
-  # run the full testsuite
-  - docker exec sardana-test sardanatestsuite
+  - $TEST_CMD
