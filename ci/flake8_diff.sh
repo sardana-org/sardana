@@ -24,6 +24,9 @@
 #     additional new line is a PEP8 violation. This happens only if the
 #     offending line was added on the boundary of the diff chunk.
 
+# exit script if any of the subsequent commands fails
+set -o errexit
+
 # pipefail is necessary to propagate exit codes
 set -o pipefail
 
@@ -121,10 +124,18 @@ MODIFIED_FILES=$(git diff --name-only $DIFF_RANGE | \
 if [[ "$MODIFIED_FILES" == "no_match" ]]; then
     echo "No python files have been modified"
 else
+    # temporarily mask the errexit option cause we want to capture the exit
+    # code and print a dedicated output
+    set +o errexit
+
     # Conservative approach: diff without context so that code that
     # was not changed does not create failures
     git diff --unified=0 $DIFF_RANGE -- $MODIFIED_FILES | flake8 --diff --show-source
     RET=$?
+
+    # exit script if any of the subsequent commands fails
+    set -o errexit
+
     if [ $RET -eq 0 ]; then
         echo -e "No problem detected by flake8\n"
     else
