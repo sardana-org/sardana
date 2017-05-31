@@ -676,7 +676,13 @@ class ct(Macro):
         for line in table.genOutput():
             self.output(line)
 
-
+        # Prepare data result to be extracted by getData()
+        self._data = {}
+        self._data['mntGrp'] = self.mnt_grp_name
+        self._data['integ_time'] = integ_time
+        self._data['data'] = zip(names, counts)
+        self.debug("Data: %r ", self._data)
+        
 class uct(Macro):
     """Count on the active measurement group and update"""
 
