@@ -653,7 +653,7 @@ class ct(Macro):
 
     def run(self, integ_time, mnt_grp_name):
         if self.mnt_grp is None:
-            self.error('%r MeasurementGroup does not exist' %self.mnt_grp_name)
+            self.error('%r MeasurementGroup does not exist' % self.mnt_grp_name)
             return
         self.debug("Using %s Measurement Group", self.mnt_grp_name)
         self.debug("Counting for %s sec", integ_time)
