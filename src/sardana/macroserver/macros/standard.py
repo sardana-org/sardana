@@ -647,12 +647,13 @@ class ct(Macro):
     def prepare(self, integ_time, mnt_grp_name, **opts):
         if mnt_grp_name == 'MntGrp_not_defined':
             mnt_grp_name = self.getEnv('ActiveMntGrp')
-        self.mnt_grp = self.getObj(mnt_grp_name, type_class=Type.MeasurementGroup)
+        self.mnt_grp = self.getObj(mnt_grp_name, 
+                                   type_class=Type.MeasurementGroup)
         self.mnt_grp_name = mnt_grp_name
 
     def run(self, integ_time, mnt_grp_name):
         if self.mnt_grp is None:
-            self.error('%r MeasurementGroup does not exist'% self.mnt_grp_name)
+            self.error('%r MeasurementGroup does not exist' %self.mnt_grp_name)
             return
         self.debug("Using %s Measurement Group", self.mnt_grp_name)
         self.debug("Counting for %s sec", integ_time)
