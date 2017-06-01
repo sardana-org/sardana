@@ -505,7 +505,8 @@ class PoolElement(BaseElement, TangoDevice):
         try:
             if Release.version_info[0] > 3:
                 # For Taurus 4
-                state = str(self.stateObj.read().rvalue).capitalize()
+                state = str(self.stateObj.read().rvalue).split('.')[0]
+                state.capitalize()
             else:
                 # For Taurus 3
                 state = str(self.state()).capitalize()
