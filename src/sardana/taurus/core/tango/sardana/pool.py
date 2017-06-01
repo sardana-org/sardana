@@ -1440,7 +1440,7 @@ class MeasurementGroup(PoolElement):
 
     def _create_str_tuple(self):
         return self.getName(), self.getTimerName(), \
-               ", ".join(self.getChannelNames())
+                ", ".join(self.getChannelNames())
 
     def getConfigurationAttrEG(self):
         return self._getAttrEG('Configuration')
