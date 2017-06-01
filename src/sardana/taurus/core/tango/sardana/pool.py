@@ -124,8 +124,8 @@ class BaseElement(object):
         return self._str_tuple[:n]
 
     def __cmp__(self, o):
-        return cmp(self.getPoolData()['full_name'], o.getPoolData()[
-            'full_name'])
+        return cmp(self.getPoolData()['full_name'],
+                   o.getPoolData()['full_name'])
 
     def getName(self):
         return self.getPoolData()['name']
@@ -258,8 +258,8 @@ def reservedOperation(fn):
         try:
             return fn(*args, **kwargs)
         except:
-            print
-            "Exception occured in reserved operation: clearing events..."
+            print("Exception occurred in reserved operation:"
+                  " clearing events...")
             self._clearEventWait()
             raise
 
@@ -1110,8 +1110,8 @@ def getChannelConfigs(mgconfig, ctrls=None, sort=True):
     if sort:
         # sort the channel configs by index (primary sort) and then by channel
         # name.
-        chconfigs = sorted(chconfigs, key=lambda c: c[
-            0])  # sort by channel_name
+        # sort by channel_name
+        chconfigs = sorted(chconfigs, key=lambda c: c[0])
         # sort by index (give a very large index for those which don't have it)
         chconfigs = sorted(chconfigs, key=lambda c: c[1].get('index', 1e16))
     return chconfigs
@@ -1439,8 +1439,8 @@ class MeasurementGroup(PoolElement):
         cfg_attr.addListener(self.on_configuration_changed)
 
     def _create_str_tuple(self):
-        return self.getName(), self.getTimerName(), ", ".join(
-            self.getChannelNames())
+        return self.getName(), self.getTimerName(), \
+               ", ".join(self.getChannelNames())
 
     def getConfigurationAttrEG(self):
         return self._getAttrEG('Configuration')
