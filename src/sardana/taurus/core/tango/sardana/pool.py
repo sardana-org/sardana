@@ -1439,8 +1439,8 @@ class MeasurementGroup(PoolElement):
         cfg_attr.addListener(self.on_configuration_changed)
 
     def _create_str_tuple(self):
-        return self.getName(), self.getTimerName(), \
-                ", ".join(self.getChannelNames())
+        channel_names = ", ".join(self.getChannelNames())
+        return self.getName(), self.getTimerName(), channel_names
 
     def getConfigurationAttrEG(self):
         return self._getAttrEG('Configuration')
