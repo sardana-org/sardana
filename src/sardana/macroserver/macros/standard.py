@@ -681,7 +681,6 @@ class ct(Macro):
         self._data['mnt_grp'] = self.mnt_grp.name
         self._data['integ_time'] = integ_time
         self._data['data'] = zip(names, counts)
-        self.debug("Data: %r ", self._data)
 
 class uct(Macro):
     """Count on the active measurement group and update"""
