@@ -47,7 +47,7 @@ import weakref
 
 from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
     DeviceProxy
-from taurus import Factory, Device, Attribute, Release
+from taurus import Factory, Device, Attribute
 from taurus.core.taurusbasetypes import TaurusEventType
 
 try:
@@ -503,13 +503,12 @@ class PoolElement(BaseElement, TangoDevice):
         indent = "\n" + tab + 10 * ' '
         msg = [self.getName() + ":"]
         try:
-            if Release.version_info[0] > 3:
-                # For Taurus 4
+            # TODO: For Taurus 4 / Taurus 3 compatibility
+            if hasattr(self, "stateObj"):
                 state_value = self.stateObj.read().rvalue
-                # state is DevState enumeration (IntEnum)
+                # state_value is DevState enumeration (IntEnum)
                 state = state_value.name.capitalize()
             else:
-                # For Taurus 3
                 state = str(self.state()).capitalize()
         except DevFailed as df:
             if len(df.args):
