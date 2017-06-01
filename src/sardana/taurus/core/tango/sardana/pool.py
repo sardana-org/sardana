@@ -47,7 +47,7 @@ import weakref
 
 from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
     DeviceProxy
-from taurus import Factory, Device, Attribute
+from taurus import Factory, Device, Attribute, Release
 from taurus.core.taurusbasetypes import TaurusEventType
 
 try:
@@ -124,8 +124,8 @@ class BaseElement(object):
         return self._str_tuple[:n]
 
     def __cmp__(self, o):
-        return cmp(self.getPoolData()['full_name'],
-                   o.getPoolData()['full_name'])
+        return cmp(self.getPoolData()['full_name'], o.getPoolData()[
+            'full_name'])
 
     def getName(self):
         return self.getPoolData()['name']
@@ -503,15 +503,18 @@ class PoolElement(BaseElement, TangoDevice):
         indent = "\n" + tab + 10 * ' '
         msg = [self.getName() + ":"]
         try:
-            state = str(self.state()).capitalize()
+            if Release.version_info[0] > 3:
+                # For Taurus 4
+                state = str(self.stateObj.read().rvalue).capitalize()
+            else:
+                # For Taurus 3
+                state = str(self.state()).capitalize()
         except DevFailed as df:
             if len(df.args):
                 state = df.args[0].desc
             else:
                 e_info = sys.exc_info()[:2]
                 state = traceback.format_exception_only(*e_info)
-        except TypeError:  # we assume state is a TaurusDevState
-            state = str(self.state)
         except:
             e_info = sys.exc_info()[:2]
             state = traceback.format_exception_only(*e_info)
