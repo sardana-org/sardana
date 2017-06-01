@@ -463,7 +463,7 @@ class mv(Macro):
         motion = self.getMotion(motors)
         state, pos = motion.move(positions)
         if state != DevState.ON:
-            self.warning("Motion ended in %s", state)
+            self.warning("Motion ended in %s", state.name)
             msg = []
             for motor in motors:
                 msg.append(motor.information())
