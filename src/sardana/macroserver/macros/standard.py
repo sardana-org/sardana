@@ -678,7 +678,7 @@ class ct(Macro):
 
         # Prepare data result to be extracted by getData()
         self._data = {}
-        self._data['mntGrp'] = self.mnt_grp.name
+        self._data['mnt_grp'] = self.mnt_grp.name
         self._data['integ_time'] = integ_time
         self._data['data'] = zip(names, counts)
         self.debug("Data: %r ", self._data)
