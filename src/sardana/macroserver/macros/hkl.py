@@ -1575,7 +1575,12 @@ class _blockprintmove(Macro, _diffrac):
         while(moving):
             moving = 0
             for angle in self.angle_names:
-                if tmp_dev[angle].state() == 6:
+                # TODO: For Taurus 4 / Taurus 3 compatibility
+                if hasattr(mot_dev, "stateObj"):
+                    angle_state = tmp_dev[angle].stateObj.read().rvalue
+                else:
+                    angle_state = tmp_dev[angle].state()
+                if angle_state == 6:
                     moving = 1
             if flagprint == 1:
                 self.outputBlock(" %7.5f  %7.5f  %7.5f" % (
