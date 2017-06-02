@@ -1,30 +1,32 @@
 #!/usr/bin/env python
 
-##############################################################################
-##
+#
+#
 # This file is part of Sardana
-##
+#
 # http://www.sardana-controls.org/
-##
+#
 # Copyright 2017 CELLS / ALBA Synchrotron, Bellaterra, Spain
-##
+#
 # Sardana is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Lesser General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-##
+#
 # Sardana is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Lesser General Public License for more details.
-##
+#
 # You should have received a copy of the GNU Lesser General Public License
 # along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
-##
-##############################################################################
+#
+#
 
 
-"""This module provides a recorder for NXscans implemented with h5py (no nxs)"""
+"""
+This module provides a recorder for NXscans implemented with h5py (no nxs)
+"""
 
 __all__ = ["NXscanH5_FileRecorder"]
 
@@ -40,6 +42,7 @@ from sardana.macroserver.scan.recorder import BaseFileRecorder, SaveModes
 
 
 class NXscanH5_FileRecorder(BaseFileRecorder):
+
     """
     Saves data to a nexus file that follows the NXscan application definition
     (This is a pure h5py implementation that does not depend on the nxs module)
@@ -87,7 +90,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
 
     def _openFile(self, fname):
         """Open the file with given filename (create if it does not exist)
-        Populate the root of the file with some metadata from the NXroot 
+        Populate the root of the file with some metadata from the NXroot
         definition"""
         if os.path.exists(fname):
             fd = h5py.File(fname, mode='r+')
@@ -102,10 +105,10 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         return fd
 
     def _startRecordList(self, recordlist):
-        
+
         if self.filename is None:
             return
-        
+
         self.currentlist = recordlist
         env = self.currentlist.getEnviron()
         serialno = env['serialno']
@@ -126,8 +129,8 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                        'Aborting macro to prevent data corruption.\n' +
                        'This is likely caused by a wrong ScanID\n' +
                        'Possible workarounds:\n' +
-                       '  * first, try re-running this macro (the ScanID may ' +
-                       'be automatically corrected)\n'
+                       '  * first, try re-running this macro (the ScanID ' +
+                       'may be automatically corrected)\n'
                        '  * if not, try changing ScanID with senv, or...\n' +
                        '  * change the file name ({ename:r} will be in both ' +
                        'files containing different data)\n' +
@@ -151,7 +154,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             else:
                 msg = '%r will not be stored. Reason: %r not supported'
                 self.warning(msg, dd.name, dd.dtype)
-                        
+
         # make a dictionary out of env['instrumentlist']
         # (use fullnames -paths- as keys)
         self._nxclass_map = {}
@@ -160,7 +163,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         if self._nxclass_map is {}:
             self.warning('Missing information on NEXUS structure. ' +
                          'Nexus Tree will not be created')
-        
+
         self.debug('Starting new recording %d on file %s', serialno,
                    self.filename)
 
@@ -189,23 +192,23 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             for dd in self.datadesc:
                 shape = ([0] + list(dd.shape))
                 _ds = _meas.create_dataset(
-                        dd.label,
-                        dtype=dd.dtype,
-                        shape=shape,
-                        maxshape=([None] + list(dd.shape)),
-                        chunks=(1,) + tuple(dd.shape),
-                        compression=self._compression(shape)
-                        )
+                    dd.label,
+                    dtype=dd.dtype,
+                    shape=shape,
+                    maxshape=([None] + list(dd.shape)),
+                    chunks=(1,) + tuple(dd.shape),
+                    compression=self._compression(shape)
+                )
                 if hasattr(dd, 'data_units'):
                     _ds.attrs['units'] = dd.data_units
-                    
+
         else:
             # leave the creation of the datasets to _writeRecordList
             # (when we actually know the length of the data to write)
             pass
-        
+
         self._createPreScanSnapshot(env)
-            
+
         self.fd.flush()
 
     def _compression(self, shape, compfilter='gzip'):
@@ -220,9 +223,9 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             return None
         else:
             return compfilter
-    
+
     def _createPreScanSnapshot(self, env):
-        """ 
+        """
         Write the pre-scan snapshot in "<entry>/measurement/pre_scan_snapshot".
         Also link to the snapshot datasets from the <entry>/measurement group
         """
@@ -244,9 +247,9 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                            dd.name, dtype)
             if dtype in self.supported_dtypes:
                 _ds = _snap.create_dataset(
-                        label,
-                        data=pre_scan_value,
-                        compression=self._compression(dd.shape)
+                    label,
+                    data=pre_scan_value,
+                    compression=self._compression(dd.shape)
                 )
                 # link to this dataset also from the measurement group
                 if label not in meas_keys:
@@ -265,7 +268,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             if dd.name in record.data:
                 data = record.data[dd.name]
                 _ds = _meas[dd.label]
-                
+
                 if data is None:
                     data = numpy.zeros(dd.shape, dtype=dd.dtype)
                 if not hasattr(data, 'shape'):
@@ -289,7 +292,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
 
         if self.filename is None:
             return
-        
+
         self._populateInstrumentInfo()
         self._createNXData()
 
@@ -309,11 +312,11 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         for dd in self.datadesc:
             shape = ([len(recordlist.records)] + list(dd.shape))
             _ds = _meas.create_dataset(
-                    dd.label,
-                    dtype=dd.dtype,
-                    shape=shape,
-                    chunks=(1,) + tuple(dd.shape),
-                    compression=self._compression(shape)
+                dd.label,
+                dtype=dd.dtype,
+                shape=shape,
+                chunks=(1,) + tuple(dd.shape),
+                compression=self._compression(shape)
             )
             if hasattr(dd, 'data_units'):
                 _ds.attrs['units'] = dd.data_units
@@ -339,10 +342,10 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                     _instr = self._createNXpath(dd.instrument,
                                                 prefix=nxentry.name)
                     _instr[os.path.basename(_ds.name)] = _ds
-                except Exception, e:
+                except Exception as e:
                     msg = 'Could not create link to %r in %r. Reason: %r'
                     self.warning(msg, dd.label, dd.instrument, e)
-                    
+
         for dd in self.preScanSnapShot:
             if getattr(dd, 'instrument', None):
                 label = self.sanitizeName(dd.label)
@@ -351,14 +354,14 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                     _instr = self._createNXpath(dd.instrument,
                                                 prefix=nxentry.name)
                     _instr[os.path.basename(_ds.name)] = _ds
-                except Exception, e:
+                except Exception as e:
                     msg = 'Could not create link to %r in %r. Reason: %r'
                     self.warning(msg, label, dd.instrument, e)
 
     def _createNXData(self):
         """
-        Creates groups of type NXdata by making links to the corresponding 
-        datasets 
+        Creates groups of type NXdata by making links to the corresponding
+        datasets
         """
         # classify by type of plot:
         plots1d = {}
@@ -375,7 +378,8 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                     plots1d[axes].append(dd)
                 else:
                     plots1d[axes] = [dd]
-                    # Note that datatesc ordering determines group name indexing
+                    # Note that datatesc ordering determines group name
+                    # indexing
                     plots1d_names[axes] = 'plot_%i' % i
                     i += 1
             else:
@@ -410,10 +414,10 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         with their corresponding NXclass attributes.
 
         This method creates the groups if they do not exist. If the
-        path is given using `name:nxclass` notation, the given nxclass is 
+        path is given using `name:nxclass` notation, the given nxclass is
         used.
-        Otherwise, the class name is obtained from self._nxclass_map values 
-        (and if not found, it defaults to NXcollection). 
+        Otherwise, the class name is obtained from self._nxclass_map values
+        (and if not found, it defaults to NXcollection).
 
         It returns the tip of the branch (the last group created)
         """
@@ -442,17 +446,17 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
 
     def _addCustomData(self, value, name, nxpath=None, dtype=None, **kwargs):
         """
-        Apart from value and name, this recorder can use the following optional 
+        Apart from value and name, this recorder can use the following optional
         parameters:
-        
-        :param nxpath: (str) a nexus path (optionally using name:nxclass 
-                       notation for the group names). See the rules for 
+
+        :param nxpath: (str) a nexus path (optionally using name:nxclass
+                       notation for the group names). See the rules for
                        automatic nxclass resolution used by
-                       :meth:`._createNXpath`. If None given, it defaults to 
+                       :meth:`._createNXpath`. If None given, it defaults to
                        nxpath='custom_data:NXcollection'
-                       
+
         :param dtype: name of data type (it is inferred from value if not given)
-                       
+
         """
         if nxpath is None:
             nxpath = 'custom_data:NXcollection'
@@ -466,9 +470,10 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             else:
                 value = numpy.array(value)
                 dtype = value.dtype.name
-            
+
         if dtype not in self.supported_dtypes and dtype != 'char':
-            self.warning('cannot write %r. Reason: unsupported data type', name)
+            self.warning(
+                'cannot write %r. Reason: unsupported data type', name)
             return
 
         # open the file if necessary
@@ -480,7 +485,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         grp = self._createNXpath(nxpath)
         try:
             grp.create_dataset(name, data=value)
-        except ValueError, e:
+        except ValueError as e:
             msg = 'Error writing %s. Reason: %s' % (name, e)
             self.warning(msg)
             self.macro.warning(msg)
