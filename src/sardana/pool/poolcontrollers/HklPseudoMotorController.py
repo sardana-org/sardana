@@ -48,8 +48,6 @@ import PyTango
 
 from itertools import chain
 
-from gi.repository import GLib
-from gi.repository import Hkl
 
 from taurus.core.util.codecs import CodecFactory
 
@@ -60,7 +58,6 @@ from sardana.pool.controller import Memorize, Memorized, MemorizedNoInit, NotMem
 
 ReadOnly = DataAccess.ReadOnly
 ReadWrite = DataAccess.ReadWrite
-USER = Hkl.UnitEnum.USER
 DEFAULT_CRYSTAL = "default_crystal"
 
 
@@ -68,7 +65,17 @@ from taurus.core.util.log import Logger
 
 logger = Logger.getLogger("ControllerManager")
 
-logger.info("The diffractometer controller is at early stage. Controller attributes and commands can slightly change.")
+hkl_loaded = False
+try:
+    from gi.repository import GLib
+    from gi.repository import Hkl
+    hkl_loaded = True
+except:
+    logger.warning("HklPseudoMotorController: Not able to load Hkl library. Diffractometer controller can not be used")
+
+if hkl_loaded:
+    USER = Hkl.UnitEnum.USER
+    logger.info("The diffractometer controller is at early stage. Controller attributes and commands can slightly change.")
 
 
 class AxisPar(object):
@@ -768,7 +775,7 @@ class DiffracBasis(PseudoMotorController):
         motor_position = []
         for i in range(0, self.nb_ph_axes):
             motor = self.GetMotor(i)
-            motor_position.append(motor.get_position(cache=False).value)
+            motor_position.append(motor.position.value)
         self.geometry.axis_values_set(motor_position, USER)
 
         curr_physical_pos = self.geometry.axis_values_get(USER)
@@ -828,7 +835,7 @@ class DiffracBasis(PseudoMotorController):
         motor_position = []
         for i in range(0, self.nb_ph_axes):
             motor = self.GetMotor(i)
-            motor_position.append(motor.get_position(cache=False).value)
+            motor_position.append(motor.position.value)
         self.geometry.axis_values_set(motor_position, USER)
         newref = self.sample.add_reflection(
             self.geometry, self.detector, value[0], value[1], value[2])
