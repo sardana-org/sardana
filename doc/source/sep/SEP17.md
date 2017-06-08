@@ -34,14 +34,14 @@ The rest of this section refers to the `Value` attribute.
 
 ## CT
 
-The software acquisition, performs the intermediate hardware readouts of the
+The software synchronized acquisition, performs the intermediate hardware readouts of the
 channels while acquiring and one more hardware readout when the acquisition has
 already finished. The intermediate readouts were temporary removed from the
 implementation with the SEP6 and we should reintroduce them ASAP.
 
 If the `Value` attribute is read while the acquisition is in progress,
 it returns the last updated by the acquisition action value (cache). In case
-of software synchronized acquisition this means an intermediate value
+of the software synchronized acquisition this means an intermediate value
 corresponding to the current acquisition index and in case of the hardware
 synchronized acquisition the value corresponding to the most recently
 reported acquisition index. 
@@ -56,7 +56,7 @@ The `Value` attribute provides the result of the accumulation operation
 executed on the accumulation buffer.
 
 Everytime the `Value` attribute is read, the operation is performed on
-what is in the buffer at that moment. So the same calculations is unneceserily
+what is in the buffer at that moment. So the same calculations are unneceserily
 repeated if the `Value` attribute is read multiple times after the acquisition.
 The accumulation buffer is filled gradually by the acquisition action with
 the hardware readout results, which by the same time fills the cache of the
@@ -128,12 +128,14 @@ corresponing to the acquisition that has just finished, or the result of the
 ongoing acquisition.
 - The `Value` read is executed per channel, meaning that we can not profit
 from the hardware access optimization possible with the `(Pre)Read{One,All}`
-sequence here.
-- Having PseudoCounters provokes subsequent repetitions of the hardware
-readouts of the underneath physical channels.
+sequence.
+- The presence of the PseudoCounters in the MeaseurementGroup provokes
+subsequent repetitions of the hardware readouts of the underneath physical
+channels.
 
+## Summary
 
-All the preceding explanation can be summarized in this table.
+All the preceding explanation can be summarized in this table:
 
 Aspect | CT | 0D | 1D, 2D | PseudoCounter
 ------ | -- | -- | ------ | -------------
@@ -146,7 +148,7 @@ Events | Yes | Yes | Yes | No
 
 ## Option 1 - Value and CurrentValue attributes
 
-`Value` attribute has two roles: it keeps the result of the most recent
+The `Value` attribute has two roles: it keeps the result of the most recent
 acquisition and provides the intermediate result updates, via events, during
 the acquisition (CT and 0Ds only).
 
@@ -156,8 +158,8 @@ Its read can return:
 is in progress
 - A result of the last acquisition - all the other cases
  
-`CurrentValue` attribute provides the ongoing measurement results of a channel.
-It is not possible to read it when the channel is acquiring (except 0Ds).
+The `CurrentValue` attribute provides the ongoing measurement results of a channel.
+It is not possible to read it when the channel is acquiring.
 This is because it could interfere with the hardware readouts performed by
 the acquisition action - all the readouts are executed via the same API -
 `(Pre)Read{One,All}` sequence.
@@ -181,7 +183,7 @@ In summary, the acquisition action start is "patient" - it waits until the
 `CurrentValue` read returns, and the `CurrentValue` read is "impatient" -
 it gives up if the acquisition is in progress.
  
-Now, it won't be possible to take a profit of the read sequence optimizations
+It won't be possible to take a profit of the read sequence optimizations
 in case of the multiple axes readouts, because the channels will be read
 separately (either Taurus or Tango polling). But in the future, we could think
 of adding to the Pool a common action that will poll the elements with a given
@@ -192,14 +194,20 @@ these polling action. But this is definitely out of the scope of this SEP.
 - Should we clear the `Value` attribute cache at the beginning of the
 acquisition. So that if someone reads the attribute before the acquisition has
 finished, or before an intermediate readout, it does not return the previous
-acquisition readout?
+acquisition final result?
 - Which attribute names are better: `Value` and `CurrentValue` or
 `LastValue` and `Value`?
-- We could allow the `CurrentValue` attribute read while the acquisition is in
-progress, but does it have sense? Is there any hardware that supports it?
+- We could allow the 0D `CurrentValue` attribute read while the acquisition is
+in progress
+- We could allow the `CurrentValue` attribute read of the other channels while
+the acquisition is in progress, but does it have sense?
+Is there any hardware that supports it?
+
  
 ### Pros
 
+- The behavior of `Value` and `CurrentValue` attributes will be almost the same
+for all the experimental channels.
 - It will be possible to retrieve the acquisition result after the acquisition
 via a synchronous readout of the attribute. This is especially useful for the
 pure Tango clients and ease development of the Taurus widgets.
@@ -213,12 +221,12 @@ sequence.
 
 - `CurrentValue(SardanaAttribute)` attribute is added to the `PoolBaseChannel`.
 - `CurrentValue` is extended with the `update` method. This method will use... 
-- The `update` method of the `Value` attributes is removed - the `Value`
-attributes can be updated only by the acquisition actions.
 - `get_current_value` method is added to the `PoolBaseChannel` class.
 - Prevent `CurrentValue` attribute readouts while acquiring. Do it on both,
 core and Tango levels. On the core level using the `OperationContext` - if set,
 raise an exception. On the Tango level using the state machine.
+- The `update` method of the `Value` attributes is removed - the `Value`
+attributes can be updated only by the acquisition actions.
 - `Value` attributes of physical channels and pseudo counters are not connected
 by events anymore.
 - `PoolBaseChannel.get_value` kwarg `cache` disappears - this method always
@@ -254,8 +262,8 @@ make an extra poll of the attribute to show the ongoing acquisition results
 
 - Refactor MeasurementGroup `count` method to listen to the `ValueBuffer`
 events and not read the `Value` attribute.
-- Most of the implementation points from the Option 1, aparto of the ones about
-the `CurrentValue` attribute...
+- It is necessary to implement the most of the Option 1 points, apart of the
+ones about the `CurrentValue` attribute...
  
 ## Option 3 - Ongoing acquisition is not supported
 
