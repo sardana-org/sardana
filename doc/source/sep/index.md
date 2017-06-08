@@ -26,6 +26,7 @@ Proposals list
   [SEP13][]    | REJECTED (moved to [TEP13][])     | Unified plugins support in Taurus & Sardana
   [SEP14][]    | DRAFT     | MSENV taurus schema
   [SEP15][]   | ACCEPTED     | Moving Sardana to Github
+  [SEP17][]   | DRAFT     | Ongoing acquisition formalization and implementation
 
 
 
@@ -46,7 +47,7 @@ Proposals list
 [SEP13]: http://www.sardana-controls.org/sep/?SEP13.md
 [SEP14]: http://www.sardana-controls.org/sep/?SEP14.md
 [SEP15]: http://www.sardana-controls.org/sep/?SEP15.md
-
+[SEP17]: http://www.sardana-controls.org/sep/?SEP17.md
 
 [TEP3]: http://www.taurus-scada.org/tep/?TEP3.md
 [TEP13]: http://www.taurus-scada.org/tep/?TEP13.md
