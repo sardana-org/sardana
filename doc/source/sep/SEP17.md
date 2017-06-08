@@ -282,7 +282,12 @@ The `Value` attribute read will never execute the hardware readout
 - `PoolBaseChannel.get_value` kwarg `cache` disappears - this method always
 returns what is in the attribute at the moment.
 
-0D will maintain the `CurrentValue` attribute as it is now. 
+0D will maintain the `CurrentValue` attribute as it is now.
+
+# Links to more details and discussions
+
+- Discussions for this SEP are conducted in its associated [Pull Request](https://github.com/sardana-org/sardana/pull/478).
+- Initial [discussion](https://sourceforge.net/p/sardana/mailman/message/35522835/) on the sardana-devel mailing list.
 
 # Changes
 
