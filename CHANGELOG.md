@@ -24,18 +24,21 @@ This file follows the formats and conventions from [keepachangelog.com]
   in use (SEP6)
 - `synchronizer` parameter to the Measurement Group configuration (SEP6)
 - `latency_time` parameter to the experimental channel controllers (SEP6)
-- `ApplyInterpolation` enviroment variable, applicable to `ascanct` & co.
+- `ApplyInterpolation` environment variable, applicable to `ascanct` & co.
   (SEP6)
 - "How to write a counter/timer controller" documentation (SEP6)
 - "How to write a trigger/gate controller" documentation (SEP6)
 - Flake8 check-on-push for CI (#451)
 
 ### Changed
-- `ascanct` & co. macro parameters to more resamble parameters of step scans
+- `ascanct` & co. macro parameters to more resemble parameters of step scans
   (SEP6)
 - `trigger_type` was renamed to `synchronization` in Measurement Group
   configuration and as the experimental channel controller parameter (SEP6)
 - Applied AutoPEP8 to whole project (#446)
+- Scan end tasks such as filling `ScanHistory` or ending the record list are
+  equally executed in case of a normal end of the scan, an exception or a scan
+  interruption (#455)
 
 ### Deprecated
 - `LoadOne` API had changed - `repetitions` was added as a mandatory argument
