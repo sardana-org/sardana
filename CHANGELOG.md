@@ -28,15 +28,17 @@ This file follows the formats and conventions from [keepachangelog.com]
   (SEP6)
 - "How to write a counter/timer controller" documentation (SEP6)
 - "How to write a trigger/gate controller" documentation (SEP6)
+- Flake8 check-on-push for CI (#451)
 
 ### Changed
 - `ascanct` & co. macro parameters to more resemble parameters of step scans
   (SEP6)
 - `trigger_type` was renamed to `synchronization` in Measurement Group
   configuration and as the experimental channel controller parameter (SEP6)
+- Applied AutoPEP8 to whole project (#446)
 - Scan end tasks such as filling `ScanHistory` or ending the record list are
   equally executed in case of a normal end of the scan, an exception or a scan
-  interruption (#455).
+  interruption (#455)
 
 ### Deprecated
 - `LoadOne` API had changed - `repetitions` was added as a mandatory argument
@@ -213,7 +215,7 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.2.0...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.2.3...HEAD
 [2.2.3]: https://github.com/sardana-org/sardana/compare/2.2.2...2.2.3
 [2.2.2]: https://github.com/sardana-org/sardana/compare/2.2.1...2.2.2
 [2.2.1]: https://github.com/sardana-org/sardana/compare/2.2.0...2.2.1

@@ -29,11 +29,15 @@ For the contributions, we use the [Fork & Pull Model][]:
 
 In general, the contributions to sardana should consider following:
 
-- The code must comply with the [Sardana coding conventions][]
+- The code must comply with the [Sardana coding conventions][].
+  [Sardana travis-ci][] will check it for each Pull Request.
+  In case the check fails, please correct the errors and commit
+  to the Pull Request branch again. You may consider running the check locally
+  using the [flake8_diff.sh][] script in order to avoid unnecessary commits.
 
 - The contributor must be clearly identified. The commit author 
   email should be valid and usable for contacting him/her.
-  
+
 - Commit messages  should follow the [commit message guidelines][]. 
   Contributions may be rejected if their commit messages are poor.
   
@@ -70,3 +74,5 @@ In general, the contributions to sardana should consider following:
 [tag_issue_closing]: https://help.github.com/articles/closing-issues-via-commit-messages/
 [Sardana coding conventions]: http://www.sardana-controls.org/devel/guide_coding.html
 [LGPL]: http://www.gnu.org/licenses/lgpl.html
+[Sardana travis-ci]: https://travis-ci.org/sardana-org/sardana
+[flake8_diff.sh]: https://github.com/sardana-org/sardana/blob/develop/ci/flake8_diff.sh
