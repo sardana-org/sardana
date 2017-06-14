@@ -455,8 +455,8 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                        :meth:`._createNXpath`. If None given, it defaults to
                        nxpath='custom_data:NXcollection'
 
-        :param dtype: name of data type (it is inferred from value if not given)
-
+        :param dtype: name of data type (it is inferred from value if not
+                      given)
         """
         if nxpath is None:
             nxpath = 'custom_data:NXcollection'
