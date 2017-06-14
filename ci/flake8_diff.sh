@@ -9,12 +9,13 @@
 #       1. the common ancestor of the local branch and the
 #          sardana-org/sardana remote
 #       2. the local branch
-#   - run flake8 --diff on the computed diff
+#   - run flake8 --diff --show-source on the computed diff
 #
 # Additional features:
 #   - the line numbers in Travis match the local branch on the PR
 #     author machine.
 #   - bash ci/flake8_diff.sh can be run locally for quick turn-around
+#     (and it accepts additional flake8 options)
 #
 # Known problems:
 #   - Adding a new line on top of the standard two lines between two functions
@@ -130,7 +131,7 @@ else
 
     # Conservative approach: diff without context so that code that
     # was not changed does not create failures
-    git diff --unified=0 $DIFF_RANGE -- $MODIFIED_FILES | flake8 --diff --show-source
+    git diff --unified=0 $DIFF_RANGE -- $MODIFIED_FILES | flake8 --diff --show-source "$@"
     RET=$?
 
     # exit script if any of the subsequent commands fails
