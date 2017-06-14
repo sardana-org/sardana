@@ -7,6 +7,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
+- New recorder for NXscan that does not use the nxs module (NAPI) but h5py
+  instead (#460)
 - New spock syntax based on the square brackets to use repeat parameters
   without limitations (#405)
 - Possibility to duplicate repeats of the repeat parameters in macroexecutor
@@ -31,14 +33,12 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Flake8 check-on-push for CI (#451)
 
 ### Changed
+- make the new NXscanH5_FileRecorder the default one for .h5 files (#460) 
 - `ascanct` & co. macro parameters to more resemble parameters of step scans
   (SEP6)
 - `trigger_type` was renamed to `synchronization` in Measurement Group
   configuration and as the experimental channel controller parameter (SEP6)
 - Applied AutoPEP8 to whole project (#446)
-- Scan end tasks such as filling `ScanHistory` or ending the record list are
-  equally executed in case of a normal end of the scan, an exception or a scan
-  interruption (#455)
 
 ### Deprecated
 - `LoadOne` API had changed - `repetitions` was added as a mandatory argument

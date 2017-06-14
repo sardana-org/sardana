@@ -71,7 +71,7 @@ class BaseFileRecorder(DataRecorder):
 class BaseNEXUS_FileRecorder(BaseFileRecorder):
     """Base class for NeXus file recorders"""
 
-    formats = {'w5': '.h5',
+    formats = {  # '.h5' not included. NXscanH5_FileRecorder is now preferred
                'w4': '.h4',
                'wx': '.xml'}
     supported_dtypes = ('float32', 'float64', 'int8',
