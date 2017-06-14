@@ -26,7 +26,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   in use (SEP6)
 - `synchronizer` parameter to the Measurement Group configuration (SEP6)
 - `latency_time` parameter to the experimental channel controllers (SEP6)
-- `ApplyInterpolation` enviroment variable, applicable to `ascanct` & co.
+- `ApplyInterpolation` environment variable, applicable to `ascanct` & co.
   (SEP6)
 - "How to write a counter/timer controller" documentation (SEP6)
 - "How to write a trigger/gate controller" documentation (SEP6)
@@ -34,7 +34,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Changed
 - make the new NXscanH5_FileRecorder the default one for .h5 files (#460) 
-- `ascanct` & co. macro parameters to more resamble parameters of step scans
+- `ascanct` & co. macro parameters to more resemble parameters of step scans
   (SEP6)
 - `trigger_type` was renamed to `synchronization` in Measurement Group
   configuration and as the experimental channel controller parameter (SEP6)
