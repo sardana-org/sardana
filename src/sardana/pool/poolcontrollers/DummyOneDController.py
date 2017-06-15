@@ -221,7 +221,7 @@ class DummyOneDController(OneDController):
         self._log.debug("ReadOne(%s)", axis)
         channel = self.read_channels[axis]
         if self._synchronization == AcqSynch.SoftwareTrigger:
-            v = channel.value
+            v = channel.value.tolist()
         elif self._synchronization in (AcqSynch.HardwareTrigger,
                                        AcqSynch.HardwareGate):
             v = copy.deepcopy(channel.buffer_values)
