@@ -47,6 +47,7 @@ from taurus.core.util.user import USER_NAME
 from taurus.core.util.codecs import CodecFactory
 from taurus.external.ordereddict import OrderedDict
 from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
+from taurus.core.util.enumeration import Enumeration
 
 from sardana.util.tree import BranchNode, LeafNode, Tree
 from sardana.util.motion import Motor as VMotor
@@ -54,7 +55,7 @@ from sardana.util.motion import MotionPath
 from sardana.util.thread import CountLatch
 from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.macroserver.msexception import MacroServerException, UnknownEnv, \
-    InterruptException, StopException
+    InterruptException, StopException, AbortException
 from sardana.macroserver.msparameter import Type
 from sardana.macroserver.scan.scandata import ColumnDesc, MoveableDesc, \
     ScanFactory, ScanDataEnvironment
@@ -63,6 +64,11 @@ from sardana.macroserver.scan.recorder import (AmbiguousRecorderError,
                                                FileRecorder)
 from sardana.taurus.core.tango.sardana.pool import Ready
 from sardana.sardanathreadpool import get_thread_pool
+
+
+# ScanEndStatus enumeration indicates the reason of the scan end.
+ScanEndStatus = Enumeration("ScanEndStatus",
+                            ["Normal", "Stop", "Abort", "Exception"])
 
 
 class ScanSetupError(Exception):
@@ -851,6 +857,7 @@ class GScan(Logger):
                        deadtime=env['deadtime'], title=env['title'],
                        serialno=env['serialno'], user=env['user'],
                        ScanFile=scan_file, ScanDir=env['ScanDir'],
+                       endstatus=ScanEndStatus.whatis(env['endstatus']),
                        channels=names)
         scan_history.append(history)
         while len(scan_history) > self.MAX_SCAN_HISTORY:
@@ -864,19 +871,22 @@ class GScan(Logger):
     def step_scan(self):
         self.start()
         try:
-            ex = None
-            try:
-                for i in self.scan_loop():
-                    self.macro.pausePoint()
-                    yield i
-            except ScanException, e:
-                # self.macro.warning(e.msg)
-                ex = e
-            self.end()
-            if not ex is None:
-                raise e
+            for i in self.scan_loop():
+                self.macro.pausePoint()
+                yield i
+            endstatus = ScanEndStatus.Normal
+        except StopException, e:
+            endstatus = ScanEndStatus.Stop
+        except AbortException, e:
+            endstatus = ScanEndStatus.Abort
+        except Exception, e:
+            endstatus = ScanEndStatus.Exception
         finally:
+            self._env["endstatus"] = endstatus
+            self.end()
             self.do_restore()
+            if endstatus != ScanEndStatus.Normal:
+                raise e
 
     def scan_loop(self):
         raise NotImplementedError('Scan method cannot be called by '
@@ -964,6 +974,7 @@ class SScan(GScan):
         try:
             state, positions = motion.move(step['positions'])
             self._sum_motion_time += time.time() - move_start_time
+            self._env['motiontime'] = self._sum_motion_time
         except InterruptException:
             raise
         except:
@@ -1011,6 +1022,7 @@ class SScan(GScan):
             data_line[ec.getName()] = ec.read()
         self.debug("[ END ] acquisition")
         self._sum_acq_time += integ_time
+        self._env['acqtime'] = self._sum_acq_time
 
         # post-acq hooks
         for hook in step.get('post-acq-hooks', ()):

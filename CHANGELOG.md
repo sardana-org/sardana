@@ -7,6 +7,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
+- New recorder for NXscan that does not use the nxs module (NAPI) but h5py
+  instead (#460)
 - New spock syntax based on the square brackets to use repeat parameters
   without limitations (#405)
 - Possibility to duplicate repeats of the repeat parameters in macroexecutor
@@ -20,24 +22,41 @@ This file follows the formats and conventions from [keepachangelog.com]
 - possibility to execute multiple, synchronized by hardware or software, 
   in time or position domain (also non equidistant) acquisitions with the
   Measurement Group (SEP6)
-- CTExpChannel may report data in chunks when hardware synchronization is
-  in use (SEP6)
+- CTExpChannel may report acquired and indexed values in chunks in
+  continuous acquisition (SEP6)
+- 0DExpChannel may report acquired and indexed values in chunks in
+  continuous acquisition (#469)
+- PseudoCounter may return calculated (from the buffered physical
+  channels values) and indexed values in chunks in continuous acquisition
+  (#469) 
 - `synchronizer` parameter to the Measurement Group configuration (SEP6)
 - `latency_time` parameter to the experimental channel controllers (SEP6)
-- `ApplyInterpolation` enviroment variable, applicable to `ascanct` & co.
+- `ApplyInterpolation` environment variable, applicable to `ascanct` & co.
   (SEP6)
 - "How to write a counter/timer controller" documentation (SEP6)
 - "How to write a trigger/gate controller" documentation (SEP6)
+- Flake8 check-on-push for CI (#451)
 
 ### Changed
-- `ascanct` & co. macro parameters to more resamble parameters of step scans
+- make the new NXscanH5_FileRecorder the default one for .h5 files (#460) 
+- `ascanct` & co. macro parameters to more resemble parameters of step scans
   (SEP6)
 - `trigger_type` was renamed to `synchronization` in Measurement Group
   configuration and as the experimental channel controller parameter (SEP6)
+- Applied AutoPEP8 to whole project (#446)
+- A part of the 0D's core API was changed in order to be more consistent with
+  the new concept of value buffer (#469):
+  - `BaseAccumulation.append_value` -> `BaseAccumulation.append`
+  - `Value.get_value_buffer` -> `Value.get_accumulation_buffer`
+  - `Value.append_value` -> `Value.append_buffer`
+  - `PoolZeoDExpChannel.get_value_buffer` -> `PoolZeoDExpChannel.get_accumulation_buffer`
+  - `PoolZeoDExpChannel.value_buffer` -> `PoolZeoDExpChannel.accumulation_buffer`
 
 ### Deprecated
 - `LoadOne` API had changed - `repetitions` was added as a mandatory argument
   and the old API is deprecated (SEP6)
+- OD's `ValueBuffer` Tango attribute is deprecated in favor of the
+  `AccumulationBuffer` attribute (#469)
 
 ### Removed
 - units level from the Measurement Group configuration (#218)
@@ -210,7 +229,7 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.2.0...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.2.3...HEAD
 [2.2.3]: https://github.com/sardana-org/sardana/compare/2.2.2...2.2.3
 [2.2.2]: https://github.com/sardana-org/sardana/compare/2.2.1...2.2.2
 [2.2.1]: https://github.com/sardana-org/sardana/compare/2.2.0...2.2.1

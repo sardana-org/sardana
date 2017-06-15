@@ -23,38 +23,31 @@
 ##
 ##############################################################################
 
-"""This module is part of the Python Sardana libray. It defines the base
-classes for Sardana values"""
+from taurus.external.unittest import TestCase
 
-from __future__ import absolute_import
-
-__all__ = ["SardanaValue"]
-
-__docformat__ = 'restructuredtext'
-
-import time
+from sardana.sardanabuffer import SardanaBuffer
 
 
-class SardanaValue(object):
+class TestPersistentBuffer(TestCase):
+    """Unit tests for Buffer class"""
 
-    def __init__(self, value=None, exc_info=None, timestamp=None,
-                 dtype=None, dformat=None):
-        self.value = value
-        self.error = exc_info is not None
-        self.exc_info = exc_info
-        if timestamp is None:
-            timestamp = time.time()
-        self.timestamp = timestamp
-        self.dtype = dtype
-        self.dformat = dformat
+    def setUp(self):
+        self.buffer = SardanaBuffer(persistent=True)
+        self.buffer.extend([1, 2, 3])
 
-    def __repr__(self):
-        v = None
-        if self.error:
-            v = "<Error>"
-        else:
-            v = self.value
-        return "{0.__class__.__name__}(value={1}, timestamp={0.timestamp})".format(self, v)
+    def test_extend(self):
+        """Test extend method with a simple case of a list."""
+        chunk = [4, 5, 6]
+        self.buffer.extend(chunk)
+        self.assertEqual(self.buffer.get_value(0), 1)
+        self.assertEqual(self.buffer.get_value(5), 6)
+        self.assertEqual(len(self.buffer), 6)
+        self.assertEqual(len(self.buffer.last_chunk), 3)
 
-    def __str__(self):
-        return repr(self)
+    def test_append(self):
+        """Test if append correctly fills the last_chunk as well as permanently
+        adds the value to the buffer.
+        """
+        self.buffer.append(1)
+        self.assertEqual(len(self.buffer), 4)
+        self.assertEqual(len(self.buffer.last_chunk), 1)

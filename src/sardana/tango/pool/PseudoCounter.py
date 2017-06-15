@@ -41,20 +41,21 @@ from sardana import State, SardanaServer
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.tango.core.util import to_tango_type_format, exception_str, \
     throw_sardana_exception
-from sardana.tango.pool.PoolDevice import PoolElementDevice, \
-    PoolElementDeviceClass
+from sardana.tango.pool.PoolDevice import PoolExpChannelDevice, \
+    PoolExpChannelDeviceClass
 
 
-class PseudoCounter(PoolElementDevice):
+class PseudoCounter(PoolExpChannelDevice):
 
     def __init__(self, dclass, name):
-        PoolElementDevice.__init__(self, dclass, name)
+        PoolExpChannelDevice.__init__(self, dclass, name)
+        self._first_read_cache = False
 
     def init(self, name):
-        PoolElementDevice.init(self, name)
+        PoolExpChannelDevice.init(self, name)
 
     def _is_allowed(self, req_type):
-        return PoolElementDevice._is_allowed(self, req_type)
+        return PoolExpChannelDevice._is_allowed(self, req_type)
 
     def get_pseudo_counter(self):
         return self.element
@@ -66,14 +67,14 @@ class PseudoCounter(PoolElementDevice):
 
     @DebugIt()
     def delete_device(self):
-        PoolElementDevice.delete_device(self)
+        PoolExpChannelDevice.delete_device(self)
         pseudo_counter = self.pseudo_counter
         if pseudo_counter is not None:
             pseudo_counter.remove_listener(self.on_pseudo_counter_changed)
 
     @DebugIt()
     def init_device(self):
-        PoolElementDevice.init_device(self)
+        PoolExpChannelDevice.init_device(self)
 
         self.Elements = map(int, self.Elements)
         pseudo_counter = self.pseudo_counter
@@ -111,8 +112,14 @@ class PseudoCounter(PoolElementDevice):
 
         timestamp = time.time()
         name = event_type.name.lower()
+        attr_name = name
+        # TODO: remove this condition when Data attribute will be substituted
+        # by ValueBuffer
+        if name == "valuebuffer":
+            attr_name = "data"
+
         try:
-            attr = self.get_attribute_by_name(name)
+            attr = self.get_attribute_by_name(attr_name)
         except DevFailed:
             return
 
@@ -124,6 +131,9 @@ class PseudoCounter(PoolElementDevice):
             value = self.calculate_tango_state(event_value)
         elif name == "status":
             value = self.calculate_tango_status(event_value)
+        elif name == "valuebuffer":
+            value = self._encode_value_chunk(event_value)
+            self._first_read_cache = True
         elif name == "value":
             if isinstance(event_value, SardanaAttribute):
                 # first obtain the value - during this process it may
@@ -162,7 +172,7 @@ class PseudoCounter(PoolElementDevice):
         cache_built = hasattr(self, "_dynamic_attributes_cache")
 
         std_attrs, dyn_attrs = \
-            PoolElementDevice.get_dynamic_attributes(self)
+            PoolExpChannelDevice.get_dynamic_attributes(self)
 
         if not cache_built:
             # For value attribute, listen to what the controller says for data
@@ -175,10 +185,10 @@ class PseudoCounter(PoolElementDevice):
         return std_attrs, dyn_attrs
 
     def initialize_dynamic_attributes(self):
-        attrs = PoolElementDevice.initialize_dynamic_attributes(self)
+        attrs = PoolExpChannelDevice.initialize_dynamic_attributes(self)
 
         detect_evts = "value",
-        non_detect_evts = ()
+        non_detect_evts = "data",
 
         for attr_name in detect_evts:
             if attr_name in attrs:
@@ -190,6 +200,9 @@ class PseudoCounter(PoolElementDevice):
     def read_Value(self, attr):
         pseudo_counter = self.pseudo_counter
         use_cache = pseudo_counter.is_in_operation() and not self.Force_HW_Read
+        if not use_cache and self._first_read_cache:
+            use_cache = True
+            self._first_read_cache = False
         value_attr = pseudo_counter.get_value(cache=use_cache, propagate=0)
         # first obtain the value - during this process it may
         # enter into the error state, either when updating the elements
@@ -226,7 +239,7 @@ class PseudoCounter(PoolElementDevice):
         return result.value
 
 
-class PseudoCounterClass(PoolElementDeviceClass):
+class PseudoCounterClass(PoolExpChannelDeviceClass):
 
     #    Class Properties
     class_property_list = {
@@ -236,23 +249,23 @@ class PseudoCounterClass(PoolElementDeviceClass):
     device_property_list = {
         "Elements":    [DevVarStringArray, "elements used by the pseudo", []],
     }
-    device_property_list.update(PoolElementDeviceClass.device_property_list)
+    device_property_list.update(PoolExpChannelDeviceClass.device_property_list)
 
     #    Command definitions
     cmd_list = {
         'CalcPseudo': [[DevVarDoubleArray, "physical values"], [DevDouble, "pseudo counter"]],
         'CalcAllPseudo': [[DevVarDoubleArray, "physical positions"], [DevVarDoubleArray, "pseudo counter values"]],
     }
-    cmd_list.update(PoolElementDeviceClass.cmd_list)
+    cmd_list.update(PoolExpChannelDeviceClass.cmd_list)
 
     #    Attribute definitions
     standard_attr_list = {
         'Value': [[DevDouble, SCALAR, READ]],
     }
-    standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
+    standard_attr_list.update(PoolExpChannelDeviceClass.standard_attr_list)
 
     def _get_class_properties(self):
-        ret = PoolElementDeviceClass._get_class_properties(self)
+        ret = PoolExpChannelDeviceClass._get_class_properties(self)
         ret['Description'] = "Pseudo counter device class"
-        ret['InheritedFrom'].insert(0, 'PoolElementDevice')
+        ret['InheritedFrom'].insert(0, 'PoolExpChannelDevice')
         return ret
