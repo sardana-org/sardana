@@ -1042,7 +1042,6 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable):
     def __init__(self, inst, props, *args, **kwargs):
         Controller.__init__(self, inst, props, *args, **kwargs)
         self._latency_time = 0
-        self._read_when_acq = True
         self._synchronization = AcqSynch.SoftwareTrigger
 
     def GetAxisPar(self, axis, parameter):
