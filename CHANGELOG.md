@@ -45,7 +45,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   configuration and as the experimental channel controller parameter (SEP6)
 - Applied AutoPEP8 to whole project (#446)
 - A part of the 0D's core API was changed in order to be more consistent with
-  the new concept of value buffer:
+  the new concept of value buffer (#469):
   - `BaseAccumulation.append_value` -> `BaseAccumulation.append`
   - `Value.get_value_buffer` -> `Value.get_accumulation_buffer`
   - `Value.append_value` -> `Value.append_buffer`
@@ -55,6 +55,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Deprecated
 - `LoadOne` API had changed - `repetitions` was added as a mandatory argument
   and the old API is deprecated (SEP6)
+- OD's `ValueBuffer` Tango attribute is deprecated in favor of the
+  `AccumulationBuffer` attribute (#469)
 
 ### Removed
 - units level from the Measurement Group configuration (#218)
