@@ -22,8 +22,13 @@ This file follows the formats and conventions from [keepachangelog.com]
 - possibility to execute multiple, synchronized by hardware or software, 
   in time or position domain (also non equidistant) acquisitions with the
   Measurement Group (SEP6)
-- CTExpChannel may report data in chunks when hardware synchronization is
-  in use (SEP6)
+- CTExpChannel may report acquired and indexed values in chunks in
+  continuous acquisition (SEP6)
+- 0DExpChannel may report acquired and indexed values in chunks in
+  continuous acquisition (#469)
+- PseudoCounter may return calculated (from the buffered physical
+  channels values) and indexed values in chunks in continuous acquisition
+  (#469) 
 - `synchronizer` parameter to the Measurement Group configuration (SEP6)
 - `latency_time` parameter to the experimental channel controllers (SEP6)
 - `ApplyInterpolation` environment variable, applicable to `ascanct` & co.
@@ -39,6 +44,13 @@ This file follows the formats and conventions from [keepachangelog.com]
 - `trigger_type` was renamed to `synchronization` in Measurement Group
   configuration and as the experimental channel controller parameter (SEP6)
 - Applied AutoPEP8 to whole project (#446)
+- A part of the 0D's core API was changed in order to be more consistent with
+  the new concept of value buffer:
+  - `BaseAccumulation.append_value` -> `BaseAccumulation.append`
+  - `Value.get_value_buffer` -> `Value.get_accumulation_buffer`
+  - `Value.append_value` -> `Value.append_buffer`
+  - `PoolZeoDExpChannel.get_value_buffer` -> `PoolZeoDExpChannel.get_accumulation_buffer`
+  - `PoolZeoDExpChannel.value_buffer` -> `PoolZeoDExpChannel.accumulation_buffer`
 
 ### Deprecated
 - `LoadOne` API had changed - `repetitions` was added as a mandatory argument
