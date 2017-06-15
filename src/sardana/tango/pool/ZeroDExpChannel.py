@@ -43,17 +43,17 @@ from sardana.sardanaattribute import SardanaAttribute
 from sardana.pool.controller import ZeroDController, Type
 from sardana.tango.core.util import to_tango_type_format
 
-from sardana.tango.pool.PoolDevice import PoolElementDevice, \
-    PoolElementDeviceClass
+from sardana.tango.pool.PoolDevice import PoolExpChannelDevice, \
+    PoolExpChannelDeviceClass
 
 
-class ZeroDExpChannel(PoolElementDevice):
+class ZeroDExpChannel(PoolExpChannelDevice):
 
     def __init__(self, dclass, name):
-        PoolElementDevice.__init__(self, dclass, name)
+        PoolExpChannelDevice.__init__(self, dclass, name)
 
     def init(self, name):
-        PoolElementDevice.init(self, name)
+        PoolExpChannelDevice.init(self, name)
 
     def get_zerod(self):
         return self.element
@@ -65,14 +65,14 @@ class ZeroDExpChannel(PoolElementDevice):
 
     @DebugIt()
     def delete_device(self):
-        PoolElementDevice.delete_device(self)
+        PoolExpChannelDevice.delete_device(self)
         zerod = self.zerod
         if zerod is not None:
             zerod.remove_listener(self.on_zerod_changed)
 
     @DebugIt()
     def init_device(self):
-        PoolElementDevice.init_device(self)
+        PoolExpChannelDevice.init_device(self)
         zerod = self.zerod
         if zerod is None:
             full_name = self.get_full_name()
@@ -94,28 +94,40 @@ class ZeroDExpChannel(PoolElementDevice):
             return
 
         timestamp = time.time()
-        name = event_type.name
         quality = AttrQuality.ATTR_VALID
         priority = event_type.priority
+        value = None
         error = None
-        attr = self.get_device_attr().get_attr_by_name(name)
+
+        name = event_type.name.lower()
+        attr_name = name
+        # TODO: remove this condition when Data attribute will be substituted
+        # by ValueBuffer
+        if name == "valuebuffer":
+            attr_name = "data"
+        attr = self.get_device_attr().get_attr_by_name(attr_name)
 
         if name == "state":
-            event_value = self.calculate_tango_state(event_value)
+            value = self.calculate_tango_state(event_value)
         elif name == "status":
-            event_value = self.calculate_tango_status(event_value)
-        else:
+            value = self.calculate_tango_status(event_value)
+        elif name == "valuebuffer":
+            value = self._encode_value_chunk(event_value)
+        elif name == "value":
             if isinstance(event_value, SardanaAttribute):
                 if event_value.error:
                     error = Except.to_dev_failed(*event_value.exc_info)
+                else:
+                    value = event_value.value
                 timestamp = event_value.timestamp
-                event_value = event_value.value
+            else:
+                value = event_value
 
             if name == "value":
                 state = self.zerod.get_state()
                 if state == State.Moving:
                     quality = AttrQuality.ATTR_CHANGING
-        self.set_attribute(attr, value=event_value, timestamp=timestamp,
+        self.set_attribute(attr, value=value, timestamp=timestamp,
                            quality=quality, priority=priority, error=error,
                            synch=False)
 
@@ -130,7 +142,7 @@ class ZeroDExpChannel(PoolElementDevice):
         cache_built = hasattr(self, "_dynamic_attributes_cache")
 
         std_attrs, dyn_attrs = \
-            PoolElementDevice.get_dynamic_attributes(self)
+            PoolExpChannelDevice.get_dynamic_attributes(self)
 
         if not cache_built:
             # For value attribute, listen to what the controller says for data
@@ -150,10 +162,10 @@ class ZeroDExpChannel(PoolElementDevice):
         return std_attrs, dyn_attrs
 
     def initialize_dynamic_attributes(self):
-        attrs = PoolElementDevice.initialize_dynamic_attributes(self)
+        attrs = PoolExpChannelDevice.initialize_dynamic_attributes(self)
 
         detect_evts = "value",
-        non_detect_evts = ()
+        non_detect_evts = "data",
 
         for attr_name in detect_evts:
             if attr_name in attrs:
@@ -189,7 +201,13 @@ class ZeroDExpChannel(PoolElementDevice):
         self.zerod.start_acquisition()
 
     def read_ValueBuffer(self, attr):
-        attr.set_value(self.zerod.get_value_buffer())
+        msg = "ValueBuffer attribute is deprecated since Jul17 release and "\
+              "it will disappear with Jan18 release."
+        self.deprecated(msg)
+        attr.set_value(self.zerod.get_accumulation_buffer())
+
+    def read_AccumulationBuffer(self, attr):
+        attr.set_value(self.zerod.get_accumulation_buffer())
 
     def read_TimeBuffer(self, attr):
         attr.set_value(self.zerod.get_time_buffer())
@@ -201,12 +219,13 @@ class ZeroDExpChannel(PoolElementDevice):
         self.zerod.set_accumulation_type(attr.get_write_value())
 
     def _is_allowed(self, req_type):
-        return PoolElementDevice._is_allowed(self, req_type)
+        return PoolExpChannelDevice._is_allowed(self, req_type)
 
     is_Value_allowed = _is_allowed
     is_CurrentValue_allowed = _is_allowed
     is_AccumulationType_allowed = _is_allowed
     is_ValueBuffer_allowed = _is_allowed
+    is_AccumulationBuffer_allowed = _is_allowed
     is_TimeBuffer_allowed = _is_allowed
 
 
@@ -215,7 +234,7 @@ _DFT_VALUE_TYPE, _DFT_VALUE_FORMAT = to_tango_type_format(
     _DFT_VALUE_INFO[Type], DataFormat.Scalar)
 
 
-class ZeroDExpChannelClass(PoolElementDeviceClass):
+class ZeroDExpChannelClass(PoolExpChannelDeviceClass):
 
     #    Class Properties
     class_property_list = {
@@ -224,33 +243,35 @@ class ZeroDExpChannelClass(PoolElementDeviceClass):
     #    Device Properties
     device_property_list = {
     }
-    device_property_list.update(PoolElementDeviceClass.device_property_list)
+    device_property_list.update(PoolExpChannelDeviceClass.device_property_list)
 
     #    Command definitions
     cmd_list = {
         'Start':   [[DevVoid, ""], [DevVoid, ""]],
     }
-    cmd_list.update(PoolElementDeviceClass.cmd_list)
+    cmd_list.update(PoolExpChannelDeviceClass.cmd_list)
 
     #    Attribute definitions
     attr_list = {
-        'ValueBuffer': [[DevDouble, SPECTRUM, READ, 16 * 1024]],
+        'ValueBuffer': [[DevDouble, SPECTRUM, READ, 16 * 1024]],  # deprecated
+        'AccumulationBuffer': [[DevDouble, SPECTRUM, READ, 16 * 1024]],
         'TimeBuffer': [[DevDouble, SPECTRUM, READ, 16 * 1024]],
         'AccumulationType': [[DevString, SCALAR, READ_WRITE],
                              {'Memorized': "true",
                               'label': "Accumulation Type",
                               'Display level': DispLevel.EXPERT}],
     }
-    attr_list.update(PoolElementDeviceClass.attr_list)
+    attr_list.update(PoolExpChannelDeviceClass.attr_list)
 
     standard_attr_list = {
         'Value': [[_DFT_VALUE_TYPE, SCALAR, READ, ],
                   {'abs_change': '1.0', }],
+        'Data': [[DevString, SCALAR, READ]]  # TODO: think about DevEncoded
     }
-    standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
+    standard_attr_list.update(PoolExpChannelDeviceClass.standard_attr_list)
 
     def _get_class_properties(self):
-        ret = PoolElementDeviceClass._get_class_properties(self)
+        ret = PoolExpChannelDeviceClass._get_class_properties(self)
         ret['Description'] = "0D experimental channel device class"
-        ret['InheritedFrom'].insert(0, 'PoolElementDevice')
+        ret['InheritedFrom'].insert(0, 'PoolExpChannelDevice')
         return ret

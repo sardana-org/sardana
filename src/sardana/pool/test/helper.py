@@ -25,18 +25,21 @@
 
 __all__ = ['createPoolController', 'createPoolCounterTimer',
            'createPoolZeroDExpChannel', 'createPoolTriggerGate',
-           'createPoolMotor', 'createPoolMeasurementGroup',
+           'createPoolMotor', 'createPoolPseudoCounter',
+           'createPoolMeasurementGroup',
            'createPoolSynchronizationConfiguration',
            'createCTAcquisitionConfiguration', 'createMGConfiguration',
            'createElemConf', 'createCtrlConf', 'createConfbyCtrlKlass',
            'createMGUserConfiguration']
 import copy
 from sardana.sardanadefs import ElementType
-from sardana.pool.poolcontroller import PoolController
+from sardana.pool.poolcontroller import PoolController,\
+    PoolPseudoMotorController, PoolPseudoCounterController
 from sardana.pool.poolcountertimer import PoolCounterTimer
 from sardana.pool.poolzerodexpchannel import Pool0DExpChannel
 from sardana.pool.pooltriggergate import PoolTriggerGate
 from sardana.pool.poolmotor import PoolMotor
+from sardana.pool.poolpseudocounter import PoolPseudoCounter
 from sardana.pool.poolmeasurementgroup import PoolMeasurementGroup
 
 
@@ -50,6 +53,7 @@ def createPoolController(pool, conf):
     ctrl_lib_info = ctrl_manager.getControllerLib(kwargs['library'])
     if ctrl_lib_info is not None:
         ctrl_class_info = ctrl_lib_info.get_controller(kwargs['klass'])
+    main_type = ctrl_class_info.type_names[0]
     # check if all controller properties are present in conf.
     # in case of missing prop. and existing default value, use the default
     properties = kwargs['properties']
@@ -69,7 +73,13 @@ def createPoolController(pool, conf):
     kwargs['pool'] = pool
     kwargs['lib_info'] = ctrl_lib_info
     kwargs['class_info'] = ctrl_class_info
-    return PoolController(**kwargs)
+    if main_type == "PseudoMotor":
+        klass = PoolPseudoMotorController
+    elif main_type == "PseudoCounter":
+        klass = PoolPseudoCounterController
+    else:
+        klass = PoolController
+    return klass(**kwargs)
 
 
 def createPoolCounterTimer(pool, poolcontroller, conf):
@@ -107,6 +117,15 @@ def createPoolMotor(pool, poolcontroller, conf):
     kwargs['ctrl'] = poolcontroller
     return PoolMotor(**kwargs)
 
+
+def createPoolPseudoCounter(pool, poolcontroller, conf, elements=()):
+    '''Method to create a PoolMotor using a configuration dictionary
+    '''
+    kwargs = copy.deepcopy(conf)
+    kwargs['pool'] = pool
+    kwargs['ctrl'] = poolcontroller
+    kwargs['user_elements'] = elements
+    return PoolPseudoCounter(**kwargs)
 
 def createPoolMeasurementGroup(pool, conf):
     '''Method to create a PoolMeasurementGroup using a configuration dictionary

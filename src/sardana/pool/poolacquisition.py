@@ -196,6 +196,12 @@ def extract_repetitions(synchronization):
     return repetitions
 
 
+def is_value_error(value):
+    if isinstance(value, SardanaValue) and value.error:
+        return True
+    return False
+
+
 class PoolAcquisition(PoolAction):
 
     def __init__(self, main_element, name="Acquisition"):
@@ -276,6 +282,14 @@ class PoolAcquisition(PoolAction):
     def run(self, *args, **kwargs):
         for elem in self.get_elements():
             elem.put_state(None)
+            # TODO: temporarily clear value buffers at the beginning of the
+            # acquisition instead of doing it in the finish hook of each
+            # acquisition sub-actions. See extensive explanation in the
+            # constructor of PoolAcquisitionBase.
+            try:
+                elem.clear_value_buffer()
+            except AttributeError:
+                pass
         config = kwargs['config']
         synchronization = kwargs["synchronization"]
         integ_time = extract_integ_time(synchronization)
@@ -406,26 +420,11 @@ class Channel(PoolActionItem):
 
     def __init__(self, acquirable, info=None):
         PoolActionItem.__init__(self, acquirable)
-        self.idx = 0
         if info:
             self.__dict__.update(info)
 
     def __getattr__(self, name):
         return getattr(self.element, name)
-
-    def _fill_idx(self, values):
-        """Fill indexes if they are missing.
-        :param values: values to be filled with the index
-        :type values: list<:class~`sardana.sardanavalue.SardanaValue`> or
-                      <:class~`sardana.sardanavalue.SardanaValue`>
-        """
-        if not is_non_str_seq(values):
-            values = list(values)
-        if len(values) and values[0].idx is None:
-            for v in values:
-                v.idx = self.idx
-                self.idx += 1
-        return values
 
 
 class PoolAcquisitionBase(PoolAction):
@@ -441,6 +440,15 @@ class PoolAcquisitionBase(PoolAction):
     def __init__(self, main_element, name):
         PoolAction.__init__(self, main_element, name)
         self._channels = None
+        # TODO: for the moment we can not clear value buffers at the end of
+        # the acquisition. This is because of the pseudo counters that are
+        # based on channels synchronized by hardware and software.
+        # These two acquisition actions finish at different moment so the
+        # pseudo counter will loose the value buffer of some of its physicals
+        # if we clear the buffer at the end.
+        # Whenever there will be solution for that, after refactoring of the
+        # acquisition actions, uncomment this line
+        # self.add_finish_hook(self.clear_value_buffers, True)
 
     def in_acquisition(self, states):
         """Determines if we are in acquisition or if the acquisition has ended
@@ -638,6 +646,10 @@ class PoolAcquisitionBase(PoolAction):
                     msg = ("%s.StartAll() failed" % pool_ctrl.name)
                     raise Exception(msg)
 
+    def clear_value_buffers(self):
+        for channel in self._channels:
+            channel.clear_value_buffer()
+
 
 class PoolAcquisitionHardware(PoolAcquisitionBase):
     """Acquisition action for controllers synchronized by hardware
@@ -673,13 +685,12 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
             if not i % nb_states_per_value:
                 self.read_value_loop(ret=values)
                 for acquirable, value in values.items():
-                    if isinstance(value, SardanaValue) and value.error:
-                        self.warning("Error when reading value: %r" %
-                                     value.exc_info)
-                    elif len(value) > 0:
-                        channel = self._channels[acquirable]
-                        channel._fill_idx(value)
-                        acquirable.put_value_chunk(value)
+                    if is_value_error(value):
+                        self.error("Loop read value error for %s" %
+                                   acquirable.name)
+                        acquirable.put_value(value)
+                    else:
+                        acquirable.extend_value_buffer(value)
 
             time.sleep(nap)
             i += 1
@@ -694,13 +705,12 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
             acquirable.set_state_info(state_info, propagate=0)
             if acquirable in values:
                 value = values[acquirable]
-                if isinstance(value, SardanaValue) and value.error:
-                    self.warning("Error when reading value: %r" %
-                                 value.exc_info)
-                elif len(value) > 0:
-                    channel = self._channels[acquirable]
-                    channel._fill_idx(value)
-                    acquirable.put_value_chunk(value, propagate=2)
+                if is_value_error(value):
+                    self.error("Loop final read value error for: %s" %
+                               acquirable.name)
+                    acquirable.put_value(value)
+                else:
+                    acquirable.extend_value_buffer(value, propagate=2)
             with acquirable:
                 acquirable.clear_operation()
                 state_info = acquirable._from_ctrl_state_info(state_info)
@@ -775,10 +785,12 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
             acquirable.set_state_info(state_info, propagate=0)
             if acquirable in values:
                 value = values[acquirable]
-                # fill information about the current index
-                value.idx = self.index
-                value_chunk = [value]
-                acquirable.put_value_chunk(value_chunk, propagate=2)
+                if is_value_error(value):
+                    self.error("Loop final read value error for: %s" %
+                               acquirable.name)
+                    acquirable.put_value(value)
+                else:
+                    acquirable.append_value_buffer(value, self.index)
             with acquirable:
                 acquirable.clear_operation()
                 state_info = acquirable._from_ctrl_state_info(state_info)
@@ -884,7 +896,7 @@ class Pool0DAcquisition(PoolAction):
 
         pool = self.pool
 
-        self.conf = kwargs
+        self._index = kwargs.get("idx")
 
         # prepare data structures
         # TODO: rollback this change when a proper synchronization between
@@ -953,14 +965,14 @@ class Pool0DAcquisition(PoolAction):
         while True:
             self.read_value(ret=values)
             for acquirable, value in values.items():
-                acquirable.put_value(value, index=self.conf[
-                                     'idx'], propagate=0)
+                acquirable.put_current_value(value, propagate=0)
             if self._stopped or self._aborted:
                 break
             time.sleep(nap)
 
         for element in self._channels:
-            element.propagate_value(priority=1)
+            value = element.accumulated_value.value_obj
+            element.append_value_buffer(value, self._index, propagate=2)
 
         with ActionContext(self):
             self.raw_read_state_info(ret=states)
