@@ -456,8 +456,11 @@ class SPEC_FileRecorder(BaseFileRecorder):
             # spec. For that reason we implement the it by hand.
             #str_data = ' '.join(data.astype(str))
             str_data = ''
-            for i in data:
-                str_data += '%s ' % i
+            if numpy.iterable(data):
+                for i in data:
+                    str_data += '%s ' % i
+            else:
+                str_data += '%s' % data
             outstr = '@A %s' % str_data
             outstr += '\n'
             fd.write(outstr)
