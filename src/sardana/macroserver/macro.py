@@ -477,6 +477,63 @@ class Macro(Logger):
         log_parent = self.parent_macro or self.door
         Logger.__init__(self, "Macro[%s]" % self._name, log_parent)
         self._reserveObjs(args)
+        
+        try:
+            self.logging_onoff = self.getEnv("LogMacroOnOff")
+        except:
+            self.logging_onoff = False
+        try:
+            self.logging_mode = self.getEnv("LogMacroMode")
+        except:
+            self.logging_mode = 0
+        try:
+            self.logging_all = self.getEnv("LogMacroAll")
+        except:
+            self.logging_all = 0
+
+        if self.logging_onoff:
+            
+            try:
+                self.logging_path = self.getEnv("LogMacroPath")
+            except:
+                self.setEnv("LogMacroPath","/tmp")
+                self.logging_path = self.getEnv("LogMacroPath")
+
+            macro_cmd = ""
+            if self.parent_macro == None:
+                import os
+                if self.logging_mode:
+                    file_name = self.logging_path + "/spock_session.log"
+                    if os.path.isfile(file_name):
+                        try:
+                            os.system("vrsn -s %s" % file_name)
+                            os.remove(file_name)
+                        except:
+                            backup_logname = file_name+'~'
+                            if os.path.isfile(backup_logname):
+                                os.remove(backup_logname)
+                            os.rename(file_name,backup_logname)
+                            os.remove(file_name)
+                
+                macro_cmd = "\n-- " + time.ctime() + "\n"
+
+            if self.logging_all or self.parent_macro == None: # Not use getParent because it is the door and not None 
+                macro_cmd = macro_cmd + self.getName() # Not use getCommand because the syntax is different than in spock
+                for par in self.getParameters():
+                    if type(par) == list:
+                        for el in par:
+                            if type(el) == list:
+                                for el1 in el:
+                                    macro_cmd = macro_cmd + " " + str(el1)
+                            else:
+                                macro_cmd = macro_cmd + " " + str(el)
+                    else:
+                        macro_cmd = macro_cmd + " " + str(par)
+                macro_cmd = macro_cmd
+                try:
+                    Logger.loggingtofile(self, macro_cmd, self.logging_path, *args, **kwargs)
+                except:
+                    self.warning("Not able to write log file. Check if the path for logging %s exist.", self.logging_path)
 
     # @name Official Macro API
     #  This list contains the set of methods that are part of the official macro
@@ -869,6 +926,19 @@ class Macro(Logger):
         :type msg: :obj:`str`
         :param args: list of arguments
         :param kwargs: list of keyword arguments"""
+
+        if self.logging_onoff:
+            msgstr = " " + msg
+            try:
+                if type(msgstr) == list:
+                    msgstr = ' '.join(msgstr)
+                msgstr = msgstr.replace("</BLOCK>","")
+                msgstr = msgstr.replace("<BLOCK>\n","")
+                Logger.loggingtofile(self, msgstr, self.logging_path, *args, **kwargs)
+            except:
+                self.warning("Not able to write log file. Check if the path for logging %s exist.", self.logging_path)
+
+    
         return Logger.output(self, msg, *args, **kwargs)
 
     @mAPI
@@ -886,6 +956,15 @@ class Macro(Logger):
         :type msg: :obj:`str`
         :param args: list of arguments
         :param kwargs: list of keyword arguments"""
+        if self.logging_onoff:
+            try:
+                if len(args) > 0:
+                    msgc = msg % args
+                else:
+                    msgc = msg
+                Logger.loggingtofile(self, msgc, self.logging_path, *args, **kwargs)
+            except:
+                pass
         return Logger.log(self, level, msg, *args, **kwargs)
 
     @mAPI
@@ -916,6 +995,15 @@ class Macro(Logger):
         :type msg: :obj:`str`
         :param args: list of arguments
         :param kwargs: list of keyword arguments"""
+        if self.logging_onoff:
+            try:
+                if len(args) > 0:
+                    msgc = msg % args
+                else:
+                    msgc = msg
+                Logger.loggingtofile(self, msgc, self.logging_path, *args, **kwargs)
+            except:
+                pass
         return Logger.info(self, msg, *args, **kwargs)
 
     @mAPI
@@ -931,6 +1019,17 @@ class Macro(Logger):
         :type msg: :obj:`str`
         :param args: list of arguments
         :param kwargs: list of keyword arguments"""
+        
+        if self.logging_onoff:
+            try:
+                if len(args) > 0:
+                    msgc = msg % args
+                else:
+                    msgc = msg
+                Logger.loggingtofile(self, msgc, self.logging_path, *args, **kwargs)
+            except:
+                pass
+                
         return Logger.warning(self, msg, *args, **kwargs)
 
     @mAPI
@@ -947,6 +1046,15 @@ class Macro(Logger):
         :param args: list of arguments
         :param kwargs: list of keyword arguments
         """
+        if self.logging_onoff:
+            try:
+                if len(args) > 0:
+                    msgc = msg % args
+                else:
+                    msgc = msg
+                Logger.loggingtofile(self, msgc, self.logging_path, *args, **kwargs)
+            except:
+                pass
         return Logger.error(self, msg, *args, **kwargs)
 
     @mAPI
@@ -962,6 +1070,15 @@ class Macro(Logger):
         :type msg: :obj:`str`
         :param args: list of arguments
         :param kwargs: list of keyword arguments"""
+        if self.logging_onoff:
+            try:
+                if len(args) > 0:
+                    msgc = msg % args
+                else:
+                    msgc = msg
+                Logger.loggingtofile(self, msgc, self.logging_path, *args, **kwargs)
+            except:
+                pass
         return Logger.critical(self, msg, *args, **kwargs)
 
     @mAPI
@@ -971,6 +1088,15 @@ class Macro(Logger):
         :param msg: (str) the message to be recorded
         :param args: list of arguments
         :param kw: list of keyword arguments"""
+        if self.logging_onoff:
+            try:
+                if len(args) > 0:
+                    msgc = msg % args
+                else:
+                    msgc = msg
+                Logger.loggingtofile(self, msgc, self.logging_path, *args, **kwargs)
+            except:
+                pass
         return Logger.trace(self, msg, *args, **kwargs)
 
     @mAPI
@@ -983,6 +1109,15 @@ class Macro(Logger):
     def stack(self, *args, **kwargs):
         """**Macro API**.
         Logs the stack with level TRACE on the macro logger."""
+        if self.logging_onoff:
+            try:
+                if len(args) > 0:
+                    msgc = msg % args
+                else:
+                    msgc = msg
+                Logger.loggingtofile(self, msgc, self.logging_path, *args, **kwargs)
+            except:
+                pass
         return Logger.stack(self, *args, **kwargs)
 
     @mAPI

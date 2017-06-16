@@ -1250,6 +1250,11 @@ class MacroExecutor(Logger):
             # sending result only if we are the top most macro
             if macro_obj.hasResult() and macro_obj.getParentMacro() is None:
                 result_repr = self.__preprocessResult(result)
+                logging_onoff = macro_obj.getEnv("LogMacroOnOff")
+                if logging_onoff:
+                    logging_path = macro_obj.getEnv("LogMacroPath")
+                    msg = "Result: %s" % (result_repr)
+                    Logger.loggingtofile(self, msg, logging_path)
                 door.debug("sending result %s", result_repr)
                 self.sendResult(result_repr)
         except AbortException as ae:

@@ -24,7 +24,8 @@
 """This is the standard macro module"""
 
 __all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "set_lim", "set_lm",
-           "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm", "tw"]
+           "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm", "tw",
+           "logmacro_off", "logmacro_on"]
 
 __docformat__ = 'restructuredtext'
 
@@ -764,3 +765,26 @@ class settimer(Macro):
 def report(self, message):
     """Logs a new record into the message report system (if active)"""
     self.report(' '.join(message))
+
+
+class logmacro_off(Macro):
+    """ Set off the logging of the spock output """
+
+    def run(self):
+        self.setEnv('LogMacroOnOff', False)
+
+
+class logmacro_on(Macro):
+    """ Set on the logging of the spock output """
+
+    param_def = [
+       ['mode', Type.Integer, -1, 'Mode: 0 append, 1 new file'],
+    ]
+
+    def run(self, mode):
+        if mode == 1:
+            self.setEnv('LogMacroMode', True)
+        elif mode == 0:
+            self.setEnv('LogMacroMode', False)
+            
+        self.setEnv('LogMacroOnOff', True)
