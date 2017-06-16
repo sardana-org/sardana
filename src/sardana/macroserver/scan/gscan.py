@@ -1814,6 +1814,15 @@ class CTScan(CScan):
                 # e.g. dict(data=seq<float>, index=seq<int>)
                 _, data = self._codec.decode(('json', value),
                                              ensure_ascii=True)
+                # numpy arrays are not json serializable so they arrive here
+                # as lists. All the downstream code expects that the 1D
+                # experimental channel values are ndarrays so we convert then
+                # here
+                values = data["data"]
+                if isinstance(values[0], list):
+                    np_values = map(np.array, values)
+                    data["data"] = np_values
+
                 channelName = event_src.getParentObj().getFullName()
                 info = {'label': channelName}
                 info.update(data)

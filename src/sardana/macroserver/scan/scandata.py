@@ -334,7 +334,13 @@ class RecordList(dict):
             for k, v in data.items():
                 if v is None:
                     continue
-                if math.isnan(v):
+                # numpy arrays (1D or 2D) are valid values and does not require
+                # interpolation but provokes TypeError
+                try:
+                    interpolate = math.isnan(v)
+                except TypeError:
+                    interpolate = False
+                if interpolate:
                     data[k] = prev_data[k]
 
     def addData(self, data):

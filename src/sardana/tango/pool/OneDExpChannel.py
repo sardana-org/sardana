@@ -42,17 +42,18 @@ from sardana.sardanaattribute import SardanaAttribute
 from sardana.pool.controller import OneDController, MaxDimSize, Type
 from sardana.tango.core.util import to_tango_type_format, exception_str
 
-from sardana.tango.pool.PoolDevice import PoolElementDevice, \
-    PoolElementDeviceClass
+from sardana.tango.pool.PoolDevice import PoolExpChannelDevice, \
+    PoolExpChannelDeviceClass
 
 
-class OneDExpChannel(PoolElementDevice):
+class OneDExpChannel(PoolExpChannelDevice):
 
     def __init__(self, dclass, name):
-        PoolElementDevice.__init__(self, dclass, name)
+        PoolExpChannelDevice.__init__(self, dclass, name)
+        self._first_read_cache = False
 
     def init(self, name):
-        PoolElementDevice.init(self, name)
+        PoolExpChannelDevice.init(self, name)
 
     def get_oned(self):
         return self.element
@@ -64,14 +65,14 @@ class OneDExpChannel(PoolElementDevice):
 
     @DebugIt()
     def delete_device(self):
-        PoolElementDevice.delete_device(self)
+        PoolExpChannelDevice.delete_device(self)
         oned = self.oned
         if oned is not None:
             oned.remove_listener(self.on_oned_changed)
 
     @DebugIt()
     def init_device(self):
-        PoolElementDevice.init_device(self)
+        PoolExpChannelDevice.init_device(self)
         oned = self.oned
         if oned is None:
             full_name = self.get_full_name()
@@ -106,9 +107,14 @@ class OneDExpChannel(PoolElementDevice):
 
         timestamp = time.time()
         name = event_type.name.lower()
+        attr_name = name
+        # TODO: remove this condition when Data attribute will be substituted
+        # by ValueBuffer
+        if name == "valuebuffer":
+            attr_name = "data"
 
         try:
-            attr = self.get_attribute_by_name(name)
+            attr = self.get_attribute_by_name(attr_name)
         except DevFailed:
             return
 
@@ -120,6 +126,9 @@ class OneDExpChannel(PoolElementDevice):
             value = self.calculate_tango_state(event_value)
         elif name == "status":
             value = self.calculate_tango_status(event_value)
+        elif name == "valuebuffer":
+            value = self._encode_value_chunk(event_value)
+            self._first_read_cache = True
         else:
             if isinstance(event_value, SardanaAttribute):
                 if event_value.error:
@@ -127,11 +136,14 @@ class OneDExpChannel(PoolElementDevice):
                 else:
                     value = event_value.value
                 timestamp = event_value.timestamp
-
+            else:
+                value = event_value
             if name == "value":
+                w_value = event_source.get_value_attribute().w_value
                 state = self.oned.get_state()
                 if state == State.Moving:
                     quality = AttrQuality.ATTR_CHANGING
+
         self.set_attribute(attr, value=value, w_value=w_value,
                            timestamp=timestamp, quality=quality,
                            priority=priority, error=error, synch=False)
@@ -147,7 +159,7 @@ class OneDExpChannel(PoolElementDevice):
         cache_built = hasattr(self, "_dynamic_attributes_cache")
 
         std_attrs, dyn_attrs = \
-            PoolElementDevice.get_dynamic_attributes(self)
+            PoolExpChannelDevice.get_dynamic_attributes(self)
 
         if not cache_built:
             # For value attribute, listen to what the controller says for data
@@ -161,6 +173,15 @@ class OneDExpChannel(PoolElementDevice):
                 data_info[0][3] = shape[0]
         return std_attrs, dyn_attrs
 
+    def initialize_dynamic_attributes(self):
+        attrs = PoolExpChannelDevice.initialize_dynamic_attributes(self)
+
+        non_detect_evts = "data",
+
+        for attr_name in non_detect_evts:
+            if attr_name in attrs:
+                self.set_change_event(attr_name, True, False)
+
     def read_Value(self, attr):
         oned = self.oned
         # TODO: decide if we force the controller developers to store the
@@ -168,14 +189,15 @@ class OneDExpChannel(PoolElementDevice):
         # cache. This is due to the fact that the clients (MS) read the value
         # after the acquisition had finished.
         use_cache = oned.is_in_operation() and not self.Force_HW_Read
-        # For the moment we just check if the previous acquisition was
-        # synchronized by hardware and in this case, we use cache and clean the
-        # buffer so the cached value will be returned only at the first readout
-        # after the acquisition. This is a workaround for the step scans which
-        # read the value after the acquisition.
-        if not use_cache and len(oned.value.value_buffer) > 0:
+        # For the moment we just check if we recently receive ValueBuffer.
+        # event. In this case, we use cache and clean the flag
+        # so the cached value will be returned only at the first readout
+        # after the acquisition. This is a workaround for the count executed
+        # by the MacroServer e.g. step scans or ct which read the value after
+        # the acquisition.
+        if not use_cache and self._first_read_cache:
             use_cache = True
-            oned.value.clear_buffer()
+            self._first_read_cache = False
         value = oned.get_value(cache=use_cache, propagate=0)
         if value.error:
             Except.throw_python_exception(*value.exc_info)
@@ -207,7 +229,7 @@ _DFT_VALUE_TYPE, _DFT_VALUE_FORMAT = to_tango_type_format(
     _DFT_VALUE_INFO[Type], DataFormat.OneD)
 
 
-class OneDExpChannelClass(PoolElementDeviceClass):
+class OneDExpChannelClass(PoolExpChannelDeviceClass):
 
     #    Class Properties
     class_property_list = {
@@ -216,29 +238,29 @@ class OneDExpChannelClass(PoolElementDeviceClass):
     #    Device Properties
     device_property_list = {
     }
-    device_property_list.update(PoolElementDeviceClass.device_property_list)
+    device_property_list.update(PoolExpChannelDeviceClass.device_property_list)
 
     #    Command definitions
     cmd_list = {
         'Start':   [[DevVoid, ""], [DevVoid, ""]],
     }
-    cmd_list.update(PoolElementDeviceClass.cmd_list)
+    cmd_list.update(PoolExpChannelDeviceClass.cmd_list)
 
     #    Attribute definitions
     attr_list = {
         'DataSource': [[DevString, SCALAR, READ]],
     }
-    attr_list.update(PoolElementDeviceClass.attr_list)
+    attr_list.update(PoolExpChannelDeviceClass.attr_list)
 
     standard_attr_list = {
         'Value': [[_DFT_VALUE_TYPE, _DFT_VALUE_FORMAT, READ,
                    _DFT_VALUE_MAX_SHAPE[0]],
-                  {'abs_change': '1.0', }],
+                  {'abs_change': '1.0', }]
     }
-    standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
+    standard_attr_list.update(PoolExpChannelDeviceClass.standard_attr_list)
 
     def _get_class_properties(self):
-        ret = PoolElementDeviceClass._get_class_properties(self)
+        ret = PoolExpChannelDeviceClass._get_class_properties(self)
         ret['Description'] = "1D device class"
-        ret['InheritedFrom'].insert(0, 'PoolElementDevice')
+        ret['InheritedFrom'].insert(0, 'PoolExpChannelDevice')
         return ret
