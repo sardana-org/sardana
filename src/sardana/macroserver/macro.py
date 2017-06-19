@@ -537,9 +537,8 @@ class Macro(Logger):
                     Logger.loggingtofile(
                         self, macro_cmd, self.logging_path, *args, **kwargs)
                 except:
-                    self.warning(
-                        "Not able to write log file. Check if the path 
-                        for logging %s exist.",
+                    self.warning("Not able to write log file. Check if the path
+                        for logging % s exist.",
                         self.logging_path)
 
     # @name Official Macro API
@@ -945,9 +944,8 @@ class Macro(Logger):
                 Logger.loggingtofile(
                     self, msgstr, self.logging_path, *args, **kwargs)
             except:
-                self.warning(
-                    "Not able to write log file. 
-                    Check if the path for logging %s exist.",
+                self.warning("Not able to write log file.
+                    Check if the path for logging % s exist.",
                     self.logging_path)
 
 
