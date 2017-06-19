@@ -1250,7 +1250,10 @@ class MacroExecutor(Logger):
             # sending result only if we are the top most macro
             if macro_obj.hasResult() and macro_obj.getParentMacro() is None:
                 result_repr = self.__preprocessResult(result)
-                logging_onoff = macro_obj.getEnv("LogMacroOnOff")
+                try:
+                    logging_onoff = macro_obj.getEnv("LogMacroOnOff")
+                except:
+                    logging_onoff = 0
                 if logging_onoff:
                     logging_path = macro_obj.getEnv("LogMacroPath")
                     msg = "Result: %s" % (result_repr)
