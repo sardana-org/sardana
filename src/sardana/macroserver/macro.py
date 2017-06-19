@@ -537,12 +537,11 @@ class Macro(Logger):
                     Logger.loggingtofile(
                         self, macro_cmd, self.logging_path, *args, **kwargs)
                 except:
-                    self.warning("Not able to write log file. Check if the path
-                        for logging % s exist.",
-                        self.logging_path)
+                    self.warning("Not able to write log file")
 
     # @name Official Macro API
-    #  This list contains the set of methods that are part of the official macro
+    #  This list contains the set of methods that are part of the official
+    #  macro
     #  API. This means that they can be safely used inside any macro.
     #@{
 
@@ -944,10 +943,7 @@ class Macro(Logger):
                 Logger.loggingtofile(
                     self, msgstr, self.logging_path, *args, **kwargs)
             except:
-                self.warning("Not able to write log file.
-                    Check if the path for logging % s exist.",
-                    self.logging_path)
-
+                self.warning("Not able to write log file")
 
         return Logger.output(self, msg, *args, **kwargs)
 
