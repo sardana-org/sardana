@@ -42,7 +42,12 @@ from lxml import etree
 
 from PyTango import DevFailed
 
-from taurus.external.ordereddict import OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    # For Python < 2.7
+    from ordereddict import OrderedDict
+
 from taurus.core.util.log import Logger
 from taurus.core.util.codecs import CodecFactory
 
@@ -1060,7 +1065,6 @@ class MacroExecutor(Logger):
         macro_name = meta_macro.name
         macro_id = init_opts.get("id")
         if macro_id is None:
-            macro_id = str(self.getNewMacroID())
             init_opts["id"] = macro_id
         macro_line = self._composeMacroLine(macro_name, macro_params, macro_id)
 
