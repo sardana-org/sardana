@@ -534,7 +534,7 @@ class Macro(Logger):
                         macro_cmd = macro_cmd + " " + str(par)
                 macro_cmd = macro_cmd
                 try:
-                    Logger.loggingtofile(
+                    Logger.log_to_file(
                         self, macro_cmd, self.logging_path, *args, **kwargs)
                 except:
                     self.warning("Not able to write log file")
@@ -940,7 +940,7 @@ class Macro(Logger):
                     msgstr = ' '.join(msgstr)
                 msgstr = msgstr.replace("</BLOCK>", "")
                 msgstr = msgstr.replace("<BLOCK>\n", "")
-                Logger.loggingtofile(
+                Logger.log_to_file(
                     self, msgstr, self.logging_path, *args, **kwargs)
             except:
                 self.warning("Not able to write log file")
@@ -968,7 +968,7 @@ class Macro(Logger):
                     msgc = msg % args
                 else:
                     msgc = msg
-                Logger.loggingtofile(
+                Logger.log_to_file(
                     self, msgc, self.logging_path, *args, **kwargs)
             except:
                 pass
@@ -1008,7 +1008,7 @@ class Macro(Logger):
                     msgc = msg % args
                 else:
                     msgc = msg
-                Logger.loggingtofile(
+                Logger.log_to_file(
                     self, msgc, self.logging_path, *args, **kwargs)
             except:
                 pass
@@ -1034,7 +1034,7 @@ class Macro(Logger):
                     msgc = msg % args
                 else:
                     msgc = msg
-                Logger.loggingtofile(
+                Logger.log_to_file(
                     self, msgc, self.logging_path, *args, **kwargs)
             except:
                 pass
@@ -1061,7 +1061,7 @@ class Macro(Logger):
                     msgc = msg % args
                 else:
                     msgc = msg
-                Logger.loggingtofile(
+                Logger.log_to_file(
                     self, msgc, self.logging_path, *args, **kwargs)
             except:
                 pass
@@ -1086,7 +1086,7 @@ class Macro(Logger):
                     msgc = msg % args
                 else:
                     msgc = msg
-                Logger.loggingtofile(
+                Logger.log_to_file(
                     self, msgc, self.logging_path, *args, **kwargs)
             except:
                 pass
@@ -1105,7 +1105,7 @@ class Macro(Logger):
                     msgc = msg % args
                 else:
                     msgc = msg
-                Logger.loggingtofile(
+                Logger.log_to_file(
                     self, msgc, self.logging_path, *args, **kwargs)
             except:
                 pass

@@ -1254,7 +1254,7 @@ class MacroExecutor(Logger):
                 if logging_onoff:
                     logging_path = macro_obj.getEnv("LogMacroPath")
                     msg = "Result: %s" % (result_repr)
-                    Logger.loggingtofile(self, msg, logging_path)
+                    Logger.log_to_file(self, msg, logging_path)
                 door.debug("sending result %s", result_repr)
                 self.sendResult(result_repr)
         except AbortException as ae:
