@@ -778,7 +778,7 @@ class logmacro_on(Macro):
     """ Set on the logging of the spock output """
 
     param_def = [
-       ['mode', Type.Integer, -1, 'Mode: 0 append, 1 new file'],
+        ['mode', Type.Integer, -1, 'Mode: 0 append, 1 new file'],
     ]
 
     def run(self, mode):
@@ -786,5 +786,5 @@ class logmacro_on(Macro):
             self.setEnv('LogMacroMode', True)
         elif mode == 0:
             self.setEnv('LogMacroMode', False)
-            
+
         self.setEnv('LogMacroOnOff', True)
