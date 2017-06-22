@@ -149,7 +149,7 @@ class aNscan(Hookable):
                                      self._period_generator, moveables, env, constrains, extrainfodesc)
             elif mode == ContinuousHwTimeMode:
                 self.nr_interv = scan_length
-                self.nr_of_points = self.nr_interv + 1
+                self.nr_points = self.nr_interv + 1
                 mg_name = self.getEnv('ActiveMntGrp')
                 mg = self.getMeasurementGroup(mg_name)
                 mg_latency_time = mg.getLatencyTime()
@@ -245,8 +245,8 @@ class aNscan(Hookable):
             'post-move') + [self._fill_missing_records]
         step["post-move-hooks"] = post_move_hooks
         step["check_func"] = []
-        step["active_time"] = self.nr_of_points * (self.integ_time +
-                                                   self.latency_time)
+        step["active_time"] = self.nr_points * (self.integ_time +
+                                                self.latency_time)
         step["positions"] = []
         step["start_positions"] = []
         starts = self.starts
@@ -321,7 +321,7 @@ class aNscan(Hookable):
 
     def _fill_missing_records(self):
         # fill record list with dummy records for the final padding
-        nb_of_points = self.nr_of_points
+        nb_of_points = self.nr_points
         scan = self._gScan
         nb_of_records = len(scan.data.records)
         missing_records = nb_of_points - nb_of_records

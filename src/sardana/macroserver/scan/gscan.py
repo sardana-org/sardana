@@ -2026,7 +2026,7 @@ class CTScan(CScan):
             moveable = moveables[MASTER].full_name
             self.measurement_group.setMoveable(moveable)
             path = motion_paths[MASTER]
-            repeats = self.macro.nr_of_points
+            repeats = self.macro.nr_points
             active_time = self.macro.integ_time
             active_position = path.max_vel * active_time
             if not path.positive_displacement:
