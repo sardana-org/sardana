@@ -45,6 +45,7 @@ import time
 import traceback
 import weakref
 
+import numpy
 from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
     DeviceProxy
 from taurus import Factory, Device, Attribute
@@ -609,33 +610,48 @@ class ComChannel(PoolElement):
 
 class ExpChannel(PoolElement):
     """ Class encapsulating ExpChannel functionality."""
-    pass
+
+    def __init__(self, name, **kw):
+        """ExpChannel initialization."""
+        self.call__init__(PoolElement, name, **kw)
+        self._value_buffer = {}
+
+    def getValueBufferObj(self):
+        return self._getAttrEG('data')
+
+    def getValueBuffer(self):
+        return self._value_buffer
+
+    def valueBufferChanged(self, value_buffer):
+        if value_buffer is None:
+            return
+        _, value_buffer = self._codec.decode(('json', value_buffer),
+                                             ensure_ascii=True)
+        indexes = value_buffer["index"]
+        values = value_buffer["data"]
+        for index, value in zip(indexes, values):
+            self._value_buffer[index] = value
 
 
 class CTExpChannel(ExpChannel):
     """ Class encapsulating CTExpChannel functionality."""
     pass
 
-
 class ZeroDExpChannel(ExpChannel):
     """ Class encapsulating ZeroDExpChannel functionality."""
     pass
-
 
 class OneDExpChannel(ExpChannel):
     """ Class encapsulating OneDExpChannel functionality."""
     pass
 
-
 class TwoDExpChannel(ExpChannel):
     """ Class encapsulating TwoDExpChannel functionality."""
     pass
 
-
 class PseudoCounter(ExpChannel):
     """ Class encapsulating PseudoCounter functionality."""
     pass
-
 
 class TriggerGate(PoolElement):
     """ Class encapsulating TriggerGate functionality."""
@@ -1438,6 +1454,9 @@ class MeasurementGroup(PoolElement):
         cfg_attr = self.getAttribute('configuration')
         cfg_attr.addListener(self.on_configuration_changed)
 
+        self._value_buffer_cb = None
+        self._codec = CodecFactory().getCodec("json")
+
     def _create_str_tuple(self):
         channel_names = ", ".join(self.getChannelNames())
         return self.getName(), self.getTimerName(), channel_names
@@ -1537,6 +1556,13 @@ class MeasurementGroup(PoolElement):
     def getValues(self, parallel=True):
         return self.getConfiguration().read(parallel=parallel)
 
+    def getValueBuffers(self):
+        value_buffers = []
+        for channel_info in self.getChannels():
+            channel = Device(channel_info["full_name"])
+            value_buffers.append(channel.getValueBuffer())
+        return value_buffers
+
     def getIntegrationTime(self):
         return self._getAttrValue('IntegrationTime')
 
@@ -1590,27 +1616,63 @@ class MeasurementGroup(PoolElement):
             moveable = 'None'  # Tango attribute is of type DevString
         self.getMoveableObj().write(moveable)
 
-    def addOnDataChangedListeners(self, listener):
-        '''Adds listener which receives data events. Used in online data
-        collection while acquiring.'''
-        for channel in self.getChannels():
-            attrName = '%s/%s' % (channel['full_name'], "data")
-            self.addAttrListener(attrName, listener)
+    def valueBufferChanged(self, channel, value_buffer):
+        """Receive value buffer updates, pre-process them, and call
+        the subscribed callback.
 
-    def removeOnDataChangedListeners(self, listener):
-        '''Removes listener which receives data events. Used in online data
-        collection while acquiring.'''
-        for channel in self.getChannels():
-            attrName = '%s/%s' % (channel['full_name'], "data")
-            self.removeAttrListener(attrName, listener)
+        :param channel: channel that reports value buffer update
+        :type channel: ExpChannel
+        :param value_buffer: json encoded value buffer update, it contains
+            at least values and indexes
+        :type value_buffer: str
+        """
+        if value_buffer is None:
+            return
+        _, value_buffer = self._codec.decode(('json', value_buffer),
+                                             ensure_ascii=True)
+        values = value_buffer["data"]
+        if isinstance(values[0], list):
+            np_values = map(numpy.array, values)
+            value_buffer["data"] = np_values
+        self._value_buffer_cb(channel, value_buffer)
 
-    def addAttrListener(self, attrName, listener):
-        attr = Attribute(attrName)
-        attr.addListener(listener)
+    def subscribeValueBuffer(self, cb=None):
+        """Subscribe to channels' value buffer update events. If no
+        callback is passed, the default channel's callback is subscribed which
+        will store the data in the channel's value_buffer attribute.
 
-    def removeAttrListener(self, attrName, listener):
-        attr = Attribute(attrName)
-        attr.removeListener(listener)
+        :param cb: callback to be subscribed, None means subscribe the default
+            channel's callback
+        :type cb: callable
+        """
+        for channel_info in self.getChannels():
+            channel = Device(channel_info["full_name"])
+            value_buffer_obj = channel.getValueBufferObj()
+            if cb is not None:
+                self._value_buffer_cb = cb
+                value_buffer_obj.subscribeEvent(self.valueBufferChanged,
+                                                channel, False)
+            else:
+                value_buffer_obj.subscribeEvent(channel.valueBufferChanged,
+                                                with_first_event=False)
+
+    def unsubscribeValueBuffer(self, cb=None):
+        """Unsubscribe from channels' value buffer events. If no callback is
+        passed, unsubscribe the channel's default callback.
+
+        :param cb: callback to be unsubscribed, None means unsubscribe the
+            default channel's callback
+        :type cb: callable
+        """
+        for channel_info in self.getChannels():
+            channel = Device(channel_info["full_name"])
+            value_buffer_obj = channel.getValueBufferObj()
+            if cb is not None:
+                value_buffer_obj.unsubscribeEvent(self.valueBufferChanged,
+                                                  channel)
+                self._value_buffer_cb = None
+            else:
+                value_buffer_obj.unsubscribeEvent(channel.valueBufferChanged)
 
     def enableChannels(self, channels):
         '''Enable acquisition of the indicated channels.
@@ -1667,6 +1729,43 @@ class MeasurementGroup(PoolElement):
             raise Exception(msg)
         values = self.getValues()
         ret = state, values
+        self._total_go_time = time.time() - start_time
+        return ret
+
+    def measure(self, synchronization, value_buffer_cb=None):
+        """Execute measurement process according to the given synchronization
+        description.
+
+        :param synchronization: synchronization description
+        :type synchronization: list of groups with equidistant synchronizations
+        :param value_buffer_cb: callback on value buffer updates
+        :type value_buffer_cb: callable
+        :return: state and eventually value buffers if no callback was passed
+        :rtype: tuple<list<DevState>,<list>>
+
+        .. todo:: Think of unifying measure with count.
+
+        .. note:: The measure method has been included in MeasurementGroup
+            class on a provisional basis. Backwards incompatible changes
+            (up to and including removal of the method) may occur if
+            deemed necessary by the core developers.
+        """
+        start_time = time.time()
+        cfg = self.getConfiguration()
+        cfg.prepare()
+        self.setSynchronization(synchronization)
+        self.subscribeValueBuffer(value_buffer_cb)
+        PoolElement.go(self)
+        self.unsubscribeValueBuffer(value_buffer_cb)
+        state = self.getStateEG().readValue()
+        if state == Fault:
+            msg = "Measurement group ended acquisition with Fault state"
+            raise Exception(msg)
+        if value_buffer_cb is None:
+            value_buffers = self.getValueBuffers()
+        else:
+            value_buffers = None
+        ret = state, value_buffers
         self._total_go_time = time.time() - start_time
         return ret
 
