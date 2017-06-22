@@ -229,8 +229,7 @@ class MacroButton(TaurusWidget):
         while len(self.macro_args) < index + 1:
             self.macro_args.append('')
         # update the given argument
-        if re.search('\s', value):
-            value = '"{0}"'.format(value)
+        value = '"{0}"'.format(value)
         self.macro_args[index] = str(value)
         # update tooltip
         self.setToolTip(self.macro_name + ' ' + ' '.join(self.macro_args))
