@@ -37,6 +37,7 @@ import operator
 import time
 import threading
 import numpy as np
+import math
 
 import PyTango
 import taurus
@@ -1329,7 +1330,7 @@ class CScan(GScan):
         then use the current top velocity"""
 
         top_vel_obj = motor.getVelocityObj()
-        min_top_vel, max_top_vel = top_vel_obj.getRange()
+        _, max_top_vel = top_vel_obj.getRange()
         try:
             max_top_vel = float(max_top_vel)
         except ValueError:
@@ -1341,6 +1342,9 @@ class CScan(GScan):
                 max_top_vel = self._maxVelDict[motor]
             except AttributeError:
                 pass
+        # Taurus4 reports -inf or inf when no limits are defined (NotSpecified)
+        if math.isinf(max_top_vel):
+            max_top_vel = motor.getVelocity()
         return max_top_vel
 
     def get_min_acc_time(self, motor):
@@ -1349,10 +1353,13 @@ class CScan(GScan):
         then use the current acceleration time"""
 
         acc_time_obj = motor.getAccelerationObj()
-        min_acc_time, max_acc_time = acc_time_obj.getRange()
+        min_acc_time, _ = acc_time_obj.getRange()
         try:
             min_acc_time = float(min_acc_time)
         except ValueError:
+            min_acc_time = motor.getAcceleration()
+        # Taurus4 reports -inf or inf when no limits are defined (NotSpecified)
+        if math.isinf(min_acc_time):
             min_acc_time = motor.getAcceleration()
         return min_acc_time
 
@@ -1362,11 +1369,14 @@ class CScan(GScan):
         then use the current acceleration time"""
 
         dec_time_obj = motor.getDecelerationObj()
-        min_dec_time, max_dec_time = dec_time_obj.getRange()
+        min_dec_time, _ = dec_time_obj.getRange()
         try:
             min_dec_time = float(min_dec_time)
         except ValueError:
             min_dec_time = motor.getDeceleration()
+        # Taurus4 reports -inf or inf when no limits are defined (NotSpecified)
+        if math.isinf(min_dec_time):
+            min_dec_time = motor.getAcceleration()
         return min_dec_time
 
     def set_max_top_velocity(self, motor):
