@@ -259,7 +259,10 @@ class GScan(Logger):
         # ----------------------------------------------------------------------
         # Setup motion objects
         # ----------------------------------------------------------------------
-        self._motion = macro.getMotion(moveable_names)
+        if len(moveable_names) > 0:
+            self._motion = macro.getMotion(moveable_names)
+        else:
+            self._motion = None
 
         # ----------------------------------------------------------------------
         # Find the measurement group
@@ -604,6 +607,10 @@ class GScan(Logger):
             i = 0
             for a in ci.plot_axes:
                 if a == '<mov>':
+                    # skip plots against moveables in scans that do not involve
+                    # them e.g. time scans
+                    if len(ref_moveables) == 0:
+                        continue
                     plotAxes.append(ref_moveables[i])
                     i += 1
                 else:
@@ -1100,7 +1107,11 @@ class CScan(GScan):
         # This is due to the fact that the CTScan coordinates the
         # pseudomotors' underneeth physical motors on on their constant
         # velocity in contrary to the the CScan which do not coordinate them
-        self._physical_motion = self.macro.getMotion(physical_moveables_names)
+        if len(physical_moveables_names) > 0:
+            self._physical_motion = self.macro.getMotion(
+                physical_moveables_names)
+        else:
+            self._physical_motion = None
 
     def populate_moveables_data_structures(self, moveables):
         '''Populates moveables data structures.
