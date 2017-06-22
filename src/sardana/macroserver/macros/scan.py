@@ -1485,3 +1485,35 @@ class a4scanct(aNscan, Macro):
                       nr_interv, integ_time, mode=ContinuousHwTimeMode,
                       latency_time=latency_time
                       ** opts)
+
+
+class timescan(Macro, Hookable):
+    """Do a time scan over the specified time intervals. The scan starts
+    immediately. The number of data points collected will be nr_interv + 1.
+    Count time is given by integ_time. Latency time will be the longer one
+    of latency_time and measurement group latency time.
+    """
+
+    param_def = [
+        ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
+        ['integ_time', Type.Float,   None, 'Integration time'],
+        ['latency_time', Type.Float, 0, 'Latency time']]
+
+    def prepare(self, nr_interv, integ_time, latency_time):
+        self.nr_interv = nr_interv
+        self.nr_points = nr_interv + 1
+        self.integ_time = integ_time
+        self.latency_time = latency_time
+        self._gScan = TScan(self)
+
+    def run(self, *args):
+        for step in self._gScan.step_scan():
+            yield step
+
+    def getTimeEstimation(self):
+        mg_latency_time = self._gScan.measurement_group.getLatencyTime()
+        latency_time = max(self.latency_time, mg_latency_time)
+        return self.nr_points * (self.integ_time + latency_time)
+
+    def getIntervalEstimation(self):
+        return self.nr_interv
