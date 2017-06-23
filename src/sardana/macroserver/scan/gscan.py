@@ -774,7 +774,9 @@ class GScan(Logger):
                     step = iterator.next()
                     end_pos = step['positions']
                     max_path_duration = 0.0
-                    for v_motor, start, stop in zip(v_motors, start_pos, end_pos):
+                    for v_motor, start, stop in zip(v_motors,
+                                                    start_pos,
+                                                    end_pos):
                         path = MotionPath(v_motor, start, stop)
                         max_path_duration = max(
                             max_path_duration, path.duration)
@@ -2443,3 +2445,26 @@ class TScan(GScan, CAcquisition):
         records = len(self.data.records)
         missing_records = nr_points - records
         self.data.initRecords(missing_records)
+
+
+    def _estimate(self):
+        with_time = hasattr(self.macro, "getTimeEstimation")
+        with_interval = hasattr(self.macro, "getIntervalEstimation")
+        if with_time and with_interval:
+            t, i = self.macro.getTimeEstimation(), self.macro.getIntervalEstimation()
+            return t, i
+
+        if not hasattr(self.macro, "synchronization"):
+            raise AttributeError("synchronization is mandatory to estimate")
+        synchronization = self.macro.synchronization
+        time = 0
+        intervals = 0
+        for group in synchronization:
+            delay = group[SynchParam.Delay][SynchDomain.Time]
+            time += delay
+            total = group[SynchParam.Total][SynchDomain.Time]
+            repeats = group[SynchParam.Repeats]
+            time += total * repeats
+            intervals += repeats
+        return time, intervals
+
