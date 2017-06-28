@@ -5,14 +5,14 @@
 Installing
 ==========
 
-Installing with easy_install [1]_ (platform-independent)
+Installing with pip [1]_ (platform-independent)
 --------------------------------------------------------
 
-Sardana can be installed using easy_install. The following command will
+Sardana can be installed using pip. The following command will
 automatically download and install the latest release of Sardana (see
-easy_install --help for options)::
+pip --help for options)::
 
-       easy_install -U sardana
+       pip install sardana
 
 You can test the installation by running::
 
@@ -125,9 +125,9 @@ Sardana has dependencies on some python libraries:
 
 .. [1] This command requires super user previledges on linux systems. If your
        user has them you can usually prefix the command with *sudo*:
-       ``sudo easy_install -U sardana``. Alternatively, if you don't have
+       ``sudo pip -U sardana``. Alternatively, if you don't have
        administrator previledges, you can install locally in your user
-       directory with: ``easy_install --user sardana``
+       directory with: ``pip --user sardana``
        In this case the executables are located at <HOME_DIR>/.local/bin. Make
        sure the PATH is pointing there or you execute from there.
 
