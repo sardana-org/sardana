@@ -46,6 +46,7 @@ def is_numerical(obj):
                 return True
     return False
 
+
 @insertTest(helper_name="count", test_method_doc="count with PC",
             elements=["_test_ct_1_1", "_test_ct_1_2", "_test_pc_1_1"])
 @insertTest(helper_name="count", test_method_doc="count with Tango attribute",

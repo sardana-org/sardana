@@ -37,7 +37,6 @@ import operator
 import time
 import threading
 import numpy as np
-import math
 
 import PyTango
 import taurus
@@ -48,10 +47,8 @@ except ImportError:
     # For Python < 2.7
     from ordereddict import OrderedDict
 
-from taurus.core import TaurusListener, TaurusEventType
 from taurus.core.util.log import Logger
 from taurus.core.util.user import USER_NAME
-from taurus.core.util.codecs import CodecFactory
 from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
 from taurus.core.util.enumeration import Enumeration
 
@@ -1352,7 +1349,7 @@ class CScan(GScan):
             except AttributeError:
                 pass
         # Taurus4 reports -inf or inf when no limits are defined (NotSpecified)
-        if math.isinf(max_top_vel):
+        if np.isinf(max_top_vel):
             max_top_vel = motor.getVelocity()
         return max_top_vel
 
@@ -1368,7 +1365,7 @@ class CScan(GScan):
         except ValueError:
             min_acc_time = motor.getAcceleration()
         # Taurus4 reports -inf or inf when no limits are defined (NotSpecified)
-        if math.isinf(min_acc_time):
+        if np.isinf(min_acc_time):
             min_acc_time = motor.getAcceleration()
         return min_acc_time
 
@@ -1384,7 +1381,7 @@ class CScan(GScan):
         except ValueError:
             min_dec_time = motor.getDeceleration()
         # Taurus4 reports -inf or inf when no limits are defined (NotSpecified)
-        if math.isinf(min_dec_time):
+        if np.isinf(min_dec_time):
             min_dec_time = motor.getAcceleration()
         return min_dec_time
 
@@ -1801,6 +1798,7 @@ class CSScan(CScan):
         if not scream:
             yield 100.0
 
+
 class CAcquisition(object):
 
     def __init__(self):
@@ -1977,7 +1975,9 @@ class CTScan(CScan, CAcquisition):
         """Internal, unprotected method to go through the different waypoints.
            It controls all the three objects: motion, trigger and measurement
            group."""
-        macro, motion, waypoints = self.macro, self._physical_motion, self.steps
+        macro = self.macro
+        motion = self._physical_motion
+        waypoints = self.steps
         measurement_group = self.measurement_group
 
         self.macro.debug("_go_through_waypoints() entering...")
@@ -2379,7 +2379,7 @@ class TScan(GScan, CAcquisition):
         mg_latency_time = self.measurement_group.getLatencyTime()
         if mg_latency_time > latency_time:
             self.macro.info("Choosing measurement group latency time: %f" %
-                      mg_latency_time)
+                            mg_latency_time)
             latency_time = mg_latency_time
         total_time = active_time + latency_time
         synchronization = [
@@ -2402,8 +2402,9 @@ class TScan(GScan, CAcquisition):
                 msg = "Macro object is missing synchronization attributes"
                 raise ScanSetupError(msg)
             latency_time = getattr(self.macro, "latency_time", 0)
-            synchronization = self._create_synchronization(active_time, repeats,
-                                                          latency_time)
+            synchronization = self._create_synchronization(active_time,
+                                                           repeats,
+                                                           latency_time)
         self._synchronization = synchronization
         return synchronization
 
@@ -2451,12 +2452,12 @@ class TScan(GScan, CAcquisition):
         missing_records = nr_points - records
         self.data.initRecords(missing_records)
 
-
     def _estimate(self):
         with_time = hasattr(self.macro, "getTimeEstimation")
         with_interval = hasattr(self.macro, "getIntervalEstimation")
         if with_time and with_interval:
-            t, i = self.macro.getTimeEstimation(), self.macro.getIntervalEstimation()
+            t = self.macro.getTimeEstimation()
+            i = self.macro.getIntervalEstimation()
             return t, i
 
         if not hasattr(self.macro, "synchronization"):
@@ -2472,4 +2473,3 @@ class TScan(GScan, CAcquisition):
             time += total * repeats
             intervals += repeats
         return time, intervals
-

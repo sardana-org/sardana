@@ -118,7 +118,7 @@ class SarTestTestCase(BasePoolTestCase):
                 self.ctrl_list.append(ctrl_name)
                 for role in roles:
                     elem = role.split("=")[1]
-                    if not elem in self.elem_list:
+                    if elem not in self.elem_list:
                         self.elem_list.append(elem)
         except Exception, e:
             # force tearDown in order to eliminate the Pool

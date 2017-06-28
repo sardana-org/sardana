@@ -44,8 +44,8 @@ import sys
 import time
 import traceback
 import weakref
-
 import numpy
+
 from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
     DeviceProxy
 from taurus import Factory, Device, Attribute
