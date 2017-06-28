@@ -62,11 +62,10 @@ requires = [
 ]
 
 install_requires = [
-    'PyTango (>=7.2.3)',
-    'itango (>=0.0.1)',
-    'taurus (>= 3.6.0)',
-    'lxml (>=2.1)',
-    'ordereddict;python_version<"2.7"'
+    'PyTango>=7.2.3',
+    'itango>=0.0.1',
+    'taurus>=3.6.0',
+    'lxml>=2.1'
 ]
 
 
