@@ -57,6 +57,8 @@ requires = [
     'itango (>=0.0.1)',
     'taurus (>= 3.6.0)',
     'lxml (>=2.1)',
+    # ordereddict is necessary for Python < 2.6
+    'ordereddict'
 ]
 
 console_scripts = [

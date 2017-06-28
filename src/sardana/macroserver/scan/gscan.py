@@ -41,11 +41,16 @@ import numpy as np
 import PyTango
 import taurus
 
+try:
+    from collections import OrderedDict
+except ImportError:
+    # For Python < 2.7
+    from ordereddict import OrderedDict
+
 from taurus.core import TaurusListener, TaurusEventType
 from taurus.core.util.log import Logger
 from taurus.core.util.user import USER_NAME
 from taurus.core.util.codecs import CodecFactory
-from taurus.external.ordereddict import OrderedDict
 from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
 from taurus.core.util.enumeration import Enumeration
 
