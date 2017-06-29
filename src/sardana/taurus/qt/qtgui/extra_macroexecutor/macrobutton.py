@@ -228,7 +228,7 @@ class MacroButton(TaurusWidget):
         # make sure that the macro_args is at least as long as index
         while len(self.macro_args) < index + 1:
             self.macro_args.append('')
-        # some signals may come with other than string argumenst e.g. int, float
+        # some signals may come with other than string argumenst e.g. int
         # so convert them to string
         value = Qt.from_qvariant(value, str)
         # string arguments may contain spaces so encapsulate them in quotes
