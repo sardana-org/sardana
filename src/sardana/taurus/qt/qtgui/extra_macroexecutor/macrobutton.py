@@ -223,14 +223,19 @@ class MacroButton(TaurusWidget):
         '''change a given argument
 
         :param index: (int) positional index for this argument
-        :param value: (str) value for this argument
+        :param value: value for this argument
         '''
         # make sure that the macro_args is at least as long as index
         while len(self.macro_args) < index + 1:
             self.macro_args.append('')
+        # some signals may come with other than string argumenst e.g. int, float
+        # so convert them to string
+        value = Qt.from_qvariant(value, str)
+        # string arguments may contain spaces so encapsulate them in quotes
+        if re.search('\s', value):
+            value = '"{0}"'.format(value)
         # update the given argument
-        value = '"{0}"'.format(value)
-        self.macro_args[index] = str(value)
+        self.macro_args[index] = value
         # update tooltip
         self.setToolTip(self.macro_name + ' ' + ' '.join(self.macro_args))
 
