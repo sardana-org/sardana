@@ -230,7 +230,7 @@ class MacroButton(TaurusWidget):
             self.macro_args.append('')
         # some signals may come with other than string argumenst e.g. int
         # so convert them to string
-        value = Qt.from_qvariant(value, str)
+        value = str(value)
         # string arguments may contain spaces so encapsulate them in quotes
         if re.search('\s', value):
             value = '"{0}"'.format(value)
