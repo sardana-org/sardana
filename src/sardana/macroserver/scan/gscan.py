@@ -898,7 +898,7 @@ class GScan(Logger):
             self.end()
             self.do_restore()
             if endstatus != ScanEndStatus.Normal:
-                raise e
+                raise
 
     def scan_loop(self):
         raise NotImplementedError('Scan method cannot be called by '
@@ -1810,7 +1810,16 @@ class CAcquisition(object):
         # e.g. dict(data=seq<float>, index=seq<int>)
         if value_buffer is None:
             return
-        info = {'label': channel.getFullName()}
+        # TODO: for Taurus4 compatibility
+        # The sardana code is not fully ready to deal with Taurus4 model names
+        # strip scheme name that appeared in the full_name since Taurus4
+        # and come back to the Taurus3 style full name cause all the recording
+        # stuff and the measurement group counts is based on them
+        full_name = channel.getFullName()
+        if full_name.startswith("tango://"):
+            full_name = full_name.lstrip("tango://")
+
+        info = {'label': full_name}
         info.update(value_buffer)
         # info is a dictionary with at least keys: label, data,
         # index and its values are of type string for label and

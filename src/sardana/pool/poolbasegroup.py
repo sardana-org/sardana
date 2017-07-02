@@ -175,8 +175,12 @@ class PoolBaseGroup(PoolContainer):
             # a tango channel or non internal element (ex: ioregister or motor
             # in measurement group)
             if not internal:
+                # TODO: for Taurus4 compatibility
                 validator = TangoAttributeNameValidator()
                 params = validator.getParams(user_element_id)
+                if params is None:
+                    user_element_id = "tango://%s" % user_element_id
+                    params = validator.getParams(user_element_id)
                 params['pool'] = self._get_pool()
                 user_element = PoolExternalObject(**params)
             self.add_user_element(user_element)
