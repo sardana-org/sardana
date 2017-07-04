@@ -223,15 +223,19 @@ class MacroButton(TaurusWidget):
         '''change a given argument
 
         :param index: (int) positional index for this argument
-        :param value: (str) value for this argument
+        :param value: value for this argument
         '''
         # make sure that the macro_args is at least as long as index
         while len(self.macro_args) < index + 1:
             self.macro_args.append('')
-        # update the given argument
+        # some signals may come with other than string argumenst e.g. int
+        # so convert them to string
+        value = str(value)
+        # string arguments may contain spaces so encapsulate them in quotes
         if re.search('\s', value):
             value = '"{0}"'.format(value)
-        self.macro_args[index] = str(value)
+        # update the given argument
+        self.macro_args[index] = value
         # update tooltip
         self.setToolTip(self.macro_name + ' ' + ' '.join(self.macro_args))
 
