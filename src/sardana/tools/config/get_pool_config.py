@@ -25,7 +25,8 @@ def checkPoolElements(pool):
                                 'OneDExpChannel': [],
                                 'TwoDExpChannel': [],
                                 'PseudoCounter': [],
-                                'ZeroDExpChannel': []}
+                                'ZeroDExpChannel': [],
+                                'TriggerGate': []}
 
     pool_controllers = {}
     for info in pool_dev['ControllerList'].value:
