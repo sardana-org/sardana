@@ -618,11 +618,9 @@ class GScan(Logger):
                     i += 1
                 else:
                     plotAxes.append(a)
-            # TODO: for Taurus4 compatibility
-            full_name = ci.full_name
-            full_name = "tango://%s" % full_name
+
             # create the ColumnDesc object
-            column = ColumnDesc(name=full_name,
+            column = ColumnDesc(name=ci.full_name,
                                 label=ci.label,
                                 dtype=ci.data_type,
                                 shape=ci.shape,
@@ -1812,11 +1810,7 @@ class CAcquisition(object):
         # e.g. dict(data=seq<float>, index=seq<int>)
         if value_buffer is None:
             return
-        full_name = channel.getFullName()
-        # TODO: for Taurus4 compatibility
-        if not full_name.startswith("tango://"):
-            full_name = "tango://%s" % full_name
-        info = {'label': full_name}
+        info = {'label': channel.getFullName()}
         info.update(value_buffer)
         # info is a dictionary with at least keys: label, data,
         # index and its values are of type string for label and

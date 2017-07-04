@@ -1646,10 +1646,7 @@ class MeasurementGroup(PoolElement):
         :type cb: callable
         """
         for channel_info in self.getChannels():
-            full_name = channel_info["full_name"]
-            # TODO: For Taurus 4 compatibility
-            full_name = "tango://%s" % full_name
-            channel = Device(full_name)
+            channel = Device(channel_info["full_name"])
             value_buffer_obj = channel.getValueBufferObj()
             if cb is not None:
                 self._value_buffer_cb = cb
@@ -1668,10 +1665,7 @@ class MeasurementGroup(PoolElement):
         :type cb: callable
         """
         for channel_info in self.getChannels():
-            full_name = channel_info["full_name"]
-            # TODO: For Taurus 4 compatibility
-            full_name = "tango://%s" % full_name
-            channel = Device(full_name)
+            channel = Device(channel_info["full_name"])
             value_buffer_obj = channel.getValueBufferObj()
             if cb is not None:
                 value_buffer_obj.unsubscribeEvent(self.valueBufferChanged,
