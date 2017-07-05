@@ -2400,7 +2400,7 @@ class TScan(GScan, CAcquisition):
         else:
             try:
                 active_time = getattr(self.macro, "integ_time")
-                repeats = getattr(self.macro, "nr_interv")
+                repeats = getattr(self.macro, "nr_points")
             except AttributeError:
                 msg = "Macro object is missing synchronization attributes"
                 raise ScanSetupError(msg)
