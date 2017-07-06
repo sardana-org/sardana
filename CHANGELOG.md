@@ -29,6 +29,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - PseudoCounter may return calculated (from the buffered physical
   channels values) and indexed values in chunks in continuous acquisition
   (#469) 
+- `timescan` macro to run equidistant time scans and `TScan` class to
+  develop custom time scans (#104, #485)
 - `synchronizer` parameter to the Measurement Group configuration (SEP6)
 - `latency_time` parameter to the experimental channel controllers (SEP6)
 - `ApplyInterpolation` environment variable, applicable to `ascanct` & co.
@@ -51,6 +53,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   - `Value.append_value` -> `Value.append_buffer`
   - `PoolZeoDExpChannel.get_value_buffer` -> `PoolZeoDExpChannel.get_accumulation_buffer`
   - `PoolZeoDExpChannel.value_buffer` -> `PoolZeoDExpChannel.accumulation_buffer`
+- `nr_of_points` attribute of `aNscan` calss was renamed to `nr_points`
 
 ### Deprecated
 - `LoadOne` API had changed - `repetitions` was added as a mandatory argument
