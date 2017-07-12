@@ -261,29 +261,29 @@ class MacroInfo(object):
             return []
         return self._result_description
 
-    def formatResult(self, res):
+    def formatResult(self, result):
         if not self.hasResult():
-            if res is None:
+            if result is None:
                 return None
             raise Exception('Macro %s does not return any result' % self.name)
         result_info = self.getResult()
         rtype = result_info['type']
         if rtype == 'File':
             fd, filename = tempfile.mkstemp(prefix='spock_', text=True)
-            os.write(fd, res[1])
+            os.write(fd, result[1])
             os.close(fd)
             # put the local filename in the result
-            res.insert(0, filename)
-            return res
-        if len(res) > 0:
+            result.insert(0, filename)
+            return result
+        if len(result) > 0:
             if rtype == 'Float':
-                return float(res[0])
+                return float(result[0])
             elif rtype == 'Integer':
-                return int(res[0])
+                return int(result[0])
             elif rtype == 'Boolean':
-                return res[0].lower() == 'true'
+                return result[0].lower() == 'true'
             elif rtype in ('String', 'User', 'Filename'):
-                return res[0]
+                return result[0]
             else:
                 raise Exception('Unknown return type for macro %s' % self.name)
         else:
