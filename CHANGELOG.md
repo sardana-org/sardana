@@ -60,6 +60,9 @@ This file follows the formats and conventions from [keepachangelog.com]
   consequence its Tango attribute data type from `DevLong` to `DevDouble` and
   the `write_ioreg` and `read_ioreg` macro parameter and result type respectively
   (#459, #458)
+- Use of ordereddict module. Now it is used from the standard library (Python >= 2.7)
+  instead of `taurus.external`. For Python 2.6 users this means a new dependency
+  `ordereddict` from PyPI (#482)
 
 ### Deprecated
 - `LoadOne` API had changed - `repetitions` was added as a mandatory argument
