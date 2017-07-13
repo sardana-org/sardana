@@ -690,6 +690,12 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         self.tabMacroListsWidget.addTab(
             self.historyMacrosViewer, "History Viewer")
         splitter.addWidget(self.tabMacroListsWidget)
+        # Due to a limitation in the useParentModel architecture of Taurus,
+        # the parent of historyMacrosViewer and favouritesMacrosEditor
+        # must be recalculated. See more details in the taurus snippet code [1]
+        # [1] https://raw.githubusercontent.com/taurus-org/taurus/develop/doc/source/devel/examples/parentmodel_issue_demo.py
+        self.historyMacrosViewer.recheckTaurusParent()
+        self.favouritesMacrosEditor.recheckTaurusParent()
 
         self._isHistoryMacro = False
         self.macroProgressBar = MacroProgressBar(self)
