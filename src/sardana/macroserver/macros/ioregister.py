@@ -37,7 +37,7 @@ class write_ioreg(Macro):
 
     param_def = [
         ['input/output register', Type.IORegister, None, 'input/output register'],
-        ['data', Type.Integer, None, 'value to be send']
+        ['data', Type.Float, None, 'value to be send']
     ]
 
     def run(self, ioreg, data):
@@ -55,13 +55,14 @@ class read_ioreg(Macro):
     ]
 
     result_def = [
-        ['input/output register value', Type.Integer, None, 'value read from ' +
+        ['input/output register value', Type.Float, None, 'value read from ' +
          'the input/output register']
     ]
 
     def run(self, ioreg):
         name = ioreg.getName()
         data = ioreg.readIORegister(force=True)
+        data = float(data)
         o = "Reading " + name + " register "
         self.debug(o)
         return data
