@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-import sys, time
+import sys
+import time
 import PyTango
 
 from upgrade_utils import *
@@ -13,4 +14,3 @@ if __name__ == "__main__":
     except Exception, e:
         import upgradeCLI
         upgradeCLI.main()
-

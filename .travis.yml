@@ -8,18 +8,32 @@ services:
 python:
   - "2.7"
 
+env:
+  - TEST="flake8"
+  - TEST="testsuite"
+
 before_install:
+  # install flake8 to perform python code style check in the script part
+  - if [ $TEST == "flake8" ]; then sudo apt-get update -qq ; fi
+  - if [ $TEST == "flake8" ]; then sudo apt-get install -qq python-flake8; fi
+
+install:
   # run reszelaz/sardana-test docker container (Debian8 with sardana-deps)
-  - docker pull reszelaz/sardana-test
-  - docker run -d --name=sardana-test -h sardana-test --volume=`pwd`:/sardana reszelaz/sardana-test
+  - if [ $TEST == "testsuite" ]; then docker pull reszelaz/sardana-test; fi
+  - if [ $TEST == "testsuite" ]; then docker run -d --name=sardana-test -h sardana-test --volume=`pwd`:/sardana reszelaz/sardana-test; fi
+
   # wait approx. 10 s (supervisor starts mysql and Tango DB)
-  - sleep 10
+  - if [ $TEST == "testsuite" ]; then sleep 10; fi
+
   # install sardana in order to create the launcher scripts for servers
-  - docker exec sardana-test bash -c "cd /sardana && python setup.py install"
+  - if [ $TEST == "testsuite" ]; then docker exec sardana-test bash -c "cd /sardana && python setup.py install"; fi
+
   # start Pool and MacroServer necessary for macro tests
-  - docker exec sardana-test supervisorctl start Pool
-  - docker exec sardana-test supervisorctl start MacroServer
+  - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl start Pool; fi
+  - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl start MacroServer; fi
 
 script:
+  # run flake8 check on all python files in the project
+  - if [ $TEST == "flake8" ]; then ci/flake8_diff.sh; fi
   # run the full testsuite
-  - docker exec sardana-test sardanatestsuite
+  - if [ $TEST == "testsuite" ]; then docker exec sardana-test sardanatestsuite; fi

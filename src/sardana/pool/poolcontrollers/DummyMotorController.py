@@ -1,23 +1,23 @@
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -60,7 +60,7 @@ class Motion(BaseMotion):
         self.small_motion = False
 
         # position where maximum velocity will be reached
-        self.curr_max_vel_pos  = -1
+        self.curr_max_vel_pos = -1
 
         # necessary displacement to reach maximum velocity
         self.curr_dsplmnt_reach_max_vel = -1
@@ -108,7 +108,7 @@ class Motion(BaseMotion):
 
         self.__recalculate_acc_constants()
 
-    def setMinVelocity(self,vi):
+    def setMinVelocity(self, vi):
         """ Sets the minimum velocity in ms^-1. A.k.a. base rate"""
         vi = float(vi)
         if vi < 0:
@@ -128,7 +128,7 @@ class Motion(BaseMotion):
     def getMinVelocity(self):
         return self.min_vel
 
-    def setMaxVelocity(self,vf):
+    def setMaxVelocity(self, vf):
         """ Sets the maximum velocity in ms^-1."""
         vf = float(vf)
         if vf <= 0:
@@ -148,7 +148,7 @@ class Motion(BaseMotion):
     def getMaxVelocity(self):
         return self.max_vel
 
-    def setAccelerationTime(self,at):
+    def setAccelerationTime(self, at):
         """Sets the time to go from minimum velocity to maximum velocity in seconds"""
         at = float(at)
         if at <= 0:
@@ -162,7 +162,7 @@ class Motion(BaseMotion):
     def getAccelerationTime(self):
         return self.accel_time
 
-    def setDecelerationTime(self,dt):
+    def setDecelerationTime(self, dt):
         """Sets the time to go from maximum velocity to minimum velocity in seconds"""
         dt = float(dt)
         if dt <= 0:
@@ -176,7 +176,7 @@ class Motion(BaseMotion):
     def getDecelerationTime(self):
         return self.decel_time
 
-    def setAcceleration(self,a):
+    def setAcceleration(self, a):
         """Sets the acceleration in ms^-2"""
         a = float(a)
         if a < 0:
@@ -191,7 +191,7 @@ class Motion(BaseMotion):
 
         self.__recalculate_acc_constants()
 
-    def setDeceleration(self,d):
+    def setDeceleration(self, d):
         """Sets the deceleration in ms^-2"""
         d = float(d)
         if d > 0:
@@ -215,10 +215,10 @@ class Motion(BaseMotion):
     def __recalculate_acc_constants(self):
         """pre-computations assuming maximum speed can be reached in a motion"""
 
-        self.dsplmnt_reach_max_vel = 0.5 * self.accel * pow(self.accel_time,2)
+        self.dsplmnt_reach_max_vel = 0.5 * self.accel * pow(self.accel_time, 2)
         self.dsplmnt_reach_max_vel += self.min_vel * self.accel_time
 
-        self.dsplmnt_reach_min_vel = 0.5 * self.decel * pow(self.decel_time,2)
+        self.dsplmnt_reach_min_vel = 0.5 * self.decel * pow(self.decel_time, 2)
         self.dsplmnt_reach_min_vel += self.max_vel * self.decel_time
 
     def startMotion(self, initial_user_pos, final_user_pos, start_instant=None):
@@ -257,7 +257,6 @@ class Motion(BaseMotion):
             self.curr_accel = -self.accel
             self.curr_decel = -self.decel
 
-
         if not self.small_motion:
 
             # necessary displacement to reach maximum velocity
@@ -277,21 +276,26 @@ class Motion(BaseMotion):
                 self.curr_max_vel_pos = self.init_pos - self.curr_dsplmnt_reach_max_vel
 
             # displacement at maximum velocity
-            self.curr_at_max_vel_dsplmnt = self.dsplmnt - (self.curr_dsplmnt_reach_max_vel + self.curr_dsplmnt_reach_min_vel)
+            self.curr_at_max_vel_dsplmnt = self.dsplmnt - \
+                (self.curr_dsplmnt_reach_max_vel + self.curr_dsplmnt_reach_min_vel)
 
         else:  # Small movement
             # position where maximum velocity will be reached
-            self.curr_max_vel_pos  = self.init_pos * self.curr_accel - self.final_pos * self.curr_decel
+            self.curr_max_vel_pos = self.init_pos * \
+                self.curr_accel - self.final_pos * self.curr_decel
             self.curr_max_vel_pos /= self.curr_accel - self.curr_decel
 
             # necessary displacement to reach maximum velocity
-            self.curr_dsplmnt_reach_max_vel = abs(self.curr_max_vel_pos - self.init_pos)
+            self.curr_dsplmnt_reach_max_vel = abs(
+                self.curr_max_vel_pos - self.init_pos)
 
             # necessary diplacement to reach minimum velocity
-            self.curr_dsplmnt_reach_min_vel = abs(self.final_pos - self.curr_max_vel_pos)
+            self.curr_dsplmnt_reach_min_vel = abs(
+                self.final_pos - self.curr_max_vel_pos)
 
             # maximum velocity possible
-            cnst = 2 * self.curr_accel * self.curr_decel * self.dsplmnt / (self.curr_decel - self.curr_accel)
+            cnst = 2 * self.curr_accel * self.curr_decel * \
+                self.dsplmnt / (self.curr_decel - self.curr_accel)
             max_vel_2 = pow(self.min_vel, 2) + cnst
 
             self.curr_max_vel = sqrt(abs(max_vel_2))
@@ -306,13 +310,16 @@ class Motion(BaseMotion):
             self.curr_at_max_vel_dsplmnt = 0.0
 
         # time to reach maximum velocity
-        self.curr_max_vel_time = abs((self.curr_max_vel - self.curr_min_vel) / self.curr_accel)
+        self.curr_max_vel_time = abs(
+            (self.curr_max_vel - self.curr_min_vel) / self.curr_accel)
 
         # time to reach minimum velocity
-        self.curr_min_vel_time = abs((self.curr_min_vel - self.curr_max_vel) / self.curr_decel)
+        self.curr_min_vel_time = abs(
+            (self.curr_min_vel - self.curr_max_vel) / self.curr_decel)
 
         # time at maximum velocity
-        self.curr_at_max_vel_time = abs(self.curr_at_max_vel_dsplmnt / self.curr_max_vel)
+        self.curr_at_max_vel_time = abs(
+            self.curr_at_max_vel_dsplmnt / self.curr_max_vel)
 
         # instant when maximum velocity should be reached
         self.curr_max_vel_instant = self.start_instant + self.curr_max_vel_time
@@ -321,7 +328,8 @@ class Motion(BaseMotion):
         self.curr_min_vel_instant = self.curr_max_vel_instant + self.curr_at_max_vel_time
 
         # time the motion will take
-        self.duration = self.curr_max_vel_time + self.curr_at_max_vel_time + self.curr_min_vel_time
+        self.duration = self.curr_max_vel_time + \
+            self.curr_at_max_vel_time + self.curr_min_vel_time
 
         # instant the motion will end
         self.final_instant = self.start_instant + self.duration
@@ -368,9 +376,10 @@ class Motion(BaseMotion):
         self.inMotion = False
         return self.curr_pos
 
-    def isInMotion(self,curr_instant=None):
+    def isInMotion(self, curr_instant=None):
         curr_instant = curr_instant or time.time()
-        #we call getCurrentPosition because inside it updates the inMotion flag
+        # we call getCurrentPosition because inside it updates the inMotion
+        # flag
         self.getCurrentPosition(curr_instant)
         return self.inMotion
 
@@ -388,7 +397,7 @@ class Motion(BaseMotion):
                 self.inMotion = False
                 pos = self.final_pos
             else:
-                pos  = self.init_pos
+                pos = self.init_pos
                 if curr_instant > self.curr_min_vel_instant:
                     if self.positive_dsplmnt:
                         pos += self.curr_dsplmnt_reach_max_vel
@@ -397,7 +406,8 @@ class Motion(BaseMotion):
                         pos -= self.curr_dsplmnt_reach_max_vel
                         pos -= self.curr_at_max_vel_dsplmnt
                     dt = curr_instant - self.curr_min_vel_instant
-                    pos += self.curr_max_vel * dt + 0.5 * self.curr_decel * pow(dt,2)
+                    pos += self.curr_max_vel * dt + \
+                        0.5 * self.curr_decel * pow(dt, 2)
                 elif curr_instant > self.curr_max_vel_instant:
                     if self.positive_dsplmnt:
                         pos += self.curr_dsplmnt_reach_max_vel
@@ -406,8 +416,9 @@ class Motion(BaseMotion):
                     dt = curr_instant - self.curr_max_vel_instant
                     pos += self.curr_max_vel * dt
                 else:
-                    dt  = curr_instant - self.start_instant
-                    pos += self.curr_min_vel * dt + 0.5 * self.curr_accel * pow(dt,2)
+                    dt = curr_instant - self.start_instant
+                    pos += self.curr_min_vel * dt + \
+                        0.5 * self.curr_accel * pow(dt, 2)
         else:
             pos = self.curr_pos
         if pos <= self.lower_ls:
@@ -420,7 +431,7 @@ class Motion(BaseMotion):
         return pos
 
     def setCurrentUserPosition(self, user_pos):
-        self.setCurrentPosition(user_pos*self.step_per_unit)
+        self.setCurrentPosition(user_pos * self.step_per_unit)
 
     def getCurrentUserPosition(self, curr_instant=None):
         return self.getCurrentPosition(curr_instant=curr_instant) / self.step_per_unit
@@ -461,37 +472,37 @@ class Motion(BaseMotion):
         self.power = power
 
     def info(self):
-        print "Small movement =",self.small_motion
-        print "length =",self.dsplmnt
-        print "position where maximum velocity will be reached =",self.curr_max_vel_pos
-        print "necessary displacement to reach maximum velocity =",self.curr_dsplmnt_reach_max_vel
-        print "necessary displacement to stop from maximum velocity =",self.curr_dsplmnt_reach_min_vel
-        print "maximum velocity possible =",self.curr_max_vel
-        print "time at top velocity =",self.curr_at_max_vel_time
-        print "displacement at top velocity =",self.curr_at_max_vel_dsplmnt
-        print "time to reach maximum velocity =",self.curr_max_vel_time
-        print "time to reach minimum velocity =",self.curr_min_vel_time
-        print "time the motion will take =",self.duration
-        print "instant when maximum velocity should be reached =",self.curr_max_vel_instant
-        print "instant when should start decelerating =",self.curr_min_vel_instant
-        print "instant the motion will end",self.final_instant
+        print "Small movement =", self.small_motion
+        print "length =", self.dsplmnt
+        print "position where maximum velocity will be reached =", self.curr_max_vel_pos
+        print "necessary displacement to reach maximum velocity =", self.curr_dsplmnt_reach_max_vel
+        print "necessary displacement to stop from maximum velocity =", self.curr_dsplmnt_reach_min_vel
+        print "maximum velocity possible =", self.curr_max_vel
+        print "time at top velocity =", self.curr_at_max_vel_time
+        print "displacement at top velocity =", self.curr_at_max_vel_dsplmnt
+        print "time to reach maximum velocity =", self.curr_max_vel_time
+        print "time to reach minimum velocity =", self.curr_min_vel_time
+        print "time the motion will take =", self.duration
+        print "instant when maximum velocity should be reached =", self.curr_max_vel_instant
+        print "instant when should start decelerating =", self.curr_min_vel_instant
+        print "instant the motion will end", self.final_instant
         print ""
-        print "For long movements (where top vel is possible), necessary displacement to reach maximum velocity =",self.dsplmnt_reach_max_vel
-        print "For long movements (where top vel is possible), necessary displacement to stop from maximum velocity =",self.dsplmnt_reach_min_vel
+        print "For long movements (where top vel is possible), necessary displacement to reach maximum velocity =", self.dsplmnt_reach_max_vel
+        print "For long movements (where top vel is possible), necessary displacement to stop from maximum velocity =", self.dsplmnt_reach_min_vel
 
 
 class BasicDummyMotorController(MotorController):
     """This class represents a basic, dummy Sardana motor controller."""
 
     gender = "Simulation"
-    model  = "Basic"
+    model = "Basic"
     organization = "Sardana team"
 
     MaxDevice = 1024
 
     def __init__(self, inst, props, *args, **kwargs):
         MotorController.__init__(self, inst, props, *args, **kwargs)
-        self.m = self.MaxDevice*[None,]
+        self.m = self.MaxDevice * [None, ]
 
     def GetAxisAttributes(self, axis):
         axis_attrs = MotorController.GetAxisAttributes(self, axis)
@@ -500,14 +511,14 @@ class BasicDummyMotorController(MotorController):
             new_axis_attrs[attr] = axis_attrs[attr]
         return new_axis_attrs
 
-    def AddDevice(self,axis):
+    def AddDevice(self, axis):
         MotorController.AddDevice(self, axis)
         idx = axis - 1
         if len(self.m) < axis:
             raise Exception("Invalid axis %d" % axis)
         if self.m[idx] is None:
             m = Motion()
-            m.setMinVelocity(2)
+            m.setMinVelocity(0)
             m.setMaxVelocity(100)
             m.setAccelerationTime(2)
             m.setDecelerationTime(2)
@@ -552,9 +563,9 @@ class BasicDummyMotorController(MotorController):
         #raise Exception("Cannot ReadOne")
         idx = axis - 1
         m = self.m[idx]
-        ts = time.time() #simulate as if we got it from hardware
+        ts = time.time()  # simulate as if we got it from hardware
         return SardanaValue(m.getCurrentUserPosition(), timestamp=ts)
-        #return m.getCurrentUserPosition()
+        # return m.getCurrentUserPosition()
 
     def PreStartAll(self):
         #raise Exception("Cannot move on PreStartAll")
@@ -585,17 +596,18 @@ class BasicDummyMotorController(MotorController):
     def SendToCtrl(self, stream):
         return stream
 
+
 class FastDummyMotorController(MotorController):
 
     gender = "Simulation"
-    model  = "Basic"
+    model = "Basic"
     organization = "Sardana team"
 
     MaxDevice = 1024
 
     def __init__(self, inst, props, *args, **kwargs):
         MotorController.__init__(self, inst, props, *args, **kwargs)
-        self.m = self.MaxDevice*[None,]
+        self.m = self.MaxDevice * [None, ]
 
     def GetAxisAttributes(self, axis):
         axis_attrs = MotorController.GetAxisAttributes(self, axis)
@@ -604,7 +616,7 @@ class FastDummyMotorController(MotorController):
             new_axis_attrs[attr] = axis_attrs[attr]
         return new_axis_attrs
 
-    def AddDevice(self,axis):
+    def AddDevice(self, axis):
         MotorController.AddDevice(self, axis)
         idx = axis - 1
         if len(self.m) < axis:
@@ -678,7 +690,7 @@ class DiscreteDummyMotorController(BasicDummyMotorController):
         pos = BasicDummyMotorController.ReadOne(self, axis)
         return int(pos)
 
-    
+
 class DummyMotorController(BasicDummyMotorController):
     """This class represents a dummy Sardana motor controller."""
 
@@ -687,41 +699,41 @@ class DummyMotorController(BasicDummyMotorController):
     model = "Best"
 
     ctrl_attributes = {
-        'LowerLimitSwitch' : { Type : float,
-                               Description : 'lower limit switch position',
-                               FGet : 'getLowerLimitSwitch',
-                               FSet : 'setLowerLimitSwitch',
-                               DefaultValue: -9999.9999, },
-        'UpperLimitSwitch' : { Type : float,
-                               Description : 'upper limit switch position',
-                               DefaultValue: 8888.8888 }
+        'LowerLimitSwitch': {Type: float,
+                             Description: 'lower limit switch position',
+                             FGet: 'getLowerLimitSwitch',
+                             FSet: 'setLowerLimitSwitch',
+                             DefaultValue: -9999.9999, },
+        'UpperLimitSwitch': {Type: float,
+                             Description: 'upper limit switch position',
+                             DefaultValue: 8888.8888}
     }
 
     axis_attributes = {
-        'LowerLimitSwitch' : { Type : float,
-                               Description : 'lower limit switch position',
-                               FGet : 'getLLS',
-                               FSet : 'setLLS',
-                               DefaultValue: -9999.9999 },
-        'UpperLimitSwitch' : { Type : float,
-                               Description : 'upper limit switch position',
-                               FGet : 'getULS',
-                               FSet : 'setULS',
-                               DefaultValue: 8888.8888 },
-        'Power'            : { Type : bool,
-                               Description : 'motor power',
-                               FGet : 'getPower',
-                               FSet : 'setPower',
-                               DefaultValue: True },
+        'LowerLimitSwitch': {Type: float,
+                             Description: 'lower limit switch position',
+                             FGet: 'getLLS',
+                             FSet: 'setLLS',
+                             DefaultValue: -9999.9999},
+        'UpperLimitSwitch': {Type: float,
+                             Description: 'upper limit switch position',
+                             FGet: 'getULS',
+                             FSet: 'setULS',
+                             DefaultValue: 8888.8888},
+        'Power': {Type: bool,
+                  Description: 'motor power',
+                  FGet: 'getPower',
+                  FSet: 'setPower',
+                  DefaultValue: True},
     }
 
     ctrl_properties = {
-        'Prop1' : { Type : str,
-                    Description  : 'demo property 1',
-                    DefaultValue : 'test property 1'},
-        'Prop2' : { Type : int,
-                    Description  : 'demo property 1',
-                    DefaultValue : 531},
+        'Prop1': {Type: str,
+                  Description: 'demo property 1',
+                  DefaultValue: 'test property 1'},
+        'Prop2': {Type: int,
+                  Description: 'demo property 1',
+                  DefaultValue: 531},
     }
 
     def __init__(self, inst, props, *args, **kwargs):

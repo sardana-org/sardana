@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -35,6 +35,12 @@ import sys
 import weakref
 import traceback
 import threading
+
+try:
+    from collections import OrderedDict
+except ImportError:
+    # For Python < 2.7
+    from ordereddict import OrderedDict
 
 from taurus.core.util.log import Logger
 
@@ -202,7 +208,8 @@ class PoolAction(Logger):
         self._elements = []
         self._pool_ctrl_dict = {}
         self._pool_ctrl_list = []
-        self._finish_hook = None
+        self._finish_hooks = OrderedDict()
+        self._started = False
         self._running = False
         self._state_info = OperationInfo()
         self._value_info = OperationInfo()
@@ -216,7 +223,7 @@ class PoolAction(Logger):
     main_element = property(get_main_element)
 
     def get_pool(self):
-        """Returns the pool object for thi action
+        """Returns the pool object for this action
 
         :return: sardana.pool.pool.Pool"""
         return self.main_element.pool
@@ -314,6 +321,17 @@ class PoolAction(Logger):
         :rtype: bool"""
         return self._running
 
+    def _is_started(self):
+        """Determines if this action is started or not.
+
+        :return: True if action is started or False otherwise
+        :rtype: bool
+
+        ..warning:: This method was added as a workaround for the lack of proper
+        synchronization between the software synchronizer and the acquisition
+        actions."""
+        return self._started
+
     def run(self, *args, **kwargs):
         """Runs this action"""
 
@@ -324,8 +342,10 @@ class PoolAction(Logger):
             try:
                 with OperationContext(self) as context:
                     self.start_action(*args, **kwargs)
+                    self._started = False
                     self.action_loop()
             finally:
+                self._started = False
                 self._running = False
         else:
             context = OperationContext(self)
@@ -336,6 +356,8 @@ class PoolAction(Logger):
                 context.exit()
                 self._running = False
                 raise
+            finally:
+                self._started = False
             get_thread_pool().add(self._asynch_action_loop, None, context)
 
     def start_action(self, *args, **kwargs):
@@ -346,23 +368,44 @@ class PoolAction(Logger):
         raise NotImplementedError("start_action must be implemented in "
                                   "subclass")
 
-    def set_finish_hook(self, hook):
-        """Attaches/Detaches a finish hook
+    def set_finish_hooks(self, hooks):
+        """Set finish hooks for this action.
 
-        :param hook: a callable object or None
-        :type hook: callable or None"""
-        self._finish_hook = hook
+        :param hooks: an ordered dictionary where keys are the hooks and values
+            is a flag if the hook is permanent (not removed after the execution)
+        :type hooks: OrderedDict or None
+        """
+        self._finish_hooks = hooks
+
+    def add_finish_hook(self, hook, permanent=True):
+        """Append one finish hook to this action.
+
+        :param hook: hook to be appended
+        :type hook: callable
+        :param permanent: flag if the hook is permanent (not removed after the
+            execution)
+        :type permanent: boolean
+        """
+        self._finish_hooks[hook] = permanent
+
+    def remove_finish_hook(self, hook):
+        """Remove finish hook.
+        """
+        self._finish_hooks.pop(hook)
 
     def finish_action(self):
         """Finishes the action execution. If a finish hook is defined it safely
         executes it. Otherwise nothing happens"""
-        hook = self._finish_hook
-        if hook is None:
-            return
-        try:
-            hook()
-        except:
-            self.warning("Exception running function finish hook", exc_info=1)
+        hooks = self._finish_hooks
+        for hook, permanent in hooks.items():
+            try:
+                hook()
+            except:
+                self.warning("Exception running function finish hook",
+                             exc_info=1)
+            finally:
+                if not permanent:
+                    hooks.pop(hook)
 
     def stop_action(self, *args, **kwargs):
         """Stop procedure for this action."""
@@ -418,7 +461,8 @@ class PoolAction(Logger):
         NotImplementedError
 
         :raises: NotImplementedError"""
-        raise NotImplementedError("action_loop must be implemented in subclass")
+        raise NotImplementedError(
+            "action_loop must be implemented in subclass")
 
     def read_state_info(self, ret=None, serial=False):
         """Reads state information of all elements involved in this action
@@ -483,7 +527,8 @@ class PoolAction(Logger):
                 return State.Fault, "Unknown controller error"
         else:
             if pool_ctrl.is_online():
-                err_msg = "".join(traceback.format_exception(exc_t, exc_v, trb))
+                err_msg = "".join(
+                    traceback.format_exception(exc_t, exc_v, trb))
                 return State.Fault, "Unexpected controller error:\n" + err_msg
         return State.Fault, pool_ctrl.get_ctrl_error_str()
 

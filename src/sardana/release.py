@@ -3,24 +3,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
-## 
-## http://www.sardana-controls.org/
+# This file is part of Sardana
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
-## 
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-## 
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
-## 
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# http://www.sardana-controls.org/
+##
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+##
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+##
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+##
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -47,7 +47,7 @@ name = 'sardana'
 
 # we use semantic versioning (http://semver.org/) and we update it using the
 # bumpversion script (https://github.com/peritus/bumpversion)
-version = '2.2.3'
+version = '2.2.5-alpha'
 
 # generate version_info and revision (**deprecated** since v 2.1.2--alpha).
 if '-' in version:
@@ -57,17 +57,17 @@ else:
 
 _v = tuple([int(n) for n in _v.split('.')])
 version_info = _v + (_rel, 0)   # deprecated, do not use
-revision = str(version_info[4]) # deprecated, do not use
+revision = str(version_info[4])  # deprecated, do not use
 
 description = "instrument control and data acquisition system"
 
 long_description = \
-'''Sardana is a Supervision, Control And Data Acquisition (SCADA) system for
+    '''Sardana is a Supervision, Control And Data Acquisition (SCADA) system for
  scientific installations. It is written in Python and based on the TANGO
  library. The hardware control and data acquisition routines can be
  accessed via an IPython console and a generic graphical user interface
  (both of which are easily extensible by the user).'''
- 
+
 license = 'LGPL'
 
 authors = {'Tiago_et_al': ('Tiago Coutinho et al.', ''),
@@ -79,6 +79,6 @@ url = 'http://www.sardana-controls.org'
 
 download_url = 'http://pypi.python.org/packages/source/s/sardana'
 
-platforms = ['Linux','Windows XP/2000/NT','Windows 95/98/ME']
+platforms = ['Linux', 'Windows XP/2000/NT', 'Windows 95/98/ME']
 
 keywords = ['Sardana', 'Tango', 'Python', 'Control System']

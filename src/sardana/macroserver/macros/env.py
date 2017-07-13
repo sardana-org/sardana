@@ -1,23 +1,23 @@
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
-## 
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-## 
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
-## 
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+##
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+##
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+##
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -30,13 +30,14 @@ __docformat__ = 'restructuredtext'
 from taurus.console.list import List
 from sardana.macroserver.macro import *
 
-################################################################################
+##########################################################################
 #
 # Environment related macros
 #
-################################################################################
+##########################################################################
 
 from lxml import etree
+
 
 def reprValue(v, max=74):
     # cut long strings
@@ -48,11 +49,11 @@ def reprValue(v, max=74):
 
 class dumpenv(Macro):
     """Dumps the complete environment"""
-    
+
     def run(self):
         env = self.getGlobalEnv()
-        out = List(['Name','Value','Type'])
-        for k,v in env.iteritems():
+        out = List(['Name', 'Value', 'Type'])
+        for k, v in env.iteritems():
             str_v = reprValue(v)
             type_v = type(v).__name__
             out.appendRow([str(k), str_v, type_v])
@@ -63,6 +64,7 @@ class dumpenv(Macro):
 
 class lsvo(Macro):
     """Lists the view options"""
+
     def run(self):
         vo = self.getViewOptions()
         out = List(['View option', 'Value'])
@@ -89,25 +91,25 @@ class setvo(Macro):
 
 class usetvo(Macro):
     """Resets the value of the given view option"""
-    
+
     param_def = [['name', Type.String, None, 'View option name']]
 
     def run(self, name):
         self.resetViewOption(name)
 
-            
+
 class lsenv(Macro):
     """Lists the environment in alphabetical order"""
-    
+
     param_def = [
         ['macro_list',
          ParamRepeat(['macro', Type.MacroClass, None, 'macro name'], min=0),
          None, 'List of macros to show environment'],
     ]
-    
+
     def prepare(self, macro_list, **opts):
         self.table_opts = opts
-        
+
     def run(self, macro_list):
         # list the environment for the current door
         if len(macro_list) == 0:
@@ -121,8 +123,8 @@ class lsenv(Macro):
                 type_name = type(env[k]).__name__
                 out.appendRow([k, str_val, type_name])
         # list the environment for the current door for the given macros
-        else:            
-            out = List(['Macro', 'Name', 'Value', 'Type']) 
+        else:
+            out = List(['Macro', 'Name', 'Value', 'Type'])
             for macro in macro_list:
                 env = self.getEnv(key=None, macro_name=macro.name)
                 names_list = list(env.keys())
@@ -138,49 +140,55 @@ class lsenv(Macro):
     def reprValue(self, v, max=54):
         # cut long strings
         v = str(v)
-        if len(v) > max: v = '%s [...]' % v[:max]
+        if len(v) > max:
+            v = '%s [...]' % v[:max]
         return v
+
 
 class senv(Macro):
     """Sets the given environment variable to the given value"""
 
     param_def = [['name', Type.Env, None,
-                  'Environment variable name. Can be one of the following:\n' \
-                  ' - <name> - global variable\n' \
-                  ' - <full door name>.<name> - variable value for a specific door\n' \
-                  ' - <macro name>.<name> - variable value for a specific macro\n' \
+                  'Environment variable name. Can be one of the following:\n'
+                  ' - <name> - global variable\n'
+                  ' - <full door name>.<name> - variable value for a specific door\n'
+                  ' - <macro name>.<name> - variable value for a specific macro\n'
                   ' - <full door name>.<macro name>.<name> - variable value for a specific macro running on a specific door'],
                  ['value_list',
-                  ParamRepeat(['value', Type.String, None, 'environment value item'], min=1),
+                  ParamRepeat(['value', Type.String, None,
+                               'environment value item'], min=1),
                   None, 'value(s). one item will eval to a single element. More than one item will eval to a tuple of elements'],
-                ]
+                 ]
 
     def run(self, env, value):
-        if len(value) == 1: 
+        if len(value) == 1:
             value = value[0]
         else:
             value = '(%s)' % ', '.join(value)
-        k,v = self.setEnv(env, value)
+        k, v = self.setEnv(env, value)
         line = '%s = %s' % (k, str(v))
         self.output(line)
+
 
 class usenv(Macro):
     """Unsets the given environment variable"""
     param_def = [
         ['environment_list',
-         ParamRepeat(['env', Type.Env, None, 'Environment variable name'], min=1),
+         ParamRepeat(
+             ['env', Type.Env, None, 'Environment variable name'], min=1),
          None, 'List of environment items to be removed'],
-    ]    
-    
+    ]
+
     def run(self, env):
         self.unsetEnv(env)
         self.output("Success!")
-        
+
+
 class load_env(Macro):
     """ Read environment variables from config_env.xml file"""
-    
+
     def run(self):
-        doc = etree.parse("config_env.xml")       
+        doc = etree.parse("config_env.xml")
         root = doc.getroot()
         for element in root:
             if element.find("./name").text == "auto_filter":
@@ -279,10 +287,9 @@ class load_env(Macro):
                     self.setEnv("ExafsRegions", exafs_regions)
                     self.output("ExafsRegions loaded")
                 else:
-                    self.output("ExafsRegions not found")  
+                    self.output("ExafsRegions not found")
         misc_tree = root.find("./miscellaneous")
         if misc_tree is not None:
             for parameter in misc_tree:
                 if parameter.tag != "name":
-                    self.setEnv(parameter.tag, parameter.text) 
-            
+                    self.setEnv(parameter.tag, parameter.text)

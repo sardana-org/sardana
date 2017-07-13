@@ -2,29 +2,29 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
 """
-parameditors.py: 
+parameditors.py:
 """
 
 import os
@@ -36,13 +36,17 @@ from sardana.taurus.qt.qtgui.extra_macroexecutor import globals
 from sardana.taurus.qt.qtgui.extra_macroexecutor.common import MSAttrListComboBox
 
 #@todo: replace by method from common module
+
+
 def str2bool(text):
     return text in ("True", "1")
+
 
 class ParamBase:
 
     def __init__(self, paramModel=None):
         self.setParamModel(paramModel)
+        self.setToolTip(paramModel.description())
 
     def paramModel(self):
         return self._paramModel
@@ -69,13 +73,16 @@ class ParamBase:
         model = self.index().model()
         model.setData(self.index(), Qt.QVariant(self.getValue()))
 
+
 class ComboBoxBoolean(ParamBase, Qt.QComboBox):
+
     def __init__(self, parent=None, paramModel=None):
-        ParamBase.__init__(self, paramModel)
         Qt.QComboBox.__init__(self, parent)
+        ParamBase.__init__(self, paramModel)
 
         self.addItems(['True', 'False'])
-        self.connect(self, Qt.SIGNAL("currentIndexChanged(int)"), self.onCurrentIndexChanged)
+        self.connect(self, Qt.SIGNAL("currentIndexChanged(int)"),
+                     self.onCurrentIndexChanged)
 
     def getValue(self):
         return str(self.currentText())
@@ -84,19 +91,22 @@ class ComboBoxBoolean(ParamBase, Qt.QComboBox):
         currentIdx = self.currentIndex()
         idx = self.findText(value)
         if currentIdx == idx:
-            self.emit(Qt.SIGNAL("currentIndexChanged(int)"), self.currentIndex())
+            self.emit(Qt.SIGNAL("currentIndexChanged(int)"),
+                      self.currentIndex())
         else:
             self.setCurrentIndex(idx)
 
     def onCurrentIndexChanged(self):
         self.emit(Qt.SIGNAL("modelChanged()"))
+
 
 class ComboBoxParam(ParamBase, Qt.QComboBox):
 
     def __init__(self, parent=None, paramModel=None):
-        ParamBase.__init__(self, paramModel)
         Qt.QComboBox.__init__(self, parent)
-        self.connect(self, Qt.SIGNAL("currentIndexChanged(int)"), self.onCurrentIndexChanged)
+        ParamBase.__init__(self, paramModel)
+        self.connect(self, Qt.SIGNAL("currentIndexChanged(int)"),
+                     self.onCurrentIndexChanged)
 
     def getValue(self):
         return str(self.currentText())
@@ -105,21 +115,24 @@ class ComboBoxParam(ParamBase, Qt.QComboBox):
         currentIdx = self.currentIndex()
         idx = self.findText(value)
         if currentIdx == idx:
-            self.emit(Qt.SIGNAL("currentIndexChanged(int)"), self.currentIndex())
+            self.emit(Qt.SIGNAL("currentIndexChanged(int)"),
+                      self.currentIndex())
         else:
             self.setCurrentIndex(idx)
 
     def onCurrentIndexChanged(self):
         self.emit(Qt.SIGNAL("modelChanged()"))
 
+
 class MSAttrListComboBoxParam(ParamBase, MSAttrListComboBox):
 
     def __init__(self, parent=None, paramModel=None):
-        ParamBase.__init__(self, paramModel)
         MSAttrListComboBox.__init__(self, parent)
+        ParamBase.__init__(self, paramModel)
 #        self.setUseParentModel(True)
 #        self.setModel("/" + self.paramModel().type() + "List")
-        self.connect(self, Qt.SIGNAL("currentIndexChanged(int)"), self.onCurrentIndexChanged)
+        self.connect(self, Qt.SIGNAL("currentIndexChanged(int)"),
+                     self.onCurrentIndexChanged)
 
     def getValue(self):
         return str(self.currentText())
@@ -134,11 +147,9 @@ class MSAttrListComboBoxParam(ParamBase, MSAttrListComboBox):
 class AttrListComboBoxParam(ParamBase, TaurusAttrListComboBox):
 
     def __init__(self, parent=None, paramModel=None):
-        ParamBase.__init__(self, paramModel)
         TaurusAttrListComboBox.__init__(self, parent)
+        ParamBase.__init__(self, paramModel)
         self.setModel("/" + self.paramModel().type() + "List")
-#        self.setToolTip(self.paramModel().description())
-
 
     def handleEvent(self, src, type, value):
         self.clear()
@@ -163,11 +174,12 @@ class AttrListComboBoxParam(ParamBase, TaurusAttrListComboBox):
 
 
 class LineEditParam(ParamBase, Qt.QLineEdit):
+
     def __init__(self, parent=None, paramModel=None):
-        ParamBase.__init__(self, paramModel)
         Qt.QLineEdit.__init__(self, parent)
-        self.connect(self, Qt.SIGNAL("textChanged(const QString&)"), self.onTextChanged)
-#        self.setToolTip(self.paramModel().description())
+        ParamBase.__init__(self, paramModel)
+        self.connect(self, Qt.SIGNAL(
+            "textChanged(const QString&)"), self.onTextChanged)
 
     def onTextChanged(self):
         self.emit(Qt.SIGNAL("modelChanged()"))
@@ -187,11 +199,12 @@ class LineEditParam(ParamBase, Qt.QLineEdit):
 #        self.setText("")
 #        self.setDefaultValue()
 
+
 class CheckBoxParam(ParamBase, Qt.QCheckBox):
 
     def __init__(self, parent=None, paramModel=None):
-        ParamBase.__init__(self, paramModel)
         Qt.QCheckBox.__init__(self, parent)
+        ParamBase.__init__(self, paramModel)
         self.connect(self, Qt.SIGNAL("stateChanged(int)"), self.onStateChanged)
 
     def getValue(self):
@@ -205,12 +218,12 @@ class CheckBoxParam(ParamBase, Qt.QCheckBox):
 
 
 class SpinBoxParam(ParamBase, Qt.QSpinBox):
+
     def __init__(self, parent=None, paramModel=None):
-        ParamBase.__init__(self, paramModel)
         Qt.QSpinBox.__init__(self, parent)
+        ParamBase.__init__(self, paramModel)
         self.setRange(-999999999, 999999999)
         self.setAccelerated(True)
-#        self.setToolTip(self.paramModel().description())
 
     def getValue(self):
         return str(self.value())
@@ -222,15 +235,16 @@ class SpinBoxParam(ParamBase, Qt.QSpinBox):
 #        self.setValue(0)
 #        self.setDefaultValue()
 
+
 class DoubleSpinBoxParam(ParamBase, Qt.QDoubleSpinBox):
+
     def __init__(self, parent=None, paramModel=None):
-        ParamBase.__init__(self, paramModel)
         Qt.QDoubleSpinBox.__init__(self, parent)
+        ParamBase.__init__(self, paramModel)
         self.setRange(-999999999.999999, 999999999.999999)
         self.setAccelerated(True)
         self.setDecimals(6)
         self.setSingleStep(0.000001)
-#        self.setToolTip(self.paramModel().description())
 
     def getValue(self):
         return str(self.value())
@@ -252,11 +266,12 @@ class DoubleSpinBoxParam(ParamBase, Qt.QDoubleSpinBox):
 #        self.setValue(0.0)
 #        self.setDefaultValue()
 
+
 class FileDialogParam(ParamBase, Qt.QWidget):
+
     def __init__(self, parent=None, paramModel=None):
-        ParamBase.__init__(self, paramModel)
         Qt.QWidget.__init__(self, parent)
-        self.setToolTip(self.paramModel().description())
+        ParamBase.__init__(self, paramModel)
         self.layout = Qt.QHBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.filePath = Qt.QLineEdit(self)
@@ -267,7 +282,8 @@ class FileDialogParam(ParamBase, Qt.QWidget):
 
         self.text = ""
 
-        Qt.QObject.connect(self.button, Qt.SIGNAL("clicked()"), self._chooseAFile)
+        Qt.QObject.connect(self.button, Qt.SIGNAL(
+            "clicked()"), self._chooseAFile)
 
     def _chooseAFile(self):
         path = Qt.QFileDialog().getOpenFileName()
@@ -294,11 +310,12 @@ class FileDialogParam(ParamBase, Qt.QWidget):
     def setValue(self, value):
         self.filePath.setText(value)
 
+
 class DirPathParam(ParamBase, Qt.QWidget):
 
     def __init__(self, parent=None, paramModel=None):
-        ParamBase.__init__(self, paramModel)
         Qt.QWidget.__init__(self, parent)
+        ParamBase.__init__(self, paramModel)
 
         self.layout = Qt.QHBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -309,7 +326,8 @@ class DirPathParam(ParamBase, Qt.QWidget):
         self.layout.addWidget(self.button)
 
         self.connect(self.button, Qt.SIGNAL("clicked()"), self.__chooseDirPath)
-        self.connect(self.dirPath, Qt.SIGNAL("textChanged(const QString&)"), self.onDirPathChanged)
+        self.connect(self.dirPath, Qt.SIGNAL(
+            "textChanged(const QString&)"), self.onDirPathChanged)
 
     def onDirPathChanged(self):
         self.emit(Qt.SIGNAL("modelChanged()"))
@@ -323,5 +341,3 @@ class DirPathParam(ParamBase, Qt.QWidget):
 
     def setValue(self, value):
         self.dirPath.setText(value)
-
-

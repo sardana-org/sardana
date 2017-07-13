@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -53,27 +53,29 @@ from taurus.qt.qtcore.mimetypes import TAURUS_MODEL_LIST_MIME_TYPE, \
 _MOD, _CLS, _FNC, _TNG = ":/python-module.png", ":/class.png", ":/function.png", ":/tango.png"
 
 TYPE_MAP = {
-    "ControllerLibrary"    : ("Controller libraries", _MOD, "Controller library",),
-    "ControllerClass"      : ("Controller classes", _CLS, "Controller class",),
-    "Controller"           : ("Controllers", _TNG, "Controller",),
-    "Motor"                : ("Motors", _TNG, "Motor",),
-    "PseudoMotor"          : ("Pseudo motors", _TNG, "Pseudo Motor",),
-    "CTExpChannel"         : ("Counter/Timers", _TNG, "Counter/Timer experiment channel",),
-    "CounterTimer"         : ("Counter/Timers", _TNG, "Counter/Timer experiment channel",),
-    "ZeroDExpChannel"      : ("0D channels", _TNG, "0D experiment channel",),
-    "OneDExpChannel"       : ("1D channels", _TNG, "1D experiment channel",),
-    "TwoDExpChannel"       : ("2D channels", _TNG, "2D experiment channel",),
-    "MotorGroup"           : ("Motor groups", _TNG, "Motor group",),
-    "MeasurementGroup"     : ("Measurement groups", _TNG, "Measurement group",),
-    "CommunicationChannel" : ("Communication channels", _TNG, "Communication channel",),
-    "MacroLibrary"         : ("Macro libraries", _MOD, "Macro library",),
-    "MacroClass"           : ("Macro classes", _CLS, "Macro class",),
-    "Instrument"           : ("Instruments", _TNG, "Instrument",),
-    "MacroFunction"        : ("Macro functions", _FNC, "Macro function",),
+    "ControllerLibrary": ("Controller libraries", _MOD, "Controller library",),
+    "ControllerClass": ("Controller classes", _CLS, "Controller class",),
+    "Controller": ("Controllers", _TNG, "Controller",),
+    "Motor": ("Motors", _TNG, "Motor",),
+    "PseudoMotor": ("Pseudo motors", _TNG, "Pseudo Motor",),
+    "CTExpChannel": ("Counter/Timers", _TNG, "Counter/Timer experiment channel",),
+    "CounterTimer": ("Counter/Timers", _TNG, "Counter/Timer experiment channel",),
+    "ZeroDExpChannel": ("0D channels", _TNG, "0D experiment channel",),
+    "OneDExpChannel": ("1D channels", _TNG, "1D experiment channel",),
+    "TwoDExpChannel": ("2D channels", _TNG, "2D experiment channel",),
+    "MotorGroup": ("Motor groups", _TNG, "Motor group",),
+    "MeasurementGroup": ("Measurement groups", _TNG, "Measurement group",),
+    "CommunicationChannel": ("Communication channels", _TNG, "Communication channel",),
+    "MacroLibrary": ("Macro libraries", _MOD, "Macro library",),
+    "MacroClass": ("Macro classes", _CLS, "Macro class",),
+    "Instrument": ("Instruments", _TNG, "Instrument",),
+    "MacroFunction": ("Macro functions", _FNC, "Macro function",),
 }
+
 
 def getElementTypeLabel(t):
     return TYPE_MAP.get(t, (t,))[0]
+
 
 def getElementTypeIcon(t):
     import taurus.qt.qtgui.resource
@@ -82,8 +84,10 @@ def getElementTypeIcon(t):
     except:
         return None
 
+
 def getElementTypeSize(t):
     return Qt.QSize(200, 24)
+
 
 def getElementTypeToolTip(t):
     return TYPE_MAP.get(t, (None, None, 'no information'))[2]
@@ -94,7 +98,7 @@ class SardanaBaseTreeItem(TaurusBaseTreeItem):
 
     def data(self, index):
         """Returns the data of this node for the given index
-        
+
         :return: (object) the data for the given index
         """
         if index.column() > 0:
@@ -104,10 +108,10 @@ class SardanaBaseTreeItem(TaurusBaseTreeItem):
     def role(self):
         """Returns the prefered role for the item.
         This implementation returns taurus.core.taurusbasetypes.TaurusElementType.Unknown
-        
+
         This method should be able to return any kind of python object as long
         as the model that is used is compatible.
-        
+
         :return: the role in form of element type"""
         return 'type'
 
@@ -221,7 +225,8 @@ class SardanaBaseElementModel(TaurusBaseModel):
         ret = Qt.QMimeData()
         data = []
         for index in indexes:
-            if not index.isValid(): continue
+            if not index.isValid():
+                continue
             tree_item = index.internalPointer()
             mime_data_item = tree_item.mimeData(index)
             if mime_data_item is None:
@@ -401,7 +406,7 @@ class SardanaEnvironmentModel(TaurusBaseModel):
         return ":/tango.png"
     #    return getElementTypeIcon(role)
 
-    #def columnIcon(self, column):
+    # def columnIcon(self, column):
     #    return self.roleIcon(self.role(column))
 
     def roleToolTip(self, role):
@@ -413,7 +418,7 @@ class SardanaEnvironmentModel(TaurusBaseModel):
         elif role == cr[2]:
             return "Environment value data type"
 
-    #def columnToolTip(self, column):
+    # def columnToolTip(self, column):
     #    return self.roleToolTip(self.role(column))
 
     def roleSize(self, role):
@@ -431,7 +436,8 @@ class SardanaEnvironmentModel(TaurusBaseModel):
         ret = Qt.QMimeData()
         data = []
         for index in indexes:
-            if not index.isValid(): continue
+            if not index.isValid():
+                continue
             tree_item = index.internalPointer()
             mime_data_item = tree_item.mimeData(index)
             if mime_data_item is None:

@@ -2,29 +2,29 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
 """
-scanplotter.py: 
+scanplotter.py:
     module containing the widget: scanplotter,
     to be used in the Taurus app "scanner.py"
 """
@@ -109,13 +109,15 @@ class ScanPlotter(TaurusTrend):
     def getPlotables(self, macronames=None, doorname=None, movingmotors=None):
         """returns a list of plotables for this scan given macro (channels and moving motors)"""
         plotables = []
-        if macronames is None: macronames = list(set(self._macroNames))
-        if doorname is None: doorname = self._doorName
-        if movingmotors is None: movingmotors = list(set(self._movingMotors))
+        if macronames is None:
+            macronames = list(set(self._macroNames))
+        if doorname is None:
+            doorname = self._doorName
+        if movingmotors is None:
+            movingmotors = list(set(self._movingMotors))
         if doorname is None or not len(macronames):
             return plotables
         door = taurus.Device(doorname)
-
 
         for macroname in macronames:
             env = dictFromSequence(door.getMacroEnv([macroname]))
@@ -126,7 +128,8 @@ class ScanPlotter(TaurusTrend):
             channels = mntgrp.getAttribute('Channels').read()
             channelsList = channels.value
             timer_name = mntgrp.getAttribute('Timer').read().value.lower()
-            plotables += [('%s/%s_value' % (mntgrp_name, ch)).lower() for ch in channelsList if ch.lower() != timer_name]
+            plotables += [('%s/%s_value' % (mntgrp_name, ch)).lower()
+                          for ch in channelsList if ch.lower() != timer_name]
 
         for m in movingmotors:
             if not (m is None or m == "" or m == "None"):
@@ -134,14 +137,16 @@ class ScanPlotter(TaurusTrend):
         return plotables
 
     def populatePlotables(self, plotables=None):
-        ##@TODO: The name in the legend should be more descriptive: i.e. "dev/attr" instead of "attr" (this probably has to be changed for taurusplot in general  )
-        if plotables is None: plotables = self.getPlotables()
+        # @TODO: The name in the legend should be more descriptive: i.e. "dev/attr" instead of "attr" (this probably has to be changed for taurusplot in general  )
+        if plotables is None:
+            plotables = self.getPlotables()
         self.setModel(plotables)
         self.curves_lock.acquire()
         try:
             for name in self.getTrendSetNames():
                 ts = self.getTrendSet(name)
-                ts.fireEvent(None, taurus.core.taurusbasetypes.TaurusEventType.Change, None)
+                ts.fireEvent(
+                    None, taurus.core.taurusbasetypes.TaurusEventType.Change, None)
         finally:
             self.curves_lock.release()
         self.setEventFilters([eventfilters.ONLY_VALID], plotables)
@@ -150,7 +155,9 @@ if __name__ == "__main__":
     import sys
     app = QtGui.QApplication(sys.argv)
     form = ScanPlotter()
-    if len(sys.argv) < 4: raise ValueError('Syntax: ' + sys.argv[0] + ' macroname doorname plotable [anotherplotable...]')
+    if len(sys.argv) < 4:
+        raise ValueError(
+            'Syntax: ' + sys.argv[0] + ' macroname doorname plotable [anotherplotable...]')
     form._macroName = sys.argv[1]
     form._doorName = sys.argv[2]
     form.populatePlotables(sys.argv[3:])

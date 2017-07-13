@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -50,7 +50,7 @@ class SPSRecorder(BaseSharedMemoryRecorder):
         """
         BaseSharedMemoryRecorder.__init__(self, **kwpars)
         try:
-            import sps  #check if sps format is supported by this system
+            import sps  # check if sps format is supported by this system
             self.sps = sps
         except ImportError:
             raise Exception("SPS is not available")
@@ -78,21 +78,25 @@ class SPSRecorder(BaseSharedMemoryRecorder):
         self.cols = cols
 
     def isInitialized(self):
-        ret = not (self.program is None or self.array_ENV is None or self.array is None)
+        ret = not (
+            self.program is None or self.array_ENV is None or self.array is None)
         return ret and not self.shape is None
 
     def putEnv(self, name, value):
-        if not self.isInitialized(): return
+        if not self.isInitialized():
+            return
         self.sps.putenv(self.program, self.array_ENV, name, str(value))
 
     def putAllEnv(self, d):
-        if not self.isInitialized(): return
+        if not self.isInitialized():
+            return
         p, a = self.program, self.array_ENV
         for k, v in d.iteritems():
             self.sps.putenv(p, a, k, str(v))
 
     def _startRecordList(self, recordlist):
-        if not self.isInitialized(): return
+        if not self.isInitialized():
+            return
 
         arraylist = self.sps.getarraylist(self.program)
 
@@ -100,38 +104,40 @@ class SPSRecorder(BaseSharedMemoryRecorder):
             shm = self.sps.attach(self.program, self.array)
         else:
             cols, rows = self.shape
-            self.sps.create(self.program, self.array, rows, cols, self.sps.DOUBLE)
+            self.sps.create(self.program, self.array,
+                            rows, cols, self.sps.DOUBLE)
             self.owner = True
 
         if self.array_ENV in arraylist:
             shm_env = self.sps.attach(self.program, self.array_ENV)
         else:
             self.sps.create(self.program, self.array_ENV, self.maxenv, self.envlen,
-                       self.sps.STRING)
+                            self.sps.STRING)
             self.owner_ENV = True
 
         self.nopts = 0
 
         env = recordlist.getEnviron()
 
-        self.labels = [ col.label for col in env['datadesc'] ]
+        self.labels = [col.label for col in env['datadesc']]
 
-        env = {     'title' : env['title'],
-                  'started' : env['starttime'].ctime(),
-                    'ended' : '',
-               'axistitles' : ' '.join(self.labels),
-                   'ylabel' : 'Counts',
-                    'nopts' : self.nopts,
-                     'xbeg' : 0,
-                     'xend' : 200,
-                  'aborted' : 0,
-                  'command' : 'done',
-                'fitresult' : '0' }
+        env = {'title': env['title'],
+               'started': env['starttime'].ctime(),
+               'ended': '',
+               'axistitles': ' '.join(self.labels),
+               'ylabel': 'Counts',
+               'nopts': self.nopts,
+               'xbeg': 0,
+               'xend': 200,
+               'aborted': 0,
+               'command': 'done',
+               'fitresult': '0'}
 
         self.putAllEnv(env)
 
     def _writeRecord(self, record):
-        if not self.isInitialized(): return
+        if not self.isInitialized():
+            return
 
         vals = []
 
@@ -146,26 +152,29 @@ class SPSRecorder(BaseSharedMemoryRecorder):
                 sufix = "1D"
                 if self.array.endswith(sufix):
                     valsmca = numpy.array(valsmca)
-                    self.sps.putdatarow(self.program, self.array, record.recordno, valsmca)
+                    self.sps.putdatarow(
+                        self.program, self.array, record.recordno, valsmca)
 
         sufix = "0D"
         if self.array.endswith(sufix):
             vals = numpy.array(vals)
-            self.sps.putdatarow(self.program, self.array, record.recordno, vals)
+            self.sps.putdatarow(self.program, self.array,
+                                record.recordno, vals)
 
         self.nopts += 1
 
-        env = {   'nopts' : self.nopts,
-                   'peak' : 111,
-                'peakpos' : 34,
-                   'fwhm' : 12.3,
-                'fwhmpos' : 45,
-                    'com' : 23 }
+        env = {'nopts': self.nopts,
+               'peak': 111,
+               'peakpos': 34,
+               'fwhm': 12.3,
+               'fwhmpos': 45,
+               'com': 23}
 
         self.putAllEnv(env)
 
     def _endRecordList(self, recordlist):
-        if not self.isInitialized(): return
+        if not self.isInitialized():
+            return
         env = recordlist.getEnviron()
         self.putEnv('ended', env.get('endtime').ctime())
 
@@ -208,7 +217,8 @@ class ShmRecorder(DataRecorder):
 
     def _startRecordList(self, recordlist):
 
-        if not self.isInitialized(): return
+        if not self.isInitialized():
+            return
 
         arraylist = self.sps.getarraylist(self.progname)
 
@@ -216,27 +226,29 @@ class ShmRecorder(DataRecorder):
             shm = self.sps.attach(self.progname, self.shm_id)
         else:
             self.sps.create(self.progname, self.shm_id, self.rows, self.cols,
-                       self.sps.DOUBLE)
+                            self.sps.DOUBLE)
 
         if self.shm_id_env in arraylist:
             shm_env = self.sps.attach(self.progname, self.shm_id_env)
         else:
             self.sps.create(self.progname, self.shm_id_env, self.maxenv, self.envlen,
-                       self.sps.STRING)
+                            self.sps.STRING)
 
         print "Starting new SHM recording"
 
         self.putenv('title', recordlist.getEnvironValue('title'))
 
         for env, val in recordlist.getEnviron().items():
-           if env != 'title' and env != 'labels':
-               self.putenv(env , val)
+            if env != 'title' and env != 'labels':
+                self.putenv(env, val)
 
         self.nopts = 0
 
-        self.putenv('started', time.ctime(recordlist.getEnvironValue('starttime')))
+        self.putenv('started', time.ctime(
+            recordlist.getEnvironValue('starttime')))
         self.putenv('ended', '')
-        self.putenv('axistitles', ' '.join(recordlist.getEnvironValue('labels')))
+        self.putenv('axistitles', ' '.join(
+            recordlist.getEnvironValue('labels')))
         self.putenv('ylabel', 'Counts')
         self.putenv('nopts', self.nopts)
         self.putenv('xbeg', 100)
@@ -250,7 +262,8 @@ class ShmRecorder(DataRecorder):
     def _writeRecord(self, record):
         # uhmm. only numeric values can be written
 
-        if not self.isInitialized(): return
+        if not self.isInitialized():
+            return
 
         vals = []
 
@@ -264,31 +277,33 @@ class ShmRecorder(DataRecorder):
         myj = 0
 
         for val2 in record.data:
-           tmp = val2 + '_value'
-           #esto me da el nombre del canal
-           for dim in self.chandimlist:
-              if tmp == dim:
-                 dim_list[myj] = self.chandimlist[dim]
-                 myj = myj + 1
+            tmp = val2 + '_value'
+            # esto me da el nombre del canal
+            for dim in self.chandimlist:
+                if tmp == dim:
+                    dim_list[myj] = self.chandimlist[dim]
+                    myj = myj + 1
 
         myj = 0
 
         for val2 in record.data.values():
-           valsmca = []
-           if type(val2) in [list]:
-              if dim_list[myj] == 1:
-                 for i in range(0, len(val2)):
-                    valsmca.append(val2[i])
-                 tmp_name = self.mnt_grp + "_1D"
-                 if self.shm_id == tmp_name:
-                    valsmca = numpy.array(valsmca)
-                    self.sps.putdatarow(self.progname, self.shm_id, record.recordno, valsmca)
-           myj = myj + 1
+            valsmca = []
+            if type(val2) in [list]:
+                if dim_list[myj] == 1:
+                    for i in range(0, len(val2)):
+                        valsmca.append(val2[i])
+                    tmp_name = self.mnt_grp + "_1D"
+                    if self.shm_id == tmp_name:
+                        valsmca = numpy.array(valsmca)
+                        self.sps.putdatarow(
+                            self.progname, self.shm_id, record.recordno, valsmca)
+            myj = myj + 1
 
         vals = numpy.array(vals)
         tmp_name = self.mnt_grp + "_0D"
         if self.shm_id == tmp_name:
-           self.sps.putdatarow(self.progname, self.shm_id, record.recordno, vals)
+            self.sps.putdatarow(self.progname, self.shm_id,
+                                record.recordno, vals)
 
         self.nopts += 1
         self.putenv('nopts', self.nopts)
@@ -298,8 +313,7 @@ class ShmRecorder(DataRecorder):
         self.putenv('fwhmpos', 45)
         self.putenv('com', 23)
 
-
     def _endRecordList(self, recordlist):
-        if not self.isInitialized(): return
+        if not self.isInitialized():
+            return
         self.putenv('ended', time.ctime(recordlist.getEnvironValue('endtime')))
-

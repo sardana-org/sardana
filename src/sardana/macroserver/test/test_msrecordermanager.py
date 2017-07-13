@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -61,7 +61,7 @@ class RecorderManagerTest(unittest.TestCase):
     def setUp(self):
         name = self.ms_fullname.split("/")[1]
         self._macro_server = MacroServer(self.ms_fullname, name, macro_path=[],
-                                    recorder_path=[])
+                                         recorder_path=[])
         self.manager = self._macro_server.recorder_manager
 
     def tearDown(self):
@@ -110,13 +110,13 @@ class RecorderManagerTest(unittest.TestCase):
         """
         self.manager.setRecorderPath(extra_paths)
         klass = self.manager.getRecorderClass(klass_name)
-        msg = "Recoder manager does not found the class %s" %(klass_name)
+        msg = "Recoder manager does not found the class %s" % (klass_name)
         self.assertNotEqual(klass, None, msg)
         _name = klass.__name__
-        msg = "The class %s is not subclass of DataRecorder" %(_name)
+        msg = "The class %s is not subclass of DataRecorder" % (_name)
         self.assertTrue(issubclass(klass, DataRecorder), msg)
         msg = "The class name giveb by the recorder manager is different." +\
-              "Expected %s, get %s" %(klass_name, _name)
+              "Expected %s, get %s" % (klass_name, _name)
         self.assertEqual(_name, klass_name, msg)
 
     def test_SameClassNames(self):
@@ -148,7 +148,7 @@ class RecorderManagerTest(unittest.TestCase):
         # set three paths containing recorders of the same format
         self._updateRecorderManager(recorder_path)
         klasses = self.manager.getRecorderMetaClasses(filter=BaseFileRecorder,
-                                                  extension='.spec')
+                                                      extension='.spec')
         klass = klasses.values()[0]
         # retrieve path to the recorder library
         path = os.sep.join(klass.lib.full_name.split(os.sep)[:-1])
@@ -158,7 +158,7 @@ class RecorderManagerTest(unittest.TestCase):
     def test_ExternalVsBuiltinPrecedence(self):
         """Test if external recorders are of higher priority than the built-in)
         """
-        external_path = os.path.join(_TEST_DIR, 'res', 'recorders', 
+        external_path = os.path.join(_TEST_DIR, 'res', 'recorders',
                                      'pathexternal')
 
         # set three paths containing recorders with the same class names

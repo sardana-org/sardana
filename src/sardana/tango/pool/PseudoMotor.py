@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -85,8 +85,8 @@ class PseudoMotor(PoolElementDevice):
             name = self.alias or full_name
             self.pseudo_motor = pseudo_motor = \
                 self.pool.create_element(type="PseudoMotor", name=name,
-                    full_name=full_name, id=self.Id, axis=self.Axis,
-                    ctrl_id=self.Ctrl_id, user_elements=self.Elements)
+                                         full_name=full_name, id=self.Id, axis=self.Axis,
+                                         ctrl_id=self.Ctrl_id, user_elements=self.Elements)
             if self.instrument is not None:
                 pseudo_motor.set_instrument(self.instrument)
         pseudo_motor.set_drift_correction(self.DriftCorrection)
@@ -218,7 +218,8 @@ class PseudoMotor(PoolElementDevice):
         """Returns the pseudo motor position for the given physical positions"""
         if not len(physical_positions):
             physical_positions = None
-        result = self.pseudo_motor.calc_pseudo(physical_positions=physical_positions)
+        result = self.pseudo_motor.calc_pseudo(
+            physical_positions=physical_positions)
         if result.error:
             throw_sardana_exception(result)
         return result.value
@@ -267,30 +268,30 @@ class PseudoMotorClass(PoolElementDeviceClass):
 
     #    Device Properties
     device_property_list = {
-        "Elements" :    [ DevVarStringArray, "elements used by the pseudo", [ ] ],
+        "Elements":    [DevVarStringArray, "elements used by the pseudo", []],
         'DriftCorrection':
             [DevBoolean,
-            "Locally apply drift correction on pseudo motors. Default is the "
-            "current global drift correction in the Pool Device",
-            None],
+             "Locally apply drift correction on pseudo motors. Default is the "
+             "current global drift correction in the Pool Device",
+             None],
     }
     device_property_list.update(PoolElementDeviceClass.device_property_list)
 
     #    Command definitions
     cmd_list = {
-        'CalcPseudo'      : [ [DevVarDoubleArray, "physical positions"], [DevDouble, "pseudo position"] ],
-        'CalcPhysical'    : [ [DevDouble, "pseudo position"], [DevVarDoubleArray, "physical positions"] ],
-        'CalcAllPseudo'   : [ [DevVarDoubleArray, "physical positions"], [DevVarDoubleArray, "pseudo positions"] ],
-        'CalcAllPhysical' : [ [DevVarDoubleArray, "pseudo positions"], [DevVarDoubleArray, "physical positions"] ],
-        'MoveRelative'    : [ [DevDouble, "amount to move"], [DevVoid, ""] ],
+        'CalcPseudo': [[DevVarDoubleArray, "physical positions"], [DevDouble, "pseudo position"]],
+        'CalcPhysical': [[DevDouble, "pseudo position"], [DevVarDoubleArray, "physical positions"]],
+        'CalcAllPseudo': [[DevVarDoubleArray, "physical positions"], [DevVarDoubleArray, "pseudo positions"]],
+        'CalcAllPhysical': [[DevVarDoubleArray, "pseudo positions"], [DevVarDoubleArray, "physical positions"]],
+        'MoveRelative': [[DevDouble, "amount to move"], [DevVoid, ""]],
     }
     cmd_list.update(PoolElementDeviceClass.cmd_list)
 
     #    Attribute definitions
     standard_attr_list = {
-        'Position'     : [ [ DevDouble, SCALAR, READ_WRITE ],
-                           { 'label'      : "Position",
-                             'abs_change' : '1.0', }, ],
+        'Position': [[DevDouble, SCALAR, READ_WRITE],
+                     {'label': "Position",
+                      'abs_change': '1.0', }, ],
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
 

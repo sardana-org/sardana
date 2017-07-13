@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -49,9 +49,11 @@ class SenvEditor(Qt.QWidget, MacroParametersEditor):
         self.layout().addRow(Qt.QLabel("Setting environment variable:", self))
 
         self.nameComboBox = ComboBoxParam(self)
-        self.nameComboBox.addItems(["ActiveMntGrp", "ExtraColumns", "JsonRecorder", "ScanFile", "ScanDir"])
+        self.nameComboBox.addItems(
+            ["ActiveMntGrp", "ExtraColumns", "JsonRecorder", "ScanFile", "ScanDir"])
         self.nameComboBox.setEditable(True)
-        self.connect(self.nameComboBox, Qt.SIGNAL("currentIndexChanged(int)"), self.onNameComboBoxChanged)
+        self.connect(self.nameComboBox, Qt.SIGNAL(
+            "currentIndexChanged(int)"), self.onNameComboBoxChanged)
         self.layout().addRow("name:", self.nameComboBox)
 
         nameIndex = self.model().index(0, 1, self.rootIndex())
@@ -98,10 +100,11 @@ class SenvEditor(Qt.QWidget, MacroParametersEditor):
         else:
             self.layout().addRow(self.valueWidget)
 
+
 def getSenvValueEditor(envName, parent):
     """Factory method, requires: string, and QWidget as a parent for returned editor.
     Factory returns a tuple of widget and a label for it.
-    
+
     :return: (Qt.QWidget, str) """
     label = "value:"
     if envName == "ActiveMntGrp":
@@ -121,6 +124,7 @@ def getSenvValueEditor(envName, parent):
         editor = LineEditParam(parent)
     return editor, label
 
+
 class ExtraColumnsEditor(ParamBase, Qt.QWidget):
 
     def __init__(self, parent=None, paramModel=None):
@@ -129,8 +133,10 @@ class ExtraColumnsEditor(ParamBase, Qt.QWidget):
         self.setLayout(Qt.QVBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
 
-        addNewColumnButton = Qt.QPushButton(getThemeIcon("list-add") , "Add new column...", self)
-        removeSelectedColumnsButton = Qt.QPushButton(getThemeIcon("list-remove") , "Remove selected...", self)
+        addNewColumnButton = Qt.QPushButton(
+            getThemeIcon("list-add"), "Add new column...", self)
+        removeSelectedColumnsButton = Qt.QPushButton(
+            getThemeIcon("list-remove"), "Remove selected...", self)
         buttonsLayout = Qt.QHBoxLayout()
         buttonsLayout.addWidget(addNewColumnButton)
         buttonsLayout.addWidget(removeSelectedColumnsButton)
@@ -139,14 +145,19 @@ class ExtraColumnsEditor(ParamBase, Qt.QWidget):
         self.extraColumnsTable = ExtraColumnsTable(self)
         self.extraColumnsModel = ExtraColumnsModel()
         self.extraColumnsTable.setModel(self.extraColumnsModel)
-        self.extraColumnsTable.setItemDelegate(ExtraColumnsDelegate(self.extraColumnsTable))
+        self.extraColumnsTable.setItemDelegate(
+            ExtraColumnsDelegate(self.extraColumnsTable))
 
         self.layout().addWidget(self.extraColumnsTable)
 
-        self.connect(addNewColumnButton, Qt.SIGNAL("clicked()"), self.onAddNewColumn)
-        self.connect(removeSelectedColumnsButton, Qt.SIGNAL("clicked()"), self.onRemoveSelectedColumns)
-        self.connect(self.extraColumnsModel, Qt.SIGNAL("dataChanged (const QModelIndex&,const QModelIndex&)"), self.onExtraColumnsChanged)
-        self.connect(self.extraColumnsModel, Qt.SIGNAL("modelReset()"), self.onExtraColumnsChanged)
+        self.connect(addNewColumnButton, Qt.SIGNAL(
+            "clicked()"), self.onAddNewColumn)
+        self.connect(removeSelectedColumnsButton, Qt.SIGNAL(
+            "clicked()"), self.onRemoveSelectedColumns)
+        self.connect(self.extraColumnsModel, Qt.SIGNAL(
+            "dataChanged (const QModelIndex&,const QModelIndex&)"), self.onExtraColumnsChanged)
+        self.connect(self.extraColumnsModel, Qt.SIGNAL(
+            "modelReset()"), self.onExtraColumnsChanged)
 
     def getValue(self):
         return repr(self.extraColumnsTable.model().columns())
@@ -178,7 +189,8 @@ class ExtraColumnsTable(Qt.QTableView):
         self.setSelectionMode(Qt.QAbstractItemView.ExtendedSelection)
 
     def setColumns(self, columns):
-        if columns == None: columns = []
+        if columns is None:
+            columns = []
         self.model().setColumns(columns)
         self.resizeColumnsToContents()
 
@@ -202,7 +214,8 @@ class ExtraColumnsDelegate(Qt.QItemDelegate):
 
     def createEditor(self, parent, option, index):
         if index.column() == 1:
-            self.combo_attr_tree_widget = TaurusDbTreeWidget(perspective=TaurusElementType.Device)
+            self.combo_attr_tree_widget = TaurusDbTreeWidget(
+                perspective=TaurusElementType.Device)
             self.combo_attr_tree_widget.setModel(self.host)
             treeView = self.combo_attr_tree_widget.treeView()
             qmodel = self.combo_attr_tree_widget.getQModel()
@@ -220,7 +233,8 @@ class ExtraColumnsDelegate(Qt.QItemDelegate):
 
     def setEditorData(self, editor, index):
         if index.column() == 2:
-            text = Qt.from_qvariant(index.model().data(index, Qt.Qt.DisplayRole), str)
+            text = Qt.from_qvariant(index.model().data(
+                index, Qt.Qt.DisplayRole), str)
             editor.setCurrentText(text)
         else:
             Qt.QItemDelegate.setEditorData(self, editor, index)
@@ -229,7 +243,8 @@ class ExtraColumnsDelegate(Qt.QItemDelegate):
         column = index.column()
         if column == 1:
             selectedItems = self.combo_attr_tree_widget.selectedItems()
-            if not len(selectedItems) == 1: return
+            if not len(selectedItems) == 1:
+                return
             taurusTreeAttributeItem = selectedItems[0]
             itemData = taurusTreeAttributeItem.itemData()
             if isinstance(itemData, TaurusAttrInfo):
@@ -242,7 +257,8 @@ class ExtraColumnsDelegate(Qt.QItemDelegate):
     def sizeHint(self, option, index):
         if index.column() == 0:
             fm = option.fontMetrics
-            text = Qt.from_qvariant(index.model().data(index, Qt.Qt.DisplayRole), str)
+            text = Qt.from_qvariant(index.model().data(
+                index, Qt.Qt.DisplayRole), str)
             document = Qt.QTextDocument()
             document.setDefaultFont(option.font)
             document.setHtml(text)
@@ -260,11 +276,12 @@ class ExtraColumnsDelegate(Qt.QItemDelegate):
             size = Qt.QItemDelegate.sizeHint(self, option, index)
         return size
 
+
 class ExtraColumnsModel(Qt.QAbstractTableModel):
 
-
     def __init__(self, columns=None):
-        if columns is None: columns = []
+        if columns is None:
+            columns = []
         Qt.QAbstractItemModel.__init__(self)
         self.__columns = columns
 
@@ -286,11 +303,14 @@ class ExtraColumnsModel(Qt.QAbstractTableModel):
             return Qt.QVariant()
         row = index.row()
         column = index.column()
-        #Display Role
+        # Display Role
         if role == Qt.Qt.DisplayRole:
-            if column == 0: return Qt.QVariant(Qt.QString(self.__columns[row]['label']))
-            elif column == 1: return Qt.QVariant(Qt.QString(self.__columns[row]['model']))
-            elif column == 2: return Qt.QVariant(Qt.QString(self.__columns[row]['instrument']))
+            if column == 0:
+                return Qt.QVariant(Qt.QString(self.__columns[row]['label']))
+            elif column == 1:
+                return Qt.QVariant(Qt.QString(self.__columns[row]['model']))
+            elif column == 2:
+                return Qt.QVariant(Qt.QString(self.__columns[row]['instrument']))
         return Qt.QVariant()
 
     def headerData(self, section, orientation, role=Qt.Qt.DisplayRole):
@@ -300,11 +320,14 @@ class ExtraColumnsModel(Qt.QAbstractTableModel):
             return Qt.QVariant(int(Qt.Qt.AlignRight | Qt.Qt.AlignVCenter))
         if role != Qt.Qt.DisplayRole:
             return Qt.QVariant()
-        #So this is DisplayRole...
+        # So this is DisplayRole...
         if orientation == Qt.Qt.Horizontal:
-            if section == 0: return Qt.QVariant("Label")
-            elif section == 1: return Qt.QVariant("Attribute")
-            elif section == 2: return Qt.QVariant("Instrument")
+            if section == 0:
+                return Qt.QVariant("Label")
+            elif section == 1:
+                return Qt.QVariant("Attribute")
+            elif section == 2:
+                return Qt.QVariant("Instrument")
             return Qt.QVariant()
         else:
             return Qt.QVariant(Qt.QString.number(section + 1))
@@ -322,15 +345,20 @@ class ExtraColumnsModel(Qt.QAbstractTableModel):
             row = index.row()
             column = index.column()
             value = Qt.from_qvariant(value, str)
-            if column == 0: self.__columns[row]['label'] = value
-            elif column == 1: self.__columns[row]['model'] = value
-            elif column == 2: self.__columns[row]['instrument'] = value
-            self.emit(Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index)
+            if column == 0:
+                self.__columns[row]['label'] = value
+            elif column == 1:
+                self.__columns[row]['model'] = value
+            elif column == 2:
+                self.__columns[row]['instrument'] = value
+            self.emit(
+                Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index)
             return True
         return False
 
     def insertRows(self, row, rows=1, parentindex=None):
-        if parentindex is None: parentindex = Qt.QModelIndex()
+        if parentindex is None:
+            parentindex = Qt.QModelIndex()
         first = row
         last = row + rows - 1
         self.beginInsertRows(parentindex, first, last)
@@ -340,10 +368,12 @@ class ExtraColumnsModel(Qt.QAbstractTableModel):
         return True
 
     def insertRow(self, row, parentIndex=None):
-        self.__columns.insert(row, {'label':'', 'model':'', 'instrument':''})
+        self.__columns.insert(
+            row, {'label': '', 'model': '', 'instrument': ''})
 
     def removeRows(self, row, rows=1, parentindex=None):
-        if parentindex is None: parentindex = Qt.QModelIndex()
+        if parentindex is None:
+            parentindex = Qt.QModelIndex()
         first = row
         last = row + rows - 1
         self.beginRemoveRows(parentindex, first, last)

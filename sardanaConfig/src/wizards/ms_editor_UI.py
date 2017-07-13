@@ -9,7 +9,9 @@
 
 from PyQt4 import QtCore, QtGui
 
+
 class Ui_MSEditor(object):
+
     def setupUi(self, MSEditor):
         MSEditor.setObjectName("MSEditor")
         MSEditor.resize(400, 429)
@@ -82,7 +84,8 @@ class Ui_MSEditor(object):
         self.msPathList = QtGui.QListWidget(self.groupBox)
         self.msPathList.setMouseTracking(True)
         self.msPathList.setEditTriggers(QtGui.QAbstractItemView.NoEditTriggers)
-        self.msPathList.setSelectionBehavior(QtGui.QAbstractItemView.SelectItems)
+        self.msPathList.setSelectionBehavior(
+            QtGui.QAbstractItemView.SelectItems)
         self.msPathList.setObjectName("msPathList")
         self.horizontalLayout.addWidget(self.msPathList)
         self.verticalLayout = QtGui.QVBoxLayout()
@@ -103,7 +106,8 @@ class Ui_MSEditor(object):
         self.gridLayout.addWidget(self.groupBox, 1, 0, 1, 1)
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem = QtGui.QSpacerItem(
+            40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
         self.createButton = QtGui.QPushButton(MSEditor)
         self.createButton.setObjectName("createButton")
@@ -114,31 +118,53 @@ class Ui_MSEditor(object):
         self.gridLayout.addLayout(self.horizontalLayout_2, 2, 0, 1, 1)
 
         self.retranslateUi(MSEditor)
-        QtCore.QObject.connect(self.msDeviceNameCheckBox, QtCore.SIGNAL("toggled(bool)"), self.msDeviceNameLineEdit.setDisabled)
-        QtCore.QObject.connect(self.msAliasCheckBox, QtCore.SIGNAL("toggled(bool)"), self.msAliasLineEdit.setDisabled)
-        QtCore.QObject.connect(self.msVersionCheckBox, QtCore.SIGNAL("toggled(bool)"), self.msVersionLineEdit.setDisabled)
-        QtCore.QObject.connect(self.closeButton, QtCore.SIGNAL("clicked()"), MSEditor.close)
-        QtCore.QObject.connect(self.doorNameCheckBox, QtCore.SIGNAL("toggled(bool)"), self.doorNameLineEdit.setDisabled)
-        QtCore.QObject.connect(self.doorAliasCheckBox, QtCore.SIGNAL("toggled(bool)"), self.doorAliasLineEdit.setDisabled)
+        QtCore.QObject.connect(self.msDeviceNameCheckBox, QtCore.SIGNAL(
+            "toggled(bool)"), self.msDeviceNameLineEdit.setDisabled)
+        QtCore.QObject.connect(self.msAliasCheckBox, QtCore.SIGNAL(
+            "toggled(bool)"), self.msAliasLineEdit.setDisabled)
+        QtCore.QObject.connect(self.msVersionCheckBox, QtCore.SIGNAL(
+            "toggled(bool)"), self.msVersionLineEdit.setDisabled)
+        QtCore.QObject.connect(
+            self.closeButton, QtCore.SIGNAL("clicked()"), MSEditor.close)
+        QtCore.QObject.connect(self.doorNameCheckBox, QtCore.SIGNAL(
+            "toggled(bool)"), self.doorNameLineEdit.setDisabled)
+        QtCore.QObject.connect(self.doorAliasCheckBox, QtCore.SIGNAL(
+            "toggled(bool)"), self.doorAliasLineEdit.setDisabled)
         QtCore.QMetaObject.connectSlotsByName(MSEditor)
 
     def retranslateUi(self, MSEditor):
-        MSEditor.setWindowTitle(QtGui.QApplication.translate("MSEditor", "Create Pool", None, QtGui.QApplication.UnicodeUTF8))
-        self.instanceNameLabel.setText(QtGui.QApplication.translate("MSEditor", "Instance name", None, QtGui.QApplication.UnicodeUTF8))
-        self.msDeviceNameLabel.setText(QtGui.QApplication.translate("MSEditor", "MS device name", None, QtGui.QApplication.UnicodeUTF8))
-        self.msAliasLabel.setText(QtGui.QApplication.translate("MSEditor", "MS alias (optional)", None, QtGui.QApplication.UnicodeUTF8))
-        self.msVersionLabel.setText(QtGui.QApplication.translate("MSEditor", "MS version", None, QtGui.QApplication.UnicodeUTF8))
-        self.msDeviceNameCheckBox.setText(QtGui.QApplication.translate("MSEditor", "Automatic", None, QtGui.QApplication.UnicodeUTF8))
-        self.msAliasCheckBox.setText(QtGui.QApplication.translate("MSEditor", "Automatic", None, QtGui.QApplication.UnicodeUTF8))
-        self.msVersionCheckBox.setText(QtGui.QApplication.translate("MSEditor", "Automatic", None, QtGui.QApplication.UnicodeUTF8))
-        self.poolNameLabel.setText(QtGui.QApplication.translate("MSEditor", "Pool name", None, QtGui.QApplication.UnicodeUTF8))
-        self.doorNameLabel.setText(QtGui.QApplication.translate("MSEditor", "Door name", None, QtGui.QApplication.UnicodeUTF8))
-        self.doorAliasLabel.setText(QtGui.QApplication.translate("MSEditor", "Door alias (optional)", None, QtGui.QApplication.UnicodeUTF8))
-        self.doorNameCheckBox.setText(QtGui.QApplication.translate("MSEditor", "Automatic", None, QtGui.QApplication.UnicodeUTF8))
-        self.doorAliasCheckBox.setText(QtGui.QApplication.translate("MSEditor", "Automatic", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox.setTitle(QtGui.QApplication.translate("MSEditor", "MacroPath", None, QtGui.QApplication.UnicodeUTF8))
-        self.createButton.setText(QtGui.QApplication.translate("MSEditor", "Create", None, QtGui.QApplication.UnicodeUTF8))
-        self.closeButton.setText(QtGui.QApplication.translate("MSEditor", "Close", None, QtGui.QApplication.UnicodeUTF8))
+        MSEditor.setWindowTitle(QtGui.QApplication.translate(
+            "MSEditor", "Create Pool", None, QtGui.QApplication.UnicodeUTF8))
+        self.instanceNameLabel.setText(QtGui.QApplication.translate(
+            "MSEditor", "Instance name", None, QtGui.QApplication.UnicodeUTF8))
+        self.msDeviceNameLabel.setText(QtGui.QApplication.translate(
+            "MSEditor", "MS device name", None, QtGui.QApplication.UnicodeUTF8))
+        self.msAliasLabel.setText(QtGui.QApplication.translate(
+            "MSEditor", "MS alias (optional)", None, QtGui.QApplication.UnicodeUTF8))
+        self.msVersionLabel.setText(QtGui.QApplication.translate(
+            "MSEditor", "MS version", None, QtGui.QApplication.UnicodeUTF8))
+        self.msDeviceNameCheckBox.setText(QtGui.QApplication.translate(
+            "MSEditor", "Automatic", None, QtGui.QApplication.UnicodeUTF8))
+        self.msAliasCheckBox.setText(QtGui.QApplication.translate(
+            "MSEditor", "Automatic", None, QtGui.QApplication.UnicodeUTF8))
+        self.msVersionCheckBox.setText(QtGui.QApplication.translate(
+            "MSEditor", "Automatic", None, QtGui.QApplication.UnicodeUTF8))
+        self.poolNameLabel.setText(QtGui.QApplication.translate(
+            "MSEditor", "Pool name", None, QtGui.QApplication.UnicodeUTF8))
+        self.doorNameLabel.setText(QtGui.QApplication.translate(
+            "MSEditor", "Door name", None, QtGui.QApplication.UnicodeUTF8))
+        self.doorAliasLabel.setText(QtGui.QApplication.translate(
+            "MSEditor", "Door alias (optional)", None, QtGui.QApplication.UnicodeUTF8))
+        self.doorNameCheckBox.setText(QtGui.QApplication.translate(
+            "MSEditor", "Automatic", None, QtGui.QApplication.UnicodeUTF8))
+        self.doorAliasCheckBox.setText(QtGui.QApplication.translate(
+            "MSEditor", "Automatic", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setTitle(QtGui.QApplication.translate(
+            "MSEditor", "MacroPath", None, QtGui.QApplication.UnicodeUTF8))
+        self.createButton.setText(QtGui.QApplication.translate(
+            "MSEditor", "Create", None, QtGui.QApplication.UnicodeUTF8))
+        self.closeButton.setText(QtGui.QApplication.translate(
+            "MSEditor", "Close", None, QtGui.QApplication.UnicodeUTF8))
 
 
 if __name__ == "__main__":
@@ -149,4 +175,3 @@ if __name__ == "__main__":
     ui.setupUi(MSEditor)
     MSEditor.show()
     sys.exit(app.exec_())
-

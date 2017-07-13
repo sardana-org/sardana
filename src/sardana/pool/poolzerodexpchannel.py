@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -36,6 +36,7 @@ import time
 from sardana import ElementType
 from sardana.sardanaevent import EventType
 from sardana.sardanaattribute import SardanaAttribute
+from sardana.sardanavalue import SardanaValue
 
 from sardana.pool.poolbasechannel import PoolBaseChannel
 from sardana.pool.poolacquisition import Pool0DAcquisition
@@ -58,7 +59,7 @@ class BaseAccumulation(object):
     def get_time_buffer(self):
         return self.buffer[1][:self.nb_points]
 
-    def append_value(self, value, timestamp=None):
+    def append(self, value, timestamp=None):
         if timestamp is None:
             timestamp = time.time()
         idx = self.nb_points
@@ -140,7 +141,8 @@ class Value(SardanaAttribute):
     DefaultAccumulationType = "Average"
 
     def __init__(self, *args, **kwargs):
-        accumulation_type = kwargs.pop('accumulation_type', self.DefaultAccumulationType)
+        accumulation_type = kwargs.pop(
+            'accumulation_type', self.DefaultAccumulationType)
         super(Value, self).__init__(*args, **kwargs)
         self.set_accumulation_type(accumulation_type)
 
@@ -167,6 +169,17 @@ class Value(SardanaAttribute):
                             " done so far!")
         return value
 
+    def _get_value_obj(self):
+        '''Override superclass method and compose a SardanaValue object from
+        the present values.
+        '''
+        value = self._accumulation.value
+        # use timestamp of the last acquired sample as timestamp of
+        # accumulation
+        timestamp = self._accumulation.get_time_buffer()[-1]
+        value_obj = SardanaValue(value=value, timestamp=timestamp)
+        return value_obj
+
     def _in_error(self):
         # for the moment let's assume that 0D is never in error
         # this could be improved by searching the accumulation buffer
@@ -179,7 +192,7 @@ class Value(SardanaAttribute):
     def _get_timestamp(self):
         return self.accumulation.timestamp
 
-    def get_value_buffer(self):
+    def get_accumulation_buffer(self):
         return self.accumulation.get_value_buffer()
 
     def get_time_buffer(self):
@@ -188,8 +201,8 @@ class Value(SardanaAttribute):
     def clear_buffer(self):
         self.accumulation.clear()
 
-    def append_value(self, value, propagate=1):
-        self.accumulation.append_value(value.value, value.timestamp)
+    def append_buffer(self, value, propagate=1):
+        self.accumulation.append(value.value, value.timestamp)
         if propagate > 0:
             evt_type = EventType(self.name, priority=propagate)
             self.fire_event(evt_type, self)
@@ -197,7 +210,8 @@ class Value(SardanaAttribute):
     def update(self, cache=True, propagate=1):
         # it is the Pool0DAcquisition action which is allowed to update
         raise Exception("0D Value can not be updated from outside"
-                            " of acquisition")
+                        " of acquisition")
+
 
 class Pool0DExpChannel(PoolBaseChannel):
 
@@ -230,14 +244,14 @@ class Pool0DExpChannel(PoolBaseChannel):
 
     def get_accumulated_value_attribute(self):
         """Returns the accumulated value attribute object for this 0D.
-        
+
         :return: the accumulated value attribute
         :rtype: :class:`~sardana.sardanaattribute.SardanaAttribute`"""
         return self.get_value_attribute()
 
     def get_current_value_attribute(self):
         """Returns the current value attribute object for this 0D.
-        
+
         :return: the current value attribute
         :rtype: :class:`~sardana.sardanaattribute.SardanaAttribute`"""
         return self._current_value
@@ -250,7 +264,7 @@ class Pool0DExpChannel(PoolBaseChannel):
             value
         :rtype:
             :class:`~sardana.sardanaattribute.SardanaAttribute`
-        
+
         :raises: Exception if no acquisition has been done yet on this 0D"""
         return self.get_accumulated_value_attribute()
 
@@ -265,7 +279,7 @@ class Pool0DExpChannel(PoolBaseChannel):
         return self.acquisition.read_value()[self]
 
     def put_current_value(self, value, propagate=1):
-        """Sets a value.
+        """Put a current value.
 
         :param value:
             the new value
@@ -279,7 +293,7 @@ class Pool0DExpChannel(PoolBaseChannel):
         curr_val_attr.set_value(value, propagate=propagate)
         if self.is_in_operation():
             acc_val_attr = self.get_accumulated_value_attribute()
-            acc_val_attr.append_value(value, propagate=propagate)
+            acc_val_attr.append_buffer(value, propagate=propagate)
 
     def get_current_value(self, cache=True, propagate=1):
         """Returns the counter value.
@@ -295,30 +309,17 @@ class Pool0DExpChannel(PoolBaseChannel):
     current_value = property(get_current_value, doc="0D value")
     accumulated_value = property(get_accumulated_value, doc="0D value")
 
-    def put_value(self, value, propagate=1):
-        return self.put_current_value(value, propagate=propagate)
-
-    def _get_value(self):
-        return self.get_current_value()
-
-    def append_value(self, value, timestamp=None, propagate=1):
-        cumulation = self.cumulation
-        cumulation.append_value(value, timestamp)
-        if not propagate:
-            return
-        self.fire_event(EventType("value", priority=propagate), cumulation.value)
-
     def clear_buffer(self):
         self.get_accumulated_value_attribute().clear_buffer()
 
     # -------------------------------------------------------------------------
-    # value buffer
+    # accumulation buffer
     # -------------------------------------------------------------------------
 
-    def get_value_buffer(self):
-        return self.get_accumulated_value_attribute().get_value_buffer()
+    def get_accumulation_buffer(self):
+        return self.get_accumulated_value_attribute().get_accumulation_buffer()
 
-    value_buffer = property(get_value_buffer)
+    accumulation_buffer = property(get_accumulation_buffer)
 
     # -------------------------------------------------------------------------
     # time buffer
@@ -333,6 +334,7 @@ class Pool0DExpChannel(PoolBaseChannel):
         self._aborted = False
         self.clear_buffer()
         if value is None:
-            raise Exception("Invalid integration_time '%s'. Hint set a new value for 'value' first" % value)
+            raise Exception(
+                "Invalid integration_time '%s'. Hint set a new value for 'value' first" % value)
         if not self._simulation_mode:
             acq = self.acquisition.run()
