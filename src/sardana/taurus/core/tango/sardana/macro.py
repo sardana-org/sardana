@@ -275,19 +275,26 @@ class MacroInfo(object):
             # put the local filename in the result
             result.insert(0, filename)
             return result
-        if len(result) > 0:
+        res = []
+        for idx, item in enumerate(result):
+            result_info = self.getResult(idx)
+            rtype = result_info['type']
             if rtype == 'Float':
-                return float(result[0])
+                res.append(float(item))
             elif rtype == 'Integer':
-                return int(result[0])
+                res.append(int(item))
             elif rtype == 'Boolean':
-                return result[0].lower() == 'true'
+                res.append(item.lower() == 'true')
             elif rtype in ('String', 'User', 'Filename'):
-                return result[0]
+                res.append(item)
             else:
                 raise Exception('Unknown return type for macro %s' % self.name)
-        else:
+        if len(res) == 0:
             return None
+        elif len(res) == 1:
+            return res[0]
+        else:
+            return tuple(res)
 
     def __str__(self):
         return self.name
