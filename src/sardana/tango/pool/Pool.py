@@ -536,6 +536,9 @@ class Pool(PyTango.Device_4Impl, Logger):
                 elif elem_type == ElementType.PseudoCounter:
                     data["value"] = {"abs_change": "1.0"}
                 elif elem_type == ElementType.IORegister:
+                    # this may be not correct when Value is of type bool or str
+                    # but apparently this callback nevers sets a value in the
+                    # database at the time of adding the #458 (github)
                     data["value"] = {"abs_change": "1"}
                 db.put_device_attribute_property(device_name, data)
             except:
@@ -584,7 +587,8 @@ class Pool(PyTango.Device_4Impl, Logger):
             cfg.append(attr)
         elif elem_type == ElementType.IORegister:
             attr = elem_proxy.get_attribute_config_ex("value")[0]
-            attr.events.ch_event.abs_change = "1"
+            if attr.data_type != PyTango.DevBoolean:
+                attr.events.ch_event.abs_change = "1"
             cfg.append(attr)
         elem_proxy.set_attribute_config(cfg)
 
