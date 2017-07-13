@@ -39,7 +39,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 - "How to write a trigger/gate controller" documentation (SEP6)
 - Flake8 check-on-push for CI (#451)
 - Possibility to specify the IORegister value attribute data type between
-  `int`, `float` or `bool` even in the same controller.
+  `int`, `float` or `bool` even in the same controller (#459, #458)
 
 ### Changed
 - make the new NXscanH5_FileRecorder the default one for .h5 files (#460) 
@@ -58,7 +58,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - `nr_of_points` attribute of `aNscan` calss was renamed to `nr_points`
 - IORegister value attribute default data type from `int` to `float` and as a
   consequence its Tango attribute data type from `DevLong` to `DevDouble` and
-  the `write_ioreg` and `read_ioreg` macro parameter and result type respectively.
+  the `write_ioreg` and `read_ioreg` macro parameter and result type respectively
+  (#459, #458)
 
 ### Deprecated
 - `LoadOne` API had changed - `repetitions` was added as a mandatory argument
