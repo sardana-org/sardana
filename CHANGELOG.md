@@ -80,6 +80,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   different than the default one e.g. using `--tango-host` option
 - macrobutton widget working with the string parameters containing white spaces
   (#423)
+- Restoring macros from the list of favorites in the macroexecutor (#441, #495)
 
 
 ## [2.2.3] - 2017-01-12
