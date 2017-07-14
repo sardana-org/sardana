@@ -82,6 +82,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 - macrobutton widget working with the string parameters containing white spaces
   (#423)
 - Restoring macros from the list of favorites in the macroexecutor (#441, #495)
+- Logging of the macro result composed from more than one item in Spock (#366, #496)
 
 
 ## [2.2.3] - 2017-01-12
