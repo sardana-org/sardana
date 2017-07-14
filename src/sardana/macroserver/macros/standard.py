@@ -640,38 +640,40 @@ class ct(Macro):
     env = ('ActiveMntGrp',)
 
     param_def = [
-        ['integ_time', Type.Float, 1.0, 'Integration time']
+        ['integ_time', Type.Float, 1.0, 'Integration time'],
+        ['mnt_grp_name', Type.String, 'MntGrp_not_defined', 'MntGrp to use']
     ]
 
-    def prepare(self, integ_time, **opts):
-        mnt_grp_name = self.getEnv('ActiveMntGrp')
-        self.mnt_grp = self.getObj(
-            mnt_grp_name, type_class=Type.MeasurementGroup)
+    def prepare(self, integ_time, mnt_grp_name, **opts):
+        if mnt_grp_name == 'MntGrp_not_defined':
+            mnt_grp_name = self.getEnv('ActiveMntGrp')
+        self.mnt_grp = self.getObj(mnt_grp_name,
+                                   type_class=Type.MeasurementGroup)
+        self.mnt_grp_name = mnt_grp_name
 
-    def run(self, integ_time):
+    def run(self, integ_time, mnt_grp_name):
         if self.mnt_grp is None:
-            self.error('ActiveMntGrp is not defined or has invalid value')
+            self.error('%r MeasurementGroup not exist' % self.mnt_grp_name)
             return
-
+        self.debug("Using %s Measurement Group", self.mnt_grp_name)
         self.debug("Counting for %s sec", integ_time)
         self.outputDate()
         self.output('')
         self.flushOutput()
 
         state, data = self.mnt_grp.count(integ_time)
-
-        names, counts = [], []
+        names, self.counts = [], []
         for ch_info in self.mnt_grp.getChannelsEnabledInfo():
-            names.append('  %s' % ch_info.label)
+            names.append('%s' % ch_info.label)
             ch_data = data.get(ch_info.full_name)
             if ch_data is None:
-                counts.append("<nodata>")
+                self.counts.append("<nodata>")
             elif ch_info.shape > [1]:
-                counts.append(list(ch_data.shape))
+                self.counts.append(list(ch_data.shape))
             else:
-                counts.append(ch_data)
+                self.counts.append(ch_data)
 
-        table = Table([counts], row_head_str=names, row_head_fmt='%*s',
+        table = Table([self.counts], row_head_str=names, row_head_fmt='  %*s',
                       col_sep='  =  ')
         for line in table.genOutput():
             self.output(line)
