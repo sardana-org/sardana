@@ -38,6 +38,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 - "How to write a counter/timer controller" documentation (SEP6)
 - "How to write a trigger/gate controller" documentation (SEP6)
 - Flake8 check-on-push for CI (#451)
+- Continuous integration service for Windows platform - AppVeyor (#383, #497)
 - Possibility to specify the IORegister value attribute data type between
   `int`, `float` or `bool` even in the same controller (#459, #458)
 
