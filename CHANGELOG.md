@@ -83,6 +83,10 @@ This file follows the formats and conventions from [keepachangelog.com]
   (#423)
 - Restoring macros from the list of favorites in the macroexecutor (#441, #495)
 - Logging of the macro result composed from more than one item in Spock (#366, #496)
+- Spurious errors when hangling macros stop/abort e.g. dscan returning to initial
+  position, restoring velocitues after continuous scan, etc. due to the lack of
+  synchronization between stopping/aborting macro reserved objects and execution of
+  on_stop/on_abort methods (#8, #503)
 
 
 ## [2.2.3] - 2017-01-12
