@@ -1081,6 +1081,13 @@ class MacroExecutor(Logger):
     def getRunningMacro(self):
         return self._macro_pointer
 
+    def clearRunningMacro(self):
+        """Clear pointer to the running macro.
+
+        ..warning:: Do not call it while the macro is running.
+        """
+        self._macro_pointer = None
+
     def __stopObjects(self):
         """Stops all the reserved objects in the executor"""
         for _, objs in self._reserved_macro_objs.items():

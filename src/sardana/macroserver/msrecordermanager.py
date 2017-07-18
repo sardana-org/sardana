@@ -95,19 +95,6 @@ class RecorderManager(MacroServerManager):
 
         MacroServerManager.reInit(self)
 
-    def cleanUp(self):
-        if self.is_cleaned():
-            return
-
-        if self._modules:
-            for _, types_dict in self._modules.items():
-                for type_name in types_dict:
-                    Type.removeType(type_name)
-
-        self._recorder_path = None
-        self._modules = None
-        MacroServerManager.cleanUp(self)
-
     def setScanRecorderMap(self, recorder_map):
         """Registers a new map of recorders in this manager.
         """
