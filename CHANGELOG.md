@@ -87,6 +87,10 @@ This file follows the formats and conventions from [keepachangelog.com]
   position, restoring velocitues after continuous scan, etc. due to the lack of
   synchronization between stopping/aborting macro reserved objects and execution of
   on_stop/on_abort methods (#8, #503)
+- Hangs and segmentation faults during the MacroServer shutdown process (#273, #494,
+  #505)
+- MacroServer start and instance creation when using using it as standalone server
+  i.e. without any Pool (#493)
 
 
 ## [2.2.3] - 2017-01-12
