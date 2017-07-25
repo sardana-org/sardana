@@ -308,12 +308,14 @@ def mAPI(fn):
             if self._shouldRaiseStopException():
                 if is_macro_th:
                     self.setProcessingStop(True)
+                self.executor._waitStopDone()
                 raise StopException("stopped before calling %s" % fn.__name__)
         ret = fn(*args, **kwargs)
         if not self.isProcessingStop():
             if self._shouldRaiseStopException():
                 if is_macro_th:
                     self.setProcessingStop(True)
+                self.executor._waitStopDone()
                 raise StopException("stopped after calling %s" % fn.__name__)
         return ret
     return new_fn

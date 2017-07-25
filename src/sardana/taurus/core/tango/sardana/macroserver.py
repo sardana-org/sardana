@@ -188,11 +188,13 @@ class ExperimentConfiguration(object):
         elif isinstance(scan_file, (str, unicode)):
             scan_file = [scan_file]
         ret['ScanFile'] = scan_file
-        mnt_grps = macro_server.getElementNamesOfType("MeasurementGroup")
+        mnt_grps = macro_server.getElementsOfType("MeasurementGroup")
+        mnt_grps_names = [mnt_grp.name for mnt_grp in mnt_grps.values()]
+        mnt_grps_full_names = mnt_grps.keys()
 
         active_mnt_grp = env.get('ActiveMntGrp')
         if active_mnt_grp is None and len(mnt_grps):
-            active_mnt_grp = mnt_grps[0]
+            active_mnt_grp = mnt_grps_names[0]
             door.putEnvironment('ActiveMntGrp', active_mnt_grp)
 
         ret['ActiveMntGrp'] = active_mnt_grp
@@ -202,11 +204,12 @@ class ExperimentConfiguration(object):
             return ret
 
         mnt_grp_grps = PyTango.Group("grp")
-        mnt_grp_grps.add(mnt_grps)
+        # use full names cause we may be using a different Tango database
+        mnt_grp_grps.add(mnt_grps_full_names)
 
         codec = CodecFactory().getCodec('json')
         replies = mnt_grp_grps.read_attribute("configuration")
-        for mnt_grp, reply in zip(mnt_grps, replies):
+        for mnt_grp, reply in zip(mnt_grps_names, replies):
             try:
                 mnt_grp_configs[mnt_grp] = \
                     codec.decode(('json', reply.get_data().value),

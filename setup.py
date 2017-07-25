@@ -57,7 +57,17 @@ requires = [
     'itango (>=0.0.1)',
     'taurus (>= 3.6.0)',
     'lxml (>=2.1)',
+    # ordereddict is necessary for Python < 2.6
+    'ordereddict'
 ]
+
+install_requires = [
+    'PyTango>=7.2.3',
+    'itango>=0.0.1',
+    'taurus>=3.6.0',
+    'lxml>=2.1'
+]
+
 
 console_scripts = [
     "MacroServer = sardana.tango.macroserver:main",
@@ -116,5 +126,6 @@ setup(name='sardana',
       entry_points=entry_points,
       provides=provides,
       requires=requires,
+      install_requires=install_requires,
       test_suite='sardana.test.testsuite.get_sardana_unitsuite',
       )

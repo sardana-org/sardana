@@ -65,6 +65,16 @@ class MacroServer(SardanaDevice):
     def delete_device(self):
         SardanaDevice.delete_device(self)
         self._macro_server.clear_log_report()
+        # Workaround for bug #494.
+        for pool in self._macro_server._pools.values():
+            elements_attr = pool.getAttribute("Elements")
+            # Remove the taurus listeners:(cleanUp)
+            elements_attr.removeListener(
+                self._macro_server.on_pool_elements_changed)
+            elements_attr.removeListener(pool.on_elements_changed)
+            # For taurus4, unsubscribeConfEvents
+            if hasattr(elements_attr, "_unsubscribeConfEvents"):
+                elements_attr._unsubscribeConfEvents()
 
     def init_device(self):
         SardanaDevice.init_device(self)

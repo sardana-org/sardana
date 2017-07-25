@@ -33,6 +33,7 @@ __all__ = ["PoolDevice", "PoolDeviceClass",
 __docformat__ = 'restructuredtext'
 
 import time
+import numpy as np
 
 from PyTango import Util, DevVoid, DevLong64, DevBoolean, DevString, \
     DevVarStringArray, DispLevel, DevState, SCALAR, SPECTRUM, \
@@ -842,9 +843,16 @@ class PoolExpChannelDevice(PoolElementDevice):
         :rtype: str"""
         data = []
         index = []
-        for idx, value in value_chunk.iteritems():
+        for idx, sdn_value in value_chunk.iteritems():
             index.append(idx)
-            data.append(value.value)
+            value = sdn_value.value
+            # TODO: Improve it in the future
+            # In case of big arrays e.g. 10k points and higher there are more
+            # optimal solutions but they require complex changes on encoding
+            # and decoding side.
+            if isinstance(value, np.ndarray):
+                value = value.tolist()
+            data.append(value)
         data = dict(data=data, index=index)
         _, encoded_data = self._codec.encode(('', data))
         return encoded_data

@@ -29,6 +29,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - PseudoCounter may return calculated (from the buffered physical
   channels values) and indexed values in chunks in continuous acquisition
   (#469) 
+- `timescan` macro to run equidistant time scans and `TScan` class to
+  develop custom time scans (#104, #485)
 - `synchronizer` parameter to the Measurement Group configuration (SEP6)
 - `latency_time` parameter to the experimental channel controllers (SEP6)
 - `ApplyInterpolation` environment variable, applicable to `ascanct` & co.
@@ -36,6 +38,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 - "How to write a counter/timer controller" documentation (SEP6)
 - "How to write a trigger/gate controller" documentation (SEP6)
 - Flake8 check-on-push for CI (#451)
+- Continuous integration service for Windows platform - AppVeyor (#383, #497)
+- Possibility to specify the IORegister value attribute data type between
+  `int`, `float` or `bool` even in the same controller (#459, #458)
 
 ### Changed
 - make the new NXscanH5_FileRecorder the default one for .h5 files (#460) 
@@ -51,6 +56,14 @@ This file follows the formats and conventions from [keepachangelog.com]
   - `Value.append_value` -> `Value.append_buffer`
   - `PoolZeoDExpChannel.get_value_buffer` -> `PoolZeoDExpChannel.get_accumulation_buffer`
   - `PoolZeoDExpChannel.value_buffer` -> `PoolZeoDExpChannel.accumulation_buffer`
+- `nr_of_points` attribute of `aNscan` calss was renamed to `nr_points`
+- IORegister value attribute default data type from `int` to `float` and as a
+  consequence its Tango attribute data type from `DevLong` to `DevDouble` and
+  the `write_ioreg` and `read_ioreg` macro parameter and result type respectively
+  (#459, #458)
+- Use of ordereddict module. Now it is used from the standard library (Python >= 2.7)
+  instead of `taurus.external`. For Python 2.6 users this means a new dependency
+  `ordereddict` from PyPI (#482)
 
 ### Deprecated
 - `LoadOne` API had changed - `repetitions` was added as a mandatory argument
@@ -68,6 +81,16 @@ This file follows the formats and conventions from [keepachangelog.com]
   different than the default one e.g. using `--tango-host` option
 - macrobutton widget working with the string parameters containing white spaces
   (#423)
+- Restoring macros from the list of favorites in the macroexecutor (#441, #495)
+- Logging of the macro result composed from more than one item in Spock (#366, #496)
+- Spurious errors when hangling macros stop/abort e.g. dscan returning to initial
+  position, restoring velocitues after continuous scan, etc. due to the lack of
+  synchronization between stopping/aborting macro reserved objects and execution of
+  on_stop/on_abort methods (#8, #503)
+- Hangs and segmentation faults during the MacroServer shutdown process (#273, #494,
+  #505)
+- MacroServer start and instance creation when using using it as standalone server
+  i.e. without any Pool (#493)
 
 
 ## [2.2.3] - 2017-01-12

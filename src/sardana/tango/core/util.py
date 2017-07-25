@@ -682,8 +682,8 @@ def prepare_server(args, tango_args):
                         print all_pools
                     else:
                         pool_names.append(elem)
-                    log_messages += register_sardana(db,
-                                                     server_name, inst_name, pool_names)
+                log_messages += register_sardana(db, server_name, inst_name,
+                                                 pool_names)
             else:
                 log_messages += register_sardana(db, server_name, inst_name)
     return log_messages
