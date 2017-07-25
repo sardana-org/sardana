@@ -33,7 +33,7 @@ import sys
 import time
 
 from PyTango import DevFailed, Except
-from PyTango import DevVoid, DevLong
+from PyTango import DevVoid, DevDouble
 from PyTango import DevState, AttrQuality
 from PyTango import READ_WRITE, SCALAR
 
@@ -44,7 +44,8 @@ from sardana.sardanaattribute import SardanaAttribute
 from sardana.pool.poolexception import PoolException
 from sardana.sardanautils import str_to_value
 
-from sardana.tango.core.util import exception_str, throw_sardana_exception
+from sardana.tango.core.util import exception_str, throw_sardana_exception, \
+    to_tango_type_format
 from sardana.tango.pool.PoolDevice import PoolElementDevice, \
     PoolElementDeviceClass
 
@@ -178,6 +179,22 @@ class IORegister(PoolElementDevice):
     def read_attr_hardware(self, data):
         pass
 
+    def get_dynamic_attributes(self):
+        cache_built = hasattr(self, "_dynamic_attributes_cache")
+
+        std_attrs, dyn_attrs = \
+            PoolElementDevice.get_dynamic_attributes(self)
+
+        if not cache_built:
+            # For value attribute, listen to what the controller says for data
+            # type (between long, float or bool)
+            value = std_attrs.get('value')
+            if value is not None:
+                _, data_info, attr_info = value
+                ttype, _ = to_tango_type_format(attr_info.dtype)
+                data_info[0][0] = ttype
+        return std_attrs, dyn_attrs
+
     def initialize_dynamic_attributes(self):
         attrs = PoolElementDevice.initialize_dynamic_attributes(self)
 
@@ -242,7 +259,7 @@ class IORegisterClass(PoolElementDeviceClass):
     attr_list.update(PoolElementDeviceClass.attr_list)
 
     standard_attr_list = {
-        'Value': [[DevLong, SCALAR, READ_WRITE],
+        'Value': [[DevDouble, SCALAR, READ_WRITE],
                   {'Memorized': "true_without_hard_applied", }, ],
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)

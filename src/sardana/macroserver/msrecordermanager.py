@@ -35,7 +35,11 @@ import sys
 import copy
 import inspect
 
-from taurus.external.ordereddict import OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    # For Python < 2.7
+    from ordereddict import OrderedDict
 
 from sardana import sardanacustomsettings
 from sardana.sardanaexception import format_exception_only_str
@@ -90,19 +94,6 @@ class RecorderManager(MacroServerManager):
         self._scan_recorder_map = {}
 
         MacroServerManager.reInit(self)
-
-    def cleanUp(self):
-        if self.is_cleaned():
-            return
-
-        if self._modules:
-            for _, types_dict in self._modules.items():
-                for type_name in types_dict:
-                    Type.removeType(type_name)
-
-        self._recorder_path = None
-        self._modules = None
-        MacroServerManager.cleanUp(self)
 
     def setScanRecorderMap(self, recorder_map):
         """Registers a new map of recorders in this manager.

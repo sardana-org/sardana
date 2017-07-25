@@ -32,7 +32,7 @@ __all__ = ['SarTestTestCase']
 
 class SarTestTestCase(BasePoolTestCase):
     """ Base class to setup sardana test environment.
-        It creates the controllers defined in cls_list
+        It creates the controllers defined in cls_list and pseudo_cls_list
         with the given 'n' elements.
 
         - cls_list is a list of tuples: (ctrl_class, prefix, subfix, num_elem)
@@ -50,10 +50,26 @@ class SarTestTestCase(BasePoolTestCase):
          'DummyCounterTimerController', '_test_ct', '1', 5),
         ('CTExpChannel', 'DummyCounterTimerController',
          'DummyCounterTimerController', '_test_ct', '2', 5),
+        ('ZeroDExpChannel', 'DummyZeroDController',
+         'DummyZeroDController', '_test_0d', '1', 5),
+        ('ZeroDExpChannel', 'DummyZeroDController',
+         'DummyZeroDController', '_test_0d', '2', 5),
+        ('OneDExpChannel', 'DummyOneDController',
+         'DummyOneDController', '_test_1d', '1', 5),
+        ('OneDExpChannel', 'DummyOneDController',
+         'DummyOneDController', '_test_1d', '2', 5),
+        ('TwoDExpChannel', 'DummyTwoDController',
+         'DummyTwoDController', '_test_2d', '1', 5),
+        ('TwoDExpChannel', 'DummyTwoDController',
+         'DummyTwoDController', '_test_2d', '2', 5),
         ('TriggerGate', 'DummyTriggerGateController',
-         'DummyTriggerGateController', '_test_tg', '1', 5),
-        ('TriggerGate', 'DummyTriggerGateController',
-         'DummyTriggerGateController', '_test_tg', '2', 5)
+         'DummyTriggerGateController', '_test_tg', '1', 5)
+    ]
+
+    pseudo_cls_list = [
+        ('PseudoCounter', 'IoverI0',
+         'IoverI0', '_test_pc', '1', "I=_test_ct_1_2", "I0=_test_ct_1_1",
+         "IoverI0=_test_pc_1_1")
     ]
 
     def setUp(self):
@@ -62,8 +78,9 @@ class SarTestTestCase(BasePoolTestCase):
         self.ctrl_list = []
         self.elem_list = []
         try:
+            # physical controllers and elements
             for sar_type, lib, cls, prefix, postfix, nelem in self.cls_list:
-                # Create controller
+                # create controller
                 ctrl_name = prefix + "_ctrl_%s" % (postfix)
                 try:
                     self.pool.CreateController([sar_type, lib, cls, ctrl_name])
@@ -72,7 +89,7 @@ class SarTestTestCase(BasePoolTestCase):
                     msg = 'Impossible to create ctrl: "%s"' % (ctrl_name)
                     raise Exception('Aborting SartestTesCase: %s' % (msg))
                 self.ctrl_list.append(ctrl_name)
-                # Create 5 elemens
+                # create elements
                 for axis in range(1, nelem + 1):
                     elem_name = prefix + "_" + postfix + '_%s' % (axis)
                     try:
@@ -84,6 +101,25 @@ class SarTestTestCase(BasePoolTestCase):
                             elem_name)
                         raise Exception('Aborting SartestTesCase: %s' % (msg))
                     self.elem_list.append(elem_name)
+            # pseudo controllers and elements
+            for pseudo in self.pseudo_cls_list:
+                sar_type, lib, cls, prefix, postfix = pseudo[0:5]
+                roles = pseudo[5:]
+                # Create controller
+                ctrl_name = prefix + "_ctrl_%s" % (postfix)
+                argin = [sar_type, lib, cls, ctrl_name]
+                argin.extend(roles)
+                try:
+                    self.pool.CreateController(argin)
+                except Exception, e:
+                    print e
+                    msg = 'Impossible to create ctrl: "%s"' % (ctrl_name)
+                    raise Exception('Aborting SartestTesCase: %s' % (msg))
+                self.ctrl_list.append(ctrl_name)
+                for role in roles:
+                    elem = role.split("=")[1]
+                    if elem not in self.elem_list:
+                        self.elem_list.append(elem)
         except Exception, e:
             # force tearDown in order to eliminate the Pool
             BasePoolTestCase.tearDown(self)

@@ -225,7 +225,6 @@ class DummyOneDController(OneDController):
         elif self._synchronization in (AcqSynch.HardwareTrigger,
                                        AcqSynch.HardwareGate):
             v = copy.deepcopy(channel.buffer_values)
-            v = map(numpy.ndarray.tolist, v)
             channel._counter = channel._counter + len(v)
             channel.buffer_values.__init__()
         self._log.debug("DummyOneDController.ReadOne: returns %r" % v)

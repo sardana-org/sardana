@@ -149,7 +149,7 @@ class aNscan(Hookable):
                                      self._period_generator, moveables, env, constrains, extrainfodesc)
             elif mode == ContinuousHwTimeMode:
                 self.nr_interv = scan_length
-                self.nr_of_points = self.nr_interv + 1
+                self.nr_points = self.nr_interv + 1
                 mg_name = self.getEnv('ActiveMntGrp')
                 mg = self.getMeasurementGroup(mg_name)
                 mg_latency_time = mg.getLatencyTime()
@@ -245,8 +245,8 @@ class aNscan(Hookable):
             'post-move') + [self._fill_missing_records]
         step["post-move-hooks"] = post_move_hooks
         step["check_func"] = []
-        step["active_time"] = self.nr_of_points * (self.integ_time +
-                                                   self.latency_time)
+        step["active_time"] = self.nr_points * (self.integ_time +
+                                                self.latency_time)
         step["positions"] = []
         step["start_positions"] = []
         starts = self.starts
@@ -321,7 +321,7 @@ class aNscan(Hookable):
 
     def _fill_missing_records(self):
         # fill record list with dummy records for the final padding
-        nb_of_points = self.nr_of_points
+        nb_of_points = self.nr_points
         scan = self._gScan
         nb_of_records = len(scan.data.records)
         missing_records = nb_of_points - nb_of_records
@@ -1485,3 +1485,35 @@ class a4scanct(aNscan, Macro):
                       nr_interv, integ_time, mode=ContinuousHwTimeMode,
                       latency_time=latency_time
                       ** opts)
+
+
+class timescan(Macro, Hookable):
+    """Do a time scan over the specified time intervals. The scan starts
+    immediately. The number of data points collected will be nr_interv + 1.
+    Count time is given by integ_time. Latency time will be the longer one
+    of latency_time and measurement group latency time.
+    """
+
+    param_def = [
+        ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
+        ['integ_time', Type.Float,   None, 'Integration time'],
+        ['latency_time', Type.Float, 0, 'Latency time']]
+
+    def prepare(self, nr_interv, integ_time, latency_time):
+        self.nr_interv = nr_interv
+        self.nr_points = nr_interv + 1
+        self.integ_time = integ_time
+        self.latency_time = latency_time
+        self._gScan = TScan(self)
+
+    def run(self, *args):
+        for step in self._gScan.step_scan():
+            yield step
+
+    def getTimeEstimation(self):
+        mg_latency_time = self._gScan.measurement_group.getLatencyTime()
+        latency_time = max(self.latency_time, mg_latency_time)
+        return self.nr_points * (self.integ_time + latency_time)
+
+    def getIntervalEstimation(self):
+        return self.nr_interv

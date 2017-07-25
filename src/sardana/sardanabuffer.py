@@ -32,7 +32,11 @@ __all__ = ["SardanaBuffer", "LateValueException", "EarlyValueException"]
 
 import weakref
 
-from taurus.external.ordereddict import OrderedDict
+try:
+    from collections import OrderedDict
+except ImportError:
+    # For Python < 2.7
+    from ordereddict import OrderedDict
 
 from .sardanavalue import SardanaValue
 from .sardanaevent import EventGenerator, EventType

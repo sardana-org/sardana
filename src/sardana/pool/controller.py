@@ -1442,6 +1442,7 @@ class IORegisterController(Controller, Readable):
         'Value': {'type': float,
                   'description': 'Value', },
     }
+    standard_axis_attributes.update(Controller.standard_axis_attributes)
 
     #: A :obj:`str` representing the controller gender
     gender = 'I/O register controller'
@@ -1449,6 +1450,6 @@ class IORegisterController(Controller, Readable):
     def __init__(self, inst, props, *args, **kwargs):
         Controller.__init__(self, inst, props, *args, **kwargs)
 
-    def WriteOne(self):
+    def WriteOne(self, axis, value):
         """**IORegister Controller API**. Override if necessary."""
         pass

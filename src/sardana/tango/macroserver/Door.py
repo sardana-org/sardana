@@ -173,6 +173,7 @@ class Door(SardanaDevice):
         if self.getRunningMacro():
             self.debug("aborting running macro")
             self.macro_executor.abort()
+            self.macro_executor.clearRunningMacro()
 
         for handler, filter, format in self._handler_dict.values():
             handler.finish()
