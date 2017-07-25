@@ -745,7 +745,8 @@ class MacroManager(MacroServerManager):
             ret.append(param_str)
         return ret
 
-    def prepareMacro(self, macro_class, par_list, init_opts={}, prepare_opts={}):
+    def prepareMacro(self, macro_class, par_list,
+                     init_opts={}, prepare_opts={}):
         """Creates the macro object and calls its prepare method.
            The return value is a tuple (MacroObject, return value of prepare)
         """
@@ -1283,7 +1284,8 @@ class MacroExecutor(Logger):
                     self.logging_path = macro_obj.getEnv("LogMacroPath")
                 log_file = self.logging_path + "/spock_session.log"
                 self.macro_obj.fileHandler = logging.FileHandler(log_file)
-                formatter = logging.Formatter("%(levelname)-8s %(asctime)s %(name)s: %(message)s")
+                formatter = logging.Formatter(
+                    "%(levelname)-8s %(asctime)s %(name)s: %(message)s")
                 self.macro_obj.fileHandler.setFormatter(formatter)
                 self.macro_obj.logger = self.macro_obj.getLogger()
                 self.macro_obj.logger.addHandler(self.macro_obj.fileHandler)
@@ -1352,7 +1354,8 @@ class MacroExecutor(Logger):
                 self.sendMacroStatusException(exc_info)
             self.debug("[ENDEX] (%s) runMacro %s" %
                        (macro_exp.__class__.__name__, name))
-            if isinstance(macro_exp, MacroServerException) and macro_obj.parent_macro is None:
+            if isinstance(
+                macro_exp, MacroServerException) and macro_obj.parent_macro is None:
                 door.debug(macro_exp.traceback)
                 door.error("An error occurred while running %s:\n%s" %
                            (macro_obj.description, macro_exp.msg))
