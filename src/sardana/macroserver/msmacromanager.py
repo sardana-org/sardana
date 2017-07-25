@@ -42,7 +42,14 @@ from lxml import etree
 
 from PyTango import DevFailed
 
-from taurus.external.ordereddict import OrderedDict
+import logging
+
+try:
+    from collections import OrderedDict
+except ImportError:
+    # For Python < 2.7
+    from ordereddict import OrderedDict
+
 from taurus.core.util.log import Logger
 from taurus.core.util.codecs import CodecFactory
 
@@ -848,7 +855,7 @@ class MacroExecutor(Logger):
         name = "%s.%s" % (str(door), self.__class__.__name__)
         self._macro_status_codec = CodecFactory().getCodec('json')
         self.call__init__(Logger, name)
-
+        
     def getDoor(self):
         return self._door
 
@@ -1060,7 +1067,6 @@ class MacroExecutor(Logger):
         macro_name = meta_macro.name
         macro_id = init_opts.get("id")
         if macro_id is None:
-            macro_id = str(self.getNewMacroID())
             init_opts["id"] = macro_id
         macro_line = self._composeMacroLine(macro_name, macro_params, macro_id)
 
@@ -1183,6 +1189,8 @@ class MacroExecutor(Logger):
             # return self._macro_pointer.getResult()
 
     def _jobEnded(self, *args, **kw):
+        if self.logging_onoff:
+            self.macro_obj.logger.removeHandler(self.macro_obj.fileHandler)
         self.debug("Job ended (stopped=%s, aborted=%s)",
                    self._stopped, self._aborted)
 
@@ -1230,9 +1238,30 @@ class MacroExecutor(Logger):
     _runXMLMacro = __runXMLMacro
 
     def runMacro(self, macro_obj):
+        
         name = macro_obj._getName()
         desc = macro_obj._getDescription()
         door = self.door
+        self.macro_obj = macro_obj
+
+        if macro_obj.getParentMacro() is None:
+            try:
+                self.logging_onoff = macro_obj.getEnv("LogMacroOnOff")
+            except:
+                self.logging_onoff = False
+            if self.logging_onoff:
+                try:
+                    self.logging_path = macro_obj.getEnv("LogMacroPath")
+                except:
+                    macro_obj.setEnv("LogMacroPath","/tmp")
+                    self.logging_path = macro_obj.getEnv("LogMacroPath")
+                log_file = self.logging_path  + "/spock_session.log"
+                self.macro_obj.fileHandler = logging.FileHandler(log_file)
+                formatter = logging.Formatter("%(levelname)-8s %(asctime)s %(name)s: %(message)s")
+                self.macro_obj.fileHandler.setFormatter(formatter)
+                self.macro_obj.logger = self.macro_obj.getLogger()
+                self.macro_obj.logger.addHandler(self.macro_obj.fileHandler)
+        
         if self._aborted:
             self.sendMacroStatusAbort()
             raise AbortException("aborted between macros (before %s)" % name)
@@ -1250,14 +1279,6 @@ class MacroExecutor(Logger):
             # sending result only if we are the top most macro
             if macro_obj.hasResult() and macro_obj.getParentMacro() is None:
                 result_repr = self.__preprocessResult(result)
-                try:
-                    logging_onoff = macro_obj.getEnv("LogMacroOnOff")
-                except:
-                    logging_onoff = 0
-                if logging_onoff:
-                    logging_path = macro_obj.getEnv("LogMacroPath")
-                    msg = "Result: %s" % (result_repr)
-                    Logger.log_to_file(self, msg, logging_path)
                 door.debug("sending result %s", result_repr)
                 self.sendResult(result_repr)
         except AbortException as ae:

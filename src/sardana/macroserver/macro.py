@@ -478,70 +478,8 @@ class Macro(Logger):
         Logger.__init__(self, "Macro[%s]" % self._name, log_parent)
         self._reserveObjs(args)
 
-        try:
-            self.logging_onoff = self.getEnv("LogMacroOnOff")
-        except:
-            self.logging_onoff = False
-        try:
-            self.logging_mode = self.getEnv("LogMacroMode")
-        except:
-            self.logging_mode = 0
-        try:
-            self.logging_all = self.getEnv("LogMacroAll")
-        except:
-            self.logging_all = 0
-
-        if self.logging_onoff:
-
-            try:
-                self.logging_path = self.getEnv("LogMacroPath")
-            except:
-                self.setEnv("LogMacroPath", "/tmp")
-                self.logging_path = self.getEnv("LogMacroPath")
-
-            macro_cmd = ""
-            if self.parent_macro is None:
-                import os
-                if self.logging_mode:
-                    file_name = self.logging_path + "/spock_session.log"
-                    if os.path.isfile(file_name):
-                        try:
-                            os.system("vrsn -s %s" % file_name)
-                            os.remove(file_name)
-                        except:
-                            backup_logname = file_name+'~'
-                            if os.path.isfile(backup_logname):
-                                os.remove(backup_logname)
-                            os.rename(file_name, backup_logname)
-                            os.remove(file_name)
-
-                macro_cmd = "\n-- " + time.ctime() + "\n"
-
-            # Not use getParent because it is the door and not None
-            if self.logging_all or self.parent_macro is None:
-                # Not use getCommand because the syntax is different than in
-                # spock
-                macro_cmd = macro_cmd + self.getName()
-                for par in self.getParameters():
-                    if type(par) == list:
-                        for el in par:
-                            if type(el) == list:
-                                for el1 in el:
-                                    macro_cmd = macro_cmd + " " + str(el1)
-                            else:
-                                macro_cmd = macro_cmd + " " + str(el)
-                    else:
-                        macro_cmd = macro_cmd + " " + str(par)
-                macro_cmd = macro_cmd
-                try:
-                    Logger.log_to_file(
-                        self, macro_cmd, self.logging_path, *args, **kwargs)
-                except:
-                    self.warning("Not able to write log file")
-
     # @name Official Macro API
-    #  This list contains the set of methods that are part of the official
-    #  macro
+    #  This list contains the set of methods that are part of the official macro
     #  API. This means that they can be safely used inside any macro.
     #@{
 
@@ -743,8 +681,7 @@ class Macro(Logger):
 
         :return: the macro command.
         :rtype: :obj:`str`"""
-        return '%s %s' % (self.getName(), ' '.join(
-            [str(p) for p in self._in_pars]))
+        return '%s %s' % (self.getName(), ' '.join([str(p) for p in self._in_pars]))
 
     @mAPI
     def getDateString(self, time_format='%a %b %d %H:%M:%S %Y'):
@@ -932,19 +869,6 @@ class Macro(Logger):
         :type msg: :obj:`str`
         :param args: list of arguments
         :param kwargs: list of keyword arguments"""
-
-        if self.logging_onoff:
-            msgstr = " " + msg
-            try:
-                if type(msgstr) == list:
-                    msgstr = ' '.join(msgstr)
-                msgstr = msgstr.replace("</BLOCK>", "")
-                msgstr = msgstr.replace("<BLOCK>\n", "")
-                Logger.log_to_file(
-                    self, msgstr, self.logging_path, *args, **kwargs)
-            except:
-                self.warning("Not able to write log file")
-
         return Logger.output(self, msg, *args, **kwargs)
 
     @mAPI
@@ -962,16 +886,6 @@ class Macro(Logger):
         :type msg: :obj:`str`
         :param args: list of arguments
         :param kwargs: list of keyword arguments"""
-        if self.logging_onoff:
-            try:
-                if len(args) > 0:
-                    msgc = msg % args
-                else:
-                    msgc = msg
-                Logger.log_to_file(
-                    self, msgc, self.logging_path, *args, **kwargs)
-            except:
-                pass
         return Logger.log(self, level, msg, *args, **kwargs)
 
     @mAPI
@@ -1002,16 +916,6 @@ class Macro(Logger):
         :type msg: :obj:`str`
         :param args: list of arguments
         :param kwargs: list of keyword arguments"""
-        if self.logging_onoff:
-            try:
-                if len(args) > 0:
-                    msgc = msg % args
-                else:
-                    msgc = msg
-                Logger.log_to_file(
-                    self, msgc, self.logging_path, *args, **kwargs)
-            except:
-                pass
         return Logger.info(self, msg, *args, **kwargs)
 
     @mAPI
@@ -1027,18 +931,6 @@ class Macro(Logger):
         :type msg: :obj:`str`
         :param args: list of arguments
         :param kwargs: list of keyword arguments"""
-
-        if self.logging_onoff:
-            try:
-                if len(args) > 0:
-                    msgc = msg % args
-                else:
-                    msgc = msg
-                Logger.log_to_file(
-                    self, msgc, self.logging_path, *args, **kwargs)
-            except:
-                pass
-
         return Logger.warning(self, msg, *args, **kwargs)
 
     @mAPI
@@ -1055,16 +947,6 @@ class Macro(Logger):
         :param args: list of arguments
         :param kwargs: list of keyword arguments
         """
-        if self.logging_onoff:
-            try:
-                if len(args) > 0:
-                    msgc = msg % args
-                else:
-                    msgc = msg
-                Logger.log_to_file(
-                    self, msgc, self.logging_path, *args, **kwargs)
-            except:
-                pass
         return Logger.error(self, msg, *args, **kwargs)
 
     @mAPI
@@ -1080,16 +962,6 @@ class Macro(Logger):
         :type msg: :obj:`str`
         :param args: list of arguments
         :param kwargs: list of keyword arguments"""
-        if self.logging_onoff:
-            try:
-                if len(args) > 0:
-                    msgc = msg % args
-                else:
-                    msgc = msg
-                Logger.log_to_file(
-                    self, msgc, self.logging_path, *args, **kwargs)
-            except:
-                pass
         return Logger.critical(self, msg, *args, **kwargs)
 
     @mAPI
@@ -1099,16 +971,6 @@ class Macro(Logger):
         :param msg: (str) the message to be recorded
         :param args: list of arguments
         :param kw: list of keyword arguments"""
-        if self.logging_onoff:
-            try:
-                if len(args) > 0:
-                    msgc = msg % args
-                else:
-                    msgc = msg
-                Logger.log_to_file(
-                    self, msgc, self.logging_path, *args, **kwargs)
-            except:
-                pass
         return Logger.trace(self, msg, *args, **kwargs)
 
     @mAPI
@@ -1524,8 +1386,7 @@ class Macro(Logger):
         self.executor.returnObj(obj)
 
     @mAPI
-    def getObj(self, name, type_class=All,
-               subtype=All, pool=All, reserve=True):
+    def getObj(self, name, type_class=All, subtype=All, pool=All, reserve=True):
         """**Macro API**. Gets the object of the given type belonging to the
         given pool with the given name. The object (if found) will automatically
         become controlled by the macro.
@@ -1560,8 +1421,7 @@ class Macro(Logger):
         return obj
 
     @mAPI
-    def getObjs(self, names, type_class=All,
-                subtype=All, pool=All, reserve=True):
+    def getObjs(self, names, type_class=All, subtype=All, pool=All, reserve=True):
         """**Macro API**. Gets the objects of the given type belonging to the
            given pool with the given names. The objects (if found) will
            automatically become controlled by the macro.
@@ -1695,8 +1555,7 @@ class Macro(Logger):
         return self.door.get_macro(macro_name)
 
     @mAPI
-    def getMotion(self, elems, motion_source=None,
-                  read_only=False, cache=True):
+    def getMotion(self, elems, motion_source=None, read_only=False, cache=True):
         """**Macro API**. Returns a new Motion object containing the given
         elements.
 
