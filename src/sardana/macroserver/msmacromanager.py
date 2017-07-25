@@ -855,7 +855,7 @@ class MacroExecutor(Logger):
         name = "%s.%s" % (str(door), self.__class__.__name__)
         self._macro_status_codec = CodecFactory().getCodec('json')
         self.call__init__(Logger, name)
-        
+
     def getDoor(self):
         return self._door
 
@@ -1238,7 +1238,7 @@ class MacroExecutor(Logger):
     _runXMLMacro = __runXMLMacro
 
     def runMacro(self, macro_obj):
-        
+
         name = macro_obj._getName()
         desc = macro_obj._getDescription()
         door = self.door
@@ -1253,15 +1253,15 @@ class MacroExecutor(Logger):
                 try:
                     self.logging_path = macro_obj.getEnv("LogMacroPath")
                 except:
-                    macro_obj.setEnv("LogMacroPath","/tmp")
+                    macro_obj.setEnv("LogMacroPath", "/tmp")
                     self.logging_path = macro_obj.getEnv("LogMacroPath")
-                log_file = self.logging_path  + "/spock_session.log"
+                log_file = self.logging_path + "/spock_session.log"
                 self.macro_obj.fileHandler = logging.FileHandler(log_file)
                 formatter = logging.Formatter("%(levelname)-8s %(asctime)s %(name)s: %(message)s")
                 self.macro_obj.fileHandler.setFormatter(formatter)
                 self.macro_obj.logger = self.macro_obj.getLogger()
                 self.macro_obj.logger.addHandler(self.macro_obj.fileHandler)
-        
+
         if self._aborted:
             self.sendMacroStatusAbort()
             raise AbortException("aborted between macros (before %s)" % name)
