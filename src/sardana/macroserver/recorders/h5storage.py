@@ -220,9 +220,13 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         """
         min_rank = self._dataCompressionRank
         if shape is None or min_rank < 0 or len(shape) < min_rank:
-            return None
-        else:
-            return compfilter
+            compfilter = None
+        elif len(shape) == 0:
+            msg = "%s compression is not supported for scalar datasets"\
+                  " - these datasets will not be compressed" % compfilter
+            self.warning(msg)
+            compfilter = None
+        return compfilter
 
     def _createPreScanSnapshot(self, env):
         """
