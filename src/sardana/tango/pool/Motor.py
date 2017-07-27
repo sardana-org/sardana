@@ -77,6 +77,7 @@ Stop            void              void
 Abort           void              void
 DefinePosition  Tango::DevDouble  void
 SaveConfig      void              void
+MoveRelative    Tango::DevDouble  void
 ==============  ================  ================
 
 - **Stop** : It stops a running motion. This command does not have input or
@@ -96,6 +97,11 @@ SaveConfig      void              void
   database as motor device properties. It is allowed only in the ON or ALARM
   states
 
+- **MoveRelative** : Moves the motor by a relative to the current position
+  distance. It has one input argument which is the relative distance
+  (a double). It is allowed only in the ON or ALARM states. The unit used for
+  the command input value is the physical unit: millimeters or milli-radians.
+
 The classical Tango Init command destroys the motor and re-create it.
 
 .. rubric:: The attributes
@@ -109,24 +115,24 @@ Name            Data type          Data format  Writable  Memorized  Operator/Ex
 Position        Tango::DevDouble   Scalar       R/W       No *       Operator
 DialPosition    Tango::DevDouble   Scalar       R         No         Expert
 Offset          Tango::DevDouble   Scalar       R/W       Yes        Expert
-Acceleration    Tango::DevDouble   Scalar       R/W       No         Expert
-Base_rate       Tango::DevDouble   Scalar       R/W       No         Expert
-Deceleration    Tango::DevDouble   Scalar       R/W       No         Expert
-Velocity        Tango::DevDouble   Scalar       R/W       No         Expert
-Limit_Switches  Tango::DevBoolean  Spectrum     R         No         Expert
+Acceleration    Tango::DevDouble   Scalar       R/W       Yes        Expert
+Base_rate       Tango::DevDouble   Scalar       R/W       Yes        Expert
+Deceleration    Tango::DevDouble   Scalar       R/W       Yes        Expert
+Velocity        Tango::DevDouble   Scalar       R/W       Yes        Expert
+Limit_switches  Tango::DevBoolean  Spectrum     R         No         Expert
 SimulationMode  Tango::DevBoolean  Scalar       R         No         Expert
 Step_per_unit   Tango::DevDouble   Scalar       R/W       Yes        Expert
 Backlash        Tango::DevLong     Scalar       R/W       Yes        Expert
 ==============  =================  ===========  ========  =========  ===============
 
 - **Position** : This is read-write scalar double attribute. With the classical
-  Tango min and max_value attribute properties, it is easy to define
+  Tango min_value and max_value attribute properties, it is easy to define
   authorized limit for this attribute. See the definition of the
   DialPosition and Offset attributes to get a precise definition of the
   meaning of this attribute. It is not allowed to read or write this
   attribute when the motor is in FAULT or UNKNOWN state. It is also not
   possible to write this attribute when the motor is already MOVING.
-  The unit used for this attribute is the physical unit: millimeters or
+  The unit used for this attribute is the physical unit e.g. millimeters or
   milli-radian. It is always an **absolute position** .
 
 - **DialPosition** : This attribute is the motor dial position. The following
@@ -167,7 +173,7 @@ Backlash        Tango::DevLong     Scalar       R/W       Yes        Expert
   executed. It is not allowed to read or write this attribute when the motor is
   in FAULT or UNKNOWN state.
 
-- **Limit_Switches** : Three limit switches are managed by this attribute.
+- **Limit_switches** : Three limit switches are managed by this attribute.
   Each of the switch are represented by a boolean value: False means inactive
   while True means active. It is a read only attribute. It is not possible to
   read this attribute when the motor is in UNKNOWN mode. It is a
@@ -238,7 +244,7 @@ been reached). The pool motor interface allows client interested by
 motor state or motor limit switches value to use the Tango event
 system subscribing to motor state change event. As soon as a motor
 starts a motion, its state is changed to MOVING and an event is sent.
-As soon as the motion is over, the motor state is updated ans another
+As soon as the motion is over, the motor state is updated and another
 event is sent. In the same way, as soon as a change in the limit
 switches value is detected, a change event is sent to client(s) which
 have subscribed to change event on the Limit_Switches attribute.
@@ -250,14 +256,14 @@ For each motor, the key attribute is its position. Special care has
 been taken on this attribute management. When the motor is not moving,
 reading the Position attribute will generate calls to the controller
 and therefore hardware access. When the motor is moving, its position
-is automatically read every 100 milli-seconds and stored in the Tango
-polling buffer. This means that a client reading motor Position
+is automatically read every 100 milli-seconds and stored in the cache.
+This means that a client reading motor Position
 attribute while the motor is moving will get the position from the
-Tango polling buffer and will not generate extra controller calls. It
+cache and will not generate extra controller calls. It
 is also possible to get a motor position using the Tango event system.
 When the motor is moving, an event is sent to the registered clients
 when the change event criterion is true. By default, this change event
-criterion is set to be a difference in position of 5. It is tunable on
+criterion is set to be a difference in position of 1. It is tunable on
 a motor basis using the classical motor Position attribute abs_change
 property or at the pool device basis using its DefaultMotPos_AbsChange
 property. Anyway, not more than 10 events could be sent by second.
