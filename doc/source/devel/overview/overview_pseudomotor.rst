@@ -6,13 +6,29 @@
 Pseudo motor overview
 =======================
 
-.. todo:: document pseudo motor overview
+The pseudo motor interface acts like an abstraction layer for a motor
+or a set of motors allowing the user to control the experiment by
+means of an interface which is more meaningful to him(her).
 
-.. seealso:: 
-    
+One example of a pseudo motor is
+:class:`~sardana.pool.poolcontrollers.Slit` useful for the beam conditioning
+using the aperture gap and offset.
+
+In order to translate the motor positions into the pseudo motor positionss and
+vice versa, calculations have to be performed. The device pool provides
+:class:`~sardana.pool.controller.PseudoMotorController` class that can be
+overwritten to provide new calculations.
+
+The pseudo motor position gets updated automatically every time one of its
+motors position gets updated e.g. when the motion is in progress.
+
+The pseudo motor object is also exposed as a Tango_ device.
+
+.. seealso::
+
     :ref:`sardana-pseudomotor-api`
-        the pseudo motor :term:`API` 
-    
+        the pseudo motor :term:`API`
+
     :class:`~sardana.tango.pool.PseudoMotor.PseudoMotor`
         the pseudo motor tango device :term:`API`
 
@@ -257,3 +273,6 @@ every 1 unit move).
 
   This sketch demonstrates the above example where offset's drift was
   corrected.
+
+
+.. _Tango: http://www.tango-controls.org/
