@@ -68,7 +68,7 @@ class MacroServer(SardanaDevice):
         self._macro_server.clear_log_report()
         # Workaround for bug #494.
         factory = taurus.Factory("tango")
-        for attr in factory.tango_attrs:
+        for attr in factory.tango_attrs.values():
             attr.cleanUp()
 
     def init_device(self):
