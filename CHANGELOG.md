@@ -91,6 +91,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   #505. #510)
 - MacroServer start and instance creation when using using it as standalone server
   i.e. without any Pool (#493)
+- One of the custom recorder examples - DumbRecorder (#511)
 
 
 ## [2.2.3] - 2017-01-12
