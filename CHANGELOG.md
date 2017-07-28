@@ -88,7 +88,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   synchronization between stopping/aborting macro reserved objects and execution of
   on_stop/on_abort methods (#8, #503)
 - Hangs and segmentation faults during the MacroServer shutdown process (#273, #494,
-  #505)
+  #505. #510)
 - MacroServer start and instance creation when using using it as standalone server
   i.e. without any Pool (#493)
 
