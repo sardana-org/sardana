@@ -17,6 +17,10 @@ Glossary
         an indented code block or within a pair of matching left and right
         delimiters (parentheses, square brackets or curly braces).
 
+    ADC
+        In electronics, an analog-to-digital converter (ADC) is a system that
+        converts an analog signal e.g. voltage into its digital representation.
+
     argument
         A value passed to a function or method, assigned to a named local
         variable in the function body.  A function or method may have both
