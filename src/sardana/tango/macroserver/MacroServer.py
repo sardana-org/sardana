@@ -31,6 +31,7 @@ import sys
 from PyTango import Util, Except, DevVoid, DevLong, DevString, DevState, \
     DevEncoded, DevVarStringArray, READ, READ_WRITE, SCALAR, SPECTRUM, DebugIt
 
+import taurus
 from taurus.core.util.codecs import CodecFactory
 
 from sardana import State, SardanaServer
@@ -66,15 +67,9 @@ class MacroServer(SardanaDevice):
         SardanaDevice.delete_device(self)
         self._macro_server.clear_log_report()
         # Workaround for bug #494.
-        for pool in self._macro_server._pools.values():
-            elements_attr = pool.getAttribute("Elements")
-            # Remove the taurus listeners:(cleanUp)
-            elements_attr.removeListener(
-                self._macro_server.on_pool_elements_changed)
-            elements_attr.removeListener(pool.on_elements_changed)
-            # For taurus4, unsubscribeConfEvents
-            if hasattr(elements_attr, "_unsubscribeConfEvents"):
-                elements_attr._unsubscribeConfEvents()
+        factory = taurus.Factory("tango")
+        for attr in factory.tango_attrs.values():
+            attr.cleanUp()
 
     def init_device(self):
         SardanaDevice.init_device(self)
