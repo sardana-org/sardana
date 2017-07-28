@@ -31,6 +31,7 @@ import sys
 from PyTango import Util, Except, DevVoid, DevLong, DevString, DevState, \
     DevEncoded, DevVarStringArray, READ, READ_WRITE, SCALAR, SPECTRUM, DebugIt
 
+import taurus
 from taurus.core.util.codecs import CodecFactory
 
 from sardana import State, SardanaServer
@@ -66,7 +67,7 @@ class MacroServer(SardanaDevice):
         SardanaDevice.delete_device(self)
         self._macro_server.clear_log_report()
         # Workaround for bug #494.
-        factory = self._macro_server.factory()
+        factory = taurus.Factory("tango")
         for attr in factory.tango_attrs:
             attr.cleanUp()
 
