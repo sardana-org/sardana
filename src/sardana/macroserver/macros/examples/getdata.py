@@ -27,7 +27,7 @@ to this data"""
 
 __all__ = ["get_data"]
 
-__docformat__ = 'restructuredtext'
+__docformat__ = "restructuredtext"
 
 from sardana.macroserver.macro import *
 
@@ -39,9 +39,9 @@ class get_data(Macro):
     This macro is part of the examples package. It was written for
     demonstration purposes"""
 
-    param_def = [['mot', Type.Moveable, None, 'moveable to be moved']]
-    result_def = [["result", Type.Float, None,
-                   "the max of the motor positions"]]
+    param_def = [["mot", Type.Moveable, None, "moveable to be moved"]]
+    result_def = [["middle", Type.Float, None,
+                   "the middle motor position"]]
 
     def run(self, mot):
         start = 0
@@ -49,17 +49,15 @@ class get_data(Macro):
         intervals = 2
         integtime = 0.1
         positions = []
-        dscan1 = self.createMacro('dscan',
-                                  mot, start, end, intervals, integtime)
-        self.runMacro(dscan1[0])
-        x1 = [None] * len(dscan1[0].data)  # motor positions during the scan
-        n_positions = 0
-        for i in range(len(dscan1[0].data)):
-            x1[i] = dscan1[0].data[i].data[mot.getName()]
-            print(x1[i])
-            positions.append(x1[i])
-            n_positions = n_positions + 1
+        dscan, _ = self.createMacro('dscan',
+                                    mot, start, end, intervals, integtime)
+        self.runMacro(dscan)
+        
+        data = dscan.data
+        len_data = len(data)
+        for point_nb in xrange(len_data):
+            position = data[point_nb].data[mot.getName()]
+            positions.append(position)
 
-        average_positions = max(positions) - min(positions) / n_positions
-        result = average_positions
-        return result
+        middle_pos = max(positions) - min(positions) / len_data
+        return middle_pos
