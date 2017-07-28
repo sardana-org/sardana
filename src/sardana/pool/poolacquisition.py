@@ -289,7 +289,11 @@ class PoolAcquisition(PoolAction):
             try:
                 elem.clear_value_buffer()
             except AttributeError:
-                pass
+                continue
+            # clean also the pseudo counters, even the ones that do not
+            # participate directly in the acquisition
+            for pseudo_elem in elem.get_pseudo_elements():
+                pseudo_elem.clear_value_buffer()
         config = kwargs['config']
         synchronization = kwargs["synchronization"]
         integ_time = extract_integ_time(synchronization)
