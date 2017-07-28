@@ -10,9 +10,14 @@ The pseudo motor interface acts like an abstraction layer for a motor
 or a set of motors allowing the user to control the experiment by
 means of an interface which is more meaningful to him(her).
 
-One example of a pseudo motor is
-:class:`~sardana.pool.poolcontrollers.Slit` useful for the beam conditioning
-using the aperture gap and offset.
+One of the most basic examples is the control of a slit. The slit has two blades
+with one motor each. Usually the user doesn't want to control the experiment by
+directly handling these two motor positions since they have little meaning from
+the experiments perspective. Instead, it would be more useful for the user to
+control the experiment by means of changing the gap and offset values. In the
+:class:`~sardana.pool.poolcontrollers.Slit` controller, pseudo motors gap and
+offset will provide the necessary interface for controlling the experiments
+gap and offset values respectively.
 
 In order to translate the motor positions into the pseudo motor positions and
 vice versa, calculations have to be performed. The device pool provides
