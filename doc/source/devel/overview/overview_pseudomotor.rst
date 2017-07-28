@@ -14,7 +14,7 @@ One example of a pseudo motor is
 :class:`~sardana.pool.poolcontrollers.Slit` useful for the beam conditioning
 using the aperture gap and offset.
 
-In order to translate the motor positions into the pseudo motor positionss and
+In order to translate the motor positions into the pseudo motor positions and
 vice versa, calculations have to be performed. The device pool provides
 :class:`~sardana.pool.controller.PseudoMotorController` class that can be
 overwritten to provide new calculations.
