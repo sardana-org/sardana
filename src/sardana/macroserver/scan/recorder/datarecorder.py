@@ -91,7 +91,7 @@ class DataHandler:
 class DataRecorder(Logger):
     """ Generic class for data recorder. Does nothing"""
 
-    def __init__(self, **pars):
+    def __init__(self, *args, **kwargs):
         name = self.__class__.__name__
         self.call__init__(Logger, name)
         self.recordlist = None

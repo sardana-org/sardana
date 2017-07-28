@@ -29,8 +29,6 @@ __all__ = ["DumbRecorder"]
 
 __docformat__ = 'restructuredtext'
 
-import time
-
 from sardana.macroserver.scan.recorder import DataRecorder
 
 
@@ -43,9 +41,9 @@ class DumbRecorder(DataRecorder):
         for envky in env.keys():
             if envky != 'title' and envky != 'labels':
                 print "# %8s :    %s " % (envky, str(env[envky]))
-        print "# Started:    ", time.ctime(env['starttime'])
+        print "# Started:    ", env['starttime']
         print "# L:  ",
-        print "  ".join(env['labels'])
+        print "  ".join([desc.label for desc in env['datadesc']])
 
     def _writeRecord(self, record):
         print record.data
@@ -53,4 +51,4 @@ class DumbRecorder(DataRecorder):
     def _endRecordList(self, recordlist):
         print "Ending recording"
         env = recordlist.getEnviron()
-        print "Recording ended at: ", time.ctime(env['endtime'])
+        print "Recording ended at: ", env['endtime']
