@@ -6,7 +6,13 @@
 Trigger/Gate API reference
 =============================
 
-.. todo:: document Trigger/Gate API reference
+The trigger/gate element represents synchronization devices like for example
+the digital trigger and/or gate generators that are used to synchronize the
+experimental channels.
+
+A trigger/gate has a ``state``, and a ``index`` attributes. The state
+indicates at any time if the trigger/gate is stopped, in alarm or moving.
+The index, indicates the current trigger/gate index.
 
 .. seealso::
 
