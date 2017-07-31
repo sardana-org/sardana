@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-from sardana.sardanavalue import SardanaValue
 
 ##############################################################################
 ##
@@ -36,6 +35,7 @@ import time
 import collections
 
 from sardana import State, ElementType, TYPE_PHYSICAL_ELEMENTS
+from sardana.sardanavalue import SardanaValue
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.sardanaexception import SardanaException
 
