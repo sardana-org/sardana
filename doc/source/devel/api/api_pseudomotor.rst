@@ -7,7 +7,7 @@ Pseudo motor API reference
 =============================
 
 A pseudo motor has a ``state``, and a ``position`` attributes. The state
-indicates at any time if the psuedo motor is stopped, in alarm or moving. The
+indicates at any time if the pseudo motor is stopped, in alarm or moving. The
 state is composed from the states of all the physical motors involved in the
 pseudo motor. So, if one of the motors is in moving or alarm state, the whole
 pseudo motor will be in that state. The position, indicates the current
