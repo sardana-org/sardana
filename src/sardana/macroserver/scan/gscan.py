@@ -2201,8 +2201,8 @@ class CTScan(CScan, CAcquisition):
         self.macro.debug("on_waypoints_end() entering...")
         self.set_all_waypoints_finished(True)
         if restore_positions is not None:
-            self._restore_motors() # first restore motors backup
-            self._setFastMotions() # then try to go even faster (limits)
+            self._restore_motors()  # first restore motors backup
+            self._setFastMotions()  # then try to go even faster (limits)
             self.macro.info("Correcting overshoot...")
             self._physical_motion.move(restore_positions)
         self.motion_end_event.set()
