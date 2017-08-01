@@ -39,6 +39,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Tooltip with parameters description in the macro execution widgets:
   MacroExecutor and Sequencer (#302)
 - Generic main to the macrobutton widget that allows to execute "any" macro
+- Overview of Pool elements documentation.
+- API fo Pool elements documentation.
 - Flake8 check-on-push for CI (#451)
 - Continuous integration service for Windows platform - AppVeyor (#383, #497)
 
