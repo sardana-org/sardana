@@ -2203,7 +2203,6 @@ class CTScan(CScan, CAcquisition):
             self._setFastMotions() # then try to go even faster (limits)
             self.macro.info("Correcting overshoot...")
             self._physical_motion.move(restore_positions)
-        self.do_restore()
         self.motion_end_event.set()
         self.cleanup()
         self.macro.debug("Waiting for data events to be processed")
