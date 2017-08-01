@@ -55,7 +55,7 @@ requires = [
     # when using PyTango < 9 the dependency is >= 0.0.1 and < 0.1.0
     # when using PyTango >= 9 the dependency is >= 0.1.6
     'itango (>=0.0.1)',
-    'taurus (>= 3.6.0)',
+    'taurus (>= 3.7.4)',
     'lxml (>=2.1)',
     # ordereddict is necessary for Python < 2.6
     'ordereddict'
@@ -64,7 +64,7 @@ requires = [
 install_requires = [
     'PyTango>=7.2.3',
     'itango>=0.0.1',
-    'taurus>=3.6.0',
+    'taurus>=3.7.4',
     'lxml>=2.1'
 ]
 
