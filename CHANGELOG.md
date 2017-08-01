@@ -7,48 +7,47 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
+- Generic continuous scans - `ascanct` & co. (SEP6)
+  - TriggerGate element and its controller to plug in hardware with
+    the synchronization capabilities
+  - Software synchronizer that emulate hardware TriggerGate elements
+  - Possibility to execute multiple, synchronized by hardware or software, 
+    in time or position domain (also non equidistant) acquisitions with the
+    Measurement Group
+  - CTExpChannel can report acquired and indexed values in chunks in
+    continuous acquisition
+  - `synchronizer` parameter to the Measurement Group configuration
+  - `latency_time` parameter to the experimental channel controllers
+  - `ApplyInterpolation` environment variable, applicable to `ascanct` & co.
+  - "How to write a counter/timer controller" documentation
+  - "How to write a trigger/gate controller" documentation
+- 0DExpChannel may report acquired and indexed values in chunks in
+  continuous acquisition (#469)
+- PseudoCounter may return calculated (from the buffered physical
+  channels values) and indexed values in chunks in continuous acquisition
+  (#469)
+- `timescan` macro to run equidistant time scans and `TScan` class to
+  develop custom time scans (#104, #485)
 - New recorder for NXscan that does not use the nxs module (NAPI) but h5py
   instead (#460)
 - New spock syntax based on the square brackets to use repeat parameters
   without limitations (#405)
+- Possibility to specify the IORegister value attribute data type between
+  `int`, `float` or `bool` even in the same controller (#459, #458)
 - Possibility to duplicate repeats of the repeat parameters in macroexecutor
   and sequencer (#426)
 - Tooltip with parameters description in the macro execution widgets:
   MacroExecutor and Sequencer (#302)
 - Generic main to the macrobutton widget that allows to execute "any" macro
-- TriggerGate element and its controller to plug in hardware with
-  the synchronization capabilities (SEP6)
-- software synchronizer that emulate hardware TriggerGate elements (SEP6)
-- possibility to execute multiple, synchronized by hardware or software, 
-  in time or position domain (also non equidistant) acquisitions with the
-  Measurement Group (SEP6)
-- CTExpChannel may report acquired and indexed values in chunks in
-  continuous acquisition (SEP6)
-- 0DExpChannel may report acquired and indexed values in chunks in
-  continuous acquisition (#469)
-- PseudoCounter may return calculated (from the buffered physical
-  channels values) and indexed values in chunks in continuous acquisition
-  (#469) 
-- `timescan` macro to run equidistant time scans and `TScan` class to
-  develop custom time scans (#104, #485)
-- `synchronizer` parameter to the Measurement Group configuration (SEP6)
-- `latency_time` parameter to the experimental channel controllers (SEP6)
-- `ApplyInterpolation` environment variable, applicable to `ascanct` & co.
-  (SEP6)
-- "How to write a counter/timer controller" documentation (SEP6)
-- "How to write a trigger/gate controller" documentation (SEP6)
 - Flake8 check-on-push for CI (#451)
 - Continuous integration service for Windows platform - AppVeyor (#383, #497)
-- Possibility to specify the IORegister value attribute data type between
-  `int`, `float` or `bool` even in the same controller (#459, #458)
 
 ### Changed
-- make the new NXscanH5_FileRecorder the default one for .h5 files (#460) 
 - `ascanct` & co. macro parameters to more resemble parameters of step scans
   (SEP6)
 - `trigger_type` was renamed to `synchronization` in Measurement Group
   configuration and as the experimental channel controller parameter (SEP6)
-- Applied AutoPEP8 to whole project (#446)
+- make the new NXscanH5_FileRecorder the default one for .h5 files (#460) 
 - A part of the 0D's core API was changed in order to be more consistent with
   the new concept of value buffer (#469):
   - `BaseAccumulation.append_value` -> `BaseAccumulation.append`
@@ -56,7 +55,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   - `Value.append_value` -> `Value.append_buffer`
   - `PoolZeoDExpChannel.get_value_buffer` -> `PoolZeoDExpChannel.get_accumulation_buffer`
   - `PoolZeoDExpChannel.value_buffer` -> `PoolZeoDExpChannel.accumulation_buffer`
-- `nr_of_points` attribute of `aNscan` calss was renamed to `nr_points`
+- `nr_of_points` attribute of `aNscan` class was renamed to `nr_points` (#469)
 - IORegister value attribute default data type from `int` to `float` and as a
   consequence its Tango attribute data type from `DevLong` to `DevDouble` and
   the `write_ioreg` and `read_ioreg` macro parameter and result type respectively
@@ -64,6 +63,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Use of ordereddict module. Now it is used from the standard library (Python >= 2.7)
   instead of `taurus.external`. For Python 2.6 users this means a new dependency
   `ordereddict` from PyPI (#482)
+- Applied AutoPEP8 to whole project (#446)
 
 ### Deprecated
 - `LoadOne` API had changed - `repetitions` was added as a mandatory argument
@@ -72,24 +72,24 @@ This file follows the formats and conventions from [keepachangelog.com]
   `AccumulationBuffer` attribute (#469)
 
 ### Removed
-- units level from the Measurement Group configuration (#218)
 - intermediate events being emitted by the CTExpChannel Value attribute while
-  acquiring with the count updates (SEP6)
+  acquiring with the count updates - temporarily removed (SEP6)
+- units level from the Measurement Group configuration (#218)
 
 ### Fixed
-- Macro execution widgets connecting to the MacroServer in a Tango database
-  different than the default one e.g. using `--tango-host` option
-- macrobutton widget working with the string parameters containing white spaces
-  (#423)
-- Restoring macros from the list of favorites in the macroexecutor (#441, #495)
-- Logging of the macro result composed from more than one item in Spock (#366, #496)
 - Spurious errors when hangling macros stop/abort e.g. dscan returning to initial
   position, restoring velocitues after continuous scan, etc. due to the lack of
   synchronization between stopping/aborting macro reserved objects and execution of
   on_stop/on_abort methods (#8, #503)
 - Hangs and segmentation faults during the MacroServer shutdown process (#273, #494,
   #505. #510)
-- MacroServer start and instance creation when using using it as standalone server
+- macrobutton widget working with the string parameters containing white spaces
+  (#423)
+- Restoring macros from the list of favorites in the macroexecutor (#441, #495)
+- Macro execution widgets connecting to the MacroServer in a Tango database
+  different than the default one e.g. using `--tango-host` option
+- Logging of the macro result composed from more than one item in Spock (#366, #496)
+- MacroServer start and instance creation when using it as standalone server
   i.e. without any Pool (#493)
 - One of the custom recorder examples - DumbRecorder (#511)
 
