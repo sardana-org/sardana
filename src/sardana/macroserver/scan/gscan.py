@@ -2104,6 +2104,8 @@ class CTScan(CScan, CAcquisition):
             self.debug("Configuration took %s time." %
                        repr(endTimestamp - startTimestamp))
             ############
+            # try to go as fast as possile to start position
+            self._setFastMotions(moveables)
             # move to start position
             self.macro.debug("Moving to start position: %s" % repr(start_pos))
             motion.move(start_pos)
