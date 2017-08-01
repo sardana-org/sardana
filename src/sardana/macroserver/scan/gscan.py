@@ -1279,8 +1279,10 @@ class CScan(GScan):
     def set_all_waypoints_finished(self, v):
         self._all_waypoints_finished = v
 
-    def do_backup(self):
-        super(CScan, self).do_backup()
+    def _backup_motor(self):
+        """Backup motors initial state (velocity, acceleration and
+        deceleration).
+        """
         self._backup = backup = []
         for moveable in self._physical_moveables:
             # first backup all motor parameters
@@ -1297,9 +1299,14 @@ class CScan(GScan):
                 motor_backup = None
             backup.append(motor_backup)
 
-    def do_restore(self):
-        super(CScan, self).do_restore()
-        # restore changed motors to initial state
+    def do_backup(self):
+        super(CScan, self).do_backup()
+        self._backup_motor()
+
+    def _restore_motors(self):
+        """Restore changed motors to initial state (velocity, acceleration and
+        deceleration).
+        """
         for motor_backup in self._backup:
             if motor_backup is None:
                 continue
@@ -1312,6 +1319,10 @@ class CScan(GScan):
             except ScanException, e:
                 msg = "Error when restoring motor's backup (%s)" % e
                 raise ScanException(msg)
+
+    def do_restore(self):
+        super(CScan, self).do_restore()
+        self._restore_motors()
 
     def _setFastMotions(self, motors=None):
         '''make given motors go at their max speed and accel'''
