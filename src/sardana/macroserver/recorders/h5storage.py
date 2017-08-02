@@ -40,6 +40,7 @@ import h5py
 from sardana.taurus.core.tango.sardana import PlotType
 from sardana.macroserver.scan.recorder import BaseFileRecorder, SaveModes
 
+
 def timedelta_total_seconds(timedelta):
     """Eqiuvalent to timedelta.total_seconds introduced with python 2.7."""
     return (
