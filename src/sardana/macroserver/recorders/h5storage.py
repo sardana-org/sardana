@@ -125,14 +125,14 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         except ValueError:
             # Warn and abort
             if self.entryname in self.fd.keys():
-                msg = ('{ename:r} already exists in {fname:r}.' +
+                msg = ('{ename:r} already exists in {fname:s}.' +
                        'Aborting macro to prevent data corruption.\n' +
                        'This is likely caused by a wrong ScanID\n' +
                        'Possible workarounds:\n' +
                        '  * first, try re-running this macro (the ScanID ' +
                        'may be automatically corrected)\n'
                        '  * if not, try changing ScanID with senv, or...\n' +
-                       '  * change the file name ({ename:r} will be in both ' +
+                       '  * change the file name ({ename:s} will be in both ' +
                        'files containing different data)\n' +
                        '\nPlease report this problem.'
                        ).format(ename=self.entryname, fname=self.filename)
