@@ -22,8 +22,10 @@
 # along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
-
-import nxs
+try:
+    import nxs
+except ImportError:
+    nxs = None
 import math
 import os
 from taurus.external import unittest
@@ -66,11 +68,16 @@ class ScanDataTestCase(unittest.TestCase):
         """SetUp
         """
         unittest.TestCase.setUp(self)
-        self.data_handler = DataHandler()
-        self.file_name = "/tmp/data_nxs.hdf5"
-        nx_recorder = NXscan_FileRecorder(filename=self.file_name,
-                                          macro="dscan", overwrite=True)
-        self.data_handler.addRecorder(nx_recorder)
+        if nxs is not None:
+            self.data_handler = DataHandler()
+            self.file_name = "/tmp/data_nxs.hdf5"
+            try:
+                nx_recorder = NXscan_FileRecorder(filename=self.file_name,
+                                                  macro="dscan",
+                                                  overwrite=True)
+            except ImportError:
+                nx_recorder = None
+            self.data_handler.addRecorder(nx_recorder)
 
     def prepareScandData(self, data, apply_interpolation=False):
         scan_dir, scan_file = os.path.split(self.file_name)
@@ -99,6 +106,7 @@ class ScanDataTestCase(unittest.TestCase):
             diff = max_len - len(dat)
             self.inputs[name] = dat + [float('Nan')] * diff
 
+    @unittest.skipIf(nxs is None, "nxs library is not installed")
     def recorddata(self, data, apply_interpolation):
         """Verify that the data sent for storage is equal
            to the actual data present in the created NeXus file.
@@ -126,6 +134,7 @@ class ScanDataTestCase(unittest.TestCase):
                     continue
                 self.assertEqual(chn_data[i], self.inputs[chn][i], msg)
 
+    @unittest.skipIf(nxs is None, "nxs library is not installed")
     def zeroOrderInterpolation(self, data, apply_interpolation):
         """Verify that the data write in the NeXus file has been
            modified using a zero order interpolation.
