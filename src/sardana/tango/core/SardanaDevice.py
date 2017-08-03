@@ -390,7 +390,7 @@ class SardanaDevice(Device_4Impl, Logger):
                     if reason == PyTango.constants.API_WAttrOutsideLimit and\
                        attr_name == 'position':
                         msg = ('Unable to update "w_value" because it is' +
-                               ' out of range')
+                               ' out of range (w_value=%f)' % w_value)
                         self.warning(msg)
                         self.debug('Details:', exc_info=1)
                     else:
