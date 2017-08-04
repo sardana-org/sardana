@@ -41,6 +41,13 @@ from sardana.taurus.core.tango.sardana import PlotType
 from sardana.macroserver.scan.recorder import BaseFileRecorder, SaveModes
 
 
+def timedelta_total_seconds(timedelta):
+    """Eqiuvalent to timedelta.total_seconds introduced with python 2.7."""
+    return (
+        timedelta.microseconds + 0.0 +
+        (timedelta.seconds + timedelta.days * 24 * 3600) * 10 ** 6) / 10 ** 6
+
+
 class NXscanH5_FileRecorder(BaseFileRecorder):
 
     """
@@ -125,14 +132,14 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         except ValueError:
             # Warn and abort
             if self.entryname in self.fd.keys():
-                msg = ('{ename:r} already exists in {fname:r}.' +
+                msg = ('{ename:r} already exists in {fname:s}.' +
                        'Aborting macro to prevent data corruption.\n' +
                        'This is likely caused by a wrong ScanID\n' +
                        'Possible workarounds:\n' +
                        '  * first, try re-running this macro (the ScanID ' +
                        'may be automatically corrected)\n'
                        '  * if not, try changing ScanID with senv, or...\n' +
-                       '  * change the file name ({ename:r} will be in both ' +
+                       '  * change the file name ({ename:s} will be in both ' +
                        'files containing different data)\n' +
                        '\nPlease report this problem.'
                        ).format(ename=self.entryname, fname=self.filename)
@@ -175,7 +182,12 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         _pname = nxentry.create_dataset('program_name', data=program_name)
         _pname.attrs['version'] = sardana.release.version
         nxentry.create_dataset('start_time', data=env['starttime'].isoformat())
-        _epoch = (env['starttime'] - datetime(1970, 1, 1)).total_seconds()
+        timedelta = (env['starttime'] - datetime(1970, 1, 1))
+        try:
+            _epoch = timedelta.total_seconds()
+        except AttributeError:
+            # for python 2.6 compatibility
+            _epoch = timedelta_total_seconds(timedelta)
         nxentry.attrs['epoch'] = _epoch
         nxentry.create_dataset('title', data=env['title'])
         nxentry.create_dataset('entry_identifier', data=str(env['serialno']))
