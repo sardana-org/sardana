@@ -128,6 +128,7 @@ def createPoolPseudoCounter(pool, poolcontroller, conf, elements=()):
     kwargs['user_elements'] = elements
     return PoolPseudoCounter(**kwargs)
 
+
 def createPoolPseudoMotor(pool, poolcontroller, conf, elements=()):
     '''Method to create a PoolPseudoMotor using a configuration dictionary
     '''
@@ -136,6 +137,7 @@ def createPoolPseudoMotor(pool, poolcontroller, conf, elements=()):
     kwargs['ctrl'] = poolcontroller
     kwargs['user_elements'] = elements
     return PoolPseudoMotor(**kwargs)
+
 
 def createPoolMeasurementGroup(pool, conf):
     '''Method to create a PoolMeasurementGroup using a configuration dictionary

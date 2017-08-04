@@ -91,7 +91,7 @@ class BasePoolTestCase(object):
     def createPMElement(self, ctrl_obj, name, axis, elements=[]):
         e_cfg = createElemConf(self.pool, axis, name)
         elem_obj = createPoolPseudoMotor(self.pool, ctrl_obj, e_cfg,
-                                           elements)
+                                         elements)
         ctrl_obj.add_element(elem_obj)
         self.pms[name] = elem_obj
         self.pool.add_element(elem_obj)
