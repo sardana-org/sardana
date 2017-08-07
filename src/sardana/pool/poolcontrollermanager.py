@@ -41,7 +41,7 @@ try:
     from collections import OrderedDict
 except ImportError:
     # For Python < 2.7
-    from ordereddict import OrderedDict
+    from taurus.external.ordereddict import OrderedDict
 
 from taurus.core import ManagerState
 from taurus.core.util.log import Logger
