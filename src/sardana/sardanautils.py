@@ -123,7 +123,7 @@ def assert_type(type_info, value):
             recv = recv.__name__
         except:
             recv = str(recv)
-        raise TypeError("Expected %s, but received %s", expected, recv)
+        raise TypeError("Expected %s, but received %s" % (expected, recv))
     return ret
 
 _DTYPE_FUNC = {
