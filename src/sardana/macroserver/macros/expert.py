@@ -27,9 +27,10 @@ from __future__ import print_function
 
 __docformat__ = 'restructuredtext'
 
-__all__ = ["commit_ctrllib", "defctrl", "defelem", "defm", "defmeas", "edctrl",
-           "edctrllib", "prdef", "rellib", "relmac", "relmaclib", "addmaclib",
-           "send2ctrl", "udefctrl", "udefelem", "udefmeas", "sar_info"]
+__all__ = ["addmaclib", "commit_ctrllib", "defctrl", "defelem", "defm",
+           "defmeas", "edctrl", "edctrllib", "prdef", "relctrl", "rellib",
+           "relmac", "relmaclib", "send2ctrl", "udefctrl", "udefelem",
+           "udefmeas", "sar_info"]
 
 import sys
 import traceback
@@ -304,6 +305,14 @@ class prdef(Macro):
         code_lines, _ = macro_data.code
         for code_line in code_lines:
             self.output(code_line.strip('\n'))
+
+class relctrl(Macro):
+    param_def = [["ctrl_class", Type.ControllerClass, None, "Controller "
+                                                            "class to reload"]]
+
+    def run(self, ctrl_class):
+        pool = ctrl_class.getPoolObj()
+        pool.ReloadControllerClass(ctrl_class.name)
 
 
 class rellib(Macro):
