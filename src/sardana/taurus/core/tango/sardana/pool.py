@@ -48,6 +48,8 @@ import numpy
 
 from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
     DeviceProxy
+
+import taurus
 from taurus import Factory, Device, Attribute
 from taurus.core.taurusbasetypes import TaurusEventType
 
@@ -85,6 +87,7 @@ QUALITY = {
     None: 'UNKNOWN'
 }
 
+taurus_version = taurus.Release.version
 
 class InterruptException(Exception):
     pass
@@ -230,7 +233,11 @@ class TangoAttributeEG(Logger, EventGenerator):
 
     def read(self, force=False):
         try:
-            self.last_val = self._attr.read(cache=not force).value
+            if taurus_version.split(".")[0] == '4':
+                self.last_val = self._attr.read(cache=not force).rvalue
+            else:
+                # Taurus 3 compatibility
+                self.last_val = self._attr.read(cache=not force).value
         except:
             self.error("Read error")
             self.debug("Details:", exc_info=1)
