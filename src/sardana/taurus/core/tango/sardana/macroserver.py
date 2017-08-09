@@ -95,7 +95,11 @@ class Attr(Logger, EventGenerator):
             self.fireEvent(None)
         elif type != TaurusEventType.Config:
             if evt_value:
-                self.fireEvent(evt_value.value)
+                if taurus_version.split(".")[0] == '4':
+                    self.fireEvent(evt_value.rvalue)
+                else:
+                    # Taurus 3 compatibility
+                    self.fireEvent(evt_value.value)
             else:
                 self.fireEvent(None)
 
@@ -121,14 +125,25 @@ class LogAttr(Attr):
 
     def eventReceived(self, src, type, evt_value):
         if type == TaurusEventType.Change:
-            if evt_value is None or evt_value.value is None:
-                self.fireEvent(None)
+            if taurus_version.split(".")[0] == '4':
+                if evt_value is None or evt_value.rvalue is None:
+                    self.fireEvent(None)
+                else:
+                    self._log_buffer.extend(evt_value.rvalue)
+                    while len(self._log_buffer) > self._max_buff_size:
+                        self._log_buffer.pop(0)
+                    if evt_value:
+                        self.fireEvent(evt_value.rvalue)
             else:
-                self._log_buffer.extend(evt_value.value)
-                while len(self._log_buffer) > self._max_buff_size:
-                    self._log_buffer.pop(0)
-                if evt_value:
-                    self.fireEvent(evt_value.value)
+                # Taurus 3 compatibility
+                if evt_value is None or evt_value.value is None:
+                    self.fireEvent(None)
+                else:
+                    self._log_buffer.extend(evt_value.value)
+                    while len(self._log_buffer) > self._max_buff_size:
+                        self._log_buffer.pop(0)
+                    if evt_value:
+                        self.fireEvent(evt_value.value)
 
 
 class BaseInputHandler(object):
@@ -653,7 +668,12 @@ class BaseDoor(MacroServerDevice):
 
         # make sure we get it as string since PyTango 7.1.4 returns a buffer
         # object and json.loads doesn't support buffer objects (only str)
-        v = map(str, v.value)
+        if taurus_version.split(".")[0] == '4':
+            v = map(str, v.rvalue)
+        else:
+            # Compatibility with Taurus3
+            v = map(str, v.value)
+
         if not len(v[1]):
             return
         format = v[0]
@@ -807,7 +827,11 @@ class BaseMacroServer(MacroServerDevice):
         if evt_type not in CHANGE_EVT_TYPES:
             return ret
 
-        env = CodecFactory().decode(evt_value.value)
+        if taurus_version.split(".")[0] == '4':
+            env = CodecFactory().decode(evt_value.rvalue)
+        else:
+            # Taurus3 compatibility
+            env = CodecFactory().decode(evt_value.value)
 
         for key, value in env.get('new', {}).items():
             self._addEnvironment(key, value)
@@ -888,10 +912,21 @@ class BaseMacroServer(MacroServerDevice):
         if evt_type not in CHANGE_EVT_TYPES:
             return ret
         try:
-            elems = CodecFactory().decode(evt_value.value, ensure_ascii=True)
+            if taurus_version.split(".")[0] == '4':
+                elems = CodecFactory().decode(evt_value.rvalue,
+                                              ensure_ascii=True)
+            else:
+                # Taurus3 compatibility
+                elems = CodecFactory().decode(evt_value.value,
+                                              ensure_ascii=True)
         except:
-            self.error("Could not decode element info format=%s len=%s",
-                       evt_value.value[0], len(evt_value.value[1]))
+            if taurus_version.split(".")[0] == '4':
+                self.error("Could not decode element info format=%s len=%s",
+                           evt_value.rvalue[0], len(evt_value.rvalue[1]))
+            else:
+                # Taurus3 compatibility
+                self.error("Could not decode element info format=%s len=%s",
+                           evt_value.value[0], len(evt_value.value[1]))
             return ret
 
         for element_data in elems.get('new', ()):
