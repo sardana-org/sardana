@@ -326,8 +326,12 @@ class BaseDoor(MacroServerDevice):
             # TODO: For Taurus 4 compatibility
             from taurus.core import TaurusDevState
             self._old_sw_door_state = TaurusDevState.Undefined
+        try:
+            self.stateObj.addListener(self.stateChanged)
+        except:
+            # Fallback for Taurus3
+            self.getStateObj().addListener(self.stateChanged)
 
-        self.getStateObj().addListener(self.stateChanged)
 
         for log_name in self.log_streams:
             tg_attr = self.getAttribute(log_name)
