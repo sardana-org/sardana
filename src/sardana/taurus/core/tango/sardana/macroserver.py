@@ -41,6 +41,7 @@ from lxml import etree
 
 import PyTango
 
+import taurus
 from taurus import Device, Factory
 from taurus.core.taurusmanager import TaurusManager
 from taurus.core.taurusbasetypes import TaurusEventType, TaurusSWDevState, \
@@ -59,7 +60,7 @@ from .pool import getChannelConfigs
 from .macro import createMacroNode
 
 CHANGE_EVT_TYPES = TaurusEventType.Change, TaurusEventType.Periodic
-
+taurus_version = taurus.Release.version
 
 def recur_map(fun, data, keep_none=False):
     """Recursive map. Similar to map, but maintains the list objects structure
@@ -574,12 +575,11 @@ class BaseDoor(MacroServerDevice):
         return result
 
     def stateChanged(self, s, t, v):
-        self._old_door_state = self.getState()
-        try:
-            self._old_sw_door_state = self.getSWState()
-        except:
-            # TODO: For Taurus 4 compatibility
+        if taurus_version.split(".")[0] == '4':
             self._old_sw_door_state = self.state
+        else:
+            # Taurus 3 compatibility
+            self._old_sw_door_state = self.getSWState()
 
     def resultReceived(self, log_name, result):
         """Method invoked by the arrival of a change event on the Result attribute"""
