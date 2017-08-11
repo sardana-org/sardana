@@ -47,7 +47,7 @@ name = 'sardana'
 
 # we use semantic versioning (http://semver.org/) and we update it using the
 # bumpversion script (https://github.com/peritus/bumpversion)
-version = '2.3.0'
+version = '2.3.1-alpha'
 
 # generate version_info and revision (**deprecated** since v 2.1.2--alpha).
 if '-' in version:
