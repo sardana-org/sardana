@@ -8,7 +8,7 @@ environment:
 
     matrix:
         # Python 2.7 (64)
-        - PYTHON_DIR: "C:\\Python27_32"
+        - PYTHON_DIR: "C:\\Python27-x64"
           PYTHON_VERSION: "2.7"
           PYTHON_ARCH: "64"
           CONDA_PY: "27"
