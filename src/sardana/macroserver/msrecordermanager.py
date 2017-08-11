@@ -87,7 +87,7 @@ class RecorderManager(MacroServerManager):
         #: value - recorder name
         self._custom_scan_recorder_map = getattr(sardanacustomsettings,
                                                  "SCAN_RECORDER_MAP",
-                                                 None)
+                                                 {})
         #: dict<str, str>
         #: key   - scan file extension
         #: value - list with recorder name(s)
