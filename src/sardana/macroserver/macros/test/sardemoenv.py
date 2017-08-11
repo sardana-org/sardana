@@ -2,24 +2,24 @@
 
 #############################################################################
 ##
-## This file is part of Sardana, a Tango User Interface Library
+# This file is part of Sardana, a Tango User Interface Library
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 #############################################################################
 
@@ -88,7 +88,8 @@ class SarDemoEnv(Singleton):
         :return: (list<str>)
         """
         if not self.ready:
-            raise RuntimeError('SarDemoEnv instantiation had previously failed')
+            raise RuntimeError(
+                'SarDemoEnv instantiation had previously failed')
         if elem_type.lower() == 'all':
             return self.env
         if elem_type.lower() == 'moveable':
@@ -195,29 +196,38 @@ def getElements(elem_type="all", fallback_name="element_not_defined",
         elements = [fallback_name] * fallback_elements_len
     return elements
 
+
 def getControllers():
     return getElements(elem_type="controller")
+
 
 def getCTs():
     return getElements(elem_type="ctexpchannel")
 
+
 def getMotors():
     return getElements(elem_type="motor")
+
 
 def getPseudoMotors():
     return getElements(elem_type="pseudomotor")
 
+
 def getMoveables():
     return getElements(elem_type="moveable")
+
 
 def getZerods():
     return getElements(elem_type="zerodexpchannel")
 
+
 def getOneds():
     return getElements(elem_type="onedexpchannel")
 
+
 def getTwods():
     return getElements(elem_type="twodexpchannel")
+
 
 def getIORs():
     return getElements(elem_type="ioregister")

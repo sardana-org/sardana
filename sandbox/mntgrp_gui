@@ -8,6 +8,7 @@ from taurus.qt.qtgui.application import TaurusApplication
 from taurus.qt.qtgui.extra_sardana.measurementgroup import MntGrpChannelPanel
 from functools import partial
 
+
 def openCfgMg(mg):
     d = Qt.QDialog(panel)
     l = Qt.QVBoxLayout()
@@ -26,8 +27,10 @@ ui = mntgrp_gui.Ui_Form()
 ui.setupUi(w)
 
 
-Qt.QObject.connect(ui.cfgMg1, Qt.SIGNAL("clicked()"), partial(openCfgMg, "mg1"))
-Qt.QObject.connect(ui.cfgMg2, Qt.SIGNAL("clicked()"), partial(openCfgMg, "mg2"))
+Qt.QObject.connect(ui.cfgMg1, Qt.SIGNAL(
+    "clicked()"), partial(openCfgMg, "mg1"))
+Qt.QObject.connect(ui.cfgMg2, Qt.SIGNAL(
+    "clicked()"), partial(openCfgMg, "mg2"))
 
 
 panel.show()

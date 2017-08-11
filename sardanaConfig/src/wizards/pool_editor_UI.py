@@ -9,7 +9,9 @@
 
 from PyQt4 import QtCore, QtGui
 
+
 class Ui_PoolEditor(object):
+
     def setupUi(self, PoolEditor):
         PoolEditor.setObjectName("PoolEditor")
         PoolEditor.resize(400, 333)
@@ -77,7 +79,8 @@ class Ui_PoolEditor(object):
         self.gridLayout.addWidget(self.groupBox, 1, 0, 1, 1)
         self.horizontalLayout_2 = QtGui.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        spacerItem = QtGui.QSpacerItem(
+            40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_2.addItem(spacerItem)
         self.createButton = QtGui.QPushButton(PoolEditor)
         self.createButton.setObjectName("createButton")
@@ -88,24 +91,39 @@ class Ui_PoolEditor(object):
         self.gridLayout.addLayout(self.horizontalLayout_2, 2, 0, 1, 1)
 
         self.retranslateUi(PoolEditor)
-        QtCore.QObject.connect(self.poolDeviceNameCheckBox, QtCore.SIGNAL("toggled(bool)"), self.poolDeviceNameLineEdit.setDisabled)
-        QtCore.QObject.connect(self.aliasCheckBox, QtCore.SIGNAL("toggled(bool)"), self.aliasLineEdit.setDisabled)
-        QtCore.QObject.connect(self.poolVersionCheckBox, QtCore.SIGNAL("toggled(bool)"), self.poolVersionLineEdit.setDisabled)
-        QtCore.QObject.connect(self.closeButton, QtCore.SIGNAL("clicked()"), PoolEditor.close)
+        QtCore.QObject.connect(self.poolDeviceNameCheckBox, QtCore.SIGNAL(
+            "toggled(bool)"), self.poolDeviceNameLineEdit.setDisabled)
+        QtCore.QObject.connect(self.aliasCheckBox, QtCore.SIGNAL(
+            "toggled(bool)"), self.aliasLineEdit.setDisabled)
+        QtCore.QObject.connect(self.poolVersionCheckBox, QtCore.SIGNAL(
+            "toggled(bool)"), self.poolVersionLineEdit.setDisabled)
+        QtCore.QObject.connect(self.closeButton, QtCore.SIGNAL(
+            "clicked()"), PoolEditor.close)
         QtCore.QMetaObject.connectSlotsByName(PoolEditor)
 
     def retranslateUi(self, PoolEditor):
-        PoolEditor.setWindowTitle(QtGui.QApplication.translate("PoolEditor", "Create Pool", None, QtGui.QApplication.UnicodeUTF8))
-        self.instanceNameLabel.setText(QtGui.QApplication.translate("PoolEditor", "Instance name", None, QtGui.QApplication.UnicodeUTF8))
-        self.poolDeviceNameLabel.setText(QtGui.QApplication.translate("PoolEditor", "Pool device name", None, QtGui.QApplication.UnicodeUTF8))
-        self.aliasLabel.setText(QtGui.QApplication.translate("PoolEditor", "Alias (optional)", None, QtGui.QApplication.UnicodeUTF8))
-        self.poolVersionLabel.setText(QtGui.QApplication.translate("PoolEditor", "Pool version", None, QtGui.QApplication.UnicodeUTF8))
-        self.poolDeviceNameCheckBox.setText(QtGui.QApplication.translate("PoolEditor", "Automatic", None, QtGui.QApplication.UnicodeUTF8))
-        self.aliasCheckBox.setText(QtGui.QApplication.translate("PoolEditor", "Automatic", None, QtGui.QApplication.UnicodeUTF8))
-        self.poolVersionCheckBox.setText(QtGui.QApplication.translate("PoolEditor", "Automatic", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox.setTitle(QtGui.QApplication.translate("PoolEditor", "PoolPath", None, QtGui.QApplication.UnicodeUTF8))
-        self.createButton.setText(QtGui.QApplication.translate("PoolEditor", "Create", None, QtGui.QApplication.UnicodeUTF8))
-        self.closeButton.setText(QtGui.QApplication.translate("PoolEditor", "Close", None, QtGui.QApplication.UnicodeUTF8))
+        PoolEditor.setWindowTitle(QtGui.QApplication.translate(
+            "PoolEditor", "Create Pool", None, QtGui.QApplication.UnicodeUTF8))
+        self.instanceNameLabel.setText(QtGui.QApplication.translate(
+            "PoolEditor", "Instance name", None, QtGui.QApplication.UnicodeUTF8))
+        self.poolDeviceNameLabel.setText(QtGui.QApplication.translate(
+            "PoolEditor", "Pool device name", None, QtGui.QApplication.UnicodeUTF8))
+        self.aliasLabel.setText(QtGui.QApplication.translate(
+            "PoolEditor", "Alias (optional)", None, QtGui.QApplication.UnicodeUTF8))
+        self.poolVersionLabel.setText(QtGui.QApplication.translate(
+            "PoolEditor", "Pool version", None, QtGui.QApplication.UnicodeUTF8))
+        self.poolDeviceNameCheckBox.setText(QtGui.QApplication.translate(
+            "PoolEditor", "Automatic", None, QtGui.QApplication.UnicodeUTF8))
+        self.aliasCheckBox.setText(QtGui.QApplication.translate(
+            "PoolEditor", "Automatic", None, QtGui.QApplication.UnicodeUTF8))
+        self.poolVersionCheckBox.setText(QtGui.QApplication.translate(
+            "PoolEditor", "Automatic", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setTitle(QtGui.QApplication.translate(
+            "PoolEditor", "PoolPath", None, QtGui.QApplication.UnicodeUTF8))
+        self.createButton.setText(QtGui.QApplication.translate(
+            "PoolEditor", "Create", None, QtGui.QApplication.UnicodeUTF8))
+        self.closeButton.setText(QtGui.QApplication.translate(
+            "PoolEditor", "Close", None, QtGui.QApplication.UnicodeUTF8))
 
 
 if __name__ == "__main__":
@@ -116,4 +134,3 @@ if __name__ == "__main__":
     ui.setupUi(PoolEditor)
     PoolEditor.show()
     sys.exit(app.exec_())
-

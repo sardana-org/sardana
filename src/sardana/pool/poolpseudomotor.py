@@ -1,26 +1,25 @@
 #!/usr/bin/env python
-from sardana.sardanavalue import SardanaValue
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -36,6 +35,7 @@ import time
 import collections
 
 from sardana import State, ElementType, TYPE_PHYSICAL_ELEMENTS
+from sardana.sardanavalue import SardanaValue
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.sardanaexception import SardanaException
 
@@ -59,7 +59,8 @@ class Position(SardanaAttribute):
         # The pool will not be able to start if we create a third slit with s3g,s3o = f(s1g, s2g)
         # self.obj.get_physical_position_attribute_iterator() raises a KeyError exception
         # so we will flag the Position object as no_listeners for later configuration
-        # We should still investigate the root of the problem when ordering the creation of elements
+        # We should still investigate the root of the problem when ordering the
+        # creation of elements
         self._listeners_configured = False
         try:
             for position_attr in self.obj.get_physical_position_attribute_iterator():
@@ -72,7 +73,7 @@ class Position(SardanaAttribute):
         for position_attr in self.obj.get_physical_position_attribute_iterator():
             if position_attr.error:
                 return True
-        return self._exc_info != None
+        return self._exc_info is not None
 
     def _has_value(self):
         for position_attr in self.obj.get_physical_position_attribute_iterator():
@@ -97,7 +98,8 @@ class Position(SardanaAttribute):
         return self.calc_pseudo(physical_positions=w_positions).value
 
     def _set_write_value(self, w_value, timestamp=None, propagate=1):
-        raise Exception("Cannot set position write value for %s" % self.obj.name)
+        raise Exception("Cannot set position write value for %s" %
+                        self.obj.name)
 
     def _get_exc_info(self):
         exc_info = self._exc_info
@@ -108,7 +110,8 @@ class Position(SardanaAttribute):
         return exc_info
 
     def _get_timestamp(self):
-        timestamps = [ pos_attr.timestamp for pos_attr in self.obj.get_physical_position_attribute_iterator() ]
+        timestamps = [
+            pos_attr.timestamp for pos_attr in self.obj.get_physical_position_attribute_iterator()]
         if not len(timestamps):
             timestamps = self._local_timestamp,
         return max(timestamps)
@@ -149,11 +152,13 @@ class Position(SardanaAttribute):
             if physical_positions is None:
                 physical_positions = self.get_physical_positions()
             else:
-                l_p, l_u = len(physical_positions), len(obj.get_user_elements())
+                l_p, l_u = len(physical_positions), len(
+                    obj.get_user_elements())
                 if l_p != l_u:
-                    raise IndexError("CalcPseudo(%s): must give %d physical " \
+                    raise IndexError("CalcPseudo(%s): must give %d physical "
                                      "positions (you gave %d)" % (obj.name, l_u, l_p))
-            result = obj.controller.calc_pseudo(obj.axis, physical_positions, None)
+            result = obj.controller.calc_pseudo(
+                obj.axis, physical_positions, None)
         except SardanaException as se:
             result = SardanaValue(exc_info=se.exc_info)
         except:
@@ -166,9 +171,10 @@ class Position(SardanaAttribute):
             if physical_positions is None:
                 physical_positions = self.get_physical_positions()
             else:
-                l_p, l_u = len(physical_positions), len(obj.get_user_elements())
+                l_p, l_u = len(physical_positions), len(
+                    obj.get_user_elements())
                 if l_p != l_u:
-                    raise IndexError("CalcAllPseudo():: must give %d physical " \
+                    raise IndexError("CalcAllPseudo():: must give %d physical "
                                      "positions (you gave %d)" % (l_u, l_p))
             result = obj.controller.calc_all_pseudo(physical_positions, None)
         except SardanaException as se:
@@ -208,11 +214,13 @@ class Position(SardanaAttribute):
                     cache = False
                     break
         if not cache:
-            dial_position_values = self.obj.motion.read_dial_position(serial=True)
+            dial_position_values = self.obj.motion.read_dial_position(
+                serial=True)
             if not len(dial_position_values):
                 self._local_timestamp = time.time()
             for motion_obj, position_value in dial_position_values.items():
-                motion_obj.put_dial_position(position_value, propagate=propagate)
+                motion_obj.put_dial_position(
+                    position_value, propagate=propagate)
 
 
 class PoolPseudoMotor(PoolBaseGroup, PoolElement):
@@ -239,7 +247,7 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
 
     def serialize(self, *args, **kwargs):
         kwargs = PoolElement.serialize(self, *args, **kwargs)
-        elements = [ elem.name for elem in self.get_user_elements() ]
+        elements = [elem.name for elem in self.get_user_elements()]
         physical_elements = []
         for elem_list in self.get_physical_elements().values():
             for elem in elem_list:
@@ -304,7 +312,7 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
         if elem_type == ElementType.Motor:
             pass
         elif elem_type == ElementType.PseudoMotor:
-            #TODO: make this happen
+            # TODO: make this happen
             pass
         else:
             raise Exception("element %s is not a motor" % element.name)
@@ -363,7 +371,7 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
         If write_pos is True and a sibling has already been moved before,
         it's last write position is used. Otherwise its read position is used
         instead.
-        
+
         :param use: the already calculated positions. If a sibling is in this
                     dictionary, the position stored here is used instead
         :type use: dict <PoolElement, :class:`~sardana.sardanavalue.SardanaValue` >
@@ -436,13 +444,15 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
         self._position.set_write_value(w_position, timestamp=timestamp,
                                        propagate=propagate)
 
-    position = property(get_position, set_position, doc="pseudo motor position")
+    position = property(get_position, set_position,
+                        doc="pseudo motor position")
 
     # ------------------------------------------------------------------------
     # state information
     # ------------------------------------------------------------------------
 
     _STD_STATUS = "{name} is {state}\n{ctrl_status}"
+
     def calculate_state_info(self, status_info=None):
 
         # Refer to Position.__init__ method for an explanation on this 'hack'
@@ -534,7 +544,7 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
         for new_position, element in zip(physical_positions.value, user_elements):
             if new_position is None:
                 raise PoolException("Cannot calculate motion: %s reports "
-                                     "position to be None" % element.name)
+                                    "position to be None" % element.name)
             element.calculate_motion(new_position, items=items,
                                      calculated=calculated)
         return items
@@ -562,7 +572,7 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
     # ------------------------------------------------------------------------
 
     def stop(self):
-        #surpass the PoolElement.stop because it doesn't do what we want
+        # surpass the PoolElement.stop because it doesn't do what we want
         PoolBaseElement.stop(self)
         PoolBaseGroup.stop(self)
 
@@ -571,7 +581,7 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
     # ------------------------------------------------------------------------
 
     def abort(self):
-        #surpass the PoolElement.abort because it doesn't do what we want
+        # surpass the PoolElement.abort because it doesn't do what we want
         PoolBaseElement.abort(self)
         PoolBaseGroup.abort(self)
 

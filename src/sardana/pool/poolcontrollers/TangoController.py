@@ -1,23 +1,23 @@
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -35,18 +35,19 @@ from sardana.pool.controller import MotorController, CounterTimerController, \
 TangoAttribute = "TangoAttribute"
 Formula = "Formula"
 
+
 class ReadTangoAttributes(object):
     """ Generic class that has as many devices as the user wants.
     Each device has a tango attribute and a formula and the 'hardware' tango calls
     are optimized in the sense that only one call per tango device is issued.
     """
     axis_attributes = {
-        TangoAttribute : { Type : str, Access : DataAccess.ReadWrite,
-                           Description : 'Attribute to read (e.g. a/b/c/attr)' },
-        Formula        : { Type : str, Access : DataAccess.ReadWrite,
-                           DefaultValue : "VALUE",
-                           Description  : 'The Formula to get the desired value.\n'
-                                          'e.g. "math.sqrt(VALUE)"' },
+        TangoAttribute: {Type: str, Access: DataAccess.ReadWrite,
+                         Description: 'Attribute to read (e.g. a/b/c/attr)'},
+        Formula: {Type: str, Access: DataAccess.ReadWrite,
+                  DefaultValue: "VALUE",
+                  Description: 'The Formula to get the desired value.\n'
+                  'e.g. "math.sqrt(VALUE)"'},
     }
 
     def __init__(self):
@@ -63,7 +64,8 @@ class ReadTangoAttributes(object):
         self._axis_formulas = {}
 
     def add_device(self, axis):
-        self._pending[axis] = "No tango attribute associated to this device yet"
+        self._pending[
+            axis] = "No tango attribute associated to this device yet"
         self._axis_formulas[axis] = self.axis_attribute[Formula][DefaultValue]
 
     def delete_device(self, axis):
@@ -120,7 +122,8 @@ class ReadTangoAttributes(object):
                     if len(df):
                         self._pending[axis] = df[0].reason + ": " + df[0].desc
                     else:
-                        self._pending[axis] = "Unknwon PyTango Error: " + str(df)
+                        self._pending[
+                            axis] = "Unknwon PyTango Error: " + str(df)
                     raise
                 self._devices[dev_name] = dev_info = proxy, []
             data[2] = dev_info[0]
@@ -128,6 +131,7 @@ class ReadTangoAttributes(object):
 
         elif name == Formula:
             self._axis_formulas[axis] = value
+
 
 class TangoCounterTimerController(ReadTangoAttributes, CounterTimerController):
     """This controller offers as many channels as the user wants.
@@ -197,4 +201,3 @@ class TangoCounterTimerController(ReadTangoAttributes, CounterTimerController):
 
     def LoadOne(self, axis, value):
         pass
-

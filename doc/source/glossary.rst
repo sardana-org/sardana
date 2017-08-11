@@ -17,6 +17,10 @@ Glossary
         an indented code block or within a pair of matching left and right
         delimiters (parentheses, square brackets or curly braces).
 
+    ADC
+        In electronics, an analog-to-digital converter (ADC) is a system that
+        converts an analog signal e.g. voltage into its digital representation.
+
     argument
         A value passed to a function or method, assigned to a named local
         variable in the function body.  A function or method may have both
@@ -298,7 +302,14 @@ Glossary
         plug-ins enable customizing the functionality of an application. For
         example, plug-ins are commonly used in web browsers to play video,
         scan for viruses, and display new file types.
-    
+
+    PLC
+        A programmable logic controller (PLC) is an industrial digital computer
+        which has been ruggedised and adapted for the control of manufacturing
+        processes, such as assembly lines, or robotic devices, or any activity
+        that requires high reliability control e.g. equipment or personal
+        protection.
+
     MCA
         Multichannel Analyzer (MCA) is a device for ...
 

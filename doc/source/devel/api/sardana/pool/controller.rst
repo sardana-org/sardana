@@ -28,6 +28,7 @@
     * :class:`Startable`
     * :class:`Stopable`
     * :class:`Loadable`
+    * :class:`Synchronizer`
     
 .. rubric:: Classes
 
@@ -91,7 +92,19 @@ Loadable interface
 .. autoclass:: Loadable
     :show-inheritance:
     :members:
-    :undoc-members:   
+    :undoc-members:
+
+
+Synchronizer interface
+----------------------
+
+.. inheritance-diagram:: Synchronizer
+    :parts: 1
+
+.. autoclass:: Synchronizer
+    :show-inheritance:
+    :members:
+    :undoc-members:
 
 
 Abstract Controller

@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
-import sys,types
+import sys
+import types
 from lxml import etree
+
 
 def transform(f):
     t = etree.XSLT(etree.parse("SAR_TO_FODS.xslt"))
@@ -10,6 +12,7 @@ def transform(f):
     else:
         doc = f
     return t(doc)
+
 
 def main():
     filename = sys.argv[1]

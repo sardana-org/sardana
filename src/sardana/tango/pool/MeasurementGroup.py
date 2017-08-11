@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -33,8 +33,7 @@ import sys
 import time
 
 from PyTango import Except, DevVoid, DevLong, DevDouble, DevString, \
-    DispLevel, DevState, AttrQuality, \
-    READ_WRITE, SCALAR
+    DispLevel, DevState, AttrQuality, READ, READ_WRITE, SCALAR
 
 from taurus.core.util.codecs import CodecFactory
 from taurus.core.util.log import DebugIt
@@ -42,6 +41,7 @@ from taurus.core.util.log import DebugIt
 from sardana import State, SardanaServer
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.pool import AcqMode
+from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.tango.core.util import exception_str
 from sardana.tango.pool.PoolDevice import PoolGroupDevice, PoolGroupDeviceClass
 
@@ -75,7 +75,7 @@ class MeasurementGroup(PoolGroupDevice):
 
         detect_evts = ()  # state and status are already set by the super class
         non_detect_evts = "configuration", "integrationtime", "monitorcount", \
-                          "acquisitionmode", "elementlist"
+                          "acquisitionmode", "elementlist", "repetitions"
         self.set_change_events(detect_evts, non_detect_evts)
 
         self.Elements = list(self.Elements)
@@ -90,8 +90,8 @@ class MeasurementGroup(PoolGroupDevice):
             name = self.alias or full_name
             self.measurement_group = mg = \
                 self.pool.create_measurement_group(name=name,
-                    full_name=full_name, id=self.Id,
-                    user_elements=self.Elements)
+                                                   full_name=full_name, id=self.Id,
+                                                   user_elements=self.Elements)
         mg.add_listener(self.on_measurement_group_changed)
 
         # force a state read to initialize the state attribute
@@ -100,7 +100,8 @@ class MeasurementGroup(PoolGroupDevice):
 
     def on_measurement_group_changed(self, event_source, event_type, event_value):
         try:
-            self._on_measurement_group_changed(event_source, event_type, event_value)
+            self._on_measurement_group_changed(
+                event_source, event_type, event_value)
         except:
             msg = 'Error occured "on_measurement_group_changed(%s.%s): %s"'
             exc_info = sys.exc_info()
@@ -133,6 +134,9 @@ class MeasurementGroup(PoolGroupDevice):
             cfg = self.measurement_group.get_user_configuration()
             codec = CodecFactory().getCodec('json')
             _, event_value = codec.encode(('', cfg))
+        elif name == "synchronization":
+            codec = CodecFactory().getCodec('json')
+            _, event_value = codec.encode(('', event_value))
         else:
             if isinstance(event_value, SardanaAttribute):
                 if event_value.error:
@@ -143,6 +147,24 @@ class MeasurementGroup(PoolGroupDevice):
         self.set_attribute(attr, value=event_value, timestamp=timestamp,
                            quality=quality, priority=priority, error=error,
                            synch=False)
+
+    def _synchronization_str2enum(self, synchronization):
+        '''Translates synchronization data structure so it uses SynchDomain
+        enums as keys instead of strings.
+        '''
+        for group in synchronization:
+            for param, conf in group.iteritems():
+                group.pop(param)
+                param = SynchParam.fromStr(param)
+                group[param] = conf
+                # skip repeats cause its value is just a long number
+                if param == SynchParam.Repeats:
+                    continue
+                for domain, value in conf.iteritems():
+                    conf.pop(domain)
+                    domain = SynchDomain.fromStr(domain)
+                    conf[domain] = value
+        return synchronization
 
     def always_executed_hook(self):
         pass
@@ -179,7 +201,7 @@ class MeasurementGroup(PoolGroupDevice):
         try:
             acq_mode = AcqMode.lookup[acq_mode_str]
         except KeyError:
-            raise Exception("Invalid acquisition mode. Must be one of " + \
+            raise Exception("Invalid acquisition mode. Must be one of " +
                             ", ".join(AcqMode.keys()))
         self.measurement_group.acquisition_mode = acq_mode
 
@@ -194,6 +216,42 @@ class MeasurementGroup(PoolGroupDevice):
         cfg = CodecFactory().decode(('json', data), ensure_ascii=True)
         self.measurement_group.set_configuration_from_user(cfg)
 
+    def read_Repetitions(self, attr):
+        repetitions = self.measurement_group.repetitions
+        if repetitions is None:
+            repetitions = int('nan')
+        attr.set_value(repetitions)
+
+    def write_Repetitions(self, attr):
+        self.measurement_group.repetitions = attr.get_write_value()
+
+    def read_Moveable(self, attr):
+        moveable = self.measurement_group.moveable
+        if moveable is None:
+            moveable = 'None'
+        attr.set_value(moveable)
+
+    def write_Moveable(self, attr):
+        self.measurement_group.moveable = attr.get_write_value()
+
+    def read_Synchronization(self, attr):
+        synchronization = self.measurement_group.synchronization
+        codec = CodecFactory().getCodec('json')
+        data = codec.encode(('', synchronization))
+        attr.set_value(data[1])
+
+    def write_Synchronization(self, attr):
+        data = attr.get_write_value()
+        synchronization = CodecFactory().decode(('json', data),
+                                                ensure_ascii=True)
+        # translate dictionary keys
+        synchronization = self._synchronization_str2enum(synchronization)
+        self.measurement_group.synchronization = synchronization
+
+    def read_LatencyTime(self, attr):
+        latency_time = self.measurement_group.latency_time
+        attr.set_value(latency_time)
+
     def Start(self):
         try:
             self.wait_for_operation()
@@ -201,12 +259,16 @@ class MeasurementGroup(PoolGroupDevice):
             raise Exception("Cannot acquire: already involved in an operation")
         self.measurement_group.start_acquisition()
 
+    def Stop(self):
+        self.measurement_group.stop()
+
     def StartMultiple(self, n):
         try:
             self.wait_for_operation()
         except:
             raise Exception("Cannot acquire: already involved in an operation")
         self.measurement_group.start_acquisition(multiple=n)
+
 
 class MeasurementGroupClass(PoolGroupDeviceClass):
 
@@ -221,25 +283,36 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
 
     #    Command definitions
     cmd_list = {
-        'Start': [ [DevVoid, ""], [DevVoid, ""] ],
-        'StartMultiple': [ [DevLong, ""], [DevVoid, ""] ],
+        'Start': [[DevVoid, ""], [DevVoid, ""]],
+        'StartMultiple': [[DevLong, ""], [DevVoid, ""]],
     }
     cmd_list.update(PoolGroupDeviceClass.cmd_list)
 
     #    Attribute definitions
     attr_list = {
-        'IntegrationTime': [ [DevDouble, SCALAR, READ_WRITE],
-                              { 'Memorized'     : "true",
-                                'Display level' : DispLevel.OPERATOR } ],
-        'MonitorCount': [ [DevLong, SCALAR, READ_WRITE],
-                              { 'Memorized'     : "true",
-                                'Display level' : DispLevel.OPERATOR } ],
-        'AcquisitionMode': [ [DevString, SCALAR, READ_WRITE],
-                              { 'Memorized'     : "true",
-                                'Display level' : DispLevel.OPERATOR } ],
-        'Configuration': [ [DevString, SCALAR, READ_WRITE],
-                              { 'Memorized'     : "true",
-                                'Display level' : DispLevel.EXPERT } ],
+        'IntegrationTime': [[DevDouble, SCALAR, READ_WRITE],
+                            {'Memorized': "true",
+                             'Display level': DispLevel.OPERATOR}],
+        'MonitorCount': [[DevLong, SCALAR, READ_WRITE],
+                         {'Memorized': "true",
+                          'Display level': DispLevel.OPERATOR}],
+        'AcquisitionMode': [[DevString, SCALAR, READ_WRITE],
+                            {'Memorized': "true",
+                             'Display level': DispLevel.OPERATOR}],
+        'Configuration': [[DevString, SCALAR, READ_WRITE],
+                          {'Memorized': "true",
+                           'Display level': DispLevel.EXPERT}],
+        'Repetitions': [[DevLong, SCALAR, READ_WRITE],
+                        {'Memorized': "true",
+                         'Display level': DispLevel.OPERATOR}],
+        'Moveable': [[DevString, SCALAR, READ_WRITE],
+                     {'Memorized': "true",
+                      'Display level': DispLevel.EXPERT}],
+        'Synchronization': [[DevString, SCALAR, READ_WRITE],
+                            {'Memorized': "true",
+                             'Display level': DispLevel.EXPERT}],
+        'LatencyTime': [[DevDouble, SCALAR, READ],
+                        {'Display level': DispLevel.EXPERT}],
     }
     attr_list.update(PoolGroupDeviceClass.attr_list)
 

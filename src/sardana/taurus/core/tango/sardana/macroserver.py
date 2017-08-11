@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -59,6 +59,22 @@ from .pool import getChannelConfigs
 from .macro import createMacroNode
 
 CHANGE_EVT_TYPES = TaurusEventType.Change, TaurusEventType.Periodic
+
+
+def recur_map(fun, data, keep_none=False):
+    """Recursive map. Similar to map, but maintains the list objects structure
+
+    :param fun: <callable> the same purpose as in map function
+    :param data: <object> the same purpose as in map function
+    :param keep_none: <bool> keep None elements without applying fun
+    """
+    if hasattr(data, "__iter__"):
+        return [recur_map(fun, elem, keep_none) for elem in data]
+    else:
+        if keep_none is True and data is None:
+            return data
+        else:
+            return fun(data)
 
 
 class Attr(Logger, EventGenerator):
@@ -147,7 +163,8 @@ class MacroServerDevice(TangoDevice):
     def _getEventWait(self):
         if not hasattr(self, '_evt_wait'):
             # create an object that waits for attribute events.
-            # each time we use it we have to connect and disconnect to an attribute
+            # each time we use it we have to connect and disconnect to an
+            # attribute
             self._evt_wait = AttributeEventWait()
         return self._evt_wait
 
@@ -163,7 +180,7 @@ class ExperimentConfiguration(object):
         env = door.getEnvironment()
 
         ret = dict(ScanDir=env.get('ScanDir'),
-                   DataCompressionRank=env.get('DataCompressionRank', 0),
+                   DataCompressionRank=env.get('DataCompressionRank', 1),
                    PreScanSnapshot=env.get('PreScanSnapshot', []))
         scan_file = env.get('ScanFile')
         if scan_file is None:
@@ -171,11 +188,13 @@ class ExperimentConfiguration(object):
         elif isinstance(scan_file, (str, unicode)):
             scan_file = [scan_file]
         ret['ScanFile'] = scan_file
-        mnt_grps = macro_server.getElementNamesOfType("MeasurementGroup")
+        mnt_grps = macro_server.getElementsOfType("MeasurementGroup")
+        mnt_grps_names = [mnt_grp.name for mnt_grp in mnt_grps.values()]
+        mnt_grps_full_names = mnt_grps.keys()
 
         active_mnt_grp = env.get('ActiveMntGrp')
         if active_mnt_grp is None and len(mnt_grps):
-            active_mnt_grp = mnt_grps[0]
+            active_mnt_grp = mnt_grps_names[0]
             door.putEnvironment('ActiveMntGrp', active_mnt_grp)
 
         ret['ActiveMntGrp'] = active_mnt_grp
@@ -185,18 +204,20 @@ class ExperimentConfiguration(object):
             return ret
 
         mnt_grp_grps = PyTango.Group("grp")
-        mnt_grp_grps.add(mnt_grps)
+        # use full names cause we may be using a different Tango database
+        mnt_grp_grps.add(mnt_grps_full_names)
 
         codec = CodecFactory().getCodec('json')
         replies = mnt_grp_grps.read_attribute("configuration")
-        for mnt_grp, reply in zip(mnt_grps, replies):
+        for mnt_grp, reply in zip(mnt_grps_names, replies):
             try:
                 mnt_grp_configs[mnt_grp] = \
-                        codec.decode(('json', reply.get_data().value),
-                                     ensure_ascii=True)[1]
+                    codec.decode(('json', reply.get_data().value),
+                                 ensure_ascii=True)[1]
             except Exception, e:
                 from taurus.core.util.log import warning
-                warning('Cannot load Measurement group "%s": %s', repr(mnt_grp), repr(e))
+                warning('Cannot load Measurement group "%s": %s',
+                        repr(mnt_grp), repr(e))
         return ret
 
     def set(self, conf, mnt_grps=None):
@@ -214,16 +235,18 @@ class ExperimentConfiguration(object):
         for mnt_grp in mnt_grps:
             try:
                 mnt_grp_cfg = conf['MntGrpConfigs'][mnt_grp]
-                if mnt_grp_cfg is None:  #a mntGrp to be deleted
+                if mnt_grp_cfg is None:  # a mntGrp to be deleted
                     pool = self._getPoolOfElement(mnt_grp)
                     pool.DeleteElement(mnt_grp)
                 else:
                     try:
                         mnt_grp_dev = Device(mnt_grp)
-                    except:  #if the mnt_grp did not already exist, create it now
+                    except:  # if the mnt_grp did not already exist, create it now
                         chconfigs = getChannelConfigs(mnt_grp_cfg)
-                        chnames, chinfos = zip(*chconfigs)  #unzipping
-                        pool = self._getPoolOfElement(chnames[0])  #We assume that all the channels belong to the same pool!
+                        chnames, chinfos = zip(*chconfigs)  # unzipping
+                        # We assume that all the channels belong to the same
+                        # pool!
+                        pool = self._getPoolOfElement(chnames[0])
                         pool.createMeasurementGroup([mnt_grp] + list(chnames))
                         mnt_grp_dev = Device(mnt_grp)
 
@@ -234,7 +257,8 @@ class ExperimentConfiguration(object):
                     mnt_grp_dev.write_attribute('configuration', data)
             except Exception, e:
                 from taurus.core.util.log import error
-                error('Could not create/delete/modify Measurement group "%s": %s', mnt_grp, repr(e))
+                error(
+                    'Could not create/delete/modify Measurement group "%s": %s', mnt_grp, repr(e))
 
     def _getPoolOfElement(self, elementname):
         ms = self._door.macro_server
@@ -277,7 +301,6 @@ class BaseDoor(MacroServerDevice):
     # maximum execution time without user interruption
     InteractiveTimeout = 0.1
 
-
     def __init__(self, name, **kw):
         self._log_attr = CaselessDict()
         self._block_lines = 0
@@ -300,9 +323,9 @@ class BaseDoor(MacroServerDevice):
         try:
             self._old_sw_door_state = TaurusSWDevState.Uninitialized
         except RuntimeError:
-            #TODO: For Taurus 4 compatibility
+            # TODO: For Taurus 4 compatibility
             from taurus.core import TaurusDevState
-            self._old_sw_door_state = TaurusDevState.Undefined 
+            self._old_sw_door_state = TaurusDevState.Undefined
 
         self.getStateObj().addListener(self.stateChanged)
 
@@ -335,7 +358,7 @@ class BaseDoor(MacroServerDevice):
     def get_color_mode(self):
         return "NoColor"
 
-    #def macrosChanged(self, s, v, t):
+    # def macrosChanged(self, s, v, t):
     #    pass
 
     @property
@@ -346,13 +369,13 @@ class BaseDoor(MacroServerDevice):
                 kls = taurus.core.util.console.NoColors
             else:
                 kls = taurus.core.util.console.TermColors
-            self._log_start = { BaseDoor.Critical : kls.LightRed,
-                                BaseDoor.Error    : kls.Red,
-                                BaseDoor.Info     : kls.LightBlue,
-                                BaseDoor.Warning  : kls.Brown,
-                                BaseDoor.Output   : kls.Normal,
-                                BaseDoor.Debug    : kls.DarkGray,
-                                BaseDoor.Result   : kls.LightGreen }
+            self._log_start = {BaseDoor.Critical: kls.LightRed,
+                               BaseDoor.Error: kls.Red,
+                               BaseDoor.Info: kls.LightBlue,
+                               BaseDoor.Warning: kls.Brown,
+                               BaseDoor.Output: kls.Normal,
+                               BaseDoor.Debug: kls.DarkGray,
+                               BaseDoor.Result: kls.LightGreen}
         return self._log_start
 
     @property
@@ -363,13 +386,13 @@ class BaseDoor(MacroServerDevice):
                 kls = taurus.core.util.console.NoColors
             else:
                 kls = taurus.core.util.console.TermColors
-            self._log_stop = {  BaseDoor.Critical : kls.Normal,
-                                BaseDoor.Error    : kls.Normal,
-                                BaseDoor.Info     : kls.Normal,
-                                BaseDoor.Warning  : kls.Normal,
-                                BaseDoor.Output   : kls.Normal,
-                                BaseDoor.Debug    : kls.Normal,
-                                BaseDoor.Result   : kls.Normal }
+            self._log_stop = {BaseDoor.Critical: kls.Normal,
+                              BaseDoor.Error: kls.Normal,
+                              BaseDoor.Info: kls.Normal,
+                              BaseDoor.Warning: kls.Normal,
+                              BaseDoor.Output: kls.Normal,
+                              BaseDoor.Debug: kls.Normal,
+                              BaseDoor.Result: kls.Normal}
         return self._log_stop
 
     def getStateAttr(self):
@@ -486,7 +509,7 @@ class BaseDoor(MacroServerDevice):
         self._clearRunMacro()
 
         xml_root = None
-        if isinstance(obj , (str, unicode)):
+        if isinstance(obj, (str, unicode)):
             if obj.startswith('<') and not parameters:
                 xml_root = etree.fromstring(obj)
             else:
@@ -497,7 +520,7 @@ class BaseDoor(MacroServerDevice):
                         pars = m.split()
                         macros.append((pars[0], pars[1:]))
                 else:
-                    parameters = map(str, parameters)
+                    parameters = recur_map(str, parameters)
                     macros.append((obj, parameters))
                 xml_root = xml_seq = etree.Element('sequence')
                 for m in macros:
@@ -596,17 +619,20 @@ class BaseDoor(MacroServerDevice):
             self._input_handler.input_timeout(input_data)
 
     def recordDataReceived(self, s, t, v):
-        if t not in CHANGE_EVT_TYPES: return
+        if t not in CHANGE_EVT_TYPES:
+            return
         return self._processRecordData(v)
 
     def _processRecordData(self, data):
-        if data is None or data.value is None: return
+        if data is None or data.value is None:
+            return
         # make sure we get it as string since PyTango 7.1.4 returns a buffer
         # object and json.loads doesn't support buffer objects (only str)
         data = map(str, data.value)
 
         size = len(data[1])
-        if size == 0: return
+        if size == 0:
+            return
         format = data[0]
         codec = CodecFactory().getCodec(format)
         data = codec.decode(data)
@@ -618,7 +644,8 @@ class BaseDoor(MacroServerDevice):
     def macroStatusReceived(self, s, t, v):
         if v is None or self._running_macros is None:
             return
-        if t not in CHANGE_EVT_TYPES: return
+        if t not in CHANGE_EVT_TYPES:
+            return
 
         # make sure we get it as string since PyTango 7.1.4 returns a buffer
         # object and json.loads doesn't support buffer objects (only str)
@@ -656,7 +683,8 @@ class BaseDoor(MacroServerDevice):
                 if line == self.BlockStart:
                     self._in_block = True
                     for i in xrange(self._block_lines):
-                        o += '\x1b[2K\x1b[1A\x1b[2K'  #erase current line, up one line, erase current line
+                        # erase current line, up one line, erase current line
+                        o += '\x1b[2K\x1b[1A\x1b[2K'
                     self._block_lines = 0
                     continue
                 elif line == self.BlockFinish:
@@ -713,10 +741,10 @@ class MacroPath(object):
         self.refresh()
 
     def refresh(self):
-        self.macro_path = mp = self._ms().get_property("MacroPath")["MacroPath"]
+        self.macro_path = mp = self._ms().get_property("MacroPath")[
+            "MacroPath"]
         self.base_macro_path = osp.commonprefix(self.macro_path)
-        self.rel_macro_path = [ osp.relpath for p in mp, self.base_macro_path ]
-
+        self.rel_macro_path = [osp.relpath for p in mp, self.base_macro_path]
 
 
 class Environment(dict):
@@ -738,7 +766,7 @@ class Environment(dict):
             ms.removeEnvironment(key)
 
     def __dir__(self):
-        return [ key for key in self.keys() if not key.startswith("_") ]
+        return [key for key in self.keys() if not key.startswith("_")]
 
 
 class BaseMacroServer(MacroServerDevice):
@@ -799,7 +827,7 @@ class BaseMacroServer(MacroServerDevice):
             pass
 
     def putEnvironment(self, name, value):
-        self.putEnvironments({ name : value })
+        self.putEnvironments({name: value})
 
     def putEnvironments(self, obj):
         obj = dict(new=obj)
@@ -820,7 +848,7 @@ class BaseMacroServer(MacroServerDevice):
         return self.removeEnvironments(keys)
 
     def removeEnvironments(self, keys):
-        obj = { 'del' : keys }
+        obj = {'del': keys}
         codec = CodecFactory().getCodec('pickle')
         self.write_attribute('Environment', codec.encode(('', obj)))
 
@@ -952,7 +980,8 @@ class BaseMacroServer(MacroServerDevice):
 
         macroNode = MacroNode(name=macro_name)
         macroInfoObj = self.getMacroInfoObj(macro_name)
-        if macroInfoObj is None: return
+        if macroInfoObj is None:
+            return
         allowedHookPlaces = []
         hints = macroInfoObj.hints
         if hints is not None:
@@ -970,7 +999,8 @@ class BaseMacroServer(MacroServerDevice):
     def validateMacroName(self, macroName):
         macroInfo = self.getElementInfo(macroName)
         if macroInfo is None:
-            raise Exception("%s macro does not exist in this sardana system." % macroName)
+            raise Exception(
+                "%s macro does not exist in this sardana system." % macroName)
         elif macroInfo.type != 'MacroClass':
             raise Exception("%s element is not a macro." % macroName)
         return True
@@ -1014,33 +1044,41 @@ class BaseMacroServer(MacroServerDevice):
             int(value)
             min = singleParamNode.min()
             max = singleParamNode.max()
-            if min != None and value < min:
-                raise  Exception("%s parameter value: %s is below minimum allowed value." % (name, value))
-            if max != None and value > max:
-                raise  Exception("%s parameter value: %s is above maximum allowed value." % (name, value))
+            if min is not None and value < min:
+                raise Exception(
+                    "%s parameter value: %s is below minimum allowed value." % (name, value))
+            if max is not None and value > max:
+                raise Exception(
+                    "%s parameter value: %s is above maximum allowed value." % (name, value))
         elif type == "Float":
             float(value)
             min = singleParamNode.min()
             max = singleParamNode.max()
-            if min != None and value < min:
-                raise  Exception("%s parameter value: %s is below minimum allowed value." % (name, value))
-            if max != None and value > max:
-                raise  Exception("%s parameter value: %s is above maximum allowed value." % (name, value))
+            if min is not None and value < min:
+                raise Exception(
+                    "%s parameter value: %s is below minimum allowed value." % (name, value))
+            if max is not None and value > max:
+                raise Exception(
+                    "%s parameter value: %s is above maximum allowed value." % (name, value))
         else:
             allowedInterfaces = self.getInterfaces().keys()
-            if not type in allowedInterfaces:
-                raise Exception("No element with %s interface exist in this sardana system." % type)
+            if type not in allowedInterfaces:
+                raise Exception(
+                    "No element with %s interface exist in this sardana system." % type)
             allowedValues = self.getElementNamesWithInterface(type)
-            if not value in allowedValues:
-                raise Exception("%s element with %s interface does not exist in this sardana system." % (value, type))
+            if value not in allowedValues:
+                raise Exception(
+                    "%s element with %s interface does not exist in this sardana system." % (value, type))
         return True
 
     def validateRepeatParam(self, repeatParamNode):
         paramName = repeatParamNode.name()
         if repeatParamNode.isBelowMin():
-            raise  Exception("%s param repeats has not enough repeats." % (paramName))
+            raise Exception(
+                "%s param repeats has not enough repeats." % (paramName))
         if repeatParamNode.isAboveMax():
-            raise  Exception("%s param repeat has too many repeats." % (paramName))
+            raise Exception(
+                "%s param repeat has too many repeats." % (paramName))
         repetitions = repeatParamNode.children()
         for repeat in repetitions:
             params = repeat.children()
@@ -1050,7 +1088,6 @@ class BaseMacroServer(MacroServerDevice):
                 else:
                     self.validateRepeatParam(param)
         return True
-
 
     def fillMacroNodeAdditionalInfos(self, macroNode):
         """
@@ -1064,7 +1101,8 @@ class BaseMacroServer(MacroServerDevice):
         macroName = macroNode.name()
         macroInfoObj = self.getMacroInfoObj(macroName)
         if macroInfoObj is None:
-            raise Exception("It was not possible to get information about %s macro.\nCheck if MacroServer is alive and if this macro exist." % macroName)
+            raise Exception(
+                "It was not possible to get information about %s macro.\nCheck if MacroServer is alive and if this macro exist." % macroName)
         allowedHookPlaces = []
         hints = macroInfoObj.hints or {}
         for hook in hints.get("allowsHooks", []):
@@ -1091,7 +1129,8 @@ class BaseMacroServer(MacroServerDevice):
             paramNode.setParamsInfo(type)
             for repeatNode in paramNode.children():
                 for internalParamNode, internalParamInfo in zip(repeatNode.children(), type):
-                    self.__fillParamNodeAdditionalInfos(internalParamNode, internalParamInfo)
+                    self.__fillParamNodeAdditionalInfos(
+                        internalParamNode, internalParamInfo)
         else:
             paramNode.setType(str(type))
             paramNode.setDefValue(str(paramInfo.get("default_value")))
@@ -1109,7 +1148,8 @@ class BaseMacroServer(MacroServerDevice):
         self.validateMacroName(macroName)
         macroInfoObj = self.getMacroInfoObj(macroName)
         if macroInfoObj is None:
-            raise Exception("It was not possible to get information about %s macro.\nCheck if MacroServer is alive and if this macro exist." % macroName)
+            raise Exception(
+                "It was not possible to get information about %s macro.\nCheck if MacroServer is alive and if this macro exist." % macroName)
         allowedHookPlaces = []
         hints = macroInfoObj.hints or {}
         for hook in hints.get("allowsHooks", []):
@@ -1125,7 +1165,8 @@ class BaseMacroServer(MacroServerDevice):
         for paramNode, paramInfo in zip(paramNodes, paramInfosList):
             paramType = paramInfo.get('type')
             if isinstance(paramType, list):
-                paramNode = self.__recreateParamRepeatNodes(macroNode, paramIndex, paramInfo)
+                paramNode = self.__recreateParamRepeatNodes(
+                    macroNode, paramIndex, paramInfo)
             else:
                 paramNode.setName(paramInfo.get("name"))
             self.__recreateParamNodeAdditionalInfos(paramNode, paramInfo)
@@ -1133,7 +1174,8 @@ class BaseMacroServer(MacroServerDevice):
         self.validateMacroNode(macroNode)
 
     def __recreateParamRepeatNodes(self, macroNode, indexToStart, repeatParamInfo):
-        #extracting rest of the single params which have to be adopted to param repeats
+        # extracting rest of the single params which have to be adopted to
+        # param repeats
         paramNodes = []
         while len(macroNode.params()) > indexToStart:
             lastParam = macroNode.popParam()
@@ -1147,7 +1189,8 @@ class BaseMacroServer(MacroServerDevice):
         repeatParamChildrenInfos = repeatParamInfo.get("type")
 
         if nrOfSingleParams % len(repeatParamChildrenInfos):
-            raise Exception("Param repeat %s doesn't have correct number of repetitions" % paramName)
+            raise Exception(
+                "Param repeat %s doesn't have correct number of repetitions" % paramName)
         nrOfRepeats = nrOfSingleParams / len(repeatParamChildrenInfos)
         repeatParamNode = RepeatParamNode(macroNode, repeatParamInfo)
         for repeatIdx in range(nrOfRepeats):
@@ -1172,15 +1215,15 @@ class BaseMacroServer(MacroServerDevice):
         paramNode.setMax(max)
         paramNode.setDescription(str(paramInfo.get("description")))
 
-        if type(paramType) == list:
+        if isinstance(paramType, list):
             paramNode.setParamsInfo(paramType)
             for repeatNode in paramNode.children():
                 for internalParamNode, internalParamInfo in zip(repeatNode.children(), paramType):
-                    self.__recreateParamNodeAdditionalInfos(internalParamNode, internalParamInfo)
+                    self.__recreateParamNodeAdditionalInfos(
+                        internalParamNode, internalParamInfo)
         else:
             paramNode.setType(paramType)
             paramNode.setDefValue(str(paramInfo.get("default_value")))
-
 
     def getMacroPathObj(self, cache=False):
         if not hasattr(self, "_macro_path"):
@@ -1195,6 +1238,7 @@ def registerExtensions():
     factory = Factory('tango')
     factory.registerDeviceClass('MacroServer', BaseMacroServer)
     factory.registerDeviceClass('Door', BaseDoor)
+
 
 def unregisterExtensions():
     """Registers the macroserver extensions in the :class:`taurus.core.tango.TangoFactory`"""

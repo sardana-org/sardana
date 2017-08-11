@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -76,11 +76,11 @@ class {macro_name}(Macro):
     #result_def = []
     #hints = {}
     #env = (,)
-    
+
     # uncomment the following lines if need prepare. Otherwise you may delete them
     #def prepare(self):
     #    pass
-        
+
     def run(self):
         pass
 
@@ -93,6 +93,7 @@ def {macro_name}(self):
     self.output("Running {macro_name}...")
 
 """
+
 
 class NewElementWizard(SardanaBaseWizard):
     pass
@@ -110,7 +111,7 @@ class ChooseElementTypePage(SardanaBasePage):
 
 class SardanaLibProxyModel(SardanaBaseProxyModel):
 
-    ALLOWED_TYPES = 'MacroLibrary',  #'ControllerLibrary',
+    ALLOWED_TYPES = 'MacroLibrary',  # 'ControllerLibrary',
 
     def filterAcceptsRow(self, sourceRow, sourceParent):
         sourceModel = self.sourceModel()
@@ -126,12 +127,12 @@ class SardanaLibProxyModel(SardanaBaseProxyModel):
 
 class SardanaLibTreeWidget(SardanaElementTreeWidget):
 
-    KnownPerspectives = { "Type" : {
-                          "label" : "By lib",
-                          "icon" : ":/python-package.png",
-                          "tooltip" : "View elements by library",
-                          "model" : [SardanaLibProxyModel, SardanaElementTypeModel],
-                        },
+    KnownPerspectives = {"Type": {
+        "label": "By lib",
+        "icon": ":/python-package.png",
+        "tooltip": "View elements by library",
+        "model": [SardanaLibProxyModel, SardanaElementTypeModel],
+    },
     }
     DftPerspective = "Type"
 
@@ -150,10 +151,11 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
                                  with_filter_widget=False,)
         elementTree.treeView().setColumnHidden(1, True)
         try:
-            self._elementTree.itemDoubleClicked.connect(self.on_element_clicked)
+            self._elementTree.itemDoubleClicked.connect(
+                self.on_element_clicked)
         except AttributeError:
             self.connect(self._elementTree, Qt.SIGNAL("itemDoubleClicked"),
-                        self.on_element_clicked)
+                         self.on_element_clicked)
         self.insertWidget(0, self._elementTree)
         self.setAutoTooltip(False)
 
@@ -169,27 +171,32 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
         on_save_apply = functools.partial(self.on_save, apply=True)
 
         self.new_action = create_action(self, "New...",
-                icon=Qt.QIcon.fromTheme('document-new'),
-                tip="Create a new macro or controller class",
-                triggered=self.on_new, shortcut=Qt.QKeySequence.New)
+                                        icon=Qt.QIcon.fromTheme(
+                                            'document-new'),
+                                        tip="Create a new macro or controller class",
+                                        triggered=self.on_new, shortcut=Qt.QKeySequence.New)
 
         self.open_action = create_action(self, "Open...",
-                icon=Qt.QIcon.fromTheme('document-open'),
-                tip="Open macro(s) or controller(s)",
-                triggered=self.on_open, shortcut=Qt.QKeySequence.Open)
+                                         icon=Qt.QIcon.fromTheme(
+                                             'document-open'),
+                                         tip="Open macro(s) or controller(s)",
+                                         triggered=self.on_open, shortcut=Qt.QKeySequence.Open)
         self.save_action = create_action(self, "Save",
-                icon=Qt.QIcon.fromTheme('document-save'),
-                tip="Save the current selected item",
-                triggered=on_save)
+                                         icon=Qt.QIcon.fromTheme(
+                                             'document-save'),
+                                         tip="Save the current selected item",
+                                         triggered=on_save)
         self.save_and_apply_action = create_action(self, "Save && apply",
-                triggered=on_save_apply,
-                icon=Qt.QIcon.fromTheme('document-save'),
-                tip="Save the current selected item and apply the new code",
-                shortcut=Qt.QKeySequence.Save)
+                                                   triggered=on_save_apply,
+                                                   icon=Qt.QIcon.fromTheme(
+                                                       'document-save'),
+                                                   tip="Save the current selected item and apply the new code",
+                                                   shortcut=Qt.QKeySequence.Save)
         self.revert_action = create_action(self, "Revert",
-                icon=Qt.QIcon.fromTheme('edit-undo'),
-                tip="Revert the current selected item code",
-                triggered=self.on_revert)
+                                           icon=Qt.QIcon.fromTheme(
+                                               'edit-undo'),
+                                           tip="Revert the current selected item code",
+                                           triggered=self.on_revert)
 
         io_actions = [self.new_action, self.open_action, self.save_action,
                       self.revert_action]
@@ -247,17 +254,17 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
         msg = "Please select the library where you want to place the new macro"
 
         macro_libraries = macro_server.getElementsOfType("MacroLibrary")
-        macro_lib_names = macro_libraries.keys()
-        macro_lib_names.sort()
+        macro_lib_names = sorted(macro_libraries.keys())
         macro_lib_name, ok = Qt.QInputDialog.getItem(self, "Macro library", msg,
-            macro_lib_names, current=0, editable=False)
+                                                     macro_lib_names, current=0, editable=False)
         if not ok:
             return
         macro_lib_name = str(macro_lib_name)
         macro_lib = macro_libraries[macro_lib_name]
 
         fname, path = macro_lib.file_path, macro_lib.path
-        fname = fname[fname.index(osp.sep) + 1:]  # transform into relative path
+        # transform into relative path
+        fname = fname[fname.index(osp.sep) + 1:]
         local_filename = osp.join(self._tmp_dir, fname)
 
         msg = "Please give new macro name"
@@ -270,10 +277,10 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
                 return
             if macro_name in macros:
                 res = Qt.QMessageBox.information(self, "Macro already exists",
-                    "A macro named '%s' already exists in '%s'.\n"
-                    "Please give a different macro name"
-                    % (macro_name, macro_lib_name),
-                    Qt.QMessageBox.Ok | Qt.QMessageBox.Cancel, Qt.QMessageBox.Ok)
+                                                 "A macro named '%s' already exists in '%s'.\n"
+                                                 "Please give a different macro name"
+                                                 % (macro_name, macro_lib_name),
+                                                 Qt.QMessageBox.Ok | Qt.QMessageBox.Cancel, Qt.QMessageBox.Ok)
                 if res == Qt.QMessageBox.Cancel:
                     return
                 continue
@@ -288,7 +295,8 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
             if not self._prepare_path(path):
                 raise Exception("Error trying to prepare path for %s", path)
             self.debug("Creating local file %s...", local_filename)
-            fname, lib_code, line = macro_server.GetMacroCode((macro_lib_name,))
+            fname, lib_code, line = macro_server.GetMacroCode(
+                (macro_lib_name,))
             fd = file(local_filename, "w")
             fd.write(lib_code)
             fd.close()
@@ -318,36 +326,37 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
         ms = self.getModelObj()
         ms_path = ms.getMacroPathObj()
         directory, ok = Qt.QInputDialog.getItem(self, "New macro module",
-            "Select the directory where you want the new macro module to " \
-            "be placed",
-            ms_path.macro_path, current=0, editable=False)
+                                                "Select the directory where you want the new macro module to "
+                                                "be placed",
+                                                ms_path.macro_path, current=0, editable=False)
         if not ok:
             return
         directory = str(directory)
         ok = 0
         while not ok:
             mod, ok = Qt.QInputDialog.getText(self, "New macro module",
-                "Module name:", Qt.QLineEdit.Normal, "")
+                                              "Module name:", Qt.QLineEdit.Normal, "")
             if not ok:
                 return
             mod = str(mod)
             m, ext = osp.splitext(mod)
             if len(ext):
-                if ext != ".py" :
+                if ext != ".py":
                     Qt.QMessageBox.critical(self, "Wrong extension",
-                        "When given, file extension<b> MUST</b> be <code>.py</code>.")
+                                            "When given, file extension<b> MUST</b> be <code>.py</code>.")
                     ok = 0
                     continue
             else:
                 mod = mod + ".py"
         self._prepare_path(directory)
         filename = osp.join(directory, mod)
-        rel_filename = filename[filename.index(osp.sep) + 1:]  # transform into relative path
+        # transform into relative path
+        rel_filename = filename[filename.index(osp.sep) + 1:]
         local_filename = osp.join(self._tmp_dir, rel_filename)
         f = file(local_filename, "w")
 
-        #TODO: ask for additional imports
-        #TODO: check if door environment has copyright variable
+        # TODO: ask for additional imports
+        # TODO: check if door environment has copyright variable
 
         pars = dict(copyright="", non_sardana_imports="",
                     sardana_imports="")
@@ -377,26 +386,31 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
         for macro_info in macros:
             name, fname = macro_info.name, macro_info.file_path
             module = macro_info.module
-            fname = fname[fname.index(osp.sep) + 1:]  # transform into relative path
+            # transform into relative path
+            fname = fname[fname.index(osp.sep) + 1:]
             local_filename = osp.join(self._tmp_dir, fname)
 
             idx = editorstack.has_filename(local_filename)
             if idx is not None and last_answer not in all_any:
                 last_answer = Qt.QMessageBox.question(self,
-                    "Macro file '{0}' already opened".format(module),
-                    "All changes to <b>{0}</b> will be lost."
-                    "<br>Do you want to revert file from the server ignoring "
-                    "any possible changes you (may) have made?".format(module),
-                    Qt.QMessageBox.Yes | Qt.QMessageBox.YesToAll | \
-                    Qt.QMessageBox.No | Qt.QMessageBox.NoToAll,
-                    Qt.QMessageBox.No)
+                                                      "Macro file '{0}' already opened".format(
+                                                          module),
+                                                      "All changes to <b>{0}</b> will be lost."
+                                                      "<br>Do you want to revert file from the server ignoring "
+                                                      "any possible changes you (may) have made?".format(
+                                                          module),
+                                                      Qt.QMessageBox.Yes | Qt.QMessageBox.YesToAll |
+                                                      Qt.QMessageBox.No | Qt.QMessageBox.NoToAll,
+                                                      Qt.QMessageBox.No)
 
             if idx is None or last_answer in yes_any:
                 if not self._prepare_path(macro_info.path):
                     Qt.QMessageBox.warning(self,
-                        "Error trying to prepare '{0}'".format(module),
-                        "An error occured trying to prepare '{0}'".format(module),
-                        Qt.QMessageBox.Ok, Qt.QMessageBox.Ok)
+                                           "Error trying to prepare '{0}'".format(
+                                               module),
+                                           "An error occured trying to prepare '{0}'".format(
+                                               module),
+                                           Qt.QMessageBox.Ok, Qt.QMessageBox.Ok)
                     continue
                 _, code, line = self.get_macro_code(module, name)
                 line = int(line)
@@ -425,26 +439,31 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
         for macro_library in macro_libraries:
             name, fname = macro_library.name, macro_library.file_path
             module = macro_library.module
-            fname = fname[fname.index(osp.sep) + 1:]  # transform into relative path
+            # transform into relative path
+            fname = fname[fname.index(osp.sep) + 1:]
             local_filename = osp.join(self._tmp_dir, fname)
 
             idx = editorstack.has_filename(local_filename)
             if idx is not None and last_answer not in all_any:
                 last_answer = Qt.QMessageBox.question(self,
-                    "Macro file '{0}' already opened".format(module),
-                    "All changes to <b>{0}</b> will be lost."
-                    "<br>Do you want to revert file from the server ignoring "
-                    "any possible changes you (may) have made?".format(module),
-                    Qt.QMessageBox.Yes | Qt.QMessageBox.YesToAll | \
-                    Qt.QMessageBox.No | Qt.QMessageBox.NoToAll,
-                    Qt.QMessageBox.No)
+                                                      "Macro file '{0}' already opened".format(
+                                                          module),
+                                                      "All changes to <b>{0}</b> will be lost."
+                                                      "<br>Do you want to revert file from the server ignoring "
+                                                      "any possible changes you (may) have made?".format(
+                                                          module),
+                                                      Qt.QMessageBox.Yes | Qt.QMessageBox.YesToAll |
+                                                      Qt.QMessageBox.No | Qt.QMessageBox.NoToAll,
+                                                      Qt.QMessageBox.No)
 
             if idx is None or last_answer in yes_any:
                 if not self._prepare_path(macro_library.path):
                     Qt.QMessageBox.warning(self,
-                        "Error trying to prepare '{0}'".format(module),
-                        "An error occured trying to prepare '{0}'".format(module),
-                        Qt.QMessageBox.Ok, Qt.QMessageBox.Ok)
+                                           "Error trying to prepare '{0}'".format(
+                                               module),
+                                           "An error occured trying to prepare '{0}'".format(
+                                               module),
+                                           Qt.QMessageBox.Ok, Qt.QMessageBox.Ok)
                     continue
                 _, code, line = self.get_macro_code(module)
                 line = int(line)
@@ -495,7 +514,7 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
 
     def get_macro_code(self, module_name, macro_name=None):
         ms = self.getModelObj()
-        pars = [ module_name ]
+        pars = [module_name]
         if macro_name is not None:
             pars.append(macro_name)
         return ms.GetMacroCode(pars)
@@ -524,7 +543,8 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
             self.warning("Could not prepare local filesystem to store macros")
             return False
         ms_name = ms.getSimpleName().replace('/', '_')
-        self._tmp_dir = tempfile.mkdtemp(prefix=ms_name, dir=self._base_tmp_dir)
+        self._tmp_dir = tempfile.mkdtemp(
+            prefix=ms_name, dir=self._base_tmp_dir)
         self._is_filesystem_prepared = True
         return True
 
@@ -537,10 +557,11 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
 def demo(model_name="MS_BL98"):
     test = SardanaEditor()
     test.resize(1000, 800)
-    #test.load(__file__)
+    # test.load(__file__)
     test.setModel(model_name)
     test.show()
     return test
+
 
 def main():
     import sys

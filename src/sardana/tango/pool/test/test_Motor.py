@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -30,26 +30,26 @@ from sardana.tango.pool.test import BasePoolTestCase
 from sardana.tango.core.util import get_free_alias
 import numbers
 
+
 class ReadMotorPositionOutsideLim(BasePoolTestCase, unittest.TestCase):
     """TestCase class for testing that read position is possible when
     motor is out of SW limits. Verify that position has a numeric type.
     """
+
     def setUp(self):
         """Create dummy motor controller and dummy motor element
         """
         super(ReadMotorPositionOutsideLim, self).setUp()
+        sar_type = 'Motor'
+        lib = 'DummyMotorController'
         cls = 'DummyMotorController'
         self.ctrl_name = get_free_alias(PyTango.Database(), "readposctrl")
-        props = ()
-        ctrl = self.pool.createController(cls, self.ctrl_name, *props)
-        #Add extra timeout of 3 seconds.
-        if ctrl is None:
-            elements_info = self.pool.getElementsInfo()
-            ctrl = self.pool._wait_for_element_in_container(elements_info,
-                                                  self.ctrl_name, timeout = 3)
+        self.pool.CreateController([sar_type, lib, cls, self.ctrl_name])
         self.elem_name = get_free_alias(PyTango.Database(), "mot_test")
-        elem_axis = 1
-        self.elem = self.pool.createElement(self.elem_name, ctrl, elem_axis)
+        axis = 1
+        self.pool.CreateElement([sar_type, self.ctrl_name, str(axis),
+                                 self.elem_name])
+        self.elem = PyTango.DeviceProxy(self.elem_name)
         self.elem.DefinePosition(0)
 
     def test_read_position_outside_sw_lim(self):

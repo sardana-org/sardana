@@ -26,7 +26,7 @@ existing controller types:
     - :class:`OneDController`
     - :class:`TwoDController`        
     - :class:`IORegisterController`
-
+    - :class:`TriggerGateController`
     - :class:`PseudoMotorController`
     - :class:`PseudoCounterController`
 

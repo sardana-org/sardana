@@ -1,23 +1,23 @@
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
-## 
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
-## 
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
-## 
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+##
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+##
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+##
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -37,11 +37,13 @@ from sardana.macroserver.macro import Macro, Type, ParamRepeat
 # The 'subsubm' macro itself calls a short ascan macro
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~--~-~-
 
+
 class call_wa(Macro):
-    
+
     def run(self):
         self.macros.wa()
-        
+
+
 class call_wm(Macro):
 
     param_def = [
@@ -52,10 +54,12 @@ class call_wm(Macro):
 
     def run(self, m):
         self.macros.wm(m)
-        
+
+
 class subsubm(Macro):
     """this macro just calls the 'subm' macro
     This macro is part of the examples package. It was written for demonstration purposes"""
+
     def run(self):
         self.output("Starting %s" % self.getName())
         m = self.macros
@@ -63,19 +67,21 @@ class subsubm(Macro):
         m.ascan(motors[0], 0, 100, 10, 0.2)
         self.output("Finished %s" % self.getName())
 
+
 class subm(Macro):
     """this macro just calls the 'subsubm' macro
     This macro is part of the examples package. It was written for demonstration purposes"""
-    
+
     def run(self):
         self.output("Starting %s" % self.getName())
         self.macros.subsubm()
         self.output("Finished %s" % self.getName())
 
+
 class mainmacro(Macro):
     """this macro just calls the 'subm' macro
     This macro is part of the examples package. It was written for demonstration purposes"""
-    
+
     def run(self):
         self.output("Starting %s" % self.getName())
         self.macros.subm()
@@ -87,11 +93,12 @@ class mainmacro(Macro):
 # another macro
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~--~-~-
 
+
 class runsubs(Macro):
     """ A macro that calls a ascan macro using the motor given as first parameter.
-    
+
     This macro is part of the examples package. It was written for demonstration purposes
-    
+
     Call type will allow to choose to format in which the ascan macro is called
     from this macro:
     1 - m.ascan(motor.getName(), '0', '10', '4', '0.2')
@@ -111,17 +118,17 @@ class runsubs(Macro):
         macro, prep = self.createMacro(params)
         macro.hooks = [ self.hook ]
         self.runMacro(macro)
-        
+
         Options 7,8 and 9 use the lower level macro API in order to be able to
         attach hooks to the ascan macro."""
     param_def = [
-       ['motor',      Type.Motor,   None, 'Motor to move'],
-       ['call_type',  Type.Integer, 2, 'type of run to execute internally'],
+        ['motor',      Type.Motor,   None, 'Motor to move'],
+        ['call_type',  Type.Integer, 2, 'type of run to execute internally'],
     ]
-    
+
     def hook(self):
         self.info("executing hook in a step of a scan...")
-    
+
     def run(self, motor, call_type):
         m = self.macros
         self.output("Using type %d" % call_type)
@@ -139,18 +146,47 @@ class runsubs(Macro):
         elif call_type == 6:
             self.execMacro("ascan %s 0 10 4 0.2" % motor.getName())
         elif call_type == 7:
-            macro, prep = self.createMacro("ascan %s 0 10 4 0.2" % \
-                                                     motor.getName())
-            macro.hooks = [ self.hook ]
+            macro, prep = self.createMacro("ascan %s 0 10 4 0.2" %
+                                           motor.getName())
+            macro.hooks = [self.hook]
             self.runMacro(macro)
         elif call_type == 8:
             macro, prep = self.createMacro('ascan', motor, 0, 10, 4, 0.2)
-            macro.hooks = [ self.hook ]
+            macro.hooks = [self.hook]
             self.runMacro(macro)
         elif call_type == 9:
             params = 'ascan', motor, 0, 10, 4, 0.2
             macro, prep = self.createMacro(params)
-            macro.hooks = [ self.hook ]
+            macro.hooks = [self.hook]
             self.runMacro(macro)
-        
-            
+
+
+class get_data(Macro):
+    """A macro that executes another macro from within it, get its data,
+    and calculates a result using this data.
+
+    This macro is part of the examples package. It was written for
+    demonstration purposes"""
+
+    param_def = [["mot", Type.Moveable, None, "moveable to be moved"]]
+    result_def = [["middle", Type.Float, None,
+                   "the middle motor position"]]
+
+    def run(self, mot):
+        start = 0
+        end = 2
+        intervals = 2
+        integtime = 0.1
+        positions = []
+        dscan, _ = self.createMacro('dscan',
+                                    mot, start, end, intervals, integtime)
+        self.runMacro(dscan)
+
+        data = dscan.data
+        len_data = len(data)
+        for point_nb in xrange(len_data):
+            position = data[point_nb].data[mot.getName()]
+            positions.append(position)
+
+        middle_pos = max(positions) - min(positions) / len_data
+        return middle_pos

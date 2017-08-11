@@ -12,7 +12,7 @@ so, not only physical motors (like a stepper motors) fit into this category but
 also, for example, a power supply for which the electrical current can be
 modified.
 As it happens with the motor controller hardware and its physical motor(s),
-a sardana motor is always associated with it's sardana motor controller. 
+a sardana motor is always associated with its sardana motor controller. 
 
 .. figure:: /_static/sardana_server_icepap_np200.png
     :width: 680

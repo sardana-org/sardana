@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -72,35 +72,43 @@ __int_klasses = tuple(__int_klasses)
 __number_klasses = tuple(__number_klasses)
 __bool_klasses = tuple(__bool_klasses)
 
+
 def is_pure_str(obj):
-    return isinstance(obj , __str_klasses)
+    return isinstance(obj, __str_klasses)
+
 
 def is_non_str_seq(obj):
     return isinstance(obj, collections.Sequence) and not is_pure_str(obj)
 
+
 def is_integer(obj):
     return isinstance(obj, __int_klasses)
+
 
 def is_number(obj):
     return isinstance(obj, __number_klasses)
 
+
 def is_bool(obj):
     return isinstance(obj, __bool_klasses)
+
 
 def is_callable(obj):
     return hasattr(obj, "__call__")
 
 __METH_MAP = {
-    DataType.Integer : is_integer,
-    DataType.Double  : is_number,
-    DataType.String  : is_pure_str,
-    DataType.Boolean : is_bool,
+    DataType.Integer: is_integer,
+    DataType.Double: is_number,
+    DataType.String: is_pure_str,
+    DataType.Boolean: is_bool,
 }
+
 
 def check_type(type_info, value):
     tinfo = __DTYPE_MAP.get(type_info, type_info)
     tmeth = __METH_MAP.get(tinfo, type_info)
     return tmeth(value)
+
 
 def assert_type(type_info, value):
     ret = check_type(type_info, value)
@@ -119,23 +127,25 @@ def assert_type(type_info, value):
     return ret
 
 _DTYPE_FUNC = {
-    DataType.Integer : int,
-    DataType.Double  : float,
-    DataType.String  : str,
-    DataType.Boolean : bool,
+    DataType.Integer: int,
+    DataType.Double: float,
+    DataType.String: str,
+    DataType.Boolean: bool,
 }
+
 
 def str_to_value(value, dtype=DataType.Double, dformat=DataFormat.Scalar):
     f = _DTYPE_FUNC[dtype]
     if dformat == DataFormat.Scalar:
         ret = f(value)
     elif dformat == DataFormat.OneD:
-        ret = [ f(v) for v in value ]
+        ret = [f(v) for v in value]
     elif dformat == DataFormat.TwoD:
         ret = []
         for v1 in value:
-            ret.append([ f(v2) for v2 in v1 ])
+            ret.append([f(v2) for v2 in v1])
     return ret
+
 
 def translate_version_str2int(version_str):
     """Translates a version string in format x[.y[.z[...]]] into a 000000 number.
@@ -143,7 +153,8 @@ def translate_version_str2int(version_str):
     import math
     parts = version_str.split('.')
     i, v, l = 0, 0, len(parts)
-    if not l: return v
+    if not l:
+        return v
     while i < 3:
         try:
             v += int(parts[i]) * int(math.pow(10, (2 - i) * 2))
@@ -151,7 +162,8 @@ def translate_version_str2int(version_str):
             i += 1
         except ValueError:
             return v
-        if not l: return v
+        if not l:
+            return v
     return v
 
     try:
@@ -159,21 +171,25 @@ def translate_version_str2int(version_str):
         l -= 1
     except ValueError:
         return v
-    if not l: return v
+    if not l:
+        return v
 
     try:
         v += 100 * int(parts[1])
         l -= 1
     except ValueError:
         return v
-    if not l: return v
+    if not l:
+        return v
 
     try:
         v += int(parts[0])
         l -= 1
     except ValueError:
         return v
-    if not l: return v
+    if not l:
+        return v
+
 
 def translate_version_str2list(version_str, depth=2):
     """Translates a version string in format 'x[.y[.z[...]]]' into a list of
@@ -189,4 +205,3 @@ def translate_version_str2list(version_str, depth=2):
                 i = 0
             ver.append(i)
     return ver
-

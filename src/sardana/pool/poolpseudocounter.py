@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -35,13 +35,43 @@ import time
 
 from sardana import State, ElementType, TYPE_PHYSICAL_ELEMENTS
 from sardana.sardanaattribute import SardanaAttribute
+from sardana.sardanabuffer import EarlyValueException, LateValueException
 from sardana.sardanaexception import SardanaException
 from sardana.sardanavalue import SardanaValue
 from sardana.pool.poolexception import PoolException
 from sardana.pool.poolbasechannel import PoolBaseChannel
+from sardana.pool.poolbasechannel import ValueBuffer as ValueBuffer_
 from sardana.pool.poolbasegroup import PoolBaseGroup
-from sardana.pool.poolacquisition import PoolAcquisition
+from sardana.pool.poolacquisition import PoolCTAcquisition
 
+
+class ValueBuffer(ValueBuffer_):
+
+    def __init__(self, *args, **kwargs):
+        super(ValueBuffer, self).__init__(*args, **kwargs)
+        for value_buf in self.obj.get_physical_value_buffer_iterator():
+            value_buf.add_listener(self.on_change)
+
+    def on_change(self, evt_src, evt_type, evt_value):
+        for idx in evt_value.iterkeys():
+            physical_values = []
+            for value_buf in self.obj.get_physical_value_buffer_iterator():
+                try:
+                    value = value_buf.get_value(idx)
+                except EarlyValueException:
+                    return
+                except LateValueException:
+                    self.remove_physical_values(idx)
+                    return
+                physical_values.append(value)
+            value = self.obj.calc(physical_values)
+            self.append(value, idx)
+            self.remove_physical_values(idx)
+
+    def remove_physical_values(self, idx, force=False):
+        for value_buf in self.obj.get_physical_value_buffer_iterator():
+            if force or not value_buf.is_value_required(idx):
+                value_buf.remove(idx)
 
 class Value(SardanaAttribute):
 
@@ -55,7 +85,7 @@ class Value(SardanaAttribute):
         for value_attr in self.obj.get_physical_value_attribute_iterator():
             if value_attr.error:
                 return True
-        return self._exc_info != None
+        return self._exc_info is not None
 
     def _has_value(self):
         for value_attr in self.obj.get_physical_value_attribute_iterator():
@@ -85,7 +115,8 @@ class Value(SardanaAttribute):
         return exc_info
 
     def _get_timestamp(self):
-        timestamps = [ value_attr.timestamp for value_attr in self.obj.get_physical_value_attribute_iterator() ]
+        timestamps = [
+            value_attr.timestamp for value_attr in self.obj.get_physical_value_attribute_iterator()]
         if not len(timestamps):
             timestamps = self._local_timestamp,
         return max(timestamps)
@@ -129,7 +160,7 @@ class Value(SardanaAttribute):
             else:
                 l_v, l_u = len(physical_values), len(obj.get_user_elements())
                 if l_v != l_u:
-                    raise IndexError("CalcPseudo(%s): must give %d physical " \
+                    raise IndexError("CalcPseudo(%s): must give %d physical "
                                      "values (you gave %d)" % (obj.name, l_u, l_v))
             ctrl, axis = obj.controller, obj.axis
             result = ctrl.calc(axis, physical_values)
@@ -151,7 +182,7 @@ class Value(SardanaAttribute):
             else:
                 l_v, l_u = len(physical_values), len(obj.get_user_elements())
                 if l_v != l_u:
-                    raise IndexError("CalcAllPseudo(%s): must give %d physical " \
+                    raise IndexError("CalcAllPseudo(%s): must give %d physical "
                                      "values (you gave %d)" % (obj.name, l_u, l_v))
             ctrl, axis = obj.controller, obj.axis
             result = ctrl.calc_all(axis, physical_values)
@@ -184,6 +215,7 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
     """A class representing a Pseudo Counter in the Sardana Device Pool"""
 
     ValueAttributeClass = Value
+    ValueBufferClass = ValueBuffer
     AcquisitionClass = None
 
     def __init__(self, **kwargs):
@@ -197,7 +229,7 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
 
     def serialize(self, *args, **kwargs):
         kwargs = PoolBaseChannel.serialize(self, *args, **kwargs)
-        elements = [ elem.name for elem in self.get_user_elements() ]
+        elements = [elem.name for elem in self.get_user_elements()]
         physical_elements = []
         for elem_list in self.get_physical_elements().values():
             for elem in elem_list:
@@ -207,6 +239,11 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
         kwargs['elements'] = elements
         kwargs['physical_elements'] = physical_elements
         return kwargs
+
+    def add_user_element(self, element, index=None):
+        index = PoolBaseGroup.add_user_element(self, element, index)
+        element.add_pseudo_element(self)
+        return index
 
     def on_element_changed(self, evt_src, evt_type, evt_value):
         name = evt_type.name.lower()
@@ -224,7 +261,7 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
 
     def _create_action_cache(self):
         acq_name = "%s.Acquisition" % self._name
-        return PoolAcquisition(self, acq_name)
+        return PoolCTAcquisition(self, acq_name)
 
     def get_action_cache(self):
         return self._get_action_cache()
@@ -266,6 +303,14 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
     def get_physical_values_attribute_map(self):
         return self.get_user_elements_attribute_map()
 
+    def get_physical_value_buffer_iterator(self):
+        """Returns an iterator over the value buffer of each user element.
+
+        :return: an iterator over the value buffer of each user element.
+        :rtype: iter< :class:`~sardana.sardanaattribute.SardanaBuffer` >"""
+        for element in self.get_user_elements():
+            yield element.get_value_buffer()
+
     def get_physical_values(self, cache=True, propagate=1):
         """Get value for underlying elements.
 
@@ -287,7 +332,7 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
 
     def get_siblings_values(self, use=None):
         """Get the last values for all siblings.
-        
+
         :param use: the already calculated values. If a sibling is in this
                     dictionary, the value stored here is used instead
         :type use: dict <PoolElement, :class:`~sardana.sardanavalue.SardanaValue` >
@@ -306,7 +351,7 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
 
     def get_value(self, cache=True, propagate=1):
         """Returns the pseudo counter value.
-        
+
         :param cache:
             if ``True`` (default) return value in cache, otherwise read value
             from hardware
@@ -334,6 +379,7 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
     # --------------------------------------------------------------------------
 
     _STD_STATUS = "{name} is {state}\n{ctrl_status}"
+
     def calculate_state_info(self, status_info=None):
         if status_info is None:
             status_info = self._state, self._status
@@ -352,8 +398,7 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
             action_cache = self.get_action_cache()
             ctrl_state_infos = action_cache.read_state_info(serial=True)
             for obj, ctrl_state_info in ctrl_state_infos.items():
-                state_info[obj] = state_info = \
-                    obj._from_ctrl_state_info(ctrl_state_info)
+                state_info = obj._from_ctrl_state_info(ctrl_state_info)
                 obj.put_state_info(state_info)
         for user_element in self.get_user_elements():
             if user_element.get_type() not in TYPE_PHYSICAL_ELEMENTS:
@@ -362,4 +407,3 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
 
         ret = self._calculate_states()
         return ret
-

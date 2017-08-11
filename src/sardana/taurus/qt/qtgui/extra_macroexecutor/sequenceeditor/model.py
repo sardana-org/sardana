@@ -2,31 +2,32 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
 """
-model.py: 
+model.py:
 """
 
+import copy
 from lxml import etree
 
 from taurus.external.qt import Qt
@@ -64,7 +65,7 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
 
         elif column == 1:
             if isinstance(node, macro.SingleParamNode) and \
-                not node.type() == "User":
+                    not node.type() == "User":
                 flags |= Qt.Qt.ItemIsEditable
             else:
                 flags |= Qt.Qt.ItemIsSelectable
@@ -84,10 +85,12 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
     def _insertRow(self, parentIndex, node=None, row=-1):
         parentNode = self.nodeFromIndex(parentIndex)
 
-        if row == -1: row = len(parentNode)
+        if row == -1:
+            row = len(parentNode)
 
         if isinstance(parentNode, macro.RepeatParamNode):
-            if node == None: node = parentNode.newRepeat()
+            if node is None:
+                node = parentNode.newRepeat()
 
         self.beginInsertRows(parentIndex, row, row)
         row = parentNode.insertChild(node, row)
@@ -126,6 +129,15 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         if isinstance(parentNode, macro.RepeatParamNode):
             parentNode.arrangeIndexes()
         return newIndex
+
+    def duplicateNode(self, index):
+        node_to_duplicate = self.nodeFromIndex(index)
+        parentIndex = index.parent()
+        parentNode = self.nodeFromIndex(parentIndex)
+        node = copy.deepcopy(node_to_duplicate)
+        self._insertRow(parentIndex, node, -1)
+        if isinstance(parentNode, macro.RepeatParamNode):
+            parentNode.arrangeIndexes()
 
     def _leftRow(self, index):
         """This method is used to move selected macro (pased via index)
@@ -171,27 +183,30 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
                         return Qt.QVariant(Qt.QIcon(":/actions/media-playback-pause.svg"))
         return Qt.QVariant()
 
-    def setData (self, index, value, role=Qt.Qt.EditRole):
+    def setData(self, index, value, role=Qt.Qt.EditRole):
         node = self.nodeFromIndex(index)
         if index.column() == 1:
             if isinstance(node, macro.SingleParamNode):
                 node.setValue(Qt.from_qvariant(value, str))
-                self.emit(Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index)
+                self.emit(
+                    Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index)
                 while True:
                     index = index.parent()
                     node = self.nodeFromIndex(index)
                     if isinstance(node, macro.MacroNode):
-                        self.emit(Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index.sibling(index.row(), self.columnCount(index) - 1))
+                        self.emit(Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index.sibling(
+                            index.row(), self.columnCount(index) - 1))
                         break
         elif index.column() == 2:
             progress = Qt.from_qvariant(value, float)
             node.setProgress(progress)
-            self.emit(Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index)
+            self.emit(
+                Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index)
         elif index.column() == 3:
             node.setPause(Qt.from_qvariant(value, bool))
-            self.emit(Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index)
+            self.emit(
+                Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index)
         return True
-
 
     def headerData(self, section, orientation, role):
         if orientation == Qt.Qt.Horizontal and role == Qt.Qt.DisplayRole:
@@ -249,7 +264,7 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         """
         Assigns ids for all macros present in the sequence. If certain macro
         already had an id, it stays without change. A list of all ids is returned
-        
+
         :return: (list)
         """
         parentNode = self.root()
@@ -364,6 +379,7 @@ class MacroSequenceProxyModel(Qt.QSortFilterProxyModel):
         node = self.sourceModel().nodeFromIndex(child)
         return isinstance(node, macro.MacroNode)
 
+
 class MacroParametersProxyModel(Qt.QSortFilterProxyModel):
 
     def __init__(self, parent=None):
@@ -395,7 +411,7 @@ class MacroParametersProxyModel(Qt.QSortFilterProxyModel):
         return self.columns
 
     def filterAcceptsRow(self, row, parentIndex):
-        if self.macroIndex() == None:
+        if self.macroIndex() is None:
             return False
         if self.macroIndex() == parentIndex:
             child = self.sourceModel().index(row, 0, parentIndex)
@@ -403,6 +419,3 @@ class MacroParametersProxyModel(Qt.QSortFilterProxyModel):
             if not isinstance(node, macro.ParamNode):
                 return False
         return True
-
-
-

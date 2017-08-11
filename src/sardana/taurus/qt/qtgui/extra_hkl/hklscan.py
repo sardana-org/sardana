@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -97,7 +97,7 @@ class HKLScan(TaurusWidget):
         return ret
 
     def setModel(self, model):
-        if model != None:
+        if model is not None:
             self.device = taurus.Device(model)
 
         self.pseudo_motor_names = []
@@ -205,7 +205,7 @@ class HKLScan(TaurusWidget):
         macro_name = ["ascan", "a2scan", "a3scan"]
         macro_command = []
         index_to_scan = []
-        if self.door_device != None:
+        if self.door_device is not None:
             for i in range(0, 3):
                 if start_hkl[i] != stop_hkl[i]:
                     dim = dim + 1
@@ -322,7 +322,7 @@ class HKLScan(TaurusWidget):
                 taurusValueAngle[i].setObjectName(tva_name)
                 taurusValueAngle[i].setValue(
                     "...                             No angle solution for hkl values                             ...")
-        # TODO: not all dimensions (H & K & L) are obligatory. One could try 
+        # TODO: not all dimensions (H & K & L) are obligatory. One could try
         # to display angles of just 1 or 2 dimensional scan.
         if nb_points == -1:
             nb_points = 0
@@ -364,7 +364,7 @@ def main():
     parser.set_description("a taurus application for performing hkl scans")
 
     app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser,
-            app_version=sardana.Release.version)
+                                                        app_version=sardana.Release.version)
     app.setApplicationName("hklscan")
     args = app.get_command_line_args()
     if len(args) < 1:
