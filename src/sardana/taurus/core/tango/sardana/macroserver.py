@@ -41,6 +41,7 @@ from lxml import etree
 
 import PyTango
 
+import taurus
 from taurus import Device, Factory
 from taurus.core.taurusmanager import TaurusManager
 from taurus.core.taurusbasetypes import TaurusEventType, TaurusSWDevState, \
@@ -59,7 +60,7 @@ from .pool import getChannelConfigs
 from .macro import createMacroNode
 
 CHANGE_EVT_TYPES = TaurusEventType.Change, TaurusEventType.Periodic
-
+taurus_version = taurus.Release.version
 
 def recur_map(fun, data, keep_none=False):
     """Recursive map. Similar to map, but maintains the list objects structure
@@ -94,7 +95,11 @@ class Attr(Logger, EventGenerator):
             self.fireEvent(None)
         elif type != TaurusEventType.Config:
             if evt_value:
-                self.fireEvent(evt_value.value)
+                if taurus_version.split(".")[0] == '4':
+                    self.fireEvent(evt_value.rvalue)
+                else:
+                    # Taurus 3 compatibility
+                    self.fireEvent(evt_value.value)
             else:
                 self.fireEvent(None)
 
@@ -120,14 +125,25 @@ class LogAttr(Attr):
 
     def eventReceived(self, src, type, evt_value):
         if type == TaurusEventType.Change:
-            if evt_value is None or evt_value.value is None:
-                self.fireEvent(None)
+            if taurus_version.split(".")[0] == '4':
+                if evt_value is None or evt_value.rvalue is None:
+                    self.fireEvent(None)
+                else:
+                    self._log_buffer.extend(evt_value.rvalue)
+                    while len(self._log_buffer) > self._max_buff_size:
+                        self._log_buffer.pop(0)
+                    if evt_value:
+                        self.fireEvent(evt_value.rvalue)
             else:
-                self._log_buffer.extend(evt_value.value)
-                while len(self._log_buffer) > self._max_buff_size:
-                    self._log_buffer.pop(0)
-                if evt_value:
-                    self.fireEvent(evt_value.value)
+                # Taurus 3 compatibility
+                if evt_value is None or evt_value.value is None:
+                    self.fireEvent(None)
+                else:
+                    self._log_buffer.extend(evt_value.value)
+                    while len(self._log_buffer) > self._max_buff_size:
+                        self._log_buffer.pop(0)
+                    if evt_value:
+                        self.fireEvent(evt_value.value)
 
 
 class BaseInputHandler(object):
@@ -326,8 +342,12 @@ class BaseDoor(MacroServerDevice):
             # TODO: For Taurus 4 compatibility
             from taurus.core import TaurusDevState
             self._old_sw_door_state = TaurusDevState.Undefined
+        try:
+            self.stateObj.addListener(self.stateChanged)
+        except:
+            # Fallback for Taurus3
+            self.getStateObj().addListener(self.stateChanged)
 
-        self.getStateObj().addListener(self.stateChanged)
 
         for log_name in self.log_streams:
             tg_attr = self.getAttribute(log_name)
@@ -570,12 +590,11 @@ class BaseDoor(MacroServerDevice):
         return result
 
     def stateChanged(self, s, t, v):
-        self._old_door_state = self.getState()
-        try:
-            self._old_sw_door_state = self.getSWState()
-        except:
-            # TODO: For Taurus 4 compatibility
+        if taurus_version.split(".")[0] == '4':
             self._old_sw_door_state = self.state
+        else:
+            # Taurus 3 compatibility
+            self._old_sw_door_state = self.getSWState()
 
     def resultReceived(self, log_name, result):
         """Method invoked by the arrival of a change event on the Result attribute"""
@@ -649,7 +668,12 @@ class BaseDoor(MacroServerDevice):
 
         # make sure we get it as string since PyTango 7.1.4 returns a buffer
         # object and json.loads doesn't support buffer objects (only str)
-        v = map(str, v.value)
+        if taurus_version.split(".")[0] == '4':
+            v = map(str, v.rvalue)
+        else:
+            # Compatibility with Taurus3
+            v = map(str, v.value)
+
         if not len(v[1]):
             return
         format = v[0]
@@ -803,7 +827,11 @@ class BaseMacroServer(MacroServerDevice):
         if evt_type not in CHANGE_EVT_TYPES:
             return ret
 
-        env = CodecFactory().decode(evt_value.value)
+        if taurus_version.split(".")[0] == '4':
+            env = CodecFactory().decode(evt_value.rvalue)
+        else:
+            # Taurus3 compatibility
+            env = CodecFactory().decode(evt_value.value)
 
         for key, value in env.get('new', {}).items():
             self._addEnvironment(key, value)
@@ -884,10 +912,21 @@ class BaseMacroServer(MacroServerDevice):
         if evt_type not in CHANGE_EVT_TYPES:
             return ret
         try:
-            elems = CodecFactory().decode(evt_value.value, ensure_ascii=True)
+            if taurus_version.split(".")[0] == '4':
+                elems = CodecFactory().decode(evt_value.rvalue,
+                                              ensure_ascii=True)
+            else:
+                # Taurus3 compatibility
+                elems = CodecFactory().decode(evt_value.value,
+                                              ensure_ascii=True)
         except:
-            self.error("Could not decode element info format=%s len=%s",
-                       evt_value.value[0], len(evt_value.value[1]))
+            if taurus_version.split(".")[0] == '4':
+                self.error("Could not decode element info format=%s len=%s",
+                           evt_value.rvalue[0], len(evt_value.rvalue[1]))
+            else:
+                # Taurus3 compatibility
+                self.error("Could not decode element info format=%s len=%s",
+                           evt_value.value[0], len(evt_value.value[1]))
             return ret
 
         for element_data in elems.get('new', ()):

@@ -48,6 +48,8 @@ import numpy
 
 from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
     DeviceProxy
+
+import taurus
 from taurus import Factory, Device, Attribute
 from taurus.core.taurusbasetypes import TaurusEventType
 
@@ -85,6 +87,7 @@ QUALITY = {
     None: 'UNKNOWN'
 }
 
+taurus_version = taurus.Release.version
 
 class InterruptException(Exception):
     pass
@@ -221,12 +224,20 @@ class TangoAttributeEG(Logger, EventGenerator):
         if evt_value is None:
             v = None
         else:
-            v = evt_value.value
+            try:
+                v = evt_value.rvalue
+            except:
+                # Fallback for Taurus3
+                v = evt_value.value
         EventGenerator.fireEvent(self, v)
 
     def read(self, force=False):
         try:
-            self.last_val = self._attr.read(cache=not force).value
+            if taurus_version.split(".")[0] == '4':
+                self.last_val = self._attr.read(cache=not force).rvalue
+            else:
+                # Taurus 3 compatibility
+                self.last_val = self._attr.read(cache=not force).value
         except:
             self.error("Read error")
             self.debug("Details:", exc_info=1)
@@ -506,7 +517,11 @@ class PoolElement(BaseElement, TangoDevice):
         try:
             # TODO: For Taurus 4 / Taurus 3 compatibility
             if hasattr(self, "stateObj"):
-                state_value = self.stateObj.read().rvalue
+                try:
+                    state_value = self.stateObj.read().rvalue
+                except:
+                    # Fallback for Taurus3
+                    state_value = self.stateObj.read().value
                 # state_value is DevState enumeration (IntEnum)
                 state = state_value.name.capitalize()
             else:
@@ -1482,7 +1497,11 @@ class MeasurementGroup(PoolElement):
         if evt_type not in CHANGE_EVT_TYPES:
             return
         self.info("Configuration changed")
-        self._setConfiguration(evt_value.value)
+        try:
+            self._setConfiguration(evt_value.rvalue)
+        except:
+            # Fallback for Taurus3
+            self._setConfiguration(evt_value.value)
 
     def getTimerName(self):
         return self.getTimer()['name']
@@ -1890,10 +1909,20 @@ class Pool(TangoDevice, MoveableSource):
         elif evt_type not in CHANGE_EVT_TYPES:
             return
         try:
-            elems = CodecFactory().decode(evt_value.value, ensure_ascii=True)
+            try:
+                elems = CodecFactory().decode(evt_value.rvalue,
+                                              ensure_ascii=True)
+            except:
+                # Fallback for Taurus3
+                elems = CodecFactory().decode(evt_value.value,
+                                              ensure_ascii=True)
         except:
             self.error("Could not decode element info")
-            self.info("value: '%s'", evt_value.value)
+            try:
+                self.info("value: '%s'", evt_value.rvalue)
+            except:
+                # Fallback for Taurus3
+                self.info("value: '%s'", evt_value.value)
             self.debug("Details:", exc_info=1)
             return
         elements = self.getElementsInfo()

@@ -570,7 +570,12 @@ class SpockMacroServer(BaseMacroServer):
             # TODO: when it becomes possible to do:
             # some taurus.Device.<attr name> = <value>
             # replace device_proxy with element
-            device_proxy = element.getObj().getHWObj()
+            try:
+                # Taurus4 usage
+                device_proxy = element.getObj().getDeviceProxy()
+            except:
+                # Taurus3 usage
+                device_proxy = element.getObj().getHWObj()
             genutils.expose_variable(element.name, device_proxy)
         return element
 
