@@ -44,10 +44,10 @@ packages = find_packages(where="src")
 
 provides = [
     'sardana',
-    'sardana.pool',
-    'sardana.macroserver',
-    'sardana.spock',
-    'sardana.tango',
+    # 'sardana.pool',
+    # 'sardana.macroserver',
+    # 'sardana.spock',
+    # 'sardana.tango',
 ]
 
 requires = [
