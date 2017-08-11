@@ -170,7 +170,8 @@ class RecorderManager(MacroServerManager):
             if extension is not None:
                 # fist look into the SCAN_RECORDER_MAP
                 _map = self._custom_scan_recorder_map
-                name = _map.get(extension, None)
+                if _map is not None:
+                    name = _map.get(extension, None)
                 if name is not None:
                     klass = self.getRecorderMetaClass(name)
                 # second look into the standard map
