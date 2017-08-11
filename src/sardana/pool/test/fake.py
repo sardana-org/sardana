@@ -35,6 +35,7 @@ class FakePool(object):
     acq_loop_states_per_value = 10
     motion_loop_sleep_time = 0.1
     motion_loop_states_per_position = 10
+    drift_correction = True
 
     def __init__(self, poolpath=[], loglevel=None):
         self.ctrl_manager = ControllerManager()

@@ -116,6 +116,14 @@ class Position(SardanaAttribute):
             timestamps = self._local_timestamp,
         return max(timestamps)
 
+    def _get_write_timestamp(self):
+        timestamps = []
+        for pos_attr in self.obj.get_physical_position_attribute_iterator():
+            timestamps.append(pos_attr.w_timestamp)
+        if not len(timestamps):
+            timestamps = time.time(),
+        return max(timestamps)
+
     def get_physical_write_positions(self):
         ret = []
         for pos_attr in self.obj.get_physical_position_attribute_iterator():

@@ -26,7 +26,7 @@
 __all__ = ['createPoolController', 'createPoolCounterTimer',
            'createPoolZeroDExpChannel', 'createPoolTriggerGate',
            'createPoolMotor', 'createPoolPseudoCounter',
-           'createPoolMeasurementGroup',
+           'createPoolPseudoMotor', 'createPoolMeasurementGroup',
            'createPoolSynchronizationConfiguration',
            'createCTAcquisitionConfiguration', 'createMGConfiguration',
            'createElemConf', 'createCtrlConf', 'createConfbyCtrlKlass',
@@ -40,6 +40,7 @@ from sardana.pool.poolzerodexpchannel import Pool0DExpChannel
 from sardana.pool.pooltriggergate import PoolTriggerGate
 from sardana.pool.poolmotor import PoolMotor
 from sardana.pool.poolpseudocounter import PoolPseudoCounter
+from sardana.pool.poolpseudomotor import PoolPseudoMotor
 from sardana.pool.poolmeasurementgroup import PoolMeasurementGroup
 
 
@@ -119,13 +120,24 @@ def createPoolMotor(pool, poolcontroller, conf):
 
 
 def createPoolPseudoCounter(pool, poolcontroller, conf, elements=()):
-    '''Method to create a PoolMotor using a configuration dictionary
+    '''Method to create a PoolPseudoCounter using a configuration dictionary
     '''
     kwargs = copy.deepcopy(conf)
     kwargs['pool'] = pool
     kwargs['ctrl'] = poolcontroller
     kwargs['user_elements'] = elements
     return PoolPseudoCounter(**kwargs)
+
+
+def createPoolPseudoMotor(pool, poolcontroller, conf, elements=()):
+    '''Method to create a PoolPseudoMotor using a configuration dictionary
+    '''
+    kwargs = copy.deepcopy(conf)
+    kwargs['pool'] = pool
+    kwargs['ctrl'] = poolcontroller
+    kwargs['user_elements'] = elements
+    return PoolPseudoMotor(**kwargs)
+
 
 def createPoolMeasurementGroup(pool, conf):
     '''Method to create a PoolMeasurementGroup using a configuration dictionary
