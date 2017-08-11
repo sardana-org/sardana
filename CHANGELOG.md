@@ -9,6 +9,13 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Added
 - ...
 
+## [2.3.2] - 2017-08-11
+For a full log of commits between versions run (in your git repo):
+`git log 2.3.1..2.3.2`
+
+### Fixed
+- Provides metadatab in setup.py to be complient with PyPI
+
 ## [2.3.1] - 2017-08-11
 For a full log of commits between versions run (in your git repo):
 `git log 2.3.0..2.3.1`
@@ -269,7 +276,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.3.1...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.3.2...HEAD
+[2.3.2]: https://github.com/sardana-org/sardana/compare/2.3.1...2.3.2
 [2.3.1]: https://github.com/sardana-org/sardana/compare/2.3.0...2.3.1
 [2.3.0]: https://github.com/sardana-org/sardana/compare/2.2.3...2.3.0
 [2.2.3]: https://github.com/sardana-org/sardana/compare/2.2.2...2.2.3
