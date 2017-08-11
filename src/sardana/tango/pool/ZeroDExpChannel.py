@@ -201,9 +201,9 @@ class ZeroDExpChannel(PoolExpChannelDevice):
         self.zerod.start_acquisition()
 
     def read_ValueBuffer(self, attr):
-        msg = "ValueBuffer attribute is deprecated since Jul17 release and "\
-              "it will disappear with Jan18 release."
-        self.deprecated(msg)
+        msg = ("ValueBuffer attribute is deprecated since version 2.3.0. "
+               "Use AccumulationBuffer attribute instead.")
+        self.warning(msg)
         attr.set_value(self.zerod.get_accumulation_buffer())
 
     def read_AccumulationBuffer(self, attr):
