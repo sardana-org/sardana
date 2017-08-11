@@ -145,7 +145,7 @@ class RecorderManager(MacroServerManager):
             raise UnknownRecorder("Unknown recorder %s" % recorder_name)
         return ret
 
-    def getRecorderMetaClasses(self, filter_=None, extension=None):
+    def getRecorderMetaClasses(self, filter=None, extension=None):
         """ Returns a :obj:`dict` containing information about recorder
         classes. These may be limitted by two conditions - filter and
         extension. The first one selects just the classes inheriting from the
@@ -161,8 +161,8 @@ class RecorderManager(MacroServerManager):
             :obj:`dict`\<:obj:`str`\,
             :class:`~sardana.macroserver.msmetarecorder.RecorderClass`\>
         """
-        if filter_ is None:
-            filter_ = DataRecorder
+        if filter is None:
+            filter = DataRecorder
         ret = {}
         for name, klass in self._recorder_dict.items():
             if not issubclass(klass.recorder_class, filter):
