@@ -7,6 +7,13 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
+- ...
+
+## [2.3.0] - 2017-08-04
+For a full log of commits between versions run (in your git repo):
+`git log 2.2.3..2.3.0`
+
+### Added
 - Generic continuous scans - `ascanct` & co. (SEP6)
   - TriggerGate element and its controller to plug in hardware with
     the synchronization capabilities
@@ -98,7 +105,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [2.2.3] - 2017-01-12
 For a full log of commits between versions run (in your git repo):
-`git log 2.2.3..2.2.3`
+`git log 2.2.2..2.2.3`
 
 ### Fixed
 - Avoid to run sardana.tango.pool tests in sardana_unitsuite (related to #402)
@@ -255,7 +262,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.2.3...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.3.0...HEAD
+[2.3.0]: https://github.com/sardana-org/sardana/compare/2.2.3...2.3.0
 [2.2.3]: https://github.com/sardana-org/sardana/compare/2.2.2...2.2.3
 [2.2.2]: https://github.com/sardana-org/sardana/compare/2.2.1...2.2.2
 [2.2.1]: https://github.com/sardana-org/sardana/compare/2.2.0...2.2.1
