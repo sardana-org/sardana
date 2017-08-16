@@ -134,7 +134,7 @@ class renameelem(Macro):
 
 
 class udefelem(Macro):
-    """Deletes an existing element(s)"""
+    """Deletes existing elements"""
 
     param_def = [
         ['elements',
@@ -180,14 +180,19 @@ class defctrl(Macro):
 
 
 class udefctrl(Macro):
-    """Deletes an existing controller"""
+    """Deletes existing controllers"""
 
-    param_def = [['controller', Type.Controller,
-                  None, 'existing controller'], ]
+    param_def = [
+        ['controllers',
+         ParamRepeat(['controller', Type.Controller, None, 'controller name'],
+                     min=1),
+         None, 'List of controller(s) name(s)'], ]
 
-    def run(self, controller):
-        pool = controller.getPoolObj()
-        pool.deleteController(controller.getName())
+    def run(self, controllers):
+        for controller in controllers:
+            pool = controller.getPoolObj()
+            pool.deleteController(controller.getName())
+
 
 ##########################################################################
 #
