@@ -383,7 +383,9 @@ class Door(SardanaDevice):
         self.macro_executor.stop()
 
     def is_StopMacro_allowed(self):
-        return self.get_state() == Macro.Running
+        is_stop_allowed = (self.get_state() == Macro.Running or
+                           self.get_state() == Macro.Pause)
+        return is_stop_allowed
 
     def ResumeMacro(self):
         macro = self.getRunningMacro()
