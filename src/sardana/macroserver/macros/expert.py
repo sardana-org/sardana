@@ -91,14 +91,19 @@ class defmeas(Macro):
 
 
 class udefmeas(Macro):
-    """Deletes an existing measurement group"""
+    """Deletes existing measurement groups"""
 
-    param_def = [['name', Type.MeasurementGroup,
-                  None, 'Measurement group name'], ]
+    param_def = [
+        ['mntgrps',
+         ParamRepeat(['mntgrp', Type.MeasurementGroup, None,
+                      'Measurement group name'],
+                     min=1),
+         None, 'List of measurement group names'], ]
 
-    def run(self, mntgrp):
-        pool = mntgrp.getPoolObj()
-        pool.deleteMeasurementGroup(mntgrp.getName())
+    def run(self, mntgrps):
+        for mntgrp in mntgrps:
+            pool = mntgrp.getPoolObj()
+            pool.deleteMeasurementGroup(mntgrp.getName())
 
 
 class defelem(Macro):
