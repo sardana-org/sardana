@@ -1100,6 +1100,15 @@ def mainloop(shell=None, user_ns=None):
 
 
 def run(user_ns=None):
+
+    # TODO: Temporary solution, available while Taurus3 is being supported.
+    from taurus import tauruscustomsettings
+    from sardana import sardanacustomsettings
+    max_counts = getattr(sardanacustomsettings,
+                         'TAURUS_MAX_DEPRECATION_COUNTS')
+    tauruscustomsettings._MAX_DEPRECATIONS_LOGGED = max_counts
+    #
+
     # initialize input handler as soon as possible
     import sardana.spock.inputhandler
     input_handler = sardana.spock.inputhandler.InputHandler()
@@ -1111,6 +1120,12 @@ def run(user_ns=None):
             clean_up()
         except Exception:
             pass
+
+    # TODO: Temporary solution, available while Taurus3 is being supported.
+    from taurus.core.util.log import _DEPRECATION_COUNT
+    from taurus import info
+    info('\n*********************\n%s', _DEPRECATION_COUNT.pretty())
+
 
 # for compatibility reasons with new IPython API (>=0.11) we add the following
 # empty methods
