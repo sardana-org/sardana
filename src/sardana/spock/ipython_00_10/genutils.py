@@ -1105,7 +1105,7 @@ def run(user_ns=None):
     from taurus import tauruscustomsettings
     from sardana import sardanacustomsettings
     max_counts = getattr(sardanacustomsettings,
-                         'TAURUS_MAX_DEPRECATION_COUNTS')
+                         'TAURUS_MAX_DEPRECATION_COUNTS', 0)
     tauruscustomsettings._MAX_DEPRECATIONS_LOGGED = max_counts
     #
 
