@@ -1236,6 +1236,14 @@ def prepare_cmdline(argv=None):
 
 def run():
 
+    # TODO: Temporary solution, available while Taurus3 is being supported.
+    from taurus import tauruscustomsettings
+    from sardana import sardanacustomsettings
+    max_counts = getattr(sardanacustomsettings,
+                         'TAURUS_MAX_DEPRECATION_COUNTS', 0)
+    tauruscustomsettings._MAX_DEPRECATIONS_LOGGED = max_counts
+    #
+
     try:
         from IPython.utils.traitlets import Unicode
         from IPython.frontend.qt.console.rich_ipython_widget import RichIPythonWidget
@@ -1267,3 +1275,8 @@ def run():
     prepare_cmdline()
 
     launch_new_instance()
+
+    # TODO: Temporary solution, available while Taurus3 is being supported.
+    from taurus.core.util.log import _DEPRECATION_COUNT
+    from taurus import info
+    info('\n*********************\n%s', _DEPRECATION_COUNT.pretty())
