@@ -578,21 +578,7 @@ class TaurusSequencerWidget(TaurusWidget):
         self.saveSequenceAction.setEnabled(False)
         self.emit(Qt.SIGNAL("currentMacroChanged"), None)
 
-    def onOpenSequence(self):
-        if not self._sequenceModel.isEmpty():
-            if Qt.QMessageBox.question(self,
-                                       "Open sequence",
-                                       "Do you want to save existing sequence?",
-                                       Qt.QMessageBox.Yes,
-                                       Qt.QMessageBox.No) == Qt.QMessageBox.Yes:
-                self.onSaveSequence()
-                self.tree.clearTree()
-
-        sequencesPath = self.sequencesPath()
-        fileName = str(Qt.QFileDialog.getOpenFileName(self,
-                                                      "Choose a sequence to open...",
-                                                      sequencesPath,
-                                                      "*"))
+    def loadFile(self, fileName):
         if fileName == "":
             return
         #@todo: reset macroComboBox to index 0
@@ -632,6 +618,24 @@ class TaurusSequencerWidget(TaurusWidget):
             self.setSequencesPath(str.join("/", fileName.rsplit("/")[:-1]))
 
         self.emit(Qt.SIGNAL("currentMacroChanged"), None)
+
+    def onOpenSequence(self):
+        if not self._sequenceModel.isEmpty():
+            if Qt.QMessageBox.question(self,
+                                       "Open sequence",
+                                       "Do you want to save existing sequence?",
+                                       Qt.QMessageBox.Yes,
+                                       Qt.QMessageBox.No) == Qt.QMessageBox.Yes:
+                self.onSaveSequence()
+                self.tree.clearTree()
+
+        sequencesPath = self.sequencesPath()
+        fileName = str(Qt.QFileDialog.getOpenFileName(self,
+                                                      "Choose a sequence to open...",
+                                                      sequencesPath,
+                                                      "*"))
+        self.loadFile(fileName)
+
 
     def onSaveSequence(self):
         sequencesPath = self.sequencesPath()
@@ -935,7 +939,7 @@ def createSequencerWidget(args):
     return sequencer
 
 
-def createSequencer(args):
+def createSequencer(args, options):
     sequencer = TaurusSequencer()
     sequencer.setModelInConfig(True)
     Qt.QObject.connect(sequencer, Qt.SIGNAL(
@@ -944,21 +948,34 @@ def createSequencer(args):
         sequencer.setModel(args[0])
         sequencer.emit(Qt.SIGNAL('doorChanged'), args[1])
     sequencer.loadSettings()
+    if options.file is not None:
+        sequencer.taurusSequencerWidget.loadFile(options.file)
     return sequencer
 
 
 def main():
+    from taurus.core.util import argparse
     from taurus.qt.qtgui.application import TaurusApplication
-    import taurus
-#    from rfoo.utils import rconsole
-#    rconsole.spawn_server()
 
-    app = TaurusApplication(sys.argv, app_version=sardana.Release.version)
+    parser = argparse.get_taurus_parser()
+    parser.set_usage("%prog [options]")
+    parser.set_description("Sardana macro sequencer.\n"
+                           "It allows the creation of sequences of "
+                           "macros, executed one after the other.\n"
+                           "The sequences can be stored under xml files")
+    parser.add_option("-f", "--file",
+                      dest="file", default=None,
+                      help="load an xml macro sequence file")
+
+    app = TaurusApplication(cmd_line_parser=parser,
+                            app_name="sequencer",
+                            app_version=sardana.Release.version)
     args = app.get_command_line_args()
+    options = app.get_command_line_options()
 
     app.setOrganizationName(globals.ORGANIZATION_NAME)
     app.setApplicationName(globals.SEQUENCER_APPLICATION_NAME)
-    sequencer = createSequencer(args)
+    sequencer = createSequencer(args, options)
     sequencer.show()
     sys.exit(app.exec_())
 
