@@ -613,6 +613,7 @@ class TaurusSequencerWidget(TaurusWidget):
                 self,
                 "Error while loading macros sequence",
                 "There was a problem while reading from file: %s" % fileName)
+            file = None
             self.tree.clearTree()
             self.newSequenceAction.setEnabled(False)
             self.saveSequenceAction.setEnabled(False)
