@@ -148,7 +148,7 @@ class MacroButton(TaurusWidget):
             door_available = False
 
         if state in [PyTango.DevState.RUNNING]:
-            self.setButtonText(self.macro_name + ": Click to abort")
+            self.setButtonText("Abort " + self.macro_name)
         elif state in [PyTango.DevState.ON, PyTango.DevState.ALARM]:
             self.setButtonText(self.macro_name)
 
