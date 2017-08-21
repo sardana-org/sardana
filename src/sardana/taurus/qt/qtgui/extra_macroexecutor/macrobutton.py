@@ -147,6 +147,11 @@ class MacroButton(TaurusWidget):
         if state not in [PyTango.DevState.ON, PyTango.DevState.ALARM] and not self.ui.button.isChecked():
             door_available = False
 
+        if state in [PyTango.DevState.RUNNING]:
+            self.setButtonText(self.macro_name + ": Click to abort")
+        elif state in [PyTango.DevState.ON, PyTango.DevState.ALARM]:
+            self.setButtonText(self.macro_name)
+
         self.ui.button.setEnabled(door_available)
         self.ui.progress.setEnabled(door_available)
 
@@ -315,7 +320,6 @@ class MacroButton(TaurusWidget):
                 'group': 'Taurus Sardana',
                 'module': 'taurus.qt.qtgui.extra_macroexecutor',
                 'icon': ':/designer/pushbutton.png'}
-
 
 class MacroButtonAbortDoor(Qt.QPushButton, TaurusBaseWidget):
     '''Deprecated class. Instead use TaurusCommandButton.
