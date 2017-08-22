@@ -81,7 +81,7 @@ class MacroButton(TaurusWidget):
         self.macro_args = []
         self.macro_id = None
         self.running_macro = None
-        self._text = ""
+        self._text = "Macro"
         self.abort_text = "Abort"
 
         self.ui.progress.setValue(0)
