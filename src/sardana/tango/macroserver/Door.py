@@ -325,10 +325,9 @@ class Door(SardanaDevice):
         value = attr.get_write_value()
         self.door.get_input_handler().input_received(value)
 
-    #@DebugIt()
     def read_ElementList(self, attr):
-        element_list = self.macro_server_device.getElementList()
-        attr.set_value(*element_list)
+        fmt, element_list = self.macro_server_device.getElements()
+        attr.set_value(fmt, element_list)
 
     def sendRecordData(self, format, data):
         self.push_change_event('RecordData', format, data)
