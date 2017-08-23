@@ -437,31 +437,51 @@ def print_dev_from_class(classname, dft=None):
         server_wildcard = '*'
         try:
             exp_dev_list = db.get_device_exported_for_class(classname)
-        except Exception:
+        except:
             exp_dev_list = []
     else:
         server_wildcard = '%'
         exp_dev_list = []
 
     res = None
-    dev_list = db.get_device_name(server_wildcard, classname)
+    dev_list = list(db.get_device_name(server_wildcard, classname))
     tg_host = "%s:%s" % (db.get_db_host(), db.get_db_port())
     print "Available", classname, "devices from", tg_host, ":"
+
+    list_devices_with_alias = []
+    list_devices_with_no_alias = []
     for dev in dev_list:
-        full_name, name, alias = from_name_to_tango(dev)
-        out = alias or name
+        _, name, alias = from_name_to_tango(dev)
         if alias:
-            out += ' (a.k.a. %s)' % name
+            dev_alias_name = (alias, name)
+            list_devices_with_alias.append(dev_alias_name)
+        else:
+            dev_alias_name = ("", name)
+            list_devices_with_no_alias.append(dev_alias_name)
+
+    list_devices_with_alias = sorted(list_devices_with_alias,
+                                     key=lambda s: s[0].lower())
+    list_devices_with_no_alias = sorted(list_devices_with_no_alias,
+                                        key=lambda s: s[0].lower())
+    ordered_devices_list = list_devices_with_alias + list_devices_with_no_alias
+
+    for dev in ordered_devices_list:
+        dev_alias = dev[0]
+        dev_name = dev[1]
+        if dev_alias == "":
+            out = dev_name
+        else:
+            out = "%s (a.k.a. %s)" % (dev_alias, dev_name)
         out = "%-25s" % out
-        if dev in exp_dev_list:
+        if dev_name in exp_dev_list:
             out += " (running)"
         print out
+
         if dft:
             if dft.lower() == name.lower():
                 res = name
-            elif not alias is None and dft.lower() == alias.lower():
+            elif alias is not None and dft.lower() == alias.lower():
                 res = alias
-
     return res
 
 
