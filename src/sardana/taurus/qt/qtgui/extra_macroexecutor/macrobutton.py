@@ -88,6 +88,9 @@ class MacroButton(TaurusWidget):
         self.connect(self.ui.button, Qt.SIGNAL('clicked()'),
                      self._onButtonClicked)
 
+    def handleEvent(self, evt_src, evt_type, evt_value):
+        pass
+
     def toggleProgress(self, visible):
         '''deprecated'''
         self.warning('toggleProgress is deprecated. Use showProgress')
