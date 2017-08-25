@@ -996,7 +996,8 @@ class MotorGroup(PoolElement, Moveable):
         for mot in self.getMotorNames():
             low, high = Device(mot).getPositionObj().getLimits()
             if new_pos[i] < low or new_pos[i] > high:
-                raise RuntimeError("%s: Requested movement beyond the limits." % mot)
+                raise RuntimeError("%s: Requested movement beyond the limits."
+                                   % mot)
             i += 1
 
         try:
