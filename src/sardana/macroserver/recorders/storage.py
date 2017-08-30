@@ -279,6 +279,16 @@ class SPEC_FileRecorder(BaseFileRecorder):
             self.setFileName(filename)
         self._expectedlabels = pars.get('labels', None)
 
+        # Configure nan value
+        self.nan_value = float('nan')
+
+        if macro is None:
+            try:
+                self.nan_value = float(macro.getEnv('SpecNanValue'))
+            except Exception as e:
+                macro.debug('SpecRecorder: Error in reading SpecNanValue. %r'
+                            % e)
+
     def setLabels(self, labels):
         self._expectedlabels = labels
 
@@ -446,7 +456,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
     def _writeRecord(self, record):
         if self.filename is None:
             return
-        nan, names, fd = float('nan'), self.names, self.fd
+        nan, names, fd = self.nan_value, self.names, self.fd
 
         d = []
         for oned_name in self.oned_names:
