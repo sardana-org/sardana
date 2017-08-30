@@ -201,22 +201,20 @@ class BaseSardanaElementContainer:
         return self.getElement(elem_name) is not None
 
     def getElement(self, elem_name):
-        elem_name = elem_name.lower()
         for elems in self._type_elems_dict.values():
             elem = elems.get(elem_name)  # full_name?
             if elem is not None:
                 return elem
             for elem in elems.values():
-                if elem.name.lower() == elem_name:
+                if elem.name == elem_name:
                     return elem
 
     def getElementWithInterface(self, elem_name, interface):
-        elem_name = elem_name.lower()
         elems = self._interfaces_dict.get(interface, {})
         if elem_name in elems:
             return elems[elem_name]
         for elem in elems.values():
-            if elem.name.lower() == elem_name:
+            if elem.name == elem_name:
                 return elem
 
     def getElements(self):

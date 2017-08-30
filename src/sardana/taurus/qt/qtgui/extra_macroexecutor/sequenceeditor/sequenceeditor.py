@@ -621,6 +621,10 @@ class TaurusSequencerWidget(TaurusWidget):
             self.newSequenceAction.setEnabled(False)
             self.saveSequenceAction.setEnabled(False)
         except:
+            Qt.QMessageBox.warning(self,
+                                   "Loading error",
+                                   "Error loading the sequence \n"
+                                   "Verify the macro syntax")
             self.tree.clearTree()
             self.playSequenceAction.setEnabled(False)
             self.newSequenceAction.setEnabled(False)
