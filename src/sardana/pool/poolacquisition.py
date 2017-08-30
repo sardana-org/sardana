@@ -716,7 +716,7 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
                 if is_value_error(value):
                     self.error("Loop final read value error for: %s" %
                                acquirable.name)
-                    acquirable.put_value(value)
+                    acquirable.extend_value_buffer(None, propagate=2)
                 else:
                     acquirable.extend_value_buffer(value, propagate=2)
             with acquirable:
@@ -796,7 +796,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
                 if is_value_error(value):
                     self.error("Loop final read value error for: %s" %
                                acquirable.name)
-                    acquirable.put_value(value)
+                    acquirable.append_value_buffer(None, self.index)
                 else:
                     acquirable.append_value_buffer(value, self.index)
             with acquirable:
