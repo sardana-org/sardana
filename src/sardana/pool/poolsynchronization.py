@@ -129,14 +129,24 @@ class PoolSynchronization(PoolAction):
                 remove_mg_listener = partial(self._synch_soft.remove_listener,
                                              self.main_element)
                 self.add_finish_hook(remove_mg_listener, False)
-            # subscribing to the position change events to generate events
+            # subscribing to the position and state change events to generate events
             # in position domain
             if moveable is not None:
-                position = moveable.get_position_attribute()
-                position.add_listener(self._synch_soft)
-                remove_pos_listener = partial(position.remove_listener,
+                # Delete FunctionGenerator Listener only for position events
+                # issue #583
+                #position = moveable.get_position_attribute()
+                #position.add_listener(self._synch_soft)
+                #remove_pos_listener = partial(position.remove_listener,
+                                              #self._synch_soft)
+                #self.add_finish_hook(remove_pos_listener, False)
+
+                # Add FunctionGenerator Listener to moveable in order to also 
+                # receive the state events, this is necessary to make known 
+                # FunctionGenerator the state of the motor.
+                moveable.add_listener(self._synch_soft)                 
+                remove_mov_listener = partial(moveable.remove_listener,
                                               self._synch_soft)
-                self.add_finish_hook(remove_pos_listener, False)
+                self.add_finish_hook(remove_mov_listener, False)
 
             # PreStartAll on all controllers
             for pool_ctrl in pool_ctrls:

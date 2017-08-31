@@ -134,9 +134,17 @@ class FunctionGenerator(EventGenerator):
     direction = property(get_direction, set_direction)
 
     def event_received(self, *args, **kwargs):
-        _, _, v = args
-        self._position = v.value
-        self._position_event.set()
+        s, t, v = args
+        if t.name.lower() == 'position':
+            self._position = v.value
+            self._position_event.set()
+
+        # In case of SynchDomain.Position check if the motor has finished the
+        #  movement
+        elif t.name.lower() == 'state':
+            if self.initial_domain_in_use == SynchDomain.Position:
+                if v != State.Moving:
+                    self.stop()
 
     def start(self):
         self._start_time = time.time()
