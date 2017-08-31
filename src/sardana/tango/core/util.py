@@ -658,7 +658,8 @@ def prepare_server(args, tango_args):
 
     db = Database()
     if not exists_server_instance(db, server_name, inst_name):
-        if ask_yes_no('%s does not exist. Do you wish create a new one' % inst_name, default='y'):
+        if ask_yes_no('%s does not exist. Do you wish to create a new '
+                      'one' % inst_name, default='y'):
             if server_name == 'MacroServer':
                 # build list of pools to which the MacroServer should connect
                 # to
@@ -670,18 +671,27 @@ def prepare_server(args, tango_args):
                     if pool_alias is not None:
                         all_pools.append(pool_alias)
                 all_pools = map(str.lower, all_pools)
+                pools_for_choosing = []
                 for i in pools:
-                    print pools[i][3]
+                    pools_for_choosing.append(pools[i][3])
+                    sorted_pools = sorted(pools_for_choosing,
+                                          key=lambda s: s.lower())
                 while True:
+                    print("\nAvailable Pools:")
+                    for pool in sorted_pools:
+                        print pool
                     elem = raw_input(
-                        "Please select pool to connect to (return to finish): ").strip()
+                        "\nPlease select the Pool to connect to "
+                        "(return to finish): ").strip()
                     if not len(elem):
+                        print("MacroServer %s has not been linked to any Pool"
+                              % inst_name)
                         break
                     if elem.lower() not in all_pools:
-                        print "Unknown pool element"
-                        print all_pools
+                        print "Unknown pool element\n"
                     else:
                         pool_names.append(elem)
+                        break
                 log_messages += register_sardana(db, server_name, inst_name,
                                                  pool_names)
             else:
