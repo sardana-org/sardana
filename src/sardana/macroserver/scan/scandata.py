@@ -233,7 +233,7 @@ class RecordList(dict):
                  initial_data=None):
 
         self.datahandler = datahandler
-        self.applyInterpolation = apply_interpolation
+        self.apply_interpolation = apply_interpolation
         self.initial_data = initial_data
         if environ is None:
             self.environ = RecordEnvironment()
@@ -375,7 +375,7 @@ class RecordList(dict):
             if self.isRecordCompleted(i):
                 rc = self.records[i]
                 self[self.currentIndex] = rc
-                if self.applyInterpolation:
+                if self.apply_interpolation:
                     self.applyZeroOrderInterpolation(rc)
                 self.datahandler.addRecord(self, rc)
                 self.currentIndex += 1
@@ -396,7 +396,7 @@ class RecordList(dict):
         for i in range(start, len(self.records)):
             rc = self.records[i]
             self[self.currentIndex] = rc
-            if self.applyInterpolation:
+            if self.apply_interpolatio:
                 self.applyZeroOrderInterpolation(rc)
             self.datahandler.addRecord(self, rc)
             self.currentIndex += 1
