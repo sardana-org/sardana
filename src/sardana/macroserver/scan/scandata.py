@@ -429,7 +429,7 @@ class RecordList(dict):
         for i in range(start, len(self.records)):
             rc = self.records[i]
             self[self.currentIndex] = rc
-            if self.apply_interpolatio:
+            if self.apply_interpolation:
                 self.applyZeroOrderInterpolation(rc)
             self.datahandler.addRecord(self, rc)
             self.currentIndex += 1
