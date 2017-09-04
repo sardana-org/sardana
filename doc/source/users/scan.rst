@@ -185,6 +185,19 @@ Scans are highly configurable using the environment variables
 
 Following variables are supported:
 
+**ApplyExtrapolation**
+    Enable/disable the extrapolation method to fill the missing parts of the
+    very first scan records in case the software synchronized acquisition could
+    not follow the pace. Can be used only with the continuous acquisition
+    macros e.g. *ct* type of continuous scans or timescan. Its value is of
+    boolean type.
+
+    .. note::
+        The ApplyExtrapolation environment variable has been included in
+        Sardana on a provisional basis. Backwards incompatible changes
+        (up to and including removal of this variable) may occur if deemed
+        necessary by the core developers.
+
 **ApplyInterpolation**
     Enable/disable the `zero order hold`_ a.k.a. "constant interpolation"
     method to fill the missing parts of the scan records in case the software
