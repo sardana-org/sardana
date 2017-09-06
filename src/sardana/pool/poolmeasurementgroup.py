@@ -117,6 +117,8 @@ class PoolMeasurementGroup(PoolGroupElement):
         self._config_dirty = True
         self._moveable = None
         self._moveable_obj = None
+        self._moveables = []
+        self._moveables_objs = []
         self._synchronization = []
         # dict with channel and its acquisition synchronization
         # key: PoolBaseChannel; value: AcqSynch
@@ -629,6 +631,26 @@ class PoolMeasurementGroup(PoolGroupElement):
                         doc="moveable source used in synchronization")
 
     # --------------------------------------------------------------------------
+    # moveable
+    # --------------------------------------------------------------------------
+
+    def get_moveables(self):
+        return self._moveables
+
+    def set_moveables(self, moveables, propagate=1):
+        self._moveables = moveables
+        moveables_objs = []
+        for name in moveables:
+            moveable_obj = self.pool.get_element_by_full_name(name)
+            moveables_objs.append(moveable_obj)
+        self._moveables_objs = moveables_objs
+        self.fire_event(EventType("moveables", priority=propagate),
+                        moveables)
+
+    moveables = property(get_moveables, set_moveables,
+                        doc="moveables to be acquired")
+
+    # --------------------------------------------------------------------------
     # latency time
     # --------------------------------------------------------------------------
 
@@ -664,6 +686,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                 kwargs['monitor'] = self._monitor
             kwargs['synchronization'] = self._synchronization
             kwargs['moveable'] = self._moveable_obj
+            kwargs['moveables'] = self._moveables_objs
             # start acquisition
             self.acquisition.run(**kwargs)
 
