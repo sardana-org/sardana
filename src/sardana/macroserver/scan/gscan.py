@@ -312,11 +312,17 @@ class GScan(Logger):
 
         # The Scan data object
         try:
-            applyInterpolation = macro.getEnv('ApplyInterpolation')
+            apply_interpol = macro.getEnv('ApplyInterpolation')
         except UnknownEnv:
-            applyInterpolation = False
+            apply_interpol = False
+        try:
+            apply_extrapol = macro.getEnv('ApplyExtrapolation')
+        except UnknownEnv:
+            apply_extrapol = False
+        # The Scan data object
         data = ScanFactory().getScanData(data_handler,
-                                         apply_interpolation=applyInterpolation)
+                                         apply_interpolation=apply_interpol,
+                                         apply_extrapolation=apply_extrapol)
 
         # The Output recorder (if any)
         output_recorder = self._getOutputRecorder()
