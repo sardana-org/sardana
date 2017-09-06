@@ -1803,12 +1803,12 @@ class CAcquisition(object):
         self._thread_pool = get_thread_pool()
         self._countdown_latch = CountLatch()
 
-    def value_buffer_changed(self, channel, value_buffer):
-        """Delegate processing of value buffer events to worker threads."""
-        # value_buffer is a dictionary with at least keys: data, index
+    def buffer_changed(self, element, buffer_):
+        """Delegate processing of buffer events to worker threads."""
+        # buffer is a dictionary with at least keys: data, index
         # and its values are of type sequence
         # e.g. dict(data=seq<float>, index=seq<int>)
-        if value_buffer is None:
+        if buffer_ is None:
             return
         # TODO: for Taurus4 compatibility
         # The sardana code is not fully ready to deal with Taurus4 model names
@@ -1820,7 +1820,7 @@ class CAcquisition(object):
             full_name = full_name.lstrip("tango://")
 
         info = {'label': full_name}
-        info.update(value_buffer)
+        info.update(buffer_)
         # info is a dictionary with at least keys: label, data,
         # index and its values are of type string for label and
         # sequence for data, index
@@ -1829,7 +1829,7 @@ class CAcquisition(object):
         self._thread_pool.add(self.data.addData,
                               self._countdown_latch.count_down, info)
 
-    def wait_value_buffer(self):
+    def wait_buffer(self):
         """Wait until all value buffer events are processed."""
         self._countdown_latch.wait()
 
@@ -2195,7 +2195,7 @@ class CTScan(CScan, CAcquisition):
         self.motion_end_event.set()
         self.cleanup()
         self.macro.debug("Waiting for data events to be processed")
-        self.wait_value_buffer()
+        self.wait_buffer()
         self.macro.debug("All data events are processed")
 
     def scan_loop(self):
@@ -2438,9 +2438,9 @@ class TScan(GScan, CAcquisition):
 
         yield 0
         measurement_group.measure(synchronization,
-                                  self.value_buffer_changed)
+                                  self.buffer_changed)
         self.debug("Waiting for value buffer events to be processed")
-        self.wait_value_buffer()
+        self.wait_buffer()
         self._fill_missing_records()
         yield 100
 
