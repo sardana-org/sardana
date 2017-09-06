@@ -306,7 +306,7 @@ class RecordList(dict):
         for label in self.channelLabels:
             rc.data[label] = initial_data.get(label, float('NaN'))
         for label in self.refMoveablesLabels:
-            rc.data[label] = initial_data.get(label)
+            rc.data[label] = initial_data.get(label, float('NaN'))
         self.records.append(rc)
         self.recordno += 1
 
