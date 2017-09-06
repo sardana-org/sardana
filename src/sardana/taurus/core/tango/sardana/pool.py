@@ -933,12 +933,12 @@ class Motor(MoveableElement, Moveable):
         return msg
 
 
-class PseudoMotor(PoolElement, Moveable):
+class PseudoMotor(MoveableElement, Moveable):
     """ Class encapsulating PseudoMotor functionality."""
 
     def __init__(self, name, **kw):
         """PoolElement initialization."""
-        self.call__init__(PoolElement, name, **kw)
+        self.call__init__(MoveableElement, name, **kw)
         self.call__init__(Moveable)
 
     def getPosition(self, force=False):
