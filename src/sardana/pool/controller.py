@@ -1147,6 +1147,8 @@ class PseudoMotorController(PseudoController):
     standard_axis_attributes = {
         'Position': {'type': float,
                      'description': 'Position', },
+        'PositionBuffer': {'type': str,
+                 'description': 'Position buffer', },
     }
 
     #: A :obj:`str` representing the controller gender
