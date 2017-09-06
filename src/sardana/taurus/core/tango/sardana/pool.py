@@ -720,11 +720,12 @@ class MoveableElement(PoolElement):
         position_buffer_obj.unsubscribeEvent(self.positionBufferChanged)
 
 
+class Motor(MoveableElement, Moveable):
     """ Class encapsulating Motor functionality."""
 
     def __init__(self, name, **kw):
         """PoolElement initialization."""
-        self.call__init__(PoolElement, name, **kw)
+        self.call__init__(MoveableElement, name, **kw)
         self.call__init__(Moveable)
 
     def getPosition(self, force=False):
