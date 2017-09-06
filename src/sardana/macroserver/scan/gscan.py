@@ -65,7 +65,8 @@ from sardana.macroserver.scan.scandata import ColumnDesc, MoveableDesc, \
 from sardana.macroserver.scan.recorder import (AmbiguousRecorderError,
                                                SharedMemoryRecorder,
                                                FileRecorder)
-from sardana.taurus.core.tango.sardana.pool import Ready, TwoDExpChannel
+from sardana.taurus.core.tango.sardana.pool import Ready, TwoDExpChannel, \
+    Motor, PseudoMotor
 from sardana.sardanathreadpool import get_thread_pool
 
 
@@ -1810,12 +1811,17 @@ class CAcquisition(object):
         # e.g. dict(data=seq<float>, index=seq<int>)
         if buffer_ is None:
             return
+        # Until the github issue #500 gets fixed we use short names
+        # for moveables and full names for experimental channels
+        if isinstance(element, Motor) or isinstance(element, PseudoMotor):
+            full_name = element.getName()
+        else:
+            full_name = element.getFullName()
         # TODO: for Taurus4 compatibility
         # The sardana code is not fully ready to deal with Taurus4 model names
         # strip scheme name that appeared in the full_name since Taurus4
         # and come back to the Taurus3 style full name cause all the recording
         # stuff and the measurement group counts is based on them
-        full_name = channel.getFullName()
         if full_name.startswith("tango://"):
             full_name = full_name.lstrip("tango://")
 
