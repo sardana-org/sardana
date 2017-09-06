@@ -1799,6 +1799,7 @@ class MeasurementGroup(PoolElement):
             return self.getStateEG().readValue(), self.getValues()
         self.putIntegrationTime(duration)
         self.setMoveable(None)
+        self.setMoveables([])
         PoolElement.go(self, *args, **kwargs)
         state = self.getStateEG().readValue()
         if state == Fault:

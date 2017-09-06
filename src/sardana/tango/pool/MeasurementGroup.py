@@ -239,7 +239,13 @@ class MeasurementGroup(PoolGroupDevice):
         attr.set_value(moveable)
 
     def write_Moveables(self, attr):
-        self.measurement_group.moveables = attr.get_write_value()
+        # Due to the problem with writing an empty scpectrum to the attribute
+        # we change None to an empty list. More details in:
+        # https://github.com/tango-controls/pytango/issues/159
+        moveables = attr.get_write_value()
+        if moveables is None:
+            moveables = []
+        self.measurement_group.moveables = moveables
 
 
     def read_Synchronization(self, attr):
