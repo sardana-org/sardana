@@ -1667,16 +1667,25 @@ class MeasurementGroup(PoolElement):
     def getMoveable(self):
         return self._getAttrValue('Moveable')
 
+    def setMoveable(self, moveable=None):
+        if moveable is None:
+            moveable = 'None'  # Tango attribute is of type DevString
+        self.getMoveableObj().write(moveable)
+
     def getLatencyTimeObj(self):
         return self._getAttrEG('LatencyTime')
 
     def getLatencyTime(self):
         return self._getAttrValue('LatencyTime')
 
-    def setMoveable(self, moveable=None):
-        if moveable is None:
-            moveable = 'None'  # Tango attribute is of type DevString
-        self.getMoveableObj().write(moveable)
+    def getMoveablesObj(self):
+        return self._getAttrEG('Moveables')
+
+    def getMoveables(self):
+        return self._getAttrValue('Moveables')
+
+    def setMoveables(self, moveables):
+        self.getMoveablesObj().write(moveables)
 
     def valueBufferChanged(self, channel, value_buffer):
         """Receive value buffer updates, pre-process them, and call
