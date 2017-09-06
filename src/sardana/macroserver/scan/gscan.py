@@ -2004,7 +2004,8 @@ class CTScan(CScan, CAcquisition):
         for _, waypoint in waypoints:
             self.macro.debug("Waypoint iteration...")
             # initializing mntgrp control variables
-            self.__mntGrpStarted = False
+            self.__mnt_grp_subscribed = False
+            self.__moveables_subscribed = False
 
             start_positions = waypoint.get('start_positions')
             positions = waypoint['positions']
@@ -2179,11 +2180,14 @@ class CTScan(CScan, CAcquisition):
                     hook()
             self.macro.checkPoint()
 
-            self.macro.debug("Starting measurement group")
-            # add listener of data events
-            measurement_group.subscribeValueBuffer(self.value_buffer_changed)
-            self.__mntGrpStarted = True
+            # add listener of buffer events
+            measurement_group.subscribeValueBuffer(self.buffer_changed)
+            self.__mnt_grp_subscribed = True
+            for moveable in self.internal_moveables:
+                moveable.subscribePositionBuffer(self.buffer_changed)
+            self.__moveables_subscribed = True
 
+            self.macro.debug("Starting measurement group")
             mg_id = self.measurement_group.start()
             try:
                 self.timestamp_to_start = time.time() + delta_start
@@ -2272,16 +2276,28 @@ class CTScan(CScan, CAcquisition):
         and trigger to its state before the scan.'''
         startTimestamp = time.time()
 
-        if self.__mntGrpStarted:
-            self.debug("Unsubscribing from value buffer events")
+        if self.__mnt_grp_subscribed:
+            self.debug("Unsubscribing from value buffers")
             try:
                 self.measurement_group.unsubscribeValueBuffer(
-                    self.value_buffer_changed)
+                    self.buffer_changed)
             except:
-                msg = "Exception occurred trying to remove data listeners"
+                msg = "Exception occurred trying to unsubscribe value buffers"
                 self.debug(msg)
                 self.debug('Details: ', exc_info=True)
-                raise ScanException('removing data listeners failed')
+                raise ScanException('unsubscrubung value buffers failed')
+
+        if self.__moveables_subscribed:
+            self.debug("Unsubscribing from value buffers")
+            try:
+                for moveable in self.internal_moveables:
+                    moveable.unsubscribePositionBuffer(self.buffer_changed)
+            except:
+                msg = "Exception occurred trying to unsubscribe position "\
+                      "buffers"
+                self.debug(msg)
+                self.debug('Details: ', exc_info=True)
+                raise ScanException('unsubscrubung position buffers failed')
 
         if hasattr(self.macro, 'getHooks'):
             for hook in self.macro.getHooks('pre-cleanup'):
