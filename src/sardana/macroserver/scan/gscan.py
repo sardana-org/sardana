@@ -2129,24 +2129,50 @@ class CTScan(CScan, CAcquisition):
                 self.on_waypoints_end()
                 return
 
-            # TODO: don't fill theoretical positions but implement the position
-            # capture, both hardware and software
-            initial_data = {}
-            motors = self.macro.motors
-            starts = self.macro.starts
-            finals = self.macro.finals
-            nr_points = self.macro.nr_points
-            theoretical_positions = generate_positions(motors, starts, finals,
-                                                       nr_points)
-            theoretical_timestamps = generate_timestamps(synch)
-            for index, data in theoretical_positions.items():
-                data.update(theoretical_timestamps[index])
-                initial_data[index] = data
-            self.data.initial_data = initial_data
             self.macro.warning(
-                "Motor positions and relative timestamp (dt) columns contains"
-                " theoretical values"
+                "Relative timestamp (dt) columns contains theoretical values"
             )
+            theoretical_timestamps = generate_timestamps(synch)
+
+            pool = measurement_group.getPoolObj()
+            external_moveables = []
+            self.internal_moveables = []
+            starts = []
+            finals = []
+            # discriminate moveables into internal and external
+            for moveable, start, final in zip(self.macro.motors,
+                                              self.macro.starts,
+                                              self.macro.finals):
+                if moveable.getPoolObj() is pool:
+                    self.internal_moveables.append(moveable)
+                else:
+                    external_moveables.append(moveable)
+                    starts.append(start)
+                    finals.append(finals)
+            # generate theoretical positions only for the external moveables
+            # the ones that do not belong the the pool which synchronizes the
+            # acquisition
+            if len(external_moveables) > 0:
+                self.macro.warning(
+                    "External moveables positions contains theoretical values"
+                )
+                nr_points = self.macro.nr_points
+                theoretical_positions = generate_positions(external_moveables,
+                                                           starts, finals,
+                                                           nr_points)
+                initial_data = {}
+                for index, data in theoretical_timestamps.items():
+                    data.update(theoretical_positions[index])
+                    initial_data[index] = data
+            else:
+                initial_data = theoretical_timestamps
+
+            self.data.initial_data = initial_data
+
+            internal_moveable_names = []
+            for moveable in self.internal_moveables:
+                internal_moveable_names.append(moveable.getFullName())
+            self.measurement_group.setMoveables(internal_moveable_names)
 
             if hasattr(macro, 'getHooks'):
                 for hook in macro.getHooks('pre-start'):
