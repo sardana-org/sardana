@@ -33,7 +33,7 @@ import sys
 import time
 
 from PyTango import Except, DevVoid, DevLong, DevDouble, DevString, \
-    DispLevel, DevState, AttrQuality, READ, READ_WRITE, SCALAR
+    DispLevel, DevState, AttrQuality, READ, READ_WRITE, SCALAR, SPECTRUM
 
 from taurus.core.util.codecs import CodecFactory
 from taurus.core.util.log import DebugIt
@@ -234,6 +234,14 @@ class MeasurementGroup(PoolGroupDevice):
     def write_Moveable(self, attr):
         self.measurement_group.moveable = attr.get_write_value()
 
+    def read_Moveables(self, attr):
+        moveable = self.measurement_group.moveable
+        attr.set_value(moveable)
+
+    def write_Moveables(self, attr):
+        self.measurement_group.moveables = attr.get_write_value()
+
+
     def read_Synchronization(self, attr):
         synchronization = self.measurement_group.synchronization
         codec = CodecFactory().getCodec('json')
@@ -306,8 +314,9 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
                         {'Memorized': "true",
                          'Display level': DispLevel.OPERATOR}],
         'Moveable': [[DevString, SCALAR, READ_WRITE],
-                     {'Memorized': "true",
-                      'Display level': DispLevel.EXPERT}],
+                    {'Display level': DispLevel.EXPERT}],
+        'Moveables': [[DevString, SPECTRUM, READ_WRITE, 4096],
+                     {'Display level': DispLevel.EXPERT}],
         'Synchronization': [[DevString, SCALAR, READ_WRITE],
                             {'Memorized': "true",
                              'Display level': DispLevel.EXPERT}],
