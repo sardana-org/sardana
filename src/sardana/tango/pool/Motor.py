@@ -32,7 +32,7 @@ __docformat__ = 'restructuredtext'
 import sys
 import time
 
-from PyTango import DevFailed, Except, DevVoid, DevShort, \
+from PyTango import DevFailed, Except, DevVoid, DevShort, DevString, \
     DevLong, DevDouble, DevBoolean, DispLevel, DevState, AttrQuality, \
     READ, READ_WRITE, SCALAR, SPECTRUM
 
@@ -44,11 +44,11 @@ from sardana.sardanaattribute import SardanaAttribute
 from sardana.pool.poolexception import PoolException
 from sardana.tango.core.util import memorize_write_attribute, exception_str, \
     to_tango_type_format, throw_sardana_exception
-from sardana.tango.pool.PoolDevice import PoolElementDevice, \
-    PoolElementDeviceClass
+from sardana.tango.pool.PoolDevice import PoolMoveableDevice, \
+    PoolMoveableDeviceClass
 
 
-class Motor(PoolElementDevice):
+class Motor(PoolMoveableDevice):
     """The tango motor device class. This class exposes through a tango device
 the sardana motor (:class:`~sardana.pool.poolmotor.PoolMotor`).
 
@@ -276,13 +276,13 @@ with this value is sent to clients using events.
     def __init__(self, dclass, name):
         """Constructor"""
         self.in_write_position = False
-        PoolElementDevice.__init__(self, dclass, name)
+        PoolMoveableDevice.__init__(self, dclass, name)
 
     def init(self, name):
-        PoolElementDevice.init(self, name)
+        PoolMoveableDevice.init(self, name)
 
     def _is_allowed(self, req_type):
-        return PoolElementDevice._is_allowed(self, req_type)
+        return PoolMoveableDevice._is_allowed(self, req_type)
 
     def get_motor(self):
         return self.element
@@ -317,14 +317,14 @@ with this value is sent to clients using events.
 
     @DebugIt()
     def delete_device(self):
-        PoolElementDevice.delete_device(self)
+        PoolMoveableDevice.delete_device(self)
         motor = self.motor
         if motor is not None:
             motor.remove_listener(self.on_motor_changed)
 
     @DebugIt()
     def init_device(self):
-        PoolElementDevice.init_device(self)
+        PoolMoveableDevice.init_device(self)
         motor = self.motor
         if motor is None:
             full_name = self.get_full_name()
@@ -391,6 +391,8 @@ with this value is sent to clients using events.
             value = self.calculate_tango_state(event_value)
         elif name == "status":
             value = self.calculate_tango_status(event_value)
+        elif name == "positionbuffer":
+            value = self._encode_position_chunk(event_value)
         else:
             if isinstance(event_value, SardanaAttribute):
                 if event_value.error:
@@ -423,7 +425,7 @@ with this value is sent to clients using events.
         cache_built = hasattr(self, "_dynamic_attributes_cache")
 
         std_attrs, dyn_attrs = \
-            PoolElementDevice.get_dynamic_attributes(self)
+            PoolMoveableDevice.get_dynamic_attributes(self)
 
         if not cache_built:
             # For position attribute, listen to what the controller says for data
@@ -436,12 +438,12 @@ with this value is sent to clients using events.
         return std_attrs, dyn_attrs
 
     def initialize_dynamic_attributes(self):
-        attrs = PoolElementDevice.initialize_dynamic_attributes(self)
+        attrs = PoolMoveableDevice.initialize_dynamic_attributes(self)
 
         detect_evts = "position", "dialposition",
         non_detect_evts = "limit_switches", "step_per_unit", "offset", \
             "sign", "velocity", "acceleration", "deceleration", "base_rate", \
-            "backlash"
+            "backlash", "positionbuffer"
 
         for attr_name in detect_evts:
             if attr_name in attrs:
@@ -594,7 +596,7 @@ with this value is sent to clients using events.
 
     def get_attributes_to_restore(self):
         """Make sure position is the last attribute to restore"""
-        restore_attributes = PoolElementDevice.get_attributes_to_restore(self)
+        restore_attributes = PoolMoveableDevice.get_attributes_to_restore(self)
         try:
             restore_attributes.remove('Position')
             restore_attributes.append('Position')
@@ -615,7 +617,7 @@ with this value is sent to clients using events.
     is_Limit_switches_allowed = _is_allowed
 
 
-class MotorClass(PoolElementDeviceClass):
+class MotorClass(PoolMoveableDeviceClass):
 
     #    Class Properties
     class_property_list = {
@@ -631,7 +633,7 @@ class MotorClass(PoolElementDeviceClass):
         '_Velocity': [DevDouble, "", -1],
         '_Base_rate': [DevDouble, "", -1],
     }
-    device_property_list.update(PoolElementDeviceClass.device_property_list)
+    device_property_list.update(PoolMoveableDeviceClass.device_property_list)
 
     #    Command definitions
     cmd_list = {
@@ -639,11 +641,11 @@ class MotorClass(PoolElementDeviceClass):
         'SaveConfig': [[DevVoid, ""], [DevVoid, ""]],
         'MoveRelative': [[DevDouble, "amount to move"], [DevVoid, ""]],
     }
-    cmd_list.update(PoolElementDeviceClass.cmd_list)
+    cmd_list.update(PoolMoveableDeviceClass.cmd_list)
 
     #    Attribute definitions
     attr_list = {}
-    attr_list.update(PoolElementDeviceClass.attr_list)
+    attr_list.update(PoolMoveableDeviceClass.attr_list)
 
     standard_attr_list = {
         'Position': [[DevDouble, SCALAR, READ_WRITE],
@@ -683,10 +685,10 @@ class MotorClass(PoolElementDeviceClass):
                             "2 - The lower limit switch\n"
                             "False means not active. True means active"}],
     }
-    standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
+    standard_attr_list.update(PoolMoveableDeviceClass.standard_attr_list)
 
     def _get_class_properties(self):
-        ret = PoolElementDeviceClass._get_class_properties(self)
+        ret = PoolMoveableDeviceClass._get_class_properties(self)
         ret['Description'] = "Motor device class"
-        ret['InheritedFrom'].insert(0, 'PoolElementDevice')
+        ret['InheritedFrom'].insert(0, 'PoolMoveableDevice')
         return ret
