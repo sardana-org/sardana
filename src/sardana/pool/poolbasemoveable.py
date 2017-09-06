@@ -26,7 +26,7 @@
 """This module is part of the Python Pool library. It defines the base classes
 for moveables"""
 
-__all__ = ["Value", "PoolBaseMoveable"]
+__all__ = ["PositionBuffer", "PoolBaseMoveable"]
 
 __docformat__ = 'restructuredtext'
 
@@ -44,9 +44,9 @@ class PoolBaseMoveable(PoolElement):
         PoolElement.__init__(self, **kwargs)
         self._position_buffer = PositionBuffer(self, listeners=self.on_change)
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # Event forwarding
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def on_change(self, evt_src, evt_type, evt_value):
         # forward all events coming from attributes to the listeners
@@ -82,4 +82,3 @@ class PoolBaseMoveable(PoolElement):
 
     position_buffer = property(get_position_buffer,
                                doc="motor position buffer")
-

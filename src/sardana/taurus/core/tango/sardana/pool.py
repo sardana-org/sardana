@@ -684,7 +684,7 @@ class MoveableElement(PoolElement):
         if position_buffer is None:
             return
         _, position_buffer = self._codec.decode(('json', position_buffer),
-                                             ensure_ascii=True)
+                                                ensure_ascii=True)
         if self._position_buffer_cb:
             self._position_buffer_cb(self, position_buffer)
         else:

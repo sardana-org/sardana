@@ -778,7 +778,7 @@ class MotorController(Controller, Startable, Stopable, Readable):
         'Position': {'type': float,
                      'description': 'Position', },
         'PositionBuffer': {'type': str,
-                 'description': 'Position buffer', },
+                           'description': 'Position buffer', },
         'DialPosition': {'type': float,
                          'description': 'Dial Position', },
         'Offset': {'type': float,
@@ -1148,7 +1148,7 @@ class PseudoMotorController(PseudoController):
         'Position': {'type': float,
                      'description': 'Position', },
         'PositionBuffer': {'type': str,
-                 'description': 'Position buffer', },
+                           'description': 'Position buffer', },
     }
 
     #: A :obj:`str` representing the controller gender

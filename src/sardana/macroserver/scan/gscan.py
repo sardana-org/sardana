@@ -2116,7 +2116,8 @@ class CTScan(CScan, CAcquisition):
                                  'end_user: %f; ' % path._final_user_pos +
                                  'start: %f; ' % path.initial_pos +
                                  'end: %f; ' % path.final_pos +
-                                 'ds: %f' % (path.final_pos - path.initial_pos))
+                                 'ds: %f' % (path.final_pos -
+                                             path.initial_pos))
                 attributes = OrderedDict(velocity=path.max_vel,
                                          acceleration=path.max_vel_time,
                                          deceleration=path.min_vel_time)

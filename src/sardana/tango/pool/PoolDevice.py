@@ -913,7 +913,7 @@ class PoolMoveableDevice(PoolElementDevice):
 class PoolMoveableDeviceClass(PoolElementDeviceClass):
 
     standard_attr_list = {
-        'PositionBuffer': [[DevString, SCALAR, READ]]  # TODO: think about DevEncoded
+        # TODO: think about DevEncoded
+        'PositionBuffer': [[DevString, SCALAR, READ]]
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
-

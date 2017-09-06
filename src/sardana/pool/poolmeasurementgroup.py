@@ -182,9 +182,9 @@ class PoolMeasurementGroup(PoolGroupElement):
             if element.get_type() is ElementType.TriggerGate:
                 return
         return PoolGroupElement.add_user_element(self, element, index)
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # configuration
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def _is_managed_element(self, element):
         element_type = element.get_type()
@@ -531,9 +531,9 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     timer = property(get_timer)
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # integration time
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_integration_time(self):
         if len(self._synchronization) == 0:
@@ -560,9 +560,9 @@ class PoolMeasurementGroup(PoolGroupElement):
     integration_time = property(get_integration_time, set_integration_time,
                                 doc="the current integration time")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # monitor count
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_monitor_count(self):
         return self._monitor_count
@@ -577,9 +577,9 @@ class PoolMeasurementGroup(PoolGroupElement):
     monitor_count = property(get_monitor_count, set_monitor_count,
                              doc="the current monitor count")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # acquisition mode
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_acquisition_mode(self):
         return self._acquisition_mode
@@ -595,9 +595,9 @@ class PoolMeasurementGroup(PoolGroupElement):
     acquisition_mode = property(get_acquisition_mode, set_acquisition_mode,
                                 doc="the current acquisition mode")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # synchronization
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_synchronization(self):
         return self._synchronization
@@ -613,9 +613,9 @@ class PoolMeasurementGroup(PoolGroupElement):
     synchronization = property(get_synchronization, set_synchronization,
                                doc="the current acquisition mode")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # moveable
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_moveable(self):
         return self._moveable
@@ -630,9 +630,9 @@ class PoolMeasurementGroup(PoolGroupElement):
     moveable = property(get_moveable, set_moveable,
                         doc="moveable source used in synchronization")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # moveable
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_moveables(self):
         return self._moveables
@@ -648,11 +648,11 @@ class PoolMeasurementGroup(PoolGroupElement):
                         moveables)
 
     moveables = property(get_moveables, set_moveables,
-                        doc="moveables to be acquired")
+                         doc="moveables to be acquired")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # latency time
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_latency_time(self):
         latency_time = 0
@@ -668,9 +668,9 @@ class PoolMeasurementGroup(PoolGroupElement):
     latency_time = property(get_latency_time,
                             doc="latency time between two consecutive acquisitions")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # acquisition
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def start_acquisition(self, value=None, multiple=1):
         self._aborted = False
