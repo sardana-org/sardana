@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -165,6 +165,7 @@ class ParamType(MSBaseObject):
 
 class ParamRepeat(object):
     # opts: min, max
+
     def __init__(self, *param_def, **opts):
         self.param_def = param_def
         self.opts = {'min': 1, 'max': None}
@@ -214,7 +215,7 @@ class ElementParamType(ParamType):
         except UnknownMacroLibrary:
             pass
         # neither pool nor macroserver contains any element with this name
-        raise UnknownParamObj('%s with name %s does not exist' % \
+        raise UnknownParamObj('%s with name %s does not exist' %
                               (self._name, name))
 
     def getObjDict(self, pool=ParamType.All, cache=False):
@@ -287,7 +288,7 @@ class ElementParamInterface(ElementParamType):
         except UnknownMacroLibrary:
             pass
         # neither pool nor macroserver contains any element with this name
-        raise UnknownParamObj('%s with name %s does not exist' % \
+        raise UnknownParamObj('%s with name %s does not exist' %
                               (self._name, name))
 
     def getObjDict(self, pool=ParamType.All, cache=False):
@@ -395,7 +396,8 @@ class ParamDecoder:
                     value = raw_param.get("value")
                 else:
                     value = raw_param
-                if value is None:
+                # None or [] indicates default value
+                if value is None or (isinstance(value, list) and len(value) == 0):
                     value = param_def['default_value']
                 if value is None:
                     raise MissingParam, "'%s' not specified" % name
@@ -437,7 +439,7 @@ class ParamDecoder:
             msg = 'Found %d repetitions of param %s, min is %d' % \
                   (len_rep, name, min_rep)
             raise MissingRepeat, msg
-        if  max_rep and len_rep > max_rep:
+        if max_rep and len_rep > max_rep:
             msg = 'Found %d repetitions of param %s, max is %d' % \
                   (len_rep, name, max_rep)
             raise SupernumeraryRepeat, msg
@@ -456,6 +458,12 @@ class ParamDecoder:
                 # do not encapsulate it in list and pass directly the item
                 if isinstance(raw_repeat, etree._Element):
                     raw_repeat = raw_repeat[0]
+                # check if one tries to decode repeat parameter of just one
+                # member encapsulated in a list, empty lists are still allowed
+                # to indicate default value
+                elif isinstance(raw_repeat, list) and len(raw_repeat) > 0:
+                    msg = 'Repetitions of just one member must not be lists'
+                    raise WrongParam, msg
                 repeat = self.decodeNormal(raw_repeat, param_type[0])
             param_repeat.append(repeat)
         return param_repeat
@@ -472,6 +480,7 @@ class FlatParamDecoder:
     located at the very last place. It requires that the raw parameters are
     passed as a flat list of strings.
     """
+
     def __init__(self, type_manager, params_def, raw_params):
         self.type_manager = type_manager
         self.params_def = params_def

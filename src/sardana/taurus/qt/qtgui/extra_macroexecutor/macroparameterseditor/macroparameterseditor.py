@@ -2,31 +2,33 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
 """
-macroparameterseditor.py: 
+macroparameterseditor.py:
 """
-import sys, inspect, glob
+import sys
+import inspect
+import glob
 
 from taurus.external.qt import Qt
 from taurus.core.util.singleton import Singleton
@@ -53,6 +55,7 @@ class MacroParametersEditor(object):
 #    def onModelReset(self):
 #        self.onDataChanged()
 
+
 class StandardMacroParametersEditor(Qt.QWidget, MacroParametersEditor):
 
     def __init__(self, parent=None, macroNode=None):
@@ -66,7 +69,8 @@ class StandardMacroParametersEditor(Qt.QWidget, MacroParametersEditor):
         self.tree = MacroParametersTree(self)
         self.delegate = ParamEditorDelegate(self.tree)
         self.tree.setItemDelegate(self.delegate)
-        self.tree.setSizePolicy(Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Expanding)
+        self.tree.setSizePolicy(Qt.QSizePolicy.Expanding,
+                                Qt.QSizePolicy.Expanding)
         self.layout().addWidget(self.tree)
 
         actionLayout = Qt.QVBoxLayout()
@@ -83,7 +87,11 @@ class StandardMacroParametersEditor(Qt.QWidget, MacroParametersEditor):
         moveDownButton = Qt.QToolButton()
         moveDownButton.setDefaultAction(self.tree.moveDownAction)
         actionLayout.addWidget(moveDownButton)
-        spacerItem = Qt.QSpacerItem(0, 0, Qt.QSizePolicy.Fixed, Qt.QSizePolicy.Expanding)
+        duplicateButton = Qt.QToolButton()
+        duplicateButton.setDefaultAction(self.tree.duplicateAction)
+        actionLayout.addWidget(duplicateButton)
+        spacerItem = Qt.QSpacerItem(
+            0, 0, Qt.QSizePolicy.Fixed, Qt.QSizePolicy.Expanding)
         actionLayout.addItem(spacerItem)
 
         self.layout().addLayout(actionLayout)
@@ -98,6 +106,7 @@ class StandardMacroParametersEditor(Qt.QWidget, MacroParametersEditor):
     def setMacroNode(self, macroNode):
         self.tree.setMacroNode(macroNode)
 
+
 class MacroParametersTree(Qt.QTreeView):
 
     def __init__(self, parent=None, designMode=False):
@@ -107,30 +116,48 @@ class MacroParametersTree(Qt.QTreeView):
 #        self.setTabKeyNavigation(True)
         self.setEditTriggers(Qt.QAbstractItemView.AllEditTriggers)
 
-        self.addAction = Qt.QAction(getThemeIcon("list-add"), "Add new repetition", self)
-        self.connect(self.addAction, Qt.SIGNAL("triggered()"), self.onAddRepeat)
-        self.addAction.setToolTip("Clicking this button will add new repetition to current parameter.")
+        self.addAction = Qt.QAction(getThemeIcon(
+            "list-add"), "Add new repetition", self)
+        self.connect(self.addAction, Qt.SIGNAL(
+            "triggered()"), self.onAddRepeat)
+        self.addAction.setToolTip(
+            "Clicking this button will add new repetition to current parameter.")
 
-        self.deleteAction = Qt.QAction(getThemeIcon("list-remove"), "Remove repetition", self)
-        self.connect(self.deleteAction, Qt.SIGNAL("triggered()"), self.onDelRepeat)
-        self.deleteAction.setToolTip("Clicking this button will remove current repetition.")
+        self.deleteAction = Qt.QAction(getThemeIcon(
+            "list-remove"), "Remove repetition", self)
+        self.connect(self.deleteAction, Qt.SIGNAL(
+            "triggered()"), self.onDelRepeat)
+        self.deleteAction.setToolTip(
+            "Clicking this button will remove current repetition.")
 
         self.moveUpAction = Qt.QAction(getThemeIcon("go-up"), "Move up", self)
-        self.connect(self.moveUpAction, Qt.SIGNAL("triggered()"), self.onUpRepeat)
-        self.moveUpAction.setToolTip("Clicking this button will move current repetition up.")
+        self.connect(self.moveUpAction, Qt.SIGNAL(
+            "triggered()"), self.onUpRepeat)
+        self.moveUpAction.setToolTip(
+            "Clicking this button will move current repetition up.")
 
-        self.moveDownAction = Qt.QAction(getThemeIcon("go-down"), "Move down", self)
-        self.connect(self.moveDownAction, Qt.SIGNAL("triggered()"), self.onDownRepeat)
-        self.moveDownAction.setToolTip("Clicking this button will move current repetition down.")
+        self.moveDownAction = Qt.QAction(
+            getThemeIcon("go-down"), "Move down", self)
+        self.connect(self.moveDownAction, Qt.SIGNAL(
+            "triggered()"), self.onDownRepeat)
+        self.moveDownAction.setToolTip(
+            "Clicking this button will move current repetition down.")
+
+        self.duplicateAction = Qt.QAction(getThemeIcon("edit-copy"),
+                                          "Duplicate", self)
+        self.connect(self.duplicateAction, Qt.SIGNAL("triggered()"),
+                     self.onDuplicateRepeat)
+        msg = "Clicking this button will duplicate the given node."
+        self.duplicateAction.setToolTip(msg)
 
         self.disableActions()
-
 
     def disableActions(self):
         self.addAction.setEnabled(False)
         self.deleteAction.setEnabled(False)
         self.moveUpAction.setEnabled(False)
         self.moveDownAction.setEnabled(False)
+        self.duplicateAction.setEnabled(False)
 
     def manageActions(self, currentIndex):
         self.disableActions()
@@ -142,16 +169,17 @@ class MacroParametersTree(Qt.QTreeView):
             self.addAction.setEnabled(False)
             self.moveUpAction.setEnabled(node.isAllowedMoveUp())
             self.moveDownAction.setEnabled(node.isAllowedMoveDown())
+            self.duplicateAction.setEnabled(True)
         elif isinstance(node, macro.RepeatParamNode):
             self.addAction.setEnabled(not node.isReachedMax())
             self.deleteAction.setEnabled(False)
-
+            self.duplicateAction.setEnabled(False)
 
     def currentChanged(self, current, previous):
         self.manageActions(current)
         Qt.QTreeView.currentChanged(self, current, previous)
 
-    #def focusInEvent(self, event):
+    # def focusInEvent(self, event):
     #    reason = event.reason()
     #    if (reason == Qt.Qt.TabFocusReason) | (reason == Qt.Qt.BacktabFocusReason):
     #        if reason == Qt.Qt.TabFocusReason:
@@ -163,7 +191,7 @@ class MacroParametersTree(Qt.QTreeView):
     #    else:
     #        Qt.QTreeView.focusInEvent(self, event)
     #
-    #def forwardIdx(self, row, col, parentIdx):
+    # def forwardIdx(self, row, col, parentIdx):
     #    try:
     #        proposalIdx = self.model().index(row, col, parentIdx)
     #    except AssertionError:
@@ -200,7 +228,7 @@ class MacroParametersTree(Qt.QTreeView):
     #        ##self.model().setRoot(proposalNode)
     #        return self.forwardIdx(0,1,proposalIdx)
     #
-    #def backwardIdx(self, row, col, parentIdx):
+    # def backwardIdx(self, row, col, parentIdx):
     #    try:
     #        proposalIdx = self.model().index(row, col, parentIdx)
     #    except AssertionError:
@@ -233,7 +261,7 @@ class MacroParametersTree(Qt.QTreeView):
     #
     #        return proposalIdx
     #
-    #def moveCursor (self, cursorAction, modifiers):
+    # def moveCursor (self, cursorAction, modifiers):
     #    ix=self.currentIndex()
     #    self.manageActions(ix)
     #    (col, row, parentIdx)=(ix.column(), ix.row(), ix.parent())
@@ -284,7 +312,7 @@ class MacroParametersTree(Qt.QTreeView):
     #            self.manageActions(backwardIdx)
     #        return backwardIdx
     #
-    #def expanded(self):
+    # def expanded(self):
     #    for column in range(self.model().columnCount(Qt.QModelIndex())):
     #        self.resizeColumnToContents(column)
 
@@ -327,6 +355,16 @@ class MacroParametersTree(Qt.QTreeView):
             newIndex = self.model()._downRow(index)
         self.setCurrentIndex(newIndex)
         self.expandAll()
+
+    def onDuplicateRepeat(self):
+        index = self.currentIndex()
+        if isinstance(self.model(), Qt.QSortFilterProxyModel):
+            sourceIndex = self.model().mapToSource(index)
+            self.model().duplicateNode(sourceIndex)
+        else:
+            self.model().duplicateNode(index)
+        self.expandAll()
+
 
 class ParamEditorManager(Singleton):
 
@@ -375,5 +413,3 @@ class ParamEditorManager(Singleton):
             return editorClass(parent=parent)
         except:
             return None
-
-

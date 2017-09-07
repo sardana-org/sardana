@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -34,11 +34,12 @@ __all__ = ["check_requirements"]
 import sys
 
 __requires__ = {
-#     module        minimum
-    "Python"      : (2, 6, 0),
-    "PyTango"     : (7, 2, 3),
-    "taurus.core" : (3, 6, 0),
+    #     module        minimum
+    "Python": (2, 6, 0),
+    "PyTango": (7, 2, 3),
+    "taurus.core": (3, 7, 4),
 }
+
 
 def check_requirements(exec_name=None):
 
@@ -78,7 +79,8 @@ def check_requirements(exec_name=None):
         sys.exit(-1)
 
     # TODO: add itango as runtime dependency of spock
-    # now it is not possible because itango does not provide info about its version
+    # now it is not possible because itango does not provide info about its
+    # version
 
     taurusver = None
     try:

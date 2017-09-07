@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -62,7 +62,7 @@ class SardanaAttribute(EventGenerator):
     def has_value(self):
         """Determines if the attribute's read value has been read at least once
         in the lifetime of the attribute.
-        
+
         :return: True if the attribute has a read value stored or False otherwise
         :rtype: bool"""
         return self._has_value()
@@ -73,7 +73,7 @@ class SardanaAttribute(EventGenerator):
     def has_write_value(self):
         """Determines if the attribute's write value has been read at least once
         in the lifetime of the attribute.
-        
+
         :return: True if the attribute has a write value stored or False otherwise
         :rtype: bool"""
         return self._has_write_value()
@@ -83,7 +83,7 @@ class SardanaAttribute(EventGenerator):
 
     def get_obj(self):
         """Returns the object which *owns* this attribute
-        
+
         :return: the object which *owns* this attribute
         :rtype: obj"""
         return self._get_obj()
@@ -96,7 +96,7 @@ class SardanaAttribute(EventGenerator):
 
     def in_error(self):
         """Determines if this attribute is in error state.
-        
+
         :return: True if the attribute is in error state or False otherwise
         :rtype: bool"""
         return self._in_error()
@@ -107,7 +107,7 @@ class SardanaAttribute(EventGenerator):
     def set_value(self, value, exc_info=None, timestamp=None, propagate=1):
         """Sets the current read value and propagates the event (if
         propagate > 0).
-        
+
         :param value: the new read value for this attribute. If a SardanaValue
                       is given, exc_info and timestamp are ignored (if given)
         :type value: obj or SardanaValue
@@ -128,16 +128,17 @@ class SardanaAttribute(EventGenerator):
         if isinstance(value, SardanaValue):
             rvalue = value
         else:
-            rvalue = SardanaValue(value=value, exc_info=exc_info, timestamp=timestamp)
+            rvalue = SardanaValue(
+                value=value, exc_info=exc_info, timestamp=timestamp)
         self._r_value = rvalue
         self.fire_read_event(propagate=propagate)
 
     def get_value(self):
         """Returns the last read value for this attribute.
-        
+
         :return: the last read value for this attribute
         :rtype: obj
-        
+
         :raises: :exc:`Exception` if no read value has been set yet"""
         return self._get_value()
 
@@ -146,10 +147,10 @@ class SardanaAttribute(EventGenerator):
 
     def get_value_obj(self):
         """Returns the last read value for this attribute.
-        
+
         :return: the last read value for this attribute
         :rtype: :class:`~sardana.sardanavalue.SardanaValue`
-        
+
         :raises: :exc:`Exception` if no read value has been set yet"""
         return self._get_value_obj()
 
@@ -161,7 +162,7 @@ class SardanaAttribute(EventGenerator):
 
     def set_write_value(self, w_value, timestamp=None, propagate=1):
         """Sets the current write value.
-        
+
         :param value: the new write value for this attribute. If a SardanaValue
                       is given, timestamp is ignored (if given)
         :type value: obj or SardanaValue
@@ -184,7 +185,7 @@ class SardanaAttribute(EventGenerator):
 
     def get_write_value(self):
         """Returns the last write value for this attribute.
-        
+
         :return: the last write value for this attribute or None if value has
                  not been written yet
         :rtype: obj"""
@@ -197,7 +198,7 @@ class SardanaAttribute(EventGenerator):
 
     def get_write_value_obj(self):
         """Returns the last write value object for this attribute.
-        
+
         :return: the last write value for this attribute or None if value has
                  not been written yet
         :rtype: :class:`~sardana.sardanavalue.SardanaValue`"""
@@ -211,7 +212,7 @@ class SardanaAttribute(EventGenerator):
         """Returns the exception information (like :func:`sys.exc_info`) about
         last attribute readout or None if last read did not generate an
         exception.
-        
+
         :return: exception information or None
         :rtype: tuple<3> or None"""
         return self._get_exc_info()
@@ -230,9 +231,9 @@ class SardanaAttribute(EventGenerator):
         return propagate > 1 or self.filter(self.get_value(), self._last_event_value.value)
 
     def get_timestamp(self):
-        """Returns the timestamp of the last readout or None if the attribute 
+        """Returns the timestamp of the last readout or None if the attribute
         has never been read before
-        
+
         :return: timestamp of the last readout or None
         :rtype: float or None"""
         return self._get_timestamp()
@@ -242,9 +243,9 @@ class SardanaAttribute(EventGenerator):
             return self._r_value.timestamp
 
     def get_write_timestamp(self):
-        """Returns the timestamp of the last write or None if the attribute 
+        """Returns the timestamp of the last write or None if the attribute
         has never been written before
-        
+
         :return: timestamp of the last write or None
         :rtype: float or None"""
         return self._get_write_timestamp()
@@ -256,7 +257,7 @@ class SardanaAttribute(EventGenerator):
     def fire_write_event(self, propagate=1):
         """Fires an event to the listeners of the object which owns this
         attribute.
-        
+
         :param propagate:
             0 for not propagating, 1 to propagate, 2 propagate with priority
         :type propagate: int"""
@@ -268,7 +269,7 @@ class SardanaAttribute(EventGenerator):
     def fire_read_event(self, propagate=1):
         """Fires an event to the listeners of the object which owns this
         attribute.
-        
+
         :param propagate:
             0 for not propagating, 1 to propagate, 2 propagate with priority
         :type propagate: int"""
@@ -282,7 +283,8 @@ class SardanaAttribute(EventGenerator):
     obj = property(get_obj, "container object for this attribute")
     value_obj = property(get_value_obj)
     write_value_obj = property(get_write_value_obj)
-    value = property(get_value, set_value, "current read value for this attribute")
+    value = property(get_value, set_value,
+                     "current read value for this attribute")
     w_value = property(get_write_value, set_write_value,
                        "current write value for this attribute")
     timestamp = property(get_timestamp, doc="the read timestamp")
@@ -300,11 +302,13 @@ class SardanaAttribute(EventGenerator):
 
     def __str__(self):
         if self.has_value():
-            value = "{0} at {1}".format(self.value, datetime.datetime.fromtimestamp(self.timestamp))
+            value = "{0} at {1}".format(
+                self.value, datetime.datetime.fromtimestamp(self.timestamp))
         else:
             value = "-----"
         if self.has_write_value():
-            w_value = "{0} at {1}".format(self.w_value, datetime.datetime.fromtimestamp(self.w_timestamp))
+            w_value = "{0} at {1}".format(
+                self.w_value, datetime.datetime.fromtimestamp(self.w_timestamp))
         else:
             w_value = "-----"
 
@@ -327,7 +331,7 @@ class SardanaSoftwareAttribute(SardanaAttribute):
     def set_value(self, value, exc_info=None, timestamp=None, propagate=1):
         """Sets the current read value and propagates the event (if
         propagate > 0).
-        
+
         :param value: the new read value for this attribute
         :type value: obj
         :param exc_info: exception information as returned by
@@ -363,4 +367,3 @@ class SardanaAttributeConfiguration(object):
         self.range = self.NoRange
         self.alarm = self.NoRange
         self.warning = self.NoRange
-

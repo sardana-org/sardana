@@ -3,24 +3,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -50,15 +50,16 @@ def expconf(self, parameter_s=''):
     except TypeError:
         # TODO: For Taurus 4 adaptation
         doorname = get_door().fullname
-    #===========================================================================
-    ## ugly hack to avoid ipython/qt thread problems #e.g. see
-    ## https://sourceforge.net/p/sardana/tickets/10/ 
-    ## this hack does not allow inter-process communication and leaves the 
-    ## widget open after closing spock 
-    ## @todo: investigate cause of segfaults when using launching qt widgets from ipython
-    # 
+    #=========================================================================
+    # ugly hack to avoid ipython/qt thread problems #e.g. see
+    # https://sourceforge.net/p/sardana/tickets/10/
+    # this hack does not allow inter-process communication and leaves the
+    # widget open after closing spock
+    # @todo: investigate cause of segfaults when using launching qt widgets from ipython
+    #
     # w = ExpDescriptionEditor(door=doorname)
-    # w.show() #launching it like this, produces the problem of https://sourceforge.net/p/sardana/tickets/10/
+    # w.show() #launching it like this, produces the problem of
+    # https://sourceforge.net/p/sardana/tickets/10/
     import subprocess
     import sys
 
@@ -133,7 +134,7 @@ def www(self, parameter_s=''):
             door.writeln("No macro ran from this console yet!")
             return
         if not hasattr(last_macro, 'exc_stack') or last_macro.exc_stack is None:
-            door.writeln("Sorry, but no exception occurred running last " \
+            door.writeln("Sorry, but no exception occurred running last "
                          "macro (%s)." % last_macro.name)
             return
         exc = "".join(last_macro.exc_stack)
@@ -173,7 +174,7 @@ def post_mortem(self, parameter_s='', from_www=False):
 
 def macrodata(self, parameter_s=''):
     """macrodata
-    
+
     Returns the data produced by the last macro"""
     door = get_door()
     macro_data = door.read_attribute("RecordData")
@@ -218,7 +219,7 @@ def edmac(self, parameter_s=''):
         if macro_info_obj is not None:
             msg = ('Do you want to create macro "%s" in module "%s" that will'
                    ' override the already existing macro in module "%s"'
-                    % (macro_name, macro_lib, macro_info_obj.module))
+                   % (macro_name, macro_lib, macro_info_obj.module))
             if not ask_yes_no(msg, 'y'):
                 print "Aborting edition..."
                 return

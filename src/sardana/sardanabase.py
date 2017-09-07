@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -42,7 +42,7 @@ from sardana.sardanaevent import EventGenerator, EventReceiver
 
 class SardanaBaseObject(EventGenerator, EventReceiver, Logger):
     """The Sardana most abstract object. It contains only two members:
-    
+
        - _manager : a weak reference to the manager (pool or ms) where it
          belongs
        - _name : the name
@@ -63,50 +63,49 @@ class SardanaBaseObject(EventGenerator, EventReceiver, Logger):
     def get_manager(self):
         """Return the :class:`sardana.Manager` which *owns* this sardana
         object.
-        
+
         :return: the manager which *owns* this pool object.
         :rtype: :class:`sardana.Manager`"""
         return self._manager()
 
     def get_name(self):
         """Returns this sardana object name
-        
+
         :return: this sardana object name
         :rtype: str"""
         return self._name
-    
+
     def set_name(self, name):
         """Sets sardana object name
-        
+
         :param: sardana object name
         :type: str"""
         self._name = name
 
-
     def get_full_name(self):
         """Returns this sardana object full name
-        
+
         :return: this sardana object full name
         :rtype: str"""
         return self._full_name
 
     def get_type(self):
         """Returns this sardana object type.
-        
+
         :return: this sardana object type
         :rtype: :obj:`~sardana.sardanadefs.ElementType`"""
         return self._type
 
     def get_parent(self):
         """Returns this pool object parent.
-        
+
         :return: this objects parent
         :rtype: :class:`~sardana.sardanabase.SardanaBaseObject`"""
         return self._parent()
 
     def get_parent_name(self):
         """Returns this sardana object parent's name.
-        
+
         :return: this objects parent
         :rtype: str"""
         parent = self.get_parent()
@@ -116,7 +115,7 @@ class SardanaBaseObject(EventGenerator, EventReceiver, Logger):
     def get_frontend(self):
         """Returns this sardana frontend object or None if no frontend is
         registered
-        
+
         :return: this objects frontend
         :rtype: :obj:`object`"""
         f = self._frontend
@@ -130,7 +129,8 @@ class SardanaBaseObject(EventGenerator, EventReceiver, Logger):
                 return EventGenerator.fire_event(self, event_type, event_value,
                                                  listeners=listeners)
             except:
-                self.warning("Error firing event <%r, %r>", event_type, event_value)
+                self.warning("Error firing event <%r, %r>",
+                             event_type, event_value)
                 self.debug("Details", exc_info=1)
         else:
             return EventGenerator.fire_event(self, event_type, event_value,
@@ -138,7 +138,7 @@ class SardanaBaseObject(EventGenerator, EventReceiver, Logger):
 
     def get_interfaces(self):
         """Returns the set of interfaces this object implements.
-        
+
         :return:
             The set of interfaces this object implements.
         :rtype:
@@ -147,7 +147,7 @@ class SardanaBaseObject(EventGenerator, EventReceiver, Logger):
 
     def get_interface(self):
         """Returns the interface this object implements.
-        
+
         :return:
             The interface this object implements.
         :rtype:
@@ -156,7 +156,7 @@ class SardanaBaseObject(EventGenerator, EventReceiver, Logger):
 
     def get_interface_names(self):
         """Returns a sequence of interface names this object implements.
-        
+
         :return:
             The sequence of interfaces this object implements.
         :rtype:
@@ -199,7 +199,7 @@ class SardanaObjectID(object):
 
     def get_id(self):
         """Returns this sardana object ID
-        
+
         :return: this sardana object ID
         :rtype: int"""
         return self._id

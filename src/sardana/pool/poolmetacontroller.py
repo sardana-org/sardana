@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -46,6 +46,7 @@ from sardana.pool.poolpseudomotor import PoolPseudoMotor
 from sardana.pool.poolmotorgroup import PoolMotorGroup
 from sardana.pool.poolmeasurementgroup import PoolMeasurementGroup
 from sardana.pool.poolcountertimer import PoolCounterTimer
+from sardana.pool.pooltriggergate import PoolTriggerGate
 from sardana.pool.poolzerodexpchannel import Pool0DExpChannel
 from sardana.pool.poolonedexpchannel import Pool1DExpChannel
 from sardana.pool.pooltwodexpchannel import Pool2DExpChannel
@@ -56,7 +57,8 @@ from sardana.pool.poolcontroller import PoolController, \
     PoolPseudoMotorController, PoolPseudoCounterController
 from sardana.pool.controller import Controller, MotorController, \
     CounterTimerController, ZeroDController, OneDController, TwoDController, \
-    PseudoMotorController, PseudoCounterController, IORegisterController
+    PseudoMotorController, PseudoCounterController, IORegisterController, \
+    TriggerGateController
 from sardana.pool.controller import Type, Access, Description, DefaultValue, \
     FGet, FSet, Memorize, Memorized, MaxDimSize
 
@@ -73,13 +75,14 @@ ET = ElementType
 #: mapping element type enumeration with the corresponding controller pool class
 #: (:class:`~sardana.pool.poolcontroller.PoolController` or sub-class of it).
 CTRL_TYPE_MAP = {
-    ET.Motor          : PoolController,
-    ET.CTExpChannel   : PoolController,
-    ET.OneDExpChannel : PoolController,
-    ET.TwoDExpChannel : PoolController,
-    ET.PseudoMotor    : PoolPseudoMotorController,
-    ET.PseudoCounter  : PoolPseudoCounterController,
-    ET.IORegister     : PoolController,
+    ET.Motor: PoolController,
+    ET.CTExpChannel: PoolController,
+    ET.OneDExpChannel: PoolController,
+    ET.TwoDExpChannel: PoolController,
+    ET.TriggerGate: PoolController,
+    ET.PseudoMotor: PoolPseudoMotorController,
+    ET.PseudoCounter: PoolPseudoCounterController,
+    ET.IORegister: PoolController,
 }
 
 #: dictionary dict<:data:`~sardana.ElementType`, :class:`tuple`>
@@ -91,19 +94,21 @@ CTRL_TYPE_MAP = {
 #: #. automatic full name
 #: #. controller class
 TYPE_MAP = {
-    ET.Controller       : ("Controller", "Controller", CTRL_TYPE_MAP, "controller/{klass}/{name}", Controller),
-    ET.Instrument       : ("Instrument", "Instrument", PoolInstrument, "{full_name}", None),
-    ET.Motor            : ("Motor", "Motor", PoolMotor, "motor/{ctrl_name}/{axis}", MotorController),
-    ET.CTExpChannel     : ("CTExpChannel", "ExpChannel", PoolCounterTimer, "expchan/{ctrl_name}/{axis}", CounterTimerController),
-    ET.ZeroDExpChannel  : ("ZeroDExpChannel", "ExpChannel", Pool0DExpChannel, "expchan/{ctrl_name}/{axis}", ZeroDController),
-    ET.OneDExpChannel   : ("OneDExpChannel", "ExpChannel", Pool1DExpChannel, "expchan/{ctrl_name}/{axis}", OneDController),
-    ET.TwoDExpChannel   : ("TwoDExpChannel", "ExpChannel", Pool2DExpChannel, "expchan/{ctrl_name}/{axis}", TwoDController),
-    ET.PseudoMotor      : ("PseudoMotor", "Motor", PoolPseudoMotor, "pm/{ctrl_name}/{axis}", PseudoMotorController),
-    ET.PseudoCounter    : ("PseudoCounter", "ExpChannel", PoolPseudoCounter, "pc/{ctrl_name}/{axis}", PseudoCounterController),
-    ET.MotorGroup       : ("MotorGroup", "MotorGroup", PoolMotorGroup, "mg/{pool_name}/{name}", None),
-    ET.MeasurementGroup : ("MeasurementGroup", "MeasurementGroup", PoolMeasurementGroup, "mntgrp/{pool_name}/{name}", None),
-    ET.IORegister       : ("IORegister", "IORegister"      , PoolIORegister, "ioregister/{ctrl_name}/{axis}", IORegisterController),
+    ET.Controller: ("Controller", "Controller", CTRL_TYPE_MAP, "controller/{klass}/{name}", Controller),
+    ET.Instrument: ("Instrument", "Instrument", PoolInstrument, "{full_name}", None),
+    ET.Motor: ("Motor", "Motor", PoolMotor, "motor/{ctrl_name}/{axis}", MotorController),
+    ET.CTExpChannel: ("CTExpChannel", "ExpChannel", PoolCounterTimer, "expchan/{ctrl_name}/{axis}", CounterTimerController),
+    ET.TriggerGate: ("TriggerGate", "TriggerGate", PoolTriggerGate, "triggergate/{ctrl_name}/{axis}", TriggerGateController),
+    ET.ZeroDExpChannel: ("ZeroDExpChannel", "ExpChannel", Pool0DExpChannel, "expchan/{ctrl_name}/{axis}", ZeroDController),
+    ET.OneDExpChannel: ("OneDExpChannel", "ExpChannel", Pool1DExpChannel, "expchan/{ctrl_name}/{axis}", OneDController),
+    ET.TwoDExpChannel: ("TwoDExpChannel", "ExpChannel", Pool2DExpChannel, "expchan/{ctrl_name}/{axis}", TwoDController),
+    ET.PseudoMotor: ("PseudoMotor", "Motor", PoolPseudoMotor, "pm/{ctrl_name}/{axis}", PseudoMotorController),
+    ET.PseudoCounter: ("PseudoCounter", "ExpChannel", PoolPseudoCounter, "pc/{ctrl_name}/{axis}", PseudoCounterController),
+    ET.MotorGroup: ("MotorGroup", "MotorGroup", PoolMotorGroup, "mg/{pool_name}/{name}", None),
+    ET.MeasurementGroup: ("MeasurementGroup", "MeasurementGroup", PoolMeasurementGroup, "mntgrp/{pool_name}/{name}", None),
+    ET.IORegister: ("IORegister", "IORegister", PoolIORegister, "ioregister/{ctrl_name}/{axis}", IORegisterController),
 }
+
 
 class TypeData(object):
     """Information for a specific Element type"""
@@ -115,7 +120,7 @@ class TypeData(object):
 #: dict<:data:`~sardana.ElementType`, :class:`~sardana.pool.poolmetacontroller.TypeData`>
 TYPE_MAP_OBJ = {}
 for t, d in TYPE_MAP.items():
-    o = TypeData(type=t, name=d[0], family=d[1], klass=d[2] ,
+    o = TypeData(type=t, name=d[0], family=d[1], klass=d[2],
                  auto_full_name=d[3], ctrl_klass=d[4])
     TYPE_MAP_OBJ[t] = o
 
@@ -170,7 +175,7 @@ class DataInfo(object):
         self.memorized = memorized
         self.fget = fget or "get%s" % name
         self.fset = fset or "set%s" % name
-        if maxdimsize == None:
+        if maxdimsize is None:
             if dformat == DataFormat.Scalar:
                 maxdimsize = ()
             elif dformat == DataFormat.OneD:
@@ -209,13 +214,13 @@ class DataInfo(object):
                         maxdimsize=maxdimsize)
 
     def toDict(self):
-        return { 'name' : self.name, 'type' : DataType.whatis(self.dtype),
-                 'format' : DataFormat.whatis(self.dformat),
-                 'access' : DataAccess.whatis(self.access),
-                 'description' : self.description,
-                 'default_value' : self.default_value,
-                 'memorized' : self.memorized,
-                 'maxdimsize' : self.maxdimsize }
+        return {'name': self.name, 'type': DataType.whatis(self.dtype),
+                'format': DataFormat.whatis(self.dformat),
+                'access': DataAccess.whatis(self.access),
+                'description': self.description,
+                'default_value': self.default_value,
+                'memorized': self.memorized,
+                'maxdimsize': self.maxdimsize}
 
     def serialize(self, *args, **kwargs):
         kwargs.update(self.toDict())
@@ -226,15 +231,15 @@ class DataInfo(object):
             self.__class__.__name__, self.name, DataType[self.dtype],
             DataFormat[self.dformat], DataAccess[self.access])
 
-#class PropertyInfo(DataInfo):
+# class PropertyInfo(DataInfo):
 
 #    def __init__(self, name, dtype, dformat=DataFormat.Scalar,
 #                 description="", default_value=None):
 #        DataInfo.__init__(self, name, dtype, dformat, access=DataAcces.ReadWrite,
-#                          description=description, default_value=default_value)
+# description=description, default_value=default_value)
 
 
-#class AttributeInfo(DataInfo):
+# class AttributeInfo(DataInfo):
 
 #    def __init__(self, name, dtype, dformat=DataFormat.Scalar,
 #                 access=DataAccess.ReadWrite, description=""):
@@ -309,7 +314,7 @@ class ControllerClass(SardanaClass):
         types = []
         klass = self.klass
         for _type, type_data in TYPE_MAP_OBJ.items():
-            if not _type in TYPE_ELEMENTS:
+            if _type not in TYPE_ELEMENTS:
                 continue
             if issubclass(klass, type_data.ctrl_klass):
                 types.append(_type)
@@ -346,5 +351,3 @@ class ControllerClass(SardanaClass):
     @property
     def organization(self):
         return self.klass.organization
-
-

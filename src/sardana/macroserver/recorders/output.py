@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -42,6 +42,7 @@ from sardana.macroserver.scan.recorder.storage import BaseFileRecorder
 
 
 class JsonRecorder(DataRecorder):
+
     def __init__(self, stream, cols=None, **pars):
         DataRecorder.__init__(self, **pars)
         self._stream = stream
@@ -57,7 +58,8 @@ class JsonRecorder(DataRecorder):
         column_desc = recordlist.getEnvironValue('datadesc')
         ref_moveables = recordlist.getEnvironValue('ref_moveables')
         estimatedtime = recordlist.getEnvironValue('estimatedtime')
-        total_scan_intervals = recordlist.getEnvironValue('total_scan_intervals')
+        total_scan_intervals = recordlist.getEnvironValue(
+            'total_scan_intervals')
         start_time = recordlist.getEnvironValue('starttime').ctime()
         self.column_desc = []
         discarded = []
@@ -84,8 +86,8 @@ class JsonRecorder(DataRecorder):
 
     def _endRecordList(self, recordlist):
         macro_id = recordlist.getEnvironValue('macro_id')
-        data = { 'endtime'  : recordlist.getEnvironValue('endtime').ctime(),
-                 'deadtime' : recordlist.getEnvironValue('deadtime') }
+        data = {'endtime': recordlist.getEnvironValue('endtime').ctime(),
+                'deadtime': recordlist.getEnvironValue('deadtime')}
         self._sendPacket(type="record_end", data=data, macro_id=macro_id)
 
     def _writeRecord(self, record):
@@ -100,8 +102,8 @@ class JsonRecorder(DataRecorder):
         '''creates a JSON packet using the keyword arguments passed
         and then sends it'''
         #data = self._codec.encode(('', kwargs))
-        #self._stream.sendRecordData(*data)
-        self._stream.sendRecordData(kwargs, codec='json')
+        # self._stream.sendRecordData(*data)
+        self._stream._sendRecordData(kwargs, codec='json')
 
     def _addCustomData(self, value, name, **kwargs):
         '''
@@ -109,7 +111,7 @@ class JsonRecorder(DataRecorder):
         and its data will be the dictionary of keyword arguments passed to this
         method plus 'name' and 'value'
         '''
-        #try to convert to list to avoid serialization problems
+        # try to convert to list to avoid serialization problems
         try:
             value = value.tolist()
         except:
@@ -156,7 +158,8 @@ class OutputRecorder(DataRecorder):
         for fr in [r for r in dh.recorders if isinstance(r, BaseFileRecorder)]:
             if not hasattr(self._stream, "getAllEnv") or \
                "ScanRecorder" in self._stream.getAllEnv().keys():
-                message = "%s from %s" % (fr.getFormat(), fr.__class__.__name__)
+                message = "%s from %s" % (
+                    fr.getFormat(), fr.__class__.__name__)
             else:
                 message = "%s" % (fr.getFormat())
             self._stream.info('Operation will be saved in %s (%s)',
@@ -165,8 +168,7 @@ class OutputRecorder(DataRecorder):
         msg = "Scan #%d started at %s." % (serialno, starttime)
         if not estimatedtime is None:
             estimatedtime = datetime.timedelta(0, abs(estimatedtime))
-            msg += " It will take at least %s\n" % estimatedtime
-            msg += "Moving to start positions..."
+            msg += " It will take at least %s" % estimatedtime
         self._stream.info(msg)
 
         labels, col_names, col_sizes = [], [], []
@@ -213,13 +215,14 @@ class OutputRecorder(DataRecorder):
         cell_t_number = '%%%%(%%s)%s' % number_fmt[1:]
 
         self._scan_line_t = [(col_names[0], '%%(%s)8d' % col_names[0])]
-        self._scan_line_t += [(name, cell_t_number % name) for name in col_names[1:]]
+        self._scan_line_t += [(name, cell_t_number % name)
+                              for name in col_names[1:]]
 
-        self._stream.output(header)
-        self._stream.flushOutput()
+        self._stream._output(header)
+        self._stream._flushOutput()
 
     def _endRecordList(self, recordlist):
-        self._stream.flushOutput()
+        self._stream._flushOutput()
         starttime = recordlist.getEnvironValue('starttime')
         endtime = recordlist.getEnvironValue('endtime')
         deadtime = recordlist.getEnvironValue('deadtime')
@@ -230,7 +233,7 @@ class OutputRecorder(DataRecorder):
 
         dh = recordlist.getDataHandler()
 
-        for fr in [ r for r in dh.recorders if isinstance(r, BaseFileRecorder) ]:
+        for fr in [r for r in dh.recorders if isinstance(r, BaseFileRecorder)]:
             self._stream.info('Operation saved in %s (%s)', fr.getFileName(),
                               fr.getFormat())
 
@@ -239,7 +242,7 @@ class OutputRecorder(DataRecorder):
         totaltimets = endts - startts
         deadtime_perc = deadtime * 100.0 / totaltimets
         motiontime_perc = motiontime * 100.0 / totaltimets
-        info_string = 'Scan #%s ended at %s, taking %s.' + \
+        info_string = 'Scan #%s ended at %s, taking %s. ' + \
                       'Dead time %.1f%% (motion dead time %.1f%%)'
         self._stream.info(info_string % (serialno, endtime, totaltime,
                                          deadtime_perc, motiontime_perc))
@@ -261,11 +264,11 @@ class OutputRecorder(DataRecorder):
         scan_line = self._col_sep.join(cells)
 
         if self._output_block:
-            self._stream.outputBlock(scan_line)
+            self._stream._outputBlock(scan_line)
         else:
-            self._stream.output(scan_line)
+            self._stream._output(scan_line)
 
-        self._stream.flushOutput()
+        self._stream._flushOutput()
 
     def _addCustomData(self, value, name, **kwargs):
         '''
@@ -276,5 +279,5 @@ class OutputRecorder(DataRecorder):
             v = 'Array(%s)' % str(numpy.shape(value))
         else:
             v = str(value)
-        self._stream.output('Custom data: %s : %s' % (name, v))
-        self._stream.flushOutput()
+        self._stream._output('Custom data: %s : %s' % (name, v))
+        self._stream._flushOutput()

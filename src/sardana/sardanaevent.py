@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -71,7 +71,7 @@ class EventGenerator(object):
 
     def add_listener(self, listener):
         """Adds a new listener for this object.
-        
+
         :param listener: a listener"""
         if self._listeners is None or listener is None:
             return False
@@ -84,7 +84,7 @@ class EventGenerator(object):
 
     def remove_listener(self, listener):
         """Removes an existing listener for this object.
-        
+
         :param listener: the listener to be removed
         :return: True is succeeded or False otherwise"""
         if self._listeners is None:
@@ -98,7 +98,7 @@ class EventGenerator(object):
 
     def has_listeners(self):
         """Returns True if anybody is listening to events from this object
-        
+
         :return: True is at least one listener is listening or False otherwise
         """
         if self._listeners is None:
@@ -144,9 +144,9 @@ class EventGenerator(object):
 
 
 class EventReceiver(object):
-    """A simple class that implements useful features for a class which is 
+    """A simple class that implements useful features for a class which is
     an event receiver. The actual class may inherit from this EventReceiver class
-    and may choose to use just a part of the API provided by this class, the 
+    and may choose to use just a part of the API provided by this class, the
     whole API or none of the API."""
 
     def __init__(self):
@@ -177,14 +177,14 @@ class EventType(object):
 
     def get_name(self):
         """Returns this event name
-        
+
         :return: this event name
         :rtype: str"""
         return self.name
 
     def get_priority(self):
         """Returns this event priority
-        
+
         :return: this event priority
         :rtype: str"""
         return self.priority

@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -78,13 +78,13 @@ class TwoDExpChannel(PoolElementDevice):
             name = self.alias or full_name
             self.twod = twod = \
                 self.pool.create_element(type="TwoDExpChannel",
-                    name=name, full_name=full_name, id=self.Id, axis=self.Axis,
-                    ctrl_id=self.Ctrl_id)
+                                         name=name, full_name=full_name, id=self.Id, axis=self.Axis,
+                                         ctrl_id=self.Ctrl_id)
             if self.instrument is not None:
                 twod.set_instrument(self.instrument)
         twod.add_listener(self.on_twod_changed)
 
-        ## force a state read to initialize the state attribute
+        # force a state read to initialize the state attribute
         #state = ct.state
         self.set_state(DevState.ON)
 
@@ -164,6 +164,10 @@ class TwoDExpChannel(PoolElementDevice):
 
     def read_Value(self, attr):
         twod = self.twod
+        # TODO: decide if we force the controller developers to store the
+        # last acquired value in the controllers or we always will use
+        # cache. This is due to the fact that the clients (MS) read the value
+        # after the acquisition had finished.
         use_cache = twod.is_in_operation() and not self.Force_HW_Read
         value = twod.get_value(cache=use_cache, propagate=0)
         if value.error:
@@ -192,7 +196,9 @@ class TwoDExpChannel(PoolElementDevice):
 
 _DFT_VALUE_INFO = TwoDController.standard_axis_attributes['Value']
 _DFT_VALUE_MAX_SHAPE = _DFT_VALUE_INFO[MaxDimSize]
-_DFT_VALUE_TYPE, _DFT_VALUE_FORMAT = to_tango_type_format(_DFT_VALUE_INFO[Type], DataFormat.TwoD)
+_DFT_VALUE_TYPE, _DFT_VALUE_FORMAT = to_tango_type_format(
+    _DFT_VALUE_INFO[Type], DataFormat.TwoD)
+
 
 class TwoDExpChannelClass(PoolElementDeviceClass):
 
@@ -207,20 +213,20 @@ class TwoDExpChannelClass(PoolElementDeviceClass):
 
     #    Command definitions
     cmd_list = {
-        'Start' :   [ [DevVoid, ""], [DevVoid, ""] ],
+        'Start':   [[DevVoid, ""], [DevVoid, ""]],
     }
     cmd_list.update(PoolElementDeviceClass.cmd_list)
 
     #    Attribute definitions
     attr_list = {
-        'DataSource' : [ [ DevString, SCALAR, READ ] ],
+        'DataSource': [[DevString, SCALAR, READ]],
     }
     attr_list.update(PoolElementDeviceClass.attr_list)
 
     standard_attr_list = {
-        'Value'     : [ [ _DFT_VALUE_TYPE, _DFT_VALUE_FORMAT, READ,
-                          _DFT_VALUE_MAX_SHAPE[0], _DFT_VALUE_MAX_SHAPE[1] ],
-                        { 'abs_change' : '1.0', } ],
+        'Value': [[_DFT_VALUE_TYPE, _DFT_VALUE_FORMAT, READ,
+                   _DFT_VALUE_MAX_SHAPE[0], _DFT_VALUE_MAX_SHAPE[1]],
+                  {'abs_change': '1.0', }],
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
 

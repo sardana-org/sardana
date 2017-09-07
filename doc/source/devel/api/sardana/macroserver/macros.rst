@@ -21,7 +21,10 @@
 .. class:: scan.a2scanc
 
     two-motor continuous scan
-    
+
+.. class:: scan.a2scanct
+
+    two-motor continuous scan (introduced with SEP6_)
 
 .. class:: scan.a3scan
 
@@ -39,7 +42,10 @@
 .. class:: scan.a3scanc
 
     three-motor continuous scan
-    
+
+.. class:: scan.a3scanct
+
+    three-motor continuous scan (introduced with SEP6_)
 
 .. class:: scan.a4scan
 
@@ -56,7 +62,10 @@
 .. class:: scan.a4scanc
 
     four-motor continuous scan
-    
+
+.. class:: scan.a4scanct
+
+    four-motor continuous scan (introduced with SEP6_)
 
 .. class:: hkl.addreflection
 
@@ -105,7 +114,11 @@
 
     Do an absolute continuous scan of the specified motor.
     ascanc scans one motor, as specified by motor.
-    
+
+.. class:: scan.ascanct
+
+    Do an absolute continuous scan of the specified motor.
+    ascanc scans one motor, as specified by motor. (introduced with SEP6_)
 
 .. class:: scan.ascanh
 
@@ -175,7 +188,11 @@
 .. class:: scan.d2scanc
 
     continuous two-motor scan relative to the starting positions
-    
+
+.. class:: scan.d2scanct
+
+    continuous two-motor scan relative to the starting positions
+    (introduced with SEP6_)
 
 .. class:: scan.d3scan
 
@@ -193,7 +210,10 @@
 .. class:: scan.d3scanc
 
     continuous three-motor scan
-    
+
+.. class:: scan.d3scanct
+
+    continuous three-motor scan (introduced with SEP6_)
 
 .. class:: scan.d4scan
 
@@ -212,7 +232,11 @@
 .. class:: scan.d4scanc
 
     continuous four-motor scan relative to the starting positions
-    
+
+.. class:: scan.d4scanct
+
+    continuous four-motor scan relative to the starting positions
+    (introduced with SEP6_)
 
 .. class:: expert.defctrl
 
@@ -279,7 +303,11 @@
 .. class:: scan.dscanc
 
     continuous motor scan relative to the starting position.
-    
+
+.. class:: scan.dscanct
+
+    continuous motor scan relative to the starting position
+    (introduced with SEP6_)
 
 .. class:: env.dumpenv
 
@@ -786,3 +814,5 @@
 
     Show the user position of the specified motors.
     
+
+.. _SEP6: http://www.sardana-controls.org/sep/?SEP6.md

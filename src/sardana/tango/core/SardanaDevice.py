@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -67,7 +67,7 @@ def get_thread_pool():
 
 
 class SardanaDevice(Device_4Impl, Logger):
-    """SardanaDevice represents the base class for all Sardana 
+    """SardanaDevice represents the base class for all Sardana
     :class:`PyTango.DeviceImpl` classes"""
 
     def __init__(self, dclass, name):
@@ -95,7 +95,7 @@ class SardanaDevice(Device_4Impl, Logger):
     def init(self, name):
         """initialize the device once in the object lifetime. Override when
         necessary but **always** call the method from your super class
-        
+
         :param str name: device name"""
 
         db = self.get_database()
@@ -121,7 +121,7 @@ class SardanaDevice(Device_4Impl, Logger):
     def get_full_name(self):
         """Returns the device full name in format
         dbname:dbport/<domain>/<family>/<member>
-        
+
         :return: this device full name
         :rtype: str"""
         db = self.get_database()
@@ -176,7 +176,7 @@ class SardanaDevice(Device_4Impl, Logger):
 
     def set_change_events(self, evts_checked, evts_not_checked):
         """Helper method to set change events on attributes
-        
+
         :param evts_checked:
             list of attribute names to activate change events programatically
             with tango filter active
@@ -200,14 +200,14 @@ class SardanaDevice(Device_4Impl, Logger):
     def get_event_thread_pool(self):
         """Return the :class:`~taurus.core.util.ThreadPool` used by sardana to
         send tango events.
-        
+
         :return: the sardana :class:`~taurus.core.util.ThreadPool`
         :rtype: :class:`~taurus.core.util.ThreadPool`"""
         return self._event_thread_pool
 
     def get_attribute_by_name(self, attr_name):
         """Gets the attribute for the given name.
-        
+
         :param attr_name: attribute name
         :type attr_name: str
         :return: the attribute object
@@ -216,7 +216,7 @@ class SardanaDevice(Device_4Impl, Logger):
 
     def get_wattribute_by_name(self, attr_name):
         """Gets the writable attribute for the given name.
-        
+
         :param attr_name: attribute name
         :type attr_name: str
         :return: the attribute object
@@ -225,7 +225,7 @@ class SardanaDevice(Device_4Impl, Logger):
 
     def get_database(self):
         """Helper method to return a reference to the current tango database
-        
+
         :return: the Tango database
         :rtype: :class:`~PyTango.Database`"""
         return Util.instance().get_database()
@@ -240,7 +240,8 @@ class SardanaDevice(Device_4Impl, Logger):
             if reason == PyTango.constants.API_WAttrOutsideLimit:
                 desc = self.alias + ": " + df0.desc
                 _df = DevFailed(*df[1:])
-                PyTango.Except.re_throw_exception(_df, df0.reason, desc, df0.origin)
+                PyTango.Except.re_throw_exception(
+                    _df, df0.reason, desc, df0.origin)
             raise df
 
     def set_attribute(self, attr, value=None, w_value=None, timestamp=None,
@@ -250,8 +251,8 @@ class SardanaDevice(Device_4Impl, Logger):
         is given an error event is sent (with no value and quality INVALID).
         If priority is > 1, the event filter is temporarily disabled so the event
         is sent for sure. If synch is set to True, wait for fire event to finish
-        
-        :param attr: 
+
+        :param attr:
             the tango attribute
         :type attr: :class:`PyTango.Attribute`
         :param value:
@@ -304,12 +305,12 @@ class SardanaDevice(Device_4Impl, Logger):
         if priority > 0 and not synch:
             with self.tango_lock:
                 return self._set_attribute_push(attr, value=value,
-                        w_value=w_value, timestamp=timestamp, quality=quality,
-                        error=error, priority=priority)
+                                                w_value=w_value, timestamp=timestamp, quality=quality,
+                                                error=error, priority=priority)
         else:
             return self._set_attribute_push(attr, value=value,
-                        w_value=w_value, timestamp=timestamp, quality=quality,
-                        error=error, priority=priority)
+                                            w_value=w_value, timestamp=timestamp, quality=quality,
+                                            error=error, priority=priority)
 
     def _set_attribute_push(self, attr, value=None, w_value=None, timestamp=None,
                             quality=None, error=None, priority=1):
@@ -324,7 +325,8 @@ class SardanaDevice(Device_4Impl, Logger):
         attr_name = attr.get_name().lower()
 
         if value is None and error is None:
-            raise Exception("Cannot set value of attribute '%s' with None" % (attr_name,))
+            raise Exception(
+                "Cannot set value of attribute '%s' with None" % (attr_name,))
 
         try:
             if error is not None and fire_event:
@@ -368,7 +370,7 @@ class SardanaDevice(Device_4Impl, Logger):
                 # or anyone trusting the w_value.
                 #
                 # TODO: Remove the try/except protection whenever Sardana
-                # feature-286 has been implemented and bug-54 has been fixed. 
+                # feature-286 has been implemented and bug-54 has been fixed.
                 # The lack of the feature and the bug can lead to the situation
                 # when motor's position write value is out of range.
                 #
@@ -388,9 +390,9 @@ class SardanaDevice(Device_4Impl, Logger):
                     if reason == PyTango.constants.API_WAttrOutsideLimit and\
                        attr_name == 'position':
                         msg = ('Unable to update "w_value" because it is' +
-                               ' out of range')
+                               ' out of range (w_value=%f)' % w_value)
                         self.warning(msg)
-                        self.debug('Details:', exc_info = 1)
+                        self.debug('Details:', exc_info=1)
                     else:
                         raise df
                 ###############################################################
@@ -414,7 +416,7 @@ class SardanaDevice(Device_4Impl, Logger):
 
     def calculate_tango_state(self, ctrl_state, update=False):
         """Calculate tango state based on the controller state.
-        
+
         :param ctrl_state: the state returned by the controller
         :type ctrl_state: :obj:`~sardana.sardanadefs.State`
         :param bool update:
@@ -429,7 +431,7 @@ class SardanaDevice(Device_4Impl, Logger):
 
     def calculate_tango_status(self, ctrl_status, update=False):
         """Calculate tango status based on the controller status.
-        
+
         :param str ctrl_status: the status returned by the controller
         :param bool update:
             if True, set the state of this device with the calculated tango
@@ -490,7 +492,7 @@ class SardanaDeviceClass(DeviceClass):
                     InheritedFrom=["Device_4Impl"])
 
     def write_class_property(self):
-        """Write class properties ``ProjectTitle``, ``Description``, 
+        """Write class properties ``ProjectTitle``, ``Description``,
         ``doc_url``, ``InheritedFrom`` and ``__icon``"""
         db = self.get_database()
         if db is None:
@@ -501,7 +503,7 @@ class SardanaDeviceClass(DeviceClass):
         """Invoked to create dynamic attributes for the given devices.
         Default implementation calls
         :meth:`SardanaDevice.initialize_dynamic_attributes` for each device
-        
+
         :param dev_list: list of devices
         :type dev_list: :class:`PyTango.DeviceImpl`"""
         for dev in dev_list:
@@ -513,7 +515,7 @@ class SardanaDeviceClass(DeviceClass):
 
     def device_name_factory(self, dev_name_list):
         """Builds list of device names to use when no Database is being used
-        
+
         :param dev_name_list: list to be filled with device names
         :type dev_name_list: seq<obj:`list`\>"""
         tango_class = self.get_name()

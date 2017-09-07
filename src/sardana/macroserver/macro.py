@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -95,9 +95,10 @@ class OverloadPrint(object):
         b = self._accum
         if b is None or len(b) == 0:
             return
-        #take the '\n' because the output is a list of strings, each to be
-        #interpreted as a separate line in the client
-        if b[-1] == '\n': b = b[:-1]
+        # take the '\n' because the output is a list of strings, each to be
+        # interpreted as a separate line in the client
+        if b[-1] == '\n':
+            b = b[:-1]
         self._macro.output(b)
         self._accum = ""
 
@@ -140,17 +141,18 @@ class PauseEvent(Logger):
             self._wait_for_abort_exception = True
             self._event.set()
 
-    def wait(self,timeout=None):
+    def wait(self, timeout=None):
         pauseit = not self._event.isSet()
         if pauseit and self._pause_cb is not None:
             self._pause_cb(self.macro_obj)
         self._event.wait(timeout)
         # if an event is set because an abort has been issued during a paused
-        # macro wait for the ashyncronous AbortException to arrive at this thread
+        # macro wait for the ashyncronous AbortException to arrive at this
+        # thread
         if self._wait_for_abort_exception:
             self._wait_for_abort_exception = False
             time.sleep(self._wait_for_abort_timeout)
-            self.debug('Abort exception did not occured in pause for %ss.' \
+            self.debug('Abort exception did not occured in pause for %ss.'
                        'Performing a Forced Abort.' % self._wait_for_abort_timeout)
             raise AbortException("Forced")
         if pauseit and self._resume_cb is not None:
@@ -175,7 +177,7 @@ class Hookable(Logger):
         try:
             return self._hookHintsDict
         except:
-            self._hookHintsDict = {'_ALL_':[], '_NOHINTS_':[]}
+            self._hookHintsDict = {'_ALL_': [], '_NOHINTS_': []}
         return self._hookHintsDict
 
     def getAllowedHookHints(self):
@@ -220,19 +222,22 @@ class Hookable(Logger):
                                       hooks that don't provide hints
             '''
             if not isinstance(hooks, list):
-                self.error('the hooks must be passed as a list<callable,list<str>>')
+                self.error(
+                    'the hooks must be passed as a list<callable,list<str>>')
                 return
 
-            #store self._hooks, making sure it is of type: list<callable,list<str>>
+            # store self._hooks, making sure it is of type:
+            # list<callable,list<str>>
             self._hooks = []
             for h in hooks:
-                if  isinstance(h, (tuple, list)) and len(h) == 2:
+                if isinstance(h, (tuple, list)) and len(h) == 2:
                     self._hooks.append(h)
-                else:  #we assume that hooks is a list<callable>
+                else:  # we assume that hooks is a list<callable>
                     self._hooks.append((h, []))
-                    self.info('Deprecation warning: hooks should be set with a list of hints. See Hookable API docs')
+                    self.info(
+                        'Deprecation warning: hooks should be set with a list of hints. See Hookable API docs')
 
-            #create _hookHintsDict
+            # create _hookHintsDict
             self._getHookHintsDict()['_ALL_'] = zip(*self._hooks)[0]
             nohints = self._hookHintsDict['_NOHINTS_']
             for hook, hints in self._hooks:
@@ -244,7 +249,7 @@ class Hookable(Logger):
                             self._hookHintsDict[hint].append(hook)
                         except KeyError:
                             self._hookHintsDict[hint] = [hook]
-        return get,set
+        return get, set
 
 
 class ExecMacroHook(object):
@@ -278,8 +283,8 @@ class MacroFinder:
         def f(*args, **kwargs):
             p_m = self.macro_obj
             p_m.syncLog()
-            opts = { 'parent_macro' : p_m,
-                     'executor'     : p_m.executor }
+            opts = {'parent_macro': p_m,
+                    'executor': p_m.executor}
             kwargs.update(opts)
             eargs = [name]
             eargs.extend(args)
@@ -288,6 +293,7 @@ class MacroFinder:
         setattr(self, name, f)
 
         return f
+
 
 def mAPI(fn):
     """Wraps the given Macro method as being protected by the stop procedure.
@@ -302,12 +308,14 @@ def mAPI(fn):
             if self._shouldRaiseStopException():
                 if is_macro_th:
                     self.setProcessingStop(True)
+                self.executor._waitStopDone()
                 raise StopException("stopped before calling %s" % fn.__name__)
         ret = fn(*args, **kwargs)
         if not self.isProcessingStop():
             if self._shouldRaiseStopException():
                 if is_macro_th:
                     self.setProcessingStop(True)
+                self.executor._waitStopDone()
                 raise StopException("stopped after calling %s" % fn.__name__)
         return ret
     return new_fn
@@ -442,7 +450,7 @@ class Macro(Logger):
     #: a set of mandatory environment variable names without which your macro
     #: cannot run
     env = ()
-    
+
     #: decide if the macro should be able to receive input from the user
     #: [default: False]. A macro which asks input but has this flag set to False
     #: will print a warning message each time it is executed
@@ -463,16 +471,16 @@ class Macro(Logger):
         self._macro_thread = None
         self._id = kwargs.get('id')
         self._desc = "Macro '%s'" % self._macro_line
-        self._macro_status = { 'id' : self._id,
-                               'range' : (0.0, 100.0),
-                               'state' : 'start',
-                               'step' : 0.0 }
+        self._macro_status = {'id': self._id,
+                              'range': (0.0, 100.0),
+                              'state': 'start',
+                              'step': 0.0}
         self._pause_event = PauseEvent(self)
         log_parent = self.parent_macro or self.door
         Logger.__init__(self, "Macro[%s]" % self._name, log_parent)
         self._reserveObjs(args)
 
-    ## @name Official Macro API
+    # @name Official Macro API
     #  This list contains the set of methods that are part of the official macro
     #  API. This means that they can be safely used inside any macro.
     #@{
@@ -486,7 +494,8 @@ class Macro(Logger):
         raises RuntimeError.
 
         :raises: RuntimeError"""
-        raise RuntimeError("Macro %s does not implement run method" % self.getName())
+        raise RuntimeError(
+            "Macro %s does not implement run method" % self.getName())
 
     def prepare(self, *args, **kwargs):
         """**Macro API**. Prepare phase. Overwrite as necessary.
@@ -706,6 +715,9 @@ class Macro(Logger):
         Sends the given data to the RecordData attribute of the Door
 
         :param data: (sequence) the data to be sent"""
+        self._sendRecordData(data, codec)
+
+    def _sendRecordData(self, data, codec=None):
         self.executor.sendRecordData(data, codec=codec)
 
     @mAPI
@@ -741,20 +753,21 @@ class Macro(Logger):
     @mAPI
     def getData(self):
         """**Macro API**.
-        Returns the data produced by the macro. 
+        Returns the data produced by the macro.
 
         :raises: Exception if no data has been set before on this macro
 
         :return: the data produced by the macro
         :rtype: object"""
         if not hasattr(self, "_data"):
-            raise Exception("Macro '%s' does not produce any data" % self.getName())
+            raise Exception(
+                "Macro '%s' does not produce any data" % self.getName())
         return self._data
 
     @mAPI
     def setData(self, data):
         """**Macro API**. Sets the data for this macro
-        
+
         :param object data: new data to be associated with this macro"""
         self._data = data
 
@@ -767,11 +780,11 @@ class Macro(Logger):
         *kwargs* are the same as :func:`print`. Example::
 
             self.print("this is a print for macro", self.getName())
-            
+
         .. note::
             you will need python >= 3.0. If you have python 2.x then you must
             include at the top of your file the statement::
-            
+
                 from __future__ import print_function
         """
         fd = kwargs.get('file', sys.stdout)
@@ -794,7 +807,7 @@ class Macro(Logger):
         newline. The function then reads a line from input, converts it to a
         string (stripping a trailing newline), and returns that.
 
-        Depending on which type of application you are running, some of the 
+        Depending on which type of application you are running, some of the
         keywords may have no effect (ex.: spock ignores decimals when a number
         is asked).
 
@@ -804,7 +817,7 @@ class Macro(Logger):
               specify a sequence of strings with possible values (use
               allow_multiple=True to say multiple values can be selected)
             - key : [default: no default] variable/label to assign to this input
-            - unit: [default: no default] units (useful for GUIs) 
+            - unit: [default: no default] units (useful for GUIs)
             - timeout : [default: None, meaning wait forever for input]
             - default_value : [default: None, meaning no default value]
               When given, it must be compatible with data_type
@@ -814,13 +827,13 @@ class Macro(Logger):
             - maximum : [default: None] When given, must be compatible with data_type (useful for GUIs)
             - step : [default: None] When given, must be compatible with data_type (useful for GUIs)
             - decimals : [default: None] When given, must be compatible with data_type (useful for GUIs)
-            
+
         Examples::
 
             device_name = self.input("Which device name (%s)?", "tab separated")
-            
+
             point_nb = self.input("How many points?", data_type=Type.Integer)
-            
+
             calc_mode = self.input("Which algorithm?", data_type=["Average", "Integral", "Sum"],
                                    default_value="Average", allow_multiple=False)"""
         if not self.interactive:
@@ -1110,7 +1123,7 @@ class Macro(Logger):
         # sync our log before calling the child macro prepare in order to avoid
         # mixed outputs between this macro and the child macro
         self.syncLog()
-        init_opts = { 'parent_macro' : self }
+        init_opts = {'parent_macro': self}
         return self.executor.prepareMacroObj(macro_name_or_klass, args,
                                              init_opts, kwargs)
 
@@ -1164,7 +1177,7 @@ class Macro(Logger):
         # sync our log before calling the child macro prepare in order to avoid
         # mixed outputs between this macro and the child macro
         self.syncLog()
-        init_opts = { 'parent_macro' : self }
+        init_opts = {'parent_macro': self}
         return self.executor.prepareMacro(args, init_opts, kwargs)
 
     @mAPI
@@ -1258,14 +1271,16 @@ class Macro(Logger):
         macro_name = None
         arg0 = args[0]
         if len(args) == 1:
-            if type(arg0) in types.StringTypes :
+            if type(arg0) in types.StringTypes:
                 # dealing with sth like args = ('ascan th 0 100 10 1.0',)
                 macro_name = arg0.split()[0]
             elif operator.isSequenceType(arg0):
-                # dealing with sth like args = (['ascan', 'th', '0', '100', '10', '1.0'],)
+                # dealing with sth like args = (['ascan', 'th', '0', '100',
+                # '10', '1.0'],)
                 macro_name = arg0[0]
         else:
-            # dealing with sth like args = ('ascan', 'th', '0', '100', '10', '1.0')
+            # dealing with sth like args = ('ascan', 'th', '0', '100', '10',
+            # '1.0')
             macro_name = args[0]
         self.debug("Executing macro: %s" % macro_name)
         macro_obj, _ = self.prepareMacro(*args, **kwargs)
@@ -1488,8 +1503,7 @@ class Macro(Logger):
             objects
         :rtype: seq<:class:`~sardana.macroserver.msmetamacro.MacroClass`
                 /:class:`~sardana.macroserver.msmetamacro.MacroFunction`\>"""
-        ret = self.door.get_macros(filter=filter).values()
-        ret.sort()
+        ret = sorted(self.door.get_macros(filter=filter).values())
         return ret
 
     @mAPI
@@ -1505,11 +1519,10 @@ class Macro(Logger):
             a sequence of :class:`~sardana.macroserver.msmetamacro.MacroLibrary`
             objects
         :rtype: seq<:class:`~sardana.macroserver.msmetamacro.MacroLibrary`\>"""
-        ret = self.door.get_macro_libs(filter=filter).values()
-        ret.sort()
+        ret = sorted(self.door.get_macro_libs(filter=filter).values())
         return ret
 
-    @mAPI 
+    @mAPI
     def getMacroLibrary(self, lib_name):
         """**Macro API**. Returns a
         :class:`~sardana.macroserver.msmetamacro.MacroLibrary` object for the
@@ -1564,7 +1577,7 @@ class Macro(Logger):
 
         :return: a Motion object """
 
-        decoupled=False
+        decoupled = False
         try:
             decoupled = self.getEnv("MotionDecoupled")
         except UnknownEnv:
@@ -1772,7 +1785,7 @@ class Macro(Logger):
     #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
     # Reload API
     #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
-    
+
     @mAPI
     def reloadLibrary(self, lib_name):
         """**Macro API**. Reloads the given library(=module) names
@@ -1785,7 +1798,7 @@ class Macro(Logger):
 
         :return:
             the reloaded python module object"""
-        return self.door.reload_lib(lib_name)    
+        return self.door.reload_lib(lib_name)
 
     @mAPI
     def reloadMacro(self, macro_name):
@@ -1842,10 +1855,10 @@ class Macro(Logger):
             objects for the reloaded libraries
         :rtype: seq<:class:`~sardana.macroserver.metamacro.MacroLibrary`\>"""
         return self.door.reload_macro_libs(lib_names)
-    
+
     reloadMacroLib = reloadMacroLibrary
     reloadMacroLibs = reloadMacroLibraries
-    
+
     @mAPI
     def getViewOption(self, name):
         return self._getViewOption(name)
@@ -1854,7 +1867,7 @@ class Macro(Logger):
     def getViewOptions(self):
         vo = self._getViewOptions()
         # ensure that all view options known by sardana are present, in case
-        # there were missing ones, update _ViewOptions dictionary after 
+        # there were missing ones, update _ViewOptions dictionary after
         # initializing missing options with the default values
         ivo = copy.deepcopy(vo)
         ViewOption.init_options(ivo)
@@ -1877,7 +1890,7 @@ class Macro(Logger):
 
     #@}
 
-    ## @name Unofficial Macro API
+    # @name Unofficial Macro API
     #    This list contains the set of methods that are <b>NOT</b> part of the
     #  the macro developer knows what he is doing.
     #    Please check before is there is an official API that does the samething
@@ -1898,7 +1911,7 @@ class Macro(Logger):
         return vo
 
     def _getViewOption(self, name):
-        '''Gets _ViewOption of a given name. If it is not defined in 
+        '''Gets _ViewOption of a given name. If it is not defined in
         the environment, sets it to a default value and returns it.
         '''
         view_options = self._getViewOptions()
@@ -1913,7 +1926,7 @@ class Macro(Logger):
         newline. The function then reads a line from input, converts it to a
         string (stripping a trailing newline), and returns that.
 
-        Depending on which type of application you are running, some of the 
+        Depending on which type of application you are running, some of the
         keywords may have no effect (ex.: spock ignores decimals when a number
         is asked).
 
@@ -1923,7 +1936,7 @@ class Macro(Logger):
               specify a sequence of strings with possible values (use
               allow_multiple=True to say multiple values can be selected)
             - key : [default: no default] variable/label to assign to this input
-            - unit: [default: no default] units (useful for GUIs) 
+            - unit: [default: no default] units (useful for GUIs)
             - timeout : [default: None, meaning wait forever for input]
             - default_value : [default: None, meaning no default value]
               When given, it must be compatible with data_type
@@ -1933,13 +1946,13 @@ class Macro(Logger):
             - maximum : [default: None] When given, must be compatible with data_type (useful for GUIs)
             - step : [default: None] When given, must be compatible with data_type (useful for GUIs)
             - decimals : [default: None] When given, must be compatible with data_type (useful for GUIs)
-            
+
         Examples::
 
             device_name = self.input("Which device name (%s)?", "tab separated")
-            
+
             point_nb = self.input("How many points?", data_type=Type.Integer)
-            
+
             calc_mode = self.input("Which algorithm?", data_type=["Average", "Integral", "Sum"],
                                    default_value="Average", allow_multiple=False)"""
         if not self.interactive:
@@ -1963,9 +1976,9 @@ class Macro(Logger):
                 else:
                     return self.getEnv(kwargs['key'])
             return kwargs['default_value']
-    
+
     def _output(self, msg, *args, **kwargs):
-        """**Macro API**.
+        """****Unofficial Macro API**.
         Record a log message in this object's output. Accepted *args* and
         *kwargs* are the same as :meth:`logging.Logger.log`.
         Example::
@@ -1977,6 +1990,19 @@ class Macro(Logger):
         :param args: list of arguments
         :param kwargs: list of keyword arguments"""
         return Logger.output(self, msg, *args, **kwargs)
+
+    def _outputBlock(self, line):
+        """**Unofficial Macro API**.
+        Sends a line tagged as a block to the output
+
+        :param str line: line to be sent"""
+        if isinstance(line, (str, unicode)):
+            o = line
+        elif operator.isSequenceType(line):
+            o = "\n".join(line)
+        else:
+            o = str(line)
+        self._output("%s\n%s\n%s" % (Macro.BlockStart, o, Macro.BlockFinish))
 
     def _log(self, level, msg, *args, **kwargs):
         """**Unofficial Macro API**.
@@ -2105,6 +2131,11 @@ class Macro(Logger):
         :param kwargs: list of keyword arguments"""
         return self.door.report(msg, *args, **kwargs)
 
+    def _flushOutput(self):
+        """**Unofficial Macro API**.
+        Flushes the output buffer."""
+        return Logger.flushOutput(self)
+
     @property
     def executor(self):
         """**Unofficial Macro API**. Alternative to :meth:`getExecutor` that
@@ -2167,7 +2198,7 @@ class Macro(Logger):
         :param result: (object) the result for this macro"""
         self._out_pars = result
 
-    ## @name Internal methods
+    # @name Internal methods
     #  This list contains the set of methods that are for INTERNAL macro usage.
     #  Macro developers should never call any of these methods
     #@{
@@ -2216,8 +2247,9 @@ class Macro(Logger):
         macro"""
         for obj in args:
             # isiterable
-            if not type(obj) in map(type,([],())):
-            #if not operator.isSequenceType(obj) or type(obj) in types.StringTypes:
+            if not type(obj) in map(type, ([], ())):
+                # if not operator.isSequenceType(obj) or type(obj) in
+                # types.StringTypes:
                 obj = (obj,)
             for sub_obj in obj:
                 if isinstance(sub_obj, PoolElement):
@@ -2233,13 +2265,13 @@ class Macro(Logger):
 
         # allow any macro to be paused at the beginning of its execution
         self.pausePoint()
-        
-        # Run the macro or obtain a generator 
+
+        # Run the macro or obtain a generator
         res = self.run(*self._in_pars)
 
         # If macro returns a generator then running the macro means go through
         # the generator steps, otherwise the macro has already ran
-        if type(res) == types.GeneratorType:
+        if isinstance(res, types.GeneratorType):
             it = iter(res)
             for i in it:
                 if operator.isMappingType(i):
@@ -2261,7 +2293,7 @@ class Macro(Logger):
         macro_status['state'] = 'finish'
         yield macro_status
 
-    def __prepareResult(self,out):
+    def __prepareResult(self, out):
         """**Internal method**. Decodes the given output in order to be able to
         send to the result channel
 
@@ -2272,7 +2304,7 @@ class Macro(Logger):
         if out is None:
             out = ()
         if operator.isSequenceType(out) and not type(out) in types.StringTypes:
-            out = map(str,out)
+            out = map(str, out)
         else:
             out = (str(out),)
         return out
@@ -2283,7 +2315,8 @@ class Macro(Logger):
         try:
             self.on_stop()
         except Exception:
-            Logger.error(self, "Error in on_stop(): %s", traceback.format_exc())
+            Logger.error(self, "Error in on_stop(): %s",
+                         traceback.format_exc())
             Logger.debug(self, "Details: ", exc_info=1)
 
     def _abortOnError(self):
@@ -2292,7 +2325,8 @@ class Macro(Logger):
         try:
             self.on_abort()
         except Exception:
-            Logger.error(self, "Error in on_abort(): %s", traceback.format_exc())
+            Logger.error(self, "Error in on_abort(): %s",
+                         traceback.format_exc())
             Logger.debug(self, "Details: ", exc_info=1)
 
     def _pausePoint(self, timeout=None):
@@ -2327,9 +2361,11 @@ class Macro(Logger):
                 time.sleep(0.1)
             if ret > 1:
                 # if it returns a number greater than one, you're in trouble,
-                # and you should call it again with exc=NULL to revert the effect
+                # and you should call it again with exc=NULL to revert the
+                # effect
                 asyncexc(th_id, None)
-                Logger.error(self, "Failed to abort (unknown error code %d)" % ret)
+                Logger.error(
+                    self, "Failed to abort (unknown error code %d)" % ret)
                 break
 
     def setProcessingStop(self, yesno):
@@ -2366,6 +2402,7 @@ class Macro(Logger):
         except UnknownMacro:
             raise AttributeError("%r object has no attribute %r" %
                                  (type(self).__name__, name))
+
         def f(*args, **kwargs):
             self.syncLog()
             opts = dict(parent_macro=self, executor=self.executor)
@@ -2400,7 +2437,6 @@ class MacroFunc(Macro):
         if function.interactive is not None:
             self.interactive = function.interactive
         Macro.__init__(self, *args, **kwargs)
-        
+
     def run(self, *args):
         return self._function(self, *args)
-

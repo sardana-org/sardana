@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -42,7 +42,7 @@ from taurus.core.util.log import Logger
 
 from sardana import DataAccess
 from sardana.sardanavalue import SardanaValue
-from sardana.pool.pooldefs import ControllerAPI, AcqTriggerType, AcqMode
+from sardana.pool.pooldefs import ControllerAPI, AcqSynch, AcqMode
 
 
 #: Constant data type (to be used as a *key* in the definition of
@@ -75,8 +75,8 @@ FSet = "fset"
 #: and :obj:`NotMemorized`
 Memorize = "memorized"
 
-#: Constant memorized (to be used as a *value* in the :obj:`Memorize` field 
-#: definition in :attr:`~Controller.axis_attributes` or 
+#: Constant memorized (to be used as a *value* in the :obj:`Memorize` field
+#: definition in :attr:`~Controller.axis_attributes` or
 #: :attr:`~Controller.ctrl_attributes`)
 Memorized = "true"
 
@@ -97,11 +97,11 @@ MaxDimSize = "maxdimsize"
 
 class Controller(object):
     """Base controller class. Do **NOT** inherit from this class directly
-    
+
     :param str inst: controller instance name
     :param dict props: a dictionary containning pairs of property name,
                        property value
-    :arg args: 
+    :arg args:
     :keyword kwargs:"""
 
     #: .. deprecated:: 1.0
@@ -130,19 +130,19 @@ class Controller(object):
     #:
     #:     - for :obj:`DefaultValue`, value is a python object or None if no
     #:       default value exists for the property.
-    #: 
+    #:
     #: Example::
     #:
     #:     from sardana.pool.controller import MotorController, \
     #:         Type, Description, DefaultValue
-    #: 
+    #:
     #:     class MyCtrl(MotorController):
-    #:          
+    #:
     #:         ctrl_properties = \
     #:         {
     #:             'host' : { Type : str,
     #:                        Description : "host name" },
-    #:             'port' : { Type : int, 
+    #:             'port' : { Type : int,
     #:                        Description : "port number",
     #:                        DefaultValue: 5000 }
     #:         }
@@ -159,7 +159,7 @@ class Controller(object):
     #:     - for :obj:`Type`, value is one of the values described in
     #:       :ref:`sardana-controller-data-type`
     #:
-    #:     - for :obj:`Access`, value is one of 
+    #:     - for :obj:`Access`, value is one of
     #:       :obj:`~sardana.sardanadefs.DataAccess` ("read" or "read_write"
     #:       (case insensitive) strings are also accepted) [default: ReadWrite]
     #:
@@ -194,22 +194,22 @@ class Controller(object):
     #:       .. versionadded:: 1.1
     #:
     #: .. versionadded:: 1.0
-    #: 
+    #:
     #: Example::
-    #:      
+    #:
     #:     from sardana.pool.controller import PseudoMotorController, \
     #:         Type, Description, DefaultValue, DataAccess
-    #: 
+    #:
     #:     class HKLCtrl(PseudoMotorController):
-    #:          
+    #:
     #:         ctrl_attributes = \
     #:         {
     #:             'ReflectionMatrix' : { Type : ( (float,), ),
     #:                                    Description : "The reflection matrix",
     #:                                    Access : DataAccess.ReadOnly,
-    #:                                    FGet : 'getReflectionMatrix', },    
+    #:                                    FGet : 'getReflectionMatrix', },
     #:         }
-    #:         
+    #:
     #:         def getReflectionMatrix(self):
     #:             return ( (1.0, 0.0), (0.0, 1.0) )
     ctrl_attributes = {}
@@ -224,7 +224,7 @@ class Controller(object):
     #:     - for :obj:`Type`, value is one of the values described in
     #:       :ref:`sardana-controller-data-type`
     #:
-    #:     - for :obj:`Access`, value is one of 
+    #:     - for :obj:`Access`, value is one of
     #:       :obj:`~sardana.sardanadefs.DataAccess` ("read" or "read_write"
     #:       (case insensitive) strings are also accepted)
     #:
@@ -252,25 +252,25 @@ class Controller(object):
     #:       .. versionadded:: 1.1
     #:
     #: .. versionadded:: 1.0
-    #: 
+    #:
     #: Example::
-    #:      
+    #:
     #:     from sardana.pool.controller import MotorController, \
     #:         Type, Description, DefaultValue, DataAccess
-    #: 
+    #:
     #:     class MyMCtrl(MotorController):
-    #:          
+    #:
     #:         axis_attributes = \
     #:         {
     #:             'EncoderSource' : { Type : str,
     #:                                 Description : 'motor encoder source', },
     #:         }
-    #:         
+    #:
     #:         def getAxisPar(self, axis, name):
     #:             name = name.lower()
     #:             if name == 'encodersource':
     #:                 return self._encodersource[axis]
-    #:         
+    #:
     #:         def setAxisPar(self, axis, name, value):
     #:             name = name.lower()
     #:             if name == 'encodersource':
@@ -295,7 +295,7 @@ class Controller(object):
 
     #: A :obj:`str` containning the path to the image logo file
     logo = None
-    
+
     def __init__(self, inst, props, *args, **kwargs):
         self._inst_name = inst
         self._log = Logger("Controller.%s" % inst)
@@ -389,7 +389,6 @@ class Controller(object):
         Default implementation raises :exc:`NotImplementedError`."""
         raise NotImplementedError("StateOne must be defined in the controller")
 
-    #def SetCtrlPar(self, unit, parameter, value):
     def SetCtrlPar(self, parameter, value):
         """**Controller API**. Override if necessary.
         Called to set a parameter with a value. Default implementation sets
@@ -398,7 +397,6 @@ class Controller(object):
         .. versionadded:: 1.0"""
         setattr(self, '_' + parameter, value)
 
-    #def GetCtrlPar(self, unit, parameter):
     def GetCtrlPar(self, parameter):
         """**Controller API**. Override if necessary.
         Called to set a parameter with a value. Default implementation returns
@@ -407,7 +405,6 @@ class Controller(object):
         .. versionadded:: 1.0"""
         return getattr(self, '_' + parameter)
 
-    #def SetAxisPar(self, unit, axis, parameter, value):
     def SetAxisPar(self, axis, parameter, value):
         """**Controller API**. Override is MANDATORY.
         Called to set a parameter with a value on the given axis. Default
@@ -417,7 +414,6 @@ class Controller(object):
         .. versionadded:: 1.0"""
         return self.SetPar(axis, parameter, value)
 
-    #def GetAxisPar(self, unit, axis, parameter):
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
         Called to get a parameter value on the given axis. Default
@@ -660,7 +656,7 @@ class Loadable(object):
         Default implementation does nothing."""
         pass
 
-    def PreLoadOne(self, axis, value):
+    def PreLoadOne(self, axis, value, repetitions):
         """**Controller API**. Override if necessary.
         Called to prepare loading the master channel axis with the integration
         time / monitor value.
@@ -668,6 +664,7 @@ class Loadable(object):
 
         :param int axis: axis number
         :param float value: integration time /monitor value
+        :param int repetitions: number of repetitions
         :return: True means a successfull PreLoadOne or False for a failure
         :rtype: bool"""
         return True
@@ -678,14 +675,55 @@ class Loadable(object):
         Default implementation does nothing."""
         pass
 
-    def LoadOne(self, axis, value):
+    def LoadOne(self, axis, value, repetitions):
         """**Controller API**. Override is MANDATORY!
         Called to load the integration time / monitor value.
         Default implementation raises :exc:`NotImplementedError`.
-        
+
         :param int axis: axis number
+        :param float value: integration time /monitor value
+        :param int repetitions: number of repetitions
         :param float value: integration time /monitor value"""
         raise NotImplementedError("LoadOne must be defined in the controller")
+
+
+class Synchronizer(object):
+    """A Synchronizer interface. A controller for which its axis are 'Able to
+    Synchronize' should implement this interface
+
+    .. note: Do not inherit directly from Synchronizer."""
+
+    def PreSynchAll(self):
+        """**Controller API**. Override if necessary.
+        Called to prepare loading the synchronization description.
+        Default implementation does nothing."""
+        pass
+
+    def PreSynchOne(self, axis, description):
+        """**Controller API**. Override if necessary.
+        Called to prepare loading the axis with the synchronization description.
+        Default implementation returns True.
+
+        :param int axis: axis number
+        :param list<dict>: synchronization description
+        :return: True means a successfull PreSynchOne or False for a failure
+        :rtype: bool"""
+        return True
+
+    def SynchAll(self):
+        """**Controller API**. Override if necessary.
+        Called to load the synchronization description.
+        Default implementation does nothing."""
+        pass
+
+    def SynchOne(self, axis, description):
+        """**Controller API**. Override is MANDATORY!
+        Called to load the axis with the synchronization description.
+        Default implementation raises :exc:`NotImplementedError`.
+
+        :param int axis: axis number
+        :param list<dict> description: synchronization description"""
+        raise NotImplementedError("SynchOne must be defined in the controller")
 
 
 class MotorController(Controller, Startable, Stopable, Readable):
@@ -737,34 +775,34 @@ class MotorController(Controller, Startable, Stopable, Readable):
     #: A :class:`dict` containing the standard attributes present on each axis
     #: device
     standard_axis_attributes = {
-        'Position'       : { 'type' : float,
-                             'description' : 'Position', },
-        'DialPosition'   : { 'type' : float,
-                             'description' : 'Dial Position', },
-        'Offset'         : { 'type' : float,
-                             'description' : 'Offset', },
-        'Sign'           : { 'type' : float,
-                             'description' : 'Sign', },
-        'Step_per_unit'  : { 'type' : float,
-                             'description' : 'Steps per unit', },
-        'Acceleration'   : { 'type' : float,
-                             'description' : 'Acceleration time (s)', },
-        'Deceleration'   : { 'type' : float,
-                             'description' : 'Deceleration time (s)', },
-        'Base_rate'      : { 'type' : float,
-                             'description' : 'Base rate', },
-        'Velocity'       : { 'type' : float,
-                             'description' : 'Velocity', },
-        'Backlash'       : { 'type' : float,
-                             'description' : 'Backlash', },
-        'Limit_switches' : { 'type' : (bool,),
-                             'description' : "This attribute is the motor "\
-                              "limit switches state. It's an array with 3 \n"\
-                              "elements which are:\n"\
-                              "0 - The home switch\n"\
-                              "1 - The upper limit switch\n"\
-                              "2 - The lower limit switch\n"\
-                              "False means not active. True means active", },
+        'Position': {'type': float,
+                     'description': 'Position', },
+        'DialPosition': {'type': float,
+                         'description': 'Dial Position', },
+        'Offset': {'type': float,
+                   'description': 'Offset', },
+        'Sign': {'type': float,
+                 'description': 'Sign', },
+        'Step_per_unit': {'type': float,
+                          'description': 'Steps per unit', },
+        'Acceleration': {'type': float,
+                         'description': 'Acceleration time (s)', },
+        'Deceleration': {'type': float,
+                         'description': 'Deceleration time (s)', },
+        'Base_rate': {'type': float,
+                      'description': 'Base rate', },
+        'Velocity': {'type': float,
+                     'description': 'Velocity', },
+        'Backlash': {'type': float,
+                     'description': 'Backlash', },
+        'Limit_switches': {'type': (bool,),
+                           'description': "This attribute is the motor "
+                           "limit switches state. It's an array with 3 \n"
+                           "elements which are:\n"
+                           "0 - The home switch\n"
+                           "1 - The upper limit switch\n"
+                           "2 - The lower limit switch\n"
+                           "False means not active. True means active", },
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 
@@ -833,8 +871,10 @@ class CounterTimerController(Controller, Readable, Startable, Stopable, Loadable
     #: A :class:`dict` containing the standard attributes present on each axis
     #: device
     standard_axis_attributes = {
-        'Value'       : { 'type' : float,
-                          'description' : 'Value', },
+        'Value': {'type': float,
+                  'description': 'Value', },
+        'Data': {'type': str,
+                 'description': 'Data', },
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 
@@ -846,7 +886,16 @@ class CounterTimerController(Controller, Readable, Startable, Stopable, Loadable
         self._timer = None
         self._monitor = None
         self._master = None
-        self._trigger_type = AcqTriggerType.Unknown
+        self._latency_time = 0
+        self._synchronization = AcqSynch.SoftwareTrigger
+
+    def get_trigger_type(self):
+        msg = "trigger_type is deprecated since SEP6. " +\
+              "Use synchronization instead"
+        self._log.warning(msg)
+        return self._synchronization
+
+    _trigger_type = property(get_trigger_type)
 
     def PreStartAllCT(self):
         """**Counter/Timer Controller API**. Override if necessary.
@@ -935,6 +984,18 @@ class CounterTimerController(Controller, Readable, Startable, Stopable, Loadable
         return self.StartAllCT()
 
 
+class TriggerGateController(Controller, Synchronizer, Stopable, Startable):
+    """Base class for a trigger/gate controller. Inherit from this class to
+    implement your own trigger/gate controller for the device pool.
+    """
+
+    #: A :obj:`str` representing the controller gender
+    gender = 'Trigger/Gate controller'
+
+    def __init__(self, inst, props, *args, **kwargs):
+        Controller.__init__(self, inst, props, *args, **kwargs)
+
+
 class ZeroDController(Controller, Readable, Stopable):
     """Base class for a 0D controller. Inherit from this class to
     implement your own 0D controller for the device pool."""
@@ -942,11 +1003,13 @@ class ZeroDController(Controller, Readable, Stopable):
     #: A :class:`dict` containing the standard attributes present on each axis
     #: device
     standard_axis_attributes = {
-        'Value'       : { 'type' : float,
-                          'description' : 'Value', },
+        'Value': {'type': float,
+                  'description': 'Value', },
+        'Data': {'type': str,
+                 'description': 'Data', },
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
-    
+
     #: A :obj:`str` representing the controller gender
     gender = '0D controller'
 
@@ -961,24 +1024,31 @@ class ZeroDController(Controller, Readable, Stopable):
 class OneDController(Controller, Readable, Startable, Stopable, Loadable):
     """Base class for a 1D controller. Inherit from this class to
     implement your own 1D controller for the device pool.
-    
+
     .. versionadded:: 1.2"""
 
     standard_axis_attributes = {
-        'Value'       : { 'type' : (float,),
-                          'description' : 'Value',
-                          'maxdimsize' : (16*1024,) },
+        'Value': {'type': (float,),
+                  'description': 'Value',
+                  'maxdimsize': (16 * 1024,)},
+        'Data': {'type': str,
+                 'description': 'Data', },
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 
     #: A :obj:`str` representing the controller gender
     gender = '1D controller'
-        
+
+    def __init__(self, inst, props, *args, **kwargs):
+        Controller.__init__(self, inst, props, *args, **kwargs)
+        self._latency_time = 0
+        self._synchronization = AcqSynch.SoftwareTrigger
+
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
         Called to get a parameter value on the given axis.
-        If parameter == 'data_source', default implementation returns None, 
-        meaning let sardana decide the proper URI for accessing the axis value. 
+        If parameter == 'data_source', default implementation returns None,
+        meaning let sardana decide the proper URI for accessing the axis value.
         Otherwise, default implementation calls deprecated
         :meth:`~Controller.GetPar` which, by default, raises
         :exc:`NotImplementedError`.
@@ -994,20 +1064,24 @@ class TwoDController(Controller, Readable, Startable, Stopable, Loadable):
     implement your own 2D controller for the device pool."""
 
     standard_axis_attributes = {
-        'Value'       : { 'type' : ((float,),),
-                          'description' : 'Value',
-                          'maxdimsize' : (4*1024, 4*1024) },
+        'Value': {'type': ((float,),),
+                  'description': 'Value',
+                  'maxdimsize': (4 * 1024, 4 * 1024)},
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 
     #: A :obj:`str` representing the controller gender
     gender = '2D controller'
 
+    def __init__(self, inst, props, *args, **kwargs):
+        Controller.__init__(self, inst, props, *args, **kwargs)
+        self._latency_time = 0
+
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
         Called to get a parameter value on the given axis.
-        If parameter == 'data_source', default implementation returns None, 
-        meaning let sardana decide the proper URI for accessing the axis value. 
+        If parameter == 'data_source', default implementation returns None,
+        meaning let sardana decide the proper URI for accessing the axis value.
         Otherwise, default implementation calls deprecated
         :meth:`~Controller.GetPar` which, by default, raises
         :exc:`NotImplementedError`.
@@ -1028,7 +1102,7 @@ class PseudoController(Controller):
         elem = local_cache.get(index_or_role)
         if elem is None:
             pool = self._getPoolController().pool
-            if type(index_or_role) == int:
+            if isinstance(index_or_role, int):
                 index = index_or_role
                 role = roles[index]
             else:
@@ -1069,13 +1143,13 @@ class PseudoMotorController(PseudoController):
     #: A :class:`dict` containing the standard attributes present on each axis
     #: device
     standard_axis_attributes = {
-        'Position'       : { 'type' : float,
-                             'description' : 'Position', },
+        'Position': {'type': float,
+                     'description': 'Position', },
     }
 
     #: A :obj:`str` representing the controller gender
     gender = 'Pseudo motor controller'
-    
+
     def __init__(self, inst, props, *args, **kwargs):
         self.__motor_role_elements = {}
         self.__pseudo_motor_role_elements = {}
@@ -1100,7 +1174,7 @@ class PseudoMotorController(PseudoController):
            .. versionadded:: 1.0"""
         ret = []
         for i in range(len(self.pseudo_motor_roles)):
-            ret.append(self.CalcPseudo(i+1, physical_pos, curr_pseudo_pos))
+            ret.append(self.CalcPseudo(i + 1, physical_pos, curr_pseudo_pos))
         return ret
 
     def CalcAllPhysical(self, pseudo_pos, curr_physical_pos):
@@ -1121,7 +1195,7 @@ class PseudoMotorController(PseudoController):
            .. versionadded:: 1.0"""
         ret = []
         for i in range(len(self.motor_roles)):
-            pos = self.CalcPhysical(i+1, pseudo_pos, curr_physical_pos)
+            pos = self.CalcPhysical(i + 1, pseudo_pos, curr_physical_pos)
             ret.append(pos)
         return ret
 
@@ -1176,9 +1250,8 @@ class PseudoMotorController(PseudoController):
                implement :meth:`~PseudoMotorController.CalcAllPseudo` instead"""
         ret = []
         for i in range(len(self.pseudo_motor_roles)):
-            ret.append(self.calc_pseudo(i+1, physical_pos))
+            ret.append(self.calc_pseudo(i + 1, physical_pos))
         return ret
-
 
     def calc_all_physical(self, pseudo_pos):
         """**Pseudo Motor Controller API**. Override if necessary.
@@ -1197,7 +1270,7 @@ class PseudoMotorController(PseudoController):
                instead"""
         ret = []
         for i in range(len(self.motor_roles)):
-            pos = self.calc_physical(i+1, pseudo_pos)
+            pos = self.calc_physical(i + 1, pseudo_pos)
             ret.append(pos)
         return ret
 
@@ -1213,7 +1286,8 @@ class PseudoMotorController(PseudoController):
 
            .. deprecated:: 1.0
                implement :meth:`~PseudoMotorController.CalcPseudo` instead"""
-        raise NotImplementedError("CalcPseudo must be defined in te controller")
+        raise NotImplementedError(
+            "CalcPseudo must be defined in te controller")
 
     def calc_physical(self, axis, pseudo_pos):
         """**Pseudo Motor Controller API**. Override is **MANDATORY**.
@@ -1267,7 +1341,8 @@ class PseudoMotorController(PseudoController):
         dict_axis = self._getPoolController().get_element_axis()
         pseudo_motor_ids = []
         for akey, aname in dict_axis.items():
-            pseudo_motor_ids.append(dict_ids.keys()[dict_ids.values().index(aname)])
+            pseudo_motor_ids.append(
+                dict_ids.keys()[dict_ids.values().index(aname)])
         return self._getElem(index_or_role, self.pseudo_motor_roles,
                              self.__pseudo_motor_role_elements,
                              pseudo_motor_ids)
@@ -1297,13 +1372,15 @@ class PseudoCounterController(Controller):
     #: A :class:`dict` containing the standard attributes present on each axis
     #: device
     standard_axis_attributes = {
-        'Value'       : { 'type' : float,
-                          'description' : 'Value', },
+        'Value': {'type': float,
+                  'description': 'Value', },
+        'Data': {'type': str,
+                 'description': 'Data', },
     }
 
     #: A :obj:`str` representing the controller gender
     gender = 'Pseudo counter controller'
-    
+
     def Calc(self, axis, values):
         """**Pseudo Counter Controller API**. Override is **MANDATORY**.
            Calculate pseudo counter position given the counter values.
@@ -1347,7 +1424,7 @@ class PseudoCounterController(Controller):
 
            .. versionadded:: 1.2"""
         f, n = self.Calc, len(self.pseudo_counter_roles)
-        return [ f(i+1, values) for i in range(n) ]
+        return [f(i + 1, values) for i in range(n)]
 
 
 class IORegisterController(Controller, Readable):
@@ -1362,17 +1439,17 @@ class IORegisterController(Controller, Readable):
     #: A :class:`dict` containing the standard attributes present on each axis
     #: device
     standard_axis_attributes = {
-        'Value'       : { 'type' : float,
-                          'description' : 'Value', },
+        'Value': {'type': float,
+                  'description': 'Value', },
     }
+    standard_axis_attributes.update(Controller.standard_axis_attributes)
 
     #: A :obj:`str` representing the controller gender
     gender = 'I/O register controller'
-    
+
     def __init__(self, inst, props, *args, **kwargs):
         Controller.__init__(self, inst, props, *args, **kwargs)
 
-    def WriteOne(self):
+    def WriteOne(self, axis, value):
         """**IORegister Controller API**. Override if necessary."""
         pass
-

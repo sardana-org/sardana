@@ -87,4 +87,6 @@ generated while loading the recorder libraries. This dynamically created map
 may be overridden by the custom map defined in the *sardanacustomsettings*
 module (SCAN_RECORDER_MAP variable with a dictionary where key is the scan file
 extension e.g. ".h5" and value is the recorder name e.g. "MyCustomRecorder",
-where both keys and values are of type string).
+where both keys and values are of type string). The SCAN_RECORDER_MAP will make
+an union with the dynamically created map taking precedence in case the
+extensions repeats in both of them.

@@ -3,3 +3,4 @@
 /build
 /setup.cfg
 *.pyc
+.idea/

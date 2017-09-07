@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -28,14 +28,10 @@
 __all__ = ['BasePoolTestCase', 'ControllerLoadsTestCase',
            'ControllerCreationTestCase', 'ElementCreationTestCase']
 
-import os
 import PyTango
-from taurus import Device
 from taurus.external import unittest
 from taurus.core.tango.starter import ProcessStarter
 from sardana import sardanacustomsettings
-from sardana.taurus.core.tango.sardana import (registerExtensions,
-                                              unregisterExtensions)
 from sardana.tango.core.util import (get_free_server, get_free_device,
                                      get_free_alias)
 from taurus.core.util import whichexecutable
@@ -61,19 +57,21 @@ class BasePoolTestCase(object):
         dev_name_parts = self.pool_name.split('/')
         prefix = '/'.join(dev_name_parts[0:2])
         start_from = int(dev_name_parts[2])
-        self.pool_name = get_free_device(PyTango.Database(), prefix, start_from)
+        self.pool_name = get_free_device(
+            PyTango.Database(), prefix, start_from)
         self._starter.addNewDevice(self.pool_name, klass='Pool')
         # start Pool server
         self._starter.startDs()
         # register extensions so the test methods can use them
-        registerExtensions()
-        self.pool = Device(self.pool_name)
+        self.pool = PyTango.DeviceProxy(self.pool_name)
 
     def tearDown(self):
         """Remove the Pool instance.
         """
-        unregisterExtensions()
         self._starter.cleanDb(force=True)
+        self._starter = None
+        self.pool = None
+        self.pool_name = None
 
 
 # TODO: Currently test inputs are implemented as class members, it would be
@@ -82,6 +80,7 @@ class ControllerLoadsTestCase(BasePoolTestCase):
     """Class for loading an arbitrary Sardana controller library and class.
     """
     controller_classes = []
+
     def test_controller_loads(self):
         """Test that the controller library and class can be loaded.
         """
@@ -108,7 +107,7 @@ class ControllerCreationTestCase(BasePoolTestCase):
     def test_controller_creation(self):
         """Test that the controller has been created with the correct name.
         """
-        for cls, name, props  in self.controller_infos:
+        for cls, name, props in self.controller_infos:
             ctrl = self.pool.createController(cls, name, *props)
             msg = 'Controller %s was not correctly created.' % name
             self.assertEqual(ctrl.getName(), name, msg)
@@ -127,7 +126,7 @@ class ElementCreationTestCase(BasePoolTestCase):
     def test_element_creation(self):
         """Test that controller and elements have been correctly created.
         """
-        for cls, name, props, elements  in self.controller_infos:
+        for cls, name, props, elements in self.controller_infos:
             ctrl = self.pool.createController(cls, name, *props)
             msg = 'Controller %s was not correctly created.' % name
             self.assertEqual(ctrl.getName(), name, msg)
@@ -153,24 +152,24 @@ if __name__ == '__main__':
                                      unittest.TestCase):
 
         controller_classes = {
-        'DummyMotorController':('DummyMotorController',)
+            'DummyMotorController': ('DummyMotorController',)
         }
 
     class BuiltinControllerCreationTest(ControllerCreationTestCase,
-                                     unittest.TestCase):
+                                        unittest.TestCase):
 
         controller_infos = [('DummyMotorController', 'unittest', ())
-        ]
+                            ]
 
     class BuiltinElementCreationTest(ElementCreationTestCase,
                                      unittest.TestCase):
         alias = get_free_alias(PyTango.Database(), "mot_test")
         controller_infos = [('DummyMotorController',
-                            'unittest',
-                            (),
-                            [(alias, 1)])
-                           ]
+                             'unittest',
+                             (),
+                             [(alias, 1)])
+                            ]
 
     suite = unittest.defaultTestLoader.loadTestsFromTestCase(
-    BuiltinElementCreationTest)
+        BuiltinElementCreationTest)
     unittest.TextTestRunner(descriptions=True, verbosity=2).run(suite)

@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -132,8 +132,8 @@ class MSDoor(MSObject):
     def get_macro_data(self):
         macro = self.running_macro
         if macro is None:
-            raise MacroServerException("No macro has run so far " + \
-                            "or the macro data was not preserved.")
+            raise MacroServerException("No macro has run so far " +
+                                       "or the macro data was not preserved.")
         data = macro.data
         return data
 
@@ -210,7 +210,7 @@ class MSDoor(MSObject):
         input_data.update(kwargs)
         data_type = kwargs['data_type']
         is_seq = not isinstance(data_type, (str, unicode)) and \
-                 isinstance(data_type, collections.Sequence)
+            isinstance(data_type, collections.Sequence)
         if is_seq:
             handle = self._handle_seq_input
         else:
@@ -373,11 +373,11 @@ class MSDoor(MSObject):
             formatter = logging.Formatter(fmt="%(message)s")
             Logger.setLogFormat("%(message)s")
             handler = logging.StreamHandler(stream=sys.stdout)
-            #handler.addFilter(filter)
+            # handler.addFilter(filter)
             Logger.addRootLogHandler(handler)
-            #handler.setFormatter(formatter)
-            #logger.addHandler(handler)
-            #logger.addFilter(filter)
+            # handler.setFormatter(formatter)
+            # logger.addHandler(handler)
+            # logger.addFilter(filter)
             self.__logging_info = handler, filter, formatter
 
             # result of a macro

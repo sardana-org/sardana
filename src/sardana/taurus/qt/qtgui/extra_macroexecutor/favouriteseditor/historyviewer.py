@@ -2,29 +2,29 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
 """
-historyviewer.py: 
+historyviewer.py:
 """
 import copy
 
@@ -32,6 +32,7 @@ from taurus.external.qt import Qt
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtcore.configuration import BaseConfigurableClass
 from model import MacrosListModel
+
 
 class HistoryMacrosViewer(TaurusWidget):
     __pyqtSignals__ = ("modelChanged(const QString &)",)
@@ -50,7 +51,7 @@ class HistoryMacrosViewer(TaurusWidget):
         self._model = MacrosListModel()
         self.list.setModel(self._model)
 
-#####        self.registerConfigDelegate(self.list)
+# self.registerConfigDelegate(self.list)
         self.layout().addWidget(self.list)
 
         actionBar = self.createActionBar()
@@ -62,21 +63,24 @@ class HistoryMacrosViewer(TaurusWidget):
         deleteAllButton = Qt.QToolButton()
         deleteAllButton.setDefaultAction(self.list.removeAllAction)
         layout.addWidget(deleteAllButton)
-        spacerItem = Qt.QSpacerItem(0, 0, Qt.QSizePolicy.Fixed, Qt.QSizePolicy.Expanding)
+        spacerItem = Qt.QSpacerItem(
+            0, 0, Qt.QSizePolicy.Fixed, Qt.QSizePolicy.Expanding)
         layout.addItem(spacerItem)
         return layout
 
     def listElementUp(self):
         indexPos = self.list.currentIndex()
         if indexPos.isValid() and indexPos.row() >= 1:
-            self.list.setCurrentIndex(indexPos.sibling(indexPos.row() - 1, indexPos.column()))
+            self.list.setCurrentIndex(indexPos.sibling(
+                indexPos.row() - 1, indexPos.column()))
         else:
             self.selectFirstElement()
 
     def listElementDown(self):
         indexPos = self.list.currentIndex()
         if indexPos.isValid() and indexPos.row() < self._model.rowCount() - 1:
-            self.list.setCurrentIndex(indexPos.sibling(indexPos.row() + 1, indexPos.column()))
+            self.list.setCurrentIndex(indexPos.sibling(
+                indexPos.row() + 1, indexPos.column()))
         elif indexPos.row() == self._model.rowCount() - 1:
             return
         else:
@@ -102,7 +106,6 @@ class HistoryMacrosViewer(TaurusWidget):
         self.list.removeAllAction.setEnabled(True)
         self.list.setCurrentIndex(self._model.index(0))
 
-
     @classmethod
     def getQtDesignerPluginInfo(cls):
         return None
@@ -113,9 +116,12 @@ class HistoryMacrosList(Qt.QListView, BaseConfigurableClass):
     def __init__(self, parent):
         Qt.QListView.__init__(self, parent)
         self.setSelectionMode(Qt.QListView.SingleSelection)
-        self.removeAllAction = Qt.QAction(Qt.QIcon(":/places/user-trash.svg"), "Remove all from history", self)
-        self.connect(self.removeAllAction, Qt.SIGNAL("triggered()"), self.removeAllMacros)
-        self.removeAllAction.setToolTip("Clicking this button will remove all macros from history.")
+        self.removeAllAction = Qt.QAction(
+            Qt.QIcon(":/places/user-trash.svg"), "Remove all from history", self)
+        self.connect(self.removeAllAction, Qt.SIGNAL(
+            "triggered()"), self.removeAllMacros)
+        self.removeAllAction.setToolTip(
+            "Clicking this button will remove all macros from history.")
         self.removeAllAction.setEnabled(False)
 
     def currentChanged(self, current, previous):
@@ -144,7 +150,8 @@ class HistoryMacrosList(Qt.QListView, BaseConfigurableClass):
 
     def removeAllMacros(self):
         self.selectAll()
-        slist = sorted(self.selectedIndexes(), key=lambda index: index.row(), reverse=True)
+        slist = sorted(self.selectedIndexes(),
+                       key=lambda index: index.row(), reverse=True)
         for index in slist:
             self.model().removeRow(index.row())
         self.removeAllAction.setEnabled(False)
@@ -157,8 +164,10 @@ class HistoryMacrosList(Qt.QListView, BaseConfigurableClass):
 
 
 def test():
-    import sys, taurus, time
-    from  taurus.qt.qtgui.application import TaurusApplication
+    import sys
+    import taurus
+    import time
+    from taurus.qt.qtgui.application import TaurusApplication
 
     app = TaurusApplication(sys.argv)
 

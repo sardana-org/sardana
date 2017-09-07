@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -33,8 +33,10 @@ from sardana import sardanacustomsettings
 from sardana.macroserver.macros.test import MacroExecutorFactory
 from taurus.test import insertTest
 
-#Define a "_NOT_PASSED" object to mark a keyword arg which is not passed
+# Define a "_NOT_PASSED" object to mark a keyword arg which is not passed
 # Note that we do not want to use None because one may want to pass None
+
+
 class __NotPassedType(int):
     pass
 _NOT_PASSED = __NotPassedType()
@@ -43,7 +45,7 @@ _NOT_PASSED = __NotPassedType()
 def macroTest(klass=None, helper_name=None, test_method_name=None,
               test_method_doc=None, **helper_kwargs):
     """This decorator is an specialization of :function::`taurus.test.insertTest`
-    for macro testing. It inserts test methods from a helper method that may 
+    for macro testing. It inserts test methods from a helper method that may
     accept arguments.
 
     macroTest provides a very economic API for creating new tests for a given
@@ -107,25 +109,25 @@ def macroTest(klass=None, helper_name=None, test_method_name=None,
         @testRun(macro_params=['-1'])
         class FooTest(RunMacroTestCase, unittest.TestCase):
             macro_name = 'twice'
-            
+
     .. seealso:: :function::`taurus.test.insertTest`
 
     """
-    #recipe to allow decorating with and without arguments
+    # recipe to allow decorating with and without arguments
     if klass is None:
         return functools.partial(macroTest, helper_name=helper_name,
                                  test_method_name=test_method_name,
                                  test_method_doc=test_method_doc,
                                  **helper_kwargs)
-        
-    return insertTest(klass=klass, helper_name=helper_name, 
+
+    return insertTest(klass=klass, helper_name=helper_name,
                       test_method_name=test_method_name,
-                      test_method_doc=test_method_doc, 
-                      tested_name = helper_kwargs.get("macro_name") or \
+                      test_method_doc=test_method_doc,
+                      tested_name=helper_kwargs.get("macro_name") or
                       klass.macro_name, **helper_kwargs)
 
 
-#Definition of specializations of the macroTest decorator:
+# Definition of specializations of the macroTest decorator:
 testRun = functools.partial(macroTest, helper_name='macro_runs')
 testStop = functools.partial(macroTest, helper_name='macro_stops')
 testFail = functools.partial(macroTest, helper_name='macro_fails')
@@ -178,7 +180,7 @@ class RunMacroTestCase(BaseMacroTestCase):
         """
         finishStates = [u'finish']
         state = self.macro_executor.getState()
-        #TODO buffer is just for debugging, attach only the last state
+        # TODO buffer is just for debugging, attach only the last state
         state_buffer = self.macro_executor.getStateBuffer()
         msg = msg + '; State history=%s' % state_buffer
         self.assertIn(state, finishStates, msg)
@@ -213,14 +215,14 @@ class RunMacroTestCase(BaseMacroTestCase):
                                 sync=True, timeout=wait_timeout)
         self.assertFinished('Macro %s did not finish' % macro_name)
 
-        #check if the data of the macro is the expected one
+        # check if the data of the macro is the expected one
         if data is not _NOT_PASSED:
             actual_data = self.macro_executor.getData()
             msg = 'Macro data does not match expected data:\n' + \
                   'obtained=%s\nexpected=%s' % (actual_data, data)
             self.assertEqual(actual_data, data, msg)
 
-        #TODO: implement generic asserts for macro result and macro output, etc
+        # TODO: implement generic asserts for macro result and macro output, etc
         #      in a similar way to what is done for macro data
 
     def macro_fails(self, macro_name=None, macro_params=None,
@@ -265,7 +267,7 @@ class RunStopMacroTestCase(RunMacroTestCase):
         """
         stoppedStates = [u'stop']
         state = self.macro_executor.getState()
-        #TODO buffer is just for debugging, attach only the last state
+        # TODO buffer is just for debugging, attach only the last state
         state_buffer = self.macro_executor.getStateBuffer()
         msg = msg + '; State buffer was %s' % state_buffer
         self.assertIn(state, stoppedStates, msg)

@@ -1,4 +1,11 @@
-import os, sys, wx, copy, taurus, settings_widget, simple_tree_model, wiz
+import os
+import sys
+import wx
+import copy
+import taurus
+import settings_widget
+import simple_tree_model
+import wiz
 import taurus.qt.qtgui.resource
 from PyQt4 import QtGui, QtCore, Qt
 from types import *
@@ -14,14 +21,15 @@ from sardana.taurus.core.tango.sardana import PoolElementType
 - OutroPage
 """
 
+
 class SelectSardanaPoolBasePage(wiz.SardanaBasePage):
     """Page for selecting Sardana and Pool
-    
+
     Selected values are saved in
-    
+
     self['sardana']
     self['pool']
-    
+
     """
 
     def __init__(self, sardana=None, pool=None, parent=None):
@@ -35,19 +43,24 @@ class SelectSardanaPoolBasePage(wiz.SardanaBasePage):
         layout = QtGui.QGridLayout()
         self._sardanaNameCB = QtGui.QComboBox()
         self._poolNameCB = QtGui.QComboBox()
-        layout.addItem(QtGui.QSpacerItem(60, 60, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum), 0, 0)
+        layout.addItem(QtGui.QSpacerItem(
+            60, 60, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum), 0, 0)
         layout.addWidget(QtGui.QLabel("Sardana"), 0, 1)
-        layout.addItem(QtGui.QSpacerItem(60, 60, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum), 0, 3)
+        layout.addItem(QtGui.QSpacerItem(
+            60, 60, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum), 0, 3)
         layout.addWidget(self._sardanaNameCB, 0, 2)
         layout.addWidget(QtGui.QLabel("Pool"), 1, 1)
         layout.addWidget(self._poolNameCB, 1, 2)
-        layout.addItem(QtGui.QSpacerItem(200, 10, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum), 2, 2)
+        layout.addItem(QtGui.QSpacerItem(
+            200, 10, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum), 2, 2)
         self._panel.setLayout(layout)
-        self.setStatus("Select the instances of Sardana and Pool, and click Next to continue")
+        self.setStatus(
+            "Select the instances of Sardana and Pool, and click Next to continue")
 
         self['sardana'] = self._getSardana
         self['pool'] = self._getPool
-        self.connect(self._sardanaNameCB, QtCore.SIGNAL('currentIndexChanged(int)'), self._fillPoolNameCB)
+        self.connect(self._sardanaNameCB, QtCore.SIGNAL(
+            'currentIndexChanged(int)'), self._fillPoolNameCB)
 
     def initializePage(self):
         wiz.SardanaBasePage.initializePage(self)
@@ -126,23 +139,25 @@ class SimpleTreeView(QtGui.QTreeView):
     def activated(self, index):
         self.emit(QtCore.SIGNAL("activated"), self.model().asRecord(index))
 
-
     def expanded(self):
-        if not self.model() == None:
+        if not self.model() is None:
             for column in range(self.model().columnCount(
                                 QtCore.QModelIndex())):
                 self.resizeColumnToContents(column)
 
+
 class AxisSteper(Qt.QSpinBox):
-    """ Object of this class is a Spin box that can jumps from 1 to the total number 
+    """ Object of this class is a Spin box that can jumps from 1 to the total number
         of axis while skipping busy values
     """
+
     def __init__(self, controllerInfo=None, busyValues=[], parent=None):
         Qt.QSpinBox.__init__(self, parent)
         self._busyValues = busyValues
         self._controllerInfo = controllerInfo
         self.setControllerInfo(controllerInfo)
-        QtCore.QObject.connect(self.lineEdit(), QtCore.SIGNAL("editingFinished()"), self._textEdited)
+        QtCore.QObject.connect(self.lineEdit(), QtCore.SIGNAL(
+            "editingFinished()"), self._textEdited)
 
     def _textEdited(self):
         axis = int(self.value())
@@ -186,8 +201,9 @@ class AxisSteper(Qt.QSpinBox):
 
 class SingleAxisWidget(Qt.QWidget):
     """
-        Widget for selecting name and axis for the device 
+        Widget for selecting name and axis for the device
     """
+
     def __init__(self, parent=None):
         Qt.QWidget.__init__(self, parent)
         self._layout = QtGui.QGridLayout(self)
@@ -207,8 +223,10 @@ class SingleAxisWidget(Qt.QWidget):
         self._axisSpinBox = AxisSteper()
         self._layout.addWidget(self._axisLabel, 1, 0, 1, 1)
         self._layout.addWidget(self._axisSpinBox, 1, 1, 1, 1)
-        QtCore.QObject.connect(self._axisSpinBox.lineEdit(), QtCore.SIGNAL("textEdited(QString)"), self._textEdited)
-        QtCore.QObject.connect(self._nameLineEdit, QtCore.SIGNAL("textEdited(QString)"), self._textEdited)
+        QtCore.QObject.connect(self._axisSpinBox.lineEdit(), QtCore.SIGNAL(
+            "textEdited(QString)"), self._textEdited)
+        QtCore.QObject.connect(self._nameLineEdit, QtCore.SIGNAL(
+            "textEdited(QString)"), self._textEdited)
 
     def _textEdited(self, str):
         self._edited = True
@@ -247,19 +265,21 @@ class NameEditorWidget(QtGui.QLineEdit):
     def textChanged(self, string):
         QtGui.QLineEdit.textChanged(self, string)
 
-    def focusOutEvent (self, event):  #QFocusEvent
+    def focusOutEvent(self, event):  # QFocusEvent
         QtGui.QLineEdit.focusOutEvent(self, event)
         self.valueChanged()
 
     def valueChanged(self):
         if not (self.getValue() == self._actualValue):
-            self.emit(QtCore.SIGNAL("valueChanged"), self._actualValue, self.getValue())
+            self.emit(QtCore.SIGNAL("valueChanged"),
+                      self._actualValue, self.getValue())
         self._actualValue = self.getValue()
         self.setValue(self.getValue())  # if value is not valid
 
     @classmethod
     def getDefaultValue(self):
         return ""
+
 
 class TableAxisDelegate(QtGui.QItemDelegate):
     """
@@ -277,7 +297,8 @@ class TableAxisDelegate(QtGui.QItemDelegate):
             editor = NameEditorWidget(parent)
             editor.installEventFilter(self)
         if index.column() == 1:
-            editor = AxisSteper(self._controllerInfo, self.parent().parent().getAxisList(), parent=parent)
+            editor = AxisSteper(self._controllerInfo, self.parent(
+            ).parent().getAxisList(), parent=parent)
             editor.installEventFilter(self)
 
         return editor
@@ -288,18 +309,18 @@ class TableAxisDelegate(QtGui.QItemDelegate):
             editor.setValue(value.toString())
         if index.column() == 1:
             value = index.model().data(index, QtCore.Qt.DisplayRole)
-            int , bool = value.toInt()
+            int, bool = value.toInt()
             editor.setValue(int)
 
     def setModelData(self, editor, model, index):
-        self.emit(QtCore.SIGNAL("editorValueChanged"), editor.getValue(), index.row(), index.column())
+        self.emit(QtCore.SIGNAL("editorValueChanged"),
+                  editor.getValue(), index.row(), index.column())
         value = editor.getValue()
-        if index.column() == 0:  #name
-            model.setData(index
-                    , QtCore.QVariant(value))
-        if index.column() == 1:  #axis
+        if index.column() == 0:  # name
+            model.setData(index, QtCore.QVariant(value))
+        if index.column() == 1:  # axis
             if editor.is_axis_free(int(value)):
-                model.setData(index , QtCore.QVariant(value))
+                model.setData(index, QtCore.QVariant(value))
 
     def updateEditorGeometry(self, editor, option, index):
         editor.setGeometry(option.rect)
@@ -309,6 +330,7 @@ class TableAxisWidget (QtGui.QWidget):
     """
     Table for selecting multiple axis
     """
+
     def __init__(self, value=None, parent=None):
         QtGui.QWidget.__init__(self, parent)
         self._controllerInfo = None
@@ -320,11 +342,13 @@ class TableAxisWidget (QtGui.QWidget):
         self._layout.addWidget(self._tableView)
         self._verticalLayout = QtGui.QVBoxLayout()
         self._addRowButton = QtGui.QPushButton(self)
-        self._addRowButton.setIcon(taurus.qt.qtgui.resource.getThemeIcon("list-add"))
+        self._addRowButton.setIcon(
+            taurus.qt.qtgui.resource.getThemeIcon("list-add"))
         self._addRowButton.setText("Add Device       ")
         self._verticalLayout.addWidget(self._addRowButton)
         self._removeRowButton = QtGui.QPushButton(self)
-        self._removeRowButton.setIcon(taurus.qt.qtgui.resource.getThemeIcon("list-remove"))
+        self._removeRowButton.setIcon(
+            taurus.qt.qtgui.resource.getThemeIcon("list-remove"))
         self._removeRowButton.setText("Remove Device    ")
         self._verticalLayout.addWidget(self._removeRowButton)
         self._upButton = QtGui.QPushButton(self)
@@ -332,22 +356,30 @@ class TableAxisWidget (QtGui.QWidget):
         self._upButton.setText("Move Up   ")
         self._verticalLayout.addWidget(self._upButton)
         self._downButton = QtGui.QPushButton(self)
-        self._downButton.setIcon(taurus.qt.qtgui.resource.getThemeIcon("go-down"))
+        self._downButton.setIcon(
+            taurus.qt.qtgui.resource.getThemeIcon("go-down"))
         self._downButton.setText("Move Down")
         self._verticalLayout.addWidget(self._downButton)
-        spacerItem = QtGui.QSpacerItem(20, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacerItem = QtGui.QSpacerItem(
+            20, 20, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self._verticalLayout.addItem(spacerItem)
-        QtCore.QObject.connect(self._addRowButton, QtCore.SIGNAL("clicked()"), self._addRow)
-        QtCore.QObject.connect(self._removeRowButton, QtCore.SIGNAL("clicked()"), self._removeRow)
-        QtCore.QObject.connect(self._upButton, QtCore.SIGNAL("clicked()"), self._moveUp)
-        QtCore.QObject.connect(self._downButton, QtCore.SIGNAL("clicked()"), self._moveDown)
+        QtCore.QObject.connect(
+            self._addRowButton, QtCore.SIGNAL("clicked()"), self._addRow)
+        QtCore.QObject.connect(self._removeRowButton,
+                               QtCore.SIGNAL("clicked()"), self._removeRow)
+        QtCore.QObject.connect(
+            self._upButton, QtCore.SIGNAL("clicked()"), self._moveUp)
+        QtCore.QObject.connect(
+            self._downButton, QtCore.SIGNAL("clicked()"), self._moveDown)
         self._layout.addLayout(self._verticalLayout)
         self._delegate = TableAxisDelegate(self._tableView)
         #QtCore.QObject.connect(self._delegate, QtCore.SIGNAL("editorValueChanged"), self._valueChanged)
         self._tableView.setItemDelegate(self._delegate)
-        QtCore.QObject.connect(self._delegate, QtCore.SIGNAL("editorValueChanged"), self._textEdited)
-        #self._tableView.setItemDelegate(self._delegate)
-        sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
+        QtCore.QObject.connect(self._delegate, QtCore.SIGNAL(
+            "editorValueChanged"), self._textEdited)
+        # self._tableView.setItemDelegate(self._delegate)
+        sizePolicy = QtGui.QSizePolicy(
+            QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.MinimumExpanding)
         self._tableView.setSizePolicy(sizePolicy)
         self._tableView.horizontalHeader().setDefaultSectionSize(80)
         self._tableView.horizontalHeader().setVisible(True)
@@ -390,7 +422,7 @@ class TableAxisWidget (QtGui.QWidget):
         self._edited = False
 
     def _getSelectedIndex(self):
-        if len (self._tableView.selectedIndexes()):
+        if len(self._tableView.selectedIndexes()):
             row = self._tableView.selectedIndexes()[0].row()
             column = self._tableView.selectedIndexes()[0].column()
         else:
@@ -418,36 +450,39 @@ class TableAxisWidget (QtGui.QWidget):
         if rowIndex is not None:
             msgBox = QtGui.QMessageBox()
             msgBox.setText("Confirmation              ")
-            msgBox.setStandardButtons(QtGui.QMessageBox().No | QtGui.QMessageBox().Yes)
+            msgBox.setStandardButtons(
+                QtGui.QMessageBox().No | QtGui.QMessageBox().Yes)
             msgBox.setInformativeText("Remove device {%i} ?" % (rowIndex + 1))
             msgBox.setIcon(QtGui.QMessageBox.Question)
             ret = msgBox.exec_()
         if ret == QtGui.QMessageBox().Yes:
-           value = self.getValue()
-           self.setValue(value[:rowIndex] + value[rowIndex + 1:])
-           self._textEdited()
-           self._addRowButton.setEnabled(True)
+            value = self.getValue()
+            self.setValue(value[:rowIndex] + value[rowIndex + 1:])
+            self._textEdited()
+            self._addRowButton.setEnabled(True)
 
     def _moveUp(self):
         value = self.getValue()  # stored table
         rows = len(value)
         rowIndex = self._getSelectedIndex()[0]
-        if (rows > 1) and (rowIndex is not None) and (rowIndex > 0) :
+        if (rows > 1) and (rowIndex is not None) and (rowIndex > 0):
             x = value.pop(rowIndex)
             value.insert(rowIndex - 1, x)
             self.setValue(value)
-            self._tableView.setCurrentIndex(self._tableView.model().index(rowIndex - 1, 0))
+            self._tableView.setCurrentIndex(
+                self._tableView.model().index(rowIndex - 1, 0))
             self._textEdited()
 
     def _moveDown(self):
         value = self.getValue()  # stored table
         rows = len(value)
         rowIndex = self._getSelectedIndex()[0]
-        if (rows > 1) and (rowIndex is not None) and (rowIndex < rows - 1) :
+        if (rows > 1) and (rowIndex is not None) and (rowIndex < rows - 1):
             x = value.pop(rowIndex)
             value.insert(rowIndex + 1, x)
             self.setValue(value)
-            self._tableView.setCurrentIndex(self._tableView.model().index(rowIndex + 1, 0))
+            self._tableView.setCurrentIndex(
+                self._tableView.model().index(rowIndex + 1, 0))
             self._textEdited()
 
     def setValue(self, value):
@@ -482,7 +517,7 @@ class MultipleAxisWidget(Qt.QWidget):
     """
     Wizard for selecting multiple axis
     Method getValue() returns two dimensional array
-        where the first column is name and the second is axis 
+        where the first column is name and the second is axis
     """
 
     def __init__(self, parent=None):
@@ -537,9 +572,12 @@ class HardwareSettings(Qt.QWidget):
         self._multipleAxisWidget = MultipleAxisWidget()
         self._layout.addWidget(self._multipleAxisWidget, 2, 0, 1, 2)
 
-        QtCore.QObject.connect(self._singleButton, QtCore.SIGNAL("clicked()"), self._changeView)
-        QtCore.QObject.connect(self._multipleButton, QtCore.SIGNAL("clicked()"), self._changeView)
-        self._spacerItem1 = Qt.QSpacerItem(10, 0, Qt.QSizePolicy.Fixed, Qt.QSizePolicy.Expanding)
+        QtCore.QObject.connect(self._singleButton, QtCore.SIGNAL(
+            "clicked()"), self._changeView)
+        QtCore.QObject.connect(self._multipleButton,
+                               QtCore.SIGNAL("clicked()"), self._changeView)
+        self._spacerItem1 = Qt.QSpacerItem(
+            10, 0, Qt.QSizePolicy.Fixed, Qt.QSizePolicy.Expanding)
         self._layout.addItem(self._spacerItem1, 4, 0, 1, 1, Qt.Qt.AlignCenter)
 
     def _changeView(self):
@@ -573,7 +611,7 @@ class NewDeviceBasePage(wiz.SardanaBasePage):
         self.setLayout(self._layout)
         self.setTitle('Selecting device')
         self.connect(self._treeView, QtCore.SIGNAL("activated"),
-             self.activated)
+                     self.activated)
         self._currentItem = None
         self._currentItemIndex = None
 
@@ -601,8 +639,10 @@ class NewDeviceBasePage(wiz.SardanaBasePage):
     def keyPressEvent(self, event):
         wiz.SardanaBasePage.keyPressEvent(self, event)
         if self._tabWidget.currentIndex() == 0:
-            undo = (event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_Z)
-            redo = (event.modifiers() == QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_Y)
+            undo = (event.modifiers() ==
+                    QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_Z)
+            redo = (event.modifiers() ==
+                    QtCore.Qt.ControlModifier and event.key() == QtCore.Qt.Key_Y)
             if (undo):
                 self._settings.undo()
             if (redo):
@@ -612,26 +652,30 @@ class NewDeviceBasePage(wiz.SardanaBasePage):
         wiz.SardanaIntroBasePage.initializePage(self)
         self.wizard().__setitem__("properties", self.getProperties)
         # resizing application
-        self._previousPageSize = copy.deepcopy([self.wizard().size().width(), self.wizard().size().height()])
+        self._previousPageSize = copy.deepcopy(
+            [self.wizard().size().width(), self.wizard().size().height()])
         preferedSize = [800, 600]
         desktopRect = QtGui.QApplication.desktop().availableGeometry(self)
         center = desktopRect.center()
-        if (not self.wizard().isMaximized()) and (self.wizard().size().height () < preferedSize[1]) and (self.wizard().size().width() < preferedSize[0]):
+        if (not self.wizard().isMaximized()) and (self.wizard().size().height() < preferedSize[1]) and (self.wizard().size().width() < preferedSize[0]):
             self.wizard().resize(preferedSize[0], preferedSize[1])
-            self.wizard().move(center.x() - self.wizard().width() * 0.5, center.y() - self.wizard().height() * 0.5)
+            self.wizard().move(center.x() - self.wizard().width() *
+                               0.5, center.y() - self.wizard().height() * 0.5)
         self._pool = self.wizard()["pool"]
         self._loadTreeModel()
         self.checkData()
 
     def cleanupPage(self):
         wiz.SardanaIntroBasePage.cleanupPage(self)
-        preferedSize = copy.deepcopy(self._previousPageSize)  # setUp size for previous page
+        # setUp size for previous page
+        preferedSize = copy.deepcopy(self._previousPageSize)
         desktopRect = QtGui.QApplication.desktop().availableGeometry(self)
         center = desktopRect.center()
 
-        if (not self.wizard().isMaximized()) and (self.wizard().size().height () > preferedSize[1]) and (self.wizard().size().width() > preferedSize[0]):
+        if (not self.wizard().isMaximized()) and (self.wizard().size().height() > preferedSize[1]) and (self.wizard().size().width() > preferedSize[0]):
             self.wizard().resize(preferedSize[0], preferedSize[1])
-            self.wizard().move(center.x() - self.wizard().width() * 0.5, center.y() - self.wizard().height() * 0.5)
+            self.wizard().move(center.x() - self.wizard().width() *
+                               0.5, center.y() - self.wizard().height() * 0.5)
 
     def _loadTreeModel(self):
 
@@ -641,20 +685,22 @@ class NewDeviceBasePage(wiz.SardanaBasePage):
         self.model.sort(-1)
 
         for item in controllerinfos:
-            self.model.addRecord(["Controller", PoolElementType[item.get_controller_type()] , item.get_name()], item , False)
+            self.model.addRecord(["Controller", PoolElementType[
+                                 item.get_controller_type()], item.get_name()], item, False)
 
-        elementTypeList = PoolElementType.keys()
-        elementTypeList.sort()
+        elementTypeList = sorted(PoolElementType.keys())
         for type in elementTypeList:
             self.model.addNodes([type], False)
         for item in controllers:
-            self.model.addRecord([PoolElementType[item.get_controller_type()], item.get_name() ], item , False)
+            self.model.addRecord(
+                [PoolElementType[item.get_controller_type()], item.get_name()], item, False)
 
         self._treeView.setModel(self.model)
 
     def setupUi(self):
         self._treeView = SimpleTreeView(self)
-        self._treeView.setSizePolicy(QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
+        self._treeView.setSizePolicy(
+            QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Minimum)
         self._layout.addWidget(self._treeView, 0, 0, 1, 1)
         self._tabWidget = QtGui.QTabWidget(self)
         self._settingsTab = QtGui.QWidget(self)
@@ -663,7 +709,8 @@ class NewDeviceBasePage(wiz.SardanaBasePage):
         self._scrollArea.setFrameShape(QtGui.QFrame.NoFrame)
         self._scrollArea.setWidgetResizable(True)
         self._scrollAreaWidgetContents = QtGui.QWidget(self._scrollArea)
-        self._scrollAreaWidgetContents.setGeometry(QtCore.QRect(0, 0, 263, 316))
+        self._scrollAreaWidgetContents.setGeometry(
+            QtCore.QRect(0, 0, 263, 316))
         self._gridLayout_2 = QtGui.QGridLayout(self._scrollAreaWidgetContents)
         self._settings = settings_widget.SettingsWidget()
         self._hardwareSettings = HardwareSettings()
@@ -677,13 +724,15 @@ class NewDeviceBasePage(wiz.SardanaBasePage):
         self._scrollArea_2.setFrameShape(QtGui.QFrame.NoFrame)
         self._scrollArea_2.setWidgetResizable(True)
         self._scrollAreaWidgetContents_2 = QtGui.QWidget(self._scrollArea_2)
-        self._gridLayout_3 = QtGui.QGridLayout(self._scrollAreaWidgetContents_2)
+        self._gridLayout_3 = QtGui.QGridLayout(
+            self._scrollAreaWidgetContents_2)
         self._description = DescriptionWidget()
         self._gridLayout_3.addWidget(self._description)
         self._scrollArea_2.setWidget(self._scrollAreaWidgetContents_2)
         self._horizontalLayout.addWidget(self._scrollArea_2)
         self._tabWidget.addTab(self._descriptionTab, "Description")
-        self._tabWidget.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        self._tabWidget.setSizePolicy(
+            QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
 
         self._layout.addWidget(self._tabWidget, 0, 1, 1, 2)
         self._tabWidget.setCurrentIndex(0)
@@ -714,8 +763,10 @@ class NewDeviceBasePage(wiz.SardanaBasePage):
             if self._settings.isEdited() or self._hardwareSettings.isEdited():
                 msgBox = QtGui.QMessageBox()
                 msgBox.setText("Confirmation              ")
-                msgBox.setStandardButtons(QtGui.QMessageBox().No | QtGui.QMessageBox().Yes)
-                msgBox.setInformativeText("Do you want to leave the editor of %s without saving the changes?" % self._currentItem.get_name())
+                msgBox.setStandardButtons(
+                    QtGui.QMessageBox().No | QtGui.QMessageBox().Yes)
+                msgBox.setInformativeText(
+                    "Do you want to leave the editor of %s without saving the changes?" % self._currentItem.get_name())
                 msgBox.setIcon(QtGui.QMessageBox.Question)
                 ret = msgBox.exec_()
 
@@ -725,7 +776,7 @@ class NewDeviceBasePage(wiz.SardanaBasePage):
                 self._currentItem = self.picked()
                 self._currentItemIndex = self._treeView.currentIndex()
 
-                if type(self._currentItem) == taurus.core.tango.sardana.sardana.ControllerClassInfo:
+                if isinstance(self._currentItem, taurus.core.tango.sardana.sardana.ControllerClassInfo):
 
                     self._gridLayout_2.addWidget(self._settings)
                     self._settings.setVisible(True)
@@ -735,16 +786,19 @@ class NewDeviceBasePage(wiz.SardanaBasePage):
                     self._tabWidget.setTabEnabled(1, True)
                     self.setStatus("Editing: " + self.picked().get_name())
 
-
-                    self._settings.setProperties(self.picked().get_properties())
-                    QtCore.QObject.connect(self._settings, QtCore.SIGNAL("propertyValueChanged()"), self.checkData)
-                    self._description.setOrganization(self.picked().get_organization())
+                    self._settings.setProperties(
+                        self.picked().get_properties())
+                    QtCore.QObject.connect(self._settings, QtCore.SIGNAL(
+                        "propertyValueChanged()"), self.checkData)
+                    self._description.setOrganization(
+                        self.picked().get_organization())
                     self._description.setFamily(self.picked().get_family())
                     self._description.setModel(self.picked().get_model())
-                    self._description.setDescription(self.picked().get_description())
+                    self._description.setDescription(
+                        self.picked().get_description())
                     self._description.setImage(None)
 
-                if type(self._currentItem) == taurus.core.tango.sardana.sardana.ControllerInfo:
+                if isinstance(self._currentItem, taurus.core.tango.sardana.sardana.ControllerInfo):
 
                     self._gridLayout_2.removeWidget(self._settings)
                     self._settings.setVisible(False)
@@ -754,8 +808,8 @@ class NewDeviceBasePage(wiz.SardanaBasePage):
                     self._tabWidget.setTabEnabled(1, False)
                     self.setStatus("Editing: " + self.picked().get_name())
             else:
-                self._treeView.selectionModel().setCurrentIndex(self._currentItemIndex, QtGui.QItemSelectionModel.SelectCurrent)
-
+                self._treeView.selectionModel().setCurrentIndex(
+                    self._currentItemIndex, QtGui.QItemSelectionModel.SelectCurrent)
 
         self.checkData()
 
@@ -773,7 +827,8 @@ class NewDeviceCommitBasePage(wiz.SardanaIntroBasePage):
 
     def __init__(self, parent=None):
         QtGui.QWizardPage.__init__(self, parent)
-        self.setPixmap(QtGui.QWizard.WatermarkPixmap, QtGui.QPixmap(":/watermark.jpg"))
+        self.setPixmap(QtGui.QWizard.WatermarkPixmap,
+                       QtGui.QPixmap(":/watermark.jpg"))
         self._layout = QtGui.QFormLayout()
         self.setCommitPage(True)
         self.setTitle('Confirmation')
@@ -789,26 +844,33 @@ class NewDeviceCommitBasePage(wiz.SardanaIntroBasePage):
 
     def initializePage(self):
         wiz.SardanaIntroBasePage.initializePage(self)
-        self._previousPageSize = copy.deepcopy([self.wizard().size().width(), self.wizard().size().height()])
-        self.setPixmap(QtGui.QWizard.WatermarkPixmap, QtGui.QPixmap(":/watermark.jpg"))
-        self._spacerItem1 = QtGui.QSpacerItem(800, 600, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
+        self._previousPageSize = copy.deepcopy(
+            [self.wizard().size().width(), self.wizard().size().height()])
+        self.setPixmap(QtGui.QWizard.WatermarkPixmap,
+                       QtGui.QPixmap(":/watermark.jpg"))
+        self._spacerItem1 = QtGui.QSpacerItem(
+            800, 600, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Expanding)
         self._layout.addItem(self._spacerItem1)
         preferedSize = [600, 600]  # prefered size for this page
         desktopRect = QtGui.QApplication.desktop().availableGeometry(self)
         center = desktopRect.center()
         if (not self.wizard().isMaximized()):
             self.wizard().resize(preferedSize[0], preferedSize[1])
-            self.wizard().move(center.x() - self.wizard().width() * 0.5, center.y() - self.wizard().height() * 0.5)
-            # and (self.wizard().size().height () > preferedSize[1]) and (self.wizard().size().width() > preferedSize[0]):
+            self.wizard().move(center.x() - self.wizard().width() *
+                               0.5, center.y() - self.wizard().height() * 0.5)
+            # and (self.wizard().size().height () > preferedSize[1]) and
+            # (self.wizard().size().width() > preferedSize[0]):
 
     def cleanupPage(self):
         wiz.SardanaIntroBasePage.cleanupPage(self)
         self.setPixmap(QtGui.QWizard.WatermarkPixmap, QtGui.QPixmap())
-        preferedSize = copy.deepcopy(self._previousPageSize)  # setUp size for previous page
+        # setUp size for previous page
+        preferedSize = copy.deepcopy(self._previousPageSize)
         desktopRect = QtGui.QApplication.desktop().availableGeometry(self)
         center = desktopRect.center()
-        if (not self.wizard().isMaximized()) and (self.wizard().size().height () < preferedSize[1]) and (self.wizard().size().width() < preferedSize[0]):
-            self.wizard().move(center.x() - preferedSize[0] * 0.5, center.y() - preferedSize[1] * 0.5)
+        if (not self.wizard().isMaximized()) and (self.wizard().size().height() < preferedSize[1]) and (self.wizard().size().width() < preferedSize[0]):
+            self.wizard().move(
+                center.x() - preferedSize[0] * 0.5, center.y() - preferedSize[1] * 0.5)
             self.wizard().resize(preferedSize[0], preferedSize[1])
 
     def setNextPageId(self, id):
@@ -828,41 +890,52 @@ class DescriptionWidget(QtGui.QWidget):
         self._imageSize = [100, 100]
         self._formLayout = QtGui.QFormLayout(self)
         self._organizationLabel = QtGui.QLabel("Organization:")
-        self._formLayout.setWidget(0, QtGui.QFormLayout.LabelRole, self._organizationLabel)
+        self._formLayout.setWidget(
+            0, QtGui.QFormLayout.LabelRole, self._organizationLabel)
         self._organizationLabelText = QtGui.QLabel(self)
         self._organizationLabelText.setFrameShape(QtGui.QFrame.Panel)
         self._organizationLabelText.setFrameShadow(QtGui.QFrame.Sunken)
         self._organizationLabelText.setWordWrap(False)
-        self._formLayout.setWidget(0, QtGui.QFormLayout.FieldRole, self._organizationLabelText)
+        self._formLayout.setWidget(
+            0, QtGui.QFormLayout.FieldRole, self._organizationLabelText)
         self._familyLabel = QtGui.QLabel("Family:")
-        self._formLayout.setWidget(1, QtGui.QFormLayout.LabelRole, self._familyLabel)
+        self._formLayout.setWidget(
+            1, QtGui.QFormLayout.LabelRole, self._familyLabel)
         self._familyLabelText = QtGui.QLabel(self)
         self._familyLabelText.setFrameShape(QtGui.QFrame.Panel)
         self._familyLabelText.setFrameShadow(QtGui.QFrame.Sunken)
         self._familyLabelText.setWordWrap(False)
-        self._formLayout.setWidget(1, QtGui.QFormLayout.FieldRole, self._familyLabelText)
+        self._formLayout.setWidget(
+            1, QtGui.QFormLayout.FieldRole, self._familyLabelText)
         self._modelLabel = QtGui.QLabel("Model:")
-        self._formLayout.setWidget(2, QtGui.QFormLayout.LabelRole, self._modelLabel)
+        self._formLayout.setWidget(
+            2, QtGui.QFormLayout.LabelRole, self._modelLabel)
         self._modelLabelText = QtGui.QLabel(self)
         self._modelLabelText.setFrameShape(QtGui.QFrame.Panel)
         self._modelLabelText.setFrameShadow(QtGui.QFrame.Sunken)
         self._modelLabelText.setWordWrap(False)
-        self._formLayout.setWidget(2, QtGui.QFormLayout.FieldRole, self._modelLabelText)
+        self._formLayout.setWidget(
+            2, QtGui.QFormLayout.FieldRole, self._modelLabelText)
         self._descriptionLabel = QtGui.QLabel("Description:")
-        self._formLayout.setWidget(3, QtGui.QFormLayout.LabelRole, self._descriptionLabel)
+        self._formLayout.setWidget(
+            3, QtGui.QFormLayout.LabelRole, self._descriptionLabel)
         self._descriptionLabelText = QtGui.QLabel(self)
         self._descriptionLabelText.setFrameShape(QtGui.QFrame.Panel)
         self._descriptionLabelText.setFrameShadow(QtGui.QFrame.Sunken)
         self._descriptionLabelText.setWordWrap(True)
         self._descriptionLabelText.setAlignment(QtCore.Qt.AlignTop)
-        self._formLayout.setWidget(3, QtGui.QFormLayout.FieldRole, self._descriptionLabelText)
+        self._formLayout.setWidget(
+            3, QtGui.QFormLayout.FieldRole, self._descriptionLabelText)
         self._imageLabel = QtGui.QLabel("Image:")
-        self._formLayout.setWidget(4, QtGui.QFormLayout.LabelRole, self._imageLabel)
+        self._formLayout.setWidget(
+            4, QtGui.QFormLayout.LabelRole, self._imageLabel)
         self._deviceLogo = QtGui.QLabel(self)
-        self._deviceLogo.setPixmap(taurus.qt.qtgui.resource.getThemePixmap("image-missing").scaled(*self._imageSize))
+        self._deviceLogo.setPixmap(taurus.qt.qtgui.resource.getThemePixmap(
+            "image-missing").scaled(*self._imageSize))
         self._deviceLogo.pixmap()
         self._deviceLogo.setAlignment(QtCore.Qt.AlignHCenter)
-        self._formLayout.setWidget(4, QtGui.QFormLayout.FieldRole, self._deviceLogo)
+        self._formLayout.setWidget(
+            4, QtGui.QFormLayout.FieldRole, self._deviceLogo)
 
     def setOrganization(self, name):
         self._organizationLabelText.setText(name)
@@ -877,18 +950,21 @@ class DescriptionWidget(QtGui.QWidget):
         self._descriptionLabelText.setText(text)
 
     def setImage(self, image):
-        if type(image) == QtGui.QPixmap:
+        if isinstance(image, QtGui.QPixmap):
             self._deviceLogo.setPixmap(image.scaled(*self._imageSize))
-        elif type(image) == QtGui.QImage:
-            self._deviceLogo.setPixmap(QtGui.QPixmap().fromImage(image).scaled(*self._imageSize))
+        elif isinstance(image, QtGui.QImage):
+            self._deviceLogo.setPixmap(
+                QtGui.QPixmap().fromImage(image).scaled(*self._imageSize))
         else:
-            self._deviceLogo.setPixmap(taurus.qt.qtgui.resource.getThemePixmap("image-missing").scaled(50, 50))
+            self._deviceLogo.setPixmap(
+                taurus.qt.qtgui.resource.getThemePixmap("image-missing").scaled(50, 50))
 
 
 def addDevice(Sardana=None, Pool=None):
     app = QtGui.QApplication([])
     QtCore.QResource.registerResource(get_resources())
-    Pages = Enumeration('Pages', ('SelectSardanaPool', 'NewDevice', 'CommitPage', 'OutroPage'))
+    Pages = Enumeration('Pages', ('SelectSardanaPool',
+                                  'NewDevice', 'CommitPage', 'OutroPage'))
     w = wiz.SardanaBaseWizard()
     w.setWindowTitle("Add New Hardware Wizard")
     selectPool = SelectSardanaPoolBasePage(Sardana, Pool)
@@ -902,6 +978,7 @@ def addDevice(Sardana=None, Pool=None):
     commit_page.setNextPageId(Pages.OutroPage)
     w.show()
     sys.exit(app.exec_())
+
 
 def get_resources():
     res_fname = os.path.abspath(__file__)

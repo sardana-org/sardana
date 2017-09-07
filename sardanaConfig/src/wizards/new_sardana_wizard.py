@@ -1,6 +1,13 @@
-import os, sys, wiz, re, traceback, time
-import taurus.qt.qtgui.resource, pool_editor_UI
-import pool_editor_UI, ms_editor_UI
+import os
+import sys
+import wiz
+import re
+import traceback
+import time
+import taurus.qt.qtgui.resource
+import pool_editor_UI
+import pool_editor_UI
+import ms_editor_UI
 from PyQt4 import QtGui, QtCore, Qt
 from taurus.core.util.enumeration import Enumeration
 from sardana.taurus.core.tango.sardana import SardanaManager
@@ -17,6 +24,8 @@ The wizard consist:
 - OutroPage
 
 """
+
+
 class NewSardanaIntroPage(wiz.SardanaIntroBasePage):
     """
     Introduction page
@@ -37,6 +46,7 @@ class SelectTangoHostPage(wiz.SardanaBasePage):
     """
     Page for selecting tango host
     """
+
     def __init__(self, parent=None):
         wiz.SardanaBasePage.__init__(self, parent)
 
@@ -74,15 +84,19 @@ class SelectTangoHostPage(wiz.SardanaBasePage):
         self['port'] = self._getPort
         self['host'] = self._getHost
 
-        self.connect(self.hostEdit, QtCore.SIGNAL('textEdited(const QString &)'), self._letterChanged)
-        self.connect(self.portEdit, QtCore.SIGNAL('textEdited(const QString &)'), self._letterChanged)
-        self.connect(self.checkButton, QtCore.SIGNAL('clicked()'), self.checkData)
+        self.connect(self.hostEdit, QtCore.SIGNAL(
+            'textEdited(const QString &)'), self._letterChanged)
+        self.connect(self.portEdit, QtCore.SIGNAL(
+            'textEdited(const QString &)'), self._letterChanged)
+        self.connect(self.checkButton, QtCore.SIGNAL(
+            'clicked()'), self.checkData)
 
         self.checkData()
 
     def get_default_tango_host(self):
         tg = os.environ.get('TANGO_HOST', '')
-        if not tg or tg.count(':') != 1: return '', ''
+        if not tg or tg.count(':') != 1:
+            return '', ''
         return tg.split(':')
 
     def _letterChanged(self):
@@ -99,8 +113,8 @@ class SelectTangoHostPage(wiz.SardanaBasePage):
                 self._valid = True
                 self.emit(QtCore.SIGNAL('completeChanged()'))
         except Exception, e:
-                self.setStatus('Invalid database')
-                self._valid = False
+            self.setStatus('Invalid database')
+            self._valid = False
         self.checkButton.hide()
 
     def _getPort(self):
@@ -168,12 +182,14 @@ class AddSardanaBasePage(wiz.SardanaBasePage):
 
         panel.setLayout(layout)
 
-        self.connect(self.nameEdit, QtCore.SIGNAL('textEdited(const QString &)'), self._letterChanged)
-        self.connect(self.checkButton, QtCore.SIGNAL('clicked()'), self.checkData)
+        self.connect(self.nameEdit, QtCore.SIGNAL(
+            'textEdited(const QString &)'), self._letterChanged)
+        self.connect(self.checkButton, QtCore.SIGNAL(
+            'clicked()'), self.checkData)
 
     def _getSardana(self):
-         sardana = str(self.nameEdit.text())
-         return sardana
+        sardana = str(self.nameEdit.text())
+        return sardana
 
     def _letterChanged(self):
         self._valid = False
@@ -192,13 +208,13 @@ class AddSardanaBasePage(wiz.SardanaBasePage):
             self.setStatus('Please type the name')
             self._valid = False
         else:
-             if self.nameEdit.text() not in self._getSardanas():
-                 self.setStatus('please click the ''Next'' button')
-                 self._valid = True
-                 self.emit(QtCore.SIGNAL('completeChanged()'))
-             else:
-                 self.setStatus('The name already exists in the database')
-                 self._valid = False
+            if self.nameEdit.text() not in self._getSardanas():
+                self.setStatus('please click the ''Next'' button')
+                self._valid = True
+                self.emit(QtCore.SIGNAL('completeChanged()'))
+            else:
+                self.setStatus('The name already exists in the database')
+                self._valid = False
         self.checkButton.hide()
 
     def isComplete(self):
@@ -228,27 +244,36 @@ class Item(object):
     """
     SuperClass of Pool and Macroservers items
     """
+
     def __init__(self, instanceName="", hostName="", level=None):
         self._instanceName = str(instanceName)
         self._hostName = str(hostName)
         self._level = level
+
     def setInstanceName(self, name):
         self._instanceName = str(name)
+
     def getInstanceName(self):
         return self._instanceName
+
     def setHostName(self, name):
         self._hostName = str(name)
+
     def getHostName(self):
         return self._hostName
+
     def setLevel(self, level):
         self._level = level
+
     def getLevel(self):
         return self._level
+
 
 class SimpleEditorBasePage(wiz.SardanaBasePage):
     """
     Superclass of Pool and Macroserver editor
     """
+
     def __init__(self, parent=None):
         wiz.SardanaBasePage.__init__(self, parent)
         self.setSubTitle('SubTitle')
@@ -260,8 +285,10 @@ class SimpleEditorBasePage(wiz.SardanaBasePage):
         self.tableWidget.setObjectName("tableWidget")
         self.tableWidget.setColumnCount(3)
         self.tableWidget.setRowCount(0)
-        self.tableWidget.setSelectionMode(QtGui.QAbstractItemView.SingleSelection)
-        self.tableWidget.setSelectionBehavior(QtGui.QAbstractItemView.SelectRows)
+        self.tableWidget.setSelectionMode(
+            QtGui.QAbstractItemView.SingleSelection)
+        self.tableWidget.setSelectionBehavior(
+            QtGui.QAbstractItemView.SelectRows)
         self.horizontalLayout.addWidget(self.tableWidget)
         self._setTableHeaders()
         self.tableWidget.horizontalHeader().resizeSection(0, 125)
@@ -273,39 +300,49 @@ class SimpleEditorBasePage(wiz.SardanaBasePage):
         self.verticalLayout.setObjectName("verticalLayout")
 
         self.addButton = QtGui.QPushButton(self)
-        self.addButton.setText(QtGui.QApplication.translate("Form", "Add", None, QtGui.QApplication.UnicodeUTF8))
+        self.addButton.setText(QtGui.QApplication.translate(
+            "Form", "Add", None, QtGui.QApplication.UnicodeUTF8))
         self.addButton.setObjectName("addButton")
-        self.addButton.setIcon(taurus.qt.qtgui.resource.getThemeIcon("list-add"))
+        self.addButton.setIcon(
+            taurus.qt.qtgui.resource.getThemeIcon("list-add"))
         self.verticalLayout.addWidget(self.addButton)
 
         self.editButton = QtGui.QPushButton(self)
-        self.editButton.setText(QtGui.QApplication.translate("Form", "Edit", None, QtGui.QApplication.UnicodeUTF8))
+        self.editButton.setText(QtGui.QApplication.translate(
+            "Form", "Edit", None, QtGui.QApplication.UnicodeUTF8))
         self.editButton.setObjectName("editButton")
-        self.editButton.setIcon(taurus.qt.qtgui.resource.getThemeIcon("preferences-system"))
+        self.editButton.setIcon(
+            taurus.qt.qtgui.resource.getThemeIcon("preferences-system"))
         self.verticalLayout.addWidget(self.editButton)
 
         self.removeButton = QtGui.QPushButton(self)
-        self.removeButton.setText(QtGui.QApplication.translate("Form", "Remove", None, QtGui.QApplication.UnicodeUTF8))
+        self.removeButton.setText(QtGui.QApplication.translate(
+            "Form", "Remove", None, QtGui.QApplication.UnicodeUTF8))
         self.removeButton.setObjectName("removeButton")
-        self.removeButton.setIcon(taurus.qt.qtgui.resource.getThemeIcon("list-remove"))
+        self.removeButton.setIcon(
+            taurus.qt.qtgui.resource.getThemeIcon("list-remove"))
         self.verticalLayout.addWidget(self.removeButton)
 
-        spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        spacerItem = QtGui.QSpacerItem(
+            20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self.verticalLayout.addItem(spacerItem)
         self.horizontalLayout.addLayout(self.verticalLayout)
         #spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        #self.horizontalLayout.addItem(spacerItem1)
+        # self.horizontalLayout.addItem(spacerItem1)
         self.listOfItems = []
         self._comboList = []
         self._spinList = []
 
     def _setTableHeaders(self):
         self.tableWidget.setColumnCount(3)
-        self.tableWidget.setHorizontalHeaderItem(0, QtGui.QTableWidgetItem("name"))
-        self.tableWidget.setHorizontalHeaderItem(1, QtGui.QTableWidgetItem("host"))
-        self.tableWidget.setHorizontalHeaderItem(2, QtGui.QTableWidgetItem("level"))
+        self.tableWidget.setHorizontalHeaderItem(
+            0, QtGui.QTableWidgetItem("name"))
+        self.tableWidget.setHorizontalHeaderItem(
+            1, QtGui.QTableWidgetItem("host"))
+        self.tableWidget.setHorizontalHeaderItem(
+            2, QtGui.QTableWidgetItem("level"))
 
-    def openEditor (self, item=None):
+    def openEditor(self, item=None):
         pass
 
     def checkName(self, name, id=None):
@@ -317,8 +354,8 @@ class SimpleEditorBasePage(wiz.SardanaBasePage):
             i += 1
         return True
 
-    def addItem (self, item):
-        if item.getLevel() == None:
+    def addItem(self, item):
+        if item.getLevel() is None:
             item.setLevel("1")
         item.setHostName(self._getHostList()[0])
         self.listOfItems.append(item)
@@ -326,8 +363,8 @@ class SimpleEditorBasePage(wiz.SardanaBasePage):
         self.checkData()
         return True
 
-    def editItem (self, item, id):
-        if item.getLevel() == None:
+    def editItem(self, item, id):
+        if item.getLevel() is None:
             item.setLevel("1")
         self.listOfItems[id] = item
         self._fillList()
@@ -369,9 +406,9 @@ class SimpleEditorBasePage(wiz.SardanaBasePage):
 
         self.tableWidget.setRowCount(len(self.listOfItems))
         self.tableWidget.clearSelection()
-        #self.tableWidget.setItemSelected(None)
+        # self.tableWidget.setItemSelected(None)
 
-        #self.tableWidget.selectRow(-1)
+        # self.tableWidget.selectRow(-1)
 
         self.editButton.setObjectName("editButton")
         i = 0
@@ -386,15 +423,17 @@ class SimpleEditorBasePage(wiz.SardanaBasePage):
             self._comboList[i].addItems(self._hostList)
             self._comboList[i].addItem("None")
             self._comboList[i].insertSeparator(len(self._hostList) + 1)
-            QtCore.QObject.connect(self._comboList[i], QtCore.SIGNAL("currentIndexChanged(int)"), self.hostChanged)
+            QtCore.QObject.connect(self._comboList[i], QtCore.SIGNAL(
+                "currentIndexChanged(int)"), self.hostChanged)
             self.tableWidget.setCellWidget(i, 1, self._comboList[i])
             self._spinList.append(QtGui.QSpinBox())
             self._spinList[i].setRange(*SardanaManager().get_level_range())
             self._spinList[i].setObjectName("levelSpinBox_%d" % i)
-            QtCore.QObject.connect(self._spinList[i], QtCore.SIGNAL("valueChanged(int)"), self.levelChanged)
+            QtCore.QObject.connect(self._spinList[i], QtCore.SIGNAL(
+                "valueChanged(int)"), self.levelChanged)
             self.tableWidget.setCellWidget(i, 2, self._spinList[i])
 
-            if (item.getHostName() == "") or (item.getHostName() == None):
+            if (item.getHostName() == "") or (item.getHostName() is None):
                 self._spinList[i].setDisabled(True)
                 self._spinList[i].setValue(0)
             else:
@@ -417,7 +456,7 @@ class SimpleEditorBasePage(wiz.SardanaBasePage):
         return SardanaManager().get_hosts()
 
     def getPoolServerList(self):
-        return [ s[s.index('/') + 1:] for s in self.db().get_server_list() if s.startswith('Pool/') ]
+        return [s[s.index('/') + 1:] for s in self.db().get_server_list() if s.startswith('Pool/')]
 
 
 class Pool(Item):
@@ -435,55 +474,74 @@ class Pool(Item):
 
     def setPoolDeviceName(self, name):
         self._poolDeviceName = str(name)
+
     def getPoolDeviceName(self):
         return str(self._poolDeviceName)
+
     def setAlias(self, alias):
         self._alias = str(alias)
+
     def getAlias(self):
         return self._alias
+
     def setPoolVersion(self, poolVersion):
         self._poolVersion = str(poolVersion)
+
     def getPoolVersion(self):
         return self._poolVersion
+
     def setPoolPath(self, path):
         self._poolPath = map(str, path)
+
     def getPoolPath(self):
         return self._poolPath
+
     def text(self):
         return str(self._instanceName)
+
     def copy(self):
         return Pool(self._instanceName, self._hostName, self._level, self._poolDeviceName, self._alias, self._poolVersion, self._poolPath[:])
-
 
 
 class AddPoolBasePage(SimpleEditorBasePage):
     """
     Page for editing the list of Pools
     """
+
     def __init__(self, parent=None):
         self._editor = None
         SimpleEditorBasePage.__init__(self, parent)
         self._editor = PoolEditor(parent=self)
         self.selectedItem = None
         self.item_id = None
-        self.setSubTitle('You can use this manager if you would like to Add, Edit or Delete Pool entries in the database.')
-        self.addButton.setText(QtGui.QApplication.translate("Form", "Add Pool", None, QtGui.QApplication.UnicodeUTF8))
-        self.editButton.setText(QtGui.QApplication.translate("Form", "Edit Pool", None, QtGui.QApplication.UnicodeUTF8))
-        self.removeButton.setText(QtGui.QApplication.translate("Form", "Remove Pool", None, QtGui.QApplication.UnicodeUTF8))
-        QtCore.QObject.connect(self.addButton, QtCore.SIGNAL("clicked()"), self.openAddEditor)
-        QtCore.QObject.connect(self.editButton, QtCore.SIGNAL("clicked()"), self.openItemEditor)
-        QtCore.QObject.connect(self.removeButton, QtCore.SIGNAL("clicked()"), self.delete)
-        QtCore.QObject.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.openItemEditor)
+        self.setSubTitle(
+            'You can use this manager if you would like to Add, Edit or Delete Pool entries in the database.')
+        self.addButton.setText(QtGui.QApplication.translate(
+            "Form", "Add Pool", None, QtGui.QApplication.UnicodeUTF8))
+        self.editButton.setText(QtGui.QApplication.translate(
+            "Form", "Edit Pool", None, QtGui.QApplication.UnicodeUTF8))
+        self.removeButton.setText(QtGui.QApplication.translate(
+            "Form", "Remove Pool", None, QtGui.QApplication.UnicodeUTF8))
+        QtCore.QObject.connect(self.addButton, QtCore.SIGNAL(
+            "clicked()"), self.openAddEditor)
+        QtCore.QObject.connect(self.editButton, QtCore.SIGNAL(
+            "clicked()"), self.openItemEditor)
+        QtCore.QObject.connect(
+            self.removeButton, QtCore.SIGNAL("clicked()"), self.delete)
+        QtCore.QObject.connect(self.tableWidget, QtCore.SIGNAL(
+            "cellDoubleClicked(int,int)"), self.openItemEditor)
 
-    def delete (self):
+    def delete(self):
         if len(self.tableWidget.selectedIndexes()) > 0:
             msgBox = QtGui.QMessageBox()
             msgBox.setText("The list of Pools has been modified.")
             self.item_id = self.tableWidget.selectedIndexes()[0].row()
             self.selectedItem = self.listOfItems[self.item_id]
-            msgBox.setInformativeText("Do you want to delete Pool?:\n" + self.selectedItem.text())
-            msgBox.setStandardButtons(QtGui.QMessageBox().Ok | QtGui.QMessageBox().Cancel)
-            msgBox.setDefaultButton(QtGui.QMessageBox().Cancel);
+            msgBox.setInformativeText(
+                "Do you want to delete Pool?:\n" + self.selectedItem.text())
+            msgBox.setStandardButtons(
+                QtGui.QMessageBox().Ok | QtGui.QMessageBox().Cancel)
+            msgBox.setDefaultButton(QtGui.QMessageBox().Cancel)
             msgBox.setIcon(QtGui.QMessageBox.Question)
             ret = msgBox.exec_()
             if ret == QtGui.QMessageBox().Ok:
@@ -491,18 +549,19 @@ class AddPoolBasePage(SimpleEditorBasePage):
             if ret == QtGui.QMessageBox().Cancel:
                 pass
 
-    def openAddEditor (self):
+    def openAddEditor(self):
         self.item_id = None
         self.selectedItem = None
         SimpleEditorBasePage.openEditor(self)
         self._editor.showEditor(item=None, item_id=None)
 
-    def openItemEditor (self):
+    def openItemEditor(self):
         if len(self.tableWidget.selectedIndexes()) > 0:
             self.item_id = self.tableWidget.selectedIndexes()[0].row()
             self.selectedItem = self.listOfItems[self.item_id]
             SimpleEditorBasePage.openEditor(self)
-            self._editor.showEditor(item=self.selectedItem, item_id=self.item_id)
+            self._editor.showEditor(
+                item=self.selectedItem, item_id=self.item_id)
 
     def checkData(self):
         if len(self.listOfItems) > 0:
@@ -534,6 +593,7 @@ class PoolEditor(object):
     """
     Pool editor
     """
+
     def __init__(self, parent=None):
 
         self._parent = parent
@@ -546,49 +606,69 @@ class PoolEditor(object):
         self._regExp = QtCore.QRegExp("^[0-9a-zA-Z_/]{,50}")
         self._regValid = QtGui.QRegExpValidator(self._regExp, self.poolEditor)
         self._regExp2 = QtCore.QRegExp("^[0-9.]{,50}")
-        self._versionValid = QtGui.QRegExpValidator(self._regExp2, self.poolEditor)
+        self._versionValid = QtGui.QRegExpValidator(
+            self._regExp2, self.poolEditor)
         self._regExp3 = QtCore.QRegExp("^[0-9a-zA-Z_/]{,100}")
-        self._deviceNameValid = QtGui.QRegExpValidator(self._regExp3, self.poolEditor)
+        self._deviceNameValid = QtGui.QRegExpValidator(
+            self._regExp3, self.poolEditor)
         self.ui.instanceNameLineEdit.setValidator(self._regValid)
         self.ui.poolDeviceNameLineEdit.setValidator(self._deviceNameValid)
         self.ui.aliasLineEdit.setValidator(self._regValid)
         self.ui.poolVersionLineEdit.setValidator(self._versionValid)
         self._item_id = None
         self._path_id = None
-        self.ui.addButton.setIcon(taurus.qt.qtgui.resource.getThemeIcon("list-add"))
-        self.ui.removeButton.setIcon(taurus.qt.qtgui.resource.getThemeIcon("list-remove"))
-        self.ui.upButton.setIcon(taurus.qt.qtgui.resource.getThemeIcon("go-up"))
-        self.ui.downButton.setIcon(taurus.qt.qtgui.resource.getThemeIcon("go-down"))
-        #connections
-        QtCore.QObject.connect(self.ui.createButton, QtCore.SIGNAL("clicked()"), self._createPool)
-        QtCore.QObject.connect(self.ui.addButton, QtCore.SIGNAL("clicked()"), self._addPath)
-        QtCore.QObject.connect(self.ui.removeButton, QtCore.SIGNAL("clicked()"), self._removePath)
-        QtCore.QObject.connect(self.ui.upButton, QtCore.SIGNAL("clicked()"), self._moveUp)
-        QtCore.QObject.connect(self.ui.downButton, QtCore.SIGNAL("clicked()"), self._moveDown)
-        QtCore.QObject.connect(self.ui.instanceNameLineEdit, QtCore.SIGNAL('textEdited(const QString &)'), self._letterChanged)
-        QtCore.QObject.connect(self.ui.poolDeviceNameCheckBox, QtCore.SIGNAL("toggled(bool)"), self._letterChanged)
-        QtCore.QObject.connect(self.ui.aliasCheckBox, QtCore.SIGNAL("toggled(bool)"), self._letterChanged)
-        QtCore.QObject.connect(self.ui.poolVersionCheckBox, QtCore.SIGNAL("toggled(bool)"), self._letterChanged)
-        QtCore.QObject.connect(self.ui.poolPathList, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem*)"), self._editPath)
+        self.ui.addButton.setIcon(
+            taurus.qt.qtgui.resource.getThemeIcon("list-add"))
+        self.ui.removeButton.setIcon(
+            taurus.qt.qtgui.resource.getThemeIcon("list-remove"))
+        self.ui.upButton.setIcon(
+            taurus.qt.qtgui.resource.getThemeIcon("go-up"))
+        self.ui.downButton.setIcon(
+            taurus.qt.qtgui.resource.getThemeIcon("go-down"))
+        # connections
+        QtCore.QObject.connect(self.ui.createButton,
+                               QtCore.SIGNAL("clicked()"), self._createPool)
+        QtCore.QObject.connect(
+            self.ui.addButton, QtCore.SIGNAL("clicked()"), self._addPath)
+        QtCore.QObject.connect(self.ui.removeButton,
+                               QtCore.SIGNAL("clicked()"), self._removePath)
+        QtCore.QObject.connect(
+            self.ui.upButton, QtCore.SIGNAL("clicked()"), self._moveUp)
+        QtCore.QObject.connect(
+            self.ui.downButton, QtCore.SIGNAL("clicked()"), self._moveDown)
+        QtCore.QObject.connect(self.ui.instanceNameLineEdit, QtCore.SIGNAL(
+            'textEdited(const QString &)'), self._letterChanged)
+        QtCore.QObject.connect(self.ui.poolDeviceNameCheckBox, QtCore.SIGNAL(
+            "toggled(bool)"), self._letterChanged)
+        QtCore.QObject.connect(self.ui.aliasCheckBox, QtCore.SIGNAL(
+            "toggled(bool)"), self._letterChanged)
+        QtCore.QObject.connect(self.ui.poolVersionCheckBox, QtCore.SIGNAL(
+            "toggled(bool)"), self._letterChanged)
+        QtCore.QObject.connect(self.ui.poolPathList, QtCore.SIGNAL(
+            "itemDoubleClicked(QListWidgetItem*)"), self._editPath)
 
     def _letterChanged(self):
         if self.ui.poolDeviceNameCheckBox.isChecked():
-            self.ui.poolDeviceNameLineEdit.setText("pool/" + self.ui.instanceNameLineEdit.text() + "/1")
+            self.ui.poolDeviceNameLineEdit.setText(
+                "pool/" + self.ui.instanceNameLineEdit.text() + "/1")
         if self.ui.aliasCheckBox.isChecked():
-            self.ui.aliasLineEdit.setText("Pool_" + self.ui.instanceNameLineEdit.text())
+            self.ui.aliasLineEdit.setText(
+                "Pool_" + self.ui.instanceNameLineEdit.text())
         if self.ui.poolVersionCheckBox.isChecked():
             self.ui.poolVersionLineEdit.setText("0.3.0")
 
-    def _addPath (self):
-        text, ok = QtGui.QInputDialog.getText(self.poolEditor, 'Input Dialog', 'Type directory to be added:')
+    def _addPath(self):
+        text, ok = QtGui.QInputDialog.getText(
+            self.poolEditor, 'Input Dialog', 'Type directory to be added:')
         if (ok and len(text) > 0):
             self._pool.getPoolPath().append(str(text))
             self._refreshPathList()
 
-    def _editPath (self):
+    def _editPath(self):
         if len(self.ui.poolPathList.selectedIndexes()) > 0:
             self._path_id = self.ui.poolPathList.selectedIndexes()[0].row()
-            text, ok = QtGui.QInputDialog.getText(self.poolEditor, 'Input Dialog', 'Edit selected directory:', QtGui.QLineEdit.Normal, self._pool.getPoolPath()[self._path_id])
+            text, ok = QtGui.QInputDialog.getText(
+                self.poolEditor, 'Input Dialog', 'Edit selected directory:', QtGui.QLineEdit.Normal, self._pool.getPoolPath()[self._path_id])
             if (ok and len(text) > 0):
                 self._pool.getPoolPath()[self._path_id] = text
         self._refreshPathList()
@@ -596,7 +676,8 @@ class PoolEditor(object):
     def _removePath(self):
         if len(self.ui.poolPathList.selectedIndexes()) > 0:
             self._path_id = self.ui.poolPathList.selectedIndexes()[0].row()
-            self._pool.getPoolPath().remove(self._pool.getPoolPath()[self._path_id])
+            self._pool.getPoolPath().remove(
+                self._pool.getPoolPath()[self._path_id])
             self._refreshPathList()
 
     def _moveUp(self):
@@ -604,20 +685,24 @@ class PoolEditor(object):
             self._path_id = self.ui.poolPathList.selectedIndexes()[0].row()
             if self._path_id > 0:
                 tmp = self._pool.getPoolPath()[self._path_id]
-                self._pool.getPoolPath()[self._path_id] = self._pool.getPoolPath()[self._path_id - 1]
+                self._pool.getPoolPath()[self._path_id] = self._pool.getPoolPath()[
+                    self._path_id - 1]
                 self._pool.getPoolPath()[self._path_id - 1] = tmp
                 self._refreshPathList()
-                self.ui.poolPathList.setCurrentIndex(self.ui.poolPathList.indexFromItem(self.ui.poolPathList.item(self._path_id - 1)))
+                self.ui.poolPathList.setCurrentIndex(self.ui.poolPathList.indexFromItem(
+                    self.ui.poolPathList.item(self._path_id - 1)))
 
     def _moveDown(self):
         if len(self.ui.poolPathList.selectedIndexes()) > 0:
             self._path_id = self.ui.poolPathList.selectedIndexes()[0].row()
             if self._path_id < self.ui.poolPathList.count() - 1:
                 tmp = self._pool.getPoolPath()[self._path_id]
-                self._pool.getPoolPath()[self._path_id] = self._pool.getPoolPath()[self._path_id + 1]
+                self._pool.getPoolPath()[self._path_id] = self._pool.getPoolPath()[
+                    self._path_id + 1]
                 self._pool.getPoolPath()[self._path_id + 1] = tmp
                 self._refreshPathList()
-                self.ui.poolPathList.setCurrentIndex(self.ui.poolPathList.indexFromItem(self.ui.poolPathList.item(self._path_id + 1)))
+                self.ui.poolPathList.setCurrentIndex(self.ui.poolPathList.indexFromItem(
+                    self.ui.poolPathList.item(self._path_id + 1)))
 
     def _refreshPathList(self):
         self.ui.poolPathList.clear()
@@ -635,16 +720,16 @@ class PoolEditor(object):
             if self._parent.checkName(self.ui.instanceNameLineEdit.text(), id=self._item_id):
                 pass
             else:
-               err = 1
-               warnMess += "The Instance Name already exist in the DataBase\n"
+                err = 1
+                warnMess += "The Instance Name already exist in the DataBase\n"
 
         pdn = str(self.ui.poolDeviceNameLineEdit.text())
         allowed = re.compile("^.{1,}/.{1,}/.{1,}$")
-        if not ((len(pdn) > 0)  and (allowed.match(pdn)) and (pdn.count("/") == 2)):
+        if not ((len(pdn) > 0) and (allowed.match(pdn)) and (pdn.count("/") == 2)):
             err = 1
             warnMess += "The Pool Device Name is not valid\n"
 
-        #if self.ui.aliasLineEdit.text() == "":
+        # if self.ui.aliasLineEdit.text() == "":
         #    err=1
         #    warnMess+="Please type the Alias\n"
 
@@ -668,7 +753,7 @@ class PoolEditor(object):
             return True
 
     def _createPool(self):
-        if self._item_id == None:
+        if self._item_id is None:
             if self._validate():
                 self._parent.addItem(self._pool.copy())
         else:
@@ -677,7 +762,7 @@ class PoolEditor(object):
 
     def showEditor(self, item=None, item_id=None):
         self._pool = Pool()
-        if item == None:
+        if item is None:
             self._pool.setPoolPath(SardanaManager.get_default_pool_path())
             self._refreshPathList()
             self.poolEditor.setWindowTitle("Create New Pool")
@@ -710,7 +795,7 @@ class PoolEditor(object):
             self.ui.aliasCheckBox.setChecked(False)
             self.ui.poolVersionLineEdit.setText(item.getPoolVersion())
             self.ui.poolVersionLineEdit.setEnabled(True)
-            self.ui.poolVersionCheckBox.setChecked(True)  ###
+            self.ui.poolVersionCheckBox.setChecked(True)
             self.ui.createButton.setText("Edit")
             self._item_id = item_id
             self.poolEditor.setModal(True)
@@ -721,6 +806,7 @@ class MS(Item):
     """
     Represents a Macroserver
     """
+
     def __init__(self, instanceName="", hostName="", level=None, poolName="", msDeviceName="", msAlias="", msVersion="", msPath=[], doorName="", doorAlias=""):
         Item.__init__(self, instanceName, hostName, level)
         self._msDeviceName = str(msDeviceName)
@@ -733,34 +819,49 @@ class MS(Item):
 
     def setPoolName(self, name):
         self._poolName = str(name)
+
     def getPoolName(self):
         return self._poolName
+
     def setMSDeviceName(self, name):
         self._msDeviceName = str(name)
+
     def getMSDeviceName(self):
         return self._msDeviceName
+
     def setMSAlias(self, alias):
         self._msAlias = str(alias)
+
     def getMSAlias(self):
         return self._msAlias
+
     def setMSVersion(self, msVersion):
         self._msVersion = str(msVersion)
+
     def getMSVersion(self):
         return self._msVersion
+
     def setMSPath(self, path):
         self._msPath = map(str, path)
+
     def getMSPath(self):
         return self._msPath
+
     def setDoorName(self, doorName):
         self._doorName = str(doorName)
+
     def getDoorName(self):
         return self._doorName
+
     def setDoorAlias(self, doorAlias):
         self._doorAlias = str(doorAlias)
+
     def getDoorAlias(self):
         return self._doorAlias
+
     def text(self):
         return str(self._instanceName)
+
     def copy(self):
         return MS(self._instanceName, self._hostName, self._level, self._poolName, self._msDeviceName, self._msAlias, self._msVersion, self._msPath[:], self._doorName, self._doorAlias)
 
@@ -769,6 +870,7 @@ class MSEditor(object):
     """
     Macroserver editor
     """
+
     def __init__(self, parent=None):
         self._parent = parent
         #self._parent = weakref.ref(parent)
@@ -781,9 +883,11 @@ class MSEditor(object):
         self._regExp = QtCore.QRegExp("^[0-9a-zA-Z]{,50}")
         self._regValid = QtGui.QRegExpValidator(self._regExp, self.msEditor)
         self._regExp2 = QtCore.QRegExp("^[0-9.]{,50}")
-        self._versionValid = QtGui.QRegExpValidator(self._regExp2, self.msEditor)
+        self._versionValid = QtGui.QRegExpValidator(
+            self._regExp2, self.msEditor)
         self._regExp3 = QtCore.QRegExp("^[0-9a-zA-Z_/]{,100}")
-        self._deviceNameValid = QtGui.QRegExpValidator(self._regExp3, self.msEditor)
+        self._deviceNameValid = QtGui.QRegExpValidator(
+            self._regExp3, self.msEditor)
         self.ui.instanceNameLineEdit.setValidator(self._regValid)
         self.ui.msDeviceNameLineEdit.setValidator(self._deviceNameValid)
         self.ui.msAliasLineEdit.setValidator(self._regValid)
@@ -792,35 +896,55 @@ class MSEditor(object):
         self.ui.doorAliasLineEdit.setValidator(self._regValid)
         self._item_id = None
         self._path_id = None
-        self.ui.addButton.setIcon(taurus.qt.qtgui.resource.getThemeIcon("list-add"))
-        self.ui.removeButton.setIcon(taurus.qt.qtgui.resource.getThemeIcon("list-remove"))
-        self.ui.upButton.setIcon(taurus.qt.qtgui.resource.getThemeIcon("go-up"))
-        self.ui.downButton.setIcon(taurus.qt.qtgui.resource.getThemeIcon("go-down"))
-        #connections
-        QtCore.QObject.connect(self.ui.createButton, QtCore.SIGNAL("clicked()"), self._createMS)
-        QtCore.QObject.connect(self.ui.addButton, QtCore.SIGNAL("clicked()"), self._addPath)
-        QtCore.QObject.connect(self.ui.removeButton, QtCore.SIGNAL("clicked()"), self._removePath)
-        QtCore.QObject.connect(self.ui.upButton, QtCore.SIGNAL("clicked()"), self._moveUp)
-        QtCore.QObject.connect(self.ui.downButton, QtCore.SIGNAL("clicked()"), self._moveDown)
-        QtCore.QObject.connect(self.ui.instanceNameLineEdit, QtCore.SIGNAL('textEdited(const QString &)'), self._letterChanged)
-        QtCore.QObject.connect(self.ui.msDeviceNameCheckBox, QtCore.SIGNAL("toggled(bool)"), self._letterChanged)
-        QtCore.QObject.connect(self.ui.msAliasCheckBox, QtCore.SIGNAL("toggled(bool)"), self._letterChanged)
-        QtCore.QObject.connect(self.ui.msVersionCheckBox, QtCore.SIGNAL("toggled(bool)"), self._letterChanged)
-        QtCore.QObject.connect(self.ui.doorNameCheckBox, QtCore.SIGNAL("toggled(bool)"), self._letterChanged)
-        QtCore.QObject.connect(self.ui.doorAliasCheckBox, QtCore.SIGNAL("toggled(bool)"), self._letterChanged)
-        QtCore.QObject.connect(self.ui.msPathList, QtCore.SIGNAL("itemDoubleClicked(QListWidgetItem*)"), self._editPath)
+        self.ui.addButton.setIcon(
+            taurus.qt.qtgui.resource.getThemeIcon("list-add"))
+        self.ui.removeButton.setIcon(
+            taurus.qt.qtgui.resource.getThemeIcon("list-remove"))
+        self.ui.upButton.setIcon(
+            taurus.qt.qtgui.resource.getThemeIcon("go-up"))
+        self.ui.downButton.setIcon(
+            taurus.qt.qtgui.resource.getThemeIcon("go-down"))
+        # connections
+        QtCore.QObject.connect(self.ui.createButton,
+                               QtCore.SIGNAL("clicked()"), self._createMS)
+        QtCore.QObject.connect(
+            self.ui.addButton, QtCore.SIGNAL("clicked()"), self._addPath)
+        QtCore.QObject.connect(self.ui.removeButton,
+                               QtCore.SIGNAL("clicked()"), self._removePath)
+        QtCore.QObject.connect(
+            self.ui.upButton, QtCore.SIGNAL("clicked()"), self._moveUp)
+        QtCore.QObject.connect(
+            self.ui.downButton, QtCore.SIGNAL("clicked()"), self._moveDown)
+        QtCore.QObject.connect(self.ui.instanceNameLineEdit, QtCore.SIGNAL(
+            'textEdited(const QString &)'), self._letterChanged)
+        QtCore.QObject.connect(self.ui.msDeviceNameCheckBox, QtCore.SIGNAL(
+            "toggled(bool)"), self._letterChanged)
+        QtCore.QObject.connect(self.ui.msAliasCheckBox, QtCore.SIGNAL(
+            "toggled(bool)"), self._letterChanged)
+        QtCore.QObject.connect(self.ui.msVersionCheckBox, QtCore.SIGNAL(
+            "toggled(bool)"), self._letterChanged)
+        QtCore.QObject.connect(self.ui.doorNameCheckBox, QtCore.SIGNAL(
+            "toggled(bool)"), self._letterChanged)
+        QtCore.QObject.connect(self.ui.doorAliasCheckBox, QtCore.SIGNAL(
+            "toggled(bool)"), self._letterChanged)
+        QtCore.QObject.connect(self.ui.msPathList, QtCore.SIGNAL(
+            "itemDoubleClicked(QListWidgetItem*)"), self._editPath)
 
     def _letterChanged(self):
         if self.ui.msDeviceNameCheckBox.isChecked():
-            self.ui.msDeviceNameLineEdit.setText("macroserver/" + self.ui.instanceNameLineEdit.text() + "/1")
+            self.ui.msDeviceNameLineEdit.setText(
+                "macroserver/" + self.ui.instanceNameLineEdit.text() + "/1")
         if self.ui.msAliasCheckBox.isChecked():
-            self.ui.msAliasLineEdit.setText("MS_" + self.ui.instanceNameLineEdit.text())
+            self.ui.msAliasLineEdit.setText(
+                "MS_" + self.ui.instanceNameLineEdit.text())
         if self.ui.msVersionCheckBox.isChecked():
             self.ui.msVersionLineEdit.setText("0.3.0")
         if self.ui.doorNameCheckBox.isChecked():
-            self.ui.doorNameLineEdit.setText("door/" + self.ui.instanceNameLineEdit.text() + "/1")
+            self.ui.doorNameLineEdit.setText(
+                "door/" + self.ui.instanceNameLineEdit.text() + "/1")
         if self.ui.doorAliasCheckBox.isChecked():
-            self.ui.doorAliasLineEdit.setText("Door_" + self.ui.instanceNameLineEdit.text())
+            self.ui.doorAliasLineEdit.setText(
+                "Door_" + self.ui.instanceNameLineEdit.text())
 
     def getPoolServerList(self):
         return self._parent.getPoolServerList()
@@ -828,7 +952,7 @@ class MSEditor(object):
     def fillPoolNameCB(self, selected=None):
         self.ui.poolNameComboBox.clear()
         i = 0
-        if selected != None:
+        if selected is not None:
             if selected == "":
                 selected = "None"
             self.ui.poolNameComboBox.addItem(selected)
@@ -847,16 +971,18 @@ class MSEditor(object):
     def db(self):
         return self._parent.wizard()['db']
 
-    def _editPath (self):
+    def _editPath(self):
         if len(self.ui.msPathList.selectedIndexes()) > 0:
             self._path_id = self.ui.msPathList.selectedIndexes()[0].row()
-            text, ok = QtGui.QInputDialog.getText(self.msEditor, 'Input Dialog', 'Edit selected directory:', QtGui.QLineEdit.Normal, self._ms.getMSPath()[self._path_id])
+            text, ok = QtGui.QInputDialog.getText(
+                self.msEditor, 'Input Dialog', 'Edit selected directory:', QtGui.QLineEdit.Normal, self._ms.getMSPath()[self._path_id])
             if (ok and len(text) > 0):
                 self._ms.getMSPath()[self._path_id] = text
         self._refreshPathList()
 
-    def _addPath (self):
-        text, ok = QtGui.QInputDialog.getText(self.msEditor, 'Input Dialog', 'Type directory to be added:')
+    def _addPath(self):
+        text, ok = QtGui.QInputDialog.getText(
+            self.msEditor, 'Input Dialog', 'Type directory to be added:')
         if (ok and len(text) > 0):
             self._ms.getMSPath().append(str(text))
             self._refreshPathList()
@@ -872,20 +998,24 @@ class MSEditor(object):
             self._path_id = self.ui.msPathList.selectedIndexes()[0].row()
             if self._path_id > 0:
                 tmp = self._ms.getMSPath()[self._path_id]
-                self._ms.getMSPath()[self._path_id] = self._ms.getMSPath()[self._path_id - 1]
+                self._ms.getMSPath()[self._path_id] = self._ms.getMSPath()[
+                    self._path_id - 1]
                 self._ms.getMSPath()[self._path_id - 1] = tmp
                 self._refreshPathList()
-                self.ui.msPathList.setCurrentIndex(self.ui.msPathList.indexFromItem(self.ui.msPathList.item(self._path_id - 1)))
+                self.ui.msPathList.setCurrentIndex(self.ui.msPathList.indexFromItem(
+                    self.ui.msPathList.item(self._path_id - 1)))
 
     def _moveDown(self):
         if len(self.ui.msPathList.selectedIndexes()) > 0:
             self._path_id = self.ui.msPathList.selectedIndexes()[0].row()
             if self._path_id < self.ui.msPathList.count() - 1:
                 tmp = self._ms.getMSPath()[self._path_id]
-                self._ms.getMSPath()[self._path_id] = self._ms.getMSPath()[self._path_id + 1]
+                self._ms.getMSPath()[self._path_id] = self._ms.getMSPath()[
+                    self._path_id + 1]
                 self._ms.getMSPath()[self._path_id + 1] = tmp
                 self._refreshPathList()
-                self.ui.msPathList.setCurrentIndex(self.ui.msPathList.indexFromItem(self.ui.msPathList.item(self._path_id + 1)))
+                self.ui.msPathList.setCurrentIndex(self.ui.msPathList.indexFromItem(
+                    self.ui.msPathList.item(self._path_id + 1)))
 
     def _refreshPathList(self):
         self.ui.msPathList.clear()
@@ -903,8 +1033,8 @@ class MSEditor(object):
             if self._parent.checkName(name=self.ui.instanceNameLineEdit.text(), id=self._item_id):
                 pass
             else:
-               err = 1
-               warnMess += "The Instance Name already exist in the DataBase\n"
+                err = 1
+                warnMess += "The Instance Name already exist in the DataBase\n"
 
         if self.ui.msDeviceNameLineEdit.text() == "":
             err = 1
@@ -912,11 +1042,11 @@ class MSEditor(object):
 
         mdn = str(self.ui.msDeviceNameLineEdit.text())
         allowed = re.compile("^.{1,}/.{1,}/.{1,}$")
-        if not ((len(mdn) > 0)  and (allowed.match(mdn)) and (mdn.count("/") == 2)):
+        if not ((len(mdn) > 0) and (allowed.match(mdn)) and (mdn.count("/") == 2)):
             err = 1
             warnMess += "The Macro Server Device Name is not valid\n"
 
-        #if self.ui.msAliasLineEdit.text() == "":
+        # if self.ui.msAliasLineEdit.text() == "":
         #    err=1
         #    warnMess+="Please type the Macro Server Alias\n"
 
@@ -926,11 +1056,11 @@ class MSEditor(object):
 
         dn = str(self.ui.doorNameLineEdit.text())
         allowed = re.compile("^.{1,}/.{1,}/.{1,}$")
-        if not ((len(dn) > 0)  and (allowed.match(dn)) and (dn.count("/") == 2)):
+        if not ((len(dn) > 0) and (allowed.match(dn)) and (dn.count("/") == 2)):
             err = 1
             warnMess += "The Door Name is not valid\n"
 
-        #if self.ui.doorAliasLineEdit.text() == "":
+        # if self.ui.doorAliasLineEdit.text() == "":
         #    err=1
         #    warnMess+="Please type the Door Alias\n"
 
@@ -957,7 +1087,7 @@ class MSEditor(object):
             return True
 
     def _createMS(self):
-        if self._item_id == None:
+        if self._item_id is None:
             if self._validate():
                 self._parent.addItem(self._ms.copy())
         else:
@@ -966,7 +1096,7 @@ class MSEditor(object):
 
     def showEditor(self, item=None, item_id=None):
         self._ms = MS()
-        if item == None:
+        if item is None:
             self._ms.setMSPath(SardanaManager.get_default_ms_path())
             self._refreshPathList()
             self.msEditor.setWindowTitle("Create New Macro Server")
@@ -1007,7 +1137,7 @@ class MSEditor(object):
             self.ui.msAliasCheckBox.setChecked(False)
             self.ui.msVersionLineEdit.setText(item.getMSVersion())
             self.ui.msVersionLineEdit.setEnabled(True)
-            self.ui.msVersionCheckBox.setChecked(True)  ###
+            self.ui.msVersionCheckBox.setChecked(True)
             self.ui.doorNameLineEdit.setText(item.getDoorName())
             self.ui.doorNameLineEdit.setEnabled(True)
             self.ui.doorNameCheckBox.setChecked(False)
@@ -1031,25 +1161,35 @@ class AddMSBasePage(SimpleEditorBasePage):
         self._editor = MSEditor(parent=self)
         self.selectedItem = None
         self.item_id = None
-        self.setSubTitle('You can use this manager if you would like to Add, Edit or Delete Macro Server entries in the database.')
-        self.addButton.setText(QtGui.QApplication.translate("Form", "Add MS", None, QtGui.QApplication.UnicodeUTF8))
-        self.editButton.setText(QtGui.QApplication.translate("Form", "Edit MS", None, QtGui.QApplication.UnicodeUTF8))
-        self.removeButton.setText(QtGui.QApplication.translate("Form", "Remove MS", None, QtGui.QApplication.UnicodeUTF8))
-        #connections
-        QtCore.QObject.connect(self.addButton, QtCore.SIGNAL("clicked()"), self.openAddEditor)
-        QtCore.QObject.connect(self.editButton, QtCore.SIGNAL("clicked()"), self.openItemEditor)
-        QtCore.QObject.connect(self.removeButton, QtCore.SIGNAL("clicked()"), self.delete)
-        QtCore.QObject.connect(self.tableWidget, QtCore.SIGNAL("cellDoubleClicked(int,int)"), self.openItemEditor)
+        self.setSubTitle(
+            'You can use this manager if you would like to Add, Edit or Delete Macro Server entries in the database.')
+        self.addButton.setText(QtGui.QApplication.translate(
+            "Form", "Add MS", None, QtGui.QApplication.UnicodeUTF8))
+        self.editButton.setText(QtGui.QApplication.translate(
+            "Form", "Edit MS", None, QtGui.QApplication.UnicodeUTF8))
+        self.removeButton.setText(QtGui.QApplication.translate(
+            "Form", "Remove MS", None, QtGui.QApplication.UnicodeUTF8))
+        # connections
+        QtCore.QObject.connect(self.addButton, QtCore.SIGNAL(
+            "clicked()"), self.openAddEditor)
+        QtCore.QObject.connect(self.editButton, QtCore.SIGNAL(
+            "clicked()"), self.openItemEditor)
+        QtCore.QObject.connect(
+            self.removeButton, QtCore.SIGNAL("clicked()"), self.delete)
+        QtCore.QObject.connect(self.tableWidget, QtCore.SIGNAL(
+            "cellDoubleClicked(int,int)"), self.openItemEditor)
 
-    def delete (self):
+    def delete(self):
         if len(self.tableWidget.selectedIndexes()) > 0:
             msgBox = QtGui.QMessageBox()
             msgBox.setText("The list of Macro Servers has been modified.")
             self.item_id = self.tableWidget.selectedIndexes()[0].row()
             self.selectedItem = self.listOfItems[self.item_id]
-            msgBox.setInformativeText("Do you want to delete Macro Server?:\n" + self.selectedItem.text())
-            msgBox.setStandardButtons(QtGui.QMessageBox().Ok | QtGui.QMessageBox().Cancel)
-            msgBox.setDefaultButton(QtGui.QMessageBox().Cancel);
+            msgBox.setInformativeText(
+                "Do you want to delete Macro Server?:\n" + self.selectedItem.text())
+            msgBox.setStandardButtons(
+                QtGui.QMessageBox().Ok | QtGui.QMessageBox().Cancel)
+            msgBox.setDefaultButton(QtGui.QMessageBox().Cancel)
             msgBox.setIcon(QtGui.QMessageBox.Question)
             ret = msgBox.exec_()
             if ret == QtGui.QMessageBox().Ok:
@@ -1057,19 +1197,19 @@ class AddMSBasePage(SimpleEditorBasePage):
             if ret == QtGui.QMessageBox().Cancel:
                 pass
 
-    def openAddEditor (self):
+    def openAddEditor(self):
         self.item_id = None
         self.selectedItem = None
         SimpleEditorBasePage.openEditor(self)
         self._editor.showEditor(item=None, item_id=None)
 
-
-    def openItemEditor (self):
+    def openItemEditor(self):
         if len(self.tableWidget.selectedIndexes()) > 0:
             self.item_id = self.tableWidget.selectedIndexes()[0].row()
             self.selectedItem = self.listOfItems[self.item_id]
             SimpleEditorBasePage.openEditor(self)
-            self._editor.showEditor(item=self.selectedItem, item_id=self.item_id)
+            self._editor.showEditor(
+                item=self.selectedItem, item_id=self.item_id)
 
     def checkData(self):
         pass
@@ -1132,28 +1272,37 @@ class SardanaCommitBasePage(wiz.SardanaIntroBasePage):
     """
     Commiting page
     """
+
     def __init__(self, parent=None):
         QtGui.QWizardPage.__init__(self, parent)
-        self.setPixmap(QtGui.QWizard.WatermarkPixmap, QtGui.QPixmap(":/watermark.jpg"))
+        self.setPixmap(QtGui.QWizard.WatermarkPixmap,
+                       QtGui.QPixmap(":/watermark.jpg"))
         self._layout = QtGui.QFormLayout()
         self._sardanaNameLabel = QtGui.QLabel()
         self._hostNameLabel = QtGui.QLabel()
         self._portLabel = QtGui.QLabel()
         self._poollsLabel = QtGui.QLabel()
         self._mssLabel = QtGui.QLabel()
-        self._layout.addRow(self._set_style(QtGui.QLabel("Sardana:")), self._sardanaNameLabel)
-        self._layout.addRow(self._set_style(QtGui.QLabel("Host:")), self._hostNameLabel)
-        self._layout.addRow(self._set_style(QtGui.QLabel("Port:")), self._portLabel)
-        self._layout.addRow(self._set_style(QtGui.QLabel("")), QtGui.QLabel(""))
-        self._layout.addRow(self._set_style(QtGui.QLabel("Pools:")), self._poollsLabel)
-        self._layout.addRow(self._set_style(QtGui.QLabel("MacroServers:")), self._mssLabel)
-        self._checkBox = QtGui.QCheckBox("Start local server automatically\neven if no starter is present")
+        self._layout.addRow(self._set_style(
+            QtGui.QLabel("Sardana:")), self._sardanaNameLabel)
+        self._layout.addRow(self._set_style(
+            QtGui.QLabel("Host:")), self._hostNameLabel)
+        self._layout.addRow(self._set_style(
+            QtGui.QLabel("Port:")), self._portLabel)
+        self._layout.addRow(self._set_style(
+            QtGui.QLabel("")), QtGui.QLabel(""))
+        self._layout.addRow(self._set_style(
+            QtGui.QLabel("Pools:")), self._poollsLabel)
+        self._layout.addRow(self._set_style(
+            QtGui.QLabel("MacroServers:")), self._mssLabel)
+        self._checkBox = QtGui.QCheckBox(
+            "Start local server automatically\neven if no starter is present")
         self._checkBox.setChecked(True)
         self._layout.addRow(self._checkBox)
         self._poolListText = ""
         self._msListText = ""
         self.setLayout(self._layout)
-        #self.setCommitPage(True)
+        # self.setCommitPage(True)
         self.setTitle('Confirmation.')
 
     def next(self):
@@ -1175,7 +1324,7 @@ class SardanaCommitBasePage(wiz.SardanaIntroBasePage):
 
         for item in self.wizard()["poolList"] + self.wizard()["msList"]:
             if item.getHostName() == "localhost":
-                if SardanaManager().has_localhost_starter() == True:
+                if SardanaManager().has_localhost_starter():
                     self._checkBox.setVisible(True)
                     break
 
@@ -1216,12 +1365,15 @@ class SardanaOutroBasePage(wiz.SardanaBasePage):
     """
     The last page in the wizard for creation sardana and all of the pools and macroservers that it consist
     """
+
     def __init__(self, parent=None):
         QtGui.QWizardPage.__init__(self, parent)
-        self.setPixmap(QtGui.QWizard.WatermarkPixmap, QtGui.QPixmap(":/watermark.jpg"))
+        self.setPixmap(QtGui.QWizard.WatermarkPixmap,
+                       QtGui.QPixmap(":/watermark.jpg"))
         self._valid = True
         self._layout = QtGui.QVBoxLayout()
-        self._spacerItem = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self._spacerItem = QtGui.QSpacerItem(
+            20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self._layout.addItem(self._spacerItem)
         self._horizontalLayout_1 = QtGui.QHBoxLayout()
         self._label = QtGui.QLabel("\nInitializing...")
@@ -1231,24 +1383,30 @@ class SardanaOutroBasePage(wiz.SardanaBasePage):
         self._pbar = QtGui.QProgressBar(self)
         self._layout.addWidget(self._pbar)
         self._horizontalLayout_2 = QtGui.QHBoxLayout()
-        self._spacerItem1 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self._spacerItem1 = QtGui.QSpacerItem(
+            40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self._horizontalLayout_2.addItem(self._spacerItem1)
         self._cancelButton = QtGui.QPushButton("Cancel")
         self._horizontalLayout_2.addWidget(self._cancelButton)
-        self._spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self._spacerItem2 = QtGui.QSpacerItem(
+            40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self._horizontalLayout_2.addItem(self._spacerItem2)
         self._layout.addLayout(self._horizontalLayout_2)
-        self._spacerItem3 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self._spacerItem3 = QtGui.QSpacerItem(
+            20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
         self._layout.addItem(self._spacerItem3)
         self.setLayout(self._layout)
 #        self.setTitle('The new instance of Sardana has been successfully created.')
 
     def initializePage(self):
         self.wizard().setOption(QtGui.QWizard.NoCancelButton, True)
-        self.wizard().setOption (QtGui.QWizard.NoBackButtonOnLastPage , True)
-        self.progress = Progress(self.wizard()["db"], self.wizard()["sardana"], self.wizard()["poolList"][:], self.wizard()["msList"][:], self.wizard()["autoStart"])
-        Qt.QObject.connect(self.progress, Qt.SIGNAL("valueUpdated"), self.setProgress)
-        QtCore.QObject.connect(self._cancelButton, QtCore.SIGNAL("clicked()"), self.progress.cancel)
+        self.wizard().setOption(QtGui.QWizard.NoBackButtonOnLastPage, True)
+        self.progress = Progress(self.wizard()["db"], self.wizard()["sardana"], self.wizard()[
+                                 "poolList"][:], self.wizard()["msList"][:], self.wizard()["autoStart"])
+        Qt.QObject.connect(self.progress, Qt.SIGNAL(
+            "valueUpdated"), self.setProgress)
+        QtCore.QObject.connect(self._cancelButton, QtCore.SIGNAL(
+            "clicked()"), self.progress.cancel)
         self.progress.start()
         self._valid = False
         self._cancelButton.show()
@@ -1257,20 +1415,22 @@ class SardanaOutroBasePage(wiz.SardanaBasePage):
         return self._valid
 
     def setProgress(self, message, value, status):
-        #status
+        # status
         #  0 - normal
         #  1 - finished
         # -1 - interrupted
         if status == 0:
-            self.setTitle('The Wizard is creating the new instance of Sardana.')
+            self.setTitle(
+                'The Wizard is creating the new instance of Sardana.')
         if status == 1:
-            self.setTitle('The new instance of Sardana has been successfully created.')
+            self.setTitle(
+                'The new instance of Sardana has been successfully created.')
             self._cancelButton.hide()
             self._valid = True
             self.emit(QtCore.SIGNAL('completeChanged()'))
         if status == -1:
             self.setTitle('The new instance of Sardana has NOT been created.')
-            self.wizard().setOption (QtGui.QWizard.NoBackButtonOnLastPage , False)
+            self.wizard().setOption(QtGui.QWizard.NoBackButtonOnLastPage, False)
             self.wizard().setOption(QtGui.QWizard.NoCancelButton, False)
             self._cancelButton.hide()
             self._valid = False
@@ -1284,6 +1444,7 @@ class Progress (Qt.QThread):
     """
     Indicate the percent of sardana creation process
     """
+
     def __init__(self, db, sardana, poolList, msList, autoStart):
         Qt.QThread.__init__(self)
         self._sardana = sardana
@@ -1297,8 +1458,8 @@ class Progress (Qt.QThread):
     def cancel(self):
         self._cancelled = True
 
-    def  run(self):
-        #status
+    def run(self):
+        # status
         #  0 - normal
         #  1 - finished
         # -1 - interrupted
@@ -1306,99 +1467,107 @@ class Progress (Qt.QThread):
             self.emit(Qt.SIGNAL("valueUpdated"), msg, percentage, status)
 
     def _createSardana(self):
-            err = False
-            mess = "Click the Finish button to exit this wizard."
-            sardanaManager = SardanaManager()
-            self._newSardana = None
+        err = False
+        mess = "Click the Finish button to exit this wizard."
+        sardanaManager = SardanaManager()
+        self._newSardana = None
 
-            percent = 0
-            step = 100 / (len(self._poolList) + len(self._msList) + 1)
+        percent = 0
+        step = 100 / (len(self._poolList) + len(self._msList) + 1)
 
-            if len (self._msList) > 0:
-                try:
-                    self._sardana_device_name = str(self._msList[0].getMSDeviceName())
-                    self._newSardana = sardanaManager.create_sardana(str(self._sardana), self._sardana_device_name, db=self._db)
-                except Exception, e:
-                    err = True
-                    mess = str(e)
-                    traceback.print_exc()
-            else:
-                try:
-                    self._sardana_device_name = str(self._poolList[0].getPoolDeviceName())
-                    self._newSardana = sardanaManager.create_sardana(str(self._sardana), self._sardana_device_name, db=self._db)
-                except Exception, e:
-                    err = True
-                    mess = str(e)
+        if len(self._msList) > 0:
+            try:
+                self._sardana_device_name = str(
+                    self._msList[0].getMSDeviceName())
+                self._newSardana = sardanaManager.create_sardana(
+                    str(self._sardana), self._sardana_device_name, db=self._db)
+            except Exception, e:
+                err = True
+                mess = str(e)
+                traceback.print_exc()
+        else:
+            try:
+                self._sardana_device_name = str(
+                    self._poolList[0].getPoolDeviceName())
+                self._newSardana = sardanaManager.create_sardana(
+                    str(self._sardana), self._sardana_device_name, db=self._db)
+            except Exception, e:
+                err = True
+                mess = str(e)
 
-            if err:
-                #msgbox = TaurusMessageBox(*sys.exc_info())
-                #msgbox.exec_()
+        if err:
+            #msgbox = TaurusMessageBox(*sys.exc_info())
+            # msgbox.exec_()
 
-                yield "\nCancelled...", 100, 1
+            yield "\nCancelled...", 100, 1
 
-            else:  #  Sardana has been created
-                percent += step
-                yield "\nProcessing the list of Pools", int(percent), 0
+        else:  # Sardana has been created
+            percent += step
+            yield "\nProcessing the list of Pools", int(percent), 0
+            time.sleep(0.5)
+
+            try:
+
+                for pool in self._poolList:
+                    if self._cancelled:
+                        raise Exception("Canceled by user")
+
+                    yield "Adding Pool:\n %s" % pool.getInstanceName(), int(percent), 0
+
+                    if pool.getPoolDeviceName() == "":
+                        pool.setPoolDeviceName(None)
+                    if pool.getAlias() == "":
+                        pool.setAlias(None)
+                    newPool = self._newSardana.create_pool(pool.getInstanceName(), pool.getPoolPath(
+                    ), pool.getPoolVersion(), alias=pool.getAlias(), device_name=pool.getPoolDeviceName())
+                    if pool.getHostName() not in (None, '', 'None'):
+                        if pool.getHostName() == "localhost":
+                            if self._autoStart:
+                                yield "Starting Pool:\n %s" % pool.getInstanceName(), int(percent), 0
+                                newPool.local_run()
+                        else:
+                            yield "Starting Pool:\n %s" % pool.getInstanceName(), int(percent), 0
+                            newPool.starter_run(
+                                pool.getHostName(), pool.getLevel())
+                    percent += step
+
+                yield "\nProcessing the list of MacroServers", int(percent), 0
                 time.sleep(0.5)
 
-                try:
+                for ms in self._msList:
+                    if self._cancelled:
+                        raise Exception("Canceled by user")
 
-                    for pool in self._poolList:
-                        if self._cancelled:
-                            raise Exception("Canceled by user")
+                    yield "Adding MacroServer:\n %s" % ms.getInstanceName(), int(percent), 0
 
-                        yield "Adding Pool:\n %s" % pool.getInstanceName(), int(percent), 0
-
-                        if pool.getPoolDeviceName() == "":
-                            pool.setPoolDeviceName(None)
-                        if pool.getAlias() == "":
-                            pool.setAlias(None)
-                        newPool = self._newSardana.create_pool(pool.getInstanceName(), pool.getPoolPath(), pool.getPoolVersion(), alias=pool.getAlias() , device_name=pool.getPoolDeviceName())
-                        if pool.getHostName() not in (None, '', 'None'):
-                            if pool.getHostName() == "localhost":
-                                if self._autoStart:
-                                     yield "Starting Pool:\n %s" % pool.getInstanceName(), int(percent), 0
-                                     newPool.local_run()
-                            else:
-                                yield "Starting Pool:\n %s" % pool.getInstanceName(), int(percent), 0
-                                newPool.starter_run(pool.getHostName(), pool.getLevel())
-                        percent += step
-
-                    yield "\nProcessing the list of MacroServers", int(percent), 0
-                    time.sleep(0.5)
-
-                    for ms in self._msList:
-                        if self._cancelled:
-                            raise Exception("Canceled by user")
-
-                        yield "Adding MacroServer:\n %s" % ms.getInstanceName(), int(percent), 0
-
-                        if ms.getMSDeviceName() == "":
-                            ms.setMSDeviceName(None)
-                        if ms.getMSAlias() == "":
-                            ms.setMSAlias(None)
-                        newMS = self._newSardana.create_macroserver(ms.getInstanceName(), ms.getMSPath(), self._poolNames, ms.getMSVersion(), alias=ms.getMSAlias() , device_name=ms.getMSDeviceName())
-                        newMS.create_door(ms.getDoorAlias(), ms.getDoorName())
-                        if ms.getHostName() not in (None, '', 'None'):
-                            if ms.getHostName() == "localhost":
-                                if self._autoStart:
-                                     yield "Starting MacroServer:\n %s" % ms.getInstanceName(), int(percent), 0
-                                     newMS.local_run()
-                            else:
+                    if ms.getMSDeviceName() == "":
+                        ms.setMSDeviceName(None)
+                    if ms.getMSAlias() == "":
+                        ms.setMSAlias(None)
+                    newMS = self._newSardana.create_macroserver(ms.getInstanceName(), ms.getMSPath(
+                    ), self._poolNames, ms.getMSVersion(), alias=ms.getMSAlias(), device_name=ms.getMSDeviceName())
+                    newMS.create_door(ms.getDoorAlias(), ms.getDoorName())
+                    if ms.getHostName() not in (None, '', 'None'):
+                        if ms.getHostName() == "localhost":
+                            if self._autoStart:
                                 yield "Starting MacroServer:\n %s" % ms.getInstanceName(), int(percent), 0
-                                newMS.starter_run(ms.getHostName(), ms.getLevel())
+                                newMS.local_run()
+                        else:
+                            yield "Starting MacroServer:\n %s" % ms.getInstanceName(), int(percent), 0
+                            newMS.starter_run(ms.getHostName(), ms.getLevel())
 
-                        percent += step
+                    percent += step
 
-                    self._newSardana.set_device_name(self._sardana_device_name)
-                    yield "\nDone...", 100, 1
+                self._newSardana.set_device_name(self._sardana_device_name)
+                yield "\nDone...", 100, 1
 
-                except Exception, e:
-                    err = True
-                    mess = str(e)
-                    traceback.print_exc()
-                    sardanaManager.remove_sardana(str(self._sardana))  # remove Sardana if something goes wrong
-                    yield "\nCanceled by user", 0, -1
+            except Exception, e:
+                err = True
+                mess = str(e)
+                traceback.print_exc()
+                # remove Sardana if something goes wrong
+                sardanaManager.remove_sardana(str(self._sardana))
+                yield "\nCanceled by user", 0, -1
 
 
 def addSardana():
@@ -1406,7 +1575,8 @@ def addSardana():
     app = QtGui.QApplication([])
     QtCore.QResource.registerResource(wiz.get_resources())
 
-    Pages = Enumeration('Pages', ('IntroPage', 'TangoPage', 'SardanaPage', 'PoolPage', 'MSPage', 'CommitPage', 'OutroPage'))
+    Pages = Enumeration('Pages', ('IntroPage', 'TangoPage', 'SardanaPage',
+                                  'PoolPage', 'MSPage', 'CommitPage', 'OutroPage'))
     w = wiz.SardanaBaseWizard()
 
     intro = NewSardanaIntroPage()
@@ -1436,14 +1606,11 @@ def addSardana():
 
     outro_page = SardanaOutroBasePage()
     w.setPage(Pages.OutroPage, outro_page)
-    w.setOption (QtGui.QWizard.CancelButtonOnLeft , True)
-
+    w.setOption(QtGui.QWizard.CancelButtonOnLeft, True)
 
     #Qt.QObject.connect(w, Qt.SIGNAL("done()"), done)
     w.show()
     sys.exit(app.exec_())
-
-
 
 
 if __name__ == "__main__":

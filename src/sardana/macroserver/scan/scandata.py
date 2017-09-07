@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -29,13 +29,15 @@ __all__ = ["ColumnDesc", "MoveableDesc", "Record", "RecordEnvironment",
            "ScanDataEnvironment", "RecordList", "ScanData", "ScanFactory"]
 
 import copy
+import math
 
 from taurus.core.util.singleton import Singleton
 
 from sardana.macroserver.scan.recorder import DataHandler
+from threading import RLock
 
 
-class ColumnDesc:
+class ColumnDesc(object):
     """The description of a column for a Record"""
 
     _TYPE_MAP = {"short": "int16",
@@ -53,13 +55,13 @@ class ColumnDesc:
 
         Any keyword not in the previous list will be converted to a member of
         the :class:`ColumnDesc`"""
-        #enforce that the mandatory arguments are present
+        # enforce that the mandatory arguments are present
         try:
             self.name = kwargs.pop('name')
         except:
             raise TypeError('"name" parameter is mandatory')
 
-        #make sure that at least the required members exist
+        # make sure that at least the required members exist
         self.label = kwargs.pop('label', self.name)
         self.setDtype(kwargs.pop('dtype', self.__class__._dtype))
         self.setShape(kwargs.pop('shape', self.__class__._shape))
@@ -117,7 +119,7 @@ class ColumnDesc:
 
     def clone(self):
         return copy.deepcopy(self)
-        #return self.__class__(**self.toDict())
+        # return self.__class__(**self.toDict())
 
 
 class MoveableDesc(ColumnDesc):
@@ -159,7 +161,7 @@ class MoveableDesc(ColumnDesc):
         return self.__class__(moveable=self.moveable, **self.toDict())
 
 
-class Record:
+class Record(object):
     """ One record is a set of values measured at the same time.
 
     The Record.data member will be
@@ -189,7 +191,8 @@ class RecordEnvironment(dict):
     """  A RecordEnvironment is a set of arbitrary pairs of type
     label/value in the form of a dictionary.
     """
-    __needed = ['title', 'labels']
+    __needed = ['title', 'labels']  # @TODO: it seems that this has changed
+    # now labels are separated in moveables and counters
 
     def isValid(self):
         """ Check valid environment = all needed keys present """
@@ -226,14 +229,22 @@ class RecordList(dict):
     """  A RecordList is a set of records: for example a scan.
     It is composed of a environment and a list of records"""
 
-    def __init__(self, datahandler, environ=None):
+    def __init__(self, datahandler, environ=None, apply_interpolation=False,
+                 apply_extrapolation=False, initial_data=None):
 
         self.datahandler = datahandler
-        if environ == None:
+        self.apply_interpolation = apply_interpolation
+        self.apply_extrapolation = apply_extrapolation
+        self.initial_data = initial_data
+        if environ is None:
             self.environ = RecordEnvironment()
         else:
             self.environ = environ
         self.records = []
+        self.rlock = RLock()
+        # currentIndex indicates the place in the records list
+        # where the next completed record will be written
+        self.currentIndex = 0
 
     # make it pickable
     def __getstate__(self):
@@ -256,7 +267,55 @@ class RecordList(dict):
 
     def start(self):
         self.recordno = 0
+        # @TODO: it is necessary only by continuous scan
+        # think how to separate this two cases
+        self.columnIndexDict = {}
+        self.labels = []
+        self.refMoveablesLabels = []
+        self.channelLabels = []
+        self.currentIndex = 0
+        self._mylabel = []
+
+        for dataDesc in self.getEnvironValue('datadesc'):
+            if isinstance(dataDesc, MoveableDesc):
+                self.refMoveablesLabels.append(dataDesc.name)
+            else:
+                name = dataDesc.name
+                if not name in ('point_nb', 'timestamp'):
+                    self.channelLabels.append(name)
+            self.labels.append(dataDesc.name)
+        for label in self.labels:
+            self.columnIndexDict[label] = 0
+        ####
         self.datahandler.startRecordList(self)
+
+    def initRecord(self):
+        '''Init a dummy record and add it to the records list.
+        A dummy record has:
+           - point_nb of the consecutive record
+           - each column initialized with NaN
+           - each moveable initialized with None
+        '''
+        recordno = self.recordno
+        if self.initial_data and self.initial_data.has_key(recordno):
+            initial_data = self.initial_data.get(recordno)
+        else:
+            initial_data = dict()
+        rc = Record({'point_nb': recordno})
+        rc.data['timestamp'] = initial_data.get('timestamp')
+        rc.setRecordNo(self.recordno)
+        for label in self.channelLabels:
+            rc.data[label] = initial_data.get(label, float('NaN'))
+        for label in self.refMoveablesLabels:
+            rc.data[label] = initial_data.get(label)
+        self.records.append(rc)
+        self.recordno += 1
+
+    def initRecords(self, nb_records):
+        '''Call nb_records times initRecord method
+        '''
+        for _ in range(nb_records):
+            self.initRecord()
 
     def addRecord(self, record):
         rc = Record(record)
@@ -264,13 +323,116 @@ class RecordList(dict):
         self.records.append(rc)
         self[self.recordno] = rc
         self.recordno += 1
-
         self.datahandler.addRecord(self, rc)
+        self.currentIndex += 1
+
+    def applyZeroOrderInterpolation(self, record):
+        ''' Apply a zero order interpolation to the given record
+        '''
+        if self.currentIndex > 0:
+            data = record.data
+            prev_data = self.records[self.currentIndex - 1].data
+            for k, v in data.items():
+                if v is None:
+                    continue
+                # numpy arrays (1D or 2D) are valid values and does not require
+                # interpolation but provokes TypeError
+                try:
+                    interpolate = math.isnan(v)
+                except TypeError:
+                    interpolate = False
+                if interpolate:
+                    data[k] = prev_data[k]
+
+    def applyExtrapolation(self, record):
+        """Apply extrapolation to the given record"""
+        data = record.data
+        for k, v in data.items():
+            if v is None:
+                continue
+            # numpy arrays (1D or 2D) are valid values and does not require
+            # extrapolation but provokes TypeError
+            try:
+                extrapolate = math.isnan(v)
+            except TypeError:
+                extrapolate = False
+            if extrapolate:
+                next_idx = self.currentIndex + 1
+                # dig into the record list for the first valid value in the
+                # column and use it to extrapolate missing initial values
+                while True:
+                    next_data = self.records[next_idx].data
+                    next_v = next_data[k]
+                    try:
+                        is_valid = not math.isnan(next_v)
+                    except TypeError:
+                        is_valid = True
+                    if is_valid:
+                        break
+                    next_idx += 1
+                data[k] = next_v
+
+    def addData(self, data):
+        """Adds data to the record list
+
+        :param data: dictionary with two mandatory elements: label - string
+                     and data - list of values
+        :type data:  dict"""
+        with self.rlock:
+            label = data['label']
+            rawData = data['data']
+            idxs = data['index']
+
+            maxIdx = max(idxs)
+            recordsLen = len(self.records)
+            # Calculate missing records
+            missingRecords = recordsLen - (maxIdx + 1)
+            # TODO: implement proper handling of timestamps and moveables
+            if missingRecords < 0:
+                missingRecords = abs(missingRecords)
+                self.initRecords(missingRecords)
+            for idx, value in zip(idxs, rawData):
+                rc = self.records[idx]
+                rc.setRecordNo(idx)
+                rc.data[label] = value
+                self.columnIndexDict[label] = idx + 1
+            self.tryToAdd(idx, label)
+
+    def tryToAdd(self, idx, label):
+        start = self.currentIndex
+        # apply extrapolation only at the beginning of the record list
+        apply_extrapolation = (self.apply_extrapolation and start == 0)
+        for i in range(start, idx + 1):
+            if self.isRecordCompleted(i):
+                rc = self.records[i]
+                if apply_extrapolation:
+                    self.applyExtrapolation(rc)
+                self[self.currentIndex] = rc
+                if self.apply_interpolation:
+                    self.applyZeroOrderInterpolation(rc)
+                self.datahandler.addRecord(self, rc)
+                self.currentIndex += 1
+
+    def isRecordCompleted(self, recordno):
+        rc = self.records[recordno]
+        for label in self.channelLabels:
+            if self.columnIndexDict[label] <= self.currentIndex:
+                return False
+        rc.completed = 1
+        return True
 
     def addRecords(self, records):
         map(self.addRecord, records)
 
     def end(self):
+        start = self.currentIndex
+        for i in range(start, len(self.records)):
+            rc = self.records[i]
+            self[self.currentIndex] = rc
+            if self.apply_interpolation:
+                self.applyZeroOrderInterpolation(rc)
+            self.datahandler.addRecord(self, rc)
+            self.currentIndex += 1
         self.datahandler.endRecordList(self)
 
     def getDataHandler(self):
@@ -279,9 +441,11 @@ class RecordList(dict):
 
 class ScanData(RecordList):
 
-    def __init__(self, environment=None, data_handler=None):
+    def __init__(self, environment=None, data_handler=None,
+                 apply_interpolation=False, apply_extrapolation=False):
         dh = data_handler or DataHandler()
-        RecordList.__init__(self, dh, environment)
+        RecordList.__init__(self, dh, environment, apply_interpolation,
+                            apply_extrapolation)
 
 
 class ScanFactory(Singleton):
@@ -297,5 +461,8 @@ class ScanFactory(Singleton):
     def getDataHandler(self):
         return DataHandler()
 
-    def getScanData(self, dh):
-        return ScanData(data_handler=dh)
+    def getScanData(self, dh, apply_interpolation=False,
+                    apply_extrapolation=False):
+        return ScanData(data_handler=dh,
+                        apply_interpolation=apply_interpolation,
+                        apply_extrapolation=apply_extrapolation)

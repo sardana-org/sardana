@@ -2,30 +2,31 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
 """MacroServer extension for taurus Qt"""
 
-__all__ = ["QDoor", "QMacroServer", "MacroServerMessageErrorHandler", "registerExtensions"]
+__all__ = ["QDoor", "QMacroServer",
+           "MacroServerMessageErrorHandler", "registerExtensions"]
 
 from taurus.core.taurusbasetypes import TaurusEventType
 from taurus.external.qt import Qt
@@ -37,8 +38,9 @@ CHANGE_EVTS = TaurusEventType.Change, TaurusEventType.Periodic
 
 class QDoor(BaseDoor, Qt.QObject):
 
-    __pyqtSignals__ = ["resultUpdated", "recordDataUpdated", "macroStatusUpdated"]
-    __pyqtSignals__ += [ "%sUpdated" % l.lower() for l in BaseDoor.log_streams ]
+    __pyqtSignals__ = ["resultUpdated",
+                       "recordDataUpdated", "macroStatusUpdated"]
+    __pyqtSignals__ += ["%sUpdated" % l.lower() for l in BaseDoor.log_streams]
     # TODO: For Taurus 4 compatibility
     try:
         # sometimes we emit None hence the type is object
@@ -66,7 +68,8 @@ class QDoor(BaseDoor, Qt.QObject):
         return res
 
     def recordDataReceived(self, s, t, v):
-        if t not in CHANGE_EVTS: return
+        if t not in CHANGE_EVTS:
+            return
         res = BaseDoor.recordDataReceived(self, s, t, v)
         self.emit(Qt.SIGNAL("recordDataUpdated"), res)
         # TODO: For Taurus 4 compatibility
@@ -80,7 +83,8 @@ class QDoor(BaseDoor, Qt.QObject):
             macro = None
         else:
             macro = self.getRunningMacro()
-        if macro is None: return
+        if macro is None:
+            return
         self.emit(Qt.SIGNAL("macroStatusUpdated"), (macro, res))
         # TODO: For Taurus 4 compatibility
         if hasattr(self, "macroStatusUpdated"):
@@ -152,12 +156,13 @@ class QMacroServer(BaseMacroServer, Qt.QObject):
 
 from taurus.qt.qtgui.panel import TaurusMessageErrorHandler
 
+
 class MacroServerMessageErrorHandler(TaurusMessageErrorHandler):
 
     def setError(self, err_type=None, err_value=None, err_traceback=None):
         """Translates the given error object into an HTML string and places it
         in the message panel
-        
+
         :param error: an error object (typically an exception object)
         :type error: object"""
 
@@ -182,7 +187,8 @@ class MacroServerMessageErrorHandler(TaurusMessageErrorHandler):
             html += "<pre>%s</pre>" % exc_info
         else:
             formatter = pygments.formatters.HtmlFormatter()
-            html += pygments.highlight(exc_info, pygments.lexers.PythonTracebackLexer(), formatter)
+            html += pygments.highlight(exc_info,
+                                       pygments.lexers.PythonTracebackLexer(), formatter)
         html += "</body></html>"
         msgbox.setOriginHtml(html)
 
@@ -201,4 +207,5 @@ def registerExtensions():
     MacroRunException = sardana.taurus.core.tango.sardana.macro.MacroRunException
     TaurusMessagePanel = taurus.qt.qtgui.panel.TaurusMessagePanel
 
-    TaurusMessagePanel.registerErrorHandler(MacroRunException, MacroServerMessageErrorHandler)
+    TaurusMessagePanel.registerErrorHandler(
+        MacroRunException, MacroServerMessageErrorHandler)

@@ -19,13 +19,14 @@ detailed chapter will focus on each specific controller type:
 
 .. toctree::
     :maxdepth: 1
-    
-    howto_controller    
+
+    howto_controller
     howto_motorcontroller
     howto_countertimercontroller
     howto_0dcontroller
     howto_1dcontroller
     howto_2dcontroller
+    howto_triggergatecontroller
     howto_ioregistercontroller
     howto_pseudomotorcontroller
     howto_pseudocountercontroller

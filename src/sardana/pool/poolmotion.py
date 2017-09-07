@@ -2,24 +2,24 @@
 
 ##############################################################################
 ##
-## This file is part of Sardana
+# This file is part of Sardana
 ##
-## http://www.sardana-controls.org/
+# http://www.sardana-controls.org/
 ##
-## Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
+# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
-## Sardana is free software: you can redistribute it and/or modify
-## it under the terms of the GNU Lesser General Public License as published by
-## the Free Software Foundation, either version 3 of the License, or
-## (at your option) any later version.
+# Sardana is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
 ##
-## Sardana is distributed in the hope that it will be useful,
-## but WITHOUT ANY WARRANTY; without even the implied warranty of
-## MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-## GNU Lesser General Public License for more details.
+# Sardana is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
 ##
-## You should have received a copy of the GNU Lesser General Public License
-## along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# You should have received a copy of the GNU Lesser General Public License
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -39,10 +39,10 @@ from sardana import State
 from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
 
 #: enumeration representing possible motion states
-MotionState = Enumeration("MotionSate", (\
+MotionState = Enumeration("MotionSate", (
     "Stopped",
-#    "StoppedOnError",
-#    "StoppedOnAbort",
+    #    "StoppedOnError",
+    #    "StoppedOnAbort",
     "Moving",
     "MovingBacklash",
     "MovingInstability",
@@ -50,9 +50,9 @@ MotionState = Enumeration("MotionSate", (\
 
 MS = MotionState
 MovingStates = MS.Moving, MS.MovingBacklash, MS.MovingInstability
-StoppedStates = MS.Stopped,  #MS.StoppedOnError, MS.StoppedOnAbort
+StoppedStates = MS.Stopped,  # MS.StoppedOnError, MS.StoppedOnAbort
 
-#MotionAction = Enumeration("MotionAction", ( \
+# MotionAction = Enumeration("MotionAction", ( \
 #    "StartMotion",
 #    "Finish",
 #    "Abort",
@@ -62,11 +62,11 @@ StoppedStates = MS.Stopped,  #MS.StoppedOnError, MS.StoppedOnAbort
 #MA = MotionAction
 
 MotionMap = {
-    #MS.Stopped          : State.On,
-    MS.Moving            : State.Moving,
-    MS.MovingBacklash    : State.Moving,
-    MS.MovingInstability : State.Moving,
-    MS.Invalid           : State.Invalid,
+    # MS.Stopped          : State.On,
+    MS.Moving: State.Moving,
+    MS.MovingBacklash: State.Moving,
+    MS.MovingInstability: State.Moving,
+    MS.Invalid: State.Invalid,
 }
 
 
@@ -165,6 +165,7 @@ class PoolMotionItem(PoolActionItem):
 
 _NON_ERROR_STATES = State.On, State.Moving, State.Running
 
+
 class PoolMotion(PoolAction):
     """This class manages motion actions"""
 
@@ -206,7 +207,7 @@ class PoolMotion(PoolAction):
             if not ret:
                 try:
                     msg = "%s.PreStartOne(%s(%d), %f) returns False" \
-                           % (pool_ctrl.name, moveable.name, axis, dial)
+                        % (pool_ctrl.name, moveable.name, axis, dial)
                     raise Exception(msg)
                 except:
                     self._recover_start_error(pool_ctrl, "PreStartOne")
@@ -300,7 +301,7 @@ class PoolMotion(PoolAction):
         emergency_stop = set()
 
         # read positions to send a first event when starting to move
-        #with ActionContext(self) as context:
+        # with ActionContext(self) as context:
         #    positions = self.raw_read_dial_position()
         #    position_error_occured = self._position_error_occured(positions)
         #    if position_error_occured:
@@ -382,14 +383,14 @@ class PoolMotion(PoolAction):
                     # try to read a last position to force an event
                     moveable.get_position(cache=False, propagate=2)
 
-                    ## free the motor from the OperationContext so we can send
-                    ## a state event. Otherwise we may be asked to move the
-                    ## motor again which would result in an exception saying
-                    ## that the motor is already involved in an operation
-                    ## ... but before protect the motor so that the monitor
-                    ## doesn't come in between the two instructions below and
-                    ## send a state event on it's own
-                    #with moveable:
+                    # free the motor from the OperationContext so we can send
+                    # a state event. Otherwise we may be asked to move the
+                    # motor again which would result in an exception saying
+                    # that the motor is already involved in an operation
+                    # ... but before protect the motor so that the monitor
+                    # doesn't come in between the two instructions below and
+                    # send a state event on it's own
+                    # with moveable:
                     #    moveable.clear_operation()
                     moveable.set_state_info(real_state_info, propagate=2)
 
@@ -407,12 +408,14 @@ class PoolMotion(PoolAction):
 
                     # send positions
                     self.read_dial_position(ret=positions)
-                    position_error_occured = self._position_error_occured(positions)
+                    position_error_occured = self._position_error_occured(
+                        positions)
                     if position_error_occured:
                         self.error("Loop final read position error. "
                                    "Retrying...")
                         self.read_dial_position(ret=positions)
-                        position_error_occured = self._position_error_occured(positions)
+                        position_error_occured = self._position_error_occured(
+                            positions)
                         if position_error_occured:
                             self.error("Loop final read position error 2. "
                                        "Cannot send final position event!!!")
@@ -437,7 +440,8 @@ class PoolMotion(PoolAction):
                 # send position
                 for moveable, position_value in positions.items():
                     if position_value.error:
-                        self.error("Loop read position error for %s" % moveable.name)
+                        self.error("Loop read position error for %s" %
+                                   moveable.name)
                     moveable.put_dial_position(position_value)
             i += 1
             time.sleep(nap)
