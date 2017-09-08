@@ -7,7 +7,11 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
-- ...
+- Optional data extrapolation for the very first records in ascanct & co.
+  (ApplyExtrapolation environment variable) (#588)
+
+### Fixed
+- Bug in theoretical motor position in ascanct & co. (#591)
 
 ## [2.3.2] - 2017-08-11
 For a full log of commits between versions run (in your git repo):
