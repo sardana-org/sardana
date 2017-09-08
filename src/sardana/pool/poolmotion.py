@@ -241,7 +241,7 @@ class PoolMotion(PoolAction):
             try:
                 pool_ctrl.ctrl.StartAll()
             except:
-                self._recover_start_error(pool_ctrl, "StartOne",
+                self._recover_start_error(pool_ctrl, "StartAll",
                                           read_state=True)
                 raise
 
