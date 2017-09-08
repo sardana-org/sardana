@@ -1904,7 +1904,7 @@ def generate_positions(motors, starts, finals, nr_points):
     moveable_positions = []
     for start, final in zip(starts, finals):
         moveable_positions.append(
-            np.linspace(start, final, nr_points + 1))
+            np.linspace(start, final, nr_points))
     # prepare table header from moveables names
     dtype_spec = []
     for motor in motors:
