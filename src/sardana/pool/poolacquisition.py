@@ -316,7 +316,7 @@ class PoolAcquisition(PoolAction):
                 sw_acq_kwargs = dict(kwargs)
                 sw_acq_kwargs['config'] = sw_acq_cfg
                 sw_acq_kwargs['integ_time'] = integ_time
-                sw_acq_kwargs['repetitions'] = repetitions
+                sw_acq_kwargs['repetitions'] = 1
                 self.set_sw_config(sw_acq_kwargs)
             if len(zerod_acq_cfg['controllers']):
                 zerod_acq_kwargs = dict(kwargs)
