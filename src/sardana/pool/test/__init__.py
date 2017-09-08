@@ -37,3 +37,4 @@ from .test_poolcontrollermanager import *
 from .test_poolcountertimer import *
 from .test_poolsynchronization import *
 from .test_synchronization import *
+from .test_poolmotion import *
