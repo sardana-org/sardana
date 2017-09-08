@@ -31,6 +31,7 @@ from sardana.pool.test import (FakePool, createPoolController,
                                createPoolMotor, dummyPoolMotorCtrlConf01,
                                dummyMotorConf01, dummyMotorConf02)
 
+
 class PoolMotionTestCase(unittest.TestCase):
     """Unittest of PoolMotion class"""
 
@@ -43,21 +44,25 @@ class PoolMotionTestCase(unittest.TestCase):
             self.skipTest("mock module is not available")
         pool = FakePool()
         dummy_mot_ctrl = createPoolController(pool, dummyPoolMotorCtrlConf01)
-        self.dummy_mot = createPoolMotor(pool, dummy_mot_ctrl, dummyMotorConf01)
-        self.dummy_mot2 = createPoolMotor(pool, dummy_mot_ctrl, dummyMotorConf02)
+        self.dummy_mot = createPoolMotor(pool, dummy_mot_ctrl,
+                                         dummyMotorConf01)
+        self.dummy_mot2 = createPoolMotor(pool, dummy_mot_ctrl,
+                                          dummyMotorConf02)
         dummy_mot_ctrl.add_element(self.dummy_mot)
         pool.add_element(dummy_mot_ctrl)
         pool.add_element(self.dummy_mot)
         pool.add_element(self.dummy_mot2)
-        
-        #{moveable: (position, dial_position, do_backlash, backlash, instability_time=None)}
-        self.items = {self.dummy_mot:(0, 0, False, 0), self.dummy_mot2:(0, 0, False, 0)}
+
+        # {moveable: (position, dial_position,
+        #             do_backlash, backlash, instability_time=None)}
+        self.items = {self.dummy_mot: (0, 0, False, 0),
+                      self.dummy_mot2: (0, 0, False, 0)}
         # Create mock and define its functions
         ctrl_methods = ['PreStartAll', 'StartAll', 'PreStartOne', 'StartOne',
                         'PreStateAll', 'StateAll', 'PreStateOne', 'StateOne',
                         'PreReadAll', 'PreReadOne', 'ReadOne', 'ReadAll',
                         'PreStopAll', 'StopAll', 'PreStopOne', 'StopOne',
-                        'PreAbortAll', 'AbortAll', 'PreAbortOne', 'AbortOne',]
+                        'PreAbortAll', 'AbortAll', 'PreAbortOne', 'AbortOne']
         self.mock_mot_ctrl = Mock(spec=ctrl_methods)
         self.mock_mot_ctrl.StateOne.return_value = (State.Moving, 'moving')
 
@@ -78,18 +83,18 @@ class PoolMotionTestCase(unittest.TestCase):
         # starting action
         self.motionaction.start_action(*args, **kwargs)
         # stopping the motion
-        #self.stopMotion()
+        # self.stopMotion()
         args = ()
         kwargs = {'items': self.items}
         self.motionaction.stop_action(*args, **kwargs)
-        
+
         # verifying that the stop has called all the controller methods chain
         self.mock_mot_ctrl.assert_has_calls([call.PreStopAll(),
-                                             call.PreStopOne(1,), 
-                                             call.StopOne(1,), 
+                                             call.PreStopOne(1,),
+                                             call.StopOne(1,),
                                              call.PreStopOne(2,),
                                              call.StopOne(2,),
-                                             call.StopAll(),])
+                                             call.StopAll()])
 
     def test_abort(self):
         """Verify motion abort call chain."""
@@ -101,14 +106,14 @@ class PoolMotionTestCase(unittest.TestCase):
         args = ()
         kwargs = {'items': self.items}
         self.motionaction.abort_action(*args, **kwargs)
-        
+
         # verifying that the abort has called all the controller methods chain
         self.mock_mot_ctrl.assert_has_calls([call.PreAbortAll(),
-                                             call.PreAbortOne(1,), 
-                                             call.AbortOne(1,), 
+                                             call.PreAbortOne(1,),
+                                             call.AbortOne(1,),
                                              call.PreAbortOne(2,),
                                              call.AbortOne(2,),
-                                             call.AbortAll(),])
+                                             call.AbortAll()])
 
     def tearDown(self):
         self.motionaction = None
