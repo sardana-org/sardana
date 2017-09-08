@@ -56,7 +56,8 @@ class PoolMotionTestCase(unittest.TestCase):
         ctrl_methods = ['PreStartAll', 'StartAll', 'PreStartOne', 'StartOne',
                         'PreStateAll', 'StateAll', 'PreStateOne', 'StateOne',
                         'PreReadAll', 'PreReadOne', 'ReadOne', 'ReadAll',
-                        'PreStopAll', 'StopAll', 'PreStopOne', 'StopOne',]
+                        'PreStopAll', 'StopAll', 'PreStopOne', 'StopOne',
+                        'PreAbortAll', 'AbortAll', 'PreAbortOne', 'AbortOne',]
         self.mock_mot_ctrl = Mock(spec=ctrl_methods)
         self.mock_mot_ctrl.StateOne.return_value = (State.Moving, 'moving')
 
@@ -89,6 +90,25 @@ class PoolMotionTestCase(unittest.TestCase):
                                              call.PreStopOne(2,),
                                              call.StopOne(2,),
                                              call.StopAll(),])
+
+    def test_abort(self):
+        """Verify motion abort call chain."""
+        from mock import call
+        args = ()
+        kwargs = {'items': self.items}
+        # starting action
+        self.motionaction.start_action(*args, **kwargs)
+        args = ()
+        kwargs = {'items': self.items}
+        self.motionaction.abort_action(*args, **kwargs)
+        
+        # verifying that the abort has called all the controller methods chain
+        self.mock_mot_ctrl.assert_has_calls([call.PreAbortAll(),
+                                             call.PreAbortOne(1,), 
+                                             call.AbortOne(1,), 
+                                             call.PreAbortOne(2,),
+                                             call.AbortOne(2,),
+                                             call.AbortAll(),])
 
     def tearDown(self):
         self.motionaction = None
