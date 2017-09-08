@@ -717,10 +717,10 @@ class PoolController(PoolBaseController):
 
     @check_ctrl
     def stop_elements(self, elements=None):
-        """Stops the given elements. If axes is None, stops all active axes.
+        """Stops the given elements. If elements is None, stops all active elements.
 
         :param elements: the list of elements to stop. Default is None
-                         meaning all active axis in this controller
+                         meaning all active elements in this controller
         :type axes: seq<PoolElement> or None
         """
         if elements is None:
