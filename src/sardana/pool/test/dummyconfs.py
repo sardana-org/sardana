@@ -233,4 +233,3 @@ dummyMotorConf02 = {'axis': 2,
                     'id': 1,
                     'name': '',
                     'pool': None}
-
