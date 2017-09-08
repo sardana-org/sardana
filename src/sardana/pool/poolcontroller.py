@@ -723,11 +723,21 @@ class PoolController(PoolBaseController):
                          meaning all active axis in this controller
         :type axes: seq<PoolElement> or None
         """
+        axes = []
         if elements is None:
-            return self.raw_stop_all()
+            axes = self._getPoolController().get_element_axis().keys()
+        else:
+            axes = [e.axis for e in elements]
 
-        for element in elements:
-            self.raw_stop_one(element.axis)
+        ctrl = self.ctrl
+        ctrl.PreStopAll()
+        for axis in axes:
+            ret = ctrl.PreStopOne(axis)
+            if not ret:
+                raise Exception("%s.PreStopOne(%d) returns False"
+                                % (self.name, axis))
+            self.raw_stop_one(axis)
+        return self.stop_all()
 
     def raw_abort_all(self):
         try:
@@ -761,6 +771,8 @@ class PoolController(PoolBaseController):
     def abort_all(self):
         self.raw_abort_all()
 
+    abort = abort_all
+
     @check_ctrl
     def abort_one(self, axis):
         return self.raw_abort_one(axis)
@@ -787,13 +799,21 @@ class PoolController(PoolBaseController):
                          meaning all active axis in this controller
         :type axes: seq<PoolElement> or None
         """
+        axes = []
         if elements is None:
-            return self.raw_abort_all()
+            axes = self._getPoolController().get_element_axis().keys()
+        else:
+            axes = [e.axis for e in elements]
 
-        for element in elements:
-            self.raw_abort_one(element.axis)
-
-    abort = abort_all
+        ctrl = self.ctrl
+        ctrl.PreAbortAll()
+        for axis in axes:
+            ret = ctrl.PreAbortOne(axis)
+            if not ret:
+                raise Exception("%s.PreAbortOne(%d) returns False"
+                                % (self.name, axis))
+            self.raw_abort_one(axis)
+        return self.abort_all()
 
     @check_ctrl
     def emergency_break(self, elements=None):
