@@ -7,8 +7,10 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
+- Allow to hide Taurus 4 related deprecation warnings
+  (`TAURUS_MAX_DEPRECATION_COUNTS` sardana custom setting) (#550)
 - Optional data extrapolation for the very first records in ascanct & co.
-  (ApplyExtrapolation environment variable) (#588)
+  (`ApplyExtrapolation` environment variable) (#588)
 
 ### Fixed
 - Bug in theoretical motor position in ascanct & co. (#591)
