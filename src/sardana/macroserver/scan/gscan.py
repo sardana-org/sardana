@@ -313,11 +313,17 @@ class GScan(Logger):
 
         # The Scan data object
         try:
-            applyInterpolation = macro.getEnv('ApplyInterpolation')
+            apply_interpol = macro.getEnv('ApplyInterpolation')
         except UnknownEnv:
-            applyInterpolation = False
+            apply_interpol = False
+        try:
+            apply_extrapol = macro.getEnv('ApplyExtrapolation')
+        except UnknownEnv:
+            apply_extrapol = False
+        # The Scan data object
         data = ScanFactory().getScanData(data_handler,
-                                         apply_interpolation=applyInterpolation)
+                                         apply_interpolation=apply_interpol,
+                                         apply_extrapolation=apply_extrapol)
 
         # The Output recorder (if any)
         output_recorder = self._getOutputRecorder()
@@ -1280,8 +1286,10 @@ class CScan(GScan):
     def set_all_waypoints_finished(self, v):
         self._all_waypoints_finished = v
 
-    def do_backup(self):
-        super(CScan, self).do_backup()
+    def _backup_motor(self):
+        """Backup motors initial state (velocity, acceleration and
+        deceleration).
+        """
         self._backup = backup = []
         for moveable in self._physical_moveables:
             # first backup all motor parameters
@@ -1298,9 +1306,14 @@ class CScan(GScan):
                 motor_backup = None
             backup.append(motor_backup)
 
-    def do_restore(self):
-        super(CScan, self).do_restore()
-        # restore changed motors to initial state
+    def do_backup(self):
+        super(CScan, self).do_backup()
+        self._backup_motor()
+
+    def _restore_motors(self):
+        """Restore changed motors to initial state (velocity, acceleration and
+        deceleration).
+        """
         for motor_backup in self._backup:
             if motor_backup is None:
                 continue
@@ -1313,6 +1326,10 @@ class CScan(GScan):
             except ScanException, e:
                 msg = "Error when restoring motor's backup (%s)" % e
                 raise ScanException(msg)
+
+    def do_restore(self):
+        super(CScan, self).do_restore()
+        self._restore_motors()
 
     def _setFastMotions(self, motors=None):
         '''make given motors go at their max speed and accel'''
@@ -1893,7 +1910,7 @@ def generate_positions(motors, starts, finals, nr_points):
     moveable_positions = []
     for start, final in zip(starts, finals):
         moveable_positions.append(
-            np.linspace(start, final, nr_points + 1))
+            np.linspace(start, final, nr_points))
     # prepare table header from moveables names
     dtype_spec = []
     for motor in motors:
@@ -2100,6 +2117,8 @@ class CTScan(CScan, CAcquisition):
             self.debug("Configuration took %s time." %
                        repr(endTimestamp - startTimestamp))
             ############
+            # try to go as fast as possile to start position
+            self._setFastMotions(moveables)
             # move to start position
             self.macro.debug("Moving to start position: %s" % repr(start_pos))
             motion.move(start_pos)
@@ -2225,10 +2244,10 @@ class CTScan(CScan, CAcquisition):
         self.macro.debug("on_waypoints_end() entering...")
         self.set_all_waypoints_finished(True)
         if restore_positions is not None:
-            self._setFastMotions()
+            self._restore_motors()  # first restore motors backup
+            self._setFastMotions()  # then try to go even faster (limits)
             self.macro.info("Correcting overshoot...")
             self._physical_motion.move(restore_positions)
-        self.do_restore()
         self.motion_end_event.set()
         self.cleanup()
         self.macro.debug("Waiting for data events to be processed")

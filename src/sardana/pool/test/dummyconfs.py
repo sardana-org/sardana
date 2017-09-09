@@ -34,7 +34,7 @@ __all__ = ['dummyMeasurementGroupConf01',
            'softwarePoolTGCtrlConf01']
 
 
-# Pool Measuremeng Group
+# Pool Measurement Group
 '''Minimum configuration to create a Pool MeasurementGroup'''
 dummyMeasurementGroupConf01 = {'full_name': '',
                                'id': None,

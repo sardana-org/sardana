@@ -50,6 +50,10 @@ SPOCK_INPUT_HANDLER = "CLI"
 #: Use this map in order to avoid ambiguity with scan recorders (file) if
 #: extension is intended to be the recorder selector.
 #: dict<str, str>
-#: key   - scan file extension
+#: key   - scan file extension e.g. ".h5"
 #: value - recorder name
 SCAN_RECORDER_MAP = None
+
+# TODO: Temporary solution, available while Taurus3 is being supported.
+# Maximum number of Taurus deprecation warnings allowed to be displayed.
+TAURUS_MAX_DEPRECATION_COUNTS = 0
