@@ -678,10 +678,10 @@ def prepare_server(args, tango_args):
                                           key=lambda s: s.lower())
                 c = 1
                 while True:
-                    print("\nAvailable Pools:")
-                    for pool in sorted_pools:
-                        print pool
                     if c == 1:
+                        print("\nAvailable Pools:")
+                        for pool in sorted_pools:
+                            print pool
                         msg = "\nPlease select the Pool to connect to " \
                               "(return to finish): "
                     else:
