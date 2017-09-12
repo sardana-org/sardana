@@ -676,22 +676,33 @@ def prepare_server(args, tango_args):
                     pools_for_choosing.append(pools[i][3])
                     sorted_pools = sorted(pools_for_choosing,
                                           key=lambda s: s.lower())
+                c = 1
                 while True:
                     print("\nAvailable Pools:")
                     for pool in sorted_pools:
                         print pool
-                    elem = raw_input(
-                        "\nPlease select the Pool to connect to "
-                        "(return to finish): ").strip()
-                    if not len(elem):
-                        print("MacroServer %s has not been linked to any Pool"
-                              % inst_name)
+                    if c == 1:
+                        msg = "\nPlease select the Pool to connect to " \
+                              "(return to finish): "
+                    else:
+                        msg = "\nIf you wish to connect to more than one " \
+                              "Pool, \nplease select the new Pool to  " \
+                              "connect to (return to finish): "
+                    elem = raw_input(msg).strip()
+                    if not len(elem) and not pool_names:
+                        print("\nMacroServer %s has not been connected to any "
+                              "Pool\n" % inst_name)
+                        break
+                    elif not len(elem):
+                        print("\nMacroServer %s has been connected to "
+                              "Pool/s %s\n" % (inst_name, pool_names))
                         break
                     if elem.lower() not in all_pools:
                         print "Unknown pool element\n"
                     else:
+                        c += 1
                         pool_names.append(elem)
-                        break
+
                 log_messages += register_sardana(db, server_name, inst_name,
                                                  pool_names)
             else:
