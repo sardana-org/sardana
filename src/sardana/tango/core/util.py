@@ -682,12 +682,9 @@ def prepare_server(args, tango_args):
                         print("\nAvailable Pools:")
                         for pool in sorted_pools:
                             print pool
-                        msg = "\nPlease select the Pool to connect to " \
-                              "(return to finish): "
-                    else:
-                        msg = "\nIf you wish to connect to more than one " \
-                              "Pool, \nplease select the new Pool to  " \
-                              "connect to (return to finish): "
+                        print("")
+                    msg = "Please select the Pool to connect to " \
+                          "(return to finish): "
                     elem = raw_input(msg).strip()
                     if not len(elem) and not pool_names:
                         print("\nMacroServer %s has not been connected to any "
@@ -698,7 +695,7 @@ def prepare_server(args, tango_args):
                               "Pool/s %s\n" % (inst_name, pool_names))
                         break
                     if elem.lower() not in all_pools:
-                        print "Unknown pool element\n"
+                        print "Unknown pool element"
                     else:
                         c += 1
                         pool_names.append(elem)
