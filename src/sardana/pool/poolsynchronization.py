@@ -135,7 +135,7 @@ class PoolSynchronization(PoolAction):
             # the motor had finished moving before reaching the final positions
             # e.g. motion stopped by the user or inprecise positioning (#583)
             if moveable is not None:
-                moveable.add_listener(self._synch_soft)                 
+                moveable.add_listener(self._synch_soft)
                 remove_mov_listener = partial(moveable.remove_listener,
                                               self._synch_soft)
                 self.add_finish_hook(remove_mov_listener, False)
