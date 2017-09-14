@@ -349,6 +349,9 @@ class Door(SardanaDevice):
             throw_sardana_exception(mse)
 
         attr.set_value(*data)
+        # workaround for a bug in PyTango (tango-controls/pytango#147),
+        # i.e. temporary solution for issue #447
+        # (storing reference to data so it can not be destroyed by GC)
         self.__buf_data = data
 
     def read_MacroStatus(self, attr):
