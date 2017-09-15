@@ -893,11 +893,11 @@ class GScan(Logger):
                 self.macro.pausePoint()
                 yield i
             endstatus = ScanEndStatus.Normal
-        except StopException, e:
+        except StopException:
             endstatus = ScanEndStatus.Stop
-        except AbortException, e:
+        except AbortException:
             endstatus = ScanEndStatus.Abort
-        except Exception, e:
+        except Exception:
             endstatus = ScanEndStatus.Exception
         finally:
             self._env["endstatus"] = endstatus
