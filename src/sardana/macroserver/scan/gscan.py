@@ -1197,7 +1197,6 @@ class CScan(GScan):
             self._setFastMotions()
             self.macro.info("Correcting overshoot...")
             self.motion.move(restore_positions)
-        self.do_restore()
         self.motion_end_event.set()
         self.motion_event.set()
 
