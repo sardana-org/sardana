@@ -1207,9 +1207,11 @@ class CScan(GScan):
             self._go_through_waypoints()
         except StopException:
             self.on_waypoints_end()
-        except ScanException, e:
-            raise e
-        except Exception:
+            raise
+        except ScanException:
+            self.on_waypoints_end()
+            raise
+        except:
             self.macro.debug('An error occurred moving to waypoints')
             self.macro.debug('Details: ', exc_info=True)
             self.on_waypoints_end()
