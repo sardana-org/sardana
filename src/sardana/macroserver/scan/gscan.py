@@ -2048,8 +2048,8 @@ class CTScan(CScan, CAcquisition):
                     msg = 'start position of motor %s (%f) ' % (name, start) +\
                           'is out of range (%f, %f)' % (min_pos, max_pos)
                     raise ScanException(msg)
-                if final < min_pos or start > max_pos:
-                    name = moveable.getName
+                if final < min_pos or final > max_pos:
+                    name = moveable.getName()
                     msg = 'final position of motor %s (%f) ' % (name, final) +\
                           'is out of range (%f, %f)' % (min_pos, max_pos)
                     raise ScanException(msg)
