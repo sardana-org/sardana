@@ -2180,10 +2180,12 @@ class CTScan(CScan, CAcquisition):
                     "Moving to waypoint position: %s" % repr(final_pos))
                 motion.move(final_pos)
             finally:
-                # for the moment just adds an extra 15 s to wait for the
-                # acquisition to finish TODO: allow parametrizing extra time
-                EXTRA_TIME = 10
-                timeout = delay_time + total_time * repeats + EXTRA_TIME
+                # wait extra 15 s to for the acquisition to finish
+                # if it does not finish, abort the measurement group
+                # (this could be due to missed hardware triggers or 
+                # positioning problems)
+                # TODO: allow parametrizing timeout
+                timeout = 15
                 measurement_group.waitFinish(timeout=timeout, id=mg_id)
                 # TODO: For Taurus 4 / Taurus 3 compatibility
                 if hasattr(measurement_group, "stateObj"):
