@@ -2169,7 +2169,7 @@ class CTScan(CScan, CAcquisition):
                 else:
                     external_moveables.append(moveable)
                     starts.append(start)
-                    finals.append(finals)
+                    finals.append(final)
             # generate theoretical positions only for the external moveables
             # the ones that do not belong the the pool which synchronizes the
             # acquisition
