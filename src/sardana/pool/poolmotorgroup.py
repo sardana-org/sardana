@@ -139,12 +139,9 @@ class PoolMotorGroup(PoolGroupElement):
 
     def on_element_changed(self, evt_src, evt_type, evt_value):
         name = evt_type.name.lower()
-        if name in ('state', 'position'):
+        if name == 'state':
             state, status = self._calculate_states()
-            if name == 'state':
-                propagate_state = evt_type.priority
-            else:
-                propagate_state = 0
+            propagate_state = evt_type.priority
             self.set_state(state, propagate=propagate_state)
             self.set_status(status, propagate=propagate_state)
 
