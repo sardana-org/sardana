@@ -302,7 +302,8 @@ class PoolAcquisition(PoolAction):
                 pseudo_elem.clear_value_buffer()
         config = kwargs['config']
         synchronization = kwargs["synchronization"]
-        self.set_moveables(kwargs["moveables"])
+        moveables = kwargs["moveables"]
+        self.set_moveables(moveables)
         integ_time = extract_integ_time(synchronization)
         repetitions = extract_repetitions(synchronization)
         # TODO: this code splits the global mg configuration into
@@ -317,7 +318,9 @@ class PoolAcquisition(PoolAction):
             cont_acq_kwargs['integ_time'] = integ_time
             cont_acq_kwargs['repetitions'] = repetitions
             self._hw_acq.run(*args, **cont_acq_kwargs)
-        if len(sw_acq_cfg['controllers']) or len(zerod_acq_cfg['controllers']):
+        if (len(sw_acq_cfg['controllers']) or
+                len(zerod_acq_cfg['controllers']) or
+                len(moveables)):
             self._synch.add_listener(self)
             if len(sw_acq_cfg['controllers']):
                 sw_acq_kwargs = dict(kwargs)
