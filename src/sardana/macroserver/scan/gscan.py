@@ -1938,6 +1938,7 @@ class CTScan(CScan, CAcquisition):
                        moveables=moveables, env=env, constraints=constraints,
                        extrainfodesc=extrainfodesc)
         CAcquisition.__init__(self)
+        self.__mntGrpStarted = False
 
     def prepare_waypoint(self, waypoint, start_positions, iterate_only=False):
         '''Prepare list of MotionPath objects per each physical motor.
