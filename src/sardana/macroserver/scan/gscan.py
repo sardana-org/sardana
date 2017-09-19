@@ -2182,7 +2182,7 @@ class CTScan(CScan, CAcquisition):
             finally:
                 # wait extra 15 s to for the acquisition to finish
                 # if it does not finish, abort the measurement group
-                # (this could be due to missed hardware triggers or 
+                # (this could be due to missed hardware triggers or
                 # positioning problems)
                 # TODO: allow parametrizing timeout
                 timeout = 15
