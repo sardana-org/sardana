@@ -358,9 +358,6 @@ class PoolMotion(PoolAction):
                     old_motion_state != MS.MovingInstability
                 stopped_now = not moving and old_motion_state in MovingStates
 
-                # make sure the state is placed in the motor
-                moveable.put_state_info(real_state_info)
-
                 if emergency_stop:
                     continue
 
