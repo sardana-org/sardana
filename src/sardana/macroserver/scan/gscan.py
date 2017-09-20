@@ -1891,7 +1891,7 @@ def generate_timestamps(synchronization):
         timestamp += delay
         ret[index] = dict(timestamp=timestamp)
         index += 1
-        for _ in xrange(1, repeats + 1):
+        for _ in xrange(1, repeats):
             timestamp += total
             ret[index] = dict(timestamp=timestamp)
             index += 1
