@@ -377,6 +377,19 @@ class PoolMotion(PoolAction):
                 elif stopped_now:
                     moveable.debug("Stopped")
 
+                    # Set state before setting final position for the needs of
+                    # Tango control system. In Tango, attributes values have
+                    # metadata called quality e.g. CHANGING, VALID, etc.
+                    # So the position attribute has CHANGING quality if the
+                    # moveable is in Moving state or VALID quality if the
+                    # moveable is in any other state. The propagate is equal
+                    # to 1 so this state will be propagated to the listeners
+                    # (for sure it is different than the previous event value
+                    # cause we have just finished the movement). The listeners
+                    # can be pseudo motors or motor groups, both are core,
+                    # but also Tango device. Tango device will not push this
+                    # event.
+                    moveable.set_state_info(real_state_info, propagate=1)
                     # try to read a last position to force an event
                     moveable.get_position(cache=False, propagate=2)
 
