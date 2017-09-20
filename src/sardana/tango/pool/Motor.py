@@ -387,6 +387,25 @@ with this value is sent to clients using events.
         priority = event_type.priority
         value, w_value, error = None, None, None
 
+        # TODO: Workaround for too few priority levels in the Sardana core.
+        # In the core, there exists only three different priority levels:
+        # 0 for not propagating
+        # 1 to propagate only if new state is different than the last event
+        # 2 to propagate with priority - regardless of the event
+        # For the Tango needs, the State and Status events needs to be
+        # propgated between internal (core) listeners but can not be pushed
+        # with Tango events yet. The need is to update the pseudo motors and
+        # motor group states when the underneeth moveable changes state so the
+        # subsequent Position event can use the updated state information to
+        # choose a proper quality: CHANGING or VALID. And the risk of pushing
+        # this event too early is that another move could start before pushing
+        # the last position update.
+        # As it is in the core, the events with priority 1 are only used
+        # internally and does not need to be pushed by Tango until this is
+        # properly solved.
+        if name in ("state", "status") and priority < 2:
+            return
+
         if name == "state":
             value = self.calculate_tango_state(event_value)
         elif name == "status":
