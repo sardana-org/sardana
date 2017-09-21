@@ -242,8 +242,8 @@ class PoolBaseElement(PoolObject):
         if not propagate:
             return
         s_evt = self._status_event
-        if (s_evt is not None and len(status) == len(s_evt) and status == s_evt
-            and propagate < 2):
+        if (s_evt is not None and len(status) == len(s_evt)
+                and status == s_evt and propagate < 2):
             # current status is equal to last status_event. Skip event
             return
         self._status_event = status
