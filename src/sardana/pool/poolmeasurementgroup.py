@@ -159,7 +159,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         if name == 'state':
             with self._state_lock:
                 state, status = self._calculate_states()
-                self.set_state(state, propagate=2)
+                self.set_state(state, propagate=1)
                 self.set_status("\n".join(status))
 
     def get_pool_controllers(self):
