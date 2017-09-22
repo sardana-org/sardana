@@ -238,7 +238,7 @@ class BaseAcquisition(object):
         mot.set_velocity(0.5)
         channel_names = self.prepare_meas(config)
         self.pmg.synchronization = synchronization
-        self.pmg.moveable = moveable
+        self.pmg.master_moveable = moveable
         repetitions = 0
         for group in synchronization:
             repetitions += group[SynchParam.Repeats]
