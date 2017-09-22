@@ -230,7 +230,7 @@ class PoolMotion(PoolAction):
         # Change the state to Moving
         for moveable in moveables:
             moveable_info = motion_info[moveable]
-            moveable.set_state(State.Moving, propagate=2)
+            moveable.set_state(State.Moving, propagate=1)
             state_info = moveable.inspect_state(), \
                 moveable.inspect_status(), \
                 moveable.inspect_limit_switches()
@@ -402,7 +402,7 @@ class PoolMotion(PoolAction):
                     # send a state event on it's own
                     # with moveable:
                     #    moveable.clear_operation()
-                    moveable.set_state_info(real_state_info, propagate=2)
+                    moveable.set_state_info(real_state_info, propagate=1)
 
                 # Then update the state
                 if not stopped_now:
@@ -436,12 +436,12 @@ class PoolMotion(PoolAction):
                     # send state
                     for moveable in states:
                         if moveable not in emergency_stop:
-                            moveable.get_state(cache=False, propagate=2)
+                            moveable.get_state(cache=False, propagate=1)
                         else:
                             motion_item = motion_info[moveable]
                             real_state_info = motion_item.get_state_info()
                             moveable.set_state_info(real_state_info,
-                                                    propagate=2)
+                                                    propagate=1)
                 break
 
             # read position every n times
