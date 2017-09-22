@@ -545,14 +545,6 @@ class PoolAcquisitionBase(PoolAction):
                 if ElementType.CTExpChannel in ctrl.get_ctrl_types():
                     _pool_ctrl_dict_loop[ctrl] = pool_ctrl_data
 
-        pool_ctrls = []
-        self._pool_ctrl_dict_loop = _pool_ctrl_dict_loop = {}
-        for ctrl, v in pool_ctrls_dict.items():
-            if ctrl.is_timerable():
-                pool_ctrls.append(ctrl)
-            if ElementType.CTExpChannel in ctrl.get_ctrl_types():
-                _pool_ctrl_dict_loop[ctrl] = v
-
         # make sure the controller which has the master channel is the last to
         # be called
         pool_ctrls.remove(master_ctrl)
