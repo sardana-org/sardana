@@ -1661,16 +1661,16 @@ class MeasurementGroup(PoolElement):
         self.getSynchronizationObj().write(data)
         self._last_integ_time = None
 
-    def getMoveableObj(self):
-        return self._getAttrEG('Moveable')
+    def getMasterMoveableObj(self):
+        return self._getAttrEG('MasterMoveable')
 
-    def getMoveable(self):
-        return self._getAttrValue('Moveable')
+    def getMasterMoveable(self):
+        return self._getAttrValue('MasterMoveable')
 
-    def setMoveable(self, moveable=None):
+    def setMasterMoveable(self, moveable=None):
         if moveable is None:
             moveable = 'None'  # Tango attribute is of type DevString
-        self.getMoveableObj().write(moveable)
+        self.getMasterMoveableObj().write(moveable)
 
     def getLatencyTimeObj(self):
         return self._getAttrEG('LatencyTime')
@@ -1798,7 +1798,7 @@ class MeasurementGroup(PoolElement):
         if duration is None or duration == 0:
             return self.getStateEG().readValue(), self.getValues()
         self.putIntegrationTime(duration)
-        self.setMoveable(None)
+        self.setMasterMoveable(None)
         self.setMoveables([])
         PoolElement.go(self, *args, **kwargs)
         state = self.getStateEG().readValue()

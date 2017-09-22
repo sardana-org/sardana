@@ -225,18 +225,18 @@ class MeasurementGroup(PoolGroupDevice):
     def write_Repetitions(self, attr):
         self.measurement_group.repetitions = attr.get_write_value()
 
-    def read_Moveable(self, attr):
-        moveable = self.measurement_group.moveable
-        if moveable is None:
-            moveable = 'None'
-        attr.set_value(moveable)
+    def read_MasterMoveable(self, attr):
+        master_moveable = self.measurement_group.master_moveable
+        if master_moveable is None:
+            master_moveable = 'None'
+        attr.set_value(master_moveable)
 
-    def write_Moveable(self, attr):
-        self.measurement_group.moveable = attr.get_write_value()
+    def write_MasterMoveable(self, attr):
+        self.measurement_group.master_moveable = attr.get_write_value()
 
     def read_Moveables(self, attr):
-        moveable = self.measurement_group.moveable
-        attr.set_value(moveable)
+        moveables = self.measurement_group.moveables
+        attr.set_value(moveables)
 
     def write_Moveables(self, attr):
         # Due to the problem with writing an empty scpectrum to the attribute
@@ -319,8 +319,8 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
         'Repetitions': [[DevLong, SCALAR, READ_WRITE],
                         {'Memorized': "true",
                          'Display level': DispLevel.OPERATOR}],
-        'Moveable': [[DevString, SCALAR, READ_WRITE],
-                     {'Display level': DispLevel.EXPERT}],
+        'MasterMoveable': [[DevString, SCALAR, READ_WRITE],
+                           {'Display level': DispLevel.EXPERT}],
         'Moveables': [[DevString, SPECTRUM, READ_WRITE, 4096],
                       {'Display level': DispLevel.EXPERT}],
         'Synchronization': [[DevString, SCALAR, READ_WRITE],

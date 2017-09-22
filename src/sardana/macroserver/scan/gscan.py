@@ -2082,8 +2082,8 @@ class CTScan(CScan, CAcquisition):
             # TODO: let a pseudomotor specify which motor should be used as
             # source
             MASTER = 0
-            moveable = moveables[MASTER].full_name
-            self.measurement_group.setMoveable(moveable)
+            master_moveable = moveables[MASTER].full_name
+            self.measurement_group.setMasterMoveable(master_moveable)
             path = motion_paths[MASTER]
             repeats = self.macro.nr_points
             active_time = self.macro.integ_time
