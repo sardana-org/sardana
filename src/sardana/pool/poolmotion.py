@@ -382,16 +382,16 @@ class PoolMotion(PoolAction):
                     # metadata called quality e.g. CHANGING, VALID, etc.
                     # So the position attribute has CHANGING quality if the
                     # moveable is in Moving state or VALID quality if the
-                    # moveable is in any other state. The propagate is equal
-                    # to 1 so this state will be propagated to the listeners
-                    # (for sure it is different than the previous event value
-                    # cause we have just finished the movement). The listeners
-                    # can be pseudo motors or motor groups, both are core,
-                    # but also Tango device. Tango device will not push this
-                    # event.
-                    moveable.set_state_info(real_state_info, propagate=1)
+                    # moveable is in any other state. Use propagate equal
+                    # to 3 so this state will be propagated internally only
+                    # The listeners can be pseudo motors or motor groups.
+                    moveable.set_state_info(real_state_info, propagate=3)
                     # try to read a last position to force an event
                     moveable.get_position(cache=False, propagate=2)
+                    # temporarily return to the Moving state and propagate it
+                    # internally only, so the final internal & external state
+                    # setting does emit event but only one (respecting filter)
+                    moveable.set_state(State.Moving, propagate=3)
 
                     # free the motor from the OperationContext so we can send
                     # a state event. Otherwise we may be asked to move the
@@ -406,7 +406,7 @@ class PoolMotion(PoolAction):
 
                 # Then update the state
                 if not stopped_now:
-                    moveable.set_state_info(real_state_info, propagate=1)
+                    moveable.set_state_info(real_state_info, propagate=3)
 
                 if moving:
                     in_motion = True
