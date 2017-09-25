@@ -306,6 +306,7 @@ class prdef(Macro):
         for code_line in code_lines:
             self.output(code_line.strip('\n'))
 
+
 class relctrl(Macro):
     param_def = [["ctrl_class", Type.ControllerClass, None, "Controller "
                                                             "class to reload"]]
