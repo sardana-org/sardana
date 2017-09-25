@@ -588,6 +588,11 @@ class Controller(PoolElement):
             return elem
 
     def getUsedAxes(self):
+        """Return axes in use by this controller
+
+        :return: list of axes
+        :rtype: list<int>
+        """
         pool = self.getPoolObj()
         axes = []
         for _, elem in pool.getElementsOfType(self.getMainType()).items():
@@ -602,6 +607,11 @@ class Controller(PoolElement):
         self.warning(msg)
         self.getUsedAxes()
     def getLastUsedAxis(self):
+        """Return the last used axis (the highest axis) in this controller
+
+        :return: last used axis
+        :rtype: int or None
+        """
         return max([1] + self.getUsedAxis())
 
     def __cmp__(self, o):
