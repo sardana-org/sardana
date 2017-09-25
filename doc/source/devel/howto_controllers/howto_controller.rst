@@ -135,6 +135,10 @@ These methods are :meth:`~sardana.pool.controller.Controller.AddDevice` and
 new axis belonging to the controller is created in sardana. The 
 :meth:`~sardana.pool.controller.Controller.DeleteDevice` method is
 called when an axis belonging to the controller is removed from sardana.
+These methods are also called when the sardana server is started and if the
+controller code has changed on the file and the new code is reloaded into
+sardana.
+
 The example shows an example how to implement these methods on a motor
 controller:
 
