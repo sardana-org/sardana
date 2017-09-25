@@ -587,15 +587,20 @@ class Controller(PoolElement):
                 continue
             return elem
 
-    def getUsedAxis(self):
+    def getUsedAxes(self):
         pool = self.getPoolObj()
-        axis = []
+        axes = []
         for _, elem in pool.getElementsOfType(self.getMainType()).items():
             if elem.controller != self.getName():
                 continue
-            axis.append(elem.getAxis())
-        return sorted(axis)
+            axes.append(elem.getAxis())
+        return sorted(axes)
 
+    def getUsedAxis(self):
+        msg = ("getUsedAxis is deprecated since version Jan18. ",
+               "Use getUsedAxes instead.")
+        self.warning(msg)
+        self.getUsedAxes()
     def getLastUsedAxis(self):
         return max([1] + self.getUsedAxis())
 
