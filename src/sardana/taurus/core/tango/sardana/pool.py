@@ -606,13 +606,17 @@ class Controller(PoolElement):
                "Use getUsedAxes instead.")
         self.warning(msg)
         self.getUsedAxes()
+
     def getLastUsedAxis(self):
         """Return the last used axis (the highest axis) in this controller
 
         :return: last used axis
         :rtype: int or None
         """
-        return max([1] + self.getUsedAxis())
+        used_axes = self.getUsedAxes()
+        if len(used_axes) == 0:
+            return None
+        return max(used_axes)
 
     def __cmp__(self, o):
         return cmp(self.getName(), o.getName())
