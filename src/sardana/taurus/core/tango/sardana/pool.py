@@ -596,7 +596,7 @@ class Controller(PoolElement):
         pool = self.getPoolObj()
         axes = []
         for _, elem in pool.getElementsOfType(self.getMainType()).items():
-            if elem.controller != self.getName():
+            if elem.controller != self.getFullName():
                 continue
             axes.append(elem.getAxis())
         return sorted(axes)
