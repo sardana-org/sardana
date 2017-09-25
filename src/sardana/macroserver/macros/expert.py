@@ -308,6 +308,9 @@ class prdef(Macro):
 
 
 class relctrl(Macro):
+    """Reloads the given controller class code from the pool server filesystem.
+    """
+
     param_def = [["ctrl_class", Type.ControllerClass, None, "Controller "
                                                             "class to reload"]]
 
