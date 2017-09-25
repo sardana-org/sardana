@@ -1204,17 +1204,9 @@ class CScan(GScan):
         """Go through the different waypoints."""
         try:
             self._go_through_waypoints()
-        except StopException:
-            self.on_waypoints_end()
-            raise
-        except ScanException:
-            self.on_waypoints_end()
-            raise
         except:
-            self.macro.debug('An error occurred moving to waypoints')
-            self.macro.debug('Details: ', exc_info=True)
             self.on_waypoints_end()
-            raise ScanException('error while moving to waypoints')
+            raise
 
     def _go_through_waypoints(self):
         """Internal, unprotected method to go through the different waypoints."""
