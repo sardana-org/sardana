@@ -195,7 +195,6 @@ class PoolMeasurementGroup(PoolGroupElement):
 
         external_from_name = isinstance(channel, (str, unicode))
         ndim = None
-        instrument = None
         if external_from_name:
             name = full_name = source = channel
         else:
@@ -203,10 +202,7 @@ class PoolMeasurementGroup(PoolGroupElement):
             full_name = channel.full_name
             source = channel.get_source()
             ndim = None
-            instrument = None
             ctype = channel.get_type()
-            if ctype != ElementType.External:
-                instrument = channel.instrument
             if ctype == ElementType.CTExpChannel:
                 ndim = 0
             elif ctype == ElementType.PseudoCounter:
@@ -232,8 +228,6 @@ class PoolMeasurementGroup(PoolGroupElement):
         channel_data['source'] = channel_data.get('source', source)
         channel_data['enabled'] = channel_data.get('enabled', True)
         channel_data['label'] = channel_data.get('label', channel_data['name'])
-        channel_data['instrument'] = channel_data.get(
-            'instrument', getattr(instrument, 'name', None))
         channel_data['ndim'] = ndim
         # Probably should be initialized by measurement group
         channel_data['output'] = channel_data.get('output', True)
