@@ -597,7 +597,6 @@ class GScan(Logger):
 
         # add master column
         master = self._master
-        instrument = master['instrument']
 
         # add channels from measurement group
         channels_info = self.measurement_group.getChannelsEnabledInfo()
