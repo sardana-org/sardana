@@ -603,7 +603,17 @@ class GScan(Logger):
         channels_info = self.measurement_group.getChannelsEnabledInfo()
         counters = []
         for ci in channels_info:
-            instrument = ci.instrument or ''
+            ctrl_name = ci._controller_name
+            external = ctrl_name.startswith('__')
+            if not external:
+                full_name = ci.full_name
+                # for Taurus 4 compatibility
+                if not full_name.startswith("tango://"):
+                    full_name = "tango://{0}".format(full_name)
+                channel = taurus.Device(full_name)
+                instrument = channel.instrument
+            else:
+                instrument = ''
             try:
                 instrumentFullName = self.macro.findObjs(
                     instrument, type_class=Type.Instrument)[0].getFullName()
