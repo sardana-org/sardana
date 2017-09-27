@@ -544,8 +544,8 @@ class PoolAcquisitionBase(PoolAction):
                 if ElementType.CTExpChannel in ctrl.get_ctrl_types():
                     _pool_ctrl_dict_loop[ctrl] = pool_ctrl_data
 
-        # # make sure the controller which has the master channel is the last to
-        # # be called
+        # make sure the controller which has the master channel is the last to
+        # be called
         pool_ctrls.remove(master_ctrl)
         pool_ctrls.append(master_ctrl)
         with ActionContext(self):
