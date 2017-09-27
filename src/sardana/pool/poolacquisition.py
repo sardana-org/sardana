@@ -511,7 +511,6 @@ class PoolAcquisitionBase(PoolAction):
         if mon_count is not None:
             master_key = 'monitor'
             master_value = -mon_count
-
         master = cfg[master_key]
         master_ctrl = master.controller
 
@@ -532,9 +531,9 @@ class PoolAcquisitionBase(PoolAction):
             ctrl_enabled = False
             elements = pool_ctrl_data['channels']
             for element, element_info in elements.items():
+
                 # skip disabled elements
                 if not element_info['enabled']:
-                    elements.pop(element)
                     continue
                 channel = Channel(element, info=element_info)
                 channels[element] = channel
@@ -545,31 +544,10 @@ class PoolAcquisitionBase(PoolAction):
                 if ElementType.CTExpChannel in ctrl.get_ctrl_types():
                     _pool_ctrl_dict_loop[ctrl] = pool_ctrl_data
 
-        pool_ctrls = []
-        self._pool_ctrl_dict_loop = _pool_ctrl_dict_loop = {}
-        for ctrl, v in pool_ctrls_dict.items():
-            if ctrl.is_timerable():
-                pool_ctrls.append(ctrl)
-            if ElementType.CTExpChannel in ctrl.get_ctrl_types():
-                _pool_ctrl_dict_loop[ctrl] = v
-
-        # make sure the controller which has the master channel is the last to
-        # be called
+        # # make sure the controller which has the master channel is the last to
+        # # be called
         pool_ctrls.remove(master_ctrl)
         pool_ctrls.append(master_ctrl)
-
-        # Determine which channels are active
-        self._channels = channels = {}
-        for pool_ctrl in pool_ctrls:
-            ctrl = pool_ctrl.ctrl
-            pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-            elements = pool_ctrl_data['channels']
-
-            for element, element_info in elements.items():
-                axis = element.axis
-                channel = Channel(element, info=element_info)
-                channels[element] = channel
-
         with ActionContext(self):
 
             # PreLoadAll, PreLoadOne, LoadOne and LoadAll
@@ -617,26 +595,29 @@ class PoolAcquisitionBase(PoolAction):
                 pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
                 elements = pool_ctrl_data['channels'].keys()
                 timer_monitor = pool_ctrl_data[master_key]
+
                 # make sure that the timer/monitor is started as the last one
                 elements.remove(timer_monitor)
                 elements.append(timer_monitor)
                 for element in elements:
-                    axis = element.axis
-                    channel = channels[element]
-                    if channel.enabled:
-                        ret = ctrl.PreStartOne(axis, master_value)
-                        if not ret:
-                            msg = ("%s.PreStartOne(%d) returns False" %
-                                   (pool_ctrl.name, axis))
-                            raise Exception(msg)
-                        try:
-                            ctrl.StartOne(axis, master_value)
-                        except Exception, e:
-                            self.debug(e)
-                            element.set_state(State.Fault, propagate=2)
-                            msg = ("%s.StartOne(%d) failed" %
-                                   (pool_ctrl.name, axis))
-                            raise Exception(msg)
+                    try:
+                        channel = channels[element]
+                    except KeyError:
+                        continue
+
+                    ret = ctrl.PreStartOne(axis, master_value)
+                    if not ret:
+                        msg = ("%s.PreStartOne(%d) returns False" %
+                               (pool_ctrl.name, axis))
+                        raise Exception(msg)
+                    try:
+                        ctrl.StartOne(axis, master_value)
+                    except Exception, e:
+                        self.debug(e)
+                        element.set_state(State.Fault, propagate=2)
+                        msg = ("%s.StartOne(%d) failed" %
+                               (pool_ctrl.name, axis))
+                        raise Exception(msg)
 
             # set the state of all elements to  and inform their listeners
             for channel in channels:
@@ -756,6 +737,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
         :param index: trigger index that will be assigned to the acquired value
         :type index: int
         """
+
         PoolAcquisitionBase.start_action(self, *args, **kwargs)
         self.index = kwargs.get("idx")
 
