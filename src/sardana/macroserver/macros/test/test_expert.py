@@ -76,8 +76,14 @@ class MeasTest(RunMacroTestCase, unittest.TestCase):
         try:
             self.macro_runs(macro_name="defmeas",
                             macro_params=[MNTGRP_NAME, CT_NAME1, CT_NAME2])
+            print "defmeas"
+            print "ExceptionStr: ", self.macro_executor.getExceptionStr()
+            print "CommonBuffer: ", self.macro_executor.getCommonBuffer()
             self.macro_runs(macro_name="udefmeas",
                             macro_params=[MNTGRP_NAME])
+            print "udefmeas"
+            print "ExceptionStr: ", self.macro_executor.getExceptionStr()
+            print "CommonBuffer: ", self.macro_executor.getCommonBuffer()
         except Exception, e:
             import taurus
             taurus.warning("Your system may stay dirty due to an unexpected"
