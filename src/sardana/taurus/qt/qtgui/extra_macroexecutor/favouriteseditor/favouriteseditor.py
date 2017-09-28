@@ -107,32 +107,36 @@ class FavouritesMacrosList(Qt.QListView, BaseConfigurableClass):
 
         self.setSelectionMode(Qt.QListView.ExtendedSelection)
 
-        self.removeAction = Qt.QAction(
-            Qt.QIcon(":/actions/list-remove.svg"), "Remove from favourites", self)
+        self.removeAction = Qt.QAction(Qt.QIcon.fromTheme(
+            "list-remove"), "Remove from favourites", self)
         self.connect(self.removeAction, Qt.SIGNAL(
             "triggered()"), self.removeMacros)
         self.removeAction.setToolTip(
-            "Clicking this button will remov selected macros from favourites.")
+            "Clicking this button will remove selected macros "
+            "from favourites.")
 
-        self.removeAllAction = Qt.QAction(
-            Qt.QIcon(":/places/user-trash.svg"), "Remove all from favourites", self)
+        self.removeAllAction = Qt.QAction(Qt.QIcon.fromTheme(
+            "user-trash"), "Remove all from favourites", self)
         self.connect(self.removeAllAction, Qt.SIGNAL(
             "triggered()"), self.removeAllMacros)
         self.removeAllAction.setToolTip(
             "Clicking this button will remove all macros from favourites.")
 
-        self.moveUpAction = Qt.QAction(
-            Qt.QIcon(":/actions/go-up.svg"), "Move up", self)
-        self.connect(self.moveUpAction, Qt.SIGNAL("triggered()"), self.upMacro)
+        self.moveUpAction = Qt.QAction(Qt.QIcon.fromTheme(
+            "go-up"), "Move up", self)
+        self.connect(self.moveUpAction, Qt.SIGNAL(
+            "triggered()"), self.upMacro)
         self.moveUpAction.setToolTip(
-            "Clicking this button will move the macro up in the favourites hierarchy.")
+            "Clicking this button will move the macro up "
+            "in the favourites hierarchy.")
 
-        self.moveDownAction = Qt.QAction(
-            Qt.QIcon(":/actions/go-down.svg"), "Move up", self)
+        self.moveDownAction = Qt.QAction(Qt.QIcon.fromTheme(
+            "go-down"), "Move down", self)
         self.connect(self.moveDownAction, Qt.SIGNAL(
             "triggered()"), self.downMacro)
         self.moveDownAction.setToolTip(
-            "Clicking this button will move the macro down in the favourites hierarchy.")
+            "Clicking this button will move the macro down "
+            "in the favourites hierarchy.")
 
         self.disableActions()
 

@@ -116,8 +116,9 @@ class HistoryMacrosList(Qt.QListView, BaseConfigurableClass):
     def __init__(self, parent):
         Qt.QListView.__init__(self, parent)
         self.setSelectionMode(Qt.QListView.SingleSelection)
-        self.removeAllAction = Qt.QAction(
-            Qt.QIcon(":/places/user-trash.svg"), "Remove all from history", self)
+
+        self.removeAllAction = Qt.QAction(Qt.QIcon.fromTheme(
+            "user-trash"), "Remove all from history", self)
         self.connect(self.removeAllAction, Qt.SIGNAL(
             "triggered()"), self.removeAllMacros)
         self.removeAllAction.setToolTip(
