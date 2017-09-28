@@ -88,6 +88,9 @@ class MeasTest(RunMacroTestCase, unittest.TestCase):
             import taurus
             taurus.warning("Your system may stay dirty due to an unexpected"
                            " exception during the test.")
+            print "Exception occurred!"
+            print "ExceptionStr: ", self.macro_executor.getExceptionStr()
+            print "CommonBuffer: ", self.macro_executor.getCommonBuffer()
             raise e
 
 # TODO: improve this test: not all sardana controller implement SendToCtrl
