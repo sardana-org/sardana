@@ -230,7 +230,7 @@ attributes specified on the controller with
 
 .. rubric:: The properties
 
-- **Sleep_before_last_read** : This property exposes the motor
+- **Sleep_bef_last_read** : This property exposes the motor
   *instability time*. It defines the time in milli-second that the software
   managing a motor movement will wait between it detects the end of the
   motion and the last motor position reading.

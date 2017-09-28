@@ -230,10 +230,11 @@ class RecordList(dict):
     It is composed of a environment and a list of records"""
 
     def __init__(self, datahandler, environ=None, apply_interpolation=False,
-                 initial_data=None):
+                 apply_extrapolation=False, initial_data=None):
 
         self.datahandler = datahandler
-        self.applyInterpolation = apply_interpolation
+        self.apply_interpolation = apply_interpolation
+        self.apply_extrapolation = apply_extrapolation
         self.initial_data = initial_data
         if environ is None:
             self.environ = RecordEnvironment()
@@ -343,6 +344,34 @@ class RecordList(dict):
                 if interpolate:
                     data[k] = prev_data[k]
 
+    def applyExtrapolation(self, record):
+        """Apply extrapolation to the given record"""
+        data = record.data
+        for k, v in data.items():
+            if v is None:
+                continue
+            # numpy arrays (1D or 2D) are valid values and does not require
+            # extrapolation but provokes TypeError
+            try:
+                extrapolate = math.isnan(v)
+            except TypeError:
+                extrapolate = False
+            if extrapolate:
+                next_idx = self.currentIndex + 1
+                # dig into the record list for the first valid value in the
+                # column and use it to extrapolate missing initial values
+                while True:
+                    next_data = self.records[next_idx].data
+                    next_v = next_data[k]
+                    try:
+                        is_valid = not math.isnan(next_v)
+                    except TypeError:
+                        is_valid = True
+                    if is_valid:
+                        break
+                    next_idx += 1
+                data[k] = next_v
+
     def addData(self, data):
         """Adds data to the record list
 
@@ -371,11 +400,15 @@ class RecordList(dict):
 
     def tryToAdd(self, idx, label):
         start = self.currentIndex
+        # apply extrapolation only at the beginning of the record list
+        apply_extrapolation = (self.apply_extrapolation and start == 0)
         for i in range(start, idx + 1):
             if self.isRecordCompleted(i):
                 rc = self.records[i]
+                if apply_extrapolation:
+                    self.applyExtrapolation(rc)
                 self[self.currentIndex] = rc
-                if self.applyInterpolation:
+                if self.apply_interpolation:
                     self.applyZeroOrderInterpolation(rc)
                 self.datahandler.addRecord(self, rc)
                 self.currentIndex += 1
@@ -396,7 +429,7 @@ class RecordList(dict):
         for i in range(start, len(self.records)):
             rc = self.records[i]
             self[self.currentIndex] = rc
-            if self.applyInterpolation:
+            if self.apply_interpolation:
                 self.applyZeroOrderInterpolation(rc)
             self.datahandler.addRecord(self, rc)
             self.currentIndex += 1
@@ -409,9 +442,10 @@ class RecordList(dict):
 class ScanData(RecordList):
 
     def __init__(self, environment=None, data_handler=None,
-                 apply_interpolation=False):
+                 apply_interpolation=False, apply_extrapolation=False):
         dh = data_handler or DataHandler()
-        RecordList.__init__(self, dh, environment, apply_interpolation)
+        RecordList.__init__(self, dh, environment, apply_interpolation,
+                            apply_extrapolation)
 
 
 class ScanFactory(Singleton):
@@ -427,6 +461,8 @@ class ScanFactory(Singleton):
     def getDataHandler(self):
         return DataHandler()
 
-    def getScanData(self, dh, apply_interpolation=False):
+    def getScanData(self, dh, apply_interpolation=False,
+                    apply_extrapolation=False):
         return ScanData(data_handler=dh,
-                        apply_interpolation=apply_interpolation)
+                        apply_interpolation=apply_interpolation,
+                        apply_extrapolation=apply_extrapolation)

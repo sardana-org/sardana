@@ -312,11 +312,17 @@ class GScan(Logger):
 
         # The Scan data object
         try:
-            applyInterpolation = macro.getEnv('ApplyInterpolation')
+            apply_interpol = macro.getEnv('ApplyInterpolation')
         except UnknownEnv:
-            applyInterpolation = False
+            apply_interpol = False
+        try:
+            apply_extrapol = macro.getEnv('ApplyExtrapolation')
+        except UnknownEnv:
+            apply_extrapol = False
+        # The Scan data object
         data = ScanFactory().getScanData(data_handler,
-                                         apply_interpolation=applyInterpolation)
+                                         apply_interpolation=apply_interpol,
+                                         apply_extrapolation=apply_extrapol)
 
         # The Output recorder (if any)
         output_recorder = self._getOutputRecorder()
@@ -1885,7 +1891,7 @@ def generate_timestamps(synchronization):
         timestamp += delay
         ret[index] = dict(timestamp=timestamp)
         index += 1
-        for _ in xrange(1, repeats + 1):
+        for _ in xrange(1, repeats):
             timestamp += total
             ret[index] = dict(timestamp=timestamp)
             index += 1
@@ -1898,7 +1904,7 @@ def generate_positions(motors, starts, finals, nr_points):
     moveable_positions = []
     for start, final in zip(starts, finals):
         moveable_positions.append(
-            np.linspace(start, final, nr_points + 1))
+            np.linspace(start, final, nr_points))
     # prepare table header from moveables names
     dtype_spec = []
     for motor in motors:
@@ -1932,6 +1938,7 @@ class CTScan(CScan, CAcquisition):
                        moveables=moveables, env=env, constraints=constraints,
                        extrainfodesc=extrainfodesc)
         CAcquisition.__init__(self)
+        self.__mntGrpStarted = False
 
     def prepare_waypoint(self, waypoint, start_positions, iterate_only=False):
         '''Prepare list of MotionPath objects per each physical motor.
@@ -2042,8 +2049,8 @@ class CTScan(CScan, CAcquisition):
                     msg = 'start position of motor %s (%f) ' % (name, start) +\
                           'is out of range (%f, %f)' % (min_pos, max_pos)
                     raise ScanException(msg)
-                if final < min_pos or start > max_pos:
-                    name = moveable.getName
+                if final < min_pos or final > max_pos:
+                    name = moveable.getName()
                     msg = 'final position of motor %s (%f) ' % (name, final) +\
                           'is out of range (%f, %f)' % (min_pos, max_pos)
                     raise ScanException(msg)

@@ -7,7 +7,21 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
-- ...
+- Allow to hide Taurus 4 related deprecation warnings
+  (`TAURUS_MAX_DEPRECATION_COUNTS` sardana custom setting) (#550)
+- Optional data extrapolation for the very first records in ascanct & co.
+  (`ApplyExtrapolation` environment variable) (#588)
+- Present available pools at the macroserver creation moment in the
+  alphabetical order (#585, #586)
+
+### Fixed
+- Spock waits until macro stopping is finished after Ctrl+C (#34. #596)
+- Bug in theoretical motor position in ascanct & co. (#591)
+- Spurious errors when reading RecordData attribute, normally triggered
+  on event subscription e.g. macrogui (#447, #598)
+- Possible too early acquisition triggering by trigger/gate due to the
+  wrong order ot starting trigger/gate and software synchronizer in the
+  synchronization action (#597)
 
 ## [2.3.2] - 2017-08-11
 For a full log of commits between versions run (in your git repo):
