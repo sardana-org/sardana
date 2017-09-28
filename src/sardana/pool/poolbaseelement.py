@@ -164,13 +164,29 @@ class PoolBaseElement(PoolObject):
         return self._state
 
     def set_state(self, state, propagate=1):
+        """Set new state for this object.
+
+        :param state: new state
+        :type state: :obj:`sardana.State`
+        :param propagate:
+            0 for not propagating
+            1 to propagate internally & externally only if new state is
+              different than the last event
+            2 to propagate internally & externally with priority - regardless
+              of the last event
+            3 to propagate internally only if new state is different than the
+              last event
+            4 to propagate internally with priority - regardless of the last
+              event
+        :type propagate: int
+        """
         self._set_state(state, propagate=propagate)
 
     def _set_state(self, state, propagate=1):
         self._state = state
         if not propagate:
             return
-        if state == self._state_event:
+        if state == self._state_event and propagate in (1, 3):
             # current state is equal to last state_event. Skip event
             return
         self._state_event = state
@@ -215,6 +231,22 @@ class PoolBaseElement(PoolObject):
         return self._status
 
     def set_status(self, status, propagate=1):
+        """Set new status for this object.
+
+        :param status: new status
+        :type status: str
+        :param propagate:
+            0 for not propagating
+            1 to propagate internally & externally only if new state is
+              different than the last event
+            2 to propagate internally & externally with priority - regardless
+              of the last event
+            3 to propagate internally only if new state is different than the
+              last event
+            4 to propagate internally with priority - regardless of the last
+              event
+        :type propagate: int
+        """
         self._set_status(status, propagate=propagate)
 
     def _set_status(self, status, propagate=1):
@@ -222,7 +254,8 @@ class PoolBaseElement(PoolObject):
         if not propagate:
             return
         s_evt = self._status_event
-        if s_evt is not None and len(status) == len(s_evt) and status == s_evt:
+        if (s_evt is not None and len(status) == len(s_evt)
+                and status == s_evt and propagate in (1, 3)):
             # current status is equal to last status_event. Skip event
             return
         self._status_event = status

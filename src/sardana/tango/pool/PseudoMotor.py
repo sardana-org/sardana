@@ -122,6 +122,19 @@ class PseudoMotor(PoolElementDevice):
         priority = event_type.priority
         value, w_value, error = None, None, None
 
+        # For the Tango needs, in the Sardana core, some of the State and
+        # Status events needs to be propgated internal only but can not be
+        # pushed with Tango events yet. The need is to update the pseudo motors
+        # and motor group states when the underneeth moveable changes state so
+        # the subsequent Position event can use the updated state information
+        # to choose a proper quality: CHANGING or VALID. On the Tango level
+        # there exist a risk of pushing this event too early. It may happen
+        # that another move start before pushing the last position update.
+        # As it is in the core, the events with priority 2 and 3 are only used
+        # internally and does not need to be pushed by Tango.
+        if name in ("state", "status") and priority > 2:
+            return
+
         if name == "state":
             value = self.calculate_tango_state(event_value)
         elif name == "status":

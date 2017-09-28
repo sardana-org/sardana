@@ -303,17 +303,17 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
 
     def on_element_changed(self, evt_src, evt_type, evt_value):
         name = evt_type.name.lower()
-        # always calculate state.
-        status_info = self._calculate_states()
-        state, status = self.calculate_state_info(status_info=status_info)
-        state_propagate = 0
-        status_propagate = 0
-        if name == 'state':
-            state_propagate = evt_type.priority
-        elif name == 'status':
-            status_propagate = evt_type.priority
-        self.set_state(state, propagate=state_propagate)
-        self.set_status(status, propagate=status_propagate)
+        if name in ("state", "status"):
+            status_info = self._calculate_states()
+            state, status = self.calculate_state_info(status_info=status_info)
+            state_propagate = 0
+            status_propagate = 0
+            if name == 'state':
+                state_propagate = evt_type.priority
+            elif name == 'status':
+                status_propagate = evt_type.priority
+            self.set_state(state, propagate=state_propagate)
+            self.set_status(status, propagate=status_propagate)
 
     def add_user_element(self, element, index=None):
         elem_type = element.get_type()

@@ -603,7 +603,7 @@ class PoolAcquisitionBase(PoolAction):
                     ctrl.LoadAll()
                 except Exception, e:
                     self.debug(e)
-                    master.set_state(State.Fault, propagate=2)
+                    master.set_state(State.Fault, propagate=1)
                     msg = ("Load sequence of %s failed" % pool_ctrl.name)
                     raise Exception(msg)
 
@@ -633,14 +633,14 @@ class PoolAcquisitionBase(PoolAction):
                             ctrl.StartOne(axis, master_value)
                         except Exception, e:
                             self.debug(e)
-                            element.set_state(State.Fault, propagate=2)
+                            element.set_state(State.Fault, propagate=1)
                             msg = ("%s.StartOne(%d) failed" %
                                    (pool_ctrl.name, axis))
                             raise Exception(msg)
 
             # set the state of all elements to  and inform their listeners
             for channel in channels:
-                channel.set_state(State.Moving, propagate=2)
+                channel.set_state(State.Moving, propagate=1)
 
             # StartAll on all controllers
             for pool_ctrl in pool_ctrls:
@@ -650,7 +650,7 @@ class PoolAcquisitionBase(PoolAction):
                     self.debug(e)
                     elements = pool_ctrl_data['channels'].keys()
                     for element in elements:
-                        element.set_state(State.Fault, propagate=2)
+                        element.set_state(State.Fault, propagate=1)
                     msg = ("%s.StartAll() failed" % pool_ctrl.name)
                     raise Exception(msg)
 
@@ -722,7 +722,7 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
             with acquirable:
                 acquirable.clear_operation()
                 state_info = acquirable._from_ctrl_state_info(state_info)
-                acquirable.set_state_info(state_info, propagate=2)
+                acquirable.set_state_info(state_info, propagate=1)
 
 
 class PoolAcquisitionSoftware(PoolAcquisitionBase):
@@ -802,7 +802,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
             with acquirable:
                 acquirable.clear_operation()
                 state_info = acquirable._from_ctrl_state_info(state_info)
-                acquirable.set_state_info(state_info, propagate=2)
+                acquirable.set_state_info(state_info, propagate=1)
 
 
 class PoolCTAcquisition(PoolAcquisitionBase):
@@ -888,7 +888,7 @@ class PoolCTAcquisition(PoolAcquisitionBase):
             with acquirable:
                 acquirable.clear_operation()
                 state_info = acquirable._from_ctrl_state_info(state_info)
-                acquirable.set_state_info(state_info, propagate=2)
+                acquirable.set_state_info(state_info, propagate=1)
 
 
 class Pool0DAcquisition(PoolAction):
@@ -946,7 +946,7 @@ class Pool0DAcquisition(PoolAction):
             # set the state of all elements to  and inform their listeners
             for channel in channels:
                 channel.clear_buffer()
-                channel.set_state(State.Moving, propagate=2)
+                channel.set_state(State.Moving, propagate=1)
 
     def in_acquisition(self, states):
         """Determines if we are in acquisition or if the acquisition has ended
@@ -992,7 +992,7 @@ class Pool0DAcquisition(PoolAction):
             acquirable.set_state_info(state_info, propagate=0)
             with acquirable:
                 acquirable.clear_operation()
-                acquirable.set_state_info(state_info, propagate=2)
+                acquirable.set_state_info(state_info, propagate=1)
 
     def stop_action(self, *args, **kwargs):
         """Stop procedure for this action."""
@@ -1065,6 +1065,6 @@ class PoolIORAcquisition(PoolAction):
 
             # finally set the state and propagate to all listeners
             for acquirable, state_info in states.items():
-                acquirable.set_state_info(state_info, propagate=2)
+                acquirable.set_state_info(state_info, propagate=1)
 
         self.set_finish_hook(finish_hook)
