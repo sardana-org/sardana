@@ -535,9 +535,11 @@ class PoolAcquisitionBase(PoolAction):
                 # skip disabled elements
                 if not element_info['enabled']:
                     continue
+                # Add only the enabled channels
                 channel = Channel(element, info=element_info)
                 channels[element] = channel
                 ctrl_enabled = True
+            # check if the ctrl has enabled channels
             if ctrl_enabled:
                 pool_ctrls.append(ctrl)
                 # only CT will be read in the loop, 1D and 2D not
@@ -599,12 +601,13 @@ class PoolAcquisitionBase(PoolAction):
                 # make sure that the timer/monitor is started as the last one
                 elements.remove(timer_monitor)
                 elements.append(timer_monitor)
+
                 for element in elements:
                     try:
                         channel = channels[element]
                     except KeyError:
                         continue
-
+                    axis = element.axis
                     ret = ctrl.PreStartOne(axis, master_value)
                     if not ret:
                         msg = ("%s.PreStartOne(%d) returns False" %
