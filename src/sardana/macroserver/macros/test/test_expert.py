@@ -74,23 +74,24 @@ class MeasTest(RunMacroTestCase, unittest.TestCase):
     def test_meas(self):
         MNTGRP_NAME = "unittestmntgrp01"
         try:
+            import taurus
             self.macro_runs(macro_name="defmeas",
                             macro_params=[MNTGRP_NAME, CT_NAME1, CT_NAME2])
-            print "defmeas"
-            print "ExceptionStr: ", self.macro_executor.getExceptionStr()
-            print "CommonBuffer: ", self.macro_executor.getCommonBuffer()
+            taurus.warning("defmeas")
+            taurus.warning("ExceptionStr: %s" % self.macro_executor.getExceptionStr())
+            taurus.warning("CommonBuffer: %s" % self.macro_executor.getCommonBuffer())
             self.macro_runs(macro_name="udefmeas",
                             macro_params=[MNTGRP_NAME])
-            print "udefmeas"
-            print "ExceptionStr: ", self.macro_executor.getExceptionStr()
-            print "CommonBuffer: ", self.macro_executor.getCommonBuffer()
+            taurus.warning("udefmeas")
+            taurus.warning("ExceptionStr: %s" % self.macro_executor.getExceptionStr())
+            taurus.warning("CommonBuffer: %s" % self.macro_executor.getCommonBuffer())
         except Exception, e:
             import taurus
             taurus.warning("Your system may stay dirty due to an unexpected"
                            " exception during the test.")
-            print "Exception occurred!"
-            print "ExceptionStr: ", self.macro_executor.getExceptionStr()
-            print "CommonBuffer: ", self.macro_executor.getCommonBuffer()
+            taurus.warning("Exception occurred!")
+            taurus.warning("ExceptionStr: %s" % self.macro_executor.getExceptionStr())
+            taurus.warning("CommonBuffer: %s" % self.macro_executor.getCommonBuffer())
             raise e
 
 # TODO: improve this test: not all sardana controller implement SendToCtrl
