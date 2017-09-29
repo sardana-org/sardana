@@ -524,6 +524,7 @@ class PoolAcquisitionBase(PoolAction):
         # channels that are acquired (only enabled)
         self._channels = channels = {}
 
+        # select only suitable e.g. enabled, timerable controllers & channels
         for ctrl, pool_ctrl_data in pool_ctrls_dict.items():
             # skip not timerable controllers e.g. 0D
             if not ctrl.is_timerable():
@@ -531,7 +532,6 @@ class PoolAcquisitionBase(PoolAction):
             ctrl_enabled = False
             elements = pool_ctrl_data['channels']
             for element, element_info in elements.items():
-
                 # skip disabled elements
                 if not element_info['enabled']:
                     continue
@@ -550,8 +550,8 @@ class PoolAcquisitionBase(PoolAction):
         # be called
         pool_ctrls.remove(master_ctrl)
         pool_ctrls.append(master_ctrl)
-        with ActionContext(self):
 
+        with ActionContext(self):
             # PreLoadAll, PreLoadOne, LoadOne and LoadAll
             for pool_ctrl in pool_ctrls:
                 try:
@@ -587,21 +587,19 @@ class PoolAcquisitionBase(PoolAction):
                     msg = ("Load sequence of %s failed" % pool_ctrl.name)
                     raise Exception(msg)
 
-            # PreStartAll on all controllers
+            # PreStartAll on all enabled controllers
             for pool_ctrl in pool_ctrls:
                 pool_ctrl.ctrl.PreStartAll()
 
-            # PreStartOne & StartOne on all elements
+            # PreStartOne & StartOne on all enabled elements
             for pool_ctrl in pool_ctrls:
                 ctrl = pool_ctrl.ctrl
                 pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
                 elements = pool_ctrl_data['channels'].keys()
                 timer_monitor = pool_ctrl_data[master_key]
-
                 # make sure that the timer/monitor is started as the last one
                 elements.remove(timer_monitor)
                 elements.append(timer_monitor)
-
                 for element in elements:
                     try:
                         channel = channels[element]
@@ -626,7 +624,7 @@ class PoolAcquisitionBase(PoolAction):
             for channel in channels:
                 channel.set_state(State.Moving, propagate=2)
 
-            # StartAll on all controllers
+            # StartAll on all enabled controllers
             for pool_ctrl in pool_ctrls:
                 try:
                     pool_ctrl.ctrl.StartAll()
