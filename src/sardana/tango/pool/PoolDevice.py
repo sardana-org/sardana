@@ -28,6 +28,7 @@
 __all__ = ["PoolDevice", "PoolDeviceClass",
            "PoolElementDevice", "PoolElementDeviceClass",
            "PoolExpChannelDevice", "PoolExpChannelDeviceClass",
+           "PoolMoveableDevice", "PoolMoveableDeviceClass",
            "PoolGroupDevice", "PoolGroupDeviceClass"]
 
 __docformat__ = 'restructuredtext'
@@ -870,5 +871,49 @@ class PoolExpChannelDeviceClass(PoolElementDeviceClass):
 
     standard_attr_list = {
         'Data': [[DevString, SCALAR, READ]]  # TODO: think about DevEncoded
+    }
+    standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
+
+
+class PoolMoveableDevice(PoolElementDevice):
+
+    def __init__(self, dclass, name):
+        """Constructor"""
+        PoolElementDevice.__init__(self, dclass, name)
+        self._codec = CodecFactory().getCodec('json')
+
+    def _encode_position_chunk(self, position_chunk):
+        """Prepare value chunk to be passed via communication channel.
+
+        :param position_chunk: position chunk
+        :type position_chunk: seq<SardanaValue>
+
+        :return: json string representing value chunk
+        :rtype: str"""
+        position = []
+        index = []
+        for idx, sdn_value in position_chunk.iteritems():
+            index.append(idx)
+            pos = sdn_value.value
+            position.append(pos)
+        data = dict(data=position, index=index)
+        _, encoded_data = self._codec.encode(('', data))
+        return encoded_data
+
+    def read_PositionBuffer(self, attr):
+        desc = "PositionBuffer attribute is not foreseen for reading. "\
+               "It is used only as the communication channel for "\
+               "thecontinuous acquisitions."
+        Except.throw_exception("UnsupportedFeature",
+                               desc,
+                               "PoolMoveableDevice.read_PositionBuffer",
+                               ErrSeverity.WARN)
+
+
+class PoolMoveableDeviceClass(PoolElementDeviceClass):
+
+    standard_attr_list = {
+        # TODO: think about DevEncoded
+        'PositionBuffer': [[DevString, SCALAR, READ]]
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)

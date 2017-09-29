@@ -658,12 +658,74 @@ class TriggerGate(PoolElement):
     pass
 
 
-class Motor(PoolElement, Moveable):
+class MoveableElement(PoolElement):
+
+    def __init__(self, name, **kw):
+        """MoveableElement initialization."""
+        self.call__init__(PoolElement, name, **kw)
+        self._position_buffer_cb = None
+        self._position_buffer = {}
+        self._codec = CodecFactory().getCodec("json")
+
+    def getPositionBufferObj(self):
+        return self._getAttrEG('positionbuffer')
+
+    def getPositionBuffer(self):
+        return self._position_buffer
+
+    def positionBufferChanged(self, _, position_buffer):
+        """Receive position buffer updates, pre-process them, and call
+        the subscribed callback.
+
+        :param position_buffer: json encoded position buffer update,
+            it contains at least values and indexes
+        :type value_buffer: str
+        """
+        if position_buffer is None:
+            return
+        _, position_buffer = self._codec.decode(('json', position_buffer),
+                                                ensure_ascii=True)
+        if self._position_buffer_cb:
+            self._position_buffer_cb(self, position_buffer)
+        else:
+            indexes = position_buffer["index"]
+            values = position_buffer["data"]
+            for index, value in zip(indexes, values):
+                self._position_buffer[index] = value
+
+    def subscribePositionBuffer(self, cb=None):
+        """Subscribe to channels' position buffer update events. If no
+        callback is passed, the default motor's callback is subscribed which
+        will store the data in the motor's value_buffer attribute.
+
+        :param cb: callback to be subscribed, None means subscribe the default
+            motor's callback
+        :type cb: callable
+        """
+        position_buffer_obj = self.getPositionBufferObj()
+        self._position_buffer_cb = cb
+        position_buffer_obj.subscribeEvent(self.positionBufferChanged,
+                                           with_first_event=False)
+
+    def unsubscribePositionBuffer(self, cb=None):
+        """Unsubscribe from motor's value buffer events. If no callback is
+        passed, unsubscribe the motor's default callback.
+
+        :param cb: callback to be unsubscribed, None means unsubscribe the
+            default motor's callback
+        :type cb: callable
+        """
+        position_buffer_obj = self.getPositionBufferObj()
+        self._position_buffer_cb = None
+        position_buffer_obj.unsubscribeEvent(self.positionBufferChanged)
+
+
+class Motor(MoveableElement, Moveable):
     """ Class encapsulating Motor functionality."""
 
     def __init__(self, name, **kw):
         """PoolElement initialization."""
-        self.call__init__(PoolElement, name, **kw)
+        self.call__init__(MoveableElement, name, **kw)
         self.call__init__(Moveable)
 
     def getPosition(self, force=False):
@@ -871,12 +933,12 @@ class Motor(PoolElement, Moveable):
         return msg
 
 
-class PseudoMotor(PoolElement, Moveable):
+class PseudoMotor(MoveableElement, Moveable):
     """ Class encapsulating PseudoMotor functionality."""
 
     def __init__(self, name, **kw):
         """PoolElement initialization."""
-        self.call__init__(PoolElement, name, **kw)
+        self.call__init__(MoveableElement, name, **kw)
         self.call__init__(Moveable)
 
     def getPosition(self, force=False):
@@ -1599,11 +1661,16 @@ class MeasurementGroup(PoolElement):
         self.getSynchronizationObj().write(data)
         self._last_integ_time = None
 
-    def getMoveableObj(self):
-        return self._getAttrEG('Moveable')
+    def getMasterMoveableObj(self):
+        return self._getAttrEG('MasterMoveable')
 
-    def getMoveable(self):
-        return self._getAttrValue('Moveable')
+    def getMasterMoveable(self):
+        return self._getAttrValue('MasterMoveable')
+
+    def setMasterMoveable(self, moveable=None):
+        if moveable is None:
+            moveable = 'None'  # Tango attribute is of type DevString
+        self.getMasterMoveableObj().write(moveable)
 
     def getLatencyTimeObj(self):
         return self._getAttrEG('LatencyTime')
@@ -1611,10 +1678,14 @@ class MeasurementGroup(PoolElement):
     def getLatencyTime(self):
         return self._getAttrValue('LatencyTime')
 
-    def setMoveable(self, moveable=None):
-        if moveable is None:
-            moveable = 'None'  # Tango attribute is of type DevString
-        self.getMoveableObj().write(moveable)
+    def getMoveablesObj(self):
+        return self._getAttrEG('Moveables')
+
+    def getMoveables(self):
+        return self._getAttrValue('Moveables')
+
+    def setMoveables(self, moveables):
+        self.getMoveablesObj().write(moveables)
 
     def valueBufferChanged(self, channel, value_buffer):
         """Receive value buffer updates, pre-process them, and call
@@ -1727,7 +1798,8 @@ class MeasurementGroup(PoolElement):
         if duration is None or duration == 0:
             return self.getStateEG().readValue(), self.getValues()
         self.putIntegrationTime(duration)
-        self.setMoveable(None)
+        self.setMasterMoveable(None)
+        self.setMoveables([])
         PoolElement.go(self, *args, **kwargs)
         state = self.getStateEG().readValue()
         if state == Fault:

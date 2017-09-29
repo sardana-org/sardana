@@ -43,21 +43,21 @@ from sardana.sardanaexception import SardanaException
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.tango.core.util import exception_str, to_tango_type_format, \
     throw_sardana_exception
-from sardana.tango.pool.PoolDevice import PoolElementDevice, \
-    PoolElementDeviceClass
+from sardana.tango.pool.PoolDevice import PoolMoveableDevice, \
+    PoolMoveableDeviceClass
 
 
-class PseudoMotor(PoolElementDevice):
+class PseudoMotor(PoolMoveableDevice):
 
     def __init__(self, dclass, name):
         self.in_write_position = False
-        PoolElementDevice.__init__(self, dclass, name)
+        PoolMoveableDevice.__init__(self, dclass, name)
 
     def init(self, name):
-        PoolElementDevice.init(self, name)
+        PoolMoveableDevice.init(self, name)
 
     def _is_allowed(self, req_type):
-        return PoolElementDevice._is_allowed(self, req_type)
+        return PoolMoveableDevice._is_allowed(self, req_type)
 
     def get_pseudo_motor(self):
         return self.element
@@ -69,14 +69,14 @@ class PseudoMotor(PoolElementDevice):
 
     @DebugIt()
     def delete_device(self):
-        PoolElementDevice.delete_device(self)
+        PoolMoveableDevice.delete_device(self)
         pseudo_motor = self.pseudo_motor
         if pseudo_motor is not None:
             pseudo_motor.remove_listener(self.on_pseudo_motor_changed)
 
     @DebugIt()
     def init_device(self):
-        PoolElementDevice.init_device(self)
+        PoolMoveableDevice.init_device(self)
 
         self.Elements = map(int, self.Elements)
         pseudo_motor = self.pseudo_motor
@@ -126,6 +126,8 @@ class PseudoMotor(PoolElementDevice):
             value = self.calculate_tango_state(event_value)
         elif name == "status":
             value = self.calculate_tango_status(event_value)
+        elif name == "positionbuffer":
+            value = self._encode_position_chunk(event_value)
         else:
             if isinstance(event_value, SardanaAttribute):
                 if event_value.error:
@@ -157,7 +159,7 @@ class PseudoMotor(PoolElementDevice):
         cache_built = hasattr(self, "_dynamic_attributes_cache")
 
         std_attrs, dyn_attrs = \
-            PoolElementDevice.get_dynamic_attributes(self)
+            PoolMoveableDevice.get_dynamic_attributes(self)
 
         if not cache_built:
             # For position attribute, listen to what the controller says for
@@ -170,10 +172,10 @@ class PseudoMotor(PoolElementDevice):
         return std_attrs, dyn_attrs
 
     def initialize_dynamic_attributes(self):
-        attrs = PoolElementDevice.initialize_dynamic_attributes(self)
+        attrs = PoolMoveableDevice.initialize_dynamic_attributes(self)
 
         detect_evts = "position",
-        non_detect_evts = ()
+        non_detect_evts = ("positionbuffer",)
 
         for attr_name in detect_evts:
             if attr_name in attrs:
@@ -260,7 +262,7 @@ class PseudoMotor(PoolElementDevice):
     is_Position_allowed = _is_allowed
 
 
-class PseudoMotorClass(PoolElementDeviceClass):
+class PseudoMotorClass(PoolMoveableDeviceClass):
 
     #    Class Properties
     class_property_list = {
@@ -275,7 +277,7 @@ class PseudoMotorClass(PoolElementDeviceClass):
              "current global drift correction in the Pool Device",
              None],
     }
-    device_property_list.update(PoolElementDeviceClass.device_property_list)
+    device_property_list.update(PoolMoveableDeviceClass.device_property_list)
 
     #    Command definitions
     cmd_list = {
@@ -285,7 +287,7 @@ class PseudoMotorClass(PoolElementDeviceClass):
         'CalcAllPhysical': [[DevVarDoubleArray, "pseudo positions"], [DevVarDoubleArray, "physical positions"]],
         'MoveRelative': [[DevDouble, "amount to move"], [DevVoid, ""]],
     }
-    cmd_list.update(PoolElementDeviceClass.cmd_list)
+    cmd_list.update(PoolMoveableDeviceClass.cmd_list)
 
     #    Attribute definitions
     standard_attr_list = {
@@ -293,10 +295,10 @@ class PseudoMotorClass(PoolElementDeviceClass):
                      {'label': "Position",
                       'abs_change': '1.0', }, ],
     }
-    standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
+    standard_attr_list.update(PoolMoveableDeviceClass.standard_attr_list)
 
     def _get_class_properties(self):
-        ret = PoolElementDeviceClass._get_class_properties(self)
+        ret = PoolMoveableDeviceClass._get_class_properties(self)
         ret['Description'] = "Pseudo motor device class"
-        ret['InheritedFrom'].insert(0, 'PoolElementDevice')
+        ret['InheritedFrom'].insert(0, 'PoolMoveableDevice')
         return ret
