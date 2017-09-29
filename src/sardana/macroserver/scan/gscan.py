@@ -597,13 +597,22 @@ class GScan(Logger):
 
         # add master column
         master = self._master
-        instrument = master['instrument']
 
         # add channels from measurement group
         channels_info = self.measurement_group.getChannelsEnabledInfo()
         counters = []
         for ci in channels_info:
-            instrument = ci.instrument or ''
+            full_name = ci.full_name
+            # for Taurus 4 compatibility
+            if not full_name.startswith("tango://"):
+                full_name = "tango://{0}".format(full_name)
+            try:
+                channel = taurus.Device(full_name)
+                instrument = channel.instrument
+            except:
+                # full_name of external channels is the name of the attribute
+                # external channels are not assigned to instruments
+                instrument = ''
             try:
                 instrumentFullName = self.macro.findObjs(
                     instrument, type_class=Type.Instrument)[0].getFullName()
