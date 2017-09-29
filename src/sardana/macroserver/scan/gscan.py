@@ -903,11 +903,11 @@ class GScan(Logger):
                 self.macro.pausePoint()
                 yield i
             endstatus = ScanEndStatus.Normal
-        except StopException, e:
+        except StopException:
             endstatus = ScanEndStatus.Stop
-        except AbortException, e:
+        except AbortException:
             endstatus = ScanEndStatus.Abort
-        except Exception, e:
+        except Exception:
             endstatus = ScanEndStatus.Exception
         finally:
             self._env["endstatus"] = endstatus
@@ -1207,7 +1207,6 @@ class CScan(GScan):
             self._setFastMotions()
             self.macro.info("Correcting overshoot...")
             self.motion.move(restore_positions)
-        self.do_restore()
         self.motion_end_event.set()
         self.motion_event.set()
 
@@ -1215,15 +1214,9 @@ class CScan(GScan):
         """Go through the different waypoints."""
         try:
             self._go_through_waypoints()
-        except StopException:
+        except:
             self.on_waypoints_end()
-        except ScanException, e:
-            raise e
-        except Exception:
-            self.macro.debug('An error occurred moving to waypoints')
-            self.macro.debug('Details: ', exc_info=True)
-            self.on_waypoints_end()
-            raise ScanException('error while moving to waypoints')
+            raise
 
     def _go_through_waypoints(self):
         """Internal, unprotected method to go through the different waypoints."""
