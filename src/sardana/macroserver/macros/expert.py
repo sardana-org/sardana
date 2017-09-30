@@ -27,10 +27,10 @@ from __future__ import print_function
 
 __docformat__ = 'restructuredtext'
 
-__all__ = ["addmaclib", "commit_ctrllib", "defctrl", "defelem", "defm",
-           "defmeas", "edctrlclass", "edctrllib", "prdef", "relctrlclass",
-           "relctrllib", "rellib", "relmac", "relmaclib", "send2ctrl",
-           "udefctrl", "udefelem", "udefmeas", "sar_info"]
+__all__ = ["addctrllib", "addmaclib", "commit_ctrllib", "defctrl", "defelem",
+           "defm", "defmeas", "edctrlclass", "edctrllib", "prdef",
+           "relctrlclass", "relctrllib", "rellib", "relmac", "relmaclib",
+           "send2ctrl", "udefctrl", "udefelem", "udefmeas", "sar_info"]
 
 import sys
 import traceback
@@ -318,6 +318,19 @@ class relctrllib(Macro):
     def run(self, ctrl_library):
         pool = ctrl_library.getPoolObj()
         pool.ReloadControllerLib(ctrl_library.name)
+
+
+class addctrllib(Macro):
+    """Adds the given controller library code to the pool server filesystem.
+    """
+
+    param_def = [["ctrl_library_name", Type.String, None,
+                  "The module name to be loaded (without extension)"]]
+
+    def run(self, ctrl_library_name):
+        # TODO: make it compatible with multiple pools
+        pool = self.getPools()[0]
+        pool.ReloadControllerLib(ctrl_library_name)
 
 
 class relctrlclass(Macro):
