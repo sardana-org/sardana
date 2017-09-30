@@ -29,8 +29,8 @@ __docformat__ = 'restructuredtext'
 
 __all__ = ["addmaclib", "commit_ctrllib", "defctrl", "defelem", "defm",
            "defmeas", "edctrlclass", "edctrllib", "prdef", "relctrlclass",
-           "rellib", "relmac", "relmaclib", "send2ctrl", "udefctrl",
-           "udefelem", "udefmeas", "sar_info"]
+           "relctrllib", "rellib", "relmac", "relmaclib", "send2ctrl",
+           "udefctrl", "udefelem", "udefmeas", "sar_info"]
 
 import sys
 import traceback
@@ -305,6 +305,19 @@ class prdef(Macro):
         code_lines, _ = macro_data.code
         for code_line in code_lines:
             self.output(code_line.strip('\n'))
+
+
+class relctrllib(Macro):
+    """Reloads the given controller library code from the pool server
+    filesystem.
+    """
+
+    param_def = [["ctrl_library", Type.ControllerLibrary, None,
+                  "Controller library to reload"]]
+
+    def run(self, ctrl_library):
+        pool = ctrl_library.getPoolObj()
+        pool.ReloadControllerLib(ctrl_library.name)
 
 
 class relctrlclass(Macro):
