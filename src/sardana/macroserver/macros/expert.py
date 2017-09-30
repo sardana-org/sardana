@@ -28,7 +28,7 @@ from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
 __all__ = ["addmaclib", "commit_ctrllib", "defctrl", "defelem", "defm",
-           "defmeas", "edctrl", "edctrllib", "prdef", "relctrlclass",
+           "defmeas", "edctrlclass", "edctrllib", "prdef", "relctrlclass",
            "rellib", "relmac", "relmaclib", "send2ctrl", "udefctrl",
            "udefelem", "udefmeas", "sar_info"]
 
@@ -220,7 +220,7 @@ class send2ctrl(Macro):
 ##########################################################################
 
 
-class edctrl(Macro):
+class edctrlclass(Macro):
     """Returns the contents of the library file which contains the given
        controller code."""
 
