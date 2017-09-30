@@ -27,8 +27,9 @@ from __future__ import print_function
 
 __docformat__ = 'restructuredtext'
 
-__all__ = ["commit_ctrllib", "defctrl", "defelem", "defm", "defmeas", "edctrl",
-           "edctrllib", "prdef", "rellib", "relmac", "relmaclib", "addmaclib",
+__all__ = ["addctrllib", "addmaclib", "commit_ctrllib", "defctrl", "defelem",
+           "defm", "defmeas", "edctrlcls", "edctrllib", "prdef",
+           "relctrlcls", "relctrllib", "rellib", "relmac", "relmaclib",
            "send2ctrl", "udefctrl", "udefelem", "udefmeas", "sar_info"]
 
 import sys
@@ -219,7 +220,7 @@ class send2ctrl(Macro):
 ##########################################################################
 
 
-class edctrl(Macro):
+class edctrlcls(Macro):
     """Returns the contents of the library file which contains the given
        controller code."""
 
@@ -304,6 +305,44 @@ class prdef(Macro):
         code_lines, _ = macro_data.code
         for code_line in code_lines:
             self.output(code_line.strip('\n'))
+
+
+class relctrllib(Macro):
+    """Reloads the given controller library code from the pool server
+    filesystem.
+    """
+
+    param_def = [["ctrl_library", Type.ControllerLibrary, None,
+                  "Controller library to reload"]]
+
+    def run(self, ctrl_library):
+        pool = ctrl_library.getPoolObj()
+        pool.ReloadControllerLib(ctrl_library.name)
+
+
+class addctrllib(Macro):
+    """Adds the given controller library code to the pool server filesystem.
+    """
+
+    param_def = [["ctrl_library_name", Type.String, None,
+                  "The module name to be loaded (without extension)"]]
+
+    def run(self, ctrl_library_name):
+        # TODO: make it compatible with multiple pools
+        pool = self.getPools()[0]
+        pool.ReloadControllerLib(ctrl_library_name)
+
+
+class relctrlcls(Macro):
+    """Reloads the given controller class code from the pool server filesystem.
+    """
+
+    param_def = [["ctrl_class", Type.ControllerClass, None, "Controller "
+                                                            "class to reload"]]
+
+    def run(self, ctrl_class):
+        pool = ctrl_class.getPoolObj()
+        pool.ReloadControllerClass(ctrl_class.name)
 
 
 class rellib(Macro):
