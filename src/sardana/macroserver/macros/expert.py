@@ -28,8 +28,8 @@ from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
 __all__ = ["addctrllib", "addmaclib", "commit_ctrllib", "defctrl", "defelem",
-           "defm", "defmeas", "edctrlclass", "edctrllib", "prdef",
-           "relctrlclass", "relctrllib", "rellib", "relmac", "relmaclib",
+           "defm", "defmeas", "edctrlcls", "edctrllib", "prdef",
+           "relctrlcls", "relctrllib", "rellib", "relmac", "relmaclib",
            "send2ctrl", "udefctrl", "udefelem", "udefmeas", "sar_info"]
 
 import sys
@@ -220,7 +220,7 @@ class send2ctrl(Macro):
 ##########################################################################
 
 
-class edctrlclass(Macro):
+class edctrlcls(Macro):
     """Returns the contents of the library file which contains the given
        controller code."""
 
@@ -333,7 +333,7 @@ class addctrllib(Macro):
         pool.ReloadControllerLib(ctrl_library_name)
 
 
-class relctrlclass(Macro):
+class relctrlcls(Macro):
     """Reloads the given controller class code from the pool server filesystem.
     """
 
