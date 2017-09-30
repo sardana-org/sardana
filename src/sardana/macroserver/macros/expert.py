@@ -28,9 +28,9 @@ from __future__ import print_function
 __docformat__ = 'restructuredtext'
 
 __all__ = ["addmaclib", "commit_ctrllib", "defctrl", "defelem", "defm",
-           "defmeas", "edctrl", "edctrllib", "prdef", "relctrl", "rellib",
-           "relmac", "relmaclib", "send2ctrl", "udefctrl", "udefelem",
-           "udefmeas", "sar_info"]
+           "defmeas", "edctrl", "edctrllib", "prdef", "relctrlclass",
+           "rellib", "relmac", "relmaclib", "send2ctrl", "udefctrl",
+           "udefelem", "udefmeas", "sar_info"]
 
 import sys
 import traceback
@@ -307,7 +307,7 @@ class prdef(Macro):
             self.output(code_line.strip('\n'))
 
 
-class relctrl(Macro):
+class relctrlclass(Macro):
     """Reloads the given controller class code from the pool server filesystem.
     """
 
