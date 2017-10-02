@@ -1848,7 +1848,7 @@ class CAcquisition(object):
             from taurus.core.tango.tangovalidator import\
                 TangoDeviceNameValidator
             validator = TangoDeviceNameValidator()
-            uri_groups = validator.getUriGroups(full_name, strict=False)
+            uri_groups = validator.getUriGroups(full_name)
             dev_name = uri_groups["devname"]
             fqdn_host = uri_groups["host"]
             if fqdn_host is not None:
