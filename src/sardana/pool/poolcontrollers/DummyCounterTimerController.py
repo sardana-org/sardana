@@ -165,10 +165,10 @@ class DummyCounterTimerController(CounterTimerController):
                 channel = self.counting_channels[ind]
                 channel.is_counting = False
                 self._updateChannelValue(ind, elapsed_time)
+                self.counting_channels.pop(ind)
             else:
                 channel = self.channels[ind - 1]
                 channel.is_counting = False
-        self.counting_channels = {}
 
     def PreReadAll(self):
         self.read_channels = {}
