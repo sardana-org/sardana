@@ -287,7 +287,7 @@ every 1 unit move).
 
 .. rubric:: Footnotes
 
-.. [#] We would like to thank Dominique Heinis for sharing his experise in
+.. [#] We would like to thank Dominique Heinis for sharing his expertise in
        blender.
 
 .. _Tango: http://www.tango-controls.org/
