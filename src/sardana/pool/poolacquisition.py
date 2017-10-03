@@ -782,13 +782,22 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
             values[element] = None
 
         nap = self._acq_sleep_time
+        nb_states_per_value = self._nb_states_per_value
 
+        i = 0
         while True:
             self.read_state_info(ret=states)
             if not self.in_acquisition(states):
                 break
 
+            # read value every n times
+            if not i % nb_states_per_value:
+                self.read_value_loop(ret=values)
+                for acquirable, value in values.items():
+                    acquirable.put_value(value)
+
             time.sleep(nap)
+            i += 1
 
         for slave in self._slaves:
             try:

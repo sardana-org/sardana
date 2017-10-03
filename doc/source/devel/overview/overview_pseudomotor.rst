@@ -22,8 +22,8 @@ gap and offset values respectively.
 .. figure:: /_static/slits.gif
     :align: center
 
-    An animation representing a system of slits composed from horizontal blades
-    (left and right) an vertical blades (top and bottom).
+    An animation [#]_ representing a system of slits composed from horizontal
+    blades (left and right) an vertical blades (top and bottom).
 
 In order to translate the motor positions into the pseudo motor positions and
 vice versa, calculations have to be performed. The device pool provides
@@ -285,5 +285,9 @@ every 1 unit move).
   This sketch demonstrates the above example where offset's drift was
   corrected.
 
+.. rubric:: Footnotes
+
+.. [#] We would like to thank Dominique Heinis for sharing his expertise in
+       blender.
 
 .. _Tango: http://www.tango-controls.org/
