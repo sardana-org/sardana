@@ -45,7 +45,6 @@ import time
 import traceback
 import weakref
 import numpy
-import re
 
 from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
     DeviceProxy
@@ -596,7 +595,7 @@ class Controller(PoolElement):
         """
 
         # Taurus 4 compability - strip scheme from the controller name
-        name = re.sub(r".*://", "", self.getFullName())
+        name = self.getFullName().split("://")[-1]
 
         pool = self.getPoolObj()
         axes = []
