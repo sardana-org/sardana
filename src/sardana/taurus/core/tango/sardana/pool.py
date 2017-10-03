@@ -993,7 +993,7 @@ class MotorGroup(PoolElement, Moveable):
         new_pos = args[0]
 
         # TODO: limits verification should be done on the server side, see:
-        # https://github.com/sardana-org/sardana/pull/560#issuecomment-332843074
+        # github.com/sardana-org/sardana/pull/560#issuecomment-332843074
         i = 0
         for mot in self.getMotorNames():
             low, high = Device(mot).getPositionObj().getLimits()
