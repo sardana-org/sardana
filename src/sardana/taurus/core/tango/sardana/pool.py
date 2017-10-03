@@ -45,6 +45,7 @@ import time
 import traceback
 import weakref
 import numpy
+import re
 
 from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
     DeviceProxy
@@ -593,10 +594,14 @@ class Controller(PoolElement):
         :return: list of axes
         :rtype: list<int>
         """
+
+        # Taurus 4 compability - strip scheme from the controller name
+        name = re.sub(r".*://", "", self.getFullName())
+
         pool = self.getPoolObj()
         axes = []
         for _, elem in pool.getElementsOfType(self.getMainType()).items():
-            if elem.controller != self.getFullName():
+            if elem.controller != name:
                 continue
             axes.append(elem.getAxis())
         return sorted(axes)
