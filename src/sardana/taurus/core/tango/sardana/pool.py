@@ -616,6 +616,20 @@ class ExpChannel(PoolElement):
         self.call__init__(PoolElement, name, **kw)
         self._value_buffer = {}
 
+    def getValueObj_(self):
+        """Retrurns Value attribute event generator object.
+
+        :return: Value attribute event generator
+        :rtype: TangoAttributeEG
+
+        ..todo:: When support to Taurus 3 will be dropped provide getValueObj.
+        Taurus 3 TaurusDevice class already uses this name.
+        """
+        return self._getAttrEG('value')
+
+    def getValue(self, force=False):
+        return self._getAttrValue('value', force=force)
+
     def getValueBufferObj(self):
         return self._getAttrEG('data')
 
