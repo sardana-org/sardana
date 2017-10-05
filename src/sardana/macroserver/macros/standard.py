@@ -29,14 +29,15 @@ __all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "set_lim", "set_lm",
 __docformat__ = 'restructuredtext'
 
 import datetime
-from taurus.console.table import Table
-
-import PyTango
-from PyTango import DevState
-from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, ViewOption, iMacro
-from sardana.macroserver.msexception import StopException
 
 import numpy as np
+from taurus import Device
+from taurus.console.table import Table
+import PyTango
+from PyTango import DevState
+
+from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, ViewOption, iMacro
+from sardana.macroserver.msexception import StopException
 
 ##########################################################################
 #
@@ -697,27 +698,20 @@ class uct(Macro):
         if self.mnt_grp is None:
             return
 
-        names, nan = self.mnt_grp.getChannelLabels(), float('nan')
+        names = self.mnt_grp.getChannelLabels()
         self.names = [[n] for n in names]
-
-        self.values = len(names) * [[nan]]
-        self.channels = self.mnt_grp.getChannelAttrExs()
-
-        for ch_attr_ex in self.channels:
-            ch_attr_ex.subscribeEvent(self.counterChanged, ch_attr_ex)
-
-    def printAllValues(self):
-        ch_width = 10
-        table = Table(self.values, elem_fmt=['%*.4f'], col_head_str=self.names,
-                      col_head_width=ch_width)
-        self.outputBlock(table.genOutput())
-        self.flushOutput()
-
-    def counterChanged(self, ch_attr, value):
-        idx = self.channels.index(ch_attr)
-        self.values[idx] = [value]
-        if self.print_value:
-            self.printAllValues()
+        self.channels = []
+        self.values = []
+        for channel_info in self.mnt_grp.getChannels():
+            full_name = channel_info["full_name"]
+            # TODO: For Taurus 4 compatibility
+            full_name = "tango://%s" % full_name
+            channel = Device(full_name)
+            self.channels.append(channel)
+            value = channel.getValue(force=True)
+            self.values.append([value])
+            valueObj = channel.getValueObj_()
+            valueObj.subscribeEvent(self.counterChanged, channel)
 
     def run(self, integ_time):
         if self.mnt_grp is None:
@@ -725,12 +719,32 @@ class uct(Macro):
             return
 
         self.print_value = True
+        try:
+            self.mnt_grp.count(integ_time)
+        finally:
+            self.finish()
 
-        state, data = self.mnt_grp.count(integ_time)
-
-        for ch_attr_ex in self.mnt_grp.getChannelAttrExs():
-            ch_attr_ex.unsubscribeEvent(self.counterChanged, ch_attr_ex)
+    def finish(self):
+        self._clean()
         self.printAllValues()
+
+    def _clean(self):
+        for channel in self.channels:
+            valueObj = channel.getValueObj_()
+            valueObj.unsubscribeEvent(self.counterChanged, channel)
+
+    def counterChanged(self, channel, value):
+        idx = self.names.index([channel.getName()])
+        self.values[idx] = [value]
+        if self.print_value and not self.isStopped():
+            self.printAllValues()
+
+    def printAllValues(self):
+        ch_width = 10
+        table = Table(self.values, elem_fmt=['%*.4f'], col_head_str=self.names,
+                      col_head_width=ch_width)
+        self.outputBlock(table.genOutput())
+        self.flushOutput()
 
 
 class settimer(Macro):
