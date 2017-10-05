@@ -132,6 +132,7 @@ class DummyCounterTimerController(CounterTimerController):
         if channel.mode == AcqSynch.SoftwareTrigger:
             if self.integ_time is not None:
                 t = elapsed_time
+                t = min([elapsed_time, self.integ_time])
                 if ind == self._timer:
                     channel.value = t
                 else:
