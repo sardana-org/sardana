@@ -26,9 +26,10 @@ from sardana.pool.controller import CounterTimerController, Type,\
     Description, Access, DataAccess
 from taurus import Attribute
 
+
 class TaurusCounterTimerController(CounterTimerController):
     """
-    This controller provides interface
+    This controller provides interface to use Taurus Attributes.
     """
 
     axis_attributes = {
