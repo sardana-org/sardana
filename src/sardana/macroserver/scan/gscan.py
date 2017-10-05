@@ -2215,7 +2215,13 @@ class CTScan(CScan, CAcquisition):
 
             internal_moveable_names = []
             for moveable in self.internal_moveables:
-                internal_moveable_names.append(moveable.getFullName())
+                # for Taurus4 compatibility
+                # Pool elements' register is based on full names without the
+                # scheme part. In case Taurus4 is in use strip the scheme.
+                full_name = moveable.full_name
+                if full_name.startswith("tango://"):
+                    full_name = full_name.lstrip("tango://")
+                internal_moveable_names.append(full_name)
             self.measurement_group.setMoveables(internal_moveable_names)
 
             if hasattr(macro, 'getHooks'):
