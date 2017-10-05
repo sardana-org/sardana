@@ -42,16 +42,11 @@ class loop(Macro, Hookable):
                  ['stop', Type.Integer, None, 'end point'],
                  ['step', Type.Integer, 1, 'step']]
 
-    def hook1(self):
-        self.output("En hook 1")
-
     def run(self, start, stop, step):
         self.info("Starting loop")
-        self.hooks = [(self.hook1, ["pre-acq"])]
         for i in xrange(start, stop, step):
             self.output("At step %d" % i)
             self.flushOutput()
-
             for hook, hints in self.hooks:
                 self.info("running hook with hints=" + repr(hints))
                 hook()
@@ -72,8 +67,8 @@ class captain_hook(Macro):
         self.info("\thook execution")
 
     def run(self, start, stop, step):
-        loop_macro = self.createMacro("loop", start, stop, step)
-        loop_macro.hooks = [self.hook]
+        loop_macro, _ = self.createMacro("loop", start, stop, step)
+        loop_macro.hooks = [(self.hook, ["pre-acq"])]
         self.runMacro(loop_macro)
 
 
@@ -91,7 +86,7 @@ class captain_hook2(Macro):
         self.execMacroStr(["lsm"])
 
     def run(self, start, stop, step):
-        loop_macro = self.createMacro("loop", start, stop, step)
+        loop_macro, _ = self.createMacro("loop", start, stop, step)
         #h = self.createExecMacroHook(["lsm"])
         # it gives the "pre-acq" hint to the hook
         loop_macro.hooks = [self.hook]
