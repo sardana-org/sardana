@@ -614,7 +614,7 @@ class PoolAcquisitionBase(PoolAction):
                         ctrl.LoadOne(axis, master_value)
                     ctrl.LoadAll()
                 except Exception, e:
-                    self.debug(e)
+                    self.debug(e, exc_info=True)
                     master.set_state(State.Fault, propagate=2)
                     msg = ("Load sequence of %s failed" % pool_ctrl.name)
                     raise Exception(msg)
@@ -646,7 +646,7 @@ class PoolAcquisitionBase(PoolAction):
                     try:
                         ctrl.StartOne(axis, master_value)
                     except Exception, e:
-                        self.debug(e)
+                        self.debug(e, exc_info=True)
                         element.set_state(State.Fault, propagate=2)
                         msg = ("%s.StartOne(%d) failed" %
                                (pool_ctrl.name, axis))
@@ -661,7 +661,7 @@ class PoolAcquisitionBase(PoolAction):
                 try:
                     pool_ctrl.ctrl.StartAll()
                 except Exception, e:
-                    self.debug(e)
+                    self.debug(e, exc_info=True)
                     elements = pool_ctrl_data['channels'].keys()
                     for element in elements:
                         element.set_state(State.Fault, propagate=2)
