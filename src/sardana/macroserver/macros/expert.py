@@ -92,14 +92,19 @@ class defmeas(Macro):
 
 
 class udefmeas(Macro):
-    """Deletes an existing measurement group"""
+    """Deletes existing measurement groups"""
 
-    param_def = [['name', Type.MeasurementGroup,
-                  None, 'Measurement group name'], ]
+    param_def = [
+        ['mntgrps',
+         ParamRepeat(['mntgrp', Type.MeasurementGroup, None,
+                      'Measurement group name'],
+                     min=1),
+         None, 'List of measurement group names'], ]
 
-    def run(self, mntgrp):
-        pool = mntgrp.getPoolObj()
-        pool.deleteMeasurementGroup(mntgrp.getName())
+    def run(self, mntgrps):
+        for mntgrp in mntgrps:
+            pool = mntgrp.getPoolObj()
+            pool.deleteMeasurementGroup(mntgrp.getName())
 
 
 class defelem(Macro):
@@ -135,7 +140,7 @@ class renameelem(Macro):
 
 
 class udefelem(Macro):
-    """Deletes an existing element(s)"""
+    """Deletes existing elements"""
 
     param_def = [
         ['elements',
@@ -181,14 +186,26 @@ class defctrl(Macro):
 
 
 class udefctrl(Macro):
-    """Deletes an existing controller"""
+    """Deletes existing controllers"""
 
-    param_def = [['controller', Type.Controller,
-                  None, 'existing controller'], ]
+    param_def = [
+        ['controllers',
+         ParamRepeat(['controller', Type.Controller, None, 'controller name'],
+                     min=1),
+         None, 'List of controller(s) name(s)'], ]
 
-    def run(self, controller):
-        pool = controller.getPoolObj()
-        pool.deleteController(controller.getName())
+    def run(self, controllers):
+        for controller in controllers:
+            pool = controller.getPoolObj()
+            ctrl_name = controller.getName()
+            try:
+                pool.deleteController(ctrl_name)
+            except Exception:
+                msg = "{0} and subsequent controllers (if any) "\
+                      "could not be deleted".format(ctrl_name)
+                self.error(msg)
+                raise
+
 
 ##########################################################################
 #
