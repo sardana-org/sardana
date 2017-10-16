@@ -658,19 +658,22 @@ class ct(Macro):
         self.outputDate()
         self.output('')
         self.flushOutput()
-
         state, data = self.mnt_grp.count(integ_time)
-
+        macro_data = {}
         names, counts = [], []
         for ch_info in self.mnt_grp.getChannelsEnabledInfo():
             names.append('  %s' % ch_info.label)
-            ch_data = data.get(ch_info.full_name)
+            ch_name = ch_info.full_name
+            ch_data = data.get(ch_name)
             if ch_data is None:
                 counts.append("<nodata>")
             elif ch_info.shape > [1]:
                 counts.append(list(ch_data.shape))
             else:
                 counts.append(ch_data)
+
+            macro_data[ch_name] = ch_data
+        self.setData(macro_data)
 
         table = Table([counts], row_head_str=names, row_head_fmt='%*s',
                       col_sep='  =  ')
