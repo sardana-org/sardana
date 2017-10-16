@@ -196,7 +196,14 @@ class udefctrl(Macro):
     def run(self, controllers):
         for controller in controllers:
             pool = controller.getPoolObj()
-            pool.deleteController(controller.getName())
+            ctrl_name = controller.getName()
+            try:
+                pool.deleteController(ctrl_name)
+            except Exception:
+                msg = "{0} and subsequent controllers (if any) "\
+                      "could not be deleted".format(ctrl_name)
+                self.error(msg)
+                raise
 
 
 ##########################################################################
