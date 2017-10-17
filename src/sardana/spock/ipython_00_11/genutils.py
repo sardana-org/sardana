@@ -1297,6 +1297,9 @@ def run():
     launch_new_instance()
 
     # TODO: Temporary solution, available while Taurus3 is being supported.
-    from taurus.core.util.log import _DEPRECATION_COUNT
-    from taurus import info
-    info('\n*********************\n%s', _DEPRECATION_COUNT.pretty())
+    try:
+        from taurus.core.util.log import _DEPRECATION_COUNT
+        from taurus import info
+        info('\n*********************\n%s', _DEPRECATION_COUNT.pretty())
+    except:
+        pass
