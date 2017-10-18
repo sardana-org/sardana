@@ -1142,10 +1142,12 @@ def run(user_ns=None):
             pass
 
     # TODO: Temporary solution, available while Taurus3 is being supported.
-    from taurus.core.util.log import _DEPRECATION_COUNT
-    from taurus import info
-    info('\n*********************\n%s', _DEPRECATION_COUNT.pretty())
-
+    try:
+        from taurus.core.util.log import _DEPRECATION_COUNT
+        from taurus import info
+        info('\n*********************\n%s', _DEPRECATION_COUNT.pretty())
+    except:
+        pass
 
 # for compatibility reasons with new IPython API (>=0.11) we add the following
 # empty methods
