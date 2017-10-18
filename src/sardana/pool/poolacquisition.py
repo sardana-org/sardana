@@ -96,13 +96,24 @@ def split_MGConfigurations(mg_cfg_in):
                 ctrls_sw_out[ctrl] = ctrl_info
             else:
                 ctrls_hw_out[ctrl] = ctrl_info
-    # TODO: timer and monitor are just random elements!!!
+
+    def find_master(ctrls, role):
+        master_idx = float("+inf")
+        master = None
+        for ctrl_info in ctrls.values():
+            element = ctrl_info[role]
+            element_idx = ctrl_info["channels"][element]["index"]
+            if element_idx < master_idx:
+                master = element
+                master_idx = element_idx
+        return master
+
     if len(ctrls_sw_out):
-        mg_sw_cfg_out['timer'] = ctrls_sw_out.values()[0]['timer']
-        mg_sw_cfg_out['monitor'] = ctrls_sw_out.values()[0]['monitor']
+        mg_sw_cfg_out["timer"] = find_master(ctrls_sw_out, "timer")
+        mg_sw_cfg_out["monitor"] = find_master(ctrls_sw_out, "monitor")
     if len(ctrls_hw_out):
-        mg_hw_cfg_out['timer'] = ctrls_hw_out.values()[0]['timer']
-        mg_hw_cfg_out['monitor'] = ctrls_hw_out.values()[0]['monitor']
+        mg_hw_cfg_out["timer"] = find_master(ctrls_hw_out, "timer")
+        mg_hw_cfg_out["monitor"] = find_master(ctrls_hw_out, "monitor")
     return (mg_hw_cfg_out, mg_sw_cfg_out, mg_0d_cfg_out)
 
 
