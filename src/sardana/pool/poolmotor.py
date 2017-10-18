@@ -38,7 +38,7 @@ from sardana.sardanaattribute import SardanaAttribute, ScalarNumberAttribute, \
     SardanaSoftwareAttribute
 from sardana.sardanaevent import EventType
 from sardana.sardanautils import assert_type, is_number
-from sardana.pool.poolelement import PoolElement
+from sardana.pool.poolbasemoveable import PoolBaseMoveable
 from sardana.pool.poolmotion import PoolMotion, MotionState
 
 
@@ -203,14 +203,14 @@ class Sign(SardanaSoftwareAttribute):
     pass
 
 
-class PoolMotor(PoolElement):
+class PoolMotor(PoolBaseMoveable):
     """An internal Motor object. **NOT** part of the official API. Accessing
     this object from a controller plug-in may lead to undetermined behavior
     like infinite recursion."""
 
     def __init__(self, **kwargs):
         kwargs['elem_type'] = ElementType.Motor
-        PoolElement.__init__(self, **kwargs)
+        PoolBaseMoveable.__init__(self, **kwargs)
         on_change = self.on_change
         self._offset = Offset(self, initial_value=0, listeners=on_change)
         self._sign = Sign(self, initial_value=1, listeners=on_change)
@@ -229,14 +229,6 @@ class PoolMotor(PoolElement):
         self._in_start_move = False
         motion_name = "%s.Motion" % self._name
         self.set_action_cache(PoolMotion(self, motion_name))
-
-    # --------------------------------------------------------------------------
-    # Event forwarding
-    # --------------------------------------------------------------------------
-
-    def on_change(self, evt_src, evt_type, evt_value):
-        # forward all events coming from attributes to the listeners
-        self.fire_event(evt_type, evt_value)
 
     # --------------------------------------------------------------------------
     # state information
@@ -263,7 +255,7 @@ class PoolMotor(PoolElement):
         return state, status, ls
 
     def _set_state_info(self, state_info, propagate=1):
-        PoolElement._set_state_info(self, state_info, propagate=propagate)
+        PoolBaseMoveable._set_state_info(self, state_info, propagate=propagate)
         ls = state_info[-1]
         if self._sign.value < 0:
             ls = ls[0], ls[2], ls[1]

@@ -295,9 +295,34 @@ class PoolElement(BaseElement, TangoDevice):
         # force the creation of a state attribute
         self.getStateEG()
 
+    # TODO: for Taurus3/Taurus4 compatibility
+    # The sardana code is not fully ready to deal with Taurus4 model names
+    # Necessary changes are:
+    # * strip scheme name that appeared in the full_name since Taurus4
+    # * avoid FQDN introduced wuth taurus-org/taurus#488
+    # and come back to the Taurus3 style full name cause all the recording
+    # stuff and the measurement group counts is based on them
     def _find_pool_data(self):
         pool = get_pool_for_device(self.getParentObj(), self.getHWObj())
-        return pool.getElementInfo(self.getFullName())._data
+        full_name = self.getFullName()
+        try:
+            from taurus.core.tango.tangovalidator import\
+                TangoDeviceNameValidator
+            validator = TangoDeviceNameValidator()
+            uri_groups = validator.getUriGroups(full_name)
+            dev_name = uri_groups["devname"]
+            fqdn_host = uri_groups["host"]
+            if fqdn_host is not None:
+                port = uri_groups["port"]
+                host = fqdn_host.split(".")[0]
+                full_name = host + ":" + port + "/" + dev_name
+        except ImportError:
+            # we are in Taurus 3 so neither scheme nor FQDN is in use
+            pass
+        except:
+            msg = "Unknown error in _find_pool_data"
+            self.warning(msg, exc_info=1)
+        return pool.getElementInfo(full_name)._data
 
     def cleanUp(self):
         TangoDevice.cleanUp(self)
@@ -616,6 +641,20 @@ class ExpChannel(PoolElement):
         self.call__init__(PoolElement, name, **kw)
         self._value_buffer = {}
 
+    def getValueObj_(self):
+        """Retrurns Value attribute event generator object.
+
+        :return: Value attribute event generator
+        :rtype: TangoAttributeEG
+
+        ..todo:: When support to Taurus 3 will be dropped provide getValueObj.
+        Taurus 3 TaurusDevice class already uses this name.
+        """
+        return self._getAttrEG('value')
+
+    def getValue(self, force=False):
+        return self._getAttrValue('value', force=force)
+
     def getValueBufferObj(self):
         return self._getAttrEG('data')
 
@@ -658,12 +697,74 @@ class TriggerGate(PoolElement):
     pass
 
 
-class Motor(PoolElement, Moveable):
+class MoveableElement(PoolElement):
+
+    def __init__(self, name, **kw):
+        """MoveableElement initialization."""
+        self.call__init__(PoolElement, name, **kw)
+        self._position_buffer_cb = None
+        self._position_buffer = {}
+        self._codec = CodecFactory().getCodec("json")
+
+    def getPositionBufferObj(self):
+        return self._getAttrEG('positionbuffer')
+
+    def getPositionBuffer(self):
+        return self._position_buffer
+
+    def positionBufferChanged(self, _, position_buffer):
+        """Receive position buffer updates, pre-process them, and call
+        the subscribed callback.
+
+        :param position_buffer: json encoded position buffer update,
+            it contains at least values and indexes
+        :type value_buffer: str
+        """
+        if position_buffer is None:
+            return
+        _, position_buffer = self._codec.decode(('json', position_buffer),
+                                                ensure_ascii=True)
+        if self._position_buffer_cb:
+            self._position_buffer_cb(self, position_buffer)
+        else:
+            indexes = position_buffer["index"]
+            values = position_buffer["data"]
+            for index, value in zip(indexes, values):
+                self._position_buffer[index] = value
+
+    def subscribePositionBuffer(self, cb=None):
+        """Subscribe to channels' position buffer update events. If no
+        callback is passed, the default motor's callback is subscribed which
+        will store the data in the motor's value_buffer attribute.
+
+        :param cb: callback to be subscribed, None means subscribe the default
+            motor's callback
+        :type cb: callable
+        """
+        position_buffer_obj = self.getPositionBufferObj()
+        self._position_buffer_cb = cb
+        position_buffer_obj.subscribeEvent(self.positionBufferChanged,
+                                           with_first_event=False)
+
+    def unsubscribePositionBuffer(self, cb=None):
+        """Unsubscribe from motor's value buffer events. If no callback is
+        passed, unsubscribe the motor's default callback.
+
+        :param cb: callback to be unsubscribed, None means unsubscribe the
+            default motor's callback
+        :type cb: callable
+        """
+        position_buffer_obj = self.getPositionBufferObj()
+        self._position_buffer_cb = None
+        position_buffer_obj.unsubscribeEvent(self.positionBufferChanged)
+
+
+class Motor(MoveableElement, Moveable):
     """ Class encapsulating Motor functionality."""
 
     def __init__(self, name, **kw):
         """PoolElement initialization."""
-        self.call__init__(PoolElement, name, **kw)
+        self.call__init__(MoveableElement, name, **kw)
         self.call__init__(Moveable)
 
     def getPosition(self, force=False):
@@ -871,12 +972,12 @@ class Motor(PoolElement, Moveable):
         return msg
 
 
-class PseudoMotor(PoolElement, Moveable):
+class PseudoMotor(MoveableElement, Moveable):
     """ Class encapsulating PseudoMotor functionality."""
 
     def __init__(self, name, **kw):
         """PoolElement initialization."""
-        self.call__init__(PoolElement, name, **kw)
+        self.call__init__(MoveableElement, name, **kw)
         self.call__init__(Moveable)
 
     def getPosition(self, force=False):
@@ -1599,11 +1700,16 @@ class MeasurementGroup(PoolElement):
         self.getSynchronizationObj().write(data)
         self._last_integ_time = None
 
-    def getMoveableObj(self):
-        return self._getAttrEG('Moveable')
+    def getMasterMoveableObj(self):
+        return self._getAttrEG('MasterMoveable')
 
-    def getMoveable(self):
-        return self._getAttrValue('Moveable')
+    def getMasterMoveable(self):
+        return self._getAttrValue('MasterMoveable')
+
+    def setMasterMoveable(self, moveable=None):
+        if moveable is None:
+            moveable = 'None'  # Tango attribute is of type DevString
+        self.getMasterMoveableObj().write(moveable)
 
     def getLatencyTimeObj(self):
         return self._getAttrEG('LatencyTime')
@@ -1611,10 +1717,14 @@ class MeasurementGroup(PoolElement):
     def getLatencyTime(self):
         return self._getAttrValue('LatencyTime')
 
-    def setMoveable(self, moveable=None):
-        if moveable is None:
-            moveable = 'None'  # Tango attribute is of type DevString
-        self.getMoveableObj().write(moveable)
+    def getMoveablesObj(self):
+        return self._getAttrEG('Moveables')
+
+    def getMoveables(self):
+        return self._getAttrValue('Moveables')
+
+    def setMoveables(self, moveables):
+        self.getMoveablesObj().write(moveables)
 
     def valueBufferChanged(self, channel, value_buffer):
         """Receive value buffer updates, pre-process them, and call
@@ -1727,7 +1837,8 @@ class MeasurementGroup(PoolElement):
         if duration is None or duration == 0:
             return self.getStateEG().readValue(), self.getValues()
         self.putIntegrationTime(duration)
-        self.setMoveable(None)
+        self.setMasterMoveable(None)
+        self.setMoveables([])
         PoolElement.go(self, *args, **kwargs)
         state = self.getStateEG().readValue()
         if state == Fault:

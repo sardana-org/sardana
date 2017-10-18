@@ -7,21 +7,57 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
+- Report real moveable's position (read on the software trigger) in
+  ascanct & co. (#590)
+- addctrlib, relctrllib, relctrlcls macros usefull when developing
+  controller classes (#541)
+- Reintroduce intermediate events for counter/timer channels while
+  software acquisition is in progress (#625)
+- TaurusCounterTimerController - that can connect to different data
+  sources e.g. EPICS by using Taurus schemes (#628)
+- Allow deleting multiple measurement groups and multiple controllers
+  with udefmeas and udefctrl macros respectivelly (#361, #547)
+- Improve exception hangling in ascanct & co. (#600)
 - Allow to hide Taurus 4 related deprecation warnings
   (`TAURUS_MAX_DEPRECATION_COUNTS` sardana custom setting) (#550)
 - Optional data extrapolation for the very first records in ascanct & co.
   (`ApplyExtrapolation` environment variable) (#588)
 - Present available pools at the macroserver creation moment in the
   alphabetical order (#585, #586)
+- Present available doors at the spock profile creation moment in the
+  alphabetical order (#221, #558)
+- Some backwards compatibility for element names in PQDN - recently
+  Taurus started using only FQDN (#625, #627)
+- Improve DumbRecorder (example of a custom file recorder) to write to
+  a file.
 
 ### Fixed
 - Spock waits until macro stopping is finished after Ctrl+C (#34. #596)
+- Acquisition start sequence which in case of starting disabled channels
+  could unintentionally change the measurement group's configuration (#607,
+  #615)
+- Make the information about the element's instrument fully dynamic and
+  remove it from the serialized information (#122, #619)
+- uct macro (#319, #627)
+- Allow to stop macro when it was previously paused (#348, #548)
 - Bug in theoretical motor position in ascanct & co. (#591)
+- Counter/timer TaurusValue widget when used with Taurus 4 - correctly show
+  the element's name (#617)
+- Icons in macroexecution widgets when used with Taurus 4 (#578)
 - Spurious errors when reading RecordData attribute, normally triggered
   on event subscription e.g. macrogui (#447, #598)
 - Possible too early acquisition triggering by trigger/gate due to the
   wrong order ot starting trigger/gate and software synchronizer in the
   synchronization action (#597)
+- Validation of motor positions agains their limits in ascanct & co. (#595)
+- Generation of theoretical timestamps in ascanct & co. (#602)
+- Number of repetitions (always pass 1) passed to experimental channel
+  controllers in case software synchronization is in use (#594)
+- Dummy counter/timer now returns partial value when its acquisition was
+  aborted (#626)
+
+### Changed
+- Rename edctrl to edctrlcls macro (#541)
 
 ## [2.3.2] - 2017-08-11
 For a full log of commits between versions run (in your git repo):
