@@ -220,6 +220,13 @@ Following variables are supported:
     Its value is a dictionary with keys pointing to the server side directory
     and values to the client side directory/ies (string or list of strings).
 
+**OutputBlock**
+    Enable/disable printing the scan output records at the same line instead
+    of appending records as new lines a.k.a. block mode. This can save space
+    of the console output and facilitate an easy visual access to the scan
+    header printed at the beginning of the scan - especially usefull for very
+    long scans.
+
 **OutputCols**
     Select a subset of the scan output columns to be printed. Two different
     ways of specifying the selected colums exists. First, by specifying an
