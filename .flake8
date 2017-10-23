@@ -1,10 +1,6 @@
 [flake8]
-# E125 and E129 are added to fulfill with PEP8 which allow the same
-# indentation of multi conditional lines ("if" statement) and the code nested
-# inside of the "if" statment. Actually on newer versions of flake8
-# 3.2.1 (mccabe: 0.5.3, pycodestyle: 2.2.0, pyflakes: 1.3.0) only E129 has to 
-# be ignored, but on travis-ci we still use an old version of flake8:
-# 2.1.0 (pep8: 1.4.6, mccabe: 0.2.1, pyflakes: 0.8.1)
-# More details in:
-# https://github.com/sardana-org/sardana/pull/551#issuecomment-338572275 
-ignore = E125,E129
+# E129 is ignored to fulfill with PEP8 which allow the same indentation of
+# multi conditional lines ("if" statement) and the code nested inside of the
+# "if" statment. More details in:
+# https://github.com/sardana-org/sardana/pull/551#issuecomment-338572275
+ignore = E129
