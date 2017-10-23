@@ -664,7 +664,8 @@ class TaurusSequencerWidget(TaurusWidget):
         except TypeError:
             # TODO: For Taurus 4 adaptation
             doorState = door.getState()
-        if doorState == PyTango.DevState.ON or doorState == PyTango.DevState.ALARM:
+        if (doorState == PyTango.DevState.ON or
+            doorState == PyTango.DevState.ALARM):
             first, last, ids = self.tree.prepareMacroIds()
             self.setFirstMacroId(first)
             self.setLastMacroId(last)
