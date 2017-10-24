@@ -22,6 +22,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   (`TAURUS_MAX_DEPRECATION_COUNTS` sardana custom setting) (#550)
 - Optional data extrapolation for the very first records in ascanct & co.
   (`ApplyExtrapolation` environment variable) (#588)
+- `--file` option to sequencer - it allows to load a sequence file
+  directly on the application startup moment (#283, #551)
 - Present available pools at the macroserver creation moment in the
   alphabetical order (#585, #586)
 - Present available doors at the spock profile creation moment in the
