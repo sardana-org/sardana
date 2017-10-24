@@ -38,6 +38,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Acquisition start sequence which in case of starting disabled channels
   could unintentionally change the measurement group's configuration (#607,
   #615)
+- Selection of the master timer/monitor for each of the acquisition
+  sub-actions (hardware and software) (#614)
 - Make the information about the element's instrument fully dynamic and
   remove it from the serialized information (#122, #619)
 - uct macro (#319, #627)
