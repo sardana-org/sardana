@@ -1423,9 +1423,6 @@ class PoolMotorTV(TaurusValue):
         self.setReadWidgetClass(PoolMotorTVReadWidget)
         self.setWriteWidgetClass(PoolMotorTVWriteWidget)
         self.setUnitsWidgetClass(PoolMotorTVUnitsWidget)
-
-        self.setLabelConfig('dev_alias')
-
         self.motor_dev = None
         self._expertView = False
         self.limits_listener = None
