@@ -894,8 +894,20 @@ class TaurusSequencerWidget(TaurusWidget):
     def fromPlainText(self, plainText):
         newRoot = self.tree.fromPlainText(plainText)
         macroServerObj = self.getModelObj()
+        error_line = 0
         for macroNode in newRoot.allMacros():
-            macroServerObj.recreateMacroNodeAndFillAdditionalInfos(macroNode)
+            error_line += 1
+            try:
+                macroServerObj.recreateMacroNodeAndFillAdditionalInfos(
+                    macroNode)
+            except Exception, e:
+                Qt.QMessageBox.warning(self,
+                                       "Error while parsing the sequence",
+                                       "Sequence line number %d contains "
+                                       "the following error:\n %s\n "
+                                       "The sequence will not be loaded"
+                                       % (error_line, e))
+                raise e
         return newRoot
 
     def setModel(self, model):
