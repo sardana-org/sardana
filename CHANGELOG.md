@@ -24,6 +24,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   (`ApplyExtrapolation` environment variable) (#588)
 - `--file` option to sequencer - it allows to load a sequence file
   directly on the application startup moment (#283, #551)
+- Report error line number when loading a sequence from a txt file
+  fails (#114, #552)
 - Present available pools at the macroserver creation moment in the
   alphabetical order (#585, #586)
 - Present available doors at the spock profile creation moment in the
@@ -40,6 +42,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   #615)
 - Selection of the master timer/monitor for each of the acquisition
   sub-actions (hardware and software) (#614)
+- Avoid "already involved in motion" errors due to wrong handling of
+  operation context and Tango state machine (#639)
 - Make the information about the element's instrument fully dynamic and
   remove it from the serialized information (#122, #619)
 - uct macro (#319, #627)
