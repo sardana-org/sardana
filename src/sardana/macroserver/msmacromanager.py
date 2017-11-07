@@ -493,6 +493,7 @@ class MacroManager(MacroServerManager):
                           macro_server=self.macro_server, exc_info=exc_info)
             return MacroLibrary(**params)
 
+
         # if there was previous Macro Library info remove it
         old_macro_lib = self._modules.pop(module_name, None)
         if old_macro_lib is not None:
@@ -503,7 +504,6 @@ class MacroManager(MacroServerManager):
             m = mod_manager.reloadModule(module_name, path)
         except:
             exc_info = sys.exc_info()
-        macro_lib = None
 
         params = dict(module=m, name=module_name,
                       macro_server=self.macro_server, exc_info=exc_info)
@@ -525,9 +525,13 @@ class MacroManager(MacroServerManager):
             for _, macro in inspect.getmembers(m, _is_macro):
                 try:
                     self.addMacro(macro_lib, macro)
-                except:
-                    self.error("Error adding macro %s", macro.__name__)
+                except Exception as e:
+                    msg = "Error adding macro %s" % macro.__name__
+                    self.error(msg)
                     self.debug("Details:", exc_info=1)
+                    e = type(e)(e.message + "\n" + msg)
+                    raise e
+
         if macro_lib.has_macros():
             self._modules[module_name] = macro_lib
         return macro_lib
@@ -546,6 +550,7 @@ class MacroManager(MacroServerManager):
         params = dict(macro_server=self.macro_server, lib=macro_lib,
                       klass=klass)
         macro_class = MacroClass(**params)
+
         macro_lib.add_macro_class(macro_class)
         self._macro_dict[macro_name] = macro_class
 
@@ -557,6 +562,7 @@ class MacroManager(MacroServerManager):
         params = dict(macro_server=self.macro_server, lib=macro_lib,
                       function=func)
         macro_function = MacroFunction(**params)
+
         macro_lib.add_macro_function(macro_function)
         self._macro_dict[macro_name] = macro_function
 
