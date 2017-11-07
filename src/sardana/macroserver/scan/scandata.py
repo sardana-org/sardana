@@ -30,8 +30,11 @@ __all__ = ["ColumnDesc", "MoveableDesc", "Record", "RecordEnvironment",
 
 import copy
 import math
+import socket
 
 from taurus.core.util.singleton import Singleton
+from taurus import Device, Attribute
+from taurus.core.taurusexception import TaurusException
 
 from sardana.macroserver.scan.recorder import DataHandler
 from threading import RLock
@@ -186,6 +189,65 @@ class Record(object):
     def setWritten(self):
         self.written = 1
 
+    def __get_fullname(self, proxy, scheme_implicit=True, t3_style=False):
+        """
+        :param proxy: taurus
+        :param t3_style:
+        :return:
+        """
+        v = proxy.getNameValidator()
+        params = v.getParams(proxy.getFullName())
+        if t3_style:
+
+            fullname = '{0}:{1}/{2}'.format(params['host'].split('.')[0],
+                                            params['port'],
+                                            params['devicename'])
+        else:
+            fullname = '{0}:{1}/{2}'.format(socket.getfqdn(params['host']),
+                                            params['port'],
+                                            params['devicename'])
+            if scheme_implicit:
+                fullname = 'tango://{0}'.format(fullname)
+
+        attr_name = params.get('attrubutename', None)
+        if attr_name is not None:
+            fullname = '{0}/{1}'.format(fullname,params['attributename'])
+
+        return fullname
+
+    def __getitem__(self, item):
+        item = item.lower()
+        if item == 'dt':
+            item = 'timestamp'
+        if item in self.data:
+            return self.data[item]
+
+        # check if the item is a device name or an attribute name
+        try:
+            chn_proxy = Device(item)
+        except TaurusException:
+            try:
+                chn_proxy = Attribute(item)
+            except TaurusException:
+                raise KeyError(item)
+
+        # TODO: Refactor this code when the data dictionary uses only taurus
+        # 4 full name
+
+        try:
+            # Using taurus 4 full name
+            fullname = self.__get_fullname(chn_proxy)
+            data = self.data[fullname]
+        except KeyError:
+            try:
+                # Using taurus 4 full name without the scheme
+                fullname = self.__get_fullname(chn_proxy, scheme_implicit=False)
+                data = self.data[fullname]
+            except KeyError:
+                # Using taurus 3 full name
+                fullname = self.__get_fullname(chn_proxy, t3_style=True)
+                data = self.data[fullname]
+        return data
 
 class RecordEnvironment(dict):
     """  A RecordEnvironment is a set of arbitrary pairs of type
