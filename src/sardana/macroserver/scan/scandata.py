@@ -211,7 +211,7 @@ class Record(object):
 
         attr_name = params.get('attrubutename', None)
         if attr_name is not None:
-            fullname = '{0}/{1}'.format(fullname,params['attributename'])
+            fullname = '{0}/{1}'.format(fullname, params['attributename'])
 
         return fullname
 
@@ -241,13 +241,15 @@ class Record(object):
         except KeyError:
             try:
                 # Using taurus 4 full name without the scheme
-                fullname = self.__get_fullname(chn_proxy, scheme_implicit=False)
+                fullname = self.__get_fullname(chn_proxy,
+                                               scheme_implicit=False)
                 data = self.data[fullname]
             except KeyError:
                 # Using taurus 3 full name
                 fullname = self.__get_fullname(chn_proxy, t3_style=True)
                 data = self.data[fullname]
         return data
+
 
 class RecordEnvironment(dict):
     """  A RecordEnvironment is a set of arbitrary pairs of type
@@ -343,7 +345,7 @@ class RecordList(dict):
                 self.refMoveablesLabels.append(dataDesc.name)
             else:
                 name = dataDesc.name
-                if not name in ('point_nb', 'timestamp'):
+                if name not in ('point_nb', 'timestamp'):
                     self.channelLabels.append(name)
             self.labels.append(dataDesc.name)
         for label in self.labels:
@@ -359,7 +361,7 @@ class RecordList(dict):
            - each moveable initialized with None
         '''
         recordno = self.recordno
-        if self.initial_data and self.initial_data.has_key(recordno):
+        if self.initial_data and recordno in self.initial_data:
             initial_data = self.initial_data.get(recordno)
         else:
             initial_data = dict()
