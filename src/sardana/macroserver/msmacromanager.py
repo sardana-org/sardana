@@ -1354,11 +1354,11 @@ class MacroExecutor(Logger):
                 self.sendMacroStatusException(exc_info)
             self.debug("[ENDEX] (%s) runMacro %s" %
                        (macro_exp.__class__.__name__, name))
-            if isinstance(
-                macro_exp, MacroServerException) and macro_obj.parent_macro is None:
-                door.debug(macro_exp.traceback)
-                door.error("An error occurred while running %s:\n%s" %
-                           (macro_obj.description, macro_exp.msg))
+            if isinstance(macro_exp, MacroServerException):
+                if macro_obj.parent_macro is None:
+                    door.debug(macro_exp.traceback)
+                    door.error("An error occurred while running %s:\n%s" %
+                               (macro_obj.description, macro_exp.msg))
             self._popMacro()
             raise macro_exp
         self.debug("[ END ] runMacro %s" % desc)
