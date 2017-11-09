@@ -524,7 +524,6 @@ class MacroManager(MacroServerManager):
             params['file_path'] = file_name
             macro_lib = MacroLibrary(**params)
         else:
-
             macro_lib = MacroLibrary(**params)
             abs_file = macro_lib.file_path
             _is_macro = functools.partial(is_macro, abs_file=abs_file,
@@ -556,6 +555,11 @@ class MacroManager(MacroServerManager):
 
                 msg = (msg + "\n" + "Summary:" + "\n" + correct_macros
                        + "\n" + incorrect_macros + "\n")
+
+                if count_correct_macros == 0:
+                    msg += "\nUse addmaclib to reload the corrected macro(s)\n"
+                if count_correct_macros != 0:
+                    msg += "\nUse relmaclib to reload the corrected macro(s)\n"
                 raise Exception(msg)
 
     def addMacro(self, macro_lib, macro):
