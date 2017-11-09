@@ -2246,7 +2246,24 @@ class CTScan(CScan, CAcquisition):
                     "Moving to waypoint position: %s" % repr(final_pos))
                 motion.move(final_pos)
             finally:
-                measurement_group.waitFinish(id=mg_id)
+                # wait extra 15 s to for the acquisition to finish
+                # if it does not finish, abort the measurement group
+                # (this could be due to missed hardware triggers or
+                # positioning problems)
+                # TODO: allow parametrizing timeout
+                timeout = 15
+                measurement_group.waitFinish(timeout=timeout, id=mg_id)
+                # TODO: For Taurus 4 / Taurus 3 compatibility
+                if hasattr(measurement_group, "stateObj"):
+                    state = measurement_group.stateObj.read().rvalue
+                else:
+                    state = measurement_group.state()
+                if state == PyTango.DevState.MOVING:
+                    msg = "Measurement did not finish acquisition within "\
+                          "timeout. Stopping it..."
+                    self.debug(msg)
+                    measurement_group.Stop()
+                    raise ScanException("acquisition timeout reached")
 
             if macro.isStopped():
                 self.on_waypoints_end()
