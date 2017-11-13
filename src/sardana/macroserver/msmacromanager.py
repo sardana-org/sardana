@@ -873,6 +873,16 @@ class MacroExecutor(Logger):
     def macro_manager(self):
         return self.macro_server.macro_manager
 
+    def getGeneralHooks(self):
+        # TODO: general hooks should reflect the state of configuration
+        # at the macro/sequence start
+        try:
+            return self.door.get_env("GeneralHooks")["GeneralHooks"]
+        except KeyError:
+            return []
+
+    general_hooks = property(getGeneralHooks)
+
     def getNewMacroID(self):
         self._macro_counter -= 1
         return self._macro_counter
