@@ -985,6 +985,9 @@ class MacroExecutor(Logger):
         }
 
         macro_obj = self._createMacroObj(macro_meta, macro_params, init_opts)
+
+        self._prepareGeneralHooks(macro_obj)
+
         for macro in xml_macro.findall('macro'):
             hook = MacroExecutor.RunSubXMLHook(self, macro)
             hook_hints = macro.findall('hookPlace')
@@ -993,6 +996,7 @@ class MacroExecutor(Logger):
             else:
                 hook_places = [h.text for h in hook_hints]
                 macro_obj.hooks = [(hook, hook_places)]
+
         prepare_result = self._prepareMacroObj(macro_obj, macro_params)
         return macro_obj, prepare_result
 
@@ -1104,8 +1108,12 @@ class MacroExecutor(Logger):
 
         init_opts['macro_line'] = macro_line
 
-        return self.prepareMacroObj(meta_macro, macro_params, init_opts,
-                                    prepare_opts)
+        macro_obj, prepare_result = self.prepareMacroObj(meta_macro, macro_params,
+                                                         init_opts, prepare_opts)
+
+        self._prepareGeneralHooks(macro_obj)
+
+        return macro_obj, prepare_result
 
     def getRunningMacro(self):
         return self._macro_pointer
