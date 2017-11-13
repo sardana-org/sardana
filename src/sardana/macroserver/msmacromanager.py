@@ -62,7 +62,8 @@ from sardana.macroserver.msmetamacro import MACRO_TEMPLATE, MacroLibrary, \
     MacroClass, MacroFunction
 from sardana.macroserver.msparameter import ParamDecoder, FlatParamDecoder, \
     WrongParam
-from sardana.macroserver.macro import Macro, MacroFunc
+from sardana.macroserver.macro import Macro, MacroFunc, ExecMacroHook, \
+    Hookable
 from sardana.macroserver.msexception import UnknownMacroLibrary, \
     LibraryError, UnknownMacro, MissingEnv, AbortException, StopException, \
     MacroServerException, UnknownEnv
@@ -953,6 +954,24 @@ class MacroExecutor(Logger):
         # and id
         macro_line = "%s(%s) -> %s" % (macro_name, params_str, macro_id)
         return macro_line
+
+    def _prepareGeneralHooks(self, macro_obj):
+        if not isinstance(macro_obj, Hookable):
+            return
+        general_hooks = self.general_hooks
+        if len(general_hooks) == 0:
+            return
+        for hook_info, hook_places in general_hooks:
+            if isinstance(hook_info, str):
+                sub_macro_name = hook_info
+                hook = ExecMacroHook(macro_obj, sub_macro_name)
+            elif isinstance(hook_info, list):
+                sub_macro_name = hook_info[0]
+                sub_macro_params = hook_info[1]
+                hook = ExecMacroHook(macro_obj, sub_macro_name,
+                                     *sub_macro_params)
+            hook_info = (hook, hook_places)
+            macro_obj.appendHook(hook_info)
 
     def _prepareXMLMacro(self, xml_macro, parent_macro=None):
         macro_meta, _, macro_params = self._decodeMacroParameters(xml_macro)
