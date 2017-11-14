@@ -1109,7 +1109,9 @@ class MacroExecutor(Logger):
         init_opts['macro_line'] = macro_line
 
         macro_obj, prepare_result = self.prepareMacroObj(meta_macro,
-            macro_params, init_opts, prepare_opts)
+                                                         macro_params,
+                                                         init_opts,
+                                                         prepare_opts)
 
         self._prepareGeneralHooks(macro_obj)
 
