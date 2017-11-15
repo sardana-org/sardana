@@ -103,7 +103,9 @@ def split_MGConfigurations(mg_cfg_in):
         for ctrl_info in ctrls.values():
             element = ctrl_info[role]
             element_idx = ctrl_info["channels"][element]["index"]
-            if element_idx < master_idx:
+            element_enabled = ctrl_info["channels"][element]["enabled"]
+            # Find master only if is enabled
+            if element_idx < master_idx and element_enabled:
                 master = element
                 master_idx = element_idx
         return master
