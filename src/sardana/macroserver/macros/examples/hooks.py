@@ -28,7 +28,7 @@ __all__ = ["captain_hook", "captain_hook2", "loop", "hooked_scan",
 
 __docformat__ = 'restructuredtext'
 
-from sardana.macroserver.macro import *
+from sardana.macroserver.macro import Macro, Type, ExecMacroHook
 
 
 class loop(Macro, Hookable):
@@ -191,4 +191,3 @@ class hooked_dummyscan(Macro):
         dummyscan.hooks = [(self.hook1, ["pre-scan"]), (self.hook2, ["pre-acq",
                                                                      "post-acq", "pre-move", "post-move", "aaaa"]), (self.hook3, ["post-scan"])]
         self.runMacro(dummyscan)
-
