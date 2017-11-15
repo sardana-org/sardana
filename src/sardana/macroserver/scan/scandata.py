@@ -30,11 +30,12 @@ __all__ = ["ColumnDesc", "MoveableDesc", "Record", "RecordEnvironment",
 
 import copy
 import math
-import socket
 
 from taurus.core.util.singleton import Singleton
-from taurus import Device, Attribute
+from taurus import Device, Attribute, getSchemeFromName, Factory
 from taurus.core.taurusexception import TaurusException
+from taurus.core import TaurusElementType
+from taurus import Release as taurus_release
 
 from sardana.macroserver.scan.recorder import DataHandler
 from threading import RLock
@@ -189,31 +190,47 @@ class Record(object):
     def setWritten(self):
         self.written = 1
 
-    def __get_fullname(self, proxy, scheme_implicit=True, t3_style=False):
-        """
-        :param proxy: taurus
-        :param t3_style:
-        :return:
-        """
+    def __get_t3_name(self, item):
+        # check if the item is a device name or an attribute name
+        try:
+            proxy = Device(item)
+        except TaurusException:
+            try:
+                proxy = Attribute(item)
+            except TaurusException:
+                raise KeyError(item)
+
         v = proxy.getNameValidator()
         params = v.getParams(proxy.getFullName())
-        if t3_style:
+        name = '{0}:{1}/{2}'.format(params['host'].split('.')[0],
+                                    params['port'],
+                                    params['devicename'])
 
-            fullname = '{0}:{1}/{2}'.format(params['host'].split('.')[0],
-                                            params['port'],
-                                            params['devicename'])
-        else:
-            fullname = '{0}:{1}/{2}'.format(socket.getfqdn(params['host']),
-                                            params['port'],
-                                            params['devicename'])
-            if scheme_implicit:
-                fullname = 'tango://{0}'.format(fullname)
-
-        attr_name = params.get('attrubutename', None)
+        attr_name = params.get('attributename', None)
         if attr_name is not None:
-            fullname = '{0}/{1}'.format(fullname, params['attributename'])
+            name = '{0}/{1}'.format(name, params['attributename'])
 
-        return fullname
+        return name
+
+    def __get_t4_name(self, item):
+        scheme = getSchemeFromName(item)
+        f = Factory(scheme=scheme)
+        element_types = f.getValidTypesForName(item)
+        if TaurusElementType.Attribute in element_types:
+            validator = f.getAttributeNameValidator()
+        elif TaurusElementType.Device in element_types:
+            validator = f.getDeviceNameValidator()
+        else:
+            raise KeyError(item)
+
+        name = validator.getNames(item)[0]
+        return name
+
+    def __get_tango_name(self, item):
+        name = self.__get_t4_name(item)
+        if name.startswith('tango://'):
+            name = name[8:]  # remove 'tango://'
+        return name
 
     def __getitem__(self, item):
         item = item.lower()
@@ -222,32 +239,22 @@ class Record(object):
         if item in self.data:
             return self.data[item]
 
-        # check if the item is a device name or an attribute name
-        try:
-            chn_proxy = Device(item)
-        except TaurusException:
-            try:
-                chn_proxy = Attribute(item)
-            except TaurusException:
-                raise KeyError(item)
+        # --------------------------------------------------------------------
+        # TODO: refactor this block once data uses taurus 4 names
 
-        # TODO: Refactor this code when the data dictionary uses only taurus
-        # 4 full name
-
-        try:
-            # Using taurus 4 full name
-            fullname = self.__get_fullname(chn_proxy)
-            data = self.data[fullname]
-        except KeyError:
+        if int(taurus_release.version.split('.')[0]) < 4:
+            # Taurus 3 backward compatibility
+            name = self.__get_t3_name(item)
+            data = self.data[name]
+        else:
             try:
-                # Using taurus 4 full name without the scheme
-                fullname = self.__get_fullname(chn_proxy,
-                                               scheme_implicit=False)
-                data = self.data[fullname]
+                name = self.__get_t4_name(item)
+                data = self.data[name]
             except KeyError:
-                # Using taurus 3 full name
-                fullname = self.__get_fullname(chn_proxy, t3_style=True)
-                data = self.data[fullname]
+                # Using a Tango URL
+                name = self.__get_tango_name(item)
+                data = self.data[name]
+        # --------------------------------------------------------------------
         return data
 
 
