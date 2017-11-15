@@ -557,7 +557,7 @@ class Stopable(object):
         Aborts one of the axis
 
         :param int axis: axis number"""
-        raise NotImplementedError("AbortOne must be defined in te controller")
+        raise NotImplementedError("AbortOne must be defined in the controller")
 
     def AbortAll(self):
         """**Controller API**. Override if necessary.
@@ -777,6 +777,8 @@ class MotorController(Controller, Startable, Stopable, Readable):
     standard_axis_attributes = {
         'Position': {'type': float,
                      'description': 'Position', },
+        'PositionBuffer': {'type': str,
+                           'description': 'Position buffer', },
         'DialPosition': {'type': float,
                          'description': 'Dial Position', },
         'Offset': {'type': float,
@@ -1145,6 +1147,8 @@ class PseudoMotorController(PseudoController):
     standard_axis_attributes = {
         'Position': {'type': float,
                      'description': 'Position', },
+        'PositionBuffer': {'type': str,
+                           'description': 'Position buffer', },
     }
 
     #: A :obj:`str` representing the controller gender
@@ -1287,7 +1291,7 @@ class PseudoMotorController(PseudoController):
            .. deprecated:: 1.0
                implement :meth:`~PseudoMotorController.CalcPseudo` instead"""
         raise NotImplementedError(
-            "CalcPseudo must be defined in te controller")
+            "CalcPseudo must be defined in the controller")
 
     def calc_physical(self, axis, pseudo_pos):
         """**Pseudo Motor Controller API**. Override is **MANDATORY**.
@@ -1408,7 +1412,7 @@ class PseudoCounterController(Controller):
 
            .. deprecated:: 1.0
                implement :meth:`~PseudoCounterController.Calc` instead"""
-        raise NotImplementedError("Calc must be defined in te controller")
+        raise NotImplementedError("Calc must be defined in the controller")
 
     def CalcAll(self, values):
         """**Pseudo Counter Controller API**. Override if necessary.

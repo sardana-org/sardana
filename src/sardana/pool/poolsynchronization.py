@@ -77,14 +77,14 @@ class PoolSynchronization(PoolAction):
         - config - dictionary containing measurement group configuration
         - synchronization - list of dictionaries containing information about
           the expected synchronization
-        - moveable (optional)- moveable object used as the synchronization
-          source in the Position domain
+        - master_moveable (optional) - moveable object used as the
+          synchronization source in the Position domain
         - monitor (optional) - counter/timer object used as the synchronization
           source in the Monitor domain
         '''
         cfg = kwargs['config']
         synchronization = kwargs.get('synchronization')
-        moveable = kwargs.get('moveable')
+        master_moveable = kwargs.get('master_moveable')
         ctrls_config = cfg.get('controllers')
         pool_ctrls = ctrls_config.keys()
 
@@ -131,12 +131,17 @@ class PoolSynchronization(PoolAction):
                 self.add_finish_hook(remove_mg_listener, False)
             # subscribing to the position change events to generate events
             # in position domain
-            if moveable is not None:
-                position = moveable.get_position_attribute()
+            if master_moveable is not None:
+                position = master_moveable.get_position_attribute()
                 position.add_listener(self._synch_soft)
                 remove_pos_listener = partial(position.remove_listener,
                                               self._synch_soft)
                 self.add_finish_hook(remove_pos_listener, False)
+
+            # start software synchronizer
+            if self._listener is not None:
+                self._synch_soft.start()
+                get_thread_pool().add(self._synch_soft.run)
 
             # PreStartAll on all controllers
             for pool_ctrl in pool_ctrls:
@@ -163,10 +168,6 @@ class PoolSynchronization(PoolAction):
             # StartAll on all controllers
             for pool_ctrl in pool_ctrls:
                 pool_ctrl.ctrl.StartAll()
-
-            if self._listener is not None:
-                self._synch_soft.start()
-                get_thread_pool().add(self._synch_soft.run)
 
     def is_triggering(self, states):
         """Determines if we are triggering or if the triggering has ended

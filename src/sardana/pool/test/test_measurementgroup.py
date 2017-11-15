@@ -115,7 +115,7 @@ class BaseAcquisition(object):
         channel_names = self.prepare_meas(config)
         # setting measurement parameters
         self.pmg.set_synchronization(synchronization)
-        self.pmg.set_moveable(moveable)
+        self.pmg.set_master_moveable(moveable)
         repetitions = 0
         for group in synchronization:
             repetitions += group[SynchParam.Repeats]
@@ -137,7 +137,7 @@ class BaseAcquisition(object):
         """
         channel_names = self.prepare_meas(config)
         self.pmg.set_synchronization(synchronization)
-        self.pmg.set_moveable(moveable)
+        self.pmg.set_master_moveable(moveable)
         repetitions = 0
         for group in synchronization:
             repetitions += group[SynchParam.Repeats]
@@ -173,7 +173,7 @@ class BaseAcquisition(object):
         jobs_before = get_thread_pool().qsize
         channel_names = self.prepare_meas(config)
         self.pmg.set_synchronization(synchronization)
-        self.pmg.set_moveable(moveable)
+        self.pmg.set_master_moveable(moveable)
         repetitions = 0
         for group in synchronization:
             repetitions += group[SynchParam.Repeats]
@@ -238,7 +238,7 @@ class BaseAcquisition(object):
         mot.set_velocity(0.5)
         channel_names = self.prepare_meas(config)
         self.pmg.synchronization = synchronization
-        self.pmg.moveable = moveable
+        self.pmg.master_moveable = moveable
         repetitions = 0
         for group in synchronization:
             repetitions += group[SynchParam.Repeats]

@@ -19,6 +19,12 @@ control the experiment by means of changing the gap and offset values. In the
 offset will provide the necessary interface for controlling the experiments
 gap and offset values respectively.
 
+.. figure:: /_static/slits.gif
+    :align: center
+
+    An animation [#]_ representing a system of slits composed from horizontal
+    blades (left and right) an vertical blades (top and bottom).
+
 In order to translate the motor positions into the pseudo motor positions and
 vice versa, calculations have to be performed. The device pool provides
 :class:`~sardana.pool.controller.PseudoMotorController` class that can be
@@ -279,5 +285,9 @@ every 1 unit move).
   This sketch demonstrates the above example where offset's drift was
   corrected.
 
+.. rubric:: Footnotes
+
+.. [#] We would like to thank Dominique Heinis for sharing his expertise in
+       blender.
 
 .. _Tango: http://www.tango-controls.org/

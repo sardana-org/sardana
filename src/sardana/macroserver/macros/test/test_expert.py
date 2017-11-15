@@ -70,7 +70,7 @@ class ExpertTest(RunMacroTestCase, unittest.TestCase):
 class MeasTest(RunMacroTestCase, unittest.TestCase):
     """Test case for measurement group related expert macros.
     """
-
+    @unittest.skip("skip test until issue #57 is fixed")
     def test_meas(self):
         MNTGRP_NAME = "unittestmntgrp01"
         try:

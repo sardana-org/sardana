@@ -349,6 +349,10 @@ class Door(SardanaDevice):
             throw_sardana_exception(mse)
 
         attr.set_value(*data)
+        # workaround for a bug in PyTango (tango-controls/pytango#147),
+        # i.e. temporary solution for issue #447
+        # (storing reference to data so it can not be destroyed by GC)
+        self.__buf_data = data
 
     def read_MacroStatus(self, attr):
         attr.set_value('', '')
@@ -383,7 +387,9 @@ class Door(SardanaDevice):
         self.macro_executor.stop()
 
     def is_StopMacro_allowed(self):
-        return self.get_state() == Macro.Running
+        is_stop_allowed = (self.get_state() == Macro.Running or
+                           self.get_state() == Macro.Pause)
+        return is_stop_allowed
 
     def ResumeMacro(self):
         macro = self.getRunningMacro()
