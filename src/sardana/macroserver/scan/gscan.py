@@ -65,8 +65,7 @@ from sardana.macroserver.scan.scandata import ColumnDesc, MoveableDesc, \
 from sardana.macroserver.scan.recorder import (AmbiguousRecorderError,
                                                SharedMemoryRecorder,
                                                FileRecorder)
-from sardana.taurus.core.tango.sardana.pool import Ready, TwoDExpChannel, \
-    Motor, PseudoMotor
+from sardana.taurus.core.tango.sardana.pool import Ready, TwoDExpChannel
 from sardana.sardanathreadpool import get_thread_pool
 
 
@@ -1823,27 +1822,24 @@ class CAcquisition(object):
         self._thread_pool = get_thread_pool()
         self._countdown_latch = CountLatch()
 
-    def buffer_changed(self, element, buffer_):
-        """Delegate processing of buffer events to worker threads."""
-        # buffer is a dictionary with at least keys: data, index
+    def value_buffer_changed(self, channel, value_buffer):
+        """Delegate processing of value buffer events to worker threads."""
+        # value_buffer is a dictionary with at least keys: data, index
         # and its values are of type sequence
         # e.g. dict(data=seq<float>, index=seq<int>)
-        if buffer_ is None:
+        if value_buffer is None:
             return
-        # Until the github issue #500 gets fixed we use short names
-        # for moveables and full names for experimental channels
-        if isinstance(element, Motor) or isinstance(element, PseudoMotor):
-            full_name = element.getName()
-        else:
-            full_name = element.getFullName()
 
-        # TODO: for Taurus3/Taurus4 compatibility
+        full_name = channel.getFullName()
+
+        # TODO: for Taurus4 compatibility
         # The sardana code is not fully ready to deal with Taurus4 model names
         # Necessary changes are:
         # * strip scheme name that appeared in the full_name since Taurus4
         # * avoid FQDN introduced wuth taurus-org/taurus#488
         # and come back to the Taurus3 style full name cause all the recording
         # stuff and the measurement group counts is based on them
+
         try:
             from taurus.core.tango.tangovalidator import\
                 TangoDeviceNameValidator
@@ -1865,7 +1861,7 @@ class CAcquisition(object):
             self.warning(msg, exc_info=1)
 
         info = {'label': full_name}
-        info.update(buffer_)
+        info.update(value_buffer)
         # info is a dictionary with at least keys: label, data,
         # index and its values are of type string for label and
         # sequence for data, index
@@ -1874,7 +1870,7 @@ class CAcquisition(object):
         self._thread_pool.add(self.data.addData,
                               self._countdown_latch.count_down, info)
 
-    def wait_buffer(self):
+    def wait_value_buffer(self):
         """Wait until all value buffer events are processed."""
         self._countdown_latch.wait()
 
@@ -2044,8 +2040,7 @@ class CTScan(CScan, CAcquisition):
         for _, waypoint in waypoints:
             self.macro.debug("Waypoint iteration...")
             # initializing mntgrp control variables
-            self.__mnt_grp_subscribed = False
-            self.__moveables_subscribed = False
+            self.__mntGrpStarted = False
 
             start_positions = waypoint.get('start_positions')
             positions = waypoint['positions']
@@ -2105,8 +2100,8 @@ class CTScan(CScan, CAcquisition):
             # TODO: let a pseudomotor specify which motor should be used as
             # source
             MASTER = 0
-            master_moveable = moveables[MASTER].full_name
-            self.measurement_group.setMasterMoveable(master_moveable)
+            moveable = moveables[MASTER].full_name
+            self.measurement_group.setMoveable(moveable)
             path = motion_paths[MASTER]
             repeats = self.macro.nr_points
             active_time = self.macro.integ_time
@@ -2158,8 +2153,7 @@ class CTScan(CScan, CAcquisition):
                                  'end_user: %f; ' % path._final_user_pos +
                                  'start: %f; ' % path.initial_pos +
                                  'end: %f; ' % path.final_pos +
-                                 'ds: %f' % (path.final_pos -
-                                             path.initial_pos))
+                                 'ds: %f' % (path.final_pos - path.initial_pos))
                 attributes = OrderedDict(velocity=path.max_vel,
                                          acceleration=path.max_vel_time,
                                          deceleration=path.min_vel_time)
@@ -2173,70 +2167,36 @@ class CTScan(CScan, CAcquisition):
                 self.on_waypoints_end()
                 return
 
-            self.macro.warning(
-                "Relative timestamp (dt) columns contains theoretical values"
-            )
+            # TODO: don't fill theoretical positions but implement the position
+            # capture, both hardware and software
+            initial_data = {}
+            motors = self.macro.motors
+            starts = self.macro.starts
+            finals = self.macro.finals
+            nr_points = self.macro.nr_points
+            theoretical_positions = generate_positions(motors, starts, finals,
+                                                       nr_points)
             theoretical_timestamps = generate_timestamps(synch)
-
-            pool = measurement_group.getPoolObj()
-            external_moveables = []
-            self.internal_moveables = []
-            starts = []
-            finals = []
-            # discriminate moveables into internal and external
-            for moveable, start, final in zip(self.macro.motors,
-                                              self.macro.starts,
-                                              self.macro.finals):
-                if moveable.getPoolObj() is pool:
-                    self.internal_moveables.append(moveable)
-                else:
-                    external_moveables.append(moveable)
-                    starts.append(start)
-                    finals.append(final)
-            # generate theoretical positions only for the external moveables
-            # the ones that do not belong the the pool which synchronizes the
-            # acquisition
-            if len(external_moveables) > 0:
-                self.macro.warning(
-                    "External moveables positions contains theoretical values"
-                )
-                nr_points = self.macro.nr_points
-                theoretical_positions = generate_positions(external_moveables,
-                                                           starts, finals,
-                                                           nr_points)
-                initial_data = {}
-                for index, data in theoretical_timestamps.items():
-                    data.update(theoretical_positions[index])
-                    initial_data[index] = data
-            else:
-                initial_data = theoretical_timestamps
-
+            for index, data in theoretical_positions.items():
+                data.update(theoretical_timestamps[index])
+                initial_data[index] = data
             self.data.initial_data = initial_data
 
-            internal_moveable_names = []
-            for moveable in self.internal_moveables:
-                # for Taurus4 compatibility
-                # Pool elements' register is based on full names without the
-                # scheme part. In case Taurus4 is in use strip the scheme.
-                full_name = moveable.full_name
-                if full_name.startswith("tango://"):
-                    full_name = full_name.lstrip("tango://")
-                internal_moveable_names.append(full_name)
-            self.measurement_group.setMoveables(internal_moveable_names)
+            self.macro.warning(
+                "Motor positions and relative timestamp (dt) columns contains"
+                " theoretical values"
+            )
 
             if hasattr(macro, 'getHooks'):
                 for hook in macro.getHooks('pre-start'):
                     hook()
             self.macro.checkPoint()
 
-            # add listener of buffer events
-            measurement_group.subscribeValueBuffer(self.buffer_changed)
-            self.__mnt_grp_subscribed = True
-            for moveable in self.internal_moveables:
-                moveable.subscribePositionBuffer(self.buffer_changed)
-            self.__moveables_subscribed = True
-
             self.macro.debug("Starting measurement group")
+            # add listener of data events
+            measurement_group.subscribeValueBuffer(self.value_buffer_changed)
+            self.__mntGrpStarted = True
+
             mg_id = self.measurement_group.start()
             try:
                 self.timestamp_to_start = time.time() + delta_start
@@ -2297,7 +2257,7 @@ class CTScan(CScan, CAcquisition):
         self.motion_end_event.set()
         self.cleanup()
         self.macro.debug("Waiting for data events to be processed")
-        self.wait_buffer()
+        self.wait_value_buffer()
         self.macro.debug("All data events are processed")
 
     def scan_loop(self):
@@ -2342,28 +2302,16 @@ class CTScan(CScan, CAcquisition):
         and trigger to its state before the scan.'''
         startTimestamp = time.time()
 
-        if self.__mnt_grp_subscribed:
-            self.debug("Unsubscribing from value buffers")
+        if self.__mntGrpStarted:
+            self.debug("Unsubscribing from value buffer events")
             try:
                 self.measurement_group.unsubscribeValueBuffer(
-                    self.buffer_changed)
+                    self.value_buffer_changed)
             except:
-                msg = "Exception occurred trying to unsubscribe value buffers"
+                msg = "Exception occurred trying to remove data listeners"
                 self.debug(msg)
                 self.debug('Details: ', exc_info=True)
-                raise ScanException('unsubscrubung value buffers failed')
-
-        if self.__moveables_subscribed:
-            self.debug("Unsubscribing from value buffers")
-            try:
-                for moveable in self.internal_moveables:
-                    moveable.unsubscribePositionBuffer(self.buffer_changed)
-            except:
-                msg = "Exception occurred trying to unsubscribe position "\
-                      "buffers"
-                self.debug(msg)
-                self.debug('Details: ', exc_info=True)
-                raise ScanException('unsubscrubung position buffers failed')
+                raise ScanException('removing data listeners failed')
 
         if hasattr(self.macro, 'getHooks'):
             for hook in self.macro.getHooks('pre-cleanup'):
@@ -2552,9 +2500,9 @@ class TScan(GScan, CAcquisition):
 
         yield 0
         measurement_group.measure(synchronization,
-                                  self.buffer_changed)
+                                  self.value_buffer_changed)
         self.debug("Waiting for value buffer events to be processed")
-        self.wait_buffer()
+        self.wait_value_buffer()
         self._fill_missing_records()
         yield 100
 

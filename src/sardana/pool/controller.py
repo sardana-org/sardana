@@ -777,8 +777,6 @@ class MotorController(Controller, Startable, Stopable, Readable):
     standard_axis_attributes = {
         'Position': {'type': float,
                      'description': 'Position', },
-        'PositionBuffer': {'type': str,
-                           'description': 'Position buffer', },
         'DialPosition': {'type': float,
                          'description': 'Dial Position', },
         'Offset': {'type': float,
@@ -1147,8 +1145,6 @@ class PseudoMotorController(PseudoController):
     standard_axis_attributes = {
         'Position': {'type': float,
                      'description': 'Position', },
-        'PositionBuffer': {'type': str,
-                           'description': 'Position buffer', },
     }
 
     #: A :obj:`str` representing the controller gender

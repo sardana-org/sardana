@@ -224,16 +224,12 @@ class PoolAcquisition(PoolAction):
         swname = name + ".SoftwareAcquisition"
         synchname = name + ".Synchronization"
 
-        self._moveables = None
         self._sw_acq_config = None
         self._0d_config = None
         self._0d_acq = Pool0DAcquisition(main_element, name=zerodname)
         self._sw_acq = PoolAcquisitionSoftware(main_element, name=swname)
         self._hw_acq = PoolAcquisitionHardware(main_element, name=hwname)
         self._synch = PoolSynchronization(main_element, name=synchname)
-
-    def set_moveables(self, moveables):
-        self._moveables = moveables
 
     def set_sw_config(self, config):
         self._sw_acq_config = config
@@ -284,8 +280,6 @@ class PoolAcquisition(PoolAction):
                     self._0d_acq._stopped = False
                     self._0d_acq._aborted = False
                     get_thread_pool().add(self._0d_acq.run, *args, **kwargs)
-            self.read_moveables(value)
-
         elif name == "passive":
             if self._0d_config and (self._0d_acq._is_started() or
                                     self._0d_acq.is_running()):
@@ -315,8 +309,6 @@ class PoolAcquisition(PoolAction):
                 pseudo_elem.clear_value_buffer()
         config = kwargs['config']
         synchronization = kwargs["synchronization"]
-        moveables = kwargs["moveables"]
-        self.set_moveables(moveables)
         integ_time = extract_integ_time(synchronization)
         repetitions = extract_repetitions(synchronization)
         # TODO: this code splits the global mg configuration into
@@ -331,9 +323,7 @@ class PoolAcquisition(PoolAction):
             cont_acq_kwargs['integ_time'] = integ_time
             cont_acq_kwargs['repetitions'] = repetitions
             self._hw_acq.run(*args, **cont_acq_kwargs)
-        if (len(sw_acq_cfg['controllers']) or
-                len(zerod_acq_cfg['controllers']) or
-                len(moveables)):
+        if len(sw_acq_cfg['controllers']) or len(zerod_acq_cfg['controllers']):
             self._synch.add_listener(self)
             if len(sw_acq_cfg['controllers']):
                 sw_acq_kwargs = dict(kwargs)
@@ -441,11 +431,6 @@ class PoolAcquisition(PoolAction):
         ret = self._ct_acq.read_value(ret=ret, serial=serial)
         ret.update(self._0d_acq.read_value(ret=ret, serial=serial))
         return ret
-
-    def read_moveables(self, idx):
-        for moveable in self._moveables:
-            pos = moveable.position.value
-            moveable.append_position_buffer(pos, idx)
 
 
 class Channel(PoolActionItem):
