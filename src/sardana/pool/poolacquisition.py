@@ -540,6 +540,11 @@ class PoolAcquisitionBase(PoolAction):
             master_key = 'monitor'
             master_value = -mon_count
         master = cfg[master_key]
+        if master is None:
+            self.main_element.set_state(State.Fault, propagate=2)
+            msg = "master {0} is unknown (probably disabled)".format(
+                master_key)
+            raise RuntimeError(msg)
         master_ctrl = master.controller
 
         pool_ctrls_dict = dict(cfg['controllers'])
@@ -573,12 +578,6 @@ class PoolAcquisitionBase(PoolAction):
                 # only CT will be read in the loop, 1D and 2D not
                 if ElementType.CTExpChannel in ctrl.get_ctrl_types():
                     _pool_ctrl_dict_loop[ctrl] = pool_ctrl_data
-            # ctrl that contains the master timer/monitor can not be disabled
-            elif ctrl is master_ctrl:
-                self.main_element.set_state(State.Fault, propagate=2)
-                msg = "master timer/monitor ({0}) is disabled".format(
-                    master.name)
-                raise RuntimeError(msg)
 
         # timer/monitor channels can not be disabled
         for pool_ctrl in pool_ctrls:
