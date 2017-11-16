@@ -22,6 +22,9 @@ This file follows the formats and conventions from [keepachangelog.com]
   (`TAURUS_MAX_DEPRECATION_COUNTS` sardana custom setting) (#550)
 - Optional data extrapolation for the very first records in ascanct & co.
   (`ApplyExtrapolation` environment variable) (#588)
+- Inform about an error when reading the sofware synchronized channel so
+  the record can be completed - value for the given trigger will not
+  arrive anymore (#581, #582)
 - `--file` option to sequencer - it allows to load a sequence file
   directly on the application startup moment (#283, #551)
 - Report error line number when loading a sequence from a txt file
