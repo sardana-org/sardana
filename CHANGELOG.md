@@ -66,6 +66,10 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Changed
 - Rename edctrl to edctrlcls macro (#541)
+- The way how the master timer/monitor for the acquisition actions is selected.
+  Previously the first one for the given synchronization was used, now it is
+  taken into account if it is enabled or disabled (next ones may be used then).
+  (#647, #648)
 
 ## [2.3.2] - 2017-08-11
 For a full log of commits between versions run (in your git repo):
