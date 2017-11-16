@@ -38,7 +38,7 @@ from sardana.sardanaattribute import SardanaAttribute, ScalarNumberAttribute, \
     SardanaSoftwareAttribute
 from sardana.sardanaevent import EventType
 from sardana.sardanautils import assert_type, is_number
-from sardana.pool.poolbasemoveable import PoolBaseMoveable
+from sardana.pool.poolelement import PoolElement
 from sardana.pool.poolmotion import PoolMotion, MotionState
 
 
@@ -203,14 +203,14 @@ class Sign(SardanaSoftwareAttribute):
     pass
 
 
-class PoolMotor(PoolBaseMoveable):
+class PoolMotor(PoolElement):
     """An internal Motor object. **NOT** part of the official API. Accessing
     this object from a controller plug-in may lead to undetermined behavior
     like infinite recursion."""
 
     def __init__(self, **kwargs):
         kwargs['elem_type'] = ElementType.Motor
-        PoolBaseMoveable.__init__(self, **kwargs)
+        PoolElement.__init__(self, **kwargs)
         on_change = self.on_change
         self._offset = Offset(self, initial_value=0, listeners=on_change)
         self._sign = Sign(self, initial_value=1, listeners=on_change)
@@ -230,9 +230,17 @@ class PoolMotor(PoolBaseMoveable):
         motion_name = "%s.Motion" % self._name
         self.set_action_cache(PoolMotion(self, motion_name))
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
+    # Event forwarding
+    # -------------------------------------------------------------------------
+
+    def on_change(self, evt_src, evt_type, evt_value):
+        # forward all events coming from attributes to the listeners
+        self.fire_event(evt_type, evt_value)
+
+    # -------------------------------------------------------------------------
     # state information
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def _from_ctrl_state_info(self, state_info):
         state_info, _ = state_info
@@ -255,15 +263,15 @@ class PoolMotor(PoolBaseMoveable):
         return state, status, ls
 
     def _set_state_info(self, state_info, propagate=1):
-        PoolBaseMoveable._set_state_info(self, state_info, propagate=propagate)
+        PoolElement._set_state_info(self, state_info, propagate=propagate)
         ls = state_info[-1]
         if self._sign.value < 0:
             ls = ls[0], ls[2], ls[1]
         self._set_limit_switches(ls, propagate=propagate)
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # state information
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     _STD_STATUS = "{name} is {state}{limit_switches}{ctrl_status}"
 
@@ -305,9 +313,9 @@ class PoolMotor(PoolBaseMoveable):
                                              ctrl_status=status)
         return state, new_status, ls
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # limit switches
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def inspect_limit_switches(self):
         """returns the current (cached value of the limit switches
@@ -346,9 +354,9 @@ class PoolMotor(PoolBaseMoveable):
     limit_switches = property(get_limit_switches, set_limit_switches,
                               doc="motor limit switches")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # instability time
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def has_instability_time(self, cache=True):
         it = self._instability_time
@@ -366,9 +374,9 @@ class PoolMotor(PoolBaseMoveable):
     instability_time = property(get_instability_time, set_instability_time,
                                 doc="motor instability time")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # backlash
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def has_backlash(self, cache=True):
         return self._backlash != 0
@@ -390,9 +398,9 @@ class PoolMotor(PoolBaseMoveable):
 
     backlash = property(get_backlash, set_backlash, doc="motor backlash")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # offset
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_offset_attribute(self):
         return self._offset
@@ -405,9 +413,9 @@ class PoolMotor(PoolBaseMoveable):
 
     offset = property(get_offset, set_offset, doc="motor offset")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # sign
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_sign_attribute(self):
         return self._sign
@@ -428,9 +436,9 @@ class PoolMotor(PoolBaseMoveable):
 
     sign = property(get_sign, set_sign, doc="motor sign")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # step per unit
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_step_per_unit(self, cache=True, propagate=1):
         if not cache or self._step_per_unit is None:
@@ -461,9 +469,9 @@ class PoolMotor(PoolBaseMoveable):
     step_per_unit = property(get_step_per_unit, set_step_per_unit,
                              doc="motor steps per unit")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # acceleration
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_acceleration(self, cache=True, propagate=1):
         if not cache or self._acceleration is None:
@@ -490,9 +498,9 @@ class PoolMotor(PoolBaseMoveable):
     acceleration = property(get_acceleration, set_acceleration,
                             doc="motor acceleration")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # deceleration
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_deceleration(self, cache=True, propagate=1):
         if not cache or self._deceleration is None:
@@ -518,9 +526,9 @@ class PoolMotor(PoolBaseMoveable):
 
     deceleration = property(get_deceleration, set_deceleration,
                             doc="motor deceleration")
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # base_rate
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_base_rate(self, cache=True, propagate=1):
         if not cache or self._base_rate is None:
@@ -546,9 +554,9 @@ class PoolMotor(PoolBaseMoveable):
     base_rate = property(get_base_rate, set_base_rate,
                          doc="motor base rate")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # velocity
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_velocity(self, cache=True, propagate=1):
         if not cache or self._velocity is None:
@@ -574,9 +582,9 @@ class PoolMotor(PoolBaseMoveable):
     velocity = property(get_velocity, set_velocity,
                         doc="motor velocity")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # position & dial position
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def define_position(self, position):
         dial = self.get_position_attribute().calc_dial_position(position)
@@ -689,25 +697,25 @@ class PoolMotor(PoolBaseMoveable):
     position = property(get_position, set_position, doc="motor user position")
     dial_position = property(get_dial_position, doc="motor dial position")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # default acquisition channel
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_default_attribute(self):
         return self.get_position_attribute()
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # motion
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_motion(self):
         return self.get_action_cache()
 
     motion = property(get_motion, doc="motion object")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # motion calculation
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def calculate_motion(self, new_position, items=None, calculated=None):
         """Calculate the motor position, dial position, backlash for the

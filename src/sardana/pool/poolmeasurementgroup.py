@@ -115,10 +115,8 @@ class PoolMeasurementGroup(PoolGroupElement):
         self._acquisition_mode = AcqMode.Timer
         self._config = None
         self._config_dirty = True
-        self._master_moveable = None
-        self._master_moveable_obj = None
-        self._moveables = []
-        self._moveables_objs = []
+        self._moveable = None
+        self._moveable_obj = None
         self._synchronization = []
         # dict with channel and its acquisition synchronization
         # key: PoolBaseChannel; value: AcqSynch
@@ -608,43 +606,21 @@ class PoolMeasurementGroup(PoolGroupElement):
                                doc="the current acquisition mode")
 
     # -------------------------------------------------------------------------
-    # master moveable
+    # moveable
     # -------------------------------------------------------------------------
 
-    def get_master_moveable(self):
-        return self._master_moveable
+    def get_moveable(self):
+        return self._moveable
 
-    def set_master_moveable(self, moveable, propagate=1):
-        self._master_moveable = moveable
-        if (self._master_moveable != 'None' and
-                self._master_moveable is not None):
-            master_moveable_obj = self.pool.get_element_by_full_name(moveable)
-            self._master_moveable_obj = master_moveable_obj
-        self.fire_event(EventType("master_moveable", priority=propagate),
+    def set_moveable(self, moveable, propagate=1):
+        self._moveable = moveable
+        if self._moveable != 'None' and self._moveable is not None:
+            self._moveable_obj = self.pool.get_element_by_full_name(moveable)
+        self.fire_event(EventType("moveable", priority=propagate),
                         moveable)
 
-    master_moveable = property(get_master_moveable, set_master_moveable,
-                               doc="master moveable used in synchronization")
-
-    # -------------------------------------------------------------------------
-    # moveables
-    # -------------------------------------------------------------------------
-
-    def get_moveables(self):
-        return self._moveables
-
-    def set_moveables(self, moveables, propagate=1):
-        self._moveables = moveables
-        moveables_objs = []
-        for name in moveables:
-            moveable_obj = self.pool.get_element_by_full_name(name)
-            moveables_objs.append(moveable_obj)
-        self._moveables_objs = moveables_objs
-        self.fire_event(EventType("moveables", priority=propagate),
-                        moveables)
-
-    moveables = property(get_moveables, set_moveables,
-                         doc="moveables to be acquired")
+    moveable = property(get_moveable, set_moveable,
+                        doc="moveable source used in synchronization")
 
     # -------------------------------------------------------------------------
     # latency time
@@ -681,8 +657,7 @@ class PoolMeasurementGroup(PoolGroupElement):
             elif acquisition_mode is AcqMode.Monitor:
                 kwargs['monitor'] = self._monitor
             kwargs['synchronization'] = self._synchronization
-            kwargs['master_moveable'] = self._master_moveable_obj
-            kwargs['moveables'] = self._moveables_objs
+            kwargs['moveable'] = self._moveable_obj
             # start acquisition
             self.acquisition.run(**kwargs)
 

@@ -40,7 +40,7 @@ from sardana.sardanaattribute import SardanaAttribute
 from sardana.sardanaexception import SardanaException
 
 from sardana.pool.poolbaseelement import PoolBaseElement
-from sardana.pool.poolbasemoveable import PoolBaseMoveable
+from sardana.pool.poolelement import PoolElement
 from sardana.pool.poolbasegroup import PoolBaseGroup
 from sardana.pool.poolmotion import PoolMotion
 from sardana.pool.poolexception import PoolException
@@ -231,7 +231,7 @@ class Position(SardanaAttribute):
                     position_value, propagate=propagate)
 
 
-class PoolPseudoMotor(PoolBaseGroup, PoolBaseMoveable):
+class PoolPseudoMotor(PoolBaseGroup, PoolElement):
     """A class representing a Pseudo Motor in the Sardana Device Pool"""
 
     def __init__(self, **kwargs):
@@ -240,13 +240,21 @@ class PoolPseudoMotor(PoolBaseGroup, PoolBaseMoveable):
         self._drift_correction = kwargs.pop('drift_correction', None)
         user_elements = kwargs.pop('user_elements')
         kwargs['elem_type'] = ElementType.PseudoMotor
-        PoolBaseMoveable.__init__(self, **kwargs)
+        PoolElement.__init__(self, **kwargs)
         PoolBaseGroup.__init__(self, user_elements=user_elements,
                                pool=kwargs['pool'])
         self._position = Position(self, listeners=self.on_change)
 
+    # -------------------------------------------------------------------------
+    # Event forwarding
+    # -------------------------------------------------------------------------
+
+    def on_change(self, evt_src, evt_type, evt_value):
+        # forward all events coming from attributes to the listeners
+        self.fire_event(evt_type, evt_value)
+
     def serialize(self, *args, **kwargs):
-        kwargs = PoolBaseMoveable.serialize(self, *args, **kwargs)
+        kwargs = PoolElement.serialize(self, *args, **kwargs)
         elements = [elem.name for elem in self.get_user_elements()]
         physical_elements = []
         for elem_list in self.get_physical_elements().values():
@@ -489,9 +497,9 @@ class PoolPseudoMotor(PoolBaseGroup, PoolBaseMoveable):
         ret = self._calculate_states()
         return ret
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # default acquisition channel
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_default_attribute(self):
         return self.get_position_attribute()

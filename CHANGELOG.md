@@ -7,8 +7,6 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
-- Report real moveable's position (read on the software trigger) in
-  ascanct & co. (#590)
 - addctrlib, relctrllib, relctrlcls macros usefull when developing
   controller classes (#541)
 - Reintroduce intermediate events for counter/timer channels while

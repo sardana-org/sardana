@@ -77,14 +77,14 @@ class PoolSynchronization(PoolAction):
         - config - dictionary containing measurement group configuration
         - synchronization - list of dictionaries containing information about
           the expected synchronization
-        - master_moveable (optional) - moveable object used as the
-          synchronization source in the Position domain
+        - moveable (optional)- moveable object used as the synchronization
+          source in the Position domain
         - monitor (optional) - counter/timer object used as the synchronization
           source in the Monitor domain
         '''
         cfg = kwargs['config']
         synchronization = kwargs.get('synchronization')
-        master_moveable = kwargs.get('master_moveable')
+        moveable = kwargs.get('moveable')
         ctrls_config = cfg.get('controllers')
         pool_ctrls = ctrls_config.keys()
 
@@ -131,8 +131,8 @@ class PoolSynchronization(PoolAction):
                 self.add_finish_hook(remove_mg_listener, False)
             # subscribing to the position change events to generate events
             # in position domain
-            if master_moveable is not None:
-                position = master_moveable.get_position_attribute()
+            if moveable is not None:
+                position = moveable.get_position_attribute()
                 position.add_listener(self._synch_soft)
                 remove_pos_listener = partial(position.remove_listener,
                                               self._synch_soft)
