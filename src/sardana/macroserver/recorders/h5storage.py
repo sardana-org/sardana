@@ -222,7 +222,6 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         self._createPreScanSnapshot(env)
 
         self.fd.flush()
-        os.fsync(self.fd.fileno())
 
     def _compression(self, shape, compfilter='gzip'):
         """
@@ -304,7 +303,6 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             else:
                 self.debug('missing data for label %r', dd.label)
         self.fd.flush()
-        os.fsync(self.fd.fileno())
 
     def _endRecordList(self, recordlist):
 
