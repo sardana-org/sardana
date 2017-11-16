@@ -654,7 +654,6 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
         self._createPreScanSnapshot(env)
 
         self.fd.flush()
-        os.fsync(self.fd.fileno())
 
     def _createPreScanSnapshot(self, env):
         # write the pre-scan snapshot in the
@@ -727,7 +726,6 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
             else:
                 debug("missing data for label '%s'", dd.label)
         fd.flush()
-        os.fsync(self.fd.fileno())
 
     def _endRecordList(self, recordlist):
 
