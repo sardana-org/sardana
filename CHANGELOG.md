@@ -35,6 +35,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   Taurus started using only FQDN (#625, #627)
 - Improve DumbRecorder (example of a custom file recorder) to write to
   a file.
+- Data in scan Records can now be accessed via dict-like syntax (#644)
 
 ### Fixed
 - Spock waits until macro stopping is finished after Ctrl+C (#34. #596)
