@@ -23,7 +23,9 @@
 
 """Environment related macros"""
 
-__all__ = ["dumpenv", "load_env", "lsenv", "senv", "usenv"]
+__all__ = ["dumpenv", "load_env", "lsenv", "senv", "usenv",
+           "lsvo", "setvo", "usetvo",
+           "lsgh", "defgh", "udefgh"]
 
 __docformat__ = 'restructuredtext'
 
@@ -293,3 +295,81 @@ class load_env(Macro):
             for parameter in misc_tree:
                 if parameter.tag != "name":
                     self.setEnv(parameter.tag, parameter.text)
+      
+class lsgh(Macro):
+    """List general hooks"""
+    
+    def run(self): 
+        try:
+            general_hooks = self.getEnv("_GeneralHooks")
+            self.output("General Hooks:")
+            for hook in general_hooks:
+                self.output(hook)
+        except:
+            self.output("No general hooks")
+
+class defgh(Macro):
+    """Define general hook. Without arguments add default ones """
+    
+    param_def = [
+        ['macro_name', Type.String, "default", 'Macro name with parameters. Ex.: "mv exp_dmy01 10"'],
+        ['hook_pos', Type.String, "default", 'Position or positions where the hook has to be executed. Ex.: "pre-scan", several positions "pre-scan,post-scan"'],
+    ]
+    
+    def run(self, macro_name, hook_pos):
+        default_list = [('gh_pre_scan',['pre-scan']),
+                        ('gh_pre_move',['pre-move']),
+                        ('gh_pre_acq',['pre-acq']),
+                        ('gh_post_acq',['post-acq']),
+                        ('gh_post_move',['post-move']),
+                        ('gh_post_step',['post-step']),
+                        ('gh_post_scan',['post-scan'])]
+        if hook_pos == "default":
+            self.info("Defining general hooks with default names")
+            self.debug(default_list)
+            self.setEnv("_GeneralHooks", default_list)
+        else:
+            self.info("Defining general hook")
+            try:
+                macros_list = self.getEnv("_GeneralHooks")
+            except:
+                macros_list = []
+            positions_split = hook_pos.split(",")
+            positions = []
+            for pos in positions_split:
+                positions.append(pos)
+            hook_tuple = (macro_name, positions)
+            self.debug(hook_tuple)
+            macros_list.append(hook_tuple)
+            self.setEnv("_GeneralHooks", macros_list)
+            self.debug("General hooks:")
+            self.debug(macros_list)
+        
+
+class udefgh(Macro):
+    """Undefine general hook. Without arguments undefine all """
+
+    param_def = [
+        ['macro_name', Type.String, "all", 'General hook to be undefined'],
+        ['hook_pos', Type.String, "all", 'Position to undefine the general hook from'],
+    ]
+
+    def run(self, macro_name, hook_pos):
+        try:
+            gh_macros_list = self.getEnv("_GeneralHooks")
+        except:
+            return
+
+        if macro_name == "all":
+            self.unsetEnv("_GeneralHooks")
+            self.info("Undefine all general hooks")
+        else:
+            macros_list = []
+            for el in gh_macros_list:
+                if el[0] != macro_name:
+                    macros_list.append(el)
+                else:
+                    self.info("Hook %s is undefineed" % macro_name)
+            
+            self.setEnv("_GeneralHooks", macros_list)
+  
