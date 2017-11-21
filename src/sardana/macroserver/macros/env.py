@@ -302,19 +302,17 @@ class lsgh(Macro):
     def run(self): 
         try:
             general_hooks = self.getEnv("_GeneralHooks")
-            default_dict = {'pre-scan': [],
-                            'pre-move': [],
-                            'pre-acq': [],
-                            'post-acq': [],
-                            'post-move': [],
-                            'post-step': [],
-                            'post-scan': []}
+            
             out = List(['Hook place', 'Hook(s)'])
+            default_dict = {}
             for hook in general_hooks:
                 name = hook[0]
                 places = hook[1]
                 for place in places:
-                    default_dict[place].append(name)
+                    if place not in default_dict.keys():
+                        default_dict[place] = []
+                    if name not in default_dict[place]:
+                        default_dict[place].append(name)
             for pos in default_dict.keys():
                 pos_set = 0
                 for hook in default_dict[pos]:
@@ -333,24 +331,25 @@ class defgh(Macro):
     
     param_def = [
         ['macro_name', Type.String, None, 'Macro name with parameters. Ex.: "mv exp_dmy01 10"'],
-        ['hook_pos', Type.String, None, 'Position or positions where the hook has to be executed. Ex.: "pre-scan", several positions "pre-scan,post-scan"'],
+        ['hookpos_list',
+         ParamRepeat(['position', Type.String, None, 'macro name'], min=1),
+         None, 'List of positions where the hook has to be executed'],
     ]
     
-    def run(self, macro_name, hook_pos):
+    def run(self, macro_name, position):
         
         self.info("Defining general hook")
+        self.output(macro_name)
+        self.output(type(position))
         try:
             macros_list = self.getEnv("_GeneralHooks")
         except:
             macros_list = []
             
-        positions_split = hook_pos.split(",")
-        positions = []
-        for pos in positions_split:
-            positions.append(pos)
-        hook_tuple = (macro_name, positions)
+        hook_tuple = (macro_name, position)
         self.debug(hook_tuple)
         macros_list.append(hook_tuple)
+        self.output("set gh")
         self.setEnv("_GeneralHooks", macros_list)
         self.debug("General hooks:")
         self.debug(macros_list)
