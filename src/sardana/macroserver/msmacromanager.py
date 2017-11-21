@@ -878,7 +878,7 @@ class MacroExecutor(Logger):
         # TODO: general hooks should reflect the state of configuration
         # at the macro/sequence start
         try:
-            return self.door.get_env("GeneralHooks")["GeneralHooks"]
+            return self.door.get_env("_GeneralHooks")["_GeneralHooks"]
         except KeyError:
             return []
 
