@@ -323,16 +323,16 @@ class defgh(Macro):
             macros_list = self.getEnv("_GeneralHooks")
         except:
             macros_list = []
-            positions_split = hook_pos.split(",")
-            positions = []
-            for pos in positions_split:
-                positions.append(pos)
-            hook_tuple = (macro_name, positions)
-            self.debug(hook_tuple)
-            macros_list.append(hook_tuple)
-            self.setEnv("_GeneralHooks", macros_list)
-            self.debug("General hooks:")
-            self.debug(macros_list)
+        positions_split = hook_pos.split(",")
+        positions = []
+        for pos in positions_split:
+            positions.append(pos)
+        hook_tuple = (macro_name, positions)
+        self.debug(hook_tuple)
+        macros_list.append(hook_tuple)
+        self.setEnv("_GeneralHooks", macros_list)
+        self.debug("General hooks:")
+        self.debug(macros_list)
         
 
 class udefgh(Macro):
