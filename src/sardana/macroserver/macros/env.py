@@ -312,28 +312,17 @@ class defgh(Macro):
     """Define general hook. Without arguments add default ones """
     
     param_def = [
-        ['macro_name', Type.String, "default", 'Macro name with parameters. Ex.: "mv exp_dmy01 10"'],
-        ['hook_pos', Type.String, "default", 'Position or positions where the hook has to be executed. Ex.: "pre-scan", several positions "pre-scan,post-scan"'],
+        ['macro_name', Type.String, None, 'Macro name with parameters. Ex.: "mv exp_dmy01 10"'],
+        ['hook_pos', Type.String, None, 'Position or positions where the hook has to be executed. Ex.: "pre-scan", several positions "pre-scan,post-scan"'],
     ]
     
     def run(self, macro_name, hook_pos):
-        default_list = [('gh_pre_scan',['pre-scan']),
-                        ('gh_pre_move',['pre-move']),
-                        ('gh_pre_acq',['pre-acq']),
-                        ('gh_post_acq',['post-acq']),
-                        ('gh_post_move',['post-move']),
-                        ('gh_post_step',['post-step']),
-                        ('gh_post_scan',['post-scan'])]
-        if hook_pos == "default":
-            self.info("Defining general hooks with default names")
-            self.debug(default_list)
-            self.setEnv("_GeneralHooks", default_list)
-        else:
-            self.info("Defining general hook")
-            try:
-                macros_list = self.getEnv("_GeneralHooks")
-            except:
-                macros_list = []
+        
+        self.info("Defining general hook")
+        try:
+            macros_list = self.getEnv("_GeneralHooks")
+        except:
+            macros_list = []
             positions_split = hook_pos.split(",")
             positions = []
             for pos in positions_split:
