@@ -302,9 +302,29 @@ class lsgh(Macro):
     def run(self): 
         try:
             general_hooks = self.getEnv("_GeneralHooks")
-            self.output("General Hooks:")
+            default_dict = {'pre-scan': [],
+                            'pre-move': [],
+                            'pre-acq': [],
+                            'post-acq': [],
+                            'post-move': [],
+                            'post-step': [],
+                            'post-scan': []}
+            out = List(['Hook place', 'Hook(s)'])
             for hook in general_hooks:
-                self.output(hook)
+                name = hook[0]
+                places = hook[1]
+                for place in places:
+                    default_dict[place].append(name)
+            for pos in default_dict.keys():
+                pos_set = 0
+                for hook in default_dict[pos]:
+                    if pos_set:
+                        out.appendRow(["", hook])
+                    else:
+                        out.appendRow([pos, hook])
+                    pos_set = 1
+            for line in out.genOutput():
+                self.output(line)
         except:
             self.output("No general hooks")
 
@@ -323,6 +343,7 @@ class defgh(Macro):
             macros_list = self.getEnv("_GeneralHooks")
         except:
             macros_list = []
+            
         positions_split = hook_pos.split(",")
         positions = []
         for pos in positions_split:
