@@ -73,6 +73,11 @@ This file follows the formats and conventions from [keepachangelog.com]
   taken into account if it is enabled or disabled (next ones may be used then).
   (#647, #648)
 
+### Removed
+- `ElementList` attribute from the Door Tango device - `Element` attribute is
+  available on the MacroServer device (#556, #557, #653)
+
+
 ## [2.3.2] - 2017-08-11
 For a full log of commits between versions run (in your git repo):
 `git log 2.3.1..2.3.2`
