@@ -28,7 +28,7 @@ __all__ = ["captain_hook", "captain_hook2", "loop", "hooked_scan",
 
 __docformat__ = 'restructuredtext'
 
-from sardana.macroserver.macro import Macro, Type, ExecMacroHook
+from sardana.macroserver.macro import Macro, Type, Hookable, ExecMacroHook
 
 
 class loop(Macro, Hookable):
