@@ -200,7 +200,7 @@ class wa(Macro):
         ['filter',
          ParamRepeat(['filter', Type.String, '.*',
                       'a regular expression filter'], min=1),
-         '.*', 'a regular expression filter'],
+         ['.*'], 'a regular expression filter'],
     ]
 
     def prepare(self, filter, **opts):
@@ -231,7 +231,7 @@ class pwa(Macro):
         ['filter',
          ParamRepeat(['filter', Type.String, '.*',
                       'a regular expression filter'], min=1),
-         '.*', 'a regular expression filter'],
+         ['.*'], 'a regular expression filter'],
     ]
 
     def run(self, filter):

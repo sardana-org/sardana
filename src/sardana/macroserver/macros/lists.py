@@ -47,9 +47,9 @@ Left, Right, HCenter = Alignment.Left, Alignment.Right, Alignment.HCenter
 class _ls(Macro):
     param_def = [
         ['filter',
-         ParamRepeat(['filter', Type.String, '.*',
+         ParamRepeat(['filter', Type.String, ".*",
                       'a regular expression filter'], min=1),
-         '.*', 'a regular expression filter'],
+         [".*"], 'a regular expression filter'],
     ]
 
     def get_column_names(self):
