@@ -325,11 +325,6 @@ class Door(SardanaDevice):
         value = attr.get_write_value()
         self.door.get_input_handler().input_received(value)
 
-    #@DebugIt()
-    def read_ElementList(self, attr):
-        element_list = self.macro_server_device.getElementList()
-        attr.set_value(*element_list)
-
     def sendRecordData(self, format, data):
         self.push_change_event('RecordData', format, data)
 
@@ -519,8 +514,4 @@ class DoorClass(SardanaDeviceClass):
                        {'label': 'Record Data', }],
         'MacroStatus': [[DevEncoded, SCALAR, READ],
                         {'label': 'Macro Status', }],
-        'ElementList': [[DevEncoded, SCALAR, READ],
-                        {'label': "Element list",
-                            'description': 'the list of all elements (a '
-                            'JSON encoded dict)', }],
     }
