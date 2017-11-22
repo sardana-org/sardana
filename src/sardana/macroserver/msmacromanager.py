@@ -67,6 +67,7 @@ from sardana.macroserver.macro import Macro, MacroFunc, ExecMacroHook, \
 from sardana.macroserver.msexception import UnknownMacroLibrary, \
     LibraryError, UnknownMacro, MissingEnv, AbortException, StopException, \
     MacroServerException, UnknownEnv
+from sardana.spock.parser import ParamParser
 
 # These classes are imported from the "client" part of sardana, if finally
 # both the client and the server side needs them, place them in some
@@ -961,17 +962,10 @@ class MacroExecutor(Logger):
         general_hooks = self.general_hooks
         if len(general_hooks) == 0:
             return
-        for hook_info, hook_places in general_hooks:
-            if isinstance(hook_info, str):
-                sub_macro_name = hook_info
-                hook = ExecMacroHook(macro_obj, sub_macro_name)
-            elif isinstance(hook_info, list):
-                sub_macro_name = hook_info[0]
-                sub_macro_params = hook_info[1]
-                hook = ExecMacroHook(macro_obj, sub_macro_name,
-                                     *sub_macro_params)
-            hook_info = (hook, hook_places)
-            macro_obj.appendHook(hook_info)
+        for hook_info_raw, hook_places in general_hooks:
+            hook_info = ParamParser().parse(hook_info_raw)
+            hook = ExecMacroHook(macro_obj, hook_info)
+            macro_obj.appendHook((hook, hook_places))
 
     def _prepareXMLMacro(self, xml_macro, parent_macro=None):
         macro_meta, _, macro_params = self._decodeMacroParameters(xml_macro)
