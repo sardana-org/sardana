@@ -254,7 +254,17 @@ class Hookable(Logger):
 
 class ExecMacroHook(object):
     """A speciallized callable hook for executing a sub macro inside another
-    macro as a hook"""
+    macro as a hook.
+
+    In order to attach macro with parameters pass all of them in form of
+    a list (repeat parameters are allowed) e.g.
+    - ExecMacroHook(self, "ct", 0.1)
+    - ExecMacroHook(self, ["ct", 0.1])
+    - ExecMacroHook(self, "mv", "mot01", 0, "mot02", 0)
+    - ExecMacroHook(self, "mv", [["mot01", 0], ["mot02", 0]])
+    - ExecMacroHook(self, ["mv", [["mot01", 0], ["mot02", 0]]])
+    The API basically follows the :meth:`Macro.execMacro`.
+    """
 
     def __init__(self, parent_macro, *pars, **kwargs):
         self._macro_obj_wr = weakref.ref(parent_macro)

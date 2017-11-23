@@ -28,7 +28,7 @@ __all__ = ["captain_hook", "captain_hook2", "loop", "hooked_scan",
 
 __docformat__ = 'restructuredtext'
 
-from sardana.macroserver.macro import *
+from sardana.macroserver.macro import Macro, Type, Hookable, ExecMacroHook
 
 
 class loop(Macro, Hookable):
@@ -134,6 +134,33 @@ class hooked_scan(Macro):
                        (self.hook4, ["pre-scan"]),
                        (self.hook5, ["pre-scan", "post-scan"]),
                        (self.hook6, ["post-step"])]
+        self.runMacro(ascan)
+
+
+class hooked_scan_with_macro(Macro):
+    """An example on how to attach macro (in this case without parameters)
+    as a hook to the various hook points of a scan.
+
+    This macro is part of the examples package. It was written for
+    demonstration purposes"""
+
+    param_def = [
+        ['motor', Type.Moveable, None, 'Motor to move'],
+        ['start_pos', Type.Float,   None, 'Scan start position'],
+        ['final_pos', Type.Float,   None, 'Scan final position'],
+        ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
+        ['integ_time', Type.Float,   None, 'Integration time'],
+        ['macro', Type.Macro, None, 'Macro to be used as hook'],
+        ['hook_places', [['hook_place', Type.String, None, 'Hook place']],
+            None, 'Hook places where macro will be called']
+    ]
+
+    def run(self, motor, start_pos, final_pos, nr_interv, integ_time, macro,
+            hook_places):
+        ascan, _ = self.createMacro(
+            "ascan", motor, start_pos, final_pos, nr_interv, integ_time)
+        macro_hook = ExecMacroHook(self, "umv", [["mot01", 1]])
+        ascan.hooks = [(macro_hook, hook_places)]
         self.runMacro(ascan)
 
 
