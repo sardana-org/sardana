@@ -36,6 +36,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Improve DumbRecorder (example of a custom file recorder) to write to
   a file.
 - Data in scan Records can now be accessed via dict-like syntax (#644)
+- Example of a macro that uses other macros as hooks #649
 
 ### Fixed
 - Spock waits until macro stopping is finished after Ctrl+C (#34. #596)
@@ -65,6 +66,9 @@ This file follows the formats and conventions from [keepachangelog.com]
   controllers in case software synchronization is in use (#594)
 - Dummy counter/timer now returns partial value when its acquisition was
   aborted (#626)
+- Workaround for #427: make default values for `wa`, `pwa` and all list
+  macros fully functional - also support execution with `Macro.execMacro`
+  (#654)
 
 ### Changed
 - Rename edctrl to edctrlcls macro (#541)
