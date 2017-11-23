@@ -327,7 +327,15 @@ class lsgh(Macro):
             self.output("No general hooks")
 
 class defgh(Macro):
-    """Define general hook. Without arguments add default ones """
+    """Define general hook.
+    Ex.
+    defgh "mv [[mot02 9]]" pre-scan
+    defgh "ct 0.1" pre-scan
+    defgh lsm pre-scan
+    defgh "mv mot03 10" pre-scan
+    defgh "Print 'Hello world'" pre-scan
+
+    """
     
     param_def = [
         ['macro_name', Type.String, None, 'Macro name with parameters. Ex.: "mv exp_dmy01 10"'],
@@ -340,7 +348,6 @@ class defgh(Macro):
         
         self.info("Defining general hook")
         self.output(macro_name)
-        self.output(type(position))
         try:
             macros_list = self.getEnv("_GeneralHooks")
         except:
@@ -349,7 +356,6 @@ class defgh(Macro):
         hook_tuple = (macro_name, position)
         self.debug(hook_tuple)
         macros_list.append(hook_tuple)
-        self.output("set gh")
         self.setEnv("_GeneralHooks", macros_list)
         self.debug("General hooks:")
         self.debug(macros_list)
