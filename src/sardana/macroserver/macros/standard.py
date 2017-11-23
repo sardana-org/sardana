@@ -196,11 +196,13 @@ class wu(Macro):
 class wa(Macro):
     """Show all motor positions"""
 
+    # TODO: duplication of the default value definition is a workaround
+    # for #427. See commit message cc3331a for more details.
     param_def = [
         ['filter',
          ParamRepeat(['filter', Type.String, '.*',
                       'a regular expression filter'], min=1),
-         '.*', 'a regular expression filter'],
+         ['.*'], 'a regular expression filter'],
     ]
 
     def prepare(self, filter, **opts):
@@ -227,11 +229,13 @@ class wa(Macro):
 class pwa(Macro):
     """Show all motor positions in a pretty table"""
 
+    # TODO: duplication of the default value definition is a workaround
+    # for #427. See commit message cc3331a for more details.
     param_def = [
         ['filter',
          ParamRepeat(['filter', Type.String, '.*',
                       'a regular expression filter'], min=1),
-         '.*', 'a regular expression filter'],
+         ['.*'], 'a regular expression filter'],
     ]
 
     def run(self, filter):
