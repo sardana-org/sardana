@@ -1,0 +1,6 @@
+[flake8]
+# E129 is ignored to fulfill with PEP8 which allow the same indentation of
+# multi conditional lines ("if" statement) and the code nested inside of the
+# "if" statment. More details in:
+# https://github.com/sardana-org/sardana/pull/551#issuecomment-338572275
+ignore = E129
