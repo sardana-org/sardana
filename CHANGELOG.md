@@ -64,11 +64,13 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Generation of theoretical timestamps in ascanct & co. (#602)
 - Number of repetitions (always pass 1) passed to experimental channel
   controllers in case software synchronization is in use (#594)
+- `Hookable.hooks` proprty setting - now it cleans the previous
+  configuration (#655)
 - Dummy counter/timer now returns partial value when its acquisition was
   aborted (#626)
-- Workaround for #427: make default values for `wa`, `pwa` and all list
-  macros fully functional - also support execution with `Macro.execMacro`
-  (#654)
+- Workaround for #427: make default values for repeat parameters of `wa`,
+  `pwa` and all list macros fully functional - also support execution with
+  `Macro.execMacro` (#654)
 
 ### Changed
 - Rename edctrl to edctrlcls macro (#541)
