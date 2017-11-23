@@ -159,11 +159,7 @@ class hooked_scan_with_macro(Macro):
             hook_places):
         ascan, _ = self.createMacro(
             "ascan", motor, start_pos, final_pos, nr_interv, integ_time)
-        # In order to attach macro with parameters pass all of them in form of
-        # a list (repeat parameters are allowed) e.g.
-        # "ExecMacroHook(self, ["ct", 0.1])"
-        # "ExecMacroHook(self, ["mv", [["mot01", 0], ["mot02", 0]]])"
-        macro_hook = ExecMacroHook(self, macro)
+        macro_hook = ExecMacroHook(self, "umv", [["mot01", 1]])
         ascan.hooks = [(macro_hook, hook_places)]
         self.runMacro(ascan)
 
