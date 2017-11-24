@@ -90,7 +90,7 @@ class MacroButton(TaurusWidget):
 
     # Override default implementation of handleEvent from TaurusWidget
     # in order to avoid button's text being lost on the MS restart.
-    # More detais in #293 and taurus-org/taurus#635 
+    # More detais in #293 and taurus-org/taurus#635
     def handleEvent(self, evt_src, evt_type, evt_value):
         pass
 
