@@ -62,6 +62,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   synchronization action (#597)
 - Validation of motor positions agains their limits in ascanct & co. (#595)
 - Generation of theoretical timestamps in ascanct & co. (#602)
+- Maintain macrobutton's text when MacroServer is shut down (#293, #559)
 - Number of repetitions (always pass 1) passed to experimental channel
   controllers in case software synchronization is in use (#594)
 - `Hookable.hooks` proprty setting - now it cleans the previous
