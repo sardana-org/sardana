@@ -570,7 +570,14 @@ class BaseDoor(MacroServerDevice):
         return result
 
     def stateChanged(self, s, t, v):
-        self._old_door_state = self.getState()
+        # In contrary to the Taurus3 the Taurus4 raises exceptions when the
+        # device server is getting down and we try to retrieve the state.
+        # In this case provide the same behavior as Taurus3 - assign None to
+        # the old state
+        try:
+            self._old_door_state = self.getState()
+        except PyTango.DevFailed:
+            self._old_door_state = None
         try:
             self._old_sw_door_state = self.getSWState()
         except:
