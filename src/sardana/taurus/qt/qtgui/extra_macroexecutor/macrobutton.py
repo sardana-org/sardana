@@ -81,6 +81,8 @@ class MacroButton(TaurusWidget):
         self.macro_args = []
         self.macro_id = None
         self.running_macro = None
+        self._text = "Macro"
+        self.abort_text = "Abort"
 
         self.ui.progress.setValue(0)
 
@@ -150,8 +152,13 @@ class MacroButton(TaurusWidget):
         # In case state is not ON, and macro not triggered by the button,
         # disable it
         door_available = True
-        if state not in [PyTango.DevState.ON, PyTango.DevState.ALARM] and not self.ui.button.isChecked():
+
+        state_ON_or_ALARM = [PyTango.DevState.ON, PyTango.DevState.ALARM]
+        if state not in state_ON_or_ALARM and not self.ui.button.isChecked():
             door_available = False
+
+        if state in state_ON_or_ALARM:
+            self.ui.button.setText(self._text)
 
         self.ui.button.setEnabled(door_available)
         self.ui.progress.setEnabled(door_available)
@@ -214,6 +221,7 @@ class MacroButton(TaurusWidget):
         '''same as :meth:`setText`
         '''
         # SHOULD ALSO BE POSSIBLE TO SET AN ICON
+        self._text = text
         self.ui.button.setText(text)
 
     def setMacroName(self, name):
@@ -269,8 +277,11 @@ class MacroButton(TaurusWidget):
 
     def _onButtonClicked(self):
         if self.ui.button.isChecked():
+            self.abort_text = "Abort " + self._text
+            self.ui.button.setText(self.abort_text)
             self.runMacro()
         else:
+            self.ui.button.setText(self._text)
             self.abort()
 
     @ProtectTaurusMessageBox(msg='Error while executing the macro.')
@@ -311,6 +322,7 @@ class MacroButton(TaurusWidget):
         if ans == Qt.QMessageBox.Ok:
             self.door.abort(synch=True)
         else:
+            self.ui.button.setText(self.abort_text)
             self.ui.button.setChecked(True)
             self.door.ResumeMacro()
 
