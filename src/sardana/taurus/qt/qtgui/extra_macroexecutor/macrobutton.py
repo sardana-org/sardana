@@ -214,7 +214,7 @@ class MacroButton(TaurusWidget):
         '''same as :meth:`setText`
         '''
         # SHOULD ALSO BE POSSIBLE TO SET AN ICON
-        self.ui.button.setText(text)
+        self.ui.button.setText("Run/Abort:\n" + text)
 
     def setMacroName(self, name):
         '''set the name of the macro to be executed
