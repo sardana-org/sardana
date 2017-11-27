@@ -373,7 +373,7 @@ class GScan(Logger):
             cols = self.macro.getEnv('ExtraColumns')
         except InterruptException:
             raise
-        except:
+        except Exception:
             self.info('ExtraColumns is not defined')
             return ret
 
@@ -421,14 +421,14 @@ class GScan(Logger):
             cols = self.macro.getEnv('OutputCols')
         except InterruptException:
             raise
-        except:
+        except Exception:
             pass
 
         try:
             output_block = self.macro.getViewOption('OutputBlock')
         except InterruptException:
             raise
-        except:
+        except Exception:
             pass
 
         return self._rec_manager.getRecorderClass("OutputRecorder")(
@@ -536,7 +536,7 @@ class GScan(Logger):
                 oned_nb = len(mg.OneDExpChannels)
             except InterruptException:
                 raise
-            except:
+            except Exception:
                 oned_nb = 0
 
             twod_nb = 0
@@ -544,7 +544,7 @@ class GScan(Logger):
                 twod_nb = len(mg.TwoDExpChannels)
             except InterruptException:
                 raise
-            except:
+            except Exception:
                 twod_nb = 0
 
             if eid == 0:
@@ -625,7 +625,7 @@ class GScan(Logger):
             try:
                 channel = taurus.Device(full_name)
                 instrument = channel.instrument
-            except:
+            except Exception:
                 # full_name of external channels is the name of the attribute
                 # external channels are not assigned to instruments
                 instrument = ''
@@ -634,7 +634,7 @@ class GScan(Logger):
                     instrument, type_class=Type.Instrument)[0].getFullName()
             except InterruptException:
                 raise
-            except:
+            except Exception:
                 instrumentFullName = ''
             # substitute the axis placeholder by the corresponding moveable.
             plotAxes = []
@@ -714,13 +714,13 @@ class GScan(Logger):
             env['ScanFile'] = self.macro.getEnv('ScanFile')
         except InterruptException:
             raise
-        except:
+        except Exception:
             env['ScanFile'] = None
         try:
             env['ScanDir'] = self.macro.getEnv('ScanDir')
         except InterruptException:
             raise
-        except:
+        except Exception:
             env['ScanDir'] = None
         env['estimatedtime'], env['total_scan_intervals'] = self._estimate()
         env['instrumentlist'] = self._macro.findObjs(
@@ -768,7 +768,7 @@ class GScan(Logger):
                 column.shape = np.shape(v)
                 column.dtype = getattr(v, 'dtype', np.dtype(type(v))).name
                 ret.append(column)
-            except:
+            except Exception:
                 self.macro.warning(
                     'Error taking pre-scan snapshot of %s (%s)', label, src)
                 self.debug('Details:', exc_info=1)
@@ -779,7 +779,7 @@ class GScan(Logger):
         for moveable in self.moveables:
             try:
                 v_motor = VMotor.fromMotor(moveable.moveable)
-            except:
+            except Exception:
                 # self.debug("Details:", exc_info=1)
                 v_motor = VMotor(min_vel=0, max_vel=float('+inf'),
                                  accel_time=0, decel_time=0)
@@ -792,8 +792,8 @@ class GScan(Logger):
         with_time = hasattr(self.macro, "getTimeEstimation")
         with_interval = hasattr(self.macro, "getIntervalEstimation")
         if with_time and with_interval:
-            t, i = self.macro.getTimeEstimation(), \
-                   self.macro.getIntervalEstimation()
+            t = self.macro.getTimeEstimation(),
+            i = self.macro.getIntervalEstimation()
             return t, i
 
         max_iter = max_iter or self.MAX_ITER
@@ -943,7 +943,7 @@ class GScan(Logger):
         try:
             if hasattr(self.macro, 'do_backup'):
                 self.macro.do_backup()
-        except:
+        except Exception:
             msg = ("Failed to execute 'do_backup' method of the %s macro" %
                    self.macro.getName())
             self.macro.debug(msg)
@@ -954,7 +954,7 @@ class GScan(Logger):
         try:
             if hasattr(self.macro, 'do_restore'):
                 self.macro.do_restore()
-        except:
+        except Exception:
             msg = ("Failed to execute 'do_restore' method of the %s macro" %
                    self.macro.getName())
             self.macro.debug(msg)
@@ -1012,7 +1012,7 @@ class SScan(GScan):
                 step['extrainfo'].update(hook.getStepExtraInfo())
             except InterruptException:
                 raise
-            except:
+            except Exception:
                 pass
 
         # Move
@@ -1024,7 +1024,7 @@ class SScan(GScan):
             self._env['motiontime'] = self._sum_motion_time
         except InterruptException:
             raise
-        except:
+        except Exception:
             self.dump_information(n, step)
             raise
         self.debug("[ END ] motion")
@@ -1039,7 +1039,7 @@ class SScan(GScan):
                 step['extrainfo'].update(hook.getStepExtraInfo())
             except InterruptException:
                 raise
-            except:
+            except Exception:
                 pass
 
         # allow scan to be stopped between motion and data acquisition
@@ -1058,7 +1058,7 @@ class SScan(GScan):
                 step['extrainfo'].update(hook.getStepExtraInfo())
             except InterruptException:
                 raise
-            except:
+            except Exception:
                 pass
 
         integ_time = step['integ_time']
@@ -1078,7 +1078,7 @@ class SScan(GScan):
                 step['extrainfo'].update(hook.getStepExtraInfo())
             except InterruptException:
                 raise
-            except:
+            except Exception:
                 pass
 
         # hooks for backwards compatibility:
@@ -1092,7 +1092,7 @@ class SScan(GScan):
                     step['extrainfo'].update(hook.getStepExtraInfo())
                 except InterruptException:
                     raise
-                except:
+                except Exception:
                     pass
 
         # Add final moveable positions
@@ -1114,7 +1114,7 @@ class SScan(GScan):
                 step['extrainfo'].update(hook.getStepExtraInfo())
             except InterruptException:
                 raise
-            except:
+            except Exception:
                 pass
 
     def dump_information(self, n, step):
@@ -1213,8 +1213,8 @@ class CScan(GScan):
 
         for moveable in moveables:
             moveable_root_node, _physical_moveables_names, \
-             _physical_moveables = generate_moveable_node(self.macro,
-                                                          moveable.moveable)
+                _physical_moveables = generate_moveable_node(self.macro,
+                                                             moveable.moveable)
             moveable_tree = Tree(moveable_root_node)
             moveable_trees.append(moveable_tree)
             physical_moveables_names += _physical_moveables_names
@@ -1241,7 +1241,7 @@ class CScan(GScan):
         """Go through the different waypoints."""
         try:
             self._go_through_waypoints()
-        except:
+        except Exception:
             self.on_waypoints_end()
             raise
 
@@ -1442,7 +1442,7 @@ class CScan(GScan):
         v = self.get_max_top_velocity(motor)
         try:
             motor.setVelocity(v)
-        except:
+        except Exception:
             pass
 
     def get_min_pos(self, motor):
@@ -1481,7 +1481,7 @@ class CScan(GScan):
         for param, value in attributes.items():
             try:
                 motor._getAttrEG(param).write(value)
-            except:
+            except Exception:
                 self.macro.debug("Error when setting %s of %s" %
                                  (param, motor.name), exc_info=True)
                 msg = "setting %s of %s to %r failed" %\
@@ -1620,7 +1620,7 @@ class CSScan(CScan):
         """go through the different waypoints."""
         try:
             self._go_through_waypoints()
-        except:
+        except Exception:
             self.macro.debug('An error occurred moving to waypoints')
             self.macro.debug('Details: ', exc_info=True)
             self.on_waypoints_end()
@@ -1783,7 +1783,7 @@ class CSScan(CScan):
                     except InterruptException:
                         self._all_waypoints_finished = True
                         raise
-                    except:
+                    except Exception:
                         pass
 
                 # allow scan to stop
@@ -1818,7 +1818,7 @@ class CSScan(CScan):
                         except InterruptException:
                             self._all_waypoints_finished = True
                             raise
-                        except:
+                        except Exception:
                             pass
 
                     # Add final moveable positions
@@ -1895,7 +1895,7 @@ class CAcquisition(object):
         except ImportError:
             # we are in Taurus 3 so neither scheme nor FQDN is in use
             pass
-        except:
+        except Exception:
             msg = "Unknown error in buffer_changed callback"
             self.warning(msg, exc_info=1)
 
@@ -2370,7 +2370,7 @@ class CTScan(CScan, CAcquisition):
                 self.measurement_group.unsubscribeValueBuffer(
                     self.value_buffer_changed)
                 self.__mngGrpSubscribed = False
-            except:
+            except Exception:
                 msg = "Exception occurred trying to remove data listeners"
                 self.debug(msg)
                 self.debug('Details: ', exc_info=True)
@@ -2381,7 +2381,7 @@ class CTScan(CScan, CAcquisition):
                 self.debug("Executing pre-cleanup hook")
                 try:
                     hook()
-                except:
+                except Exception:
                     msg = "Exception while trying to execute a pre-cleanup " \
                           "hook"
                     self.debug(msg)
@@ -2393,7 +2393,7 @@ class CTScan(CScan, CAcquisition):
                 self.debug("Executing post-cleanup hook")
                 try:
                     hook()
-                except:
+                except Exception:
                     msg = "Exception while trying to execute a " + \
                           "post-cleanup hook"
                     self.debug(msg)
@@ -2419,7 +2419,7 @@ class HScan(SScan):
                 step['extrainfo'].update(hook.getStepExtraInfo())
             except InterruptException:
                 raise
-            except:
+            except Exception:
                 pass
 
         positions, integ_time = step['positions'], step['integ_time']
@@ -2429,7 +2429,7 @@ class HScan(SScan):
             mg_ID = mg.startCount(integ_time)
         except InterruptException:
             raise
-        except:
+        except Exception:
             self.dump_information(n, step)
             raise
 
@@ -2438,7 +2438,7 @@ class HScan(SScan):
             mg.waitCount(id=mg_ID)
         except InterruptException:
             raise
-        except:
+        except Exception:
             self.dump_information(n, step)
             raise
         self._sum_acq_time += integ_time
@@ -2475,7 +2475,7 @@ class HScan(SScan):
                 step['extrainfo'].update(hook.getStepExtraInfo())
             except InterruptException:
                 raise
-            except:
+            except Exception:
                 pass
 
     def dump_information(self, n, step):

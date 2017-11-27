@@ -374,11 +374,11 @@ class ascan(aNscan, Macro):
     """
 
     param_def = [
-        ['motor',      Type.Moveable,   None, 'Moveable to move'],
-        ['start_pos',  Type.Float,   None, 'Scan start position'],
-        ['final_pos',  Type.Float,   None, 'Scan final position'],
-        ['nr_interv',  Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time', Type.Float,   None, 'Integration time']
+        ['motor', Type.Moveable, None, 'Moveable to move'],
+        ['start_pos', Type.Float, None, 'Scan start position'],
+        ['final_pos', Type.Float, None, 'Scan final position'],
+        ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
+        ['integ_time', Type.Float, None, 'Integration time']
     ]
 
     def prepare(self, motor, start_pos, final_pos, nr_interv, integ_time,
@@ -398,14 +398,14 @@ class a2scan(aNscan, Macro):
     Count time is given by time which if positive, specifies seconds and
     if negative, specifies monitor counts."""
     param_def = [
-        ['motor1',      Type.Moveable,   None, 'Moveable 1 to move'],
-        ['start_pos1',  Type.Float,   None, 'Scan start position 1'],
-        ['final_pos1',  Type.Float,   None, 'Scan final position 1'],
-        ['motor2',      Type.Moveable,   None, 'Moveable 2 to move'],
-        ['start_pos2',  Type.Float,   None, 'Scan start position 2'],
-        ['final_pos2',  Type.Float,   None, 'Scan final position 2'],
-        ['nr_interv',  Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time', Type.Float,   None, 'Integration time']
+        ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
+        ['start_pos1', Type.Float, None, 'Scan start position 1'],
+        ['final_pos1', Type.Float, None, 'Scan final position 1'],
+        ['motor2', Type.Moveable, None, 'Moveable 2 to move'],
+        ['start_pos2', Type.Float, None, 'Scan start position 2'],
+        ['final_pos2', Type.Float, None, 'Scan final position 2'],
+        ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
+        ['integ_time', Type.Float, None, 'Integration time']
     ]
 
     def prepare(self, motor1, start_pos1, final_pos1, motor2, start_pos2,
@@ -425,20 +425,20 @@ class a3scan(aNscan, Macro):
     Count time is given by time which if positive, specifies seconds and
     if negative, specifies monitor counts."""
     param_def = [
-        ['motor1',      Type.Moveable,   None, 'Moveable 1 to move'],
-        ['start_pos1',  Type.Float,   None, 'Scan start position 1'],
-        ['final_pos1',  Type.Float,   None, 'Scan final position 1'],
-        ['motor2',      Type.Moveable,   None, 'Moveable 2 to move'],
-        ['start_pos2',  Type.Float,   None, 'Scan start position 2'],
-        ['final_pos2',  Type.Float,   None, 'Scan final position 2'],
-        ['motor3',      Type.Moveable,   None, 'Moveable 3 to move'],
-        ['start_pos3',  Type.Float,   None, 'Scan start position 3'],
-        ['final_pos3',  Type.Float,   None, 'Scan final position 3'],
-        ['nr_interv',  Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time', Type.Float,   None, 'Integration time']
+        ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
+        ['start_pos1', Type.Float, None, 'Scan start position 1'],
+        ['final_pos1', Type.Float, None, 'Scan final position 1'],
+        ['motor2', Type.Moveable, None, 'Moveable 2 to move'],
+        ['start_pos2', Type.Float, None, 'Scan start position 2'],
+        ['final_pos2', Type.Float, None, 'Scan final position 2'],
+        ['motor3', Type.Moveable, None, 'Moveable 3 to move'],
+        ['start_pos3', Type.Float, None, 'Scan start position 3'],
+        ['final_pos3', Type.Float, None, 'Scan final position 3'],
+        ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
+        ['integ_time', Type.Float, None, 'Integration time']
     ]
 
-    def prepare(self, m1, s1, f1,  m2, s2, f2, m3, s3, f3, nr_interv,
+    def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, nr_interv,
                 integ_time, **opts):
         self._prepare([m1, m2, m3], [s1, s2, s3], [f1, f2, f3],
                       nr_interv, integ_time, **opts)
@@ -455,20 +455,20 @@ class a4scan(aNscan, Macro):
     Count time is given by time which if positive, specifies seconds and
     if negative, specifies monitor counts."""
     param_def = [
-        ['motor1',      Type.Moveable,   None, 'Moveable 1 to move'],
-        ['start_pos1',  Type.Float,   None, 'Scan start position 1'],
-        ['final_pos1',  Type.Float,   None, 'Scan final position 1'],
-        ['motor2',      Type.Moveable,   None, 'Moveable 2 to move'],
-        ['start_pos2',  Type.Float,   None, 'Scan start position 2'],
-        ['final_pos2',  Type.Float,   None, 'Scan final position 2'],
-        ['motor3',      Type.Moveable,   None, 'Moveable 3 to move'],
-        ['start_pos3',  Type.Float,   None, 'Scan start position 3'],
-        ['final_pos3',  Type.Float,   None, 'Scan final position 3'],
-        ['motor4',      Type.Moveable,   None, 'Moveable 3 to move'],
-        ['start_pos4',  Type.Float,   None, 'Scan start position 3'],
-        ['final_pos4',  Type.Float,   None, 'Scan final position 3'],
-        ['nr_interv',  Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time', Type.Float,   None, 'Integration time']
+        ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
+        ['start_pos1', Type.Float, None, 'Scan start position 1'],
+        ['final_pos1', Type.Float, None, 'Scan final position 1'],
+        ['motor2', Type.Moveable, None, 'Moveable 2 to move'],
+        ['start_pos2', Type.Float, None, 'Scan start position 2'],
+        ['final_pos2', Type.Float, None, 'Scan final position 2'],
+        ['motor3', Type.Moveable, None, 'Moveable 3 to move'],
+        ['start_pos3', Type.Float, None, 'Scan start position 3'],
+        ['final_pos3', Type.Float, None, 'Scan final position 3'],
+        ['motor4', Type.Moveable, None, 'Moveable 3 to move'],
+        ['start_pos4', Type.Float, None, 'Scan start position 3'],
+        ['final_pos4', Type.Float, None, 'Scan final position 3'],
+        ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
+        ['integ_time', Type.Float, None, 'Integration time']
     ]
 
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, m4, s4, f4,
@@ -492,11 +492,11 @@ class amultiscan(aNscan, Macro):
     param_def = [
         ['motor_start_end_list',
          ParamRepeat(['motor', Type.Moveable, None, 'Moveable to move'],
-                     ['start',   Type.Float, None, 'Starting position'],
-                     ['end',   Type.Float, None, 'Final position']),
+                     ['start', Type.Float, None, 'Starting position'],
+                     ['end', Type.Float, None, 'Final position']),
          None, 'List of motor, start and end positions'],
-        ['nr_interv',  Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time', Type.Float,   None, 'Integration time']
+        ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
+        ['integ_time', Type.Float, None, 'Integration time']
     ]
 
     def prepare(self, *args, **opts):
@@ -525,11 +525,11 @@ class dmultiscan(dNscan, Macro):
     param_def = [
         ['motor_start_end_list',
          ParamRepeat(['motor', Type.Moveable, None, 'Moveable to move'],
-                     ['start',   Type.Float, None, 'Starting position'],
-                     ['end',   Type.Float, None, 'Final position']),
+                     ['start', Type.Float, None, 'Starting position'],
+                     ['end', Type.Float, None, 'Final position']),
          None, 'List of motor, start and end positions'],
-        ['nr_interv',  Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time', Type.Float,   None, 'Integration time']
+        ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
+        ['integ_time', Type.Float, None, 'Integration time']
     ]
 
     def prepare(self, *args, **opts):
@@ -552,11 +552,11 @@ class dscan(dNscan, Macro):
     specifies monitor counts. """
 
     param_def = [
-        ['motor',      Type.Moveable,   None, 'Moveable to move'],
-        ['start_pos',  Type.Float,   None, 'Scan start position'],
-        ['final_pos',  Type.Float,   None, 'Scan final position'],
-        ['nr_interv',  Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time', Type.Float,   None, 'Integration time']
+        ['motor', Type.Moveable, None, 'Moveable to move'],
+        ['start_pos', Type.Float, None, 'Scan start position'],
+        ['final_pos', Type.Float, None, 'Scan final position'],
+        ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
+        ['integ_time', Type.Float, None, 'Integration time']
     ]
 
     def prepare(self, motor, start_pos, final_pos, nr_interv, integ_time,
@@ -576,14 +576,14 @@ class d2scan(dNscan, Macro):
     Count time is given by time which if positive, specifies seconds and
     if negative, specifies monitor counts."""
     param_def = [
-        ['motor1',      Type.Moveable,   None, 'Moveable 1 to move'],
-        ['start_pos1',  Type.Float,   None, 'Scan start position 1'],
-        ['final_pos1',  Type.Float,   None, 'Scan final position 1'],
-        ['motor2',      Type.Moveable,   None, 'Moveable 2 to move'],
-        ['start_pos2',  Type.Float,   None, 'Scan start position 2'],
-        ['final_pos2',  Type.Float,   None, 'Scan final position 2'],
-        ['nr_interv',  Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time', Type.Float,   None, 'Integration time']
+        ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
+        ['start_pos1', Type.Float, None, 'Scan start position 1'],
+        ['final_pos1', Type.Float, None, 'Scan final position 1'],
+        ['motor2', Type.Moveable, None, 'Moveable 2 to move'],
+        ['start_pos2', Type.Float, None, 'Scan start position 2'],
+        ['final_pos2', Type.Float, None, 'Scan final position 2'],
+        ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
+        ['integ_time', Type.Float, None, 'Integration time']
     ]
 
     def prepare(self, motor1, start_pos1, final_pos1, motor2, start_pos2,
@@ -604,20 +604,20 @@ class d3scan(dNscan, Macro):
     if negative, specifies monitor counts."""
 
     param_def = [
-        ['motor1',      Type.Moveable,   None, 'Moveable 1 to move'],
-        ['start_pos1',  Type.Float,   None, 'Scan start position 1'],
-        ['final_pos1',  Type.Float,   None, 'Scan final position 1'],
-        ['motor2',      Type.Moveable,   None, 'Moveable 2 to move'],
-        ['start_pos2',  Type.Float,   None, 'Scan start position 2'],
-        ['final_pos2',  Type.Float,   None, 'Scan final position 2'],
-        ['motor3',      Type.Moveable,   None, 'Moveable 3 to move'],
-        ['start_pos3',  Type.Float,   None, 'Scan start position 3'],
-        ['final_pos3',  Type.Float,   None, 'Scan final position 3'],
-        ['nr_interv',  Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time', Type.Float,   None, 'Integration time']
+        ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
+        ['start_pos1', Type.Float, None, 'Scan start position 1'],
+        ['final_pos1', Type.Float, None, 'Scan final position 1'],
+        ['motor2', Type.Moveable, None, 'Moveable 2 to move'],
+        ['start_pos2', Type.Float, None, 'Scan start position 2'],
+        ['final_pos2', Type.Float, None, 'Scan final position 2'],
+        ['motor3', Type.Moveable, None, 'Moveable 3 to move'],
+        ['start_pos3', Type.Float, None, 'Scan start position 3'],
+        ['final_pos3', Type.Float, None, 'Scan final position 3'],
+        ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
+        ['integ_time', Type.Float, None, 'Integration time']
     ]
 
-    def prepare(self, m1, s1, f1,  m2, s2, f2, m3, s3, f3, nr_interv,
+    def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, nr_interv,
                 integ_time, **opts):
         self._prepare([m1, m2, m3], [s1, s2, s3], [f1, f2, f3],
                       nr_interv, integ_time, **opts)
@@ -638,20 +638,20 @@ class d4scan(dNscan, Macro):
     """
 
     param_def = [
-        ['motor1',      Type.Moveable,   None, 'Moveable 1 to move'],
-        ['start_pos1',  Type.Float,   None, 'Scan start position 1'],
-        ['final_pos1',  Type.Float,   None, 'Scan final position 1'],
-        ['motor2',      Type.Moveable,   None, 'Moveable 2 to move'],
-        ['start_pos2',  Type.Float,   None, 'Scan start position 2'],
-        ['final_pos2',  Type.Float,   None, 'Scan final position 2'],
-        ['motor3',      Type.Moveable,   None, 'Moveable 3 to move'],
-        ['start_pos3',  Type.Float,   None, 'Scan start position 3'],
-        ['final_pos3',  Type.Float,   None, 'Scan final position 3'],
-        ['motor4',      Type.Moveable,   None, 'Moveable 3 to move'],
-        ['start_pos4',  Type.Float,   None, 'Scan start position 3'],
-        ['final_pos4',  Type.Float,   None, 'Scan final position 3'],
-        ['nr_interv',  Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time', Type.Float,   None, 'Integration time']
+        ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
+        ['start_pos1', Type.Float, None, 'Scan start position 1'],
+        ['final_pos1', Type.Float, None, 'Scan final position 1'],
+        ['motor2', Type.Moveable, None, 'Moveable 2 to move'],
+        ['start_pos2', Type.Float, None, 'Scan start position 2'],
+        ['final_pos2', Type.Float, None, 'Scan final position 2'],
+        ['motor3', Type.Moveable, None, 'Moveable 3 to move'],
+        ['start_pos3', Type.Float, None, 'Scan start position 3'],
+        ['final_pos3', Type.Float, None, 'Scan final position 3'],
+        ['motor4', Type.Moveable, None, 'Moveable 3 to move'],
+        ['start_pos4', Type.Float, None, 'Scan start position 3'],
+        ['final_pos4', Type.Float, None, 'Scan final position 3'],
+        ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
+        ['integ_time', Type.Float, None, 'Integration time']
     ]
 
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, m4, s4, f4,
@@ -792,7 +792,7 @@ class dmesh(mesh):
         ['m2_final_pos', Type.Float, None, 'Scan final position for second '
                                            'motor'],
         ['m2_nr_interv', Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time',  Type.Float,   None, 'Integration time'],
+        ['integ_time', Type.Float, None, 'Integration time'],
         ['bidirectional', Type.Boolean, False, 'Save time by scanning '
                                                's-shaped']
     ]
@@ -890,7 +890,7 @@ class fscan(Macro, Hookable):
             # input
             self.paths = numpy.array(self.paths, dtype='d')
             self.paths.reshape((self.N, npoints))
-        except:  # shape mismatch?
+        except Exception:  # shape mismatch?
             # try to give a meaningful description of the error
             for p, fs in zip(self.paths, self.funcstrings):
                 if len(p) != npoints:
@@ -958,11 +958,11 @@ class ascanh(aNscan, Macro):
     counts. """
 
     param_def = [
-        ['motor',      Type.Moveable,   None, 'Moveable to move'],
-        ['start_pos',  Type.Float,   None, 'Scan start position'],
-        ['final_pos',  Type.Float,   None, 'Scan final position'],
-        ['nr_interv',  Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time', Type.Float,   None, 'Integration time']
+        ['motor', Type.Moveable, None, 'Moveable to move'],
+        ['start_pos', Type.Float, None, 'Scan start position'],
+        ['final_pos', Type.Float, None, 'Scan final position'],
+        ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
+        ['integ_time', Type.Float, None, 'Integration time']
     ]
 
     def prepare(self, motor, start_pos, final_pos, nr_interv, integ_time,
@@ -976,7 +976,7 @@ class scanhist(Macro):
     display details about a specific scan"""
 
     param_def = [
-        ['scan number',  Type.Integer, -1,
+        ['scan number', Type.Integer, -1,
          'scan number. [default=-1 meaning show all scans]'],
     ]
 
@@ -1032,7 +1032,7 @@ class scanhist(Macro):
     def show_all(self, hist):
 
         cols = "#", "Title", "Start time", "End time", "Stored"
-        width = -1,      -1,           -1,         -1,       -1
+        width = -1, -1, -1, -1, -1
         out = List(cols, max_col_width=width)
         today = datetime.datetime.today().date()
         for h in hist:
@@ -1061,11 +1061,11 @@ class ascanc(aNscan, Macro):
     ascanc scans one motor, as specified by motor."""
 
     param_def = [
-        ['motor',      Type.Moveable,   None, 'Moveable to move'],
-        ['start_pos',  Type.Float,   None, 'Scan start position'],
-        ['final_pos',  Type.Float,   None, 'Scan final position'],
-        ['integ_time', Type.Float,   None, 'Integration time'],
-        ['slow_down',  Type.Float, 1, 'global scan slow down factor (0, 1]'],
+        ['motor', Type.Moveable, None, 'Moveable to move'],
+        ['start_pos', Type.Float, None, 'Scan start position'],
+        ['final_pos', Type.Float, None, 'Scan final position'],
+        ['integ_time', Type.Float, None, 'Integration time'],
+        ['slow_down', Type.Float, 1, 'global scan slow down factor (0, 1]'],
     ]
 
     def prepare(self, motor, start_pos, final_pos, integ_time, slow_down,
@@ -1077,14 +1077,14 @@ class ascanc(aNscan, Macro):
 class a2scanc(aNscan, Macro):
     """two-motor continuous scan"""
     param_def = [
-        ['motor1',      Type.Moveable,   None, 'Moveable 1 to move'],
-        ['start_pos1',  Type.Float,   None, 'Scan start position 1'],
-        ['final_pos1',  Type.Float,   None, 'Scan final position 1'],
-        ['motor2',      Type.Moveable,   None, 'Moveable 2 to move'],
-        ['start_pos2',  Type.Float,   None, 'Scan start position 2'],
-        ['final_pos2',  Type.Float,   None, 'Scan final position 2'],
-        ['integ_time', Type.Float,   None, 'Integration time'],
-        ['slow_down',  Type.Float, 1, 'global scan slow down factor (0, 1]'],
+        ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
+        ['start_pos1', Type.Float, None, 'Scan start position 1'],
+        ['final_pos1', Type.Float, None, 'Scan final position 1'],
+        ['motor2', Type.Moveable, None, 'Moveable 2 to move'],
+        ['start_pos2', Type.Float, None, 'Scan start position 2'],
+        ['final_pos2', Type.Float, None, 'Scan final position 2'],
+        ['integ_time', Type.Float, None, 'Integration time'],
+        ['slow_down', Type.Float, 1, 'global scan slow down factor (0, 1]'],
     ]
 
     def prepare(self, motor1, start_pos1, final_pos1, motor2, start_pos2,
@@ -1097,20 +1097,20 @@ class a2scanc(aNscan, Macro):
 class a3scanc(aNscan, Macro):
     """three-motor continuous scan"""
     param_def = [
-        ['motor1',      Type.Moveable,   None, 'Moveable 1 to move'],
-        ['start_pos1',  Type.Float,   None, 'Scan start position 1'],
-        ['final_pos1',  Type.Float,   None, 'Scan final position 1'],
-        ['motor2',      Type.Moveable,   None, 'Moveable 2 to move'],
-        ['start_pos2',  Type.Float,   None, 'Scan start position 2'],
-        ['final_pos2',  Type.Float,   None, 'Scan final position 2'],
-        ['motor3',      Type.Moveable,   None, 'Moveable 3 to move'],
-        ['start_pos3',  Type.Float,   None, 'Scan start position 3'],
-        ['final_pos3',  Type.Float,   None, 'Scan final position 3'],
-        ['integ_time', Type.Float,   None, 'Integration time'],
-        ['slow_down',  Type.Float, 1, 'global scan slow down factor (0, 1]'],
+        ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
+        ['start_pos1', Type.Float, None, 'Scan start position 1'],
+        ['final_pos1', Type.Float, None, 'Scan final position 1'],
+        ['motor2', Type.Moveable, None, 'Moveable 2 to move'],
+        ['start_pos2', Type.Float, None, 'Scan start position 2'],
+        ['final_pos2', Type.Float, None, 'Scan final position 2'],
+        ['motor3', Type.Moveable, None, 'Moveable 3 to move'],
+        ['start_pos3', Type.Float, None, 'Scan start position 3'],
+        ['final_pos3', Type.Float, None, 'Scan final position 3'],
+        ['integ_time', Type.Float, None, 'Integration time'],
+        ['slow_down', Type.Float, 1, 'global scan slow down factor (0, 1]'],
     ]
 
-    def prepare(self, m1, s1, f1,  m2, s2, f2, m3, s3, f3, integ_time,
+    def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, integ_time,
                 slow_down, **opts):
         self._prepare([m1, m2, m3], [s1, s2, s3], [f1, f2, f3], slow_down,
                       integ_time, mode=ContinuousMode, **opts)
@@ -1119,20 +1119,20 @@ class a3scanc(aNscan, Macro):
 class a4scanc(aNscan, Macro):
     """four-motor continuous scan"""
     param_def = [
-        ['motor1',      Type.Moveable,   None, 'Moveable 1 to move'],
-        ['start_pos1',  Type.Float,   None, 'Scan start position 1'],
-        ['final_pos1',  Type.Float,   None, 'Scan final position 1'],
-        ['motor2',      Type.Moveable,   None, 'Moveable 2 to move'],
-        ['start_pos2',  Type.Float,   None, 'Scan start position 2'],
-        ['final_pos2',  Type.Float,   None, 'Scan final position 2'],
-        ['motor3',      Type.Moveable,   None, 'Moveable 3 to move'],
-        ['start_pos3',  Type.Float,   None, 'Scan start position 3'],
-        ['final_pos3',  Type.Float,   None, 'Scan final position 3'],
-        ['motor4',      Type.Moveable,   None, 'Moveable 3 to move'],
-        ['start_pos4',  Type.Float,   None, 'Scan start position 3'],
-        ['final_pos4',  Type.Float,   None, 'Scan final position 3'],
-        ['integ_time', Type.Float,   None, 'Integration time'],
-        ['slow_down',  Type.Float, 1, 'global scan slow down factor (0, 1]'],
+        ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
+        ['start_pos1', Type.Float, None, 'Scan start position 1'],
+        ['final_pos1', Type.Float, None, 'Scan final position 1'],
+        ['motor2', Type.Moveable, None, 'Moveable 2 to move'],
+        ['start_pos2', Type.Float, None, 'Scan start position 2'],
+        ['final_pos2', Type.Float, None, 'Scan final position 2'],
+        ['motor3', Type.Moveable, None, 'Moveable 3 to move'],
+        ['start_pos3', Type.Float, None, 'Scan start position 3'],
+        ['final_pos3', Type.Float, None, 'Scan final position 3'],
+        ['motor4', Type.Moveable, None, 'Moveable 3 to move'],
+        ['start_pos4', Type.Float, None, 'Scan start position 3'],
+        ['final_pos4', Type.Float, None, 'Scan final position 3'],
+        ['integ_time', Type.Float, None, 'Integration time'],
+        ['slow_down', Type.Float, 1, 'global scan slow down factor (0, 1]'],
     ]
 
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, m4, s4, f4,
@@ -1154,11 +1154,11 @@ class dscanc(dNscanc, Macro):
     """continuous motor scan relative to the starting position."""
 
     param_def = [
-        ['motor',      Type.Moveable,   None, 'Moveable to move'],
-        ['start_pos',  Type.Float,   None, 'Scan start position'],
-        ['final_pos',  Type.Float,   None, 'Scan final position'],
-        ['integ_time', Type.Float,   None, 'Integration time'],
-        ['slow_down',  Type.Float, 1, 'global scan slow down factor (0, 1]'],
+        ['motor', Type.Moveable, None, 'Moveable to move'],
+        ['start_pos', Type.Float, None, 'Scan start position'],
+        ['final_pos', Type.Float, None, 'Scan final position'],
+        ['integ_time', Type.Float, None, 'Integration time'],
+        ['slow_down', Type.Float, 1, 'global scan slow down factor (0, 1]'],
     ]
 
     def prepare(self, motor, start_pos, final_pos, integ_time, slow_down,
@@ -1170,14 +1170,14 @@ class dscanc(dNscanc, Macro):
 class d2scanc(dNscanc, Macro):
     """continuous two-motor scan relative to the starting positions"""
     param_def = [
-        ['motor1',      Type.Moveable,   None, 'Moveable 1 to move'],
-        ['start_pos1',  Type.Float,   None, 'Scan start position 1'],
-        ['final_pos1',  Type.Float,   None, 'Scan final position 1'],
-        ['motor2',      Type.Moveable,   None, 'Moveable 2 to move'],
-        ['start_pos2',  Type.Float,   None, 'Scan start position 2'],
-        ['final_pos2',  Type.Float,   None, 'Scan final position 2'],
-        ['integ_time', Type.Float,   None, 'Integration time'],
-        ['slow_down',  Type.Float, 1, 'global scan slow down factor (0, 1]'],
+        ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
+        ['start_pos1', Type.Float, None, 'Scan start position 1'],
+        ['final_pos1', Type.Float, None, 'Scan final position 1'],
+        ['motor2', Type.Moveable, None, 'Moveable 2 to move'],
+        ['start_pos2', Type.Float, None, 'Scan start position 2'],
+        ['final_pos2', Type.Float, None, 'Scan final position 2'],
+        ['integ_time', Type.Float, None, 'Integration time'],
+        ['slow_down', Type.Float, 1, 'global scan slow down factor (0, 1]'],
     ]
 
     def prepare(self, motor1, start_pos1, final_pos1, motor2, start_pos2,
@@ -1190,20 +1190,20 @@ class d2scanc(dNscanc, Macro):
 class d3scanc(dNscanc, Macro):
     """continuous three-motor scan"""
     param_def = [
-        ['motor1',      Type.Moveable,   None, 'Moveable 1 to move'],
-        ['start_pos1',  Type.Float,   None, 'Scan start position 1'],
-        ['final_pos1',  Type.Float,   None, 'Scan final position 1'],
-        ['motor2',      Type.Moveable,   None, 'Moveable 2 to move'],
-        ['start_pos2',  Type.Float,   None, 'Scan start position 2'],
-        ['final_pos2',  Type.Float,   None, 'Scan final position 2'],
-        ['motor3',      Type.Moveable,   None, 'Moveable 3 to move'],
-        ['start_pos3',  Type.Float,   None, 'Scan start position 3'],
-        ['final_pos3',  Type.Float,   None, 'Scan final position 3'],
-        ['integ_time', Type.Float,   None, 'Integration time'],
-        ['slow_down',  Type.Float, 1, 'global scan slow down factor (0, 1]'],
+        ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
+        ['start_pos1', Type.Float, None, 'Scan start position 1'],
+        ['final_pos1', Type.Float, None, 'Scan final position 1'],
+        ['motor2', Type.Moveable, None, 'Moveable 2 to move'],
+        ['start_pos2', Type.Float, None, 'Scan start position 2'],
+        ['final_pos2', Type.Float, None, 'Scan final position 2'],
+        ['motor3', Type.Moveable, None, 'Moveable 3 to move'],
+        ['start_pos3', Type.Float, None, 'Scan start position 3'],
+        ['final_pos3', Type.Float, None, 'Scan final position 3'],
+        ['integ_time', Type.Float, None, 'Integration time'],
+        ['slow_down', Type.Float, 1, 'global scan slow down factor (0, 1]'],
     ]
 
-    def prepare(self, m1, s1, f1,  m2, s2, f2, m3, s3, f3, integ_time,
+    def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, integ_time,
                 slow_down, **opts):
         self._prepare([m1, m2, m3], [s1, s2, s3], [f1, f2, f3], slow_down,
                       integ_time, mode=ContinuousMode, **opts)
@@ -1212,20 +1212,20 @@ class d3scanc(dNscanc, Macro):
 class d4scanc(dNscanc, Macro):
     """continuous four-motor scan relative to the starting positions"""
     param_def = [
-        ['motor1',      Type.Moveable,   None, 'Moveable 1 to move'],
-        ['start_pos1',  Type.Float,   None, 'Scan start position 1'],
-        ['final_pos1',  Type.Float,   None, 'Scan final position 1'],
-        ['motor2',      Type.Moveable,   None, 'Moveable 2 to move'],
-        ['start_pos2',  Type.Float,   None, 'Scan start position 2'],
-        ['final_pos2',  Type.Float,   None, 'Scan final position 2'],
-        ['motor3',      Type.Moveable,   None, 'Moveable 3 to move'],
-        ['start_pos3',  Type.Float,   None, 'Scan start position 3'],
-        ['final_pos3',  Type.Float,   None, 'Scan final position 3'],
-        ['motor4',      Type.Moveable,   None, 'Moveable 3 to move'],
-        ['start_pos4',  Type.Float,   None, 'Scan start position 3'],
-        ['final_pos4',  Type.Float,   None, 'Scan final position 3'],
-        ['integ_time', Type.Float,   None, 'Integration time'],
-        ['slow_down',  Type.Float, 1, 'global scan slow down factor (0, 1]'],
+        ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
+        ['start_pos1', Type.Float, None, 'Scan start position 1'],
+        ['final_pos1', Type.Float, None, 'Scan final position 1'],
+        ['motor2', Type.Moveable, None, 'Moveable 2 to move'],
+        ['start_pos2', Type.Float, None, 'Scan start position 2'],
+        ['final_pos2', Type.Float, None, 'Scan final position 2'],
+        ['motor3', Type.Moveable, None, 'Moveable 3 to move'],
+        ['start_pos3', Type.Float, None, 'Scan start position 3'],
+        ['final_pos3', Type.Float, None, 'Scan final position 3'],
+        ['motor4', Type.Moveable, None, 'Moveable 3 to move'],
+        ['start_pos4', Type.Float, None, 'Scan start position 3'],
+        ['final_pos4', Type.Float, None, 'Scan final position 3'],
+        ['integ_time', Type.Float, None, 'Integration time'],
+        ['slow_down', Type.Float, 1, 'global scan slow down factor (0, 1]'],
     ]
 
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, m4, s4, f4,
@@ -1380,8 +1380,8 @@ class dmeshc(meshc):
                                            'motor'],
         ['m2_nr_interv', Type.Integer, None, 'Number of scan intervals'],
         ['integ_time', Type.Float, None, 'Integration time'],
-        ['bidirectional', Type.Boolean,  False, 'Save time by scanning '
-                                                's-shaped']
+        ['bidirectional', Type.Boolean, False, 'Save time by scanning '
+                                               's-shaped']
     ]
 
     def prepare(self, m1, m1_start_pos, m1_final_pos, slow_down,
@@ -1445,14 +1445,14 @@ class a2scanct(aNscan, Macro):
                                                  'post-cleanup')}
 
     param_def = [
-        ['motor1',      Type.Moveable,   None, 'Moveable 1 to move'],
-        ['start_pos1',  Type.Float,   None, 'Scan start position 1'],
-        ['final_pos1',  Type.Float,   None, 'Scan final position 1'],
-        ['motor2',      Type.Moveable,   None, 'Moveable 2 to move'],
-        ['start_pos2',  Type.Float,   None, 'Scan start position 2'],
-        ['final_pos2',  Type.Float,   None, 'Scan final position 2'],
+        ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
+        ['start_pos1', Type.Float, None, 'Scan start position 1'],
+        ['final_pos1', Type.Float, None, 'Scan final position 1'],
+        ['motor2', Type.Moveable, None, 'Moveable 2 to move'],
+        ['start_pos2', Type.Float, None, 'Scan start position 2'],
+        ['final_pos2', Type.Float, None, 'Scan final position 2'],
         ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time', Type.Float,   None, 'Integration time'],
+        ['integ_time', Type.Float, None, 'Integration time'],
         ['latency_time', Type.Float, 0, 'Latency time']]
 
     def prepare(self, m1, s1, f1, m2, s2, f2, nr_interv,
@@ -1477,17 +1477,17 @@ class a3scanct(aNscan, Macro):
                                                  'post-cleanup')}
 
     param_def = [
-        ['motor1',      Type.Moveable,   None, 'Moveable 1 to move'],
-        ['start_pos1',  Type.Float,   None, 'Scan start position 1'],
-        ['final_pos1',  Type.Float,   None, 'Scan final position 1'],
-        ['motor2',      Type.Moveable,   None, 'Moveable 2 to move'],
-        ['start_pos2',  Type.Float,   None, 'Scan start position 2'],
-        ['final_pos2',  Type.Float,   None, 'Scan final position 2'],
-        ['motor3',      Type.Moveable,   None, 'Moveable 3 to move'],
-        ['start_pos3',  Type.Float,   None, 'Scan start position 3'],
-        ['final_pos3',  Type.Float,   None, 'Scan final position 3'],
+        ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
+        ['start_pos1', Type.Float, None, 'Scan start position 1'],
+        ['final_pos1', Type.Float, None, 'Scan final position 1'],
+        ['motor2', Type.Moveable, None, 'Moveable 2 to move'],
+        ['start_pos2', Type.Float, None, 'Scan start position 2'],
+        ['final_pos2', Type.Float, None, 'Scan final position 2'],
+        ['motor3', Type.Moveable, None, 'Moveable 3 to move'],
+        ['start_pos3', Type.Float, None, 'Scan start position 3'],
+        ['final_pos3', Type.Float, None, 'Scan final position 3'],
         ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time', Type.Float,   None, 'Integration time'],
+        ['integ_time', Type.Float, None, 'Integration time'],
         ['latency_time', Type.Float, 0, 'Latency time']]
 
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, nr_interv,
@@ -1512,28 +1512,27 @@ class a4scanct(aNscan, Macro):
                                                  'post-cleanup')}
 
     param_def = [
-        ['motor1',      Type.Moveable,   None, 'Moveable 1 to move'],
-        ['start_pos1',  Type.Float,   None, 'Scan start position 1'],
-        ['final_pos1',  Type.Float,   None, 'Scan final position 1'],
-        ['motor2',      Type.Moveable,   None, 'Moveable 2 to move'],
-        ['start_pos2',  Type.Float,   None, 'Scan start position 2'],
-        ['final_pos2',  Type.Float,   None, 'Scan final position 2'],
-        ['motor3',      Type.Moveable,   None, 'Moveable 3 to move'],
-        ['start_pos3',  Type.Float,   None, 'Scan start position 3'],
-        ['final_pos3',  Type.Float,   None, 'Scan final position 3'],
-        ['motor4',      Type.Moveable,   None, 'Moveable 4 to move'],
-        ['start_pos4',  Type.Float,   None, 'Scan start position 4'],
-        ['final_pos4',  Type.Float,   None, 'Scan final position 4'],
+        ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
+        ['start_pos1', Type.Float, None, 'Scan start position 1'],
+        ['final_pos1', Type.Float, None, 'Scan final position 1'],
+        ['motor2', Type.Moveable, None, 'Moveable 2 to move'],
+        ['start_pos2', Type.Float, None, 'Scan start position 2'],
+        ['final_pos2', Type.Float, None, 'Scan final position 2'],
+        ['motor3', Type.Moveable, None, 'Moveable 3 to move'],
+        ['start_pos3', Type.Float, None, 'Scan start position 3'],
+        ['final_pos3', Type.Float, None, 'Scan final position 3'],
+        ['motor4', Type.Moveable, None, 'Moveable 4 to move'],
+        ['start_pos4', Type.Float, None, 'Scan start position 4'],
+        ['final_pos4', Type.Float, None, 'Scan final position 4'],
         ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time', Type.Float,   None, 'Integration time'],
+        ['integ_time', Type.Float, None, 'Integration time'],
         ['latency_time', Type.Float, 0, 'Latency time']]
 
     def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, m4, s4, f4,
                 nr_interv, integ_time, latency_time, **opts):
         self._prepare([m1, m2, m3, m4], [s1, s2, s3, s4], [f1, f2, f3, f4],
                       nr_interv, integ_time, mode=ContinuousHwTimeMode,
-                      latency_time=latency_time
-                      ** opts)
+                      latency_time=latency_time, **opts)
 
 
 class meshct(Macro, Hookable):
@@ -1696,7 +1695,7 @@ class timescan(Macro, Hookable):
 
     param_def = [
         ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
-        ['integ_time', Type.Float,   None, 'Integration time'],
+        ['integ_time', Type.Float, None, 'Integration time'],
         ['latency_time', Type.Float, 0, 'Latency time']]
 
     def prepare(self, nr_interv, integ_time, latency_time):
