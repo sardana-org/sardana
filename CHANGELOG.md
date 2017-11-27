@@ -79,6 +79,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   Previously the first one for the given synchronization was used, now it is
   taken into account if it is enabled or disabled (next ones may be used then).
   (#647, #648)
+- Macrobutton's text to from "<macro_name>" to "Run/Abort <macro_name>"
+  (#322, #554, #658)
 
 ### Removed
 - `ElementList` attribute from the Door Tango device - `Element` attribute is
