@@ -792,7 +792,7 @@ class GScan(Logger):
         with_time = hasattr(self.macro, "getTimeEstimation")
         with_interval = hasattr(self.macro, "getIntervalEstimation")
         if with_time and with_interval:
-            t = self.macro.getTimeEstimation(),
+            t = self.macro.getTimeEstimation()
             i = self.macro.getIntervalEstimation()
             return t, i
 
