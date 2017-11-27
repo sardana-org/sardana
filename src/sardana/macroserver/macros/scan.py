@@ -85,6 +85,40 @@ def getCallable(repr):
         return lambda: None
 
 
+# TODO: remove starts
+def _calculate_positions(moveable_node, start, end):
+    '''Function to calculate starting and ending positions on the physical
+    motors level.
+    :param moveable_node: (BaseNode) node representing a moveable.
+                          Can be a BranchNode representing a PseudoMotor,
+                          or a LeafNode representing a PhysicalMotor).
+    :param start: (float) starting position of the moveable
+    :param end: (float) ending position of the moveable
+
+    :return: (list<(float,float)>) a list of tuples comprising starting
+             and ending positions. List order is important and preserved.'''
+    start_positions = []
+    end_positions = []
+    if isinstance(moveable_node, BranchNode):
+        pseudo_node = moveable_node
+        moveable = pseudo_node.data
+        moveable_nodes = moveable_node.children
+        starts = moveable.calcPhysical(start)
+        ends = moveable.calcPhysical(end)
+        for moveable_node, start, end in zip(moveable_nodes, starts,
+                                             ends):
+            _start_positions, _end_positions = _calculate_positions(
+                moveable_node,
+                start, end)
+            start_positions += _start_positions
+            end_positions += _end_positions
+    else:
+        start_positions = [start]
+        end_positions = [end]
+
+    return start_positions, end_positions
+
+
 class aNscan(Hookable):
 
     hints = {'scan': 'aNscan', 'allowsHooks': ('pre-scan', 'pre-move',
@@ -208,42 +242,6 @@ class aNscan(Hookable):
             yield step
 
     def _waypoint_generator_hwtime(self):
-        # TODO: remove starts
-        def calculate_positions(moveable_node, start, end):
-            """
-            Function to calculate starting and ending positions on the physical
-            motors level.
-            :param moveable_node: (BaseNode) node representing a moveable.
-                                  Can be a BranchNode representing a
-                                  PseudoMotor, or a LeafNode representing a
-                                  PhysicalMotor).
-            :param start: (float) starting position of the moveable
-            :param end: (float) ending position of the moveable
-
-            :return: (list<(float,float)>) a list of tuples comprising starting
-                     and ending positions. List order is important and
-                     preserved.
-            """
-            start_positions = []
-            end_positions = []
-            if isinstance(moveable_node, BranchNode):
-                pseudo_node = moveable_node
-                moveable = pseudo_node.data
-                moveable_nodes = moveable_node.children
-                starts = moveable.calcPhysical(start)
-                ends = moveable.calcPhysical(end)
-                for moveable_node, start, end in zip(moveable_nodes, starts,
-                                                     ends):
-                    _start_positions, _end_positions = calculate_positions(
-                        moveable_node,
-                        start, end)
-                    start_positions += _start_positions
-                    end_positions += _end_positions
-            else:
-                start_positions = [start]
-                end_positions = [end]
-
-            return start_positions, end_positions
 
         # CScan in its constructor populates a list of data structures - trees.
         # Each tree represent one Moveables with its hierarchy of inferior
@@ -264,7 +262,7 @@ class aNscan(Hookable):
             for start, end, moveable_tree in zip(starts, waypoint,
                                                  moveables_trees):
                 moveable_root = moveable_tree.root()
-                start_positions, end_positions = calculate_positions(
+                start_positions, end_positions = _calculate_positions(
                     moveable_root, start, end)
                 step["start_positions"] += start_positions
                 step["positions"] += end_positions
@@ -1536,6 +1534,157 @@ class a4scanct(aNscan, Macro):
                       nr_interv, integ_time, mode=ContinuousHwTimeMode,
                       latency_time=latency_time
                       ** opts)
+
+
+class meshct(Macro, Hookable):
+    """2d grid scan  .
+    The mesh scan traces out a grid using motor1 and motor2.
+    The first motor scans  in contiuous mode from m1_start_pos to m1_final_pos
+    using the specified number of intervals. The second motor similarly
+    scans from m2_start_pos to m2_final_pos but it does not move during the
+    continuous scan. Each point is counted for integ_time seconds
+    (or monitor counts, if integ_time is negative).
+    The scan of motor1 is done at each point scanned by motor2. That is, the
+    first motor scan is nested within the second motor scan.
+    """
+
+    hints = {'scan': 'meshct', 'allowsHooks': ('pre-scan', 'pre-move',
+                                               'post-move', 'pre-acq',
+                                               'post-acq', 'post-step',
+                                               'post-scan')}
+    env = ('ActiveMntGrp',)
+
+    param_def = [
+        ['motor1', Type.Moveable, None, 'First motor to move'],
+        ['m1_start_pos', Type.Float, None, 'Scan start position for first '
+                                           'motor'],
+        ['m1_final_pos', Type.Float, None, 'Scan final position for first '
+                                           'motor'],
+        ['m1_nr_interv', Type.Integer, None, 'Number of scan intervals'],
+        ['motor2', Type.Moveable, None, 'Second motor to move'],
+        ['m2_start_pos', Type.Float, None, 'Scan start position for second '
+                                           'motor'],
+        ['m2_final_pos', Type.Float, None, 'Scan final position for second '
+                                           'motor'],
+        ['m2_nr_interv', Type.Integer, None, 'Number of scan intervals'],
+        ['integ_time', Type.Float, None, 'Integration time'],
+        ['bidirectional', Type.Boolean, False, 'Save time by scanning '
+                                               's-shaped'],
+        ['latency_time', Type.Float, 0, 'Latency time']
+    ]
+
+    def prepare(self, m1, m1_start_pos, m1_final_pos, m1_nr_interv,
+                m2, m2_start_pos, m2_final_pos, m2_nr_interv, integ_time,
+                bidirectional, latency_time, **opts):
+
+        self.motors = [m1, m2]
+        self.starts = numpy.array([m1_start_pos, m2_start_pos], dtype='d')
+        self.finals = numpy.array([m1_final_pos, m2_final_pos], dtype='d')
+        self.nr_intervs = numpy.array([m1_nr_interv, m2_nr_interv], dtype='i')
+
+        # Number of intervals of the first motor which is doing the
+        # continuous scan.
+        self.nr_interv = m1_nr_interv
+        self.nr_points = self.nr_interv + 1
+        self.integ_time = integ_time
+        self.bidirectional_mode = bidirectional
+
+        self.name = opts.get('name', 'meshct')
+
+        moveables = []
+        for m, start, final in zip(self.motors, self.starts, self.finals):
+            moveables.append(MoveableDesc(moveable=m, min_value=min(
+                start, final), max_value=max(start, final)))
+        moveables[0].is_reference = True
+
+        env = opts.get('env', {})
+        mg_name = self.getEnv('ActiveMntGrp')
+        mg = self.getMeasurementGroup(mg_name)
+        mg_latency_time = mg.getLatencyTime()
+        if mg_latency_time > latency_time:
+            self.info("Choosing measurement group latency time: %f" %
+                      mg_latency_time)
+            latency_time = mg_latency_time
+
+        self.latency_time = latency_time
+
+        constrains = [getCallable(cns) for cns in opts.get('constrains',
+                                                           [UNCONSTRAINED])]
+
+        extrainfodesc = opts.get('extrainfodesc', [])
+
+        # Hooks are not always set at this point. We will call getHooks
+        # later on in the scan_loop
+        # self.pre_scan_hooks = self.getHooks('pre-scan')
+        # self.post_scan_hooks = self.getHooks('post-scan')
+
+        self._gScan = CTScan(self, self._generator, moveables, env, constrains,
+                             extrainfodesc)
+
+    def _generator(self):
+        moveables_trees = self._gScan.get_moveables_trees()
+        step = {}
+        step["pre-move-hooks"] = self.getHooks('pre-move')
+        post_move_hooks = self.getHooks(
+            'post-move') + [self._fill_missing_records]
+        step["post-move-hooks"] = post_move_hooks
+        step["check_func"] = []
+        step["active_time"] = self.nr_points * (self.integ_time +
+                                                self.latency_time)
+
+        m1start, m2start = self.starts
+        m1end, m2end = self.finals
+        points1, points2 = self.nr_intervs + 1
+
+        m2_space = numpy.linspace(m2start, m2end, points2)
+        self.waypoints = []
+        starts_points = []
+        for i, m2pos in enumerate(m2_space):
+            starts_points.append([m1start, m2pos])
+            self.waypoints.append([m1end, m2pos])
+            if self.bidirectional_mode:
+                m1start, m1end = m1end, m1start
+
+        for i, waypoint in enumerate(self.waypoints):
+            self.waypoint_id = points1 * i
+            step["waypoint_id"] = self.waypoint_id
+            self.starts = starts_points[i]
+            self.finals = waypoint
+            step["positions"] = []
+            step["start_positions"] = []
+
+            for start, end, moveable_tree in zip(self.starts, self.finals,
+                                                 moveables_trees):
+                moveable_root = moveable_tree.root()
+                start_positions, end_positions = _calculate_positions(
+                    moveable_root, start, end)
+                step["start_positions"] += start_positions
+                step["positions"] += end_positions
+
+            yield step
+
+    def run(self, *args):
+        for step in self._gScan.step_scan():
+            yield step
+
+    @property
+    def data(self):
+        return self._gScan.data
+
+    def getTimeEstimation(self):
+        return 0.0
+
+    def getIntervalEstimation(self):
+        pass
+
+    def _fill_missing_records(self):
+        # fill record list with dummy records for the final padding
+        nb_of_points = self.nr_points
+        scan = self._gScan
+        nb_of_total_records = len(scan.data.records)
+        nb_of_records = nb_of_total_records - self.waypoint_id
+        missing_records = nb_of_points - nb_of_records
+        scan.data.initRecords(missing_records)
 
 
 class timescan(Macro, Hookable):

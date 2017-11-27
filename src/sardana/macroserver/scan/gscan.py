@@ -1900,6 +1900,9 @@ class CAcquisition(object):
             self.warning(msg, exc_info=1)
 
         info = {'label': full_name}
+        idx = np.array(value_buffer['index'])
+        idx += self.start_index
+        value_buffer['index'] = idx.tolist()
         info.update(value_buffer)
         # info is a dictionary with at least keys: label, data,
         # index and its values are of type string for label and
@@ -1943,9 +1946,9 @@ class CAcquisition(object):
         return is_compatible, non_compatible_channels
 
 
-def generate_timestamps(synchronization):
+def generate_timestamps(synchronization, timestamp=0):
     ret = dict()
-    timestamp = 0
+    timestamp = timestamp
     index = 0
     for group in synchronization:
         delay = group[SynchParam.Delay][SynchDomain.Time]
@@ -2001,7 +2004,7 @@ class CTScan(CScan, CAcquisition):
                        moveables=moveables, env=env, constraints=constraints,
                        extrainfodesc=extrainfodesc)
         CAcquisition.__init__(self)
-        self.__mntGrpStarted = False
+        self.__mngGrpSubscribed = False
 
     def prepare_waypoint(self, waypoint, start_positions, iterate_only=False):
         """Prepare list of MotionPath objects per each physical motor.
@@ -2024,7 +2027,10 @@ class CTScan(CScan, CAcquisition):
         ideal_paths = []
 
         max_acc_time, max_dec_time = 0, 0
-        for moveable, end_position in zip(self._physical_moveables, positions):
+        for moveable, start_position, end_position in zip(
+                self._physical_moveables, start_positions, positions):
+            if start_position == end_position:
+                continue
             motor = moveable
             self.macro.debug("Motor: %s" % motor.getName())
             self.macro.debug("AccTime: %f" % self.get_min_acc_time(motor))
@@ -2075,11 +2081,19 @@ class CTScan(CScan, CAcquisition):
                   (measurement_group.getName(), macro.getName())
             raise ScanException(msg)
 
+        # add listener of data events
+        measurement_group.subscribeValueBuffer(self.value_buffer_changed)
+        # initializing mntgrp subscription control variables
+        self.__mngGrpSubscribed = True
+
+        self.data.initial_data = {}
         last_positions = None
-        for _, waypoint in waypoints:
+        self.macro.warning(
+            "Motor positions and relative timestamp (dt) columns contains"
+            " theoretical values"
+        )
+        for i, waypoint in waypoints:
             self.macro.debug("Waypoint iteration...")
-            # initializing mntgrp control variables
-            self.__mntGrpStarted = False
 
             start_positions = waypoint.get('start_positions')
             positions = waypoint['positions']
@@ -2122,11 +2136,15 @@ class CTScan(CScan, CAcquisition):
                 self.on_waypoints_end()
                 return
             ############
-            # validation of parameters
-            for start, end in zip(self.macro.starts, self.macro.finals):
-                if start == end:
-                    raise ScanException(
-                        "Scan start and end must be different.")
+            # validation of parameters. At least one motor must have different
+            # values on the start and final positions
+            if self.macro.starts == self.macro.finals:
+                if len(self.macro.starts) > 1:
+                    msg = "One of the motor must have the scan start " \
+                          "different to scan end."
+                else:
+                    msg = "Scan start and end must be different."
+                raise ScanException(msg)
 
             startTimestamp = time.time()
 
@@ -2199,6 +2217,8 @@ class CTScan(CScan, CAcquisition):
                                          acceleration=path.max_vel_time,
                                          deceleration=path.min_vel_time)
                 try:
+                    if path.initial_user_pos == path.final_user_pos:
+                        continue
                     self.configure_motor(motor, attributes)
                 except ScanException, e:
                     msg = "Error when configuring scan motion (%s)" % e
@@ -2210,23 +2230,24 @@ class CTScan(CScan, CAcquisition):
 
             # TODO: don't fill theoretical positions but implement the position
             # capture, both hardware and software
-            initial_data = {}
+            if i == 0:
+                dt_timestamp = 0
+                first_timestamp = time.time()
+            else:
+                dt_timestamp = time.time() - first_timestamp
+            initial_data = self.data.initial_data
+            self.start_index = waypoint['waypoint_id']
             motors = self.macro.motors
             starts = self.macro.starts
             finals = self.macro.finals
             nr_points = self.macro.nr_points
             theoretical_positions = generate_positions(motors, starts, finals,
                                                        nr_points)
-            theoretical_timestamps = generate_timestamps(synch)
+            theoretical_timestamps = generate_timestamps(synch, dt_timestamp)
             for index, data in theoretical_positions.items():
                 data.update(theoretical_timestamps[index])
-                initial_data[index] = data
+                initial_data[index + self.start_index] = data
             self.data.initial_data = initial_data
-
-            self.macro.warning(
-                "Motor positions and relative timestamp (dt) columns contains"
-                " theoretical values"
-            )
 
             if hasattr(macro, 'getHooks'):
                 for hook in macro.getHooks('pre-start'):
@@ -2234,11 +2255,11 @@ class CTScan(CScan, CAcquisition):
             self.macro.checkPoint()
 
             self.macro.debug("Starting measurement group")
-            # add listener of data events
-            measurement_group.subscribeValueBuffer(self.value_buffer_changed)
-            self.__mntGrpStarted = True
 
             mg_id = self.measurement_group.start()
+            if i == 0:
+                first_timestamp = time.time()
+
             try:
                 self.timestamp_to_start = time.time() + delta_start
 
@@ -2343,11 +2364,12 @@ class CTScan(CScan, CAcquisition):
         and trigger to its state before the scan.'''
         startTimestamp = time.time()
 
-        if self.__mntGrpStarted:
+        if self.__mngGrpSubscribed:
             self.debug("Unsubscribing from value buffer events")
             try:
                 self.measurement_group.unsubscribeValueBuffer(
                     self.value_buffer_changed)
+                self.__mngGrpSubscribed = False
             except:
                 msg = "Exception occurred trying to remove data listeners"
                 self.debug(msg)
