@@ -597,7 +597,7 @@
     Reloads the given controller class code from the pool server filesystem.
 
 
-.. class:: expert.relctrlcls
+.. class:: expert.relctrllib
 
     Reloads the given controller library code from the pool server filesystem.
 
@@ -646,7 +646,7 @@
 
 ... class:: expert.renameelem
 
-    Renames any type of Pool elements apart of Pools."""
+    Renames any type of Pool elements apart of Pools
 
 
 .. class:: demo.sar_demo
