@@ -1860,6 +1860,7 @@ class CAcquisition(object):
     def __init__(self):
         self._thread_pool = get_thread_pool()
         self._countdown_latch = CountLatch()
+        self._index_offset = 0
 
     def value_buffer_changed(self, channel, value_buffer):
         """Delegate processing of value buffer events to worker threads."""
@@ -1901,7 +1902,7 @@ class CAcquisition(object):
 
         info = {'label': full_name}
         idx = np.array(value_buffer['index'])
-        idx += self.start_index
+        idx += self._index_offset
         value_buffer['index'] = idx.tolist()
         info.update(value_buffer)
         # info is a dictionary with at least keys: label, data,
@@ -2236,7 +2237,7 @@ class CTScan(CScan, CAcquisition):
             else:
                 dt_timestamp = time.time() - first_timestamp
             initial_data = self.data.initial_data
-            self.start_index = waypoint['waypoint_id']
+
             motors = self.macro.motors
             starts = self.macro.starts
             finals = self.macro.finals
@@ -2244,9 +2245,10 @@ class CTScan(CScan, CAcquisition):
             theoretical_positions = generate_positions(motors, starts, finals,
                                                        nr_points)
             theoretical_timestamps = generate_timestamps(synch, dt_timestamp)
+            self._index_offset = i * self.macro.nr_points
             for index, data in theoretical_positions.items():
                 data.update(theoretical_timestamps[index])
-                initial_data[index + self.start_index] = data
+                initial_data[index + self._index_offset] = data
             self.data.initial_data = initial_data
 
             if hasattr(macro, 'getHooks'):

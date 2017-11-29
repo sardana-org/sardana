@@ -1645,8 +1645,8 @@ class meshct(Macro, Hookable):
                 m1start, m1end = m1end, m1start
 
         for i, waypoint in enumerate(self.waypoints):
-            self.waypoint_id = points1 * i
-            step["waypoint_id"] = self.waypoint_id
+            self.point_id = points1 * i
+            step["waypoint_id"] = i
             self.starts = starts_points[i]
             self.finals = waypoint
             step["positions"] = []
@@ -1681,7 +1681,7 @@ class meshct(Macro, Hookable):
         nb_of_points = self.nr_points
         scan = self._gScan
         nb_of_total_records = len(scan.data.records)
-        nb_of_records = nb_of_total_records - self.waypoint_id
+        nb_of_records = nb_of_total_records - self.point_id
         missing_records = nb_of_points - nb_of_records
         scan.data.initRecords(missing_records)
 
