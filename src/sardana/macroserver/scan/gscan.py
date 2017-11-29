@@ -1997,8 +1997,51 @@ def generate_positions(motors, starts, finals, nr_points):
 
 
 class CTScan(CScan, CAcquisition):
-    '''Continuous scan controlled by hardware trigger signals.
-    Sequence of trigger signals is programmed in time.
+    '''Generic continuous scan class.
+
+    The idea is that the scan macros create an instance of this class,
+    supplying in the constructor a reference to the macro that created the
+    scan, a waypoint generator function pointer, a list of moveable items,
+    an extra environment and a sequence of constrains.
+
+    The generator must be a function yielding a dictionary with the following
+    content (minimum) at each step of the scan:
+      - 'start_positions' : The user positions where the **physical** motors
+                            should start the active region of the waypoint scan
+                            (usually during the constant velocity of the
+                            **physical** motors)
+      - 'positions'  : The user positions where the **physical** motors should
+                       end the active region of the waypoint scan (since
+                       currently the post-trigger acquisition is assumed this
+                       does not mean leaving the constant velocity of the
+                       **physical** motors - the constant velocity will be
+                       maintained for the last point of the waypoint scan)
+      - 'active_time' : Duration of the active region of the waypoint scan,
+                        (in contrary to the *positions* configuration this one
+                        includes the time necessary for hangling the last point
+                        of the waypoint scan with its *latency time*
+                        (in seconds)
+      - 'pre-move-hooks' : (optional) a sequence of callables to be called
+                           in strict order before starting to move
+      - 'post-move-hooks': (optional) a sequence of callables to be called
+                           in strict order after finishing the move
+      - 'hooks' : (deprecated, use post-acq-hooks instead)
+      - 'waypoint_id' : a hashable identifing the waypoint
+      - 'check_func' : (optional) a list of callable objects.
+                       callable(moveables, counters)
+      - 'extravalues': (optional) a dictionary containing the values for
+                       each extra info field. The extra information fields
+                       must be described in extradesc (passed in the
+                       constructor of the Gscan)
+
+    .. todo::
+        - instead of passing the *active_time* pass the synchronization
+          description
+        - decide whether *positions* should include the real end of the active
+          region
+        - decide if the *start_positions* and *positions* should operate
+          directly on the physical motors or it would be more interesting on
+          the pseudo motors
 
     .. note::
         The CTScan class has been included in Sardana
