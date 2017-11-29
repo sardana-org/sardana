@@ -2013,7 +2013,7 @@ class CTScan(CScan, CAcquisition):
                        moveables=moveables, env=env, constraints=constraints,
                        extrainfodesc=extrainfodesc)
         CAcquisition.__init__(self)
-        self.__mngGrpSubscribed = False
+        self.__mntGrpSubscribed = False
 
     def prepare_waypoint(self, waypoint, start_positions, iterate_only=False):
         """Prepare list of MotionPath objects per each physical motor.
@@ -2093,7 +2093,7 @@ class CTScan(CScan, CAcquisition):
         # add listener of data events
         measurement_group.subscribeValueBuffer(self.value_buffer_changed)
         # initializing mntgrp subscription control variables
-        self.__mngGrpSubscribed = True
+        self.__mntGrpSubscribed = True
 
         self.data.initial_data = {}
         last_positions = None
@@ -2374,12 +2374,12 @@ class CTScan(CScan, CAcquisition):
         and trigger to its state before the scan.'''
         startTimestamp = time.time()
 
-        if self.__mngGrpSubscribed:
+        if self.__mntGrpSubscribed:
             self.debug("Unsubscribing from value buffer events")
             try:
                 self.measurement_group.unsubscribeValueBuffer(
                     self.value_buffer_changed)
-                self.__mngGrpSubscribed = False
+                self.__mntGrpSubscribed = False
             except Exception:
                 msg = "Exception occurred trying to remove data listeners"
                 self.debug(msg)
