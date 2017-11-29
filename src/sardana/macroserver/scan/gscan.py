@@ -2038,6 +2038,9 @@ class CTScan(CScan, CAcquisition):
         max_acc_time, max_dec_time = 0, 0
         for moveable, start_position, end_position in zip(
                 self._physical_moveables, start_positions, positions):
+            # motors that won't be moved do not participate in the
+            # configuration selection
+            # TODO: think of not attaching them to the waypoint at all
             if start_position == end_position:
                 continue
             motor = moveable
@@ -2149,8 +2152,8 @@ class CTScan(CScan, CAcquisition):
             # values on the start and final positions
             if self.macro.starts == self.macro.finals:
                 if len(self.macro.starts) > 1:
-                    msg = "One of the motor must have the scan start " \
-                          "different to scan end."
+                    msg = "Scan start and end must be different for at " \
+                          "least one motor"
                 else:
                     msg = "Scan start and end must be different."
                 raise ScanException(msg)
@@ -2225,9 +2228,11 @@ class CTScan(CScan, CAcquisition):
                 attributes = OrderedDict(velocity=path.max_vel,
                                          acceleration=path.max_vel_time,
                                          deceleration=path.min_vel_time)
+                # do not configure motors which are not moved in the waypoint
+                # TODO: think of not attaching them to the waypoint at all
+                if path.initial_user_pos == path.final_user_pos:
+                    continue
                 try:
-                    if path.initial_user_pos == path.final_user_pos:
-                        continue
                     self.configure_motor(motor, attributes)
                 except ScanException, e:
                     msg = "Error when configuring scan motion (%s)" % e
@@ -2257,6 +2262,8 @@ class CTScan(CScan, CAcquisition):
             for index, data in theoretical_positions.items():
                 data.update(theoretical_timestamps[index])
                 initial_data[index + self._index_offset] = data
+            # TODO: this changes the initial data on-the-fly - seems like not
+            # the best practice
             self.data.initial_data = initial_data
 
             if hasattr(macro, 'getHooks'):
