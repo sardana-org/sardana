@@ -1947,9 +1947,17 @@ class CAcquisition(object):
         return is_compatible, non_compatible_channels
 
 
-def generate_timestamps(synchronization, timestamp=0):
+def generate_timestamps(synchronization, initial_timestamp=0):
+    """Generate theoretical timestamps at which the acquisition should take
+    place according to the synchronization description
+
+    :param synchronization: synchronization description data structure
+    :type synchronization: list<dict>
+    :param initial_timestamp: initial timestamp to start from
+    :type initial_timestamp: float
+    """
     ret = dict()
-    timestamp = timestamp
+    timestamp = initial_timestamp
     index = 0
     for group in synchronization:
         delay = group[SynchParam.Delay][SynchDomain.Time]
