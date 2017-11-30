@@ -992,16 +992,6 @@ class MotorGroup(PoolElement, Moveable):
     def _start(self, *args, **kwargs):
         new_pos = args[0]
 
-        # TODO: limits verification should be done on the server side, see:
-        # github.com/sardana-org/sardana/pull/560#issuecomment-332843074
-        i = 0
-        for mot in self.getMotorNames():
-            low, high = Device(mot).getPositionObj().getLimits()
-            if new_pos[i] < low or new_pos[i] > high:
-                raise RuntimeError("%s: Requested movement beyond the limits."
-                                   % mot)
-            i += 1
-
         try:
             self.write_attribute('position', new_pos)
         except DevFailed, df:
