@@ -557,23 +557,22 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
             # TODO: get the configuration for an specific sardana class and get rid of AttributeProxy.
             config = AttributeProxy(element.name + '/position').get_config()
             try:
-                high =  str(config.max_value)
-            except:
+                high = float(config.max_value)
+            except ValueError:
                 high = None
             try:
-                low =  config.min_value
-            except:
+                low = float(config.min_value)
+            except ValueError:
                 low = None
             if high is not None:
-                if float(new_position) > float(high):
+                if float(new_position) > high:
                     raise RuntimeError("%s: Requested movement above upper limit."
                                        % element.name)
             if low is not None:
-                if float(new_position) < float(low):
+                if float(new_position) < low:
                     raise RuntimeError("%s: Requested movement below lower limit."
                                        % element.name)
-                    
-            
+
             element.calculate_motion(new_position, items=items,
                                      calculated=calculated)
         return items
