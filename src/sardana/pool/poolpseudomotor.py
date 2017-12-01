@@ -554,7 +554,8 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
             if new_position is None:
                 raise PoolException("Cannot calculate motion: %s reports "
                                     "position to be None" % element.name)
-            # TODO: get the configuration for an specific sardana class and get rid of AttributeProxy.
+            # TODO: get the configuration for an specific sardana class and
+            # get rid of AttributeProxy.
             config = AttributeProxy(element.name + '/position').get_config()
             try:
                 high = float(config.max_value)
@@ -566,12 +567,12 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
                 low = None
             if high is not None:
                 if float(new_position) > high:
-                    raise RuntimeError("%s: Requested movement above upper limit."
-                                       % element.name)
+                    raise RuntimeError("%s: Requested movement above "
+                                       " upper limit." % element.name)
             if low is not None:
                 if float(new_position) < low:
-                    raise RuntimeError("%s: Requested movement below lower limit."
-                                       % element.name)
+                    raise RuntimeError("%s: Requested movement below "
+                                       " lower limit." % element.name)
 
             element.calculate_motion(new_position, items=items,
                                      calculated=calculated)
