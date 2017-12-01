@@ -69,6 +69,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   controllers in case software synchronization is in use (#594)
 - `Hookable.hooks` proprty setting - now it cleans the previous
   configuration (#655)
+- Make PoolUtil thread-safe (#662, #655)
 - Dummy counter/timer now returns partial value when its acquisition was
   aborted (#626)
 - Workaround for #427: make default values for repeat parameters of `wa`,
