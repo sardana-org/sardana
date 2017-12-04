@@ -45,7 +45,7 @@ from sardana.pool.poolbasegroup import PoolBaseGroup
 from sardana.pool.poolmotion import PoolMotion
 from sardana.pool.poolexception import PoolException
 
-from PyTango import AttributeProxy
+from sardana.sardanaattribute import SardanaAttributeConfiguration
 
 class Position(SardanaAttribute):
 
@@ -555,16 +555,8 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
                 raise PoolException("Cannot calculate motion: %s reports "
                                     "position to be None" % element.name)
             # TODO: get the configuration for an specific sardana class and
-            # get rid of AttributeProxy.
-            config = AttributeProxy(element.name + '/position').get_config()
-            try:
-                high = float(config.max_value)
-            except ValueError:
-                high = None
-            try:
-                low = float(config.min_value)
-            except ValueError:
-                low = None
+
+            low, high = SardanaAttributeConfiguration(element.name + '/position').range
             if high is not None:
                 if float(new_position) > high:
                     raise RuntimeError("%s: Requested movement above "
