@@ -358,12 +358,25 @@ class ScalarNumberAttribute(SardanaAttribute):
         SardanaAttribute.__init__(self, *args, **kwargs)
         self.filter = ScalarNumberFilter()
 
+from PyTango import AttributeProxy
 
 class SardanaAttributeConfiguration(object):
     """Storage class for :class:`SardanaAttribute` information (like ranges)"""
     NoRange = float('-inf'), float('inf')
 
-    def __init__(self):
-        self.range = self.NoRange
+    def __init__(self, attr_name = None):
+        if attr_name is not None:
+            config = AttributeProxy(attr_name).get_config()
+            try:
+                high =  float(config.max_value)
+            except:
+                high = None
+            try:
+                low =  float(config.min_value)
+            except:
+                low = None
+            self.range = low,high
+        else:
+            self.range = self.NoRange
         self.alarm = self.NoRange
         self.warning = self.NoRange
