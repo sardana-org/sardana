@@ -31,6 +31,7 @@ __docformat__ = 'restructuredtext'
 
 from taurus.console.list import List
 from sardana.macroserver.macro import Macro, Type, ParamRepeat
+from sardana.macroserver.msexception import UnknownEnv
 
 ##########################################################################
 #
@@ -303,29 +304,30 @@ class lsgh(Macro):
     def run(self):
         try:
             general_hooks = self.getEnv("_GeneralHooks")
-
-            out = List(['Hook place', 'Hook(s)'])
-            default_dict = {}
-            for hook in general_hooks:
-                name = hook[0]
-                places = hook[1]
-                for place in places:
-                    if place not in default_dict.keys():
-                        default_dict[place] = []
-                    if name not in default_dict[place]:
-                        default_dict[place].append(name)
-            for pos in default_dict.keys():
-                pos_set = 0
-                for hook in default_dict[pos]:
-                    if pos_set:
-                        out.appendRow(["", hook])
-                    else:
-                        out.appendRow([pos, hook])
-                    pos_set = 1
-            for line in out.genOutput():
-                self.output(line)
-        except:
+        except UnknownEnv:
             self.output("No general hooks")
+            return
+
+        out = List(['Hook place', 'Hook(s)'])
+        default_dict = {}
+        for hook in general_hooks:
+            name = hook[0]
+            places = hook[1]
+            for place in places:
+                if place not in default_dict.keys():
+                    default_dict[place] = []
+                if name not in default_dict[place]:
+                    default_dict[place].append(name)
+        for pos in default_dict.keys():
+            pos_set = 0
+            for hook in default_dict[pos]:
+                if pos_set:
+                    out.appendRow(["", hook])
+                else:
+                    out.appendRow([pos, hook])
+                pos_set = 1
+        for line in out.genOutput():
+            self.output(line)
 
 
 class defgh(Macro):
@@ -353,7 +355,7 @@ class defgh(Macro):
         self.output(macro_name)
         try:
             macros_list = self.getEnv("_GeneralHooks")
-        except:
+        except UnknownEnv:
             macros_list = []
 
         hook_tuple = (macro_name, position)
@@ -376,7 +378,7 @@ class udefgh(Macro):
     def run(self, macro_name, hook_pos):
         try:
             gh_macros_list = self.getEnv("_GeneralHooks")
-        except:
+        except UnknownEnv:
             return
 
         if macro_name == "all":
