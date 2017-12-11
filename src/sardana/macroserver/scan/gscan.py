@@ -2273,7 +2273,7 @@ class CTScan(CScan, CAcquisition):
                                          deceleration=path.min_vel_time)
                 # do not configure motors which are not moved in the waypoint
                 # TODO: think of not attaching them to the waypoint at all
-                if path.initial_user_pos == path.final_user_pos:
+                if path._initial_user_pos == path._final_user_pos:
                     continue
                 try:
                     self.configure_motor(motor, attributes)
