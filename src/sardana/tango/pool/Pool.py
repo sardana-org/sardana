@@ -1342,6 +1342,14 @@ class PoolClass(PyTango.DeviceClass):
             [PyTango.DevVarStringArray,
              "List of instruments (internal property)",
              []],
+        'LogstashHost':
+            [PyTango.DevString,
+             "Hostname where Logstash runs",
+             None],
+        'LogstashPort':
+            [PyTango.DevLong,
+             "Port on which Logstash will listen on events",
+             None]
     }
 
     #    Command definitions
