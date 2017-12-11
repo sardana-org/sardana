@@ -47,6 +47,7 @@ import string
 import logging
 import os.path
 import traceback
+import itertools
 
 import PyTango
 from PyTango import Util, Database, WAttribute, DbDevInfo, DevFailed, \
@@ -826,6 +827,22 @@ def get_dev_from_class(db, classname):
             out += " (running)"
         res[dev] = full_name, name, alias, out
     return res
+
+
+def get_dev_from_class_server(db, classname, server):
+    """Returns device(s) name for a given class and server"""
+
+    def pairwise(iterable):
+        "s -> (s0, s1), (s2, s3), (s4, s5), ..."
+        a = iter(iterable)
+        return itertools.izip(a, a)
+
+    devices = []
+    device_class_list = db.get_device_class_list(server)
+    for dev, cls in pairwise(device_class_list):
+        if cls == classname:
+            devices.append(dev)
+    return devices
 
 
 def get_free_server(db, prefix, start_from=1):
