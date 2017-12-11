@@ -30,7 +30,7 @@ __all__ = ["dumpenv", "load_env", "lsenv", "senv", "usenv",
 __docformat__ = 'restructuredtext'
 
 from taurus.console.list import List
-from sardana.macroserver.macro import *
+from sardana.macroserver.macro import Macro, Type, ParamRepeat
 
 ##########################################################################
 #
@@ -295,14 +295,15 @@ class load_env(Macro):
             for parameter in misc_tree:
                 if parameter.tag != "name":
                     self.setEnv(parameter.tag, parameter.text)
-      
+
+
 class lsgh(Macro):
     """List general hooks"""
-    
-    def run(self): 
+
+    def run(self):
         try:
             general_hooks = self.getEnv("_GeneralHooks")
-            
+
             out = List(['Hook place', 'Hook(s)'])
             default_dict = {}
             for hook in general_hooks:
@@ -326,6 +327,7 @@ class lsgh(Macro):
         except:
             self.output("No general hooks")
 
+
 class defgh(Macro):
     """Define general hook.
     Ex.
@@ -336,37 +338,39 @@ class defgh(Macro):
     defgh "Print 'Hello world'" pre-scan
 
     """
-    
+
     param_def = [
-        ['macro_name', Type.String, None, 'Macro name with parameters. Ex.: "mv exp_dmy01 10"'],
+        ['macro_name', Type.String, None, ('Macro name with parameters. '
+                                           'Ex.: "mv exp_dmy01 10"')],
         ['hookpos_list',
          ParamRepeat(['position', Type.String, None, 'macro name'], min=1),
          None, 'List of positions where the hook has to be executed'],
     ]
-    
+
     def run(self, macro_name, position):
-        
+
         self.info("Defining general hook")
         self.output(macro_name)
         try:
             macros_list = self.getEnv("_GeneralHooks")
         except:
             macros_list = []
-            
+
         hook_tuple = (macro_name, position)
         self.debug(hook_tuple)
         macros_list.append(hook_tuple)
         self.setEnv("_GeneralHooks", macros_list)
         self.debug("General hooks:")
         self.debug(macros_list)
-        
+
 
 class udefgh(Macro):
     """Undefine general hook. Without arguments undefine all """
 
     param_def = [
         ['macro_name', Type.String, "all", 'General hook to be undefined'],
-        ['hook_pos', Type.String, "all", 'Position to undefine the general hook from'],
+        ['hook_pos', Type.String, "all", ('Position to undefine the general '
+                                          'hook from')],
     ]
 
     def run(self, macro_name, hook_pos):
@@ -385,6 +389,5 @@ class udefgh(Macro):
                     macros_list.append(el)
                 else:
                     self.info("Hook %s is undefineed" % macro_name)
-            
+
             self.setEnv("_GeneralHooks", macros_list)
-  
