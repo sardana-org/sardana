@@ -890,6 +890,61 @@ def prepare_taurus(options, args, tango_args):
     factory.disablePolling()
 
 
+def prepare_logstash(args):
+    """Prepare logstash handler based on the configuration stored in the Tango
+    database.
+
+    :param args: process execution arguments
+    :type args: list<str>
+    """
+    log_messages = []
+    try:
+        import logstash
+    except ImportError:
+        msg = "Unable to import logstash. Skipping logstash configuration..."
+        log_messages.append(msg)
+        return
+
+    def get_logstash_conf(dev_name):
+        try:
+            props = db.get_device_property(dev_name, "LogstashHost")
+            host = props["LogstashHost"][0]
+        except IndexError:
+            host = None
+        try:
+            props = db.get_device_property(dev_name, "LogstashPort")
+            port = int(props["LogstashPort"][0])
+        except IndexError:
+            port = 12345
+        return host, port
+
+    db = Database()
+
+    bin_name = args[0]
+    instance_name = args[1]
+    server_name = bin_name + "/" + instance_name
+    if bin_name in ["Pool", "MacroServer"]:
+        class_name = bin_name
+        dev_name = get_dev_from_class_server(db, class_name, server_name)[0]
+        host, port = get_logstash_conf(dev_name)
+    else:
+        dev_name = get_dev_from_class_server(db, "Pool", server_name)[0]
+        host, port = get_logstash_conf(dev_name)
+        if host is None:
+            dev_name = get_dev_from_class_server(db, "MacroServer",
+                                                 server_name)[0]
+            host, port = get_logstash_conf(dev_name)
+
+    if host is not None:
+        root = Logger.getRootLog()
+        fmt = Logger.getLogFormat()
+        handler = logstash.TCPLogstashHandler(host, port, version=1)
+        handler.setFormatter(fmt)
+        root.addHandler(handler)
+
+    return log_messages
+
+
 def prepare_logging(options, args, tango_args, start_time=None, log_messages=None):
     taurus.setLogLevel(taurus.Debug)
     root = Logger.getRootLog()
@@ -1073,6 +1128,7 @@ def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None,
 
     log_messages.extend(prepare_environment(args, tango_args, ORB_args))
     log_messages.extend(prepare_server(args, tango_args))
+    log_messages.extend(prepare_logstash(args))
 
     if tango_util is None:
         tango_util = Util(tango_args)
