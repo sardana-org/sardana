@@ -382,6 +382,14 @@ class MacroServerClass(SardanaDeviceClass):
             [DevString,
              "Log report format [default: '%s']" % DefaultLogReportFormat,
              DefaultLogReportFormat],
+        'LogstashHost':
+            [DevString,
+             "Hostname where Logstash runs",
+             None],
+        'LogstashPort':
+            [DevLong,
+             "Port on which Logstash will listen on events",
+             None]
     }
 
     #    Command definitions
