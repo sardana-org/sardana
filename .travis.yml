@@ -1,5 +1,3 @@
-group: deprecated-2017Q4
-
 language: python
 
 sudo: required
@@ -34,7 +32,9 @@ install:
 
   # start Pool and MacroServer necessary for macro tests
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl start Pool; fi
+  - if [ $TEST == "testsuite" ]; then docker exec sardana-test cat /tmp/tango-root/Pool/demo1/log.txt; fi
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl start MacroServer; fi
+  - if [ $TEST == "testsuite" ]; then docker exec sardana-test cat /tmp/tango-root/MacroServer/demo1/log.txt; fi
 
 script:
   # run flake8 check on all python files in the project
