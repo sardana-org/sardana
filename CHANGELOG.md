@@ -9,6 +9,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Added
 - addctrlib, relctrllib, relctrlcls macros usefull when developing
   controller classes (#541)
+- Timeout/watchdog in continuous scans - especially usefull when
+  triggers may be missed e.g. not precise positioning (#136, #601)
 - Reintroduce intermediate events for counter/timer channels while
   software acquisition is in progress (#625)
 - TaurusCounterTimerController - that can connect to different data
@@ -67,6 +69,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   controllers in case software synchronization is in use (#594)
 - `Hookable.hooks` proprty setting - now it cleans the previous
   configuration (#655)
+- Make PoolUtil thread-safe (#662, #655)
 - Dummy counter/timer now returns partial value when its acquisition was
   aborted (#626)
 - Workaround for #427: make default values for repeat parameters of `wa`,
