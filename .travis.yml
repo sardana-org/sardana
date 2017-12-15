@@ -31,6 +31,8 @@ install:
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test bash -c "cd /sardana && python setup.py install"; fi
 
   # start Pool and MacroServer necessary for macro tests
+  - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl tail -10000 mysqld; fi
+  - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl tail -10000 mysqld stderr; fi
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl tail -10000 tango-db; fi
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl tail -10000 tango-db stderr; fi
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl start Pool; fi
