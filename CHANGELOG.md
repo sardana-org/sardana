@@ -79,6 +79,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   `Macro.execMacro` (#654)
 
 ### Changed
+- Internally use URI (FQDN) references to be fully compatible with Taurus4
 - Rename edctrl to edctrlcls macro (#541)
 - The way how the master timer/monitor for the acquisition actions is selected.
   Previously the first one for the given synchronization was used, now it is
