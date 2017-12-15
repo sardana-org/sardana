@@ -31,13 +31,15 @@ install:
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test bash -c "cd /sardana && python setup.py install"; fi
 
   # start Pool and MacroServer necessary for macro tests
+  - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl tail -10000 tango-db; fi
+  - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl tail -10000 tango-db stderr; fi
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl start Pool; fi
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl tail -100 Pool; fi
-  - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl tail -5000 Pool stderr; fi
+  - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl tail -10000 Pool stderr; fi
   #- if [ $TEST == "testsuite" ]; then docker exec sardana-test cat /tmp/tango-root/Pool/demo1/log.txt; fi
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl start MacroServer; fi
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl tail -100 MacroServer; fi
-  - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl tail -5000 MacroServer stderr; fi
+  - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl tail -10000 MacroServer stderr; fi
   #- if [ $TEST == "testsuite" ]; then docker exec sardana-test cat /tmp/tango-root/MacroServer/demo1/log.txt; fi
 
 script:
