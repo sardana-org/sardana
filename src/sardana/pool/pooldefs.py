@@ -68,7 +68,8 @@ class SynchDomain(SynchEnum):
 
     - Time - describes the synchronization in time domain
     - Position - describes the synchronization in position domain
-    - Monitor - not used at the moment but foreseen for synchronization on monitor
+    - Monitor - not used at the moment but foreseen for synchronization on
+                monitor
 
     .. note::
         The SynchDomain class has been included in Sardana
@@ -81,7 +82,8 @@ class SynchDomain(SynchEnum):
     Monitor = 2
 #     - Default - the controller selects the most appropriate domain:
 #       for active events the precedence should be first Position and then Time
-#       for passive events the precedence should be first Time and then Position
+#       for passive events the precedence should be first Time and then
+#       Position
 #    Default = 3
 
 
@@ -113,6 +115,7 @@ class SynchParam(SynchEnum):
 #
 #     Trigger = 0
 #     Gate = 1
+
 
 AcqSynchType = Enumeration("AcqSynchType", ["Trigger", "Gate"])
 

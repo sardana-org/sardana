@@ -82,7 +82,7 @@ class MeasurementGroup(PoolGroupDevice):
         for i in range(len(self.Elements)):
             try:
                 self.Elements[i] = int(self.Elements[i])
-            except:
+            except Exception:
                 pass
         mg = self.measurement_group
         if mg is None:
@@ -90,26 +90,29 @@ class MeasurementGroup(PoolGroupDevice):
             name = self.alias or full_name
             self.measurement_group = mg = \
                 self.pool.create_measurement_group(name=name,
-                                                   full_name=full_name, id=self.Id,
+                                                   full_name=full_name,
+                                                   id=self.Id,
                                                    user_elements=self.Elements)
         mg.add_listener(self.on_measurement_group_changed)
 
         # force a state read to initialize the state attribute
-        #state = self.measurement_group.state
+        # state = self.measurement_group.state
         self.set_state(DevState.ON)
 
-    def on_measurement_group_changed(self, event_source, event_type, event_value):
+    def on_measurement_group_changed(self, event_source, event_type,
+                                     event_value):
         try:
             self._on_measurement_group_changed(
                 event_source, event_type, event_value)
-        except:
+        except Exception:
             msg = 'Error occured "on_measurement_group_changed(%s.%s): %s"'
             exc_info = sys.exc_info()
             self.error(msg, self.measurement_group.name, event_type.name,
                        exception_str(*exc_info[:2]))
             self.debug("Details", exc_info=exc_info)
 
-    def _on_measurement_group_changed(self, event_source, event_type, event_value):
+    def _on_measurement_group_changed(self, event_source, event_type,
+                                      event_value):
         # during server startup and shutdown avoid processing element
         # creation events
         if SardanaServer.server_state != State.Running:
@@ -168,7 +171,7 @@ class MeasurementGroup(PoolGroupDevice):
 
     def always_executed_hook(self):
         pass
-        #state = to_tango_state(self.motor_group.get_state(cache=False))
+        # state = to_tango_state(self.motor_group.get_state(cache=False))
 
     def read_attr_hardware(self, data):
         pass
@@ -255,7 +258,7 @@ class MeasurementGroup(PoolGroupDevice):
     def Start(self):
         try:
             self.wait_for_operation()
-        except:
+        except Exception:
             raise Exception("Cannot acquire: already involved in an operation")
         self.measurement_group.start_acquisition()
 
@@ -265,7 +268,7 @@ class MeasurementGroup(PoolGroupDevice):
     def StartMultiple(self, n):
         try:
             self.wait_for_operation()
-        except:
+        except Exception:
             raise Exception("Cannot acquire: already involved in an operation")
         self.measurement_group.start_acquisition(multiple=n)
 
