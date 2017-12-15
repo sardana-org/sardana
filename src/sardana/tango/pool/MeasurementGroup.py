@@ -155,19 +155,24 @@ class MeasurementGroup(PoolGroupDevice):
         '''Translates synchronization data structure so it uses SynchDomain
         enums as keys instead of strings.
         '''
+
+        new_synchronization = []
         for group in synchronization:
+            new_group = {}
             for param, conf in group.iteritems():
-                group.pop(param)
                 param = SynchParam.fromStr(param)
-                group[param] = conf
-                # skip repeats cause its value is just a long number
                 if param == SynchParam.Repeats:
-                    continue
-                for domain, value in conf.iteritems():
-                    conf.pop(domain)
-                    domain = SynchDomain.fromStr(domain)
-                    conf[domain] = value
-        return synchronization
+                    new_group[param] = conf
+                else:
+                    new_conf = {}
+                    for domain, value in conf.iteritems():
+                        domain = SynchDomain.fromStr(domain)
+                        if param == SynchParam.Moveables:
+                            value = list(value)
+                        new_conf[domain] = value
+                    new_group[param] = dict(new_conf)
+            new_synchronization.append(dict(new_group))
+        return new_synchronization
 
     def always_executed_hook(self):
         pass

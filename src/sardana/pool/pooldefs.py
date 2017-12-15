@@ -108,6 +108,8 @@ class SynchParam(SynchEnum):
     Active = 2
     Repeats = 3
     Initial = 4
+    Moveables = 5
+    Master = 6
 
 # TODO: convert to to python enums, but having in ming problems with
 # JSON serialization: https://bugs.python.org/issue18264
