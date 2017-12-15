@@ -56,6 +56,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Bug in theoretical motor position in ascanct & co. (#591)
 - Counter/timer TaurusValue widget when used with Taurus 4 - correctly show
   the element's name (#617)
+- `relmaclib` reports the error message in case the macro has parameters
+  definition is incorrect (#377, #642)
 - Icons in macroexecution widgets when used with Taurus 4 (#578)
 - Spurious errors when reading RecordData attribute, normally triggered
   on event subscription e.g. macrogui (#447, #598)
