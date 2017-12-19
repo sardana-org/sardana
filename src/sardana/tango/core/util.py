@@ -937,9 +937,7 @@ def prepare_logstash(args):
 
     if host is not None:
         root = Logger.getRootLog()
-        fmt = Logger.getLogFormat()
         handler = logstash.TCPLogstashHandler(host, port, version=1)
-        handler.setFormatter(fmt)
         root.addHandler(handler)
 
     return log_messages
