@@ -64,7 +64,7 @@ class PoolChannelTV(TaurusValue):
     def __init__(self, parent=None, designMode=False):
         TaurusValue.__init__(self, parent=parent, designMode=designMode)
         self.setLabelWidgetClass(LabelWidgetDragsDeviceAndAttribute)
-        self.setLabelConfig('dev_alias')
+        self.setLabelConfig('<dev_alias>')
 
     def getDefaultExtraWidgetClass(self):
         return _ParentDevButton
@@ -107,7 +107,7 @@ class PoolChannel(TaurusWidget):
         self._TaurusValue = TaurusValue(parent=w, designMode=designMode)
         self._TaurusValue.setLabelWidgetClass(
             LabelWidgetDragsDeviceAndAttribute)
-        self._TaurusValue.setLabelConfig('dev_alias')
+        self._TaurusValue.setLabelConfig('<dev_alias>')
         self.layout().addWidget(w)
 
         #...and a dev button next to the widget

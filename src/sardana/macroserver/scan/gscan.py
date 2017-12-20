@@ -312,11 +312,17 @@ class GScan(Logger):
 
         # The Scan data object
         try:
-            applyInterpolation = macro.getEnv('ApplyInterpolation')
+            apply_interpol = macro.getEnv('ApplyInterpolation')
         except UnknownEnv:
-            applyInterpolation = False
+            apply_interpol = False
+        try:
+            apply_extrapol = macro.getEnv('ApplyExtrapolation')
+        except UnknownEnv:
+            apply_extrapol = False
+        # The Scan data object
         data = ScanFactory().getScanData(data_handler,
-                                         apply_interpolation=applyInterpolation)
+                                         apply_interpolation=apply_interpol,
+                                         apply_extrapolation=apply_extrapol)
 
         # The Output recorder (if any)
         output_recorder = self._getOutputRecorder()
@@ -591,13 +597,22 @@ class GScan(Logger):
 
         # add master column
         master = self._master
-        instrument = master['instrument']
 
         # add channels from measurement group
         channels_info = self.measurement_group.getChannelsEnabledInfo()
         counters = []
         for ci in channels_info:
-            instrument = ci.instrument or ''
+            full_name = ci.full_name
+            # for Taurus 4 compatibility
+            if not full_name.startswith("tango://"):
+                full_name = "tango://{0}".format(full_name)
+            try:
+                channel = taurus.Device(full_name)
+                instrument = channel.instrument
+            except:
+                # full_name of external channels is the name of the attribute
+                # external channels are not assigned to instruments
+                instrument = ''
             try:
                 instrumentFullName = self.macro.findObjs(
                     instrument, type_class=Type.Instrument)[0].getFullName()
@@ -887,11 +902,11 @@ class GScan(Logger):
                 self.macro.pausePoint()
                 yield i
             endstatus = ScanEndStatus.Normal
-        except StopException, e:
+        except StopException:
             endstatus = ScanEndStatus.Stop
-        except AbortException, e:
+        except AbortException:
             endstatus = ScanEndStatus.Abort
-        except Exception, e:
+        except Exception:
             endstatus = ScanEndStatus.Exception
         finally:
             self._env["endstatus"] = endstatus
@@ -1191,7 +1206,6 @@ class CScan(GScan):
             self._setFastMotions()
             self.macro.info("Correcting overshoot...")
             self.motion.move(restore_positions)
-        self.do_restore()
         self.motion_end_event.set()
         self.motion_event.set()
 
@@ -1199,15 +1213,9 @@ class CScan(GScan):
         """Go through the different waypoints."""
         try:
             self._go_through_waypoints()
-        except StopException:
+        except:
             self.on_waypoints_end()
-        except ScanException, e:
-            raise e
-        except Exception:
-            self.macro.debug('An error occurred moving to waypoints')
-            self.macro.debug('Details: ', exc_info=True)
-            self.on_waypoints_end()
-            raise ScanException('error while moving to waypoints')
+            raise
 
     def _go_through_waypoints(self):
         """Internal, unprotected method to go through the different waypoints."""
@@ -1821,14 +1829,36 @@ class CAcquisition(object):
         # e.g. dict(data=seq<float>, index=seq<int>)
         if value_buffer is None:
             return
+
+        full_name = channel.getFullName()
+
         # TODO: for Taurus4 compatibility
         # The sardana code is not fully ready to deal with Taurus4 model names
-        # strip scheme name that appeared in the full_name since Taurus4
+        # Necessary changes are:
+        # * strip scheme name that appeared in the full_name since Taurus4
+        # * avoid FQDN introduced wuth taurus-org/taurus#488
         # and come back to the Taurus3 style full name cause all the recording
         # stuff and the measurement group counts is based on them
-        full_name = channel.getFullName()
-        if full_name.startswith("tango://"):
-            full_name = full_name.lstrip("tango://")
+
+        try:
+            from taurus.core.tango.tangovalidator import\
+                TangoDeviceNameValidator
+            validator = TangoDeviceNameValidator()
+            uri_groups = validator.getUriGroups(full_name)
+            dev_name = uri_groups["devname"]
+            fqdn_host = uri_groups["host"]
+            if fqdn_host is not None:
+                port = uri_groups["port"]
+                host = fqdn_host.split(".")[0]
+                full_name = host + ":" + port + "/" + dev_name
+            else:
+                full_name = dev_name
+        except ImportError:
+            # we are in Taurus 3 so neither scheme nor FQDN is in use
+            pass
+        except:
+            msg = "Unknown error in buffer_changed callback"
+            self.warning(msg, exc_info=1)
 
         info = {'label': full_name}
         info.update(value_buffer)
@@ -1885,7 +1915,7 @@ def generate_timestamps(synchronization):
         timestamp += delay
         ret[index] = dict(timestamp=timestamp)
         index += 1
-        for _ in xrange(1, repeats + 1):
+        for _ in xrange(1, repeats):
             timestamp += total
             ret[index] = dict(timestamp=timestamp)
             index += 1
@@ -1898,7 +1928,7 @@ def generate_positions(motors, starts, finals, nr_points):
     moveable_positions = []
     for start, final in zip(starts, finals):
         moveable_positions.append(
-            np.linspace(start, final, nr_points + 1))
+            np.linspace(start, final, nr_points))
     # prepare table header from moveables names
     dtype_spec = []
     for motor in motors:
@@ -1932,6 +1962,7 @@ class CTScan(CScan, CAcquisition):
                        moveables=moveables, env=env, constraints=constraints,
                        extrainfodesc=extrainfodesc)
         CAcquisition.__init__(self)
+        self.__mntGrpStarted = False
 
     def prepare_waypoint(self, waypoint, start_positions, iterate_only=False):
         '''Prepare list of MotionPath objects per each physical motor.
@@ -2042,8 +2073,8 @@ class CTScan(CScan, CAcquisition):
                     msg = 'start position of motor %s (%f) ' % (name, start) +\
                           'is out of range (%f, %f)' % (min_pos, max_pos)
                     raise ScanException(msg)
-                if final < min_pos or start > max_pos:
-                    name = moveable.getName
+                if final < min_pos or final > max_pos:
+                    name = moveable.getName()
                     msg = 'final position of motor %s (%f) ' % (name, final) +\
                           'is out of range (%f, %f)' % (min_pos, max_pos)
                     raise ScanException(msg)
@@ -2122,7 +2153,8 @@ class CTScan(CScan, CAcquisition):
                                  'end_user: %f; ' % path._final_user_pos +
                                  'start: %f; ' % path.initial_pos +
                                  'end: %f; ' % path.final_pos +
-                                 'ds: %f' % (path.final_pos - path.initial_pos))
+                                 'ds: %f' % (path.final_pos -
+                                             path.initial_pos))
                 attributes = OrderedDict(velocity=path.max_vel,
                                          acceleration=path.max_vel_time,
                                          deceleration=path.min_vel_time)
@@ -2150,6 +2182,7 @@ class CTScan(CScan, CAcquisition):
                 data.update(theoretical_timestamps[index])
                 initial_data[index] = data
             self.data.initial_data = initial_data
+
             self.macro.warning(
                 "Motor positions and relative timestamp (dt) columns contains"
                 " theoretical values"
@@ -2174,7 +2207,24 @@ class CTScan(CScan, CAcquisition):
                     "Moving to waypoint position: %s" % repr(final_pos))
                 motion.move(final_pos)
             finally:
-                measurement_group.waitFinish(id=mg_id)
+                # wait extra 15 s to for the acquisition to finish
+                # if it does not finish, abort the measurement group
+                # (this could be due to missed hardware triggers or
+                # positioning problems)
+                # TODO: allow parametrizing timeout
+                timeout = 15
+                measurement_group.waitFinish(timeout=timeout, id=mg_id)
+                # TODO: For Taurus 4 / Taurus 3 compatibility
+                if hasattr(measurement_group, "stateObj"):
+                    state = measurement_group.stateObj.read().rvalue
+                else:
+                    state = measurement_group.state()
+                if state == PyTango.DevState.MOVING:
+                    msg = "Measurement did not finish acquisition within "\
+                          "timeout. Stopping it..."
+                    self.debug(msg)
+                    measurement_group.Stop()
+                    raise ScanException("acquisition timeout reached")
 
             if macro.isStopped():
                 self.on_waypoints_end()

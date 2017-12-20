@@ -116,6 +116,14 @@ class Position(SardanaAttribute):
             timestamps = self._local_timestamp,
         return max(timestamps)
 
+    def _get_write_timestamp(self):
+        timestamps = []
+        for pos_attr in self.obj.get_physical_position_attribute_iterator():
+            timestamps.append(pos_attr.w_timestamp)
+        if not len(timestamps):
+            timestamps = time.time(),
+        return max(timestamps)
+
     def get_physical_write_positions(self):
         ret = []
         for pos_attr in self.obj.get_physical_position_attribute_iterator():
@@ -237,9 +245,9 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
                                pool=kwargs['pool'])
         self._position = Position(self, listeners=self.on_change)
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # Event forwarding
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def on_change(self, evt_src, evt_type, evt_value):
         # forward all events coming from attributes to the listeners
@@ -489,9 +497,9 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
         ret = self._calculate_states()
         return ret
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # default acquisition channel
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_default_attribute(self):
         return self.get_position_attribute()

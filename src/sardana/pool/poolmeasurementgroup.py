@@ -180,9 +180,9 @@ class PoolMeasurementGroup(PoolGroupElement):
             if element.get_type() is ElementType.TriggerGate:
                 return
         return PoolGroupElement.add_user_element(self, element, index)
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # configuration
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def _is_managed_element(self, element):
         element_type = element.get_type()
@@ -195,7 +195,6 @@ class PoolMeasurementGroup(PoolGroupElement):
 
         external_from_name = isinstance(channel, (str, unicode))
         ndim = None
-        instrument = None
         if external_from_name:
             name = full_name = source = channel
         else:
@@ -203,10 +202,7 @@ class PoolMeasurementGroup(PoolGroupElement):
             full_name = channel.full_name
             source = channel.get_source()
             ndim = None
-            instrument = None
             ctype = channel.get_type()
-            if ctype != ElementType.External:
-                instrument = channel.instrument
             if ctype == ElementType.CTExpChannel:
                 ndim = 0
             elif ctype == ElementType.PseudoCounter:
@@ -232,8 +228,6 @@ class PoolMeasurementGroup(PoolGroupElement):
         channel_data['source'] = channel_data.get('source', source)
         channel_data['enabled'] = channel_data.get('enabled', True)
         channel_data['label'] = channel_data.get('label', channel_data['name'])
-        channel_data['instrument'] = channel_data.get(
-            'instrument', getattr(instrument, 'name', None))
         channel_data['ndim'] = ndim
         # Probably should be initialized by measurement group
         channel_data['output'] = channel_data.get('output', True)
@@ -529,9 +523,9 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     timer = property(get_timer)
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # integration time
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_integration_time(self):
         if len(self._synchronization) == 0:
@@ -558,9 +552,9 @@ class PoolMeasurementGroup(PoolGroupElement):
     integration_time = property(get_integration_time, set_integration_time,
                                 doc="the current integration time")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # monitor count
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_monitor_count(self):
         return self._monitor_count
@@ -575,9 +569,9 @@ class PoolMeasurementGroup(PoolGroupElement):
     monitor_count = property(get_monitor_count, set_monitor_count,
                              doc="the current monitor count")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # acquisition mode
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_acquisition_mode(self):
         return self._acquisition_mode
@@ -593,9 +587,9 @@ class PoolMeasurementGroup(PoolGroupElement):
     acquisition_mode = property(get_acquisition_mode, set_acquisition_mode,
                                 doc="the current acquisition mode")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # synchronization
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_synchronization(self):
         return self._synchronization
@@ -611,9 +605,9 @@ class PoolMeasurementGroup(PoolGroupElement):
     synchronization = property(get_synchronization, set_synchronization,
                                doc="the current acquisition mode")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # moveable
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_moveable(self):
         return self._moveable
@@ -628,9 +622,9 @@ class PoolMeasurementGroup(PoolGroupElement):
     moveable = property(get_moveable, set_moveable,
                         doc="moveable source used in synchronization")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # latency time
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_latency_time(self):
         latency_time = 0
@@ -646,9 +640,9 @@ class PoolMeasurementGroup(PoolGroupElement):
     latency_time = property(get_latency_time,
                             doc="latency time between two consecutive acquisitions")
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # acquisition
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def start_acquisition(self, value=None, multiple=1):
         self._aborted = False

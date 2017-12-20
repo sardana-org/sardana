@@ -254,7 +254,7 @@ ReadOne method may return data in blocks corresponding to multiple acquisitions 
 
 **Acquisition actions**
 
-Several sub-acquisition actions may participate in the global acquisition, what depends on te involved experimental channels and their synchronization mode. These includes:
+Several sub-acquisition actions may participate in the global acquisition, what depends on the involved experimental channels and their synchronization mode. These includes:
 
 * HardwareSynchronizedAcquisition
 * SoftwareSynchronizedAcquisition

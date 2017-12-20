@@ -1,3 +1,5 @@
+group: deprecated-2017Q4
+
 language: python
 
 sudo: required
@@ -14,8 +16,10 @@ env:
 
 before_install:
   # install flake8 to perform python code style check in the script part
+  # install it using pip in order to get the newest version
   - if [ $TEST == "flake8" ]; then sudo apt-get update -qq ; fi
-  - if [ $TEST == "flake8" ]; then sudo apt-get install -qq python-flake8; fi
+  - if [ $TEST == "flake8" ]; then sudo apt-get install -qq python-pip; fi
+  - if [ $TEST == "flake8" ]; then sudo pip install flake8; fi
 
 install:
   # run reszelaz/sardana-test docker container (Debian8 with sardana-deps)

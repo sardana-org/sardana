@@ -138,6 +138,11 @@ class PoolSynchronization(PoolAction):
                                               self._synch_soft)
                 self.add_finish_hook(remove_pos_listener, False)
 
+            # start software synchronizer
+            if self._listener is not None:
+                self._synch_soft.start()
+                get_thread_pool().add(self._synch_soft.run)
+
             # PreStartAll on all controllers
             for pool_ctrl in pool_ctrls:
                 pool_ctrl.ctrl.PreStartAll()
@@ -163,10 +168,6 @@ class PoolSynchronization(PoolAction):
             # StartAll on all controllers
             for pool_ctrl in pool_ctrls:
                 pool_ctrl.ctrl.StartAll()
-
-            if self._listener is not None:
-                self._synch_soft.start()
-                get_thread_pool().add(self._synch_soft.run)
 
     def is_triggering(self, states):
         """Determines if we are triggering or if the triggering has ended

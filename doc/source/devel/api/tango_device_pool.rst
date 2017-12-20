@@ -382,7 +382,7 @@ _Velocity, _Base_rate and _Deceleration. The user properties are:
 ======================  =============
 Property name           Default value  
 ======================  =============
-Sleep_before_last_read  0              
+Sleep_bef_last_read     0
 ======================  =============
 
 This property defines the time in milli-second that the software
@@ -1723,7 +1723,7 @@ Sleep_bef_last_read is a user property.This user property is:
 ======================  =============
 Property name           Default value
 ======================  =============
-Sleep_before_last_read  0            
+Sleep_bef_last_read     0
 ======================  =============
 
 It defines the time in milli-second that the software managing a motor

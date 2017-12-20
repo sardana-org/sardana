@@ -42,10 +42,10 @@ class move_async(Macro):
                  ]
 
     def run(self, moveable, pos):
+        motion = self.getMotion([moveable])
+        self.info('initial position: %s' % motion.readPosition())
+        _id = motion.startMove([pos])
         try:
-            motion = self.getMotion([moveable])
-            self.info('initial position: %s' % motion.readPosition())
-            _id = motion.startMove([pos])
             # Do whatever here (while the moveable is moving)
             self.info('state: %s' % motion.readState())
             # End Do whatever here
