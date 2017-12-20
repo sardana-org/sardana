@@ -180,7 +180,7 @@ class ExperimentConfiguration(object):
         env = door.getEnvironment()
 
         ret = dict(ScanDir=env.get('ScanDir'),
-                   DataCompressionRank=env.get('DataCompressionRank', 0),
+                   DataCompressionRank=env.get('DataCompressionRank', 1),
                    PreScanSnapshot=env.get('PreScanSnapshot', []))
         scan_file = env.get('ScanFile')
         if scan_file is None:

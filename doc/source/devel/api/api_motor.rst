@@ -92,7 +92,7 @@ controller is specifically programmed not to, it's motors will also have:
 
     :attr:`~PoolMotor.sign`
 
-**Steps per unit**
+**steps per unit**
     This is the number of motor steps per :term:`user position` [default:
     1.0]
 
@@ -112,7 +112,7 @@ controller is specifically programmed not to, it's motors will also have:
 
     :attr:`~PoolMotor.backlash`
     
-**instability_time**
+**instability time**
     This property defines the time in milliseconds that the software
     managing a motor movement will wait between it detects the end of the
     motion and the last motor position reading. It is typically used for motors

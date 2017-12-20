@@ -159,3 +159,34 @@ class runsubs(Macro):
             macro, prep = self.createMacro(params)
             macro.hooks = [self.hook]
             self.runMacro(macro)
+
+
+class get_data(Macro):
+    """A macro that executes another macro from within it, get its data,
+    and calculates a result using this data.
+
+    This macro is part of the examples package. It was written for
+    demonstration purposes"""
+
+    param_def = [["mot", Type.Moveable, None, "moveable to be moved"]]
+    result_def = [["middle", Type.Float, None,
+                   "the middle motor position"]]
+
+    def run(self, mot):
+        start = 0
+        end = 2
+        intervals = 2
+        integtime = 0.1
+        positions = []
+        dscan, _ = self.createMacro('dscan',
+                                    mot, start, end, intervals, integtime)
+        self.runMacro(dscan)
+
+        data = dscan.data
+        len_data = len(data)
+        for point_nb in xrange(len_data):
+            position = data[point_nb].data[mot.getName()]
+            positions.append(position)
+
+        middle_pos = max(positions) - min(positions) / len_data
+        return middle_pos

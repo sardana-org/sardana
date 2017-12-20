@@ -289,7 +289,11 @@ class PoolAcquisition(PoolAction):
             try:
                 elem.clear_value_buffer()
             except AttributeError:
-                pass
+                continue
+            # clean also the pseudo counters, even the ones that do not
+            # participate directly in the acquisition
+            for pseudo_elem in elem.get_pseudo_elements():
+                pseudo_elem.clear_value_buffer()
         config = kwargs['config']
         synchronization = kwargs["synchronization"]
         integ_time = extract_integ_time(synchronization)
@@ -579,8 +583,10 @@ class PoolAcquisitionBase(PoolAction):
                     try:
                         res = ctrl.PreLoadOne(axis, master_value, repetitions)
                     except TypeError:
-                        # TODO: raise correctly deprecation warning
-                        self.warning("PreLoadOne API has changed")
+                        msg = ("PreLoadOne(axis, value) is deprecated since "
+                               "version 2.3.0. Use PreLoadOne(axis, value, "
+                               "repetitions) instead.")
+                        self.warning(msg)
                         res = ctrl.PreLoadOne(axis, master_value)
                     if not res:
                         msg = ("%s.PreLoadOne(%d) returned False" %
@@ -589,8 +595,10 @@ class PoolAcquisitionBase(PoolAction):
                     try:
                         ctrl.LoadOne(axis, master_value, repetitions)
                     except TypeError:
-                        # TODO: raise correctly deprecation warning
-                        self.warning("LoadOne API has changed")
+                        msg = ("LoadOne(axis, value) is deprecated since "
+                               "version 2.3.0. Use LoadOne(axis, value, "
+                               "repetitions) instead.")
+                        self.warning(msg)
                         ctrl.LoadOne(axis, master_value)
                     ctrl.LoadAll()
                 except Exception, e:

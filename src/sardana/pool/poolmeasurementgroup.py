@@ -530,23 +530,6 @@ class PoolMeasurementGroup(PoolGroupElement):
     timer = property(get_timer)
 
     # --------------------------------------------------------------------------
-    # repetitions
-    # --------------------------------------------------------------------------
-
-    def get_repetitions(self):
-        return self._repetitions
-
-    def set_repetitions(self, repetitions, propagate=1):
-        self._repetitions = repetitions
-        if not propagate:
-            return
-        self.fire_event(EventType("repetitions", priority=propagate),
-                        repetitions)
-
-    repetitions = property(get_repetitions, set_repetitions,
-                           doc="repetitions used in synchronized acquisition")
-
-    # --------------------------------------------------------------------------
     # integration time
     # --------------------------------------------------------------------------
 
