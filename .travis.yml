@@ -33,6 +33,8 @@ install:
   # start Pool and MacroServer necessary for macro tests
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl tail -10000 mysqld; fi
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl tail -10000 mysqld stderr; fi
+  - if [ $TEST == "testsuite" ]; then docker exec sardana-test bash -c "ls /var/run/mysqld/mysqld.sock"; fi
+  - if [ $TEST == "testsuite" ]; then docker exec sardana-test bash -c "ps -ef"; fi
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test bash -c "mysqladmin ping"; fi
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl tail -10000 tango-db; fi
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl tail -10000 tango-db stderr; fi
