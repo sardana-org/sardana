@@ -21,8 +21,8 @@ before_install:
 
 install:
   # run reszelaz/sardana-test docker container (Debian8 with sardana-deps)
-  - if [ $TEST == "testsuite" ]; then docker pull reszelaz/sardana-test; fi
-  - if [ $TEST == "testsuite" ]; then docker run -d --name=sardana-test -h sardana-test --volume=`pwd`:/sardana reszelaz/sardana-test; fi
+  - if [ $TEST == "testsuite" ]; then docker pull reszelaz/sardana-test:travis-test; fi
+  - if [ $TEST == "testsuite" ]; then docker run -d --name=sardana-test -h sardana-test --volume=`pwd`:/sardana reszelaz/sardana-test:travis-test; fi
 
   # wait approx. 10 s (supervisor starts mysql and Tango DB)
   - if [ $TEST == "testsuite" ]; then sleep 10; fi
