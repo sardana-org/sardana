@@ -898,8 +898,7 @@ class TaurusSequencerWidget(TaurusWidget):
         for macroNode in newRoot.allMacros():
             error_line += 1
             try:
-                macroServerObj.recreateMacroNodeAndFillAdditionalInfos(
-                    macroNode)
+                macroServerObj.recreateFullMacroParams(macroNode)
             except Exception, e:
                 Qt.QMessageBox.warning(self,
                                        "Error while parsing the sequence",

@@ -24,7 +24,7 @@
 ##############################################################################
 
 """The macro submodule."""
-
+from __future__ import absolute_import
 __all__ = ["MacroInfo", "Macro", "MacroNode", "ParamFactory",
            "MacroRunException"]
 
@@ -41,6 +41,7 @@ import PyTango
 
 from taurus.core.util.user import USER_NAME
 from taurus.core.util.codecs import CodecFactory
+from sardana.spock.parser import ParamParser
 
 
 class MacroRunException(Exception):
@@ -435,6 +436,7 @@ class ParamNode(BaseNode):
 
     def __init__(self, parent=None, param=None):
         BaseNode.__init__(self, parent)
+
         if param is None:
             self.setName(None)
             self.setDescription(None)
@@ -574,8 +576,9 @@ class RepeatParamNode(ParamNode, BranchNode):
         ParamNode.__init__(self, parent, param)
         BranchNode.__init__(self, parent)
         if param is None:
-            return
-        self.setParamsInfo(copy.deepcopy(param.get('type')))
+            self.setParamsInfo([])
+        else:
+            self.setParamsInfo(copy.deepcopy(param.get('type')))
 
     def __repr__(self):
         return repr(self.children())
@@ -701,6 +704,7 @@ class RepeatParamNode(ParamNode, BranchNode):
         for each repetition.
         """
         for j, repeat in enumerate(repeats):
+
             repeat_node = self.child(j)
             if repeat_node is None:
                 repeat_node = self.addRepeat()
@@ -735,13 +739,8 @@ class RepeatNode(BranchNode):
         return "#%d" % self.index()
 
     def addParam(self, param):
-        type = param.get('type', None)
-        if isinstance(type, list):
-            paramRepeat = RepeatParamNode(self, param)
-            self.insertChild(paramRepeat)
-            paramRepeat.addRepeat()
-        else:
-            self.insertChild(SingleParamNode(self, param))
+        paramNode = ParamFactory(param, self)
+        self.insertChild(paramNode)
 
     def toXml(self):
         repeatElement = etree.Element("repeat", nr=str(self.index()))
@@ -800,16 +799,18 @@ class RepeatNode(BranchNode):
         It is a string or empty list in case of repetitions of
         single elements.
         """
-        if len(self.children()) == 1:
+        len_children = len(self.children())
+        if len_children == 1:
             self.child(0).fromList(params)
-        else:
+        elif len_children > 1:
             for k, member_node in enumerate(self.children()):
                 try:
                     param = params[k]
                 except IndexError:
                     param = []
                 member_node.fromList(param)
-
+        else:
+            self.addParam(params)
 
 class MacroNode(BranchNode):
     """Class to represent macro element."""
@@ -830,7 +831,7 @@ class MacroNode(BranchNode):
         # containing repeat parameters)
         if params_def is not None:
             for param_info in params_def:
-                self.addParam(ParamFactory(param_info))
+                self.addParam(ParamFactory(param_info, self))
 
     def id(self):
         """
@@ -1165,16 +1166,17 @@ class MacroNode(BranchNode):
                 hookPlaces.append(element.text)
         self.setHookPlaces(hookPlaces)
 
-    def fromPlainText(self, plainText):
-        words = plainText.split()
-        length = len(words)
-        if length == 0:
-            return
-        self.setName(words[0])
-        for index in range(1, length):
-            param = SingleParamNode(self)
-            param.setValue(words[index])
-            self.addParam(param)
+    # deleted to use more generic 'fromList' method.
+    # def fromPlainText(self, plainText):
+    #     """Receive a plain text with the mac"""
+    #     words = ParamParser().parse(plainText)
+    #     length = len(words)
+    #     if length == 0:
+    #         return
+    #     macro_name = words[0]
+    #     macro_params = words[1:]
+    #     self.setName(macro_name)
+    #     self.fromList(macro_params)
 
     def toList(self):
         """Convert to list representation in format:
@@ -1195,13 +1197,15 @@ class MacroNode(BranchNode):
         where the objects can be strings or lists in a recursive mode.
         """
         params = self.params()
-        for i, node in enumerate(params):
+        for i, val in enumerate(values):
+            # If exist the ParamNode, complete it.
             try:
-                raw = values[i]
+                param = params[i]
+                param.fromList(val)
             except IndexError:
-                continue
-            node.fromList(raw)
-
+            # else, create a new one with ParamFactory
+                param = ParamFactory(val)
+                self.addParam(param)
 
 class SequenceNode(BranchNode):
     """Class to represent sequence element."""
@@ -1246,8 +1250,12 @@ class SequenceNode(BranchNode):
             # ignoring the commented lines
             if plainMacro[0] in self.comment_characters:
                 continue
-            macro = MacroNode(self)
-            macro.fromPlainText(plainMacro)
+            # use the official Parameters Parser
+            words = ParamParser().parse(plainMacro)
+            macro_name = words[0]
+            macro_params = words[1:]
+            macro = MacroNode(self, name=macro_name)
+            macro.fromList(macro_params)
             self.insertChild(macro)
 
 #    def descendantFromId(self, id):
@@ -1262,15 +1270,30 @@ class SequenceNode(BranchNode):
 #        return descendant
 
 
-def ParamFactory(paramInfo):
-    """Factory method returning param element, depends of the paramInfo argument."""
+def ParamFactory(paramInfo, parent=None):
+    """Factory method returning param element, depends of the paramInfo
+    argument.
+    :param paramInfo: Can be a list to to create a RepeatParamNode, dict with
+    the paramInfo and a str that creates a SingleParamNode with a value.
+    :return ParamNode element
+    """
+    if isinstance(paramInfo, list):
+        param = RepeatParamNode(parent=parent)
+        for pI in paramInfo:
+            repeat_node = param.addRepeat()
+            for p in pI:
+                repeat_node.insertChild(ParamFactory(p, repeat_node))
 
-    if isinstance(paramInfo.get('type'), list):
-        param = RepeatParamNode(param=paramInfo)
-        if param.min() > 0:
-            param.addRepeat()
+    elif isinstance(paramInfo, dict):
+        if isinstance(paramInfo.get('type'), list):
+            param = RepeatParamNode(parent=parent, param=paramInfo)
+            if param.min() > 0:
+                param.addRepeat()
+        else:
+            param = SingleParamNode(parent=parent, param=paramInfo)
     else:
-        param = SingleParamNode(param=paramInfo)
+        param = SingleParamNode(parent=parent)
+        param.setValue(paramInfo)
     return param
 
 
@@ -1288,7 +1311,8 @@ def createMacroNode(macro_name, params_def, macro_params):
     :return (lxml.etree._Element) macro XML element
 
     .. todo:: This method implements exactly the same logic as :meth:
-    `sardana.taurus.core.tango.sardana.macroserver.BaseDoor._createMacroXmlFromStr`
+    `sardana.taurus.core.tango.sardana.macroserver.BaseDoor.
+    _createMacroXmlFromStr`
     unify them and place in some common location.
     """
     macro_node = MacroNode(name=macro_name, params_def=params_def)

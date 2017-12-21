@@ -35,6 +35,7 @@ import time
 import uuid
 import weakref
 import threading
+import math
 import os.path as osp
 
 from lxml import etree
@@ -56,7 +57,8 @@ from .macro import MacroInfo, Macro, \
     ParamNode
 from .sardana import BaseSardanaElementContainer, BaseSardanaElement
 from .pool import getChannelConfigs
-from .macro import createMacroNode
+from .macro import createMacroNode, ParamFactory
+from itertools import izip_longest
 
 CHANGE_EVT_TYPES = TaurusEventType.Change, TaurusEventType.Periodic
 
@@ -985,22 +987,21 @@ class BaseMacroServer(MacroServerDevice):
         See Also: fillMacroNodeAddidtionalInfos
         """
 
-        macroNode = MacroNode(name=macro_name)
         macroInfoObj = self.getMacroInfoObj(macro_name)
         if macroInfoObj is None:
             return
+        # fill macro parameters
+        paramsInfo = macroInfoObj.parameters
+        macroNode = MacroNode(name=macro_name, params_def=paramsInfo)
+        hasParams = bool(len(paramsInfo))
+        macroNode.setHasParams(hasParams)
+        # fill allowed hook places
         allowedHookPlaces = []
         hints = macroInfoObj.hints
         if hints is not None:
             for hook in hints.get('allowsHooks', []):
                 allowedHookPlaces.append(str(hook))
         macroNode.setAllowedHookPlaces(allowedHookPlaces)
-        hasParams = bool(len(macroInfoObj.parameters))
-        macroNode.setHasParams(hasParams)
-        paramsInfo = macroInfoObj.parameters
-        for paramInfo in paramsInfo:
-            param = ParamFactory(paramInfo)
-            macroNode.addParam(param)
         return macroNode
 
     def validateMacroName(self, macroName):
@@ -1122,6 +1123,7 @@ class BaseMacroServer(MacroServerDevice):
             for paramNode, paramInfo in zip(macroNode.params(), paramList):
                 self.__fillParamNodeAdditionalInfos(paramNode, paramInfo)
 
+
     def __fillParamNodeAdditionalInfos(self, paramNode, paramInfo):
         """
         This is a protected method foreseen to use only internally by
@@ -1136,27 +1138,29 @@ class BaseMacroServer(MacroServerDevice):
             paramNode.setParamsInfo(type)
             for repeatNode in paramNode.children():
                 for internalParamNode, internalParamInfo in zip(repeatNode.children(), type):
+
                     self.__fillParamNodeAdditionalInfos(
                         internalParamNode, internalParamInfo)
         else:
             paramNode.setType(str(type))
             paramNode.setDefValue(str(paramInfo.get("default_value")))
 
-    def recreateMacroNodeAndFillAdditionalInfos(self, macroNode):
+    def recreateFullMacroParams(self, macroNode):
         """
-        This method filles macroNode information which couldn't be stored
-        in plain text file.
+        This is the macro the recreate a full Macro params whrn the params
+        are in plain text.
 
-        :param macroNode: (MacroNode) macro node obj populated from plain text information
-
-        See Also: getMacroNodeObj
+        :param macroNode:
+        :return:
         """
-        macroName = macroNode.name()
-        self.validateMacroName(macroName)
-        macroInfoObj = self.getMacroInfoObj(macroName)
+        macro_name = macroNode.name()
+        self.validateMacroName(macro_name)
+        macroInfoObj = self.getMacroInfoObj(macro_name)
         if macroInfoObj is None:
             raise Exception(
-                "It was not possible to get information about %s macro.\nCheck if MacroServer is alive and if this macro exist." % macroName)
+                "It was not possible to get information about %s "
+                "macro.\nCheck if MacroServer is alive and if this macro "
+                "exist." % macro_name)
         allowedHookPlaces = []
         hints = macroInfoObj.hints or {}
         for hook in hints.get("allowsHooks", []):
@@ -1168,48 +1172,120 @@ class BaseMacroServer(MacroServerDevice):
             return
         paramInfosList = macroInfoObj.getParamList()
         paramNodes = macroNode.params()
-        paramIndex = 0
-        for paramNode, paramInfo in zip(paramNodes, paramInfosList):
-            paramType = paramInfo.get('type')
-            if isinstance(paramType, list):
-                paramNode = self.__recreateParamRepeatNodes(
-                    macroNode, paramIndex, paramInfo)
+
+        # Check if the params are new interface syntax
+        new_interface = False
+        for paramNode in paramNodes:
+            if isinstance(paramNode, RepeatParamNode):
+                new_interface = True
+                break
+
+        if not new_interface:
+            # Old param repeat interface
+            # reconstruct the ParamNodes to use the the new interface.
+
+            msg_error = 'Error in syntax, you should use new param ' \
+                        'repeat interface.'
+            flg = False
+            for idx, paramInfo in enumerate(paramInfosList):
+                paramType = paramInfo.get('type')
+                if isinstance(paramType, list):
+                    flg = True
+                    if idx != len(paramInfosList)-1:
+                        raise ValueError(msg_error)
+            if flg:
+                new_param_nodes = []
+
+                # Complete the Single paramNodes.
+                for i in range(len(paramInfosList)-1):
+                    new_param_nodes.append(paramNodes.pop[0])
+
+                # Take the paramInfo if the RepeatParam
+                paramInfo = paramInfosList[-1]['type']
+
+                # # check if mach the params and the paramrepeats
+                # if len(paramNodes)% len(paramInfo) > 0:
+                #     raise ValueError(msg_error)
+
+                # check if there are param repeat inside the param repeat
+                for paramType in paramInfo:
+                    if isinstance(paramType, list):
+                        raise ValueError(msg_error)
+
+                newParamsRepeats = []
+                params_per_repeat = float(len(paramNodes))/len(paramInfo)
+                params_per_repeat = int(math.ceil(params_per_repeat))
+                # Regenerate from old Interface to new one Interface
+                if params_per_repeat > 0:
+                    for idx in range(params_per_repeat):
+                        repeat = []
+                        for i in range(len(paramInfo)):
+                            if len(paramNodes)>0:
+                                repeat.append(paramNodes.pop(0).value())
+                            else:
+                                value = paramInfo[i]['default_value']
+                                if value is None:
+                                    raise ValueError(msg_error)
+                                repeat.append(value)
+                        newParamsRepeats.append(repeat)
+
+                    # Create a new RepeatParamNode with the new params config
+                    new_param_nodes.append(ParamFactory(newParamsRepeats,
+                                                        macroNode))
+                paramNodes = new_param_nodes
+
+        newParamNodes = []
+        # New param repeat API
+        for paramInfo, paramNode in izip_longest(paramInfosList, paramNodes):
+
+            if paramNode is None:
+                paramNode = ParamFactory(paramInfo, macroNode)
             else:
-                paramNode.setName(paramInfo.get("name"))
-            self.__recreateParamNodeAdditionalInfos(paramNode, paramInfo)
-            paramIndex += 1
-        self.validateMacroNode(macroNode)
+                self.__fillParamNodesValues(paramInfo, paramNode)
+            newParamNodes.append(paramNode)
+        macroNode.setParams(newParamNodes)
 
-    def __recreateParamRepeatNodes(self, macroNode, indexToStart, repeatParamInfo):
-        # extracting rest of the single params which have to be adopted to
-        # param repeats
-        paramNodes = []
-        while len(macroNode.params()) > indexToStart:
-            lastParam = macroNode.popParam()
-            paramNodes.append(lastParam)
-        paramNodes.reverse()
+    def __fillParamNodesValues(self, paramInfo, paramNode):
+        """
+        This is a protected method foreseen to use only internally by
+        __fillParamNodesValues, to be called for every param node obj.
 
-        nrOfSingleParams = len(paramNodes)
-        paramName = repeatParamInfo.get("name")
-        min = repeatParamInfo.get("min")
-        max = repeatParamInfo.get("max")
-        repeatParamChildrenInfos = repeatParamInfo.get("type")
+        :param paramInfo, paramNode:
+        :return:
 
-        if nrOfSingleParams % len(repeatParamChildrenInfos):
-            raise Exception(
-                "Param repeat %s doesn't have correct number of repetitions" % paramName)
-        nrOfRepeats = nrOfSingleParams / len(repeatParamChildrenInfos)
-        repeatParamNode = RepeatParamNode(macroNode, repeatParamInfo)
-        for repeatIdx in range(nrOfRepeats):
-            repeatNode = RepeatNode(repeatParamNode)
-            for singleParamInfo in repeatParamChildrenInfos:
-                singleParamName = singleParamInfo.get('name')
-                singleParamNode = paramNodes.pop(0)
-                singleParamNode.setName(singleParamName)
-                repeatNode.insertChild(singleParamNode)
-            repeatParamNode.insertChild(repeatNode)
-        macroNode.addParam(repeatParamNode)
-        return repeatParamNode
+        """
+
+        paramType = paramInfo.get('type')
+        paramNode.setDescription(str(paramInfo.get("description")))
+        min = paramInfo.get("min")
+        paramNode.setMin(min)
+        max = paramInfo.get("max")
+        paramNode.setMax(max)
+        paramNode.setName(paramInfo['name'])
+        if isinstance(paramType, list):
+            for repeatNode in paramNode.children():
+                children = repeatNode.children()
+                for child, paramT in izip_longest(children,
+                                                  paramType):
+                    if child is None:
+                        repeatNode.insertChild(ParamFactory(paramT, repeatNode))
+                    else:
+                        self.__fillParamNodesValues(paramT,child)
+
+        else:
+            paramNode.setType(str(paramType))
+            paramNode.setDefValue(str(paramInfo.get("default_value")))
+
+
+    def printTree(self, nodes, tabs=0):
+        tabs = tabs + 1
+        for node in nodes:
+            print ('\t'*tabs) + str(type(node)) + str(node)
+            if isinstance(node, SingleParamNode):
+                pass
+            else:
+                nodes = node.children()
+                self.printTree(nodes, tabs)
 
     def __recreateParamNodeAdditionalInfos(self, paramNode, paramInfo):
         """
