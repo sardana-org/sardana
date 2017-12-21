@@ -35,6 +35,7 @@ import os
 import sys
 import copy
 import inspect
+import logging
 import functools
 import traceback
 import threading
@@ -42,8 +43,6 @@ import threading
 from lxml import etree
 
 from PyTango import DevFailed
-
-import logging
 
 try:
     from collections import OrderedDict
