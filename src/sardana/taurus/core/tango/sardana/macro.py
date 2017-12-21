@@ -162,8 +162,8 @@ class MacroInfo(object):
         """Gets the possible parameters for the given index
 
         :param idx: (int) parameter index
-        :param parameters: (sequence) sequence of parameter information (default
-                           is None which means use the macro parameters
+        :param parameters: (sequence) sequence of parameter information
+                        (default is None which means use the macro parameters)
         :return: (sequence) list of possible parameters
         """
         if parameters is None:
@@ -244,8 +244,8 @@ class MacroInfo(object):
 
     def getResultStr(self):
         """Returns the string line representing the macro results.
-           For example, if a macro returns a number, this method it will return:
-           '<number>'
+           For example, if a macro returns a number, this method it
+           will return: '<number>'
 
         :return: (str) a string representing the macro result line
         """
@@ -525,7 +525,7 @@ class SingleParamNode(ParamNode):
     def toXml(self):
         value = self.value()
         paramElement = etree.Element("param", name=self.name())
-        if not value is None:
+        if value is not None:
             paramElement.set("value", value)
         return paramElement
 
@@ -628,7 +628,8 @@ class RepeatParamNode(ParamNode, BranchNode):
 
     def insertChild(self, child, row=-1):
         # this line was removed on purpose
-        # in case of importing sequences from plain text, it is possible that user introduced more repetitions than allowed
+        # in case of importing sequences from plain text, it is possible that
+        #  user introduced more repetitions than allowed
         # in this case later validation will inform him about exceeding a limit
         # if self.isReachedMax(): return
         return BranchNode.insertChild(self, child, row)
@@ -664,7 +665,8 @@ class RepeatParamNode(ParamNode, BranchNode):
         values = []
         alert = ""
         if self.isBelowMin():
-            alert += "Parameter <b>" + self.name() + "</b> has not enough repeats<br>"
+            alert += "Parameter <b>" + self.name() + "</b> has not enough " \
+                                                    "repeats<br>"
         for child in self.children():
             val, ale = child.toRun()
             values += val
@@ -718,7 +720,8 @@ class RepeatParamNode(ParamNode, BranchNode):
 
 
 class RepeatNode(BranchNode):
-    """Class for repetition elements (group of params which were repeated in macro)"""
+    """Class for repetition elements (group of params which were repeated in
+    macro)"""
 
     def __init__(self, parent=None):
         BranchNode.__init__(self, parent)
@@ -811,6 +814,7 @@ class RepeatNode(BranchNode):
                 member_node.fromList(param)
         else:
             self.addParam(params)
+
 
 class MacroNode(BranchNode):
     """Class to represent macro element."""
@@ -1047,8 +1051,10 @@ class MacroNode(BranchNode):
 #        return descendant
 
     def isAllowedMoveLeft(self):
-        """This method checks if is is allowed to move macro to grandparent's hook list.
-        It is enough to check that grandparent exist, cause all parents must allow hooks"""
+        """This method checks if is is allowed to move macro to grandparent's
+        hook list.
+        It is enough to check that grandparent exist, cause all parents must
+        allow hooks"""
         return self.parent().parent() is not None
 
     def moveLeft(self):
@@ -1074,7 +1080,8 @@ class MacroNode(BranchNode):
 
     def moveRight(self):
         """This method is used to move selected macro (pased via index)
-        to it's first following sibling's hook list. In tree representation it basically move macro to the right"""
+        to it's first following sibling's hook list. In tree representation
+        it basically move macro to the right"""
         parent = self.parent()
         for idx, hook in enumerate(parent.hooks()):
             if hook is self:
@@ -1117,7 +1124,8 @@ class MacroNode(BranchNode):
         """
         Converts MacroNode obj to etree.Element obj.
 
-        :param withId: (bool) if we want to export also macro id (default: True)
+        :param withId: (bool) if we want to export also macro id
+                        (default: True)
 
         See Also: fromXml
         """
@@ -1125,7 +1133,7 @@ class MacroNode(BranchNode):
         macroElement = etree.Element("macro", name=self.name())
         if withId:
             id_ = self.id()
-            if not id_ is None:
+            if id_ is not None:
                 macroElement.set("id", str(self.id()))
         for hookPlace in self.hookPlaces():
             hookElement = etree.SubElement(macroElement, "hookPlace")
@@ -1140,7 +1148,8 @@ class MacroNode(BranchNode):
 
     def fromXml(self, xmlElement):
         """
-        Fills properties of MacroNode obj from etree.Element obj passed as a parameter
+        Fills properties of MacroNode obj from etree.Element obj passed
+        as a parameter
 
         :param xmlElement: (etree.Element)
 
@@ -1203,9 +1212,10 @@ class MacroNode(BranchNode):
                 param = params[i]
                 param.fromList(val)
             except IndexError:
-            # else, create a new one with ParamFactory
+                # else, create a new one with ParamFactory
                 param = ParamFactory(val)
                 self.addParam(param)
+
 
 class SequenceNode(BranchNode):
     """Class to represent sequence element."""
