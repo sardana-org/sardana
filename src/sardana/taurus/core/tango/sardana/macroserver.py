@@ -969,11 +969,12 @@ class BaseMacroServer(MacroServerDevice):
 
     def getMacros(self):
         iname = 'MacroCode'
-        return dict(self.getElementsInfo().getElementsWithInterface(l))
+        return dict(self.getElementsInfo().getElementsWithInterface(iname))
 
     def getMacroInfoObj(self, macro_name):
         iname = 'MacroCode'
-        return self.getElementsInfo().getElementWithInterface(macro_name, l)
+        return self.getElementsInfo().getElementWithInterface(macro_name,
+                                                              iname)
 
     def getMacroStrList(self):
         return self.getElementNamesWithInterface('MacroCode')
