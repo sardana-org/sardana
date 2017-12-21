@@ -241,7 +241,7 @@ class ExperimentConfiguration(object):
                 else:
                     try:
                         mnt_grp_dev = Device(mnt_grp)
-                    except:
+                    except Exception as e:
                         # if the mnt_grp did not already exist, create it now
                         chconfigs = getChannelConfigs(mnt_grp_cfg)
                         chnames, chinfos = zip(*chconfigs)  # unzipping
@@ -968,11 +968,11 @@ class BaseMacroServer(MacroServerDevice):
     # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
     def getMacros(self):
-        l = 'MacroCode'
+        iname = 'MacroCode'
         return dict(self.getElementsInfo().getElementsWithInterface(l))
 
     def getMacroInfoObj(self, macro_name):
-        l = 'MacroCode'
+        iname = 'MacroCode'
         return self.getElementsInfo().getElementWithInterface(macro_name, l)
 
     def getMacroStrList(self):
