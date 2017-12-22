@@ -975,7 +975,6 @@ class BaseMacroServer(MacroServerDevice):
         iname = 'MacroCode'
         return self.getElementsInfo().getElementWithInterface(macro_name,
                                                               iname)
-
     def getMacroStrList(self):
         return self.getElementNamesWithInterface('MacroCode')
 
