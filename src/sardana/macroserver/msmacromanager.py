@@ -1305,10 +1305,10 @@ class MacroExecutor(Logger):
                 self.logging_onoff = False
             if self.logging_onoff:
                 try:
-                    self.logging_path = macro_obj.getEnv("LogMacroPath")
+                    self.logging_path = macro_obj.getEnv("LogMacroDir")
                 except:
-                    macro_obj.setEnv("LogMacroPath", "/tmp")
-                    self.logging_path = macro_obj.getEnv("LogMacroPath")
+                    macro_obj.setEnv("LogMacroDir", "/tmp")
+                    self.logging_path = macro_obj.getEnv("LogMacroDir")
                 log_file = self.logging_path + "/spock_session.log"
                 macro_obj.fileHandler = logging.FileHandler(log_file)
                 formatter = logging.Formatter(
