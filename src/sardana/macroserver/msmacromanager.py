@@ -1305,11 +1305,11 @@ class MacroExecutor(Logger):
                 self.logging_onoff = False
             if self.logging_onoff:
                 try:
-                    self.logging_path = macro_obj.getEnv("LogMacroDir")
+                    logging_path = macro_obj.getEnv("LogMacroDir")
                 except:
                     macro_obj.setEnv("LogMacroDir", "/tmp")
-                    self.logging_path = macro_obj.getEnv("LogMacroDir")
-                log_file = self.logging_path + "/spock_session.log"
+                    logging_path = macro_obj.getEnv("LogMacroDir")
+                log_file = logging_path + "/spock_session.log"
                 macro_obj.fileHandler = logging.FileHandler(log_file)
                 formatter = logging.Formatter(
                     "%(levelname)-8s %(asctime)s %(name)s: %(message)s")
