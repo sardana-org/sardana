@@ -1245,8 +1245,6 @@ class MacroExecutor(Logger):
             # return self._macro_pointer.getResult()
 
     def _jobEnded(self, *args, **kw):
-        if self.logging_onoff:
-            self.macro_obj.logger.removeHandler(self.macro_obj.fileHandler)
         self.debug("Job ended (stopped=%s, aborted=%s)",
                    self._stopped, self._aborted)
 
@@ -1298,7 +1296,7 @@ class MacroExecutor(Logger):
         name = macro_obj._getName()
         desc = macro_obj._getDescription()
         door = self.door
-        self.macro_obj = macro_obj
+        macro_obj = macro_obj
 
         if macro_obj.getParentMacro() is None:
             try:
@@ -1312,12 +1310,12 @@ class MacroExecutor(Logger):
                     macro_obj.setEnv("LogMacroPath", "/tmp")
                     self.logging_path = macro_obj.getEnv("LogMacroPath")
                 log_file = self.logging_path + "/spock_session.log"
-                self.macro_obj.fileHandler = logging.FileHandler(log_file)
+                macro_obj.fileHandler = logging.FileHandler(log_file)
                 formatter = logging.Formatter(
                     "%(levelname)-8s %(asctime)s %(name)s: %(message)s")
-                self.macro_obj.fileHandler.setFormatter(formatter)
-                self.macro_obj.logger = self.macro_obj.getLogger()
-                self.macro_obj.logger.addHandler(self.macro_obj.fileHandler)
+                macro_obj.fileHandler.setFormatter(formatter)
+                macro_obj.logger = macro_obj.getLogger()
+                macro_obj.logger.addHandler(macro_obj.fileHandler)
 
         if self._aborted:
             self.sendMacroStatusAbort()
@@ -1404,6 +1402,9 @@ class MacroExecutor(Logger):
                        'Set "%s" environment variable ' % env_var_name +
                        'to True in order to change it.')
             self._macro_pointer = None
+            
+        if self.logging_onoff:
+            macro_obj.logger.removeHandler(macro_obj.fileHandler)
 
         return result
 
