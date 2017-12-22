@@ -1300,10 +1300,10 @@ class MacroExecutor(Logger):
 
         if macro_obj.getParentMacro() is None:
             try:
-                self.logging_onoff = macro_obj.getEnv("LogMacroOnOff")
+                logging_onoff = macro_obj.getEnv("LogMacroOnOff")
             except:
-                self.logging_onoff = False
-            if self.logging_onoff:
+                logging_onoff = False
+            if logging_onoff:
                 try:
                     logging_path = macro_obj.getEnv("LogMacroDir")
                 except:
@@ -1403,7 +1403,7 @@ class MacroExecutor(Logger):
                        'to True in order to change it.')
             self._macro_pointer = None
             
-        if self.logging_onoff:
+        if logging_onoff:
             macro_obj.logger.removeHandler(macro_obj.fileHandler)
 
         return result
