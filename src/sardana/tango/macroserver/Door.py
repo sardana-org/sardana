@@ -350,7 +350,10 @@ class Door(SardanaDevice):
         self.__buf_data = data
 
     def read_MacroStatus(self, attr):
-        attr.set_value('', '')
+        macro_status = self.door.macro_status
+        codec = CodecFactory().getCodec('json')
+        status = codec.encode(('', macro_status))
+        attr.set_value(*status)
 
     def Abort(self):
         self.debug("Abort is deprecated. Use StopMacro instead")
