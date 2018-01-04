@@ -1312,11 +1312,11 @@ class MacroExecutor(Logger):
                 log_file = logging_path + "/spock_session.log"
                 macro_obj.fileHandler = logging.FileHandler(log_file)
                 try:
-                    formatter = macro_obj.getEnv("LogMacroFormatter")
+                    log_format = macro_obj.getEnv("LogMacroFormat")
                 except:
-                    formatter = logging.Formatter(
+                    log_format = logging.Formatter(
                         "%(levelname)-8s %(asctime)s %(name)s: %(message)s")
-                macro_obj.fileHandler.setFormatter(formatter)
+                macro_obj.fileHandler.setFormatter(log_format)
                 macro_obj.logger = macro_obj.getLogger()
                 macro_obj.logger.addHandler(macro_obj.fileHandler)
 
