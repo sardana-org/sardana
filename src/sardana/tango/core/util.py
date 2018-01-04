@@ -674,32 +674,35 @@ def prepare_server(args, tango_args):
                 pools_for_choosing = []
                 for i in pools:
                     pools_for_choosing.append(pools[i][3])
-                    sorted_pools = sorted(pools_for_choosing,
-                                          key=lambda s: s.lower())
-                c = 1
-                while True:
-                    if c == 1:
-                        print("\nAvailable Pools:")
-                        for pool in sorted_pools:
-                            print pool
-                        print("")
-                    msg = "Please select the Pool to connect to " \
-                          "(return to finish): "
-                    elem = raw_input(msg).strip()
-                    if not len(elem) and not pool_names:
-                        print("\nMacroServer %s has not been connected to any "
-                              "Pool\n" % inst_name)
-                        break
-                    elif not len(elem):
-                        print("\nMacroServer %s has been connected to "
-                              "Pool/s %s\n" % (inst_name, pool_names))
-                        break
-                    if elem.lower() not in all_pools:
-                        print "Unknown pool element"
-                    else:
-                        c += 1
-                        pool_names.append(elem)
-
+                pools_for_choosing = sorted(pools_for_choosing,
+                                      key=lambda s: s.lower())
+                no_pool_msg = ("\nMacroServer %s has not been connected to "
+                               "any Pool\n" % inst_name)
+                if len(pools_for_choosing) == 0:
+                    print(no_pool_msg)
+                else:
+                    print("\nAvailable Pools:")
+                    for pool in pools_for_choosing:
+                        print pool
+                    print("")
+                    while True:
+                        msg = "Please select the Pool to connect to " \
+                              "(return to finish): "
+                        elem = raw_input(msg).strip()
+                        # no pools selected and user ended loop
+                        if len(elem) == 0 and len(pool_names) == 0:
+                            print(no_pool_msg)
+                            break
+                        # user ended loop with some pools selected
+                        elif len(elem) == 0:
+                            print("\nMacroServer %s has been connected to "
+                                  "Pool/s %s\n" % (inst_name, pool_names))
+                            break
+                        # user entered unknown pool
+                        elif elem.lower() not in all_pools:
+                            print "Unknown pool element"
+                        else:
+                            pool_names.append(elem)
                 log_messages += register_sardana(db, server_name, inst_name,
                                                  pool_names)
             else:
