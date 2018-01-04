@@ -675,7 +675,7 @@ def prepare_server(args, tango_args):
                 for i in pools:
                     pools_for_choosing.append(pools[i][3])
                 pools_for_choosing = sorted(pools_for_choosing,
-                                      key=lambda s: s.lower())
+                                            key=lambda s: s.lower())
                 no_pool_msg = ("\nMacroServer %s has not been connected to "
                                "any Pool\n" % inst_name)
                 if len(pools_for_choosing) == 0:
