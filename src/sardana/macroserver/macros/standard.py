@@ -787,24 +787,21 @@ def report(self, message):
     self.report(' '.join(message))
 
 
-class logmacro_off(Macro):
-    """ Set off the logging of the spock output """
-
-    def run(self):
-        self.setEnv('LogMacroOnOff', False)
-
-
-class logmacro_on(Macro):
-    """ Set on the logging of the spock output """
+class logmacro(Macro):
+    """ Turn on/off logging of the spock output """
 
     param_def = [
+        ['offon', Type.Boolean, None, 'Unset/Set logging'],
         ['mode', Type.Integer, -1, 'Mode: 0 append, 1 new file'],
     ]
 
-    def run(self, mode):
-        if mode == 1:
-            self.setEnv('LogMacroMode', True)
-        elif mode == 0:
-            self.setEnv('LogMacroMode', False)
-
-        self.setEnv('LogMacroOnOff', True)
+    def run(self, offon, mode):
+        if offon:
+            if mode == 1:
+                self.setEnv('LogMacroMode', True)
+            elif mode == 0:
+                self.setEnv('LogMacroMode', False)
+                
+            self.setEnv('LogMacro', True)
+        else:
+            self.setEnv('LogMacro', False)

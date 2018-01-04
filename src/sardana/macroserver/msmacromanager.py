@@ -1300,7 +1300,7 @@ class MacroExecutor(Logger):
 
         if macro_obj.getParentMacro() is None:
             try:
-                logging_onoff = macro_obj.getEnv("LogMacroOnOff")
+                logging_onoff = macro_obj.getEnv("LogMacro")
             except:
                 logging_onoff = False
             if logging_onoff:
