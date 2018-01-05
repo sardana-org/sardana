@@ -1305,11 +1305,29 @@ class MacroExecutor(Logger):
                 logging_onoff = False
             if logging_onoff:
                 try:
+                    self.logging_mode = macro_obj.getEnv("LogMacroMode")
+                except:
+                    self.logging_mode = 0
+                try:
                     logging_path = macro_obj.getEnv("LogMacroDir")
                 except:
                     macro_obj.setEnv("LogMacroDir", "/tmp")
                     logging_path = macro_obj.getEnv("LogMacroDir")
                 log_file = logging_path + "/spock_session.log"
+
+                if self.logging_mode:
+                    if os.path.isfile(log_file):
+                        try:
+                            os.system("vrsn -s %s" % log_file)
+                            os.remove(log_file)
+                        except:
+                            backup_logname = log_file+'~'
+                            if os.path.isfile(backup_logname):
+                                os.remove(backup_logname)
+                            os.rename(log_file,backup_logname)
+                            os.remove(log_file)
+                                      
+                
                 macro_obj.fileHandler = logging.FileHandler(log_file)
                 try:
                     log_format = macro_obj.getEnv("LogMacroFormat")
