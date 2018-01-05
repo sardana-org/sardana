@@ -77,6 +77,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Workaround for #427: make default values for repeat parameters of `wa`,
   `pwa` and all list macros fully functional - also support execution with
   `Macro.execMacro` (#654)
+- `getIntervalEstimation` method of the GSF for some scanning modes (#661)
 
 ### Changed
 - Rename edctrl to edctrlcls macro (#541)
