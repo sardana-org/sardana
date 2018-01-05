@@ -40,6 +40,8 @@ import functools
 import traceback
 import threading
 
+import socket
+
 from lxml import etree
 
 from PyTango import DevFailed
@@ -1313,7 +1315,8 @@ class MacroExecutor(Logger):
                 except:
                     macro_obj.setEnv("LogMacroDir", "/tmp")
                     logging_path = macro_obj.getEnv("LogMacroDir")
-                log_file = logging_path + "/spock_session.log"
+                    
+                log_file = logging_path + "/spock_session_" + socket.gethostname() +".log"
 
                 if self.logging_mode:
                     if os.path.isfile(log_file):
