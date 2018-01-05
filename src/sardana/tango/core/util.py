@@ -688,6 +688,9 @@ def prepare_server(args, tango_args):
                     while True:
                         msg = "Please select the Pool to connect to " \
                               "(return to finish): "
+                        # user may abort it with Ctrl+C - this will not
+                        # register anything in the database and the
+                        # KeyboardInterrupt will be raised
                         elem = raw_input(msg).strip()
                         # no pools selected and user ended loop
                         if len(elem) == 0 and len(pool_names) == 0:
@@ -1058,7 +1061,11 @@ def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None,
         pass
 
     log_messages.extend(prepare_environment(args, tango_args, ORB_args))
-    log_messages.extend(prepare_server(args, tango_args))
+    try:
+        log_messages.extend(prepare_server(args, tango_args))
+    except KeyboardInterrupt:
+        print("\nInterrupted by keyboard")
+        return
 
     if tango_util is None:
         tango_util = Util(tango_args)
