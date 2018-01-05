@@ -32,7 +32,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Present available pools at the macroserver creation moment in the
   alphabetical order (#585, #586)
 - Present available doors at the spock profile creation moment in the
-  alphabetical order (#221, #558)
+  alphabetical order (#221, #558, #673)
 - Some backwards compatibility for element names in PQDN - recently
   Taurus started using only FQDN (#625, #627)
 - Improve DumbRecorder (example of a custom file recorder) to write to
