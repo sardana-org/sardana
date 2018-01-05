@@ -1333,7 +1333,8 @@ class MacroExecutor(Logger):
                 
                 macro_obj.fileHandler = logging.FileHandler(log_file)
                 try:
-                    log_format = macro_obj.getEnv("LogMacroFormat")
+                    format_to_set = macro_obj.getEnv("LogMacroFormat")
+                    log_format = logging.Formatter(format_to_set)
                 except:
                     log_format = logging.Formatter(
                         "%(levelname)-8s %(asctime)s %(name)s: %(message)s")
