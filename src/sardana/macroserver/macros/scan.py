@@ -314,7 +314,7 @@ class aNscan(Hookable):
 
     def getIntervalEstimation(self):
         mode = self.mode
-        if mode == StepMode:
+        if mode in [StepMode, ContinuousHwTimeMode, HybridMode]:
             return self.nr_interv
         elif mode == ContinuousMode:
             return self.nr_waypoints
