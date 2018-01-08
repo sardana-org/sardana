@@ -502,6 +502,8 @@ class PoolMeasurementGroup(PoolGroupElement):
             if isinstance(ctrl, str):
                 continue
             # telling controller in which acquisition mode it will participate
+            if not ctrl.is_online():
+                continue
             ctrl.set_ctrl_par('acquisition_mode', self.acquisition_mode)
             # @TODO: fix optimization and enable it again
             if ctrl.operator == self and not force and not self._config_dirty:
