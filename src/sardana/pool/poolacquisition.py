@@ -39,7 +39,6 @@ from taurus.core.util.enumeration import Enumeration
 
 from sardana import SardanaValue, State, ElementType, TYPE_TIMERABLE_ELEMENTS
 from sardana.sardanathreadpool import get_thread_pool
-from sardana.sardanautils import is_non_str_seq
 from sardana.pool import SynchParam, SynchDomain, AcqSynch
 from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
 from sardana.pool.poolsynchronization import PoolSynchronization
@@ -314,7 +313,8 @@ class PoolAcquisition(PoolAction):
         # TODO: this code splits the global mg configuration into
         # experimental channels triggered by hw and experimental channels
         # triggered by sw. Refactor it!!!!
-        (hw_acq_cfg, sw_acq_cfg, zerod_acq_cfg) = split_MGConfigurations(config)
+        (hw_acq_cfg, sw_acq_cfg, zerod_acq_cfg) = split_MGConfigurations(
+            config)
         synch_cfg, _ = getTGConfiguration(config)
         # starting continuous acquisition only if there are any controllers
         if len(hw_acq_cfg['controllers']):
@@ -387,9 +387,9 @@ class PoolAcquisition(PoolAction):
     def get_elements(self, copy_of=False):
         """Returns a sequence of all elements involved in this action.
 
-        :param copy_of: If False (default) the internal container of elements is
-                        returned. If True, a copy of the internal container is
-                        returned instead
+        :param copy_of: If False (default) the internal container of
+                        elements is returned. If True, a copy of the
+                        internal container is returned instead
         :type copy_of: bool
         :return: a sequence of all elements involved in this action.
         :rtype: seq<sardana.pool.poolelement.PoolElement>"""
@@ -407,7 +407,8 @@ class PoolAcquisition(PoolAction):
         """Returns a dict of all controller elements involved in this action.
 
         :return: a dict of all controller elements involved in this action.
-        :rtype: dict<sardana.pool.poolelement.PoolController, seq<sardana.pool.poolelement.PoolElement>>"""
+        :rtype: dict<sardana.pool.poolelement.PoolController,
+                seq<sardana.pool.poolelement.PoolElement>>"""
         ret = {}
         ret.update(self._hw_acq.get_pool_controllers())
         ret.update(self._sw_acq.get_pool_controllers())
@@ -799,7 +800,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
         for slave in self._slaves:
             try:
                 slave.stop_action()
-            except:
+            except Exception:
                 self.warning("Unable to stop slave acquisition %s",
                              slave.getLogName())
                 self.debug("Details", exc_info=1)
@@ -860,7 +861,7 @@ class PoolCTAcquisition(PoolAcquisitionBase):
         states, values = {}, {}
         for element in self._channels:
             states[element] = None
-            #values[element] = None
+            # values[element] = None
 
         nap = self._acq_sleep_time
         nb_states_per_value = self._nb_states_per_value
@@ -888,7 +889,7 @@ class PoolCTAcquisition(PoolAcquisitionBase):
         for slave in self._slaves:
             try:
                 slave.stop_action()
-            except:
+            except Exception:
                 self.warning("Unable to stop slave acquisition %s",
                              slave.getLogName())
                 self.debug("Details", exc_info=1)

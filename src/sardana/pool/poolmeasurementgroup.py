@@ -51,9 +51,9 @@ from sardana.pool.poolexternal import PoolExternalObject
 from sardana.taurus.core.tango.sardana import PlotType, Normalization
 
 
-#----------------------------------------------
+# ----------------------------------------------
 # Measurement Group Configuration information
-#----------------------------------------------
+# ----------------------------------------------
 # dict <str, obj> with (at least) keys:
 #    - 'timer' : the timer channel name / timer channel id
 #    - 'monitor' : the monitor channel name / monitor channel id
@@ -63,17 +63,19 @@ from sardana.taurus.core.tango.sardana import PlotType, Normalization
 #                - 'timer' : the timer channel name / timer channel id
 #                - 'monitor' : the monitor channel name / monitor channel id
 #                - 'synchronization' : 'Gate'/'Software'
-#                - 'channels' where value is a dict<str, obj> with (at least) keys:
+#                - 'channels' where value is a dict<str, obj> with (at least)
+#                   keys:
 #                    - 'id' : the channel name ( channel id )
 #                    optional keys:
 #                    - 'enabled' : True/False (default is True)
 #                    any hints:
 #                    - 'output' : True/False (default is True)
 #                    - 'plot_type' : 'No'/'1D'/'2D' (default is 'No')
-#                    - 'plot_axes' : list<str> 'where str is channel name/'step#/'index#' (default is [])
+#                    - 'plot_axes' : list<str> 'where str is channel
+#                                    name/'step#/'index#' (default is [])
 #                    - 'label' : prefered label (default is channel name)
-#                    - 'scale' : <float, float> with min/max (defaults to channel
-#                                range if it is defined
+#                    - 'scale' : <float, float> with min/max (defaults to
+#                                channel range if it is defined
 #                    - 'plot_color' : int representing RGB
 #    optional keys:
 #    - 'label' : measurement group label (defaults to measurement group name)
@@ -84,8 +86,8 @@ from sardana.taurus.core.tango.sardana import PlotType, Normalization
 #  <monitor>CT1</monitor>
 # </MeasurementGroupConfiguration>
 
-# Example: 2 NI cards, where channel 1 of card 1 is wired to channel 1 of card 2
-# at configuration time we should set:
+# Example: 2 NI cards, where channel 1 of card 1 is wired to channel 1 of
+# card 2 at configuration time we should set:
 
 # ni0ctrl.setCtrlPar(0, 'synchronization', AcqSynch.SoftwareTrigger)
 # ni0ctrl.setCtrlPar(0, 'timer', 1) # channel 1 is the timer
@@ -392,11 +394,12 @@ class PoolMeasurementGroup(PoolGroupElement):
 
         for c_name, c_data in cfg['controllers'].items():
             # backwards compatibility for measurement groups created before
-            # implementing feature-372: https://sourceforge.net/p/sardana/tickets/372/
+            # implementing feature-372:
+            # https://sourceforge.net/p/sardana/tickets/372/
             # WARNING: this is one direction backwards compatibility - it just
             # reads channels from the units, but does not write channels to the
             # units back
-            if c_data.has_key('units'):
+            if 'units' in c_data:
                 c_data = c_data['units']['0']
             # discard controllers which don't have items (garbage)
             ch_count = len(c_data['channels'])
@@ -433,8 +436,8 @@ class PoolMeasurementGroup(PoolGroupElement):
                     # backwards compatibility for configurations before SEP6
                     synchronization = c_data['trigger_type']
                     msg = ("trigger_type configuration parameter is deprecated"
-                           " in favor of synchronization. Re-apply configuration"
-                           " in order to upgrade.")
+                           " in favor of synchronization. Re-apply "
+                           "configuration in order to upgrade.")
                     self.warning(msg)
                 ctrl_data['synchronization'] = synchronization
             ctrl_data['channels'] = channels = {}
@@ -471,16 +474,16 @@ class PoolMeasurementGroup(PoolGroupElement):
             external = ctrl_name.startswith('__')
             controllers[ctrl_name] = ctrl_data = {}
             if not external and c.is_timerable():
-                if c_data.has_key('timer'):
+                if 'timer' in c_data:
                     ctrl_data['timer'] = c_data['timer'].full_name
-                if c_data.has_key('monitor'):
+                if 'monitor' in c_data:
                     ctrl_data['monitor'] = c_data['monitor'].full_name
-                if c_data.has_key('synchronizer'):
+                if 'synchronizer' in c_data:
                     synchronizer = c_data['synchronizer']
                     if synchronizer != 'software':
                         synchronizer = synchronizer.full_name
                     ctrl_data['synchronizer'] = synchronizer
-                if c_data.has_key('synchronization'):
+                if 'synchronization' in c_data:
                     ctrl_data['synchronization'] = c_data['synchronization']
             ctrl_data['channels'] = channels = {}
             for ch, ch_data in c_data['channels'].items():
@@ -493,14 +496,14 @@ class PoolMeasurementGroup(PoolGroupElement):
     def load_configuration(self, force=False):
         """Loads the current configuration to all involved controllers"""
         cfg = self.get_configuration()
-        g_timer, g_monitor = cfg['timer'], cfg['monitor']
+        # g_timer, g_monitor = cfg['timer'], cfg['monitor']
         for ctrl, ctrl_data in cfg['controllers'].items():
             # skip external channels
             if isinstance(ctrl, str):
                 continue
             # telling controller in which acquisition mode it will participate
             ctrl.set_ctrl_par('acquisition_mode', self.acquisition_mode)
-            #@TODO: fix optimization and enable it again
+            # @TODO: fix optimization and enable it again
             if ctrl.operator == self and not force and not self._config_dirty:
                 continue
             ctrl.operator = self
@@ -512,8 +515,8 @@ class PoolMeasurementGroup(PoolGroupElement):
                 ctrl.set_ctrl_par('timer', ctrl_data['timer'].axis)
                 ctrl.set_ctrl_par('monitor', ctrl_data['monitor'].axis)
                 synchronization = self._ctrl_to_acq_synch.get(ctrl)
-                self.debug('load_configuration: setting trigger_type: %s to ctrl: %s' % (
-                    synchronization, ctrl))
+                self.debug('load_configuration: setting trigger_type: %s '
+                           'to ctrl: %s' % (synchronization, ctrl))
                 ctrl.set_ctrl_par('synchronization', synchronization)
 
         self._config_dirty = False
@@ -534,7 +537,8 @@ class PoolMeasurementGroup(PoolGroupElement):
         elif len(self._synchronization) > 1:
             raise Exception("There are more than one synchronization groups")
         else:
-            return self._synchronization[0][SynchParam.Active][SynchDomain.Time]
+            return self._synchronization[0][SynchParam.Active][
+                SynchDomain.Time]
 
     def set_integration_time(self, integration_time, propagate=1):
         total_time = integration_time + self.latency_time
@@ -638,7 +642,8 @@ class PoolMeasurementGroup(PoolGroupElement):
         return latency_time
 
     latency_time = property(get_latency_time,
-                            doc="latency time between two consecutive acquisitions")
+                            doc="latency time between two consecutive "
+                                "acquisitions")
 
     # -------------------------------------------------------------------------
     # acquisition
