@@ -61,7 +61,7 @@ from taurus.core.util.log import Logger
 import sardana
 from sardana import State, SardanaServer, DataType, DataFormat, InvalidId, \
     DataAccess, to_dtype_dformat, to_daccess, Release, ServerRunMode
-from sardana.sardanaexception import SardanaException
+from sardana.sardanaexception import SardanaException, AbortException
 from sardana.sardanavalue import SardanaValue
 from sardana.util.wrap import wraps
 from sardana.pool.poolmetacontroller import DataInfo
@@ -688,6 +688,9 @@ def prepare_server(args, tango_args):
                     while True:
                         msg = "Please select the Pool to connect to " \
                               "(return to finish): "
+                        # user may abort it with Ctrl+C - this will not
+                        # register anything in the database and the
+                        # KeyboardInterrupt will be raised
                         elem = raw_input(msg).strip()
                         # no pools selected and user ended loop
                         if len(elem) == 0 and len(pool_names) == 0:
@@ -707,6 +710,8 @@ def prepare_server(args, tango_args):
                                                  pool_names)
             else:
                 log_messages += register_sardana(db, server_name, inst_name)
+        else:
+            raise AbortException("%s startup aborted" % server_name)
     return log_messages
 
 
@@ -1058,7 +1063,14 @@ def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None,
         pass
 
     log_messages.extend(prepare_environment(args, tango_args, ORB_args))
-    log_messages.extend(prepare_server(args, tango_args))
+    try:
+        log_messages.extend(prepare_server(args, tango_args))
+    except AbortException, e:
+        print e.message
+        return
+    except KeyboardInterrupt:
+        print("\nInterrupted by keyboard")
+        return
 
     if tango_util is None:
         tango_util = Util(tango_args)
