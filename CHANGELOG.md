@@ -78,6 +78,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   `pwa` and all list macros fully functional - also support execution with
   `Macro.execMacro` (#654)
 - `getIntervalEstimation` method of the GSF for some scanning modes (#661)
+- Improved MacroServer creation wizard (#676)
 
 ### Changed
 - Rename edctrl to edctrlcls macro (#541)
