@@ -167,8 +167,6 @@ class MeasurementGroup(PoolGroupDevice):
                     new_conf = {}
                     for domain, value in conf.iteritems():
                         domain = SynchDomain.fromStr(domain)
-                        if param == SynchParam.Moveables:
-                            value = list(value)
                         new_conf[domain] = value
                     new_group[param] = dict(new_conf)
             new_synchronization.append(dict(new_group))

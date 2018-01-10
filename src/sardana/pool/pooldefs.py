@@ -95,6 +95,7 @@ class SynchParam(SynchEnum):
     - Active - active interval (part of the total interval)
     - Repeats - number of repetitions within the group
     - Initial - initial point (absolute)
+    - Master - motor full name
 
     .. note::
         The SynchParam class has been included in Sardana
@@ -108,8 +109,7 @@ class SynchParam(SynchEnum):
     Active = 2
     Repeats = 3
     Initial = 4
-    Moveables = 5
-    Master = 6
+    Master = 5
 
 # TODO: convert to to python enums, but having in ming problems with
 # JSON serialization: https://bugs.python.org/issue18264
