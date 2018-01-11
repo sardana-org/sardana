@@ -111,14 +111,13 @@ class TangoStatusCb(TangoAttrCb):
             self._tango_macro_executor._exception = macro_status.get(
                 'exc_type')
             if state in self.START_STATES:
-                # print 'TangoStatusCb.push_event: setting _started_event'
                 self._tango_macro_executor._started_event.set()
-            elif state in self.DONE_STATES:
-                # print 'TangoStatusCb.push_event: setting _done_event %s'
-                # %(state)
+            # set done event only if the macro was previously started by us
+            # this is needed since from #675 the MacroStatus returns the last
+            # known macro status on the door
+            elif (state in self.DONE_STATES and
+                  self._tango_macro_executor._started_event.is_set()):
                 self._tango_macro_executor._done_event.set()
-            # else:
-            #    print 'State %s' %(state)
             self._tango_macro_executor._state_buffer.append(state)
 
 
