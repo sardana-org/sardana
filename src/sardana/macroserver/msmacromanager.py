@@ -1447,6 +1447,12 @@ class MacroExecutor(Logger):
             self.sendMacroStatus((ms,))
 
     def sendMacroStatus(self, data):
+        """Send macro status via door.
+
+        :param data: sequence of dictionaries where each represents the macro
+            status information described by keys id, state, step, range, etc.
+        :type data: tuple<dict>
+        """
         self._last_macro_status = data
         #data = self._macro_status_codec.encode(('', data))
         return self.door.set_macro_status(data)
