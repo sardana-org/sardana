@@ -111,7 +111,7 @@ class MSDoor(MSObject):
         self._state = None
         self._status = None
         self._result = None
-        self._macro_status = None
+        self._macro_status = tuple()
         self._record_data = None
         self._macro_proxy_cache = None
         self._input_handler = BaseInputHandler()
