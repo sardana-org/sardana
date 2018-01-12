@@ -1338,11 +1338,12 @@ class MacroExecutor(Logger):
                 try:
                     logging_path = macro_obj.getEnv("LogMacroDir")
                 except:
-                    macro_obj.setEnv("LogMacroDir", "/tmp")
-                    logging_path = macro_obj.getEnv("LogMacroDir")
-                    
-                log_file = logging_path + "/spock_session_" + socket.gethostname() +".log"
+                    logging_path = os.path.join(os.sep, "tmp")
+                    macro_obj.setEnv("LogMacroDir", logging_path)
 
+                file_name = "session_" + socket.gethostname() +".log"
+                log_file = os.path.join(logging_path, file_name)
+                
                 if self.logging_mode:
                     if os.path.isfile(log_file):
                         try:
