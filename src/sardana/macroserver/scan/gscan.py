@@ -94,11 +94,11 @@ class ExtraData(object):
             - instrument (str, optional): full instrument name"""
         self._label = kwargs['label']
         self._model = kwargs['model']
-        if not kwargs.has_key('dtype'):
+        if 'dtype' not in kwargs:
             kwargs['dtype'] = self.getType()
-        if not kwargs.has_key('shape'):
+        if 'shape' not in kwargs:
             kwargs['shape'] = self.getShape()
-        if not kwargs.has_key('name'):
+        if 'name' not in kwargs:
             kwargs['name'] = self._model
         self._column = ColumnDesc(**kwargs)
 
@@ -136,15 +136,15 @@ class TangoExtraData(ExtraData):
     def getType(self):
         t = self.attribute.getType()
         if t is None:
-            raise Exception(
-                "Could not determine type for unknown attribute '%s'" % self._model)
+            raise Exception("Could not determine type for unknown attribute "
+                            "'%s'" % self._model)
         return FROM_TANGO_TO_STR_TYPE[t]
 
     def getShape(self):
         s = self.attribute.getShape()
         if s is None:
-            raise Exception(
-                "Could not determine type for unknown attribute '%s'" % self._model)
+            raise Exception("Could not determine type for unknown attribute "
+                            "'%s'" % self._model)
         return s
 
     def read(self):
@@ -159,8 +159,8 @@ class TangoExtraData(ExtraData):
 class GScan(Logger):
     """Generic Scan object.
     The idea is that the scan macros create an instance of this Generic Scan,
-    supplying in the constructor a reference to the macro that created the scan,
-    a generator function pointer, a list of moveable items, an extra
+    supplying in the constructor a reference to the macro that created the
+    scan, a generator function pointer, a list of moveable items, an extra
     environment and a sequence of constrains.
 
     If the referenced macro is hookable, 'pre-scan' and 'post-scan' hook hints
@@ -169,21 +169,30 @@ class GScan(Logger):
 
     The generator must be a function yielding a dictionary with the following
     content (minimum) at each step of the scan:
-      - 'positions'  : In a step scan, the position where the moveables should go
-      - 'integ_time' : In a step scan, a number representing the integration time for the step
-                     (in seconds)
+      - 'positions'  : In a step scan, the position where the moveables
+                       should go
+      - 'integ_time' : In a step scan, a number representing the integration
+                      time for the step (in seconds)
       - 'integ_time' : In a continuous scan, the time between acquisitions
-      - 'pre-move-hooks' : (optional) a sequence of callables to be called in strict order before starting to move.
-      - 'post-move-hooks': (optional) a sequence of callables to be called in strict order after finishing the move.
-      - 'pre-acq-hooks'  : (optional) a sequence of callables to be called in strict order before starting to acquire.
-      - 'post-acq-hooks' : (optional) a sequence of callables to be called in strict order after finishing acquisition but before recording the step.
-      - 'post-step-hooks' : (optional) a sequence of callables to be called in strict order after finishing recording the step.
+      - 'pre-move-hooks' : (optional) a sequence of callables to be called
+                           in strict order before starting to move.
+      - 'post-move-hooks': (optional) a sequence of callables to be called
+                           in strict order after finishing the move.
+      - 'pre-acq-hooks'  : (optional) a sequence of callables to be called in
+                           strict order before starting to acquire.
+      - 'post-acq-hooks' : (optional) a sequence of callables to be called in
+                           strict order after finishing acquisition but before
+                           recording the step.
+      - 'post-step-hooks' : (optional) a sequence of callables to be called in
+                            strict order after finishing recording the step.
       - 'hooks' : (deprecated, use post-acq-hooks instead)
       - 'point_id' : a hashable identifing the scan point.
-      - 'check_func' : (optional) a list of callable objects. callable(moveables, counters)
-      - 'extravalues': (optional) a dictionary containing the values for each extra info
-                       field. The extra information fields must be described in
-                       extradesc (passed in the constructor of the Gscan)
+      - 'check_func' : (optional) a list of callable objects.
+                       callable(moveables, counters)
+      - 'extravalues': (optional) a dictionary containing the values for
+                       each extra info field. The extra information fields
+                       must be described in extradesc (passed in the
+                       constructor of the Gscan)
 
 
     The moveables must be a sequence Motion or MoveableDesc objects.
@@ -195,15 +204,16 @@ class GScan(Logger):
     current point and the next point. It should return True or False
 
     The extradesc optional argument consists of a list of ColumnDesc objects
-    which describe the data fields that will be filled using step['extravalues'],
-    where step is what the generator yields.
+    which describe the data fields that will be filled using
+    step['extravalues'], where step is what the generator yields.
 
     The Generic Scan will create:
       - a ScanData
       - DataHandler with the following recorders:
         - OutputRecorder (depends on 'OutputCols' environment variable)
         - SharedMemoryRecorder (depends on 'SharedMemory' environment variable)
-        - FileRecorder (depends on 'ScanDir' and 'ScanData' environment variables)
+        - FileRecorder (depends on 'ScanDir' and 'ScanData'
+          environment variables)
       - ScanDataEnvironment with the following contents:
         - 'serialno' : a integer identifier for the scan operation
         - 'user' : the user which started the scan
@@ -212,17 +222,19 @@ class GScan(Logger):
                      (labels, data format, data shape, etc)
         - 'estimatedtime' : a float representing an estimation for
                           the duration of the scan (in seconds). Negative means
-                          the time estimation is known not to be accurate. Anyway,
-                          time estimation has 'at least' semantics.
-        - 'total_scan_intervals' : total number of scan intervals. Negative means
-                                   the estimation is known not to be accurate. In
-                                   this case, estimation has 'at least' semantics.
+                          the time estimation is known not to be accurate.
+                          Anyway, time estimation has 'at least' semantics.
+        - 'total_scan_intervals' : total number of scan intervals. Negative
+                                   means the estimation is known not to be
+                                   accurate. In this case, estimation has
+                                   'at least' semantics.
         - '' : a datetime.datetime representing the start of the scan
         - 'instrumentlist' : a list of Instrument objects containing info
-                            about the physical setup of the motors, counters,...
+                            about the physical setup of the motors, counters,
+                            ...
         - <extra environment> given in the constructor
-        (at the end of the scan, extra keys 'endtime' and 'deadtime' will be added
-        representing the time at the end of the scan and the dead time)
+        (at the end of the scan, extra keys 'endtime' and 'deadtime' will be
+        added representing the time at the end of the scan and the dead time)
 
         This object is passed to all recorders at the beginning and at the end
         of the scan (when startRecordList and endRecordList is called)
@@ -236,17 +248,18 @@ class GScan(Logger):
 
     MAX_SCAN_HISTORY = 20
 
-    env = ('ActiveMntGrp', 'ExtraColumns' 'ScanDir', 'ScanFile', 'ScanRecorder',
-           'SharedMemory', 'OutputCols')
+    env = ('ActiveMntGrp', 'ExtraColumns' 'ScanDir', 'ScanFile',
+           'ScanRecorder', 'SharedMemory', 'OutputCols')
 
-    def __init__(self, macro, generator=None, moveables=[], env={}, constraints=[],
-                 extrainfodesc=[]):
+    def __init__(self, macro, generator=None, moveables=[], env={},
+                 constraints=[], extrainfodesc=[]):
         self._macro = macro
         self._generator = generator
         self._extrainfodesc = extrainfodesc
 
         # nasty hack to make sure macro has access to gScan as soon as possible
-        self._macro._gScan = self  # TODO: CAUTION! this may be causing a circular reference!
+        # TODO: CAUTION! this may be causing a circular reference!
+        self._macro._gScan = self
         self._rec_manager = macro.getMacroServer().recorder_manager
 
         self._moveables, moveable_names = [], []
@@ -259,17 +272,17 @@ class GScan(Logger):
         name = self.__class__.__name__
         self.call__init__(Logger, name)
 
-        # ----------------------------------------------------------------------
+        # ---------------------------------------------------------------------
         # Setup motion objects
-        # ----------------------------------------------------------------------
+        # ---------------------------------------------------------------------
         if len(moveable_names) > 0:
             self._motion = macro.getMotion(moveable_names)
         else:
             self._motion = None
 
-        # ----------------------------------------------------------------------
+        # ---------------------------------------------------------------------
         # Find the measurement group
-        # ----------------------------------------------------------------------
+        # ---------------------------------------------------------------------
         try:
             mnt_grp_name = macro.getEnv('ActiveMntGrp')
         except UnknownEnv:
@@ -298,14 +311,14 @@ class GScan(Logger):
 
         self._measurement_group = mnt_grp
 
-        # ----------------------------------------------------------------------
+        # ---------------------------------------------------------------------
         # Setup extra columns
-        # ----------------------------------------------------------------------
+        # ---------------------------------------------------------------------
         self._extra_columns = self._getExtraColumns()
 
-        # ----------------------------------------------------------------------
+        # ---------------------------------------------------------------------
         # Setup data management
-        # ----------------------------------------------------------------------
+        # ---------------------------------------------------------------------
 
         # Generate data handler
         data_handler = ScanFactory().getDataHandler()
@@ -349,9 +362,9 @@ class GScan(Logger):
         self._data = data
         self._data_handler = data_handler
 
-        # ----------------------------------------------------------------------
+        # ---------------------------------------------------------------------
         # Setup environment
-        # ----------------------------------------------------------------------
+        # ---------------------------------------------------------------------
         self._setupEnvironment(env)
 
     def _getExtraColumns(self):
@@ -360,7 +373,7 @@ class GScan(Logger):
             cols = self.macro.getEnv('ExtraColumns')
         except InterruptException:
             raise
-        except:
+        except Exception:
             self.info('ExtraColumns is not defined')
             return ret
 
@@ -368,9 +381,10 @@ class GScan(Logger):
             for i, kwargs in enumerate(cols):
                 kw = dict(kwargs)
                 try:
-                    if kw.has_key('instrument'):
+                    if 'instrument' in kw:
+                        type_class = Type.Instrument
                         instrument = self._macro.getObj(kw['instrument'],
-                                                        type_class=Type.Instrument)
+                                                        type_class=type_class)
                         if instrument:
                             kw['instrument'] = instrument
                     ret.append(TangoExtraData(**kw))
@@ -407,14 +421,14 @@ class GScan(Logger):
             cols = self.macro.getEnv('OutputCols')
         except InterruptException:
             raise
-        except:
+        except Exception:
             pass
 
         try:
             output_block = self.macro.getViewOption('OutputBlock')
         except InterruptException:
             raise
-        except:
+        except Exception:
             pass
 
         return self._rec_manager.getRecorderClass("OutputRecorder")(
@@ -428,8 +442,8 @@ class GScan(Logger):
             raise
         except Exception:
             macro.warning('ScanDir is not defined. This operation will not be '
-                          'stored persistently. Use Use "expconf" (or "senv ScanDir '
-                          '<abs directory>") to enable it')
+                          'stored persistently. Use Use "expconf" (or "senv '
+                          'ScanDir <abs directory>") to enable it')
             return ()
 
         if not isinstance(scan_dir, (str, unicode)):
@@ -442,8 +456,8 @@ class GScan(Logger):
             raise
         except Exception:
             macro.warning('ScanFile is not defined. This operation will not '
-                          'be stored persistently. Use "expconf" (or "senv ScanFile <scan '
-                          'file(s)>") to enable it')
+                          'be stored persistently. Use "expconf" (or "senv '
+                          'ScanFile <scan file(s)>") to enable it')
             return ()
 
         scan_recorders = []
@@ -465,8 +479,8 @@ class GScan(Logger):
             scan_recorders = (scan_recorders,)
         elif not operator.isSequenceType(scan_recorders):
             scan_recorders_t = type(scan_recorders).__name__
-            raise TypeError("ScanRecorder MUST be string or sequence of strings."
-                            " It is '%s'" % scan_recorders_t)
+            raise TypeError("ScanRecorder MUST be string or sequence of "
+                            "strings. It is '%s'" % scan_recorders_t)
 
         file_recorders = []
         for i, file_name in enumerate(file_names):
@@ -490,8 +504,8 @@ class GScan(Logger):
                 macro.debug("Details:", exc_info=1)
 
         if len(file_recorders) == 0:
-            macro.warning("No valid recorder found. This operation will not be "
-                          " stored persistently")
+            macro.warning("No valid recorder found. This operation will not "
+                          "be stored persistently")
         return file_recorders
 
     def _getSharedMemoryRecorder(self, eid):
@@ -522,7 +536,7 @@ class GScan(Logger):
                 oned_nb = len(mg.OneDExpChannels)
             except InterruptException:
                 raise
-            except:
+            except Exception:
                 oned_nb = 0
 
             twod_nb = 0
@@ -530,7 +544,7 @@ class GScan(Logger):
                 twod_nb = len(mg.TwoDExpChannels)
             except InterruptException:
                 raise
-            except:
+            except Exception:
                 twod_nb = 0
 
             if eid == 0:
@@ -576,7 +590,9 @@ class GScan(Logger):
 
         env = ScanDataEnvironment(
             {'serialno': serialno,
-             'user': USER_NAME,  # TODO: this should be got from self.measurement_group.getChannelsInfo()
+             # TODO: this should be got from
+             # self.measurement_group.getChannelsInfo()
+             'user': USER_NAME,
              'title': self.macro.getCommand()})
 
         # Initialize the data_desc list (and add the point number column)
@@ -609,7 +625,7 @@ class GScan(Logger):
             try:
                 channel = taurus.Device(full_name)
                 instrument = channel.instrument
-            except:
+            except Exception:
                 # full_name of external channels is the name of the attribute
                 # external channels are not assigned to instruments
                 instrument = ''
@@ -618,7 +634,7 @@ class GScan(Logger):
                     instrument, type_class=Type.Instrument)[0].getFullName()
             except InterruptException:
                 raise
-            except:
+            except Exception:
                 instrumentFullName = ''
             # substitute the axis placeholder by the corresponding moveable.
             plotAxes = []
@@ -673,14 +689,14 @@ class GScan(Logger):
             env['DataCompressionRank'] = -1
 
         # set the sample information
-        #@todo: use the instrument API to get this info
+        # @todo: use the instrument API to get this info
         try:
             env['SampleInfo'] = self.macro.getEnv('SampleInfo')
         except UnknownEnv:
             env['SampleInfo'] = {}
 
         # set the source information
-        #@todo: use the instrument API to get this info
+        # @todo: use the instrument API to get this info
         try:
             env['SourceInfo'] = self.macro.getEnv('SourceInfo')
         except UnknownEnv:
@@ -698,13 +714,13 @@ class GScan(Logger):
             env['ScanFile'] = self.macro.getEnv('ScanFile')
         except InterruptException:
             raise
-        except:
+        except Exception:
             env['ScanFile'] = None
         try:
             env['ScanDir'] = self.macro.getEnv('ScanDir')
         except InterruptException:
             raise
-        except:
+        except Exception:
             env['ScanDir'] = None
         env['estimatedtime'], env['total_scan_intervals'] = self._estimate()
         env['instrumentlist'] = self._macro.findObjs(
@@ -719,14 +735,16 @@ class GScan(Logger):
         self.data.setEnviron(env)
 
     def takeSnapshot(self, elements=[]):
-        '''reads the current values of the given elements
+        """reads the current values of the given elements
 
-        :param elements: (list<str,str>) list of tuples of label,src for the elements to read
-                         (can be pool elements or Taurus attribute names).
+        :param elements: (list<str,str>) list of tuples of label,src for the
+                         elements to read (can be pool elements or Taurus
+                         attribute names).
 
-        :return: (list<ColumnDesc>) a list of :class:`ColumnDesc`, each including a
-                 "pre_scan_value" attribute with the read value for that attr
-        '''
+        :return: (list<ColumnDesc>) a list of :class:`ColumnDesc`,
+                 each including a "pre_scan_value" attribute with the read
+                 value for that attr
+        """
         manager = self.macro.getManager()
         all_elements_info = manager.get_elements_with_interface('Element')
         ret = []
@@ -743,13 +761,14 @@ class GScan(Logger):
                                         label=label,
                                         source=src)
 
-                # @Fixme: Tango-centric. It should work for any Taurus Attribute
+                # @Fixme: Tango-centric. It should work for any Taurus
+                # Attribute
                 v = PyTango.AttributeProxy(column.source).read().value
                 column.pre_scan_value = v
                 column.shape = np.shape(v)
                 column.dtype = getattr(v, 'dtype', np.dtype(type(v))).name
                 ret.append(column)
-            except:
+            except Exception:
                 self.macro.warning(
                     'Error taking pre-scan snapshot of %s (%s)', label, src)
                 self.debug('Details:', exc_info=1)
@@ -760,8 +779,8 @@ class GScan(Logger):
         for moveable in self.moveables:
             try:
                 v_motor = VMotor.fromMotor(moveable.moveable)
-            except:
-                #self.debug("Details:", exc_info=1)
+            except Exception:
+                # self.debug("Details:", exc_info=1)
                 v_motor = VMotor(min_vel=0, max_vel=float('+inf'),
                                  accel_time=0, decel_time=0)
             ret.append(v_motor)
@@ -773,7 +792,8 @@ class GScan(Logger):
         with_time = hasattr(self.macro, "getTimeEstimation")
         with_interval = hasattr(self.macro, "getIntervalEstimation")
         if with_time and with_interval:
-            t, i = self.macro.getTimeEstimation(), self.macro.getIntervalEstimation()
+            t = self.macro.getTimeEstimation()
+            i = self.macro.getIntervalEstimation()
             return t, i
 
         max_iter = max_iter or self.MAX_ITER
@@ -858,9 +878,9 @@ class GScan(Logger):
         env['endts'] = end_ts = time.time()
         env['endtime'] = datetime.datetime.fromtimestamp(end_ts)
         total_time = end_ts - env['startts']
-        estimated = env['estimatedtime']
+        # estimated = env['estimatedtime']
         acq_time = env['acqtime']
-        #env['deadtime'] = 100.0 * (total_time - estimated) / total_time
+        # env['deadtime'] = 100.0 * (total_time - estimated) / total_time
 
         env['deadtime'] = total_time - acq_time
         if 'delaytime' in env:
@@ -923,7 +943,7 @@ class GScan(Logger):
         try:
             if hasattr(self.macro, 'do_backup'):
                 self.macro.do_backup()
-        except:
+        except Exception:
             msg = ("Failed to execute 'do_backup' method of the %s macro" %
                    self.macro.getName())
             self.macro.debug(msg)
@@ -934,7 +954,7 @@ class GScan(Logger):
         try:
             if hasattr(self.macro, 'do_restore'):
                 self.macro.do_restore()
-        except:
+        except Exception:
             msg = ("Failed to execute 'do_restore' method of the %s macro" %
                    self.macro.getName())
             self.macro.debug(msg)
@@ -992,7 +1012,7 @@ class SScan(GScan):
                 step['extrainfo'].update(hook.getStepExtraInfo())
             except InterruptException:
                 raise
-            except:
+            except Exception:
                 pass
 
         # Move
@@ -1004,7 +1024,7 @@ class SScan(GScan):
             self._env['motiontime'] = self._sum_motion_time
         except InterruptException:
             raise
-        except:
+        except Exception:
             self.dump_information(n, step)
             raise
         self.debug("[ END ] motion")
@@ -1019,7 +1039,7 @@ class SScan(GScan):
                 step['extrainfo'].update(hook.getStepExtraInfo())
             except InterruptException:
                 raise
-            except:
+            except Exception:
                 pass
 
         # allow scan to be stopped between motion and data acquisition
@@ -1038,7 +1058,7 @@ class SScan(GScan):
                 step['extrainfo'].update(hook.getStepExtraInfo())
             except InterruptException:
                 raise
-            except:
+            except Exception:
                 pass
 
         integ_time = step['integ_time']
@@ -1058,11 +1078,11 @@ class SScan(GScan):
                 step['extrainfo'].update(hook.getStepExtraInfo())
             except InterruptException:
                 raise
-            except:
+            except Exception:
                 pass
 
         # hooks for backwards compatibility:
-        if step.has_key('hooks'):
+        if 'hooks' in step:
             self.macro.info('Deprecation warning: you should use '
                             '"post-acq-hooks" instead of "hooks" in the step '
                             'generator')
@@ -1072,7 +1092,7 @@ class SScan(GScan):
                     step['extrainfo'].update(hook.getStepExtraInfo())
                 except InterruptException:
                     raise
-                except:
+                except Exception:
                     pass
 
         # Add final moveable positions
@@ -1082,7 +1102,7 @@ class SScan(GScan):
             data_line[m.moveable.getName()] = positions[i]
 
         # Add extra data coming in the step['extrainfo'] dictionary
-        if step.has_key('extrainfo'):
+        if 'extrainfo' in step:
             data_line.update(step['extrainfo'])
 
         self.data.addRecord(data_line)
@@ -1094,7 +1114,7 @@ class SScan(GScan):
                 step['extrainfo'].update(hook.getStepExtraInfo())
             except InterruptException:
                 raise
-            except:
+            except Exception:
                 pass
 
     def dump_information(self, n, step):
@@ -1134,28 +1154,35 @@ class CScan(GScan):
             self._physical_motion = None
 
     def populate_moveables_data_structures(self, moveables):
-        '''Populates moveables data structures.
+        """Populates moveables data structures.
         :param moveables: (list<Moveable>) data structures will be generated
                           for these moveables
         :return (moveable_trees, physical_moveables_names, physical_moveables)
-                - moveable_trees (list<Tree>) - each tree represent one Moveables
-                            with its hierarchy of inferior moveables.
-                - physical_moveables_names (list<str> - list of the names of the
-                            physical moveables. List order is important and preserved.
-                - physical_moveables (list<Moveable> - list of the moveable objects.
-                            List order is important and preserved.'''
+                - moveable_trees (list<Tree>) - each tree represent one
+                     Moveables with its hierarchy of inferior moveables.
+                - physical_moveables_names (list<str> - list of the names of
+                     the physical moveables. List order is important and
+                     preserved.
+                - physical_moveables (list<Moveable> - list of the moveable
+                     objects. List order is important and preserved.
+        """
 
         def generate_moveable_node(macro, moveable):
-            '''Function to generate a moveable data structures based on moveable object.
-            Internally can be recursively called if moveable is a PseudoMotor.
+            """Function to generate a moveable data structures based on
+            moveable object. Internally can be recursively called if
+            moveable is a PseudoMotor.
             :param moveable: moveable object
-            :return (moveable_node, physical_moveables_names, physical_moveables)
-                - moveable_node (BaseNode) - can be a BranchNode if moveable is a PseudoMotor
-                                      or a LeafNode if moveable is a PhysicalMotor.
-                - physical_moveables_names (list<str> - list of the names of the
-                            physical moveables. List order is important and preserved.
-                - physical_moveables (list<Moveable> - list of the moveable objects.
-                            List order is important and preserved.'''
+            :return (moveable_node, physical_moveables_names,
+                    physical_moveables)
+                - moveable_node (BaseNode) - can be a BranchNode if moveable
+                      is a PseudoMotor or a LeafNode if moveable is a
+                      PhysicalMotor.
+                - physical_moveables_names (list<str> - list of the names of
+                      the physical moveables. List order is important and
+                      preserved.
+                - physical_moveables (list<Moveable> - list of the moveable
+                      objects. List order is important and preserved.
+            """
             moveable_node = None
             physical_moveables_names = []
             physical_moveables = []
@@ -1168,8 +1195,8 @@ class CScan(GScan):
                 for sub_moveable in sub_moveables:
                     sub_moveable_node, \
                         _physical_moveables_names, \
-                        _physical_moveables = generate_moveable_node(macro,
-                                                                     sub_moveable)
+                        _physical_moveables = \
+                        generate_moveable_node(macro, sub_moveable)
                     physical_moveables_names += _physical_moveables_names
                     physical_moveables += _physical_moveables
                     moveable_node.addChild(sub_moveable_node)
@@ -1185,8 +1212,9 @@ class CScan(GScan):
         physical_moveables = []
 
         for moveable in moveables:
-            moveable_root_node, _physical_moveables_names, _physical_moveables = \
-                generate_moveable_node(self.macro, moveable.moveable)
+            moveable_root_node, _physical_moveables_names, \
+                _physical_moveables = generate_moveable_node(self.macro,
+                                                             moveable.moveable)
             moveable_tree = Tree(moveable_root_node)
             moveable_trees.append(moveable_tree)
             physical_moveables_names += _physical_moveables_names
@@ -1194,7 +1222,7 @@ class CScan(GScan):
         return moveable_trees, physical_moveables_names, physical_moveables
 
     def get_moveables_trees(self):
-        '''Returns reference to the list of the moveables trees'''
+        """Returns reference to the list of the moveables trees"""
         return self._moveables_trees
 
     def on_waypoints_end(self, restore_positions=None):
@@ -1213,20 +1241,24 @@ class CScan(GScan):
         """Go through the different waypoints."""
         try:
             self._go_through_waypoints()
-        except:
+        except Exception:
             self.on_waypoints_end()
             raise
 
     def _go_through_waypoints(self):
-        """Internal, unprotected method to go through the different waypoints."""
-        raise NotImplementedError("_go_through_waypoints must be implemented " +
-                                  "in CScan derived classes")
+        """
+        Internal, unprotected method to go through the different waypoints.
+        """
+        raise NotImplementedError("_go_through_waypoints must be implemented"
+                                  " in CScan derived classes")
 
     def waypoint_estimation(self):
-        """Internal, unprotected method to go through the different waypoints."""
+        """
+        Internal, unprotected method to go through the different waypoints.
+        """
         motion, waypoints = self.motion, self.generator()
         total_duration = 0
-        #v_motors = self.get_virtual_motors()
+        # v_motors = self.get_virtual_motors()
         curr_positions, last_end_positions = motion.readPosition(
             force=True), None
         for i, waypoint in enumerate(waypoints):
@@ -1272,7 +1304,8 @@ class CScan(GScan):
 
         # add correct overshoot time
         overshoot_duration = 0
-        for _path, start, end in zip(motion_paths, last_end_positions, positions):
+        for _path, start, end in zip(motion_paths, last_end_positions,
+                                     positions):
             v_motor = _path.motor
             path = MotionPath(v_motor, start, end)
             overshoot_duration = max(overshoot_duration, path.duration)
@@ -1409,7 +1442,7 @@ class CScan(GScan):
         v = self.get_max_top_velocity(motor)
         try:
             motor.setVelocity(v)
-        except:
+        except Exception:
             pass
 
     def get_min_pos(self, motor):
@@ -1448,7 +1481,7 @@ class CScan(GScan):
         for param, value in attributes.items():
             try:
                 motor._getAttrEG(param).write(value)
-            except:
+            except Exception:
                 self.macro.debug("Error when setting %s of %s" %
                                  (param, motor.name), exc_info=True)
                 msg = "setting %s of %s to %r failed" %\
@@ -1485,18 +1518,20 @@ class CSScan(CScan):
 
         duration, cruise_duration, delta_start = 0, 0, 0
         ideal_paths, real_paths = [], []
-        for i, (moveable, position) in enumerate(zip(self.moveables, positions)):
+        for i, (moveable, position) in enumerate(zip(self.moveables,
+                                                     positions)):
             motor = moveable.moveable
 
             coordinate = True
             try:
                 base_vel, top_vel = motor.getBaseRate(), motor.getVelocity()
-                accel_time, decel_time = motor.getAcceleration(), motor.getDeceleration()
+                accel_time = motor.getAcceleration()
+                decel_time = motor.getDeceleration()
 
                 if slow_down > 0:
                     # find and set the maximum top velocity for the motor.
-                    # If the motor doesn't have a defined range for top velocity,
-                    # then use the current top velocity
+                    # If the motor doesn't have a defined range for top
+                    # velocity, then use the current top velocity
                     max_top_vel = self.get_max_top_velocity(motor)
                     if not iterate_only:
                         motor.setVelocity(max_top_vel)
@@ -1520,14 +1555,14 @@ class CSScan(CScan):
             real_path.moveable = moveable
             real_path.apply_correction = coordinate
 
-            # Find the cruise duration of motion at top velocity. For this create a
-            # virtual motor which has instantaneous acceleration and
+            # Find the cruise duration of motion at top velocity. For this
+            # create a virtual motor which has instantaneous acceleration and
             # deceleration
             ideal_vmotor = VMotor(min_vel=base_vel, max_vel=max_top_vel,
                                   accel_time=0, decel_time=0)
 
-            # create a path which will tell us which is the cruise duration of this
-            # motion at top velocity
+            # create a path which will tell us which is the cruise
+            # duration of this motion at top velocity
             ideal_path = MotionPath(ideal_vmotor, last_user_pos, position)
             ideal_path.moveable = moveable
             ideal_path.apply_correction = coordinate
@@ -1571,8 +1606,8 @@ class CSScan(CScan):
             vmotor.setAccelerationTime(accel_t)
             vmotor.setDecelerationTime(decel_t)
             disp_sign = path.positive_displacement and 1 or -1
-            new_initial_pos = path.initial_user_pos - accel_t * 0.5 * disp_sign * \
-                (new_top_vel + base_vel) - disp_sign * \
+            new_initial_pos = path.initial_user_pos - accel_t * 0.5 * \
+                disp_sign * (new_top_vel + base_vel) - disp_sign * \
                 new_top_vel * (delta_start - accel_t)
             path.setInitialUserPos(new_initial_pos)
             new_final_pos = path.final_user_pos + \
@@ -1585,14 +1620,16 @@ class CSScan(CScan):
         """go through the different waypoints."""
         try:
             self._go_through_waypoints()
-        except:
+        except Exception:
             self.macro.debug('An error occurred moving to waypoints')
             self.macro.debug('Details: ', exc_info=True)
             self.on_waypoints_end()
             raise ScanException('error while moving to waypoints')
 
     def _go_through_waypoints(self):
-        """Internal, unprotected method to go through the different waypoints."""
+        """
+        Internal, unprotected method to go through the different waypoints.
+        """
         macro, motion, waypoints = self.macro, self.motion, self.steps
         self.macro.debug("_go_through_waypoints() entering...")
 
@@ -1666,7 +1703,9 @@ class CSScan(CScan):
         self.on_waypoints_end(positions)
 
     def scan_loop(self):
-        motion, mg, waypoints = self.motion, self.measurement_group, self.steps
+        motion = self.motion
+        mg = self.measurement_group
+        # waypoints = self.steps
         macro = self.macro
         manager = macro.getManager()
         scream = False
@@ -1682,10 +1721,10 @@ class CSScan(CScan):
         else:
             yield 0.0
 
-        moveables = [m.moveable for m in self.moveables]
+        # moveables = [m.moveable for m in self.moveables]
         period_steps = self.period_steps
         point_nb, step = -1, None
-        data = self.data
+        # data = self.data
 
         if hasattr(macro, 'getHooks'):
             for hook in macro.getHooks('pre-scan'):
@@ -1744,7 +1783,7 @@ class CSScan(CScan):
                     except InterruptException:
                         self._all_waypoints_finished = True
                         raise
-                    except:
+                    except Exception:
                         pass
 
                 # allow scan to stop
@@ -1763,8 +1802,8 @@ class CSScan(CScan):
                 # allow scan to stop
                 macro.checkPoint()
 
-                # After acquisition, test if we are asked to stop, probably because
-                # the motor are stopped. In this case discard the last
+                # After acquisition, test if we are asked to stop, probably
+                # because the motor are stopped. In this case discard the last
                 # acquisition
                 if not self._all_waypoints_finished:
                     for ec in self._extra_columns:
@@ -1779,7 +1818,7 @@ class CSScan(CScan):
                         except InterruptException:
                             self._all_waypoints_finished = True
                             raise
-                        except:
+                        except Exception:
                             pass
 
                     # Add final moveable positions
@@ -1789,7 +1828,7 @@ class CSScan(CScan):
                         data_line[m.moveable.getName()] = positions[i]
 
                     # Add extra data coming in the step['extrainfo'] dictionary
-                    if step.has_key('extrainfo'):
+                    if 'extrainfo' in step:
                         data_line.update(step['extrainfo'])
 
                     self.data.addRecord(data_line)
@@ -1821,6 +1860,7 @@ class CAcquisition(object):
     def __init__(self):
         self._thread_pool = get_thread_pool()
         self._countdown_latch = CountLatch()
+        self._index_offset = 0
 
     def value_buffer_changed(self, channel, value_buffer):
         """Delegate processing of value buffer events to worker threads."""
@@ -1856,11 +1896,14 @@ class CAcquisition(object):
         except ImportError:
             # we are in Taurus 3 so neither scheme nor FQDN is in use
             pass
-        except:
+        except Exception:
             msg = "Unknown error in buffer_changed callback"
             self.warning(msg, exc_info=1)
 
         info = {'label': full_name}
+        idx = np.array(value_buffer['index'])
+        idx += self._index_offset
+        value_buffer['index'] = idx.tolist()
         info.update(value_buffer)
         # info is a dictionary with at least keys: label, data,
         # index and its values are of type string for label and
@@ -1904,9 +1947,17 @@ class CAcquisition(object):
         return is_compatible, non_compatible_channels
 
 
-def generate_timestamps(synchronization):
+def generate_timestamps(synchronization, initial_timestamp=0):
+    """Generate theoretical timestamps at which the acquisition should take
+    place according to the synchronization description
+
+    :param synchronization: synchronization description data structure
+    :type synchronization: list<dict>
+    :param initial_timestamp: initial timestamp to start from
+    :type initial_timestamp: float
+    """
     ret = dict()
-    timestamp = 0
+    timestamp = initial_timestamp
     index = 0
     for group in synchronization:
         delay = group[SynchParam.Delay][SynchDomain.Time]
@@ -1946,8 +1997,51 @@ def generate_positions(motors, starts, finals, nr_points):
 
 
 class CTScan(CScan, CAcquisition):
-    '''Continuous scan controlled by hardware trigger signals.
-    Sequence of trigger signals is programmed in time.
+    '''Generic continuous scan class.
+
+    The idea is that the scan macros create an instance of this class,
+    supplying in the constructor a reference to the macro that created the
+    scan, a waypoint generator function pointer, a list of moveable items,
+    an extra environment and a sequence of constrains.
+
+    The generator must be a function yielding a dictionary with the following
+    content (minimum) at each step of the scan:
+      - 'start_positions' : The user positions where the **physical** motors
+                            should start the active region of the waypoint scan
+                            (usually during the constant velocity of the
+                            **physical** motors)
+      - 'positions'  : The user positions where the **physical** motors should
+                       end the active region of the waypoint scan (since
+                       currently the post-trigger acquisition is assumed this
+                       does not mean leaving the constant velocity of the
+                       **physical** motors - the constant velocity will be
+                       maintained for the last point of the waypoint scan)
+      - 'active_time' : Duration of the active region of the waypoint scan,
+                        (in contrary to the *positions* configuration this one
+                        includes the time necessary for hangling the last point
+                        of the waypoint scan with its *latency time*
+                        (in seconds)
+      - 'pre-move-hooks' : (optional) a sequence of callables to be called
+                           in strict order before starting to move
+      - 'post-move-hooks': (optional) a sequence of callables to be called
+                           in strict order after finishing the move
+      - 'hooks' : (deprecated, use post-acq-hooks instead)
+      - 'waypoint_id' : a hashable identifing the waypoint
+      - 'check_func' : (optional) a list of callable objects.
+                       callable(moveables, counters)
+      - 'extravalues': (optional) a dictionary containing the values for
+                       each extra info field. The extra information fields
+                       must be described in extradesc (passed in the
+                       constructor of the Gscan)
+
+    .. todo::
+        - instead of passing the *active_time* pass the synchronization
+          description
+        - decide whether *positions* should include the real end of the active
+          region
+        - decide if the *start_positions* and *positions* should operate
+          directly on the physical motors or it would be more interesting on
+          the pseudo motors
 
     .. note::
         The CTScan class has been included in Sardana
@@ -1962,10 +2056,10 @@ class CTScan(CScan, CAcquisition):
                        moveables=moveables, env=env, constraints=constraints,
                        extrainfodesc=extrainfodesc)
         CAcquisition.__init__(self)
-        self.__mntGrpStarted = False
+        self.__mntGrpSubscribed = False
 
     def prepare_waypoint(self, waypoint, start_positions, iterate_only=False):
-        '''Prepare list of MotionPath objects per each physical motor.
+        """Prepare list of MotionPath objects per each physical motor.
         :param waypoint: (dict) waypoint dictionary with necessary information
         :param start_positions: (list<
         float>) list of starting position per each
@@ -1973,11 +2067,11 @@ class CTScan(CScan, CAcquisition):
         :return (ideal_paths, acc_time, active_time)
                 - ideal_paths: (list<MotionPath> representing motion attributes
                                of each physical motor)
-                - acc_time: acceleration time which will be used during the scan
-                            it corresponds to the longest acceleration time of
-                            all the motors
+                - acc_time: acceleration time which will be used during the
+                            scan it corresponds to the longest acceleration
+                            time of all the motors
                 - active_time: time interval while all the physical motors will
-                               maintain constant velocity'''
+                               maintain constant velocity"""
 
         positions = waypoint['positions']
         active_time = waypoint["active_time"]
@@ -1985,7 +2079,13 @@ class CTScan(CScan, CAcquisition):
         ideal_paths = []
 
         max_acc_time, max_dec_time = 0, 0
-        for moveable, end_position in zip(self._physical_moveables, positions):
+        for moveable, start_position, end_position in zip(
+                self._physical_moveables, start_positions, positions):
+            # motors that won't be moved do not participate in the
+            # configuration selection
+            # TODO: think of not attaching them to the waypoint at all
+            if start_position == end_position:
+                continue
             motor = moveable
             self.macro.debug("Motor: %s" % motor.getName())
             self.macro.debug("AccTime: %f" % self.get_min_acc_time(motor))
@@ -2036,11 +2136,19 @@ class CTScan(CScan, CAcquisition):
                   (measurement_group.getName(), macro.getName())
             raise ScanException(msg)
 
+        # add listener of data events
+        measurement_group.subscribeValueBuffer(self.value_buffer_changed)
+        # initializing mntgrp subscription control variables
+        self.__mntGrpSubscribed = True
+
+        self.data.initial_data = {}
         last_positions = None
-        for _, waypoint in waypoints:
+        self.macro.warning(
+            "Motor positions and relative timestamp (dt) columns contains"
+            " theoretical values"
+        )
+        for i, waypoint in waypoints:
             self.macro.debug("Waypoint iteration...")
-            # initializing mntgrp control variables
-            self.__mntGrpStarted = False
 
             start_positions = waypoint.get('start_positions')
             positions = waypoint['positions']
@@ -2083,11 +2191,15 @@ class CTScan(CScan, CAcquisition):
                 self.on_waypoints_end()
                 return
             ############
-            # validation of parameters
-            for start, end in zip(self.macro.starts, self.macro.finals):
-                if start == end:
-                    raise ScanException(
-                        "Scan start and end must be different.")
+            # validation of parameters. At least one motor must have different
+            # values on the start and final positions
+            if self.macro.starts == self.macro.finals:
+                if len(self.macro.starts) > 1:
+                    msg = "Scan start and end must be different for at " \
+                          "least one motor"
+                else:
+                    msg = "Scan start and end must be different."
+                raise ScanException(msg)
 
             startTimestamp = time.time()
 
@@ -2114,13 +2226,14 @@ class CTScan(CScan, CAcquisition):
             initial_position = start
             total_time = abs(total_position) / path.max_vel
             delay_time = path.max_vel_time
-            synch = [{SynchParam.Delay: {SynchDomain.Time: delay_time},
-                      SynchParam.Initial: {SynchDomain.Position: initial_position},
-                      SynchParam.Active: {SynchDomain.Position: active_position,
-                                          SynchDomain.Time: active_time},
-                      SynchParam.Total: {SynchDomain.Position: total_position,
-                                         SynchDomain.Time: total_time},
-                      SynchParam.Repeats: repeats}]
+            synch = [
+                {SynchParam.Delay: {SynchDomain.Time: delay_time},
+                 SynchParam.Initial: {SynchDomain.Position: initial_position},
+                 SynchParam.Active: {SynchDomain.Position: active_position,
+                                     SynchDomain.Time: active_time},
+                 SynchParam.Total: {SynchDomain.Position: total_position,
+                                    SynchDomain.Time: total_time},
+                 SynchParam.Repeats: repeats}]
             self.debug('Synchronization: %s' % synch)
             measurement_group.setSynchronization(synch)
             self.macro.checkPoint()
@@ -2158,6 +2271,10 @@ class CTScan(CScan, CAcquisition):
                 attributes = OrderedDict(velocity=path.max_vel,
                                          acceleration=path.max_vel_time,
                                          deceleration=path.min_vel_time)
+                # do not configure motors which are not moved in the waypoint
+                # TODO: think of not attaching them to the waypoint at all
+                if path.initial_user_pos == path.final_user_pos:
+                    continue
                 try:
                     self.configure_motor(motor, attributes)
                 except ScanException, e:
@@ -2170,23 +2287,27 @@ class CTScan(CScan, CAcquisition):
 
             # TODO: don't fill theoretical positions but implement the position
             # capture, both hardware and software
-            initial_data = {}
+            if i == 0:
+                dt_timestamp = 0
+                first_timestamp = time.time()
+            else:
+                dt_timestamp = time.time() - first_timestamp
+            initial_data = self.data.initial_data
+
             motors = self.macro.motors
             starts = self.macro.starts
             finals = self.macro.finals
             nr_points = self.macro.nr_points
             theoretical_positions = generate_positions(motors, starts, finals,
                                                        nr_points)
-            theoretical_timestamps = generate_timestamps(synch)
+            theoretical_timestamps = generate_timestamps(synch, dt_timestamp)
+            self._index_offset = i * self.macro.nr_points
             for index, data in theoretical_positions.items():
                 data.update(theoretical_timestamps[index])
-                initial_data[index] = data
+                initial_data[index + self._index_offset] = data
+            # TODO: this changes the initial data on-the-fly - seems like not
+            # the best practice
             self.data.initial_data = initial_data
-
-            self.macro.warning(
-                "Motor positions and relative timestamp (dt) columns contains"
-                " theoretical values"
-            )
 
             if hasattr(macro, 'getHooks'):
                 for hook in macro.getHooks('pre-start'):
@@ -2194,11 +2315,11 @@ class CTScan(CScan, CAcquisition):
             self.macro.checkPoint()
 
             self.macro.debug("Starting measurement group")
-            # add listener of data events
-            measurement_group.subscribeValueBuffer(self.value_buffer_changed)
-            self.__mntGrpStarted = True
 
             mg_id = self.measurement_group.start()
+            if i == 0:
+                first_timestamp = time.time()
+
             try:
                 self.timestamp_to_start = time.time() + delta_start
 
@@ -2263,23 +2384,23 @@ class CTScan(CScan, CAcquisition):
 
     def scan_loop(self):
         macro = self.macro
-        manager = macro.getManager()
+        # manager = macro.getManager()
         scream = False
-        startts = self._env['startts']
+        # startts = self._env['startts']
 
         sum_delay = 0
         sum_integ_time = 0
 
         if hasattr(macro, "nr_points"):
-            nr_points = float(macro.nr_points)
+            # nr_points = float(macro.nr_points)
             scream = True
         else:
             yield 0.0
 
-        moveables = [m.moveable for m in self.moveables]
+        # moveables = [m.moveable for m in self.moveables]
 
-        point_nb, step = -1, None
-        data = self.data
+        # point_nb, step = -1, None
+        # data = self.data
 
         if hasattr(macro, 'getHooks'):
             for hook in macro.getHooks('pre-scan'):
@@ -2303,12 +2424,13 @@ class CTScan(CScan, CAcquisition):
         and trigger to its state before the scan.'''
         startTimestamp = time.time()
 
-        if self.__mntGrpStarted:
+        if self.__mntGrpSubscribed:
             self.debug("Unsubscribing from value buffer events")
             try:
                 self.measurement_group.unsubscribeValueBuffer(
                     self.value_buffer_changed)
-            except:
+                self.__mntGrpSubscribed = False
+            except Exception:
                 msg = "Exception occurred trying to remove data listeners"
                 self.debug(msg)
                 self.debug('Details: ', exc_info=True)
@@ -2319,8 +2441,9 @@ class CTScan(CScan, CAcquisition):
                 self.debug("Executing pre-cleanup hook")
                 try:
                     hook()
-                except:
-                    msg = "Exception while trying to execute a pre-cleanup hook"
+                except Exception:
+                    msg = "Exception while trying to execute a pre-cleanup " \
+                          "hook"
                     self.debug(msg)
                     self.debug('Details: ', exc_info=True)
                     raise ScanException('pre-cleanup hook failed')
@@ -2330,7 +2453,7 @@ class CTScan(CScan, CAcquisition):
                 self.debug("Executing post-cleanup hook")
                 try:
                     hook()
-                except:
+                except Exception:
                     msg = "Exception while trying to execute a " + \
                           "post-cleanup hook"
                     self.debug(msg)
@@ -2356,7 +2479,7 @@ class HScan(SScan):
                 step['extrainfo'].update(hook.getStepExtraInfo())
             except InterruptException:
                 raise
-            except:
+            except Exception:
                 pass
 
         positions, integ_time = step['positions'], step['integ_time']
@@ -2366,7 +2489,7 @@ class HScan(SScan):
             mg_ID = mg.startCount(integ_time)
         except InterruptException:
             raise
-        except:
+        except Exception:
             self.dump_information(n, step)
             raise
 
@@ -2375,7 +2498,7 @@ class HScan(SScan):
             mg.waitCount(id=mg_ID)
         except InterruptException:
             raise
-        except:
+        except Exception:
             self.dump_information(n, step)
             raise
         self._sum_acq_time += integ_time
@@ -2400,7 +2523,7 @@ class HScan(SScan):
             data_line[m.moveable.getName()] = m_positions[i]
 
         # Add extra data coming in the step['extrainfo'] dictionary
-        if step.has_key('extrainfo'):
+        if 'extrainfo' in step:
             data_line.update(step['extrainfo'])
 
         self.data.addRecord(data_line)
@@ -2412,7 +2535,7 @@ class HScan(SScan):
                 step['extrainfo'].update(hook.getStepExtraInfo())
             except InterruptException:
                 raise
-            except:
+            except Exception:
                 pass
 
     def dump_information(self, n, step):
