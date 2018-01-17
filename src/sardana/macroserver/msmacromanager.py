@@ -1343,21 +1343,15 @@ class MacroExecutor(Logger):
 
                 file_name = "session_" + socket.gethostname() +".log"
                 log_file = os.path.join(logging_path, file_name)
-                
+
                 if self.logging_mode:
-                    if os.path.isfile(log_file):
-                        try:
-                            os.system("vrsn -s %s" % log_file)
-                            os.remove(log_file)
-                        except:
-                            backup_logname = log_file+'~'
-                            if os.path.isfile(backup_logname):
-                                os.remove(backup_logname)
-                            os.rename(log_file,backup_logname)
-                            os.remove(log_file)
-                                      
+                    bck_counts = 100
+                else:
+                    bck_counts = 0
                 
-                macro_obj.fileHandler = logging.FileHandler(log_file)
+                macro_obj.fileHandler = logging.handlers.RotatingFileHandler(log_file, backupCount = bck_counts)
+                macro_obj.fileHandler.doRollover()
+                
                 try:
                     format_to_set = macro_obj.getEnv("LogMacroFormat")
                     log_format = logging.Formatter(format_to_set)
