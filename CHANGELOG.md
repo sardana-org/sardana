@@ -54,6 +54,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Make the information about the element's instrument fully dynamic and
   remove it from the serialized information (#122, #619)
 - uct macro (#319, #627)
+- Avoid measurement group start failures when to the disabled controller
+  is offline (#677)
 - Allow to stop macro when it was previously paused (#348, #548)
 - Bug in theoretical motor position in ascanct & co. (#591)
 - Counter/timer TaurusValue widget when used with Taurus 4 - correctly show
