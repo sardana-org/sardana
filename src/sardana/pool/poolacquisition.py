@@ -560,6 +560,11 @@ class PoolAcquisitionBase(PoolAction):
                 ctrl_enabled = True
             # check if the ctrl has enabled channels
             if ctrl_enabled:
+                # enabled controller can no be offline
+                if not ctrl.is_online():
+                    self.main_element.set_state(State.Fault, propagate=2)
+                    msg = "controller {0} is offline".format(ctrl.name)
+                    raise RuntimeError(msg)
                 pool_ctrls.append(ctrl)
                 # only CT will be read in the loop, 1D and 2D not
                 if ElementType.CTExpChannel in ctrl.get_ctrl_types():
