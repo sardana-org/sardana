@@ -39,7 +39,7 @@ from PyTango import DevState
 from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, \
     ViewOption, iMacro
 from sardana.macroserver.msexception import StopException
-
+from sardana.macroserver.scan.scandata import Record
 ##########################################################################
 #
 # Motion related macros
@@ -666,7 +666,6 @@ class ct(Macro):
         self.flushOutput()
 
         state, data = self.mnt_grp.count(integ_time)
-
         names, counts = [], []
         for ch_info in self.mnt_grp.getChannelsEnabledInfo():
             names.append('  %s' % ch_info.label)
@@ -677,7 +676,9 @@ class ct(Macro):
                 counts.append(list(ch_data.shape))
             else:
                 counts.append(ch_data)
-
+        record_data = {}
+        record_data[0] = Record(data)
+        self.setData(record_data)
         table = Table([counts], row_head_str=names, row_head_fmt='%*s',
                       col_sep='  =  ')
         for line in table.genOutput():
