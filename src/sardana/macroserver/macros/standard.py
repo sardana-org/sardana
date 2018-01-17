@@ -39,7 +39,7 @@ from PyTango import DevState
 from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, \
     ViewOption, iMacro
 from sardana.macroserver.msexception import StopException
-
+from sardana.macroserver.scan.scandata import Record
 ##########################################################################
 #
 # Motion related macros
@@ -726,13 +726,17 @@ class uct(Macro):
 
         self.print_value = True
         try:
-            self.mnt_grp.count(integ_time)
+            state, self.data = self.mnt_grp.count(integ_time)
         finally:
             self.finish()
 
     def finish(self):
         self._clean()
         self.printAllValues()
+        # setData the Record Data
+        record_data = {}
+        record_data[0] = Record(self.data)
+        self.setData(record_data)
 
     def _clean(self):
         for channel in self.channels:
