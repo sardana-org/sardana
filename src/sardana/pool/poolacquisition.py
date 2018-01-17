@@ -619,8 +619,7 @@ class PoolAcquisitionBase(PoolAction):
                 except Exception, e:
                     self.debug(e, exc_info=True)
                     master.set_state(State.Fault, propagate=2)
-                    msg = ("Load sequence of %s failed.\nController status: "
-                           "%s" % (pool_ctrl.name, pool_ctrl.status))
+                    msg = ("Load sequence of %s failed" % pool_ctrl.name)
                     raise Exception(msg)
 
             # PreStartAll on all enabled controllers
