@@ -129,14 +129,16 @@ class PoolSynchronization(PoolAction):
                 remove_mg_listener = partial(self._synch_soft.remove_listener,
                                              self.main_element)
                 self.add_finish_hook(remove_mg_listener, False)
-            # subscribing to the position change events to generate events
-            # in position domain
+            # subscribing to motor events to generate events in position domain
+            # insteaf of subscribing to the position attribute directly
+            # we subscribe to the motor cause in some cases we need to know if
+            # the motor had finished moving before reaching the final positions
+            # e.g. motion stopped by the user or inprecise positioning (#583)
             if moveable is not None:
-                position = moveable.get_position_attribute()
-                position.add_listener(self._synch_soft)
-                remove_pos_listener = partial(position.remove_listener,
+                moveable.add_listener(self._synch_soft)
+                remove_mov_listener = partial(moveable.remove_listener,
                                               self._synch_soft)
-                self.add_finish_hook(remove_pos_listener, False)
+                self.add_finish_hook(remove_mov_listener, False)
 
             # start software synchronizer
             if self._listener is not None:
