@@ -85,6 +85,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Improved MacroServer creation wizard (#676)
 
 ### Changed
+- Make explicit file descriptor buffer synchronization (force effective write to
+  the file system) in SPEC and FIO recorders (#651)
 - Rename edctrl to edctrlcls macro (#541)
 - The way how the master timer/monitor for the acquisition actions is selected.
   Previously the first one for the given synchronization was used, now it is
