@@ -213,6 +213,12 @@ class aNscan(Hookable):
                                 moveables, env, constrains, extrainfodesc)
         else:
             raise ValueError('invalid value for mode %s' % mode)
+        # _data is the default member where the Macro class stores the data.
+        # Assign the date produced by GScan (or its subclasses) to it so all
+        # the Macro infrastrucutre related to the data works e.g. getter,
+        # property, etc. Ideally this should be done by the data setter
+        # but this is available in the Macro class and we inherit from it
+        # latter. More details in sardana-org/sardana#683.
         self._data = self._gScan.data
 
     def _stepGenerator(self):
