@@ -723,6 +723,14 @@ class mesh(Macro, Hookable):
 
         self._gScan = SScan(self, generator, moveables, env, constrains)
 
+        # _data is the default member where the Macro class stores the data.
+        # Assign the date produced by GScan (or its subclasses) to it so all
+        # the Macro infrastrucutre related to the data works e.g. getter,
+        # property, etc. Ideally this should be done by the data setter
+        # but this is available in the Macro class and we inherit from it
+        # latter. More details in sardana-org/sardana#683.
+        self._data = self._gScan.data
+
     def _generator(self):
         step = {}
         step["integ_time"] = self.integ_time
@@ -754,10 +762,6 @@ class mesh(Macro, Hookable):
     def run(self, *args):
         for step in self._gScan.step_scan():
             yield step
-
-    @property
-    def data(self):
-        return self._gScan.data
 
 
 class dmesh(mesh):
@@ -926,6 +930,14 @@ class fscan(Macro, Hookable):
 
         self._gScan = SScan(self, generator, moveables, env, constrains)
 
+        # _data is the default member where the Macro class stores the data.
+        # Assign the date produced by GScan (or its subclasses) to it so all
+        # the Macro infrastrucutre related to the data works e.g. getter,
+        # property, etc. Ideally this should be done by the data setter
+        # but this is available in the Macro class and we inherit from it
+        # latter. More details in sardana-org/sardana#683.
+        self._data = self._gScan.data
+
     def _generator(self):
         step = {}
         step["pre-move-hooks"] = self.getHooks('pre-move')
@@ -945,10 +957,6 @@ class fscan(Macro, Hookable):
     def run(self, *args):
         for step in self._gScan.step_scan():
             yield step
-
-    @property
-    def data(self):
-        return self._gScan.data
 
 
 class ascanh(aNscan, Macro):
@@ -1299,6 +1307,14 @@ class meshc(Macro, Hookable):
                              constrains, extrainfodesc)
         self._gScan.frozen_motors = [m2]
 
+        # _data is the default member where the Macro class stores the data.
+        # Assign the date produced by GScan (or its subclasses) to it so all
+        # the Macro infrastrucutre related to the data works e.g. getter,
+        # property, etc. Ideally this should be done by the data setter
+        # but this is available in the Macro class and we inherit from it
+        # latter. More details in sardana-org/sardana#683.
+        self._data = self._gScan.data
+
     def _waypoint_generator(self):
         step = {}
         step["pre-move-hooks"] = self.getHooks('pre-move')
@@ -1343,10 +1359,6 @@ class meshc(Macro, Hookable):
 
     def getIntervalEstimation(self):
         return self.nr_waypoints
-
-    @property
-    def data(self):
-        return self._gScan.data
 
 
 class dmeshc(meshc):
@@ -1622,6 +1634,13 @@ class meshct(Macro, Hookable):
 
         self._gScan = CTScan(self, self._generator, moveables, env, constrains,
                              extrainfodesc)
+        # _data is the default member where the Macro class stores the data.
+        # Assign the date produced by GScan (or its subclasses) to it so all
+        # the Macro infrastrucutre related to the data works e.g. getter,
+        # property, etc. Ideally this should be done by the data setter
+        # but this is available in the Macro class and we inherit from it
+        # latter. More details in sardana-org/sardana#683.
+        self._data = self._gScan.data
 
     def _generator(self):
         moveables_trees = self._gScan.get_moveables_trees()
@@ -1669,10 +1688,6 @@ class meshct(Macro, Hookable):
         for step in self._gScan.step_scan():
             yield step
 
-    @property
-    def data(self):
-        return self._gScan.data
-
     def getTimeEstimation(self):
         return 0.0
 
@@ -1707,6 +1722,14 @@ class timescan(Macro, Hookable):
         self.integ_time = integ_time
         self.latency_time = latency_time
         self._gScan = TScan(self)
+
+        # _data is the default member where the Macro class stores the data.
+        # Assign the date produced by GScan (or its subclasses) to it so all
+        # the Macro infrastrucutre related to the data works e.g. getter,
+        # property, etc. Ideally this should be done by the data setter
+        # but this is available in the Macro class and we inherit from it
+        # latter. More details in sardana-org/sardana#683.
+        self._data = self._gScan.data
 
     def run(self, *args):
         for step in self._gScan.step_scan():
