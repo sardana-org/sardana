@@ -2238,6 +2238,9 @@ class CTScan(CScan, CAcquisition):
             measurement_group.setSynchronization(synch)
             self.macro.checkPoint()
 
+            # Set the index offset used in CAcquisition class.
+            self._index_offset = i * self.macro.nr_points
+
             # extra post configuration
             if hasattr(macro, 'getHooks'):
                 for hook in macro.getHooks('post-configuration'):
@@ -2301,7 +2304,6 @@ class CTScan(CScan, CAcquisition):
             theoretical_positions = generate_positions(motors, starts, finals,
                                                        nr_points)
             theoretical_timestamps = generate_timestamps(synch, dt_timestamp)
-            self._index_offset = i * self.macro.nr_points
             for index, data in theoretical_positions.items():
                 data.update(theoretical_timestamps[index])
                 initial_data[index + self._index_offset] = data
