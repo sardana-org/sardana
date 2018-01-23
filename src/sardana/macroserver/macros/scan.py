@@ -1172,10 +1172,6 @@ class dscanc(dNscanc, Macro):
 class dscanct(dNscanc, Macro):
     """Do an a relative continuous motor scan."""
 
-    """Do an absolute continuous scan of the specified motor.
-       ascanct scans one motor, as specified by motor. The motor starts 
-       before the"""
-
     param_def = [['motor', Type.Moveable, None, 'Moveable name'],
                  ['start_pos', Type.Float, None, 'Scan start position'],
                  ['final_pos', Type.Float, None, 'Scan final position'],
