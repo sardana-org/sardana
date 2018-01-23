@@ -1238,7 +1238,7 @@ class d4scanc(dNscanc, Macro):
                       slow_down, integ_time, mode=ContinuousMode, **opts)
 
 
-class dscanct(dNscanc, Macro):
+class dscanct(dNscan, Macro):
     """Do an a relative continuous motor scan."""
 
     param_def = [['motor', Type.Moveable, None, 'Moveable name'],
