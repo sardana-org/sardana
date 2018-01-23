@@ -1255,6 +1255,71 @@ class dscanct(dNscan, Macro):
                       latency_time=latency_time, **opts)
 
 
+class d2scanct(dNscan, Macro):
+    """continuous four-motor scan relative to the starting positions"""
+    param_def = [
+        ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
+        ['start_pos1', Type.Float, None, 'Scan start position 1'],
+        ['final_pos1', Type.Float, None, 'Scan final position 1'],
+        ['motor2', Type.Moveable, None, 'Moveable 2 to move'],
+        ['start_pos2', Type.Float, None, 'Scan start position 2'],
+        ['final_pos2', Type.Float, None, 'Scan final position 2'],
+        ['integ_time', Type.Float, None, 'Integration time'],
+        ['slow_down', Type.Float, 1, 'global scan slow down factor (0, 1]'],
+    ]
+
+    def prepare(self, m1, s1, f1, m2, s2, f2, integ_time, slow_down, **opts):
+        self._prepare([m1, m2], [s1, s2], [f1, f2], slow_down, integ_time,
+                      mode=ContinuousHwTimeMode, **opts)
+
+
+class d3scanct(dNscan, Macro):
+    """continuous four-motor scan relative to the starting positions"""
+    param_def = [
+        ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
+        ['start_pos1', Type.Float, None, 'Scan start position 1'],
+        ['final_pos1', Type.Float, None, 'Scan final position 1'],
+        ['motor2', Type.Moveable, None, 'Moveable 2 to move'],
+        ['start_pos2', Type.Float, None, 'Scan start position 2'],
+        ['final_pos2', Type.Float, None, 'Scan final position 2'],
+        ['motor3', Type.Moveable, None, 'Moveable 3 to move'],
+        ['start_pos3', Type.Float, None, 'Scan start position 3'],
+        ['final_pos3', Type.Float, None, 'Scan final position 3'],
+        ['integ_time', Type.Float, None, 'Integration time'],
+        ['slow_down', Type.Float, 1, 'global scan slow down factor (0, 1]'],
+    ]
+
+    def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, integ_time,
+                slow_down, **opts):
+        self._prepare([m1, m2, m3], [s1, s2, s3], [f1, f2, f3], slow_down,
+                      integ_time, mode=ContinuousHwTimeMode, **opts)
+
+
+class d4scanct(dNscan, Macro):
+    """continuous four-motor scan relative to the starting positions"""
+    param_def = [
+        ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
+        ['start_pos1', Type.Float, None, 'Scan start position 1'],
+        ['final_pos1', Type.Float, None, 'Scan final position 1'],
+        ['motor2', Type.Moveable, None, 'Moveable 2 to move'],
+        ['start_pos2', Type.Float, None, 'Scan start position 2'],
+        ['final_pos2', Type.Float, None, 'Scan final position 2'],
+        ['motor3', Type.Moveable, None, 'Moveable 3 to move'],
+        ['start_pos3', Type.Float, None, 'Scan start position 3'],
+        ['final_pos3', Type.Float, None, 'Scan final position 3'],
+        ['motor4', Type.Moveable, None, 'Moveable 3 to move'],
+        ['start_pos4', Type.Float, None, 'Scan start position 3'],
+        ['final_pos4', Type.Float, None, 'Scan final position 3'],
+        ['integ_time', Type.Float, None, 'Integration time'],
+        ['slow_down', Type.Float, 1, 'global scan slow down factor (0, 1]'],
+    ]
+
+    def prepare(self, m1, s1, f1, m2, s2, f2, m3, s3, f3, m4, s4, f4,
+                integ_time, slow_down, **opts):
+        self._prepare([m1, m2, m3, m4], [s1, s2, s3, s4], [f1, f2, f3, f4],
+                      slow_down, integ_time, mode=ContinuousHwTimeMode, **opts)
+
+
 class meshc(Macro, Hookable):
     """2d grid scan. scans continuous"""
 
