@@ -729,7 +729,7 @@ class mesh(Macro, Hookable):
         # property, etc. Ideally this should be done by the data setter
         # but this is available in the Macro class and we inherit from it
         # latter. More details in sardana-org/sardana#683.
-        self._data = self._gScan.data
+        self.setData(self._gScan.data)
 
     def _generator(self):
         step = {}
@@ -936,7 +936,7 @@ class fscan(Macro, Hookable):
         # property, etc. Ideally this should be done by the data setter
         # but this is available in the Macro class and we inherit from it
         # latter. More details in sardana-org/sardana#683.
-        self._data = self._gScan.data
+        self.setData(self._gScan.data)
 
     def _generator(self):
         step = {}
@@ -1313,7 +1313,7 @@ class meshc(Macro, Hookable):
         # property, etc. Ideally this should be done by the data setter
         # but this is available in the Macro class and we inherit from it
         # latter. More details in sardana-org/sardana#683.
-        self._data = self._gScan.data
+        self.setData(self._gScan.data)
 
     def _waypoint_generator(self):
         step = {}
@@ -1640,7 +1640,7 @@ class meshct(Macro, Hookable):
         # property, etc. Ideally this should be done by the data setter
         # but this is available in the Macro class and we inherit from it
         # latter. More details in sardana-org/sardana#683.
-        self._data = self._gScan.data
+        self.setData(self._gScan.data)
 
     def _generator(self):
         moveables_trees = self._gScan.get_moveables_trees()
@@ -1729,7 +1729,7 @@ class timescan(Macro, Hookable):
         # property, etc. Ideally this should be done by the data setter
         # but this is available in the Macro class and we inherit from it
         # latter. More details in sardana-org/sardana#683.
-        self._data = self._gScan.data
+        self.setData(self._gScan.data)
 
     def run(self, *args):
         for step in self._gScan.step_scan():
