@@ -1169,22 +1169,6 @@ class dscanc(dNscanc, Macro):
         self._prepare([motor], [start_pos], [final_pos], slow_down, integ_time,
                       mode=ContinuousMode, **opts)
 
-class dscanct(dNscanc, Macro):
-    """Do an a relative continuous motor scan."""
-
-    param_def = [['motor', Type.Moveable, None, 'Moveable name'],
-                 ['start_pos', Type.Float, None, 'Scan start position'],
-                 ['final_pos', Type.Float, None, 'Scan final position'],
-                 ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
-                 ['integ_time', Type.Float, None, 'Integration time'],
-                 ['latency_time', Type.Float, 0, 'Latency time']]
-
-    def prepare(self, motor, start_pos, final_pos, nr_interv,
-                integ_time, latency_time, **opts):
-        self._prepare([motor], [start_pos], [final_pos], nr_interv,
-                      integ_time, mode=ContinuousHwTimeMode,
-                      latency_time=latency_time, **opts)
-
 
 class d2scanc(dNscanc, Macro):
     """continuous two-motor scan relative to the starting positions"""
@@ -1252,6 +1236,23 @@ class d4scanc(dNscanc, Macro):
                 integ_time, slow_down, **opts):
         self._prepare([m1, m2, m3, m4], [s1, s2, s3, s4], [f1, f2, f3, f4],
                       slow_down, integ_time, mode=ContinuousMode, **opts)
+
+
+class dscanct(dNscanc, Macro):
+    """Do an a relative continuous motor scan."""
+
+    param_def = [['motor', Type.Moveable, None, 'Moveable name'],
+                 ['start_pos', Type.Float, None, 'Scan start position'],
+                 ['final_pos', Type.Float, None, 'Scan final position'],
+                 ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
+                 ['integ_time', Type.Float, None, 'Integration time'],
+                 ['latency_time', Type.Float, 0, 'Latency time']]
+
+    def prepare(self, motor, start_pos, final_pos, nr_interv,
+                integ_time, latency_time, **opts):
+        self._prepare([motor], [start_pos], [final_pos], nr_interv,
+                      integ_time, mode=ContinuousHwTimeMode,
+                      latency_time=latency_time, **opts)
 
 
 class meshc(Macro, Hookable):
