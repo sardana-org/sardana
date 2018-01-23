@@ -1169,9 +1169,30 @@ class dscanc(dNscanc, Macro):
         self._prepare([motor], [start_pos], [final_pos], slow_down, integ_time,
                       mode=ContinuousMode, **opts)
 
+class dscanct(dNscanc, Macro):
+    """Do an a relative continuous motor scan."""
+
+    """Do an absolute continuous scan of the specified motor.
+       ascanct scans one motor, as specified by motor. The motor starts 
+       before the"""
+
+    param_def = [['motor', Type.Moveable, None, 'Moveable name'],
+                 ['start_pos', Type.Float, None, 'Scan start position'],
+                 ['final_pos', Type.Float, None, 'Scan final position'],
+                 ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
+                 ['integ_time', Type.Float, None, 'Integration time'],
+                 ['latency_time', Type.Float, 0, 'Latency time']]
+
+    def prepare(self, motor, start_pos, final_pos, nr_interv,
+                integ_time, latency_time, **opts):
+        self._prepare([motor], [start_pos], [final_pos], nr_interv,
+                      integ_time, mode=ContinuousHwTimeMode,
+                      latency_time=latency_time, **opts)
+
 
 class d2scanc(dNscanc, Macro):
     """continuous two-motor scan relative to the starting positions"""
+
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
         ['start_pos1', Type.Float, None, 'Scan start position 1'],
