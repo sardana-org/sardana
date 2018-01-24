@@ -11,6 +11,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   controller classes (#541)
 - `meshct` macro - mesh composed from row scans executed in the continuous
   way (#659)
+- Relative continuous scans like `dscanct`, `d2scanct`, etc. (#605, #688)
 - Timeout/watchdog in continuous scans - especially usefull when
   triggers may be missed e.g. not precise positioning (#136, #601)
 - Reintroduce intermediate events for counter/timer channels while
