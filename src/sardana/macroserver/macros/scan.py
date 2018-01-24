@@ -1538,6 +1538,7 @@ class a4scanct(aNscan, Macro):
                       nr_interv, integ_time, mode=ContinuousHwTimeMode,
                       latency_time=latency_time, **opts)
 
+
 class dscanct(dNscan, Macro):
     """Do an a relative continuous motor scan,
     dscanct scans a motor, as specified by motor1.
