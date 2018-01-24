@@ -1323,7 +1323,7 @@ class MacroExecutor(Logger):
         name = macro_obj._getName()
         desc = macro_obj._getDescription()
         door = self.door
-        
+
         if macro_obj.getParentMacro() is None:
             try:
                 logging_onoff = macro_obj.getEnv("LogMacro")
@@ -1340,6 +1340,7 @@ class MacroExecutor(Logger):
                     logging_path = os.path.join(os.sep, "tmp")
                     macro_obj.setEnv("LogMacroDir", logging_path)
 
+                door_name = door.name
                 door_name = door_name.replace(":","_").replace("/","_") # Cleaning name in case alias does not exist
                 file_name = "session_" + door_name +".log"
                 log_file = os.path.join(logging_path, file_name)
