@@ -1323,7 +1323,6 @@ class MacroExecutor(Logger):
         name = macro_obj._getName()
         desc = macro_obj._getDescription()
         door = self.door
-        macro_obj = macro_obj
         
         if macro_obj.getParentMacro() is None:
             try:
