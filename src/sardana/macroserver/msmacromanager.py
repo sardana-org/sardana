@@ -1324,6 +1324,7 @@ class MacroExecutor(Logger):
         desc = macro_obj._getDescription()
         door = self.door
 
+        logging_onoff = False
         if macro_obj.getParentMacro() is None:
             try:
                 logging_onoff = macro_obj.getEnv("LogMacro")
@@ -1450,8 +1451,8 @@ class MacroExecutor(Logger):
                        'Set "%s" environment variable ' % env_var_name +
                        'to True in order to change it.')
             self._macro_pointer = None
-            
-        if logging_onoff:
+        
+        if logging_onoff:    
             macro_obj.logger.removeHandler(macro_obj.fileHandler)
 
         return result
