@@ -213,7 +213,7 @@ class Door(SardanaDevice):
 
         door = self.door
         if door is None:
-            full_name = self.get_name()
+            full_name = self.get_full_name()
             name = self.alias or full_name
             macro_server = self.macro_server_device.macro_server
             self.door = door = \
