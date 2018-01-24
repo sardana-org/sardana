@@ -1331,9 +1331,9 @@ class MacroExecutor(Logger):
                 logging_onoff = False
             if logging_onoff:
                 try:
-                    self.logging_mode = macro_obj.getEnv("LogMacroMode")
+                    logging_mode = macro_obj.getEnv("LogMacroMode")
                 except:
-                    self.logging_mode = 0
+                    logging_mode = 0
                 try:
                     logging_path = macro_obj.getEnv("LogMacroDir")
                 except:
@@ -1344,7 +1344,7 @@ class MacroExecutor(Logger):
                 file_name = "session_" + door_name +".log"
                 log_file = os.path.join(logging_path, file_name)
 
-                if self.logging_mode:
+                if logging_mode:
                     bck_counts = 100
                 else:
                     bck_counts = 0
