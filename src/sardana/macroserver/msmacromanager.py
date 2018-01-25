@@ -1351,8 +1351,8 @@ class MacroExecutor(Logger):
                 else:
                     bck_counts = 0
                 
-                macro_obj.fileHandler = logging.handlers.RotatingFileHandler(log_file, backupCount = bck_counts)
-                macro_obj.fileHandler.doRollover()
+                fileHandler = logging.handlers.RotatingFileHandler(log_file, backupCount = bck_counts)
+                fileHandler.doRollover()
                 
                 try:
                     format_to_set = macro_obj.getEnv("LogMacroFormat")
@@ -1360,11 +1360,11 @@ class MacroExecutor(Logger):
                 except:
                     log_format = logging.Formatter(
                         "%(levelname)-8s %(asctime)s %(name)s: %(message)s")
-                macro_obj.fileHandler.setFormatter(log_format)
-                macro_obj.fileHandler.addFilter(LogFilter("[START]", "message"))
-                macro_obj.fileHandler.addFilter(LogFilter("[ END ]", "message"))
-                macro_obj.logger = macro_obj.getLogger()
-                macro_obj.logger.addHandler(macro_obj.fileHandler)
+                fileHandler.setFormatter(log_format)
+                fileHandler.addFilter(LogFilter("[START]", "message"))
+                fileHandler.addFilter(LogFilter("[ END ]", "message"))
+                logger = macro_obj.getLogger()
+                logger.addHandler(fileHandler)
 
         if self._aborted:
             self.sendMacroStatusAbort()
@@ -1453,7 +1453,7 @@ class MacroExecutor(Logger):
             self._macro_pointer = None
         
         if logging_onoff:    
-            macro_obj.logger.removeHandler(macro_obj.fileHandler)
+            logger.removeHandler(fileHandler)
 
         return result
 
