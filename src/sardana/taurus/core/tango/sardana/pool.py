@@ -1143,8 +1143,6 @@ class TangoChannelInfo(BaseChannelInfo):
                      self.data_type = None
                 else:
                      raise e
-            
-                
 
         if 'shape' not in data:
             shape = ()
