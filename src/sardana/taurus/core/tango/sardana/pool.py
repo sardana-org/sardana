@@ -1140,9 +1140,9 @@ class TangoChannelInfo(BaseChannelInfo):
                 # For backwards compatibility:
                 # starting from Taurus 4.3.0 DevVoid was added to the dict
                 if data_type == PyTango.DevVoid:
-                     self.data_type = None
+                    self.data_type = None
                 else:
-                     raise e
+                    raise e
 
         if 'shape' not in data:
             shape = ()
