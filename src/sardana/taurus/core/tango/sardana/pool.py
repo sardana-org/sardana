@@ -1134,10 +1134,17 @@ class TangoChannelInfo(BaseChannelInfo):
 
         if 'data_type' not in data:
             data_type = info.data_type
-            if data_type == PyTango.DevVoid:
-                self.data_type = None
-            else:
+            try:
                 self.data_type = FROM_TANGO_TO_STR_TYPE[data_type]
+            except KeyError, e:
+                # For backwards compatibility:
+                # starting from Taurus 4.3.0 DevVoid was added to the dict
+                if data_type == PyTango.DevVoid:
+                     self.data_type = None
+                else:
+                     raise e
+            
+                
 
         if 'shape' not in data:
             shape = ()
