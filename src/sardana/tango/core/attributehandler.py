@@ -60,7 +60,12 @@ class AttributeLogHandler(logging.Handler):
         attr = self._attr
         if attr is None or dev is None:
             return
-        dev.set_attribute(attr, output)
+        # Delegate push event to the EventTH worker thread to avoid deadlocks
+        # in multithreading scenarios. This is because we may be asked to
+        # handle stream messages while the Tango monitor is acquired causing
+        # a deadlock if the owner of the monitor also requires to handle
+        # messages. See sardana-org/sardana#693
+        dev.set_attribute(attr, output, synch=False)
 
     def read(self, attr):
         """Read from the buffer and assign to the attribute value"""
