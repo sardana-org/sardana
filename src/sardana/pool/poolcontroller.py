@@ -702,20 +702,6 @@ class PoolController(PoolBaseController):
         return self.raw_stop_one(axis)
 
     @check_ctrl
-    def stop_axes(self, axes=None):
-        """Stops the given axes. If axes is None, stops all active axes.
-
-        :param axes: the list of axis to stop. Default is None
-                       meaning all active axis in this controller
-        :type axes: seq<int> or None
-        """
-        if axes is None:
-            return self.raw_stop_all()
-
-        for axis in axes:
-            self.raw_stop_one(axis)
-
-    @check_ctrl
     def stop_elements(self, elements=None):
         """Stops the given elements. If axes is None, stops all active axes.
 
@@ -776,20 +762,6 @@ class PoolController(PoolBaseController):
     @check_ctrl
     def abort_one(self, axis):
         return self.raw_abort_one(axis)
-
-    @check_ctrl
-    def abort_axes(self, axes=None):
-        """Aborts the given axes. If axes is None, aborts all active axes.
-
-        :param axes: the list of axis to abort. Default is None
-                       meaning all active axis in this controller
-        :type axes: seq<int> or None
-        """
-        if axes is None:
-            return self.raw_abort_all()
-
-        for axis in axes:
-            self.raw_abort_one(axis)
 
     @check_ctrl
     def abort_elements(self, elements=None):
