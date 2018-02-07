@@ -119,7 +119,7 @@ class PoolElement(PoolBaseElement):
     def stop(self):
         self.info("Stop!")
         PoolBaseElement.stop(self)
-        self.controller.stop_one(self.axis)
+        self.controller.stop_elements([self])
 
     # --------------------------------------------------------------------------
     # abort
@@ -128,7 +128,7 @@ class PoolElement(PoolBaseElement):
     def abort(self):
         self.info("Abort!")
         PoolBaseElement.abort(self)
-        self.controller.abort_one(self.axis)
+        self.controller.abort_elements([self])
 
     def get_par(self, name):
         return self.controller.get_axis_par(self.axis, name)
