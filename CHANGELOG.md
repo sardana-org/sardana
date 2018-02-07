@@ -101,6 +101,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Removed
 - `ElementList` attribute from the Door Tango device - `Element` attribute is
   available on the MacroServer device (#556, #557, #653)
+- `stop_axes` and `abort_axes` methods of the `PoolController` class. Equivalent
+  methods are `stop_elements` and `remove_elements` (#696)
 
 
 ## [2.3.2] - 2017-08-11
