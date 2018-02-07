@@ -788,27 +788,6 @@ class PoolController(PoolBaseController):
         return self.abort_all()
 
     @check_ctrl
-    def emergency_break(self, elements=None):
-        """Stops the given elements. If axes is None, stops all active axes.
-        If stop raises exception, an abort is attempted.
-
-        :param elements: the list of elements to stop. Default is None
-                         meaning all active axis in this controller
-        :type axes: seq<PoolElement> or None
-        """
-        if elements is None:
-            try:
-                return self._raw_stop_all()
-            except:
-                return self.raw_abort_all()
-
-        for element in elements:
-            try:
-                self._raw_stop_one(element.axis)
-            except:
-                self.raw_abort_one(element.axis)
-
-    @check_ctrl
     def send_to_controller(self, stream):
         return self.ctrl.SendToCtrl(stream)
 
