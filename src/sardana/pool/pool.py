@@ -619,12 +619,12 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
     def stop(self):
         controllers = self.get_elements_by_type(ElementType.Controller)
         for controller in controllers:
-            controller.stop_all()
+            controller.stop_elements()
 
     def abort(self):
         controllers = self.get_elements_by_type(ElementType.Controller)
         for controller in controllers:
-            controller.abort_all()
+            controller.abort_elements()
 
     # --------------------------------------------------------------------------
     # (Re)load code
