@@ -423,10 +423,7 @@ class PoolAction(Logger):
         """Tries to execute a stop. If it fails try an abort"""
         self._stopped = True
         for pool_ctrl, elements in self._pool_ctrl_dict.items():
-            try:
-                return pool_ctrl.stop_elements(elements)
-            except Exception:
-                return pool_ctrl.abort_elements(elements)
+            pool_ctrl.emergency_break(elements)
 
     def was_stopped(self):
         """Determines if the action has been stopped from outside
