@@ -39,7 +39,8 @@ import functools
 
 from taurus.core.util.containers import CaselessDict
 
-from sardana import State, ElementType, TYPE_TIMERABLE_ELEMENTS
+from sardana import State, ElementType, TYPE_TIMERABLE_ELEMENTS,\
+    TYPE_PSEUDO_ELEMENTS
 from sardana.sardanaevent import EventType
 from sardana.sardanavalue import SardanaValue
 from sardana.sardanautils import is_non_str_seq, is_number
@@ -396,6 +397,12 @@ class PoolController(PoolBaseController):
     def is_timerable(self):
         for t in self._ctrl_info.types:
             if t in TYPE_TIMERABLE_ELEMENTS:
+                return True
+        return False
+
+    def is_pseudo(self):
+        for t in self._ctrl_info.types:
+            if t in TYPE_PSEUDO_ELEMENTS:
                 return True
         return False
 
