@@ -619,11 +619,21 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
     def stop(self):
         controllers = self.get_elements_by_type(ElementType.Controller)
         for controller in controllers:
+            if controller.is_pseudo():
+                continue
+            elif ElementType.IORegister in controller.get_ctrl_types():
+                # Skip IOR since they are not stoppable
+                continue
             controller.stop_elements()
 
     def abort(self):
         controllers = self.get_elements_by_type(ElementType.Controller)
         for controller in controllers:
+            if controller.is_pseudo():
+                continue
+            elif ElementType.IORegister in controller.get_ctrl_types():
+                # Skip IOR since they are not stoppable
+                continue
             controller.abort_elements()
 
     # --------------------------------------------------------------------------
