@@ -804,9 +804,9 @@ class PoolController(PoolBaseController):
         :type axes: seq<PoolElement> or None
         """
         try:
-            return pool_ctrl.stop_elements(elements)
+            return self.stop_elements(elements)
         except Exception:
-            return pool_ctrl.abort_elements(elements)
+            return self.abort_elements(elements)
 
     @check_ctrl
     def send_to_controller(self, stream):
