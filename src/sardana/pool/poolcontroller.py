@@ -711,7 +711,7 @@ class PoolController(PoolBaseController):
         """
         axes = []
         if elements is None:
-            axes = self._getPoolController().get_element_axis().keys()
+            axes = self.get_element_axis().keys()
         else:
             axes = [e.axis for e in elements]
 
@@ -773,7 +773,7 @@ class PoolController(PoolBaseController):
         """
         axes = []
         if elements is None:
-            axes = self._getPoolController().get_element_axis().keys()
+            axes = self.get_element_axis().keys()
         else:
             axes = [e.axis for e in elements]
 
