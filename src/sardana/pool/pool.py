@@ -637,6 +637,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
             raise RuntimeError(msg_init + msg)
 
     def abort(self):
+        msg = ""
         controllers = self.get_elements_by_type(ElementType.Controller)
         for controller in controllers:
             if controller.is_pseudo():
