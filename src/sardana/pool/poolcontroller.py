@@ -716,21 +716,48 @@ class PoolController(PoolBaseController):
                          meaning all active axis in this controller
         :type axes: seq<PoolElement> or None
         """
-        axes = []
+        error_axes = []
+        all_stopped = True
         if elements is None:
             axes = self.get_element_axis().keys()
         else:
             axes = [e.axis for e in elements]
 
         ctrl = self.ctrl
-        ctrl.PreStopAll()
+        # PreStopAll
+        try:
+            ctrl.PreStopAll()
+        except Exception:
+            for axis in axes:
+                error_axes.append(axis)
+            msg = "%s.PreStopAll has failed" % self.name
+            self.warning(msg)
+
         for axis in axes:
-            ret = ctrl.PreStopOne(axis)
-            if not ret:
-                raise Exception("%s.PreStopOne(%d) returns False"
-                                % (self.name, axis))
-            self.raw_stop_one(axis)
-        return self.stop_all()
+            # PreStopOne
+            ret_pre_stop_one = ctrl.PreStopOne(axis)
+            if not ret_pre_stop_one:
+                msg = "%s.PreStopOne(%d) has failed" % (self.name, axis)
+                error_axes.append(axis)
+                self.warning(msg)
+            # StopOne
+            try:
+                ctrl.StopOne(axis)
+            except Exception:
+                msg = "%s.StopOne(%d) has failed" % (self.name, axis)
+                if axis not in error_axes:
+                    error_axes.append(axis)
+                self.warning(msg)
+        # StopAll
+        try:
+            ctrl.StopAll()
+        except Exception:
+            for axis in axes:
+                if axis not in error_axes:
+                    error_axes.append(axis)
+            msg = "%s.StopAll(%d) has failed" % self.name
+            self.warning(msg)
+        return error_axes
 
     def raw_abort_all(self):
         try:
