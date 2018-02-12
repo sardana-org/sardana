@@ -715,6 +715,12 @@ class PoolController(PoolBaseController):
         :param elements: the list of elements to stop. Default is None
                          meaning all active axis in this controller
         :type axes: seq<PoolElement> or None
+
+        .. todo:: PoolController API is oriented to the axis and not the
+        element. Using elements as arguments adds an extra inter class
+        dependency. From the other hand this API is convenient and could be
+        maintained. In the future we could add stop_axes method that would
+        implement the stopping algorithm and be based on axis.
         """
 
         if elements is None:
