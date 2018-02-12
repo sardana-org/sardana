@@ -618,20 +618,20 @@ expeced to return the state/position of the requested axis.
 
 The internal sardana algorithm to read position is::
 
-    /FOR/ Each controller(s) implied in the reading
+    /FOR/ Each controller(s) implied in the reading (executed concurrently)
+
          - Call PreReadAll()
-    /END FOR/
-     
-    /FOR/ Each motor(s) implied in the reading
-         - PreReadOne(motor to read)
-    /END FOR/
-     
-    /FOR/ Each controller(s) implied in the reading
-         - Call ReadAll()
-    /END FOR/
-     
-    /FOR/ Each motor(s) implied in the reading
-         - Call ReadOne(motor to read)
+
+        /FOR/ Each motor(s) of the given controller implied in the reading
+             - PreReadOne(motor to read)
+        /END FOR/
+
+        - Call ReadAll()
+
+        /FOR/ Each motor(s) of the given controller implied in the reading
+             - ReadOne(motor to read)
+        /END FOR/
+
     /END FOR/
 
 Here is an example assuming the springfield library tells us in the
