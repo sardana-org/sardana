@@ -716,46 +716,51 @@ class PoolController(PoolBaseController):
                          meaning all active axis in this controller
         :type axes: seq<PoolElement> or None
         """
-        error_axes = []
+
         if elements is None:
             axes = self.get_element_axis().keys()
         else:
             axes = [e.axis for e in elements]
 
         ctrl = self.ctrl
+
         # PreStopAll
         try:
             ctrl.PreStopAll()
         except Exception:
-            for axis in axes:
-                error_axes.append(axis)
             msg = "%s.PreStopAll has failed" % self.name
-            self.warning(msg)
+            self.warning(msg, exc_info=True)
+            return axes
 
+        error_axes = []
         for axis in axes:
             # PreStopOne
-            ret_pre_stop_one = ctrl.PreStopOne(axis)
-            if not ret_pre_stop_one:
-                msg = "%s.PreStopOne(%d) has failed" % (self.name, axis)
+            msg = "%s.PreStopOne(%d) has failed" % (self.name, axis)
+            try:
+                ret = ctrl.PreStopOne(axis)
+            except Exception:
+                error_axes.append(axis)
+                self.warning(msg, exc_info=True)
+                continue
+            if not ret:
                 error_axes.append(axis)
                 self.warning(msg)
+                continue
             # StopOne
             try:
                 ctrl.StopOne(axis)
             except Exception:
                 msg = "%s.StopOne(%d) has failed" % (self.name, axis)
-                if axis not in error_axes:
-                    error_axes.append(axis)
-                self.warning(msg)
+                error_axes.append(axis)
+                self.warning(msg, exc_info=True)
         # StopAll
         try:
             ctrl.StopAll()
         except Exception:
-            for axis in axes:
-                if axis not in error_axes:
-                    error_axes.append(axis)
             msg = "%s.StopAll(%d) has failed" % self.name
-            self.warning(msg)
+            self.warning(msg, exc_info=True)
+            return axes
+
         return error_axes
 
     def raw_abort_all(self):
