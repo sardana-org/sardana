@@ -360,34 +360,46 @@ class PoolBaseGroup(PoolContainer):
     # --------------------------------------------------------------------------
 
     def stop(self):
+        msg = ""
         for ctrl, elements in self.get_physical_elements().items():
             self.debug("Stopping %s %s", ctrl.name, [e.name for e in elements])
             try:
                 error_axes = ctrl.stop_elements(elements=elements)
                 if error_axes:
+                    msg += "Controller %s: axis/es %s\n" % (ctrl.name,
+                                                            str(error_axes))
                     self.error("Unable to stop %s controller: "
                                "Stop of axis/es %s failed" %
                                (ctrl.name, str(error_axes)))
             except:
                 self.error("Unable to stop controller %s", ctrl.name)
                 self.debug("Details:", exc_info=1)
+        if msg:
+            msg_init = "\nControllers/axes which could not be stopped:\n"
+            raise RuntimeError(msg_init + msg)
 
     # --------------------------------------------------------------------------
     # abort
     # --------------------------------------------------------------------------
 
     def abort(self):
+        msg = ""
         for ctrl, elements in self.get_physical_elements().items():
             self.debug("Aborting %s %s", ctrl.name, [e.name for e in elements])
             try:
                 error_axes = ctrl.abort_elements(elements=elements)
                 if error_axes:
+                    msg += "Controller %s : axis/es %s\n" % (ctrl.name,
+                                                             str(error_axes))
                     self.error("Unable to abort %s controller: "
                                "Abort of axis/es %s failed" %
                                (ctrl.name, str(error_axes)))
             except:
                 self.error("Unable to abort controller %s", ctrl.name)
                 self.debug("Details:", exc_info=1)
+        if msg:
+            msg_init = "\nControllers/axes which could not be aborted:\n"
+            raise RuntimeError(msg_init + msg)
 
     # --------------------------------------------------------------------------
     # involved in an operation
