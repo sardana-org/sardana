@@ -46,6 +46,8 @@ import traceback
 import weakref
 import numpy
 
+import PyTango
+
 from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
     DeviceProxy
 from taurus import Factory, Device, Attribute
@@ -295,9 +297,34 @@ class PoolElement(BaseElement, TangoDevice):
         # force the creation of a state attribute
         self.getStateEG()
 
+    # TODO: for Taurus3/Taurus4 compatibility
+    # The sardana code is not fully ready to deal with Taurus4 model names
+    # Necessary changes are:
+    # * strip scheme name that appeared in the full_name since Taurus4
+    # * avoid FQDN introduced wuth taurus-org/taurus#488
+    # and come back to the Taurus3 style full name cause all the recording
+    # stuff and the measurement group counts is based on them
     def _find_pool_data(self):
         pool = get_pool_for_device(self.getParentObj(), self.getHWObj())
-        return pool.getElementInfo(self.getFullName())._data
+        full_name = self.getFullName()
+        try:
+            from taurus.core.tango.tangovalidator import\
+                TangoDeviceNameValidator
+            validator = TangoDeviceNameValidator()
+            uri_groups = validator.getUriGroups(full_name)
+            dev_name = uri_groups["devname"]
+            fqdn_host = uri_groups["host"]
+            if fqdn_host is not None:
+                port = uri_groups["port"]
+                host = fqdn_host.split(".")[0]
+                full_name = host + ":" + port + "/" + dev_name
+        except ImportError:
+            # we are in Taurus 3 so neither scheme nor FQDN is in use
+            pass
+        except:
+            msg = "Unknown error in _find_pool_data"
+            self.warning(msg, exc_info=1)
+        return pool.getElementInfo(full_name)._data
 
     def cleanUp(self):
         TangoDevice.cleanUp(self)
@@ -446,13 +473,24 @@ class PoolElement(BaseElement, TangoDevice):
         return (ts2,)
 
     def waitFinish(self, timeout=None, id=None):
+        """Wait for the operation to finish
+
+        :param timeout: optional timeout (seconds)
+        :type timeout: float
+        :param id: id of the opertation returned by start
+        :type id: tuple(float)
+        """
+        # Due to taurus-org/taurus #573 we need to divide the timeout
+        # in two intervals
+        if timeout is not None:
+            timeout = timeout / 2
         if id is not None:
             id = id[0]
         evt_wait = self._getEventWait()
         evt_wait.lock()
         try:
             evt_wait.waitEvent(DevState.MOVING, after=id, equal=False,
-                               timeout=timeout)
+                               timeout=timeout, retries=1)
         finally:
             self.__go_end_time = time.time()
             self.__go_time = self.__go_end_time - self.__go_start_time
@@ -615,6 +653,20 @@ class ExpChannel(PoolElement):
         """ExpChannel initialization."""
         self.call__init__(PoolElement, name, **kw)
         self._value_buffer = {}
+
+    def getValueObj_(self):
+        """Retrurns Value attribute event generator object.
+
+        :return: Value attribute event generator
+        :rtype: TangoAttributeEG
+
+        ..todo:: When support to Taurus 3 will be dropped provide getValueObj.
+        Taurus 3 TaurusDevice class already uses this name.
+        """
+        return self._getAttrEG('value')
+
+    def getValue(self, force=False):
+        return self._getAttrValue('value', force=force)
 
     def getValueBufferObj(self):
         return self._getAttrEG('data')
@@ -1081,7 +1133,16 @@ class TangoChannelInfo(BaseChannelInfo):
         data = self.raw_data
 
         if 'data_type' not in data:
-            self.data_type = FROM_TANGO_TO_STR_TYPE[info.data_type]
+            data_type = info.data_type
+            try:
+                self.data_type = FROM_TANGO_TO_STR_TYPE[data_type]
+            except KeyError, e:
+                # For backwards compatibility:
+                # starting from Taurus 4.3.0 DevVoid was added to the dict
+                if data_type == PyTango.DevVoid:
+                    self.data_type = None
+                else:
+                    raise e
 
         if 'shape' not in data:
             shape = ()
@@ -1259,7 +1320,6 @@ class MGConfiguration(object):
                 tg_chs_info[channel_name] = dev_name, attr_name, attr_info
 
     def _build_empty_tango_attr_info(self, channel_data):
-        import PyTango
         ret = PyTango.AttributeInfoEx()
         ret.name = channel_data['name']
         ret.label = channel_data['label']

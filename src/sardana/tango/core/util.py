@@ -61,7 +61,7 @@ from taurus.core.util.log import Logger
 import sardana
 from sardana import State, SardanaServer, DataType, DataFormat, InvalidId, \
     DataAccess, to_dtype_dformat, to_daccess, Release, ServerRunMode
-from sardana.sardanaexception import SardanaException
+from sardana.sardanaexception import SardanaException, AbortException
 from sardana.sardanavalue import SardanaValue
 from sardana.util.wrap import wraps
 from sardana.pool.poolmetacontroller import DataInfo
@@ -658,7 +658,8 @@ def prepare_server(args, tango_args):
 
     db = Database()
     if not exists_server_instance(db, server_name, inst_name):
-        if ask_yes_no('%s does not exist. Do you wish create a new one' % inst_name, default='y'):
+        if ask_yes_no('%s does not exist. Do you wish to create a new '
+                      'one' % inst_name, default='y'):
             if server_name == 'MacroServer':
                 # build list of pools to which the MacroServer should connect
                 # to
@@ -670,22 +671,47 @@ def prepare_server(args, tango_args):
                     if pool_alias is not None:
                         all_pools.append(pool_alias)
                 all_pools = map(str.lower, all_pools)
+                pools_for_choosing = []
                 for i in pools:
-                    print pools[i][3]
-                while True:
-                    elem = raw_input(
-                        "Please select pool to connect to (return to finish): ").strip()
-                    if not len(elem):
-                        break
-                    if elem.lower() not in all_pools:
-                        print "Unknown pool element"
-                        print all_pools
-                    else:
-                        pool_names.append(elem)
+                    pools_for_choosing.append(pools[i][3])
+                pools_for_choosing = sorted(pools_for_choosing,
+                                            key=lambda s: s.lower())
+                no_pool_msg = ("\nMacroServer %s has not been connected to "
+                               "any Pool\n" % inst_name)
+                if len(pools_for_choosing) == 0:
+                    print(no_pool_msg)
+                else:
+                    print("\nAvailable Pools:")
+                    for pool in pools_for_choosing:
+                        print pool
+                    print("")
+                    while True:
+                        msg = "Please select the Pool to connect to " \
+                              "(return to finish): "
+                        # user may abort it with Ctrl+C - this will not
+                        # register anything in the database and the
+                        # KeyboardInterrupt will be raised
+                        elem = raw_input(msg).strip()
+                        # no pools selected and user ended loop
+                        if len(elem) == 0 and len(pool_names) == 0:
+                            print(no_pool_msg)
+                            break
+                        # user ended loop with some pools selected
+                        elif len(elem) == 0:
+                            print("\nMacroServer %s has been connected to "
+                                  "Pool/s %s\n" % (inst_name, pool_names))
+                            break
+                        # user entered unknown pool
+                        elif elem.lower() not in all_pools:
+                            print "Unknown pool element"
+                        else:
+                            pool_names.append(elem)
                 log_messages += register_sardana(db, server_name, inst_name,
                                                  pool_names)
             else:
                 log_messages += register_sardana(db, server_name, inst_name)
+        else:
+            raise AbortException("%s startup aborted" % server_name)
     return log_messages
 
 
@@ -1037,7 +1063,14 @@ def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None,
         pass
 
     log_messages.extend(prepare_environment(args, tango_args, ORB_args))
-    log_messages.extend(prepare_server(args, tango_args))
+    try:
+        log_messages.extend(prepare_server(args, tango_args))
+    except AbortException, e:
+        print e.message
+        return
+    except KeyboardInterrupt:
+        print("\nInterrupted by keyboard")
+        return
 
     if tango_util is None:
         tango_util = Util(tango_args)

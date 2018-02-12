@@ -29,14 +29,16 @@ __all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "set_lim", "set_lm",
 __docformat__ = 'restructuredtext'
 
 import datetime
-from taurus.console.table import Table
-
-import PyTango
-from PyTango import DevState
-from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, ViewOption, iMacro
-from sardana.macroserver.msexception import StopException
 
 import numpy as np
+from taurus import Device
+from taurus.console.table import Table
+import PyTango
+from PyTango import DevState
+
+from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, \
+    ViewOption, iMacro
+from sardana.macroserver.msexception import StopException
 
 ##########################################################################
 #
@@ -94,7 +96,7 @@ class _wm(Macro):
                             value = float('NaN')
                         data[name].append(value)
                     req2delete.append(name)
-                except PyTango.AsynReplyNotArrived, e:
+                except PyTango.AsynReplyNotArrived:
                     continue
                 except PyTango.DevFailed:
                     data[name].append(float('NaN'))
@@ -149,7 +151,6 @@ class _wum(Macro):
         self.table_opts = {}
 
     def run(self, motor_list):
-        show_dial = self.getViewOption(ViewOption.ShowDial)
         motor_width = 9
         motor_names = []
         motor_pos = []
@@ -195,11 +196,13 @@ class wu(Macro):
 class wa(Macro):
     """Show all motor positions"""
 
+    # TODO: duplication of the default value definition is a workaround
+    # for #427. See commit message cc3331a for more details.
     param_def = [
         ['filter',
          ParamRepeat(['filter', Type.String, '.*',
                       'a regular expression filter'], min=1),
-         '.*', 'a regular expression filter'],
+         ['.*'], 'a regular expression filter'],
     ]
 
     def prepare(self, filter, **opts):
@@ -226,11 +229,13 @@ class wa(Macro):
 class pwa(Macro):
     """Show all motor positions in a pretty table"""
 
+    # TODO: duplication of the default value definition is a workaround
+    # for #427. See commit message cc3331a for more details.
     param_def = [
         ['filter',
          ParamRepeat(['filter', Type.String, '.*',
                       'a regular expression filter'], min=1),
-         '.*', 'a regular expression filter'],
+         ['.*'], 'a regular expression filter'],
     ]
 
     def run(self, filter):
@@ -285,7 +290,8 @@ class set_pos(Macro):
 
 
 class set_user_pos(Macro):
-    """Sets the USER position of the motor to the specified value (by changing OFFSET and keeping DIAL)"""
+    """Sets the USER position of the motor to the specified value (by
+    changing OFFSET and keeping DIAL)"""
 
     param_def = [
         ['motor', Type.Motor, None, 'Motor name'],
@@ -299,8 +305,9 @@ class set_user_pos(Macro):
         old_offset = offset_attr.read().value
         new_offset = pos - (old_pos - old_offset)
         offset_attr.write(new_offset)
-        self.output("%s reset from %.4f (offset %.4f) to %.4f (offset %.4f)" % (
-            name, old_pos, old_offset, pos, new_offset))
+        msg = "%s reset from %.4f (offset %.4f) to %.4f (offset %.4f)" % (
+            name, old_pos, old_offset, pos, new_offset)
+        self.output(msg)
 
 
 class wm(Macro):
@@ -697,27 +704,20 @@ class uct(Macro):
         if self.mnt_grp is None:
             return
 
-        names, nan = self.mnt_grp.getChannelLabels(), float('nan')
+        names = self.mnt_grp.getChannelLabels()
         self.names = [[n] for n in names]
-
-        self.values = len(names) * [[nan]]
-        self.channels = self.mnt_grp.getChannelAttrExs()
-
-        for ch_attr_ex in self.channels:
-            ch_attr_ex.subscribeEvent(self.counterChanged, ch_attr_ex)
-
-    def printAllValues(self):
-        ch_width = 10
-        table = Table(self.values, elem_fmt=['%*.4f'], col_head_str=self.names,
-                      col_head_width=ch_width)
-        self.outputBlock(table.genOutput())
-        self.flushOutput()
-
-    def counterChanged(self, ch_attr, value):
-        idx = self.channels.index(ch_attr)
-        self.values[idx] = [value]
-        if self.print_value:
-            self.printAllValues()
+        self.channels = []
+        self.values = []
+        for channel_info in self.mnt_grp.getChannels():
+            full_name = channel_info["full_name"]
+            # TODO: For Taurus 4 compatibility
+            full_name = "tango://%s" % full_name
+            channel = Device(full_name)
+            self.channels.append(channel)
+            value = channel.getValue(force=True)
+            self.values.append([value])
+            valueObj = channel.getValueObj_()
+            valueObj.subscribeEvent(self.counterChanged, channel)
 
     def run(self, integ_time):
         if self.mnt_grp is None:
@@ -725,12 +725,32 @@ class uct(Macro):
             return
 
         self.print_value = True
+        try:
+            self.mnt_grp.count(integ_time)
+        finally:
+            self.finish()
 
-        state, data = self.mnt_grp.count(integ_time)
-
-        for ch_attr_ex in self.mnt_grp.getChannelAttrExs():
-            ch_attr_ex.unsubscribeEvent(self.counterChanged, ch_attr_ex)
+    def finish(self):
+        self._clean()
         self.printAllValues()
+
+    def _clean(self):
+        for channel in self.channels:
+            valueObj = channel.getValueObj_()
+            valueObj.unsubscribeEvent(self.counterChanged, channel)
+
+    def counterChanged(self, channel, value):
+        idx = self.names.index([channel.getName()])
+        self.values[idx] = [value]
+        if self.print_value and not self.isStopped():
+            self.printAllValues()
+
+    def printAllValues(self):
+        ch_width = 10
+        table = Table(self.values, elem_fmt=['%*.4f'], col_head_str=self.names,
+                      col_head_width=ch_width)
+        self.outputBlock(table.genOutput())
+        self.flushOutput()
 
 
 class settimer(Macro):
@@ -757,10 +777,13 @@ class settimer(Macro):
         except Exception, e:
             self.output(str(e))
             self.output(
-                "%s is not a valid channel in the active measurement group" % timer)
+                "%s is not a valid channel in the active measurement group"
+                % timer)
 
 
-@macro([['message', ParamRepeat(['message_item', Type.String, None, 'message item to be reported']), None, 'message to be reported']])
+@macro([['message', ParamRepeat(['message_item', Type.String, None,
+                                 'message item to be reported']), None,
+         'message to be reported']])
 def report(self, message):
     """Logs a new record into the message report system (if active)"""
     self.report(' '.join(message))

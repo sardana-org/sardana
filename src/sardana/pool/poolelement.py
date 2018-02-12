@@ -57,10 +57,6 @@ class PoolElement(PoolBaseElement):
         kwargs = PoolBaseElement.serialize(self, *args, **kwargs)
         kwargs['controller'] = self.controller.full_name
         kwargs['axis'] = self.axis
-        if self.instrument is not None:
-            kwargs['instrument'] = self.instrument.full_name
-        else:
-            kwargs['instrument'] = None
         kwargs['source'] = self.get_source()
         return kwargs
 

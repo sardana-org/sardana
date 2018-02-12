@@ -237,6 +237,9 @@ class Hookable(Logger):
                     self.info(
                         'Deprecation warning: hooks should be set with a list of hints. See Hookable API docs')
 
+            # delete _hookHintsDict to force its recreation on the next access
+            if hasattr(self, '_hookHintsDict'):
+                del self._hookHintsDict
             # create _hookHintsDict
             self._getHookHintsDict()['_ALL_'] = zip(*self._hooks)[0]
             nohints = self._hookHintsDict['_NOHINTS_']
@@ -254,7 +257,17 @@ class Hookable(Logger):
 
 class ExecMacroHook(object):
     """A speciallized callable hook for executing a sub macro inside another
-    macro as a hook"""
+    macro as a hook.
+
+    In order to attach macro with parameters pass all of them in form of
+    a list (repeat parameters are allowed) e.g.
+    - ExecMacroHook(self, "ct", 0.1)
+    - ExecMacroHook(self, ["ct", 0.1])
+    - ExecMacroHook(self, "mv", "mot01", 0, "mot02", 0)
+    - ExecMacroHook(self, "mv", [["mot01", 0], ["mot02", 0]])
+    - ExecMacroHook(self, ["mv", [["mot01", 0], ["mot02", 0]]])
+    The API basically follows the :meth:`Macro.execMacro`.
+    """
 
     def __init__(self, parent_macro, *pars, **kwargs):
         self._macro_obj_wr = weakref.ref(parent_macro)

@@ -35,7 +35,7 @@ __all__ = ['dummyMeasurementGroupConf01',
            'dummyMotorConf01', 'dummyMotorConf02']
 
 
-# Pool Measuremeng Group
+# Pool Measurement Group
 '''Minimum configuration to create a Pool MeasurementGroup'''
 dummyMeasurementGroupConf01 = {'full_name': '',
                                'id': None,
