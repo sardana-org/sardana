@@ -617,6 +617,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         return ret
 
     def stop(self):
+        msg = ""
         controllers = self.get_elements_by_type(ElementType.Controller)
         for controller in controllers:
             if controller.is_pseudo():
@@ -624,7 +625,16 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
             elif ElementType.IORegister in controller.get_ctrl_types():
                 # Skip IOR since they are not stoppable
                 continue
-            controller.stop_elements()
+            error_axes = controller.stop_elements()
+            if error_axes:
+                msg += "Controller %s: axis/es %s\n" % (controller.name,
+                                                        str(error_axes))
+                self.error("Unable to stop %s controller: "
+                           "Stop of axis/es %s failed" %
+                           (controller.name, str(error_axes)))
+        if msg:
+            msg_init = "\nControllers/axes which could not be stopped:\n"
+            raise RuntimeError(msg_init + msg)
 
     def abort(self):
         controllers = self.get_elements_by_type(ElementType.Controller)
@@ -634,7 +644,16 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
             elif ElementType.IORegister in controller.get_ctrl_types():
                 # Skip IOR since they are not stoppable
                 continue
-            controller.abort_elements()
+            error_axes = controller.abort_elements()
+            if error_axes:
+                msg += "Controller %s: axis/es %s\n" % (controller.name,
+                                                        str(error_axes))
+                self.error("Unable to abort %s controller: "
+                           "Abort of axis/es %s failed" %
+                           (controller.name, str(error_axes)))
+        if msg:
+            msg_init = "\nControllers/axes which could not be aborted:\n"
+            raise RuntimeError(msg_init + msg)
 
     # --------------------------------------------------------------------------
     # (Re)load code
