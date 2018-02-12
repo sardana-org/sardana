@@ -363,7 +363,11 @@ class PoolBaseGroup(PoolContainer):
         for ctrl, elements in self.get_physical_elements().items():
             self.debug("Stopping %s %s", ctrl.name, [e.name for e in elements])
             try:
-                ctrl.stop_elements(elements=elements)
+                error_axes = ctrl.stop_elements(elements=elements)
+                if error_axes:
+                    self.error("Unable to stop %s controller: "
+                               "Stop of axis/es %s failed" %
+                               (ctrl.name, str(error_axes)))
             except:
                 self.error("Unable to stop controller %s", ctrl.name)
                 self.debug("Details:", exc_info=1)
@@ -376,7 +380,11 @@ class PoolBaseGroup(PoolContainer):
         for ctrl, elements in self.get_physical_elements().items():
             self.debug("Aborting %s %s", ctrl.name, [e.name for e in elements])
             try:
-                ctrl.abort_elements(elements=elements)
+                error_axes = ctrl.abort_elements(elements=elements)
+                if error_axes:
+                    self.error("Unable to abort %s controller: "
+                               "Abort of axis/es %s failed" %
+                               (ctrl.name, str(error_axes)))
             except:
                 self.error("Unable to abort controller %s", ctrl.name)
                 self.debug("Details:", exc_info=1)
