@@ -627,14 +627,14 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
                 continue
             error_axes = controller.stop_elements()
             if error_axes:
-                msg += "Controller %s: axis/es %s\n" % (controller.name,
-                                                        str(error_axes))
+                msg += "Controller %s: axes %s\n" % (controller.name,
+                                                     str(error_axes))
                 self.error("Unable to stop %s controller: "
-                           "Stop of axis/es %s failed" %
+                           "Stop of axes %s failed" %
                            (controller.name, str(error_axes)))
         if msg:
-            msg_init = "\nControllers/axes which could not be stopped:\n"
-            raise RuntimeError(msg_init + msg)
+            msg_init = "Controllers/axes which could not be stopped:\n"
+            raise Exception(msg_init + msg)
 
     def abort(self):
         msg = ""
@@ -647,14 +647,14 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
                 continue
             error_axes = controller.abort_elements()
             if error_axes:
-                msg += "Controller %s: axis/es %s\n" % (controller.name,
-                                                        str(error_axes))
+                msg += "Controller %s: axes %s\n" % (controller.name,
+                                                     str(error_axes))
                 self.error("Unable to abort %s controller: "
-                           "Abort of axis/es %s failed" %
+                           "Abort of axes %s failed" %
                            (controller.name, str(error_axes)))
         if msg:
-            msg_init = "\nControllers/axes which could not be aborted:\n"
-            raise RuntimeError(msg_init + msg)
+            msg_init = "Controllers/axes which could not be aborted:\n"
+            raise Exception(msg_init + msg)
 
     # --------------------------------------------------------------------------
     # (Re)load code
