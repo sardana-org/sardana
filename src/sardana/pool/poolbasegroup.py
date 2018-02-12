@@ -371,7 +371,7 @@ class PoolBaseGroup(PoolContainer):
                     self.error("Unable to stop %s controller: "
                                "Stop of axis/es %s failed" %
                                (ctrl.name, str(error_axes)))
-            except:
+            except Exception:
                 self.error("Unable to stop controller %s", ctrl.name)
                 self.debug("Details:", exc_info=1)
         if msg:
@@ -394,7 +394,7 @@ class PoolBaseGroup(PoolContainer):
                     self.error("Unable to abort %s controller: "
                                "Abort of axis/es %s failed" %
                                (ctrl.name, str(error_axes)))
-            except:
+            except Exception:
                 self.error("Unable to abort controller %s", ctrl.name)
                 self.debug("Details:", exc_info=1)
         if msg:
