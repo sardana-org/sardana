@@ -717,7 +717,6 @@ class PoolController(PoolBaseController):
         :type axes: seq<PoolElement> or None
         """
         error_axes = []
-        all_stopped = True
         if elements is None:
             axes = self.get_element_axis().keys()
         else:
@@ -805,21 +804,47 @@ class PoolController(PoolBaseController):
                          meaning all active axis in this controller
         :type axes: seq<PoolElement> or None
         """
-        axes = []
+        error_axes = []
         if elements is None:
             axes = self.get_element_axis().keys()
         else:
             axes = [e.axis for e in elements]
 
         ctrl = self.ctrl
-        ctrl.PreAbortAll()
+        # PreAbortAll
+        try:
+            ctrl.PreAbortAll()
+        except Exception:
+            for axis in axes:
+                error_axes.append(axis)
+            msg = "%s.PreAbortAll has failed" % self.name
+            self.warning(msg)
+
         for axis in axes:
-            ret = ctrl.PreAbortOne(axis)
-            if not ret:
-                raise Exception("%s.PreAbortOne(%d) returns False"
-                                % (self.name, axis))
-            self.raw_abort_one(axis)
-        return self.abort_all()
+            # PreAbortOne
+            ret_pre_abort_one = ctrl.PreAbortOne(axis)
+            if not ret_pre_abort_one:
+                msg = "%s.PreAbortOne(%d) has failed" % (self.name, axis)
+                error_axes.append(axis)
+                self.warning(msg)
+            # AbortOne
+            try:
+                ctrl.AbortOne(axis)
+            except Exception:
+                msg = "%s.AbortOne(%d) has failed" % (self.name, axis)
+                if axis not in error_axes:
+                    error_axes.append(axis)
+                self.warning(msg)
+        # AbortAll
+        try:
+            ctrl.AbortAll()
+        except Exception:
+            for axis in axes:
+                if axis not in error_axes:
+                    error_axes.append(axis)
+            msg = "%s.AbortAll(%d) has failed" % self.name
+            self.warning(msg)
+        return error_axes
 
     @check_ctrl
     def emergency_break(self, elements=None):
