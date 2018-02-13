@@ -896,6 +896,12 @@ def prepare_logstash(args):
 
     :param args: process execution arguments
     :type args: list<str>
+
+    .. note::
+        The prepare_logstash function has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
     """
     log_messages = []
     try:
