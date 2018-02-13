@@ -362,22 +362,26 @@ class PoolBaseGroup(PoolContainer):
     def stop(self):
         msg = ""
         for ctrl, elements in self.get_physical_elements().items():
-            self.debug("Stopping %s %s", ctrl.name, [e.name for e in elements])
+            self.debug("Stopping %s %s", ctrl.name,
+                       [e.name for e in elements])
             try:
-                error_axes = ctrl.stop_elements(elements=elements)
+                error_elements = ctrl.stop_elements(elements=elements)
                 # TODO: report elements that could not be stopped by their
                 # names
-                if error_axes:
-                    msg += "Controller %s: axes %s\n" % (ctrl.name,
-                                                         str(error_axes))
+                if len(error_elements) > 0:
+                    element_names = ""
+                    for element in error_elements:
+                        element_names += element.name + " "
+                    msg += ("Controller %s -> %s\n" %
+                            (controller.name, element_names))
                     self.error("Unable to stop %s controller: "
-                               "Stop of axes %s failed" %
-                               (ctrl.name, str(error_axes)))
+                               "Stop of elements %s failed" %
+                               (controller.name, element_names))
             except Exception:
                 self.error("Unable to stop controller %s", ctrl.name)
                 self.debug("Details:", exc_info=1)
         if msg:
-            msg_init = "Controllers/axes which could not be stopped:\n"
+            msg_init = "Elements which could not be stopped:\n"
             # TODO: think about a more specific type of exception
             raise Exception(msg_init + msg)
 
@@ -388,14 +392,18 @@ class PoolBaseGroup(PoolContainer):
     def abort(self):
         msg = ""
         for ctrl, elements in self.get_physical_elements().items():
-            self.debug("Aborting %s %s", ctrl.name, [e.name for e in elements])
+            self.debug("Aborting %s %s", ctrl.name,
+                       [e.name for e in elements])
             try:
-                error_axes = ctrl.abort_elements(elements=elements)
+                error_elements = ctrl.abort_elements(elements=elements)
                 # TODO: report elements that could not be aborted by their
                 # names
-                if error_axes:
-                    msg += "Controller %s : axes %s\n" % (ctrl.name,
-                                                          str(error_axes))
+                if len(error_elements) > 0:
+                    element_names = ""
+                    for element in error_elements:
+                        element_names += element.name + " "
+                    msg += ("Controller %s -> %s\n" %
+                            (controller.name, element_names))
                     self.error("Unable to abort %s controller: "
                                "Abort of axes %s failed" %
                                (ctrl.name, str(error_axes)))
@@ -403,7 +411,7 @@ class PoolBaseGroup(PoolContainer):
                 self.error("Unable to abort controller %s", ctrl.name)
                 self.debug("Details:", exc_info=1)
         if msg:
-            msg_init = "Controllers/axes which could not be aborted:\n"
+            msg_init = "Elements which could not be aborted:\n"
             # TODO: think about a more specific type of exception
             raise Exception(msg_init + msg)
 
