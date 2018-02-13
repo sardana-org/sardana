@@ -725,7 +725,8 @@ class uct(Macro):
 
         self.print_value = True
         try:
-            self.mnt_grp.count(integ_time)
+            _, data = self.mnt_grp.count(integ_time)
+            self.setData(Record(data))
         finally:
             self.finish()
 
