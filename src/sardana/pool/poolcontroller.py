@@ -709,6 +709,20 @@ class PoolController(PoolBaseController):
         return self.raw_stop_one(axis)
 
     @check_ctrl
+    def stop_element(self, element):
+        """Stops the given element.
+
+        :param element: the list of elements to stop
+        :type element: PoolElement
+        :raises Exception: not able to stop element
+        """
+
+        axes = [element.axis]
+        error_axes = self.stop_axes(axes)
+        if len(error_axes):
+            raise Exception("Stop of element %s failed" % element.name)
+
+    @check_ctrl
     def stop_elements(self, elements=None):
         """Stops the given elements. If elements is None, stops all
         active elements.
@@ -815,6 +829,20 @@ class PoolController(PoolBaseController):
     @check_ctrl
     def abort_one(self, axis):
         return self.raw_abort_one(axis)
+
+    @check_ctrl
+    def abort_element(self, element):
+        """Aborts the given elements.
+
+        :param element: the list of elements to abort
+        :type element: PoolElement
+        :raises Exception: not able to abort element
+        """
+
+        axes = [element.axis]
+        error_axes = self.abort_axes(axes)
+        if len(error_axes):
+            raise Exception("Abort of element %s failed" % element.name)
 
     @check_ctrl
     def abort_elements(self, elements=None):
