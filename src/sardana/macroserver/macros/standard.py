@@ -676,9 +676,7 @@ class ct(Macro):
                 counts.append(list(ch_data.shape))
             else:
                 counts.append(ch_data)
-        record_data = {}
-        record_data[0] = Record(data)
-        self.setData(record_data)
+        self.setData(Record(data))
         table = Table([counts], row_head_str=names, row_head_fmt='%*s',
                       col_sep='  =  ')
         for line in table.genOutput():
