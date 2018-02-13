@@ -710,15 +710,14 @@ class PoolController(PoolBaseController):
 
     @check_ctrl
     def stop_elements(self, elements=None):
-        """Stops the given elements. If axes is None, stops all active axes.
+        """Stops the given elements. If elements is None, stops all
+        active elements.
 
         :param elements: the list of elements to stop. Default is None
-                         meaning all active axis in this controller
+                         meaning all active elements in this controller
         :type elements: seq<PoolElement> or None
         :return: list of elements that could not be stopped
         :rtype: list<PoolElements>
-
-        .. todo:: failed elements could be reported by name and not by axis
         """
 
         if elements is None:
@@ -726,11 +725,18 @@ class PoolController(PoolBaseController):
         else:
             axes = [e.axis for e in elements]
         error_axes = self.stop_axes(axes)
-        error_elements = [self.getElement(axis=axis) for axis in error_axes]
+        error_elements = [self.get_element(axis=axis) for axis in error_axes]
         return error_elements
 
     def stop_axes(self, axes):
+        """Stops the given axes. If axes is None, aborts all active axes.
 
+        :param axes: the list of axes to aborted. Default is None
+                     meaning all active axes in this controller
+        :type axes: list<axes> or None
+        :return: list of axes that could not be aborted
+        :rtype: list<int>
+        """
         ctrl = self.ctrl
 
         # PreStopAll
@@ -812,11 +818,33 @@ class PoolController(PoolBaseController):
 
     @check_ctrl
     def abort_elements(self, elements=None):
-        """Aborts the given elements. If axes is None, aborts all active axes.
+        """Abort the given elements. If elements is None, stops all
+        active elements.
 
-        :param elements: the list of elements to abort. Default is None
+        :param elements: the list of elements to stop. Default is None
+                         meaning all active elements in this controller
+        :type elements: seq<PoolElement> or None
+        :return: list of elements that could not be aborted
+        :rtype: list<PoolElements>
+        """
+
+        if elements is None:
+            axes = self.get_element_axis().keys()
+        else:
+            axes = [e.axis for e in elements]
+        error_axes = self.abort_axes(axes)
+        error_elements = [self.get_element(axis=axis) for axis in error_axes]
+        return error_elements
+
+    @check_ctrl
+    def abort_axes(self, axes=None):
+        """Aborts the given axes. If axes is None, aborts all active axes.
+
+        :param axes: the list of axes to aborted. Default is None
                          meaning all active axis in this controller
-        :type axes: seq<PoolElement> or None
+        :type axes: list<axes> or None
+        :return: list of axes that could not be aborted
+        :rtype: list<int>
         """
         error_axes = []
         if elements is None:
@@ -866,13 +894,14 @@ class PoolController(PoolBaseController):
         If stop raises exception, an abort is attempted.
 
         :param elements: the list of elements to stop. Default is None
-                         meaning all active axis in this controller
+                         meaning all active axes in this controller
         :type axes: seq<PoolElement> or None
         """
-        try:
-            return self.stop_elements(elements)
-        except Exception:
-            return self.abort_elements(elements)
+        error_elements = self.stop_elements(elements)
+        if error_elements == 0:
+            return error_elements
+        else:
+            return self.abort_elements(error_elements)
 
     @check_ctrl
     def send_to_controller(self, stream):
