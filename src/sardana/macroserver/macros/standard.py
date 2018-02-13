@@ -726,17 +726,14 @@ class uct(Macro):
 
         self.print_value = True
         try:
-            state, self.data = self.mnt_grp.count(integ_time)
+            _, self.__data = self.mnt_grp.count(integ_time)
         finally:
             self.finish()
 
     def finish(self):
         self._clean()
         self.printAllValues()
-        # setData the Record Data
-        record_data = {}
-        record_data[0] = Record(self.data)
-        self.setData(record_data)
+        self.setData(Record(self.__data))
 
     def _clean(self):
         for channel in self.channels:
