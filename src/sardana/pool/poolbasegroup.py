@@ -373,10 +373,10 @@ class PoolBaseGroup(PoolContainer):
                     for element in error_elements:
                         element_names += element.name + " "
                     msg += ("Controller %s -> %s\n" %
-                            (controller.name, element_names))
+                            (ctrl.name, element_names))
                     self.error("Unable to stop %s controller: "
                                "Stop of elements %s failed" %
-                               (controller.name, element_names))
+                               (ctrl.name, element_names))
             except Exception:
                 self.error("Unable to stop controller %s", ctrl.name)
                 self.debug("Details:", exc_info=1)
@@ -403,7 +403,7 @@ class PoolBaseGroup(PoolContainer):
                     for element in error_elements:
                         element_names += element.name + " "
                     msg += ("Controller %s -> %s\n" %
-                            (controller.name, element_names))
+                            (ctrl.name, element_names))
                     self.error("Unable to abort %s controller: "
                                "Abort of axes %s failed" %
                                (ctrl.name, str(error_axes)))
