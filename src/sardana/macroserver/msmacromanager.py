@@ -507,6 +507,12 @@ class MacroManager(MacroServerManager):
 
         params = dict(module=m, name=module_name,
                       macro_server=self.macro_server, exc_info=exc_info)
+
+        # Dictionary for gathering macros with errors
+        macro_errors = {}
+        count_correct_macros = 0
+        count_incorrect_macros = 0
+
         if m is None:
             file_name = self._findMacroLibName(module_name)
             if file_name is None:
@@ -525,12 +531,36 @@ class MacroManager(MacroServerManager):
             for _, macro in inspect.getmembers(m, _is_macro):
                 try:
                     self.addMacro(macro_lib, macro)
-                except:
+                    count_correct_macros += 1
+                except Exception as e:
+                    count_incorrect_macros += 1
                     self.error("Error adding macro %s", macro.__name__)
                     self.debug("Details:", exc_info=1)
-        if macro_lib.has_macros():
-            self._modules[module_name] = macro_lib
-        return macro_lib
+                    macro_errors[macro.__name__] = str(e)
+        try:
+            if macro_lib.has_macros():
+                self._modules[module_name] = macro_lib
+            return macro_lib
+        finally:
+            if macro_errors:
+                msg = ""
+                for key, value in macro_errors.iteritems():
+                    msg_part = ("\n" + "Error adding macro(s): " + key + "\n"
+                                + "It presents an error: \n" + str(value))
+                    msg += str(msg_part) + "\n"
+                correct_macros = ("%d macro(s) correctly loaded" %
+                                  count_correct_macros)
+                incorrect_macros = ("%d macro(s) could not be loaded" %
+                                    count_incorrect_macros)
+
+                msg = (msg + "\n" + "Summary:" + "\n" + correct_macros
+                       + "\n" + incorrect_macros + "\n")
+
+                if count_correct_macros == 0:
+                    msg += "\nUse addmaclib to reload the corrected macro(s)\n"
+                if count_correct_macros != 0:
+                    msg += "\nUse relmaclib to reload the corrected macro(s)\n"
+                raise Exception(msg)
 
     def addMacro(self, macro_lib, macro):
         add = self.addMacroFunction

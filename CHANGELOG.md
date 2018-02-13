@@ -7,8 +7,13 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
-- addctrlib, relctrllib, relctrlcls macros usefull when developing
+- `addctrlib`, `relctrllib`, `relctrlcls` macros usefull when developing
   controller classes (#541)
+- `meshct` macro - mesh composed from row scans executed in the continuous
+  way (#659)
+- Relative continuous scans like `dscanct`, `d2scanct`, etc. (#605, #688)
+- Expose acquisition data in `ct` and `uct` macros via data macro property
+  (#471, #682, #684)
 - Timeout/watchdog in continuous scans - especially usefull when
   triggers may be missed e.g. not precise positioning (#136, #601)
 - Reintroduce intermediate events for counter/timer channels while
@@ -32,7 +37,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Present available pools at the macroserver creation moment in the
   alphabetical order (#585, #586)
 - Present available doors at the spock profile creation moment in the
-  alphabetical order (#221, #558)
+  alphabetical order (#221, #558, #673)
+- `DiffractometerType` is stored in crystal file in HKL controller (#679)
 - Some backwards compatibility for element names in PQDN - recently
   Taurus started using only FQDN (#625, #627)
 - Improve DumbRecorder (example of a custom file recorder) to write to
@@ -52,10 +58,14 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Make the information about the element's instrument fully dynamic and
   remove it from the serialized information (#122, #619)
 - uct macro (#319, #627)
+- Avoid measurement group start failures when to the disabled controller
+  is offline (#677, #681)
 - Allow to stop macro when it was previously paused (#348, #548)
 - Bug in theoretical motor position in ascanct & co. (#591)
 - Counter/timer TaurusValue widget when used with Taurus 4 - correctly show
   the element's name (#617)
+- `relmaclib` reports the error message in case the macro has parameters
+  definition is incorrect (#377, #642)
 - Icons in macroexecution widgets when used with Taurus 4 (#578)
 - Spurious errors when reading RecordData attribute, normally triggered
   on event subscription e.g. macrogui (#447, #598)
@@ -69,14 +79,19 @@ This file follows the formats and conventions from [keepachangelog.com]
   controllers in case software synchronization is in use (#594)
 - `Hookable.hooks` proprty setting - now it cleans the previous
   configuration (#655)
+- `getData` of scan macros from the GSF (#683, #687)
 - Make PoolUtil thread-safe (#662, #655)
 - Dummy counter/timer now returns partial value when its acquisition was
   aborted (#626)
 - Workaround for #427: make default values for repeat parameters of `wa`,
   `pwa` and all list macros fully functional - also support execution with
   `Macro.execMacro` (#654)
+- `getIntervalEstimation` method of the GSF for some scanning modes (#661)
+- Improved MacroServer creation wizard (#676)
 
 ### Changed
+- Make explicit file descriptor buffer synchronization (force effective write to
+  the file system) in SPEC and FIO recorders (#651)
 - Rename edctrl to edctrlcls macro (#541)
 - The way how the master timer/monitor for the acquisition actions is selected.
   Previously the first one for the given synchronization was used, now it is
@@ -88,6 +103,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Removed
 - `ElementList` attribute from the Door Tango device - `Element` attribute is
   available on the MacroServer device (#556, #557, #653)
+- `stop_axes` and `abort_axes` methods of the `PoolController` class. Equivalent
+  methods are `stop_elements` and `remove_elements` (#696)
 
 
 ## [2.3.2] - 2017-08-11

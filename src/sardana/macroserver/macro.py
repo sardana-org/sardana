@@ -238,7 +238,8 @@ class Hookable(Logger):
                         'Deprecation warning: hooks should be set with a list of hints. See Hookable API docs')
 
             # delete _hookHintsDict to force its recreation on the next access
-            del self._hookHintsDict
+            if hasattr(self, '_hookHintsDict'):
+                del self._hookHintsDict
             # create _hookHintsDict
             self._getHookHintsDict()['_ALL_'] = zip(*self._hooks)[0]
             nohints = self._hookHintsDict['_NOHINTS_']

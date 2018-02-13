@@ -3,4 +3,8 @@
 # multi conditional lines ("if" statement) and the code nested inside of the
 # "if" statment. More details in:
 # https://github.com/sardana-org/sardana/pull/551#issuecomment-338572275
-ignore = E129
+#
+# The default configuration ignores: E121, E123, E126, E133, E226, E241,
+# E242, E704 and W503 so ignore them here as well. See more details in:
+# https://pycodestyle.readthedocs.io/en/latest/intro.html#error-codes
+ignore = E121, E123, E126, E129, E133, E226, E241, E242, E704 and W503
