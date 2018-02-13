@@ -366,12 +366,8 @@ class PoolBaseGroup(PoolContainer):
                        [e.name for e in elements])
             try:
                 error_elements = ctrl.stop_elements(elements=elements)
-                # TODO: report elements that could not be stopped by their
-                # names
                 if len(error_elements) > 0:
-                    element_names = ""
-                    for element in error_elements:
-                        element_names += element.name + " "
+                    element_names = [elem.name for elem in error_elements]
                     msg += ("Controller %s -> %s\n" %
                             (ctrl.name, element_names))
                     self.error("Unable to stop %s controller: "
@@ -399,14 +395,12 @@ class PoolBaseGroup(PoolContainer):
                 # TODO: report elements that could not be aborted by their
                 # names
                 if len(error_elements) > 0:
-                    element_names = ""
-                    for element in error_elements:
-                        element_names += element.name + " "
+                    element_names = [elem.name for elem in error_elements]
                     msg += ("Controller %s -> %s\n" %
                             (ctrl.name, element_names))
                     self.error("Unable to abort %s controller: "
                                "Abort of axes %s failed" %
-                               (ctrl.name, str(error_axes)))
+                               (ctrl.name, element_names))
             except Exception:
                 self.error("Unable to abort controller %s", ctrl.name)
                 self.debug("Details:", exc_info=1)
