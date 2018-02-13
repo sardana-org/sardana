@@ -1273,8 +1273,7 @@ class BaseMacroServer(MacroServerDevice):
         if isinstance(paramType, list):
             for repeatNode in paramNode.children():
                 children = repeatNode.children()
-                for child, paramT in izip_longest(children,
-                                                  paramType):
+                for child, paramT in izip_longest(children, paramType):
                     if child is None:
                         node = ParamFactory(paramT, repeatNode)
                         repeatNode.insertChild(node)

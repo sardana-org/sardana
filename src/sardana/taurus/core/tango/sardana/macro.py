@@ -1291,8 +1291,13 @@ def ParamFactory(paramInfo, parent=None):
         param = RepeatParamNode(parent=parent)
         for pI in paramInfo:
             repeat_node = param.addRepeat()
-            for p in pI:
-                repeat_node.insertChild(ParamFactory(p, repeat_node))
+            # If contains another paramRepeats:
+            if isinstance(pI, list):
+                for p in pI:
+                    if len(p) > 0:
+                        repeat_node.insertChild(ParamFactory(p, repeat_node))
+            else:
+                repeat_node.insertChild(ParamFactory(pI, repeat_node))
 
     elif isinstance(paramInfo, dict):
         if isinstance(paramInfo.get('type'), list):
