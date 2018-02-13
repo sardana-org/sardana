@@ -715,14 +715,8 @@ class PoolController(PoolBaseController):
         :param elements: the list of elements to stop. Default is None
                          meaning all active axis in this controller
         :type elements: seq<PoolElement> or None
-        :return: list of axes that could not be stopped
-        :rtype: list<int>
-
-        .. todo:: PoolController API is oriented to the axis and not the
-        element. Using elements as arguments adds an extra inter class
-        dependency. From the other hand this API is convenient and could be
-        maintained. In the future we could add stop_axes method that would
-        implement the stopping algorithm and be based on axis.
+        :return: list of elements that could not be stopped
+        :rtype: list<PoolElements>
 
         .. todo:: failed elements could be reported by name and not by axis
         """
@@ -731,6 +725,11 @@ class PoolController(PoolBaseController):
             axes = self.get_element_axis().keys()
         else:
             axes = [e.axis for e in elements]
+        error_axes = self.stop_axes(axes)
+        error_elements = [self.getElement(axis=axis) for axis in error_axes]
+        return error_elements
+
+    def stop_axes(self, axes):
 
         ctrl = self.ctrl
 
