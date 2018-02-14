@@ -874,27 +874,28 @@ class PoolController(PoolBaseController):
         :return: list of axes that could not be aborted
         :rtype: list<int>
         """
-        error_axes = []
-        if elements is None:
-            axes = self.get_element_axis().keys()
-        else:
-            axes = [e.axis for e in elements]
 
         ctrl = self.ctrl
+
         # PreAbortAll
         try:
             ctrl.PreAbortAll()
         except Exception:
-            for axis in axes:
-                error_axes.append(axis)
             msg = "%s.PreAbortAll has failed" % self.name
-            self.warning(msg)
+            self.warning(msg, exc_info=True)
+            return axes
 
+        error_axes = []
         for axis in axes:
-            # PreAbortOne
-            ret_pre_abort_one = ctrl.PreAbortOne(axis)
-            if not ret_pre_abort_one:
-                msg = "%s.PreAbortOne(%d) has failed" % (self.name, axis)
+            # PreStopOne
+            msg = "%s.PreAbortOne(%d) has failed" % (self.name, axis)
+            try:
+                ret = ctrl.PreAbortOne(axis)
+            except Exception:
+                error_axes.append(axis)
+                self.warning(msg, exc_info=True)
+                continue
+            if not ret:
                 error_axes.append(axis)
                 self.warning(msg)
             # AbortOne
@@ -902,34 +903,46 @@ class PoolController(PoolBaseController):
                 ctrl.AbortOne(axis)
             except Exception:
                 msg = "%s.AbortOne(%d) has failed" % (self.name, axis)
-                if axis not in error_axes:
-                    error_axes.append(axis)
-                self.warning(msg)
+                error_axes.append(axis)
+                self.warning(msg, exc_info=True)
         # AbortAll
         try:
             ctrl.AbortAll()
         except Exception:
-            for axis in axes:
-                if axis not in error_axes:
-                    error_axes.append(axis)
             msg = "%s.AbortAll(%d) has failed" % self.name
-            self.warning(msg)
+            self.warning(msg, exc_info=True)
+            return axes
+
         return error_axes
 
     @check_ctrl
     def emergency_break(self, elements=None):
-        """Stops the given elements. If axes is None, stops all active axes.
-        If stop raises exception, an abort is attempted.
+        """Stops the given elements. If elements is None,
+        stops all active elements.
+        If stop could not be executed, an abort is attempted.
 
         :param elements: the list of elements to stop. Default is None
-                         meaning all active axes in this controller
+                         meaning all active elements in this controller
         :type axes: seq<PoolElement> or None
         """
+        if not elements:
+            elements = self.ctrl.get_elements()
         error_elements = self.stop_elements(elements)
-        if error_elements == 0:
-            return error_elements
-        else:
-            return self.abort_elements(error_elements)
+        if error_elements:
+            error_elements = self.abort_elements(error_elements)
+            element_names = [elem.name for elem in error_elements]
+            msg = ("Unable to stop element(s): %s. Trying to abort..."
+                   % element_names)
+            self.warning(msg)
+            if error_elements:
+                element_names = [elem.name for elem in error_elements]
+                msg = "Unable to abort element(s): %s" % element_names
+                self.warning(msg)
+                if not error_elements:
+                    element_names = [elem.name for elem in elements]
+                    msg = "Elements stopped/aborted: " % element_names
+                    self.warning(msg)
+        return error_elements
 
     @check_ctrl
     def send_to_controller(self, stream):
