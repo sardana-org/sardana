@@ -9,7 +9,6 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Added
 - New API to `Stoppable` interface of pool controllers that allows synchronized
 multiaxes stop/abort (#157, #592)
-- Notification to the user in case of a failed operation of stopping in spock (#592)
 - `addctrlib`, `relctrllib`, `relctrlcls` macros usefull when developing
   controller classes (#541)
 - `meshct` macro - mesh composed from row scans executed in the continuous
@@ -17,6 +16,8 @@ multiaxes stop/abort (#157, #592)
 - Relative continuous scans like `dscanct`, `d2scanct`, etc. (#605, #688)
 - Expose acquisition data in `ct` and `uct` macros via data macro property
   (#471, #682, #684)
+- Notification to the user in case of a failed operation of stopping in spock
+  (#592)
 - Timeout/watchdog in continuous scans - especially usefull when
   triggers may be missed e.g. not precise positioning (#136, #601)
 - Reintroduce intermediate events for counter/timer channels while
