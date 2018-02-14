@@ -955,6 +955,9 @@ def prepare_logstash(args):
         root = Logger.getRootLog()
         handler = logstash.TCPLogstashHandler(host, port, version=1)
         root.addHandler(handler)
+        msg = ("Log is being sent to logstash listening on %s:%d",
+               host, port)
+        log_messages.append(msg)
 
     return log_messages
 
