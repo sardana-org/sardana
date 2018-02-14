@@ -7,6 +7,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
+- New API to `Stoppable` interface of pool controllers that allows synchronized
+multiaxes stop/abort (#157, #592)
+- Notification to the user in case of a failed operation of stopping in spock (#592)
 - `addctrlib`, `relctrllib`, `relctrlcls` macros usefull when developing
   controller classes (#541)
 - `meshct` macro - mesh composed from row scans executed in the continuous
@@ -103,8 +106,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Removed
 - `ElementList` attribute from the Door Tango device - `Element` attribute is
   available on the MacroServer device (#556, #557, #653)
-- `stop_axes` and `abort_axes` methods of the `PoolController` class. Equivalent
-  methods are `stop_elements` and `remove_elements` (#696)
+- `raw_stop_all`, `raw_stop_one`, `_raw_stop_all`, `_raw_stop_one`, `stop_all`,
+  `stop_one`, `raw_abort_all`, `raw_abort_one`, `_raw_abort_all`, `_raw_abort_one`,
+  `abort_all`, `abort_one` methods of the `PoolController` class (#592)
 
 
 ## [2.3.2] - 2017-08-11
