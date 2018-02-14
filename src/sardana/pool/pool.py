@@ -625,15 +625,18 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
             elif ElementType.IORegister in controller.get_ctrl_types():
                 # Skip IOR since they are not stoppable
                 continue
-            error_axes = controller.stop_elements()
-            if error_axes:
-                msg += "Controller %s: axes %s\n" % (controller.name,
-                                                     str(error_axes))
+            error_elements = controller.stop_elements()
+            if len(error_elements) > 0:
+                element_names = ""
+                for element in error_elements:
+                    element_names += element.name + " "
+                msg += ("Controller %s -> %s\n" %
+                        (controller.name, element_names))
                 self.error("Unable to stop %s controller: "
-                           "Stop of axes %s failed" %
-                           (controller.name, str(error_axes)))
+                           "Stop of elements %s failed" %
+                           (controller.name, element_names))
         if msg:
-            msg_init = "Controllers/axes which could not be stopped:\n"
+            msg_init = "Elements which could not be stopped:\n"
             raise Exception(msg_init + msg)
 
     def abort(self):
@@ -645,15 +648,18 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
             elif ElementType.IORegister in controller.get_ctrl_types():
                 # Skip IOR since they are not stoppable
                 continue
-            error_axes = controller.abort_elements()
-            if error_axes:
-                msg += "Controller %s: axes %s\n" % (controller.name,
-                                                     str(error_axes))
+            error_elements = controller.abort_elements()
+            if len(error_elements) > 0:
+                element_names = ""
+                for element in error_elements:
+                    element_names += element.name + " "
+                msg += ("Controller %s -> %s\n" %
+                        (controller.name, element_names))
                 self.error("Unable to abort %s controller: "
-                           "Abort of axes %s failed" %
-                           (controller.name, str(error_axes)))
+                           "Abort of elements %s failed" %
+                           (controller.name, element_names))
         if msg:
-            msg_init = "Controllers/axes which could not be aborted:\n"
+            msg_init = "Elements which could not be aborted:\n"
             raise Exception(msg_init + msg)
 
     # --------------------------------------------------------------------------
