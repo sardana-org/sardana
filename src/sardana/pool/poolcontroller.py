@@ -670,44 +670,6 @@ class PoolController(PoolBaseController):
         :rtype: dict<PoolElement, SardanaValue>"""
         return self.raw_read_axis_values(axes=axes)
 
-    def raw_stop_all(self):
-        try:
-            return self._raw_stop_all()
-        except:
-            pass
-
-    def raw_stop_one(self, axis):
-        try:
-            self._raw_stop_one(axis)
-        except:
-            pass
-
-    def _raw_stop_all(self):
-        try:
-            return self.ctrl.StopAll()
-        except:
-            self.warning("StopAll() raises exception")
-            self.debug("Details:", exc_info=1)
-            raise
-
-    def _raw_stop_one(self, axis):
-        try:
-            self.ctrl.StopOne(axis)
-        except:
-            self.warning("StopOne(%d) raises exception", axis)
-            self.debug("Details:", exc_info=1)
-            raise
-
-    @check_ctrl
-    def stop_all(self):
-        self.raw_stop_all()
-
-    stop = stop_all
-
-    @check_ctrl
-    def stop_one(self, axis):
-        return self.raw_stop_one(axis)
-
     @check_ctrl
     def stop_element(self, element):
         """Stops the given element.
@@ -791,43 +753,7 @@ class PoolController(PoolBaseController):
 
         return error_axes
 
-    def raw_abort_all(self):
-        try:
-            return self._raw_abort_all()
-        except:
-            pass
 
-    def raw_abort_one(self, axis):
-        try:
-            self._raw_abort_one(axis)
-        except:
-            pass
-
-    def _raw_abort_all(self):
-        try:
-            return self.ctrl.AbortAll()
-        except:
-            self.warning("AbortAll() raises exception")
-            self.debug("Details:", exc_info=1)
-            raise
-
-    def _raw_abort_one(self, axis):
-        try:
-            self.ctrl.AbortOne(axis)
-        except:
-            self.warning("AbortOne(%d) raises exception", axis)
-            self.debug("Details:", exc_info=1)
-            raise
-
-    @check_ctrl
-    def abort_all(self):
-        self.raw_abort_all()
-
-    abort = abort_all
-
-    @check_ctrl
-    def abort_one(self, axis):
-        return self.raw_abort_one(axis)
 
     @check_ctrl
     def abort_element(self, element):
@@ -862,6 +788,8 @@ class PoolController(PoolBaseController):
         error_axes = self.abort_axes(axes)
         error_elements = [self.get_element(axis=axis) for axis in error_axes]
         return error_elements
+
+    stop = stop_elements
 
     @check_ctrl
     def abort_axes(self, axes):
@@ -914,6 +842,8 @@ class PoolController(PoolBaseController):
         return error_axes
 
     @check_ctrl
+    abort = abort_elements
+
     def emergency_break(self, elements=None):
         """Stops the given elements. If elements is None,
         stops all active elements.
