@@ -743,12 +743,11 @@ class PoolController(PoolBaseController):
         return error_elements
 
     def stop_axes(self, axes):
-        """Stops the given axes. If axes is None, aborts all active axes.
+        """Stops the given axes.
 
-        :param axes: the list of axes to aborted. Default is None
-                     meaning all active axes in this controller
-        :type axes: list<axes> or None
-        :return: list of axes that could not be aborted
+        :param axes: the list of axes to stopped.
+        :type axes: list<axes>
+        :return: list of axes that could not be stopped
         :rtype: list<int>
         """
         ctrl = self.ctrl
@@ -865,12 +864,11 @@ class PoolController(PoolBaseController):
         return error_elements
 
     @check_ctrl
-    def abort_axes(self, axes=None):
-        """Aborts the given axes. If axes is None, aborts all active axes.
+    def abort_axes(self, axes):
+        """Aborts the given axes.
 
-        :param axes: the list of axes to aborted. Default is None
-                         meaning all active axis in this controller
-        :type axes: list<axes> or None
+        :param axes: the list of axes to aborted.
+        :type axes: list<axes>
         :return: list of axes that could not be aborted
         :rtype: list<int>
         """
