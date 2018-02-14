@@ -922,24 +922,31 @@ class PoolController(PoolBaseController):
         :param elements: the list of elements to stop. Default is None
                          meaning all active elements in this controller
         :type axes: seq<PoolElement> or None
+        :return: elements that could neither be stopped nor aborted
+        :rtype: list<PoolElement>
         """
-        if not elements:
+        if elements is None:
             elements = self.ctrl.get_elements()
+
         error_elements = self.stop_elements(elements)
+        if not error_elements:
+            return []
+        element_names = [elem.name for elem in error_elements]
+        msg = ("Emergency break could not stop element(s): %s. "
+               + "Trying to abort...") % element_names
+        self.warning(msg)
+        # trying to abort elements that could not be stopped
+        error_elements = self.abort_elements(error_elements)
         if error_elements:
-            error_elements = self.abort_elements(error_elements)
             element_names = [elem.name for elem in error_elements]
-            msg = ("Unable to stop element(s): %s. Trying to abort..."
+            msg = ("Emergency break could not abort element(s): %s"
                    % element_names)
             self.warning(msg)
-            if error_elements:
-                element_names = [elem.name for elem in error_elements]
-                msg = "Unable to abort element(s): %s" % element_names
-                self.warning(msg)
-                if not error_elements:
-                    element_names = [elem.name for elem in elements]
-                    msg = "Elements stopped/aborted: " % element_names
-                    self.warning(msg)
+        else:
+            element_names = [elem.name for elem in elements]
+            msg = ("Emergency break stopped/aborted element(s): %s" 
+                   % element_names)
+            self.warning(msg)
         return error_elements
 
     @check_ctrl
