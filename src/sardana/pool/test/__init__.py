@@ -25,16 +25,16 @@
 
 """This is the pool test module"""
 
-from .fake import *
-from .helper import *
-from .dummyconfs import *
-from .base import *
-from .test_acquisition import *
-from .test_ctacquisition import *
-from .test_measurementgroup import *
-from .test_poolcontroller import *
-from .test_poolcontrollermanager import *
-from .test_poolcountertimer import *
-from .test_poolsynchronization import *
-from .test_synchronization import *
-from .test_poolmotion import *
+from .fake import *  # NOQA
+from .helper import *  # NOQA
+from .dummyconfs import *  # NOQA
+from .base import *  # NOQA
+from .test_acquisition import *  # NOQA
+from .test_ctacquisition import *  # NOQA
+from .test_measurementgroup import *  # NOQA
+from .test_poolcontroller import *  # NOQA
+from .test_poolcontrollermanager import *  # NOQA
+from .test_poolcountertimer import *  # NOQA
+from .test_poolsynchronization import *  # NOQA
+from .test_synchronization import *  # NOQA
+from .test_poolmotion import *  # NOQA
