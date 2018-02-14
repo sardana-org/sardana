@@ -912,11 +912,13 @@ def prepare_logstash(args):
         deemed necessary by the core developers.
     """
     log_messages = []
+
     try:
         import logstash
     except ImportError:
-        msg = "Unable to import logstash. Skipping logstash configuration..."
-        log_messages.append(msg)
+        msg = ("Unable to import logstash. Skipping logstash "
+               + "configuration...", )
+        log_messages.append(msg,)
         return log_messages
 
     def get_logstash_conf(dev_name):
