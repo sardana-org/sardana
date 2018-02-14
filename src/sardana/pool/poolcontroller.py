@@ -944,7 +944,7 @@ class PoolController(PoolBaseController):
             self.warning(msg)
         else:
             element_names = [elem.name for elem in elements]
-            msg = ("Emergency break stopped/aborted element(s): %s" 
+            msg = ("Emergency break stopped/aborted element(s): %s"
                    % element_names)
             self.warning(msg)
         return error_elements
