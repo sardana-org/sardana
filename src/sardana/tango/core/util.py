@@ -917,7 +917,7 @@ def prepare_logstash(args):
     except ImportError:
         msg = "Unable to import logstash. Skipping logstash configuration..."
         log_messages.append(msg)
-        return
+        return log_messages
 
     def get_logstash_conf(dev_name):
         try:
