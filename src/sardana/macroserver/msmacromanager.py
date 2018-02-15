@@ -876,8 +876,19 @@ class MacroExecutor(Logger):
         return self.macro_server.macro_manager
 
     def getGeneralHooks(self):
-        # TODO: general hooks should reflect the state of configuration
-        # at the macro/sequence start
+        """Get data structure containing definition of the general hooks.
+
+        .. note::
+        The `general_hooks` has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
+
+        .. todo::
+        General hooks should reflect the state of configuration at the
+        macro/sequence start.
+        """
+
         try:
             return self.door.get_env("_GeneralHooks")["_GeneralHooks"]
         except KeyError:

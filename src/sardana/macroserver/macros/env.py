@@ -299,7 +299,14 @@ class load_env(Macro):
 
 
 class lsgh(Macro):
-    """List general hooks"""
+    """List general hooks.
+
+    .. note::
+        The `lsgh` macro has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
+    """
 
     def run(self):
         try:
@@ -333,11 +340,17 @@ class lsgh(Macro):
 class defgh(Macro):
     """Define general hook.
     Ex.
-    defgh "mv [[mot02 9]]" pre-scan
-    defgh "ct 0.1" pre-scan
-    defgh lsm pre-scan
-    defgh "mv mot03 10" pre-scan
-    defgh "Print 'Hello world'" pre-scan
+        defgh "mv [[mot02 9]]" pre-scan
+        defgh "ct 0.1" pre-scan
+        defgh lsm pre-scan
+        defgh "mv mot03 10" pre-scan
+        defgh "Print 'Hello world'" pre-scan
+
+    .. note::
+        The `defgh` macro has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
 
     """
 
@@ -367,7 +380,14 @@ class defgh(Macro):
 
 
 class udefgh(Macro):
-    """Undefine general hook. Without arguments undefine all """
+    """Undefine general hook. Without arguments undefine all.
+
+    .. note::
+        The `lsgh` macro has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
+    """
 
     param_def = [
         ['macro_name', Type.String, "all", 'General hook to be undefined'],
