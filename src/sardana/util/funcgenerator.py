@@ -27,10 +27,10 @@ import math
 import copy
 import numpy
 
-
 from sardana import State
 from sardana.sardanaevent import EventGenerator, EventType
 from sardana.pool.pooldefs import SynchParam, SynchDomain
+from taurus.core.util.log import Logger
 
 
 class FunctionGenerator(EventGenerator):
@@ -62,6 +62,7 @@ class FunctionGenerator(EventGenerator):
         self._direction = None
         self._condition = None
         self._id = None
+        self.logger = Logger('FunctionGenerator')
 
     def set_initial_domain(self, domain):
         self._initial_domain = domain
@@ -135,8 +136,12 @@ class FunctionGenerator(EventGenerator):
 
     def event_received(self, *args, **kwargs):
         _, _, v = args
-        self._position = v.value
-        self._position_event.set()
+        if v.error:
+            self.logger.error("Synchronizer value could not be read")
+            self.logger.error(v.exc_info)
+        else:
+            self._position = v.value
+            self._position_event.set()
 
     def start(self):
         self._start_time = time.time()
