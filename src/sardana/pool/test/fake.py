@@ -89,8 +89,9 @@ class FakePool(object):
 class FakeElement(object):
     '''Fake pool element'''
 
-    def __init__(self, pool):
+    def __init__(self, pool, name="FakeElement"):
         self.pool = pool
+        self.name = name
 
     def on_element_changed(self, *args, **kwargs):
         pass
