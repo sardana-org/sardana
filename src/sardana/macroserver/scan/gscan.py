@@ -2201,6 +2201,9 @@ class CTScan(CScan, CAcquisition):
                     msg = "Scan start and end must be different."
                 raise ScanException(msg)
 
+            # Set the index offset used in CAcquisition class.
+            self._index_offset = i * self.macro.nr_points
+
             startTimestamp = time.time()
 
             # extra pre configuration
@@ -2237,9 +2240,6 @@ class CTScan(CScan, CAcquisition):
             self.debug('Synchronization: %s' % synch)
             measurement_group.setSynchronization(synch)
             self.macro.checkPoint()
-
-            # Set the index offset used in CAcquisition class.
-            self._index_offset = i * self.macro.nr_points
 
             # extra post configuration
             if hasattr(macro, 'getHooks'):
