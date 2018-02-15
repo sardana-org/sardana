@@ -46,7 +46,7 @@ class FunctionGenerator(EventGenerator):
 
     MAX_NAP_TIME = 0.1
 
-    def __init__(self):
+    def __init__(self, name="FunctionGenerator"):
         EventGenerator.__init__(self)
         self._initial_domain = None
         self._active_domain = None
@@ -62,7 +62,7 @@ class FunctionGenerator(EventGenerator):
         self._direction = None
         self._condition = None
         self._id = None
-        self.logger = Logger('FunctionGenerator')
+        self.logger = Logger(name)
 
     def set_initial_domain(self, domain):
         self._initial_domain = domain

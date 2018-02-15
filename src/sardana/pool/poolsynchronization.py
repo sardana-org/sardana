@@ -66,7 +66,8 @@ class PoolSynchronization(PoolAction):
 
     def __init__(self, main_element, name="Synchronization"):
         PoolAction.__init__(self, main_element, name)
-        self._synch_soft = FunctionGenerator()
+        soft_synch_name = main_element.name + "-SoftSynch"
+        self._synch_soft = FunctionGenerator(name=soft_synch_name)
         self._listener = None
 
     def add_listener(self, listener):
