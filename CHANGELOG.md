@@ -59,6 +59,8 @@ multiaxes stop/abort (#157, #592)
   sub-actions (hardware and software) (#614)
 - Avoid "already involved in motion" errors due to wrong handling of
   operation context and Tango state machine (#639)
+- Protect software synchronizer from errors in reading motor's position
+  (#694, #700)
 - Make the information about the element's instrument fully dynamic and
   remove it from the serialized information (#122, #619)
 - uct macro (#319, #627)
