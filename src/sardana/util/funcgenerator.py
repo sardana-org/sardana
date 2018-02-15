@@ -50,6 +50,7 @@ class FunctionGenerator(EventGenerator, Logger):
     def __init__(self, name="FunctionGenerator"):
         EventGenerator.__init__(self)
         Logger.__init__(self, name)
+        self._name = name
         self._initial_domain = None
         self._active_domain = None
         self._position_event = threading.Event()
@@ -64,6 +65,11 @@ class FunctionGenerator(EventGenerator, Logger):
         self._direction = None
         self._condition = None
         self._id = None
+
+    def get_name(self):
+        return self._name
+
+    name = property(get_name)
 
     def set_initial_domain(self, domain):
         self._initial_domain = domain
