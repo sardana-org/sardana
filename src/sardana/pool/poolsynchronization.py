@@ -66,6 +66,12 @@ class PoolSynchronization(PoolAction):
 
     def __init__(self, main_element, name="Synchronization"):
         PoolAction.__init__(self, main_element, name)
+        # Even if rest of Sardana is using "." in logger names use "-" as
+        # sepator. This is in order to avoid confusion about the logger
+        # hierary - by default python logging use "." to indicate loggers'
+        # hirarchy in case parent-children relation is established between the
+        # loggers.
+        # TODO: review if it is possible in Sardana to use a common separator.
         soft_synch_name = main_element.name + "-SoftSynch"
         self._synch_soft = FunctionGenerator(name=soft_synch_name)
         self._listener = None
