@@ -1109,7 +1109,9 @@ class MacroExecutor(Logger):
         macro_id = init_opts.get("id")
         if macro_id is None:
             init_opts["id"] = macro_id
-        macro_line = self._composeMacroLine(macro_name, macro_params, macro_id)
+        macro_line = self._composeMacroLine(macro_name,
+                                            macro_params,
+                                            macro_id)
 
         init_opts['macro_line'] = macro_line
 
