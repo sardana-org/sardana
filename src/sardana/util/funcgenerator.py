@@ -26,6 +26,7 @@ import threading
 import math
 import copy
 import numpy
+import traceback
 
 from sardana import State
 from sardana.sardanaevent import EventGenerator, EventType
@@ -137,8 +138,10 @@ class FunctionGenerator(EventGenerator):
     def event_received(self, *args, **kwargs):
         _, _, v = args
         if v.error:
-            self.logger.error("Synchronization base attribute is in error")
-            self.logger.debug("Details: %s" % v.exc_info)
+            exc_info = v.exc_info
+            self.logger.error("Synchronization base attribute in error")
+            msg = "Details: " + "".join(traceback.format_exception(*exc_info))
+            self.logger.debug(msg)
             return
         self._position = v.value
         self._position_event.set()
