@@ -34,7 +34,7 @@ from sardana.pool.pooldefs import SynchParam, SynchDomain
 from taurus.core.util.log import Logger
 
 
-class FunctionGenerator(EventGenerator):
+class FunctionGenerator(EventGenerator, Logger):
     """Generator of active and passive events describing a rectangular
     function.
 
@@ -49,6 +49,7 @@ class FunctionGenerator(EventGenerator):
 
     def __init__(self, name="FunctionGenerator"):
         EventGenerator.__init__(self)
+        Logger.__init__(self, name)
         self._initial_domain = None
         self._active_domain = None
         self._position_event = threading.Event()
@@ -63,7 +64,6 @@ class FunctionGenerator(EventGenerator):
         self._direction = None
         self._condition = None
         self._id = None
-        self.logger = Logger(name)
 
     def set_initial_domain(self, domain):
         self._initial_domain = domain
@@ -139,9 +139,9 @@ class FunctionGenerator(EventGenerator):
         _, _, v = args
         if v.error:
             exc_info = v.exc_info
-            self.logger.error("Synchronization base attribute in error")
+            self.error("Synchronization base attribute in error")
             msg = "Details: " + "".join(traceback.format_exception(*exc_info))
-            self.logger.debug(msg)
+            self.debug(msg)
             return
         self._position = v.value
         self._position_event.set()
