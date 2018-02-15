@@ -136,12 +136,12 @@ class FunctionGenerator(EventGenerator):
 
     def event_received(self, *args, **kwargs):
         _, _, v = args
-        if v.error:
-            self.logger.error("Synchronizer value could not be read")
-            self.logger.error(v.exc_info)
-        else:
-            self._position = v.value
-            self._position_event.set()
+        if v.in_error:
+            self.logger.error("Synchronization base attribute is in error")
+            self.logger.debug("Details: %s" % v.exc_info)
+            return
+        self._position = v.value
+        self._position_event.set()
 
     def start(self):
         self._start_time = time.time()
