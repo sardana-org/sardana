@@ -136,7 +136,7 @@ class FunctionGenerator(EventGenerator):
 
     def event_received(self, *args, **kwargs):
         _, _, v = args
-        if v.in_error:
+        if v.error:
             self.logger.error("Synchronization base attribute is in error")
             self.logger.debug("Details: %s" % v.exc_info)
             return
