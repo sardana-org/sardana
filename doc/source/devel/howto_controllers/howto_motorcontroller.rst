@@ -602,7 +602,7 @@ an extra angle of the table that in very specific cases may be not desired e.g.
 activation of the safety limits, closed loop errors, etc.
 
 In this case the complete algorithm for stopping/aborting the motor motion in
-sardana is:
+sardana is::
 
     /FOR/ Each controller(s) implied in the motion
 
