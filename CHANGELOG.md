@@ -7,6 +7,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
+- General hooks - hooks that can be configured with `defgh`, `udefgh` and `lsgh`
+  macros instead of attaching them programatically (#200, #646)
 - New API to `Stoppable` interface of pool controllers that allows synchronized
 multiaxes stop/abort (#157, #592)
 - `addctrlib`, `relctrllib`, `relctrlcls` macros usefull when developing
