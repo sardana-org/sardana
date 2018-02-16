@@ -1342,6 +1342,22 @@ class PoolClass(PyTango.DeviceClass):
             [PyTango.DevVarStringArray,
              "List of instruments (internal property)",
              []],
+        'LogstashHost':
+            [PyTango.DevString,
+             "Hostname where Logstash runs. "
+             "This property has been included in Sardana on a provisional "
+             "basis. Backwards incompatible changes (up to and including "
+             "its removal) may occur if deemed necessary by the "
+             "core developers.",
+             None],
+        'LogstashPort':
+            [PyTango.DevLong,
+             "Port on which Logstash will listen on events. "
+             "This property has been included in Sardana on a provisional "
+             "basis. Backwards incompatible changes (up to and including "
+             "its removal) may occur if deemed necessary by the "
+             "core developers.",
+             None]
     }
 
     #    Command definitions

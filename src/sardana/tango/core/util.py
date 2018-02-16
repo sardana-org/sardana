@@ -47,6 +47,7 @@ import string
 import logging
 import os.path
 import traceback
+import itertools
 
 import PyTango
 from PyTango import Util, Database, WAttribute, DbDevInfo, DevFailed, \
@@ -836,6 +837,22 @@ def get_dev_from_class(db, classname):
     return res
 
 
+def get_dev_from_class_server(db, classname, server):
+    """Returns device(s) name for a given class and server"""
+
+    def pairwise(iterable):
+        "s -> (s0, s1), (s2, s3), (s4, s5), ..."
+        a = iter(iterable)
+        return itertools.izip(a, a)
+
+    devices = []
+    device_class_list = db.get_device_class_list(server)
+    for dev, cls in pairwise(device_class_list):
+        if cls == classname:
+            devices.append(dev)
+    return devices
+
+
 def get_free_server(db, prefix, start_from=1):
     prefix = prefix + "_"
     server_members = db.get_server_list(prefix + "*")
@@ -879,6 +896,70 @@ def prepare_taurus(options, args, tango_args):
     # make sure the polling is not active
     factory = taurus.Factory()
     factory.disablePolling()
+
+
+def prepare_logstash(args):
+    """Prepare logstash handler based on the configuration stored in the Tango
+    database.
+
+    :param args: process execution arguments
+    :type args: list<str>
+
+    .. note::
+        The prepare_logstash function has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
+    """
+    log_messages = []
+
+    try:
+        import logstash
+    except ImportError:
+        msg = ("Unable to import logstash. Skipping logstash "
+               + "configuration...", )
+        log_messages.append(msg,)
+        return log_messages
+
+    def get_logstash_conf(dev_name):
+        try:
+            props = db.get_device_property(dev_name, "LogstashHost")
+            host = props["LogstashHost"][0]
+        except IndexError:
+            host = None
+        try:
+            props = db.get_device_property(dev_name, "LogstashPort")
+            port = int(props["LogstashPort"][0])
+        except IndexError:
+            port = 12345
+        return host, port
+
+    db = Database()
+
+    bin_name = args[0]
+    instance_name = args[1]
+    server_name = bin_name + "/" + instance_name
+    if bin_name in ["Pool", "MacroServer"]:
+        class_name = bin_name
+        dev_name = get_dev_from_class_server(db, class_name, server_name)[0]
+        host, port = get_logstash_conf(dev_name)
+    else:
+        dev_name = get_dev_from_class_server(db, "Pool", server_name)[0]
+        host, port = get_logstash_conf(dev_name)
+        if host is None:
+            dev_name = get_dev_from_class_server(db, "MacroServer",
+                                                 server_name)[0]
+            host, port = get_logstash_conf(dev_name)
+
+    if host is not None:
+        root = Logger.getRootLog()
+        handler = logstash.TCPLogstashHandler(host, port, version=1)
+        root.addHandler(handler)
+        msg = ("Log is being sent to logstash listening on %s:%d",
+               host, port)
+        log_messages.append(msg)
+
+    return log_messages
 
 
 def prepare_logging(options, args, tango_args, start_time=None, log_messages=None):
@@ -1063,6 +1144,7 @@ def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None,
         pass
 
     log_messages.extend(prepare_environment(args, tango_args, ORB_args))
+
     try:
         log_messages.extend(prepare_server(args, tango_args))
     except AbortException, e:
@@ -1071,6 +1153,8 @@ def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None,
     except KeyboardInterrupt:
         print("\nInterrupted by keyboard")
         return
+
+    log_messages.extend(prepare_logstash(args))
 
     if tango_util is None:
         tango_util = Util(tango_args)
