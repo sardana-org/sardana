@@ -2201,6 +2201,9 @@ class CTScan(CScan, CAcquisition):
                     msg = "Scan start and end must be different."
                 raise ScanException(msg)
 
+            # Set the index offset used in CAcquisition class.
+            self._index_offset = i * self.macro.nr_points
+
             startTimestamp = time.time()
 
             # extra pre configuration
@@ -2301,7 +2304,6 @@ class CTScan(CScan, CAcquisition):
             theoretical_positions = generate_positions(motors, starts, finals,
                                                        nr_points)
             theoretical_timestamps = generate_timestamps(synch, dt_timestamp)
-            self._index_offset = i * self.macro.nr_points
             for index, data in theoretical_positions.items():
                 data.update(theoretical_timestamps[index])
                 initial_data[index + self._index_offset] = data
