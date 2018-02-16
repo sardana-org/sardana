@@ -15,6 +15,9 @@ multiaxes stop/abort (#157, #592)
   controller classes (#541)
 - `meshct` macro - mesh composed from row scans executed in the continuous
   way (#659)
+- Optional sending of logs to Logstash (www.elastic.co) configurable with
+  `LogstashHost` and `LogstashPort` Tango properties of Pool and MacroServer
+  (#699).
 - Relative continuous scans like `dscanct`, `d2scanct`, etc. (#605, #688)
 - Expose acquisition data in `ct` and `uct` macros via data macro property
   (#471, #682, #684)
