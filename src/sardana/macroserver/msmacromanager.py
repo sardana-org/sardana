@@ -1336,8 +1336,8 @@ class MacroExecutor(Logger):
                     log_format = logging.Formatter(
                         "%(levelname)-8s %(asctime)s %(name)s: %(message)s")
                 fileHandler.setFormatter(log_format)
-                logger = macro_obj.getLogger()
-                logger.addHandler(fileHandler)
+                macro_obj.addLogHandler(fileHandler)
+                self.addLogHandler(fileHandler)
 
         if self._aborted:
             self.sendMacroStatusAbort()
@@ -1424,9 +1424,10 @@ class MacroExecutor(Logger):
                        'Set "%s" environment variable ' % env_var_name +
                        'to True in order to change it.')
             self._macro_pointer = None
-        
-        if logging_onoff:    
-            logger.removeHandler(fileHandler)
+
+        if logging_onoff:
+            macro_obj.removeLogHandler(fileHandler)
+            self.removeLogHandler(fileHandler)
 
         return result
 
