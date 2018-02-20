@@ -2138,7 +2138,7 @@ class CTScan(CScan, CAcquisition):
 
         # add listener of data events
         # If the cleanup fails, it is not possible to add again the listener
-        # and the macro fails. 
+        # and the macro fails.
         try:
             measurement_group.subscribeValueBuffer(self.value_buffer_changed)
         except Exception as e:
