@@ -75,34 +75,9 @@ from sardana.macroserver.msexception import UnknownMacroLibrary, \
 # common location
 from sardana.taurus.core.tango.sardana.macro import createMacroNode
 
+
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-class LogFilter(logging.Filter):
-    # Possible fields: created, name, process, levelname, levelno, funcName, module, message = msg
-    # Ex.:
-    # created   -> 1515147905.34
-    # name      -> Door/issue102/1.Macro[ascan]
-    # process   -> 15638
-    # levelname -> OUTPUT
-    # levelno   -> 15
-    # funcName  -> output
-    # module    -> __init__
-    # message   -> 2         10        0         0         0         0      2.11293 
-
-    def __init__(self, param=None, field=None):
-        self.param = param
-        self.field = field
-
-    def filter(self, record):
-        allow = True
-        if self.param != "MacroExecutor" and "MacroExecutor" in record.name:
-            allow = True
-        elif self.field == "message":
-            allow = self.param not in record.msg
-        elif self.field == "name":
-            allow = self.param not in record.name
-        return allow
-        
 def islambda(f):
     """inspect doesn't come with islambda so I create one :-P"""
     return inspect.isfunction(f) and \
@@ -1361,8 +1336,6 @@ class MacroExecutor(Logger):
                     log_format = logging.Formatter(
                         "%(levelname)-8s %(asctime)s %(name)s: %(message)s")
                 fileHandler.setFormatter(log_format)
-                fileHandler.addFilter(LogFilter("[START]", "message"))
-                fileHandler.addFilter(LogFilter("[ END ]", "message"))
                 logger = macro_obj.getLogger()
                 logger.addHandler(fileHandler)
 
