@@ -776,11 +776,12 @@ class settimer(Macro):
         except Exception, e:
             self.output(str(e))
             self.output("%s is not a valid channel"
-                         " in the active measurement group" % timer)
+                        " in the active measurement group" % timer)
 
 
 @macro([['message',
-         ParamRepeat(['message_item', Type.String, None, 'message item to be reported']),
+         ParamRepeat(['message_item', Type.String, None,
+                      'message item to be reported']),
          None, 'message to be reported']])
 def report(self, message):
     """Logs a new record into the message report system (if active)"""
@@ -808,7 +809,6 @@ class logmacro(Macro):
                 self.setEnv('LogMacroMode', True)
             elif mode == 0:
                 self.setEnv('LogMacroMode', False)
-                
             self.setEnv('LogMacro', True)
         else:
             self.setEnv('LogMacro', False)

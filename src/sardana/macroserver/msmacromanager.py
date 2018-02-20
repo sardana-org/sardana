@@ -40,8 +40,6 @@ import functools
 import traceback
 import threading
 
-import socket
-
 from lxml import etree
 
 from PyTango import DevFailed
@@ -77,6 +75,7 @@ from sardana.taurus.core.tango.sardana.macro import createMacroNode
 
 
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 def islambda(f):
     """inspect doesn't come with islambda so I create one :-P"""
@@ -904,8 +903,8 @@ class LogMacroManager(object):
 
         door_name = door.name
         # Cleaning name in case alias does not exist
-        door_name = door_name.replace(":","_").replace("/","_")
-        file_name = "session_" + door_name +".log"
+        door_name = door_name.replace(":", "_").replace("/", "_")
+        file_name = "session_" + door_name + ".log"
         log_file = os.path.join(logging_path, file_name)
 
         if logging_mode:
@@ -920,9 +919,9 @@ class LogMacroManager(object):
 
         try:
             format_to_set = macro_obj.getEnv("LogMacroFormat")
-            log_format = logging.Formatter(format_to_set)
-        except:
-            log_format = logging.Formatter(self.DEFAULT_FMT)
+        except UnknownEnv:
+            format_to_set = self.DEFAULT_FMT
+        log_format = logging.Formatter(format_to_set)
         file_handler.setFormatter(log_format)
         macro_obj.addLogHandler(file_handler)
         executor.addLogHandler(file_handler)
