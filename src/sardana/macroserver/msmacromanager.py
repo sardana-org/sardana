@@ -923,6 +923,8 @@ class LogMacroManager(object):
             format_to_set = self.DEFAULT_FMT
         log_format = logging.Formatter(format_to_set)
         file_handler.setFormatter(log_format)
+        # attach the same handler to two different loggers due to
+        # lack of hierarchy between them (see: sardana-org/sardana#703)
         macro_obj.addLogHandler(file_handler)
         executor.addLogHandler(file_handler)
         return True
