@@ -848,6 +848,93 @@ class MacroManager(MacroServerManager):
         return me
 
 
+class LogMacroManager(object):
+
+    DEFAULT_DIR = os.path.join(os.sep, "tmp")
+    DEFAULT_FMT = "%(levelname)-8s %(asctime)s %(name)s: %(message)s"
+    DEFAULT_MODE = 0
+
+    def __init__(self, macro_obj):
+        self._macro_obj = macro_obj
+        self._file_handler = None
+        self._enabled = False
+
+    def enable(self):
+        """Enable macro logging only if the following requirements are
+        fulfilled:
+            * this is the top-most macro
+            * macro logging is enabled by user
+
+        :return: True or False, depending if logging was enabled or not
+        :rtype: boolean
+        """
+
+        macro_obj = self._macro_obj
+        executor = macro_obj.executor
+        door = macro_obj.door
+
+        # enable logging only for the top-most macros
+        if macro_obj.getParentMacro() is not None:
+            return False
+        # enable logging only if configured by user
+        try:
+            self._enabled = macro_obj.getEnv("LogMacro")
+        except UnknownEnv:
+            return False
+
+        try:
+            logging_mode = macro_obj.getEnv("LogMacroMode")
+        except UnknownEnv:
+            logging_mode = self.DEFAULT_MODE
+        try:
+            logging_path = macro_obj.getEnv("LogMacroDir")
+        except UnknownEnv:
+            logging_path = self.DEFAULT_DIR
+            macro_obj.setEnv("LogMacroDir", logging_path)
+
+        door_name = door.name
+        # Cleaning name in case alias does not exist
+        door_name = door_name.replace(":","_").replace("/","_")
+        file_name = "session_" + door_name +".log"
+        log_file = os.path.join(logging_path, file_name)
+
+        if logging_mode:
+            bck_counts = 100
+        else:
+            bck_counts = 0
+
+        self._file_handler = file_handler = \
+            logging.handlers.RotatingFileHandler(log_file,
+                                                 backupCount=bck_counts)
+        file_handler.doRollover()
+
+        try:
+            format_to_set = macro_obj.getEnv("LogMacroFormat")
+            log_format = logging.Formatter(format_to_set)
+        except:
+            log_format = logging.Formatter(self.DEFAULT_FMT)
+        file_handler.setFormatter(log_format)
+        macro_obj.addLogHandler(file_handler)
+        executor.addLogHandler(file_handler)
+        return True
+
+    def disable(self):
+        """Disable macro logging only if it was enabled before.
+
+        :return: True or False, depending if logging was disabled or not
+        :rtype: boolean
+        """
+
+        if not self._enabled:
+            return False
+        macro_obj = self._macro_obj
+        executor = macro_obj.executor
+        file_handler = self._file_handler
+        macro_obj.removeLogHandler(file_handler)
+        executor.removeLogHandler(file_handler)
+        return True
+
+
 class MacroExecutor(Logger):
     """ """
 
@@ -1299,45 +1386,8 @@ class MacroExecutor(Logger):
         desc = macro_obj._getDescription()
         door = self.door
 
-        logging_onoff = False
-        if macro_obj.getParentMacro() is None:
-            try:
-                logging_onoff = macro_obj.getEnv("LogMacro")
-            except:
-                logging_onoff = False
-            if logging_onoff:
-                try:
-                    logging_mode = macro_obj.getEnv("LogMacroMode")
-                except:
-                    logging_mode = 0
-                try:
-                    logging_path = macro_obj.getEnv("LogMacroDir")
-                except:
-                    logging_path = os.path.join(os.sep, "tmp")
-                    macro_obj.setEnv("LogMacroDir", logging_path)
-
-                door_name = door.name
-                door_name = door_name.replace(":","_").replace("/","_") # Cleaning name in case alias does not exist
-                file_name = "session_" + door_name +".log"
-                log_file = os.path.join(logging_path, file_name)
-
-                if logging_mode:
-                    bck_counts = 100
-                else:
-                    bck_counts = 0
-                
-                fileHandler = logging.handlers.RotatingFileHandler(log_file, backupCount = bck_counts)
-                fileHandler.doRollover()
-                
-                try:
-                    format_to_set = macro_obj.getEnv("LogMacroFormat")
-                    log_format = logging.Formatter(format_to_set)
-                except:
-                    log_format = logging.Formatter(
-                        "%(levelname)-8s %(asctime)s %(name)s: %(message)s")
-                fileHandler.setFormatter(log_format)
-                macro_obj.addLogHandler(fileHandler)
-                self.addLogHandler(fileHandler)
+        log_macro_manager = MacroExecutor.LogMacroManager(macro_obj)
+        log_macro_manager.enable()
 
         if self._aborted:
             self.sendMacroStatusAbort()
@@ -1425,9 +1475,7 @@ class MacroExecutor(Logger):
                        'to True in order to change it.')
             self._macro_pointer = None
 
-        if logging_onoff:
-            macro_obj.removeLogHandler(fileHandler)
-            self.removeLogHandler(fileHandler)
+        log_macro_manager.disable()
 
         return result
 
