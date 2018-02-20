@@ -2137,7 +2137,14 @@ class CTScan(CScan, CAcquisition):
             raise ScanException(msg)
 
         # add listener of data events
-        measurement_group.subscribeValueBuffer(self.value_buffer_changed)
+        # If the cleanup fails, it is not possible to add again the listener
+        # and the macro fails. 
+        try:
+            measurement_group.subscribeValueBuffer(self.value_buffer_changed)
+        except Exception as e:
+            msg = "Exception occurred trying to add data listeners {0}"
+            self.debug(msg.format(e))
+
         # initializing mntgrp subscription control variables
         self.__mntGrpSubscribed = True
 
