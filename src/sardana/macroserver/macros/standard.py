@@ -788,7 +788,14 @@ def report(self, message):
 
 
 class logmacro(Macro):
-    """ Turn on/off logging of the spock output """
+    """ Turn on/off logging of the spock output.
+
+    .. note::
+        The logmacro class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers
+    """
 
     param_def = [
         ['offon', Type.Boolean, None, 'Unset/Set logging'],

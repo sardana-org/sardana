@@ -849,6 +849,16 @@ class MacroManager(MacroServerManager):
 
 
 class LogMacroManager(object):
+    """Manage user-oriented macro logging to a file. It is configurable with
+    LogMacro, LogMacroMode, LogMacroFormat and LogMacroDir environment
+    variables.
+
+    .. note::
+        The LogMacroManager class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
+    """
 
     DEFAULT_DIR = os.path.join(os.sep, "tmp")
     DEFAULT_FMT = "%(levelname)-8s %(asctime)s %(name)s: %(message)s"
