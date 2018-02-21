@@ -37,9 +37,10 @@ from taurus.console.table import Table
 import PyTango
 from PyTango import DevState
 
-from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, ViewOption, iMacro
+from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, \
+    ViewOption, iMacro
 from sardana.macroserver.msexception import StopException
-
+from sardana.macroserver.scan.scandata import Record
 ##########################################################################
 #
 # Motion related macros
@@ -96,7 +97,7 @@ class _wm(Macro):
                             value = float('NaN')
                         data[name].append(value)
                     req2delete.append(name)
-                except PyTango.AsynReplyNotArrived, e:
+                except PyTango.AsynReplyNotArrived:
                     continue
                 except PyTango.DevFailed:
                     data[name].append(float('NaN'))
@@ -151,7 +152,6 @@ class _wum(Macro):
         self.table_opts = {}
 
     def run(self, motor_list):
-        show_dial = self.getViewOption(ViewOption.ShowDial)
         motor_width = 9
         motor_names = []
         motor_pos = []
@@ -291,7 +291,8 @@ class set_pos(Macro):
 
 
 class set_user_pos(Macro):
-    """Sets the USER position of the motor to the specified value (by changing OFFSET and keeping DIAL)"""
+    """Sets the USER position of the motor to the specified value (by
+    changing OFFSET and keeping DIAL)"""
 
     param_def = [
         ['motor', Type.Motor, None, 'Motor name'],
@@ -305,8 +306,9 @@ class set_user_pos(Macro):
         old_offset = offset_attr.read().value
         new_offset = pos - (old_pos - old_offset)
         offset_attr.write(new_offset)
-        self.output("%s reset from %.4f (offset %.4f) to %.4f (offset %.4f)" % (
-            name, old_pos, old_offset, pos, new_offset))
+        msg = "%s reset from %.4f (offset %.4f) to %.4f (offset %.4f)" % (
+            name, old_pos, old_offset, pos, new_offset)
+        self.output(msg)
 
 
 class wm(Macro):
@@ -665,7 +667,6 @@ class ct(Macro):
         self.flushOutput()
 
         state, data = self.mnt_grp.count(integ_time)
-
         names, counts = [], []
         for ch_info in self.mnt_grp.getChannelsEnabledInfo():
             names.append('  %s' % ch_info.label)
@@ -676,7 +677,7 @@ class ct(Macro):
                 counts.append(list(ch_data.shape))
             else:
                 counts.append(ch_data)
-
+        self.setData(Record(data))
         table = Table([counts], row_head_str=names, row_head_fmt='%*s',
                       col_sep='  =  ')
         for line in table.genOutput():
@@ -725,7 +726,8 @@ class uct(Macro):
 
         self.print_value = True
         try:
-            self.mnt_grp.count(integ_time)
+            _, data = self.mnt_grp.count(integ_time)
+            self.setData(Record(data))
         finally:
             self.finish()
 
@@ -775,14 +777,14 @@ class settimer(Macro):
             mnt_grp.setTimer(timer.getName())
         except Exception, e:
             self.output(str(e))
-            self.output("%s is not a valid channel"
-                        " in the active measurement group" % timer)
+            self.output(
+                "%s is not a valid channel in the active measurement group"
+                % timer)
 
 
-@macro([['message',
-         ParamRepeat(['message_item', Type.String, None,
-                      'message item to be reported']),
-         None, 'message to be reported']])
+@macro([['message', ParamRepeat(['message_item', Type.String, None,
+                                 'message item to be reported']), None,
+         'message to be reported']])
 def report(self, message):
     """Logs a new record into the message report system (if active)"""
     self.report(' '.join(message))

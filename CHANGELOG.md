@@ -7,8 +7,22 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
-- addctrlib, relctrllib, relctrlcls macros usefull when developing
+- General hooks - hooks that can be configured with `defgh`, `udefgh` and `lsgh`
+  macros instead of attaching them programatically (#200, #646)
+- New API to `Stoppable` interface of pool controllers that allows synchronized
+multiaxes stop/abort (#157, #592)
+- `addctrlib`, `relctrllib`, `relctrlcls` macros usefull when developing
   controller classes (#541)
+- `meshct` macro - mesh composed from row scans executed in the continuous
+  way (#659)
+- Optional sending of logs to Logstash (www.elastic.co) configurable with
+  `LogstashHost` and `LogstashPort` Tango properties of Pool and MacroServer
+  (#699).
+- Relative continuous scans like `dscanct`, `d2scanct`, etc. (#605, #688)
+- Expose acquisition data in `ct` and `uct` macros via data macro property
+  (#471, #682, #684)
+- Notification to the user in case of a failed operation of stopping in spock
+  (#592)
 - Timeout/watchdog in continuous scans - especially usefull when
   triggers may be missed e.g. not precise positioning (#136, #601)
 - Reintroduce intermediate events for counter/timer channels while
@@ -32,7 +46,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Present available pools at the macroserver creation moment in the
   alphabetical order (#585, #586)
 - Present available doors at the spock profile creation moment in the
-  alphabetical order (#221, #558)
+  alphabetical order (#221, #558, #673)
+- `DiffractometerType` is stored in crystal file in HKL controller (#679)
 - Some backwards compatibility for element names in PQDN - recently
   Taurus started using only FQDN (#625, #627)
 - Improve DumbRecorder (example of a custom file recorder) to write to
@@ -49,9 +64,13 @@ This file follows the formats and conventions from [keepachangelog.com]
   sub-actions (hardware and software) (#614)
 - Avoid "already involved in motion" errors due to wrong handling of
   operation context and Tango state machine (#639)
+- Protect software synchronizer from errors in reading motor's position
+  (#694, #700)
 - Make the information about the element's instrument fully dynamic and
   remove it from the serialized information (#122, #619)
 - uct macro (#319, #627)
+- Avoid measurement group start failures when to the disabled controller
+  is offline (#677, #681)
 - Allow to stop macro when it was previously paused (#348, #548)
 - Bug in theoretical motor position in ascanct & co. (#591)
 - Counter/timer TaurusValue widget when used with Taurus 4 - correctly show
@@ -71,14 +90,19 @@ This file follows the formats and conventions from [keepachangelog.com]
   controllers in case software synchronization is in use (#594)
 - `Hookable.hooks` proprty setting - now it cleans the previous
   configuration (#655)
+- `getData` of scan macros from the GSF (#683, #687)
 - Make PoolUtil thread-safe (#662, #655)
 - Dummy counter/timer now returns partial value when its acquisition was
   aborted (#626)
 - Workaround for #427: make default values for repeat parameters of `wa`,
   `pwa` and all list macros fully functional - also support execution with
   `Macro.execMacro` (#654)
+- `getIntervalEstimation` method of the GSF for some scanning modes (#661)
+- Improved MacroServer creation wizard (#676)
 
 ### Changed
+- Make explicit file descriptor buffer synchronization (force effective write to
+  the file system) in SPEC and FIO recorders (#651)
 - Rename edctrl to edctrlcls macro (#541)
 - The way how the master timer/monitor for the acquisition actions is selected.
   Previously the first one for the given synchronization was used, now it is
@@ -90,6 +114,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Removed
 - `ElementList` attribute from the Door Tango device - `Element` attribute is
   available on the MacroServer device (#556, #557, #653)
+- `raw_stop_all`, `raw_stop_one`, `_raw_stop_all`, `_raw_stop_one`, `stop_all`,
+  `stop_one`, `raw_abort_all`, `raw_abort_one`, `_raw_abort_all`, `_raw_abort_one`,
+  `abort_all`, `abort_one` methods of the `PoolController` class (#592)
 
 
 ## [2.3.2] - 2017-08-11

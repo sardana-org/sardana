@@ -244,6 +244,9 @@ class Motion(BaseMotion):
                             allow_unknown=allow_unknown, read_only=read_only)
         self.__total_motion_time = 0
 
+    def __str__(self):
+        return self.__class__.__name__ + "(" + str(self.names) + ")"
+
     def init_by_movables(self, elements, moveable_srcs, allow_repeat, allow_unknown):
         # TODO: Optimize this. Dont call init_by_names. It its possible to do it
         # manually with some performance gain

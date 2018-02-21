@@ -46,6 +46,8 @@ import traceback
 import weakref
 import numpy
 
+import PyTango
+
 from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
     DeviceProxy
 from taurus import Factory, Device, Attribute
@@ -1131,7 +1133,16 @@ class TangoChannelInfo(BaseChannelInfo):
         data = self.raw_data
 
         if 'data_type' not in data:
-            self.data_type = FROM_TANGO_TO_STR_TYPE[info.data_type]
+            data_type = info.data_type
+            try:
+                self.data_type = FROM_TANGO_TO_STR_TYPE[data_type]
+            except KeyError, e:
+                # For backwards compatibility:
+                # starting from Taurus 4.3.0 DevVoid was added to the dict
+                if data_type == PyTango.DevVoid:
+                    self.data_type = None
+                else:
+                    raise e
 
         if 'shape' not in data:
             shape = ()
@@ -1309,7 +1320,6 @@ class MGConfiguration(object):
                 tg_chs_info[channel_name] = dev_name, attr_name, attr_info
 
     def _build_empty_tango_attr_info(self, channel_data):
-        import PyTango
         ret = PyTango.AttributeInfoEx()
         ret.name = channel_data['name']
         ret.label = channel_data['label']

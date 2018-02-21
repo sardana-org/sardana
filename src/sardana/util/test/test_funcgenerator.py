@@ -57,6 +57,7 @@ class Position(EventGenerator):
     def __init__(self):
         EventGenerator.__init__(self)
         self.value = None
+        self.error = False
 
     def run(self, start=0, end=2, step=0.01, sleep=0.01):
         for position in numpy.arange(start, end, step):

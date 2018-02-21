@@ -202,6 +202,32 @@ class Hookable(Logger):
         else:
             return self._getHookHintsDict().get(hint, [])
 
+    def appendHook(self, hook_info):
+        """Append a hook according to the hook information
+
+        :param hook_info: sequence of two elements, the first one is the hook
+            and its optional parameters/arguments, the second one is the list
+            of hints e.g. hook places
+        """
+        self._getHooks().append(hook_info)
+        hook = hook_info[0]
+        hints = hook_info[1]
+        allowed_hookhints = self.getAllowedHookHints()
+        if len(hints) == 0:
+            self._getHookHintsDict()['_ALL_'].append(hook)
+            self._hookHintsDict['_NOHINTS_'].append(hook)
+            return
+        for hint in hints:
+            if hint in allowed_hookhints:
+                self._getHookHintsDict()['_ALL_'].append(hook)
+                break
+        for hint in hints:
+            if hint in allowed_hookhints:
+                try:
+                    self._hookHintsDict[hint].append(hook)
+                except KeyError:
+                    self._hookHintsDict[hint] = [hook]
+
     @propertx
     def hooks():
         def get(self):
@@ -238,7 +264,8 @@ class Hookable(Logger):
                         'Deprecation warning: hooks should be set with a list of hints. See Hookable API docs')
 
             # delete _hookHintsDict to force its recreation on the next access
-            del self._hookHintsDict
+            if hasattr(self, '_hookHintsDict'):
+                del self._hookHintsDict
             # create _hookHintsDict
             self._getHookHintsDict()['_ALL_'] = zip(*self._hooks)[0]
             nohints = self._hookHintsDict['_NOHINTS_']

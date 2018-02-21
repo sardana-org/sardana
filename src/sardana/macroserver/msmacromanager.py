@@ -63,10 +63,12 @@ from sardana.macroserver.msmetamacro import MACRO_TEMPLATE, MacroLibrary, \
     MacroClass, MacroFunction
 from sardana.macroserver.msparameter import ParamDecoder, FlatParamDecoder, \
     WrongParam
-from sardana.macroserver.macro import Macro, MacroFunc
+from sardana.macroserver.macro import Macro, MacroFunc, ExecMacroHook, \
+    Hookable
 from sardana.macroserver.msexception import UnknownMacroLibrary, \
     LibraryError, UnknownMacro, MissingEnv, AbortException, StopException, \
     MacroServerException, UnknownEnv
+from sardana.spock.parser import ParamParser
 
 # These classes are imported from the "client" part of sardana, if finally
 # both the client and the server side needs them, place them in some
@@ -1007,6 +1009,27 @@ class MacroExecutor(Logger):
     def macro_manager(self):
         return self.macro_server.macro_manager
 
+    def getGeneralHooks(self):
+        """Get data structure containing definition of the general hooks.
+
+        .. note::
+        The `general_hooks` has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
+
+        .. todo::
+        General hooks should reflect the state of configuration at the
+        macro/sequence start.
+        """
+
+        try:
+            return self.door.get_env("_GeneralHooks")["_GeneralHooks"]
+        except KeyError:
+            return []
+
+    general_hooks = property(getGeneralHooks)
+
     def getNewMacroID(self):
         self._macro_counter -= 1
         return self._macro_counter
@@ -1078,6 +1101,17 @@ class MacroExecutor(Logger):
         macro_line = "%s(%s) -> %s" % (macro_name, params_str, macro_id)
         return macro_line
 
+    def _prepareGeneralHooks(self, macro_obj):
+        if not isinstance(macro_obj, Hookable):
+            return
+        general_hooks = self.general_hooks
+        if len(general_hooks) == 0:
+            return
+        for hook_info_raw, hook_places in general_hooks:
+            hook_info = ParamParser().parse(hook_info_raw)
+            hook = ExecMacroHook(macro_obj, hook_info)
+            macro_obj.appendHook((hook, hook_places))
+
     def _prepareXMLMacro(self, xml_macro, parent_macro=None):
         macro_meta, _, macro_params = self._decodeMacroParameters(xml_macro)
         macro_name = macro_meta.name
@@ -1090,6 +1124,9 @@ class MacroExecutor(Logger):
         }
 
         macro_obj = self._createMacroObj(macro_meta, macro_params, init_opts)
+
+        self._prepareGeneralHooks(macro_obj)
+
         for macro in xml_macro.findall('macro'):
             hook = MacroExecutor.RunSubXMLHook(self, macro)
             hook_hints = macro.findall('hookPlace')
@@ -1098,6 +1135,7 @@ class MacroExecutor(Logger):
             else:
                 hook_places = [h.text for h in hook_hints]
                 macro_obj.hooks = [(hook, hook_places)]
+
         prepare_result = self._prepareMacroObj(macro_obj, macro_params)
         return macro_obj, prepare_result
 
@@ -1205,12 +1243,20 @@ class MacroExecutor(Logger):
         macro_id = init_opts.get("id")
         if macro_id is None:
             init_opts["id"] = macro_id
-        macro_line = self._composeMacroLine(macro_name, macro_params, macro_id)
+        macro_line = self._composeMacroLine(macro_name,
+                                            macro_params,
+                                            macro_id)
 
         init_opts['macro_line'] = macro_line
 
-        return self.prepareMacroObj(meta_macro, macro_params, init_opts,
-                                    prepare_opts)
+        macro_obj, prepare_result = self.prepareMacroObj(meta_macro,
+                                                         macro_params,
+                                                         init_opts,
+                                                         prepare_opts)
+
+        self._prepareGeneralHooks(macro_obj)
+
+        return macro_obj, prepare_result
 
     def getRunningMacro(self):
         return self._macro_pointer
