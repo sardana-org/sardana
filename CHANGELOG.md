@@ -10,7 +10,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 - General hooks - hooks that can be configured with `defgh`, `udefgh` and `lsgh`
   macros instead of attaching them programatically (#200, #646)
 - New API to `Stoppable` interface of pool controllers that allows synchronized
-multiaxes stop/abort (#157, #592)
+  multiaxes stop/abort (#157, #592)
+- Macro execution logs can be saved to a file. Controlled with `logmacro` macro and
+  `LogMacroDir`, `LogMacroFormat` environment variables (#102, #480)
 - `addctrlib`, `relctrllib`, `relctrlcls` macros usefull when developing
   controller classes (#541)
 - `meshct` macro - mesh composed from row scans executed in the continuous
