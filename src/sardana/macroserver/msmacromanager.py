@@ -877,7 +877,6 @@ class LogMacroManager(object):
         :return: True or False, depending if logging was enabled or not
         :rtype: boolean
         """
-
         macro_obj = self._macro_obj
         executor = macro_obj.executor
         door = macro_obj.door
@@ -887,8 +886,10 @@ class LogMacroManager(object):
             return False
         # enable logging only if configured by user
         try:
-            self._enabled = macro_obj.getEnv("LogMacro")
+            enabled = macro_obj.getEnv("LogMacro")
         except UnknownEnv:
+            return False
+        if not enabled:
             return False
 
         try:
@@ -927,6 +928,7 @@ class LogMacroManager(object):
         # lack of hierarchy between them (see: sardana-org/sardana#703)
         macro_obj.addLogHandler(file_handler)
         executor.addLogHandler(file_handler)
+        self._enabled = True
         return True
 
     def disable(self):
