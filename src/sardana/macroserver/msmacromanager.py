@@ -40,8 +40,6 @@ import functools
 import traceback
 import threading
 
-import socket
-
 from lxml import etree
 
 from PyTango import DevFailed
@@ -75,34 +73,10 @@ from sardana.macroserver.msexception import UnknownMacroLibrary, \
 # common location
 from sardana.taurus.core.tango.sardana.macro import createMacroNode
 
+
 _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-class LogFilter(logging.Filter):
-    # Possible fields: created, name, process, levelname, levelno, funcName, module, message = msg
-    # Ex.:
-    # created   -> 1515147905.34
-    # name      -> Door/issue102/1.Macro[ascan]
-    # process   -> 15638
-    # levelname -> OUTPUT
-    # levelno   -> 15
-    # funcName  -> output
-    # module    -> __init__
-    # message   -> 2         10        0         0         0         0      2.11293 
 
-    def __init__(self, param=None, field=None):
-        self.param = param
-        self.field = field
-
-    def filter(self, record):
-        allow = True
-        if self.param != "MacroExecutor" and "MacroExecutor" in record.name:
-            allow = True
-        elif self.field == "message":
-            allow = self.param not in record.msg
-        elif self.field == "name":
-            allow = self.param not in record.name
-        return allow
-        
 def islambda(f):
     """inspect doesn't come with islambda so I create one :-P"""
     return inspect.isfunction(f) and \
@@ -873,6 +847,107 @@ class MacroManager(MacroServerManager):
         return me
 
 
+class LogMacroManager(object):
+    """Manage user-oriented macro logging to a file. It is configurable with
+    LogMacro, LogMacroMode, LogMacroFormat and LogMacroDir environment
+    variables.
+
+    .. note::
+        The LogMacroManager class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
+    """
+
+    DEFAULT_DIR = os.path.join(os.sep, "tmp")
+    DEFAULT_FMT = "%(levelname)-8s %(asctime)s %(name)s: %(message)s"
+    DEFAULT_MODE = 0
+
+    def __init__(self, macro_obj):
+        self._macro_obj = macro_obj
+        self._file_handler = None
+        self._enabled = False
+
+    def enable(self):
+        """Enable macro logging only if the following requirements are
+        fulfilled:
+            * this is the top-most macro
+            * macro logging is enabled by user
+
+        :return: True or False, depending if logging was enabled or not
+        :rtype: boolean
+        """
+        macro_obj = self._macro_obj
+        executor = macro_obj.executor
+        door = macro_obj.door
+
+        # enable logging only for the top-most macros
+        if macro_obj.getParentMacro() is not None:
+            return False
+        # enable logging only if configured by user
+        try:
+            enabled = macro_obj.getEnv("LogMacro")
+        except UnknownEnv:
+            return False
+        if not enabled:
+            return False
+
+        try:
+            logging_mode = macro_obj.getEnv("LogMacroMode")
+        except UnknownEnv:
+            logging_mode = self.DEFAULT_MODE
+        try:
+            logging_path = macro_obj.getEnv("LogMacroDir")
+        except UnknownEnv:
+            logging_path = self.DEFAULT_DIR
+            macro_obj.setEnv("LogMacroDir", logging_path)
+
+        door_name = door.name
+        # Cleaning name in case alias does not exist
+        door_name = door_name.replace(":", "_").replace("/", "_")
+        file_name = "session_" + door_name + ".log"
+        log_file = os.path.join(logging_path, file_name)
+
+        if logging_mode:
+            bck_counts = 100
+        else:
+            bck_counts = 0
+
+        self._file_handler = file_handler = \
+            logging.handlers.RotatingFileHandler(log_file,
+                                                 backupCount=bck_counts)
+        file_handler.doRollover()
+
+        try:
+            format_to_set = macro_obj.getEnv("LogMacroFormat")
+        except UnknownEnv:
+            format_to_set = self.DEFAULT_FMT
+        log_format = logging.Formatter(format_to_set)
+        file_handler.setFormatter(log_format)
+        # attach the same handler to two different loggers due to
+        # lack of hierarchy between them (see: sardana-org/sardana#703)
+        macro_obj.addLogHandler(file_handler)
+        executor.addLogHandler(file_handler)
+        self._enabled = True
+        return True
+
+    def disable(self):
+        """Disable macro logging only if it was enabled before.
+
+        :return: True or False, depending if logging was disabled or not
+        :rtype: boolean
+        """
+
+        if not self._enabled:
+            return False
+        macro_obj = self._macro_obj
+        executor = macro_obj.executor
+        file_handler = self._file_handler
+        macro_obj.removeLogHandler(file_handler)
+        executor.removeLogHandler(file_handler)
+        return True
+
+
 class MacroExecutor(Logger):
     """ """
 
@@ -1324,47 +1399,8 @@ class MacroExecutor(Logger):
         desc = macro_obj._getDescription()
         door = self.door
 
-        logging_onoff = False
-        if macro_obj.getParentMacro() is None:
-            try:
-                logging_onoff = macro_obj.getEnv("LogMacro")
-            except:
-                logging_onoff = False
-            if logging_onoff:
-                try:
-                    logging_mode = macro_obj.getEnv("LogMacroMode")
-                except:
-                    logging_mode = 0
-                try:
-                    logging_path = macro_obj.getEnv("LogMacroDir")
-                except:
-                    logging_path = os.path.join(os.sep, "tmp")
-                    macro_obj.setEnv("LogMacroDir", logging_path)
-
-                door_name = door.name
-                door_name = door_name.replace(":","_").replace("/","_") # Cleaning name in case alias does not exist
-                file_name = "session_" + door_name +".log"
-                log_file = os.path.join(logging_path, file_name)
-
-                if logging_mode:
-                    bck_counts = 100
-                else:
-                    bck_counts = 0
-                
-                fileHandler = logging.handlers.RotatingFileHandler(log_file, backupCount = bck_counts)
-                fileHandler.doRollover()
-                
-                try:
-                    format_to_set = macro_obj.getEnv("LogMacroFormat")
-                    log_format = logging.Formatter(format_to_set)
-                except:
-                    log_format = logging.Formatter(
-                        "%(levelname)-8s %(asctime)s %(name)s: %(message)s")
-                fileHandler.setFormatter(log_format)
-                fileHandler.addFilter(LogFilter("[START]", "message"))
-                fileHandler.addFilter(LogFilter("[ END ]", "message"))
-                logger = macro_obj.getLogger()
-                logger.addHandler(fileHandler)
+        log_macro_manager = LogMacroManager(macro_obj)
+        log_macro_manager.enable()
 
         if self._aborted:
             self.sendMacroStatusAbort()
@@ -1451,9 +1487,8 @@ class MacroExecutor(Logger):
                        'Set "%s" environment variable ' % env_var_name +
                        'to True in order to change it.')
             self._macro_pointer = None
-        
-        if logging_onoff:    
-            logger.removeHandler(fileHandler)
+
+        log_macro_manager.disable()
 
         return result
 
