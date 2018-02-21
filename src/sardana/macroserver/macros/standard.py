@@ -24,7 +24,8 @@
 """This is the standard macro module"""
 
 __all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "set_lim", "set_lm",
-           "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm", "tw"]
+           "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm", "tw",
+           "logmacro"]
 
 __docformat__ = 'restructuredtext'
 
@@ -787,3 +788,29 @@ class settimer(Macro):
 def report(self, message):
     """Logs a new record into the message report system (if active)"""
     self.report(' '.join(message))
+
+
+class logmacro(Macro):
+    """ Turn on/off logging of the spock output.
+
+    .. note::
+        The logmacro class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers
+    """
+
+    param_def = [
+        ['offon', Type.Boolean, None, 'Unset/Set logging'],
+        ['mode', Type.Integer, -1, 'Mode: 0 append, 1 new file'],
+    ]
+
+    def run(self, offon, mode):
+        if offon:
+            if mode == 1:
+                self.setEnv('LogMacroMode', True)
+            elif mode == 0:
+                self.setEnv('LogMacroMode', False)
+            self.setEnv('LogMacro', True)
+        else:
+            self.setEnv('LogMacro', False)
