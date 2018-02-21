@@ -45,6 +45,7 @@ from sardana.pool.poolbasegroup import PoolBaseGroup
 from sardana.pool.poolmotion import PoolMotion
 from sardana.pool.poolexception import PoolException
 
+from sardana.sardanaattribute import SardanaAttributeConfiguration
 
 class Position(SardanaAttribute):
 
@@ -553,6 +554,18 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
             if new_position is None:
                 raise PoolException("Cannot calculate motion: %s reports "
                                     "position to be None" % element.name)
+            # TODO: get the configuration for an specific sardana class and
+
+            low, high = SardanaAttributeConfiguration(element.name + '/position').range
+            if high is not None:
+                if float(new_position) > high:
+                    raise RuntimeError("%s: Requested movement above "
+                                       " upper limit." % element.name)
+            if low is not None:
+                if float(new_position) < low:
+                    raise RuntimeError("%s: Requested movement below "
+                                       " lower limit." % element.name)
+
             element.calculate_motion(new_position, items=items,
                                      calculated=calculated)
         return items
