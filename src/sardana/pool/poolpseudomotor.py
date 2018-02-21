@@ -555,7 +555,7 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
                 raise PoolException("Cannot calculate motion: %s reports "
                                     "position to be None" % element.name)
             # TODO: get the configuration for an specific sardana class and
-            # get rid of AttributeProxy.
+            # get rid of AttributeProxy - see sardana-org/sardana#663
             config = AttributeProxy(element.name + '/position').get_config()
             try:
                 high = float(config.max_value)
