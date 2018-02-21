@@ -1397,7 +1397,7 @@ class MacroExecutor(Logger):
         desc = macro_obj._getDescription()
         door = self.door
 
-        log_macro_manager = MacroExecutor.LogMacroManager(macro_obj)
+        log_macro_manager = LogMacroManager(macro_obj)
         log_macro_manager.enable()
 
         if self._aborted:
