@@ -267,12 +267,14 @@ class PoolMotorGroup(PoolGroupElement):
                 low = None
             if high is not None:
                 if float(new_position) > high:
-                    raise RuntimeError("%s: Requested movement above "
-                                       "upper limit." % element.name)
+                    msg = "requested movement of %s is above its upper limit"\
+                        % element.name
+                    raise RuntimeError(msg)
             if low is not None:
                 if float(new_position) < low:
-                    raise RuntimeError("%s: Requested movement below "
-                                       "lower limit." % element.name)
+                    msg = "requested movement of %s is below its lower limit"\
+                        % element.name
+                    raise RuntimeError(msg)
 
         for new_position, element in zip(new_positions, user_elements):
             element.calculate_motion(new_position, items=items,
