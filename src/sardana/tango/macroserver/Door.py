@@ -359,7 +359,6 @@ class Door(SardanaDevice):
     def AbortMacro(self):
         self.debug("Aborting")
         self.macro_executor.abort()
-        self.debug("Finished aborting")
 
     def is_Abort_allowed(self):
         return True
