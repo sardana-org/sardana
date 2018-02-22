@@ -61,6 +61,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Spock waits until macro stopping is finished after Ctrl+C (#34. #596)
 - Limits of the underneeth motors are checked if we move a pseudo motor
   (#36, #663, #704)
+- Limits of the underneeth motors are checked if we move a motor group
+  (#259, #560)
 - Acquisition start sequence which in case of starting disabled channels
   could unintentionally change the measurement group's configuration (#607,
   #615)
