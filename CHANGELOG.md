@@ -63,6 +63,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   (#36, #663, #704)
 - Limits of the underneeth motors are checked if we move a motor group
   (#259, #560)
+- Eliminate a possibility of deadlock when aborting a macro (#693, #695,
+  #708)
 - Acquisition start sequence which in case of starting disabled channels
   could unintentionally change the measurement group's configuration (#607,
   #615)
