@@ -7,7 +7,7 @@ tested.
 ## The release process
 
 1. During all the development, use the Milestones to keep track of the intended
-   release for each issue
+   release for each issue.
 2. Previous to the release deadline, re-check the open issues/PR and update
    the assignation issues/PR to the release milestone. Request feedback from
    the devel community.
@@ -23,19 +23,19 @@ tested.
    integrators to push directly to it).
 4. Create the release branch if it was not done already in the previous step
    and:
-    1. Review and update the CHANGELOG.md if necessary. See [this](http://keepachangelog.com)
+    1. Review and update the CHANGELOG.md if necessary. See [this](http://keepachangelog.com).
     2. Bump version using `bumpversion <major|minor|patch> && bumpversion release`
        (use [semver](http://semver.org/) criteria to choose amongst `major`,
-       `minor` or `patch`
+       `minor` or `patch`. OPTIONAL: Sardana depends on Taurus, and the
+       required version of Taurus may need to be bumped as well. Taurus and
+       other dependencies are specified in: `setup.py` (requires list of
+       strings) and `src/sardana/requirements.py` (`__requires__` dictionary
+       and taurus.core value).
     3. The version numbers used in the man pages of the Sardana scripts are
        bumped (you may use `taurus/doc/makeman` script executing it from the
        doc directory e.g. `sardana/doc`) and committing the changes.
     4. Create a PR to merge the `release-XXX` against the **`master`** branch
        of the sardana-org repo
-    OPTIONAL: Sardana depends on Taurus, and the required version of Taurus
-    may need to be bumped as well. Taurus and other dependencies are specified
-    in: `setup.py` (requires list of strings) and `src/sardana/requirements.py`
-    (`__requires__` dictionary and taurus.core value).
 5. Request reviews in the PR from at least one integrator from each
    participating institute. The master branch is protected, so the reviews need
    to be cleared (or dismissed with an explanation) before the release can be
