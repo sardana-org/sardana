@@ -98,3 +98,43 @@ Hint: this list can be used as a template to be copy-pasted on a release PR
      `edmac my_macro <path_to_sardana_installation_dir>/macroserver/macros/examples/my_macros.py
      and run it.
 
+### Test Sardana with TaurusGUI
+
+- [ ] Create the GUI using this [guide](https://sourceforge.net/p/sardana/wiki/Howto-GUI_creation)
+
+#### PMTV (PoolMotorTaurusValue)
+- [ ] Move motors from the slit panel in absolute and relative modes.
+- [ ] Show expert view.
+- [ ] Show compact mode.
+
+#### macroexecutor
+- [ ] Execute `ascan` macro
+- [ ] Pause it in the middel and resume
+- [ ] Abort it
+- [ ] Add it to favorites
+- [ ] Run `lsm` macro
+- [ ] Execute `ascan` from favorites
+- [ ] Run `lsmac` macro
+- [ ] Execute `ascan` from history
+- [ ] Edit `dscan` macro in spock yellow line and run it
+- [ ] Restart macroexecutor application
+- [ ] Run `lsm` from history
+- [ ] Run `ascan` from favorites
+
+#### sequencer
+- [ ] Add `ascan` macro to the sequence
+- [ ] Add `lsct` macro as a `post-acq` hook of `ascan`
+- [ ] Add `dscan` macro to the sequence
+- [ ] Run the sequence
+- [ ] Save sequence to a file
+- [ ] Start new sequence
+- [ ] Load sequence from a files
+- [ ] Run the loaded sequence
+
+#### sardanaeditor
+- [ ] Open sardanaeditor with macroserver name as argument.
+- [ ] Browse macro libraries and open an existing macro.
+- [ ] Edit existing macro and save & apply chaneges.
+- [ ] Execute macro to see if changes were aplied.
+- [ ] Create a new macro using template.
+- [ ] Execute the newly created macro.
