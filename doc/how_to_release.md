@@ -59,15 +59,15 @@ Hint: this list can be used as a template to be copy-pasted on a release PR
 - [ ] Install Sardana from the tar.gz : `pip install <tarball_artifact_URL>`
 
 ### Create testing environment and run testsuite
-- [] Start Pool demo2. In a console do `Pool demo2`.
-- [] Start MacroServer demo2 and connect to the Pool demo2.
+- [ ] Start Pool demo2. In a console do `Pool demo2`.
+- [ ] Start MacroServer demo2 and connect to the Pool demo2.
   In another console do: `MacroServer demo2`
-- [] Set MacroServer's MacroPath to <sardana>/macroserver/macros/examples.
+- [ ] Set MacroServer's MacroPath to point to the macro examples.
   In another IPython console do: `PyTango.DeviceProxy('<macroserver>').put_property({'MacroPath':'<path_to_sardana_installation_dir>/macroserver/macros/examples'})`
-- [] Restart MacroServer e.g. Ctrl+C in the MacroServer's console and
+- [ ] Restart MacroServer e.g. Ctrl+C in the MacroServer's console and
   start it again.
-- [] Create spock profile demo2. In another console do `spock --profile=demo2`
-- [] In spock run `sar_demo` macro.
-- [] Edit <path_to_sardana_installation_dir>/sardanacustomsettings.py to point to the correct door e.g. `UNITTEST_DOOR_NAME = "door/demo2/1"`
-- [] Run testsuite. In another console do `sardanatestsuite`
+- [ ] Create spock profile demo2. In another console do `spock --profile=demo2`
+- [ ] In spock run `sar_demo` macro.
+- [ ] Edit <path_to_sardana_installation_dir>/sardanacustomsettings.py to point to the demo2 door e.g. `UNITTEST_DOOR_NAME = "door/demo2/1"`
+- [ ] Run testsuite. In another console do `sardanatestsuite`
 
