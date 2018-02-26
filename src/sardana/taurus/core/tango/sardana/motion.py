@@ -346,7 +346,7 @@ class Motion(BaseMotion):
                  for moveable in self.moveable_list]
         return max(times)
 
-    def getTotalLastMotionTime():
+    def getTotalLastMotionTime(self):
         return self.__total_motion_time
 
     def startMove(self, pos_list, timeout=None):
