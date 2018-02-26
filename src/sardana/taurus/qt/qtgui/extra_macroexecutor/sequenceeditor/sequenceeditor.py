@@ -961,6 +961,8 @@ class TaurusSequencer(MacroExecutionWindow):
                 self._qDoor,
                 Qt.SIGNAL("macroStatusUpdated"),
                 self.taurusSequencerWidget.onMacroStatusUpdated)
+            self._qDoor = None
+
         if doorName == "":
             return
         self._qDoor = Device(doorName)
