@@ -338,14 +338,14 @@ class BaseDoor(MacroServerDevice):
                 attr.subscribeEvent(self.logReceived, log_name)
             self._log_attr[log_name] = attr
 
-        input_attr = self.getAttribute("Input")
-        input_attr.addListener(self.inputReceived)
+        self.__input_attr = self.getAttribute("Input")
+        self.__input_attr.addListener(self.inputReceived)
 
-        record_data_attr = self.getAttribute('RecordData')
-        record_data_attr.addListener(self.recordDataReceived)
+        self.__record_data_attr = self.getAttribute('RecordData')
+        self.__record_data_attr.addListener(self.recordDataReceived)
 
-        macro_status_attr = self.getAttribute('MacroStatus')
-        macro_status_attr.addListener(self.macroStatusReceived)
+        self.__macro_status_attr = self.getAttribute('MacroStatus')
+        self.__macro_status_attr.addListener(self.macroStatusReceived)
 
         self._experiment_configuration = ExperimentConfiguration(self)
 
@@ -784,15 +784,17 @@ class BaseMacroServer(MacroServerDevice):
         self._elements = BaseSardanaElementContainer()
         self.call__init__(MacroServerDevice, name, **kw)
 
-        attr = self.getAttribute("Elements")
-        attr.setSerializationMode(TaurusSerializationMode.Serial)
-        attr.addListener(self.on_elements_changed)
-        attr.setSerializationMode(TaurusSerializationMode.Concurrent)
+        self.__elems_attr = self.getAttribute("Elements")
+        self.__elems_attr.setSerializationMode(TaurusSerializationMode.Serial)
+        self.__elems_attr.addListener(self.on_elements_changed)
+        self.__elems_attr.setSerializationMode(
+            TaurusSerializationMode.Concurrent)
 
-        attr = self.getAttribute('Environment')
-        attr.setSerializationMode(TaurusSerializationMode.Serial)
-        attr.addListener(self.on_environment_changed)
-        attr.setSerializationMode(TaurusSerializationMode.Concurrent)
+        self.__env_attr = self.getAttribute('Environment')
+        self.__env_attr.setSerializationMode(TaurusSerializationMode.Serial)
+        self.__env_attr.addListener(self.on_environment_changed)
+        self.__env_attr.setSerializationMode(
+            TaurusSerializationMode.Concurrent)
 
     NO_CLASS_TYPES = 'ControllerClass', 'ControllerLibrary', \
                      'MacroLibrary', 'Instrument', 'Meta', 'ParameterType'

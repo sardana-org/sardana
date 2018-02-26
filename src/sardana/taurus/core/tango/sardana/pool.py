@@ -1511,8 +1511,8 @@ class MeasurementGroup(PoolElement):
         self._last_integ_time = None
         self.call__init__(PoolElement, name, **kw)
 
-        cfg_attr = self.getAttribute('configuration')
-        cfg_attr.addListener(self.on_configuration_changed)
+        self.__cfg_attr = self.getAttribute('configuration')
+        self.__cfg_attr.addListener(self.on_configuration_changed)
 
         self._value_buffer_cb = None
         self._codec = CodecFactory().getCodec("json")
@@ -1914,7 +1914,8 @@ class Pool(TangoDevice, MoveableSource):
         self.call__init__(MoveableSource)
 
         self._elements = BaseSardanaElementContainer()
-        self.getAttribute("Elements").addListener(self.on_elements_changed)
+        self.__elements_attr = self.getAttribute("Elements")
+        self.__elements_attr.addListener(self.on_elements_changed)
 
     def getObject(self, element_info):
         elem_type = element_info.getType()
@@ -1968,6 +1969,7 @@ class Pool(TangoDevice, MoveableSource):
             except:
                 self.warning("Failed to remove %s", element_data)
         for element_data in elems.get('change', ()):
+            # TODO: element is assigned but not used!! (check)
             element = self._removeElement(element_data)
             element = self._addElement(element_data)
         return elems
