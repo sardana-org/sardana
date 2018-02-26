@@ -75,26 +75,26 @@ Hint: this list can be used as a template to be copy-pasted on a release PR
 
 ### Test Sardana using Spock
 - [ ] Test interactive macros from spock e.g. `ask_for_moveable`, `ask_peak`
-- [ ] Execute umvr macro and verify that the position updates arrives.
-- [ ] Test expconf:
-      1. Configure scan files using expconf set ScanDir to: `/tmp/` and
-         ScanFile to: `demo1.h5, demo1.dat`.
-      2. Configure online plot to show counters.
-      3. Configure snapshot group: with a motor and the `sys/tg_test/1/ampli`
-         attribute.
-      4. Add the `sys/tg_test/1/double_scalar` attribute to the measurement
-         group.
-      5. Open online plot.
-      6. Set JsonRecorder to true. In spock do `senv JsonRecorder True`
-      7. Run step scan and verify:
-         - Records appear in spock output.
-         - Records were stored in scan files.
-         - Records were plotted on the online plot
-- [ ] Run showscan and access to the last scan data.
-- [ ] Test edmac:
-      1. Modify existing macro: ask_peak and run it to verify that the change
-         was applied.
-      2. Create new macro in a new macro library:
-         `edmac my_macro <path_to_sardana_installation_dir>/macroserver/macros/examples/my_macros.py
-         and run it.
+- [ ] Execute `umvr` macro and verify that the position updates arrives.
+- [ ] Test `expconf`:
+  1. Configure scan files using expconf set ScanDir to: `/tmp/` and
+     ScanFile to: `demo1.h5, demo1.dat`.
+  2. Configure online plot to show counters.
+  3. Configure snapshot group: with a motor and the `sys/tg_test/1/ampli`
+     attribute.
+  4. Add the `sys/tg_test/1/double_scalar` attribute to the measurement
+     group.
+  5. Open online plot.
+  6. Set JsonRecorder to true. In spock do `senv JsonRecorder True`
+  7. Run step scan and verify if:
+     - Records appear in spock output.
+     - Records were stored in scan files.
+     - Records were plotted on the online plot
+- [ ] Run `showscan` and access to the last scan data.
+- [ ] Test `edmac`:
+  1. Modify existing macro: `ask_peak` and run it to verify that the change
+     was applied.
+  2. Create new macro in a new macro library:
+     `edmac my_macro <path_to_sardana_installation_dir>/macroserver/macros/examples/my_macros.py
+     and run it.
 
