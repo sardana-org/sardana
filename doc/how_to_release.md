@@ -63,11 +63,38 @@ Hint: this list can be used as a template to be copy-pasted on a release PR
 - [ ] Start MacroServer demo2 and connect to the Pool demo2.
   In another console do: `MacroServer demo2`
 - [ ] Set MacroServer's MacroPath to point to the macro examples.
-  In another IPython console do: `PyTango.DeviceProxy('<macroserver>').put_property({'MacroPath':'<path_to_sardana_installation_dir>/macroserver/macros/examples'})`
+  In another IPython console do:
+  `PyTango.DeviceProxy('macroserver/demo1/1').put_property({'MacroPath':'<path_to_sardana_installation_dir>/macroserver/macros/examples'})`
 - [ ] Restart MacroServer e.g. Ctrl+C in the MacroServer's console and
   start it again.
 - [ ] Create spock profile demo2. In another console do `spock --profile=demo2`
 - [ ] In spock run `sar_demo` macro.
-- [ ] Edit <path_to_sardana_installation_dir>/sardanacustomsettings.py to point to the demo2 door e.g. `UNITTEST_DOOR_NAME = "door/demo2/1"`
+- [ ] Edit `<path_to_sardana_installation_dir>/sardanacustomsettings.py`
+  to point to the demo2 door e.g. `UNITTEST_DOOR_NAME = "door/demo2/1"`
 - [ ] Run testsuite. In another console do `sardanatestsuite`
+
+### Test Sardana using Spock
+- [ ] Test interactive macros from spock e.g. `ask_for_moveable`, `ask_peak`
+- [ ] Execute umvr macro and verify that the position updates arrives.
+- [ ] Test expconf:
+      1. Configure scan files using expconf set ScanDir to: `/tmp/` and
+         ScanFile to: `demo1.h5, demo1.dat`.
+      2. Configure online plot to show counters.
+      3. Configure snapshot group: with a motor and the `sys/tg_test/1/ampli`
+         attribute.
+      4. Add the `sys/tg_test/1/double_scalar` attribute to the measurement
+         group.
+      5. Open online plot.
+      6. Set JsonRecorder to true. In spock do `senv JsonRecorder True`
+      7. Run step scan and verify:
+         - Records appear in spock output.
+         - Records were stored in scan files.
+         - Records were plotted on the online plot
+- [ ] Run showscan and access to the last scan data.
+- [ ] Test edmac:
+      1. Modify existing macro: ask_peak and run it to verify that the change
+         was applied.
+      2. Create new macro in a new macro library:
+         `edmac my_macro <path_to_sardana_installation_dir>/macroserver/macros/examples/my_macros.py
+         and run it.
 
