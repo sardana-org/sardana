@@ -118,6 +118,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   (#647, #648)
 - Macrobutton's text to from "<macro_name>" to "Run/Abort <macro_name>"
   (#322, #554, #658)
+- Color policy in spock for IPython >= 5 from Linux to Neutral (#706 and #712)
 
 ### Removed
 - `ElementList` attribute from the Door Tango device - `Element` attribute is
