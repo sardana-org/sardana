@@ -79,7 +79,7 @@ Hint: this list can be used as a template to be copy-pasted on a release PR
 - [ ] Test `expconf`:
   1. Configure scan files using expconf set ScanDir to: `/tmp/` and
      ScanFile to: `demo1.h5, demo1.dat`.
-  2. Configure online plot to show counters: On expconf GUI select, for all the counter channels, enabled and output to True, and PlotType to Spectrum.
+  2. Configure online plot to show counters: On expconf GUI select for all the counter channels, Plot Type 'Spectrum' and Plot Axes '<mov>'
   3. Configure snapshot group: with a motor and the `sys/tg_test/1/ampli`
      attribute.
   4. Add the `sys/tg_test/1/double_scalar` attribute to the measurement
