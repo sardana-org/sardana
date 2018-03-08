@@ -1874,27 +1874,23 @@ class CAcquisition(object):
 
         # TODO: for Taurus4 compatibility
         # The sardana code is not fully ready to deal with Taurus4 model names
-        # Necessary changes are:
-        # * strip scheme name that appeared in the full_name since Taurus4
-        # * avoid FQDN introduced wuth taurus-org/taurus#488
-        # and come back to the Taurus3 style full name cause all the recording
-        # stuff and the measurement group counts is based on them
-
+        # It is necessary to strip the scheme name that appeared in
+        # the full_name since Taurus4 and come back to the Taurus3 style full
+        # name
         try:
             from taurus.core.tango.tangovalidator import\
                 TangoDeviceNameValidator
             validator = TangoDeviceNameValidator()
             uri_groups = validator.getUriGroups(full_name)
             dev_name = uri_groups["devname"]
-            fqdn_host = uri_groups["host"]
-            if fqdn_host is not None:
+            host = uri_groups["host"]
+            if host is not None:
                 port = uri_groups["port"]
-                host = fqdn_host.split(".")[0]
                 full_name = host + ":" + port + "/" + dev_name
             else:
                 full_name = dev_name
         except ImportError:
-            # we are in Taurus 3 so neither scheme nor FQDN is in use
+            # we are in Taurus 3 so scheme is not in use
             pass
         except Exception:
             msg = "Unknown error in buffer_changed callback"

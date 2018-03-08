@@ -61,7 +61,7 @@ class TangoAttributeListener(AttributeListener):
             value = _value['data']
             idx = _value['index']
             dev = event.device
-            obj_fullname = '%s:%s/%s' % (dev.get_db_host().split('.')[0],
+            obj_fullname = '%s:%s/%s' % (dev.get_db_host(),
                                          dev.get_db_port(),
                                          dev.name())
             # filling the measurement records
