@@ -38,6 +38,22 @@ from sardana.tango.pool.test import SarTestTestCase
 from sardana.pool.test.test_acquisition import AttributeListener
 
 
+def _to_fqdn(name, logger=None):
+    full_name = name
+    # try to use Taurus 4 to retrieve FQDN
+    try:
+        from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
+        full_name, _, _ = TangoDeviceNameValidator().getNames(name)
+    # if Taurus3 in use just continue
+    except ImportError:
+        pass
+    if full_name != name and logger:
+        msg = ("PQDN full name is deprecated in favor of FQDN full name."
+               " Re-apply configuration in order to upgrade.")
+        logger.warning(msg)
+    return full_name
+
+
 class TangoAttributeListener(AttributeListener):
 
     def push_event(self, *args, **kwargs):
@@ -64,6 +80,7 @@ class TangoAttributeListener(AttributeListener):
             obj_fullname = '%s:%s/%s' % (dev.get_db_host(),
                                          dev.get_db_port(),
                                          dev.name())
+            obj_fullname = _to_fqdn(obj_fullname)
             # filling the measurement records
             with self.data_lock:
                 channel_data = self.data.get(obj_fullname, [])
@@ -118,9 +135,11 @@ class MeasSarTestTestCase(SarTestTestCase):
                 synchronizer, synchronization = exp_dict[name]
                 if synchronizer != 'software':
                     synchronizer_dev = PyTango.DeviceProxy(synchronizer)
-                    synchronizer = '%s:%s/%s' % (synchronizer_dev.get_db_host().split('.')[0],
-                                                 synchronizer_dev.get_db_port(),
-                                                 synchronizer_dev.name())
+                    synchronizer = '%s:%s/%s' % (
+                        synchronizer_dev.get_db_host(),
+                        synchronizer_dev.get_db_port(),
+                        synchronizer_dev.name())
+                    synchronizer = _to_fqdn(synchronizer)
                 ctrl_data['synchronizer'] = synchronizer
                 ctrl_data['synchronization'] = synchronization
                 self.tg_names.append(synchronizer)
@@ -143,9 +162,10 @@ class MeasSarTestTestCase(SarTestTestCase):
             for ch_tg in ctrl:
                 channel = ch_tg[0]
                 dev = PyTango.DeviceProxy(channel)
-                ch_fullname = '%s:%s/%s' % (dev.get_db_host().split('.')[0],
+                ch_fullname = '%s:%s/%s' % (dev.get_db_host(),
                                             dev.get_db_port(),
                                             dev.name())
+                ch_fullname = _to_fqdn(ch_fullname)
                 event_id = dev.subscribe_event('Data',
                                                PyTango.EventType.CHANGE_EVENT,
                                                self.attr_listener)

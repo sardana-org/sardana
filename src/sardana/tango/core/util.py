@@ -811,7 +811,7 @@ def from_name_to_tango(db, name):
     else:
         raise Exception("Invalid device name '%s'" % name)
 
-    full_name = "%s:%s/%s" % (db.get_db_host(), db.get_db_port(), name)
+    full_name = "tango://%s:%s/%s" % (db.get_db_host(), db.get_db_port(), name)
     return full_name, name, alias
 
 

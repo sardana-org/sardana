@@ -1265,17 +1265,7 @@ class MGConfiguration(object):
         for channel_name, channel_data in self.channels.items():
             cache[channel_name] = None
             data_source = channel_data['source']
-            # external = ctrl_name.startswith("__")
-            # TODO: For Taurus 4 compatibility
-            # data_source of the sardana channels does not contain the scheme
-            # part but the external tango channels does.
-            # First try to use the original data_source and as the fallback
-            # complete it with the "tango://" part. If it fails, treat it as a
-            # NON tango channel.
             params = tg_attr_validator.getParams(data_source)
-            if params is None:
-                params = tg_attr_validator.getParams(
-                    "tango://%s" % data_source)
             if params is None:
                 # Handle NON tango channel
                 n_tg_chs[channel_name] = channel_data
@@ -1285,7 +1275,8 @@ class MGConfiguration(object):
                 attr_name = params['attributename'].lower()
                 host, port = params.get('host'), params.get('port')
                 if host is not None and port is not None:
-                    dev_name = "{0}:{1}/{2}".format(host, port, dev_name)
+                    dev_name = "tango://{0}:{1}/{2}".format(host, port,
+                                                            dev_name)
                 dev_data = tg_dev_chs.get(dev_name)
 
                 if dev_data is None:
@@ -1703,8 +1694,6 @@ class MeasurementGroup(PoolElement):
         """
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
-            # TODO: For Taurus 4 compatibility
-            full_name = "tango://%s" % full_name
             channel = Device(full_name)
             value_buffer_obj = channel.getValueBufferObj()
             if cb is not None:
@@ -1725,8 +1714,6 @@ class MeasurementGroup(PoolElement):
         """
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
-            # TODO: For Taurus 4 compatibility
-            full_name = "tango://%s" % full_name
             channel = Device(full_name)
             value_buffer_obj = channel.getValueBufferObj()
             if cb is not None:
@@ -1922,9 +1909,7 @@ class Pool(TangoDevice, MoveableSource):
             kwargs['_pool_data'] = data
             kwargs['_pool_obj'] = self
             return klass(**kwargs)
-        # TODO: For Taurus 4 compatibility
-        fullname = "tango://%s" % element_info.full_name
-        obj = Factory().getDevice(fullname, _pool_obj=self,
+        obj = Factory().getDevice(element_info.full_name, _pool_obj=self,
                                   _pool_data=data)
         return obj
 
