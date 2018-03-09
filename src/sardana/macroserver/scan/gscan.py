@@ -619,9 +619,6 @@ class GScan(Logger):
         counters = []
         for ci in channels_info:
             full_name = ci.full_name
-            # for Taurus 4 compatibility
-            if not full_name.startswith("tango://"):
-                full_name = "tango://{0}".format(full_name)
             try:
                 channel = taurus.Device(full_name)
                 instrument = channel.instrument
@@ -1872,30 +1869,6 @@ class CAcquisition(object):
 
         full_name = channel.getFullName()
 
-        # TODO: for Taurus4 compatibility
-        # The sardana code is not fully ready to deal with Taurus4 model names
-        # It is necessary to strip the scheme name that appeared in
-        # the full_name since Taurus4 and come back to the Taurus3 style full
-        # name
-        try:
-            from taurus.core.tango.tangovalidator import\
-                TangoDeviceNameValidator
-            validator = TangoDeviceNameValidator()
-            uri_groups = validator.getUriGroups(full_name)
-            dev_name = uri_groups["devname"]
-            host = uri_groups["host"]
-            if host is not None:
-                port = uri_groups["port"]
-                full_name = host + ":" + port + "/" + dev_name
-            else:
-                full_name = dev_name
-        except ImportError:
-            # we are in Taurus 3 so scheme is not in use
-            pass
-        except Exception:
-            msg = "Unknown error in buffer_changed callback"
-            self.warning(msg, exc_info=1)
-
         info = {'label': full_name}
         idx = np.array(value_buffer['index'])
         idx += self._index_offset
@@ -1928,9 +1901,6 @@ class CAcquisition(object):
         for channel_info in measurement_group.getChannels():
             full_name = channel_info["full_name"]
             name = channel_info["name"]
-            # for taurus 4 compatibility
-            if not full_name.startswith("tango://"):
-                full_name = "tango://" + full_name
             try:
                 channel = taurus.Device(full_name)
             except Exception:
