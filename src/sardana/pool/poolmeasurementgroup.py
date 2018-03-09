@@ -215,6 +215,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         ndim = None
         if external_from_name:
             name = full_name = source = channel
+            ndim = 0  # TODO: this should somehow verify the dimension
         else:
             name = channel.name
             full_name = channel.full_name
