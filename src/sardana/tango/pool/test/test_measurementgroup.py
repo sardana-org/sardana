@@ -118,9 +118,10 @@ class MeasSarTestTestCase(SarTestTestCase):
                 synchronizer, synchronization = exp_dict[name]
                 if synchronizer != 'software':
                     synchronizer_dev = PyTango.DeviceProxy(synchronizer)
-                    synchronizer = '%s:%s/%s' % (synchronizer_dev.get_db_host().split('.')[0],
-                                                 synchronizer_dev.get_db_port(),
-                                                 synchronizer_dev.name())
+                    synchronizer = '%s:%s/%s' % (
+                        synchronizer_dev.get_db_host(),
+                        synchronizer_dev.get_db_port(),
+                        synchronizer_dev.name())
                 ctrl_data['synchronizer'] = synchronizer
                 ctrl_data['synchronization'] = synchronization
                 self.tg_names.append(synchronizer)
