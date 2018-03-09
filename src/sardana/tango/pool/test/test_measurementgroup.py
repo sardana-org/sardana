@@ -165,6 +165,7 @@ class MeasSarTestTestCase(SarTestTestCase):
                 ch_fullname = '%s:%s/%s' % (dev.get_db_host(),
                                             dev.get_db_port(),
                                             dev.name())
+                ch_fullname = _to_fqdn(ch_fullname)
                 event_id = dev.subscribe_event('Data',
                                                PyTango.EventType.CHANGE_EVENT,
                                                self.attr_listener)

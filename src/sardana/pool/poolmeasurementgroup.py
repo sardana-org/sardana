@@ -152,7 +152,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         # TODO: make it more elegant
         if configuration is None:
             configuration = self.get_configuration()
-            self.set_configuration(configuration, propagate=0)
+            self.set_configuration(configuration, propagate=0, to_fqdn=False)
 
     def _create_action_cache(self):
         acq_name = "%s.Acquisition" % self._name
@@ -327,7 +327,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                     channel_data, element)
         return config
 
-    def set_configuration(self, config=None, propagate=1):
+    def set_configuration(self, config=None, propagate=1, to_fqdn=True):
         if config is None:
             config = self._build_configuration()
         else:
@@ -352,7 +352,8 @@ class PoolMeasurementGroup(PoolGroupElement):
                         channel_data['source'] = _id
                     else:
                         full_name = channel_data['full_name']
-                        full_name = _to_fqdn(full_name, logger=self)
+                        if to_fqdn:
+                            full_name = _to_fqdn(full_name, logger=self)
                         element = pool.get_element_by_full_name(full_name)
                         _id = element.id
                     channel_data = self._build_channel_defaults(
@@ -400,15 +401,17 @@ class PoolMeasurementGroup(PoolGroupElement):
             return
         self.fire_event(EventType("configuration", priority=propagate), config)
 
-    def set_configuration_from_user(self, cfg, propagate=1):
+    def set_configuration_from_user(self, cfg, propagate=1, to_fqdn=True):
         config = {}
         user_elements = self.get_user_elements()
         pool = self.pool
         timer_name = cfg.get('timer', user_elements[0].full_name)
         monitor_name = cfg.get('monitor', user_elements[0].full_name)
-        timer_name = _to_fqdn(timer_name, logger=self)
+        if to_fqdn:
+            timer_name = _to_fqdn(timer_name, logger=self)
         config['timer'] = pool.get_element_by_full_name(timer_name)
-        monitor_name = _to_fqdn(monitor_name, logger=self)
+        if to_fqdn:
+            monitor_name = _to_fqdn(monitor_name, logger=self)
         config['monitor'] = pool.get_element_by_full_name(monitor_name)
         config['controllers'] = controllers = {}
 
@@ -430,7 +433,8 @@ class PoolMeasurementGroup(PoolGroupElement):
             if external:
                 ctrl = c_name
             else:
-                c_name = _to_fqdn(c_name, logger=self)
+                if to_fqdn:
+                    c_name = _to_fqdn(c_name, logger=self)
                 ctrl = pool.get_element_by_full_name(c_name)
                 assert ctrl.get_type() == ElementType.Controller
             controllers[ctrl] = ctrl_data = {}
@@ -438,11 +442,13 @@ class PoolMeasurementGroup(PoolGroupElement):
             # exclude external and not timerable elements
             if not external and ctrl.is_timerable():
                 timer_name = c_data['timer']
-                timer_name = _to_fqdn(timer_name, logger=self)
+                if to_fqdn:
+                    timer_name = _to_fqdn(timer_name, logger=self)
                 timer = pool.get_element_by_full_name(timer_name)
                 ctrl_data['timer'] = timer
                 monitor_name = c_data['monitor']
-                monitor_name = _to_fqdn(monitor_name, logger=self)
+                if to_fqdn:
+                    monitor_name = _to_fqdn(monitor_name, logger=self)
                 monitor = pool.get_element_by_full_name(monitor_name)
                 ctrl_data['monitor'] = monitor
                 synchronizer = c_data.get('synchronizer')
@@ -451,7 +457,8 @@ class PoolMeasurementGroup(PoolGroupElement):
                 if synchronizer is None:
                     synchronizer = 'software'
                 elif synchronizer != 'software':
-                    synchronizer = _to_fqdn(synchronizer, logger=self)
+                    if to_fqdn:
+                        synchronizer = _to_fqdn(synchronizer, logger=self)
                     synchronizer = pool.get_element_by_full_name(synchronizer)
                 ctrl_data['synchronizer'] = synchronizer
                 try:
@@ -472,14 +479,15 @@ class PoolMeasurementGroup(PoolGroupElement):
                     params['pool'] = self.pool
                     channel = PoolExternalObject(**params)
                 else:
-                    ch_name = _to_fqdn(ch_name, logger=self)
+                    if to_fqdn:
+                        ch_name = _to_fqdn(ch_name, logger=self)
                     channel = pool.get_element_by_full_name(ch_name)
                 channels[channel] = dict(ch_data)
 
         config['label'] = cfg.get('label', self.name)
         config['description'] = cfg.get('description', self.DFT_DESC)
 
-        self.set_configuration(config, propagate=propagate)
+        self.set_configuration(config, propagate=propagate, to_fqdn=to_fqdn)
 
     def get_configuration(self):
         return self._config
@@ -643,10 +651,11 @@ class PoolMeasurementGroup(PoolGroupElement):
     def get_moveable(self):
         return self._moveable
 
-    def set_moveable(self, moveable, propagate=1):
+    def set_moveable(self, moveable, propagate=1, to_fqdn=True):
         self._moveable = moveable
         if self._moveable != 'None' and self._moveable is not None:
-            moveable = _to_fqdn(moveable, logger=self)
+            if to_fqdn:
+                moveable = _to_fqdn(moveable, logger=self)
             self._moveable_obj = self.pool.get_element_by_full_name(moveable)
         self.fire_event(EventType("moveable", priority=propagate),
                         moveable)

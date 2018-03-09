@@ -61,7 +61,7 @@ class BaseAcquisition(object):
         conf["user_elements"] = channel_ids
         self.pmg = createPoolMeasurementGroup(pool, conf)
         pool.add_element(self.pmg)
-        self.pmg.set_configuration_from_user(mg_conf)
+        self.pmg.set_configuration_from_user(mg_conf, to_fqdn=False)
         return channel_names
 
     def prepare_attribute_listener(self):
@@ -115,7 +115,7 @@ class BaseAcquisition(object):
         channel_names = self.prepare_meas(config)
         # setting measurement parameters
         self.pmg.set_synchronization(synchronization)
-        self.pmg.set_moveable(moveable)
+        self.pmg.set_moveable(moveable, to_fqdn=False)
         repetitions = 0
         for group in synchronization:
             repetitions += group[SynchParam.Repeats]
@@ -137,7 +137,7 @@ class BaseAcquisition(object):
         """
         channel_names = self.prepare_meas(config)
         self.pmg.set_synchronization(synchronization)
-        self.pmg.set_moveable(moveable)
+        self.pmg.set_moveable(moveable, to_fqdn=False)
         repetitions = 0
         for group in synchronization:
             repetitions += group[SynchParam.Repeats]
@@ -157,7 +157,7 @@ class BaseAcquisition(object):
             pool, config)
 
         # setting mg configuration - this cleans the action cache!
-        self.pmg.set_configuration_from_user(mg_conf)
+        self.pmg.set_configuration_from_user(mg_conf, to_fqdn=False)
         repetitions = 0
         for group in synchronization:
             repetitions += group[SynchParam.Repeats]
@@ -173,7 +173,7 @@ class BaseAcquisition(object):
         jobs_before = get_thread_pool().qsize
         channel_names = self.prepare_meas(config)
         self.pmg.set_synchronization(synchronization)
-        self.pmg.set_moveable(moveable)
+        self.pmg.set_moveable(moveable, to_fqdn=False)
         repetitions = 0
         for group in synchronization:
             repetitions += group[SynchParam.Repeats]
@@ -202,7 +202,7 @@ class BaseAcquisition(object):
         """
         self.prepare_meas(config)
         self.pmg.synchronization = synchronization
-        self.pmg.moveable = moveable
+        self.pmg.set_moveable(moveable, to_fqdn=False)
         self.prepare_attribute_listener()
 
         self.pmg.start_acquisition()
@@ -238,7 +238,7 @@ class BaseAcquisition(object):
         mot.set_velocity(0.5)
         channel_names = self.prepare_meas(config)
         self.pmg.synchronization = synchronization
-        self.pmg.moveable = moveable
+        self.pmg.set_moveable(moveable, to_fqdn=False)
         repetitions = 0
         for group in synchronization:
             repetitions += group[SynchParam.Repeats]
