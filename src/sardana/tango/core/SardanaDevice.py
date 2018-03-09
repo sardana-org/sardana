@@ -151,7 +151,7 @@ class SardanaDevice(Device_4Impl, Logger):
         # if Taurus3 in use just continue
         except ImportError:
             pass
-        full_name = "{0}/{1}".format(db_name,self.get_name())
+        full_name = "{0}/{1}".format(db_name, self.get_name())
         return full_name
 
     def init_device(self):
