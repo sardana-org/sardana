@@ -75,7 +75,19 @@ class Pool(PyTango.Device_4Impl, Logger):
     def get_full_name(self):
         db = PyTango.Util.instance().get_database()
         db_name = db.get_db_host() + ":" + db.get_db_port()
-        return db_name + "/" + self.get_name()
+        # Taurus 4 uses FQDN. In case PQDN is used as TANGO_HOST use FQDN
+        # in full_name. Scheme name "tango:" is still not used.
+        try:
+            from taurus.core.tango.tangovalidator import \
+                TangoAuthorityNameValidator
+            auth_name = "//%s" % db_name
+            uri_groups = TangoAuthorityNameValidator().getUriGroups(auth_name)
+            db_name = uri_groups["host"] + ":" + uri_groups["port"]
+        except ImportError:
+            # Taurus3 in use, nothing to be done...
+            pass
+        full_name = db_name + "/" + self.get_name()
+        return full_name
 
     @property
     def pool(self):
