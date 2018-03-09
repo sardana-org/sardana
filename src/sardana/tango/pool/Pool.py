@@ -73,18 +73,29 @@ class Pool(PyTango.Device_4Impl, Logger):
         self._pool.add_listener(self.on_pool_changed)
 
     def get_full_name(self):
+        """Compose full name from the TANGO_HOST information and device name.
+
+        In case Sardana is used with Taurus 3 the full name is of format
+        "dbhost:dbport/<domain>/<family>/<member>" where dbhost may be either
+        FQDN or PQDN, depending on the TANGO_HOST configuration.
+
+        In case Sardana is used with Taurus 4 the full name is of format
+        "tango://dbhost:dbport/<domain>/<family>/<member>" where dbhost is
+        always FQDN.
+
+        :return: this device full name
+        :rtype: str
+        """
         db = PyTango.Util.instance().get_database()
         db_name = db.get_db_host() + ":" + db.get_db_port()
-        # Taurus 4 uses FQDN. In case PQDN is used as TANGO_HOST use FQDN
-        # in full_name. Scheme name "tango:" is still not used.
+        # try to use Taurus 4 to retrieve FQDN
         try:
             from taurus.core.tango.tangovalidator import \
                 TangoAuthorityNameValidator
-            auth_name = "//%s" % db_name
-            uri_groups = TangoAuthorityNameValidator().getUriGroups(auth_name)
-            db_name = uri_groups["host"] + ":" + uri_groups["port"]
+            db_name = "//%s" % db_name
+            db_name, _, _ = TangoAuthorityNameValidator().getNames(db_name)
+        # if Taurus3 in use just continue
         except ImportError:
-            # Taurus3 in use, nothing to be done...
             pass
         full_name = db_name + "/" + self.get_name()
         return full_name
