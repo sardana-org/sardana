@@ -310,7 +310,7 @@ class MSDoor(MSObject):
         self.fire_event(EventType("macrostatus", priority=propagate),
                         macro_status)
 
-    result = property(get_result, set_result)
+    macro_status = property(get_macro_status, set_macro_status)
 
     def get_record_data(self):
         return self._record_data

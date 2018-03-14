@@ -395,24 +395,44 @@ def print_dev_from_class(classname, dft=None):
         exp_dev_list = []
 
     res = None
-    dev_list = db.get_device_name(server_wildcard, classname)
+    dev_list = list(db.get_device_name(server_wildcard, classname))
     tg_host = "%s:%s" % (db.get_db_host(), db.get_db_port())
     print "Available", classname, "devices from", tg_host, ":"
+
+    list_devices_with_alias = []
+    list_devices_with_no_alias = []
     for dev in dev_list:
         _, name, alias = from_name_to_tango(dev)
-        out = alias or name
         if alias:
-            out += ' (a.k.a. %s)' % name
+            dev_alias_name = (alias, name)
+            list_devices_with_alias.append(dev_alias_name)
+        else:
+            dev_alias_name = ("", name)
+            list_devices_with_no_alias.append(dev_alias_name)
+
+    list_devices_with_alias = sorted(list_devices_with_alias,
+                                     key=lambda s: s[0].lower())
+    list_devices_with_no_alias = sorted(list_devices_with_no_alias,
+                                        key=lambda s: s[0].lower())
+    ordered_devices_list = list_devices_with_alias + list_devices_with_no_alias
+
+    for dev in ordered_devices_list:
+        dev_alias = dev[0]
+        dev_name = dev[1]
+        if dev_alias == "":
+            out = dev_name
+        else:
+            out = "%s (a.k.a. %s)" % (dev_alias, dev_name)
         out = "%-25s" % out
-        if dev in exp_dev_list:
+        if dev_name in exp_dev_list:
             out += " (running)"
         print out
+
         if dft:
             if dft.lower() == name.lower():
                 res = name
-            elif not alias is None and dft.lower() == alias.lower():
+            elif alias is not None and dft.lower() == alias.lower():
                 res = alias
-
     return res
 
 
@@ -1236,6 +1256,14 @@ def prepare_cmdline(argv=None):
 
 def run():
 
+    # TODO: Temporary solution, available while Taurus3 is being supported.
+    from taurus import tauruscustomsettings
+    from sardana import sardanacustomsettings
+    max_counts = getattr(sardanacustomsettings,
+                         'TAURUS_MAX_DEPRECATION_COUNTS', 0)
+    tauruscustomsettings._MAX_DEPRECATIONS_LOGGED = max_counts
+    #
+
     try:
         from IPython.utils.traitlets import Unicode
         from IPython.frontend.qt.console.rich_ipython_widget import RichIPythonWidget
@@ -1267,3 +1295,11 @@ def run():
     prepare_cmdline()
 
     launch_new_instance()
+
+    # TODO: Temporary solution, available while Taurus3 is being supported.
+    try:
+        from taurus.core.util.log import _DEPRECATION_COUNT
+        from taurus import info
+        info('\n*********************\n%s', _DEPRECATION_COUNT.pretty())
+    except:
+        pass

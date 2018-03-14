@@ -1141,6 +1141,12 @@ class DiffracBasis(PseudoMotorController):
             date_str = "Created at " + time.strftime("%Y-%m-%d %H:%M") + "\n\n"
             crys_file.write(date_str)
 
+            # diffractometer type
+
+            difftype_str = ("DiffractometerType " + self.DiffractometerType +
+                            "\n\n")
+            crys_file.write(difftype_str)
+
             # write crystal name
 
             crystal_name = self.sample.name_get()

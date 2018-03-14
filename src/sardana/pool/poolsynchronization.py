@@ -66,7 +66,14 @@ class PoolSynchronization(PoolAction):
 
     def __init__(self, main_element, name="Synchronization"):
         PoolAction.__init__(self, main_element, name)
-        self._synch_soft = FunctionGenerator()
+        # Even if rest of Sardana is using "." in logger names use "-" as
+        # sepator. This is in order to avoid confusion about the logger
+        # hierary - by default python logging use "." to indicate loggers'
+        # hirarchy in case parent-children relation is established between the
+        # loggers.
+        # TODO: review if it is possible in Sardana to use a common separator.
+        soft_synch_name = main_element.name + "-SoftSynch"
+        self._synch_soft = FunctionGenerator(name=soft_synch_name)
         self._listener = None
 
     def add_listener(self, listener):
@@ -138,6 +145,11 @@ class PoolSynchronization(PoolAction):
                                               self._synch_soft)
                 self.add_finish_hook(remove_pos_listener, False)
 
+            # start software synchronizer
+            if self._listener is not None:
+                self._synch_soft.start()
+                get_thread_pool().add(self._synch_soft.run)
+
             # PreStartAll on all controllers
             for pool_ctrl in pool_ctrls:
                 pool_ctrl.ctrl.PreStartAll()
@@ -163,10 +175,6 @@ class PoolSynchronization(PoolAction):
             # StartAll on all controllers
             for pool_ctrl in pool_ctrls:
                 pool_ctrl.ctrl.StartAll()
-
-            if self._listener is not None:
-                self._synch_soft.start()
-                get_thread_pool().add(self._synch_soft.run)
 
     def is_triggering(self, states):
         """Determines if we are triggering or if the triggering has ended

@@ -29,26 +29,36 @@ __all__ = ["DumbRecorder"]
 
 __docformat__ = 'restructuredtext'
 
-from sardana.macroserver.scan.recorder import DataRecorder
+from sardana.macroserver.scan.recorder import BaseFileRecorder
 
 
-class DumbRecorder(DataRecorder):
+class DumbRecorder(BaseFileRecorder):
+
+    def __init__(self, filename=None, macro=None, overwrite=False, **pars):
+        BaseFileRecorder.__init__(self, **pars)
+
+        self.macro = macro
+        self.overwrite = overwrite
+        if filename:
+            self.filename = filename
 
     def _startRecordList(self, recordlist):
-        print "Starting new recording"
-        print "# Title :     ", recordlist.getEnvironValue('title')
+        self.fd = open(self.filename, "a")
+        self.fd.write("Starting new recording\n")
+        self.fd.write("# Title :     %s\n" % recordlist.getEnvironValue('title'))
         env = recordlist.getEnviron()
         for envky in env.keys():
             if envky != 'title' and envky != 'labels':
-                print "# %8s :    %s " % (envky, str(env[envky]))
-        print "# Started:    ", env['starttime']
-        print "# L:  ",
-        print "  ".join([desc.label for desc in env['datadesc']])
+                self.fd.write("# %8s :    %s \n" % (envky, str(env[envky])))
+        self.fd.write("# Started:    %s\n" % env['starttime'])
+        self.fd.write("# L:  ")
+        self.fd.write("  ".join([desc.label for desc in env['datadesc']]) + "\n")
 
     def _writeRecord(self, record):
-        print record.data
+        self.fd.write("%s\n" % record.data)
 
     def _endRecordList(self, recordlist):
-        print "Ending recording"
+        self.fd.write("Ending recording\n")
         env = recordlist.getEnviron()
-        print "Recording ended at: ", env['endtime']
+        self.fd.write("Recording ended at: %s\n" % env['endtime'])
+        self.fd.close()

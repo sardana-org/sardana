@@ -58,7 +58,7 @@ As you will see, most symbols can be imported through the
     from sardana.pool.controller import MotorController
     
     class SpringfieldMotorController(MotorController):
-        """A motor controller intended from demonstration purposes only"""
+        """A motor controller intended for demonstration purposes only"""
         pass
 
 The common :term:`API` to all low level controllers includes the set of methods
@@ -135,6 +135,10 @@ These methods are :meth:`~sardana.pool.controller.Controller.AddDevice` and
 new axis belonging to the controller is created in sardana. The 
 :meth:`~sardana.pool.controller.Controller.DeleteDevice` method is
 called when an axis belonging to the controller is removed from sardana.
+These methods are also called when the sardana server is started and if the
+controller code has changed on the file and the new code is reloaded into
+sardana.
+
 The example shows an example how to implement these methods on a motor
 controller:
 
@@ -214,7 +218,7 @@ loop on demand.
 
 The first thing to do is to specify which are the extra attributes.
 This is done through the :attr:`~sardana.pool.controller.Controller.axis_attributes`.
-This is basically a dictionary were the keys are attribute names and the value
+This is basically a dictionary where the keys are attribute names and the value
 is a dictionary describing the folowing properties for each attribute:
 
 ===================== ========= ============================================  ======================================================= ===============================================

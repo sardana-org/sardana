@@ -23,16 +23,20 @@
 ##
 ##############################################################################
 
+__all__ = ["BasePoolTestCase"]
+
+import logging
+
 from sardana.pool.test import (FakePool, createPoolController, createCtrlConf,
                                createPoolCounterTimer, createPoolTriggerGate,
                                createPoolMotor, createElemConf,
                                createPoolZeroDExpChannel,
-                               createPoolPseudoCounter)
-import logging
+                               createPoolPseudoCounter, createPoolPseudoMotor)
 
 
 class BasePoolTestCase(object):
     """Base pool test for setting the environment."""
+
     POOLPATH = []
     LOGLEVEL = logging.WARNING
 
@@ -84,8 +88,16 @@ class BasePoolTestCase(object):
         elem_obj = createPoolPseudoCounter(self.pool, ctrl_obj, e_cfg,
                                            elements)
         ctrl_obj.add_element(elem_obj)
-        # MOT elements
         self.pcs[name] = elem_obj
+        self.pool.add_element(elem_obj)
+        return elem_obj
+
+    def createPMElement(self, ctrl_obj, name, axis, elements=[]):
+        e_cfg = createElemConf(self.pool, axis, name)
+        elem_obj = createPoolPseudoMotor(self.pool, ctrl_obj, e_cfg,
+                                         elements)
+        ctrl_obj.add_element(elem_obj)
+        self.pms[name] = elem_obj
         self.pool.add_element(elem_obj)
         return elem_obj
 
@@ -103,6 +115,7 @@ class BasePoolTestCase(object):
         self.tgs = {}
         self.mots = {}
         self.pcs = {}
+        self.pms = {}
         # Create nctctrls CT ctrls
         for ctrl in range(1, self.nctctrls + 1):
             name = '_test_ct_ctrl_%s' % ctrl

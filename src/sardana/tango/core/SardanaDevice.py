@@ -119,11 +119,19 @@ class SardanaDevice(Device_4Impl, Logger):
     alias = property(get_alias, doc="the device alias name")
 
     def get_full_name(self):
-        """Returns the device full name in format
-        dbname:dbport/<domain>/<family>/<member>
+        """Compose full name from the TANGO_HOST information and device name.
+
+        In case Sardana is used with Taurus 3 the full name is of format
+        "dbhost:dbport/<domain>/<family>/<member>" where dbhost may be either
+        FQDN or PQDN, depending on the TANGO_HOST configuration.
+
+        In case Sardana is used with Taurus 4 the full name is of format
+        "tango://dbhost:dbport/<domain>/<family>/<member>" where dbhost is
+        always FQDN.
 
         :return: this device full name
-        :rtype: str"""
+        :rtype: str
+        """
         db = self.get_database()
         if db.get_from_env_var():
             db_name = ApiUtil.get_env_var("TANGO_HOST")
@@ -132,7 +140,19 @@ class SardanaDevice(Device_4Impl, Logger):
                 db_name = db.get_db_host() + ":" + db.get_db_port()
             else:
                 db_name = db.get_file_name()
-        return db_name + "/" + self.get_name()
+                full_name = db_name + "/" + self.get_name()
+                return full_name
+        # try to use Taurus 4 to retrieve FQDN
+        try:
+            from taurus.core.tango.tangovalidator import \
+                TangoAuthorityNameValidator
+            db_name = "//%s" % db_name
+            db_name, _, _ = TangoAuthorityNameValidator().getNames(db_name)
+        # if Taurus3 in use just continue
+        except ImportError:
+            pass
+        full_name = "{0}/{1}".format(db_name, self.get_name())
+        return full_name
 
     def init_device(self):
         """Initialize the device. Called during startup after :meth:`init` and
@@ -390,7 +410,7 @@ class SardanaDevice(Device_4Impl, Logger):
                     if reason == PyTango.constants.API_WAttrOutsideLimit and\
                        attr_name == 'position':
                         msg = ('Unable to update "w_value" because it is' +
-                               ' out of range')
+                               ' out of range (w_value=%f)' % w_value)
                         self.warning(msg)
                         self.debug('Details:', exc_info=1)
                     else:

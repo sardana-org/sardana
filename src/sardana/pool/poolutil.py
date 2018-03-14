@@ -30,12 +30,14 @@ __all__ = ["PoolUtil"]
 __docformat__ = 'restructuredtext'
 
 from taurus.core.util.containers import CaselessDict
+import threading
 
 
 class _PoolUtil(object):
 
     def __init__(self):
         self._ctrl_proxies = CaselessDict()
+        self._lock = threading.Lock()
 
     def __call__(self, *args, **kwargs):
         return self
@@ -43,13 +45,14 @@ class _PoolUtil(object):
     def get_device(self, *args, **kwargs):
         ctrl_name = args[0]
         device_name = args[1]
-        ctrl_devs = self._ctrl_proxies.get(ctrl_name)
-        if ctrl_devs is None:
-            self._ctrl_proxies[ctrl_name] = ctrl_devs = CaselessDict()
-        dev = ctrl_devs.get(device_name)
-        if dev is None:
-            import PyTango
-            ctrl_devs[device_name] = dev = PyTango.DeviceProxy(device_name)
+        with self._lock:
+            ctrl_devs = self._ctrl_proxies.get(ctrl_name)
+            if ctrl_devs is None:
+                self._ctrl_proxies[ctrl_name] = ctrl_devs = CaselessDict()
+            dev = ctrl_devs.get(device_name)
+            if dev is None:
+                import PyTango
+                ctrl_devs[device_name] = dev = PyTango.DeviceProxy(device_name)
         return dev
 
     get_motor = get_phy_motor = get_pseudo_motor = get_motor_group = \

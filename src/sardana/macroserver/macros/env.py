@@ -23,12 +23,15 @@
 
 """Environment related macros"""
 
-__all__ = ["dumpenv", "load_env", "lsenv", "senv", "usenv"]
+__all__ = ["dumpenv", "load_env", "lsenv", "senv", "usenv",
+           "lsvo", "setvo", "usetvo",
+           "lsgh", "defgh", "udefgh"]
 
 __docformat__ = 'restructuredtext'
 
 from taurus.console.list import List
-from sardana.macroserver.macro import *
+from sardana.macroserver.macro import Macro, Type, ParamRepeat
+from sardana.macroserver.msexception import UnknownEnv
 
 ##########################################################################
 #
@@ -293,3 +296,120 @@ class load_env(Macro):
             for parameter in misc_tree:
                 if parameter.tag != "name":
                     self.setEnv(parameter.tag, parameter.text)
+
+
+class lsgh(Macro):
+    """List general hooks.
+
+    .. note::
+        The `lsgh` macro has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
+    """
+
+    def run(self):
+        try:
+            general_hooks = self.getEnv("_GeneralHooks")
+        except UnknownEnv:
+            self.output("No general hooks")
+            return
+
+        out = List(['Hook place', 'Hook(s)'])
+        default_dict = {}
+        for hook in general_hooks:
+            name = hook[0]
+            places = hook[1]
+            for place in places:
+                if place not in default_dict.keys():
+                    default_dict[place] = []
+                if name not in default_dict[place]:
+                    default_dict[place].append(name)
+        for pos in default_dict.keys():
+            pos_set = 0
+            for hook in default_dict[pos]:
+                if pos_set:
+                    out.appendRow(["", hook])
+                else:
+                    out.appendRow([pos, hook])
+                pos_set = 1
+        for line in out.genOutput():
+            self.output(line)
+
+
+class defgh(Macro):
+    """Define general hook.
+    Ex.
+        defgh "mv [[mot02 9]]" pre-scan
+        defgh "ct 0.1" pre-scan
+        defgh lsm pre-scan
+        defgh "mv mot03 10" pre-scan
+        defgh "Print 'Hello world'" pre-scan
+
+    .. note::
+        The `defgh` macro has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
+
+    """
+
+    param_def = [
+        ['macro_name', Type.String, None, ('Macro name with parameters. '
+                                           'Ex.: "mv exp_dmy01 10"')],
+        ['hookpos_list',
+         ParamRepeat(['position', Type.String, None, 'macro name'], min=1),
+         None, 'List of positions where the hook has to be executed'],
+    ]
+
+    def run(self, macro_name, position):
+
+        self.info("Defining general hook")
+        self.output(macro_name)
+        try:
+            macros_list = self.getEnv("_GeneralHooks")
+        except UnknownEnv:
+            macros_list = []
+
+        hook_tuple = (macro_name, position)
+        self.debug(hook_tuple)
+        macros_list.append(hook_tuple)
+        self.setEnv("_GeneralHooks", macros_list)
+        self.debug("General hooks:")
+        self.debug(macros_list)
+
+
+class udefgh(Macro):
+    """Undefine general hook. Without arguments undefine all.
+
+    .. note::
+        The `lsgh` macro has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
+    """
+
+    param_def = [
+        ['macro_name', Type.String, "all", 'General hook to be undefined'],
+        ['hook_pos', Type.String, "all", ('Position to undefine the general '
+                                          'hook from')],
+    ]
+
+    def run(self, macro_name, hook_pos):
+        try:
+            gh_macros_list = self.getEnv("_GeneralHooks")
+        except UnknownEnv:
+            return
+
+        if macro_name == "all":
+            self.unsetEnv("_GeneralHooks")
+            self.info("Undefine all general hooks")
+        else:
+            macros_list = []
+            for el in gh_macros_list:
+                if el[0] != macro_name:
+                    macros_list.append(el)
+                else:
+                    self.info("Hook %s is undefineed" % macro_name)
+
+            self.setEnv("_GeneralHooks", macros_list)

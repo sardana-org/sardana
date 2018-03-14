@@ -340,7 +340,7 @@ class SpockBaseDoor(BaseDoor):
         except KeyboardInterrupt:
             self.write('\nCtrl-C received: Stopping... ')
             self.block_lines = 0
-            self.command_inout("StopMacro")
+            self.stop()
             self.writeln("Done!")
         except PyTango.DevFailed, e:
             if is_non_str_seq(e.args) and \

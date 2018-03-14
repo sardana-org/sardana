@@ -133,6 +133,7 @@ advanced element manipulation macros
 
     * :class:`~sardana.macroserver.macros.expert.defelem`
     * :class:`~sardana.macroserver.macros.expert.udefelem`
+    * :class:`~sardana.macroserver.macros.expert.renameelem`
     * :class:`~sardana.macroserver.macros.expert.defctrl`
     * :class:`~sardana.macroserver.macros.expert.udefctrl`
     * :class:`~sardana.macroserver.macros.expert.prdef`
@@ -145,7 +146,11 @@ reload code macros
 
     * :class:`~sardana.macroserver.macros.expert.relmac`
     * :class:`~sardana.macroserver.macros.expert.relmaclib`
+    * :class:`~sardana.macroserver.macros.expert.addmaclib`
     * :class:`~sardana.macroserver.macros.expert.rellib`
+    * :class:`~sardana.macroserver.macros.expert.relctrlcls`
+    * :class:`~sardana.macroserver.macros.expert.relctrllib`
+    * :class:`~sardana.macroserver.macros.expert.addctrllib`
 
 scan macros
 -----------

@@ -926,7 +926,7 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
             ch_name, ch_data = index.internalPointer().itemData()
             ctrl_name = ch_data['_controller_name']
             ctrl_data = dataSource['controllers'][ctrl_name]
-            # get te affected channels
+            # get the affected channels
             affected = []
             channels = ctrl_data.get('channels')
             for _, ch_data in channels.items():

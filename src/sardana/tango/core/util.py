@@ -47,6 +47,7 @@ import string
 import logging
 import os.path
 import traceback
+import itertools
 
 import PyTango
 from PyTango import Util, Database, WAttribute, DbDevInfo, DevFailed, \
@@ -61,7 +62,7 @@ from taurus.core.util.log import Logger
 import sardana
 from sardana import State, SardanaServer, DataType, DataFormat, InvalidId, \
     DataAccess, to_dtype_dformat, to_daccess, Release, ServerRunMode
-from sardana.sardanaexception import SardanaException
+from sardana.sardanaexception import SardanaException, AbortException
 from sardana.sardanavalue import SardanaValue
 from sardana.util.wrap import wraps
 from sardana.pool.poolmetacontroller import DataInfo
@@ -658,7 +659,8 @@ def prepare_server(args, tango_args):
 
     db = Database()
     if not exists_server_instance(db, server_name, inst_name):
-        if ask_yes_no('%s does not exist. Do you wish create a new one' % inst_name, default='y'):
+        if ask_yes_no('%s does not exist. Do you wish to create a new '
+                      'one' % inst_name, default='y'):
             if server_name == 'MacroServer':
                 # build list of pools to which the MacroServer should connect
                 # to
@@ -670,22 +672,47 @@ def prepare_server(args, tango_args):
                     if pool_alias is not None:
                         all_pools.append(pool_alias)
                 all_pools = map(str.lower, all_pools)
+                pools_for_choosing = []
                 for i in pools:
-                    print pools[i][3]
-                while True:
-                    elem = raw_input(
-                        "Please select pool to connect to (return to finish): ").strip()
-                    if not len(elem):
-                        break
-                    if elem.lower() not in all_pools:
-                        print "Unknown pool element"
-                        print all_pools
-                    else:
-                        pool_names.append(elem)
+                    pools_for_choosing.append(pools[i][3])
+                pools_for_choosing = sorted(pools_for_choosing,
+                                            key=lambda s: s.lower())
+                no_pool_msg = ("\nMacroServer %s has not been connected to "
+                               "any Pool\n" % inst_name)
+                if len(pools_for_choosing) == 0:
+                    print(no_pool_msg)
+                else:
+                    print("\nAvailable Pools:")
+                    for pool in pools_for_choosing:
+                        print pool
+                    print("")
+                    while True:
+                        msg = "Please select the Pool to connect to " \
+                              "(return to finish): "
+                        # user may abort it with Ctrl+C - this will not
+                        # register anything in the database and the
+                        # KeyboardInterrupt will be raised
+                        elem = raw_input(msg).strip()
+                        # no pools selected and user ended loop
+                        if len(elem) == 0 and len(pool_names) == 0:
+                            print(no_pool_msg)
+                            break
+                        # user ended loop with some pools selected
+                        elif len(elem) == 0:
+                            print("\nMacroServer %s has been connected to "
+                                  "Pool/s %s\n" % (inst_name, pool_names))
+                            break
+                        # user entered unknown pool
+                        elif elem.lower() not in all_pools:
+                            print "Unknown pool element"
+                        else:
+                            pool_names.append(elem)
                 log_messages += register_sardana(db, server_name, inst_name,
                                                  pool_names)
             else:
                 log_messages += register_sardana(db, server_name, inst_name)
+        else:
+            raise AbortException("%s startup aborted" % server_name)
     return log_messages
 
 
@@ -784,7 +811,7 @@ def from_name_to_tango(db, name):
     else:
         raise Exception("Invalid device name '%s'" % name)
 
-    full_name = "%s:%s/%s" % (db.get_db_host(), db.get_db_port(), name)
+    full_name = "tango://%s:%s/%s" % (db.get_db_host(), db.get_db_port(), name)
     return full_name, name, alias
 
 
@@ -808,6 +835,22 @@ def get_dev_from_class(db, classname):
             out += " (running)"
         res[dev] = full_name, name, alias, out
     return res
+
+
+def get_dev_from_class_server(db, classname, server):
+    """Returns device(s) name for a given class and server"""
+
+    def pairwise(iterable):
+        "s -> (s0, s1), (s2, s3), (s4, s5), ..."
+        a = iter(iterable)
+        return itertools.izip(a, a)
+
+    devices = []
+    device_class_list = db.get_device_class_list(server)
+    for dev, cls in pairwise(device_class_list):
+        if cls == classname:
+            devices.append(dev)
+    return devices
 
 
 def get_free_server(db, prefix, start_from=1):
@@ -853,6 +896,70 @@ def prepare_taurus(options, args, tango_args):
     # make sure the polling is not active
     factory = taurus.Factory()
     factory.disablePolling()
+
+
+def prepare_logstash(args):
+    """Prepare logstash handler based on the configuration stored in the Tango
+    database.
+
+    :param args: process execution arguments
+    :type args: list<str>
+
+    .. note::
+        The prepare_logstash function has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
+    """
+    log_messages = []
+
+    try:
+        import logstash
+    except ImportError:
+        msg = ("Unable to import logstash. Skipping logstash "
+               + "configuration...", )
+        log_messages.append(msg,)
+        return log_messages
+
+    def get_logstash_conf(dev_name):
+        try:
+            props = db.get_device_property(dev_name, "LogstashHost")
+            host = props["LogstashHost"][0]
+        except IndexError:
+            host = None
+        try:
+            props = db.get_device_property(dev_name, "LogstashPort")
+            port = int(props["LogstashPort"][0])
+        except IndexError:
+            port = 12345
+        return host, port
+
+    db = Database()
+
+    bin_name = args[0]
+    instance_name = args[1]
+    server_name = bin_name + "/" + instance_name
+    if bin_name in ["Pool", "MacroServer"]:
+        class_name = bin_name
+        dev_name = get_dev_from_class_server(db, class_name, server_name)[0]
+        host, port = get_logstash_conf(dev_name)
+    else:
+        dev_name = get_dev_from_class_server(db, "Pool", server_name)[0]
+        host, port = get_logstash_conf(dev_name)
+        if host is None:
+            dev_name = get_dev_from_class_server(db, "MacroServer",
+                                                 server_name)[0]
+            host, port = get_logstash_conf(dev_name)
+
+    if host is not None:
+        root = Logger.getRootLog()
+        handler = logstash.TCPLogstashHandler(host, port, version=1)
+        root.addHandler(handler)
+        msg = ("Log is being sent to logstash listening on %s:%d",
+               host, port)
+        log_messages.append(msg)
+
+    return log_messages
 
 
 def prepare_logging(options, args, tango_args, start_time=None, log_messages=None):
@@ -1037,7 +1144,17 @@ def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None,
         pass
 
     log_messages.extend(prepare_environment(args, tango_args, ORB_args))
-    log_messages.extend(prepare_server(args, tango_args))
+
+    try:
+        log_messages.extend(prepare_server(args, tango_args))
+    except AbortException, e:
+        print e.message
+        return
+    except KeyboardInterrupt:
+        print("\nInterrupted by keyboard")
+        return
+
+    log_messages.extend(prepare_logstash(args))
 
     if tango_util is None:
         tango_util = Util(tango_args)

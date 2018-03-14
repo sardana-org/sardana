@@ -169,6 +169,7 @@ class FIO_FileRecorder(BaseFileRecorder):
         self.fd.write(outLine)
 
         self.fd.flush()
+        os.fsync(self.fd.fileno())
 
     def _writeRecord(self, record):
         if self.filename is None:
@@ -187,6 +188,7 @@ class FIO_FileRecorder(BaseFileRecorder):
 
         fd.write(outstr)
         fd.flush()
+        os.fsync(self.fd.fileno())
 
         if len(self.mcaNames) > 0:
             self._writeMcaFile(record)
@@ -387,6 +389,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
         self.fd = open(self.filename, 'a')
         self.fd.write(header % data)
         self.fd.flush()
+        os.fsync(self.fd.fileno())
 
     def _prepareMultiLines(self, character, sep, items_list):
         '''Translate list of lists of items into multiple line string
@@ -476,6 +479,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
         fd.write(outstr)
 
         fd.flush()
+        os.fsync(self.fd.fileno())
 
     def _endRecordList(self, recordlist):
         if self.filename is None:

@@ -27,8 +27,9 @@ from __future__ import print_function
 
 __docformat__ = 'restructuredtext'
 
-__all__ = ["commit_ctrllib", "defctrl", "defelem", "defm", "defmeas", "edctrl",
-           "edctrllib", "prdef", "rellib", "relmac", "relmaclib", "addmaclib",
+__all__ = ["addctrllib", "addmaclib", "commit_ctrllib", "defctrl", "defelem",
+           "defm", "defmeas", "edctrlcls", "edctrllib", "prdef",
+           "relctrlcls", "relctrllib", "rellib", "relmac", "relmaclib",
            "send2ctrl", "udefctrl", "udefelem", "udefmeas", "sar_info"]
 
 import sys
@@ -91,14 +92,19 @@ class defmeas(Macro):
 
 
 class udefmeas(Macro):
-    """Deletes an existing measurement group"""
+    """Deletes existing measurement groups"""
 
-    param_def = [['name', Type.MeasurementGroup,
-                  None, 'Measurement group name'], ]
+    param_def = [
+        ['mntgrps',
+         ParamRepeat(['mntgrp', Type.MeasurementGroup, None,
+                      'Measurement group name'],
+                     min=1),
+         None, 'List of measurement group names'], ]
 
-    def run(self, mntgrp):
-        pool = mntgrp.getPoolObj()
-        pool.deleteMeasurementGroup(mntgrp.getName())
+    def run(self, mntgrps):
+        for mntgrp in mntgrps:
+            pool = mntgrp.getPoolObj()
+            pool.deleteMeasurementGroup(mntgrp.getName())
 
 
 class defelem(Macro):
@@ -134,7 +140,7 @@ class renameelem(Macro):
 
 
 class udefelem(Macro):
-    """Deletes an existing element(s)"""
+    """Deletes existing elements"""
 
     param_def = [
         ['elements',
@@ -180,14 +186,26 @@ class defctrl(Macro):
 
 
 class udefctrl(Macro):
-    """Deletes an existing controller"""
+    """Deletes existing controllers"""
 
-    param_def = [['controller', Type.Controller,
-                  None, 'existing controller'], ]
+    param_def = [
+        ['controllers',
+         ParamRepeat(['controller', Type.Controller, None, 'controller name'],
+                     min=1),
+         None, 'List of controller(s) name(s)'], ]
 
-    def run(self, controller):
-        pool = controller.getPoolObj()
-        pool.deleteController(controller.getName())
+    def run(self, controllers):
+        for controller in controllers:
+            pool = controller.getPoolObj()
+            ctrl_name = controller.getName()
+            try:
+                pool.deleteController(ctrl_name)
+            except Exception:
+                msg = "{0} and subsequent controllers (if any) "\
+                      "could not be deleted".format(ctrl_name)
+                self.error(msg)
+                raise
+
 
 ##########################################################################
 #
@@ -219,7 +237,7 @@ class send2ctrl(Macro):
 ##########################################################################
 
 
-class edctrl(Macro):
+class edctrlcls(Macro):
     """Returns the contents of the library file which contains the given
        controller code."""
 
@@ -304,6 +322,44 @@ class prdef(Macro):
         code_lines, _ = macro_data.code
         for code_line in code_lines:
             self.output(code_line.strip('\n'))
+
+
+class relctrllib(Macro):
+    """Reloads the given controller library code from the pool server
+    filesystem.
+    """
+
+    param_def = [["ctrl_library", Type.ControllerLibrary, None,
+                  "Controller library to reload"]]
+
+    def run(self, ctrl_library):
+        pool = ctrl_library.getPoolObj()
+        pool.ReloadControllerLib(ctrl_library.name)
+
+
+class addctrllib(Macro):
+    """Adds the given controller library code to the pool server filesystem.
+    """
+
+    param_def = [["ctrl_library_name", Type.String, None,
+                  "The module name to be loaded (without extension)"]]
+
+    def run(self, ctrl_library_name):
+        # TODO: make it compatible with multiple pools
+        pool = self.getPools()[0]
+        pool.ReloadControllerLib(ctrl_library_name)
+
+
+class relctrlcls(Macro):
+    """Reloads the given controller class code from the pool server filesystem.
+    """
+
+    param_def = [["ctrl_class", Type.ControllerClass, None, "Controller "
+                                                            "class to reload"]]
+
+    def run(self, ctrl_class):
+        pool = ctrl_class.getPoolObj()
+        pool.ReloadControllerClass(ctrl_class.name)
 
 
 class rellib(Macro):

@@ -38,6 +38,8 @@ from sardana.sardanaattribute import SardanaAttribute
 from sardana.pool.poolgroupelement import PoolGroupElement
 from sardana.pool.poolmotion import PoolMotion
 
+from PyTango import AttributeProxy
+
 
 class Position(SardanaAttribute):
 
@@ -251,6 +253,28 @@ class PoolMotorGroup(PoolGroupElement):
         calculated = {}
         for new_position, element in zip(new_positions, user_elements):
             calculated[element] = new_position
+
+            # TODO: get the configuration for an specific sardana class and
+            # get rid of AttributeProxy.
+            config = AttributeProxy(element.name + '/position').get_config()
+            try:
+                high = float(config.max_value)
+            except ValueError:
+                high = None
+            try:
+                low = float(config.min_value)
+            except ValueError:
+                low = None
+            if high is not None:
+                if float(new_position) > high:
+                    msg = "requested movement of %s is above its upper limit"\
+                        % element.name
+                    raise RuntimeError(msg)
+            if low is not None:
+                if float(new_position) < low:
+                    msg = "requested movement of %s is below its lower limit"\
+                        % element.name
+                    raise RuntimeError(msg)
 
         for new_position, element in zip(new_positions, user_elements):
             element.calculate_motion(new_position, items=items,

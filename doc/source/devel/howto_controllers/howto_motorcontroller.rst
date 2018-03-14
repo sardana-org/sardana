@@ -593,7 +593,36 @@ We can modify our motor controller to take profit of this hardware feature:
 
         def StartAll(self):
             self.springfield.moveMultiple(self._moveable_info)
-            
+
+In case of stopping/aborting of the motors (or any other stoppable/abortable
+elements) the synchronization may be as important as in case of starting
+them. Let's take an example of a motorized two-legged table and its
+translational movement. A desynchronized stop/abort of the motors may introduce
+an extra angle of the table that in very specific cases may be not desired e.g.
+activation of the safety limits, closed loop errors, etc.
+
+In this case the complete algorithm for stopping/aborting the motor motion in
+sardana is::
+
+    /FOR/ Each controller(s) implied in the motion
+
+        - Call PreStopAll()
+
+        /FOR/ Each motor of the given controller implied in the motion
+            - ret = PreStopOne(motor to stop)
+            - /IF/ ret is not true
+                /RAISE/ Cannot stop. Motor PreStopOne returns False
+            - /END IF/
+            - Call StopOne(motor to stop)
+        /END FOR/
+
+        - Call StopAll()
+
+    /END FOR/
+
+Each of the hardware controller method calls is protected in case of errors
+so the stopping/aborting algorithm tries to stop/abort as many axes/controllers.
+
 A similar principle applies when sardana asks for the state and position of
 multiple axis. The two sets of methods are, in these cases:
 
@@ -618,20 +647,20 @@ expeced to return the state/position of the requested axis.
 
 The internal sardana algorithm to read position is::
 
-    /FOR/ Each controller(s) implied in the reading
+    /FOR/ Each controller(s) implied in the reading (executed concurrently)
+
          - Call PreReadAll()
-    /END FOR/
-     
-    /FOR/ Each motor(s) implied in the reading
-         - PreReadOne(motor to read)
-    /END FOR/
-     
-    /FOR/ Each controller(s) implied in the reading
-         - Call ReadAll()
-    /END FOR/
-     
-    /FOR/ Each motor(s) implied in the reading
-         - Call ReadOne(motor to read)
+
+        /FOR/ Each motor(s) of the given controller implied in the reading
+             - PreReadOne(motor to read)
+        /END FOR/
+
+        - Call ReadAll()
+
+        /FOR/ Each motor(s) of the given controller implied in the reading
+             - ReadOne(motor to read)
+        /END FOR/
+
     /END FOR/
 
 Here is an example assuming the springfield library tells us in the

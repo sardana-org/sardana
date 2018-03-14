@@ -35,6 +35,7 @@ class FakePool(object):
     acq_loop_states_per_value = 10
     motion_loop_sleep_time = 0.1
     motion_loop_states_per_position = 10
+    drift_correction = True
 
     def __init__(self, poolpath=[], loglevel=None):
         self.ctrl_manager = ControllerManager()
@@ -88,8 +89,9 @@ class FakePool(object):
 class FakeElement(object):
     '''Fake pool element'''
 
-    def __init__(self, pool):
+    def __init__(self, pool, name="FakeElement"):
         self.pool = pool
+        self.name = name
 
     def on_element_changed(self, *args, **kwargs):
         pass
