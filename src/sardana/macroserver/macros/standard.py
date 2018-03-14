@@ -710,8 +710,6 @@ class uct(Macro):
         self.values = []
         for channel_info in self.mnt_grp.getChannels():
             full_name = channel_info["full_name"]
-            # TODO: For Taurus 4 compatibility
-            full_name = "tango://%s" % full_name
             channel = Device(full_name)
             self.channels.append(channel)
             value = channel.getValue(force=True)

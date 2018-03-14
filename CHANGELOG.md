@@ -4,7 +4,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 This file follows the formats and conventions from [keepachangelog.com]
 
 
-## [Unreleased]
+## [2.4.0] 2018-03-14
 
 ### Added
 - General hooks - hooks that can be configured with `defgh`, `udefgh` and `lsgh`
@@ -109,6 +109,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Improved MacroServer creation wizard (#676)
 
 ### Changed
+- FQDN are now used internally by sardana in its identifiers (#668, partially)
 - Make explicit file descriptor buffer synchronization (force effective write to
   the file system) in SPEC and FIO recorders (#651)
 - Rename edctrl to edctrlcls macro (#541)
@@ -396,6 +397,7 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 [keepachangelog.com]: http://keepachangelog.com
 [Unreleased]: https://github.com/sardana-org/sardana/compare/2.3.2...HEAD
+[2.4.0]: https://github.com/sardana-org/sardana/compare/2.3.2...2.4.0
 [2.3.2]: https://github.com/sardana-org/sardana/compare/2.3.1...2.3.2
 [2.3.1]: https://github.com/sardana-org/sardana/compare/2.3.0...2.3.1
 [2.3.0]: https://github.com/sardana-org/sardana/compare/2.2.3...2.3.0

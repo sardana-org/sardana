@@ -207,7 +207,7 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
         :type macro_path:
             seq<str>
         """
-        self.macro_manager.setMacroPath(macro_path)
+        self.macro_manager.setMacroPath([p.rstrip(os.sep) for p in macro_path])
 
     # --------------------------------------------------------------------------
     # Recorder path related methods
