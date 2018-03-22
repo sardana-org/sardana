@@ -518,6 +518,11 @@ class SpringfieldMotorHW(object):
         motion = self._motions.get(axis)
         if motion is None:
             self._motions[axis] = motion = Motion()
+            motion.setMinVelocity(0)
+            motion.setMaxVelocity(100)
+            motion.setAccelerationTime(2)
+            motion.setDecelerationTime(2)
+            motion.setCurrentPosition(0)
         return motion
 
     def getState(self, axis):
