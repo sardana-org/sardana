@@ -47,7 +47,7 @@ Proposals list
 [SEP13]: http://www.sardana-controls.org/sep/?SEP13.md
 [SEP14]: http://www.sardana-controls.org/sep/?SEP14.md
 [SEP15]: http://www.sardana-controls.org/sep/?SEP15.md
-[SEP16]:
+[SEP16]: http://github.com/reszelaz/sardana/blob/aa0ec93c7e868409a1a362c28fbadbe2a68e8b8f/doc/source/sep/SEP16.md
 
 [TEP3]: http://www.taurus-scada.org/tep/?TEP3.md
 [TEP13]: http://www.taurus-scada.org/tep/?TEP13.md
