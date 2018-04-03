@@ -7,7 +7,7 @@
      is pending on what to do with them.
     Date: 2017-04-03
     Drivers: Zbigniew Reszela <zreszela@cells.es>
-    URL: http://github.com/reszelaz/sardana/blob/aa0ec93c7e868409a1a362c28fbadbe2a68e8b8f/doc/source/sep/SEP16.md
+    URL: https://github.com/reszelaz/sardana/blob/sep16/doc/source/sep/SEP16.md
     License: http://www.jclark.com/xml/copying.txt
     Abstract:
      SEP15 migrated the Sardana project from SourceForge to GitHub but
