@@ -46,11 +46,12 @@ Objectives
 ----------
 
 1. Enable natural way of working using git, like for example, use of the
-feature branches, pull-requests, tags, etc.
-2. Let developers organize plugins in projects so they could have their own
+feature branches, pull-requests, tags, independent git history etc.
+2. Let developers organize their repositories according to their preferences.
+3. Let developers organize plugins in projects so they could have their own
 issue trackers, wiki pages, etc.
-3. Do not force the hosting platform.
-4. Give visibility to the well maintained plugins.
+4. Do not force the hosting platform.
+5. Give visibility to the well maintained plugins.
 
 Design
 ------
