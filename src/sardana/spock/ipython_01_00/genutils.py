@@ -638,6 +638,13 @@ def _macro_completer(self, event):
     ms = get_macro_server()
 
     macro_name = event.command.lstrip('%')
+
+    env = ms.getEnvironment()
+    pre_values = None
+    for el in env:
+        if el == macro_name + "Predefined":
+            pre_values = ms.getEnvironment()[el]
+
     # calculate parameter index
     param_idx = len(event.line.split()) - 1
     if not event.line.endswith(' '):
@@ -654,6 +661,9 @@ def _macro_completer(self, event):
         res = []
         for param in possible_params:
             res.extend(ms.getElementNamesWithInterface(param['type']))
+        if param['type'] == 'String':
+            for value in pre_values:
+                res.append(str(value))
         return res
 
 
