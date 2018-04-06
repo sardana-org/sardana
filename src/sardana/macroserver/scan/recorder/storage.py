@@ -31,20 +31,12 @@ __all__ = ["AmbiguousRecorderError", "BaseFileRecorder",
 __docformat__ = 'restructuredtext'
 
 import os
-import time
 import itertools
 import re
 
-import numpy
-
-import PyTango
-
-from sardana.taurus.core.tango.sardana import PlotType
-from sardana.macroserver.macro import Type
 from sardana.macroserver.scan.recorder.datarecorder import DataRecorder, \
     SaveModes
 from sardana.macroserver.msexception import MacroServerException
-from taurus.core.util.containers import chunks
 
 
 class AmbiguousRecorderError(MacroServerException):
