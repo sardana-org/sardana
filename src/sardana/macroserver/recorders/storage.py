@@ -36,8 +36,6 @@ import re
 
 import numpy
 
-import PyTango
-
 from sardana.taurus.core.tango.sardana import PlotType
 from sardana.macroserver.macro import Type
 from sardana.macroserver.scan.recorder import (BaseFileRecorder,
@@ -56,6 +54,7 @@ class FIO_FileRecorder(BaseFileRecorder):
         self.base_filename = filename
         if macro:
             self.macro = macro
+        import PyTango
         self.db = PyTango.Database()
         if filename:
             self.setFileName(self.base_filename)
