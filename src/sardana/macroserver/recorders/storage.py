@@ -37,7 +37,6 @@ import re
 import numpy
 
 from sardana.taurus.core.tango.sardana import PlotType
-from sardana.macroserver.macro import Type
 from sardana.macroserver.scan.recorder import (BaseFileRecorder,
                                                BaseNAPI_FileRecorder,
                                                SaveModes)
@@ -134,6 +133,7 @@ class FIO_FileRecorder(BaseFileRecorder):
         self.fd.flush()
         env = self.macro.getAllEnv()
         if env.has_key('FlagFioWriteMotorPositions') and env['FlagFioWriteMotorPositions']:
+            from sardana.macroserver.macro import Type
             all_motors = sorted(self.macro.findObjs('.*', type_class=Type.Motor))
             for mot in all_motors:
                 pos = mot.getPosition(force=True)
