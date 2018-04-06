@@ -49,10 +49,6 @@ def format_exception_only_str(etype, value):
     return "".join(format_exception_only(etype, value))
 
 
-class AbortException(Exception):
-    pass
-
-
 class SardanaException(Exception):
 
     def __init__(self, *args, **kwargs):
