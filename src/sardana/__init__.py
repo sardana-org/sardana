@@ -29,8 +29,6 @@
 import release as __release
 import requirements as __requirements
 
-__requirements.check_requirements()
-
 
 class Release:
     pass
