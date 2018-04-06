@@ -34,11 +34,9 @@ __all__ = ["MacroServerException", "MacroServerExceptionList", "MissingEnv",
 
 __docformat__ = 'restructuredtext'
 
-from sardana.taurus.core.tango.sardana.pool import InterruptException, \
-    StopException, AbortException
-
 from sardana.sardanaexception import SardanaException, SardanaExceptionList, \
-    UnknownCode, UnknownLibrary, LibraryError
+    UnknownCode, UnknownLibrary, LibraryError, InterruptException, \
+    StopException, AbortException
 
 
 class MacroServerException(SardanaException):

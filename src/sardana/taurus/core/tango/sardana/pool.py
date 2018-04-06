@@ -26,8 +26,7 @@
 """The device pool submodule.
 It contains specific part of sardana device pool"""
 
-__all__ = ["InterruptException", "StopException", "AbortException",
-           "BaseElement", "ControllerClass", "ControllerLibrary",
+__all__ = ["BaseElement", "ControllerClass", "ControllerLibrary",
            "PoolElement", "Controller", "ComChannel", "ExpChannel",
            "CTExpChannel", "ZeroDExpChannel", "OneDExpChannel",
            "TwoDExpChannel", "PseudoCounter", "Motor", "PseudoMotor",
@@ -66,6 +65,8 @@ from taurus.core.util.event import EventGenerator, AttributeEventWait, \
     AttributeEventIterator
 from taurus.core.tango import TangoDevice, FROM_TANGO_TO_STR_TYPE
 
+from sardana.sardanaexception import AbortException, StopException
+
 from .sardana import BaseSardanaElementContainer, BaseSardanaElement
 from .motion import Moveable, MoveableSource
 
@@ -86,18 +87,6 @@ QUALITY = {
     AttrQuality.ATTR_ALARM: 'ALARM',
     None: 'UNKNOWN'
 }
-
-
-class InterruptException(Exception):
-    pass
-
-
-class StopException(InterruptException):
-    pass
-
-
-class AbortException(InterruptException):
-    pass
 
 
 class BaseElement(object):

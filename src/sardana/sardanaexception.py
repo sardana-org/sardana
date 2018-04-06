@@ -28,7 +28,8 @@ for sardana exceptions"""
 
 from __future__ import absolute_import
 
-__all__ = ["AbortException", "SardanaException", "SardanaExceptionList",
+__all__ = ["AbortException", "InterruptException", "SardanaException",
+           "SardanaExceptionList", "StopException",
            "UnknownCode", "UnknownLibrary", "LibraryError",
            "format_exception_only", "format_exception_only_str"]
 
@@ -100,4 +101,16 @@ class UnknownLibrary(SardanaException):
 
 
 class LibraryError(SardanaException):
+    pass
+
+
+class InterruptException(SardanaException):
+    pass
+
+
+class StopException(InterruptException):
+    pass
+
+
+class AbortException(InterruptException):
     pass
