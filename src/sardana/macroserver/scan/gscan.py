@@ -38,7 +38,6 @@ import time
 import threading
 import numpy as np
 
-import PyTango
 import taurus
 
 try:
@@ -742,6 +741,8 @@ class GScan(Logger):
                  each including a "pre_scan_value" attribute with the read
                  value for that attr
         """
+        import PyTango
+
         manager = self.macro.getManager()
         all_elements_info = manager.get_elements_with_interface('Element')
         ret = []
@@ -2308,6 +2309,7 @@ class CTScan(CScan, CAcquisition):
                     state = measurement_group.stateObj.read().rvalue
                 else:
                     state = measurement_group.state()
+                import PyTango
                 if state == PyTango.DevState.MOVING:
                     msg = "Measurement did not finish acquisition within "\
                           "timeout. Stopping it..."
