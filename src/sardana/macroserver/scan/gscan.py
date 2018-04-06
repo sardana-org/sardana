@@ -48,7 +48,6 @@ except ImportError:
 
 from taurus.core.util.log import Logger
 from taurus.core.util.user import USER_NAME
-from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
 from taurus.core.util.enumeration import Enumeration
 
 from sardana.util.tree import BranchNode, LeafNode, Tree
@@ -137,6 +136,7 @@ class TangoExtraData(ExtraData):
         if t is None:
             raise Exception("Could not determine type for unknown attribute "
                             "'%s'" % self._model)
+        from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
         return FROM_TANGO_TO_STR_TYPE[t]
 
     def getShape(self):
