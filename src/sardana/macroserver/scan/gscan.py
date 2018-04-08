@@ -63,7 +63,7 @@ from sardana.macroserver.scan.scandata import ColumnDesc, MoveableDesc, \
 from sardana.macroserver.scan.recorder import (AmbiguousRecorderError,
                                                SharedMemoryRecorder,
                                                FileRecorder)
-from sardana.taurus.core.tango.sardana.pool import Ready, TwoDExpChannel
+# from sardana.taurus.core.tango.sardana.pool import Ready, TwoDExpChannel
 from sardana.sardanathreadpool import get_thread_pool
 
 
