@@ -115,6 +115,7 @@ list related macros
     * :class:`~sardana.macroserver.macros.lists.lsa`
     * :class:`~sardana.macroserver.macros.lists.lsmac`
     * :class:`~sardana.macroserver.macros.lists.lsmaclib`
+    * :class:`~sardana.macroserver.macros.env.lsgh`
 
 measurement configuration macros
 --------------------------------
@@ -124,7 +125,17 @@ measurement configuration macros
 
     * :class:`~sardana.macroserver.macros.expert.defmeas`
     * :class:`~sardana.macroserver.macros.expert.udefmeas`
-    
+
+general hooks macros
+--------------------
+
+.. hlist::
+    :columns: 5
+
+    * :class:`~sardana.macroserver.macros.env.lsgh`
+    * :class:`~sardana.macroserver.macros.env.defgh`
+    * :class:`~sardana.macroserver.macros.env.udefgh`
+
 advanced element manipulation macros
 ------------------------------------
 
