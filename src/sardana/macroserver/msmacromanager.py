@@ -42,6 +42,8 @@ import threading
 
 from lxml import etree
 
+import time
+
 from PyTango import DevFailed
 
 try:
@@ -848,7 +850,42 @@ class MacroManager(MacroServerManager):
             self._macro_executors[door] = me = MacroExecutor(door)
         return me
 
+class FileHandlerFilter(logging.Filter):
+    def __init__(self, param=None):
+        self.param = param
 
+    def filter(self, record):
+        allow = True
+        if record.levelname == "DEBUG":
+            if record.msg.find("[START]") != -1:
+                msg = record.msg
+                start = msg.index("'") + 1
+                end = msg.index("->", start)
+                msg = msg[start:end]
+                msg = msg.replace("("," ").replace(")", "").replace("[", "").replace("]", "")
+                msg = msg.replace(", ", " ")
+                msg = msg.replace(",", " ")
+                msg = msg.replace(".*", "")
+                while msg.find("  ") != -1:
+                    msg = msg.replace("  "," ")
+                if msg[0] == "_":
+                    allow = False
+                else:
+                    msg_split = msg.split(" ")
+                    msg = ""
+                    for i in range(0,len(msg_split)):
+                        if msg_split[i].find(" ") == -1:
+                            msg_split[i] = msg_split[i].replace("'", " ")
+                        msg = msg + " " + str(msg_split[i])
+                    while msg.find("  ") != -1:
+                        msg = msg.replace("  "," ")
+                    record.msg = "\n-- " + time.ctime() + "\n" +  msg
+                    allow = True
+            else:
+                allow = False
+        return allow
+
+    
 class LogMacroManager(object):
     """Manage user-oriented macro logging to a file. It is configurable with
     LogMacro, LogMacroMode, LogMacroFormat and LogMacroDir environment
@@ -862,7 +899,7 @@ class LogMacroManager(object):
     """
 
     DEFAULT_DIR = os.path.join(os.sep, "tmp")
-    DEFAULT_FMT = "%(levelname)-8s %(asctime)s %(name)s: %(message)s"
+    DEFAULT_FMT = "%(message)s"
     DEFAULT_MODE = 0
 
     def __init__(self, macro_obj):
@@ -919,6 +956,7 @@ class LogMacroManager(object):
             logging.handlers.RotatingFileHandler(log_file,
                                                  backupCount=bck_counts)
         file_handler.doRollover()
+        file_handler.addFilter(FileHandlerFilter())
 
         try:
             format_to_set = macro_obj.getEnv("LogMacroFormat")
@@ -947,8 +985,8 @@ class LogMacroManager(object):
         file_handler = self._file_handler
         macro_obj.removeLogHandler(file_handler)
         executor.removeLogHandler(file_handler)
-        return True
 
+        return True
 
 class MacroExecutor(Logger):
     """ """
