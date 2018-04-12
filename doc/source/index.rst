@@ -36,7 +36,7 @@ Projects related to Sardana
 .. toctree::
     :hidden:
 
-    Home Page <http://sardana-controls.org>
+    Home Page <http://www.sardana-controls.org>
     Project Page <https://github.com/sardana-org/sardana>
     Download from PyPI <http://pypi.python.org/pypi/sardana>
     docs
