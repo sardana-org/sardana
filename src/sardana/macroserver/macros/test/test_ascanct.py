@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Tests for scan macros"""
+"""Tests for continuous scans (ct-like)"""
 import time
 import PyTango
 from taurus.external import unittest
@@ -65,55 +65,37 @@ mg_config4 = [[('_test_ct_1_1', 'software', AcqSynchType.Trigger)],
 macro_params_1 = ['_test_mt_1_1', '0', '10', '100', '0.1']
 
 
-@testRun(meas_config=mg_config1, macro_params=macro_params_1,
-         wait_timeout=30)
-@testRun(meas_config=mg_config2, macro_params=macro_params_1,
-         wait_timeout=30)
-@testRun(meas_config=mg_config3, macro_params=macro_params_1,
-         wait_timeout=30)
-@testRun(meas_config=mg_config4, macro_params=macro_params_1,
-         wait_timeout=30)
-@testStop(meas_config=mg_config1, macro_params=macro_params_1,
-          stop_delay=5, wait_timeout=20)
-class AscanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
-                  RunStopMacroTestCase, unittest.TestCase):
-    """Checks that ascanct works and generates the exact number of records
-    by parsing the door output.
-
-    .. todo:: check the macro data instead of the door output
+class ScanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
+                 RunStopMacroTestCase):
+    """Base class for the continuous scans (ct-like) tests. Implements
+    methods for preparation of the elements and validation of the results.
     """
-    macro_name = 'ascanct'
 
     utils = UtilsForTests()
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
         MeasSarTestTestCase.setUp(self)
         BaseMacroServerTestCase.setUp(self, self.pool_name)
         RunStopMacroTestCase.setUp(self)
 
-    def macro_runs(self, meas_config, macro_params, wait_timeout=float("inf")):
+    def configure_motors(self, motor_names):
         # TODO: workaround for bug with velocity<base_rate: Sdn#38
-        mot = PyTango.DeviceProxy(macro_params[0])
-        mot.write_attribute('acceleration', 0.1)
-        mot.write_attribute('base_rate', 0)
-        mot.write_attribute('deceleration', 0.1)
+        for name in motor_names:
+            mot = PyTango.DeviceProxy(name)
+            mot.write_attribute('acceleration', 0.1)
+            mot.write_attribute('base_rate', 0)
+            mot.write_attribute('deceleration', 0.1)
+
+    def configure_mntgrp(self, meas_config):
         # creating MEAS
         self.create_meas(meas_config)
         # Set ActiveMntGrp
         self.macro_executor.run(macro_name='senv',
                                 macro_params=['ActiveMntGrp', '_test_mg_1'],
-                                sync=True, timeout=wait_timeout)
-        # Run the ascanct
-        self.macro_executor.run(macro_name=self.macro_name,
-                                macro_params=macro_params,
-                                sync=True, timeout=wait_timeout)
-        self.assertFinished('Macro %s did not finish' % self.macro_name)
+                                sync=True, timeout=1.)
 
-        # Checking that the required number of scan points is present.
-        expected_nb_points = int(macro_params[3]) + 1
-
-        # Test data from log_output (macro_executor.getLog('output'))
+    def check_using_output(self, expected_nb_points):
+        # Test data from log_output
         log_output = self.macro_executor.getLog('output')
         (aa, bb) = self.utils.parsingOutputPoints(log_output)
         # ordered_points: (int) obtained number of points.
@@ -127,13 +109,15 @@ class AscanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
 
         self.assertEqual(obtained_nb_points, expected_nb_points,
                          "The ascanct execution did not return the expected number of " +
-                         " points.\n Expected " + str(expected_nb_points) + " points." +
+                         " points.\n Expected " + str(
+                             expected_nb_points) + " points." +
                          "\n Obtained " + str(obtained_nb_points) + " points."
                          + "Checked using log_output")
 
         self.assertTrue(ordered_points, "Scan points are NOT in good order.\n"
                         + "Checked using log_output")
 
+    def check_using_data(self, expected_nb_points):
         # Test data from macro (macro_executor.getData())
         data = self.macro_executor.getData()
         order_points_data = self.utils.orderPointsData(data)
@@ -145,26 +129,73 @@ class AscanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
         obtained_nb_points_data = len(data.keys())
         self.assertEqual(int(obtained_nb_points_data), int(expected_nb_points),
                          "The ascanct execution did not return the expected number of " +
-                         " points.\n Expected " + str(expected_nb_points) + " points." +
-                         "\n Obtained " + str(obtained_nb_points_data) + " points." +
+                         " points.\n Expected " + str(
+                             expected_nb_points) + " points." +
+                         "\n Obtained " + str(
+                             obtained_nb_points_data) + " points." +
                          "\nChecked using macro_executor.getData()")
 
         self.assertTrue(order_points_data, "Scan points are NOT in good order."
                         + "\nChecked using  macro_executor.getData().")
 
+    def check_stopped(self):
+        self.assertStopped('Macro %s did not stop' % self.macro_name)
+        for name in self.expchan_names + self.tg_names:
+            channel = PyTango.DeviceProxy(name)
+            desired_state = PyTango.DevState.ON
+            state = channel.state()
+            msg = 'element %s state after stop is %s (should be %s)' % \
+                  (name, state, desired_state)
+            self.assertEqual(state, desired_state, msg)
+
+    def tearDown(self):
+        BaseMacroServerTestCase.tearDown(self)
+        MeasSarTestTestCase.tearDown(self)
+        RunStopMacroTestCase.tearDown(self)
+
+
+@testRun(meas_config=mg_config1, macro_params=macro_params_1,
+         wait_timeout=30)
+@testRun(meas_config=mg_config2, macro_params=macro_params_1,
+         wait_timeout=30)
+@testRun(meas_config=mg_config3, macro_params=macro_params_1,
+         wait_timeout=30)
+@testRun(meas_config=mg_config4, macro_params=macro_params_1,
+         wait_timeout=30)
+@testStop(meas_config=mg_config1, macro_params=macro_params_1,
+          stop_delay=5, wait_timeout=20)
+class AscanctTest(ScanctTest, unittest.TestCase):
+    """Checks that ascanct works and generates the exact number of records
+    by parsing the door output.
+
+    .. todo:: check the macro data instead of the door output
+    """
+    macro_name = 'ascanct'
+
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        ScanctTest.setUp(self)
+
+    def macro_runs(self, meas_config, macro_params, wait_timeout=float("inf")):
+        motors = [macro_params[0]]
+        ScanctTest.configure_motors(self, motors)
+        ScanctTest.configure_mntgrp(self, meas_config)
+        # Run the ascanct
+        self.macro_executor.run(macro_name=self.macro_name,
+                                macro_params=macro_params,
+                                sync=True, timeout=wait_timeout)
+        self.assertFinished('Macro %s did not finish' % self.macro_name)
+
+        expected_nb_points = int(macro_params[3]) + 1
+        ScanctTest.check_using_output(self, expected_nb_points)
+        ScanctTest.check_using_data(self, expected_nb_points)
+
+
     def macro_stops(self, meas_config, macro_params, wait_timeout=float("inf"),
                     stop_delay=0.1):
-        # TODO: workaround for bug with velocity<base_rate: Sdn#38
-        mot = PyTango.DeviceProxy(macro_params[0])
-        mot.write_attribute('acceleration', 0.1)
-        mot.write_attribute('base_rate', 0)
-        mot.write_attribute('deceleration', 0.1)
-        # creating MEAS
-        self.create_meas(meas_config)
-        # Set ActiveMntGrp
-        self.macro_executor.run(macro_name='senv',
-                                macro_params=['ActiveMntGrp', '_test_mg_1'],
-                                sync=True, timeout=wait_timeout)
+        motors = [macro_params[0]]
+        ScanctTest.configure_motors(self, motors)
+        ScanctTest.configure_mntgrp(self, meas_config)
         # Run the ascanct
         self.macro_executor.run(macro_name=self.macro_name,
                                 macro_params=macro_params,
@@ -173,17 +204,8 @@ class AscanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
             time.sleep(stop_delay)
         self.macro_executor.stop()
         self.macro_executor.wait(timeout=wait_timeout)
-        self.assertStopped('Macro %s did not stop' % self.macro_name)
-        for name in self.expchan_names + self.tg_names:
-            channel = PyTango.DeviceProxy(name)
-            desired_state = PyTango.DevState.ON
-            state = channel.state()
-            msg = 'element %s state after stop is %s (should be %s)' %\
-                (name, state, desired_state)
-            self.assertEqual(state, desired_state, msg)
+        ScanctTest.check_stopped(self)
 
     def tearDown(self):
-        BaseMacroServerTestCase.tearDown(self)
-        MeasSarTestTestCase.tearDown(self)
-        RunStopMacroTestCase.tearDown(self)
+        ScanctTest.tearDown(self)
         unittest.TestCase.tearDown(self)
