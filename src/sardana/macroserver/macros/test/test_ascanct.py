@@ -250,10 +250,65 @@ class A2scanctTest(ScanctTest, unittest.TestCase):
 
     def macro_stops(self, meas_config, macro_params, wait_timeout=float("inf"),
                     stop_delay=0.1):
-        motors = [macro_params[0]]
+        motors = [macro_params[self.MOT1], macro_params[self.MOT2]]
         ScanctTest.configure_motors(self, motors)
         ScanctTest.configure_mntgrp(self, meas_config)
         # Run the ascanct
+        self.macro_executor.run(macro_name=self.macro_name,
+                                macro_params=macro_params,
+                                sync=False, timeout=wait_timeout)
+        if stop_delay is not None:
+            time.sleep(stop_delay)
+        self.macro_executor.stop()
+        self.macro_executor.wait(timeout=wait_timeout)
+        ScanctTest.check_stopped(self)
+
+    def tearDown(self):
+        ScanctTest.tearDown(self)
+        unittest.TestCase.tearDown(self)
+
+
+meshct_params_1 = ['_test_mt_1_1', '0', '10', '2', '_test_mt_1_2', '0', '20',
+                   '2', '0.1']
+
+
+@testRun(meas_config=mg_config1, macro_params=meshct_params_1,
+         wait_timeout=30)
+class MeshctTest(ScanctTest, unittest.TestCase):
+    """Checks that meshct works and generates the exact number of records
+    by parsing the door output.
+
+    .. todo:: check the macro data instead of the door output
+    """
+    macro_name = 'meshct'
+    MOT1 = 0
+    MOT2 = 4
+    INTERVALS_MOT1 = 3
+    INTERVALS_MOT2 = 7
+
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        ScanctTest.setUp(self)
+
+    def macro_runs(self, meas_config, macro_params, wait_timeout=float("inf")):
+        motors = [macro_params[self.MOT1], macro_params[self.MOT2]]
+        ScanctTest.configure_motors(self, motors)
+        ScanctTest.configure_mntgrp(self, meas_config)
+        self.macro_executor.run(macro_name=self.macro_name,
+                                macro_params=macro_params,
+                                sync=True, timeout=wait_timeout)
+        self.assertFinished('Macro %s did not finish' % self.macro_name)
+
+        expected_nb_points = (int(macro_params[self.INTERVALS_MOT1]) + 1) * \
+                             (int(macro_params[self.INTERVALS_MOT2]) + 1)
+        ScanctTest.check_using_output(self, expected_nb_points)
+        ScanctTest.check_using_data(self, expected_nb_points)
+
+    def macro_stops(self, meas_config, macro_params, wait_timeout=float("inf"),
+                    stop_delay=0.1):
+        motors = [macro_params[self.MOT1], macro_params[self.MOT2]]
+        ScanctTest.configure_motors(self, motors)
+        ScanctTest.configure_mntgrp(self, meas_config)
         self.macro_executor.run(macro_name=self.macro_name,
                                 macro_params=macro_params,
                                 sync=False, timeout=wait_timeout)
