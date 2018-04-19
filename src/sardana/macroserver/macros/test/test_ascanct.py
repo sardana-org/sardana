@@ -52,18 +52,6 @@ class UtilsForTests():
                 break
         return ordered_points_data
 
-mg_config1 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger)]]
-mg_config2 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),
-               ('_test_ct_1_2', '_test_tg_1_1', AcqSynchType.Trigger)]
-              ]
-mg_config3 = [[('_test_ct_1_1', 'software', AcqSynchType.Trigger)],
-              [('_test_ct_2_1', '_test_tg_1_1', AcqSynchType.Trigger)]
-              ]
-mg_config4 = [[('_test_ct_1_1', 'software', AcqSynchType.Trigger)],
-              [('_test_ct_2_1', 'software', AcqSynchType.Trigger)]
-              ]
-macro_params_1 = ['_test_mt_1_1', '0', '10', '100', '0.1']
-
 
 class ScanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
                  RunStopMacroTestCase):
@@ -154,15 +142,30 @@ class ScanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
         RunStopMacroTestCase.tearDown(self)
 
 
-@testRun(meas_config=mg_config1, macro_params=macro_params_1,
+mg_config1 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger)]]
+mg_config2 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),
+               ('_test_ct_1_2', '_test_tg_1_1', AcqSynchType.Trigger)]
+              ]
+mg_config3 = [[('_test_ct_1_1', 'software', AcqSynchType.Trigger)],
+              [('_test_ct_2_1', '_test_tg_1_1', AcqSynchType.Trigger)]
+              ]
+mg_config4 = [[('_test_ct_1_1', 'software', AcqSynchType.Trigger)],
+              [('_test_ct_2_1', 'software', AcqSynchType.Trigger)]
+              ]
+
+
+ascanct_params_1 = ['_test_mt_1_1', '0', '10', '100', '0.1']
+
+
+@testRun(meas_config=mg_config1, macro_params=ascanct_params_1,
          wait_timeout=30)
-@testRun(meas_config=mg_config2, macro_params=macro_params_1,
+@testRun(meas_config=mg_config2, macro_params=ascanct_params_1,
          wait_timeout=30)
-@testRun(meas_config=mg_config3, macro_params=macro_params_1,
+@testRun(meas_config=mg_config3, macro_params=ascanct_params_1,
          wait_timeout=30)
-@testRun(meas_config=mg_config4, macro_params=macro_params_1,
+@testRun(meas_config=mg_config4, macro_params=ascanct_params_1,
          wait_timeout=30)
-@testStop(meas_config=mg_config1, macro_params=macro_params_1,
+@testStop(meas_config=mg_config1, macro_params=ascanct_params_1,
           stop_delay=5, wait_timeout=20)
 class AscanctTest(ScanctTest, unittest.TestCase):
     """Checks that ascanct works and generates the exact number of records
@@ -190,6 +193,60 @@ class AscanctTest(ScanctTest, unittest.TestCase):
         ScanctTest.check_using_output(self, expected_nb_points)
         ScanctTest.check_using_data(self, expected_nb_points)
 
+
+    def macro_stops(self, meas_config, macro_params, wait_timeout=float("inf"),
+                    stop_delay=0.1):
+        motors = [macro_params[0]]
+        ScanctTest.configure_motors(self, motors)
+        ScanctTest.configure_mntgrp(self, meas_config)
+        # Run the ascanct
+        self.macro_executor.run(macro_name=self.macro_name,
+                                macro_params=macro_params,
+                                sync=False, timeout=wait_timeout)
+        if stop_delay is not None:
+            time.sleep(stop_delay)
+        self.macro_executor.stop()
+        self.macro_executor.wait(timeout=wait_timeout)
+        ScanctTest.check_stopped(self)
+
+    def tearDown(self):
+        ScanctTest.tearDown(self)
+        unittest.TestCase.tearDown(self)
+
+
+a2scanct_params_1 = ['_test_mt_1_1', '0', '10', '_test_mt_1_2', '0', '20',
+                     '100', '0.1']
+
+
+@testRun(meas_config=mg_config1, macro_params=a2scanct_params_1,
+         wait_timeout=30)
+class A2scanctTest(ScanctTest, unittest.TestCase):
+    """Checks that a2scanct works and generates the exact number of records
+    by parsing the door output.
+
+    .. todo:: check the macro data instead of the door output
+    """
+    macro_name = 'a2scanct'
+    MOT1 = 0
+    MOT2 = 3
+
+    def setUp(self):
+        unittest.TestCase.setUp(self)
+        ScanctTest.setUp(self)
+
+    def macro_runs(self, meas_config, macro_params, wait_timeout=float("inf")):
+        motors = [macro_params[self.MOT1], macro_params[self.MOT2]]
+        ScanctTest.configure_motors(self, motors)
+        ScanctTest.configure_mntgrp(self, meas_config)
+        # Run the ascanct
+        self.macro_executor.run(macro_name=self.macro_name,
+                                macro_params=macro_params,
+                                sync=True, timeout=wait_timeout)
+        self.assertFinished('Macro %s did not finish' % self.macro_name)
+
+        expected_nb_points = int(macro_params[6]) + 1
+        ScanctTest.check_using_output(self, expected_nb_points)
+        ScanctTest.check_using_data(self, expected_nb_points)
 
     def macro_stops(self, meas_config, macro_params, wait_timeout=float("inf"),
                     stop_delay=0.1):
