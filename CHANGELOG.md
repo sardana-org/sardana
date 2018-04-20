@@ -5,6 +5,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
+### Fixed
+- Validation of starts and finals for a2scanct, a3scanct, meshct, ... (#734)
 
 ## [2.4.0] 2018-03-14
 
