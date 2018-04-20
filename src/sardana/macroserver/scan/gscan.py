@@ -2156,10 +2156,9 @@ class CTScan(CScan, CAcquisition):
             if macro.isStopped():
                 self.on_waypoints_end()
                 return
-            ############
-            # validation of parameters. At least one motor must have different
-            # values on the start and final positions
-            if self.macro.starts == self.macro.finals:
+
+            # at least one motor must have different start and final positions
+            if all(self.macro.starts == self.macro.finals):
                 if len(self.macro.starts) > 1:
                     msg = "Scan start and end must be different for at " \
                           "least one motor"
