@@ -6,8 +6,8 @@ from taurus.external import unittest
 from sardana.macroserver.macros.test import (RunStopMacroTestCase, testRun,
                                              testStop)
 from sardana.pool import AcqSynchType
-# TODO: MeasSarTestTestCase is a util, could be moved to base_sartest or another
-# utils module.
+# TODO: MeasSarTestTestCase is a util, could be moved to base_sartest
+# or another utils module.
 from sardana.tango.pool.test.test_measurementgroup import MeasSarTestTestCase
 from sardana.tango.macroserver.test import BaseMacroServerTestCase
 
@@ -22,11 +22,11 @@ class UtilsForTests():
         list_points = []
         for line, in log_output[first_data_line:]:
             # Get a list of elements without white spaces between them
-            l = line.split()
+            columns = line.split()
 
             # Cast index of scan to int (the first element of the list)
-            l[scan_index] = int(l[scan_index])
-            list_points.append(l[scan_index])
+            columns[scan_index] = int(columns[scan_index])
+            list_points.append(columns[scan_index])
         nb_points = len(list_points)
 
         ordered_points = 0
@@ -91,40 +91,38 @@ class ScanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
         # ordered_points: booleand which indicates if points are ordered.
         ordered_points = bb
 
-        self.assertNotEqual(obtained_nb_points, 0,
-                            "The ascanct execution did not return any scan point.\n"
-                            + "Checked using log_output")
+        msg = ("The ascanct execution did not return any scan point.\n"
+               "Checked using macro output")
+        self.assertNotEqual(obtained_nb_points, 0, msg)
 
-        self.assertEqual(obtained_nb_points, expected_nb_points,
-                         "The ascanct execution did not return the expected number of " +
-                         " points.\n Expected " + str(
-                             expected_nb_points) + " points." +
-                         "\n Obtained " + str(obtained_nb_points) + " points."
-                         + "Checked using log_output")
+        msg = ("The ascanct execution did not return the expected number of "
+               "points.\nExpected " + str(expected_nb_points) + " points."
+               "\nObtained " + str(obtained_nb_points) + " points."
+               "Checked using macro output")
+        self.assertEqual(obtained_nb_points, expected_nb_points, msg)
 
-        self.assertTrue(ordered_points, "Scan points are NOT in good order.\n"
-                        + "Checked using log_output")
+        msg = "Scan points are NOT in good order.\nChecked using macro output"
+        self.assertTrue(ordered_points, msg)
 
     def check_using_data(self, expected_nb_points):
         # Test data from macro (macro_executor.getData())
         data = self.macro_executor.getData()
         order_points_data = self.utils.orderPointsData(data)
-
-        self.assertTrue(len(data.keys()) > 0,
-                        "The ascanct execution did not return any scan point.\n"
-                        + "Checked using macro_executor.getData()")
-
         obtained_nb_points_data = len(data.keys())
-        self.assertEqual(int(obtained_nb_points_data), int(expected_nb_points),
-                         "The ascanct execution did not return the expected number of " +
-                         " points.\n Expected " + str(
-                             expected_nb_points) + " points." +
-                         "\n Obtained " + str(
-                             obtained_nb_points_data) + " points." +
-                         "\nChecked using macro_executor.getData()")
 
-        self.assertTrue(order_points_data, "Scan points are NOT in good order."
-                        + "\nChecked using  macro_executor.getData().")
+        msg = ("The ascanct execution did not return any scan point.\n"
+               "Checked using macro data.")
+        self.assertTrue(len(data.keys()) > 0, msg)
+
+        msg = ("The ascanct execution did not return the expected number of "
+               "points.\nExpected " + str(expected_nb_points) + " points."
+               "\nObtained " + str(obtained_nb_points_data) + " points."
+               "\nChecked using macro data.")
+        self.assertEqual(obtained_nb_points_data, expected_nb_points, msg)
+
+        msg = ("Scan points are NOT in good order."
+               "\nChecked using macro data.")
+        self.assertTrue(order_points_data, msg)
 
     def check_stopped(self):
         self.assertStopped('Macro %s did not stop' % self.macro_name)
@@ -192,7 +190,6 @@ class AscanctTest(ScanctTest, unittest.TestCase):
         expected_nb_points = int(macro_params[3]) + 1
         ScanctTest.check_using_output(self, expected_nb_points)
         ScanctTest.check_using_data(self, expected_nb_points)
-
 
     def macro_stops(self, meas_config, macro_params, wait_timeout=float("inf"),
                     stop_delay=0.1):
