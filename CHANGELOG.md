@@ -6,6 +6,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Fixed
+- Push change events from code for measurement group attributes: moveable,
+  latency time and synchronization (#736, #738)
 - Validation of starts and finals for a2scanct, a3scanct, meshct, ... (#734)
 
 ## [2.4.0] 2018-03-14
