@@ -857,6 +857,9 @@ class FileHandlerFilter(logging.Filter):
     def filter(self, record):
         allow = True
         if record.levelname == "DEBUG":
+            if type(record.msg) != str:
+                allow = False
+                return allow
             if record.msg.find("[START]") != -1:
                 msg = record.msg
                 start = msg.index("'") + 1
