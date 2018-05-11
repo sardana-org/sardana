@@ -146,7 +146,7 @@ of length 0.1 second equally spaced on a distance of 100 units.
             SynchParam.Initial: {SynchDomain.Time: None, SynchDomain.Position: 0},
             SynchParam.Active:  {SynchDomain.Time: 0.1, SynchDomain.Position: 1},
             SynchParam.Total:   {SynchDomain.Time: 1, SynchDomain.Position: 10},
-            SynchParam.Repeats: 10},
+            SynchParam.Repeats: 10,
         }
     ]
 
