@@ -5,6 +5,10 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
+### Added
+- `repeat` macro for executing n-times the hooks attached in its body (#310,
+  #745)
+
 ### Fixed
 - Push change events from code for measurement group attributes: moveable,
   latency time and synchronization (#736, #738)
