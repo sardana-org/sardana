@@ -51,7 +51,7 @@ def _get_full_name(device_proxy, logger=None):
     # try to use Taurus 4 to retrieve FQDN
     try:
         from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
-        full_name, _, _ = TangoDeviceNameValidator().getNames(name)
+        full_name, _, _ = TangoDeviceNameValidator().getNames(full_name)
     # if Taurus3 in use just continue
     except ImportError:
         pass
