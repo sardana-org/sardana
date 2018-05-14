@@ -90,7 +90,7 @@ You can clone sardana from the main git repository::
 
 Then, to work in editable mode, just do::
 
-    pip install -e ./taurus
+    pip install -e ./sardana
 
 
 .. _dependencies:
