@@ -422,8 +422,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
                 full_name = nfo.full_name
                 display = nfo.name
             # TODO: For Taurus 4 compatibility
-            if full_name.startswith("tango://"):
-                full_name = full_name[8:]
+            # if full_name.startswith("tango://"):
+            #     full_name = full_name[8:]
             preScanList.append((full_name, display))
         self._localConfig['PreScanSnapshot'] = preScanList
         self._setDirty(True)

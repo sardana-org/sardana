@@ -747,6 +747,10 @@ class GScan(Logger):
         ret = []
         for src, label in elements:
             try:
+                is_full_tango_name = src.startswith('tango://')
+                if not is_full_tango_name:
+                    src = 'tango://{}'.format(src)
+
                 if src in all_elements_info:
                     ei = all_elements_info[src]
                     column = ColumnDesc(name=ei.full_name,
