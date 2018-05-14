@@ -13,6 +13,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Push change events from code for measurement group attributes: moveable,
   latency time and synchronization (#736, #738)
 - Validation of starts and finals for a2scanct, a3scanct, meshct, ... (#734)
+- Make SPEC_FileRecorder use LF instead of CRLF even on windows (#750)
 
 ## [2.4.0] 2018-03-14
 
