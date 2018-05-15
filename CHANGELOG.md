@@ -15,6 +15,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Validation of starts and finals for a2scanct, a3scanct, meshct, ... (#734)
 - Make SPEC_FileRecorder use LF instead of CRLF even on windows (#750)
 - Fix appending of hooks from sequence XML (#747)
+- Avoid errors if selected trajectory in HKL controller does not exists (#752)
 - Documentation on how to install and use Sardana from Git clone (#751)
 
 ## [2.4.0] 2018-03-14
