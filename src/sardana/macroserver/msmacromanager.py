@@ -1131,10 +1131,10 @@ class MacroExecutor(Logger):
             hook = MacroExecutor.RunSubXMLHook(self, macro)
             hook_hints = macro.findall('hookPlace')
             if hook_hints is None:
-                macro_obj.hooks = [hook]
+                macro_obj.appendHook((hook, []))
             else:
                 hook_places = [h.text for h in hook_hints]
-                macro_obj.hooks = [(hook, hook_places)]
+                macro_obj.appendHook((hook, hook_places))
 
         prepare_result = self._prepareMacroObj(macro_obj, macro_params)
         return macro_obj, prepare_result
