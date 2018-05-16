@@ -86,13 +86,15 @@ class kepcoController(MotorController):
         return state, 'some text', limit_switches
 
     def ReadOne(self, axis):
-        return float(self.inst.query('MEAS:CURR?'))
+        res = float(self.inst.query('MEAS:CURR?'))
+        return res
 
     def StartOne(self, axis, position):
         self._moveStartTime = time.time()
         self._isMoving = True
         self._target = position
-        self.inst.write('CURR {}'.format(position))
+        cmd = 'CURR {:f}'.format(position)
+        self.inst.write(cmd)
 
     def StopOne(self, axis):
         pass
