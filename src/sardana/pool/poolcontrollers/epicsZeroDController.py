@@ -23,6 +23,7 @@
 
 
 from epics import caget
+import time
 
 from sardana import State
 from sardana.pool.controller import ZeroDController
@@ -51,16 +52,17 @@ class epicsZeroDController(ZeroDController):
         self.read_channels = {}
 
     def AddDevice(self, ind):
-        self.channels[ind].active = True
+        self.channels[ind-1].active = True
 
     def DeleteDevice(self, ind):
-        self.channels[ind].active = False
+        self.channels[ind-1].active = False
 
     def StateOne(self, ind):
         return State.On, "OK"
 
     def _setChannelValue(self, channel):
         channel.value = caget(channel.PVname)
+        time.sleep(0.1)
 
     def PreReadAll(self):
         self.read_channels = {}
