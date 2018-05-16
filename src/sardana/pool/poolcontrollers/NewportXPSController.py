@@ -160,8 +160,8 @@ class NewportXPSController(MotorController):
             raise ValueError('positioner not set for this axis')
         
         if name == "acceleration" or name == "deceleration":
-            [_, _, v, _, _] = self.XPS.PositionerSGammaParametersGet(self.socketSGamma, positioner)
-            v = 1/v
+            [_, vel, acc, _, _] = self.XPS.PositionerSGammaParametersGet(self.socketSGamma, positioner)
+            v = vel/acc
         elif name == "velocity":
             [_, v, _, _, _] = self.XPS.PositionerSGammaParametersGet(self.socketSGamma, positioner)
         elif name == "base_rate":
