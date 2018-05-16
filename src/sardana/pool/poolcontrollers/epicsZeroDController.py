@@ -21,12 +21,12 @@
 ##
 ##############################################################################
 
-import random
-from epics import caget, caput
+
+from epics import caget
 
 from sardana import State
 from sardana.pool.controller import ZeroDController
-
+from sardana.pool.controller import Type, Description, DefaultValue, Access, DataAccess, Memorize, Memorized
 
 class Channel:
 
@@ -34,16 +34,15 @@ class Channel:
         self.idx = idx            # 1 based index
         self.value = 0.0
         self.active = False
+        self.PVname = None
 
 
-class DummyZeroDController(ZeroDController):
+class epicsZeroDController(ZeroDController):
     """This class represents a dummy Sardana 0D controller."""
 
-    gender = "Simulation"
-    model = "Basic"
-    organization = "Sardana team"
-
     MaxDevice = 1024
+    
+    axis_attributes  = {'PVname': {Type: str, Description: 'PV name of channel', DefaultValue: None,  Access: DataAccess.ReadWrite, Memorized: Memorize},}
 
     def __init__(self, inst, props, *args, **kwargs):
         ZeroDController.__init__(self, inst, props, *args, **kwargs)
@@ -61,7 +60,7 @@ class DummyZeroDController(ZeroDController):
         return State.On, "OK"
 
     def _setChannelValue(self, channel):
-        channel.value = caget('PM:MOKE:PUMP:RP')
+        channel.value = caget(channel.PVname)
 
     def PreReadAll(self):
         self.read_channels = {}
@@ -77,3 +76,29 @@ class DummyZeroDController(ZeroDController):
     def ReadOne(self, ind):
         v = self.read_channels[ind].value
         return v
+    
+    def GetAxisExtraPar(self, ind, name):
+        """ Get Smaract axis particular parameters.
+        @param axis to get the parameter
+        @param name of the parameter to retrive
+        @return the value of the parameter
+        """
+        name = name.lower()
+        
+        if name == 'pvname':
+            result = self.channels[ind - 1].PVname
+        else:
+            raise ValueError('There is not %s attribute' % name)
+        return result
+
+    def SetAxisExtraPar(self, ind, name, value):
+        """ Set Smaract axis particular parameters.
+        @param axis to set the parameter
+        @param name of the parameter
+        @param value to be set
+        """
+        name = name.lower()
+        if name == 'pvname':
+            self.channels[ind - 1].PVname = value
+        else:
+            raise ValueError('There is not %s attribute' % name)
