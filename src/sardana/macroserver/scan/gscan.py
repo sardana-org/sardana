@@ -2099,7 +2099,7 @@ class CTScan(CScan, CAcquisition):
                         new_vel -= (read_vel-new_vel)
             except Exception as e:
                 self.macro.error(e)
-                ideal_path.max_vel =  ideal_path.theo_max_vel
+                ideal_path.max_vel = ideal_path.theo_max_vel
             finally:
                 moveable.setVelocity(bkp_vel)
 
