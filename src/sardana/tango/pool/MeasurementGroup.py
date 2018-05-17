@@ -75,7 +75,8 @@ class MeasurementGroup(PoolGroupDevice):
         # state and status are already set by the super class
         detect_evts = "latencytime", "moveable", "synchronization"
         non_detect_evts = "configuration", "integrationtime", "monitorcount", \
-                          "acquisitionmode", "elementlist", "repetitions"
+                          "acquisitionmode", "elementlist", "repetitions", \
+                          "softwaresynchronizerinitialdomain"
         self.set_change_events(detect_evts, non_detect_evts)
 
         self.Elements = list(self.Elements)
@@ -252,6 +253,22 @@ class MeasurementGroup(PoolGroupDevice):
         latency_time = self.measurement_group.latency_time
         attr.set_value(latency_time)
 
+    def read_SoftwareSynchronizerInitialDomain(self, attr):
+        domain = self.measurement_group.sw_synch_initial_domain
+        d = SynchDomain(domain).name
+        attr.set_value(d)
+
+    def write_SoftwareSynchronizerInitialDomain(self, attr):
+        data = attr.get_write_value()
+        if (SynchDomain.has_name(data)):
+            domain = SynchDomain.fromStr(data)
+            self.measurement_group.sw_synch_initial_domain = domain
+        else:
+            items = SynchDomain.__members__.items()
+            available = [name for name, member in items]
+            raise Exception("Invalid InitialDomain. Must be one of " +
+                            ", ".join(available))
+
     def Start(self):
         try:
             self.wait_for_operation()
@@ -313,6 +330,10 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
                              'Display level': DispLevel.EXPERT}],
         'LatencyTime': [[DevDouble, SCALAR, READ],
                         {'Display level': DispLevel.EXPERT}],
+        'SoftwareSynchronizerInitialDomain': [[DevString, SCALAR, READ_WRITE],
+                        {'Memorized': "true",
+                         'Display level': DispLevel.OPERATOR}],
+
     }
     attr_list.update(PoolGroupDeviceClass.attr_list)
 

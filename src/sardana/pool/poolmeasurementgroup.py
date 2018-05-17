@@ -135,6 +135,10 @@ class PoolMeasurementGroup(PoolGroupElement):
         self._config_dirty = True
         self._moveable = None
         self._moveable_obj = None
+        # By default Software syncronizer initial domain is set to Position
+        # Domain
+        self._sw_synch_initial_domain = SynchDomain.Position
+
         self._synchronization = []
         # dict with channel and its acquisition synchronization
         # key: PoolBaseChannel; value: AcqSynch
@@ -682,6 +686,16 @@ class PoolMeasurementGroup(PoolGroupElement):
                             doc="latency time between two consecutive "
                                 "acquisitions")
 
+    def get_sw_synch_initial_domain(self):
+        return self._sw_synch_initial_domain
+
+    def set_sw_synch_initial_domain(self, domain):
+        self._sw_synch_initial_domain = domain
+
+    sw_synch_initial_domain = property(
+            get_sw_synch_initial_domain,
+            set_sw_synch_initial_domain,
+            doc="Software Syncronizer initial domain, Time/Position")
     # -------------------------------------------------------------------------
     # acquisition
     # -------------------------------------------------------------------------
@@ -700,6 +714,8 @@ class PoolMeasurementGroup(PoolGroupElement):
                 kwargs['monitor'] = self._monitor
             kwargs['synchronization'] = self._synchronization
             kwargs['moveable'] = self._moveable_obj
+            self.acquisition._synch._synch_soft.initial_domain = \
+                self._sw_synch_initial_domain
             # start acquisition
             self.acquisition.run(**kwargs)
 
