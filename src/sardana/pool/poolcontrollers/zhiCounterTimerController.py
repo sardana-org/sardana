@@ -35,15 +35,17 @@ import zhinst.utils as utils
 
 
 class boxcars:
-    def __init__(self, ip='127.0.01', port=8004, api_level=6):
+    def __init__(self, ip='127.0.01', port=8004, api_level=6, repRate = 1500, timeOut = 30):
         # Create a connection to a Zurich Instruments Data Server
 	
         print 'connecting ...'
 
         self.daq = zh.ziDAQServer(ip, port, api_level)
         self.daq.connect()
-        self.repRate = 1500
-        self.timeOut = 30
+        self.repRate = repRate
+        self.timeOut = timeOut
+        self.acqStartTime = None
+        self.acqEndTime   = None
     
         # Detect a device
         self.device = utils.autoDetect(self.daq)
@@ -74,7 +76,7 @@ class boxcars:
         
         print 'connected'
 
-    def get_data(self,int_time=1):
+    def startAcq(self,int_time=1):
         # Poll the data
         #define number of samples that shall be recorded
         
@@ -85,15 +87,19 @@ class boxcars:
         
         self.dacq.execute()
         self.dacq.set('dataAcquisitionModule/forcetrigger', 1)
+        self.acqStartTime = time.time()
         
-        finished = False
-        start = time.time()
-        now = start
-        while (finished == False) & ((now-start) < self.timeOut):
-            [finished] = self.dacq.progress()
-            now = time.time()
-
+        
+    def isFinished(self):
+        finished = self.dacq.progress()
+        now = time.time()
+        hasTimeout = ((now-self.acqStartTime) > self.timeOut)
+        return (finished, hasTimeout)
+    
+    def readData(self):
+        
         data = self.dacq.read()
+        self.acqEndTime = time.time()
         
         [boxcar1_value]     = data[self.device]['boxcars']['0']['sample'][0]['value']
         [boxcar1_timestamp] = data[self.device]['boxcars']['0']['sample'][0]['timestamp']
@@ -102,10 +108,11 @@ class boxcars:
         [boxcar2_timestamp] = data[self.device]['boxcars']['1']['sample'][0]['timestamp']
         
         select = (~np.isnan(boxcar1_value)) & (~np.isnan(boxcar2_value))
-        freq   = 1/(np.mean((np.diff(boxcar1_timestamp[select])))/self.clock)        
+        freq   = 1/(np.mean((np.diff(boxcar1_timestamp[select])))/self.clock)
+        duration = self.acqEndTime-self.acqStartTime
         	
         return (np.mean(boxcar1_value[select], dtype=np.float64), np.mean(boxcar2_value[select], dtype=np.float64),
-                sem(boxcar1_value[select]),sem(boxcar2_value[select]), len(boxcar1_value[select]), freq)
+                sem(boxcar1_value[select]),sem(boxcar2_value[select]), len(boxcar1_value[select]), freq, duration)
         
 
     def close(self):
@@ -116,8 +123,6 @@ class boxcars:
         self.daq.unsubscribe('*')
         del self.daq
 
-
-	
 class zhiCounterTimerController(CounterTimerController):
     """The most basic controller intended from demonstration purposes only.
     This is the absolute minimum you have to implement to set a proper counter
@@ -146,26 +151,26 @@ class zhiCounterTimerController(CounterTimerController):
 
     def ReadOne(self, axis):
         """Get the specified counter value"""
+        if axis == 0:
+            self.data = self.zhi.readData()
+                   
         return self.data[axis]
 
     def StateOne(self, axis):
         """Get the specified counter state"""
-        if self.isAquiring == False:
+        
+        (finished, hasTimeout) = self.zhi.isFinished()
+        if finished or hasTimeout:
             return State.On, "Counter is stopped"
         else:
             return State.Moving, "Counter is acquiring"
-
+        
     def StartOne(self, axis, value=None):
         """acquire the specified counter"""
-        #print('axis {} value {}'.format(axis,value))
-        
+                
         if axis == 0:
-            self.isAquiring = True
-            #a = time.time()
-            self.data = self.zhi.get_data(value)
-            #b = time.time()
-            #print('elapsed time: {}'.format(b-a))
-            self.isAquiring = False
+            self.data = []
+            self.zhi.startAcq(value)
     
     def StartAll(self):
         pass
