@@ -1,5 +1,6 @@
 /MANIFEST
 /dist
+/src/sardana.egg-info
 /build
 /setup.cfg
 *.pyc
