@@ -219,8 +219,12 @@ class MacroManager(MacroServerManager):
         refer to an old module (which could possibly generate problems of type
         class A != class A)."""
         p = []
-        for item in macro_path:
-            p.extend(item.split(":"))
+        
+        if os.name != 'nt':
+            for item in macro_path:
+                p.extend(item.split(":"))
+        else:
+            p = macro_path
 
         # filter empty and commented paths
         p = [i for i in p if i and not i.startswith("#")]
