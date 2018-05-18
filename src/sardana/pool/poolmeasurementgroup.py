@@ -696,6 +696,7 @@ class PoolMeasurementGroup(PoolGroupElement):
             get_sw_synch_initial_domain,
             set_sw_synch_initial_domain,
             doc="Software Syncronizer initial domain, Time/Position")
+
     # -------------------------------------------------------------------------
     # acquisition
     # -------------------------------------------------------------------------
@@ -714,8 +715,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                 kwargs['monitor'] = self._monitor
             kwargs['synchronization'] = self._synchronization
             kwargs['moveable'] = self._moveable_obj
-            self.acquisition._synch._synch_soft.initial_domain = \
-                self._sw_synch_initial_domain
+            kwargs['swsynchinitialdomain'] = self._sw_synch_initial_domain
             # start acquisition
             self.acquisition.run(**kwargs)
 
