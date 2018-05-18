@@ -22,6 +22,7 @@
 ##############################################################################
 
 import random
+from epics import caget, caput
 
 from sardana import State
 from sardana.pool.controller import ZeroDController
@@ -60,7 +61,7 @@ class DummyZeroDController(ZeroDController):
         return State.On, "OK"
 
     def _setChannelValue(self, channel):
-        channel.value = 100 * channel.idx + 10 * (random.random() - 0.5)
+        channel.value = caget('PM:MOKE:PUMP:RP')
 
     def PreReadAll(self):
         self.read_channels = {}
