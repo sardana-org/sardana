@@ -94,6 +94,7 @@ class boxcars:
         finished = self.dacq.progress()
         now = time.time()
         hasTimeout = ((now-self.acqStartTime) > self.timeOut)
+        time.sleep(0.01)
         return (finished, hasTimeout)
     
     def readData(self):
@@ -110,9 +111,12 @@ class boxcars:
         select = (~np.isnan(boxcar1_value)) & (~np.isnan(boxcar2_value))
         freq   = 1/(np.mean((np.diff(boxcar1_timestamp[select])))/self.clock)
         duration = self.acqEndTime-self.acqStartTime
+        
+        
         	
         return (np.mean(boxcar1_value[select], dtype=np.float64), np.mean(boxcar2_value[select], dtype=np.float64),
-                sem(boxcar1_value[select]),sem(boxcar2_value[select]), len(boxcar1_value[select]), freq, duration)
+                sem(boxcar1_value[select]),sem(boxcar2_value[select]), len(boxcar1_value[select]), freq, duration,
+                np.mean((boxcar1_value[select]/boxcar2_value[select]), dtype=np.float64))
         
 
     def close(self):
@@ -132,7 +136,9 @@ class zhiCounterTimerController(CounterTimerController):
     This example is so basic that it is not even directly described in the
     documentation"""
     ctrl_properties = {'IP': {Type: str, Description: 'The IP of the ZHI controller', DefaultValue: '127.0.0.1'},
-						     'port': {Type: int, Description: 'The port of the ZHI controller', DefaultValue: 8004}}
+						     'port': {Type: int, Description: 'The port of the ZHI controller', DefaultValue: 8004},
+                       'repRate': {Type: int, Description: 'RepRate of the acquisition', DefaultValue: 1500},
+                       'timeOut': {Type: int, Description: 'Timeout of the acquisition in s', DefaultValue: 30}}
        
     
     def AddDevice(self, axis):
@@ -145,7 +151,7 @@ class zhiCounterTimerController(CounterTimerController):
         """Constructor"""
         super(zhiCounterTimerController,
               self).__init__(inst, props, *args, **kwargs)
-        self.zhi = boxcars(self.IP, self.port, api_level=6)
+        self.zhi = boxcars(self.IP, self.port, api_level=6, repRate=self.repRate, timeOut=self.timeOut)
         self.data = []
         self.isAquiring = False
 
