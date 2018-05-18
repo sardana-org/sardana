@@ -279,19 +279,18 @@ class FunctionGenerator(EventGenerator, Logger):
             initial_param = group.get(Initial)
             if initial_param is None:
                 initial_param = dict()
-            if not initial_param.has_key(Time):
+            if Time not in initial_param:
                 delay_param = group.get(Delay)
-                if delay_param.has_key(Time):
+                if Time in delay_param:
                     initial_param[Time] = delay_param[Time]
                 group[Initial] = initial_param
             # determine active domain in use
             msg = "no initial value in group %d" % i
-
-            if initial_param.has_key(self.initial_domain):
+            if self.initial_domain in initial_param:
                 self.initial_domain_in_use = self.initial_domain
-            elif initial_param.has_key(Position):
+            elif Position in initial_param:
                 self.initial_domain_in_use = Position
-            elif initial_param.has_key(Time):
+            elif Time in initial_param:
                 self.initial_domain_in_use = Time
             else:
                 raise ValueError(msg)
@@ -299,13 +298,13 @@ class FunctionGenerator(EventGenerator, Logger):
             active_param = group.get(Active)
             msg = "no active value in group %d" % i
             if self.active_domain is None:
-                if active_param.has_key(Time):
+                if Time in active_param:
                     self.active_domain_in_use = Time
-                elif active_param.has_key(Position):
+                elif Position in active_param:
                     self.active_domain_in_use = Position
                 else:
                     raise ValueError(msg)
-            elif active_param.has_key(self.active_domain):
+            elif self.active_domain in active_param:
                 self.active_domain_in_use = self.active_domain
             else:
                 raise ValueError(msg)
