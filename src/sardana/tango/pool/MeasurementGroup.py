@@ -263,10 +263,10 @@ class MeasurementGroup(PoolGroupDevice):
 
     def write_SoftwareSynchronizerInitialDomain(self, attr):
         data = attr.get_write_value()
-        if (SynchDomain.has_name(data)):
-            domain = SynchDomain.fromStr(data)
+        try:
+            domain = SynchDomain[data]
             self.measurement_group.sw_synch_initial_domain = domain
-        else:
+        except KeyError:
             items = SynchDomain.__members__.items()
             available = [name for name, member in items]
             raise Exception("Invalid InitialDomain. Must be one of " +

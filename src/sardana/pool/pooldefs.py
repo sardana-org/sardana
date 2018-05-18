@@ -62,11 +62,6 @@ class SynchEnum(IntEnum):
         else:
             raise ValueError('Can not convert %s to SynchDomain' % string)
 
-    @classmethod
-    def has_name(cls, name):
-        return any(name.lower() == item.name.lower() for item in cls)
-
-
 class SynchDomain(SynchEnum):
     """Enumeration of synchronization domains.
 
