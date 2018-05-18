@@ -62,6 +62,7 @@ class SynchEnum(IntEnum):
         else:
             raise ValueError('Can not convert %s to SynchDomain' % string)
 
+
 class SynchDomain(SynchEnum):
     """Enumeration of synchronization domains.
 
