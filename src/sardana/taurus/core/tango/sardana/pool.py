@@ -1760,7 +1760,17 @@ class MeasurementGroup(PoolElement):
         self.setConfiguration(cfg.raw_data)
 
     def _start(self, *args, **kwargs):
-        self.Start()
+        try:
+            self.Start()
+        except Exception as e:
+            while True:
+                try:
+                    self.stop()
+                    break
+                except Exception:
+                    pass
+            # TODO: Do more friendly user the exception message.
+            raise e
 
     def go(self, *args, **kwargs):
         start_time = time.time()
