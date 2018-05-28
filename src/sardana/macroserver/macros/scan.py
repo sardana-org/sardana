@@ -1790,7 +1790,7 @@ class meshct(Macro, Hookable):
         return 0.0
 
     def getIntervalEstimation(self):
-        return self.nr_intervs
+        return int((self.nr_intervs[0] + 1) * (self.nr_intervs[1] + 1) - 1)
 
     def _fill_missing_records(self):
         # fill record list with dummy records for the final padding
