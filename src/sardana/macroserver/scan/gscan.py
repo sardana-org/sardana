@@ -826,6 +826,7 @@ class GScan(Logger):
                     interval_nb += 1
                 total_time = self.macro.getTimeEstimation()
         except StopIteration:
+            interval_nb -= 1
             return total_time, interval_nb
         # max iteration reached.
         return -total_time, -interval_nb
