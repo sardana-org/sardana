@@ -18,6 +18,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Avoid errors if selected trajectory in HKL controller does not exists (#752)
 - Documentation on how to install and use Sardana from Git clone (#751)
 
+### Changed
+- Change epoch from float to formatted date & time in Spec recorder (#766)
+
 ## [2.4.0] 2018-03-14
 
 ### Added
