@@ -14,8 +14,9 @@ This file follows the formats and conventions from [keepachangelog.com]
   latency time and synchronization (#736, #738)
 - Validation of starts and finals for a2scanct, a3scanct, meshct, ... (#734)
 - Make SPEC_FileRecorder use LF instead of CRLF even on windows (#750)
-- Fix appending of hooks from sequence XML (#747)
-- Avoid errors if selected trajectory in HKL controller does not exists (#752)
+- Appending of hooks from sequence XML (#747)
+- `lsgh` list hooks multiple times to reflect the configuration (#774)
+- Avoid errors if selected trajectory in HKL controller doesnot exists (#752)
 - Documentation on how to install and use Sardana from Git clone (#751)
 
 ### Changed
