@@ -25,7 +25,7 @@
 
 __all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "repeat", "set_lim",
            "set_lm", "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm",
-           "tw", "logmacro"]
+           "tw", "logmacro", "newfile"]
 
 __docformat__ = 'restructuredtext'
 
