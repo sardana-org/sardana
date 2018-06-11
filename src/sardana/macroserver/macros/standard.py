@@ -849,7 +849,7 @@ class repeat(Hookable, Macro):
 
 class newfile(Macro):
     """This macro sets a new ScanFile and ScanID values into the env.
-    The ScanID should be set to the value N of the last executed ScanID 
+    The ScanID should be set to the value N of the last executed ScanID
     in order to continue with a ScanID N+1 for the next scan."""
 
     env = ('ScanFile', 'ScanID')
