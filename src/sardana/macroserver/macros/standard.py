@@ -860,13 +860,12 @@ class newfile(Macro):
          ParamRepeat(['ScanFile', Type.String, None, 'Name of scan file']),
          None, 'List of scan file names'],
     ]
-    
-    def run(self, ScanID, ScanFile_list):        
+
+    def run(self, ScanID, ScanFile_list):
         self.setEnv('ScanFile', ScanFile_list)
         self.setEnv('ScanID', ScanID)
-        
+
         self.output('ScanFile set to: ')
         for ScanFile in ScanFile_list:
             self.output(' %s', ScanFile)
         self.output('ScanID set to: %d', ScanID)
-        
