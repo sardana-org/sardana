@@ -1302,11 +1302,34 @@ def createMacroNode(macro_name, params_def, macro_params):
     if not new_interface:
         param_nodes = macro_node.params()
         len_param_nodes = len(param_nodes)
+        param_idx = 0
         for param_node, param_raw in zip(param_nodes, macro_params):
             if isinstance(param_node, SingleParamNode):
                 param_node.setValue(param_raw)
-            # the rest of the values are interpreted as repeat parameter
-            elif isinstance(param_node, RepeatParamNode):
+            # Repeat parameters that are not at the end.
+            elif (isinstance(param_node, RepeatParamNode) and
+                  param_idx < (len_param_nodes - 1)):
+                repeat_node = param_node.child(0)
+                # Add a new repeat node. This is needed when the raw values
+                # fill more repeat nodes that the minimum number of
+                # repetitions e.g. min=0.
+                if repeat_node is None:
+                    repeat_node = param_node.addRepeat()
+                if len(repeat_node.children()) > 1:
+                    msg = ("repeat parameter with more than one member must "
+                           "be defined at the end when intended to "
+                           "be used with spock syntax")
+                    raise Exception(msg)
+                member_node = repeat_node.child(0)
+                if isinstance(member_node, RepeatParamNode):
+                    msg = ("nested repeat parameters are not allowed when "
+                           "intended to be used with spock syntax")
+                    raise Exception(msg)
+                member_node.setValue(param_raw)
+            # The resting values are interpreted as repeat parameter values.
+            # This ignores parameter values which exceeds the parameters
+            # definition.
+            else:
                 params_info = param_node.paramsInfo()
                 params_info_len = len(params_info)
                 rep = 0
@@ -1329,6 +1352,7 @@ def createMacroNode(macro_name, params_def, macro_params):
                     if mem == 0:
                         rep += 1
                 break
+            param_idx += 1
     else:
         macro_node.fromList(macro_params)
     return macro_node
