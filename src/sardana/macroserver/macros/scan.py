@@ -260,6 +260,8 @@ class aNscan(Hookable):
             'post-move') + [self._fill_missing_records]
         step["post-move-hooks"] = post_move_hooks
         step["pre-acq-hooks"] = self.getHooks('pre-acq')
+        step["post-acq-hooks"] = self.getHooks('post-acq') + self.getHooks(
+            '_NOHINTS_')
         step["check_func"] = []
         step["active_time"] = self.nr_points * (self.integ_time +
                                                 self.latency_time)
@@ -1425,6 +1427,7 @@ class ascanct(aNscan, Macro):
                                                 'post-configuration',
                                                 'pre-start',
                                                 'pre-acq',
+                                                'post-acq',
                                                 'pre-cleanup',
                                                 'post-cleanup')}
 
@@ -1454,6 +1457,7 @@ class a2scanct(aNscan, Macro):
                                                  'post-configuration',
                                                  'pre-start',
                                                  'pre-acq',
+                                                 'post-acq',
                                                  'pre-cleanup',
                                                  'post-cleanup')}
 
@@ -1487,6 +1491,7 @@ class a3scanct(aNscan, Macro):
                                                  'post-configuration',
                                                  'pre-start',
                                                  'pre-acq',
+                                                 'post-acq',
                                                  'pre-cleanup',
                                                  'post-cleanup')}
 
@@ -1523,6 +1528,7 @@ class a4scanct(aNscan, Macro):
                                                  'post-configuration',
                                                  'pre-start',
                                                  'pre-acq',
+                                                 'post-acq',
                                                  'pre-cleanup',
                                                  'post-cleanup')}
 
