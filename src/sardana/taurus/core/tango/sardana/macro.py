@@ -1332,9 +1332,10 @@ def createMacroNode(macro_name, params_def, macro_params):
             else:
                 params_info = param_node.paramsInfo()
                 params_info_len = len(params_info)
+                last_param_idx = len_param_nodes - 1
                 rep = 0
                 mem = 0
-                rest_raw = macro_params[i:]
+                rest_raw = macro_params[last_param_idx:]
                 for member_raw in rest_raw:
                     repeat_node = param_node.child(rep)
                     # Add a new repeat node. This is needed when the raw
