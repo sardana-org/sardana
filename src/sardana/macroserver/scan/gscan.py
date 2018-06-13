@@ -2280,7 +2280,7 @@ class CTScan(CScan, CAcquisition):
                 pre_acq_hooks = macro.getHooks('pre-start')
                 if len(pre_acq_hooks) > 0:
                     self.macro.warning("pre-start hook deprecated,"
-                                       "use post-acq-hooks instead")
+                                       "use pre-acq instead")
                 pre_acq_hooks += waypoint.get('pre-acq-hooks', [])
 
                 for hook in pre_acq_hooks:
