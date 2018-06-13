@@ -1301,18 +1301,7 @@ def createMacroNode(macro_name, params_def, macro_params):
 
     if not new_interface:
         param_nodes = macro_node.params()
-        contain_param_repeat = False
         len_param_nodes = len(param_nodes)
-        for i, param_node in enumerate(param_nodes):
-            if isinstance(param_node, RepeatParamNode):
-                if contain_param_repeat:
-                    msg = "Only one repeat parameter is allowed"
-                    raise Exception(msg)
-                if i < len_param_nodes - 1:
-                    msg = "Repeat parameter must be the last one"
-                    raise Exception(msg)
-        # If ParamRepeat only one and as last parameter
-        # this ignores raw_parameters which exceeds the param_def
         for param_node, param_raw in zip(param_nodes, macro_params):
             if isinstance(param_node, SingleParamNode):
                 param_node.setValue(param_raw)
