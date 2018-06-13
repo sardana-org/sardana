@@ -1337,14 +1337,15 @@ def createMacroNode(macro_name, params_def, macro_params):
                 rest_raw = macro_params[i:]
                 for member_raw in rest_raw:
                     repeat_node = param_node.child(rep)
-                    # add a new repeat node (this is needed when the raw values
-                    # fill more repeat nodes that the minimum number of
-                    # repetitions e.g. min=0
+                    # Add a new repeat node. This is needed when the raw
+                    # values fill more repeat nodes that the minimum number
+                    # of repetitions e.g. min=0.
                     if repeat_node is None:
                         repeat_node = param_node.addRepeat()
                     member_node = repeat_node.child(mem)
                     if isinstance(member_node, RepeatParamNode):
-                        msg = ("Nested repeat parameters are not allowed")
+                        msg = ("nested repeat parameters are not allowed "
+                               "when intended to be used with spock syntax")
                         raise Exception(msg)
                     member_node.setValue(member_raw)
                     mem += 1
