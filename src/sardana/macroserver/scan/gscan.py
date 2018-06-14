@@ -835,6 +835,10 @@ class GScan(Logger):
         return self._data
 
     @property
+    def data_handler(self):
+        return self._data_handler
+
+    @property
     def macro(self):
         return self._macro
 
