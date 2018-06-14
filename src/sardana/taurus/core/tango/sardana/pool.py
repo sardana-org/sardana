@@ -637,7 +637,7 @@ class Controller(PoolElement):
         return sorted(axes)
 
     def getUsedAxis(self):
-        msg = ("getUsedAxis is deprecated since version Jan18. ",
+        msg = ("getUsedAxis is deprecated since version Jul18. ",
                "Use getUsedAxes instead.")
         self.warning(msg)
         self.getUsedAxes()
