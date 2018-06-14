@@ -135,7 +135,12 @@ class Parameterizable(object):
         return self._result
 
     def build_parameter(self):
-        return self._build_parameter(self.get_parameter_definition())
+        try:
+            built_param = self._build_parameter(
+                self.get_parameter_definition())
+        except:
+            raise Exception("Error in the parameters definition")
+        return built_param
 
     def build_result(self):
         return self._build_parameter(self.get_result_definition())

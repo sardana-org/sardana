@@ -45,6 +45,7 @@ from sardana.pool.poolbasegroup import PoolBaseGroup
 from sardana.pool.poolmotion import PoolMotion
 from sardana.pool.poolexception import PoolException
 
+from PyTango import AttributeProxy
 
 class Position(SardanaAttribute):
 
@@ -245,9 +246,9 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
                                pool=kwargs['pool'])
         self._position = Position(self, listeners=self.on_change)
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # Event forwarding
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def on_change(self, evt_src, evt_type, evt_value):
         # forward all events coming from attributes to the listeners
@@ -497,9 +498,9 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
         ret = self._calculate_states()
         return ret
 
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
     # default acquisition channel
-    # --------------------------------------------------------------------------
+    # -------------------------------------------------------------------------
 
     def get_default_attribute(self):
         return self.get_position_attribute()
@@ -553,6 +554,28 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
             if new_position is None:
                 raise PoolException("Cannot calculate motion: %s reports "
                                     "position to be None" % element.name)
+            # TODO: get the configuration for an specific sardana class and
+            # get rid of AttributeProxy - see sardana-org/sardana#663
+            config = AttributeProxy(element.name + '/position').get_config()
+            try:
+                high = float(config.max_value)
+            except ValueError:
+                high = None
+            try:
+                low = float(config.min_value)
+            except ValueError:
+                low = None
+            if high is not None:
+                if float(new_position) > high:
+                    msg = "requested movement of %s is above its upper limit"\
+                        % element.name
+                    raise RuntimeError(msg)
+            if low is not None:
+                if float(new_position) < low:
+                    msg = "requested movement of %s is below its lower limit"\
+                        % element.name
+                    raise RuntimeError(msg)
+
             element.calculate_motion(new_position, items=items,
                                      calculated=calculated)
         return items

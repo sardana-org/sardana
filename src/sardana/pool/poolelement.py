@@ -57,10 +57,6 @@ class PoolElement(PoolBaseElement):
         kwargs = PoolBaseElement.serialize(self, *args, **kwargs)
         kwargs['controller'] = self.controller.full_name
         kwargs['axis'] = self.axis
-        if self.instrument is not None:
-            kwargs['instrument'] = self.instrument.full_name
-        else:
-            kwargs['instrument'] = None
         kwargs['source'] = self.get_source()
         return kwargs
 
@@ -119,7 +115,7 @@ class PoolElement(PoolBaseElement):
     def stop(self):
         self.info("Stop!")
         PoolBaseElement.stop(self)
-        self.controller.stop_one(self.axis)
+        self.controller.stop_element(self)
 
     # --------------------------------------------------------------------------
     # abort
@@ -128,7 +124,7 @@ class PoolElement(PoolBaseElement):
     def abort(self):
         self.info("Abort!")
         PoolBaseElement.abort(self)
-        self.controller.abort_one(self.axis)
+        self.controller.abort_element(self)
 
     def get_par(self, name):
         return self.controller.get_axis_par(self.axis, name)

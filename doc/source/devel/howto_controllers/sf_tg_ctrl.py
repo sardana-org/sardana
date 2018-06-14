@@ -47,10 +47,6 @@ class SpringfieldBaseTriggerGateController(TriggerGateController):
             inst, props, *args, **kwargs)
         self.springfield = springfieldlib.SpringfieldTriggerHW()
 
-    def ReadOne(self, axis):
-        """Get the specified trigger value"""
-        return self.springfield.getValue(axis)
-
     def StateOne(self, axis):
         """Get the specified trigger state"""
         springfield = self.springfield
@@ -107,10 +103,6 @@ class SpringfieldTriggerGateController(TriggerGateController):
         state = self.StateMap[springfield.getState(axis)]
         status = springfield.getStatus(axis)
         return state, status
-
-    def ReadOne(self, axis):
-        value = self.springfield.getValue(axis)
-        return value
 
     def SynchOne(self, axis, synchronization):
         self.springfield.SynchChannel(axis, synchronization)

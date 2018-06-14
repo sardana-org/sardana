@@ -132,8 +132,7 @@ class DummyCounterTimerController(CounterTimerController):
         if channel.mode == AcqSynch.SoftwareTrigger:
             if self.integ_time is not None:
                 t = elapsed_time
-                if not channel.is_counting:
-                    t = self.integ_time
+                t = min([elapsed_time, self.integ_time])
                 if ind == self._timer:
                     channel.value = t
                 else:
@@ -167,10 +166,10 @@ class DummyCounterTimerController(CounterTimerController):
                 channel = self.counting_channels[ind]
                 channel.is_counting = False
                 self._updateChannelValue(ind, elapsed_time)
+                self.counting_channels.pop(ind)
             else:
                 channel = self.channels[ind - 1]
                 channel.is_counting = False
-        self.counting_channels = {}
 
     def PreReadAll(self):
         self.read_channels = {}

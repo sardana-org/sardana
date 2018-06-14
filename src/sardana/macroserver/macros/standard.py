@@ -23,21 +23,24 @@
 
 """This is the standard macro module"""
 
-__all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "set_lim", "set_lm",
-           "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm", "tw"]
+__all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "repeat", "set_lim",
+           "set_lm", "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm",
+           "tw", "logmacro"]
 
 __docformat__ = 'restructuredtext'
 
 import datetime
-from taurus.console.table import Table
-
-import PyTango
-from PyTango import DevState
-from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, ViewOption, iMacro
-from sardana.macroserver.msexception import StopException
 
 import numpy as np
+from taurus import Device
+from taurus.console.table import Table
+import PyTango
+from PyTango import DevState
 
+from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, \
+    ViewOption, iMacro, Hookable
+from sardana.macroserver.msexception import StopException
+from sardana.macroserver.scan.scandata import Record
 ##########################################################################
 #
 # Motion related macros
@@ -94,7 +97,7 @@ class _wm(Macro):
                             value = float('NaN')
                         data[name].append(value)
                     req2delete.append(name)
-                except PyTango.AsynReplyNotArrived, e:
+                except PyTango.AsynReplyNotArrived:
                     continue
                 except PyTango.DevFailed:
                     data[name].append(float('NaN'))
@@ -149,7 +152,6 @@ class _wum(Macro):
         self.table_opts = {}
 
     def run(self, motor_list):
-        show_dial = self.getViewOption(ViewOption.ShowDial)
         motor_width = 9
         motor_names = []
         motor_pos = []
@@ -195,11 +197,13 @@ class wu(Macro):
 class wa(Macro):
     """Show all motor positions"""
 
+    # TODO: duplication of the default value definition is a workaround
+    # for #427. See commit message cc3331a for more details.
     param_def = [
         ['filter',
          ParamRepeat(['filter', Type.String, '.*',
                       'a regular expression filter'], min=1),
-         '.*', 'a regular expression filter'],
+         ['.*'], 'a regular expression filter'],
     ]
 
     def prepare(self, filter, **opts):
@@ -226,11 +230,13 @@ class wa(Macro):
 class pwa(Macro):
     """Show all motor positions in a pretty table"""
 
+    # TODO: duplication of the default value definition is a workaround
+    # for #427. See commit message cc3331a for more details.
     param_def = [
         ['filter',
          ParamRepeat(['filter', Type.String, '.*',
                       'a regular expression filter'], min=1),
-         '.*', 'a regular expression filter'],
+         ['.*'], 'a regular expression filter'],
     ]
 
     def run(self, filter):
@@ -285,7 +291,8 @@ class set_pos(Macro):
 
 
 class set_user_pos(Macro):
-    """Sets the USER position of the motor to the specified value (by changing OFFSET and keeping DIAL)"""
+    """Sets the USER position of the motor to the specified value (by
+    changing OFFSET and keeping DIAL)"""
 
     param_def = [
         ['motor', Type.Motor, None, 'Motor name'],
@@ -299,8 +306,9 @@ class set_user_pos(Macro):
         old_offset = offset_attr.read().value
         new_offset = pos - (old_pos - old_offset)
         offset_attr.write(new_offset)
-        self.output("%s reset from %.4f (offset %.4f) to %.4f (offset %.4f)" % (
-            name, old_pos, old_offset, pos, new_offset))
+        msg = "%s reset from %.4f (offset %.4f) to %.4f (offset %.4f)" % (
+            name, old_pos, old_offset, pos, new_offset)
+        self.output(msg)
 
 
 class wm(Macro):
@@ -659,7 +667,6 @@ class ct(Macro):
         self.flushOutput()
 
         state, data = self.mnt_grp.count(integ_time)
-
         names, counts = [], []
         for ch_info in self.mnt_grp.getChannelsEnabledInfo():
             names.append('  %s' % ch_info.label)
@@ -670,7 +677,7 @@ class ct(Macro):
                 counts.append(list(ch_data.shape))
             else:
                 counts.append(ch_data)
-
+        self.setData(Record(data))
         table = Table([counts], row_head_str=names, row_head_fmt='%*s',
                       col_sep='  =  ')
         for line in table.genOutput():
@@ -697,27 +704,18 @@ class uct(Macro):
         if self.mnt_grp is None:
             return
 
-        names, nan = self.mnt_grp.getChannelLabels(), float('nan')
+        names = self.mnt_grp.getChannelLabels()
         self.names = [[n] for n in names]
-
-        self.values = len(names) * [[nan]]
-        self.channels = self.mnt_grp.getChannelAttrExs()
-
-        for ch_attr_ex in self.channels:
-            ch_attr_ex.subscribeEvent(self.counterChanged, ch_attr_ex)
-
-    def printAllValues(self):
-        ch_width = 10
-        table = Table(self.values, elem_fmt=['%*.4f'], col_head_str=self.names,
-                      col_head_width=ch_width)
-        self.outputBlock(table.genOutput())
-        self.flushOutput()
-
-    def counterChanged(self, ch_attr, value):
-        idx = self.channels.index(ch_attr)
-        self.values[idx] = [value]
-        if self.print_value:
-            self.printAllValues()
+        self.channels = []
+        self.values = []
+        for channel_info in self.mnt_grp.getChannels():
+            full_name = channel_info["full_name"]
+            channel = Device(full_name)
+            self.channels.append(channel)
+            value = channel.getValue(force=True)
+            self.values.append([value])
+            valueObj = channel.getValueObj_()
+            valueObj.subscribeEvent(self.counterChanged, channel)
 
     def run(self, integ_time):
         if self.mnt_grp is None:
@@ -725,12 +723,33 @@ class uct(Macro):
             return
 
         self.print_value = True
+        try:
+            _, data = self.mnt_grp.count(integ_time)
+            self.setData(Record(data))
+        finally:
+            self.finish()
 
-        state, data = self.mnt_grp.count(integ_time)
-
-        for ch_attr_ex in self.mnt_grp.getChannelAttrExs():
-            ch_attr_ex.unsubscribeEvent(self.counterChanged, ch_attr_ex)
+    def finish(self):
+        self._clean()
         self.printAllValues()
+
+    def _clean(self):
+        for channel in self.channels:
+            valueObj = channel.getValueObj_()
+            valueObj.unsubscribeEvent(self.counterChanged, channel)
+
+    def counterChanged(self, channel, value):
+        idx = self.names.index([channel.getName()])
+        self.values[idx] = [value]
+        if self.print_value and not self.isStopped():
+            self.printAllValues()
+
+    def printAllValues(self):
+        ch_width = 10
+        table = Table(self.values, elem_fmt=['%*.4f'], col_head_str=self.names,
+                      col_head_width=ch_width)
+        self.outputBlock(table.genOutput())
+        self.flushOutput()
 
 
 class settimer(Macro):
@@ -757,10 +776,72 @@ class settimer(Macro):
         except Exception, e:
             self.output(str(e))
             self.output(
-                "%s is not a valid channel in the active measurement group" % timer)
+                "%s is not a valid channel in the active measurement group"
+                % timer)
 
 
-@macro([['message', ParamRepeat(['message_item', Type.String, None, 'message item to be reported']), None, 'message to be reported']])
+@macro([['message', ParamRepeat(['message_item', Type.String, None,
+                                 'message item to be reported']), None,
+         'message to be reported']])
 def report(self, message):
     """Logs a new record into the message report system (if active)"""
     self.report(' '.join(message))
+
+
+class logmacro(Macro):
+    """ Turn on/off logging of the spock output.
+
+    .. note::
+        The logmacro class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers
+    """
+
+    param_def = [
+        ['offon', Type.Boolean, None, 'Unset/Set logging'],
+        ['mode', Type.Integer, -1, 'Mode: 0 append, 1 new file'],
+    ]
+
+    def run(self, offon, mode):
+        if offon:
+            if mode == 1:
+                self.setEnv('LogMacroMode', True)
+            elif mode == 0:
+                self.setEnv('LogMacroMode', False)
+            self.setEnv('LogMacro', True)
+        else:
+            self.setEnv('LogMacro', False)
+
+
+class repeat(Hookable, Macro):
+    """This macro executes as many repetitions of it's body hook macros as
+    specified by nr parameter. If nr parameter has negative value,
+    repetitions will be executed until you stop repeat macro."""
+
+    # hints = { 'allowsHooks': ('body', 'break', 'continue') }
+    hints = {'allowsHooks': ('body',)}
+
+    param_def = [
+        ['nr', Type.Integer, None, 'Nr of iterations']
+    ]
+
+    def prepare(self, nr):
+        # self.breakHooks = self.getHooks("break")
+        # self.continueHooks = self.getHooks("continue")
+        self.bodyHooks = self.getHooks("body")
+
+    def __loop(self):
+        self.checkPoint()
+        for bodyHook in self.bodyHooks:
+            bodyHook()
+
+    def run(self, nr):
+        if nr < 0:
+            while True:
+                self.__loop()
+        else:
+            for i in range(nr):
+                self.__loop()
+                progress = ((i + 1) / float(nr)) * 100
+                yield progress

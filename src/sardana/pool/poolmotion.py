@@ -390,8 +390,8 @@ class PoolMotion(PoolAction):
                     # ... but before protect the motor so that the monitor
                     # doesn't come in between the two instructions below and
                     # send a state event on it's own
-                    # with moveable:
-                    #    moveable.clear_operation()
+                    with moveable:
+                        moveable.clear_operation()
                     moveable.set_state_info(real_state_info, propagate=2)
 
                 # Then update the state

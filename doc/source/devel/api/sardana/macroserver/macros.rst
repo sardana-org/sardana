@@ -72,6 +72,11 @@
     Add reflection at the botton of reflections list.
 
 
+.. class:: expert.addctrllib
+
+    Adds the given controller library code to the pool server filesystem.
+
+
 .. class:: expert.addmaclib
 
     Loads a new macro library.
@@ -261,7 +266,12 @@
 .. class:: expert.defelem
 
     Creates an element on a controller with an axis
-    
+
+
+.. class:: env.defgh
+
+    Defines general hook
+
 
 .. class:: expert.defm
 
@@ -452,7 +462,12 @@
 .. class:: lists.lsexp
 
     Lists all experiment channels
-    
+
+
+.. class:: env.lsgh
+
+    Lists general hooks
+
 
 .. class:: lists.lsi
 
@@ -586,6 +601,17 @@
 
     Reads an output register
 
+
+.. class:: expert.relctrlcls
+
+    Reloads the given controller class code from the pool server filesystem.
+
+
+.. class:: expert.relctrllib
+
+    Reloads the given controller library code from the pool server filesystem.
+
+
 .. class:: expert.rellib
 
     Reloads the given python library code from the macro server filesystem.
@@ -626,7 +652,13 @@
 .. class:: standard.report
 
     Logs a new record into the message report system (if active)
-    
+
+
+... class:: expert.renameelem
+
+    Renames any type of Pool elements apart of Pools
+
+
 .. class:: demo.sar_demo
 
    Sets up a demo environment. It creates many elements for testing
@@ -749,7 +781,12 @@
 .. class:: expert.udefelem
 
     Deletes an existing element
-    
+
+
+.. class:: env.udefgh
+
+    Undefine general hook
+
 
 .. class:: expert.udefmeas
 

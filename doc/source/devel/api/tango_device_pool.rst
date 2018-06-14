@@ -3,7 +3,9 @@
 Device Pool Tango_ :term:`API`
 ==========================================
 
-.. todo:: Device Pool chapter is out of date. Need to update it and distribute chapters logically around the sardana documentation
+.. warning:: Device Pool chapter is out of date. Some parts of it are not valid and may create confusions e.g. "Specifying the motor controller features".
+
+.. todo:: Update this chapter and distribute its contents logically around the documentation.
 
 Introduction
 ============

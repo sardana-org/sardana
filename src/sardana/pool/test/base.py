@@ -23,16 +23,20 @@
 ##
 ##############################################################################
 
+__all__ = ["BasePoolTestCase"]
+
+import logging
+
 from sardana.pool.test import (FakePool, createPoolController, createCtrlConf,
                                createPoolCounterTimer, createPoolTriggerGate,
                                createPoolMotor, createElemConf,
                                createPoolZeroDExpChannel,
                                createPoolPseudoCounter, createPoolPseudoMotor)
-import logging
 
 
 class BasePoolTestCase(object):
     """Base pool test for setting the environment."""
+
     POOLPATH = []
     LOGLEVEL = logging.WARNING
 

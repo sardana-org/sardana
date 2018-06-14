@@ -3,25 +3,149 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This file follows the formats and conventions from [keepachangelog.com]
 
-
 ## [Unreleased]
 
 ### Added
+- `repeat` macro for executing n-times the hooks attached in its body (#310,
+  #745)
+
+### Fixed
+- Push change events from code for measurement group attributes: moveable,
+  latency time and synchronization (#736, #738)
+- Validation of starts and finals for a2scanct, a3scanct, meshct, ... (#734)
+- Make SPEC_FileRecorder use LF instead of CRLF even on windows (#750)
+- Appending of hooks from sequence XML (#747)
+- `lsgh` list hooks multiple times to reflect the configuration (#774)
+- Avoid errors if selected trajectory in HKL controller doesnot exists (#752)
+- Documentation on how to install and use Sardana from Git clone (#751)
+
+### Changed
+- Change epoch from float to formatted date & time in Spec recorder (#766)
+
+## [2.4.0] 2018-03-14
+
+### Added
+- General hooks - hooks that can be configured with `defgh`, `udefgh` and `lsgh`
+  macros instead of attaching them programatically (#200, #646)
+- New API to `Stoppable` interface of pool controllers that allows synchronized
+  multiaxes stop/abort (#157, #592)
+- Macro execution logs can be saved to a file. Controlled with `logmacro` macro and
+  `LogMacroDir`, `LogMacroFormat` environment variables (#102, #480)
+- `addctrlib`, `relctrllib`, `relctrlcls` macros usefull when developing
+  controller classes (#541)
+- `meshct` macro - mesh composed from row scans executed in the continuous
+  way (#659)
+- Optional sending of logs to Logstash (www.elastic.co) configurable with
+  `LogstashHost` and `LogstashPort` Tango properties of Pool and MacroServer
+  (#699).
+- Relative continuous scans like `dscanct`, `d2scanct`, etc. (#605, #688)
+- Expose acquisition data in `ct` and `uct` macros via data macro property
+  (#471, #682, #684)
+- Notification to the user in case of a failed operation of stopping in spock
+  (#592)
+- Timeout/watchdog in continuous scans - especially usefull when
+  triggers may be missed e.g. not precise positioning (#136, #601)
+- Reintroduce intermediate events for counter/timer channels while
+  software acquisition is in progress (#625)
+- TaurusCounterTimerController - that can connect to different data
+  sources e.g. EPICS by using Taurus schemes (#628)
+- Allow deleting multiple measurement groups and multiple controllers
+  with udefmeas and udefctrl macros respectivelly (#361, #547)
+- Improve exception hangling in ascanct & co. (#600)
 - Allow to hide Taurus 4 related deprecation warnings
   (`TAURUS_MAX_DEPRECATION_COUNTS` sardana custom setting) (#550)
 - Optional data extrapolation for the very first records in ascanct & co.
   (`ApplyExtrapolation` environment variable) (#588)
+- Inform about an error when reading the sofware synchronized channel so
+  the record can be completed - value for the given trigger will not
+  arrive anymore (#581, #582)
+- `--file` option to sequencer - it allows to load a sequence file
+  directly on the application startup moment (#283, #551)
+- Report error line number when loading a sequence from a txt file
+  fails (#114, #552)
 - Present available pools at the macroserver creation moment in the
   alphabetical order (#585, #586)
+- Present available doors at the spock profile creation moment in the
+  alphabetical order (#221, #558, #673)
+- `DiffractometerType` is stored in crystal file in HKL controller (#679)
+- Some backwards compatibility for element names in PQDN - recently
+  Taurus started using only FQDN (#625, #627)
+- Improve DumbRecorder (example of a custom file recorder) to write to
+  a file.
+- Data in scan Records can now be accessed via dict-like syntax (#644)
+- Example of a macro that uses other macros as hooks #649
 
 ### Fixed
 - Spock waits until macro stopping is finished after Ctrl+C (#34. #596)
+- Limits of the underneeth motors are checked if we move a pseudo motor
+  (#36, #663, #704)
+- Limits of the underneeth motors are checked if we move a motor group
+  (#259, #560)
+- Eliminate a possibility of deadlock when aborting a macro (#693, #695,
+  #708)
+- Acquisition start sequence which in case of starting disabled channels
+  could unintentionally change the measurement group's configuration (#607,
+  #615)
+- Selection of the master timer/monitor for each of the acquisition
+  sub-actions (hardware and software) (#614)
+- Avoid "already involved in motion" errors due to wrong handling of
+  operation context and Tango state machine (#639)
+- Protect software synchronizer from errors in reading motor's position
+  (#694, #700)
+- Make the information about the element's instrument fully dynamic and
+  remove it from the serialized information (#122, #619)
+- uct macro (#319, #627)
+- Avoid measurement group start failures when to the disabled controller
+  is offline (#677, #681)
+- Allow to stop macro when it was previously paused (#348, #548)
 - Bug in theoretical motor position in ascanct & co. (#591)
+- Counter/timer TaurusValue widget when used with Taurus 4 - correctly show
+  the element's name (#617)
+- `relmaclib` reports the error message in case the macro has parameters
+  definition is incorrect (#377, #642)
+- Icons in macroexecution widgets when used with Taurus 4 (#578)
 - Spurious errors when reading RecordData attribute, normally triggered
   on event subscription e.g. macrogui (#447, #598)
 - Possible too early acquisition triggering by trigger/gate due to the
   wrong order ot starting trigger/gate and software synchronizer in the
   synchronization action (#597)
+- Validation of motor positions agains their limits in ascanct & co. (#595)
+- Generation of theoretical timestamps in ascanct & co. (#602)
+- Maintain macrobutton's text when MacroServer is shut down (#293, #559)
+- Number of repetitions (always pass 1) passed to experimental channel
+  controllers in case software synchronization is in use (#594)
+- `Hookable.hooks` proprty setting - now it cleans the previous
+  configuration (#655)
+- `getData` of scan macros from the GSF (#683, #687)
+- Make PoolUtil thread-safe (#662, #655)
+- Dummy counter/timer now returns partial value when its acquisition was
+  aborted (#626)
+- Workaround for #427: make default values for repeat parameters of `wa`,
+  `pwa` and all list macros fully functional - also support execution with
+  `Macro.execMacro` (#654)
+- `getIntervalEstimation` method of the GSF for some scanning modes (#661)
+- Improved MacroServer creation wizard (#676)
+
+### Changed
+- FQDN are now used internally by sardana in its identifiers (#668, partially)
+- Make explicit file descriptor buffer synchronization (force effective write to
+  the file system) in SPEC and FIO recorders (#651)
+- Rename edctrl to edctrlcls macro (#541)
+- The way how the master timer/monitor for the acquisition actions is selected.
+  Previously the first one for the given synchronization was used, now it is
+  taken into account if it is enabled or disabled (next ones may be used then).
+  (#647, #648)
+- Macrobutton's text to from "<macro_name>" to "Run/Abort <macro_name>"
+  (#322, #554, #658)
+- Color policy in spock for IPython >= 5 from Linux to Neutral (#706 and #712)
+
+### Removed
+- `ElementList` attribute from the Door Tango device - `Element` attribute is
+  available on the MacroServer device (#556, #557, #653)
+- `raw_stop_all`, `raw_stop_one`, `_raw_stop_all`, `_raw_stop_one`, `stop_all`,
+  `stop_one`, `raw_abort_all`, `raw_abort_one`, `_raw_abort_all`, `_raw_abort_one`,
+  `abort_all`, `abort_one` methods of the `PoolController` class (#592)
+
 
 ## [2.3.2] - 2017-08-11
 For a full log of commits between versions run (in your git repo):
@@ -291,6 +415,7 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 [keepachangelog.com]: http://keepachangelog.com
 [Unreleased]: https://github.com/sardana-org/sardana/compare/2.3.2...HEAD
+[2.4.0]: https://github.com/sardana-org/sardana/compare/2.3.2...2.4.0
 [2.3.2]: https://github.com/sardana-org/sardana/compare/2.3.1...2.3.2
 [2.3.1]: https://github.com/sardana-org/sardana/compare/2.3.0...2.3.1
 [2.3.0]: https://github.com/sardana-org/sardana/compare/2.2.3...2.3.0

@@ -551,6 +551,22 @@ class Stopable(object):
 
     .. note: Do not inherit directly from :class:`Stopable`."""
 
+    def PreAbortAll(self):
+        """**Controller API**. Override if necessary.
+        Called to prepare a abort of all axis (whatever pre-abort means).
+        Default implementation does nothing."""
+        pass
+
+    def PreAbortOne(self, axis):
+        """**Controller API**. Override if necessary.
+        Called to prepare a abort of the given axis (whatever pre-abort means).
+        Default implementation returns True.
+
+        :param int axis: axis number
+        :return: True means a successfull pre-abort or False for a failure
+        :rtype: bool"""
+        return True
+
     def AbortOne(self, axis):
         """**Controller API**. Override is MANDATORY!
         Default implementation raises :exc:`NotImplementedError`.
@@ -561,20 +577,25 @@ class Stopable(object):
 
     def AbortAll(self):
         """**Controller API**. Override if necessary.
-        Aborts all active axis of this controller. Default implementation
-        calls :meth:`~Controller.AbortOne` on each active axis.
+        Aborts all active axis of this controller.
+        Default implementation does nothing."""
+        pass
 
-        .. versionadded:: 1.0"""
-        exceptions = []
-        axes = self._getPoolController().get_element_axis().keys()
-        for axis in axes:
-            try:
-                self.AbortOne(axis)
-            except:
-                import sys
-                exceptions.append(sys.exc_info())
-        if len(exceptions) > 0:
-            raise Exception(exceptions)
+    def PreStopAll(self):
+        """**Controller API**. Override if necessary.
+        Called to prepare a stop of all axis (whatever pre-stop means).
+        Default implementation does nothing."""
+        pass
+
+    def PreStopOne(self, axis):
+        """**Controller API**. Override if necessary.
+        Called to prepare a stop of the given axis (whatever pre-stop means).
+        Default implementation returns True.
+
+        :param int axis: axis number
+        :return: True means a successfull pre-stop or False for a failure
+        :rtype: bool"""
+        return True
 
     def StopOne(self, axis):
         """**Controller API**. Override if necessary.
@@ -590,21 +611,8 @@ class Stopable(object):
     def StopAll(self):
         """**Controller API**. Override if necessary.
         Stops all active axis of this controller.
-        *This method is reserved for future implementation.*
-        Default implementation calls :meth:`~Controller.StopOne` on each
-        active axis.
-
-        .. versionadded:: 1.0"""
-        exceptions = []
-        axes = self._getPoolController().get_element_axis().keys()
-        for axis in axes:
-            try:
-                self.StopOne(axis)
-            except:
-                import sys
-                exceptions.append(sys.exc_info())
-        if len(exceptions) > 0:
-            raise Exception(exceptions)
+        Default implementation does nothing."""
+        pass
 
 
 class Readable(object):

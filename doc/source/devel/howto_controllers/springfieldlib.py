@@ -518,6 +518,11 @@ class SpringfieldMotorHW(object):
         motion = self._motions.get(axis)
         if motion is None:
             self._motions[axis] = motion = Motion()
+            motion.setMinVelocity(0)
+            motion.setMaxVelocity(100)
+            motion.setAccelerationTime(2)
+            motion.setDecelerationTime(2)
+            motion.setCurrentPosition(0)
         return motion
 
     def getState(self, axis):
@@ -549,11 +554,11 @@ class SpringfieldMotorHW(object):
 
     def getLimits(self, axis):
         motion = self.getMotion(axis)
-        m.getCurrentUserPosition()
+        motion.getCurrentUserPosition()
         switchstate = 3 * [False, ]
-        if m.hitLowerLimit():
+        if motion.hitLowerLimit():
             switchstate[2] = True
-        if m.hitUpperLimit():
+        if motion.hitUpperLimit():
             switchstate[1] = True
         return switchstate
 

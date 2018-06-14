@@ -88,6 +88,12 @@ class MacroButton(TaurusWidget):
         self.connect(self.ui.button, Qt.SIGNAL('clicked()'),
                      self._onButtonClicked)
 
+    # Override default implementation of handleEvent from TaurusWidget
+    # in order to avoid button's text being lost on the MS restart.
+    # More detais in #293 and taurus-org/taurus#635
+    def handleEvent(self, evt_src, evt_type, evt_value):
+        pass
+
     def toggleProgress(self, visible):
         '''deprecated'''
         self.warning('toggleProgress is deprecated. Use showProgress')
@@ -208,7 +214,7 @@ class MacroButton(TaurusWidget):
         '''same as :meth:`setText`
         '''
         # SHOULD ALSO BE POSSIBLE TO SET AN ICON
-        self.ui.button.setText(text)
+        self.ui.button.setText("Run/Abort:\n" + text)
 
     def setMacroName(self, name):
         '''set the name of the macro to be executed

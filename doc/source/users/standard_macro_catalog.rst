@@ -115,6 +115,7 @@ list related macros
     * :class:`~sardana.macroserver.macros.lists.lsa`
     * :class:`~sardana.macroserver.macros.lists.lsmac`
     * :class:`~sardana.macroserver.macros.lists.lsmaclib`
+    * :class:`~sardana.macroserver.macros.env.lsgh`
 
 measurement configuration macros
 --------------------------------
@@ -124,7 +125,17 @@ measurement configuration macros
 
     * :class:`~sardana.macroserver.macros.expert.defmeas`
     * :class:`~sardana.macroserver.macros.expert.udefmeas`
-    
+
+general hooks macros
+--------------------
+
+.. hlist::
+    :columns: 5
+
+    * :class:`~sardana.macroserver.macros.env.lsgh`
+    * :class:`~sardana.macroserver.macros.env.defgh`
+    * :class:`~sardana.macroserver.macros.env.udefgh`
+
 advanced element manipulation macros
 ------------------------------------
 
@@ -133,6 +144,7 @@ advanced element manipulation macros
 
     * :class:`~sardana.macroserver.macros.expert.defelem`
     * :class:`~sardana.macroserver.macros.expert.udefelem`
+    * :class:`~sardana.macroserver.macros.expert.renameelem`
     * :class:`~sardana.macroserver.macros.expert.defctrl`
     * :class:`~sardana.macroserver.macros.expert.udefctrl`
     * :class:`~sardana.macroserver.macros.expert.prdef`
@@ -145,7 +157,11 @@ reload code macros
 
     * :class:`~sardana.macroserver.macros.expert.relmac`
     * :class:`~sardana.macroserver.macros.expert.relmaclib`
+    * :class:`~sardana.macroserver.macros.expert.addmaclib`
     * :class:`~sardana.macroserver.macros.expert.rellib`
+    * :class:`~sardana.macroserver.macros.expert.relctrlcls`
+    * :class:`~sardana.macroserver.macros.expert.relctrllib`
+    * :class:`~sardana.macroserver.macros.expert.addctrllib`
 
 scan macros
 -----------
