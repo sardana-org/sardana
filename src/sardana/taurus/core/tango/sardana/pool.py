@@ -628,13 +628,10 @@ class Controller(PoolElement):
         :rtype: list<int>
         """
 
-        # Taurus 4 compability - strip scheme from the controller name
-        name = self.getFullName().split("://")[-1]
-
         pool = self.getPoolObj()
         axes = []
         for _, elem in pool.getElementsOfType(self.getMainType()).items():
-            if elem.controller != name:
+            if elem.controller != self.getFullName():
                 continue
             axes.append(elem.getAxis())
         return sorted(axes)
