@@ -13,6 +13,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Push change events from code for measurement group attributes: moveable,
   latency time and synchronization (#736, #738)
 - Validation of starts and finals for a2scanct, a3scanct, meshct, ... (#734)
+- `defelem` macro when using default axis number (#568, #609)
 - Make SPEC_FileRecorder use LF instead of CRLF even on windows (#750)
 - Appending of hooks from sequence XML (#747)
 - `lsgh` list hooks multiple times to reflect the configuration (#774)
@@ -21,6 +22,10 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Changed
 - Change epoch from float to formatted date & time in Spec recorder (#766)
+
+### Deprecated
+- `Controller.getUsedAxis` (Taurus device extension) is deprecated in favor
+of `Controller.getUsedAxes` (#609)
 
 ## [2.4.0] 2018-03-14
 
