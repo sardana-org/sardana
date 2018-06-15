@@ -621,17 +621,37 @@ class Controller(PoolElement):
                 continue
             return elem
 
-    def getUsedAxis(self):
+    def getUsedAxes(self):
+        """Return axes in use by this controller
+
+        :return: list of axes
+        :rtype: list<int>
+        """
+
         pool = self.getPoolObj()
-        axis = []
+        axes = []
         for _, elem in pool.getElementsOfType(self.getMainType()).items():
-            if elem.controller != self.getName():
+            if elem.controller != self.getFullName():
                 continue
-            axis.append(elem.getAxis())
-        return sorted(axis)
+            axes.append(elem.getAxis())
+        return sorted(axes)
+
+    def getUsedAxis(self):
+        msg = ("getUsedAxis is deprecated since version Jul18. ",
+               "Use getUsedAxes instead.")
+        self.warning(msg)
+        self.getUsedAxes()
 
     def getLastUsedAxis(self):
-        return max([1] + self.getUsedAxis())
+        """Return the last used axis (the highest axis) in this controller
+
+        :return: last used axis
+        :rtype: int or None
+        """
+        used_axes = self.getUsedAxes()
+        if len(used_axes) == 0:
+            return None
+        return max(used_axes)
 
     def __cmp__(self, o):
         return cmp(self.getName(), o.getName())
@@ -2111,7 +2131,11 @@ class Pool(TangoDevice, MoveableSource):
     def createElement(self, name, ctrl, axis=None):
         ctrl_type = ctrl.types[0]
         if axis is None:
-            axis = str(ctrl.getLastUsedAxis() + 1)
+            last_axis = ctrl.getLastUsedAxis()
+            if last_axis is None:
+                axis = str(1)
+            else:
+                axis = str(last_axis + 1)
         else:
             axis = str(axis)
         cmd = "CreateElement"
