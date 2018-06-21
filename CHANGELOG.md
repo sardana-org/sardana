@@ -8,6 +8,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Added
 - `repeat` macro for executing n-times the hooks attached in its body (#310,
   #745)
+- Enhance software synchronization by allowing function generation when
+  group has 1 repeat only (#786).
 
 ### Fixed
 - Push change events from code for measurement group attributes: moveable,
