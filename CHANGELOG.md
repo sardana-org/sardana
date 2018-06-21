@@ -26,7 +26,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Change epoch from float to formatted date & time in Spec recorder (#766)
 
 ### Deprecated
-- `Controller.getUsedAxis` (Taurus device extension) is deprecated in favor
+- `PoolMotorSlim` widget in favor of `PoolMotorTV` widget (#163, #785) 
+- `Controller.getUsedAxis` (Taurus device extension) in favor
 of `Controller.getUsedAxes` (#609)
 
 ## [2.4.0] 2018-03-14
