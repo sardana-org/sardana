@@ -323,30 +323,37 @@ class FunctionGenerator(EventGenerator, Logger):
             # create short variables for commodity
             initial_domain_in_use = self.initial_domain_in_use
             active_domain_in_use = self.active_domain_in_use
-            total_param = group[Total]
-            repeats = group[Repeats]
+            repeats = group.get(Repeats, 1)
             active = active_param[active_domain_in_use]
             initial_in_initial_domain = initial_param[initial_domain_in_use]
             initial_in_active_domain = initial_param[active_domain_in_use]
-            total_in_initial_domain = total_param[initial_domain_in_use]
-            total_in_active_domain = total_param[active_domain_in_use]
-
             active_event_in_initial_domain = initial_in_initial_domain
             active_event_in_active_domain = initial_in_active_domain
-            for _ in xrange(repeats):
-                passive_event = active_event_in_active_domain + active
+            if repeats > 1:
+                total_param = group[Total]
+                total_in_initial_domain = total_param[initial_domain_in_use]
+                total_in_active_domain = total_param[active_domain_in_use]
+                for _ in xrange(repeats):
+                    passive_event = active_event_in_active_domain + active
+                    active_events.append(active_event_in_initial_domain)
+                    passive_events.append(passive_event)
+                    active_event_in_initial_domain += total_in_initial_domain
+                    active_event_in_active_domain += total_in_active_domain
+                # determine direction
+                direction = 1
+                if total_in_initial_domain < 0:
+                    direction = -1
+                if self.direction is None:
+                    self.direction = direction
+                elif self.direction != direction:
+                    msg = "active values indicate contradictory directions"
+                    raise ValueError(msg)
+            else:
                 active_events.append(active_event_in_initial_domain)
+                passive_event = active_event_in_active_domain + active
                 passive_events.append(passive_event)
-                active_event_in_initial_domain += total_in_initial_domain
-                active_event_in_active_domain += total_in_active_domain
-            self.active_events = active_events
-            self.passive_events = passive_events
-            # determine direction
-            direction = 1
-            if total_in_initial_domain < 0:
-                direction = -1
-            if self.direction is None:
-                self.direction = direction
-            elif self.direction != direction:
                 msg = "active values indicate contradictory directions"
                 raise ValueError(msg)
+
+        self.active_events = active_events
+        self.passive_events = passive_events
