@@ -38,6 +38,7 @@ def strictly_increasing(l):
     """Check whether list l has strictly increasing values"""
     return all(x < y for x, y in zip(l, l[1:]))
 
+
 def strictly_decreasing(l):
     """Check whether list l has strictly deacreasing values"""
     return all(x > y for x, y in zip(l, l[1:]))
