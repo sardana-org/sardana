@@ -339,19 +339,18 @@ class FunctionGenerator(EventGenerator, Logger):
                     passive_events.append(passive_event)
                     active_event_in_initial_domain += total_in_initial_domain
                     active_event_in_active_domain += total_in_active_domain
-                # determine direction
-                direction = 1
-                if total_in_initial_domain < 0:
-                    direction = -1
-                if self.direction is None:
-                    self.direction = direction
-                elif self.direction != direction:
-                    msg = "active values indicate contradictory directions"
-                    raise ValueError(msg)
             else:
                 active_events.append(active_event_in_initial_domain)
                 passive_event = active_event_in_active_domain + active
                 passive_events.append(passive_event)
+
+        # determine direction
+        if self.direction is None:
+            if strictly_increasing(active_events):
+                self.direction = 1
+            elif strictly_decreasing(active_events):
+                self.direction = -1
+            else:
                 msg = "active values indicate contradictory directions"
                 raise ValueError(msg)
 
