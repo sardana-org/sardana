@@ -288,9 +288,9 @@ class FunctionGenerator(EventGenerator, Logger):
             initial_param = group.get(Initial)
             if initial_param is None:
                 initial_param = dict()
-            if not initial_param.has_key(Time):
+            if Time not in initial_param:
                 delay_param = group.get(Delay)
-                if delay_param.has_key(Time):
+                if Time in delay_param:
                     initial_param[Time] = delay_param[Time]
                 group[Initial] = initial_param
             # determine active domain in use
@@ -316,7 +316,7 @@ class FunctionGenerator(EventGenerator, Logger):
                     self.active_domain_in_use = Position
                 else:
                     raise ValueError(msg)
-            elif active_param.has_key(self.active_domain):
+            elif self.active_domain in active_param:
                 self.active_domain_in_use = self.active_domain
             else:
                 raise ValueError(msg)
