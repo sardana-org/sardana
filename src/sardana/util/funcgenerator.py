@@ -34,6 +34,15 @@ from sardana.pool.pooldefs import SynchParam, SynchDomain
 from taurus.core.util.log import Logger
 
 
+def strictly_increasing(l):
+    """Check whether list l has strictly increasing values"""
+    return all(x < y for x, y in zip(l, l[1:]))
+
+def strictly_decreasing(l):
+    """Check whether list l has strictly deacreasing values"""
+    return all(x > y for x, y in zip(l, l[1:]))
+
+
 class FunctionGenerator(EventGenerator, Logger):
     """Generator of active and passive events describing a rectangular
     function.
