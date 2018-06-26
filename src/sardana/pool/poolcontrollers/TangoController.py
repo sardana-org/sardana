@@ -145,6 +145,12 @@ class TangoCounterTimerController(ReadTangoAttributes, CounterTimerController):
     ch2.Formula = 'math.sqrt(VALUE)'
     ch3.TangoExtraAttribute = 'my_other/tango/device/attribute1'
     ch3.Formula = 'math.cos(VALUE)'
+    
+    ..warning:: As pointed in sardana-org/sardana#722 this controller is
+    buggy. A working version of this and other Tango controllers can be found
+    in the third-party repository: http://sf.net/p/sardana/controllers.git.
+    As part of the sardana-org/sardana#181 this controller will be fixed or
+    removed from Sardana.
     """
 
     gender = ""

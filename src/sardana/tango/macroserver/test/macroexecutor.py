@@ -108,8 +108,12 @@ class TangoStatusCb(TangoAttrCb):
         fmt, data = codec.decode(v)
         for macro_status in data:
             state = macro_status['state']
-            self._tango_macro_executor._exception = macro_status.get(
-                'exc_type')
+            exc_stack = macro_status.get('exc_stack')
+            if state == 'exception':
+                exception_str = ''
+                for line in exc_stack:
+                    exception_str += line
+                self._tango_macro_executor._exception = exception_str
             if state in self.START_STATES:
                 # print 'TangoStatusCb.push_event: setting _started_event'
                 self._tango_macro_executor._started_event.set()

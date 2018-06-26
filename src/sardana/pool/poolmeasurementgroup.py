@@ -51,9 +51,9 @@ from sardana.pool.poolexternal import PoolExternalObject
 from sardana.taurus.core.tango.sardana import PlotType, Normalization
 
 
-#----------------------------------------------
+# ----------------------------------------------
 # Measurement Group Configuration information
-#----------------------------------------------
+# ----------------------------------------------
 # dict <str, obj> with (at least) keys:
 #    - 'timer' : the timer channel name / timer channel id
 #    - 'monitor' : the monitor channel name / monitor channel id
@@ -63,17 +63,19 @@ from sardana.taurus.core.tango.sardana import PlotType, Normalization
 #                - 'timer' : the timer channel name / timer channel id
 #                - 'monitor' : the monitor channel name / monitor channel id
 #                - 'synchronization' : 'Gate'/'Software'
-#                - 'channels' where value is a dict<str, obj> with (at least) keys:
+#                - 'channels' where value is a dict<str, obj> with (at least)
+#                   keys:
 #                    - 'id' : the channel name ( channel id )
 #                    optional keys:
 #                    - 'enabled' : True/False (default is True)
 #                    any hints:
 #                    - 'output' : True/False (default is True)
 #                    - 'plot_type' : 'No'/'1D'/'2D' (default is 'No')
-#                    - 'plot_axes' : list<str> 'where str is channel name/'step#/'index#' (default is [])
+#                    - 'plot_axes' : list<str> 'where str is channel
+#                                    name/'step#/'index#' (default is [])
 #                    - 'label' : prefered label (default is channel name)
-#                    - 'scale' : <float, float> with min/max (defaults to channel
-#                                range if it is defined
+#                    - 'scale' : <float, float> with min/max (defaults to
+#                                channel range if it is defined
 #                    - 'plot_color' : int representing RGB
 #    optional keys:
 #    - 'label' : measurement group label (defaults to measurement group name)
@@ -84,8 +86,8 @@ from sardana.taurus.core.tango.sardana import PlotType, Normalization
 #  <monitor>CT1</monitor>
 # </MeasurementGroupConfiguration>
 
-# Example: 2 NI cards, where channel 1 of card 1 is wired to channel 1 of card 2
-# at configuration time we should set:
+# Example: 2 NI cards, where channel 1 of card 1 is wired to channel 1 of
+# card 2 at configuration time we should set:
 
 # ni0ctrl.setCtrlPar(0, 'synchronization', AcqSynch.SoftwareTrigger)
 # ni0ctrl.setCtrlPar(0, 'timer', 1) # channel 1 is the timer
@@ -102,6 +104,22 @@ from sardana.taurus.core.tango.sardana import PlotType, Normalization
 """
 
 """
+
+
+def _to_fqdn(name, logger=None):
+    full_name = name
+    # try to use Taurus 4 to retrieve FQDN
+    try:
+        from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
+        full_name, _, _ = TangoDeviceNameValidator().getNames(name)
+    # if Taurus3 in use just continue
+    except ImportError:
+        pass
+    if full_name != name and logger:
+        msg = ("PQDN full name is deprecated in favor of FQDN full name."
+               " Re-apply configuration in order to upgrade.")
+        logger.warning(msg)
+    return full_name
 
 
 class PoolMeasurementGroup(PoolGroupElement):
@@ -134,7 +152,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         # TODO: make it more elegant
         if configuration is None:
             configuration = self.get_configuration()
-            self.set_configuration(configuration, propagate=0)
+            self.set_configuration(configuration, propagate=0, to_fqdn=False)
 
     def _create_action_cache(self):
         acq_name = "%s.Acquisition" % self._name
@@ -197,6 +215,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         ndim = None
         if external_from_name:
             name = full_name = source = channel
+            ndim = 0  # TODO: this should somehow verify the dimension
         else:
             name = channel.name
             full_name = channel.full_name
@@ -308,7 +327,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                     channel_data, element)
         return config
 
-    def set_configuration(self, config=None, propagate=1):
+    def set_configuration(self, config=None, propagate=1, to_fqdn=True):
         if config is None:
             config = self._build_configuration()
         else:
@@ -332,8 +351,10 @@ class PoolMeasurementGroup(PoolGroupElement):
                         element = _id = channel_data['full_name']
                         channel_data['source'] = _id
                     else:
-                        element = pool.get_element_by_full_name(
-                            channel_data['full_name'])
+                        full_name = channel_data['full_name']
+                        if to_fqdn:
+                            full_name = _to_fqdn(full_name, logger=self)
+                        element = pool.get_element_by_full_name(full_name)
                         _id = element.id
                     channel_data = self._build_channel_defaults(
                         channel_data, element)
@@ -380,23 +401,28 @@ class PoolMeasurementGroup(PoolGroupElement):
             return
         self.fire_event(EventType("configuration", priority=propagate), config)
 
-    def set_configuration_from_user(self, cfg, propagate=1):
+    def set_configuration_from_user(self, cfg, propagate=1, to_fqdn=True):
         config = {}
         user_elements = self.get_user_elements()
         pool = self.pool
         timer_name = cfg.get('timer', user_elements[0].full_name)
         monitor_name = cfg.get('monitor', user_elements[0].full_name)
+        if to_fqdn:
+            timer_name = _to_fqdn(timer_name, logger=self)
         config['timer'] = pool.get_element_by_full_name(timer_name)
+        if to_fqdn:
+            monitor_name = _to_fqdn(monitor_name, logger=self)
         config['monitor'] = pool.get_element_by_full_name(monitor_name)
         config['controllers'] = controllers = {}
 
         for c_name, c_data in cfg['controllers'].items():
             # backwards compatibility for measurement groups created before
-            # implementing feature-372: https://sourceforge.net/p/sardana/tickets/372/
+            # implementing feature-372:
+            # https://sourceforge.net/p/sardana/tickets/372/
             # WARNING: this is one direction backwards compatibility - it just
             # reads channels from the units, but does not write channels to the
             # units back
-            if c_data.has_key('units'):
+            if 'units' in c_data:
                 c_data = c_data['units']['0']
             # discard controllers which don't have items (garbage)
             ch_count = len(c_data['channels'])
@@ -407,6 +433,8 @@ class PoolMeasurementGroup(PoolGroupElement):
             if external:
                 ctrl = c_name
             else:
+                if to_fqdn:
+                    c_name = _to_fqdn(c_name, logger=self)
                 ctrl = pool.get_element_by_full_name(c_name)
                 assert ctrl.get_type() == ElementType.Controller
             controllers[ctrl] = ctrl_data = {}
@@ -414,9 +442,13 @@ class PoolMeasurementGroup(PoolGroupElement):
             # exclude external and not timerable elements
             if not external and ctrl.is_timerable():
                 timer_name = c_data['timer']
+                if to_fqdn:
+                    timer_name = _to_fqdn(timer_name, logger=self)
                 timer = pool.get_element_by_full_name(timer_name)
                 ctrl_data['timer'] = timer
                 monitor_name = c_data['monitor']
+                if to_fqdn:
+                    monitor_name = _to_fqdn(monitor_name, logger=self)
                 monitor = pool.get_element_by_full_name(monitor_name)
                 ctrl_data['monitor'] = monitor
                 synchronizer = c_data.get('synchronizer')
@@ -425,6 +457,8 @@ class PoolMeasurementGroup(PoolGroupElement):
                 if synchronizer is None:
                     synchronizer = 'software'
                 elif synchronizer != 'software':
+                    if to_fqdn:
+                        synchronizer = _to_fqdn(synchronizer, logger=self)
                     synchronizer = pool.get_element_by_full_name(synchronizer)
                 ctrl_data['synchronizer'] = synchronizer
                 try:
@@ -433,8 +467,8 @@ class PoolMeasurementGroup(PoolGroupElement):
                     # backwards compatibility for configurations before SEP6
                     synchronization = c_data['trigger_type']
                     msg = ("trigger_type configuration parameter is deprecated"
-                           " in favor of synchronization. Re-apply configuration"
-                           " in order to upgrade.")
+                           " in favor of synchronization. Re-apply "
+                           "configuration in order to upgrade.")
                     self.warning(msg)
                 ctrl_data['synchronization'] = synchronization
             ctrl_data['channels'] = channels = {}
@@ -445,13 +479,15 @@ class PoolMeasurementGroup(PoolGroupElement):
                     params['pool'] = self.pool
                     channel = PoolExternalObject(**params)
                 else:
+                    if to_fqdn:
+                        ch_name = _to_fqdn(ch_name, logger=self)
                     channel = pool.get_element_by_full_name(ch_name)
                 channels[channel] = dict(ch_data)
 
         config['label'] = cfg.get('label', self.name)
         config['description'] = cfg.get('description', self.DFT_DESC)
 
-        self.set_configuration(config, propagate=propagate)
+        self.set_configuration(config, propagate=propagate, to_fqdn=to_fqdn)
 
     def get_configuration(self):
         return self._config
@@ -471,16 +507,16 @@ class PoolMeasurementGroup(PoolGroupElement):
             external = ctrl_name.startswith('__')
             controllers[ctrl_name] = ctrl_data = {}
             if not external and c.is_timerable():
-                if c_data.has_key('timer'):
+                if 'timer' in c_data:
                     ctrl_data['timer'] = c_data['timer'].full_name
-                if c_data.has_key('monitor'):
+                if 'monitor' in c_data:
                     ctrl_data['monitor'] = c_data['monitor'].full_name
-                if c_data.has_key('synchronizer'):
+                if 'synchronizer' in c_data:
                     synchronizer = c_data['synchronizer']
                     if synchronizer != 'software':
                         synchronizer = synchronizer.full_name
                     ctrl_data['synchronizer'] = synchronizer
-                if c_data.has_key('synchronization'):
+                if 'synchronization' in c_data:
                     ctrl_data['synchronization'] = c_data['synchronization']
             ctrl_data['channels'] = channels = {}
             for ch, ch_data in c_data['channels'].items():
@@ -493,14 +529,16 @@ class PoolMeasurementGroup(PoolGroupElement):
     def load_configuration(self, force=False):
         """Loads the current configuration to all involved controllers"""
         cfg = self.get_configuration()
-        g_timer, g_monitor = cfg['timer'], cfg['monitor']
+        # g_timer, g_monitor = cfg['timer'], cfg['monitor']
         for ctrl, ctrl_data in cfg['controllers'].items():
             # skip external channels
             if isinstance(ctrl, str):
                 continue
             # telling controller in which acquisition mode it will participate
+            if not ctrl.is_online():
+                continue
             ctrl.set_ctrl_par('acquisition_mode', self.acquisition_mode)
-            #@TODO: fix optimization and enable it again
+            # @TODO: fix optimization and enable it again
             if ctrl.operator == self and not force and not self._config_dirty:
                 continue
             ctrl.operator = self
@@ -512,8 +550,8 @@ class PoolMeasurementGroup(PoolGroupElement):
                 ctrl.set_ctrl_par('timer', ctrl_data['timer'].axis)
                 ctrl.set_ctrl_par('monitor', ctrl_data['monitor'].axis)
                 synchronization = self._ctrl_to_acq_synch.get(ctrl)
-                self.debug('load_configuration: setting trigger_type: %s to ctrl: %s' % (
-                    synchronization, ctrl))
+                self.debug('load_configuration: setting trigger_type: %s '
+                           'to ctrl: %s' % (synchronization, ctrl))
                 ctrl.set_ctrl_par('synchronization', synchronization)
 
         self._config_dirty = False
@@ -534,7 +572,8 @@ class PoolMeasurementGroup(PoolGroupElement):
         elif len(self._synchronization) > 1:
             raise Exception("There are more than one synchronization groups")
         else:
-            return self._synchronization[0][SynchParam.Active][SynchDomain.Time]
+            return self._synchronization[0][SynchParam.Active][
+                SynchDomain.Time]
 
     def set_integration_time(self, integration_time, propagate=1):
         total_time = integration_time + self.latency_time
@@ -612,9 +651,11 @@ class PoolMeasurementGroup(PoolGroupElement):
     def get_moveable(self):
         return self._moveable
 
-    def set_moveable(self, moveable, propagate=1):
+    def set_moveable(self, moveable, propagate=1, to_fqdn=True):
         self._moveable = moveable
         if self._moveable != 'None' and self._moveable is not None:
+            if to_fqdn:
+                moveable = _to_fqdn(moveable, logger=self)
             self._moveable_obj = self.pool.get_element_by_full_name(moveable)
         self.fire_event(EventType("moveable", priority=propagate),
                         moveable)
@@ -638,7 +679,8 @@ class PoolMeasurementGroup(PoolGroupElement):
         return latency_time
 
     latency_time = property(get_latency_time,
-                            doc="latency time between two consecutive acquisitions")
+                            doc="latency time between two consecutive "
+                                "acquisitions")
 
     # -------------------------------------------------------------------------
     # acquisition

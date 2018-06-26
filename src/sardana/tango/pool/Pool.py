@@ -73,9 +73,32 @@ class Pool(PyTango.Device_4Impl, Logger):
         self._pool.add_listener(self.on_pool_changed)
 
     def get_full_name(self):
+        """Compose full name from the TANGO_HOST information and device name.
+
+        In case Sardana is used with Taurus 3 the full name is of format
+        "dbhost:dbport/<domain>/<family>/<member>" where dbhost may be either
+        FQDN or PQDN, depending on the TANGO_HOST configuration.
+
+        In case Sardana is used with Taurus 4 the full name is of format
+        "tango://dbhost:dbport/<domain>/<family>/<member>" where dbhost is
+        always FQDN.
+
+        :return: this device full name
+        :rtype: str
+        """
         db = PyTango.Util.instance().get_database()
         db_name = db.get_db_host() + ":" + db.get_db_port()
-        return db_name + "/" + self.get_name()
+        # try to use Taurus 4 to retrieve FQDN
+        try:
+            from taurus.core.tango.tangovalidator import \
+                TangoAuthorityNameValidator
+            db_name = "//%s" % db_name
+            db_name, _, _ = TangoAuthorityNameValidator().getNames(db_name)
+        # if Taurus3 in use just continue
+        except ImportError:
+            pass
+        full_name = db_name + "/" + self.get_name()
+        return full_name
 
     @property
     def pool(self):
@@ -1342,6 +1365,22 @@ class PoolClass(PyTango.DeviceClass):
             [PyTango.DevVarStringArray,
              "List of instruments (internal property)",
              []],
+        'LogstashHost':
+            [PyTango.DevString,
+             "Hostname where Logstash runs. "
+             "This property has been included in Sardana on a provisional "
+             "basis. Backwards incompatible changes (up to and including "
+             "its removal) may occur if deemed necessary by the "
+             "core developers.",
+             None],
+        'LogstashPort':
+            [PyTango.DevLong,
+             "Port on which Logstash will listen on events. "
+             "This property has been included in Sardana on a provisional "
+             "basis. Backwards incompatible changes (up to and including "
+             "its removal) may occur if deemed necessary by the "
+             "core developers.",
+             None]
     }
 
     #    Command definitions

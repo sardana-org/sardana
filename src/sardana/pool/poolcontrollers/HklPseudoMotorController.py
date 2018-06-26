@@ -479,6 +479,8 @@ class DiffracBasis(PseudoMotorController):
         self.getWavelength()
 
         solutions = self._solutions(values, curr_physical_pos)
+        if self.selected_trajectory > len(solutions.items()):
+            self.selected_trajectory = len(solutions.items()) - 1
         for i, item in enumerate(solutions.items()):
             if i == self.selected_trajectory:
                 angles = item.geometry_get().axis_values_get(USER)
@@ -1140,6 +1142,12 @@ class DiffracBasis(PseudoMotorController):
 
             date_str = "Created at " + time.strftime("%Y-%m-%d %H:%M") + "\n\n"
             crys_file.write(date_str)
+
+            # diffractometer type
+
+            difftype_str = ("DiffractometerType " + self.DiffractometerType +
+                            "\n\n")
+            crys_file.write(difftype_str)
 
             # write crystal name
 

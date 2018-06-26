@@ -266,7 +266,12 @@
 .. class:: expert.defelem
 
     Creates an element on a controller with an axis
-    
+
+
+.. class:: env.defgh
+
+    Defines general hook
+
 
 .. class:: expert.defm
 
@@ -457,7 +462,12 @@
 .. class:: lists.lsexp
 
     Lists all experiment channels
-    
+
+
+.. class:: env.lsgh
+
+    Lists general hooks
+
 
 .. class:: lists.lsi
 
@@ -771,7 +781,12 @@
 .. class:: expert.udefelem
 
     Deletes an existing element
-    
+
+
+.. class:: env.udefgh
+
+    Undefine general hook
+
 
 .. class:: expert.udefmeas
 

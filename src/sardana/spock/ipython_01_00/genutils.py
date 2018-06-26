@@ -1063,6 +1063,9 @@ object?   -> Details about 'object'. ?object also works, ?? prints more.
     i_shell.confirm_exit = False
 
     if ipy_ver >= 50000:
+        # Change color for ipy_ver >= 50000 due to
+        # https://github.com/ipython/ipython/pull/9655
+        i_shell.colors = 'Neutral'
         from IPython.terminal.prompts import (Prompts, Token)
 
         class SpockPrompts(Prompts):

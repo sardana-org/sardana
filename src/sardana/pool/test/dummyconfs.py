@@ -31,7 +31,8 @@ __all__ = ['dummyMeasurementGroupConf01',
            'dummyCounterTimerConf03', 'dummyCounterTimerConf04',
            'dummyTriggerGateConf01', 'dummyTriggerGateConf02',
            'dummyTriggerGateConf03', 'dummyTriggerGateConf04',
-           'softwarePoolTGCtrlConf01']
+           'softwarePoolTGCtrlConf01', 'dummyPoolMotorCtrlConf01',
+           'dummyMotorConf01', 'dummyMotorConf02']
 
 
 # Pool Measurement Group
@@ -139,6 +140,18 @@ dummyPoolTGCtrlConf02 = {'class_info': None,
                          'role_ids': '',
                          'type': 'TGChannel'}
 
+'''Minimum configuration to create a Pool Motor controller'''
+dummyPoolMotorCtrlConf01 = {'class_info': None,
+                            'full_name': '',
+                            'id': 1,
+                            'klass': 'DummyMotorController',
+                            'lib_info': None,
+                            'library': 'DummyMotorController.py',
+                            'name': '',
+                            'pool': None,
+                            'properties': {},
+                            'role_ids': '',
+                            'type': 'Motor'}
 
 # Pool Elements
 '''Minimum configuration to create a Pool CounterTimer'''
@@ -204,3 +217,19 @@ dummyTriggerGateConf04 = {'axis': 4,
                           'id': 5,
                           'name': '',
                           'pool': None}
+
+'''Minimum configuration to create a Pool Motor'''
+dummyMotorConf01 = {'axis': 1,
+                    'ctrl': None,
+                    'full_name': '',
+                    'id': 1,
+                    'name': '',
+                    'pool': None}
+
+'''Minimum configuration to create a Pool Motor'''
+dummyMotorConf02 = {'axis': 2,
+                    'ctrl': None,
+                    'full_name': '',
+                    'id': 1,
+                    'name': '',
+                    'pool': None}

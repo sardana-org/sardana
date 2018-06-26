@@ -216,7 +216,11 @@ class OneDExpChannel(PoolExpChannelDevice):
     def read_DataSource(self, attr):
         data_source = self.oned.get_data_source()
         if data_source is None:
-            data_source = "tango://{0}/value".format(self.get_full_name())
+            full_name = self.get_full_name()
+            # for Taurus 3/4 compatibility
+            if not full_name.startswith("tango://"):
+                full_name = "tango://{0}".format(full_name)
+            data_source = "{0}/value".format(full_name)
         attr.set_value(data_source)
 
     def Start(self):
