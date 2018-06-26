@@ -51,6 +51,7 @@ from taurus.core.util.log import Logger
 from taurus.core.util.user import USER_NAME
 from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
 from taurus.core.util.enumeration import Enumeration
+from taurus.core.util.threadpool import ThreadPool
 
 from sardana.util.tree import BranchNode, LeafNode, Tree
 from sardana.util.motion import Motor as VMotor
@@ -66,7 +67,29 @@ from sardana.macroserver.scan.recorder import (AmbiguousRecorderError,
                                                SharedMemoryRecorder,
                                                FileRecorder)
 from sardana.taurus.core.tango.sardana.pool import Ready, TwoDExpChannel
-from sardana.sardanathreadpool import get_thread_pool
+
+
+__thread_pool_lock = threading.Lock()
+__thread_pool = None
+
+
+def get_thread_pool():
+    """Returns the pool with only one thread for handling ValueBuffer events
+
+    :return: the global pool of threads object
+    :rtype: taurus.core.util.ThreadPool"""
+
+    global __thread_pool
+
+    if __thread_pool:
+        return __thread_pool
+
+    global __thread_pool_lock
+    with __thread_pool_lock:
+        if __thread_pool is None:
+            __thread_pool = ThreadPool(name="ValueBufferTH", Psize=1,
+                                       Qsize=100000)
+        return __thread_pool
 
 
 # ScanEndStatus enumeration indicates the reason of the scan end.
@@ -1883,6 +1906,7 @@ class CAcquisition(object):
         # sequence for data, index
         # e.g. dict(label=str, data=seq<float>, index=seq<int>)
         self._countdown_latch.count_up()
+        # only one thread is present in the pool so jobs are serialized
         self._thread_pool.add(self.data.addData,
                               self._countdown_latch.count_down, info)
 
