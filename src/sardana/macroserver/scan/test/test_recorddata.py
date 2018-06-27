@@ -23,7 +23,6 @@
 ##
 ##############################################################################
 
-import nxs
 import math
 import os
 from taurus.external import unittest
@@ -65,6 +64,12 @@ class ScanDataTestCase(unittest.TestCase):
     def setUp(self):
         """SetUp
         """
+        try:
+            import nxs
+            self.nxs = nxs
+        except ImportError:
+            self.skipTest("nxs module is not available")
+
         unittest.TestCase.setUp(self)
         self.data_handler = DataHandler()
         self.file_name = "/tmp/data_nxs.hdf5"
@@ -112,7 +117,7 @@ class ScanDataTestCase(unittest.TestCase):
             s.join()
         self.scan_data.end()
         # Test the generated nxs file
-        f = nxs.load(self.file_name)
+        f = self.nxs.load(self.file_name)
         m = f['entry1']['measurement']
         for chn in data.keys():
             chn_data = m[chn].nxdata
@@ -139,7 +144,7 @@ class ScanDataTestCase(unittest.TestCase):
             s.join()
         self.scan_data.end()
         # Test the generated nxs file
-        f = nxs.load(self.file_name)
+        f = self.nxs.load(self.file_name)
         m = f['entry1']['measurement']
         for chn in data.keys():
             chn_data = m[chn].nxdata

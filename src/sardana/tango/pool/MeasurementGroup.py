@@ -72,8 +72,8 @@ class MeasurementGroup(PoolGroupDevice):
     @DebugIt()
     def init_device(self):
         PoolGroupDevice.init_device(self)
-
-        detect_evts = ()  # state and status are already set by the super class
+        # state and status are already set by the super class
+        detect_evts = "latencytime", "moveable", "synchronization"
         non_detect_evts = "configuration", "integrationtime", "monitorcount", \
                           "acquisitionmode", "elementlist", "repetitions"
         self.set_change_events(detect_evts, non_detect_evts)

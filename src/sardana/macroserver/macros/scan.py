@@ -1759,8 +1759,8 @@ class meshct(Macro, Hookable):
         self.waypoints = []
         starts_points = []
         for i, m2pos in enumerate(m2_space):
-            starts_points.append([m1start, m2pos])
-            self.waypoints.append([m1end, m2pos])
+            starts_points.append(numpy.array([m1start, m2pos], dtype='d'))
+            self.waypoints.append(numpy.array([m1end, m2pos], dtype='d'))
             if self.bidirectional_mode:
                 m1start, m1end = m1end, m1start
 

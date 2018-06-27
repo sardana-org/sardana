@@ -245,7 +245,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         Write the pre-scan snapshot in "<entry>/measurement/pre_scan_snapshot".
         Also link to the snapshot datasets from the <entry>/measurement group
         """
-        _meas = self.fd[os.path.join(self.entryname, 'measurement')]
+        _meas = self.fd[(self.entryname + '/measurement')]
         self.preScanSnapShot = env.get('preScanSnapShot', [])
         _snap = _meas.create_group('pre_scan_snapshot')
         _snap.attrs['NX_class'] = 'NXcollection'

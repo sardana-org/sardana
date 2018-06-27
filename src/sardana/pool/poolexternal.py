@@ -69,14 +69,13 @@ class PoolTangoObject(PoolBaseExternalObject):
             if devalias is not None:
                 try:
                     device_name = db.get_device_alias(devalias)
-                    full_name = "{0}:{1}/{2}/{3}".format(host, port,
-                                                         device_name,
-                                                         attribute_name)
+                    full_name = "tango://{0}:{1}/{2}/{3}".format(
+                        host, port, device_name, attribute_name)
                 except:
                     full_name = "{0}/{1}".format(devalias, attribute_name)
         else:
-            full_name = "{0}:{1}/{2}/{3}".format(host, port, device_name,
-                                                 attribute_name)
+            full_name = "tango://{0}:{1}/{2}/{3}".format(
+                host, port, device_name, attribute_name)
         self._device_name = device_name
         self._attribute_name = attribute_name
         self._config = None

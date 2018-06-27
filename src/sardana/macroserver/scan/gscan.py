@@ -619,9 +619,6 @@ class GScan(Logger):
         counters = []
         for ci in channels_info:
             full_name = ci.full_name
-            # for Taurus 4 compatibility
-            if not full_name.startswith("tango://"):
-                full_name = "tango://{0}".format(full_name)
             try:
                 channel = taurus.Device(full_name)
                 instrument = channel.instrument
@@ -836,6 +833,10 @@ class GScan(Logger):
     @property
     def data(self):
         return self._data
+
+    @property
+    def data_handler(self):
+        return self._data_handler
 
     @property
     def macro(self):
@@ -1872,34 +1873,6 @@ class CAcquisition(object):
 
         full_name = channel.getFullName()
 
-        # TODO: for Taurus4 compatibility
-        # The sardana code is not fully ready to deal with Taurus4 model names
-        # Necessary changes are:
-        # * strip scheme name that appeared in the full_name since Taurus4
-        # * avoid FQDN introduced wuth taurus-org/taurus#488
-        # and come back to the Taurus3 style full name cause all the recording
-        # stuff and the measurement group counts is based on them
-
-        try:
-            from taurus.core.tango.tangovalidator import\
-                TangoDeviceNameValidator
-            validator = TangoDeviceNameValidator()
-            uri_groups = validator.getUriGroups(full_name)
-            dev_name = uri_groups["devname"]
-            fqdn_host = uri_groups["host"]
-            if fqdn_host is not None:
-                port = uri_groups["port"]
-                host = fqdn_host.split(".")[0]
-                full_name = host + ":" + port + "/" + dev_name
-            else:
-                full_name = dev_name
-        except ImportError:
-            # we are in Taurus 3 so neither scheme nor FQDN is in use
-            pass
-        except Exception:
-            msg = "Unknown error in buffer_changed callback"
-            self.warning(msg, exc_info=1)
-
         info = {'label': full_name}
         idx = np.array(value_buffer['index'])
         idx += self._index_offset
@@ -1932,9 +1905,6 @@ class CAcquisition(object):
         for channel_info in measurement_group.getChannels():
             full_name = channel_info["full_name"]
             name = channel_info["name"]
-            # for taurus 4 compatibility
-            if not full_name.startswith("tango://"):
-                full_name = "tango://" + full_name
             try:
                 channel = taurus.Device(full_name)
             except Exception:
@@ -2197,10 +2167,9 @@ class CTScan(CScan, CAcquisition):
             if macro.isStopped():
                 self.on_waypoints_end()
                 return
-            ############
-            # validation of parameters. At least one motor must have different
-            # values on the start and final positions
-            if self.macro.starts == self.macro.finals:
+
+            # at least one motor must have different start and final positions
+            if all(self.macro.starts == self.macro.finals):
                 if len(self.macro.starts) > 1:
                     msg = "Scan start and end must be different for at " \
                           "least one motor"

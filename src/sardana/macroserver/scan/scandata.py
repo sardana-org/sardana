@@ -228,8 +228,6 @@ class Record(object):
 
     def __get_tango_name(self, item):
         name = self.__get_t4_name(item)
-        if name.startswith('tango://'):
-            name = name[8:]  # remove 'tango://'
         return name
 
     def __getitem__(self, item):

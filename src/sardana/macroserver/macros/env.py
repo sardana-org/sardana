@@ -323,8 +323,7 @@ class lsgh(Macro):
             for place in places:
                 if place not in default_dict.keys():
                     default_dict[place] = []
-                if name not in default_dict[place]:
-                    default_dict[place].append(name)
+                default_dict[place].append(name)
         for pos in default_dict.keys():
             pos_set = 0
             for hook in default_dict[pos]:

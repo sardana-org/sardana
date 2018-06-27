@@ -78,21 +78,19 @@ necessary to run Sardana on your windows machine
 =========================
 Working directly from Git
 =========================
+ 
+If you intend to do changes to Sardana itself, or want to try the latest
+developments, it is convenient to work directly from the git source in
+"develop" (aka "editable") mode, so that you do not need to re-install
+on each change.
 
-Sometimes it is convenient to work directly from the git source without
-installing. To do so, you can clone sardana from our main git repository::
+You can clone sardana from the main git repository::
 
     git clone https://github.com/sardana-org/sardana.git sardana
 
-And then you can directly execute sardana binaries (Pool, MacroServer, Sardana
-or spock from the command line)::
+Then, to work in editable mode, just do::
 
-    homer@pc001:~/workspace$ cd sardana
-    homer@pc001:~/workspace/sardana$ scripts/Sardana
-
-.. tip:: If you plan to work normally from git without installing, you may want
-         to add the `sardana/scripts` directory to your `PATH` variable and
-         `sardana/src` to your `PYTHONPATH` variable.
+    pip install -e ./sardana
 
 
 .. _dependencies:

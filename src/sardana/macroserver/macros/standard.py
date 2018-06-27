@@ -23,8 +23,9 @@
 
 """This is the standard macro module"""
 
-__all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "set_lim", "set_lm",
-           "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm", "tw"]
+__all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "repeat", "set_lim",
+           "set_lm", "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm",
+           "tw", "logmacro"]
 
 __docformat__ = 'restructuredtext'
 
@@ -37,7 +38,7 @@ import PyTango
 from PyTango import DevState
 
 from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, \
-    ViewOption, iMacro
+    ViewOption, iMacro, Hookable
 from sardana.macroserver.msexception import StopException
 from sardana.macroserver.scan.scandata import Record
 ##########################################################################
@@ -709,8 +710,6 @@ class uct(Macro):
         self.values = []
         for channel_info in self.mnt_grp.getChannels():
             full_name = channel_info["full_name"]
-            # TODO: For Taurus 4 compatibility
-            full_name = "tango://%s" % full_name
             channel = Device(full_name)
             self.channels.append(channel)
             value = channel.getValue(force=True)
@@ -787,3 +786,62 @@ class settimer(Macro):
 def report(self, message):
     """Logs a new record into the message report system (if active)"""
     self.report(' '.join(message))
+
+
+class logmacro(Macro):
+    """ Turn on/off logging of the spock output.
+
+    .. note::
+        The logmacro class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers
+    """
+
+    param_def = [
+        ['offon', Type.Boolean, None, 'Unset/Set logging'],
+        ['mode', Type.Integer, -1, 'Mode: 0 append, 1 new file'],
+    ]
+
+    def run(self, offon, mode):
+        if offon:
+            if mode == 1:
+                self.setEnv('LogMacroMode', True)
+            elif mode == 0:
+                self.setEnv('LogMacroMode', False)
+            self.setEnv('LogMacro', True)
+        else:
+            self.setEnv('LogMacro', False)
+
+
+class repeat(Hookable, Macro):
+    """This macro executes as many repetitions of it's body hook macros as
+    specified by nr parameter. If nr parameter has negative value,
+    repetitions will be executed until you stop repeat macro."""
+
+    # hints = { 'allowsHooks': ('body', 'break', 'continue') }
+    hints = {'allowsHooks': ('body',)}
+
+    param_def = [
+        ['nr', Type.Integer, None, 'Nr of iterations']
+    ]
+
+    def prepare(self, nr):
+        # self.breakHooks = self.getHooks("break")
+        # self.continueHooks = self.getHooks("continue")
+        self.bodyHooks = self.getHooks("body")
+
+    def __loop(self):
+        self.checkPoint()
+        for bodyHook in self.bodyHooks:
+            bodyHook()
+
+    def run(self, nr):
+        if nr < 0:
+            while True:
+                self.__loop()
+        else:
+            for i in range(nr):
+                self.__loop()
+                progress = ((i + 1) / float(nr)) * 100
+                yield progress
