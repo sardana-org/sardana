@@ -186,6 +186,7 @@ class pt7d1(Macro):
     pt7d1 mot1 1 mot2 3
     Using default value, ex.:
     pt7d1 [[mot1] [mot2 3]] # at any repetition
+    pt7d1 mot1 # if only one repetition
 
     """
 
@@ -262,6 +263,7 @@ class pt10(Macro):
     parameter may be defined as first one.
     Usage from Spock, ex.:
     pt10 [1 3] mot1
+    pt10 1 mot1 # if only one repetition
     """
 
     param_def = [
@@ -279,6 +281,7 @@ class pt11(Macro):
     parameters.
     Usages from Spock, ex.:
     pt11 ct1 [1 3] mot1
+    pt11 ct1 1 mot1 # if only one repetition
     """
 
     param_def = [
@@ -296,6 +299,7 @@ class pt12(Macro):
     parameters may defined.
     Usage from Spock, ex.:
     pt12 [1 3 4] [mot1 mot2]
+    pt12 1 mot1 # if only one repetition for each repeat parameter
     """
 
     param_def = [
