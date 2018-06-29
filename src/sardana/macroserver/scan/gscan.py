@@ -69,29 +69,6 @@ from sardana.macroserver.scan.recorder import (AmbiguousRecorderError,
 from sardana.taurus.core.tango.sardana.pool import Ready, TwoDExpChannel
 
 
-__thread_pool_lock = threading.Lock()
-__thread_pool = None
-
-
-def get_thread_pool():
-    """Returns the pool with only one thread for handling ValueBuffer events
-
-    :return: the global pool of threads object
-    :rtype: taurus.core.util.ThreadPool"""
-
-    global __thread_pool
-
-    if __thread_pool:
-        return __thread_pool
-
-    global __thread_pool_lock
-    with __thread_pool_lock:
-        if __thread_pool is None:
-            __thread_pool = ThreadPool(name="ValueBufferTH", Psize=1,
-                                       Qsize=100000)
-        return __thread_pool
-
-
 # ScanEndStatus enumeration indicates the reason of the scan end.
 ScanEndStatus = Enumeration("ScanEndStatus",
                             ["Normal", "Stop", "Abort", "Exception"])
@@ -1882,12 +1859,13 @@ class CSScan(CScan):
 class CAcquisition(object):
 
     def __init__(self):
-        self._thread_pool = get_thread_pool()
+        self._thread_pool = ThreadPool(name="ValueBufferTH", Psize=1,
+                                       Qsize=100000)
         self._countdown_latch = CountLatch()
         self._index_offset = 0
 
     def value_buffer_changed(self, channel, value_buffer):
-        """Delegate processing of value buffer events to worker threads."""
+        """Delegate processing of value buffer events to a worker thread."""
         # value_buffer is a dictionary with at least keys: data, index
         # and its values are of type sequence
         # e.g. dict(data=seq<float>, index=seq<int>)
