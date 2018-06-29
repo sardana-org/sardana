@@ -51,6 +51,7 @@ from taurus.core.util.log import Logger
 from taurus.core.util.user import USER_NAME
 from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
 from taurus.core.util.enumeration import Enumeration
+from taurus.core.util.threadpool import ThreadPool
 
 from sardana.util.tree import BranchNode, LeafNode, Tree
 from sardana.util.motion import Motor as VMotor
@@ -66,7 +67,6 @@ from sardana.macroserver.scan.recorder import (AmbiguousRecorderError,
                                                SharedMemoryRecorder,
                                                FileRecorder)
 from sardana.taurus.core.tango.sardana.pool import Ready, TwoDExpChannel
-from sardana.sardanathreadpool import get_thread_pool
 
 
 # ScanEndStatus enumeration indicates the reason of the scan end.
@@ -1859,12 +1859,13 @@ class CSScan(CScan):
 class CAcquisition(object):
 
     def __init__(self):
-        self._thread_pool = get_thread_pool()
+        self._thread_pool = ThreadPool(name="ValueBufferTH", Psize=1,
+                                       Qsize=100000)
         self._countdown_latch = CountLatch()
         self._index_offset = 0
 
     def value_buffer_changed(self, channel, value_buffer):
-        """Delegate processing of value buffer events to worker threads."""
+        """Delegate processing of value buffer events to a worker thread."""
         # value_buffer is a dictionary with at least keys: data, index
         # and its values are of type sequence
         # e.g. dict(data=seq<float>, index=seq<int>)
@@ -1883,6 +1884,7 @@ class CAcquisition(object):
         # sequence for data, index
         # e.g. dict(label=str, data=seq<float>, index=seq<int>)
         self._countdown_latch.count_up()
+        # only one thread is present in the pool so jobs are serialized
         self._thread_pool.add(self.data.addData,
                               self._countdown_latch.count_down, info)
 
