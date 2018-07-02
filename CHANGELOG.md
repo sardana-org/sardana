@@ -13,7 +13,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Fixed
 - Ensure that value buffer (data) events are handled sequentially so data
-  are wrongly interpreted as lost (#794)
+  are not wrongly interpreted as lost (#794)
 - Push change events from code for measurement group attributes: moveable,
   latency time and synchronization (#736, #738)
 - Validation of starts and finals for a2scanct, a3scanct, meshct, ... (#734)
