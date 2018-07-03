@@ -1243,8 +1243,8 @@ class CScan(GScan):
         try:
             self._go_through_waypoints()
         except Exception:
+            self.macro.setProcessingStop(True)
             self.on_waypoints_end()
-            raise
 
     def _go_through_waypoints(self):
         """
@@ -2106,14 +2106,7 @@ class CTScan(CScan, CAcquisition):
                   (measurement_group.getName(), macro.getName())
             raise ScanException(msg)
 
-        # add listener of data events
-        # If the cleanup fails, it is not possible to add again the listener
-        # and the macro fails.
-        try:
-            measurement_group.subscribeValueBuffer(self.value_buffer_changed)
-        except Exception as e:
-            msg = "Exception occurred trying to add data listeners {0}"
-            self.debug(msg.format(e))
+        measurement_group.subscribeValueBuffer(self.value_buffer_changed)
 
         # initializing mntgrp subscription control variables
         self.__mntGrpSubscribed = True
@@ -2187,7 +2180,6 @@ class CTScan(CScan, CAcquisition):
                 for hook in macro.getHooks('pre-configuration'):
                     hook()
             self.macro.checkPoint()
-
             # TODO: let a pseudomotor specify which motor should be used as
             # source
             MASTER = 0
