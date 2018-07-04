@@ -54,16 +54,23 @@ class DiscretePseudoMotorController(PseudoMotorController):
 
     axis_attributes = {CALIBRATION:  # type hackish until arrays supported
                        {Type: str,
-                        Description: 'Flatten list of a list of triples and [min,cal,max]',
+                        Description: 'Flatten list of a list of triples and '
+                                     '[min,cal,max]',
                         Access: DataAccess.ReadWrite,
                         'fget': 'get%s' % CALIBRATION,
                         'fset': 'set%s' % CALIBRATION},
                        LABELS:  # type hackish until arrays supported
                        {Type: str,
-                        Description: 'String list with the meaning of each discrete position',
+                        Description: 'String list with the meaning of each '
+                                     'discrete position',
                         Access: DataAccess.ReadWrite,
                         'fget': 'get%s' % LABELS,
-                        'fset': 'set%s' % LABELS}
+                        'fset': 'set%s' % LABELS},
+                       'Configuration':  # type hackish until arrays supported
+                       {Type: str,
+                        Description: 'String dictionary mapping the labels and'
+                                     ' discrete positions',
+                        Access: DataAccess.ReadWrite}
                        }
 
     def __init__(self, inst, props, *args, **kwargs):
@@ -173,3 +180,48 @@ class DiscretePseudoMotorController(PseudoMotorController):
             self._calibration = json.loads(value)
         except:
             raise Exception("Rejecting calibration: invalid structure")
+
+    def getConfiguration(self, axis):
+        mapping = dict()
+        llab = len(self._labels)
+        lcal = len(self._calibration)
+
+        if llab == 0:
+            return json.dumps(mapping)
+        elif lcal > 0 and lcal != llab:
+            msg = 'Calibration and labels have different length'
+            raise RuntimeError(msg)
+
+        for idx, label in enumerate(self._labels):
+            pos = self._positions[idx]
+            mapping[label] = {'pos': int(pos)}
+            if lcal > 0:
+                minimum, set, maximum = self._calibration[idx]
+                mapping[label]['set'] = set
+                mapping[label]['min'] = minimum
+                mapping[label]['max'] = maximum
+
+        return json.dumps(mapping)
+
+    def setConfiguration(self, axis, value):
+        try:
+            mapping = json.loads(value)
+            labels = []
+            positions = []
+            calibration = []
+            for k, v in mapping.items():
+                labels.append(k)
+                value = int(v['pos'])
+                if value in positions:
+                    msg = 'Integer position {0} duplicated in' \
+                          ' configuration.'.format(value)
+                    raise ValueError(msg)
+                positions.append(value)
+                if all([x in v.keys() for x in ['min', 'set', 'max']]):
+                    calibration.append([v['min'], v['set'], v['max']])
+            self._labels = labels
+            self._positions = positions
+            self._calibration = calibration
+        except Exception as e:
+            msg = "Rejecting calibration: invalid structure\n{0}".format(e)
+            raise Exception(msg)
