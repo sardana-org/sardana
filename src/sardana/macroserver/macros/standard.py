@@ -669,14 +669,14 @@ class ct(Macro, Hookable):
         self.output('')
         self.flushOutput()
 
-        for preAcqHook in  self.getHooks('pre-acq'):
+        for preAcqHook in self.getHooks('pre-acq'):
             preAcqHook()
 
         state, data = self.mnt_grp.count(integ_time)
 
-        for postAcqHook in  self.getHooks('post-acq'):
+        for postAcqHook in self.getHooks('post-acq'):
             postAcqHook()
-    
+
         names, counts = [], []
         for ch_info in self.mnt_grp.getChannelsEnabledInfo():
             names.append('  %s' % ch_info.label)
