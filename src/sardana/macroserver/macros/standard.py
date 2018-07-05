@@ -652,7 +652,7 @@ class ct(Macro, Hookable):
     ]
     # integration time has to be accessible from with in the hooks
     # so declare it also as a property of the ct class
-    integ_time = 0 
+    integ_time = 0
 
     def prepare(self, integ_time, **opts):
         mnt_grp_name = self.getEnv('ActiveMntGrp')
@@ -663,20 +663,20 @@ class ct(Macro, Hookable):
         if self.mnt_grp is None:
             self.error('ActiveMntGrp is not defined or has invalid value')
             return
-        self.integ_time = integ_time # set integ_time property for hooks
+        self.integ_time = integ_time  # set integ_time property for hooks
         self.debug("Counting for %s sec", integ_time)
         self.outputDate()
         self.output('')
         self.flushOutput()
-        
+
         for preAcqHook in  self.getHooks('pre-acq'):
             preAcqHook()
 
         state, data = self.mnt_grp.count(integ_time)
-        
+
         for postAcqHook in  self.getHooks('post-acq'):
             postAcqHook()
-            
+    
         names, counts = [], []
         for ch_info in self.mnt_grp.getChannelsEnabledInfo():
             names.append('  %s' % ch_info.label)
