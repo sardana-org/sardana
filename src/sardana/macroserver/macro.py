@@ -342,16 +342,16 @@ def mAPI(fn):
     @wraps(fn)
     def new_fn(*args, **kwargs):
         self = args[0]
-        if not self.isProcessingStop():
+        if self.executor._stopped:
             is_macro_th = self._macro_thread == threading.current_thread()
-            if self._shouldRaiseStopException():
+            if not self.isProcessingStop():
                 if is_macro_th:
                     self.setProcessingStop(True)
                 self.executor._waitStopDone()
                 raise StopException("stopped before calling %s" % fn.__name__)
         ret = fn(*args, **kwargs)
-        if not self.isProcessingStop():
-            if self._shouldRaiseStopException():
+        if self.executor._stopped:
+            if not self.isProcessingStop():
                 if is_macro_th:
                     self.setProcessingStop(True)
                 self.executor._waitStopDone()
