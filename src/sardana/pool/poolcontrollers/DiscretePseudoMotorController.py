@@ -77,7 +77,9 @@ class DiscretePseudoMotorController(PseudoMotorController):
         PseudoMotorController.__init__(self, inst, props, *args, **kwargs)
         self._calibration = None
         self._positions = None
-        self._labels = None
+        self._calibration = []
+        self._positions = []
+        self._labels = []
 
     def GetAxisAttributes(self, axis):
         axis_attrs = PseudoMotorController.GetAxisAttributes(self, axis)
