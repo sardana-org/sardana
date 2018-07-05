@@ -652,7 +652,6 @@ class ct(Macro, Hookable):
     ]
     # integration time has to be accessible from with in the hooks
     # so declare it also as a property of the ct class
-    integ_time = 0
 
     def prepare(self, integ_time, **opts):
         mnt_grp_name = self.getEnv('ActiveMntGrp')
