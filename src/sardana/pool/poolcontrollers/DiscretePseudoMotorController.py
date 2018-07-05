@@ -42,8 +42,9 @@ MSG_API = 'The new API is using! You must use configuration attribute.'
 
 
 class DiscretePseudoMotorController(PseudoMotorController):
-    """A discrete pseudo motor controller which converts physical motor positions
-    to discrete values"""
+    """
+    A discrete pseudo motor controller which converts physical motor
+    positions to discrete values"""
 
     gender = "DiscretePseudoMotorController"
     model = "PseudoMotor"
@@ -114,7 +115,7 @@ class DiscretePseudoMotorController(PseudoMotorController):
             value = int(value)
             try:
                 positions.index(value)
-            except:
+            except Exception:
                 raise Exception("Invalid position.")
             else:
                 return value
@@ -155,7 +156,7 @@ class DiscretePseudoMotorController(PseudoMotorController):
             self._log.debug("Value = %s", value)
             try:
                 positions.index(value)
-            except:
+            except Exception:
                 raise Exception("Invalid position.")
             return value
         # case 1+fussy: the write to the to the DiscretePseudoMotorController
@@ -164,7 +165,7 @@ class DiscretePseudoMotorController(PseudoMotorController):
             self._log.debug("Value = %s", value)
             try:
                 destination = positions.index(value)
-            except:
+            except Exception:
                 raise Exception("Invalid position.")
             self._log.debug("destination = %s", destination)
             calibrated_position = calibration[
@@ -223,7 +224,7 @@ class DiscretePseudoMotorController(PseudoMotorController):
 
         try:
             self._calibration = json.loads(value)
-        except:
+        except Exception:
             raise Exception("Rejecting calibration: invalid structure")
 
     def getConfiguration(self, axis):
