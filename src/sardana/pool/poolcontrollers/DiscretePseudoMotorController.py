@@ -38,6 +38,7 @@ from sardana.pool.controller import Type, Access, Description
 
 CALIBRATION = 'Calibration'
 LABELS = 'Labels'
+MSG_API = 'The new API is using! You must use configuration attribute.'
 
 
 class DiscretePseudoMotorController(PseudoMotorController):
@@ -75,11 +76,13 @@ class DiscretePseudoMotorController(PseudoMotorController):
 
     def __init__(self, inst, props, *args, **kwargs):
         PseudoMotorController.__init__(self, inst, props, *args, **kwargs)
-        self._calibration = None
-        self._positions = None
         self._calibration = []
         self._positions = []
         self._labels = []
+        self._configuration = None
+        self._calibration_cfg = None
+        self._positions_cfg = None
+        self._labels_cfg = None
 
     def GetAxisAttributes(self, axis):
         axis_attrs = PseudoMotorController.GetAxisAttributes(self, axis)
@@ -88,9 +91,17 @@ class DiscretePseudoMotorController(PseudoMotorController):
         return axis_attrs
 
     def CalcPseudo(self, axis, physical_pos, curr_pseudo_pos):
-        llabels = len(self._labels)
-        positions = self._positions
-        calibration = self._calibration
+        if self._configuration is not None:
+            positions = self._positions_cfg
+            calibration = self._calibration_cfg
+            labels = self._labels_cfg
+        else:
+            # TODO: Remove when we do not support more
+            positions = self._positions
+            calibration = self._calibration
+            labels = self._labels
+
+        llabels = len(labels)
         lcalibration = len(calibration)
 
         value = physical_pos[0]
@@ -119,10 +130,20 @@ class DiscretePseudoMotorController(PseudoMotorController):
             raise Exception("Bad configuration on axis attributes.")
 
     def CalcPhysical(self, axis, pseudo_pos, curr_physical_pos):
+
+        if self._configuration is not None:
+            positions = self._positions_cfg
+            calibration = self._calibration_cfg
+            labels = self._labels_cfg
+        else:
+            # TODO: Remove when we do not support more
+            print('holaaaa', self._labels)
+            positions = self._positions
+            calibration = self._calibration
+            labels = self._labels
+
         # If Labels is well defined, the write value must be one this struct
-        llabels = len(self._labels)
-        positions = self._positions
-        calibration = self._calibration
+        llabels = len(labels)
         lcalibration = len(calibration)
         value = pseudo_pos[0]
 
@@ -151,7 +172,13 @@ class DiscretePseudoMotorController(PseudoMotorController):
             self._log.debug("calibrated_position = %s", calibrated_position)
             return calibrated_position
 
+    # TODO: Remove when we do not support more
     def getLabels(self, axis):
+        if self._configuration is not None:
+            raise ValueError(MSG_API)
+
+        self._log.warning('Deprecation warning: Use configuration attribute')
+
         # hackish until we support DevVarDoubleArray in extra attrs
         labels = self._labels
         positions = self._positions
@@ -160,7 +187,13 @@ class DiscretePseudoMotorController(PseudoMotorController):
             labels_str += "%s:%d " % (labels[i], positions[i])
         return labels_str[:-1]  # remove the final space
 
+    # TODO: Remove when we do not support more
     def setLabels(self, axis, value):
+        if self._configuration is not None:
+            raise ValueError(MSG_API)
+
+        self._log.warning('Deprecation warning: Use configuration attribute')
+
         # hackish until we support DevVarStringArray in extra attrs
         labels = []
         positions = []
@@ -174,16 +207,34 @@ class DiscretePseudoMotorController(PseudoMotorController):
         else:
             raise Exception("Rejecting labels: invalid structure")
 
+    # TODO: Remove when we do not support more
     def getCalibration(self, axis):
+        if self._configuration is not None:
+            raise ValueError(MSG_API)
+        self._log.warning('Deprecation warning: Use configuration attribute')
+
         return json.dumps(self._calibration)
 
+    # TODO: Remove when we do not support more
     def setCalibration(self, axis, value):
+        if self._configuration is not None:
+            raise ValueError(MSG_API)
+        self._log.warning('Deprecation warning: Use configuration attribute')
+
         try:
             self._calibration = json.loads(value)
         except:
             raise Exception("Rejecting calibration: invalid structure")
 
     def getConfiguration(self, axis):
+        if self._configuration is None:
+            # TODO: Remove when we
+            return self._getConfiguration()
+        else:
+            return json.dumps(self._configuration)
+
+    # TODO: Remove when we do not support more
+    def _getConfiguration(self):
         mapping = dict()
         llab = len(self._labels)
         lcal = len(self._calibration)
@@ -213,17 +264,18 @@ class DiscretePseudoMotorController(PseudoMotorController):
             calibration = []
             for k, v in mapping.items():
                 labels.append(k)
-                value = int(v['pos'])
-                if value in positions:
+                pos = int(v['pos'])
+                if pos in positions:
                     msg = 'Integer position {0} duplicated in' \
-                          ' configuration.'.format(value)
+                          ' configuration.'.format(pos)
                     raise ValueError(msg)
-                positions.append(value)
+                positions.append(pos)
                 if all([x in v.keys() for x in ['min', 'set', 'max']]):
                     calibration.append([v['min'], v['set'], v['max']])
-            self._labels = labels
-            self._positions = positions
-            self._calibration = calibration
+            self._labels_cfg = labels
+            self._positions_cfg = positions
+            self._calibration_cfg = calibration
+            self._configuration = json.loads(value)
         except Exception as e:
             msg = "Rejecting calibration: invalid structure\n{0}".format(e)
             raise Exception(msg)
