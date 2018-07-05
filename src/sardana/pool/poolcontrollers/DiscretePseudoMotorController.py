@@ -138,7 +138,6 @@ class DiscretePseudoMotorController(PseudoMotorController):
             labels = self._labels_cfg
         else:
             # TODO: Remove when we do not support more
-            print('holaaaa', self._labels)
             positions = self._positions
             calibration = self._calibration
             labels = self._labels
