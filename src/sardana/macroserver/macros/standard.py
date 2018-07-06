@@ -650,8 +650,6 @@ class ct(Macro, Hookable):
     param_def = [
         ['integ_time', Type.Float, 1.0, 'Integration time']
     ]
-    # integration time has to be accessible from with in the hooks
-    # so declare it also as a property of the ct class
 
     def prepare(self, integ_time, **opts):
         mnt_grp_name = self.getEnv('ActiveMntGrp')
@@ -662,7 +660,9 @@ class ct(Macro, Hookable):
         if self.mnt_grp is None:
             self.error('ActiveMntGrp is not defined or has invalid value')
             return
-        self.integ_time = integ_time  # set integ_time property for hooks
+        # integration time has to be accessible from with in the hooks
+        # so declare it also instance attribute
+        self.integ_time = integ_time
         self.debug("Counting for %s sec", integ_time)
         self.outputDate()
         self.output('')
