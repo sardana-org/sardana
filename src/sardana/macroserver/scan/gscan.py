@@ -1892,6 +1892,11 @@ class CAcquisition(object):
         """Wait until all value buffer events are processed."""
         self._countdown_latch.wait()
 
+    def join_thread_pool(self):
+        """Dispose the thread pool. Call it when you finish with processing
+        value_buffer events."""
+        self._thread_pool.join()
+
     @staticmethod
     def is_measurement_group_compatible(measurement_group):
         """Check if the given measurement group is compatible with continuous
@@ -2353,6 +2358,7 @@ class CTScan(CScan, CAcquisition):
         self.cleanup()
         self.macro.debug("Waiting for data events to be processed")
         self.wait_value_buffer()
+        self.join_thread_pool()
         self.macro.debug("All data events are processed")
 
     def scan_loop(self):
@@ -2600,6 +2606,7 @@ class TScan(GScan, CAcquisition):
                                   self.value_buffer_changed)
         self.debug("Waiting for value buffer events to be processed")
         self.wait_value_buffer()
+        self.join_thread_pool()
         self._fill_missing_records()
         yield 100
 
