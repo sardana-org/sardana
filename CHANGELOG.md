@@ -8,8 +8,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Added
 - `repeat` macro for executing n-times the hooks attached in its body (#310,
   #745)
+- `pre-acq` and `post-acq` hooks to the `ct` macro (#808)
 - Enhance software synchronization by allowing function generation when
-  group has 1 repeat only (#786).
+  group has 1 repeat only (#786)
 
 ### Fixed
 - Ensure that value buffer (data) events are handled sequentially so data
