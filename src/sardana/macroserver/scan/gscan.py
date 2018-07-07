@@ -53,6 +53,7 @@ from taurus.core.util.user import USER_NAME
 from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
 from taurus.core.util.enumeration import Enumeration
 from taurus.core.util.threadpool import ThreadPool
+from taurus.core.util.event import CallableRef
 
 from sardana.util.tree import BranchNode, LeafNode, Tree
 from sardana.util.motion import Motor as VMotor
@@ -255,7 +256,7 @@ class GScan(Logger):
     def __init__(self, macro, generator=None, moveables=[], env={},
                  constraints=[], extrainfodesc=[]):
         self._macro = weakref.ref(macro)
-        self._generator = generator
+        self._generator = CallableRef(generator)
         self._extrainfodesc = extrainfodesc
 
         # nasty hack to make sure macro has access to gScan as soon as
@@ -849,7 +850,7 @@ class GScan(Logger):
 
     @property
     def generator(self):
-        return self._generator
+        return self._generator()
 
     @property
     def motion(self):
