@@ -8,11 +8,17 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Added
 - `repeat` macro for executing n-times the hooks attached in its body (#310,
   #745)
+- `pre-acq` and `post-acq` hooks to the `ct` macro (#808)
+- Enhance software synchronization by allowing function generation when
+  group has 1 repeat only (#786)
 
 ### Fixed
+- Ensure that value buffer (data) events are handled sequentially so data
+  are not wrongly interpreted as lost (#794)
 - Push change events from code for measurement group attributes: moveable,
   latency time and synchronization (#736, #738)
 - Validation of starts and finals for a2scanct, a3scanct, meshct, ... (#734)
+- `defelem` macro when using default axis number (#568, #609)
 - Make SPEC_FileRecorder use LF instead of CRLF even on windows (#750)
 - Appending of hooks from sequence XML (#747)
 - `lsgh` list hooks multiple times to reflect the configuration (#774)
@@ -21,6 +27,11 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Changed
 - Change epoch from float to formatted date & time in Spec recorder (#766)
+
+### Deprecated
+- `PoolMotorSlim` widget in favor of `PoolMotorTV` widget (#163, #785) 
+- `Controller.getUsedAxis` (Taurus device extension) in favor
+of `Controller.getUsedAxes` (#609)
 
 ## [2.4.0] 2018-03-14
 
