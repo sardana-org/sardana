@@ -46,7 +46,7 @@ class JsonRecorder(DataRecorder):
 
     def __init__(self, stream, cols=None, **pars):
         DataRecorder.__init__(self, **pars)
-        self._stream = stream
+        self._stream = weakref.ref(stream)
         self._codec = CodecFactory().getCodec('json')
 
     def _startRecordList(self, recordlist):
