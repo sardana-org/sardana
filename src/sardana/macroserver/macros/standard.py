@@ -864,13 +864,18 @@ class newfile(Macro):
     env = ('ScanFile', 'ScanID')
 
     param_def = [
-        ['ScanID', Type.Integer, 1, 'Scan ID'],
         ['ScanFile_list',
          ParamRepeat(['ScanFile', Type.String, None, 'Name of scan file']),
          None, 'List of scan file names'],
+        ['ScanID', Type.Integer, 0, 'Scan ID'],
     ]
 
-    def run(self, ScanID, ScanFile_list):
+    def run(self, ScanFile_list, ScanID):
+        # check if the ScanFile_list contains any folder
+        # first iterate over every element in the ScanFile_list and extract the 
+        # possible folder - then check if at least one folder is set and if
+        # multiples - they have to be equal
+        # if now inputs are givin the macro should be interactive
         self.setEnv('ScanFile', ScanFile_list)
         self.setEnv('ScanID', ScanID)
 
