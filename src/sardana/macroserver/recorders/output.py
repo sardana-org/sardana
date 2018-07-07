@@ -103,8 +103,8 @@ class JsonRecorder(DataRecorder):
         '''creates a JSON packet using the keyword arguments passed
         and then sends it'''
         #data = self._codec.encode(('', kwargs))
-        # self._stream.sendRecordData(*data)
-        self._stream._sendRecordData(kwargs, codec='json')
+        # self._stream().sendRecordData(*data)
+        self._stream()._sendRecordData(kwargs, codec='json')
 
     def _addCustomData(self, value, name, **kwargs):
         '''
@@ -117,7 +117,7 @@ class JsonRecorder(DataRecorder):
             value = value.tolist()
         except:
             pass
-        macro_id = self._stream.getID()
+        macro_id = self._stream().getID()
         data = dict(kwargs)  # shallow copy
         data['name'] = name
         data['value'] = value
@@ -129,7 +129,7 @@ class OutputRecorder(DataRecorder):
     def __init__(self, stream, cols=None, number_fmt='%8.4f', col_width=8,
                  col_sep='  ', output_block=False, **pars):
         DataRecorder.__init__(self, **pars)
-        self._stream = stream
+        self._stream = weakref.ref(stream)
         if not number_fmt.startswith('%'):
             number_fmt = '%%s' % number_fmt
         self._number_fmt = number_fmt
