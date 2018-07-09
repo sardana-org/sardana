@@ -858,62 +858,74 @@ class repeat(Hookable, Macro):
 
 
 class newfile(Macro):
-    """This macro sets a new ScanFile and ScanID values into the env.
-    The ScanID should be set to the value N of the last executed ScanID
-    in order to continue with a ScanID N+1 for the next scan."""
+    """ Sets the ScanDir and ScanFile as well as ScanID in the environment.
+    If ScanFilePath is only a file name, the ScanDir must be set externally via
+    senv ScanDir PathToScanFile or using the %expconf. Otherwise, the path in
+    ScanFilePath must be absolute and existing on the MacroServer host.
+    The ScanID should be set to the value of the upcoming scan number. Default
+    value is 1.
+    """
 
-    env = ('ScanFilePath', 'ScanID')
+    env = ('ScanDir', 'ScanFile', 'ScanID')
 
     param_def = [
-        ['ScanFilePath_list',
-         ParamRepeat(['ScanFilePath', Type.String, None,
-                      'full path to scan file']),
-         None, 'List of scan file names and paths'],
+        ['ScanFileDir_list',
+         ParamRepeat(['ScanFileDir', Type.String, None,
+                      '(ScanDir/)ScanFile']),
+         None, 'List of (ScanDir/)ScanFile'],
         ['ScanID', Type.Integer, -1, 'Scan ID'],
     ]
 
-    def run(self, ScanFilePath_list, ScanID):
+    def run(self, ScanFileDir_list, ScanID):
         path_list = []
         fileName_list = []
-        # traverse the repeat parameters for the path+fileNames
-        for i, ScanFilePath in enumerate(ScanFilePath_list):
-            path = os.path.dirname(ScanFilePath)
-            fileName = os.path.basename(ScanFilePath)
+        # traverse the repeat parameters for the ScanFilePath_list
+        for i, ScanFileDir in enumerate(ScanFileDir_list):
+            path = os.path.dirname(ScanFileDir)
+            fileName = os.path.basename(ScanFileDir)
             if not path and i == 0:
-                # first entry and no given path: use pwd
-                path = os.getcwd()
+                # first entry and no given ScanDir: check if ScanDir exists
+                ScanDir = self.getEnv('ScanDir')
+                if not ScanDir:
+                    self.warning('Data is not stored until ScanDir is set! '
+                                 'Provide ScanDir with newfile macro: '
+                                 'newfile [<ScanDir>/<ScanFile>] <ScanID> or'
+                                 'senv ScanDir <ScanDir> or with %expconf')
+                else:
+                    path = ScanDir
             elif not path and i > 0:
                 # not first entry and no given path: use path of last iteration
                 path = path_list[i-1]
             elif not os.path.isabs(path):
                 # relative path
-                path = os.path.normpath(os.path.join(os.getcwd(), path))
+                self.error('Only absolute path are allowed!')
+                return
             else:
                 # absolute path
                 path = os.path.normpath(path)
 
-            if i > 0 and path in ((p) for p in path_list):
+            if i > 0 and (path not in path_list):
                 # check if paths are equal
-                self.error("Multiple paths, %s, to the data files are not"
-                           "allowed" % path)
+                self.error('Multiple paths to the data files are not allowed')
                 return
             elif not os.path.exists(path):
                 # check if folder exists
-                self.error("Path %s does not exists and has to be created in"
-                           "advance." % path)
+                self.error('Path %s does not exists on the host of the '
+                           'MacroServerand has to be created in '
+                           'advance.' % path)
                 return
             else:
-                self.debug("Path %s appended." % path)
+                self.debug('Path %s appended.' % path)
                 path_list.append(path)
 
             if not fileName:
-                self.error("No filename is given")
+                self.error('No filename is given.')
                 return
-            elif i > 0 and fileName in ((f) for f in fileName_list):
-                self.error("Duplicate filename %s." % fileName)
+            elif fileName in fileName_list:
+                self.error('Duplicate filename %s is not allowed.' % fileName)
                 return
             else:
-                self.debug("Filename is %s." % fileName)
+                self.debug('Filename is %s.' % fileName)
                 fileName_list.append(fileName)
 
             if ScanID < 1:
