@@ -30,6 +30,7 @@ __all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "repeat", "set_lim",
 __docformat__ = 'restructuredtext'
 
 import datetime
+import os
 
 import numpy as np
 from taurus import Device
@@ -861,25 +862,71 @@ class newfile(Macro):
     The ScanID should be set to the value N of the last executed ScanID
     in order to continue with a ScanID N+1 for the next scan."""
 
-    env = ('ScanFile', 'ScanID')
+    env = ('ScanFilePath', 'ScanID')
 
     param_def = [
-        ['ScanFile_list',
-         ParamRepeat(['ScanFile', Type.String, None, 'Name of scan file']),
-         None, 'List of scan file names'],
-        ['ScanID', Type.Integer, 0, 'Scan ID'],
+        ['ScanFilePath_list',
+         ParamRepeat(['ScanFilePath', Type.String, None,
+                      'full path to scan file']),
+         None, 'List of scan file names and paths'],
+        ['ScanID', Type.Integer, -1, 'Scan ID'],
     ]
 
-    def run(self, ScanFile_list, ScanID):
-        # check if the ScanFile_list contains any folder
-        # first iterate over every element in the ScanFile_list and extract the 
-        # possible folder - then check if at least one folder is set and if
-        # multiples - they have to be equal
-        # if now inputs are givin the macro should be interactive
-        self.setEnv('ScanFile', ScanFile_list)
-        self.setEnv('ScanID', ScanID)
+    def run(self, ScanFilePath_list, ScanID):
+        path_list = []
+        fileName_list = []
+        # traverse the repeat parameters for the path+fileNames
+        for i, ScanFilePath in enumerate(ScanFilePath_list):
+            path = os.path.dirname(ScanFilePath)
+            fileName = os.path.basename(ScanFilePath)
+            if not path and i == 0:
+                # first entry and no given path: use pwd
+                path = os.getcwd()
+            elif not path and i > 0:
+                # not first entry and no given path: use path of last iteration
+                path = path_list[i-1]
+            elif not os.path.isabs(path):
+                # relative path
+                path = os.path.normpath(os.path.join(os.getcwd(), path))
+            else:
+                # absolute path
+                path = os.path.normpath(path)
 
-        self.output('ScanFile set to: ')
-        for ScanFile in ScanFile_list:
-            self.output(' %s', ScanFile)
-        self.output('ScanID set to: %d', ScanID)
+            if i > 0 and path in ((p) for p in path_list):
+                # check if paths are equal
+                self.error("Multiple paths, %s, to the data files are not"
+                           "allowed" % path)
+                return
+            elif not os.path.exists(path):
+                # check if folder exists
+                self.error("Path %s does not exists and has to be created in"
+                           "advance." % path)
+                return
+            else:
+                self.debug("Path %s appended." % path)
+                path_list.append(path)
+
+            if not fileName:
+                self.error("No filename is given")
+                return
+            elif i > 0 and fileName in ((f) for f in fileName_list):
+                self.error("Duplicate filename %s." % fileName)
+                return
+            else:
+                self.debug("Filename is %s." % fileName)
+                fileName_list.append(fileName)
+
+            if ScanID < 1:
+                ScanID = 0
+            else:
+                ScanID = ScanID-1
+
+            self.setEnv('ScanFile', fileName_list)
+            self.setEnv('ScanDir', path_list[0])
+            self.setEnv('ScanID', ScanID)
+
+            self.output('ScanDir is: %s', path_list[0])
+            self.output('ScanFile set to: ')
+            for ScanFile in fileName_list:
+                self.output(' %s', ScanFile)
+            self.output('Next scan is #%d', ScanID+1)
