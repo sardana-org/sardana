@@ -838,10 +838,10 @@ class fscan(Macro, Hookable):
     -no spaces are allowed in the indepvar string.
     -all funcs must evaluate to the same number of points
 
-    EXAMPLE:
-    fscan x=[1,3,5,7,9],y=arange(5) 0.1 motor1 x**2 motor2 sqrt(y*x+3)
-    fscan x=[1,3,5,7,9],y=arange(5) [0.1,0.2,0.3,0.4,0.5] motor1 x**2 motor2
-          sqrt(y*x+3)
+
+    >>> fscan x=[1,3,5,7,9],y=arange(5) 0.1 motor1 x**2 motor2 sqrt(y*x+3)
+    >>> fscan x=[1,3,5,7,9],y=arange(5) [0.1,0.2,0.3,0.4,0.5] motor1 x**2 motor2
+    sqrt(y*x+3)
     """
 
     # ['integ_time', Type.String,   None, 'Integration time']
