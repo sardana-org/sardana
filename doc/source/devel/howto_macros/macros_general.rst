@@ -108,7 +108,9 @@ to write your macros. Unless configured otherwise, spock will use the editor
 specified by the system environment variable :envvar:`EDITOR`. If this variable
 is not set, it will default to vi under Linux/Unix and to notepad under
 Windows. The following line explains how to set the :envvar:`EDITOR`
-environment variable to gedit under linux using bash shell::
+environment variable to gedit under linux using bash shell:
+
+.. code-block:: bash
 
     $ export EDITOR=gedit
 
