@@ -12,6 +12,7 @@ User's Guide
     Spock <spock>
     Sardana-Taurus Widgets <taurus/index>
     Scans <scan>
+    Adding real elements <adding_elements>
     Standard macro catalog <standard_macro_catalog>
     Screenshots <screenshots>
     FAQ <faq>
