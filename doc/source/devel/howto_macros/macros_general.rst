@@ -735,6 +735,51 @@ prepare HelloWorld to run only after year 1989:
 
 .. _sardana-macro-using-external-libraries:
 
+Handling macro stop and abort
+-----------------------------
+
+While macro is being executed the user has a possibility to stop or abort it
+at any time. The way of performing this operation may vary between the
+client application being used, for example see :ref:`sardana-spock-stopping`
+in Spock.
+
+It may be desired to stop or abort objects in use when the macro
+execution gets interrupted. This does not need to be implemented by
+each of the macros. One simply needs to use a special :term:`API` to reserve
+this objects in the macro context and the magic will happen to stop or abort
+them when needed. For example if you get an object using the
+:meth:`~sardana.macroserver.macro.Macro.getObj` method it is automatically
+reserved. It is also worth mentioning the difference between the
+:meth:`~sardana.macroserver.macro.Macro.getMotion` and
+:meth:`~sardana.macroserver.macro.Macro.getMotor` methods. The first one
+will reserve the moveable while the second will not.
+
+And of course we need to clarify the difference between the stop and the abort
+operations. It is commonly agreed that stop is more gentle and
+respectful than abort and is supposed to bring the system to a stable state
+according to a particular protocol and respecting a nominal configuration e.g.
+stop motors respecting the nominal deceleration time. While abort is
+foreseen for more emergency situations and is supposed to bring the system
+to a stable state as fast as possible e.g. stop motors instantly, possibly
+loosing track of position.
+
+While the reserved objects are stopped or aborted immediately after user's
+interruption, the macro execution does not. The macro will not stop until its
+execution thread encounters the next *Macro API* call e.g.
+:meth:`~sardana.macroserver.macro.Macro.output` or
+:meth:`~sardana.macroserver.macro.Macro.getMotor`. There is also a special
+method :meth:`~sardana.macroserver.macro.Macro.checkPoint` that does nothing
+else but mark this place in your code as suitable for stopping or aborting.
+
+If you want to execute a special procedure that should be executed in case
+of user's interruption you must override the
+:meth:`~sardana.macroserver.macro.Macro.on_stop` or
+:meth:`~sardana.macroserver.macro.Macro.on_abort` methods.
+
+.. note:: Currently it is not possible to use any of the *Macro API* calls
+    withing the :meth:`~sardana.macroserver.macro.Macro.on_stop` or
+    :meth:`~sardana.macroserver.macro.Macro.on_abort`.
+
 Using external python libraries
 -------------------------------
 
