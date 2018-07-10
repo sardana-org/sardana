@@ -185,6 +185,8 @@ Scans are highly configurable using the environment variables
 
 Following variables are supported:
 
+.. _activemntgrp:
+
 **ActiveMntGrp**
     *Mandatory, set by user*
 
@@ -193,7 +195,9 @@ Following variables are supported:
 
 .. seealso:: For further information regarding measurement groups, please read
              the following document:
-             :ref:`Measurement Group Overview <_sardana-measurementgroup-overview>`
+             :ref:`Measurement Group Overview <sardana-measurementgroup-overview>`
+
+.. _applyextraploation:
 
 **ApplyExtrapolation**
     *Not mandatory, set by user*
@@ -210,6 +214,8 @@ Following variables are supported:
         (up to and including removal of this variable) may occur if deemed
         necessary by the core developers.
 
+.. _applyinterpolation:
+
 **ApplyInterpolation**
     *Not mandatory, set by user*
 
@@ -225,6 +231,8 @@ Following variables are supported:
         changes (up to and including removal of this variable) may occur if
         deemed necessary by the core developers.
 
+.. _directorymap:
+
 **DirectoryMap**
     *Not mandatory, set by user*
 
@@ -239,11 +247,15 @@ Following variables are supported:
     .. todo::
         Add an example here.
 
+.. _scandir:
+
 **ScanDir**
     *Mandatory if file wants to be saved, set by user*
 
     Its value is of string type and indicates an absolute path to the directory
     where scan data will be stored.
+
+.. _scanfile:
 
 **ScanFile**
     *Mandatory if file wants to be saved, set by user*
@@ -256,6 +268,8 @@ Following variables are supported:
     
 .. seealso:: More about the extension to recorder map in
              :ref:`sardana-writing-recorders`).
+
+.. _scanrecorder:
 
 **ScanRecorder**
     *Not mandatory, set by user*
@@ -284,6 +298,8 @@ Following variables are supported:
         FIO_FileRecorder will write myexperiment.spec file and
         NXscan_FileRecorder will write the myexpriment.h5. The selection of the
         second recorder is based on the extension.
+
+.. _sharedmemory:
 
 **SharedMemory**
     *Not mandatory, set by user*
