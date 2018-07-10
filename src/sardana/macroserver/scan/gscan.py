@@ -1019,7 +1019,8 @@ class SScan(GScan):
         self.debug("[START] motion")
         move_start_time = time.time()
         try:
-            self.info("Macro stage: moving to {} ...".format(step['positions']))
+            log = "Macro stage: moving to {} ...".format(step['positions'])
+            self.info(log)
             state, positions = motion.move(step['positions'])
             self._sum_motion_time += time.time() - move_start_time
             self._env['motiontime'] = self._sum_motion_time
