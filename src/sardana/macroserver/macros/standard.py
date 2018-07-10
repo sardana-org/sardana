@@ -874,7 +874,7 @@ class plotselect(Macro):
 
         # Enable Plot only in the channels passed.
         for channel in self.mntGrp.getChannels():
-            if channel['name'] in plotChs[0]:
+            if channel['name'] in plotChs:
                 # Enable Plot
                 self.info("Plot channel %s" % channel['name'])
                 channel['plot_type'] = 1
