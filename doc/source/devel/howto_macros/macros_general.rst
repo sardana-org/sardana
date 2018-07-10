@@ -764,7 +764,7 @@ to a stable state as fast as possible e.g. stop motors instantly, possibly
 loosing track of position.
 
 While the reserved objects are stopped or aborted immediately after user's
-interruption, the macro execution does not. The macro will not stop until its
+interruption, the macro execution is not. The macro will not stop until its
 execution thread encounters the next *Macro API* call e.g.
 :meth:`~sardana.macroserver.macro.Macro.output` or
 :meth:`~sardana.macroserver.macro.Macro.getMotor`. There is also a special
