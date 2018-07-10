@@ -177,6 +177,8 @@ Miscellaneous
     - :class:`~sardana.macroserver.macros.expert.sar_info` *object*
       displays detailed information about an element
 
+.. _sardana-spock-stopping:
+
 Stopping macros
 ---------------
 
