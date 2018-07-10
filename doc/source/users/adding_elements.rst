@@ -4,70 +4,80 @@
 Adding real elements
 ====================
 
-To use your hardware with Sardana you will need to create corresponding elements
-first. Each Sardana element uses the controller instance for hardware
-communication.
+For the sake of demonstration, let's suppose you want to integrate a slit with
+IcePAP-based motors into Sardana.
+
+Before doing anything else you should check the `controller plugin register <https://sourceforge.net/p/sardana/controllers.git>`_.
+There's a high chance that somebody already wrote the plugin for your hardware.
+If not, you can :ref:`write the plugin yourself <sardana-controller-howto>`.
 
 Controllers
 ===========
 
-To create the controller you can use
-:class:`~sardana.macroserver.macros.expert.defctrl` macro::
+The controller is a Sardana object that handles the communication with the hardware.
+To create the controller you can use :class:`~sardana.macroserver.macros.expert.defctrl`
+macro::
 
   defctrl <class> <name> <roles/properties>
 
 The ``<class>`` parameter is a class name for your controller to use and
-``<name>`` is the name of the controller instance.
+``<name>`` is the name of the new controller instance. Roles and properties are
+used to configure the controller.
 
-Roles are used to connect the Pseudo controllers with other Sardana elements and
-should be specified in the following format: ``role=value``.
-Properties are used for controller configuration and use different syntax:
-``property value``.
-You can specify multiple roles and properties, however when using both, roles
-should be supplied before properties.
+For our IcePAP controller we will use two properties: ``Host`` and ``Port`` of
+our IcePAP system::
 
-Examples::
-
-  defctrl DummyMotorController motctrl01
   defctrl IcepapController ipap01 Host 10.0.0.30 Port 5000
-  defctrl Slit s0ctrl sl2t=mot01 sl2b=mot02 Gap=s0gap Offset=s0off
 
 Controller axes
 ===============
 
-Each Sardana element that serves as the interface for hardware is a controller
-axis. For example, single motor controller can have multiple axes corresponding
-to multiple motors.
+Since single motor controller can have multiple axes corresponding to multiple
+motors, we will need to create the elements for these axes. This way the controller
+will know which motor to move.
 
 With the :class:`~sardana.macroserver.macros.expert.defelem` macro you can
-create any type of controller axis::
+create any type of controller axis, not only motors::
 
   defelem <name> <controller> <axis>
 
 ``<name>`` is the element name, ``<controller>`` is the controller instance on
 which the element should be created and ``<axis>`` is the controller axis number.
-The ``<axis>`` default value is ``-1`` which adds the element as first available
-axis.
 
-Example::
+Let's add an axis to our IcePAP controller::
 
-  defelem mot01 motctrl01 1
-
-The exception are the Pseudo controllers that use pseudo roles instead of the
-axes. As roles are specified during controller creation, elements are created
-together with the controller instance, and it's not possible to use the
-:class:`~sardana.macroserver.macros.expert.defelem` macro with Pseudo controllers.
+  defelem mot01 ipap01 1
 
 Motors
 ======
 
-For creating motors you can use :class:`~sardana.macroserver.macros.expert.defm`
+For creating motors you can also use :class:`~sardana.macroserver.macros.expert.defm`
 macro instead of :class:`~sardana.macroserver.macros.expert.defelem`.
-Its invocation is the same, it's just a shortcut.
+Its invocation is the same, it's just a shortcut::
 
-Example::
+  defm mot02 ipap01 2
 
-  defm mot02 motctrl01 2
+Pseudomotors
+============
+
+To use our slit with more abstract interface we can use the ``Slit`` pseudomotor
+controller. To use it, just add the ``Slit`` controller with the
+:class:`~sardana.macroserver.macros.expert.defctrl` macro::
+
+  defctrl Slit s0ctrl sl2t=mot01 sl2b=mot02 Gap=s0gap Offset=s0off
+
+For the ``Slit`` controller we use roles. There are two types of roles:
+
+* physical roles - real motors, elements that already exist in Sardana
+
+* pseudo roles - abstract motors that will be created by pseudo controller
+
+The ``Slit`` controller defines two physical roles: ``sl2t`` and ``sl2b``, and
+two pseudo roles: ``Gap`` and ``Offset``. Note the difference in syntax for passing
+roles and properties to the :class:`~sardana.macroserver.macros.expert.defctrl` macro.
+
+By this point your slit should be accesible from Sardana using real motors as well as
+abstract pseudomotor interface.
 
 Measurement groups
 ==================
