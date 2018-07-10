@@ -185,7 +185,19 @@ Scans are highly configurable using the environment variables
 
 Following variables are supported:
 
+**ActiveMntGrp**
+    *Mandatory, set by user*
+
+    Environment variable to define the measurement group that will be
+    used when running a scan.
+
+.. seealso:: For further information regarding measurement groups, please read
+             the following document:
+             :ref:`Measurement Group Overview <_sardana-measurementgroup-overview>`
+
 **ApplyExtrapolation**
+    *Not mandatory, set by user*
+
     Enable/disable the extrapolation method to fill the missing parts of the
     very first scan records in case the software synchronized acquisition could
     not follow the pace. Can be used only with the continuous acquisition
@@ -199,6 +211,8 @@ Following variables are supported:
         necessary by the core developers.
 
 **ApplyInterpolation**
+    *Not mandatory, set by user*
+
     Enable/disable the `zero order hold`_ a.k.a. "constant interpolation"
     method to fill the missing parts of the scan records in case the software
     synchronized acquisition could not follow the pace. Can be used only
@@ -212,6 +226,8 @@ Following variables are supported:
         deemed necessary by the core developers.
 
 **DirectoryMap**
+    *Not mandatory, set by user*
+
     In case that the server and the client do not run on the same host, the scan
     data may be easily shared between them using the NFS. Since some of the
     tools e.g. showscan rely on the scan data file the DirectoryMap may help in
@@ -220,19 +236,30 @@ Following variables are supported:
     Its value is a dictionary with keys pointing to the server side directory
     and values to the client side directory/ies (string or list of strings).
 
+    .. todo::
+        Add an example here.
+
 **ScanDir**
+    *Mandatory if file wants to be saved, set by user*
+
     Its value is of string type and indicates an absolute path to the directory
     where scan data will be stored.
 
 **ScanFile**
+    *Mandatory if file wants to be saved, set by user*
+
     Its value may be either of type string or of list of strings. In the second
     case data will be duplicated in multiple files (different file formats may
     be used). Recorder class is implicitly selected based on the file extension.
     For example "myexperiment.spec" will by default store data in SPEC
-    compatible format (see more about the extension to recorder map in
-    :ref:`sardana-writing-recorders`).
+    compatible format.
+    
+.. seealso:: More about the extension to recorder map in
+             :ref:`sardana-writing-recorders`).
 
 **ScanRecorder**
+    *Not mandatory, set by user*
+
     Its value may be either of type string or of list of strings. If
     ScanRecorder variable is defined, it explicitly indicates which recorder
     class should be used and for which file defined by ScanFile (based on the 
@@ -259,6 +286,8 @@ Following variables are supported:
         second recorder is based on the extension.
 
 **SharedMemory**
+    *Not mandatory, set by user*
+
     Its value is of string type and it indicates which shared memory recorder should
     be used during the scan e.g. "sps" will use SPSRecorder (sps Python module
     must be installed on the PC where the MacroServer runs).
