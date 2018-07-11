@@ -28,8 +28,10 @@ DiffracDevice
 ~~~~~~~~~~~~~
 *Mandatory, set by user*
 
-Name of the diffractometer device (tango device name of the Pool device of the
-class HklPseudoMotorCtrl) to be used by the hkl macros.
+This environment variable is used to define the name of the diffractometer device.
+At this moment, this name is supporting only tango device names and it should
+be pointing to the Sardana controller of the class HklPseudoMotorCtrl that will
+be used by the hkl macros.
 
 .. _psi:
 
@@ -37,8 +39,9 @@ Psi
 ~~~
 *Not mandatory, set by user*
 
-name of the psi device (tango device of the class PseudoMotor in the pool
-corresponding to the azimuthal angle).
+Environment variable to specify the *psi* device. This device must be the
+tango device server corresponding Sardana PseudoMotor steering the movement
+of the azimuthal angle.
 
 .. _q:
 
@@ -46,7 +49,10 @@ Q
 ~
 *Mandatory, set by macro wh*
 
+This environment variable is set by the macro *wh* and it correspond to the
 Q vector.
+
+.. todo:: Add the reference to the wh macro.
 
 .. _intern-env-vars:
 
