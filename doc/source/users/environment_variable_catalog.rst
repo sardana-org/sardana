@@ -271,7 +271,8 @@ SampleInfo
 ~~~~~~~~~~
     *Not mandatory, set by user*
 
-Extra info for the sample. describe la muestra.
+Extra information about the sample that could be added as a string.
+This environment variable exist for metadata purposes.
 
 .. _scandir:
 
@@ -348,3 +349,5 @@ SourceInfo
 ~~~~~~~~~~
 *Not mandatory, set by user*
 
+Extra information about the source that could be added as a string.
+This environment variable exist for metadata purposes.
