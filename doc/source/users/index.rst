@@ -12,8 +12,8 @@ User's Guide
     Spock <spock>
     Sardana-Taurus Widgets <taurus/index>
     Scans <scan>
+    Diffractometer <diffractometer>
     Macro Hooks <macro_hooks>
     Standard macro catalog <standard_macro_catalog>
     Screenshots <screenshots>
     FAQ <faq>
-
