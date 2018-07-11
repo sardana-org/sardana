@@ -407,6 +407,26 @@ The history of scans is available through the
        5     ascan gap01 1.0 10.0 20 0.1              13:19:05              13:19:13      scans.h5
 
 
+*Spock syntax* and *Advanced spock syntax*
+------------------------------------------
+
+*Spock syntax* is based on space separated list of parameter values. Not all macros
+are allowed to be used with the spock syntax. Restrictions appear for those macros
+using :ref:`repeat parameters <sardana-macro-repeat-parameters>` as argument. The
+*Spock syntax* would not allow:
+
+1. macros defining more than one repeat parameter
+2. macros defining repeat parameter which is not at the end of the parameters definition
+3. macros defining nested repeat parameters
+
+To overcome these restrictions an *Advanced spock syntax* was developed, this syntax introduces the
+use of square brackets to group the repeat parameters and its repetitions.
+The *Spock Syntax* was extended for the cases 1 and 2 in case only one repetion of the repeat
+parameter is needed, this extension assumes that the parameter values passed by the user are a single
+repetition of the repeat parameter. 
+A set of macro parameter examples using both syntax can be found :ref:`here <sardana-devel-macro-parameter-examples>`.
+
+       
 Using spock as a Python_ console
 --------------------------------
 
