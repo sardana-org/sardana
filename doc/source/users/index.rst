@@ -14,7 +14,7 @@ User's Guide
     Scans <scan>
     Diffractometer <diffractometer>
     Adding real elements <adding_elements>
+    Macro Hooks <macro_hooks>
     Standard macro catalog <standard_macro_catalog>
     Screenshots <screenshots>
     FAQ <faq>
-
