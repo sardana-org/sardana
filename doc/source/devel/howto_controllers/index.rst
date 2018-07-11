@@ -31,3 +31,6 @@ detailed chapter will focus on each specific controller type:
     howto_pseudomotorcontroller
     howto_pseudocountercontroller
 
+.. seealso:: See the :ref:`sardana-adding-elements` section for information on
+    how to add, configure and use controllers.
+

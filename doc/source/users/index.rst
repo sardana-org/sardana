@@ -13,6 +13,7 @@ User's Guide
     Sardana-Taurus Widgets <taurus/index>
     Scans <scan>
     Diffractometer <diffractometer>
+    Adding real elements <adding_elements>
     Macro Hooks <macro_hooks>
     Standard macro catalog <standard_macro_catalog>
     Screenshots <screenshots>
