@@ -14,6 +14,8 @@ User's Guide
     Scans <scan>
     Diffractometer <diffractometer>
     Macro Hooks <macro_hooks>
+    Macro Environment <macro_environment>
+    Environment Variable Catalog <environment_variable_catalog>
     Standard macro catalog <standard_macro_catalog>
     Screenshots <screenshots>
     FAQ <faq>
