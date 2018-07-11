@@ -287,7 +287,7 @@ to switch active measurement groups type
 :class:`~sardana.macroserver.macros.env.senv` **ActiveMntGrp** *mg_name*.
 
 You can also create, modify and select measurement groups using the
-:class:`~sardana.spock.magic.expconf` command
+:ref:`expconf <expconf_ui>` command
 
 Scanning
 --------
@@ -406,6 +406,84 @@ The history of scans is available through the
        4   ascan gap01 10.0 100.0 20 1.0              12:56:47              12:57:18   Not stored!
        5     ascan gap01 1.0 10.0 20 0.1              13:19:05              13:19:13      scans.h5
 
+Accessing macro data
+--------------------
+
+The command :class:`~sardana.spock.magic.macrodata`  allows to retrieve the data of the last macro run in spock.
+If this macro does not provide any data an error message is thrown.
+Example accesing scan data:
+
+.. sourcecode:: spock
+
+   Door_1 [9]: ascan mot17 1 10 2 1
+   ScanDir is not defined. This operation will not be stored persistently. Use "expconf" (or "senv ScanDir <abs directory>") to enable it
+   Scan #2 started at Tue Feb 13 11:16:18 2018. It will take at least 0:00:05.048528
+   #Pt No    mot17      ct17      ct19      ct20       dt
+   0         1         1         3         4      0.865325
+   1        5.5        1         3         4      2.51148    
+   2         10        1         3         4      4.16662   
+   Scan #2 ended at Tue Feb 13 11:16:24 2018, taking 0:00:05.201949. Dead time 42.3% (motion dead time 40.5%)         
+   Door_1 [10]: r = %macrodata  
+   Door_1 [11]: r[0].data.keys()   
+   Result [11]:            
+   ['point_nb',                     
+   'timestamp',                
+   'mot17',                       
+   'haso111n:10000/expchan/ctctrl05/4', 
+   'haso111n:10000/expchan/ctctrl05/1',  
+   'haso111n:10000/expchan/ctctrl05/3'] 
+   Door_1 [12]: r[0].data['point_nb']   
+   Result [12]: 0  
+   Door_1 [13]: r[0].data['mot17'] 
+   Result [13]: 1.0  
+   Door_1 [16]: r[0].data['haso111n:10000/expchan/ctctrl05/1']
+   Result [16]: 1.0
+
+Editing macros
+--------------
+
+The command :class:`~sardana.spock.magic.edmac` allows to edit the macros
+directly from spock. See :ref:`sardana-macros-howto` section.
+
+
+Debugging problems
+------------------
+
+Spock provides some commands that help to debug or recognize the errors in
+case a macro fails when being executed.
+
+    - :class:`~sardana.spock.magic.www` prints the error message from the
+      last macro execution
+
+    - :class:`~sardana.spock.magic.debug` used with ``on`` as parameter
+      activates the print out of the debug messages during macro execution.
+      Set it to ``off`` to deactivate it.
+
+    - :class:`~sardana.spock.magic.post_mortem` prints the current logger
+      messages. If no argument is specified it reads the ``debug`` stream.
+      Valid values are ``output``, ``critical``, ``error``, ``warning``,
+      ``info``, ``debug`` and ``result``.
+
+*Spock syntax* and *Advanced spock syntax*
+------------------------------------------
+
+*Spock syntax* is based on space separated list of parameter values. Not all macros
+are allowed to be used with the spock syntax. Restrictions appear for those macros
+using :ref:`repeat parameters <sardana-macro-repeat-parameters>` as argument. The
+*Spock syntax* would not allow:
+
+1. macros defining more than one repeat parameter
+2. macros defining repeat parameter which is not at the end of the parameters definition
+3. macros defining nested repeat parameters
+
+To overcome these restrictions an *Advanced spock syntax* was developed, this syntax introduces the
+use of square brackets to group the repeat parameters and its repetitions.
+The *Spock Syntax* was extended for the cases 1 and 2 in case only one repetion of the repeat
+parameter is needed, this extension assumes that the parameter values passed by the user are a single
+repetition of the repeat parameter.
+A set of macro examples using both syntaxes can be found in :ref:`sardana-devel-macro-parameter-examples`.
+You can see the invocation example for each of these macros in its docstring.
+
 
 Using spock as a Python_ console
 --------------------------------
@@ -443,7 +521,7 @@ console:
 
 .. rubric:: Footnotes
 
-.. [#] The PyTango_ ipython documentation can be found :ref:`here <itango>`
+.. [#] The PyTango_ ipython documentation can be found here: ITango_
 
 .. _ALBA: http://www.cells.es/
 .. _ANKA: http://http://ankaweb.fzk.de/
@@ -457,6 +535,7 @@ console:
 
 .. _Tango: http://www.tango-controls.org/
 .. _PyTango: http://packages.python.org/PyTango/
+.. _ITango: https://pythonhosted.org/itango/
 .. _Taurus: http://packages.python.org/taurus/
 .. _QTango: http://www.tango-controls.org/download/index_html#qtango3
 .. _`PyTango installation steps`: http://packages.python.org/PyTango/start.html#getting-started

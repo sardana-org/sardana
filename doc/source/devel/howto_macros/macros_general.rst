@@ -373,6 +373,46 @@ each item is an internal list of the members.
 A set of macro parameter examples can be found
 :ref:`here <sardana-devel-macro-parameter-examples>`.
 
+.. _sardana-macro-result:
+
+Returning a macro result
+------------------------
+
+A macro can produce one or more results to be returned.
+The macro :term:`API` enforces to specify certain information about
+these result values.
+Here's an example of how to define and return the results::
+
+  class twice(Macro):
+    """A macro that returns its input and twice its input."""
+
+    param_def = [ [ "value", Type.Float, 23, "value to be doubled" ] ]
+    result_def = [ [ "input_value", Type.Float, None, "the input value" ],
+    [ "result", Type.Float, None, "the double of the given value" ] ]
+
+    def run(self, n):
+        ret = 2*n
+        return n, ret
+
+If a macro with a result is called from another macro the results can be
+retrieved as shown in this example::
+
+  class get_result(Macro):
+    """Different ways of getting the result of a macro"""
+
+    def run(self):
+
+        mymacro, pars= self.createMacro("twice 1")
+        value = self.runMacro(mymacro)
+        self.output(value)
+
+	value = self.execMacro("twice 1")
+        self.output(value.getResult())
+
+        value = self.twice(1)
+        self.output(value.getResult())
+
+
 .. _sardana-macro-context:
 
 Macro context
