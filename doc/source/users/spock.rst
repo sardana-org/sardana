@@ -425,7 +425,7 @@ The *Spock Syntax* was extended for the cases 1 and 2 in case only one repetion 
 parameter is needed, this extension assumes that the parameter values passed by the user are a single
 repetition of the repeat parameter.
 A set of macro examples using both syntaxes can be found in :ref:`sardana-devel-macro-parameter-examples`.
-You can see the invocation example for each macro in its docstring.
+You can see the invocation example for each of these macros in its docstring.
 
 
 Using spock as a Python_ console
