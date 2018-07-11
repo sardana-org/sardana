@@ -20,6 +20,7 @@ scientific installations.
    Glossary <glossary>
    To do <todo>
    History of changes <revision>
+   other_versions
    
 
 * :ref:`genindex`
