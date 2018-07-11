@@ -423,10 +423,11 @@ To overcome these restrictions an *Advanced spock syntax* was developed, this sy
 use of square brackets to group the repeat parameters and its repetitions.
 The *Spock Syntax* was extended for the cases 1 and 2 in case only one repetion of the repeat
 parameter is needed, this extension assumes that the parameter values passed by the user are a single
-repetition of the repeat parameter. 
-A set of macro parameter examples using both syntax can be found :ref:`here <sardana-devel-macro-parameter-examples>`.
+repetition of the repeat parameter.
+A set of macro examples using both syntaxes can be found in :ref:`sardana-devel-macro-parameter-examples`.
+You can see the invocation example for each macro in its docstring.
 
-       
+
 Using spock as a Python_ console
 --------------------------------
 
