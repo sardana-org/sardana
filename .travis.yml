@@ -19,6 +19,7 @@ env:
   - TEST="flake8"
   - TEST="testsuite" DOCKER_IMG=reszelaz/sardana-test
   - TEST="testsuite" DOCKER_IMG=reszelaz/sardana-test:taurus-support-3.x
+  - TEST="doc" DOCKER_IMG=reszelaz/sardana-test
 
 
 before_install:
@@ -30,8 +31,8 @@ before_install:
 
 install:
   # run reszelaz/sardana-test docker container (Debian8 with sardana-deps)
-  - if [ $TEST == "testsuite" ]; then docker pull $DOCKER_IMG; fi
-  - if [ $TEST == "testsuite" ]; then docker run -d --name=sardana-test -h sardana-test --volume=`pwd`:/sardana $DOCKER_IMG; fi
+  - if [ $TEST != "flake8" ]; then docker pull $DOCKER_IMG; fi
+  - if [ $TEST != "flake8" ]; then docker run -d --name=sardana-test -h sardana-test --volume=`pwd`:/sardana $DOCKER_IMG; fi
 
   # wait approx. 10 s (supervisor starts mysql and Tango DB)
   - if [ $TEST == "testsuite" ]; then sleep 10; fi
@@ -50,12 +51,14 @@ script:
   - if [ $TEST == "flake8" ]; then ci/flake8_diff.sh; fi
   # run the full testsuite
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test sardanatestsuite; fi
-  # build & deploy sphinx docs to sardana-doc repo
-  - if [[ "$DOCKER_IMG" == "reszelaz/sardana-test" && "$TRAVIS_REPO_SLUG" == "sardana-org/sardana" ]]; then
-      docker exec -t sardana-test /bin/bash -c "cd /sardana ; python setup.py build_sphinx" ;
+  # build docs
+  - if [ $TEST == "doc" ]; then docker exec -t sardana-test /bin/bash -c "cd /sardana ; python setup.py build_sphinx" ; fi
+  
+  # deploy sphinx docs to sardana-doc repo if we are on upstream
+  - if [[ $TEST == "doc" && $TRAVIS_REPO_SLUG == "sardana-org/sardana" ]]; then      
       pip install doctr ;
       docker exec sardana-test /bin/bash -c "touch /sardana/build/sphinx/html/.nojekyll" ;
-      if [[ "${TRAVIS_BRANCH}" == "develop" ]]; then
+      if [[ $TRAVIS_BRANCH == "develop" ]]; then
         doctr deploy . ;
       else
         doctr deploy "v-$TRAVIS_BRANCH"  ;
