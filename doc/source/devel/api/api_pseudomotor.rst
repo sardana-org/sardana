@@ -297,6 +297,4 @@ every 1 unit move).
   This sketch demonstrates the above example where offset's drift was
   corrected.
 
-.. rubric:: Footnotes
-
 

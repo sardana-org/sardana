@@ -43,6 +43,8 @@ The pseudo motor object is also exposed as a Tango_ device.
     :class:`~sardana.tango.pool.PseudoMotor.PseudoMotor`
         the pseudo motor tango device :term:`API`
 
+.. rubric:: Footnotes
+
 .. [#] We would like to thank Dominique Heinis for sharing his expertise in
        blender.
 
