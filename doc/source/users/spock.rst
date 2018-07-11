@@ -441,7 +441,7 @@ Editing macros
 --------------
 
 The command :class:`~sardana.spock.magic.edmac` allows to edit the macros
-directly from spock. See documention :ref:`here <sardana-macros-howto>`.
+directly from spock. See :ref:`sardana-macros-howto` section.
 
 
 Debugging problems
@@ -498,7 +498,7 @@ console:
 
 .. rubric:: Footnotes
 
-.. [#] The PyTango_ ipython documentation can be found :ref:`here <itango>`
+.. [#] The PyTango_ ipython documentation can be found here: ITango_
 
 .. _ALBA: http://www.cells.es/
 .. _ANKA: http://http://ankaweb.fzk.de/
@@ -512,6 +512,7 @@ console:
 
 .. _Tango: http://www.tango-controls.org/
 .. _PyTango: http://packages.python.org/PyTango/
+.. _ITango: https://pythonhosted.org/itango/
 .. _Taurus: http://packages.python.org/taurus/
 .. _QTango: http://www.tango-controls.org/download/index_html#qtango3
 .. _`PyTango installation steps`: http://packages.python.org/PyTango/start.html#getting-started
