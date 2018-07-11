@@ -450,17 +450,17 @@ Debugging problems
 Spock provides some commands that help to debug or recognize the errors in
 case a macro fails when being executed.
 
-  
     - :class:`~sardana.spock.magic.www` prints the error message from the
       last macro execution
 
-    - :class:`~sardana.spock.magic.debug` used with *on* as parameter
+    - :class:`~sardana.spock.magic.debug` used with ``on`` as parameter
       activates the print out of the debug messages during macro execution.
-      Set it to *off* will desactivate it.
-      
+      Set it to ``off`` to deactivate it.
+
     - :class:`~sardana.spock.magic.post_mortem` prints the current logger
-      messages. If not argument is specified it reads 'debug' stream.
-      Valid values are output, critical, error, warning, info, debug and result.
+      messages. If no argument is specified it reads the ``debug`` stream.
+      Valid values are ``output``, ``critical``, ``error``, ``warning``,
+      ``info``, ``debug`` and ``result``.
 
 Using spock as a Python_ console
 --------------------------------
