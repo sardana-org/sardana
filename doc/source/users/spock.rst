@@ -464,6 +464,27 @@ case a macro fails when being executed.
       Valid values are ``output``, ``critical``, ``error``, ``warning``,
       ``info``, ``debug`` and ``result``.
 
+*Spock syntax* and *Advanced spock syntax*
+------------------------------------------
+
+*Spock syntax* is based on space separated list of parameter values. Not all macros
+are allowed to be used with the spock syntax. Restrictions appear for those macros
+using :ref:`repeat parameters <sardana-macro-repeat-parameters>` as argument. The
+*Spock syntax* would not allow:
+
+1. macros defining more than one repeat parameter
+2. macros defining repeat parameter which is not at the end of the parameters definition
+3. macros defining nested repeat parameters
+
+To overcome these restrictions an *Advanced spock syntax* was developed, this syntax introduces the
+use of square brackets to group the repeat parameters and its repetitions.
+The *Spock Syntax* was extended for the cases 1 and 2 in case only one repetion of the repeat
+parameter is needed, this extension assumes that the parameter values passed by the user are a single
+repetition of the repeat parameter.
+A set of macro examples using both syntaxes can be found in :ref:`sardana-devel-macro-parameter-examples`.
+You can see the invocation example for each of these macros in its docstring.
+
+
 Using spock as a Python_ console
 --------------------------------
 
