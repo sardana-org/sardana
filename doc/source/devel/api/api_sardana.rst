@@ -19,6 +19,8 @@ Sardana API
     Pseudo motor API <api_pseudomotor>
     Pseudo counter API <api_pseudocounter>
     Measurement group API <api_measurementgroup>
+    MacroServer API <api_macroserver>
+    Pool API <api_pool>
     Pool tango API <tango_device_pool>
     Macro server tango API <tango_macroserver>
     Library <sardana/sardana>

@@ -1,3 +1,4 @@
+.. _sardana-taurus:
 
 ================================
 Sardana Taurus Extension widgets
