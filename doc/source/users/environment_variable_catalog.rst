@@ -54,10 +54,6 @@ Q vector.
 
 .. todo:: Add the reference to the wh macro.
 
-_ViewOptions
-~~~~~~~~~~~~
-*Not mandatory, set by user*
-
 .. _macro-logging-env-vars:
 
 Macro Logging Environment Variables
@@ -69,7 +65,7 @@ LogMacro
 ~~~~~~~~
 *Not mandatory, set by user*
 
-If true macro logging on, if false or not set macro logging off.
+Enable and disable the macro logging via this boolean environment variable.
 
 .. _logmacrodir:
 
@@ -77,7 +73,7 @@ LogMacroDir
 ~~~~~~~~~~~
 *Not mandatory, set by user or to default value: \tmp, by macro*
 
-Directory to save the macro logging file.
+Directory where the macro logging file will be save.
 
 .. _logmacromode:
 
@@ -85,7 +81,10 @@ LogMacroMode
 ~~~~~~~~~~~~
 *Not mandatory, set by user or to default value: 0, by macro*
 
-Number of backup files to be saved.
+With this environment variable it's possible to specify the number of backup
+files to be saved.
+
+.. todo:: Add and example here.
 
 .. _logmacroformat:
 
@@ -93,7 +92,7 @@ LogMacroFormat
 ~~~~~~~~~~~~~~
 *Not mandatory, set by user or to default value by macro*
 
-Line file format.
+Definition of the format to be used to save the file.
 
 .. _motion-env-vars:
 
@@ -191,11 +190,38 @@ JsonRecorder
 ~~~~~~~~~~~~
     *Not mandatory, set by user*
 
+.. _outputblock:
+
+OutputBlock
+~~~~~~~~~~~
+    *Not mandatory, set by user*
+
+Enable/disable printing the scan output records at the same line instead
+of appending records as new lines a.k.a. block mode. This can save space
+of the console output and facilitate an easy visual access to the scan
+header printed at the beginning of the scan - especially useful for very
+long scans.
+
 .. _outputcols:
 
 OutputCols
 ~~~~~~~~~~
     *Not mandatory, set by user*
+
+Select a subset of the scan output columns to be printed. Two different ways
+of specifying the selected columns exists. First, by specifying an integer
+number e.g. 2 means print just the very first two columns.
+Second, by specifying a list of string identifiers e.g. scan elements URIs
+or the scan record metadata identifiers: "point_nb", "timestamp".
+
+The original order of colums is not changed. This feature is similar to the
+*expconf* enable/disable output.
+
+Example:
+
+::
+
+    senv OutputCols "['tango_host:port/expchan/zerodctrl01/1','motor1','timestamp']"
 
 .. _prescansnapshot:
 
