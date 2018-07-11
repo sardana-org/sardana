@@ -54,13 +54,6 @@ Q vector.
 
 .. todo:: Add the reference to the wh macro.
 
-.. _intern-env-vars:
-
-Intern
-------
-
-.. _viewoptions:
-
 _ViewOptions
 ~~~~~~~~~~~~
 *Not mandatory, set by user*
