@@ -13,6 +13,10 @@ available as debian package
 is exclusively done inside of the controller code, so the hkl binding is only
 required if a diffractometer controller is going to be created.
 
+.. note ::
+  To use the HklPseudoMotorController you need to install the following Debian
+  packages: ``libhkl5`` and ``gir1.2-hkl-5.0``.
+
 The tango device created inside of the Pool for the diffractometer
 controller contains all the commands/attributes for setting the diffractometer,
 the movements are done using the real (in real space) and the pseudo (in
@@ -59,33 +63,18 @@ device, for setting the diffractometer, and the pseudo motor devices, for
 the reciprocal space movements. The real motors have to be included as motors
 in sardana, like the motors associated to any other PseudoMotor. Example:
 
- .. sourcecode:: Example
-  
-   params = ["PseudoMotor",
-   "HklPseudoMotorController",
-   "DiffracE6C",
-   "e6cctrl",
-   "mu=hostname:10000/motor/realdiffmot/1",
-   "omega=hostname:10000/motor/realdiffmot/2",
-   "chi=hostname:10000/motor/realdiffmot/3",
-   "phi=hostname:10000/motor/realdiffmot/4",
-   "gamma=hostname:10000/motor/realdiffmot/5",
-   "delta=hostname:10000/motor/realdiffmot/6",
-   "h=e6ch","k=e6ck","l=e6cl",
-   "psi=e6cpsi","q=e6cq","alpha=e6calpha",
-   "qper=e6cqper1","qpar=e6cqpar",
-   "DiffractometerType","E6C"]
-   
-   pool.command_inout("CreateController", params)
- 
+::
+  defctrl DiffracE6C e6cctrl mu=mot01 omega=mot02 chi=mot03 phi=mot04 \
+  gamma=mot05 delta=mot06 h=e6ch k=e6ck l=e6cl psi=e6cpsi q=e6cq \
+  alpha=e6calpha qper=e6cqper1 qpar=e6cqpar DiffractometerType E6C
 
-for creating the devices corresponding to a diffractometer with E6C geometry, 
-where hostname:10000/motor/realdiffmot/x are the names of the pool device
+for creating the devices corresponding to a diffractometer with E6C geometry,
+where ``motXX`` are the names of the pool device
 associated to each real motor (already existing Motors in sardana),
-e6cctrl is an arbitrary name given to the controller,
-and e6ch, ee6ck , e6cl, e6cpsi, e6cq, e6calpha, e6cqper1, e6cqpar are the
-arbitrary names given to the motors in reciprocal space (PseudoMotors in
-sardana, created by this call).
+``e6cctrl`` is an arbitrary name given to the controller,
+and ``e6ch``, ``e6ck`` , ``e6cl``, ``e6cpsi``, ``e6cq``, ``e6calpha``, ``e6cqper1``
+and ``e6cqpar`` are the arbitrary names given to the motors in reciprocal space
+(PseudoMotors in Sardana, created by this call).
 
 The diffractometer controller device contains as attributes (since it is not
 possible add extra commands to the controllers) all the commands and settings for
