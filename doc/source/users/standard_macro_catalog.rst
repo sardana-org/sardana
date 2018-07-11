@@ -45,6 +45,7 @@ counting macros
 
 diffractometer related macros
 -----------------------------
+.. _sardana-diffractometer-macros:
 
 .. hlist::
     :columns: 5
