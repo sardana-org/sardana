@@ -3,7 +3,7 @@
 .. _sardana-pseudomotor-api:
 
 =============================
-Pseudo motor API geference
+Pseudo motor API reference
 =============================
 
 A pseudo motor has a ``state``, and a ``position`` attributes. The state
