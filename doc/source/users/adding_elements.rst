@@ -29,6 +29,9 @@ our IcePAP system::
 
   defctrl IcepapController ipap01 Host 10.0.0.30 Port 5000
 
+.. note::
+  To learn more about controllers see :ref:`sardana-controller-overview`.
+
 Controller axes
 ===============
 
@@ -47,6 +50,23 @@ which the element should be created and ``<axis>`` is the controller axis number
 Let's add an axis to our IcePAP controller::
 
   defelem mot01 ipap01 1
+
+.. note::
+  To learn more about different element types see the following sections:
+
+  * :ref:`sardana-motor-overview`
+
+  * :ref:`sardana-ior-overview`
+
+  * :ref:`sardana-countertimer-overview`
+
+  * :ref:`sardana-0d-overview`
+
+  * :ref:`sardana-1d-overview`
+
+  * :ref:`sardana-2d-overview`
+
+  * :ref:`sardana-triggergate-overview`
 
 Motors
 ======
@@ -79,6 +99,10 @@ roles and properties to the :class:`~sardana.macroserver.macros.expert.defctrl` 
 By this point your slit should be accesible from Sardana using real motors as well as
 abstract pseudomotor interface.
 
+.. note::
+  To learn more about pseudo elements see :ref:`sardana-pseudomotor-overview` and
+  :ref:`sardana-pseudocounter-overview`.
+
 Measurement groups
 ==================
 
@@ -94,6 +118,9 @@ channel and at least one of the channels must be a Counter/Timer.
 Example::
 
   defmeas mntgrp01 ct01 ct02 ct03 ct04
+
+.. note::
+  To learn more about measurement groups see :ref:`sardana-measurementgroup-overview`.
 
 Removing elements
 =================
