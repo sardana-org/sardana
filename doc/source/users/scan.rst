@@ -187,6 +187,4 @@ Scans are highly configurable using the environment variables
              Variables, check the 
              :ref:`Environment Variable Catalog <environment-variable-catalog>`
 
-.. _zero order hold: https://en.wikipedia.org/wiki/Zero-order_hold
-.. _SEP6: http://www.sardana-controls.org/sep/?SEP6.md
 .. _Tango: http://www.tango-controls.org

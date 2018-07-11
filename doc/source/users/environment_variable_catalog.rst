@@ -351,3 +351,6 @@ SourceInfo
 
 Extra information about the source that could be added as a string.
 This environment variable exist for metadata purposes.
+
+.. _zero order hold: https://en.wikipedia.org/wiki/Zero-order_hold
+.. _SEP6: http://www.sardana-controls.org/sep/?SEP6.md
