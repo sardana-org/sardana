@@ -337,13 +337,13 @@ class lsgh(Macro):
 
 
 class defgh(Macro):
-    """Define general hook.
-    Ex.
-        defgh "mv [[mot02 9]]" pre-scan
-        defgh "ct 0.1" pre-scan
-        defgh lsm pre-scan
-        defgh "mv mot03 10" pre-scan
-        defgh "Print 'Hello world'" pre-scan
+    """Define general hook:
+
+    >>> defgh "mv [[mot02 9]]" pre-scan
+    >>> defgh "ct 0.1" pre-scan
+    >>> defgh lsm pre-scan
+    >>> defgh "mv mot03 10" pre-scan
+    >>> defgh "Print 'Hello world'" pre-scan
 
     .. note::
         The `defgh` macro has been included in Sardana
