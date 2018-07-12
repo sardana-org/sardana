@@ -7,10 +7,7 @@ Environment Variable Catalog
 This is the catalog of the available environment variables that can be used in
 Sardana.
 
-.. toctree::
-    :maxdepth: 3
-
-    environment_variable_catalog
+.. contents::
 
 .. _general-env-vars:
 
