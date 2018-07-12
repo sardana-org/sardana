@@ -220,6 +220,22 @@ Following variables are supported:
     Its value is a dictionary with keys pointing to the server side directory
     and values to the client side directory/ies (string or list of strings).
 
+**OutputBlock**
+    Enable/disable printing the scan output records at the same line instead
+    of appending records as new lines a.k.a. block mode. This can save space
+    of the console output and facilitate an easy visual access to the scan
+    header printed at the beginning of the scan - especially usefull for very
+    long scans.
+
+**OutputCols**
+    Select a subset of the scan output columns to be printed. Two different
+    ways of specifying the selected colums exists. First, by specifying an
+    integer number e.g. 2 means print just the very first two colums.
+    Second, by specifying a list of string identifiers e.g. scan elements URIs
+    or the scan record metadata identifiers: "point_nb", "timestamp".
+    The original order of colums is not changed. This feature is similar to
+    the *expconf* enable/disable output.
+
 **ScanDir**
     Its value is of string type and indicates an absolute path to the directory
     where scan data will be stored.
