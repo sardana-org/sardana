@@ -15,7 +15,7 @@ Prerequisites
 Before writing the first python pseudo motor class for your device
 pool two checks must be performed: 
 
-1. The device pool **PoolPath** property must exist and must point to the
+#. The device pool **PoolPath** property must exist and must point to the
    directory which will contain your python pseudo motor module. The syntax of
    this PseudoPath property is the same used in the PATH or PYTHONPATH
    environment variables.
@@ -23,39 +23,29 @@ pool two checks must be performed:
    .. seealso:: Please see :ref:`sardana-pool-api-poolpath` 
                 for more information on setting this property.
 
-2. A *PseudoMotor.py* file is part of the device pool distribution and is
-   located within the *sardana/pool* module. The directory containing this
+#. A ``poolpseudomotor.py`` file is part of the device pool distribution and is
+   located within the :mod:`sardana.pool` module. The directory containing this
    module must be in the PYTHONPATH environment variable or it must be part of
    the **PoolPath** device pool property mentioned above.
+
 
 Rules
 -----
 
 A correct pseudo motor system class must obey the following rules: 
 
-#. The python class PseudoMotor of the PseudoMotor module must be
-   imported into the current namespace by using one of the python import
-   statements:
-
+#. The python class :class:`PseudoMotorController` of the
+   :mod:`sardana.pool.controller`
+   module must be imported into the current namespace by using one of the
+   python import statements, e.g.:
     
-    
-    ::
-    
-        from PseudoMotor import *
+   ::
 
-    ::
-
-        import PseudoMotor
-
-   or
-   
-    ::
-
-        from PseudoMotor import PseudoMotor
+        from sardana.pool.controller import PseudoMotorController
     
     
 #. The pseudo motor system class being written must be a subclass of the
-   PseudoMotor class (see example :ref:`below <pseudomotor-example>`)
+   PseudoMotorController class (see example :ref:`below <pseudomotor-example>`)
 
 
 #. The class variable **motor_roles** must be set to be a tuple of text
@@ -68,11 +58,13 @@ A correct pseudo motor system class must obey the following rules:
 
 
 #. The class variable **pseudo_motor_roles** must be set if the pseudo motor
-   class being written represents more than one pseudo motor. The order in
-   which the roles are defined will determine the index of the pseudo motors
-   in the pseudo motor system. If the pseudo motor class represents only one
-   pseudo motor then this operation is optional. If omitted, the value of
-   pseudo_motor_roles will be set with the class name.
+   class being written represents more than one pseudo motor. This variable
+   must contain a tuple of text descriptions containing each pseudo motor role
+   description.
+   The order in which the roles are defined will determine the index of the 
+   pseudo motors in the pseudo motor system. If the pseudo motor class 
+   represents only one pseudo motor then this operation is optional.
+   If omitted, the value of pseudo_motor_roles will be set with the class name.
 
     
 #. If the pseudo motor class needs some special parameters then the class
@@ -101,12 +93,12 @@ A correct pseudo motor system class must obey the following rules:
      corresponding 'Type' value. 
 
 
-#. The pseudo motor class must implement a **calc_pseudo** method with the
+#. The pseudo motor class must implement a **CalcPseudo** method with the
    following signature:
 
    ::
     
-        number = calc_pseudo(index, physical_pos, params = None)
+        number = CalcPseudo(index, physical_pos, params = None)
     
    The method will receive as argument the index of the pseudo motor for
    which the pseudo position calculation is requested. This number refers
@@ -124,12 +116,12 @@ A correct pseudo motor system class must obey the following rules:
    motor position. 
 
 
-#. The pseudo motor class must implement a **calc_physical** method with the
+#. The pseudo motor class must implement a **CalcPhysical** method with the
    following signature:
 
     ::
     
-        number = calc_physical(index, pseudo_pos, params = None)
+        number = CalcPhysical(index, pseudo_pos, params = None)
     
    The method will receive as argument the index of the motor for which
    the physical position calculation is requested. This number refers to
@@ -146,12 +138,12 @@ A correct pseudo motor system class must obey the following rules:
    The method will return a number representing the calculated motor position. 
     
 
-#. Optional implementation of **calc_all_pseudo** method with the following
+#. Optional implementation of **CalcAllPseudo** method with the following
    signature:
 
    ::
    
-       ()/[]/number = calc_all_pseudo(physical_pos,params = None)
+       ()/[]/number = CalcAllPseudo(physical_pos, params = None)
    
    The method will receive as argument a physical_pos which is a tuple of
    motor positions. 
@@ -164,16 +156,16 @@ A correct pseudo motor system class must obey the following rules:
    then the return value could be a single number. 
    
    .. note:: At the time of writing this documentation, the method
-             **calc_all_pseudo** is not used. Is still available for backward
+             **CalcAllPseudo** is not used. Is still available for backward
              compatibility.
 
     
-#. Optional implementation of **calc_all_physical** method with the following
+#. Optional implementation of **CalcAllPhysical** method with the following
    signature:
     
    ::
    
-       ()/[]/number = calc_all_physical(pseudo_pos, params = None)
+       ()/[]/number = CalcAllPhysical(pseudo_pos, params = None)
    
    The method will receive as argument a pseudo_pos which is a tuple of
    pseudo motor positions. 
@@ -185,8 +177,8 @@ A correct pseudo motor system class must obey the following rules:
    positions. If the pseudo motor class requires a single motor then the
    return value could be a single number. 
 
-   .. note:: The default implementation **calc_all_physical** and 
-             **calc_all_pseudo** methods will call calc_physical and calc_pseudo
+   .. note:: The default implementation **CalcAllPhysical** and 
+             **CalcAllPseudo** methods will call CalcPhysical and CalcPseudo
              for each motor and physical motor respectively. Overwriting the
              default implementation should only be done if a gain in performance
              can be obtained. 
@@ -226,44 +218,74 @@ The calculations that need to be performed are:
 The corresponding python code would be: 
 
 ::
-    
-      class Slit(PseudoMotor):
-          """A Slit system for controlling gap and offset pseudo motors."""
-    
-          pseudo_motor_roles = ("Gap", "Offset")
-          motor_roles = ("Motor on blade 1", "Motor on blade 2")
-    
-      def calc_physical(self,index,pseudo_pos,params = None):
-          half_gap = pseudo_pos[0]/2.0
-          if index == 0:
-              return -pseudo_pos[1] + half_gap
-          else
-              return pseudo_pos[1] + half_gap
-    
-      def calc_pseudo(self,index,physical_pos,params = None):
-          if index == 0:
-              return physical_pos[1] + physical_pos[0]
-          else:
-              return (physical_pos[1] - physical_pos[0])/2.0
+
+    """This module contains the definition of a slit pseudo motor controller
+    for the Sardana Device Pool"""
+
+    __all__ = ["Slit"]
+
+    __docformat__ = 'restructuredtext'
+
+    from sardana import DataAccess
+    from sardana.pool.controller import PseudoMotorController
+    from sardana.pool.controller import DefaultValue, Description, Access, Type
 
 
-Read Gap Position Diagram
--------------------------
+    class Slit(PseudoMotorController):
+        """A Slit pseudo motor controller for handling gap and offset pseudo
+        motors. The system uses to real motors sl2t (top slit) and sl2b (bottom
+        slit)"""
 
-The following diagram shows the sequence of operations performed when
-the position is requested from the gap pseudo motor: 
+        gender = "Slit"
+        model = "Default Slit"
+        organization = "Sardana team"
 
-.. image:: /_static/gap_read.png
+        pseudo_motor_roles = "Gap", "Offset"
+        motor_roles = "sl2t", "sl2b"
 
+        ctrl_properties = {'sign': {Type: float,
+                                    Description: 'Gap = sign * calculated gap\nOffset = sign * calculated offet',
+                                    DefaultValue: 1}, }
 
-Write Gap Position Diagram
---------------------------
+        axis_attributes = {'example': {Type: int,
+                                    Access: DataAccess.ReadWrite,
+                                    Description: 'test purposes'}, }
 
-The following diagram shows the sequence of operations performed when
-a new position is written to the gap pseudo motor: 
+        def __init__(self, inst, props, *args, **kwargs):
+            PseudoMotorController.__init__(self, inst, props, *args, **kwargs)
+            self._log.debug("Created SLIT %s", inst)
+            self._example = {}
 
+        def CalcPhysical(self, index, pseudo_pos, curr_physical_pos):
+            half_gap = pseudo_pos[0] / 2.0
+            if index == 1:
+                ret = self.sign * (pseudo_pos[1] + half_gap)
+            else:
+                ret = self.sign * (half_gap - pseudo_pos[1])
+            self._log.debug("Slit.CalcPhysical(%d, %s) -> %f",
+                            index, pseudo_pos, ret)
+            return ret
 
-.. image:: /_static/gap_write.png
+        def CalcPseudo(self, index, physical_pos, curr_pseudo_pos):
+            gap = physical_pos[1] + physical_pos[0]
+            if index == 1:
+                ret = self.sign * gap
+            else:
+                ret = self.sign * (physical_pos[0] - gap / 2.0)
+            return ret
+
+        def CalcAllPseudo(self, physical_pos, curr_pseudo_pos):
+            """Calculates the positions of all pseudo motors that belong to the
+            pseudo motor system from the positions of the physical motors."""
+            gap = physical_pos[1] + physical_pos[0]
+            return (self.sign * gap,
+                    self.sign * (physical_pos[0] - gap / 2.0))
+
+        def SetAxisExtraPar(self, axis, parameter, value):
+            self._example[axis] = value
+
+        def GetAxisExtraPar(self, axis, parameter):
+            return self._example.get(axis, -1)
 
 
 .. seealso:: For more details on pseudo motors please refer to
