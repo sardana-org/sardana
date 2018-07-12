@@ -104,6 +104,6 @@ log report format
 -----------------
     Macros may report information to a file and the format of this
     information is configurable. It uses the
-    `Python logging format syntax <https://docs.python.org/2/library/logging.html#formatter-objects>`.
-    
+    `Python logging format syntax <https://docs.python.org/2/library/logging.html#formatter-objects>`_.
+
     Defaul value: ``%(levelname)-8s %(asctime)s: %(message)s``
