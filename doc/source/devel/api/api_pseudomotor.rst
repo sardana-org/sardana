@@ -53,8 +53,22 @@ abort
     :class:`~sardana.tango.pool.PseudoMotor.PseudoMotor`
         the pseudo-motor tango device :term:`API`
 
-..    :class:`~sardana.pool.poolpseudomotor.PoolPseudoMotor`
-..        the pseudo-motor class :term:`API`
+
+.. _sardana-pseudomotor-api-position:
+
+PseudoMotor position
+--------------------
+
+The pseudomotor's current position can be obtained by reading the
+position attribute. The diagram shows the internal sequence of calls.
+As it is shown on this picture this process is divided into two parts. First
+the physical :ref:`motor positions are read <sardana-motor-api-position>`
+from the hardware. Later these motor positions are used to calculate the
+pseudo position.
+
+.. image:: /_static/sardana_server_internal_pseudomotor_read_position_flow.png
+    :width: 680
+    :align: center
 
 .. _drift_section:
 
