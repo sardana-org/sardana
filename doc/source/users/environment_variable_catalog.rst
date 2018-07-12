@@ -169,6 +169,26 @@ timescan. Its value is of boolean type.
     changes (up to and including removal of this variable) may occur if
     deemed necessary by the core developers.
 
+.. _datacompressionrank:
+
+DataCompressionRank
+~~~~~~~~~~~~~~~~~~~
+*Not mandatory, set by user*
+
+Environment variable used to select the data compression rank that will be
+used to save the data into a file.
+
+The data compression rank is the minimum number of dimensions above which the
+dataset will be compressed, e.g. 0 for scalars, 1 for spectrums, 2 for images.
+
+The possible values are:
+
+* -1: No where
+* 0: for all datasets
+* 1: for datasets of rank 1 or more
+* 2: for datasets of rank 2 or more
+* 3: for datasets of rank 3 or more
+
 .. _directorymap:
 
 DirectoryMap
