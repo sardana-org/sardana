@@ -291,7 +291,7 @@ intersphinx_mapping = {
     'http://docs.scipy.org/doc/scipy/reference': None,
     'http://docs.scipy.org/doc/numpy': None,
     'http://ipython.org/ipython-doc/stable/': None,
-    'http://www.esrf.fr/computing/cs/tango/tango_doc/kernel_doc/pytango/latest/': None,
+    'http://pytango.readthedocs.io/en/stable/': None,
     'http://www.taurus-scada.org': None,
     'http://pyqt.sourceforge.net/Docs/PyQt4/': None,
     'http://matplotlib.sourceforge.net/': None,
