@@ -1691,7 +1691,7 @@ class MeasurementGroup(PoolElement):
         :type channel: ExpChannel
         :param value_buffer: json encoded value buffer update, it contains
             at least values and indexes
-        :type value_buffer: str
+        :type value_buffer: :obj:`str`
         """
         if value_buffer is None:
             return

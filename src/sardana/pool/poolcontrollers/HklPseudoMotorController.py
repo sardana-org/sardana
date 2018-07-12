@@ -990,7 +990,7 @@ class DiffracBasis(PseudoMotorController):
         """Load crystal information from a file. Ignore wavelength information.
 
         :param value: complete path of the file with the crystal to set
-        :type value: string
+        :type value: :obj:`str`
         """
         # Read the file
         with open(value, 'r') as crystal_file:
