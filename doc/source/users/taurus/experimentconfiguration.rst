@@ -90,7 +90,7 @@ a given channel or its controller:
 Show / Hide current scan plot(s)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The experiment Configuration widget provides a button to show/hide plots of the
+The Experiment Configuration widget provides a button to show/hide plots of the
 current scan. When this button is checked, the values of `plot type` and
 `plot axes` :ref:`in the channel configuration <expconf_ui_measurementgroup_channel>`
 determine how many plot widgets will be spawned to show the channels involved
