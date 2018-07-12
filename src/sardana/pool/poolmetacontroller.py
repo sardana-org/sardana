@@ -269,10 +269,15 @@ class ControllerClass(SardanaClass):
         self.ctrl_features = tuple(klass.ctrl_features)
 
         self.ctrl_properties = props = CaselessDict()
+        self.ctrl_properties_descriptions = []
         for k, v in klass.class_prop.items():  # old member
             props[k] = DataInfo.toDataInfo(k, v)
+            self.ctrl_properties_descriptions.append(v['description'])
         for k, v in klass.ctrl_properties.items():
             props[k] = DataInfo.toDataInfo(k, v)
+            self.ctrl_properties_descriptions.append(v['description'])
+        self.dict_extra['properties'] = tuple(klass.ctrl_properties)
+        self.dict_extra['properties_desc'] = self.ctrl_properties_descriptions
 
         self.ctrl_attributes = ctrl_attrs = CaselessDict()
         for k, v in klass.ctrl_attributes.items():
