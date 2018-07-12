@@ -16,5 +16,6 @@ User's Guide
     Adding real elements <adding_elements>
     Macro Hooks <macro_hooks>
     Standard macro catalog <standard_macro_catalog>
+    Configuration <configuration/index>
     Screenshots <screenshots>
     FAQ <faq>
