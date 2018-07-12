@@ -838,10 +838,10 @@ macro as a class <sardana-macro-class-writing>` while at the same time
 inheriting from the :class:`~sardana.macroserver.macro.Hookable` class.
 
 The hook places can be defined in the ``hints`` class member dictionary with
-the ``allowedHooks`` key and a tuple of strings with the hook places
+the ``allowsHooks`` key and a tuple of strings with the hook places
 identifiers::
 
-    class loop(Macro, Hookable):
+    class hookable_macro(Macro, Hookable):
         """A macro that accepts and executes hooks."""
 
         hints = {"allowsHooks": ("hook-place", "another-hook-place")}
