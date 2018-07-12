@@ -66,30 +66,10 @@ A correct pseudo motor system class must obey the following rules:
    If omitted, the value of pseudo_motor_roles will be set with the class name.
 
     
-#. If the pseudo motor class needs some special parameters then the class
-   variable parameters must be set to be a dictionary of 
-   
-   ::
-
-   <parameter name>: { <property> : <value> } 
-   
-   where:
-
-   * <parameter name> is a string representing the name of the parameter.
-   
-   * <property> is one of the following mandatory properties:
-   
-        * 'Description'
-   
-        * 'Type'
-
-     The 'DefaultValue' property is optional. 
-    
-   * <value> is the corresponding value of the property. The
-     'Description' can contain any text value.
-     The 'Type' must be one of available Tango_ property data types and
-     'DefaultValue' must be a string containing a valid value for the
-     corresponding 'Type' value. 
+#. In case the pseudo motor class needs special properties or attributes,
+   it exist the possibility of defining them as explained in the section
+   :ref:`sardana-controller-howto-axis-attributes` and
+   :ref:`sardana-controller-howto-controller-attributes`.
 
 
 #. The pseudo motor class must implement a **CalcPseudo** method with the
@@ -120,7 +100,7 @@ A correct pseudo motor system class must obey the following rules:
 
     ::
     
-        number = CalcPhysical(index, pseudo_pos,  curr_physical_pos)
+        number = CalcPhysical(index, pseudo_pos, curr_physical_pos)
     
    The method will receive as argument the index of the motor for which
    the physical position calculation is requested. This number refers to
