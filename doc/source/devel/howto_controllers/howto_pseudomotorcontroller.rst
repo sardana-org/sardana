@@ -49,8 +49,7 @@ A correct pseudo motor system class must obey the following rules:
 
 
 #. The class variable **motor_roles** must be set to be a tuple of text
-   descriptions containing each motor role description. It is crucial that all
-   necessary motors contain a textual description even if it is an empty one.
+   descriptions containing each motor role name.
    This is because the number of elements in this tuple will determine the
    number of required motors for this pseudo motor class. The order in which
    the roles are defined is also important as it will determine the index of
@@ -60,7 +59,7 @@ A correct pseudo motor system class must obey the following rules:
 #. The class variable **pseudo_motor_roles** must be set if the pseudo motor
    class being written represents more than one pseudo motor. This variable
    must contain a tuple of text descriptions containing each pseudo motor role
-   description.
+   name.
    The order in which the roles are defined will determine the index of the 
    pseudo motors in the pseudo motor system. If the pseudo motor class 
    represents only one pseudo motor then this operation is optional.
@@ -84,12 +83,12 @@ A correct pseudo motor system class must obey the following rules:
    
         * 'Type'
 
-     The 'Default Value' property is optional. 
+     The 'DefaultValue' property is optional. 
     
    * <value> is the corresponding value of the property. The
      'Description' can contain any text value.
      The 'Type' must be one of available Tango_ property data types and
-     'Default Value' must be a string containing a valid value for the
+     'DefaultValue' must be a string containing a valid value for the
      corresponding 'Type' value. 
 
 
@@ -98,7 +97,7 @@ A correct pseudo motor system class must obey the following rules:
 
    ::
     
-        number = CalcPseudo(index, physical_pos, params = None)
+        number = CalcPseudo(index, physical_pos, curr_pseudo_pos)
     
    The method will receive as argument the index of the pseudo motor for
    which the pseudo position calculation is requested. This number refers
@@ -121,7 +120,7 @@ A correct pseudo motor system class must obey the following rules:
 
     ::
     
-        number = CalcPhysical(index, pseudo_pos, params = None)
+        number = CalcPhysical(index, pseudo_pos,  curr_physical_pos)
     
    The method will receive as argument the index of the motor for which
    the physical position calculation is requested. This number refers to
@@ -143,7 +142,7 @@ A correct pseudo motor system class must obey the following rules:
 
    ::
    
-       ()/[]/number = CalcAllPseudo(physical_pos, params = None)
+       ()/[]/number = CalcAllPseudo(physical_pos, curr_pseudo_pos)
    
    The method will receive as argument a physical_pos which is a tuple of
    motor positions. 
@@ -165,7 +164,7 @@ A correct pseudo motor system class must obey the following rules:
     
    ::
    
-       ()/[]/number = CalcAllPhysical(pseudo_pos, params = None)
+       ()/[]/number = CalcAllPhysical(pseudo_pos, curr_physical_pos)
    
    The method will receive as argument a pseudo_pos which is a tuple of
    pseudo motor positions. 
