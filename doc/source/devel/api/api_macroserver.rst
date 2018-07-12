@@ -57,6 +57,8 @@ environment db
     module. The shelve file is stored on the file system and by default it
     points to the OS temporary directory e.g. ``/tmp`` in case of Linux
     which may be transitory. It is highly recommended to change this location.
+    
+    Default value: ``/tmp/tango/<ds_exec_name>/<ds_inst_name>/macroserver.properties``
 
 .. _sardana-macroserver-api-macropath:
 
@@ -87,6 +89,8 @@ max parallel macros
 -------------------
     Multiple macros can run concurrently in the MacroServer on different
     Doors. The maximum number of these threads is configurable.
+    
+    Default value: 5
 
 .. _sardana-macroserver-api-logreportfilename:
 
@@ -99,4 +103,7 @@ log report file name
 log report format
 -----------------
     Macros may report information to a file and the format of this
-    information is configurable.
+    information is configurable. It uses the
+    `Python logging format syntax <https://docs.python.org/2/library/logging.html#formatter-objects>`.
+    
+    Defaul value: ``%(levelname)-8s %(asctime)s: %(message)s``
