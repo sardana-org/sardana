@@ -979,6 +979,7 @@ class SScan(GScan):
 
         if hasattr(macro, 'getHooks'):
             for hook in macro.getHooks('pre-scan'):
+                self.info("Macro stage: pre-scan hook {} ...".format(hook))
                 hook()
 
         self._sum_motion_time = 0
@@ -994,6 +995,7 @@ class SScan(GScan):
 
         if hasattr(macro, 'getHooks'):
             for hook in macro.getHooks('post-scan'):
+                self.info("Macro stage: post-scan hook {} ...".format(hook))
                 hook()
 
         if not scream:
@@ -1008,6 +1010,7 @@ class SScan(GScan):
 
         # pre-move hooks
         for hook in step.get('pre-move-hooks', ()):
+            self.info("Macro stage: pre-move hook {} ...".format(hook))
             hook()
             try:
                 step['extrainfo'].update(hook.getStepExtraInfo())
@@ -1020,6 +1023,8 @@ class SScan(GScan):
         self.debug("[START] motion")
         move_start_time = time.time()
         try:
+            log = "Macro stage: moving to {} ...".format(step['positions'])
+            self.info(log)
             state, positions = motion.move(step['positions'])
             self._sum_motion_time += time.time() - move_start_time
             self._env['motiontime'] = self._sum_motion_time
@@ -1035,6 +1040,7 @@ class SScan(GScan):
 
         # post-move hooks
         for hook in step.get('post-move-hooks', ()):
+            self.info("Macro stage: post-move hook {} ...".format(hook))
             hook()
             try:
                 step['extrainfo'].update(hook.getStepExtraInfo())
@@ -1054,6 +1060,7 @@ class SScan(GScan):
 
         # pre-acq hooks
         for hook in step.get('pre-acq-hooks', ()):
+            self.info("Macro stage: pre-acq hook {} ...".format(hook))
             hook()
             try:
                 step['extrainfo'].update(hook.getStepExtraInfo())
@@ -1065,6 +1072,7 @@ class SScan(GScan):
         integ_time = step['integ_time']
         # Acquire data
         self.debug("[START] acquisition")
+        self.info("Macro stage: acquiring {} : {} ...".format(integ_time, mg))
         state, data_line = mg.count(integ_time)
         for ec in self._extra_columns:
             data_line[ec.getName()] = ec.read()
@@ -1074,6 +1082,7 @@ class SScan(GScan):
 
         # post-acq hooks
         for hook in step.get('post-acq-hooks', ()):
+            self.info("Macro stage: post-acq hook {} ...".format(hook))
             hook()
             try:
                 step['extrainfo'].update(hook.getStepExtraInfo())
@@ -1110,6 +1119,7 @@ class SScan(GScan):
 
         # post-step hooks
         for hook in step.get('post-step-hooks', ()):
+            self.info("Macro stage: post-step hook {} ...".format(hook))
             hook()
             try:
                 step['extrainfo'].update(hook.getStepExtraInfo())
