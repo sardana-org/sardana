@@ -34,7 +34,8 @@ Multiple macros can run concurrently in the MacroServer and the maximum number
 of these threads is configurable via
 :ref:`sardana-macroserver-api-maxparallelmacros` attribute. In case Sardana is
 used with Tango this configuration is accessible via the ``MaxParallelMacros``
-:class:`~sardana.tango.macroserver.MacroServer.MacroServer` device property.
+:class:`~sardana.tango.macroserver.MacroServer.MacroServer` device property
+(default: 10).
 
 Macros may report information to a file which is configurable via
 :ref:`sardana-macroserver-api-logreportfilename` and
