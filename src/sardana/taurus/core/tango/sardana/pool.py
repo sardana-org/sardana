@@ -707,21 +707,26 @@ class CTExpChannel(ExpChannel):
     """ Class encapsulating CTExpChannel functionality."""
     pass
 
+
 class ZeroDExpChannel(ExpChannel):
     """ Class encapsulating ZeroDExpChannel functionality."""
     pass
+
 
 class OneDExpChannel(ExpChannel):
     """ Class encapsulating OneDExpChannel functionality."""
     pass
 
+
 class TwoDExpChannel(ExpChannel):
     """ Class encapsulating TwoDExpChannel functionality."""
     pass
 
+
 class PseudoCounter(ExpChannel):
     """ Class encapsulating PseudoCounter functionality."""
     pass
+
 
 class TriggerGate(PoolElement):
     """ Class encapsulating TriggerGate functionality."""
