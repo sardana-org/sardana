@@ -29,6 +29,10 @@ our IcePAP system::
 
   defctrl IcepapController ipap01 Host 10.0.0.30 Port 5000
 
+.. hint::
+  You can use the :class:`~sardana.macroserver.macros.expert.sar_info` macro to
+  see the roles and properties available for a controller class.
+
 .. note::
   To learn more about controllers see :ref:`sardana-controller-overview`.
 
