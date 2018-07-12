@@ -287,13 +287,14 @@ graphviz_output_format = 'png'  # 'svg'
 # -- Options for reference to other documentation ------------------------
 
 intersphinx_mapping = {
-    'http://docs.python.org/dev': None,
-    'http://docs.scipy.org/doc/scipy/reference': None,
-    'http://docs.scipy.org/doc/numpy': None,
+    'https://docs.python.org/dev': None,
+    'https://docs.scipy.org/doc/scipy/reference': None,
+    'https://docs.scipy.org/doc/numpy': None,
     'http://ipython.org/ipython-doc/stable/': None,
     'http://pytango.readthedocs.io/en/stable/': None,
-    'http://www.taurus-scada.org': None,
+    'http://taurus-scada.org': None,
     'http://pyqt.sourceforge.net/Docs/PyQt4/': None,
-    'http://matplotlib.sourceforge.net/': None,
-    'http://packages.python.org/guiqwt/': None,
+    'https://matplotlib.org/': None,
+    'https://pythonhosted.org/guiqwt/': None,
 }
+
