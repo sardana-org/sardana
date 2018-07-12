@@ -389,17 +389,10 @@ Viewing scan data
 You can show plots for the current scan (i.e. plotting the scan *online*) by
 using the :ref:`show/hide button from the expconf widget <expconf_ui_showplots>`
 
-Sardana provides a scan data viewer for scans which were stored in a `NeXus`_
-file. Without arguments, :class:`~sardana.macroserver.macros.scan.showscan`
-will show you the result of the last scan in a :term:`GUI`:
-
-.. figure:: /_static/spock_snapshot02.png
-    :height: 600
-    
-    Scan data viewer in action
-
-:class:`~sardana.macroserver.macros.scan.showscan` *scan_number* will display
-data for the given scan number.
+Sardana provides also a scan data viewer for scans which were stored in a `NeXus`_
+file: :ref:`showscan_ui`. It can be launched using :class:`~sardana.spock.magic.showscan`
+spock command. It accepts scan number as an argument, and will show the last scan
+when invoked without arguments.
 
 The history of scans is available through the
 :class:`~sardana.macroserver.macros.scan.scanhist` macro:
