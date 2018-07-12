@@ -86,6 +86,11 @@ Example::
 The first time a certain profile is used you will be asked to which door you
 want to connect to (see previous chapter).
 
+.. note::
+  Spock profiles are stored by default in ``~/.ipython/profile_<profile_name>``
+  directory. For more information please refer to the
+  `IPython documentation <http://ipython.readthedocs.io/en/stable/config/intro.html#profiles>`_.
+
 Spock IPython_ Primer
 ---------------------
 
