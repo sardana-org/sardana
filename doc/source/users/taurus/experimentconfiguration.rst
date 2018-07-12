@@ -10,7 +10,7 @@ Experiment Configuration user interface
 .. contents::
 
 Experiment Configuration widget a.k.a. expconf is a complete interface to
-define all the experiment configuration. It consists of three main groups of
+define the experiment configuration. It consists of three main groups of
 parameters organized in tabs:
 
 * Measurement group
@@ -20,6 +20,9 @@ parameters organized in tabs:
 The parameters may be modified in an arbitrary order, at any of the tabs, and
 will be maintained as pending to apply until either applied or reset by the
 user.
+
+This widget is usually present in sardana-aware Taurus GUIs and is also invoked
+by the `expconf` command in :ref:`Spock<sardana-spock>`
 
 .. _expconf_ui_measurementgroup:
 
@@ -34,6 +37,7 @@ In the measurement group tab the user can:
 * reorganize the order of the channels in the measurement group
 * change configuration of a particular channel (or its controller) in the
   selected measurement group
+* show/hide online plots for the current scan.
 
 .. figure:: /_static/expconf01.png
    :width: 100%
@@ -41,6 +45,8 @@ In the measurement group tab the user can:
    :align: center
 
    Measurement group tab of the expconf widget with the `mntgrp` configuration.
+
+
 
 .. _expconf_ui_measurementgroup_channel:
 
@@ -78,3 +84,26 @@ a given channel or its controller:
 * conditioning - expression to evaluate on the data before displaying it
 * normalization - normalization mode for the data
 * nexus path - location of the data of this channel withing the NeXus tree
+
+.. _expconf_ui_showplots:
+
+Show / Hide current scan plot(s)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The Experiment Configuration widget provides a button to show/hide plots of the
+current scan. When this button is checked, the values of `plot type` and
+`plot axes` :ref:`in the channel configuration <expconf_ui_measurementgroup_channel>`
+determine how many plot widgets will be spawned to show the channels involved
+in a scan when the scan is run.
+
+
+.. figure:: /_static/expconf-showplot.png
+   :width: 100%
+   :figwidth: 100%
+   :align: center
+
+   Button for enabling/disabling plots of the current scan.
+
+.. note:: This button may in some contexts be disabled (e.g. by default on
+          sardana-aware TaurusGUIs)
+
