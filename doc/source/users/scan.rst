@@ -187,5 +187,24 @@ Scans are highly configurable using the environment variables
              Variables, check the 
              :ref:`Environment Variable Catalog <environment-variable-catalog>`
 
+.. _sardana-users-scan-snapshot:
+
+Scan snapshots
+--------------
+
+Snapshots are used for saving data (or metadata) from elements and devices not
+necessarily related to the scan itself. A scan saves only the values of the involved
+elements, that is positions of motors being moved, and values read from experiment
+channels in the active measurement group. If you want your scans to include
+something more you can use the snapshot.
+
+Snapshot group can be configured via :ref:`Experiment Configuration widget <expconf_ui_snapshot_group>`
+and :ref:`prescansnapshot` environment variable. It can include both Sardana
+elements as well as external (Tango) data sources.
+
+The snapshot is saved only once during a scan, on the very beginning. The exact
+way the snapshot data is saved depends on the :ref:`recorder <sardana-writing-recorders>`
+and scan file format being used.
+
 .. _SEP6: http://www.sardana-controls.org/sep/?SEP6.md
 .. _Tango: http://www.tango-controls.org
