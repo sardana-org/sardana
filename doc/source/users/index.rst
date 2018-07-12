@@ -15,6 +15,8 @@ User's Guide
     Diffractometer <diffractometer>
     Adding real elements <adding_elements>
     Macro Hooks <macro_hooks>
+    Macro Environment <macro_environment>
+    Environment Variable Catalog <environment_variable_catalog>
     Standard macro catalog <standard_macro_catalog>
     Configuration <configuration/index>
     Screenshots <screenshots>
