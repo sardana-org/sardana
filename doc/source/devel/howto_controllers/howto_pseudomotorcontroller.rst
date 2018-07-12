@@ -6,71 +6,55 @@
 How to write a pseudo motor controller
 ======================================
 
-This chapter describes how to write a valid python pseudo motor system
-class. 
+This chapter describes how to write a valid Python pseudo motor system
+class.
 
 Prerequisites
 -------------
 
-Before writing the first python pseudo motor class for your device
-pool two checks must be performed: 
+Before writing the first Python pseudo motor class for your Device
+Pool two checks must be performed: 
 
 #. The device pool **PoolPath** property must exist and must point to the
-   directory which will contain your python pseudo motor module. The syntax of
-   this PseudoPath property is the same used in the PATH or PYTHONPATH
-   environment variables.
+   directory which will contain your Python pseudo motor module. The syntax of
+   this **PoolPath** property is one directory per line.
 
    .. seealso:: Please see :ref:`sardana-pool-api-poolpath` 
                 for more information on setting this property.
 
-#. A ``poolpseudomotor.py`` file is part of the device pool distribution and is
+#. A ``poolpseudomotor.py`` file is part of the Device Pool distribution and is
    located within the :mod:`sardana.pool` module. The directory containing this
    module must be in the PYTHONPATH environment variable or it must be part of
-   the **PoolPath** device pool property mentioned above.
+   the **PoolPath** Device Pool property mentioned above.
 
 
 Rules
 -----
 
-A correct pseudo motor system class must obey the following rules: 
+A correct pseudo motor system class must obey the following rules:
 
-#. The python class :class:`PseudoMotorController` of the
-   :mod:`sardana.pool.controller`
-   module must be imported into the current namespace by using one of the
-   python import statements, e.g.:
-    
-   ::
-
-        from sardana.pool.controller import PseudoMotorController
-    
-    
 #. The pseudo motor system class being written must be a subclass of the
-   PseudoMotorController class (see example :ref:`below <pseudomotor-example>`)
+   PseudoMotorController class from :mod:`sardana.pool.controller` module
+   (see example :ref:`below <pseudomotor-example>`).
 
-
-#. The class variable **motor_roles** must be set to be a tuple of text
-   descriptions containing each motor role name.
-   This is because the number of elements in this tuple will determine the
-   number of required motors for this pseudo motor class. The order in which
-   the roles are defined is also important as it will determine the index of
-   the motors in the pseudo motor system.
-
+#. The class variable **motor_roles** should be a tuple of motor role name.
+   The number of elements in this tuple will determine the number of required
+   motors for this pseudo motor class. The order in which the roles are defined
+   is also important as it will determine the index of the motors in the pseudo 
+   motor system.
 
 #. The class variable **pseudo_motor_roles** must be set if the pseudo motor
    class being written represents more than one pseudo motor. This variable
-   must contain a tuple of text descriptions containing each pseudo motor role
-   name.
+   must contain a tuple of pseudo motor role names.
    The order in which the roles are defined will determine the index of the 
    pseudo motors in the pseudo motor system. If the pseudo motor class 
    represents only one pseudo motor then this operation is optional.
-   If omitted, the value of pseudo_motor_roles will be set with the class name.
+   If omitted, the value of pseudo_motor_roles will be set to the class name.
 
-    
 #. In case the pseudo motor class needs special properties or attributes,
    it exist the possibility of defining them as explained in the section
    :ref:`sardana-controller-howto-axis-attributes` and
    :ref:`sardana-controller-howto-controller-attributes`.
-
 
 #. The pseudo motor class must implement a **CalcPseudo** method with the
    following signature:
@@ -82,18 +66,14 @@ A correct pseudo motor system class must obey the following rules:
    The method will receive as argument the index of the pseudo motor for
    which the pseudo position calculation is requested. This number refers
    to the index in the pseudo_motor_roles class variable. 
-   
+
    The physical_pos is a tuple containing the motor positions. 
-   
-   The params argument is optional and will contain a dictionary of
-   <parameter name> : <value>. 
-   
+
    The method body should contain a code to translate the given motor
    positions into pseudo motor positions. 
-   
+
    The method will return a number representing the calculated pseudo
    motor position. 
-
 
 #. The pseudo motor class must implement a **CalcPhysical** method with the
    following signature:
@@ -105,17 +85,13 @@ A correct pseudo motor system class must obey the following rules:
    The method will receive as argument the index of the motor for which
    the physical position calculation is requested. This number refers to
    the index in the motor_roles class variable. 
-   
+
    The pseudo_pos is a tuple containing the pseudo motor positions. 
-   
-   The params argument is optional and will contain a dictionary of
-   <parameter name> : <value>. 
-   
+
    The method body should contain a code to translate the given pseudo
    motor positions into motor positions. 
-   
+
    The method will return a number representing the calculated motor position. 
-    
 
 #. Optional implementation of **CalcAllPseudo** method with the following
    signature:
@@ -126,19 +102,15 @@ A correct pseudo motor system class must obey the following rules:
    
    The method will receive as argument a physical_pos which is a tuple of
    motor positions. 
-   
-   The params argument is optional and will contain a dictionary of
-   <parameter name> : <value>. 
-   
+
    The method will return a tuple or a list of calculated pseudo motor
    positions. If the pseudo motor class represents a single pseudo motor
    then the return value could be a single number. 
-   
+
    .. note:: At the time of writing this documentation, the method
              **CalcAllPseudo** is not used. Is still available for backward
              compatibility.
 
-    
 #. Optional implementation of **CalcAllPhysical** method with the following
    signature:
     
@@ -148,10 +120,7 @@ A correct pseudo motor system class must obey the following rules:
    
    The method will receive as argument a pseudo_pos which is a tuple of
    pseudo motor positions. 
-   
-   The params argument is optional and will contain a dictionary of
-   <parameter name> : <value>. 
-   
+
    The method will return a tuple or a list of calculated motor
    positions. If the pseudo motor class requires a single motor then the
    return value could be a single number. 
@@ -172,9 +141,7 @@ two blades with one motor each. Usually the user doesn't want to
 control the experiment by directly handling these two motor positions
 since their have little meaning from the experiments perspective.
 
-
 .. image:: /_static/gap_offset.png
-
 
 Instead, it would be more useful for the user to control the
 experiment by means of changing the gap and offset values. Pseudo
@@ -194,7 +161,7 @@ The calculations that need to be performed are:
     sl2b = offset + gap/2
 
 
-The corresponding python code would be: 
+The corresponding Python code would be: 
 
 ::
 
