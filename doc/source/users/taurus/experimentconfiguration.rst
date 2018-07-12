@@ -107,3 +107,45 @@ in a scan when the scan is run.
 .. note:: This button may in some contexts be disabled (e.g. by default on
           sardana-aware TaurusGUIs)
 
+.. _expconf_ui_snapshot_group:
+
+Snapshot group
+~~~~~~~~~~~~~~
+
+You can configure the snapshot group with the Experiment Configuration widget.
+To do so, go to the **Snapshot Group** tab.
+
+.. figure:: /_static/expconf-snapshot-group.png
+   :width: 100%
+   :figwidth: 100%
+   :align: center
+
+   Snapshot Group tab.
+
+This tab provides the device tree browser for both Sardana elements and external
+devices (currently only Tango is supported as an external source).
+You can add elements to the snapshot group by just dragging them from the tree
+browser and dropping them onto the list below.
+
+.. note:: Settings in this tab alter :ref:`prescansnapshot` environment variable.
+
+.. _expconf_ui_storage:
+
+Storage
+~~~~~~~
+
+The ``expconf`` widget provides a way to configure the scan storage paths.
+These settings are in the **Storage** tab.
+
+.. figure:: /_static/expconf-storage.png
+   :width: 100%
+   :figwidth: 100%
+   :align: center
+
+   Storage configuration tab.
+
+You can specify multiple files as a comma-separated list. Remeber that the path
+you set is a path on Sardana server machine.
+
+.. note:: Settings in this tab alter :ref:`scanfile`, :ref:`scandir` and :ref:`datacompressionrank`
+  environment variables.

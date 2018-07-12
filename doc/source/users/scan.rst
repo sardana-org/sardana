@@ -183,92 +183,9 @@ Scans are highly configurable using the environment variables
 (on how to use environment variables see environment related macros in
 :ref:`sardana-standard-macro-catalog`).
 
-Following variables are supported:
+.. seealso:: For further information about the available Sardana Environment
+             Variables, check the 
+             :ref:`Environment Variable Catalog <environment-variable-catalog>`
 
-**ApplyExtrapolation**
-    Enable/disable the extrapolation method to fill the missing parts of the
-    very first scan records in case the software synchronized acquisition could
-    not follow the pace. Can be used only with the continuous acquisition
-    macros e.g. *ct* type of continuous scans or timescan. Its value is of
-    boolean type.
-
-    .. note::
-        The ApplyExtrapolation environment variable has been included in
-        Sardana on a provisional basis. Backwards incompatible changes
-        (up to and including removal of this variable) may occur if deemed
-        necessary by the core developers.
-
-**ApplyInterpolation**
-    Enable/disable the `zero order hold`_ a.k.a. "constant interpolation"
-    method to fill the missing parts of the scan records in case the software
-    synchronized acquisition could not follow the pace. Can be used only
-    with the continuous acquisition macros *ct* type of continuous scans or
-    timescan. Its value is of boolean type.
-
-    .. note::
-        The ApplyInterpolation environment variable has been included in
-        Sardana on a provisional basis with SEP6_. Backwards incompatible
-        changes (up to and including removal of this variable) may occur if
-        deemed necessary by the core developers.
-
-**DirectoryMap**
-    In case that the server and the client do not run on the same host, the scan
-    data may be easily shared between them using the NFS. Since some of the
-    tools e.g. showscan rely on the scan data file the DirectoryMap may help in
-    overcoming the shared directory naming issues between the hosts.
-
-    Its value is a dictionary with keys pointing to the server side directory
-    and values to the client side directory/ies (string or list of strings).
-
-**ScanDir**
-    Its value is of string type and indicates an absolute path to the directory
-    where scan data will be stored.
-
-**ScanFile**
-    Its value may be either of type string or of list of strings. In the second
-    case data will be duplicated in multiple files (different file formats may
-    be used). Recorder class is implicitly selected based on the file extension.
-    For example "myexperiment.spec" will by default store data in SPEC
-    compatible format (see more about the extension to recorder map in
-    :ref:`sardana-writing-recorders`).
-
-**ScanRecorder**
-    Its value may be either of type string or of list of strings. If
-    ScanRecorder variable is defined, it explicitly indicates which recorder
-    class should be used and for which file defined by ScanFile (based on the 
-    order).
-
-    Example 1:
-	
-	::
-
-		ScanFile = myexperiment.spec
-		ScanRecorder = FIO_FileRecorder
-
-        FIO_FileRecorder will write myexperiment.spec file.
-
-    Example 2:
-
-	::
-	
-		ScanFile = myexperiment.spec, myexperiment.h5
-		ScanRecorder = FIO_FileRecorder
-
-        FIO_FileRecorder will write myexperiment.spec file and
-        NXscan_FileRecorder will write the myexpriment.h5. The selection of the
-        second recorder is based on the extension.
-
-**SharedMemory**
-    Its value is of string type and it indicates which shared memory recorder should
-    be used during the scan e.g. "sps" will use SPSRecorder (sps Python module
-    must be installed on the PC where the MacroServer runs).
-
-
-
-.. seealso:: For more information about the implementation details of the scan
-             macros in Sardana, see 
-             :ref:`scan framework <sardana-macros-scanframework>`
-
-.. _zero order hold: https://en.wikipedia.org/wiki/Zero-order_hold
 .. _SEP6: http://www.sardana-controls.org/sep/?SEP6.md
 .. _Tango: http://www.tango-controls.org
