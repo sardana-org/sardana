@@ -24,23 +24,6 @@ probably need a github account and you are strongly encouragedto subscribe to th
 
 The rest of this document will focus on how to contribute code.
 
-Cloning and forking sardana from Git
-------------------------------------
-
-You are welcome to clone the Sardana code from our main Git repository::
-
-    git clone https://github.com/sardana-org/sardana.git sardana
-
-Code contributions (bug patches, new features) are welcome,
-but the review process/workflow for accepting new code is yet to be discussed. For the
-moment, use the sardana-devel mailing list for proposing patches.
-
-Note that you can also fork the git repository in github to get your own
-github-hosted clone of the sardana repository to which you will have full
-access. This will create a new git repository associated to your personal account in
-github, so that your changes can be easily shared and eventually merged
-into the official repository.
-
 Documentation
 -------------
 
