@@ -825,6 +825,34 @@ of user's interruption you must override the
     withing the :meth:`~sardana.macroserver.macro.Macro.on_stop` or
     :meth:`~sardana.macroserver.macro.Macro.on_abort`.
 
+Adding hooks support
+--------------------
+
+Your macros may accept to :ref:`attach an arbitrary <sardana-macros-hooks>`
+code, a simple Python callable or even another macro, that will be executed
+at given places. In Sardana this code are called *hooks*, and the places are
+called *hook places*.
+
+In order to allow attaching hooks to your macro you must :ref:`write you
+macro as a class <sardana-macro-class-writing>` while at the same time
+inheriting from the :class:`~sardana.macroserver.macro.Hookable` class.
+
+The hook places can be defined in the ``hints`` class member dictionary with
+the ``allowedHooks`` key and a tuple of strings with the hook places
+identifiers::
+
+    class loop(Macro, Hookable):
+        """A macro that accepts and executes hooks."""
+
+        hints = {"allowsHooks": ("hook-place", "another-hook-place")}
+
+        def run(self):
+            for hook in self.getHooks("hook-place"):
+                hook()
+            self.info("In between hook places")
+            for hook in self.getHooks("another-hook-place"):
+                hook()
+
 Using external python libraries
 -------------------------------
 
