@@ -15,3 +15,4 @@ Sardana provides several :mod:`taurus`-based widgets for being used in GUIs
     Experiment Configuration <experimentconfiguration>
     MacroButton <macrobutton>
     Sardana Editor <sardanaeditor>
+    Showscan <showscan>
