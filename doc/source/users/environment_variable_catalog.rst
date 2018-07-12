@@ -46,7 +46,7 @@ DiffracDevice
 *Mandatory, set by user*
 
 This environment variable is used to define the name of the diffractometer device.
-At this moment, this name is supporting only tango device names and it should
+At this moment, this name is supporting only Tango device names and it should
 be pointing to the Sardana controller of the class HklPseudoMotorCtrl that will
 be used by the hkl macros.
 
@@ -57,7 +57,7 @@ Psi
 *Not mandatory, set by user*
 
 Environment variable to specify the *psi* device. This device must be the
-tango device server corresponding Sardana PseudoMotor steering the movement
+Tango device server corresponding Sardana PseudoMotor steering the movement
 of the azimuthal angle.
 
 .. _q:
@@ -267,10 +267,10 @@ The format for the value is the following:
 [(taurus model URI, label)]
 
 If the first element in the tuple is a Sardana element, it's enough to set up
-the URI up to the tango device server name. If the element is outside Sardana,
-i.e. A tango attribute, you need to add the full URI, up to the attribute name.
+the URI up to the Tango device server name. If the element is outside Sardana,
+i.e. A Tango attribute, you need to add the full URI, up to the attribute name.
 
-Exemple:
+Example:
 
 ::
 
@@ -295,7 +295,7 @@ This environment variable exist for metadata purposes.
 
 ScanDir
 ~~~~~~~
-*Mandatory if file wants to be saved, set by user*
+*Mandatory if you want scan file to be saved, set by user*
 
 Its value is of string type and indicates an absolute path to the directory
 where scan data will be stored.
@@ -304,7 +304,7 @@ where scan data will be stored.
 
 ScanFile
 ~~~~~~~~
-*Mandatory if file wants to be saved, set by user*
+*Mandatory if you want scan file to be saved, set by user*
 
 Its value may be either of type string or of list of strings. In the second
 case data will be duplicated in multiple files (different file formats may
@@ -344,7 +344,7 @@ Example 2:
     second recorder is based on the extension.
 
 .. seealso:: More about the extension to recorder map in
-             :ref:`sardana-writing-recorders`).
+             :ref:`sardana-writing-recorders`.
 
 .. _sharedmemory:
 

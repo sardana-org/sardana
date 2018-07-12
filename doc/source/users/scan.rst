@@ -187,4 +187,5 @@ Scans are highly configurable using the environment variables
              Variables, check the 
              :ref:`Environment Variable Catalog <environment-variable-catalog>`
 
+.. _SEP6: http://www.sardana-controls.org/sep/?SEP6.md
 .. _Tango: http://www.tango-controls.org
