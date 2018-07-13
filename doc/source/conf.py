@@ -297,4 +297,3 @@ intersphinx_mapping = {
     'https://matplotlib.org/': None,
     'https://pythonhosted.org/guiqwt/': None,
 }
-
