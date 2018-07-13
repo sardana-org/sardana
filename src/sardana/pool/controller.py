@@ -96,10 +96,13 @@ MaxDimSize = "maxdimsize"
 
 
 class Controller(object):
-    """Base controller class. Do **NOT** inherit from this class directly
+    """
+    Base controller class. Do **NOT** inherit from this class directly
 
     :param :obj:`str` inst: controller instance name
-    :param dict props: a dictionary containing pairs of property name, property value
+    :param dict props: a dictionary containing pairs of property name,
+    property value
+
     :arg args:
     :keyword kwargs:
     """

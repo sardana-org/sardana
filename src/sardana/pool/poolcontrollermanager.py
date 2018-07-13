@@ -212,16 +212,17 @@ class ControllerManager(Singleton, Logger):
         return f_name
 
     def getOrCreateControllerLib(self, lib_name, controller_name=None):
-        """Gets the exiting controller lib or creates a new controller lib file.
-        If name is not None, a controller template code for the given controller
-        name is appended to the end of the file.
+        """
+        Gets the exiting controller lib or creates a new controller lib file.
+        If name is not None, a controller template code for the given
+        controller name is appended to the end of the file.
 
-        :param :obj:`str` lib_name: module name, python file name, or full file name
-                             (with path)
-        :param :obj:`str` controller_name: an optional controller name. If given a
-                                    controller template code is appended to the
-                                    end of the file [default: None, meaning no
-                                    controller code is added)
+        :param :obj:`str` lib_name: module name, python file name, or full file
+                        name (with path)
+        :param :obj:`str` controller_name: an optional controller name. If
+                        given a controller template code is appended to the
+                        end of the file [default: None, meaning no controller
+                        code is added)
 
         :return: a sequence with three items: full_filename, code, line number
                  line number is 0 if no controller is created or n representing
