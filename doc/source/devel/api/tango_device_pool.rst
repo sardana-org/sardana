@@ -1,3 +1,4 @@
+:orphan:
 
 ==========================================
 Device Pool Tango_ :term:`API`
