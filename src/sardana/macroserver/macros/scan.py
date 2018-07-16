@@ -706,7 +706,12 @@ class mesh(Macro, Hookable):
         self.name = opts.get('name', 'mesh')
 
         generator = self._generator
-        moveables = self.motors
+        moveables = []
+        for m, start, final in zip(self.motors, self.starts, self.finals):
+            moveables.append(MoveableDesc(moveable=m,
+                                          min_value=min(start, final),
+                                          max_value=max(start, final)))
+        moveables[0].is_reference = True
         env = opts.get('env', {})
         constrains = [getCallable(cns) for cns in opts.get(
             'constrains', [UNCONSTRAINED])]
