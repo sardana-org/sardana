@@ -1221,9 +1221,13 @@ class MGConfiguration(object):
     def __init__(self, mg, data):
         self._mg = weakref.ref(mg)
         self._raw_data = None
+        self.set_data(data)
+
+    def set_data(self, data, force=False):
+        # object each time
         if isinstance(data, (str, unicode)):
             data = CodecFactory().decode(('json', data), ensure_ascii=True)
-        self.raw_data = data
+        if not force:
         self._raw_data = data
         self.__dict__.update(data)
 
@@ -1631,6 +1635,11 @@ class MeasurementGroup(PoolElement):
 
     def getValues(self, parallel=True):
         return self.getConfiguration().read(parallel=parallel)
+    def _setConfiguration(self, data):
+        if self._configuration is None:
+            self._configuration = MGConfiguration(self, data)
+        else:
+            self._configuration.set_data(data)
 
     def getValueBuffers(self):
         value_buffers = []
