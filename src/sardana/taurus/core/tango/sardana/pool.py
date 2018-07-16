@@ -1220,9 +1220,11 @@ def getChannelConfigs(mgconfig, ctrls=None, sort=True):
 class MGConfiguration(object):
     def __init__(self, mg, data):
         self._mg = weakref.ref(mg)
+        self._raw_data = None
         if isinstance(data, (str, unicode)):
             data = CodecFactory().decode(('json', data), ensure_ascii=True)
         self.raw_data = data
+        self._raw_data = data
         self.__dict__.update(data)
 
         # dict<str, dict>
