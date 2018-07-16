@@ -1746,8 +1746,7 @@ class MeasurementGroup(PoolElement):
         return self.getTimer()['name']
 
     def getTimer(self):
-        cfg = self.getConfiguration()
-        return cfg.channels[cfg.timer]
+        return self.channels[self.timer]
 
     def getTimerValue(self):
         return self.getTimerName()
@@ -1756,26 +1755,27 @@ class MeasurementGroup(PoolElement):
         return self.getMonitor()['name']
 
     def getMonitor(self):
-        cfg = self.getConfiguration()
-        return cfg.channels[cfg.monitor]
+        return self.channels[self.monitor]
 
-    def setTimer(self, timer_name):
-        try:
-            self.getChannel(timer_name)
-        except KeyError:
-            raise Exception("%s does not contain a channel named '%s'"
-                            % (str(self), timer_name))
-        cfg = self.getConfiguration().raw_data
-        cfg['timer'] = timer_name
-        import json
-        self.write_attribute("configuration", json.dumps(cfg))
+    def getValues(self, parallel=True):
+        return self.read(parallel=parallel)
 
-    def getChannels(self):
-        return self.getConfiguration().getChannels()
+    def setTimer(self, timer, apply_cfg=True):
+        """
+        Set the Global Timer to the measurement group, also it changes the
+        timer in the controllers with the previous timer.
+
+        :param timer: <str> timer name
+        """
+        result = self._get_ctrl_from_channels([timer], unique=True)
+
+        for timer, ctrl in result.items():
+            self._local_changes = True
+            self._raw_data['timer'] = timer
+            self._set_ctrls_key('timer', timer, [ctrl], apply_cfg)
 
     def getCounters(self):
-        cfg = self.getConfiguration()
-        return [c for c in self.getChannels() if c['full_name'] != cfg.timer]
+        return [c for c in self.getChannels() if c['full_name'] != self.timer]
 
     def getChannelNames(self):
         return [ch['name'] for ch in self.getChannels()]
@@ -1790,26 +1790,39 @@ class MeasurementGroup(PoolElement):
         return [ch['label'] for ch in self.getCounters()]
 
     def getChannel(self, name):
-        return self.getConfiguration().channels[name]
-
-    def getChannelInfo(self, name):
-        return self.getConfiguration().getChannelInfo(name)
-
-    def getChannelsInfo(self):
-        return self.getConfiguration().getChannelsInfoList()
+        return self.channels[name]
 
     def getChannelsEnabledInfo(self):
-        """Returns information about **only enabled** channels present in the
+        """
+        Returns information about **only enabled** channels present in the
         measurement group in a form of ordered, based on the channel index,
         list.
 
         :return: list with channels info
         :rtype: list<TangoChannelInfo>
         """
-        return self.getConfiguration().getChannelsInfoList(only_enabled=True)
+        return self.getChannelsInfoList(only_enabled=True)
 
     def getCountersInfo(self):
-        return self.getConfiguration().getCountersInfoList()
+        return self.getCountersInfoList()
+
+    def enableChannels(self, channels, apply_cfg=True):
+        """
+        Enable acquisition of the indicated channels.
+
+        :param channels: (seq<str>) a sequence of strings indicating
+                         channel names
+        """
+        self.setEnabledChannels(True, channels, apply_cfg)
+
+    def disableChannels(self, channels, apply_cfg=True):
+        """
+        Disable acquisition of the indicated channels.
+
+        :param channels: (seq<str>) a sequence of strings indicating
+                         channel names
+        """
+        self.setEnabledChannels(False, channels, apply_cfg)
         self._flg_event = False
     def setConfiguration(self, configuration):
         self._flg_event = True
@@ -1817,8 +1830,6 @@ class MeasurementGroup(PoolElement):
         f, data = codec.encode(('', configuration))
         self.write_attribute('configuration', data)
 
-    def getValues(self, parallel=True):
-        return self.getConfiguration().read(parallel=parallel)
     def _setConfiguration(self, data):
         if self._configuration is None:
             self._configuration = MGConfiguration(self, data)
@@ -1950,42 +1961,6 @@ class MeasurementGroup(PoolElement):
                 self._value_buffer_cb = None
             else:
                 value_buffer_obj.unsubscribeEvent(channel.valueBufferChanged)
-
-    def enableChannels(self, channels):
-        '''Enable acquisition of the indicated channels.
-
-        :param channels: (seq<str>) a sequence of strings indicating
-                         channel names
-        '''
-        self._enableChannels(channels, True)
-
-    def disableChannels(self, channels):
-        '''Disable acquisition of the indicated channels.
-
-        :param channels: (seq<str>) a sequence of strings indicating
-                         channel names
-        '''
-        self._enableChannels(channels, False)
-
-    def _enableChannels(self, channels, state):
-        found = {}
-        for channel in channels:
-            found[channel] = False
-        cfg = self.getConfiguration()
-        for channel in cfg.getChannels():
-            name = channel['name']
-            if name in channels:
-                channel['enabled'] = state
-                found[name] = True
-        wrong_channels = []
-        for ch, f in found.items():
-            if f is False:
-                wrong_channels.append(ch)
-        if len(wrong_channels) > 0:
-            msg = 'channels: %s are not present in measurement group' % \
-                  wrong_channels
-            raise Exception(msg)
-        self.setConfiguration(cfg.raw_data)
 
     def _start(self, *args, **kwargs):
         self.Start()
