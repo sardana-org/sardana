@@ -22,6 +22,5 @@ Sardana API
     MacroServer API <api_macroserver>
     Pool API <api_pool>
     Pool tango API <tango_device_pool>
-    Macro server tango API <tango_macroserver>
     Library <sardana/sardana>
     Test API <api_test>
