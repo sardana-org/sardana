@@ -1907,9 +1907,6 @@ class Instrument(BaseElement):
     def getType(self):
         return self.klass
 
-    def getPoolObj(self):
-        return self._pool_obj
-
 
 class Pool(TangoDevice, MoveableSource):
     """ Class encapsulating device Pool functionality."""
