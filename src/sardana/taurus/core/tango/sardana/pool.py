@@ -1235,10 +1235,24 @@ class MGConfiguration(object):
         # where key is the channel name and value is the channel data in form
         # of a dict as receveid by the MG configuration attribute
         self.channels = channels = CaselessDict()
+        self.channels_names = channels_names = CaselessDict()
+        self.channels_labels = channels_labels = CaselessDict()
+        self.controllers_names = controllers_names = CaselessDict()
 
-        for _, ctrl_data in self.controllers.items():
+        # TODO private controllers attr
+        for ctrl_name, ctrl_data in self.controllers.items():
+            try:
+                if ctrl_name != '__tango__':
+                    proxy = DeviceProxy(ctrl_name)
+                    controllers_names[proxy.alias()] = ctrl_data
+            except Exception:
+                pass
             for channel_name, channel_data in ctrl_data['channels'].items():
                 channels[channel_name] = channel_data
+                name = channel_data['name']
+                channels_names[name] = channel_data
+                name = channel_data['label']
+                channels_labels[name] = channel_data
 
         #####################
         # @todo: the for-loops above could be replaced by something like:
@@ -1520,6 +1534,142 @@ class MGConfiguration(object):
                     ret[channel_data['full_name']] = None
         return ret
 
+    def _get_proxy(self, element):
+        try:
+            proxy = DeviceProxy(element)
+        except Exception:
+            try:
+                proxy = AttributeProxy(element)
+            except Exception:
+                raise KeyError(element)
+        return proxy
+
+    def _get_channel_data(self, channel_name):
+        if channel_name in self.channels_names:
+            return self.channels_names[channel_name]
+        elif channel_name in self.channels_labels:
+            return self.channels_labels[channel_name]
+        elif channel_name in self.channels:
+            return self.channels[channel_name]
+        else:
+            # TODO: Improve this way
+            proxy = self._get_proxy(channel_name)
+            try:
+                alias = proxy.alias()
+            except Exception:
+                # The attribute proxy does not have alias.
+                alias = proxy.name()
+            names = self.channels_names.keys() + self.channels_labels.keys()
+            if alias not in names:
+                raise KeyError('Channel "{0}" is not on the '
+                               'MntGrp "{1}"'.format(alias, self.label))
+            return self._get_channel_data(alias)
+
+    def _get_ctrl_data(self, ctrl_name):
+        if ctrl_name in self.controllers_names:
+            return self.controllers_names[ctrl_name]
+        elif ctrl_name in self.controllers:
+            return self.controllers[ctrl_name]
+        else:
+            # TODO: Improve this way
+            proxy = self._get_proxy(ctrl_name)
+            alias = proxy.alias()
+            if alias not in self.controllers_names:
+                raise KeyError('Controller "{}" is not on the '
+                               'MntGrp "{1}"'.format(alias, self.label))
+            return self._get_ctrl_data(alias)
+
+    def _set_channels_key(self, key, value, channels_names=None,
+                          apply_cfg=True):
+
+        self._local_changes = True
+        if channels_names is None:
+            channels_names = self.channels.keys()
+        # Protections:
+        if key in ['enabled', 'output']:
+            if type(value) != bool:
+                raise ValueError('The value must be a boolean')
+
+        for channel_name in channels_names:
+            channel = self._get_channel_data(channel_name)
+            channel[key] = value
+        if apply_cfg:
+            self.applyConfiguration()
+
+    def _get_channels_key(self, key, channels_names=None, use_fullname=False):
+        result = OrderedDict({})
+
+        if channels_names is None:
+            channels_names = self.channels.keys()
+
+        for channel_name in channels_names:
+            channel = self._get_channel_data(channel_name)
+
+            value = channel[key]
+            if use_fullname:
+                label = channel
+            else:
+                label = channel['label']
+                if key == 'plot_axes':
+                    res = []
+                    for v in value:
+                        if v not in ['<mov>', '<idx>']:
+                            v = self.channels[v]['label']
+                        res.append(v)
+                    value = res
+            result[label] = value
+        return result
+
+    def _set_ctrls_key(self, key, value, ctrls_names=None, apply_cfg=True):
+        self._local_changes = True
+        if ctrls_names is None:
+            ctrls_names = self.controllers.keys()
+
+        for ctrl_name in ctrls_names:
+            if ctrl_name == '__tango__':
+                continue
+            ctrl = self._get_ctrl_data(ctrl_name)
+            ctrl[key] = value
+        if apply_cfg:
+            self.applyConfiguration()
+
+    def _get_ctrls_key(self, key, ctrls_names=None, use_fullname=False):
+        result = OrderedDict({})
+        if ctrls_names is None:
+            ctrls_names = self.controllers.keys()
+
+        for ctrl_name in ctrls_names:
+            if ctrl_name == '__tango__':
+                continue
+            ctrl = self._get_ctrl_data(ctrl_name)
+            label = ctrl_name
+            value = ctrl[key]
+            if key == 'synchronization':
+                value = AcqSynchType.get(value)
+            if not use_fullname:
+                label = DeviceProxy(ctrl_name).alias()
+                if key in ['timer', 'monitor']:
+                    value = self.channels[value]['label']
+                elif key == 'synchronizer' and value != 'software':
+                    value = DeviceProxy(value).alias()
+            result[label] = value
+        return result
+
+    def _get_ctrl_from_channels(self, channels_names, unique=False):
+        result = OrderedDict({})
+
+        if channels_names is None:
+            channels_names = self.channels.keys()
+
+        for channel_name in channels_names:
+            channel = self._get_channel_data(channel_name)
+            ctrl = channel['_controller_name']
+            if unique and ctrl in result.values():
+                raise KeyError('There are more than one channel of the same '
+                               'controller')
+            result[channel['full_name']] = ctrl
+
+        return result
 
 class MeasurementGroup(PoolElement):
     """ Class encapsulating MeasurementGroup functionality."""
