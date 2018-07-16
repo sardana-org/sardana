@@ -75,7 +75,7 @@ class SardanaBuffer(EventGenerator):
         :param obj: the object which owns this buffer
         :type obj: obj
         :param name: object name
-        :type name: str
+        :type name: :obj:`str`
         :param persistent: whether values are kept in the buffer until
             being explicitly removed (True) or just until firing the next event
             (False)

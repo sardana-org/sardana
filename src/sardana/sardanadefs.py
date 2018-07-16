@@ -187,7 +187,7 @@ def from_dtype_str(dtype):
           (:obj:`DataType`, :obj:`DataFormat.Scalar`)
 
     :param dtype: the data type to be transformed
-    :type dtype: str or None or :obj:`DataType`
+    :type dtype: :obj:`str` or None or :obj:`DataType`
     :return: a tuple <str, :obj:`DataFormat`> for the given dtype
     :rtype: tuple<str, :obj:`DataFormat`>"""
     dformat = DataFormat.Scalar
@@ -212,9 +212,9 @@ def from_access_str(access):
     a simplified data access string.
 
     :param dtype: the access to be transformed
-    :type dtype: str
+    :type dtype: :obj:`str`
     :return: a simple string for the given access
-    :rtype: str"""
+    :rtype: :obj:`str`"""
     if isinstance(access, (str, unicode)):
         access = access.lower()
         if access.startswith("pytango."):
@@ -228,7 +228,7 @@ def to_dtype_dformat(data):
     elements (:obj:`DataType`, :obj:`DataFormat`).
 
     :param data: the data information to be transformed
-    :type data: str or seq<str> or seq<seq<str>>
+    :type data: :obj:`str` or seq<str> or seq<seq<str>>
     :return: a tuple <:obj:`DataType`, :obj:`DataFormat`> for the given data
     :rtype: tuple<:obj:`DataType`, :obj:`DataFormat`>
     """
@@ -257,7 +257,7 @@ def to_daccess(daccess):
     :obj:`DataAccess`. If None is given returns :obj:`DataAccess.ReadWrite`
 
     :param dtype: the access to be transformed
-    :type dtype: str
+    :type dtype: :obj:`str`
     :return: a :obj:`DataAccess` for the given access
     :rtype: :obj:`DataAccess`"""
     if daccess is None:

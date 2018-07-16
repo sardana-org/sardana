@@ -179,7 +179,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
 
         :param host: host name [default: None, meaning use the machine host name
                      as returned by :func:`socket.gethostname`].
-        :type host: str
+        :type host: :obj:`str`
         :param port: port number [default: None, meaning use
                      :data:`logging.handlers.DEFAULT_TCP_LOGGING_PORT`"""
         log = logging.getLogger("Controller")
