@@ -23,6 +23,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Appending of hooks from sequence XML (#747)
 - `lsgh` list hooks multiple times to reflect the configuration (#774)
 - Avoid errors if selected trajectory in HKL controller doesnot exists (#752)
+- Pass motion range information with `MoveableDesc` in `mesh` scan (#864)
 - Documentation on how to install and use Sardana from Git clone (#751)
 
 ### Changed
