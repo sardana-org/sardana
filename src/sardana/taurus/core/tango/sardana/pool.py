@@ -137,11 +137,8 @@ class BaseElement(object):
         return self._pool_obj
 
     def getPoolData(self):
-        try:
-            return self._pool_data
-        except AttributeError:
-            self._pool_data = self._find_pool_data()
-            return self._pool_data
+        """Get reference to this object's Pool data."""
+        return self._pool_data
 
 
 class ControllerClass(BaseElement):
@@ -297,9 +294,25 @@ class PoolElement(BaseElement, TangoDevice):
         # force the creation of a state attribute
         self.getStateEG()
 
-    def _find_pool_data(self):
+    def _find_pool_obj(self):
         pool = get_pool_for_device(self.getParentObj(), self.getHWObj())
+        return pool
+
+    def _find_pool_data(self):
+        pool = self._find_pool_obj()
         return pool.getElementInfo(self.getFullName())._data
+
+    # Override BaseElement.getPoolData because the reference to pool data may
+    # not be filled. This reference is filled when the element is obtained
+    # using Pool.getPoolData. If one obtain the element directly using Taurus
+    # e.g. mot = taurus.Device(<mot_name>) it won't be filled. In this case
+    # look for the pool object and its data using the database information.
+    def getPoolData(self):
+        try:
+            return self._pool_data
+        except AttributeError:
+            self._pool_data = self._find_pool_data()
+            return self._pool_data
 
     def cleanUp(self):
         TangoDevice.cleanUp(self)
