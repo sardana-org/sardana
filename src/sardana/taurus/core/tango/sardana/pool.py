@@ -297,30 +297,9 @@ class PoolElement(BaseElement, TangoDevice):
         # force the creation of a state attribute
         self.getStateEG()
 
-    # TODO: for Taurus3/Taurus4 compatibility
-    # The sardana code is not fully ready to deal with Taurus4 model names
-    # It is necessary to strip the scheme name that appeared in the
-    # full_name since Taurus4 and come back to the Taurus3 style full name
     def _find_pool_data(self):
         pool = get_pool_for_device(self.getParentObj(), self.getHWObj())
-        full_name = self.getFullName()
-        try:
-            from taurus.core.tango.tangovalidator import\
-                TangoDeviceNameValidator
-            validator = TangoDeviceNameValidator()
-            uri_groups = validator.getUriGroups(full_name)
-            dev_name = uri_groups["devname"]
-            host = uri_groups["host"]
-            if fqdn_host is not None:
-                port = uri_groups["port"]
-                full_name = host + ":" + port + "/" + dev_name
-        except ImportError:
-            # we are in Taurus 3 so scheme is not in use
-            pass
-        except:
-            msg = "Unknown error in _find_pool_data"
-            self.warning(msg, exc_info=1)
-        return pool.getElementInfo(full_name)._data
+        return pool.getElementInfo(self.getFullName())._data
 
     def cleanUp(self):
         TangoDevice.cleanUp(self)
