@@ -134,14 +134,12 @@ class BaseElement(object):
         return self.getPoolData()['name']
 
     def getPoolObj(self):
+        """Get reference to this object's Pool."""
         return self._pool_obj
 
     def getPoolData(self):
-        try:
-            return self._pool_data
-        except AttributeError:
-            self._pool_data = self._find_pool_data()
-            return self._pool_data
+        """Get reference to this object's Pool data."""
+        return self._pool_data
 
 
 class ControllerClass(BaseElement):
@@ -297,9 +295,37 @@ class PoolElement(BaseElement, TangoDevice):
         # force the creation of a state attribute
         self.getStateEG()
 
-    def _find_pool_data(self):
+    def _find_pool_obj(self):
         pool = get_pool_for_device(self.getParentObj(), self.getHWObj())
+        return pool
+
+    def _find_pool_data(self):
+        pool = self._find_pool_obj()
         return pool.getElementInfo(self.getFullName())._data
+
+    # Override BaseElement.getPoolObj because the reference to pool object may
+    # not be filled. This reference is filled when the element is obtained
+    # using Pool.getObject. If one obtain the element directly using Taurus
+    # e.g. mot = taurus.Device(<mot_name>) it won't be filled. In this case
+    # look for the pool object using the database information.
+    def getPoolObj(self):
+        try:
+            return self._pool_obj
+        except AttributeError:
+            self._pool_obj = self._find_pool_obj()
+            return self._pool_obj
+
+    # Override BaseElement.getPoolData because the reference to pool data may
+    # not be filled. This reference is filled when the element is obtained
+    # using Pool.getPoolData. If one obtain the element directly using Taurus
+    # e.g. mot = taurus.Device(<mot_name>) it won't be filled. In this case
+    # look for the pool object and its data using the database information.
+    def getPoolData(self):
+        try:
+            return self._pool_data
+        except AttributeError:
+            self._pool_data = self._find_pool_data()
+            return self._pool_data
 
     def cleanUp(self):
         TangoDevice.cleanUp(self)
@@ -392,9 +418,6 @@ class PoolElement(BaseElement, TangoDevice):
 
     def getType(self):
         return self.getPoolData()['type']
-
-    def getPoolObj(self):
-        return self._pool_obj
 
     def waitReady(self, timeout=None):
         return self.getStateEG().waitEvent(Moving, equal=False,
@@ -1883,9 +1906,6 @@ class Instrument(BaseElement):
 
     def getType(self):
         return self.klass
-
-    def getPoolObj(self):
-        return self._pool_obj
 
 
 class Pool(TangoDevice, MoveableSource):
