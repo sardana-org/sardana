@@ -2133,8 +2133,8 @@ class MeasurementGroup(PoolElement):
 
     # TODO, should be removed
     def getChannelsInfo(self):
-        self.warning('Deprecation warning: you should use "getChannelsInfoList" '
-                     'instead of "getChannelsInfo"')
+        self.warning('Deprecation warning: you should use '
+                     '"getChannelsInfoList" instead of "getChannelsInfo"')
         return self.getConfiguration().getChannelsInfoList()
 
     def getValueBuffers(self):
