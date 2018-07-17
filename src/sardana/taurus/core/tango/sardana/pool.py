@@ -2089,6 +2089,16 @@ class MeasurementGroup(PoolElement):
         self._value_buffer_cb = None
         self._codec = CodecFactory().getCodec("json")
 
+    def __getattr__(self, item):
+        try:
+            return PoolElement.__getattr__(self, item)
+        except Exception:
+            try:
+                return self._configuration.__getattribute__(item)
+            except Exception:
+                raise AttributeError("'{0}' object has not attribute "
+                                     "'{1}'".format('MeasurementGroup', item))
+
     def _create_str_tuple(self):
         channel_names = ", ".join(self.getChannelNames())
         return self.getName(), self.getTimerName(), channel_names
