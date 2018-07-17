@@ -232,8 +232,8 @@ demonstrates the use of the hook points of a scan using the Hooks API.
 Other examples of the :mod:`~sardana.macroserver.macros.examples.hooks` module
 can be illustrative.
 
-Also, note that the Taurus Sequencer widget allows the user to dynamically
-add hooks to existing macros before execution.
+Also, note that the :ref:`Taurus Sequencer <sequencer_ui>` widget allows the
+user to dynamically add hooks to existing macros before execution.
 
 
 More examples
