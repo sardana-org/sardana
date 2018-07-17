@@ -11,6 +11,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 - `pre-acq` and `post-acq` hooks to the `ct` macro (#808)
 - Enhance software synchronization by allowing function generation when
   group has 1 repeat only (#786)
+- Information about controller properties in `sar_info` macro (#855, #866)
 
 ### Fixed
 - Ensure that value buffer (data) events are handled sequentially so data
@@ -26,9 +27,11 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Avoid errors if selected trajectory in HKL controller doesnot exists (#752)
 - Pass motion range information with `MoveableDesc` in `mesh` scan (#864)
 - Documentation on how to install and use Sardana from Git clone (#751)
+- Documentation (Sphinx) build warnings (#859, #179, #219, #393)
 
 ### Changed
 - Change epoch from float to formatted date & time in Spec recorder (#766)
+- Documentation hosting from ReadTheDocs to Github Pages (build on Travis) (#826)
 
 ### Deprecated
 - `PoolMotorSlim` widget in favor of `PoolMotorTV` widget (#163, #785) 
