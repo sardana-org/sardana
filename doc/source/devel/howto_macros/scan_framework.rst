@@ -226,7 +226,9 @@ The following is a list of hint strings that the scan framework support (other h
 - 'post-step-hooks' : for steps: after finishing recording the step.
 - 'post-scan-hooks' : after finishing the scan.
     
-
+The standard scan macros, see module :mod:`~sardana.macroserver.macros.scan`, support the above hints
+name supressing the end *_hooks*, ex. 'pre-scan', 'pre-move',...
+  
 The code of :class:`~sardana.macroserver.macros.examples.hooks.hooked_scan`
 demonstrates the use of the hook points of a scan using the Hooks API.
 Other examples of the :mod:`~sardana.macroserver.macros.examples.hooks` module
@@ -242,10 +244,7 @@ More examples
 Other macros in the
 :mod:`~sardana.macroserver.macros.examples` module
 illustrate more features of the scan framework.
-
-See also the code of the standard scan macros in the
-:mod:`~sardana.macroserver.macros.scan` module. 
-
+ 
 Finally, the documentation and code of
 :class:`~sardana.macroserver.scan.GScan`,
 :class:`~sardana.macroserver.scan.SScan` and
