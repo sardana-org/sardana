@@ -2105,6 +2105,7 @@ class MeasurementGroup(PoolElement):
 
     def getConfigurationAttrEG(self):
         return self._getAttrEG('Configuration')
+
     def setConfiguration(self, configuration):
         self._flg_event = True
         codec = CodecFactory().getCodec('json')
@@ -2122,12 +2123,20 @@ class MeasurementGroup(PoolElement):
             data = self.getConfigurationAttrEG().readValue(force=True)
             self._setConfiguration(data)
         return self._configuration
+
     def on_configuration_changed(self, evt_src, evt_type, evt_value):
         if evt_type not in CHANGE_EVT_TYPES:
             return
         self.info("Configuration changed")
         self._setConfiguration(evt_value.value)
         self._flg_event = False
+
+    # TODO, should be removed
+    def getChannelsInfo(self):
+        self.warning('Deprecation warning: you should use "getChannelsInfoList" '
+                     'instead of "getChannelsInfo"')
+        return self.getConfiguration().getChannelsInfoList()
+
     def getValueBuffers(self):
         value_buffers = []
         for channel_info in self.getChannels():
