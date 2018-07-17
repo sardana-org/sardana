@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from __future__ import absolute_import
 
 ##############################################################################
 ##
@@ -46,12 +47,11 @@ import traceback
 import weakref
 import json
 import numpy
-
 import PyTango
 
 from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
-    DeviceProxy
-from taurus import Factory, Device, Attribute
+    DeviceProxy, AttributeProxy
+from taurus import Factory, Device
 from taurus.core.taurusbasetypes import TaurusEventType
 
 try:
@@ -69,6 +69,16 @@ from taurus.core.tango import TangoDevice, FROM_TANGO_TO_STR_TYPE
 
 from .sardana import BaseSardanaElementContainer, BaseSardanaElement
 from .motion import Moveable, MoveableSource
+
+try:
+    from collections import OrderedDict
+except ImportError:
+    # For Python < 2.7
+    from ordereddict import OrderedDict
+
+
+from sardana.pool import AcqSynchType
+from sardana.taurus.core.tango.sardana import PlotType
 
 Ready = Standby = DevState.ON
 Counting = Acquiring = Moving = DevState.MOVING
@@ -1700,48 +1710,282 @@ class MGConfiguration(object):
             if (time.time() - t1) >= timeout:
                 raise RuntimeError('Timeout on applying configuration')
 
-class MeasurementGroup(PoolElement):
-    """ Class encapsulating MeasurementGroup functionality."""
+    def getEnabledChannels(self, channels=None, use_fullname=False):
+        """get acquisition Enabled channels.
 
-    def __init__(self, name, **kw):
-        """PoolElement initialization."""
-        self._configuration = None
-        self._channels = None
-        self._last_integ_time = None
-        self.call__init__(PoolElement, name, **kw)
+        :param channels: (seq<str>) a list of channels names to get the
+        Enabled info
+        :param use_fullname: (bool) returns a full name instead sardana
+        element name
 
-        self.__cfg_attr = self.getAttribute('configuration')
-        self.__cfg_attr.addListener(self.on_configuration_changed)
+        :return a OrderedDict where the key are the channels and value the
+        Enabled state
+        """
 
-        self._value_buffer_cb = None
-        self._codec = CodecFactory().getCodec("json")
+        return self._get_channels_key('enabled', channels, use_fullname)
 
-    def _create_str_tuple(self):
-        channel_names = ", ".join(self.getChannelNames())
-        return self.getName(), self.getTimerName(), channel_names
+    def setEnabledChannels(self, state, channels=None, apply_cfg=True):
+        """Enable acquisition of the indicated channels.
 
-    def getConfigurationAttrEG(self):
-        return self._getAttrEG('Configuration')
+        :param state: <bool> The state of the channels to be set.
+        :param channels: (seq<str>) a sequence of strings indicating
+                         channel names
+        """
 
-    def setConfiguration(self, configuration):
-        codec = CodecFactory().getCodec('json')
-        f, data = codec.encode(('', configuration))
-        self.write_attribute('configuration', data)
+        self._set_channels_key('enabled', state, channels, apply_cfg)
 
-    def _setConfiguration(self, data):
-        self._configuration = MGConfiguration(self, data)
+    def getOutputChannels(self, channels=None, use_fullname=False):
+        """get the output State of the channels.
 
-    def getConfiguration(self, force=False):
-        if force or self._configuration is None:
-            data = self.getConfigurationAttrEG().readValue(force=True)
-            self._setConfiguration(data)
-        return self._configuration
+        :param channels: (list<str>) a string indicating the channel name,
+        in case of None, it will return all the Outputs Info
+        :param use_fullname: (bool) returns a full name instead sardana
+        element name
 
-    def on_configuration_changed(self, evt_src, evt_type, evt_value):
-        if evt_type not in CHANGE_EVT_TYPES:
-            return
-        self.info("Configuration changed")
-        self._setConfiguration(evt_value.value)
+        :return a OrderedDict where keys are channel names and
+        value the Outputs configuration
+        """
+
+        return self._get_channels_key('output', channels, use_fullname)
+
+    def setOutputChannels(self, state, channels=None, apply_cfg=True):
+        """Set the Output state of the indicated channels.
+
+        :param state: (bool) Indicate the state of the output.
+        :param channels: (seq<str>) a sequence of strings indicating
+                         channel names
+        """
+
+        self._set_channels_key('output', state, channels, apply_cfg)
+
+    def getPlotTypeChannels(self, channels=None, use_fullname=False):
+        """get the Plot Type for the channel indicated. In case of empty
+        channel value it will return  all the Plot Type Info
+
+        :param channels: (list<str>) Indicate the channel to return the
+        Plot Type Info
+        :param use_fullname: (bool) returns a full name instead sardana
+        element name
+
+        :return  a OrderedDict where keys are channel names and
+        value the plot axes info
+        """
+
+        return self._get_channels_key('plot_type', channels, use_fullname)
+
+    def setPlotTypeChannels(self,  ptype, channels=None, apply_cfg=True):
+        """Set the Plot Type for the indicated channels.
+
+        :param ptype: <str> string indicating the type name
+        :param channels: (seq<str>) a list of strings indicating the channels
+        to apply the PlotType
+        """
+
+        msg_error = 'Wrong value! PlotType allowed: ' \
+                    '{0}'.format(PlotType.keys())
+        if type(ptype) == str:
+            if ptype.lower() not in map(str.lower, PlotType.keys()):
+                raise ValueError(msg_error)
+            for value in PlotType.keys():
+                if value.lower() == ptype.lower():
+                    ptype = PlotType[value]
+                    break
+        elif type(ptype) == int:
+            try:
+                PlotType[ptype]
+            except Exception:
+                raise ValueError(msg_error)
+        else:
+            raise ValueError()
+        self._set_channels_key('plot_type', ptype, channels, apply_cfg)
+
+    def getPlotAxesChannels(self, channels=None, use_fullname=False):
+        """get the PlotAxes for the channel indicated. In case of empty channel
+        value it will return  all the PlotAxes Info
+
+        :param channels: (list<str>) Indicate the channel to return the
+        PlotAxes Info
+        :param use_fullname: (bool) returns a full name instead sardana
+        element name
+
+        :return  a OrderedDict where keys are channel names and
+        value the plot axes info
+        """
+
+        return self._get_channels_key('plot_axes', channels, use_fullname)
+
+    def setPlotAxesChannels(self,  axes, channels_names=None, apply_cfg=True):
+        """Set the PlotAxes for the indicated channels.
+
+        :param axes: <seq(str)> string indicating the axis name
+        :param channels_names: (seq<str>) a list of strings indicating the
+        channels to apply the PlotAxes
+        """
+        if channels_names is None:
+            channels_names = self.channels.keys()
+
+        for channel_name in channels_names:
+            channel_data = self._get_channel_data(channel_name)
+
+            # Check the current channel plot type
+            plot_type = PlotType[PlotType[channel_data['plot_type']]]
+            if plot_type == PlotType.No:
+                raise RuntimeError('You must set firs the PlotType')
+            elif plot_type == PlotType.Spectrum:
+                if len(axes) != 1:
+                    raise ValueError('The Spectrum Type only allows one axis')
+            elif plot_type == PlotType.Image:
+                if len(axes) != 2:
+                    raise ValueError('The Image Type only allows two axis')
+
+            # Validate axes values
+            for value in axes:
+                if value in ['<idx>', '<mov>']:
+                    continue
+                else:
+                    self._get_channel_data(value)
+            channel_name = channel_data['name']
+            self._set_channels_key('plot_axes',  axes, [channel_name],
+                                   apply_cfg)
+
+    def getCtrlsTimer(self, ctrls=None, use_fullname=False):
+        """get the acquisition Timer.
+
+        :param ctrls: <list(str)> list of Controllers names to get the timer
+        info
+        :param use_fullname: <bool> returns a full name instead sardana
+        element name
+
+        :return a OrderedDict where keys are controller names and
+        value the Timer Info
+        """
+
+        return self._get_ctrls_key('timer', ctrls, use_fullname)
+
+    def setCtrlsTimer(self, timers, apply_cfg=True):
+        """Set the acquisition Timer to the controllers compatibles,
+        it finds the controller comptible with this timer and set it
+        .
+        :param timer_name: <str> strings indicating the timer name
+        """
+        result = self._get_ctrl_from_channels(timers, unique=True)
+        meas_ctrl = self.channels[self.timer]['_controller_name']
+
+        for timer, ctrl in result.items():
+            if ctrl == meas_ctrl:
+                self._local_changes = True
+                self._raw_data['timer'] = timer
+            self._set_ctrls_key('timer', timer, [ctrl], apply_cfg)
+
+    def getCtrlsMonitor(self, ctrls=None, use_fullname=False):
+        """get the Monitor for the channel indicated. In case of empty channel
+        value it will return  all the Monitor Info
+
+        :param ctrls: <str> Indicate the controllers to return the Monitor Info
+        :param use_fullname: <bool> returns a full name instead sardana
+        element name
+
+        :return  a OrderedDict where keys are channel names and
+        value the Monitor Info
+        """
+
+        return self._get_ctrls_key('monitor', ctrls, use_fullname)
+
+    def setCtrlsMonitor(self, monitors, apply_cfg=True):
+        """Set the Monitor for to the controllers compatibles,
+        it finds the controller comptible with this timer and set it
+
+        :param monitors: (seq<str>) a list of strings indicating the channels
+        to apply the monitor
+        :param monitor: <str> string indicating the monitor name
+        """
+
+        result = self._get_ctrl_from_channels(monitors, unique=True)
+        meas_ctrl = self.channels[self.monitor]['_controller_name']
+
+        for monitor, ctrl in result.items():
+            if ctrl == meas_ctrl:
+                self._local_changes = True
+                self._raw_data['monitor'] = monitor
+            self._set_ctrls_key('monitor', monitor, [ctrl], apply_cfg)
+
+    def getCtrlsSynchronization(self, ctrls=None, use_fullname=False):
+        """get the Synchronization for the channel indicated. In case of empty
+        ctrl value it will return  all the Synchronization Info
+
+        :param ctrl: <str> Indicate the controllers to return the
+        Synchronization Info
+        :param use_fullname: <bool> returns a full name instead sardana
+        element name
+
+        :return  a OrderedDict where keys are controllers names and
+        value the Synchronization Info
+        """
+
+        return self._get_ctrls_key('synchronization', ctrls, use_fullname)
+
+    def setCtrlsSynchronization(self, synchronization, ctrls=None,
+                                apply_cfg=True):
+        """Set the Synchronization to the indicated controllers.
+
+        :param synchronization: <str> string indicating the synchronization
+        :param ctrls: (seq<str>) a list of strings indicating the channels
+        to apply the Synchronization
+        name
+        """
+        msg_error = 'Wrong value! Synchronization allowed: ' \
+                    '{0}'.format(AcqSynchType.keys())
+        if type(synchronization) == str:
+            if synchronization.lower() not in map(str.lower,
+                                                  AcqSynchType.keys()):
+                raise ValueError(msg_error)
+            for value in AcqSynchType.keys():
+                if value.lower() == synchronization.lower():
+                    synchronization = AcqSynchType[value]
+                    break
+        elif type(synchronization) == int:
+            try:
+                AcqSynchType[synchronization]
+            except Exception:
+                raise ValueError(msg_error)
+        else:
+            raise ValueError()
+        self._set_ctrls_key('synchronization', synchronization, ctrls,
+                            apply_cfg)
+
+    def getCtrlsSynchronizer(self, ctrls=None, use_fullname=False):
+        """get the synchronizer for the channel indicated. In case of empty
+        channel value it will return  all the Synchronizers Info
+
+        :param ctrls: <str> Indicate the controllers to return the
+        Synchronizer Info
+        :param use_fullname: <bool> returns a full name instead sardana
+        element name
+        :return  a OrderedDict where keys are controllers names and
+        value the synchronizer info
+        """
+
+        return self._get_ctrls_key('synchronizer', ctrls, use_fullname)
+
+    def setCtrlsSynchronizer(self, synchronizer, ctrls=None, apply_cfg=True):
+        """Set the synchronizer for the indicated controollers. In case of
+        empty ctrls value it will be applied to all the controllers
+
+        :param syncronizer: <str> string indicating the synchronizer name
+        :param ctrls: (seq<str>) a list of strings indicating the
+        controllers to apply the synchronizer
+        """
+        if synchronizer == 'software':
+            pass
+        else:
+            # TODO: Improve how to check if the element is a trigger_gate
+            sync = Device(synchronizer)
+            if 'triggergate' not in sync.name():
+                raise ValueError('The "{0}" is not a '
+                                 'triggergate'.format(synchronizer))
+            synchronizer = sync.getFullName()
+
+        self._set_ctrls_key('synchronizer', synchronizer, ctrls, apply_cfg)
 
     def getTimerName(self):
         return self.getTimer()['name']
