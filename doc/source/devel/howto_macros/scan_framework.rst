@@ -206,17 +206,16 @@ use a "hints" mechanism to pass the receiving macro some extra information on
 how/when they should be executed. The hints are strings, and its content is not
 fixed by the API, being up to each macro to identify, use and/or ignore them.
 
-You can find some examples of the use of hooks in the
-:mod:`~sardana.macroserver.macros.examples.hooks` module.
-
-In the case of the scan macros, the hooks can be either registered directly via
-the Hooks API or passed as key:values of the "step" dictionary returned by the
-scan :meth:`~sardana.macroserver.macro.scan.gscan.GScan.generator` (see
-:class:`~sardana.macroserver.macro.scan.gscan.GScan` for more details).
+In the case of the scan macros, the hooks can be registered not only via
+the Hooks API but also passed as key:values of the "step"
+dictionary returned by the scan :meth:`~sardana.macroserver.macro.scan.gscan.GScan.generator`
+(see :class:`~sardana.macroserver.macro.scan.gscan.GScan` for more details and
+:class:`~sardana.macroserver.macro.macros.aNscan` as an use case).
 
 The hints for a given hook are used by the scan framework to select the moment
-of the scan execution that the given hook is run. The following is a list of
-hint strings that scan macros support (other hints are ignored):
+of the scan execution that the given hook is run.
+
+The following is a list of hint strings that the scan framework support (other hints are ignored):
 
 - 'pre-scan-hooks' : before starting the scan.
 - 'pre-move-hooks' : for steps: before starting to move.
@@ -225,28 +224,29 @@ hint strings that scan macros support (other hints are ignored):
 - 'post-acq-hooks' : for steps: after finishing acquisition but before
   recording the step.
 - 'post-step-hooks' : for steps: after finishing recording the step.
-- 'post-scan-hooks' : after finishing the scan
-
-See the code of :class:`~sardana.macroserver.macros.examples.hooks.hooked_scan`
-for a macro that demonstrates the use of the hook points of a scan.
-
+- 'post-scan-hooks' : after finishing the scan.
+    
+The standard scan macros, see module :mod:`~sardana.macroserver.macros.scan`, support the above hints
+name supressing the end *_hooks*, ex. 'pre-scan', 'pre-move',...
+  
+The code of :class:`~sardana.macroserver.macros.examples.hooks.hooked_scan`
+demonstrates the use of the hook points of a scan using the Hooks API.
 Other examples of the :mod:`~sardana.macroserver.macros.examples.hooks` module
 can be illustrative.
 
-Also, note that the Taurus MacroExecutor widget allows the user to dynamically
-add hooks to existing macros before execution.
+Also, note that the :ref:`Taurus Sequencer <sequencer_ui>` widget allows the
+user to dynamically add hooks to existing macros before execution.
 
 
 More examples
 -------------
 
-Other macros in the :mod:`~sardana.macroserver.macros.examples` module
+Other macros in the
+:mod:`~sardana.macroserver.macros.examples` module
 illustrate more features of the scan framework.
-
-See also the code of the standard scan macros in the
-:mod:`~sardana.macroserver.macros.scan` module. 
-
-Finally, the documentation and code of :class:`~sardana.macroserver.scan.GScan`,
+ 
+Finally, the documentation and code of
+:class:`~sardana.macroserver.scan.GScan`,
 :class:`~sardana.macroserver.scan.SScan` and
 :class:`~sardana.macroserver.scan.CScan` may be helpful.
 
