@@ -2071,7 +2071,30 @@ class MGConfiguration(object):
 
     def __repr__(self):
         return json.dumps(self._raw_data, indent=4, sort_keys=True)
+
+
+class MeasurementGroup(PoolElement):
+    """ Class encapsulating MeasurementGroup functionality."""
+
+    def __init__(self, name, **kw):
+        """PoolElement initialization."""
+        self._configuration = None
+        self._channels = None
+        self._last_integ_time = None
+        self.call__init__(PoolElement, name, **kw)
+
+        self.__cfg_attr = self.getAttribute('configuration')
+        self.__cfg_attr.addListener(self.on_configuration_changed)
         self._flg_event = False
+        self._value_buffer_cb = None
+        self._codec = CodecFactory().getCodec("json")
+
+    def _create_str_tuple(self):
+        channel_names = ", ".join(self.getChannelNames())
+        return self.getName(), self.getTimerName(), channel_names
+
+    def getConfigurationAttrEG(self):
+        return self._getAttrEG('Configuration')
     def setConfiguration(self, configuration):
         self._flg_event = True
         codec = CodecFactory().getCodec('json')
@@ -2084,6 +2107,11 @@ class MGConfiguration(object):
         else:
             self._configuration.set_data(data)
 
+    def getConfiguration(self, force=False):
+        if force or self._configuration is None:
+            data = self.getConfigurationAttrEG().readValue(force=True)
+            self._setConfiguration(data)
+        return self._configuration
     def on_configuration_changed(self, evt_src, evt_type, evt_value):
         if evt_type not in CHANGE_EVT_TYPES:
             return
