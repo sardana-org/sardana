@@ -44,6 +44,7 @@ import sys
 import time
 import traceback
 import weakref
+import json
 import numpy
 
 import PyTango
@@ -1823,6 +1824,9 @@ class MeasurementGroup(PoolElement):
                          channel names
         """
         self.setEnabledChannels(False, channels, apply_cfg)
+
+    def __repr__(self):
+        return json.dumps(self._raw_data, indent=4, sort_keys=True)
         self._flg_event = False
     def setConfiguration(self, configuration):
         self._flg_event = True
