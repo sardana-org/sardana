@@ -541,3 +541,30 @@ class sar_info(Macro):
         self.output("-----------")
         for line in table.genOutput():
             self.output(line)
+
+
+class reconfig(Macro):
+    """Reconfigure a pool element.
+
+    This implies its full initialization which includes re-write of its
+    memorized attributes with the last set values.
+
+    Controller initialization implies initialization of all its elements."""
+
+    param_def = [
+        ['obj', Type.PoolElement, None, 'Pool element to reconfigure']
+    ]
+
+    def run(self, obj):
+        type_ = obj.getType().lower()
+        if type_ == "instrument":
+            raise ValueError("Instruments can not be reconfigured")
+        obj.Init()
+        self.info("%s was reconfigured" % obj.getName())
+        if type_ == "controller":
+            ctrl = obj
+            used_axes = ctrl.getUsedAxes()
+            for axis in used_axes:
+                elem = ctrl.getElementByAxis(axis)
+                elem.Init()
+                self.info("%s was reconfigured" % elem.getName())
