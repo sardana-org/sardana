@@ -619,8 +619,9 @@ class Controller(PoolElement):
 
     def getElementByName(self, name):
         pool = self.getPoolObj()
-        for name, elem in pool.getElementsOfType(self.getMainType()).items():
-            if elem.controller != self.getName() or elem.getName() != name:
+        for _, elem in pool.getElementsOfType(self.getMainType()).items():
+            if (elem.controller != self.getFullName() or
+                    elem.getName() != name):
                 continue
             return elem
 
