@@ -36,13 +36,35 @@ __docformat__ = 'restructuredtext'
 
 from copy import deepcopy
 from lxml import etree
-
+import json
 from taurus.core.util.containers import CaselessDict
 
 from sardana import ElementType, INTERFACES_EXPANDED
 from sardana.macroserver.msbase import MSBaseObject
 from sardana.macroserver.msexception import MacroServerException, \
     UnknownMacro, UnknownMacroLibrary
+
+
+class OptionalParamClass(dict):
+    def __init__(self, obj):
+        super(OptionalParamClass, self).__init__(obj)
+        attributes = dir(self)
+
+        for attr in attributes:
+            if attr in ['__setattr__', '__repr__', 'raise_error', '__class__',
+                        '__dict__', '__weakref__']:
+                continue
+            self.__setattr__(attr, self.raise_error)
+        self.__setattr__ = self.raise_error
+
+    def __repr__(self):
+        return 'OptionalParam'
+
+    def raise_error(*args, **kwargs):
+        raise RuntimeError('can not be accessed')
+
+
+OptionalParam = OptionalParamClass({'___optional_parameter__': True})
 
 
 class WrongParam(MacroServerException):
@@ -397,22 +419,25 @@ class ParamDecoder:
                 else:
                     value = raw_param
                 # None or [] indicates default value
-                if value is None or (isinstance(value, list) and len(value) == 0):
+                if value is None or (isinstance(value, list) and
+                                     len(value) == 0):
                     value = param_def['default_value']
                 if value is None:
-                    raise MissingParam, "'%s' not specified" % name
+                    raise MissingParam("'%s' not specified" % name)
+                elif isinstance(value, OptionalParamClass):
+                    param = OptionalParam
                 else:
                     # cast to sting to fulfill with ParamType API
-                    value = str(value)
-                param = param_type.getObj(value)
-            except ValueError, e:
-                raise WrongParamType, e.message
-            except UnknownParamObj, e:
-                raise WrongParam, e.message
+                    param = param_type.getObj(str(value))
+
+            except ValueError as e:
+                raise WrongParamType(e.message)
+            except UnknownParamObj as e:
+                raise WrongParam(e.message)
             if param is None:
                 msg = 'Could not create %s parameter "%s" for "%s"' % \
                       (param_type.getName(), name, raw_param)
-                raise WrongParam, msg
+                raise WrongParam(msg)
         return param
 
     def decodeRepeat(self, raw_param_repeat, param_repeat_def):
