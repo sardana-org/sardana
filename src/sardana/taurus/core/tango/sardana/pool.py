@@ -612,7 +612,8 @@ class Controller(PoolElement):
     def getElementByAxis(self, axis):
         pool = self.getPoolObj()
         for _, elem in pool.getElementsOfType(self.getMainType()).items():
-            if elem.controller != self.getName() or elem.getAxis() != axis:
+            if (elem.controller != self.getFullName() or
+                    elem.getAxis() != axis):
                 continue
             return elem
 
