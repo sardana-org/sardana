@@ -487,10 +487,10 @@ class SingleParamNode(ParamNode):
         if param is None:
             return
         self.setType(str(param.get('type')))
-        self.setDefValue(str(param.get('default_value', '')))
+        self.setDefValue(str(param.get('default_value', None)))
         if self.type() == "User":
             self.setDefValue(str(USER_NAME))
-        self.setValue(self.defValue())
+        self._value = None
 
     def __len__(self):
         return 0
@@ -523,7 +523,9 @@ class SingleParamNode(ParamNode):
     def toXml(self):
         value = self.value()
         paramElement = etree.Element("param", name=self.name())
-        if not value is None:
+        # set value attribute only if it is different than the default value
+        # the server will assign the default value anyway.
+        if value is not None and value != self.defValue():
             paramElement.set("value", value)
         return paramElement
 
@@ -542,9 +544,12 @@ class SingleParamNode(ParamNode):
 
     def toRun(self):
         val = self.value()
-        if val is None or val == "None" or val == "":
-            alert = "Parameter <b>" + self.name() + "</b> is missing.<br>"
-            return ([val], alert)
+        if val is None or val == "None":
+            if self.defValue() is None:
+                alert = "Parameter <b>" + self.name() + "</b> is missing.<br>"
+                return ([val], alert)
+            else:
+                val = self.defValue()
         return ([val], "")
 
     def toList(self):
