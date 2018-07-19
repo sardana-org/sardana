@@ -959,7 +959,20 @@ class LogMacroManager(object):
             logging.handlers.RotatingFileHandler(log_file,
                                                  backupCount=bck_counts)
         file_handler.doRollover()
-        file_handler.addFilter(LogMacroFilter())
+
+        from sardana import sardanacustomsettings
+        log_macro_filter = getattr(sardanacustomsettings,"LOG_MACRO_FILTER")
+        print log_macro_filter
+        if isinstance(log_macro_filter, basestring):
+            print "Es basestring"
+            try:
+                moduleName, filterName = log_macro_filter.rsplit('.', 1)
+                __import__(moduleName)
+                module = sys.modules[moduleName]
+                filter_class = getattr(module, filterName)
+                file_handler.addFilter(filter_class())
+            except:
+                file_handler.addFilter(LogMacroFilter())
 
         try:
             format_to_set = macro_obj.getEnv("LogMacroFormat")
