@@ -850,7 +850,7 @@ class MacroManager(MacroServerManager):
             self._macro_executors[door] = me = MacroExecutor(door)
         return me
 
-class FileHandlerFilter(logging.Filter):
+class LogMacroFilter(logging.Filter):
     def __init__(self, param=None):
         self.param = param
 
@@ -959,7 +959,7 @@ class LogMacroManager(object):
             logging.handlers.RotatingFileHandler(log_file,
                                                  backupCount=bck_counts)
         file_handler.doRollover()
-        file_handler.addFilter(FileHandlerFilter())
+        file_handler.addFilter(LogMacroFilter())
 
         try:
             format_to_set = macro_obj.getEnv("LogMacroFormat")
