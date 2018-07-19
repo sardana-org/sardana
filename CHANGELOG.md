@@ -26,6 +26,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - `lsgh` list hooks multiple times to reflect the configuration (#774)
 - Avoid errors if selected trajectory in HKL controller doesnot exists (#752)
 - Pass motion range information with `MoveableDesc` in `mesh` scan (#864)
+- `getElementByAxis` and `getElementByName` of Controller Taurus extension
+  class (#872)
 - Documentation on how to install and use Sardana from Git clone (#751)
 - Documentation (Sphinx) build warnings (#859, #179, #219, #393)
 
