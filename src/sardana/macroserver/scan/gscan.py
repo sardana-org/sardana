@@ -163,36 +163,35 @@ class GScan(Logger):
     scan, a generator function pointer, a list of moveable items, an extra
     environment and a sequence of constrains.
 
-    If the referenced macro is hookable, 'pre-scan' and 'post-scan' hook hints
-    will be used to execute callables before the start and after the end of the
-    scan, respectively
+    If the referenced macro is hookable, ``pre-scan`` and ``post-scan`` hook
+    hints will be used to execute callables before the start and after the
+    end of the scan, respectively
 
     The generator must be a function yielding a dictionary with the following
     content (minimum) at each step of the scan:
-      - 'positions'  : In a step scan, the position where the moveables
-                       should go
-      - 'integ_time' : In a step scan, a number representing the integration
-                      time for the step (in seconds)
-      - 'integ_time' : In a continuous scan, the time between acquisitions
-      - 'pre-move-hooks' : (optional) a sequence of callables to be called
-                           in strict order before starting to move.
-      - 'post-move-hooks': (optional) a sequence of callables to be called
-                           in strict order after finishing the move.
-      - 'pre-acq-hooks'  : (optional) a sequence of callables to be called in
-                           strict order before starting to acquire.
-      - 'post-acq-hooks' : (optional) a sequence of callables to be called in
-                           strict order after finishing acquisition but before
-                           recording the step.
-      - 'post-step-hooks' : (optional) a sequence of callables to be called in
-                            strict order after finishing recording the step.
-      - 'hooks' : (deprecated, use post-acq-hooks instead)
-      - 'point_id' : a hashable identifing the scan point.
-      - 'check_func' : (optional) a list of callable objects.
-                       callable(moveables, counters)
-      - 'extravalues': (optional) a dictionary containing the values for
-                       each extra info field. The extra information fields
-                       must be described in extradesc (passed in the
-                       constructor of the Gscan)
+
+    - 'positions' : In a step scan, the position where the moveables
+      should go
+    - 'integ_time' : In a step scan, a number representing the integration
+      time for the step (in seconds)
+    - 'integ_time' : In a continuous scan, the time between acquisitions
+    - 'pre-move-hooks' : (optional) a sequence of callables to be called
+      in strict order before starting to move.
+    - 'post-move-hooks': (optional) a sequence of callables to be called
+      in strict order after finishing the move.
+    - 'pre-acq-hooks' : (optional) a sequence of callables to be called in
+      strict order before starting to acquire.
+    - 'post-acq-hooks' : (optional) a sequence of callables to be called in
+      strict order after finishing acquisition but before recording the step.
+    - 'post-step-hooks' : (optional) a sequence of callables to be called in
+      strict order after finishing recording the step.
+    - 'hooks' : (deprecated, use post-acq-hooks instead)
+    - 'point_id' : a hashable identifing the scan point.
+    - 'check_func' : (optional) a list of callable objects.
+      callable(moveables, counters)
+    - 'extravalues': (optional) a dictionary containing the values for
+      each extra info field. The extra information fields must be described
+      in extradesc (passed in the constructor of the Gscan)
 
 
     The moveables must be a sequence Motion or MoveableDesc objects.
@@ -208,31 +207,31 @@ class GScan(Logger):
     step['extravalues'], where step is what the generator yields.
 
     The Generic Scan will create:
-      - a ScanData
-      - DataHandler with the following recorders:
-        - OutputRecorder (depends on 'OutputCols' environment variable)
-        - SharedMemoryRecorder (depends on 'SharedMemory' environment variable)
-        - FileRecorder (depends on 'ScanDir' and 'ScanData'
-          environment variables)
-      - ScanDataEnvironment with the following contents:
+
+    - a ScanData
+    - DataHandler with the following recorders:
+    - OutputRecorder (depends on ``OutputCols`` environment variable)
+    - SharedMemoryRecorder (depends on ``SharedMemory`` environment variable)
+    - FileRecorder (depends on ``ScanDir`` and ``ScanData``
+      environment variables)
+    - ScanDataEnvironment with the following contents:
+
         - 'serialno' : a integer identifier for the scan operation
         - 'user' : the user which started the scan
         - 'title' : the scan title (build from macro.getCommand)
         - 'datadesc' : a seq<ColumnDesc> describing each column of data
-                     (labels, data format, data shape, etc)
-        - 'estimatedtime' : a float representing an estimation for
-                          the duration of the scan (in seconds). Negative means
-                          the time estimation is known not to be accurate.
-                          Anyway, time estimation has 'at least' semantics.
+          (labels, data format, data shape, etc)
+        - 'estimatedtime' : a float representing an estimation for the duration
+          of the scan (in seconds). Negative means the time estimation is known
+          not to be accurate. Anyway, time estimation has 'at least' semantics.
         - 'total_scan_intervals' : total number of scan intervals. Negative
-                                   means the estimation is known not to be
-                                   accurate. In this case, estimation has
-                                   'at least' semantics.
+          means the estimation is known not to be accurate. In this case,
+          estimation has 'at least' semantics.
         - '' : a datetime.datetime representing the start of the scan
-        - 'instrumentlist' : a list of Instrument objects containing info
-                            about the physical setup of the motors, counters,
-                            ...
+        - 'instrumentlist' : a list of Instrument objects containing info about
+          the physical setup of the motors, counters,
         - <extra environment> given in the constructor
+
         (at the end of the scan, extra keys 'endtime' and 'deadtime' will be
         added representing the time at the end of the scan and the dead time)
 
@@ -242,9 +241,12 @@ class GScan(Logger):
     At each step of the scan, for each Recorder, the writeRecord method will
     be called with a Record object as parameter. The Record.data member will be
     a dictionary containing:
-      - 'point_nb' : the point number of the scan
-      - for each column of the scan (motor or counter), a key with the
-      corresponding column name will contain the value"""
+
+    - 'point_nb' : the point number of the scan
+    - for each column of the scan (motor or counter), a key with the
+      corresponding column name will contain the value
+
+    """
 
     MAX_SCAN_HISTORY = 20
 
@@ -832,6 +834,7 @@ class GScan(Logger):
 
     @property
     def data(self):
+        """Scan data."""
         return self._data
 
     @property
@@ -848,6 +851,7 @@ class GScan(Logger):
 
     @property
     def generator(self):
+        """Generator of steps or waypoints used in this scan."""
         return self._generator
 
     @property
@@ -1157,15 +1161,16 @@ class CScan(GScan):
     def populate_moveables_data_structures(self, moveables):
         """Populates moveables data structures.
         :param moveables: (list<Moveable>) data structures will be generated
-                          for these moveables
+        for these moveables
         :return (moveable_trees, physical_moveables_names, physical_moveables)
-                - moveable_trees (list<Tree>) - each tree represent one
-                     Moveables with its hierarchy of inferior moveables.
-                - physical_moveables_names (list<str> - list of the names of
-                     the physical moveables. List order is important and
-                     preserved.
-                - physical_moveables (list<Moveable> - list of the moveable
-                     objects. List order is important and preserved.
+
+        - moveable_trees (list<Tree>) - each tree represent one Moveable
+          with its hierarchy of inferior moveables.
+        - physical_moveables_names (list<str> - list of the names of
+          the physical moveables. List order is important and preserved.
+        - physical_moveables (list<Moveable> - list of the moveable
+          objects. List order is important and preserved.
+
         """
 
         def generate_moveable_node(macro, moveable):

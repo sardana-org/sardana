@@ -113,15 +113,14 @@ def _calculate_positions(moveable_node, start, end):
 
 
 class aNscan(Hookable):
+    """N-dimensional scan. This is **not** meant to be called by the user,
+    but as a generic base to construct ascan, a2scan, a3scan,..."""
 
     hints = {'scan': 'aNscan', 'allowsHooks': ('pre-scan', 'pre-move',
                                                'post-move', 'pre-acq',
                                                'post-acq', 'post-step',
                                                'post-scan')}
     # env = ('ActiveMntGrp',)
-
-    """N-dimensional scan. This is **not** meant to be called by the user,
-    but as a generic base to construct ascan, a2scan, a3scan,..."""
 
     def _prepare(self, motorlist, startlist, endlist, scan_length, integ_time,
                  mode=StepMode, latency_time=0, **opts):
