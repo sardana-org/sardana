@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from __future__ import absolute_import
 ##############################################################################
 ##
 # This file is part of Sardana
@@ -41,6 +41,7 @@ import PyTango
 
 from taurus.core.util.user import USER_NAME
 from taurus.core.util.codecs import CodecFactory
+from sardana.macroserver.msparameter import OptionalParam
 
 
 class MacroRunException(Exception):
@@ -487,9 +488,9 @@ class SingleParamNode(ParamNode):
         if param is None:
             return
         self.setType(str(param.get('type')))
-        self.setDefValue(str(param.get('default_value', None)))
+        self.setDefValue(param.get('default_value', None))
         if self.type() == "User":
-            self.setDefValue(str(USER_NAME))
+            self.setDefValue(USER_NAME)
         self._value = None
 
     def __len__(self):
@@ -507,7 +508,9 @@ class SingleParamNode(ParamNode):
         self._value = value
 
     def defValue(self):
-        return self._defValue
+        if self._defValue is None:
+            return None
+        return str(self._defValue)
 
     def setDefValue(self, defValue):
         if defValue == "None":
@@ -525,8 +528,9 @@ class SingleParamNode(ParamNode):
         paramElement = etree.Element("param", name=self.name())
         # set value attribute only if it is different than the default value
         # the server will assign the default value anyway.
-        if value is not None and value != self.defValue():
-            paramElement.set("value", value)
+        if value is not None or str(value).lower() != 'none':
+            if value != self.defValue():
+                paramElement.set("value", value)
         return paramElement
 
     def fromXml(self, xmlElement):
@@ -548,6 +552,8 @@ class SingleParamNode(ParamNode):
             if self.defValue() is None:
                 alert = "Parameter <b>" + self.name() + "</b> is missing.<br>"
                 return ([val], alert)
+            elif self._defValue == OptionalParam:
+                val = ''
             else:
                 val = self.defValue()
         return ([val], "")
