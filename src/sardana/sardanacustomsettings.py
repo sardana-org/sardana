@@ -54,6 +54,10 @@ SPOCK_INPUT_HANDLER = "CLI"
 #: value - recorder name
 SCAN_RECORDER_MAP = None
 
+#: Filter for macro logging: name of the class to be used as filter for the macro logging
+LOG_MACRO_FILTER = "sardana.macroserver.msmacromanager.LogMacroFilter"
+
 # TODO: Temporary solution, available while Taurus3 is being supported.
 # Maximum number of Taurus deprecation warnings allowed to be displayed.
 TAURUS_MAX_DEPRECATION_COUNTS = 0
+
