@@ -552,7 +552,8 @@ class reconfig(Macro):
     Controller initialization implies initialization of all its elements."""
 
     param_def = [
-        ['obj', Type.PoolElement, None, 'Pool element to reconfigure']
+        ["obj", Type.PoolElement, None, "Pool element (or its name) to "
+                                        "reconfigure"]
     ]
 
     def run(self, obj):
