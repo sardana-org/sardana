@@ -892,7 +892,7 @@ class LogMacroFilter(logging.Filter):
         return allow
 
 
-class LogMacroManager(object):
+class LogMacroManager(Logger):
 
     """Manage user-oriented macro logging to a file. It is configurable with
     LogMacro, LogMacroMode, LogMacroFormat and LogMacroDir environment
@@ -910,6 +910,8 @@ class LogMacroManager(object):
     DEFAULT_MODE = 0
 
     def __init__(self, macro_obj):
+        name = macro_obj.getName() + ".LogMacroManager"
+        Logger.__init__(self, name)
         self._macro_obj = macro_obj
         self._file_handler = None
         self._enabled = False
