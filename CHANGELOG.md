@@ -9,6 +9,10 @@ This file follows the formats and conventions from [keepachangelog.com]
 - `repeat` macro for executing n-times the hooks attached in its body (#310,
   #745)
 - `pre-acq` and `post-acq` hooks to the `ct` macro (#808)
+- Default macro logging filter which improves the output of logging messages.
+  Filter can be configured with sardanacustomsettings (#730)
+- Possibiltiy to configure ORB end point for Tango servers with Tango DB
+  free property (#874)
 - Enhance software synchronization by allowing function generation when
   group has 1 repeat only (#786)
 - Information about controller properties in `sar_info` macro (#855, #866)
