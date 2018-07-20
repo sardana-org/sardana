@@ -850,7 +850,9 @@ class MacroManager(MacroServerManager):
             self._macro_executors[door] = me = MacroExecutor(door)
         return me
 
+
 class LogMacroFilter(logging.Filter):
+
     def __init__(self, param=None):
         self.param = param
 
@@ -865,31 +867,33 @@ class LogMacroFilter(logging.Filter):
                 start = msg.index("'") + 1
                 end = msg.index("->", start)
                 msg = msg[start:end]
-                msg = msg.replace("("," ").replace(")", "").replace("[", "").replace("]", "")
+                msg = msg.replace("(", " ").replace(")", "").replace(
+                    "[", "").replace("]", "")
                 msg = msg.replace(", ", " ")
                 msg = msg.replace(",", " ")
                 msg = msg.replace(".*", "")
                 while msg.find("  ") != -1:
-                    msg = msg.replace("  "," ")
+                    msg = msg.replace("  ", " ")
                 if msg[0] == "_":
                     allow = False
                 else:
                     msg_split = msg.split(" ")
                     msg = ""
-                    for i in range(0,len(msg_split)):
+                    for i in range(0, len(msg_split)):
                         if msg_split[i].find(" ") == -1:
                             msg_split[i] = msg_split[i].replace("'", " ")
                         msg = msg + " " + str(msg_split[i])
                     while msg.find("  ") != -1:
-                        msg = msg.replace("  "," ")
-                    record.msg = "\n-- " + time.ctime() + "\n" +  msg
+                        msg = msg.replace("  ", " ")
+                    record.msg = "\n-- " + time.ctime() + "\n" + msg
                     allow = True
             else:
                 allow = False
         return allow
 
-    
-class LogMacroManager(object):
+
+class LogMacroManager(Logger):
+
     """Manage user-oriented macro logging to a file. It is configurable with
     LogMacro, LogMacroMode, LogMacroFormat and LogMacroDir environment
     variables.
@@ -906,9 +910,43 @@ class LogMacroManager(object):
     DEFAULT_MODE = 0
 
     def __init__(self, macro_obj):
+        name = macro_obj.getName() + ".LogMacroManager"
+        Logger.__init__(self, name)
         self._macro_obj = macro_obj
         self._file_handler = None
         self._enabled = False
+
+    def getFilterClass(self):
+        """Get filter class.
+
+        First look if a custom filter class was set using
+        sardanacustomsettings.LOG_MACRO_FILTER variable, if not, silently
+        return None (no filter will be applied).
+
+        If the custom filter class was incorrectly set or class is not
+        importable warn the user and return None (no filter will be applied).
+        """
+        filter_class = None
+        from sardana import sardanacustomsettings
+        try:
+            log_macro_filter = getattr(sardanacustomsettings,
+                                       "LOG_MACRO_FILTER")
+        except AttributeError:
+            pass
+        else:
+            if isinstance(log_macro_filter, basestring):
+                try:
+                    module_name, filter_name = log_macro_filter.rsplit('.', 1)
+                    __import__(module_name)
+                    module = sys.modules[module_name]
+                    filter_class = getattr(module, filter_name)
+                except Exception:
+                    msg = "sardanacustomsettings.LOG_MACRO_FILTER has wrong" \
+                          " format or class is not importable." \
+                          " No filter will be used."
+                    self.warning(msg)
+                    self.debug(exc_info=True)
+        return filter_class
 
     def enable(self):
         """Enable macro logging only if the following requirements are
@@ -960,19 +998,17 @@ class LogMacroManager(object):
                                                  backupCount=bck_counts)
         file_handler.doRollover()
 
-        from sardana import sardanacustomsettings
-        log_macro_filter = getattr(sardanacustomsettings,"LOG_MACRO_FILTER")
-        print log_macro_filter
-        if isinstance(log_macro_filter, basestring):
-            print "Es basestring"
+        filter_class = self.getFilterClass()
+        if filter_class is not None:
             try:
-                moduleName, filterName = log_macro_filter.rsplit('.', 1)
-                __import__(moduleName)
-                module = sys.modules[moduleName]
-                filter_class = getattr(module, filterName)
-                file_handler.addFilter(filter_class())
-            except:
-                file_handler.addFilter(LogMacroFilter())
+                filter_ = filter_class()
+            except Exception:
+                msg = "Not possible to instantiate %s class. No filter will" \
+                      " be used." % filter_class
+                self.warning(msg)
+                self.debug(exc_info=True)
+            else:
+                file_handler.addFilter(filter_)
 
         try:
             format_to_set = macro_obj.getEnv("LogMacroFormat")
@@ -1004,7 +1040,9 @@ class LogMacroManager(object):
 
         return True
 
+
 class MacroExecutor(Logger):
+
     """ """
 
     class RunSubXMLHook:
@@ -1660,7 +1698,7 @@ class MacroExecutor(Logger):
 
     def sendMacroStatus(self, data):
         self._last_macro_status = data
-        #data = self._macro_status_codec.encode(('', data))
+        # data = self._macro_status_codec.encode(('', data))
         return self.door.set_macro_status(data)
 
     def sendRecordData(self, data, codec=None):
