@@ -89,9 +89,9 @@ class setvo(Macro):
     - **OutputBlock**: used by scan macros. Default value ``False``
 
     """
-    
 
-    
+
+
     param_def = [['name', Type.String, None, 'View option name'],
                  ['value', Type.String, None, 'View option value']]
 
