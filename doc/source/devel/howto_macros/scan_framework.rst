@@ -208,19 +208,23 @@ how/when they should be executed. The *hook places* are just arbitrary strings
 and are not fixed by the API, being up to each macro to identify, use and/or
 ignore them.
 
-You can find some examples of the use of hooks in
-:ref:`sardana-devel-macro-hooks-examples` chapter.
+See the code of the ``hooked_scan`` macro in
+:ref:`sardana-devel-macro-hooks-examples` that demonstrates how to use the
+Hooks API in scans. Other examples of the same chapter can be illustrative.
+
+Also, note that the Sardana-Taurus widget Sequencer widget allows the user
+to dynamically add hooks to existing macros before execution.
 
 In the case of the scan macros, the hooks can be registered not only via
-the Hooks API but also passed as ``key:value`` pairs, where key is a hook place
-value is a list of callable hooks, of the "step" dictionary returned by the
+the Hooks API but also passed as ``key:value`` pairs, where key is a
+concatenation of a *hook place* and the **-hooks** string e.g. pre-scan-hooks
+and value is a list of callable hooks, of the "step" dictionary returned by the
 scan :attr:`~sardana.macroserver.scan.GScan.generator`
 (see :class:`~sardana.macroserver.scan.GScan` for more details and
 :class:`~sardana.macroserver.macros.scan.aNscan` as a use case).
 
 
-The following is a list of hint strings that scan macros support (other
-hints are ignored):
+The following is a list of the supported keys:
 
 - 'pre-scan-hooks' : before starting the scan.
 - 'pre-move-hooks' : for steps: before starting to move.
@@ -230,17 +234,6 @@ hints are ignored):
   recording the step.
 - 'post-step-hooks' : for steps: after finishing recording the step.
 - 'post-scan-hooks' : after finishing the scan.
-    
-The standard scan macros, see module :mod:`~sardana.macroserver.macros.scan`,
-support the above hints name suppressing the end **_hooks**, ex. 'pre-scan',
-'pre-move', ...
-
-See the code of the ``hooked_scan`` macro in
-:ref:`sardana-devel-macro-hooks-examples` that demonstrates the use of the
-hook points of a scan. Other examples of the same chapter can be illustrative.
-
-Also, note that the Taurus MacroExecutor widget allows the user to dynamically
-add hooks to existing macros before execution.
 
 
 More examples
