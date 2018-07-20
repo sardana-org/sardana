@@ -1228,7 +1228,7 @@ def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None,
     except KeyboardInterrupt:
         pass
 
-    log_messages.extend(prepare_ORBendPoint(args))
+    log_messages.extend(prepare_ORBendPoint(args, tango_args))
     # Tango versions < 8.0.5 are affected by
     # https://sourceforge.net/p/tango-cs/bugs/495/
     tango_version = get_tango_version_number()
