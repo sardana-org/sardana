@@ -965,7 +965,7 @@ def get_free_property(db, obj_name, property_name):
     try:
         prop = db.get_property(obj_name, property_name)
         value = prop[property_name][0]
-    except:
+    except Exception:
         msg = " '{}' property not found for object '{}".format(
             property_name, obj_name)
         log_messages.append(msg)
