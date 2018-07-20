@@ -440,6 +440,27 @@ Example accesing scan data:
    Door_1 [16]: r[0].data['haso111n:10000/expchan/ctctrl05/1']
    Result [16]: 1.0
 
+
+ViewOptions
+-----------
+
+The ViewOptions are variables internally set in the spock environment that allows
+the users to customize the output displayed by certain macros.
+They are set by the macro :class:`~sardana.macroserver.macros.env.setvo`. The macro
+:class:`~sardana.macroserver.macros.env.usetvo` returns the ViewOptions to the
+default value.
+Here the list of the available ViewOptions:
+
+- *ShowDial*: Select if the *dial* information of the motor should be displayed.
+  Default value False (no *dial* but only *user* information). 
+- *ShowCtrlAxis*: Select if the name of the controller the motor belongs to should be
+  displayed. Default value False (not controller name).
+- *PosFormat*: Set the number of decimal digits displayed in the motor positions/limits.
+  Default value -1 (all digits).
+- *OutputBlock*: Set if the line information during scans is appended to the output or
+  updated. Default value False (lines are appended to the displayed output during the scan).    
+
+  
 Editing macros
 --------------
 

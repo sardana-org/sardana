@@ -82,9 +82,9 @@ class setvo(Macro):
     """Sets the given view option to the given value.
 
     Available view options:
-    'ShowDial': used by macro wm, wa. Default value False
-    'ShowCtrlAxis': used by macro wm, wa. Default value False
-    'PosFormat': used by macro wm, wa. Default value -1
+    'ShowDial': used by macro wm, pwm and wa. Default value False
+    'ShowCtrlAxis': used by macro wm, pwm and wa. Default value False
+    'PosFormat': used by macro wm, pwm and wa. Default value -1
     'OutputBlock': used by scan macros. Default value False
 
     """
