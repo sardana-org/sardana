@@ -642,6 +642,26 @@ def prepare_cmdline(parser=None, args=None):
     return res
 
 
+def prepare_ORBendPoint(args):
+    """Try to get Tango *free property* (object name: ``ORBendPoint``,
+    property name: ``<server_name>/<instance_name>``) and set it via
+    environment variable if this one was not existing before.
+    """
+    log_messages = []
+    server_name = args[0]
+    instance_name = args[1]
+    env_name = "ORBendPoint"
+    if env_name not in os.environ:
+        db = PyTango.Database()
+        property_name = server_name + "/" + instance_name
+        env_val = get_free_property(db, env_name, property_name)
+        if env_val is not None:
+            os.environ[env_name] = env_val
+            log_messages.append(("setting %s=%s from Property", env_name,
+                                 env_val))
+    return log_messages
+
+
 def prepare_environment(args, tango_args, ORB_args):
     """Since we have to create a Tango Database object before the Tango Util,
     omniORB doesn't recognize parameters on the command line anymore
@@ -655,6 +675,13 @@ def prepare_environment(args, tango_args, ORB_args):
             env_name = arg[1:]
             env_val = ORB_args[i + 1]
             os.environ[env_name] = env_val
+
+            # In Tango > 7 the omniORB parameters has a conflict if are
+            # passed in command line and using environment variables,
+            # the workarround is remove the omniORB arguments after setting
+            # it in environemnts variables.
+            tango_args.remove(ORB_args[i])
+            tango_args.remove(ORB_args[i + 1])
             log_messages.append(("setting %s=%s", env_name, env_val))
     return log_messages
 
@@ -928,6 +955,24 @@ def get_free_alias(db, prefix, start_from=1):
         start_from += 1
 
 
+def get_free_property(db, obj_name, property_name):
+    """Get *free property* from Tango database.
+
+    If it is not defined return None.
+    """
+    log_messages = []
+    value = None
+    try:
+        prop = db.get_property(obj_name, property_name)
+        value = prop[property_name][0]
+    except:
+        pass
+        msg = " '{}' property not found for object '{}".format(
+            property_name, obj_name)
+        log_messages.append(msg)
+    return value
+
+
 def prepare_taurus(options, args, tango_args):
     # make sure the polling is not active
     factory = taurus.Factory()
@@ -1181,6 +1226,7 @@ def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None,
     except KeyboardInterrupt:
         pass
 
+    log_messages.extend(prepare_ORBendPoint(args))
     log_messages.extend(prepare_environment(args, tango_args, ORB_args))
 
     try:
