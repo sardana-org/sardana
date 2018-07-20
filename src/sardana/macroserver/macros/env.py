@@ -79,8 +79,18 @@ class lsvo(Macro):
 
 
 class setvo(Macro):
-    """Sets the given view option to the given value"""
+    """Sets the given view option to the given value.
 
+    Available view options:
+    'ShowDial': used by macro wm, wa. Default value False
+    'ShowCtrlAxis': used by macro wm, wa. Default value False
+    'PosFormat': used by macro wm, wa. Default value -1
+    'OutputBlock': used by scan macros. Default value False
+
+    """
+    
+
+    
     param_def = [['name', Type.String, None, 'View option name'],
                  ['value', Type.String, None, 'View option value']]
 
@@ -93,7 +103,15 @@ class setvo(Macro):
 
 
 class usetvo(Macro):
-    """Resets the value of the given view option"""
+    """Resets the value of the given view option.
+
+    Available view options:
+    'ShowDial': used by macro wm, wa. Default value False
+    'ShowCtrlAxis': used by macro wm, wa. Default value False
+    'PosFormat': used by macro wm, wa. Default value -1
+    'OutputBlock': used by scan macros. Default value False
+
+    """
 
     param_def = [['name', Type.String, None, 'View option name']]
 
