@@ -440,6 +440,33 @@ Example accesing scan data:
    Door_1 [16]: r[0].data['haso111n:10000/expchan/ctctrl05/1']
    Result [16]: 1.0
 
+.. |br| raw:: html
+
+    <br>
+
+Changing appearance with View Options
+-------------------------------------
+
+The *View Options* allow the users to customize the output displayed by certain
+macros. They are set by the macro :class:`~sardana.macroserver.macros.env.setvo`.
+The macro :class:`~sardana.macroserver.macros.env.usetvo` returns the
+*View Options* to the default value. And the macro
+:class:`~sardana.macroserver.macros.env.lsvo` lists the current values.
+       
+Available *View Options*:
+
+- **ShowDial**: Select if the :term:`dial` information of the motor should be
+  displayed. |br| Default value ``False`` (no :term:`dial` but only
+  :term:`user` information).
+- **ShowCtrlAxis**: Select if the name of the controller the motor belongs to
+  should be displayed. Default value ``False`` (no controller name).
+- **PosFormat**: Set the number of decimal digits displayed in the motor
+  position/limits. |br| Default value ``-1`` (all digits).
+- **OutputBlock**: Set if the line information during scans is appended to the
+  output or updated. |br| Default value ``False`` (lines are appended to the
+  displayed output during the scan).
+
+  
 Editing macros
 --------------
 
