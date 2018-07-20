@@ -866,7 +866,7 @@ def from_name_to_tango(db, name):
             alias = db.get_alias(name)
             if alias.lower() == 'nada':
                 alias = None
-        except:
+        except Exception:
             alias = None
     elif l == 1:
         alias = name
@@ -1073,7 +1073,7 @@ def prepare_logging(options, args, tango_args, start_time=None,
             try:
                 # include the user name to avoid permission errors
                 tangodir = 'tango-%s' % getpass.getuser()
-            except:
+            except Exception:
                 tangodir = 'tango' % getpass.getuser()
             path = os.path.join(os.sep, "tmp", tangodir, ds_name, ds_instance)
             log_file_name = os.path.join(path, 'log.txt')
@@ -1108,7 +1108,7 @@ def prepare_logging(options, args, tango_args, start_time=None,
             else:
                 taurus.info("Starting up...")
             taurus.info("Log is being stored in %s", log_file_name)
-        except:
+        except Exception:
             if start_time is not None:
                 taurus.info("Started at %s", start_time)
             else:
@@ -1142,7 +1142,7 @@ def prepare_rconsole(options, args, tango_args):
         import rfoo.utils.rconsole
         rfoo.utils.rconsole.spawn_server(port=port)
         taurus.debug("Finished setting up rconsole")
-    except:
+    except Exception:
         taurus.debug("Failed to setup rconsole", exc_info=1)
 
 
