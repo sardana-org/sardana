@@ -642,23 +642,30 @@ def prepare_cmdline(parser=None, args=None):
     return res
 
 
-def prepare_ORBendPoint(args):
+def prepare_ORBendPoint(args, tango_args):
     """Try to get Tango *free property* (object name: ``ORBendPoint``,
     property name: ``<server_name>/<instance_name>``) and set it via
-    environment variable if this one was not existing before.
+    environment variable only in two occasions:
+
+    - this one was not existing
+    - ``-ORBendPoint`` argument was not passed
     """
     log_messages = []
     server_name = args[0]
     instance_name = args[1]
     env_name = "ORBendPoint"
-    if env_name not in os.environ:
-        db = PyTango.Database()
-        property_name = server_name + "/" + instance_name
-        env_val = get_free_property(db, env_name, property_name)
-        if env_val is not None:
-            os.environ[env_name] = env_val
-            log_messages.append(("setting %s=%s from Property", env_name,
-                                 env_val))
+    if env_name in os.environ:
+        return log_messages
+    arg_name = "-" + env_name
+    if arg_name in tango_args:
+        return log_messages
+    db = PyTango.Database()
+    property_name = server_name + "/" + instance_name
+    env_val = get_free_property(db, env_name, property_name)
+    if env_val is not None:
+        os.environ[env_name] = env_val
+        log_messages.append(("setting %s=%s from Tango DB free property",
+                             env_name, env_val))
     return log_messages
 
 
