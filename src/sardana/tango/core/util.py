@@ -672,8 +672,11 @@ def prepare_ORBendPoint(args, tango_args):
 def prepare_environment(args, tango_args, ORB_args):
     """Since we have to create a Tango Database object before the Tango Util,
     omniORB doesn't recognize parameters on the command line anymore
-    (tango, omniORB bug?), so we export these parameters as environment
-    variables (this workaround seems to work)"""
+    (ORB singleton did not receive cmd args), so we export these parameters as
+    environment variables (this workaround seems to work). For Tango >=
+    8.0.5 it is not necessary anymore.
+    More details in: https://sourceforge.net/p/tango-cs/bugs/495/
+    """
     log_messages = []
     ORB_args_len = len(ORB_args)
     for i in range(ORB_args_len):
