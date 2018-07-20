@@ -21,7 +21,7 @@
 ##
 ##############################################################################
 
-"""This is the standard macro module"""
+"""This is the communication macro module"""
 
 __docformat__ = 'restructuredtext'
 

@@ -72,21 +72,21 @@ class SardanaBaseObject(EventGenerator, EventReceiver, Logger):
         """Returns this sardana object name
 
         :return: this sardana object name
-        :rtype: str"""
+        :rtype: :obj:`str`"""
         return self._name
 
     def set_name(self, name):
         """Sets sardana object name
 
         :param: sardana object name
-        :type: str"""
+        :type: :obj:`str`"""
         self._name = name
 
     def get_full_name(self):
         """Returns this sardana object full name
 
         :return: this sardana object full name
-        :rtype: str"""
+        :rtype: :obj:`str`"""
         return self._full_name
 
     def get_type(self):
@@ -107,7 +107,7 @@ class SardanaBaseObject(EventGenerator, EventReceiver, Logger):
         """Returns this sardana object parent's name.
 
         :return: this objects parent
-        :rtype: str"""
+        :rtype: :obj:`str`"""
         parent = self.get_parent()
         if parent and hasattr(parent, 'name'):
             return parent.name

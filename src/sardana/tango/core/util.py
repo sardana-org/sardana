@@ -762,9 +762,9 @@ def register_server_with_devices(db, server_name, server_instance, devices):
        :param db: database where to register devices
        :type db: PyTango.Database
        :param server_name: server name
-       :type server_name: str
+       :type server_name: :obj:`str`
        :param server_instance: server instance name
-       :type server_instance: str
+       :type server_instance: :obj:`str`
        :param devices: map of devices to create.
        :type devices: dict<str, seq<tuple<str, str, dict>>>
     """

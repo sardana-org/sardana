@@ -23,8 +23,7 @@
 ##
 ##############################################################################
 
-"""This module contains the class definition for the MacroServer generic
-scan"""
+"""This is the lists macro module"""
 
 
 __all__ = ["ls0d", "ls1d", "ls2d", "lsa", "lscom", "lsct", "lsctrl",

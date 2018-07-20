@@ -24,22 +24,15 @@
 """
     Macro library containning scan macros for the macros server Tango device
     server as part of the Sardana project.
-
-   Available Macros are:
-     ascan family: ascan, a2scan, a3scan, a4scan and amultiscan
-     dscan family: dscan, d2scan, d3scan, d4scan and dmultiscan
-     mesh
-     fscan
-     scanhist
 """
 
 __all__ = ["a2scan", "a3scan", "a4scan", "amultiscan", "aNscan", "ascan",
            "d2scan", "d3scan", "d4scan", "dmultiscan", "dNscan", "dscan",
-           "fscan", "mesh",
+           "fscan", "mesh", "timescan",
            "a2scanc", "a3scanc", "a4scanc", "ascanc",
            "d2scanc", "d3scanc", "d4scanc", "dscanc",
            "meshc",
-           "a2scanct", "a3scanct", "a4scanct", "ascanct",
+           "a2scanct", "a3scanct", "a4scanct", "ascanct", "meshct",
            "scanhist", "getCallable", "UNCONSTRAINED"]
 
 __docformat__ = 'restructuredtext'
@@ -120,15 +113,14 @@ def _calculate_positions(moveable_node, start, end):
 
 
 class aNscan(Hookable):
+    """N-dimensional scan. This is **not** meant to be called by the user,
+    but as a generic base to construct ascan, a2scan, a3scan,..."""
 
     hints = {'scan': 'aNscan', 'allowsHooks': ('pre-scan', 'pre-move',
                                                'post-move', 'pre-acq',
                                                'post-acq', 'post-step',
                                                'post-scan')}
     # env = ('ActiveMntGrp',)
-
-    """N-dimensional scan. This is **not** meant to be called by the user,
-    but as a generic base to construct ascan, a2scan, a3scan,..."""
 
     def _prepare(self, motorlist, startlist, endlist, scan_length, integ_time,
                  mode=StepMode, latency_time=0, **opts):
@@ -391,15 +383,17 @@ class ascan(aNscan, Macro):
 
 
 class a2scan(aNscan, Macro):
-    """two-motor scan.
+    """
+    two-motor scan.
     a2scan scans two motors, as specified by motor1 and motor2.
     Each motor moves the same number of intervals with starting and ending
     positions given by start_pos1 and final_pos1, start_pos2 and final_pos2,
     respectively. The step size for each motor is:
-        (start_pos-final_pos)/nr_interv
+    (start_pos-final_pos)/nr_interv
     The number of data points collected will be nr_interv+1.
     Count time is given by time which if positive, specifies seconds and
-    if negative, specifies monitor counts."""
+    if negative, specifies monitor counts.
+    """
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
         ['start_pos1', Type.Float, None, 'Scan start position 1'],
@@ -711,7 +705,12 @@ class mesh(Macro, Hookable):
         self.name = opts.get('name', 'mesh')
 
         generator = self._generator
-        moveables = self.motors
+        moveables = []
+        for m, start, final in zip(self.motors, self.starts, self.finals):
+            moveables.append(MoveableDesc(moveable=m,
+                                          min_value=min(start, final),
+                                          max_value=max(start, final)))
+        moveables[0].is_reference = True
         env = opts.get('env', {})
         constrains = [getCallable(cns) for cns in opts.get(
             'constrains', [UNCONSTRAINED])]
@@ -843,10 +842,10 @@ class fscan(Macro, Hookable):
     -no spaces are allowed in the indepvar string.
     -all funcs must evaluate to the same number of points
 
-    EXAMPLE:
-    fscan x=[1,3,5,7,9],y=arange(5) 0.1 motor1 x**2 motor2 sqrt(y*x+3)
-    fscan x=[1,3,5,7,9],y=arange(5) [0.1,0.2,0.3,0.4,0.5] motor1 x**2 motor2
-          sqrt(y*x+3)
+
+    >>> fscan x=[1,3,5,7,9],y=arange(5) 0.1 motor1 x**2 motor2 sqrt(y*x+3)
+    >>> fscan x=[1,3,5,7,9],y=arange(5) [0.1,0.2,0.3,0.4,0.5] motor1 x**2 \
+motor2 sqrt(y*x+3)
     """
 
     # ['integ_time', Type.String,   None, 'Integration time']

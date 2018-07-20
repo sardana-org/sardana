@@ -22,3 +22,4 @@ MacroServer
     
 .. autoclass:: MacroServer
     :show-inheritance:
+    :members:
