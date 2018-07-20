@@ -1226,7 +1226,11 @@ def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None,
         pass
 
     log_messages.extend(prepare_ORBendPoint(args))
-    log_messages.extend(prepare_environment(args, tango_args, ORB_args))
+    # Tango versions < 8.0.5 are affected by
+    # https://sourceforge.net/p/tango-cs/bugs/495/
+    tango_version = get_tango_version_number()
+    if tango_version < 80005:
+        log_messages.extend(prepare_environment(args, tango_args, ORB_args))
 
     try:
         log_messages.extend(prepare_server(args, tango_args))
