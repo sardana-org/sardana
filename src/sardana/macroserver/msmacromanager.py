@@ -968,10 +968,10 @@ class LogMacroManager(object):
         log_macro_filter = getattr(sardanacustomsettings, "LOG_MACRO_FILTER")
         if isinstance(log_macro_filter, basestring):
             try:
-                moduleName, filterName = log_macro_filter.rsplit('.', 1)
-                __import__(moduleName)
-                module = sys.modules[moduleName]
-                filter_class = getattr(module, filterName)
+                module_name, filter_ame = log_macro_filter.rsplit('.', 1)
+                __import__(module_name)
+                module = sys.modules[module_name]
+                filter_class = getattr(module, filter_name)
                 file_handler.addFilter(filter_class())
             except Exception:
                 file_handler.addFilter(LogMacroFilter())
