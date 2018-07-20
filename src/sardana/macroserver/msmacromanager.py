@@ -916,6 +916,38 @@ class LogMacroManager(Logger):
         self._file_handler = None
         self._enabled = False
 
+    def getFilterClass(self):
+        """Get filter class.
+
+        First look if a custom filter class was set using
+        sardanacustomsettings.LOG_MACRO_FILTER variable, if not, silently
+        return None (no filter will be applied).
+
+        If the custom filter class was incorrectly set or class is not
+        importable warn the user and return None (no filter will be applied).
+        """
+        filter_class = None
+        from sardana import sardanacustomsettings
+        try:
+            log_macro_filter = getattr(sardanacustomsettings,
+                                       "LOG_MACRO_FILTER")
+        except AttributeError:
+            pass
+        else:
+            if isinstance(log_macro_filter, basestring):
+                try:
+                    module_name, filter_name = log_macro_filter.rsplit('.', 1)
+                    __import__(module_name)
+                    module = sys.modules[module_name]
+                    filter_class = getattr(module, filter_name)
+                except Exception:
+                    msg = "sardanacustomsettings.LOG_MACRO_FILTER has wrong" \
+                          " format or class is not importable." \
+                          " No filter will be used."
+                    self.warning(msg)
+                    self.debug(exc_info=True)
+        return filter_class
+
     def enable(self):
         """Enable macro logging only if the following requirements are
         fulfilled:
@@ -966,17 +998,17 @@ class LogMacroManager(Logger):
                                                  backupCount=bck_counts)
         file_handler.doRollover()
 
-        from sardana import sardanacustomsettings
-        log_macro_filter = getattr(sardanacustomsettings, "LOG_MACRO_FILTER")
-        if isinstance(log_macro_filter, basestring):
+        filter_class = self.getFilterClass()
+        if filter_class is not None:
             try:
-                module_name, filter_ame = log_macro_filter.rsplit('.', 1)
-                __import__(module_name)
-                module = sys.modules[module_name]
-                filter_class = getattr(module, filter_name)
-                file_handler.addFilter(filter_class())
+                filter_ = filter_class()
             except Exception:
-                file_handler.addFilter(LogMacroFilter())
+                msg = "Not possible to instantiate %s class. No filter will" \
+                      " be used." % filter_class
+                self.warning(msg)
+                self.debug(exc_info=True)
+            else:
+                file_handler.addFilter(filter_)
 
         try:
             format_to_set = macro_obj.getEnv("LogMacroFormat")
