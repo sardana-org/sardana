@@ -675,13 +675,6 @@ def prepare_environment(args, tango_args, ORB_args):
             env_name = arg[1:]
             env_val = ORB_args[i + 1]
             os.environ[env_name] = env_val
-
-            # In Tango > 7 the omniORB parameters has a conflict if are
-            # passed in command line and using environment variables,
-            # the workarround is remove the omniORB arguments after setting
-            # it in environemnts variables.
-            tango_args.remove(ORB_args[i])
-            tango_args.remove(ORB_args[i + 1])
             log_messages.append(("setting %s=%s", env_name, env_val))
     return log_messages
 
