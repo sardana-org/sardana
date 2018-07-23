@@ -326,7 +326,7 @@ all available sardana interfaces (:obj:`~sardana.sardanadefs.Interface`)
 .. _sardana-macro-optional-parameters:
 
 Optional parameters
-~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
 A special default value is the *OptionalParam*. It allows to the macro
 identify if the user introduces a value or not to take a decision.
