@@ -1023,7 +1023,13 @@ def prepare_logstash(args):
     db = Database()
 
     bin_name = args[0]
-    instance_name = args[1]
+    try:
+        instance_name = args[1]
+    except IndexError:
+        msg = ("Unknown %s instance name. " % bin_name
+               + "Skipping logstash configuration...")
+        log_messages.append(msg, )
+        return log_messages
     server_name = bin_name + "/" + instance_name
     if bin_name in ["Pool", "MacroServer"]:
         class_name = bin_name
