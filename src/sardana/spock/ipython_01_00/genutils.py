@@ -653,7 +653,11 @@ def _macro_completer(self, event):
     if possible_params:
         res = []
         for param in possible_params:
-            res.extend(ms.getElementNamesWithInterface(param['type']))
+            if param['type'].lower() == 'boolean':
+                res.extend(['True', 'False'])
+            else:
+                res.extend(ms.getElementNamesWithInterface(param['type']))
+
         return res
 
 
