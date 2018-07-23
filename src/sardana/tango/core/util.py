@@ -652,7 +652,13 @@ def prepare_ORBendPoint(args, tango_args):
     """
     log_messages = []
     server_name = args[0]
-    instance_name = args[1]
+    try:
+        instance_name = args[1]
+    except IndexError:
+        msg = ("Unknown %s instance name. " % server_name
+               + "Skipping ORBendPoint from free property configuration...")
+        log_messages.append(msg, )
+        return log_messages
     env_name = "ORBendPoint"
     if env_name in os.environ:
         return log_messages
