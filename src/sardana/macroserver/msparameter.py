@@ -36,7 +36,6 @@ __docformat__ = 'restructuredtext'
 
 from copy import deepcopy
 from lxml import etree
-import json
 from taurus.core.util.containers import CaselessDict
 
 from sardana import ElementType, INTERFACES_EXPANDED
