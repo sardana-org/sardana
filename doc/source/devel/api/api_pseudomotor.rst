@@ -31,7 +31,7 @@ drift correction
 siblings
 --------
 
-    List of other psuedo motor objects that belongs to the same controller.
+    List of other pseudo motor objects that belongs to the same controller.
 
     :attr:`~PoolPseudoMotor.siblings`
 
