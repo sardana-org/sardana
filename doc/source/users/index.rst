@@ -17,6 +17,7 @@ User's Guide
     Macro Hooks <macro_hooks>
     Macro Environment <macro_environment>
     Macro Logging <macro_logging>
+    Macro Report <macro_report>
     Environment Variable Catalog <environment_variable_catalog>
     Standard macro catalog <standard_macro_catalog>
     Configuration <configuration/index>
