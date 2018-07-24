@@ -38,7 +38,10 @@ import array
 
 from sardana.macroserver.msexception import UnknownMacroLibrary
 from sardana.macroserver.msparameter import WrongParam
-from sardana.macroserver.macro import Macro, Type, ParamRepeat, Table, LibraryError
+from sardana.macroserver.macro import Macro, Type, ParamRepeat, Table,\
+    LibraryError
+from sardana.taurus.core.tango.sardana.pool import Fault
+
 
 ##########################################################################
 #
@@ -552,20 +555,41 @@ class reconfig(Macro):
     Controller initialization implies initialization of all its elements."""
 
     param_def = [
-        ["obj", Type.PoolElement, None, "Pool element (or its name) to "
-                                        "reconfigure"]
+        ["element", Type.PoolElement, None, "Pool element (or its name) to "
+                                            "reconfigure"]
     ]
 
-    def run(self, obj):
-        type_ = obj.getType().lower()
+    def _init_element(self, element):
+        """Init element and verify its state. Return True if the
+        initialization succeeded, otherwise return False.
+        """
+
+        def _getState(element):
+            if hasattr(element, "stateObj"):
+                state = element.stateObj.read().rvalue
+                # state_value is DevState enumeration (IntEnum)
+            else:
+                state = element.state()
+            return state
+
+        element.Init()
+        name = element.getName()
+        if _getState(element) == Fault:
+            self.error("Failure while reconfiguring %s" % name)
+            self.warning(element.information())
+            return False
+        else:
+            self.info("%s was successfully reconfigured" % name)
+            return True
+
+    def run(self, element):
+        type_ = element.getType().lower()
         if type_ == "instrument":
             raise ValueError("Instruments can not be reconfigured")
-        obj.Init()
-        self.info("%s was reconfigured" % obj.getName())
-        if type_ == "controller":
-            ctrl = obj
+        ok = self._init_element(element)
+        if type_ == "controller" and ok:
+            ctrl = element
             used_axes = ctrl.getUsedAxes()
             for axis in used_axes:
-                elem = ctrl.getElementByAxis(axis)
-                elem.Init()
-                self.info("%s was reconfigured" % elem.getName())
+                ctrl_element = ctrl.getElementByAxis(axis)
+                self._init_element(ctrl_element)
