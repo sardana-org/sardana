@@ -112,6 +112,19 @@ LogMacroFormat
 
 Definition of the format to be used to save the file.
 
+.. _logmacrofilter:
+
+LogMacroFilter
+~~~~~~~~~~~~~~
+
+*Not mandatory, set by user*
+
+Full path of the class to be used as filter by the LogMacroManager.
+
+* if LOG_MACRO_FILTER is not defined no filter will be used.
+* if LOG_MACRO_FILTER is wrongly defined warn user and no filter will be used
+*if macro filter can not be initialized warn user and no filter will be used
+
 .. _motion-env-vars:
 
 Motion Environment Variables
