@@ -573,6 +573,8 @@ class reconfig(Macro):
             return state
 
         element.Init()
+        # TODO: subsribe to state event and wait until it arrives
+        import time; time.sleep(0.5)
         name = element.getName()
         if _getState(element) == Fault:
             self.error("Failure while reconfiguring %s" % name)
