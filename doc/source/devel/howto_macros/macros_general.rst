@@ -565,7 +565,7 @@ Here is an example on how to write a logging information message::
 Reports
 -------
 
-Once the report facility has been properly configured, report messages can be
+Once the report facility has been :ref:`properly configured <sardana-configuration-macroserver>`, report messages can be
 sent to the previously configured report file.
 
 There are several differences between :ref:`reporting <sardana-macro-reporting>` and
