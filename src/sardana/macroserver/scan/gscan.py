@@ -2303,6 +2303,7 @@ class CTScan(CScan, CAcquisition):
             except Exception as e:
                 msg = "Motion did not start properly.\n{0}".format(e)
                 self.debug(msg)
+                raise ScanException("move to final position failed")
             else:
                 # wait extra 15 s to for the acquisition to finish
                 # if it does not finish, abort the measurement group
