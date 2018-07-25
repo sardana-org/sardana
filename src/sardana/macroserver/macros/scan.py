@@ -1856,7 +1856,7 @@ class scanstats(Macro):
     the active measurement group for the last scan. Print it and publish it
     in the env. The macro must be hooked in the post-scan hook place.
     """
-    
+
     def run(self, *args):
         parent = self.getParentMacro()
         if parent:
@@ -1864,32 +1864,32 @@ class scanstats(Macro):
             self.mntGrp = self.getObj(mntGrp, type_class=Type.MeasurementGroup)
             channels = self.mntGrp.getChannels()
             select_channel = ''
-            
+
             for channel in channels:
                 if channel['enabled'] & channel['plot_type'] == 1:
-                    select_channel = channel['name']                    
+                    select_channel = channel['name']
                     break
-            
+
             # in case no channel is enabled and plotted just take the first
             if select_channel == '':
                 select_channel = channels[0]['name']
-                
+
             select_motor = str(parent.motors[0])
-            
-            self.info('Statistics on channel: %s' % select_channel)   
+
+            self.info('Statistics on channel: %s' % select_channel)
             self.info('Statistics for movable: %s' % select_motor)
             data = parent.data
-            
+
             counter_data = []
             motor_data = []
-            
+
             for idx, rc in data.items():
                 counter_data.append(rc[select_channel])
                 motor_data.append(rc[select_motor])
-            
+
             counter_data = numpy.array(counter_data)
             motor_data = numpy.array(motor_data)
-            
+
             CEN = numpy.sum(counter_data*motor_data)/numpy.sum(counter_data)
             PEAK = motor_data[numpy.argmax(counter_data)]
             # print statistics
@@ -1900,11 +1900,11 @@ class scanstats(Macro):
             self.info('Mean:\t %g' % numpy.mean(counter_data))
             self.info('Integral:\t %g' % numpy.sum(counter_data))
             self.info('CEN:\t %g' % CEN)
-            # set CEN and PEAK as env variables          
+            # set CEN and PEAK as env variables
             # set the motor only in case it is hard to access it from another
             # macro liek pic or cen
-            self.setEnv('ScanStats', {'PEAK':PEAK, 'CEN':CEN,
-                                      'motor':select_motor})
+            self.setEnv('ScanStats', {'PEAK': PEAK, 'CEN': CEN,
+                                      'motor': select_motor})
         else:
             self.warning('for now the scanstats macro can only be executed as'
                          ' a post-scan hook')
