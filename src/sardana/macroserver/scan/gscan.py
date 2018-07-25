@@ -2301,6 +2301,7 @@ class CTScan(CScan, CAcquisition):
                     "Moving to waypoint position: %s" % repr(final_pos))
                 motion.move(final_pos)
             except Exception as e:
+                measurement_group.waitFinish(timeout=0, id=mg_id)
                 msg = "Motion did not start properly.\n{0}".format(e)
                 self.debug(msg)
                 raise ScanException("move to final position failed")
@@ -2312,7 +2313,6 @@ class CTScan(CScan, CAcquisition):
                 # TODO: allow parametrizing timeout
                 timeout = 15
                 measurement_group.waitFinish(timeout=timeout, id=mg_id)
-            finally:
                 # TODO: For Taurus 4 / Taurus 3 compatibility
                 if hasattr(measurement_group, "stateObj"):
                     state = measurement_group.stateObj.read().rvalue
@@ -2322,8 +2322,9 @@ class CTScan(CScan, CAcquisition):
                     msg = "Measurement did not finish acquisition within "\
                           "timeout. Stopping it..."
                     self.debug(msg)
-                    measurement_group.Stop()
                     raise ScanException("acquisition timeout reached")
+            finally:
+                measurement_group.Stop()
 
             for hook in waypoint.get('post-acq-hooks', []):
                 hook()
