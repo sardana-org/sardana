@@ -2300,10 +2300,6 @@ class CTScan(CScan, CAcquisition):
                 self.macro.debug(
                     "Moving to waypoint position: %s" % repr(final_pos))
                 motion.move(final_pos)
-            finally:
-                # To ensure it is executed.
-                for hook in waypoint.get('post-acq-hooks', []):
-                    hook()
                 # wait extra 15 s to for the acquisition to finish
                 # if it does not finish, abort the measurement group
                 # (this could be due to missed hardware triggers or
@@ -2322,6 +2318,9 @@ class CTScan(CScan, CAcquisition):
                     self.debug(msg)
                     measurement_group.Stop()
                     raise ScanException("acquisition timeout reached")
+
+            for hook in waypoint.get('post-acq-hooks', []):
+                hook()
 
             if macro.isStopped():
                 self.on_waypoints_end()
