@@ -2300,6 +2300,10 @@ class CTScan(CScan, CAcquisition):
                 self.macro.debug(
                     "Moving to waypoint position: %s" % repr(final_pos))
                 motion.move(final_pos)
+            except Exception as e:
+                msg = "Motion did not start properly.\n{0}".format(e)
+                self.debug(msg)
+            else:
                 # wait extra 15 s to for the acquisition to finish
                 # if it does not finish, abort the measurement group
                 # (this could be due to missed hardware triggers or
@@ -2307,6 +2311,7 @@ class CTScan(CScan, CAcquisition):
                 # TODO: allow parametrizing timeout
                 timeout = 15
                 measurement_group.waitFinish(timeout=timeout, id=mg_id)
+            finally:
                 # TODO: For Taurus 4 / Taurus 3 compatibility
                 if hasattr(measurement_group, "stateObj"):
                     state = measurement_group.stateObj.read().rvalue
