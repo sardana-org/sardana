@@ -58,6 +58,12 @@ SCAN_RECORDER_MAP = None
 
 #: Filter for macro logging: name of the class to be used as filter
 #: for the macro logging
+#:
+#: - if LOG_MACRO_FILTER is not defined no filter will be used
+#: - if LOG_MACRO_FILTER is wrongly defined a user warning will be issued and
+#:   no filter will be used
+#: - if LOG_MACRO_FILTER is correctly defined but macro filter can not be
+#:   initialized a user warning will be issued and no filter will be used
 LOG_MACRO_FILTER = "sardana.macroserver.msmacromanager.LogMacroFilter"
 
 # TODO: Temporary solution, available while Taurus3 is being supported.

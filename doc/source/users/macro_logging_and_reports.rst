@@ -23,10 +23,6 @@ and output format.
 Filters can be applied with
 :data:`~sardana.sardanacustomsettings.LOG_MACRO_FILTER`.
 
-* if LOG_MACRO_FILTER is not defined no filter will be used.
-* if LOG_MACRO_FILTER is wrongly defined warn user and no filter will be used
-* if macro filter can not be initialized warn user and no filter will be used
-
 The macro :class:`~sardana.macroserver.macros.standard.logmacro` activate/deactivate the macro logging.
 
 :ref:`Report messages <sardana-macro-reporting>` can be sent by the macros to a report file.
