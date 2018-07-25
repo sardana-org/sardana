@@ -2295,11 +2295,12 @@ class CTScan(CScan, CAcquisition):
 
             try:
                 self.timestamp_to_start = time.time() + delta_start
-
+                end_move = False
                 # move to waypoint end position
                 self.macro.debug(
                     "Moving to waypoint position: %s" % repr(final_pos))
                 motion.move(final_pos)
+                end_move = True
             except Exception as e:
                 measurement_group.waitFinish(timeout=0, id=mg_id)
                 msg = "Motion did not start properly.\n{0}".format(e)
@@ -2313,18 +2314,19 @@ class CTScan(CScan, CAcquisition):
                 # TODO: allow parametrizing timeout
                 timeout = 15
                 measurement_group.waitFinish(timeout=timeout, id=mg_id)
+            finally:
                 # TODO: For Taurus 4 / Taurus 3 compatibility
                 if hasattr(measurement_group, "stateObj"):
                     state = measurement_group.stateObj.read().rvalue
                 else:
                     state = measurement_group.state()
                 if state == PyTango.DevState.MOVING:
-                    msg = "Measurement did not finish acquisition within "\
-                          "timeout. Stopping it..."
-                    self.debug(msg)
-                    raise ScanException("acquisition timeout reached")
-            finally:
-                measurement_group.Stop()
+                    measurement_group.Stop()
+                    if end_move:
+                        msg = "Measurement did not finish acquisition within "\
+                              "timeout. Stopping it..."
+                        self.debug(msg)
+                        raise ScanException("acquisition timeout reached")
 
             for hook in waypoint.get('post-acq-hooks', []):
                 hook()
