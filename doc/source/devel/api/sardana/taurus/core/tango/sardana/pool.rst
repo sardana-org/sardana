@@ -1,38 +1,71 @@
-.. currentmodule:: sardana.taurus.core.tango.sardana
+.. currentmodule:: sardana.taurus.core.tango.sardana.pool
 
-:mod:`~sardana.tango.pool.Controller`
-=====================================
-
-.. automodule:: sardana.taurus.core.tango.sardana.pool
+=================
+Taurus Extensions
+=================
 
 .. rubric:: Classes
 
 .. hlist::
-    :columns: 3
+    :columns: 4
 
-    * :class:`Controller`
+    * :class:`BaseElement`
     * :class:`ComChannel`
-    * :class:`ExpChannel`
+    * :class:`Controller`
+    * :class:`ControllerClass`
     * :class:`CTExpChannel`
+    * :class:`ExpChannel`
+    * :class:`Instrument`
+    * :class:`IORegister`
+    * :class:`MeasurementGroup`
+    * :class:`Motor`
+    * :class:`MotorGroup`
+    * :class:`OneDExpChannel`
+    * :class:`Pool`
+    * :class:`PoolElement`
+    * :class:`PseudoCounter`
+    * :class:`PseudoMotor`
+    * :class:`TriggerGate`
+    * :class:`TwoDExpChannel`
+    * :class:`ZeroDExpChannel`
 
+BaseElement
+-----------
+    
+.. autoclass:: BaseElement
+    :show-inheritance:
+    :members:
+    :undoc-members:
+    
+ComChannel
+----------
+    
+.. autoclass:: ComChannel
+    :show-inheritance:
+    :members:
+    :undoc-members:
+      
 Controller
 ----------
-
-.. inheritance-diagram:: Controller
-    :parts: 1
     
 .. autoclass:: Controller
     :show-inheritance:
     :members:
     :undoc-members:
-
-ComChannel
-----------
-
-.. inheritance-diagram:: ComChannel
-    :parts: 1
+      
+ControllerClass
+---------------
     
-.. autoclass:: ComChannel
+.. autoclass:: ControllerClass
+    :show-inheritance:
+    :members:
+    :undoc-members:
+
+
+CTExpChannel
+------------
+    
+.. autoclass:: CTExpChannel
     :show-inheritance:
     :members:
     :undoc-members:
@@ -47,14 +80,118 @@ ExpChannel
     :show-inheritance:
     :members:
     :undoc-members:
+      
+Instrument
+----------
+    
+.. autoclass:: Instrument
+    :show-inheritance:
+    :members:
+    :undoc-members:
+       
+IORegister
+----------
+    
+.. autoclass:: IORegister
+    :show-inheritance:
+    :members:
+    :undoc-members:
 
-CTExpChannel
-------------
+  
+MeasurementGroup
+----------------
+    
+.. autoclass:: MeasurementGroup
+    :show-inheritance:
+    :members:
+    :undoc-members:
+      
+Motor
+-----
 
-.. inheritance-diagram:: CTExpChannel
+.. inheritance-diagram:: Motor
     :parts: 1
     
-.. autoclass:: CTExpChannel
+.. autoclass:: Motor
+    :show-inheritance:
+    :members:
+    :undoc-members:
+      
+MotorGroup
+----------
+    
+.. autoclass:: MotorGroup
+    :show-inheritance:
+    :members:
+    :undoc-members:
+
+OneDExpChannel
+--------------
+    
+.. autoclass:: OneDExpChannel
+    :show-inheritance:
+    :members:
+    :undoc-members:
+      
+Pool
+----
+
+.. inheritance-diagram:: Pool
+    :parts: 1
+    
+.. autoclass:: Pool
+    :show-inheritance:
+    :members:
+    :undoc-members:
+      
+PoolElement
+-----------
+
+.. inheritance-diagram:: PoolElement
+    :parts: 1
+    
+.. autoclass:: PoolElement
+    :show-inheritance:
+    :members:
+    :undoc-members:
+   
+PseudoCounter
+-------------
+    
+.. autoclass:: PseudoCounter
+    :show-inheritance:
+    :members:
+    :undoc-members:
+
+PseudoMotor
+-----------
+
+.. autoclass:: PseudoMotor
+    :show-inheritance:
+    :members:
+    :undoc-members:
+       
+TriggerGate
+-----------
+    
+.. autoclass:: TriggerGate
+    :show-inheritance:
+    :members:
+    :undoc-members:
+   
+TwoDExpChannel
+--------------
+    
+.. autoclass:: TwoDExpChannel
+    :show-inheritance:
+    :members:
+    :undoc-members:
+
+      
+ZeroDExpChannel
+---------------
+
+.. autoclass:: ZeroDExpChannel
     :show-inheritance:
     :members:
     :undoc-members:
