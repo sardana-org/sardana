@@ -1,0 +1,61 @@
+.. currentmodule:: sardana.taurus.core.tango.sardana
+
+:mod:`~sardana.tango.pool.Controller`
+=====================================
+
+.. automodule:: sardana.taurus.core.tango.sardana.pool
+
+.. rubric:: Classes
+
+.. hlist::
+    :columns: 3
+
+    * :class:`Controller`
+    * :class:`ComChannel`
+    * :class:`ExpChannel`
+    * :class:`CTExpChannel`
+
+Controller
+----------
+
+.. inheritance-diagram:: Controller
+    :parts: 1
+    
+.. autoclass:: Controller
+    :show-inheritance:
+    :members:
+    :undoc-members:
+
+ComChannel
+----------
+
+.. inheritance-diagram:: ComChannel
+    :parts: 1
+    
+.. autoclass:: ComChannel
+    :show-inheritance:
+    :members:
+    :undoc-members:
+
+ExpChannel
+----------
+
+.. inheritance-diagram:: ExpChannel
+    :parts: 1
+    
+.. autoclass:: ExpChannel
+    :show-inheritance:
+    :members:
+    :undoc-members:
+
+CTExpChannel
+------------
+
+.. inheritance-diagram:: CTExpChannel
+    :parts: 1
+    
+.. autoclass:: CTExpChannel
+    :show-inheritance:
+    :members:
+    :undoc-members:
+
