@@ -105,7 +105,7 @@ class RecorderManager(MacroServerManager):
         """
         _recorder_path = []
         for paths in recorder_path:
-            splited_paths = paths.split(":")
+            splited_paths = paths.split(os.pathsep)
             for path in splited_paths:
                 # filter empty and commented paths
                 if not path.startswith("#"):
