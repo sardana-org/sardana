@@ -820,8 +820,6 @@ class GScan(Logger):
                         total_time += integ_time + max_path_duration
                         point_nb += 1
                         start_pos = end_pos
-                except StopIteration:
-                    raise
                 finally:
                     if with_interval:
                         interval_nb = self.macro.getIntervalEstimation()
@@ -830,8 +828,6 @@ class GScan(Logger):
                     while point_nb < max_iter:
                         step = iterator.next()
                         point_nb += 1
-                except StopIteration:
-                    raise
                 finally:
                     total_time = self.macro.getTimeEstimation()
         except StopIteration:
