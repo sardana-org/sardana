@@ -57,8 +57,8 @@ class QMeasurementGroup(Qt.QObject, TangoDevice):
         self.call__init__(TangoDevice, name, **kw)
 
         self._config = None
-        configuration = self.getAttribute("Configuration")
-        configuration.addListener(self._configurationChanged)
+        self.__configuration = self.getAttribute("Configuration")
+        self.__configuration.addListener(self._configurationChanged)
 
     def __getattr__(self, name):
         try:
