@@ -312,7 +312,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
 
         # datetime object
         start_time = env['starttime']
-        epoch = time.mktime(start_time.timetuple())
+        epoch = time.strftime("%a %b %d %H:%M:%S %Y", start_time.timetuple())
         serialno = env['serialno']
 
         # store names for performance reason

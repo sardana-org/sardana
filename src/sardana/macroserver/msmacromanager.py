@@ -42,6 +42,8 @@ import threading
 
 from lxml import etree
 
+import time
+
 from PyTango import DevFailed
 
 try:
@@ -294,12 +296,12 @@ class MacroManager(MacroServerManager):
 
         :param lib_name:
             module name, python file name, or full file name (with path)
-        :type lib_name: str
+        :type lib_name: :obj:`str`
         :param macro_name:
             an optional macro name. If given a macro template code is appended
             to the end of the file (default is None meaning no macro code is
             added)
-        :type macro_name: str
+        :type macro_name: :obj:`str`
 
         :return:
             a sequence with three items: full_filename, code, line number is 0
@@ -614,7 +616,7 @@ class MacroManager(MacroServerManager):
         :param filter:
             a regular expression for macro names [default: None, meaning all
             macros]
-        :type filter: str
+        :type filter: :obj:`str`
         :return: a :obj:`dict` containing information about macros
         :rtype:
             :obj:`dict`\<:obj:`str`\, :class:`~sardana.macroserver.msmetamacro.MacroCode`\>"""
@@ -635,7 +637,7 @@ class MacroManager(MacroServerManager):
         :param filter:
             a regular expression for macro names [default: None, meaning all
             macros]
-        :type filter: str
+        :type filter: :obj:`str`
         :return: a :obj:`dict` containing information about macro classes
         :rtype:
             :obj:`dict`\<:obj:`str`\, :class:`~sardana.macroserver.msmetamacro.MacroClass`\>"""
@@ -652,7 +654,7 @@ class MacroManager(MacroServerManager):
         :param filter:
             a regular expression for macro names [default: None, meaning all
             macros]
-        :type filter: str
+        :type filter: :obj:`str`
         :return: a :obj:`dict` containing information about macro functions
         :rtype:
             :obj:`dict`\<:obj:`str`\, :class:`~sardana.macroserver.msmetamacro.MacroFunction`\>"""
@@ -849,7 +851,49 @@ class MacroManager(MacroServerManager):
         return me
 
 
-class LogMacroManager(object):
+class LogMacroFilter(logging.Filter):
+
+    def __init__(self, param=None):
+        self.param = param
+
+    def filter(self, record):
+        allow = True
+        if record.levelname == "DEBUG":
+            if type(record.msg) != str:
+                allow = False
+                return allow
+            if record.msg.find("[START]") != -1:
+                msg = record.msg
+                start = msg.index("'") + 1
+                end = msg.index("->", start)
+                msg = msg[start:end]
+                msg = msg.replace("(", " ").replace(")", "").replace(
+                    "[", "").replace("]", "")
+                msg = msg.replace(", ", " ")
+                msg = msg.replace(",", " ")
+                msg = msg.replace(".*", "")
+                while msg.find("  ") != -1:
+                    msg = msg.replace("  ", " ")
+                if msg[0] == "_":
+                    allow = False
+                else:
+                    msg_split = msg.split(" ")
+                    msg = ""
+                    for i in range(0, len(msg_split)):
+                        if msg_split[i].find(" ") == -1:
+                            msg_split[i] = msg_split[i].replace("'", " ")
+                        msg = msg + " " + str(msg_split[i])
+                    while msg.find("  ") != -1:
+                        msg = msg.replace("  ", " ")
+                    record.msg = "\n-- " + time.ctime() + "\n" + msg
+                    allow = True
+            else:
+                allow = False
+        return allow
+
+
+class LogMacroManager(Logger):
+
     """Manage user-oriented macro logging to a file. It is configurable with
     LogMacro, LogMacroMode, LogMacroFormat and LogMacroDir environment
     variables.
@@ -862,13 +906,47 @@ class LogMacroManager(object):
     """
 
     DEFAULT_DIR = os.path.join(os.sep, "tmp")
-    DEFAULT_FMT = "%(levelname)-8s %(asctime)s %(name)s: %(message)s"
+    DEFAULT_FMT = "%(message)s"
     DEFAULT_MODE = 0
 
     def __init__(self, macro_obj):
+        name = macro_obj.getName() + ".LogMacroManager"
+        Logger.__init__(self, name)
         self._macro_obj = macro_obj
         self._file_handler = None
         self._enabled = False
+
+    def getFilterClass(self):
+        """Get filter class.
+
+        First look if a custom filter class was set using
+        sardanacustomsettings.LOG_MACRO_FILTER variable, if not, silently
+        return None (no filter will be applied).
+
+        If the custom filter class was incorrectly set or class is not
+        importable warn the user and return None (no filter will be applied).
+        """
+        filter_class = None
+        from sardana import sardanacustomsettings
+        try:
+            log_macro_filter = getattr(sardanacustomsettings,
+                                       "LOG_MACRO_FILTER")
+        except AttributeError:
+            pass
+        else:
+            if isinstance(log_macro_filter, basestring):
+                try:
+                    module_name, filter_name = log_macro_filter.rsplit('.', 1)
+                    __import__(module_name)
+                    module = sys.modules[module_name]
+                    filter_class = getattr(module, filter_name)
+                except Exception:
+                    msg = "sardanacustomsettings.LOG_MACRO_FILTER has wrong" \
+                          " format or class is not importable." \
+                          " No filter will be used."
+                    self.warning(msg)
+                    self.debug(exc_info=True)
+        return filter_class
 
     def enable(self):
         """Enable macro logging only if the following requirements are
@@ -920,6 +998,18 @@ class LogMacroManager(object):
                                                  backupCount=bck_counts)
         file_handler.doRollover()
 
+        filter_class = self.getFilterClass()
+        if filter_class is not None:
+            try:
+                filter_ = filter_class()
+            except Exception:
+                msg = "Not possible to instantiate %s class. No filter will" \
+                      " be used." % filter_class
+                self.warning(msg)
+                self.debug(exc_info=True)
+            else:
+                file_handler.addFilter(filter_)
+
         try:
             format_to_set = macro_obj.getEnv("LogMacroFormat")
         except UnknownEnv:
@@ -947,10 +1037,12 @@ class LogMacroManager(object):
         file_handler = self._file_handler
         macro_obj.removeLogHandler(file_handler)
         executor.removeLogHandler(file_handler)
+
         return True
 
 
 class MacroExecutor(Logger):
+
     """ """
 
     class RunSubXMLHook:
@@ -1606,7 +1698,7 @@ class MacroExecutor(Logger):
 
     def sendMacroStatus(self, data):
         self._last_macro_status = data
-        #data = self._macro_status_codec.encode(('', data))
+        # data = self._macro_status_codec.encode(('', data))
         return self.door.set_macro_status(data)
 
     def sendRecordData(self, data, codec=None):
