@@ -27,7 +27,9 @@
 
 __all__ = ["ExpDescriptionEditor"]
 
-from taurus.external.qt import Qt
+
+import json
+from taurus.external.qt import Qt, QtCore
 import copy
 import taurus
 import taurus.core
@@ -197,6 +199,99 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
         # Taurus Configuration properties and delegates
         self.registerConfigDelegate(self.ui.channelEditor)
+
+    def _getResumeText(self):
+        msg_resume = '<p> Summary of changes: <ul>'
+        mnt_grps = ''
+        envs = ''
+        for key in self._diff:
+            if key == 'MntGrpConfigs':
+                for names in self._diff['MntGrpConfigs']:
+                    if mnt_grps != '':
+                        mnt_grps += ', '
+                    mnt_grps += '<b>{0}</b>'.format(names)
+            else:
+                if envs != '':
+                    envs += ', '
+                envs += '<b>{0}</b>'.format(key)
+        values = ''
+        if mnt_grps != '':
+            values += '<li> Measurement Groups: {0}</li>'.format(mnt_grps)
+        if envs != '':
+            values += '<li> Enviroment variables: {0}</li>'.format(envs)
+
+        msg_resume += values
+        msg_resume += ' </ul> </p>'
+        return msg_resume
+
+    def _getDetialsText(self):
+        msg_detials = 'Changes {key: [external, local], ...}\n'
+        msg_detials += json.dumps(self._diff, sort_keys=True)
+        return msg_detials
+
+    def _createExpConfChangedDialog(self):
+        msg_details = self._getDetialsText()
+        msg_info = self._getResumeText()
+        self._expConfChangedDialog = Qt.QMessageBox()
+        self._expConfChangedDialog.setIcon(Qt.QMessageBox.Warning)
+        self._expConfChangedDialog.setWindowTitle('External Changes')
+        # text = '''
+        # <p align='justify'>
+        # The experiment configuration has been modified externally.<br/>
+        # You can either:<br/> <l1><b>Load</b> the new configuration from the
+        # door
+        # (discarding local changes) or <b>Keep</b> your local configuration
+        # (would eventually overwrite the external changes when applying).
+        # </p>'''
+        text = '''
+        <p>The experiment configuration has been modified externally.
+        You can either:
+        <ul>
+        <li><strong>Load </strong>the new configuration from the door 
+        (discarding local changes)</li>
+        <li><strong>Keep </strong>your local configuration (would eventually 
+        overwrite the external changes when applying)</li>
+        </ul></p>
+        '''
+        self._expConfChangedDialog.setText(text)
+        self._expConfChangedDialog.setTextFormat(QtCore.Qt.RichText)
+        self._expConfChangedDialog.setInformativeText(msg_info)
+        self._expConfChangedDialog.setDetailedText(msg_details)
+        self._expConfChangedDialog.setStandardButtons(Qt.QMessageBox.Ok |
+                                                      Qt.QMessageBox.Cancel)
+        btn_ok = self._expConfChangedDialog.button(Qt.QMessageBox.Ok)
+        btn_ok.setText('Load')
+        btn_cancel = self._expConfChangedDialog.button(Qt.QMessageBox.Cancel)
+        btn_cancel.setText('Keep')
+        result = self._expConfChangedDialog.exec_()
+        self._expConfChangedDialog = None
+        if result == Qt.QMessageBox.Ok:
+            self._reloadConf(force=True)
+
+    @QtCore.pyqtSlot()
+    def _experimentalConfigurationChanged(self):
+        try:
+            self._diff = self._getDiff()
+        except Exception:
+            return
+
+        if len(self._diff) > 0:
+            if self._expConfChangedDialog is None:
+                self.emit(Qt.SIGNAL('createExpConfChangedDialog'))
+            else:
+                msg_details = self._getDetialsText()
+                msg_info = self._getResumeText()
+                self._expConfChangedDialog.setInformativeText(msg_info)
+                self._expConfChangedDialog.setDetailedText(msg_details)
+
+    def _getDiff(self):
+        door = self.getModelObj()
+        if door is None:
+            return []
+
+        new_conf = door.getExperimentConfiguration()
+        old_conf = self._localConfig
+        return find_diff(new_conf, old_conf)
 
     def getModelClass(self):
         '''reimplemented from :class:`TaurusBaseWidget`'''
