@@ -8,15 +8,44 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Added
 - `repeat` macro for executing n-times the hooks attached in its body (#310,
   #745)
+- `pre-acq` and `post-acq` hooks to the `ct` macro (#808)
+- `pre-acq` and `post-acq` hooks to the continuous scans: `ascanct` family
+  macros (#780)
+- Default macro logging filter which improves the output of logging messages.
+  Filter can be configured with sardanacustomsettings (#730)
+- Possibiltiy to configure ORB end point for Tango servers with Tango DB
+  free property (#874)
+- Enhance software synchronization by allowing function generation when
+  group has 1 repeat only (#786)
+- Information about controller properties in `sar_info` macro (#855, #866)
 
 ### Fixed
+- Ensure that value buffer (data) events are handled sequentially so data
+  are not wrongly interpreted as lost (#794, #813)
 - Push change events from code for measurement group attributes: moveable,
   latency time and synchronization (#736, #738)
+- `getPoolObj` random `AttributeErrors: _pool_obj` errors in macros (#865, #57)
 - Validation of starts and finals for a2scanct, a3scanct, meshct, ... (#734)
+- `defelem` macro when using default axis number (#568, #609)
 - Make SPEC_FileRecorder use LF instead of CRLF even on windows (#750)
-- Fix appending of hooks from sequence XML (#747)
-- Avoid errors if selected trajectory in HKL controller does not exists (#752)
+- Appending of hooks from sequence XML (#747)
+- `lsgh` list hooks multiple times to reflect the configuration (#774)
+- Avoid errors if selected trajectory in HKL controller doesnot exists (#752)
+- Pass motion range information with `MoveableDesc` in `mesh` scan (#864)
+- `getElementByAxis` and `getElementByName` of Controller Taurus extension
+  class (#872)
+- `GScan` intervals estimation (#772)
 - Documentation on how to install and use Sardana from Git clone (#751)
+- Documentation (Sphinx) build warnings (#859, #179, #219, #393)
+
+### Changed
+- Change epoch from float to formatted date & time in Spec recorder (#766)
+- Documentation hosting from ReadTheDocs to Github Pages (build on Travis) (#826)
+
+### Deprecated
+- `PoolMotorSlim` widget in favor of `PoolMotorTV` widget (#163, #785) 
+- `Controller.getUsedAxis` (Taurus device extension) in favor
+of `Controller.getUsedAxes` (#609)
 
 ## [2.4.0] 2018-03-14
 

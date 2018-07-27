@@ -642,11 +642,11 @@ class tw(iMacro):
 ##########################################################################
 
 
-class ct(Macro):
+class ct(Macro, Hookable):
     """Count for the specified time on the active measurement group"""
 
     env = ('ActiveMntGrp',)
-
+    hints = {'allowsHooks': ('pre-acq', 'post-acq')}
     param_def = [
         ['integ_time', Type.Float, 1.0, 'Integration time']
     ]
@@ -660,13 +660,22 @@ class ct(Macro):
         if self.mnt_grp is None:
             self.error('ActiveMntGrp is not defined or has invalid value')
             return
-
+        # integration time has to be accessible from with in the hooks
+        # so declare it also instance attribute
+        self.integ_time = integ_time
         self.debug("Counting for %s sec", integ_time)
         self.outputDate()
         self.output('')
         self.flushOutput()
 
+        for preAcqHook in self.getHooks('pre-acq'):
+            preAcqHook()
+
         state, data = self.mnt_grp.count(integ_time)
+
+        for postAcqHook in self.getHooks('post-acq'):
+            postAcqHook()
+
         names, counts = [], []
         for ch_info in self.mnt_grp.getChannelsEnabledInfo():
             names.append('  %s' % ch_info.label)

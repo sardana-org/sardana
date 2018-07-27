@@ -38,7 +38,6 @@ from taurus.core import TaurusElementType
 from taurus import Release as taurus_release
 
 from sardana.macroserver.scan.recorder import DataHandler
-from threading import RLock
 
 
 class ColumnDesc(object):
@@ -310,7 +309,6 @@ class RecordList(dict):
         else:
             self.environ = environ
         self.records = []
-        self.rlock = RLock()
         # currentIndex indicates the place in the records list
         # where the next completed record will be written
         self.currentIndex = 0
@@ -447,25 +445,24 @@ class RecordList(dict):
         :param data: dictionary with two mandatory elements: label - string
                      and data - list of values
         :type data:  dict"""
-        with self.rlock:
-            label = data['label']
-            rawData = data['data']
-            idxs = data['index']
+        label = data['label']
+        rawData = data['data']
+        idxs = data['index']
 
-            maxIdx = max(idxs)
-            recordsLen = len(self.records)
-            # Calculate missing records
-            missingRecords = recordsLen - (maxIdx + 1)
-            # TODO: implement proper handling of timestamps and moveables
-            if missingRecords < 0:
-                missingRecords = abs(missingRecords)
-                self.initRecords(missingRecords)
-            for idx, value in zip(idxs, rawData):
-                rc = self.records[idx]
-                rc.setRecordNo(idx)
-                rc.data[label] = value
-                self.columnIndexDict[label] = idx + 1
-            self.tryToAdd(idx, label)
+        maxIdx = max(idxs)
+        recordsLen = len(self.records)
+        # Calculate missing records
+        missingRecords = recordsLen - (maxIdx + 1)
+        # TODO: implement proper handling of timestamps and moveables
+        if missingRecords < 0:
+            missingRecords = abs(missingRecords)
+            self.initRecords(missingRecords)
+        for idx, value in zip(idxs, rawData):
+            rc = self.records[idx]
+            rc.setRecordNo(idx)
+            rc.data[label] = value
+            self.columnIndexDict[label] = idx + 1
+        self.tryToAdd(idx, label)
 
     def tryToAdd(self, idx, label):
         start = self.currentIndex

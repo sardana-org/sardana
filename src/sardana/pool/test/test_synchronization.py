@@ -76,9 +76,9 @@ class SynchronizationTestCase(object):
         trigger/gate generation.
 
        :param ctrl_lib: controller library used for the test
-       :type ctrl_lib: str
+       :type ctrl_lib: :obj:`str`
        :param ctrl_klass: controller class used for the test
-       :type ctrl_klass: str
+       :type ctrl_klass: :obj:`str`
        :param offset: temporal offset before beginning the trigger generation
        :type offset: float
        :param active_interval: signal at which triggers will be generated
@@ -121,9 +121,9 @@ class SynchronizationTestCase(object):
         trigger/gate generation when aborting the trigger generation.
 
        :param ctrl_lib: controller library used for the test
-       :type ctrl_lib: str
+       :type ctrl_lib: :obj:`str`
        :param ctrl_klass: controller class used for the test
-       :type ctrl_klass: str
+       :type ctrl_klass: :obj:`str`
        :param offset: temporal offset before beginning the trigger generation
        :type offset: float
        :param active_interval: signal at which triggers will be generated

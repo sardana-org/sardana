@@ -70,7 +70,7 @@ class PoolDevice(SardanaDevice):
         """initialize the device once in the object lifetime. Override when
         necessary but **always** call the method from your super class
 
-        :param str name: device name"""
+        :param :obj:`str` name: device name"""
         SardanaDevice.init(self, name)
         util = Util.instance()
         self._pool_device = util.get_device_list_by_class("Pool")[0]
@@ -284,7 +284,7 @@ class PoolDevice(SardanaDevice):
                               write, is_allowed):
         """Adds a single dynamic attribute
 
-        :param str attr_name: the attribute name
+        :param :obj:`str` attr_name: the attribute name
         :param data_info: tango attribute information
         :type data_info: seq< :class:`~PyTango.CmdArgType`, :class:`~PyTango.AttrDataFormat`, :class:`~PyTango.AttrWriteType` >
         :param attr_info: attribute information
@@ -321,7 +321,7 @@ class PoolDevice(SardanaDevice):
                                write, is_allowed):
         """Adds a single standard dynamic attribute
 
-        :param str attr_name: the attribute name
+        :param :obj:`str` attr_name: the attribute name
         :param data_info: tango attribute information
         :type data_info: seq< :class:`~PyTango.CmdArgType`, :class:`~PyTango.AttrDataFormat`, :class:`~PyTango.AttrWriteType` >
         :param attr_info: attribute information
@@ -417,11 +417,13 @@ class PoolDevice(SardanaDevice):
             return DevState.FAULT
 
     def dev_status(self):
-        """Calculates and returns the device status. Called by Tango on a read
+        """
+        Calculates and returns the device status. Called by Tango on a read
         status request.
 
         :return: the device status
-        :rtype: str"""
+        :rtype: :obj:`str`
+        """
         element = self.element
         try:
             use_cache = element.is_in_operation() and not self.Force_HW_Read
@@ -754,7 +756,7 @@ class PoolElementDeviceClass(PoolDeviceClass):
     def get_standard_attr_info(self, attr):
         """Returns information about the standard attribute
 
-        :param str attr: attribute name
+        :param :obj:`str` attr: attribute name
         :return: a sequence of tango data_type, data format"""
         return self.standard_attr_list[attr]
 

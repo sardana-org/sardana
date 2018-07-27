@@ -24,38 +24,6 @@ probably need a github account and you are strongly encouragedto subscribe to th
 
 The rest of this document will focus on how to contribute code.
 
-Cloning and forking sardana from Git
-------------------------------------
-
-You are welcome to clone the Sardana code from our main Git repository::
-
-    git clone https://github.com/sardana-org/sardana.git sardana
-
-Code contributions (bug patches, new features) are welcome,
-but the review process/workflow for accepting new code is yet to be discussed. For the
-moment, use the sardana-devel mailing list for proposing patches.
-
-Note that you can also fork the git repository in github to get your own
-github-hosted clone of the sardana repository to which you will have full
-access. This will create a new git repository associated to your personal account in
-github, so that your changes can be easily shared and eventually merged
-into the official repository.
- 
-The old code repositories
----------------------------
-
-With acceptance of `SEP1 <http://www.sardana-controls.org/sep?SEP1.md>`_ the
-code repository was migrated from SVN to Git within the SourceForge platform.
-The old SVN repository is still `accessible for reference <https://sourceforge.net/p/sardana/code/>`_,
-but writing has been disabled and its contents are frozen as of 2013-07-31.
-
-Then, with acceptance of `SEP15 <http://www.sardana-controls.org/sep?SEP15.md>`_ the
-code repository was migrated from SourceForge Git to Github Git.
-The old SourceForge Git repository is still `accessible for reference <https://sourceforge.net/p/sardana/sardana.git>`_,
-but writing has been disabled and its contents are frozen as of 2016-12-02.
-
-For development, see the instructions above on cloning from Git
-
 Documentation
 -------------
 
