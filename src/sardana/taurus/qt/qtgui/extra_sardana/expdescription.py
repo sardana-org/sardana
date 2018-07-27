@@ -66,6 +66,55 @@ class SardanaAcquirableProxyModel(SardanaBaseProxyModel):
         return True
 
 
+def find_diff(first, second):
+    """
+    Return a dict of keys that differ with another config object.  If a value
+    is not found in one fo the configs, it will be represented by KEYNOTFOUND.
+    @param first:   Fist configuration to diff.
+    @param second:  Second configuration to diff.
+    @return diff:   Dict of Key => (first.val, second.val)
+    """
+
+    KEYNOTFOUNDIN1 = 'KeyNotFoundInRemote'
+    KEYNOTFOUNDIN2 = 'KeyNotFoundInLocal'
+    SKIPKEYS = ['_controller_name']
+    SKIPLIST = ['scanfile']
+    DICT_TYPES = [taurus.core.util.containers.CaselessDict, dict]
+    diff = {}
+    sd1 = set(first)
+    sd2 = set(second)
+    # Keys missing in the second dict
+
+    for key in sd1.difference(sd2):
+        if key in SKIPKEYS:
+            continue
+        diff[key] = (first[key], KEYNOTFOUNDIN2)
+    # Keys missing in the first dict
+    for key in sd2.difference(sd1):
+        if key in SKIPKEYS:
+            continue
+        diff[key] = (KEYNOTFOUNDIN1, second[key])
+    # Check for differences
+    for key in sd1.intersection(sd2):
+        value1 = first[key]
+        value2 = second[key]
+        if type(value1) in DICT_TYPES:
+            idiff = find_diff(value1, value2)
+            if len(idiff) > 0:
+                diff[key] = idiff
+        elif type(value1) == list and key.lower() not in SKIPLIST:
+            ldiff = []
+            for v1, v2 in zip(value1, value2):
+                idiff = find_diff(v1, v2)
+                ldiff.append(idiff)
+            if len(ldiff) > 0:
+                diff[key] = ldiff
+        else:
+            if value1 != value2:
+                diff[key] = (first[key], second[key])
+    return diff
+
+
 @UILoadable(with_ui='ui')
 class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
     '''
