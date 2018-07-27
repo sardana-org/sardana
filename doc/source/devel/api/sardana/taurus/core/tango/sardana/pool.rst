@@ -72,9 +72,6 @@ CTExpChannel
 
 ExpChannel
 ----------
-
-.. inheritance-diagram:: ExpChannel
-    :parts: 1
     
 .. autoclass:: ExpChannel
     :show-inheritance:
@@ -108,9 +105,6 @@ MeasurementGroup
       
 Motor
 -----
-
-.. inheritance-diagram:: Motor
-    :parts: 1
     
 .. autoclass:: Motor
     :show-inheritance:
@@ -135,9 +129,6 @@ OneDExpChannel
       
 Pool
 ----
-
-.. inheritance-diagram:: Pool
-    :parts: 1
     
 .. autoclass:: Pool
     :show-inheritance:
@@ -145,10 +136,6 @@ Pool
     :undoc-members:
       
 PoolElement
------------
-
-.. inheritance-diagram:: PoolElement
-    :parts: 1
     
 .. autoclass:: PoolElement
     :show-inheritance:
