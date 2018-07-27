@@ -796,14 +796,15 @@ class GScan(Logger):
         max_iter = max_iter or self.MAX_ITER
         iterator = self.generator()
         total_time = 0.0
-        interval_nb = 0
+        point_nb = 0
+        interval_nb = None
         try:
             if not with_time:
                 try:
                     start_pos = self.motion.readPosition(force=True)
                     v_motors = self.get_virtual_motors()
                     motion_time, acq_time = 0.0, 0.0
-                    while interval_nb < max_iter:
+                    while point_nb < max_iter:
                         step = iterator.next()
                         end_pos = step['positions']
                         max_path_duration = 0.0
@@ -817,7 +818,7 @@ class GScan(Logger):
                         acq_time += integ_time
                         motion_time += max_path_duration
                         total_time += integ_time + max_path_duration
-                        interval_nb += 1
+                        point_nb += 1
                         start_pos = end_pos
                 except StopIteration:
                     raise
@@ -826,18 +827,28 @@ class GScan(Logger):
                         interval_nb = self.macro.getIntervalEstimation()
             else:
                 try:
-                    while interval_nb < max_iter:
+                    while point_nb < max_iter:
                         step = iterator.next()
-                        interval_nb += 1
+                        point_nb += 1
                 except StopIteration:
                     raise
                 finally:
                     total_time = self.macro.getTimeEstimation()
         except StopIteration:
-            interval_nb -= 1
-            return total_time, interval_nb
-        # max iteration reached.
-        return -total_time, -interval_nb
+            pass
+        else:
+            # max iteration reached.
+            total_time = -total_time
+            point_nb = -point_nb
+        if interval_nb is None:
+            if point_nb < 1:
+                interval_nb = point_nb + 1
+            elif point_nb > 1:
+                interval_nb = point_nb - 1
+            else:
+                interval_nb = 0
+                self.warning("Estimation of intervals have not succeeded")
+        return total_time, interval_nb
 
     @property
     def data(self):
