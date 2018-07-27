@@ -52,12 +52,15 @@ class QDoor(BaseDoor, Qt.QObject):
         infoUpdated = Qt.pyqtSignal(object)
         outputUpdated = Qt.pyqtSignal(object)
         debugUpdated = Qt.pyqtSignal(object)
+        experimentConfigurationChanged = Qt.pyqtSignal()
     except AttributeError:
         pass
 
     def __init__(self, name, qt_parent=None, **kw):
         self.call__init__wo_kw(Qt.QObject, qt_parent)
         self.call__init__(BaseDoor, name, **kw)
+        self._mntgrp_connected = []
+        self._use_experimet_configuration = False
 
     def resultReceived(self, log_name, result):
         res = BaseDoor.resultReceived(self, log_name, result)
@@ -102,6 +105,40 @@ class QDoor(BaseDoor, Qt.QObject):
         except AttributeError:
             pass
         return res
+
+    def _prepare_connections(self):
+        if not self._use_experimet_configuration:
+            self.connect(self.macro_server, Qt.SIGNAL("environmentChanged"),
+                         self._experimentalConfiguration)
+            self.connect(self.macro_server, Qt.SIGNAL("elementsChanged"),
+                         self._elementsChanged)
+
+    def _elementsChanged(self):
+        len_mnt_grps_connected = len(self._mntgrp_connected)
+        elements = self.macro_server.getElementsOfType("MeasurementGroup")
+        for name, mg in elements.items():
+            if name in self._mntgrp_connected:
+                continue
+            else:
+                obj = mg.getObj()
+                self.connect(obj, Qt.SIGNAL("configurationChanged"),
+                             self._experimentalConfiguration)
+                self._mntgrp_connected.append(name)
+
+        if len(self._mntgrp_connected) != len_mnt_grps_connected:
+            self.emit(Qt.SIGNAL("experimentConfigurationChanged"))
+
+    def _experimentalConfiguration(self, *args):
+        self.emit(Qt.SIGNAL("experimentConfigurationChanged"))
+
+    def getExperimentConfigurationObj(self):
+        self._prepare_connections()
+        return BaseDoor.getExperimentConfigurationObj(self)
+
+    def getExperimentConfiguration(self):
+        self._prepare_connections()
+        return BaseDoor.getExperimentConfiguration(self)
+
 
 
 class QMacroServer(BaseMacroServer, Qt.QObject):
