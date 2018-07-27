@@ -34,6 +34,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Pass motion range information with `MoveableDesc` in `mesh` scan (#864)
 - `getElementByAxis` and `getElementByName` of Controller Taurus extension
   class (#872)
+- `GScan` intervals estimation (#772)
 - Documentation on how to install and use Sardana from Git clone (#751)
 - Documentation (Sphinx) build warnings (#859, #179, #219, #393)
 
