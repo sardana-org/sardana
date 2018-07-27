@@ -147,6 +147,12 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self._dirty = False
         self._dirtyMntGrps = set()
 
+        # Pending event variables
+        self._expConfChangedDialog = None
+        self.createExpConfChangedDialog = Qt.pyqtSignal()
+        self.connect(self, Qt.SIGNAL('createExpConfChangedDialog'),
+                     self._createExpConfChangedDialog)
+
         self.connect(self.ui.activeMntGrpCB, Qt.SIGNAL(
             'activated (QString)'), self.changeActiveMntGrp)
         self.connect(self.ui.createMntGrpBT, Qt.SIGNAL(
@@ -229,6 +235,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         msname = door.macro_server.getFullName()
         self.ui.taurusModelTree.setModel(tghost)
         self.ui.sardanaElementTree.setModel(msname)
+        self.connect(door, Qt.SIGNAL("experimentConfigurationChanged"),
+                     self._experimentalConfigurationChanged)
 
     def _reloadConf(self, force=False):
         if not force and self.isDataChanged():
