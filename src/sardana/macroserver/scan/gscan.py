@@ -799,27 +799,31 @@ class GScan(Logger):
         interval_nb = 0
         try:
             if not with_time:
-                start_pos = self.motion.readPosition(force=True)
-                v_motors = self.get_virtual_motors()
-                motion_time, acq_time = 0.0, 0.0
-                while interval_nb < max_iter:
-                    step = iterator.next()
-                    end_pos = step['positions']
-                    max_path_duration = 0.0
-                    for v_motor, start, stop in zip(v_motors,
-                                                    start_pos,
-                                                    end_pos):
-                        path = MotionPath(v_motor, start, stop)
-                        max_path_duration = max(
-                            max_path_duration, path.duration)
-                    integ_time = step.get("integ_time", 0.0)
-                    acq_time += integ_time
-                    motion_time += max_path_duration
-                    total_time += integ_time + max_path_duration
-                    interval_nb += 1
-                    start_pos = end_pos
-                if with_interval:
-                    interval_nb = self.macro.getIntervalEstimation()
+                try:
+                    start_pos = self.motion.readPosition(force=True)
+                    v_motors = self.get_virtual_motors()
+                    motion_time, acq_time = 0.0, 0.0
+                    while interval_nb < max_iter:
+                        step = iterator.next()
+                        end_pos = step['positions']
+                        max_path_duration = 0.0
+                        for v_motor, start, stop in zip(v_motors,
+                                                        start_pos,
+                                                        end_pos):
+                            path = MotionPath(v_motor, start, stop)
+                            max_path_duration = max(
+                                max_path_duration, path.duration)
+                        integ_time = step.get("integ_time", 0.0)
+                        acq_time += integ_time
+                        motion_time += max_path_duration
+                        total_time += integ_time + max_path_duration
+                        interval_nb += 1
+                        start_pos = end_pos
+                except StopIteration:
+                    raise
+                finally:
+                    if with_interval:
+                        interval_nb = self.macro.getIntervalEstimation()
             else:
                 while interval_nb < max_iter:
                     step = iterator.next()
