@@ -1,5 +1,8 @@
 .. currentmodule:: sardana.taurus.core.tango.sardana.pool
 
+:mod:`~sardana.taurus.core.tango.sardana.pool`
+==============================================
+
 =================
 Taurus Extensions
 =================

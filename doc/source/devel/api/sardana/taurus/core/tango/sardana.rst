@@ -1,7 +1,7 @@
 .. currentmodule:: sardana.taurus.core.tango.sardana
 
-:mod:`~sardana.taurus.core`
-============================
+:mod:`~sardana.taurus.core.tango.sardana`
+=========================================
 
 .. automodule:: sardana.taurus.core.tango.sardana
 
