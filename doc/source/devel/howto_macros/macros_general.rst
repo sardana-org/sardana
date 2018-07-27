@@ -515,6 +515,18 @@ outputs the new ``ScanID`` value:
         scan_id = self.getEnv('ScanID')
         self.output("ScanID is now %d", scan_id)
 
+.. _sardana-macro-poolelements:
+
+Accessing Pool elements
+-----------------------
+
+As described in :ref:`sardana-macro-context`, all the Pool elements can be directly accessed
+inside of the macros.
+
+The :term:`API` for the objects returned by the :ref:`sardana-macro-api` is provided by the
+:ref:`sardana-taurus-api`.
+
+
 .. _sardana-macro-logging:
 
 Logging
