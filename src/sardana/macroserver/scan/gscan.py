@@ -825,10 +825,14 @@ class GScan(Logger):
                     if with_interval:
                         interval_nb = self.macro.getIntervalEstimation()
             else:
-                while interval_nb < max_iter:
-                    step = iterator.next()
-                    interval_nb += 1
-                total_time = self.macro.getTimeEstimation()
+                try:
+                    while interval_nb < max_iter:
+                        step = iterator.next()
+                        interval_nb += 1
+                except StopIteration:
+                    raise
+                finally:
+                    total_time = self.macro.getTimeEstimation()
         except StopIteration:
             interval_nb -= 1
             return total_time, interval_nb
