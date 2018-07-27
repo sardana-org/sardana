@@ -345,7 +345,9 @@ class MacroServerClass(SardanaDeviceClass):
         'MacroPath':
             [DevVarStringArray,
              "list of directories to search for macros (path separators "
-             "can be '\n' or ':')",
+             "can be '\n' or character conventionally used by the OS to"
+             "separate search path components, such as ':' for POSIX"
+             "or ';' for Windows)",
              []],
         'RecorderPath':
             [DevVarStringArray,
