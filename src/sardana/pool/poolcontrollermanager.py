@@ -147,11 +147,8 @@ class ControllerManager(Singleton, Logger):
             kept it will refer to an old module (which could possibly generate
             problems of type class A != class A)."""
         p = []
-        if os.name != 'nt':
-            for item in controller_path:
-                p.extend(item.split(":"))
-        else:
-            p = controller_path
+        for item in controller_path:
+            p.extend(item.split(os.pathsep))
 
         # filter empty and commented paths
         p = [i for i in p if i and not i.startswith("#")]
