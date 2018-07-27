@@ -105,6 +105,15 @@ class QDoor(BaseDoor, Qt.QObject):
 
 
 class QMacroServer(BaseMacroServer, Qt.QObject):
+    # TODO: For Taurus 4 compatibility
+    try:
+        typesUpdated = Qt.pyqtSignal()
+        elementsUpdated = Qt.pyqtSignal()
+        elementsChanged = Qt.pyqtSignal()
+        macrosUpdated = Qt.pyqtSignal()
+        environmentChange = Qt.pyqtSignal(list)
+    except AttributeError:
+        pass
 
     def __init__(self, name, qt_parent=None, **kw):
         self.call__init__wo_kw(Qt.QObject, qt_parent)
@@ -145,7 +154,6 @@ class QMacroServer(BaseMacroServer, Qt.QObject):
     def on_environment_changed(self, s, t, v):
         ret = added, removed, changed = \
             BaseMacroServer.on_environment_changed(self, s, t, v)
-
         if added or removed or changed:
             self.emit(Qt.SIGNAL("environmentChanged"), ret)
         return ret
