@@ -29,6 +29,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 - `defelem` macro when using default axis number (#568, #609)
 - Make SPEC_FileRecorder use LF instead of CRLF even on windows (#750)
 - Appending of hooks from sequence XML (#747)
+- Split of `PoolPath`, `MacroPath` and `RecorderPath` with OS separator (#762)
 - `lsgh` list hooks multiple times to reflect the configuration (#774)
 - Avoid errors if selected trajectory in HKL controller doesnot exists (#752)
 - Pass motion range information with `MoveableDesc` in `mesh` scan (#864)
