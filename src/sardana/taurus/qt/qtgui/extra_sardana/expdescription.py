@@ -133,6 +133,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self.loadUi()
         self.ui.buttonBox.setStandardButtons(
             Qt.QDialogButtonBox.Reset | Qt.QDialogButtonBox.Apply)
+        self.ui.buttonBox.button(Qt.QDialogButtonBox.Reset).setText('Reload')
+
         newperspectivesDict = copy.deepcopy(
             self.ui.sardanaElementTree.KnownPerspectives)
         #newperspectivesDict[self.ui.sardanaElementTree.DftPerspective]['model'] = [SardanaAcquirableProxyModel, SardanaElementPlainModel]
