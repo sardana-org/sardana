@@ -96,11 +96,6 @@ Graphical user interface screen shots
     
     ALBA_'s vaccum GUI
   
-.. figure:: /_static/gui_snapshot10.png
-    :width: 600
-    :alt: Sardana configuration GUI
-    
-    Sardana configuration GUI
 
 .. _ALBA: http://www.cells.es/
 .. _ANKA: http://http://ankaweb.fzk.de/

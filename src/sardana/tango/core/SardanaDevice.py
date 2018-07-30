@@ -96,7 +96,7 @@ class SardanaDevice(Device_4Impl, Logger):
         """initialize the device once in the object lifetime. Override when
         necessary but **always** call the method from your super class
 
-        :param str name: device name"""
+        :param :obj:`str` name: device name"""
 
         db = self.get_database()
         if db is None:
@@ -113,7 +113,7 @@ class SardanaDevice(Device_4Impl, Logger):
         """Returns this device alias name
 
         :return: this device alias
-        :rtype: str"""
+        :rtype: :obj:`str`"""
         return self._alias
 
     alias = property(get_alias, doc="the device alias name")
@@ -130,7 +130,7 @@ class SardanaDevice(Device_4Impl, Logger):
         always FQDN.
 
         :return: this device full name
-        :rtype: str
+        :rtype: :obj:`str`
         """
         db = self.get_database()
         if db.get_from_env_var():
@@ -229,7 +229,7 @@ class SardanaDevice(Device_4Impl, Logger):
         """Gets the attribute for the given name.
 
         :param attr_name: attribute name
-        :type attr_name: str
+        :type attr_name: :obj:`str`
         :return: the attribute object
         :rtype: :class:`~PyTango.Attribute`"""
         return self.get_device_attr().get_attr_by_name(attr_name)
@@ -238,7 +238,7 @@ class SardanaDevice(Device_4Impl, Logger):
         """Gets the writable attribute for the given name.
 
         :param attr_name: attribute name
-        :type attr_name: str
+        :type attr_name: :obj:`str`
         :return: the attribute object
         :rtype: :class:`~PyTango.WAttribute`"""
         return self.get_device_attr().get_w_attr_by_name(attr_name)
@@ -450,14 +450,17 @@ class SardanaDevice(Device_4Impl, Logger):
         return state
 
     def calculate_tango_status(self, ctrl_status, update=False):
-        """Calculate tango status based on the controller status.
+        """
+        Calculate tango status based on the controller status.
 
-        :param str ctrl_status: the status returned by the controller
-        :param bool update:
-            if True, set the state of this device with the calculated tango
-            state [default: False:
+        :param ctrl_status: the status returned by the controller
+        :type ctrl_status: :obj:`str`
+        :param bool update: if True, set the state of this device with the
+                            calculated tango state (by default is False)
+
         :return: the corresponding tango state
-        :rtype: str"""
+        :rtype: :obj:`str`
+        """
         self._status = status = ctrl_status
         if update:
             self.set_status(status)

@@ -14,6 +14,13 @@ Macro class
     :members:
     :undoc-members:
 
+Hookable class
+--------------
+
+.. autoclass:: Hookable
+    :members:
+    :undoc-members:
+
 iMacro class
 ------------
 

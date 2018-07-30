@@ -84,7 +84,7 @@ class Pool(PyTango.Device_4Impl, Logger):
         always FQDN.
 
         :return: this device full name
-        :rtype: str
+        :rtype: :obj:`str`
         """
         db = PyTango.Util.instance().get_database()
         db_name = db.get_db_host() + ":" + db.get_db_port()
@@ -1174,7 +1174,7 @@ Tango command to delete element.
 
 :param argin:
     {0}
-:type argin: str
+:type argin: :obj:`str`
 :return:
     {1}
 """.format(DELETE_ELEMENT_PAR_IN_DOC, DELETE_ELEMENT_PAR_OUT_DOC)
@@ -1202,10 +1202,10 @@ Tango command to get detailed information about a controller class.
 
 :param argin:
     {0}
-:type argin: str
+:type argin: :obj:`str`
 :return:
     {1}
-:rtype: str
+:rtype: :obj:`str`
 """.format(GET_CONTROLLER_CLASS_INFO_PAR_IN_DOC, GET_CONTROLLER_CLASS_INFO_PAR_OUT_DOC)
 
 RELOAD_CONTROLLER_LIB_PAR_IN_DOC = """\
@@ -1219,7 +1219,7 @@ Tango command to reload the controller library code.
 
 :param argin:
     {0}
-:type argin: str
+:type argin: :obj:`str`
 :return:
     {1}
 """.format(RELOAD_CONTROLLER_LIB_PAR_IN_DOC, RELOAD_CONTROLLER_LIB_PAR_OUT_DOC)
@@ -1236,7 +1236,7 @@ where the class is described).
 
 :param argin:
     {0}
-:type argin: str
+:type argin: :obj:`str`
 :return:
     {1}
 """.format(RELOAD_CONTROLLER_CLASS_PAR_IN_DOC, RELOAD_CONTROLLER_CLASS_PAR_OUT_DOC)
@@ -1324,7 +1324,9 @@ class PoolClass(PyTango.DeviceClass):
         'PoolPath':
             [PyTango.DevVarStringArray,
              "list of directories to search for controllers (path separators "
-             "can be '\n' or ':')",
+             "can be '\n' or character conventionally used by the OS to"
+             "separate search path components, such as ':' for POSIX"
+             "or ';' for Windows)",
              []],
         'PythonPath':
             [PyTango.DevVarStringArray,
