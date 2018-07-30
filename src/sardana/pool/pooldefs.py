@@ -125,6 +125,8 @@ class AcqSynch(Enumeration):
     HardwareTrigger = 1
     SoftwareGate = 2
     HardwareGate = 3
+    SoftwareStart = 4
+    HardwareStart = 5
 
     @classmethod
     def from_synch_type(self, software, synch_type):
@@ -141,6 +143,11 @@ class AcqSynch(Enumeration):
                 return AcqSynch.SoftwareGate
             else:
                 return AcqSynch.HardwareGate
+        elif synch_type is AcqSynchType.Start:
+            if software:
+                return AcqSynch.SoftwareStart
+            else:
+                return AcqSynch.HardwareStart
         else:
             raise ValueError("Unable to determine AcqSynch from %s" %
                              synch_type)
