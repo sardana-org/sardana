@@ -114,7 +114,7 @@ class SynchParam(SynchEnum):
 #     Trigger = 0
 #     Gate = 1
 
-AcqSynchType = Enumeration("AcqSynchType", ["Trigger", "Gate"])
+AcqSynchType = Enumeration("AcqSynchType", ["Trigger", "Gate", "Start"])
 
 
 # TODO: convert to to python enums, but having in ming problems with
