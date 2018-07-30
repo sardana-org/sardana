@@ -247,9 +247,9 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         <p>The experiment configuration has been modified externally.
         You can either:
         <ul>
-        <li><strong>Load </strong>the new configuration from the door 
+        <li><strong>Load </strong>the new configuration from the door
         (discarding local changes)</li>
-        <li><strong>Keep </strong>your local configuration (would eventually 
+        <li><strong>Keep </strong>your local configuration (would eventually
         overwrite the external changes when applying)</li>
         </ul></p>
         '''
