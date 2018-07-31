@@ -81,6 +81,7 @@ class PoolSynchronization(PoolAction):
 
     def start_action(self, *args, **kwargs):
         '''Start action method. Expects the following kwargs:
+
         - config - dictionary containing measurement group configuration
         - synchronization - list of dictionaries containing information about
           the expected synchronization

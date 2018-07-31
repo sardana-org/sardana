@@ -135,8 +135,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         self._config_dirty = True
         self._moveable = None
         self._moveable_obj = None
-        # By default Software syncronizer initial domain is set to Position
-        # Domain
+        # by default software synchronizer initial domain is set to Position
         self._sw_synch_initial_domain = SynchDomain.Position
 
         self._synchronization = []
@@ -693,9 +692,11 @@ class PoolMeasurementGroup(PoolGroupElement):
         self._sw_synch_initial_domain = domain
 
     sw_synch_initial_domain = property(
-            get_sw_synch_initial_domain,
-            set_sw_synch_initial_domain,
-            doc="Software Syncronizer initial domain, Time/Position")
+        get_sw_synch_initial_domain,
+        set_sw_synch_initial_domain,
+        doc="software synchronizer initial domain (SynchDomain.Time "
+            "or SynchDomain.Position)"
+    )
 
     # -------------------------------------------------------------------------
     # acquisition
