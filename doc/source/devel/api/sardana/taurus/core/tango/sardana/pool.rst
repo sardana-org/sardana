@@ -12,7 +12,6 @@ Taurus Extensions
     :columns: 4
 
     * :class:`BaseElement`
-    * :class:`ComChannel`
     * :class:`Controller`
     * :class:`ControllerClass`
     * :class:`CTExpChannel`
@@ -35,14 +34,6 @@ BaseElement
 -----------
     
 .. autoclass:: BaseElement
-    :show-inheritance:
-    :members:
-    :undoc-members:
-    
-ComChannel
-----------
-    
-.. autoclass:: ComChannel
     :show-inheritance:
     :members:
     :undoc-members:
