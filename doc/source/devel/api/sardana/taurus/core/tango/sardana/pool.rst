@@ -32,7 +32,10 @@ Taurus Extensions
 
 BaseElement
 -----------
-    
+
+.. inheritance-diagram:: BaseElement
+    :parts: 1
+
 .. autoclass:: BaseElement
     :show-inheritance:
     :members:
@@ -40,7 +43,10 @@ BaseElement
       
 Controller
 ----------
-    
+
+.. inheritance-diagram:: Controller
+    :parts: 1
+
 .. autoclass:: Controller
     :show-inheritance:
     :members:
@@ -48,7 +54,10 @@ Controller
       
 ControllerClass
 ---------------
-    
+
+.. inheritance-diagram:: ControllerClass
+    :parts: 1
+
 .. autoclass:: ControllerClass
     :show-inheritance:
     :members:
@@ -57,7 +66,10 @@ ControllerClass
 
 CTExpChannel
 ------------
-    
+
+.. inheritance-diagram:: CTExpChannel
+    :parts: 1
+
 .. autoclass:: CTExpChannel
     :show-inheritance:
     :members:
@@ -65,7 +77,10 @@ CTExpChannel
 
 ExpChannel
 ----------
-    
+
+.. inheritance-diagram:: ExpChannel
+    :parts: 1
+
 .. autoclass:: ExpChannel
     :show-inheritance:
     :members:
@@ -73,7 +88,10 @@ ExpChannel
       
 Instrument
 ----------
-    
+
+.. inheritance-diagram:: Instrument
+    :parts: 1
+
 .. autoclass:: Instrument
     :show-inheritance:
     :members:
@@ -81,7 +99,10 @@ Instrument
        
 IORegister
 ----------
-    
+
+.. inheritance-diagram:: IORegister
+    :parts: 1
+
 .. autoclass:: IORegister
     :show-inheritance:
     :members:
@@ -90,7 +111,10 @@ IORegister
   
 MeasurementGroup
 ----------------
-    
+
+.. inheritance-diagram:: MeasurementGroup
+    :parts: 1
+
 .. autoclass:: MeasurementGroup
     :show-inheritance:
     :members:
@@ -98,7 +122,10 @@ MeasurementGroup
       
 Motor
 -----
-    
+
+.. inheritance-diagram:: Motor
+    :parts: 1
+
 .. autoclass:: Motor
     :show-inheritance:
     :members:
@@ -106,7 +133,10 @@ Motor
       
 MotorGroup
 ----------
-    
+
+.. inheritance-diagram:: MotorGroup
+    :parts: 1
+
 .. autoclass:: MotorGroup
     :show-inheritance:
     :members:
@@ -114,7 +144,10 @@ MotorGroup
 
 OneDExpChannel
 --------------
-    
+
+.. inheritance-diagram:: OneDExpChannel
+    :parts: 1
+
 .. autoclass:: OneDExpChannel
     :show-inheritance:
     :members:
@@ -122,14 +155,21 @@ OneDExpChannel
       
 Pool
 ----
-    
+
+.. inheritance-diagram:: Pool
+    :parts: 1
+
 .. autoclass:: Pool
     :show-inheritance:
     :members:
     :undoc-members:
       
 PoolElement
-    
+-----------
+
+.. inheritance-diagram:: PoolElement
+    :parts: 1
+
 .. autoclass:: PoolElement
     :show-inheritance:
     :members:
@@ -137,7 +177,10 @@ PoolElement
    
 PseudoCounter
 -------------
-    
+
+.. inheritance-diagram:: PseudoCounter
+    :parts: 1
+
 .. autoclass:: PseudoCounter
     :show-inheritance:
     :members:
@@ -146,6 +189,9 @@ PseudoCounter
 PseudoMotor
 -----------
 
+.. inheritance-diagram:: PseudoMotor
+    :parts: 1
+
 .. autoclass:: PseudoMotor
     :show-inheritance:
     :members:
@@ -153,7 +199,10 @@ PseudoMotor
        
 TriggerGate
 -----------
-    
+
+.. inheritance-diagram:: TriggerGate
+    :parts: 1
+
 .. autoclass:: TriggerGate
     :show-inheritance:
     :members:
@@ -161,18 +210,22 @@ TriggerGate
    
 TwoDExpChannel
 --------------
-    
+
+.. inheritance-diagram:: TwoDExpChannel
+    :parts: 1
+
 .. autoclass:: TwoDExpChannel
     :show-inheritance:
     :members:
     :undoc-members:
 
-      
 ZeroDExpChannel
 ---------------
+
+.. inheritance-diagram:: ZeroDExpChannel
+    :parts: 1
 
 .. autoclass:: ZeroDExpChannel
     :show-inheritance:
     :members:
     :undoc-members:
-
