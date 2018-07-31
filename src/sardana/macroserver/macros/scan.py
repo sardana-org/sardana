@@ -1819,6 +1819,9 @@ class timescan(Macro, Hookable):
     of latency_time and measurement group latency time.
     """
 
+    hints = {'scan': 'timescan', 'allowsHooks': ('pre-scan', 'pre-acq',
+                                                 'post-acq', 'post-scan')}
+
     param_def = [
         ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
         ['integ_time', Type.Float, None, 'Integration time'],

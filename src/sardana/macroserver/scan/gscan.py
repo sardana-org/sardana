@@ -2639,6 +2639,10 @@ class TScan(GScan, CAcquisition):
             for hook in macro.getHooks('pre-scan'):
                 hook()
 
+        if hasattr(macro, 'getHooks'):
+            for hook in macro.getHooks('pre-acq'):
+                hook()
+
         yield 0
         measurement_group.measure(synchronization,
                                   self.value_buffer_changed)
@@ -2647,6 +2651,10 @@ class TScan(GScan, CAcquisition):
         self.join_thread_pool()
         self._fill_missing_records()
         yield 100
+
+        if hasattr(macro, 'getHooks'):
+            for hook in macro.getHooks('post-acq'):
+                hook()
 
         if hasattr(macro, 'getHooks'):
             for hook in macro.getHooks('post-scan'):
