@@ -424,8 +424,11 @@ sardana elements by means of the first parameter on your macro (you can give
 this parameter any name but usually, by convention it is called ``self``).
 
 ``self`` provides access to an extensive catalog of functions you can use in
-your macro to do all kinds of things. The complete catalog of functions can be
-found :ref:`here <sardana-macro-api>`.
+your macro to do all kinds of things, among others, to obtain the sardana
+elements. The :ref:`Macro API reference <sardana-macro-api>` describes all
+these functions and the
+:ref:`Sardana-Taurus extensions API reference <sardana-taurus-api>`
+describes the obtained sardana elements.
 
 Let's say you want to write a macro that explicitly moves a known *theta* motor
 to a certain position. You could write a macro which receives the motor as
@@ -514,6 +517,8 @@ outputs the new ``ScanID`` value:
         self.ascan(moveable, 0, 100, 10, 0.1)
         scan_id = self.getEnv('ScanID')
         self.output("ScanID is now %d", scan_id)
+
+
 
 .. _sardana-macro-logging:
 
