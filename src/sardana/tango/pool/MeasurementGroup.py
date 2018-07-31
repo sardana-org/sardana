@@ -265,12 +265,9 @@ class MeasurementGroup(PoolGroupDevice):
         data = attr.get_write_value()
         try:
             domain = SynchDomain[data]
-            self.measurement_group.sw_synch_initial_domain = domain
         except KeyError:
-            items = SynchDomain.__members__.items()
-            available = [name for name, member in items]
-            raise Exception("Invalid InitialDomain. Must be one of " +
-                            ", ".join(available))
+            raise Exception("Invalid domain (can be either Position or Time)")
+        self.measurement_group.sw_synch_initial_domain = domain
 
     def Start(self):
         try:
