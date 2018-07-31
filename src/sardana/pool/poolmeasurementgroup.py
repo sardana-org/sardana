@@ -715,7 +715,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                 kwargs['monitor'] = self._monitor
             kwargs['synchronization'] = self._synchronization
             kwargs['moveable'] = self._moveable_obj
-            kwargs['swsynchinitialdomain'] = self._sw_synch_initial_domain
+            kwargs['sw_synch_initial_domain'] = self._sw_synch_initial_domain
             # start acquisition
             self.acquisition.run(**kwargs)
 

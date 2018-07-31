@@ -88,12 +88,14 @@ class PoolSynchronization(PoolAction):
           source in the Position domain
         - monitor (optional) - counter/timer object used as the synchronization
           source in the Monitor domain
+        - sw_synch_initial_domain (optional) - initial domain for software
+          synchronizer, can be either SynchDomain.Time or SynchDomain.Position
         '''
         cfg = kwargs['config']
         synchronization = kwargs.get('synchronization')
         moveable = kwargs.get('moveable')
+        sw_synch_initial_domain = kwargs.get('sw_synch_initial_domain', None)
         ctrls_config = cfg.get('controllers')
-        sw_synch_initial_domain = kwargs.get('swsynchinitialdomain', None)
         pool_ctrls = ctrls_config.keys()
 
         # Prepare a dictionary with the involved channels
@@ -127,7 +129,8 @@ class PoolSynchronization(PoolAction):
             # attaching listener (usually acquisition action)
             # to the software trigger gate generator
             if self._listener is not None:
-                self._synch_soft.initial_domain = sw_synch_initial_domain
+                if sw_synch_initial_domain is not None:
+                    self._synch_soft.initial_domain = sw_synch_initial_domain
                 self._synch_soft.set_configuration(synchronization)
                 self._synch_soft.add_listener(self._listener)
                 remove_acq_listener = partial(self._synch_soft.remove_listener,
