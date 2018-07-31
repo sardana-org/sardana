@@ -1,5 +1,7 @@
 .. currentmodule:: sardana.taurus.core.tango.sardana
 
+.. _sardana-taurus-api:
+
 :mod:`~sardana.taurus.core.tango.sardana`
 =========================================
 
