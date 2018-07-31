@@ -25,7 +25,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Push change events from code for measurement group attributes: moveable,
   latency time and synchronization (#736, #738)
 - `getPoolObj` random `AttributeErrors: _pool_obj` errors in macros (#865, #57)
-- Spock returning prompt too early not allowing to stop macros (#717, #725)
+- Spock returning prompt too early not allowing to stop macros (#717, #725).
+  Requires Taurus 4.4 (taurus-org/taurus#738).
 - Validation of starts and finals for a2scanct, a3scanct, meshct, ... (#734)
 - `defelem` macro when using default axis number (#568, #609)
 - Make SPEC_FileRecorder use LF instead of CRLF even on windows (#750)
