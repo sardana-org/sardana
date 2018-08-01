@@ -911,7 +911,7 @@ class newfile(Macro):
             elif not os.path.exists(path):
                 # check if folder exists
                 self.error('Path %s does not exists on the host of the '
-                           'MacroServerand has to be created in '
+                           'MacroServer and has to be created in '
                            'advance.' % path)
                 return
             else:
