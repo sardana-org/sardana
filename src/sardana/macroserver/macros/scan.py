@@ -1875,31 +1875,31 @@ class scanstats(Macro):
                 select_channel = channels[0]['label']
 
             select_motor = str(parent.motors[0])
-            
+
             # calculate stats for all enabled channels
             data = parent.data
             stats = {}
-            
+
             for channel in channels:
                 if channel['enabled']:
                     channel_name = channel['label']
                     counter_data = []
                     motor_data = []
-                    
+
                     for idx, rc in data.items():
                         counter_data.append(rc[channel_name])
                         motor_data.append(rc[channel_name])
 
                     counter_data = numpy.array(counter_data)
                     motor_data = numpy.array(motor_data)
-                    
+
                     stats[channel_name] = {'min': numpy.min(counter_data),
-                                             'max': numpy.max(counter_data),
-                                             'minpos': motor_data[numpy.argmin(counter_data)],
-                                             'maxpos': motor_data[numpy.argmax(counter_data)],
-                                             'mean': numpy.mean(counter_data),
-                                             'int': numpy.sum(counter_data),
-                                             'cen': numpy.sum(counter_data*motor_data)/numpy.sum(counter_data)}
+                                           'max': numpy.max(counter_data),
+                                           'minpos': motor_data[numpy.argmin(counter_data)],
+                                           'maxpos': motor_data[numpy.argmax(counter_data)],
+                                           'mean': numpy.mean(counter_data),
+                                           'int': numpy.sum(counter_data),
+                                           'cen': numpy.sum(counter_data*motor_data)/numpy.sum(counter_data)}
 
             self.info('Statistics on channel:  %s' % select_channel)
             self.info('Statistics for movable: %s' % select_motor)
@@ -1915,7 +1915,8 @@ class scanstats(Macro):
             # set CEN and PEAK as env variables
             # set the motor only in case it is hard to access it from another
             # macro like pic or cen
-            self.setEnv('ScanStats', {'stats': stats, 'counter': select_channel,
+            self.setEnv('ScanStats', {'stats': stats,
+                                      'counter': select_channel,
                                       'motor': select_motor})
         else:
             self.warning('for now the scanstats macro can only be executed as'
