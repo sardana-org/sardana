@@ -11,7 +11,10 @@ This file follows the formats and conventions from [keepachangelog.com]
 - `pre-acq` and `post-acq` hooks to the `ct` macro (#808)
 - `pre-acq` and `post-acq` hooks to the continuous scans: `ascanct` family
   macros (#780)
-- `pre-acq` and `post-acq` hooks to `timescan` macro (#885)  
+- `pre-acq` and `post-acq` hooks to `timescan` macro (#885)
+- `SoftwareSynhronizerInitialDomain` Tango attribute to
+  the Measurement Group Tango device and `sw_synch_initial_domain` attribute
+  to the `PoolMeasurementGroup` (#759) - experimental
 - Default macro logging filter which improves the output of logging messages.
   Filter can be configured with sardanacustomsettings (#730)
 - Possibiltiy to configure ORB end point for Tango servers with Tango DB
