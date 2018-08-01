@@ -280,13 +280,16 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             return
 
         if len(self._diff) > 0:
-            if self._expConfChangedDialog is None:
-                self.emit(Qt.SIGNAL('createExpConfChangedDialog'))
+            if self._autoUpdate:
+                self._reloadConf(force=True)
             else:
-                msg_details = self._getDetialsText()
-                msg_info = self._getResumeText()
-                self._expConfChangedDialog.setInformativeText(msg_info)
-                self._expConfChangedDialog.setDetailedText(msg_details)
+                if self._expConfChangedDialog is None:
+                    self.emit(Qt.SIGNAL('createExpConfChangedDialog'))
+                else:
+                    msg_details = self._getDetialsText()
+                    msg_info = self._getResumeText()
+                    self._expConfChangedDialog.setInformativeText(msg_info)
+                    self._expConfChangedDialog.setDetailedText(msg_details)
 
     def _getDiff(self):
         door = self.getModelObj()
