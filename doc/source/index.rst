@@ -39,7 +39,8 @@ Projects related to Sardana
     Home Page <http://www.sardana-controls.org>
     Project Page <https://github.com/sardana-org/sardana>
     Download from PyPI <http://pypi.python.org/pypi/sardana>
-    docs
+    Documentation <docs>
+    Wiki <http://github.com/sardana-org/sardana/wiki>
 
 .. _ALBA: http://www.albasynchrotron.es
 .. _DESY: http://www.desy.de

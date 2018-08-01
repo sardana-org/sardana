@@ -72,6 +72,8 @@ You should get an output like this:
 You should now have in your sardana system a set of simulated motors and
 counters with which you can play.
 
+If you want to add some real hardware, look at :ref:`sardana-adding-elements`.
+
 .. hint::
 
     for clearing sardana from the elements created by the demo, execute

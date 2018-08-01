@@ -142,12 +142,12 @@ class PoolBaseController(PoolBaseElement):
         """Rename element in the controller.
 
         :param old_name: old name of the element
-        :type old_name: str
+        :type old_name: :obj:`str`
         :param new_name: new name of the element
-        :type new_name: str
+        :type new_name: :obj:`str`
         :param propagate: 0 for not propagating, 1 to propagate,
                2 propagate with priority
-        :type propagate: int
+        :type propagate: :obj:`int`
         """
         element = self._element_names.pop(old_name, None)
         if element is None:
@@ -723,8 +723,8 @@ class PoolController(PoolBaseController):
     def stop_element(self, element):
         """Stops the given element.
 
-        :param element: the list of elements to stop
-        :type element: PoolElement
+        :param element: element to stop
+        :type element: ~sardana.pool.poolelement.PoolElement
         :raises Exception: not able to stop element
         """
 
@@ -809,8 +809,8 @@ class PoolController(PoolBaseController):
     def abort_element(self, element):
         """Aborts the given elements.
 
-        :param element: the list of elements to abort
-        :type element: PoolElement
+        :param element: element to abort
+        :type element: ~sardana.pool.poolelement.PoolElement
         :raises Exception: not able to abort element
         """
 

@@ -13,6 +13,7 @@
     pool <pool>
     macroserver <macroserver>
     tango <tango>
+    taurus <taurus>
     
 .. rubric:: Modules
 

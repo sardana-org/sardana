@@ -605,7 +605,8 @@ class SpockMacroServer(BaseMacroServer):
                     return macro.getResult()
 
         macro_fn.func_name = macro_name
-        macro_fn.__doc__ = macro_info.doc
+        macro_fn.__doc__ = macro_info.doc + "\nWARNING: do not rely on the" \
+                                            " file path below\n"
 
         # register magic command
         genutils.expose_magic(macro_name, macro_fn)

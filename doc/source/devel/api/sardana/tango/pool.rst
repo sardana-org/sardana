@@ -21,3 +21,4 @@
     2D experiment channel <pool/TwoDExpChannel>
     PseudoMotor <pool/PseudoMotor>
     PseudoCounter <pool/PseudoCounter>
+    MeasurementGroup <pool/MeasurementGroup>
