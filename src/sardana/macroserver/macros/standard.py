@@ -872,23 +872,27 @@ class plotselect(Macro):
         self.mntGrp = self.getObj(mntGrp, type_class=Type.MeasurementGroup)
         cfg = self.mntGrp.getConfiguration()
         channels = self.mntGrp.getChannels()
-        
+        channelNames = []
+
         # Enable Plot only in the channels passed.
         for channel in channels:
-            if channel['name'] in plotChs:
-                # Enable Plot
-                self.info("Plot channel %s" % channel['name'])
-                channel['plot_type'] = 1
-                channel['plot_axes'] = ['<mov>']
-            else:
-                # Disable Plot
-                channel['plot_type'] = 0
-                channel['plot_axes'] = []
+            if channel['enabled']:
+                channelNames.append(channel['name'])
+                if channel['name'] in plotChs:
+                    # Enable Plot
+                    self.info("Plot channel %s" % channel['name'])
+                    channel['plot_type'] = 1
+                    channel['plot_axes'] = ['<mov>']
+                else:
+                    # Disable Plot
+                    channel['plot_type'] = 0
+                    channel['plot_axes'] = []
 
         # check if plotChs exists
         for plotCh in plotChs:
-            if plotCh not in channles:
-                self.warning('channel %s does not exist in the current measurement group' % plotCh)
+            if plotCh not in channelNames:
+                self.warning('channel %s is not enabled or does not exist in'
+                              ' the current measurement group' % plotCh)
 
         # Force set Configuration.
         self.mntGrp.setConfiguration(cfg.raw_data)
