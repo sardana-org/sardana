@@ -69,7 +69,7 @@ class SynchDomain(SynchEnum):
     - Time - describes the synchronization in time domain
     - Position - describes the synchronization in position domain
     - Monitor - not used at the moment but foreseen for synchronization on
-    monitor
+      monitor
 
     .. note::
         The SynchDomain class has been included in Sardana
