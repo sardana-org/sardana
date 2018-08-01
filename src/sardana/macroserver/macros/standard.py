@@ -25,7 +25,7 @@
 
 __all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "repeat", "set_lim",
            "set_lm", "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm",
-           "tw", "logmacro"]
+           "tw", "logmacro", "pic", "cen"]
 
 __docformat__ = 'restructuredtext'
 
@@ -38,7 +38,7 @@ import PyTango
 from PyTango import DevState
 
 from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, \
-    ViewOption, iMacro, Hookable
+    ViewOption, iMacro, Hookable, OptionalParam
 from sardana.macroserver.msexception import StopException
 from sardana.macroserver.scan.scandata import Record
 ##########################################################################
@@ -824,6 +824,63 @@ class logmacro(Macro):
 
 
 class repeat(Hookable, Macro):
+    """This macro executes as many repetitions of it's body hook macros as
+    specified by nr parameter. If nr parameter has negative value,
+    repetitions will be executed until you stop repeat macro."""
+
+    # hints = { 'allowsHooks': ('body', 'break', 'continue') }
+    hints = {'allowsHooks': ('body',)}
+
+    param_def = [
+        ['nr', Type.Integer, None, 'Nr of iterations']
+    ]
+
+    def prepare(self, nr):
+        # self.breakHooks = self.getHooks("break")
+        # self.continueHooks = self.getHooks("continue")
+        self.bodyHooks = self.getHooks("body")
+
+    def __loop(self):
+        self.checkPoint()
+        for bodyHook in self.bodyHooks:
+            bodyHook()
+
+    def run(self, nr):
+        if nr < 0:
+            while True:
+                self.__loop()
+        else:
+            for i in range(nr):
+                self.__loop()
+                progress = ((i + 1) / float(nr)) * 100
+                yield progress
+
+
+
+class pic(Macro):
+    """This macro moves the motor of the last scan to the peak position for a
+    given counter. If no counter is given, it selects the first plotted counter
+    from the expconf.
+    """
+
+    param_def = [
+        ['counter', Type.ExpChannel, OptionalParam, 'name of counter']
+    ]
+
+    def prepare(self, counter):
+        self.stats = self.getEnv('ScanStats')
+        if counter == -1:
+            counter = self.stats['counter']
+        self.info('use counter: %s' % counter)
+
+    def run(self, counter):
+        motor_name = self.stats['motor']
+        motor = self.getMotion([motor_name])
+        self.info(motor.getPositon())
+                
+
+
+class cen(Hookable, Macro):
     """This macro executes as many repetitions of it's body hook macros as
     specified by nr parameter. If nr parameter has negative value,
     repetitions will be executed until you stop repeat macro."""
