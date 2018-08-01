@@ -23,7 +23,7 @@
 
 """Environment related macros"""
 
-__all__ = ["dumpenv", "load_env", "lsenv", "senv", "usenv", "genv"
+__all__ = ["dumpenv", "load_env", "lsenv", "senv", "usenv", "genv",
            "lsvo", "setvo", "usetvo",
            "lsgh", "defgh", "udefgh"]
 
@@ -199,9 +199,12 @@ class genv(Macro):
     param_def = [['name', Type.Env, None,
                   'Environment variable name. Can be one of the following:\n'
                   ' - <name> - global variable\n'
-                  ' - <full door name>.<name> - variable value for a specific door\n'
-                  ' - <macro name>.<name> - variable value for a specific macro\n'
-                  ' - <full door name>.<macro name>.<name> - variable value for a specific macro running on a specific door'],
+                  ' - <full door name>.<name> - variable value for a specific '
+                  'door\n'
+                  ' - <macro name>.<name> - variable value for a specific'
+                  ' macro\n'
+                  ' - <full door name>.<macro name>.<name> - variable value'
+                  ' for a specific macro running on a specific door'],
                  ]
 
     def run(self, env):
