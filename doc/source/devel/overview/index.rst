@@ -22,4 +22,5 @@ Overview
     2D experiment channel <overview_2D>
     Pseudo counter <overview_pseudocounter>
     Measurement Group <overview_measurementgroup>
+    Instrument <overview_instrument>
 
