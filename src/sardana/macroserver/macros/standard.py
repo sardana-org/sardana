@@ -892,7 +892,7 @@ class plotselect(Macro):
         for plotCh in plotChs:
             if plotCh not in channelNames:
                 self.warning('channel %s is not enabled or does not exist in'
-                              ' the current measurement group' % plotCh)
+                             ' the current measurement group' % plotCh)
 
         # Force set Configuration.
         self.mntGrp.setConfiguration(cfg.raw_data)
