@@ -25,7 +25,7 @@
 
 __all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "repeat", "set_lim",
            "set_lm", "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm",
-           "tw", "logmacro", "pic", "cen"]
+           "tw", "logmacro", "pic", "cen", "edge", "wher"]
 
 __docformat__ = 'restructuredtext'
 
@@ -856,7 +856,6 @@ class repeat(Hookable, Macro):
                 yield progress
 
 
-
 class pic(Macro):
     """This macro moves the motor of the last scan to the peak position for a
     given counter. If no counter is given, it selects the first plotted counter
@@ -869,45 +868,90 @@ class pic(Macro):
 
     def prepare(self, counter):
         self.stats = self.getEnv('ScanStats')
-        if counter == -1:
-            counter = self.stats['counter']
-        self.info('use counter: %s' % counter)
+        if counter is OptionalParam:
+            self.counter = self.stats['counter']
+        else:
+            self.counter = counter.getName()
+
+        self.motor_name = self.stats['motor']
+        self.motor = self.getMotion([self.motor_name])
 
     def run(self, counter):
-        motor_name = self.stats['motor']
-        motor = self.getMotion([motor_name])
-        self.info(motor.getPositon())
-                
+        current_pos = self.motor.readPosition()[0]
+        peak = self.stats['stats'][self.counter]['maxpos']
+        self.info('move motor %s from current position\nat %f\nto peak of'
+                  ' counter %s\nat %f' % (self.motor_name, current_pos,
+                                          self.counter, peak))
+        self.motor.move(peak)
 
 
-class cen(Hookable, Macro):
-    """This macro executes as many repetitions of it's body hook macros as
-    specified by nr parameter. If nr parameter has negative value,
-    repetitions will be executed until you stop repeat macro."""
-
-    # hints = { 'allowsHooks': ('body', 'break', 'continue') }
-    hints = {'allowsHooks': ('body',)}
+class cen(Macro):
+    """This macro moves the motor of the last scan to the cen position for a
+    given counter. If no counter is given, it selects the first plotted counter
+    from the expconf.
+    """
 
     param_def = [
-        ['nr', Type.Integer, None, 'Nr of iterations']
+        ['counter', Type.ExpChannel, OptionalParam, 'name of counter']
     ]
 
-    def prepare(self, nr):
-        # self.breakHooks = self.getHooks("break")
-        # self.continueHooks = self.getHooks("continue")
-        self.bodyHooks = self.getHooks("body")
-
-    def __loop(self):
-        self.checkPoint()
-        for bodyHook in self.bodyHooks:
-            bodyHook()
-
-    def run(self, nr):
-        if nr < 0:
-            while True:
-                self.__loop()
+    def prepare(self, counter):
+        self.stats = self.getEnv('ScanStats')
+        if counter is OptionalParam:
+            self.counter = self.stats['counter']
         else:
-            for i in range(nr):
-                self.__loop()
-                progress = ((i + 1) / float(nr)) * 100
-                yield progress
+            self.counter = counter.getName()
+
+        self.motor_name = self.stats['motor']
+        self.motor = self.getMotion([self.motor_name])
+
+    def run(self, counter):
+        current_pos = self.motor.readPosition()[0]
+        cen = self.stats['stats'][self.counter]['cen']
+        self.info('move motor %s from current position\nat %f\nto cen of'
+                  ' counter %s\nat %f' % (self.motor_name, current_pos,
+                                          self.counter, cen))
+        self.motor.move(cen)
+
+
+class edge(Macro):
+    """This macro moves the motor of the last scan to the edge position for a
+    given counter. If no counter is given, it selects the first plotted counter
+    from the expconf.
+    """
+
+    param_def = [
+        ['counter', Type.ExpChannel, OptionalParam, 'name of counter']
+    ]
+
+    def prepare(self, counter):
+        self.stats = self.getEnv('ScanStats')
+        if counter is OptionalParam:
+            self.counter = self.stats['counter']
+        else:
+            self.counter = counter.getName()
+
+        self.motor_name = self.stats['motor']
+        self.motor = self.getMotion([self.motor_name])
+
+    def run(self, counter):
+        current_pos = self.motor.readPosition()[0]
+        edge = self.stats['stats'][self.counter]['edge']
+        self.info('move motor %s from current position\nat %f\nto edge of'
+                  ' counter %s\nat %f' % (self.motor_name, current_pos,
+                                          self.counter, edge))
+        self.motor.move(edge)
+
+
+class wher(Macro):
+    """This macro shows the current position of the last scanned motor.
+    """
+
+    def prepare(self):
+        self.stats = self.getEnv('ScanStats')
+        self.motor_name = self.stats['motor']
+        self.motor = self.getMotion([self.motor_name])
+
+    def run(self):
+        current_pos = self.motor.readPosition()[0]
+        self.info('motor %s is\nat %f' % (self.motor_name, current_pos))
