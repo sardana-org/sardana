@@ -14,11 +14,21 @@ to a laboratory instrument.
 Two features uses this information: nexus data storage and the
 TaurusGUI panel population.
 
-After creating a new instrument or changing an element from one instrument
-to another, Pool, MacroServer and Spock must be restarted, otherwise the
-changes will not have effect.
+Instruments are created in the Pool and populated from the elements that want
+to be added to it. Example how to configure Instruments from Spock::
 
+  Pool_demo1_1.CreateInstrument(['/slit','NXcollimator'])
+  mot01.instrument = '/slit'
+  mot02.instrument = '/slit'
+  gap01.instrument = '/slit'
+  offset01.instrument = '/slit'
+  Pool_demo1_1.CreateInstrument(['/mirror','NXmirror'])
+  mot03.instrument = '/mirror'
+  mot04.instrument = '/mirror'
+  Pool_demo1_1.CreateInstrument(['/monitor','NXmonitor'])
+  ct01.instrument = '/monitor'
 
+  
 .. seealso::
 
 
