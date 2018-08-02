@@ -43,16 +43,16 @@ class DiscretePseudoMotorConfiguration(dict):
     def has_calibration(self):
         return all(['set' in self[x].keys() for x in self.keys()])
 
-    def add_point(self, label, pos, dmin, dmax, set):
+    def add_point(self, label, pos, dmin, dmax, setpos):
         point = dict()
         point['pos'] = int(pos)
         # Calculate point calibration if required
         if self.has_calibration():
             # Set to current physical position if no value supplied as argument
-            if math.isinf(set):
+            if math.isinf(setpos):
                 point['set'] = self.motor.position
             else:
-                point['set'] = float(set)
+                point['set'] = float(setpos)
             # If point exists, we use current min, max values
             if label in self.keys() and math.isinf(dmin) and math.isinf(dmax):
                 p = self[label]
