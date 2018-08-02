@@ -29,7 +29,7 @@ __all__ = ["ExpDescriptionEditor"]
 
 
 import json
-from taurus.external.qt import Qt, QtCore
+from taurus.external.qt import Qt, QtCore, QtGui
 import copy
 import taurus
 import taurus.core
@@ -151,7 +151,12 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self._originalConfiguration = None
         self._dirty = False
         self._dirtyMntGrps = set()
+
+        # Add warning message to the Widget
         self._autoUpdate = autoUpdate
+        if self._autoUpdate:
+            w = self._getWarningWidget()
+            self.ui.verticalLayout_3.insertWidget(0, w)
 
         # Pending event variables
         self._expConfChangedDialog = None
@@ -203,6 +208,21 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
         # Taurus Configuration properties and delegates
         self.registerConfigDelegate(self.ui.channelEditor)
+
+    def _getWarningWidget(self):
+        w = Qt.QWidget()
+        layout = QtGui.QHBoxLayout()
+        w.setLayout(layout)
+        icon = QtGui.QIcon.fromTheme('dialog-warning')
+        pixmap =QtGui.QPixmap(icon.pixmap(QtCore.QSize(32, 32)))
+        label_icon = QtGui.QLabel()
+        label_icon.setPixmap(pixmap)
+        label = QtGui.QLabel('This experiment configuration dialog '
+                             'updates automatically on external changes!')
+        layout.addWidget(label_icon)
+        layout.addWidget(label)
+        layout.addStretch(1)
+        return w
 
     def _getResumeText(self):
         msg_resume = '<p> Summary of changes: <ul>'
