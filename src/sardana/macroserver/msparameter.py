@@ -407,6 +407,7 @@ class ParamDecoder:
         """
         param_type = param_def["type"]
         name = param_def["name"]
+        optional_param = False
         if isinstance(param_type, list):
             param = self.decodeRepeat(raw_param, param_def)
         else:
@@ -424,7 +425,8 @@ class ParamDecoder:
                 if value is None:
                     raise MissingParam("'%s' not specified" % name)
                 elif isinstance(value, OptionalParamClass):
-                    param = OptionalParam
+                    param = None
+                    optional_param = True
                 else:
                     # cast to sting to fulfill with ParamType API
                     param = param_type.getObj(str(value))
@@ -433,7 +435,7 @@ class ParamDecoder:
                 raise WrongParamType(e.message)
             except UnknownParamObj as e:
                 raise WrongParam(e.message)
-            if param is None:
+            if param is None and not optional_param:
                 msg = 'Could not create %s parameter "%s" for "%s"' % \
                       (param_type.getName(), name, raw_param)
                 raise WrongParam(msg)

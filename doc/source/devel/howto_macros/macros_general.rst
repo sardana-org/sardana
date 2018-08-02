@@ -345,7 +345,7 @@ So, here is an example how to define and use a optional parameter::
         def run(self, itime, mntgrp):
             bkp_active_mntgrp = None
             try:
-                if mntgrp is not OptionalParam:
+                if mntgrp is not None:
                     bkp_active_mntgrp = self.getEnv('ActiveMntGrp')
                     self.setEnv('ActiveMntGrp', mntgrp.name)
                 self.info('Use "{0}" measurement '
