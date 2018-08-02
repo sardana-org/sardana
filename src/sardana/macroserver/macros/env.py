@@ -194,7 +194,7 @@ class senv(Macro):
 
 
 class genv(Macro):
-    """Sets the given environment variable to the given value"""
+    """Gets the given environment variable"""
 
     param_def = [['name', Type.Env, None,
                   'Environment variable name. Can be one of the following:\n'
@@ -207,9 +207,9 @@ class genv(Macro):
                   ' for a specific macro running on a specific door'],
                  ]
 
-    def run(self, env):
-        v = self.getEnv(env)
-        line = '%s = %s' % (env, str(v))
+    def run(self, var):
+        env = self.getAllDoorEnv()
+        line = '%s = %s' % (str(var), env[var])
         self.output(line)
 
 
