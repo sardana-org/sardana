@@ -214,7 +214,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         layout = QtGui.QHBoxLayout()
         w.setLayout(layout)
         icon = QtGui.QIcon.fromTheme('dialog-warning')
-        pixmap =QtGui.QPixmap(icon.pixmap(QtCore.QSize(32, 32)))
+        pixmap = QtGui.QPixmap(icon.pixmap(QtCore.QSize(32, 32)))
         label_icon = QtGui.QLabel()
         label_icon.setPixmap(pixmap)
         label = QtGui.QLabel('This experiment configuration dialog '
