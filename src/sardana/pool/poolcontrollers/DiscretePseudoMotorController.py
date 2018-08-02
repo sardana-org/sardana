@@ -38,7 +38,8 @@ from sardana.pool.controller import Type, Access, Description
 
 CALIBRATION = 'Calibration'
 LABELS = 'Labels'
-MSG_API = 'The new API is using! You must use configuration attribute.'
+MSG_API = 'Configuration attribute is in use. Labels and Calibration ' \
+          'attributes are deprecated since version Jul18'
 
 
 class DiscretePseudoMotorController(PseudoMotorController):
@@ -57,21 +58,24 @@ class DiscretePseudoMotorController(PseudoMotorController):
     axis_attributes = {CALIBRATION:  # type hackish until arrays supported
                        {Type: str,
                         Description: 'Flatten list of a list of triples and '
-                                     '[min,cal,max]',
+                                     '[min,cal,max]. Deprecated since '
+                                     'version Jul18.',
                         Access: DataAccess.ReadWrite,
                         'fget': 'get%s' % CALIBRATION,
                         'fset': 'set%s' % CALIBRATION},
                        LABELS:  # type hackish until arrays supported
                        {Type: str,
                         Description: 'String list with the meaning of each '
-                                     'discrete position',
+                                     'discrete position. Deprecated since '
+                                     'version Jul18.',
                         Access: DataAccess.ReadWrite,
                         'fget': 'get%s' % LABELS,
                         'fset': 'set%s' % LABELS},
-                       'Configuration':  # type hackish until arrays supported
+                       'Configuration':
+                       # type hackish until encoded attributes supported
                        {Type: str,
-                        Description: 'String dictionary mapping the labels and'
-                                     ' discrete positions',
+                        Description: 'String dictionary mapping the labels'
+                                     ' and discrete positions',
                         Access: DataAccess.ReadWrite}
                        }
 
@@ -97,7 +101,7 @@ class DiscretePseudoMotorController(PseudoMotorController):
             calibration = self._calibration_cfg
             labels = self._labels_cfg
         else:
-            # TODO: Remove when we do not support more
+            # TODO: Remove when we drop support to Labels and Calibration
             positions = self._positions
             calibration = self._calibration
             labels = self._labels
@@ -137,7 +141,7 @@ class DiscretePseudoMotorController(PseudoMotorController):
             calibration = self._calibration_cfg
             labels = self._labels_cfg
         else:
-            # TODO: Remove when we do not support more
+            # TODO: Remove when we drop support to Labels and Calibration
             positions = self._positions
             calibration = self._calibration
             labels = self._labels
@@ -172,12 +176,13 @@ class DiscretePseudoMotorController(PseudoMotorController):
             self._log.debug("calibrated_position = %s", calibrated_position)
             return calibrated_position
 
-    # TODO: Remove when we do not support more
+    # TODO: Remove when we drop support to Labels and Calibration
     def getLabels(self, axis):
         if self._configuration is not None:
             raise ValueError(MSG_API)
 
-        self._log.warning('Deprecation warning: Use configuration attribute')
+        self._log.warning("Labels attribute is deprecated since version "
+                          "Jul18. Use Configuration attribute instead.")
 
         # hackish until we support DevVarDoubleArray in extra attrs
         labels = self._labels
@@ -187,12 +192,13 @@ class DiscretePseudoMotorController(PseudoMotorController):
             labels_str += "%s:%d " % (labels[i], positions[i])
         return labels_str[:-1]  # remove the final space
 
-    # TODO: Remove when we do not support more
+    # TODO: Remove when we drop support to Labels and Calibration
     def setLabels(self, axis, value):
         if self._configuration is not None:
             raise ValueError(MSG_API)
 
-        self._log.warning('Deprecation warning: Use configuration attribute')
+        self._log.warning("Labels attribute is deprecated since version "
+                          "Jul18. Use Configuration attribute instead.")
 
         # hackish until we support DevVarStringArray in extra attrs
         labels = []
@@ -207,19 +213,21 @@ class DiscretePseudoMotorController(PseudoMotorController):
         else:
             raise Exception("Rejecting labels: invalid structure")
 
-    # TODO: Remove when we do not support more
+    # TODO: Remove when we drop support to Labels and Calibration
     def getCalibration(self, axis):
         if self._configuration is not None:
             raise ValueError(MSG_API)
-        self._log.warning('Deprecation warning: Use configuration attribute')
+        self._log.warning("Calibration attribute is deprecated since version "
+                          "Jul18. Use Configuration attribute instead.")
 
         return json.dumps(self._calibration)
 
-    # TODO: Remove when we do not support more
+    # TODO: Remove when we drop support to Labels and Calibration
     def setCalibration(self, axis, value):
         if self._configuration is not None:
             raise ValueError(MSG_API)
-        self._log.warning('Deprecation warning: Use configuration attribute')
+        self._log.warning("Calibration attribute is deprecated since version "
+                          "Jul18. Use Configuration attribute instead.")
 
         try:
             self._calibration = json.loads(value)
@@ -228,12 +236,12 @@ class DiscretePseudoMotorController(PseudoMotorController):
 
     def getConfiguration(self, axis):
         if self._configuration is None:
-            # TODO: Remove when we
+            # TODO: Remove when we drop support to Labels and Calibration
             return self._getConfiguration()
         else:
             return json.dumps(self._configuration)
 
-    # TODO: Remove when we do not support more
+    # TODO: Remove when we drop support to Labels and Calibration
     def _getConfiguration(self):
         mapping = dict()
         llab = len(self._labels)
@@ -242,7 +250,7 @@ class DiscretePseudoMotorController(PseudoMotorController):
         if llab == 0:
             return json.dumps(mapping)
         elif lcal > 0 and lcal != llab:
-            msg = 'Calibration and labels have different length'
+            msg = 'Calibration and Labels have different length'
             raise RuntimeError(msg)
 
         for idx, label in enumerate(self._labels):
@@ -266,8 +274,7 @@ class DiscretePseudoMotorController(PseudoMotorController):
                 labels.append(k)
                 pos = int(v['pos'])
                 if pos in positions:
-                    msg = 'Integer position {0} duplicated in' \
-                          ' configuration.'.format(pos)
+                    msg = 'position {0} is already used'.format(pos)
                     raise ValueError(msg)
                 positions.append(pos)
                 if all([x in v.keys() for x in ['min', 'set', 'max']]):
@@ -277,5 +284,5 @@ class DiscretePseudoMotorController(PseudoMotorController):
             self._calibration_cfg = calibration
             self._configuration = json.loads(value)
         except Exception as e:
-            msg = "Rejecting calibration: invalid structure\n{0}".format(e)
+            msg = "invalid configuration: {0}".format(e)
             raise Exception(msg)
