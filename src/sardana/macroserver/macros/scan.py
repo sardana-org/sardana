@@ -1888,9 +1888,10 @@ class scanstats(Macro):
 
                     for idx, rc in data.items():
                         counter_data.append(rc[channel_name])
-                        motor_data.append(rc[channel_name])
+                        motor_data.append(rc[select_motor])
 
                     counter_data = numpy.array(counter_data)
+                    counter_data_grad = numpy.gradient(counter_data)
                     motor_data = numpy.array(motor_data)
 
                     stats[channel_name] = {'min': numpy.min(counter_data),
@@ -1899,7 +1900,8 @@ class scanstats(Macro):
                                            'maxpos': motor_data[numpy.argmax(counter_data)],
                                            'mean': numpy.mean(counter_data),
                                            'int': numpy.sum(counter_data),
-                                           'cen': numpy.sum(counter_data*motor_data)/numpy.sum(counter_data)}
+                                           'cen': numpy.sum(counter_data*motor_data)/numpy.sum(counter_data),
+                                           'edge': numpy.sum(counter_data_grad*motor_data)/numpy.sum(counter_data_grad)}
 
             self.info('Statistics on channel:  %s' % select_channel)
             self.info('Statistics for movable: %s' % select_motor)
@@ -1912,6 +1914,7 @@ class scanstats(Macro):
             self.info('Mean:     %g' % stats[select_channel]['mean'])
             self.info('Integral: %g' % stats[select_channel]['int'])
             self.info('CEN:      %g' % stats[select_channel]['cen'])
+            self.info('EDGE:     %g' % stats[select_channel]['edge'])
             # set CEN and PEAK as env variables
             # set the motor only in case it is hard to access it from another
             # macro like pic or cen
