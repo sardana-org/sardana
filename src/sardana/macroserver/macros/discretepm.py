@@ -22,10 +22,9 @@
 ##############################################################################
 
 """ Discrete pseudo motor controller configuration related macros"""
-
-from sardana.macroserver.macro import Macro, Type
-import json
 import math
+from taurus.core.util.codecs import CodecFactory
+from sardana.macroserver.macro import Macro, Type
 
 
 class DiscretePseudoMotorConfiguration(dict):
@@ -34,11 +33,15 @@ class DiscretePseudoMotorConfiguration(dict):
         self.macro = macro
         _physical_motor_name = self.pseudo.physical_elements[0]
         self.motor = macro.getMoveable(_physical_motor_name)
+        cf = CodecFactory()
+        self.json = cf.getCodec('json')
         conf = self.get_configuration()
         super(DiscretePseudoMotorConfiguration, self).__init__(conf)
 
     def get_configuration(self):
-        return json.loads(self.pseudo.read_attribute('configuration').value)
+        value = self.pseudo.read_attribute('configuration').value
+        fmt, data = self.json.decode(('json', value))
+        return data
 
     def has_calibration(self):
         return all(['set' in self[x].keys() for x in self.keys()])
@@ -78,14 +81,16 @@ class DiscretePseudoMotorConfiguration(dict):
 
     def _update(self):
         try:
-            self.pseudo.write_attribute('configuration', json.dumps(self))
+            fmt, value = self.json.encode(('', self))
+            self.pseudo.write_attribute('configuration', value)
             self.macro.debug('Updated configuration:\n{0}'.format(self))
         except Exception as e:
             msg = 'Cannot update configuration]\n{0}\{1}'.format(e, self)
             self.macro.error(msg)
 
     def __str__(self):
-        return json.dumps(self, indent=4, sort_keys=True)
+        fmt, value = self.json.encode(('', self), indent=4, sort_keys=True)
+        return value
 
 
 class def_dpm_pos(Macro):
