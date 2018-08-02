@@ -39,7 +39,7 @@ class DiscretePseudoMotorConfiguration(dict):
         self.update(conf)
 
     def get_configuration(self):
-        value = self.pseudo.read_attribute('configuration').value
+        value = self.pseudo.getAttribute('configuration').read().value
         fmt, data = self.json.decode(('json', value))
         return data
 
@@ -82,7 +82,7 @@ class DiscretePseudoMotorConfiguration(dict):
     def _update(self):
         try:
             fmt, value = self.json.encode(('', self))
-            self.pseudo.write_attribute('configuration', value)
+            self.pseudo.getAttribute('configuration').write(value)
             self.macro.debug('Updated configuration:\n{0}'.format(self))
         except Exception as e:
             msg = 'Cannot update configuration]\n{0}\{1}'.format(e, self)
