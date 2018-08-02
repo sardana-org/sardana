@@ -36,7 +36,7 @@ class DiscretePseudoMotorConfiguration(dict):
         cf = CodecFactory()
         self.json = cf.getCodec('json')
         conf = self.get_configuration()
-        super(DiscretePseudoMotorConfiguration, self).__init__(conf)
+        self.update(conf)
 
     def get_configuration(self):
         value = self.pseudo.read_attribute('configuration').value
