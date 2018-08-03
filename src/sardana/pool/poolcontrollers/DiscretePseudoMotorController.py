@@ -52,8 +52,8 @@ class DiscretePseudoMotorController(PseudoMotorController):
     organization = "Sardana team"
     image = ""
 
-    pseudo_motor_roles = ("PseudoMotor",)
-    motor_roles = ("Motor",)
+    pseudo_motor_roles = ("DiscreteMoveable",)
+    motor_roles = ("ContinuousMoveable",)
 
     axis_attributes = {CALIBRATION:  # type hackish until arrays supported
                        {Type: str,
