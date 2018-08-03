@@ -24,6 +24,7 @@
 """ Discrete pseudo motor controller configuration related macros"""
 import math
 from taurus.core.util.codecs import CodecFactory
+from taurus.console.table import Table
 from sardana.macroserver.macro import Macro, Type
 
 
@@ -156,4 +157,29 @@ class prdef_dpm_conf(Macro):
 
     def run(self, pseudo):
         conf = DiscretePseudoMotorConfiguration(pseudo, self)
-        self.output(conf)
+        col_head_str = [['pos'], ['set'], ['min'], ['max']]
+        row_head_str = []
+        value_list = []
+
+        for k, v in conf.items():
+            row_head_str.append(k)
+            _row_values = [k]
+            for i in col_head_str:
+                _row_values.append(v[i[0]])
+            value_list.append(_row_values)
+
+        if len(value_list):
+            # Sort by position column
+            value_list = sorted(value_list, key=lambda x: x[1])
+            # Transpose matrix
+            value_list = map(list, zip(*value_list))
+            # Extract sorted row headers
+            row_head_str = value_list[0]
+            # Extract sorted values
+            value_list = value_list[1:]
+            table = Table(value_list, row_head_str=row_head_str,
+                          col_head_str=col_head_str, col_head_width=15)
+            for line in table.genOutput():
+                self.output(line)
+        else:
+            self.output('No configuration available')
