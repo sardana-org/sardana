@@ -824,10 +824,10 @@ class logmacro(Macro):
 
 class repeat(Hookable, Macro):
     """This macro executes as many repetitions of a set of macros as
-    specified by nr parameter. The macros to be repeated can be 
-    given as parameters or as body hooks. 
-    If the macros are given as parameters the body hooks are ignored. 
-    If nr has negative value, repetitions will be executed until you 
+    specified by nr parameter. The macros to be repeated can be
+    given as parameters or as body hooks.
+    If the macros are given as parameters the body hooks are ignored.
+    If nr has negative value, repetitions will be executed until you
     stop repeat macro.
 
     .. note::
@@ -835,13 +835,18 @@ class repeat(Hookable, Macro):
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the macro) may occur if
         deemed necessary by the core developers."""
-    
+
     # hints = { 'allowsHooks': ('body', 'break', 'continue') }
     hints = {'allowsHooks': ('body',)}
 
     param_def = [
         ['nr', Type.Integer, None, 'Nr of iterations'],
-        ['macro_name_params', [['token', Type.String, None, 'Macro name and parameters (if any)'], {'min':0}], None, "List with macro name and parameters (if any)"]
+        ['macro_name_params', [
+                ['token', Type.String,
+                None, 'Macro name and parameters (if any)'],
+                {'min': 0}
+            ],
+            None, "List with macro name and parameters (if any)"]
     ]
 
     def prepare(self, nr, macro_name_params):
@@ -852,7 +857,7 @@ class repeat(Hookable, Macro):
 
     def __loop(self):
         self.checkPoint()
-        if self.macro_name_params == None:
+        if self.macro_name_params is None:
             for bodyHook in self.bodyHooks:
                 bodyHook()
         else:
