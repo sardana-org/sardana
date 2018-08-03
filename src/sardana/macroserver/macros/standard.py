@@ -822,30 +822,45 @@ class logmacro(Macro):
         else:
             self.setEnv('LogMacro', False)
 
-
 class repeat(Hookable, Macro):
-    """This macro executes as many repetitions of it's body hook macros as
-    specified by nr parameter. If nr parameter has negative value,
-    repetitions will be executed until you stop repeat macro."""
+    """This macro executes as many repetitions of a set of macros as
+    specified by nr parameter. The macros to be repeated can be 
+    given as parameters or as body hooks. 
+    If the macros are given as parameters the body hooks are ignored. 
+    If nr has negative value, repetitions will be executed until you 
+    stop repeat macro.
 
+    .. note::
+        The repeat macro has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the macro) may occur if
+        deemed necessary by the core developers."""
+    
     # hints = { 'allowsHooks': ('body', 'break', 'continue') }
     hints = {'allowsHooks': ('body',)}
 
     param_def = [
-        ['nr', Type.Integer, None, 'Nr of iterations']
+        ['nr', Type.Integer, None, 'Nr of iterations'],
+        ['macro_name_params', [['token', Type.String, None, 'Macro name and parameters (if any)'], {'min':0}], None, "List with macro name and parameters (if any)"]
     ]
 
-    def prepare(self, nr):
+    def prepare(self, nr, macro_name_params):
         # self.breakHooks = self.getHooks("break")
         # self.continueHooks = self.getHooks("continue")
         self.bodyHooks = self.getHooks("body")
+        self.macro_name_params = macro_name_params
 
     def __loop(self):
         self.checkPoint()
-        for bodyHook in self.bodyHooks:
-            bodyHook()
+        if self.macro_name_params == None:
+            for bodyHook in self.bodyHooks:
+                bodyHook()
+        else:
+            for macro in self.macro_name_params:
+                self.execMacro(macro)
 
-    def run(self, nr):
+    def run(self, nr, macro_name_params):
+        self.output(macro_name_params)
         if nr < 0:
             while True:
                 self.__loop()
