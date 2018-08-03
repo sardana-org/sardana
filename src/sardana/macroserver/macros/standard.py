@@ -836,22 +836,19 @@ class repeat(Hookable, Macro):
         (up to and including removal of the macro) may occur if
         deemed necessary by the core developers."""
 
-    # hints = { 'allowsHooks': ('body', 'break', 'continue') }
     hints = {'allowsHooks': ('body',)}
 
     param_def = [
         ['nr', Type.Integer, None, 'Nr of iterations'],
         ['macro_name_params', [
                 ['token', Type.String,
-                None, 'Macro name and parameters (if any)'],
+                 None, 'Macro name and parameters (if any)'],
                 {'min': 0}
             ],
             None, "List with macro name and parameters (if any)"]
     ]
 
     def prepare(self, nr, macro_name_params):
-        # self.breakHooks = self.getHooks("break")
-        # self.continueHooks = self.getHooks("continue")
         self.bodyHooks = self.getHooks("body")
         self.macro_name_params = macro_name_params
 
