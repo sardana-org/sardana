@@ -854,12 +854,12 @@ class repeat(Hookable, Macro):
 
     def __loop(self):
         self.checkPoint()
-        if self.macro_name_params is None:
-            for bodyHook in self.bodyHooks:
-                bodyHook()
-        else:
+        if len(self.macro_name_params) > 0:
             for macro in self.macro_name_params:
                 self.execMacro(macro)
+        else:
+            for bodyHook in self.bodyHooks:
+                bodyHook()
 
     def run(self, nr, macro_name_params):
         self.output(macro_name_params)
