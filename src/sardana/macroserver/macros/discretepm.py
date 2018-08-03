@@ -46,9 +46,10 @@ class DiscretePseudoMotorConfiguration(dict):
     def has_calibration(self):
         return all(['set' in self[x].keys() for x in self.keys()])
 
-    def add_point(self, label, pos, dmin, dmax, setpos):
+    def add_point(self, label, pos, setpos, dmin, dmax):
         point = dict()
         point['pos'] = int(pos)
+        label = label.upper()
         # Calculate point calibration if required
         if self.has_calibration():
             # Set to current physical position if no value supplied as argument
@@ -59,11 +60,14 @@ class DiscretePseudoMotorConfiguration(dict):
             # If point exists, we use current min, max values
             if label in self.keys() and math.isinf(dmin) and math.isinf(dmax):
                 p = self[label]
-                min_pos = point['set'] - abs(p['set'] - p['min'])
-                max_pos = point['set'] + abs(p['set'] - p['max'])
+                min_pos = point['set'] + p['set'] - p['min']
+                max_pos = point['set'] + p['set'] - p['max']
             # else, new point has new calibration,
+            elif math.isinf(dmin) and math.isinf(dmax):
+                min_pos = point['set']
+                max_pos = point['set']
             else:
-                min_pos = point['set'] - dmin
+                min_pos = point['set'] + dmin
                 max_pos = point['set'] + dmax
 
             point['min'] = min_pos
@@ -74,6 +78,7 @@ class DiscretePseudoMotorConfiguration(dict):
 
     def remove_point(self, label):
         try:
+            label = label.upper()
             self.pop(label)
             self._update()
         except Exception as e:
@@ -112,19 +117,19 @@ class def_dpm_pos(Macro):
     the calibration.
     """
     param_def = [
-        ['pseudo', Type.PseudoMotor, None, 'Discrete pseudomotor name'],
-        ['label', Type.String, None, 'Label name'],
-        ['pos', Type.Integer, None, 'Pseudo position'],
+        ['pseudo', Type.PseudoMotor, None, 'Discrete pseudomotor name.'],
+        ['label', Type.String, None, 'Label name.'],
+        ['pos', Type.Integer, None, 'Discrete (pseudo) position.'],
+        ['set', Type.Float, float('inf'), 'Continuous position.'],
         ['dmin', Type.Float, float('-inf'),
-         'Delta increment defining the minimum position'],
+         'Delta increment used to define the minimum position.'],
         ['dmax', Type.Float, float('inf'),
-         'Delta increment defining the maximum position'],
-        ['set', Type.Float, float('inf'), 'Real position'],
+         'Delta increment used to define the maximum position.'],
         ]
 
-    def run(self, pseudo, label, pos, dmin, dmax, set):
+    def run(self, pseudo, label, pos, setpos, dmin, dmax):
         conf = DiscretePseudoMotorConfiguration(pseudo, self)
-        conf.add_point(label, pos, dmin, dmax, set)
+        conf.add_point(label, pos, setpos, dmin, dmax)
 
 
 class udef_dpm_pos(Macro):
