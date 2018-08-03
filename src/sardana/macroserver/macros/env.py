@@ -208,8 +208,15 @@ class genv(Macro):
                  ]
 
     def run(self, var):
-        env = self.getAllDoorEnv()
-        line = '%s = %s' % (str(var), env[var])
+        pars = var.split(".")
+        if len(pars) == 1:
+            env = self.getAllDoorEnv()
+            line = '%s = %s' % (str(var), env[var])
+        else:
+            env = self.getEnv(key=None, macro_name=pars[0])
+            names_list = list(env.keys())
+            names_list.sort(key=str.lower)
+            line = '%s = %s' % (str(var), str(env[pars[1]]))
         self.output(line)
 
 
