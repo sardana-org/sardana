@@ -22,6 +22,11 @@
 ##############################################################################
 
 """ Discrete pseudo motor controller configuration related macros"""
+
+__all__ = ["def_dpm_pos", "udef_dpm_pos", "prdef_dpm_conf"]
+
+__docformat__ = 'restructuredtext'
+
 import math
 from taurus.core.util.codecs import CodecFactory
 from taurus.console.table import Table
@@ -29,6 +34,7 @@ from sardana.macroserver.macro import Macro, Type
 
 
 class DiscretePseudoMotorConfiguration(dict):
+
     def __init__(self, pseudo_obj, macro):
         self.pseudo = pseudo_obj
         self.macro = macro
