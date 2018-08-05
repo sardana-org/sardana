@@ -1122,6 +1122,7 @@ object?   -> Details about 'object'. ?object also works, ?? prints more.
     term_app.display_banner = True
     term_app.gui = gui_mode
     term_app.pylab = 'qt'
+    term_app.pylab_import_all = False
     #term_app.nosep = False
     #term_app.classic = True
 
