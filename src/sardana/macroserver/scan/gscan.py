@@ -2084,15 +2084,17 @@ class CTScan(CScan, CAcquisition):
                 while True:
                     moveable.setVelocity(try_vel)
                     get_vel = moveable.getVelocity(force=True)
-                    if get_vel <= ideal_max_vel:
+                    if get_vel < ideal_max_vel:
                         msg = 'Ideal scan velocity {0} of motor {1} cannot ' \
                               'be reached, {2} will be used instead'.format(
                                   ideal_max_vel, moveable.name, get_vel)
                         self.macro.warning(msg)
                         ideal_path.max_vel = get_vel
                         break
-                    else:
+                    elif get_vel > ideal_max_vel:
                         try_vel -= (get_vel - try_vel)
+                    else:
+                        break
             except Exception:
                 self.macro.debug("Unknown error when trying if hardware "
                                  "accepts ideal scan velocity", exc_info=1)
