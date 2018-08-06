@@ -2077,26 +2077,25 @@ class CTScan(CScan, CAcquisition):
                                   min_vel=base_vel)
             ideal_path = MotionPath(ideal_vmotor, start, end, active_time)
 
-            # check real_velocity
+            # check if calculated ideal velocity is accepted by hardware
             backup_vel = moveable.getVelocity(force=True)
             ideal_max_vel = try_vel = ideal_path.max_vel
             try:
                 while True:
                     moveable.setVelocity(try_vel)
                     get_vel = moveable.getVelocity(force=True)
-                    if get_vel <= ideal_path.max_vel:
-                        msg = 'Ideal vel: {0} cannot be reached, Real vel: {' \
-                              '1}. Set ' \
-                              'path.max_vel to real ' \
-                              'vel.'.format(ideal_max_vel,
-                                            get_vel)
-                        self.macro.debug(msg)
+                    if get_vel <= ideal_max_vel:
+                        msg = 'Ideal scan velocity {0} of motor {1} cannot ' \
+                              'be reached, {2} will be used instead'.format(
+                                  ideal_max_vel, moveable.name, get_vel)
+                        self.macro.warning(msg)
                         ideal_path.max_vel = get_vel
                         break
                     else:
-                        try_vel -= (get_vel-try_vel)
-            except Exception as e:
-                self.macro.error(e)
+                        try_vel -= (get_vel - try_vel)
+            except Exception:
+                self.macro.debug("Unknown error when trying if hardware "
+                                 "accepts ideal scan velocity", exc_info=1)
                 ideal_path.max_vel = ideal_max_vel
             finally:
                 moveable.setVelocity(backup_vel)
