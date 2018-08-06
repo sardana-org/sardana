@@ -64,7 +64,6 @@ class Boolean(ParamType):
             value = False
         else:
             raise ValueError('{0} is not a boolean'.format(str_repr))
-
         return value
 
 

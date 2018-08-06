@@ -657,7 +657,6 @@ def _macro_completer(self, event):
                 res.extend(['True', 'False'])
             else:
                 res.extend(ms.getElementNamesWithInterface(param['type']))
-
         return res
 
 
