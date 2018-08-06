@@ -254,7 +254,12 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         # TODO: For Taurus 4 compatibility
         psl_fullname = []
         for name, display in psl:
-            psl_fullname.append(("tango://%s" % name, display))
+            is_full_tango_name = name.startswith('tango://')
+            if not is_full_tango_name:
+                psl_fullname.append(("tango://%s" % name, display))
+            else:
+                psl_fullname.append((name, display))
+
         self.ui.preScanList.clear()
         self.ui.preScanList.addModels(psl_fullname)
 
