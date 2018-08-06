@@ -542,14 +542,10 @@ class PoolMeasurementGroup(PoolGroupElement):
         cfg = self.get_configuration()
         # g_timer, g_monitor = cfg['timer'], cfg['monitor']
         for ctrl, ctrl_data in cfg['controllers'].items():
-            # skip external channels
-            if isinstance(ctrl, str):
+            if isinstance(ctrl, str):  # skip external channels
                 continue
-            # telling controller in which acquisition mode it will participate
             if not ctrl.is_online():
                 continue
-
-            # skip controllers without any channel enabled
             if ctrl not in self._enabled_ctrls:
                 self.debug('Skipping load configuration {}'.format(ctrl))
                 continue
