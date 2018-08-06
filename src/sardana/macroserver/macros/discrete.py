@@ -23,7 +23,7 @@
 
 """ Discrete pseudo motor controller configuration related macros"""
 
-__all__ = ["def_dpm_pos", "udef_dpm_pos", "prdef_dpm_conf"]
+__all__ = ["def_discr_pos", "udef_discr_pos", "prdef_discr"]
 
 __docformat__ = 'restructuredtext'
 
