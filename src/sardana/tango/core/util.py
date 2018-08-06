@@ -914,7 +914,7 @@ def prepare_logstash(args):
     log_messages = []
 
     try:
-        import logstash
+        from logstash_async.handler import AsynchronousLogstashHandler
     except ImportError:
         msg = ("Unable to import logstash. Skipping logstash "
                + "configuration...", )
@@ -953,7 +953,8 @@ def prepare_logstash(args):
 
     if host is not None:
         root = Logger.getRootLog()
-        handler = logstash.TCPLogstashHandler(host, port, version=1)
+        handler = AsynchronousLogstashHandler(host, port,
+                  database_path="/tmp/sardana-logstash-cache.db")
         root.addHandler(handler)
         msg = ("Log is being sent to logstash listening on %s:%d",
                host, port)
