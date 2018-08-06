@@ -547,7 +547,6 @@ class PoolMeasurementGroup(PoolGroupElement):
             if not ctrl.is_online():
                 continue
             if ctrl not in self._enabled_ctrls:
-                self.debug('Skipping load configuration {}'.format(ctrl))
                 continue
 
             ctrl.set_ctrl_par('acquisition_mode', self.acquisition_mode)
