@@ -2078,30 +2078,28 @@ class CTScan(CScan, CAcquisition):
             ideal_path = MotionPath(ideal_vmotor, start, end, active_time)
 
             # check real_velocity
-            bkp_vel = moveable.getVelocity(force=True)
+            backup_vel = moveable.getVelocity(force=True)
+            ideal_max_vel = try_vel = ideal_path.max_vel
             try:
-                ideal_max_vel = ideal_path.max_vel
-                new_vel = ideal_path.max_vel
-
                 while True:
-                    moveable.setVelocity(new_vel)
-                    read_vel = moveable.getVelocity(force=True)
-                    if read_vel <= ideal_path.max_vel:
+                    moveable.setVelocity(try_vel)
+                    get_vel = moveable.getVelocity(force=True)
+                    if get_vel <= ideal_path.max_vel:
                         msg = 'Ideal vel: {0} cannot be reached, Real vel: {' \
                               '1}. Set ' \
                               'path.max_vel to real ' \
                               'vel.'.format(ideal_max_vel,
-                                            read_vel)
+                                            get_vel)
                         self.macro.debug(msg)
-                        ideal_path.max_vel = read_vel
+                        ideal_path.max_vel = get_vel
                         break
                     else:
-                        new_vel -= (read_vel-new_vel)
+                        try_vel -= (get_vel-try_vel)
             except Exception as e:
                 self.macro.error(e)
                 ideal_path.max_vel = ideal_max_vel
             finally:
-                moveable.setVelocity(bkp_vel)
+                moveable.setVelocity(backup_vel)
 
             ideal_path.moveable = moveable
             ideal_path.apply_correction = True
