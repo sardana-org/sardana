@@ -955,6 +955,9 @@ def prepare_logstash(args):
         root = Logger.getRootLog()
         handler = AsynchronousLogstashHandler(host, port,
                   database_path="/tmp/sardana-logstash-cache.db")
+        # don't use full path for program_name
+        handler._create_formatter_if_necessary()
+        _, handler.formatter._program_name = os.path.split(handler.formatter._program_name)
         root.addHandler(handler)
         msg = ("Log is being sent to logstash listening on %s:%d",
                host, port)
