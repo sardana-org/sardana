@@ -143,7 +143,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         # key: PoolController; value: AcqSynch
         self._ctrl_to_acq_synch = {}
         # list of controller with channels enabled.
-        self._ctrl_enable = []
+        self._enabled_ctrls = []
         kwargs['elem_type'] = ElementType.MeasurementGroup
         PoolGroupElement.__init__(self, **kwargs)
         configuration = kwargs.get("configuration")
@@ -284,7 +284,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         config['controllers'] = controllers = {}
 
         external_user_elements = []
-        self._ctrl_enable = []
+        self._enabled_ctrls = []
         for index, element in enumerate(user_elements):
             elem_type = element.get_type()
             if elem_type == ElementType.External:
@@ -294,7 +294,7 @@ class PoolMeasurementGroup(PoolGroupElement):
             ctrl = element.controller
             ctrl_data = controllers.get(ctrl)
             # include all controller in the enabled list
-            self._ctrl_enable.append(ctrl)
+            self._enabled_ctrls.append(ctrl)
             if ctrl_data is None:
                 controllers[ctrl] = ctrl_data = {}
                 ctrl_data['channels'] = channels = {}
@@ -332,7 +332,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         return config
 
     def set_configuration(self, config=None, propagate=1, to_fqdn=True):
-        self._ctrl_enable = []
+        self._enabled_ctrls = []
         if config is None:
             config = self._build_configuration()
         else:
@@ -376,7 +376,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                 if ctrl_to_acq_synch:
                     self._ctrl_to_acq_synch[c] = acq_synch
                 if ctrl_enabled:
-                    self._ctrl_enable.append(c)
+                    self._enabled_ctrls.append(c)
 
             # sorted ids may not be consecutive (if a channel is disabled)
             indexes = sorted(user_elem_ids.keys())
@@ -550,7 +550,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                 continue
 
             # skip controllers without any channel enabled
-            if ctrl not in self._ctrl_enable:
+            if ctrl not in self._enabled_ctrls:
                 self.debug('Skipping load configuration {}'.format(ctrl))
                 continue
 
