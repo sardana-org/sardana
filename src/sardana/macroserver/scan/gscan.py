@@ -749,7 +749,7 @@ class GScan(Logger):
             try:
                 is_full_tango_name = src.startswith('tango://')
                 if not is_full_tango_name:
-                    src = 'tango://{}'.format(src)
+                    src = 'tango://{0}'.format(src)
 
                 if src in all_elements_info:
                     ei = all_elements_info[src]
