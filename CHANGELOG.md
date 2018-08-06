@@ -6,6 +6,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
+- `def_discr_pos`, `udef_discr_pos` and `prdef_discr` macros for configuring
+  discrete pseudo motors (#801)
+- `Configuration` attribute to discrete pseudo motor (#801)
 - `repeat` macro for executing n-times the hooks attached in its body (#310,
   #745)
 - `pre-acq` and `post-acq` hooks to the `ct` macro (#808)
@@ -55,6 +58,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Documentation hosting from ReadTheDocs to Github Pages (build on Travis) (#826)
 
 ### Deprecated
+- `Label` and `Calibration` attributes of discrete pseudo motor in favor
+  of `Configuration` attribute (#801)
 - `PoolMotorSlim` widget in favor of `PoolMotorTV` widget (#163, #785) 
 - `Controller.getUsedAxis` (Taurus device extension) in favor
 of `Controller.getUsedAxes` (#609)
