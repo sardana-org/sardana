@@ -397,7 +397,16 @@ class MacroServerClass(SardanaDeviceClass):
              "basis. Backwards incompatible changes (up to and including "
              "its removal) may occur if deemed necessary by the "
              "core developers.",
-             None]
+             None],
+        'LogstashCacheDbPath':
+            [DevString,
+             "Path to the Logstash cache database [default: "
+             "/tmp/sardana-ms-logstash-cache.db]. "
+             "This property has been included in Sardana on a provisional "
+             "basis. Backwards incompatible changes (up to and including "
+             "its removal) may occur if deemed necessary by the "
+             "core developers.",
+             "/tmp/sardana-ms-logstash-cache.db"]
     }
 
     #    Command definitions

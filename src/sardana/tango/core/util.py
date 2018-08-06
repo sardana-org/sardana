@@ -921,7 +921,7 @@ def prepare_logstash(args):
         log_messages.append(msg,)
         return log_messages
 
-    def get_logstash_conf(dev_name):
+    def get_logstash_conf(dev_name, class_name=None):
         try:
             props = db.get_device_property(dev_name, "LogstashHost")
             host = props["LogstashHost"][0]
@@ -932,7 +932,17 @@ def prepare_logstash(args):
             port = int(props["LogstashPort"][0])
         except IndexError:
             port = 12345
-        return host, port
+        try:
+            props = db.get_device_property(dev_name, "LogstashCacheDbPath")
+            cache_db_path = int(props["LogstashCacheDbPath"][0])
+        except IndexError:
+            if class_name == "Pool":
+                cache_db_path = "/tmp/sardana-pool-logstash-cache.db"
+            elif class_name == "MacroServer":
+                cache_db_path = "/tmp/sardana-ms-logstash-cache.db"
+            else:
+                cache_db_path = "/tmp/sardana-logstash-cache.db"
+        return host, port, cache_db_path
 
     db = Database()
 
@@ -942,19 +952,18 @@ def prepare_logstash(args):
     if bin_name in ["Pool", "MacroServer"]:
         class_name = bin_name
         dev_name = get_dev_from_class_server(db, class_name, server_name)[0]
-        host, port = get_logstash_conf(dev_name)
+        host, port, cache = get_logstash_conf(dev_name, class_name)
     else:
         dev_name = get_dev_from_class_server(db, "Pool", server_name)[0]
-        host, port = get_logstash_conf(dev_name)
+        host, port, cache = get_logstash_conf(dev_name)
         if host is None:
             dev_name = get_dev_from_class_server(db, "MacroServer",
                                                  server_name)[0]
-            host, port = get_logstash_conf(dev_name)
+            host, port, cache = get_logstash_conf(dev_name)
 
     if host is not None:
         root = Logger.getRootLog()
-        handler = AsynchronousLogstashHandler(host, port,
-                  database_path="/tmp/sardana-logstash-cache.db")
+        handler = AsynchronousLogstashHandler(host, port, database_path=cache)
         # don't use full path for program_name
         handler._create_formatter_if_necessary()
         _, handler.formatter._program_name = os.path.split(handler.formatter._program_name)
