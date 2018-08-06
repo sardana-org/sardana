@@ -105,7 +105,7 @@ class DiscretePseudoMotorConfiguration(dict):
         return value
 
 
-class def_dpm_pos(Macro):
+class def_discr_pos(Macro):
     """
     Define a (calibrated) point for a discrete pseudomotor configuration.
 
@@ -122,6 +122,12 @@ class def_dpm_pos(Macro):
     case. However, if no dmin and dmax are provided, the previous
     calibration values for dmin and dmax are calculated and used to rebuild
     the calibration.
+
+    .. note::
+        The def_discr_pos macro has been included in sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the macro) may occur if
+        deemed necessary by the core developers.
     """
     param_def = [
         ['pseudo', Type.PseudoMotor, None, 'Discrete pseudomotor name.'],
@@ -139,9 +145,15 @@ class def_dpm_pos(Macro):
         conf.add_point(label, pos, setpos, dmin, dmax)
 
 
-class udef_dpm_pos(Macro):
+class udef_discr_pos(Macro):
     """
     Remove a point from a discrete pseudomotor configuration.
+
+    .. note::
+        The udef_discr_pos macro has been included in sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the macro) may occur if
+        deemed necessary by the core developers.
     """
     param_def = [
         ['pseudo', Type.PseudoMotor, None, 'Discrete pseudomotor name'],
@@ -153,9 +165,15 @@ class udef_dpm_pos(Macro):
         conf.remove_point(label)
 
 
-class prdef_dpm_conf(Macro):
+class prdef_discr(Macro):
     """
     Print discrete pseudomotor configuration.
+
+    .. note::
+    The prdef_discr_pos macro has been included in sardana
+    on a provisional basis. Backwards incompatible changes
+    (up to and including removal of the macro) may occur if
+    deemed necessary by the core developers.
     """
     param_def = [
         ['pseudo', Type.PseudoMotor, None, 'Discrete pseudomotor name'],
