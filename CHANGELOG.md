@@ -21,6 +21,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   free property (#874)
 - Enhance software synchronization by allowing function generation when
   group has 1 repeat only (#786)
+- Tab completion in spock for Boolean macro parameters (#871)
 - Information about controller properties in `sar_info` macro (#855, #866)
 
 ### Fixed
@@ -33,6 +34,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   Requires Taurus 4.4 (taurus-org/taurus#738).
 - Validation of starts and finals for a2scanct, a3scanct, meshct, ... (#734)
 - `defelem` macro when using default axis number (#568, #609)
+- Boolean macro parameter validation - now works only True, true, 1
+  or False, false, 0 (#871)
 - Remove numpy and pylab symbols from spock namespace in order to
   not collide with macros e.g. repeat, where, etc. (#893)
 - Make SPEC_FileRecorder use LF instead of CRLF even on windows (#750)
