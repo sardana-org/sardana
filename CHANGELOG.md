@@ -33,6 +33,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   Requires Taurus 4.4 (taurus-org/taurus#738).
 - Validation of starts and finals for a2scanct, a3scanct, meshct, ... (#734)
 - `defelem` macro when using default axis number (#568, #609)
+- Remove numpy and pylab symbols from spock namespace in order to
+  not collide with macros e.g. repeat, where, etc. (#893)
 - Make SPEC_FileRecorder use LF instead of CRLF even on windows (#750)
 - Appending of hooks from sequence XML (#747)
 - Split of `PoolPath`, `MacroPath` and `RecorderPath` with OS separator (#762)
