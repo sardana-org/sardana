@@ -38,6 +38,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Push change events from code for measurement group attributes: moveable,
   latency time and synchronization (#736, #738)
 - `getPoolObj` random `AttributeErrors: _pool_obj` errors in macros (#865, #57)
+- Avoid loading configuration to disabled controllers in measurement group
+  acquisition (#758)
 - Spock returning prompt too early not allowing to stop macros (#717, #725).
   Requires Taurus 4.4 (taurus-org/taurus#738).
 - Validation of starts and finals for a2scanct, a3scanct, meshct, ... (#734)
