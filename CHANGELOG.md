@@ -9,6 +9,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 - `def_discr_pos`, `udef_discr_pos` and `prdef_discr` macros for configuring
   discrete pseudo motors (#801)
 - `Configuration` attribute to discrete pseudo motor (#801)
+- Avoid desynchronization of motion and acquisition in time synchronized
+  continuous scans by checking whether the motor controller accepts the scan
+  velocity and in case it rounds it up, reduce the scan velocity (#757)
 - `repeat` macro for executing n-times the hooks attached in its body (#310,
   #745)
 - `pre-acq` and `post-acq` hooks to the `ct` macro (#808)
