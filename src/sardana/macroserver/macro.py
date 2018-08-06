@@ -2278,9 +2278,6 @@ class Macro(Logger):
         :rtype: :obj:`dict`"""
         return self._macro_status
 
-    def _shouldRaiseStopException(self):
-        return self.isStopped() and not self.isProcessingStop()
-
     def _reserveObjs(self, args):
         """**Internal method**. Used to reserve a set of objects for this
         macro"""
