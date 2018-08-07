@@ -46,6 +46,14 @@ tested.
    CHANGELOG.md, merge the PR and tag in master.
 8. Merge also the  `release-XXX` branch into develop, and bump the version of
    develop with `bumpversion patch`
+9. Release to PyPI **from a clean checkout** and using [twine](https://github.com/pypa/twine):
+   ```
+   cd /tmp
+   git clone https://github.com/sardana-org/sardana.git -b <RELEASE_TAG>
+   cd sardana
+   python setup.py sdist bdist_wheel
+   twine upload dist/*
+   ```
 
 ## Manual test checklist
 
