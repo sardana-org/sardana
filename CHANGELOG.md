@@ -58,6 +58,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 - `getElementByAxis` and `getElementByName` of Controller Taurus extension
   class (#872)
 - `GScan` intervals estimation (#772)
+- `meshct` intervals estimation (#768)
 - Documentation on how to install and use Sardana from Git clone (#751)
 - Documentation (Sphinx) build warnings (#859, #179, #219, #393)
 
