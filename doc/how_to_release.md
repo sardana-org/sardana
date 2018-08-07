@@ -56,6 +56,7 @@ tested.
    python setup.py sdist bdist_wheel
    twine upload dist/*
    ```
+10. Complete GitHub release (upload artifacts, edit text)
 
 ## Manual test checklist
 
