@@ -788,6 +788,13 @@ class GScan(Logger):
     MAX_ITER = 100000
 
     def _estimate(self, max_iter=None):
+        """Estimate time and intervals of a scan.
+
+        Time estimation considers motion time (including going to the start
+        position) and acquisition time.
+
+        Interval estimation is a number of scan trajectory intervals.
+        """
         with_time = hasattr(self.macro, "getTimeEstimation")
         with_interval = hasattr(self.macro, "getIntervalEstimation")
         if with_time and with_interval:
