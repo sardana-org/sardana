@@ -934,7 +934,7 @@ def prepare_logstash(args):
             port = 12345
         try:
             props = db.get_device_property(dev_name, "LogstashCacheDbPath")
-            cache_db_path = int(props["LogstashCacheDbPath"][0])
+            cache_db_path = props["LogstashCacheDbPath"][0]
         except IndexError:
             if class_name == "Pool":
                 cache_db_path = "/tmp/sardana-pool-logstash-cache.db"
