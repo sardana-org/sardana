@@ -857,12 +857,10 @@ class repeat(Hookable, Macro):
         if len(self.macro_name_params) > 0:
             for macro_cmd in self.macro_name_params:
                 self.execMacro(macro_cmd)
-        else:
-            for bodyHook in self.bodyHooks:
-                bodyHook()
+        for bodyHook in self.bodyHooks:
+            bodyHook()
 
     def run(self, nr, macro_name_params):
-        self.output(macro_name_params)
         if nr < 0:
             while True:
                 self.__loop()
