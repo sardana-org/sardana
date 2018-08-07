@@ -41,6 +41,36 @@ from taurus.qt.qtgui.util.ui import UILoadable
 #from taurus.qt.qtcore.tango.sardana.model import SardanaElementPlainModel
 
 
+def _to_fqdn(name, logger=None):
+    """Helper to convert name into a FQDN URI reference. Works for devices
+    and attributes.
+    Prior to sardana 2.4.0 Pool element references were using not unique full
+    names e.g. pc255:10000/motor/motctrl20/1. This helper converts them into
+    FQDN URI references e.g. tango://pc255.cells.es:10000/motor/motctrl20/1.
+    It is similarly solved for attribute names.
+    """
+    full_name = name
+    # try to use Taurus 4 to retrieve FQDN URI name
+    try:
+        from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
+        try:
+            full_name, _, _ = TangoDeviceNameValidator().getNames(name)
+        # it is not a device try as an attribute
+        except Exception:
+            from taurus.core.tango.tangovalidator import \
+                TangoAttributeNameValidator
+            full_name, _, _ = TangoAttributeNameValidator().getNames(name)
+    # if Taurus3 in use just continue
+    except ImportError:
+        pass
+    if full_name != name and logger:
+        msg = ("PQDN full name is deprecated in favor of FQDN full name. "
+               "Re-apply pre-scan snapshot configuration in order to "
+               "upgrade.")
+        logger.warning(msg)
+    return full_name
+
+
 class SardanaAcquirableProxyModel(SardanaBaseProxyModel):
     #    ALLOWED_TYPES = 'Acquirable'
     #
@@ -254,11 +284,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         # TODO: For Taurus 4 compatibility
         psl_fullname = []
         for name, display in psl:
-            is_full_tango_name = name.startswith('tango://')
-            if not is_full_tango_name:
-                psl_fullname.append(("tango://%s" % name, display))
-            else:
-                psl_fullname.append((name, display))
+            name = _to_fqdn(name, self)
+            psl_fullname.append((name, display))
 
         self.ui.preScanList.clear()
         self.ui.preScanList.addModels(psl_fullname)
