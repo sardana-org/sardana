@@ -826,7 +826,8 @@ class repeat(Hookable, Macro):
     """This macro executes as many repetitions of a set of macros as
     specified by nr parameter. The macros to be repeated can be
     given as parameters or as body hooks.
-    If the macros are given as parameters the body hooks are ignored.
+    If both are given first will be executed the ones given as
+    parameters and then the ones given as body hooks.
     If nr has negative value, repetitions will be executed until you
     stop repeat macro.
 
