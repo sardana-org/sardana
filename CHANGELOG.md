@@ -12,8 +12,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Avoid desynchronization of motion and acquisition in time synchronized
   continuous scans by checking whether the motor controller accepts the scan
   velocity and in case it rounds it up, reduce the scan velocity (#757)
-- `repeat` macro for executing n-times the hooks attached in its body (#310,
-  #745)
+- `repeat` macro for executing n-times a set of macros passed as parameters
+  or attached as hooks (#310, #745, #892)
 - `pre-acq` and `post-acq` hooks to the `ct` macro (#808)
 - `pre-acq` and `post-acq` hooks to the continuous scans: `ascanct` family
   macros (#780)
