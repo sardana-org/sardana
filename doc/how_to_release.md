@@ -34,7 +34,9 @@ tested.
     3. The version numbers used in the man pages of the Sardana scripts are
        bumped (you may use `taurus/doc/makeman` script executing it from the
        doc directory e.g. `sardana/doc`) and committing the changes.
-    4. Create a PR to merge the `release-XXX` against the **`master`** branch
+    4. In the code use version number instead of milestone in deprecation
+       warnings (if any) e.g. replace *Jul18* with *2.5.0*.
+    5. Create a PR to merge the `release-XXX` against the **`master`** branch
        of the sardana-org repo
 5. Request reviews in the PR from at least one integrator from each
    participating institute. The master branch is protected, so the reviews need
