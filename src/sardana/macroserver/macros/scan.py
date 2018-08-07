@@ -1713,6 +1713,20 @@ class meshct(Macro, Hookable):
         self.integ_time = integ_time
         self.bidirectional_mode = bidirectional
 
+        # Prepare the waypoints
+        m1start, m2start = self.starts
+        m1end, m2end = self.finals
+        points1, points2 = self.nr_intervs + 1
+
+        m2_space = numpy.linspace(m2start, m2end, points2)
+        self.waypoints = []
+        self.starts_points = []
+        for i, m2pos in enumerate(m2_space):
+            self.starts_points.append(numpy.array([m1start, m2pos], dtype='d'))
+            self.waypoints.append(numpy.array([m1end, m2pos], dtype='d'))
+            if self.bidirectional_mode:
+                m1start, m1end = m1end, m1start
+
         self.name = opts.get('name', 'meshct')
 
         moveables = []
@@ -1761,23 +1775,11 @@ class meshct(Macro, Hookable):
         step["active_time"] = self.nr_points * (self.integ_time +
                                                 self.latency_time)
 
-        m1start, m2start = self.starts
-        m1end, m2end = self.finals
-        points1, points2 = self.nr_intervs + 1
-
-        m2_space = numpy.linspace(m2start, m2end, points2)
-        self.waypoints = []
-        starts_points = []
-        for i, m2pos in enumerate(m2_space):
-            starts_points.append(numpy.array([m1start, m2pos], dtype='d'))
-            self.waypoints.append(numpy.array([m1end, m2pos], dtype='d'))
-            if self.bidirectional_mode:
-                m1start, m1end = m1end, m1start
-
+        points1, _ = self.nr_intervs + 1
         for i, waypoint in enumerate(self.waypoints):
             self.point_id = points1 * i
             step["waypoint_id"] = i
-            self.starts = starts_points[i]
+            self.starts = self.starts_points[i]
             self.finals = waypoint
             step["positions"] = []
             step["start_positions"] = []
