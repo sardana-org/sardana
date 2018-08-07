@@ -63,6 +63,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Changed
 - Change epoch from float to formatted date & time in Spec recorder (#766)
 - Documentation hosting from ReadTheDocs to Github Pages (build on Travis) (#826)
+- Door and MacroServer references in spock configuration file (profile) to
+  use FQDN URI references (#894, #668)
 
 ### Deprecated
 - `Label` and `Calibration` attributes of discrete pseudo motor in favor
