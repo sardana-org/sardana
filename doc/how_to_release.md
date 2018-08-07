@@ -57,6 +57,8 @@ tested.
    twine upload dist/*
    ```
 10. Complete GitHub release (upload artifacts, edit text)
+11. Create news in www.tango-controls.org
+12. Notify mailing lists (sardana-users@lists.sourceforge.net, sardana-devel@lists.sourceforge.net, info@tango-controls.org)
 
 ## Manual test checklist
 
