@@ -19,7 +19,7 @@ tested.
    because the release-related PRs (which are done against the `release-XXX`
    branch), may need to be also merged to develop.
    Note: the `release-XXX` branch *can* live in the sardana-org repo or on a
-   personal fork (in which case you should do step 4.iv **now** to allow other
+   personal fork (in which case you should do step 4.v **now** to allow other
    integrators to push directly to it).
 4. Create the release branch if it was not done already in the previous step
    and:
