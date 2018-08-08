@@ -72,7 +72,7 @@ This is a check-list of manual tests. It is just orientative. Expand it
 at will. This list assumes a clean environment with all Sardana dependencies
 already installed and access to a Tango system with the TangoTest DS running.
 
-Hint: this list can be used as a template to be copy-pasted on a release PR
+Hint: this list can be used as a template to be copy-pasted on a release manual test issues
 
 ### Installation
 - [ ] Install Sardana from the tar.gz : `pip install <tarball_artifact_URL>`
