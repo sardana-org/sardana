@@ -53,6 +53,9 @@ This file follows the formats and conventions from [keepachangelog.com]
   not collide with macros e.g. repeat, where, etc. (#893)
 - Make SPEC_FileRecorder use LF instead of CRLF even on windows (#750)
 - Appending of hooks from sequence XML (#747)
+- Avoid problems with MacroServer attributes (Environment and Elements) in
+  taurus extesnions by using newly introduced (in taurus 4.4.0) TangoSerial
+  serialization mode (#897)
 - Split of `PoolPath`, `MacroPath` and `RecorderPath` with OS separator (#762)
 - `lsgh` list hooks multiple times to reflect the configuration (#774)
 - Avoid errors if selected trajectory in HKL controller doesnot exists (#752)
