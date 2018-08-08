@@ -56,6 +56,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Avoid problems with MacroServer attributes (Environment and Elements) in
   taurus extesnions by using newly introduced (in taurus 4.4.0) TangoSerial
   serialization mode (#897)
+- Pseudo counters in continuous acquisition (#899)
 - Split of `PoolPath`, `MacroPath` and `RecorderPath` with OS separator (#762)
 - `lsgh` list hooks multiple times to reflect the configuration (#774)
 - Avoid errors if selected trajectory in HKL controller doesnot exists (#752)
