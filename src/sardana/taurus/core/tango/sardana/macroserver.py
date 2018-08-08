@@ -299,7 +299,9 @@ class BaseDoor(MacroServerDevice):
     log_streams = (Error, Warning, Info, Output, Debug, Result)
 
     # maximum execution time without user interruption
-    InteractiveTimeout = 0.1
+    # this also means a time window within door state events must arrive
+    # 0.1 s was not enough on Windows (see sardana-ord/sardana#725)
+    InteractiveTimeout = .3
 
     def __init__(self, name, **kw):
         self._log_attr = CaselessDict()
