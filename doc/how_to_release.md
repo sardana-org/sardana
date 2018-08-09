@@ -92,30 +92,31 @@ Hint: this list can be used as a template to be copy-pasted on a release manual 
   to point to the demo2 door e.g. `UNITTEST_DOOR_NAME = "door/demo2/1"`
 - [ ] Run testsuite. In another console do `sardanatestsuite`
 
-### Test Sardana using Spock
+### Test Sardana using Spock and expconf
 - [ ] Test interactive macros from spock e.g. `ask_for_moveable`, `ask_peak`
 - [ ] Execute `umvr` macro and verify that the position updates arrives.
-- [ ] Test `expconf`:
-  1. Configure scan files using expconf set ScanDir to: `/tmp/` and
-     ScanFile to: `demo1.h5, demo1.dat`.
-  2. Configure online plot to show counters: On expconf GUI select for all the counter channels, Plot Type 'Spectrum' and Plot Axes '<mov>'
-  3. Configure snapshot group: with a motor and the `sys/tg_test/1/ampli`
-     attribute.
-  4. Add the `sys/tg_test/1/double_scalar` attribute to the measurement
-     group.
-  5. Open online plot.
-  6. Set JsonRecorder to true. In spock do `senv JsonRecorder True`
-  7. Run step scan and verify if:
-     - Records appear in spock output.
-     - Records were stored in scan files.
-     - Records were plotted on the online plot
+- [ ] In expconf configure scan files by setting ScanDir to:
+  * `/tmp/` on Linux
+  * `C:\Users\IEUser\tmp` on Windows
+  and ScanFile to: `demo1.h5, demo1.dat`.
+- [ ] Configure online plot to show counters: On expconf GUI select for all
+  the counter channels, Plot Type 'Spectrum' and Plot Axes '<mov>'
+- [ ] Configure snapshot group: with a motor and the `sys/tg_test/1/ampli`
+  attribute.
+- [ ] Add the `sys/tg_test/1/double_scalar` attribute to the measurement
+  group.
+- [ ] Open online plot.
+- [ ] Set JsonRecorder to true. In spock do `senv JsonRecorder True`
+- [ ] Run step scan
+- [ ] Verify that records appear in spock output.
+- [ ] Verify that records were stored in scan files.
+- [ ] Verify that records were plotted on the online plot
 - [ ] Run `showscan` and access to the last scan data.
-- [ ] Test `edmac`:
-  1. Modify existing macro: `ask_peak` and run it to verify that the change
-     was applied.
-  2. Create new macro in a new macro library:
-     `edmac my_macro <path_to_sardana_installation_dir>/macroserver/macros/examples/my_macros.py
-     and run it.
+- [ ] With `edmac` modify existing macro: `ask_peak` and run it to verify that the change
+  was applied.
+- [ ] With `edmac` create a new macro in a new macro library:
+  `edmac my_macro <path_to_sardana_installation_dir>/macroserver/macros/examples/my_macros.py`
+  and run it.
 
 ### Test Sardana with TaurusGUI
 
