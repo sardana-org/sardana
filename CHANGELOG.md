@@ -65,6 +65,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 - `meshct` intervals estimation (#768)
 - Documentation on how to install and use Sardana from Git clone (#751)
 - Documentation (Sphinx) build warnings (#859, #179, #219, #393)
+- MacroServer doesn't need Qt bindings to start anymore (#907)
 
 ### Changed
 - Change epoch from float to formatted date & time in Spec recorder (#766)
