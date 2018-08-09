@@ -41,7 +41,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Pre-scan snapshot (#753)
 - Avoid loading configuration to disabled controllers in measurement group
   acquisition (#758)
-- Spock returning prompt too early not allowing to stop macros (#717, #725).
+- Spock returning prompt too early not allowing to stop macros on Windows
+  (#717, #725, #905)
   Requires Taurus 4.4 (taurus-org/taurus#738).
 - Validation of starts and finals for a2scanct, a3scanct, meshct, ... (#734)
 - `defelem` macro when using default axis number (#568, #609)
