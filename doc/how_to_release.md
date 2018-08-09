@@ -75,7 +75,10 @@ already installed and access to a Tango system with the TangoTest DS running.
 Hint: this list can be used as a template to be copy-pasted on a release manual test issues
 
 ### Installation
-- [ ] Install Sardana from the tar.gz : `pip install <tarball_artifact_URL>`
+- [ ] Install Sardana (on Linux from the tar.gz : `pip install <tarball_artifact_URL>`
+  and on Windows from MSI)
+  **Note:** On openSuse 11.1 there are problems with pip, try `python setup
+  .py install`
 
 ### Create testing environment and run testsuite
 - [ ] Start Pool demo2. In a console do `Pool demo2`.
@@ -84,6 +87,8 @@ Hint: this list can be used as a template to be copy-pasted on a release manual 
 - [ ] Set MacroServer's MacroPath to point to the macro examples.
   In another IPython console do:
   `PyTango.DeviceProxy('macroserver/demo2/1').put_property({'MacroPath':'<path_to_sardana_installation_dir>/macroserver/macros/examples'})`
+  **Note:** Remember to use OS path separator e.g. '/' on Linux and '\' on 
+  Windows
 - [ ] Restart MacroServer e.g. Ctrl+C in the MacroServer's console and
   start it again.
 - [ ] Create spock profile demo2. In another console do `spock --profile=demo2`
@@ -91,16 +96,17 @@ Hint: this list can be used as a template to be copy-pasted on a release manual 
 - [ ] Edit `<path_to_sardana_installation_dir>/sardanacustomsettings.py`
   to point to the demo2 door e.g. `UNITTEST_DOOR_NAME = "door/demo2/1"`
 - [ ] Run testsuite. In another console do `sardanatestsuite`
+  **Note:** On openSuse 11.1 and Windows there are known problems with 
+  testsuite. Check previous release comments.
 
 ### Test Sardana using Spock and expconf
 - [ ] Test interactive macros from spock e.g. `ask_for_moveable`, `ask_peak`
+  **Note**: On Windows there are known bugs. 
 - [ ] Execute `umvr` macro and verify that the position updates arrives.
-- [ ] In expconf configure scan files by setting ScanDir to:
-  * `/tmp/` on Linux
-  * `C:\Users\IEUser\tmp` on Windows
-  and ScanFile to: `demo1.h5, demo1.dat`.
+- [ ] In expconf configure scan files by setting ScanDir to: `/tmp/` on Linux
+  `C:\Users\<username>\tmp` on Windows and ScanFile to: `demo1.h5, demo1.dat`.
 - [ ] Configure online plot to show counters: On expconf GUI select for all
-  the counter channels, Plot Type 'Spectrum' and Plot Axes '<mov>'
+  the counter channels, Plot Type 'Spectrum' and Plot Axes '\<mov\>'
 - [ ] Configure snapshot group: with a motor and the `sys/tg_test/1/ampli`
   attribute.
 - [ ] Add the `sys/tg_test/1/double_scalar` attribute to the measurement
@@ -117,6 +123,8 @@ Hint: this list can be used as a template to be copy-pasted on a release manual 
 - [ ] With `edmac` create a new macro in a new macro library:
   `edmac my_macro <path_to_sardana_installation_dir>/macroserver/macros/examples/my_macros.py`
   and run it.
+  **Note:** Remember to use OS path separator e.g. '/' on Linux and '\' on 
+  Windows
 
 ### Test Sardana with TaurusGUI
 
@@ -152,6 +160,7 @@ Hint: this list can be used as a template to be copy-pasted on a release manual 
 - [ ] Run the loaded sequence
 
 #### sardanaeditor
+**Note:** There are known bugs on CentOS and Windows
 - [ ] Open sardanaeditor with macroserver name as argument.
 - [ ] Browse macro libraries and open an existing macro.
 - [ ] Edit existing macro and save & apply chaneges.
