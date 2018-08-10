@@ -39,7 +39,7 @@ from sardana.pool.controller import Type, Access, Description
 CALIBRATION = 'Calibration'
 LABELS = 'Labels'
 MSG_API = 'Configuration attribute is in use. Labels and Calibration ' \
-          'attributes are deprecated since version Jul18'
+          'attributes are deprecated since version 2.5.0'
 
 
 class DiscretePseudoMotorController(PseudoMotorController):
@@ -59,7 +59,7 @@ class DiscretePseudoMotorController(PseudoMotorController):
                        {Type: str,
                         Description: 'Flatten list of a list of triples and '
                                      '[min,cal,max]. Deprecated since '
-                                     'version Jul18.',
+                                     'version 2.5.0.',
                         Access: DataAccess.ReadWrite,
                         'fget': 'get%s' % CALIBRATION,
                         'fset': 'set%s' % CALIBRATION},
@@ -67,7 +67,7 @@ class DiscretePseudoMotorController(PseudoMotorController):
                        {Type: str,
                         Description: 'String list with the meaning of each '
                                      'discrete position. Deprecated since '
-                                     'version Jul18.',
+                                     'version 2.5.0.',
                         Access: DataAccess.ReadWrite,
                         'fget': 'get%s' % LABELS,
                         'fset': 'set%s' % LABELS},
@@ -182,7 +182,7 @@ class DiscretePseudoMotorController(PseudoMotorController):
             raise ValueError(MSG_API)
 
         self._log.warning("Labels attribute is deprecated since version "
-                          "Jul18. Use Configuration attribute instead.")
+                          "2.5.0. Use Configuration attribute instead.")
 
         # hackish until we support DevVarDoubleArray in extra attrs
         labels = self._labels
@@ -198,7 +198,7 @@ class DiscretePseudoMotorController(PseudoMotorController):
             raise ValueError(MSG_API)
 
         self._log.warning("Labels attribute is deprecated since version "
-                          "Jul18. Use Configuration attribute instead.")
+                          "2.5.0. Use Configuration attribute instead.")
 
         # hackish until we support DevVarStringArray in extra attrs
         labels = []
@@ -218,7 +218,7 @@ class DiscretePseudoMotorController(PseudoMotorController):
         if self._configuration is not None:
             raise ValueError(MSG_API)
         self._log.warning("Calibration attribute is deprecated since version "
-                          "Jul18. Use Configuration attribute instead.")
+                          "2.5.0. Use Configuration attribute instead.")
 
         return json.dumps(self._calibration)
 
@@ -227,7 +227,7 @@ class DiscretePseudoMotorController(PseudoMotorController):
         if self._configuration is not None:
             raise ValueError(MSG_API)
         self._log.warning("Calibration attribute is deprecated since version "
-                          "Jul18. Use Configuration attribute instead.")
+                          "2.5.0. Use Configuration attribute instead.")
 
         try:
             self._calibration = json.loads(value)
