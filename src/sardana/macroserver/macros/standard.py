@@ -23,9 +23,9 @@
 
 """This is the standard macro module"""
 
-__all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "set_lim", "set_lm",
-           "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm", "tw",
-           "logmacro"]
+__all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "repeat", "set_lim",
+           "set_lm", "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm",
+           "tw", "logmacro"]
 
 __docformat__ = 'restructuredtext'
 
@@ -38,7 +38,7 @@ import PyTango
 from PyTango import DevState
 
 from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, \
-    ViewOption, iMacro
+    ViewOption, iMacro, Hookable
 from sardana.macroserver.msexception import StopException
 from sardana.macroserver.scan.scandata import Record
 ##########################################################################
@@ -642,11 +642,11 @@ class tw(iMacro):
 ##########################################################################
 
 
-class ct(Macro):
+class ct(Macro, Hookable):
     """Count for the specified time on the active measurement group"""
 
     env = ('ActiveMntGrp',)
-
+    hints = {'allowsHooks': ('pre-acq', 'post-acq')}
     param_def = [
         ['integ_time', Type.Float, 1.0, 'Integration time']
     ]
@@ -660,13 +660,22 @@ class ct(Macro):
         if self.mnt_grp is None:
             self.error('ActiveMntGrp is not defined or has invalid value')
             return
-
+        # integration time has to be accessible from with in the hooks
+        # so declare it also instance attribute
+        self.integ_time = integ_time
         self.debug("Counting for %s sec", integ_time)
         self.outputDate()
         self.output('')
         self.flushOutput()
 
+        for preAcqHook in self.getHooks('pre-acq'):
+            preAcqHook()
+
         state, data = self.mnt_grp.count(integ_time)
+
+        for postAcqHook in self.getHooks('post-acq'):
+            postAcqHook()
+
         names, counts = [], []
         for ch_info in self.mnt_grp.getChannelsEnabledInfo():
             names.append('  %s' % ch_info.label)
@@ -812,3 +821,52 @@ class logmacro(Macro):
             self.setEnv('LogMacro', True)
         else:
             self.setEnv('LogMacro', False)
+
+class repeat(Hookable, Macro):
+    """This macro executes as many repetitions of a set of macros as
+    specified by nr parameter. The macros to be repeated can be
+    given as parameters or as body hooks.
+    If both are given first will be executed the ones given as
+    parameters and then the ones given as body hooks.
+    If nr has negative value, repetitions will be executed until you
+    stop repeat macro.
+
+    .. note::
+        The repeat macro has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the macro) may occur if
+        deemed necessary by the core developers."""
+
+    hints = {'allowsHooks': ('body',)}
+
+    param_def = [
+        ['nr', Type.Integer, None, 'Nr of iterations'],
+        ['macro_name_params', [
+                ['token', Type.String,
+                 None, 'Macro name and parameters (if any)'],
+                {'min': 0}
+            ],
+            None, "List with macro name and parameters (if any)"]
+    ]
+
+    def prepare(self, nr, macro_name_params):
+        self.bodyHooks = self.getHooks("body")
+        self.macro_name_params = macro_name_params
+
+    def __loop(self):
+        self.checkPoint()
+        if len(self.macro_name_params) > 0:
+            for macro_cmd in self.macro_name_params:
+                self.execMacro(macro_cmd)
+        for bodyHook in self.bodyHooks:
+            bodyHook()
+
+    def run(self, nr, macro_name_params):
+        if nr < 0:
+            while True:
+                self.__loop()
+        else:
+            for i in range(nr):
+                self.__loop()
+                progress = ((i + 1) / float(nr)) * 100
+                yield progress

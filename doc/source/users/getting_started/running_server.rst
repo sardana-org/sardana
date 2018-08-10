@@ -89,6 +89,10 @@ You should get an output like this::
     Please select pool to connect to (return to finish): 
     DServer/MacroServer/lab-01 has no event channel defined in the database - creating it
 
+.. seealso::
+
+   For configuring server to listen for CORBA requests on a given port
+   see :ref:`sardana-configuration-server` chapter.
 
 .. _numpy: http://numpy.scipy.org/
 .. _PLY: http://www.dabeaz.com/ply/

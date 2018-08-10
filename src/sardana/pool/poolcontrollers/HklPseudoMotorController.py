@@ -479,6 +479,8 @@ class DiffracBasis(PseudoMotorController):
         self.getWavelength()
 
         solutions = self._solutions(values, curr_physical_pos)
+        if self.selected_trajectory > len(solutions.items()):
+            self.selected_trajectory = len(solutions.items()) - 1
         for i, item in enumerate(solutions.items()):
             if i == self.selected_trajectory:
                 angles = item.geometry_get().axis_values_get(USER)
@@ -988,7 +990,7 @@ class DiffracBasis(PseudoMotorController):
         """Load crystal information from a file. Ignore wavelength information.
 
         :param value: complete path of the file with the crystal to set
-        :type value: string
+        :type value: :obj:`str`
         """
         # Read the file
         with open(value, 'r') as crystal_file:

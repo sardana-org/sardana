@@ -23,7 +23,6 @@
 ##
 ##############################################################################
 
-import nxs
 import math
 import os
 from taurus.external import unittest
@@ -65,6 +64,18 @@ class ScanDataTestCase(unittest.TestCase):
     def setUp(self):
         """SetUp
         """
+        try:
+            import nxs
+            self.nxs = nxs
+        except ImportError:
+            self.skipTest("nxs module is not available")
+        # In real world addData are always called sequentially.
+        # This test was developed assuming that these may arrive in
+        # parallel and that addData would protect the critical section, this
+        # is no more the case.
+        self.skipTest("this test wrongly assumes that data may arrive in "
+                      "parallel")
+
         unittest.TestCase.setUp(self)
         self.data_handler = DataHandler()
         self.file_name = "/tmp/data_nxs.hdf5"
@@ -112,7 +123,7 @@ class ScanDataTestCase(unittest.TestCase):
             s.join()
         self.scan_data.end()
         # Test the generated nxs file
-        f = nxs.load(self.file_name)
+        f = self.nxs.load(self.file_name)
         m = f['entry1']['measurement']
         for chn in data.keys():
             chn_data = m[chn].nxdata
@@ -139,7 +150,7 @@ class ScanDataTestCase(unittest.TestCase):
             s.join()
         self.scan_data.end()
         # Test the generated nxs file
-        f = nxs.load(self.file_name)
+        f = self.nxs.load(self.file_name)
         m = f['entry1']['measurement']
         for chn in data.keys():
             chn_data = m[chn].nxdata

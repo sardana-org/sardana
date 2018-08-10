@@ -187,16 +187,17 @@ class Hookable(Logger):
         return self._getHookHintsDict().keys()
 
     def getHooks(self, hint=None):
-        '''This will return a list of hooks that have the given hint. Two reserved
+        """This will return a list of hooks that have the given hint. Two reserved
         hints are always valid:
-          - "_ALL_": which contains all the hooks
-          - "_NOHINTS_": which contains the hooks that don't provide any hint
+
+        - "_ALL_": which contains all the hooks
+        - "_NOHINTS_": which contains the hooks that don't provide any hint
 
         :param hint: (str) a hint. If None is passed, it returns a list of
                      (hook,hints) tuples
 
         :return: (list) an ordered list of hooks that have the given hint
-        '''
+        """
         if hint is None:
             return self._getHooks()
         else:
@@ -1250,7 +1251,7 @@ class Macro(Logger):
             return macro
 
         :param name: name of the macro to be prepared
-        :type name: str
+        :type name: :obj:`str`
         :param args: list of parameter objects
         :param kwargs: list of keyword parameters
 
@@ -1369,7 +1370,7 @@ class Macro(Logger):
     def outputBlock(self, line):
         """**Macro API**. Sends an line tagged as a block to the output
 
-        :param str line: line to be sent"""
+        :param :obj:`str` line: line to be sent"""
         if isinstance(line, (str, unicode)):
             o = line
         elif operator.isSequenceType(line):
@@ -1414,7 +1415,8 @@ class Macro(Logger):
         executed the stop method of the given object will be called.
 
         :param obj_list: list of objects to be controlled
-        :type obj_list: sequence"""
+        :type obj_list: :obj:`collections.Sequence`
+        """
         for o in obj_list:
             self.addObj(o)
 
@@ -1569,7 +1571,7 @@ class Macro(Logger):
 
         :param lib_name:
             library name
-        :type lib_name: str
+        :type lib_name: :obj:`str`
         :return:
             a macro library :class:`~sardana.macroserver.msmetamacro.MacroLibrary`
         :rtype: :class:`~sardana.macroserver.msmetamacro.MacroLibrary`"""
@@ -1761,15 +1763,15 @@ class Macro(Logger):
 
         :param key:
             environment variable name [default: None, meaning all environment]
-        :type key: str
+        :type key: :obj:`str`
         :param door_name:
             local context for a given door [default: None, meaning no door
             context is used]
-        :type door_name: str
+        :type door_name: :obj:`str`
         :param macro_name:
             local context for a given macro [default: None, meaning no macro
             context is used]
-        :type macro_name: str
+        :type macro_name: :obj:`str`
 
         :return: a :obj:`dict` containing the environment
         :rtype: :obj:`dict`"""
@@ -2034,7 +2036,7 @@ class Macro(Logger):
         """**Unofficial Macro API**.
         Sends a line tagged as a block to the output
 
-        :param str line: line to be sent"""
+        :param :obj:`str` line: line to be sent"""
         if isinstance(line, (str, unicode)):
             o = line
         elif operator.isSequenceType(line):

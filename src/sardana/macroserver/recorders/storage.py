@@ -33,6 +33,7 @@ import os
 import time
 import itertools
 import re
+import io
 
 import numpy
 
@@ -311,7 +312,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
 
         # datetime object
         start_time = env['starttime']
-        epoch = time.mktime(start_time.timetuple())
+        epoch = time.strftime("%a %b %d %H:%M:%S %Y", start_time.timetuple())
         serialno = env['serialno']
 
         # store names for performance reason
@@ -386,8 +387,8 @@ class SPEC_FileRecorder(BaseFileRecorder):
                 header += '#@DET_%s %s\n' % (idx, oned_label)
         header += '#L %(labels)s\n'
 
-        self.fd = open(self.filename, 'a')
-        self.fd.write(header % data)
+        self.fd = io.open(self.filename, 'a', newline='\n')
+        self.fd.write(unicode(header % data))
         self.fd.flush()
         os.fsync(self.fd.fileno())
 
@@ -466,7 +467,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
                 str_data += '%s' % data
             outstr = '@A %s' % str_data
             outstr += '\n'
-            fd.write(outstr)
+            fd.write(unicode(outstr))
 
         for c in names:
             data = record.data.get(c)
@@ -476,7 +477,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
         outstr = ' '.join(d)
         outstr += '\n'
 
-        fd.write(outstr)
+        fd.write(unicode(outstr))
 
         fd.flush()
         os.fsync(self.fd.fileno())
@@ -487,7 +488,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
 
         env = recordlist.getEnviron()
         end_time = env['endtime'].ctime()
-        self.fd.write("#C Acquisition ended at %s\n" % end_time)
+        self.fd.write(unicode("#C Acquisition ended at %s\n" % end_time))
         self.fd.flush()
         self.fd.close()
 
@@ -521,7 +522,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
                 self.info(
                     'Custom data "%s" will not be stored in SPEC file. Reason: cannot open file', name)
                 return
-        self.fd.write('#C %s : %s\n' % (name, v))
+        self.fd.write(unicode('#C %s : %s\n' % (name, v)))
         self.fd.flush()
         if fileWasClosed:
             self.fd.close()  # leave the file descriptor as found

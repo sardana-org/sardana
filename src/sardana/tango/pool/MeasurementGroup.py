@@ -72,8 +72,9 @@ class MeasurementGroup(PoolGroupDevice):
     @DebugIt()
     def init_device(self):
         PoolGroupDevice.init_device(self)
-
-        detect_evts = ()  # state and status are already set by the super class
+        # state and status are already set by the super class
+        detect_evts = "latencytime", "moveable", "synchronization", \
+                      "softwaresynchronizerinitialdomain"
         non_detect_evts = "configuration", "integrationtime", "monitorcount", \
                           "acquisitionmode", "elementlist", "repetitions"
         self.set_change_events(detect_evts, non_detect_evts)
@@ -90,15 +91,17 @@ class MeasurementGroup(PoolGroupDevice):
             name = self.alias or full_name
             self.measurement_group = mg = \
                 self.pool.create_measurement_group(name=name,
-                                                   full_name=full_name, id=self.Id,
+                                                   full_name=full_name,
+                                                   id=self.Id,
                                                    user_elements=self.Elements)
         mg.add_listener(self.on_measurement_group_changed)
 
         # force a state read to initialize the state attribute
-        #state = self.measurement_group.state
+        # state = self.measurement_group.state
         self.set_state(DevState.ON)
 
-    def on_measurement_group_changed(self, event_source, event_type, event_value):
+    def on_measurement_group_changed(self, event_source, event_type,
+                                     event_value):
         try:
             self._on_measurement_group_changed(
                 event_source, event_type, event_value)
@@ -109,7 +112,8 @@ class MeasurementGroup(PoolGroupDevice):
                        exception_str(*exc_info[:2]))
             self.debug("Details", exc_info=exc_info)
 
-    def _on_measurement_group_changed(self, event_source, event_type, event_value):
+    def _on_measurement_group_changed(self, event_source, event_type,
+                                      event_value):
         # during server startup and shutdown avoid processing element
         # creation events
         if SardanaServer.server_state != State.Running:
@@ -168,7 +172,7 @@ class MeasurementGroup(PoolGroupDevice):
 
     def always_executed_hook(self):
         pass
-        #state = to_tango_state(self.motor_group.get_state(cache=False))
+        # state = to_tango_state(self.motor_group.get_state(cache=False))
 
     def read_attr_hardware(self, data):
         pass
@@ -252,6 +256,19 @@ class MeasurementGroup(PoolGroupDevice):
         latency_time = self.measurement_group.latency_time
         attr.set_value(latency_time)
 
+    def read_SoftwareSynchronizerInitialDomain(self, attr):
+        domain = self.measurement_group.sw_synch_initial_domain
+        d = SynchDomain(domain).name
+        attr.set_value(d)
+
+    def write_SoftwareSynchronizerInitialDomain(self, attr):
+        data = attr.get_write_value()
+        try:
+            domain = SynchDomain[data]
+        except KeyError:
+            raise Exception("Invalid domain (can be either Position or Time)")
+        self.measurement_group.sw_synch_initial_domain = domain
+
     def Start(self):
         try:
             self.wait_for_operation()
@@ -313,6 +330,11 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
                              'Display level': DispLevel.EXPERT}],
         'LatencyTime': [[DevDouble, SCALAR, READ],
                         {'Display level': DispLevel.EXPERT}],
+        'SoftwareSynchronizerInitialDomain': [[DevString, SCALAR, READ_WRITE],
+                                              {'Memorized': "true",
+                                               'Display level':
+                                               DispLevel.OPERATOR}],
+
     }
     attr_list.update(PoolGroupDeviceClass.attr_list)
 
