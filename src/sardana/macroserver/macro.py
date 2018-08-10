@@ -343,16 +343,16 @@ def mAPI(fn):
     @wraps(fn)
     def new_fn(*args, **kwargs):
         self = args[0]
-        if self.executor._stopped:
+        if not self.isProcessingStop():
             is_macro_th = self._macro_thread == threading.current_thread()
-            if not self.isProcessingStop():
+            if self._shouldRaiseStopException():
                 if is_macro_th:
                     self.setProcessingStop(True)
                 self.executor._waitStopDone()
                 raise StopException("stopped before calling %s" % fn.__name__)
         ret = fn(*args, **kwargs)
-        if self.executor._stopped:
-            if not self.isProcessingStop():
+        if not self.isProcessingStop():
+            if self._shouldRaiseStopException():
                 if is_macro_th:
                     self.setProcessingStop(True)
                 self.executor._waitStopDone()
@@ -2279,6 +2279,9 @@ class Macro(Logger):
         :return: the macro status
         :rtype: :obj:`dict`"""
         return self._macro_status
+
+    def _shouldRaiseStopException(self):
+        return self.isStopped() and not self.isProcessingStop()
 
     def _reserveObjs(self, args):
         """**Internal method**. Used to reserve a set of objects for this
