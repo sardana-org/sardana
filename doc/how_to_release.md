@@ -63,7 +63,7 @@ tested.
        * Ilustration: sardana or official logo (use png)
        * Summary: short summary of the news (do not include the whole changelog here..)
        * Categories: Release
-    2. After submitting click on Modify this content text of the area <<Content>> and provide detailes of the release e.g. changelog.
+    2. After submitting click on Modify this content text of the area \<\<Content\>\> and provide detailes of the release e.g. changelog.
 12. Notify mailing lists (sardana-users@lists.sourceforge.net, sardana-devel@lists.sourceforge.net, info@tango-controls.org)
 
 ## Manual test checklist
