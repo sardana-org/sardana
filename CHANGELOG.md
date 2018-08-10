@@ -5,7 +5,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
-## [2.5.0] 2018-08-XX
+## [2.5.0] 2018-08-10
 
 ### Added
 - `def_discr_pos`, `udef_discr_pos` and `prdef_discr` macros for configuring
