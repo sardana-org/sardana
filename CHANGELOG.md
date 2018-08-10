@@ -31,8 +31,6 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Information about controller properties in `sar_info` macro (#855, #866)
 
 ### Fixed
-- Stopping of macros with programatic hooks implemented as wrapper macro
-  methods with macro API calls (#810, #804)
 - Ensure that value buffer (data) events are handled sequentially so data
   are not wrongly interpreted as lost (#794, #813)
 - Push change events from code for measurement group attributes: moveable,
