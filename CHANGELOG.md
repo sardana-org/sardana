@@ -5,6 +5,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
+### Fixed
+- MacroServer doesn't need Qt bindings to start anymore (#907)
+
 ## [2.5.0] 2018-08-10
 
 ### Added
