@@ -5,6 +5,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
+## [2.5.0] 2018-08-10
+
 ### Added
 - `def_discr_pos`, `udef_discr_pos` and `prdef_discr` macros for configuring
   discrete pseudo motors (#801)
@@ -31,8 +33,6 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Information about controller properties in `sar_info` macro (#855, #866)
 
 ### Fixed
-- Stopping of macros with programatic hooks implemented as wrapper macro
-  methods with macro API calls (#810, #804)
 - Ensure that value buffer (data) events are handled sequentially so data
   are not wrongly interpreted as lost (#794, #813)
 - Push change events from code for measurement group attributes: moveable,
@@ -41,8 +41,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Pre-scan snapshot (#753)
 - Avoid loading configuration to disabled controllers in measurement group
   acquisition (#758)
-- Spock returning prompt too early not allowing to stop macros (#717, #725).
-  Requires Taurus 4.4 (taurus-org/taurus#738).
+- Spock returning prompt too early not allowing to stop macros on Windows
+  (#717, #725, #905)
 - Validation of starts and finals for a2scanct, a3scanct, meshct, ... (#734)
 - `defelem` macro when using default axis number (#568, #609)
 - Boolean macro parameter validation - now works only True, true, 1
@@ -472,7 +472,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.4.0...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.5.0...HEAD
+[2.5.0]: https://github.com/sardana-org/sardana/compare/2.4.0...2.5.0
 [2.4.0]: https://github.com/sardana-org/sardana/compare/2.3.2...2.4.0
 [2.3.2]: https://github.com/sardana-org/sardana/compare/2.3.1...2.3.2
 [2.3.1]: https://github.com/sardana-org/sardana/compare/2.3.0...2.3.1
