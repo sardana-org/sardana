@@ -723,8 +723,8 @@ class PoolController(PoolBaseController):
     def stop_element(self, element):
         """Stops the given element.
 
-        :param element: the list of elements to stop
-        :type element: PoolElement
+        :param element: element to stop
+        :type element: ~sardana.pool.poolelement.PoolElement
         :raises Exception: not able to stop element
         """
 
@@ -809,8 +809,8 @@ class PoolController(PoolBaseController):
     def abort_element(self, element):
         """Aborts the given elements.
 
-        :param element: the list of elements to abort
-        :type element: PoolElement
+        :param element: element to abort
+        :type element: ~sardana.pool.poolelement.PoolElement
         :raises Exception: not able to abort element
         """
 

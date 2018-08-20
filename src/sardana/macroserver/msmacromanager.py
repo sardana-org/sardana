@@ -222,7 +222,7 @@ class MacroManager(MacroServerManager):
         class A != class A)."""
         p = []
         for item in macro_path:
-            p.extend(item.split(":"))
+            p.extend(item.split(os.pathsep))
 
         # filter empty and commented paths
         p = [i for i in p if i and not i.startswith("#")]

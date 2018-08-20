@@ -296,24 +296,21 @@ class FunctionGenerator(EventGenerator, Logger):
                 group[Initial] = initial_param
             # determine active domain in use
             msg = "no initial value in group %d" % i
-            if self.initial_domain is None:
-                if initial_param.has_key(Position):
-                    self.initial_domain_in_use = Position
-                elif initial_param.has_key(Time):
-                    self.initial_domain_in_use = Time
-                else:
-                    raise ValueError(msg)
-            elif initial_param.has_key(self.initial_domain):
+            if self.initial_domain in initial_param:
                 self.initial_domain_in_use = self.initial_domain
+            elif Position in initial_param:
+                self.initial_domain_in_use = Position
+            elif Time in initial_param:
+                self.initial_domain_in_use = Time
             else:
                 raise ValueError(msg)
             # determine passive domain in use
             active_param = group.get(Active)
             msg = "no active value in group %d" % i
             if self.active_domain is None:
-                if active_param.has_key(Time):
+                if Time in active_param:
                     self.active_domain_in_use = Time
-                elif active_param.has_key(Position):
+                elif Position in active_param:
                     self.active_domain_in_use = Position
                 else:
                     raise ValueError(msg)

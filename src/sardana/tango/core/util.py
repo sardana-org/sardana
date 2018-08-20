@@ -652,7 +652,13 @@ def prepare_ORBendPoint(args, tango_args):
     """
     log_messages = []
     server_name = args[0]
-    instance_name = args[1]
+    try:
+        instance_name = args[1]
+    except IndexError:
+        msg = ("Unknown %s instance name. " % server_name
+               + "Skipping ORBendPoint from free property configuration...")
+        log_messages.append(msg, )
+        return log_messages
     env_name = "ORBendPoint"
     if env_name in os.environ:
         return log_messages
@@ -1017,7 +1023,13 @@ def prepare_logstash(args):
     db = Database()
 
     bin_name = args[0]
-    instance_name = args[1]
+    try:
+        instance_name = args[1]
+    except IndexError:
+        msg = ("Unknown %s instance name. " % bin_name
+               + "Skipping logstash configuration...")
+        log_messages.append(msg, )
+        return log_messages
     server_name = bin_name + "/" + instance_name
     if bin_name in ["Pool", "MacroServer"]:
         class_name = bin_name
@@ -1225,13 +1237,6 @@ def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None,
     except KeyboardInterrupt:
         pass
 
-    log_messages.extend(prepare_ORBendPoint(args, tango_args))
-    # Tango versions < 8.0.5 are affected by
-    # https://sourceforge.net/p/tango-cs/bugs/495/
-    tango_version = get_tango_version_number()
-    if tango_version < 80005:
-        log_messages.extend(prepare_environment(args, tango_args, ORB_args))
-
     try:
         log_messages.extend(prepare_server(args, tango_args))
     except AbortException, e:
@@ -1240,6 +1245,13 @@ def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None,
     except KeyboardInterrupt:
         print("\nInterrupted by keyboard")
         return
+
+    log_messages.extend(prepare_ORBendPoint(args, tango_args))
+    # Tango versions < 8.0.5 are affected by
+    # https://sourceforge.net/p/tango-cs/bugs/495/
+    tango_version = get_tango_version_number()
+    if tango_version < 80005:
+        log_messages.extend(prepare_environment(args, tango_args, ORB_args))
 
     log_messages.extend(prepare_logstash(args))
 

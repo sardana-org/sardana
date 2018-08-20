@@ -148,7 +148,7 @@ class ControllerManager(Singleton, Logger):
             problems of type class A != class A)."""
         p = []
         for item in controller_path:
-            p.extend(item.split(":"))
+            p.extend(item.split(os.pathsep))
 
         # filter empty and commented paths
         p = [i for i in p if i and not i.startswith("#")]

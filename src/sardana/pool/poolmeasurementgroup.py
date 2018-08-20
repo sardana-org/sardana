@@ -135,6 +135,9 @@ class PoolMeasurementGroup(PoolGroupElement):
         self._config_dirty = True
         self._moveable = None
         self._moveable_obj = None
+        # by default software synchronizer initial domain is set to Position
+        self._sw_synch_initial_domain = SynchDomain.Position
+
         self._synchronization = []
         # dict with channel and its acquisition synchronization
         # key: PoolBaseChannel; value: AcqSynch
@@ -142,6 +145,8 @@ class PoolMeasurementGroup(PoolGroupElement):
         # dict with controller and its acquisition synchronization
         # key: PoolController; value: AcqSynch
         self._ctrl_to_acq_synch = {}
+        # list of controller with channels enabled.
+        self._enabled_ctrls = []
         kwargs['elem_type'] = ElementType.MeasurementGroup
         PoolGroupElement.__init__(self, **kwargs)
         configuration = kwargs.get("configuration")
@@ -282,6 +287,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         config['controllers'] = controllers = {}
 
         external_user_elements = []
+        self._enabled_ctrls = []
         for index, element in enumerate(user_elements):
             elem_type = element.get_type()
             if elem_type == ElementType.External:
@@ -290,7 +296,8 @@ class PoolMeasurementGroup(PoolGroupElement):
 
             ctrl = element.controller
             ctrl_data = controllers.get(ctrl)
-
+            # include all controller in the enabled list
+            self._enabled_ctrls.append(ctrl)
             if ctrl_data is None:
                 controllers[ctrl] = ctrl_data = {}
                 ctrl_data['channels'] = channels = {}
@@ -328,6 +335,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         return config
 
     def set_configuration(self, config=None, propagate=1, to_fqdn=True):
+        self._enabled_ctrls = []
         if config is None:
             config = self._build_configuration()
         else:
@@ -343,6 +351,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                 # only timerable elements are configured with acq_synch
                 acq_synch = None
                 ctrl_enabled = False
+                ctrl_to_acq_synch = False
                 if not external and c.is_timerable():
                     acq_synch = AcqSynch.from_synch_type(
                         software, acq_synch_type)
@@ -359,14 +368,19 @@ class PoolMeasurementGroup(PoolGroupElement):
                     channel_data = self._build_channel_defaults(
                         channel_data, element)
                     if channel_data["enabled"]:
+                        ctrl_enabled = True
                         if acq_synch is not None:
-                            ctrl_enabled = True
+                            ctrl_to_acq_synch = True
                             self._channel_to_acq_synch[element] = acq_synch
                             if not software:
                                 tg_elem_ids.append(synchronizer.id)
                         user_elem_ids[channel_data['index']] = _id
-                if ctrl_enabled:
+
+                if ctrl_to_acq_synch:
                     self._ctrl_to_acq_synch[c] = acq_synch
+                if ctrl_enabled:
+                    self._enabled_ctrls.append(c)
+
             # sorted ids may not be consecutive (if a channel is disabled)
             indexes = sorted(user_elem_ids.keys())
             user_elem_ids_list = [user_elem_ids[idx] for idx in indexes]
@@ -531,12 +545,13 @@ class PoolMeasurementGroup(PoolGroupElement):
         cfg = self.get_configuration()
         # g_timer, g_monitor = cfg['timer'], cfg['monitor']
         for ctrl, ctrl_data in cfg['controllers'].items():
-            # skip external channels
-            if isinstance(ctrl, str):
+            if isinstance(ctrl, str):  # skip external channels
                 continue
-            # telling controller in which acquisition mode it will participate
             if not ctrl.is_online():
                 continue
+            if ctrl not in self._enabled_ctrls:
+                continue
+
             ctrl.set_ctrl_par('acquisition_mode', self.acquisition_mode)
             # @TODO: fix optimization and enable it again
             if ctrl.operator == self and not force and not self._config_dirty:
@@ -682,6 +697,19 @@ class PoolMeasurementGroup(PoolGroupElement):
                             doc="latency time between two consecutive "
                                 "acquisitions")
 
+    def get_sw_synch_initial_domain(self):
+        return self._sw_synch_initial_domain
+
+    def set_sw_synch_initial_domain(self, domain):
+        self._sw_synch_initial_domain = domain
+
+    sw_synch_initial_domain = property(
+        get_sw_synch_initial_domain,
+        set_sw_synch_initial_domain,
+        doc="software synchronizer initial domain (SynchDomain.Time "
+            "or SynchDomain.Position)"
+    )
+
     # -------------------------------------------------------------------------
     # acquisition
     # -------------------------------------------------------------------------
@@ -700,6 +728,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                 kwargs['monitor'] = self._monitor
             kwargs['synchronization'] = self._synchronization
             kwargs['moveable'] = self._moveable_obj
+            kwargs['sw_synch_initial_domain'] = self._sw_synch_initial_domain
             # start acquisition
             self.acquisition.run(**kwargs)
 

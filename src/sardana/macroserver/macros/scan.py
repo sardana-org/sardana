@@ -251,6 +251,9 @@ class aNscan(Hookable):
         post_move_hooks = self.getHooks(
             'post-move') + [self._fill_missing_records]
         step["post-move-hooks"] = post_move_hooks
+        step["pre-acq-hooks"] = self.getHooks('pre-acq')
+        step["post-acq-hooks"] = self.getHooks('post-acq') + self.getHooks(
+            '_NOHINTS_')
         step["check_func"] = []
         step["active_time"] = self.nr_points * (self.integ_time +
                                                 self.latency_time)
@@ -1422,6 +1425,8 @@ class ascanct(aNscan, Macro):
     hints = {'scan': 'ascanct', 'allowsHooks': ('pre-configuration',
                                                 'post-configuration',
                                                 'pre-start',
+                                                'pre-acq',
+                                                'post-acq',
                                                 'pre-cleanup',
                                                 'post-cleanup')}
 
@@ -1450,6 +1455,8 @@ class a2scanct(aNscan, Macro):
     hints = {'scan': 'a2scanct', 'allowsHooks': ('pre-configuration',
                                                  'post-configuration',
                                                  'pre-start',
+                                                 'pre-acq',
+                                                 'post-acq',
                                                  'pre-cleanup',
                                                  'post-cleanup')}
 
@@ -1482,6 +1489,8 @@ class a3scanct(aNscan, Macro):
     hints = {'scan': 'a2scanct', 'allowsHooks': ('pre-configuration',
                                                  'post-configuration',
                                                  'pre-start',
+                                                 'pre-acq',
+                                                 'post-acq',
                                                  'pre-cleanup',
                                                  'post-cleanup')}
 
@@ -1517,6 +1526,8 @@ class a4scanct(aNscan, Macro):
     hints = {'scan': 'a2scanct', 'allowsHooks': ('pre-configuration',
                                                  'post-configuration',
                                                  'pre-start',
+                                                 'pre-acq',
+                                                 'post-acq',
                                                  'pre-cleanup',
                                                  'post-cleanup')}
 
@@ -1702,6 +1713,20 @@ class meshct(Macro, Hookable):
         self.integ_time = integ_time
         self.bidirectional_mode = bidirectional
 
+        # Prepare the waypoints
+        m1start, m2start = self.starts
+        m1end, m2end = self.finals
+        points1, points2 = self.nr_intervs + 1
+
+        m2_space = numpy.linspace(m2start, m2end, points2)
+        self.waypoints = []
+        self.starts_points = []
+        for i, m2pos in enumerate(m2_space):
+            self.starts_points.append(numpy.array([m1start, m2pos], dtype='d'))
+            self.waypoints.append(numpy.array([m1end, m2pos], dtype='d'))
+            if self.bidirectional_mode:
+                m1start, m1end = m1end, m1start
+
         self.name = opts.get('name', 'meshct')
 
         moveables = []
@@ -1750,23 +1775,11 @@ class meshct(Macro, Hookable):
         step["active_time"] = self.nr_points * (self.integ_time +
                                                 self.latency_time)
 
-        m1start, m2start = self.starts
-        m1end, m2end = self.finals
-        points1, points2 = self.nr_intervs + 1
-
-        m2_space = numpy.linspace(m2start, m2end, points2)
-        self.waypoints = []
-        starts_points = []
-        for i, m2pos in enumerate(m2_space):
-            starts_points.append(numpy.array([m1start, m2pos], dtype='d'))
-            self.waypoints.append(numpy.array([m1end, m2pos], dtype='d'))
-            if self.bidirectional_mode:
-                m1start, m1end = m1end, m1start
-
+        points1, _ = self.nr_intervs + 1
         for i, waypoint in enumerate(self.waypoints):
             self.point_id = points1 * i
             step["waypoint_id"] = i
-            self.starts = starts_points[i]
+            self.starts = self.starts_points[i]
             self.finals = waypoint
             step["positions"] = []
             step["start_positions"] = []
@@ -1789,7 +1802,7 @@ class meshct(Macro, Hookable):
         return 0.0
 
     def getIntervalEstimation(self):
-        return self.nr_intervs
+        return len(self.waypoints)
 
     def _fill_missing_records(self):
         # fill record list with dummy records for the final padding
@@ -1807,6 +1820,9 @@ class timescan(Macro, Hookable):
     Count time is given by integ_time. Latency time will be the longer one
     of latency_time and measurement group latency time.
     """
+
+    hints = {'scan': 'timescan', 'allowsHooks': ('pre-scan', 'pre-acq',
+                                                 'post-acq', 'post-scan')}
 
     param_def = [
         ['nr_interv', Type.Integer, None, 'Number of scan intervals'],

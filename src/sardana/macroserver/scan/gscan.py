@@ -788,6 +788,13 @@ class GScan(Logger):
     MAX_ITER = 100000
 
     def _estimate(self, max_iter=None):
+        """Estimate time and intervals of a scan.
+
+        Time estimation considers motion time (including going to the start
+        position) and acquisition time.
+
+        Interval estimation is a number of scan trajectory intervals.
+        """
         with_time = hasattr(self.macro, "getTimeEstimation")
         with_interval = hasattr(self.macro, "getIntervalEstimation")
         if with_time and with_interval:
@@ -798,39 +805,55 @@ class GScan(Logger):
         max_iter = max_iter or self.MAX_ITER
         iterator = self.generator()
         total_time = 0.0
-        interval_nb = 0
+        point_nb = 0
+        interval_nb = None
         try:
             if not with_time:
-                start_pos = self.motion.readPosition(force=True)
-                v_motors = self.get_virtual_motors()
-                motion_time, acq_time = 0.0, 0.0
-                while interval_nb < max_iter:
-                    step = iterator.next()
-                    end_pos = step['positions']
-                    max_path_duration = 0.0
-                    for v_motor, start, stop in zip(v_motors,
-                                                    start_pos,
-                                                    end_pos):
-                        path = MotionPath(v_motor, start, stop)
-                        max_path_duration = max(
-                            max_path_duration, path.duration)
-                    integ_time = step.get("integ_time", 0.0)
-                    acq_time += integ_time
-                    motion_time += max_path_duration
-                    total_time += integ_time + max_path_duration
-                    interval_nb += 1
-                    start_pos = end_pos
-                if with_interval:
-                    interval_nb = self.macro.getIntervalEstimation()
+                try:
+                    start_pos = self.motion.readPosition(force=True)
+                    v_motors = self.get_virtual_motors()
+                    motion_time, acq_time = 0.0, 0.0
+                    while point_nb < max_iter:
+                        step = iterator.next()
+                        end_pos = step['positions']
+                        max_path_duration = 0.0
+                        for v_motor, start, stop in zip(v_motors,
+                                                        start_pos,
+                                                        end_pos):
+                            path = MotionPath(v_motor, start, stop)
+                            max_path_duration = max(
+                                max_path_duration, path.duration)
+                        integ_time = step.get("integ_time", 0.0)
+                        acq_time += integ_time
+                        motion_time += max_path_duration
+                        total_time += integ_time + max_path_duration
+                        point_nb += 1
+                        start_pos = end_pos
+                finally:
+                    if with_interval:
+                        interval_nb = self.macro.getIntervalEstimation()
             else:
-                while interval_nb < max_iter:
-                    step = iterator.next()
-                    interval_nb += 1
-                total_time = self.macro.getTimeEstimation()
+                try:
+                    while point_nb < max_iter:
+                        step = iterator.next()
+                        point_nb += 1
+                finally:
+                    total_time = self.macro.getTimeEstimation()
         except StopIteration:
-            return total_time, interval_nb
-        # max iteration reached.
-        return -total_time, -interval_nb
+            pass
+        else:
+            # max iteration reached.
+            total_time = -total_time
+            point_nb = -point_nb
+        if interval_nb is None:
+            if point_nb < 1:
+                interval_nb = point_nb + 1
+            elif point_nb > 1:
+                interval_nb = point_nb - 1
+            else:
+                interval_nb = 0
+                self.warning("Estimation of intervals have not succeeded")
+        return total_time, interval_nb
 
     @property
     def data(self):
@@ -2092,6 +2115,32 @@ class CTScan(CScan, CAcquisition):
                                   decel_time=dec_time,
                                   min_vel=base_vel)
             ideal_path = MotionPath(ideal_vmotor, start, end, active_time)
+
+            # check if calculated ideal velocity is accepted by hardware
+            backup_vel = moveable.getVelocity(force=True)
+            ideal_max_vel = try_vel = ideal_path.max_vel
+            try:
+                while True:
+                    moveable.setVelocity(try_vel)
+                    get_vel = moveable.getVelocity(force=True)
+                    if get_vel < ideal_max_vel:
+                        msg = 'Ideal scan velocity {0} of motor {1} cannot ' \
+                              'be reached, {2} will be used instead'.format(
+                                  ideal_max_vel, moveable.name, get_vel)
+                        self.macro.warning(msg)
+                        ideal_path.max_vel = get_vel
+                        break
+                    elif get_vel > ideal_max_vel:
+                        try_vel -= (get_vel - try_vel)
+                    else:
+                        break
+            except Exception:
+                self.macro.debug("Unknown error when trying if hardware "
+                                 "accepts ideal scan velocity", exc_info=1)
+                ideal_path.max_vel = ideal_max_vel
+            finally:
+                moveable.setVelocity(backup_vel)
+
             ideal_path.moveable = moveable
             ideal_path.apply_correction = True
             ideal_paths.append(ideal_path)
@@ -2293,7 +2342,13 @@ class CTScan(CScan, CAcquisition):
             self.data.initial_data = initial_data
 
             if hasattr(macro, 'getHooks'):
-                for hook in macro.getHooks('pre-start'):
+                pre_acq_hooks = macro.getHooks('pre-start')
+                if len(pre_acq_hooks) > 0:
+                    self.macro.warning("pre-start hook place is deprecated,"
+                                       "use pre-acq instead")
+                pre_acq_hooks += waypoint.get('pre-acq-hooks', [])
+
+                for hook in pre_acq_hooks:
                     hook()
             self.macro.checkPoint()
 
@@ -2305,12 +2360,18 @@ class CTScan(CScan, CAcquisition):
 
             try:
                 self.timestamp_to_start = time.time() + delta_start
-
+                end_move = False
                 # move to waypoint end position
                 self.macro.debug(
                     "Moving to waypoint position: %s" % repr(final_pos))
                 motion.move(final_pos)
-            finally:
+                end_move = True
+            except Exception as e:
+                measurement_group.waitFinish(timeout=0, id=mg_id)
+                msg = "Motion did not start properly.\n{0}".format(e)
+                self.debug(msg)
+                raise ScanException("move to final position failed")
+            else:
                 # wait extra 15 s to for the acquisition to finish
                 # if it does not finish, abort the measurement group
                 # (this could be due to missed hardware triggers or
@@ -2318,17 +2379,22 @@ class CTScan(CScan, CAcquisition):
                 # TODO: allow parametrizing timeout
                 timeout = 15
                 measurement_group.waitFinish(timeout=timeout, id=mg_id)
+            finally:
                 # TODO: For Taurus 4 / Taurus 3 compatibility
                 if hasattr(measurement_group, "stateObj"):
                     state = measurement_group.stateObj.read().rvalue
                 else:
                     state = measurement_group.state()
                 if state == PyTango.DevState.MOVING:
-                    msg = "Measurement did not finish acquisition within "\
-                          "timeout. Stopping it..."
-                    self.debug(msg)
                     measurement_group.Stop()
-                    raise ScanException("acquisition timeout reached")
+                    if end_move:
+                        msg = "Measurement did not finish acquisition within "\
+                              "timeout. Stopping it..."
+                        self.debug(msg)
+                        raise ScanException("acquisition timeout reached")
+
+            for hook in waypoint.get('post-acq-hooks', []):
+                hook()
 
             if macro.isStopped():
                 self.on_waypoints_end()
@@ -2606,6 +2672,10 @@ class TScan(GScan, CAcquisition):
             for hook in macro.getHooks('pre-scan'):
                 hook()
 
+        if hasattr(macro, 'getHooks'):
+            for hook in macro.getHooks('pre-acq'):
+                hook()
+
         yield 0
         measurement_group.measure(synchronization,
                                   self.value_buffer_changed)
@@ -2614,6 +2684,10 @@ class TScan(GScan, CAcquisition):
         self.join_thread_pool()
         self._fill_missing_records()
         yield 100
+
+        if hasattr(macro, 'getHooks'):
+            for hook in macro.getHooks('post-acq'):
+                hook()
 
         if hasattr(macro, 'getHooks'):
             for hook in macro.getHooks('post-scan'):
