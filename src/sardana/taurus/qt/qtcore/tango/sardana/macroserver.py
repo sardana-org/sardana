@@ -61,6 +61,7 @@ class QDoor(BaseDoor, Qt.QObject):
         self.call__init__(BaseDoor, name, **kw)
         self._mntgrp_connected = []
         self._use_experimet_configuration = False
+        self._connections_prepared = False
 
     def resultReceived(self, log_name, result):
         res = BaseDoor.resultReceived(self, log_name, result)
@@ -107,11 +108,13 @@ class QDoor(BaseDoor, Qt.QObject):
         return res
 
     def _prepare_connections(self):
-        if not self._use_experimet_configuration:
+        if not self._use_experimet_configuration and \
+                not self._connections_prepared:
             self.connect(self.macro_server, Qt.SIGNAL("environmentChanged"),
                          self._experimentalConfiguration)
             self.connect(self.macro_server, Qt.SIGNAL("elementsChanged"),
                          self._elementsChanged)
+            self._connections_prepared = True
 
     def _elementsChanged(self):
         len_mnt_grps_connected = len(self._mntgrp_connected)
