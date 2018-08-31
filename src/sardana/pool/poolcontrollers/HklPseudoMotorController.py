@@ -1412,7 +1412,8 @@ class Diffrac6Cp23(DiffracBasis):  # DiffractometerType: "PETRA3 P23 6C"
 
     """ The PseudoMotor controller for the diffractometer"""
 
-    pseudo_motor_roles = "h", "k", "l", "psi", "q", "alpha", "tth2",  "alpha_tth2", "incidence", "emergence"
+    pseudo_motor_roles = "h", "k", "l", "psi", "q", "alpha", "tth2",
+    "alpha_tth2", "incidence", "emergence"
     motor_roles = "omega_t", "mu", "omega", "chi", "phi", "gamma", "delta"
 
     def __init__(self, inst, props, *args, **kwargs):
@@ -1456,11 +1457,13 @@ class DiffracE6C(DiffracBasis):
 
 # 4C Diffractometers ####################
 
+
 class Diffrac4Cp23(DiffracBasis):  # DiffractometerType: "PETRA3 P23 4C"
 
     """ The PseudoMotor controller for the diffractometer"""
 
-    pseudo_motor_roles = "h", "k", "l", "q", "alpha", "qper", "qpar", "tth2", "alpha_tth2", "incidence", "emergence"
+    pseudo_motor_roles = "h", "k", "l", "q", "alpha", "qper", "qpar",
+    "tth2", "alpha_tth2", "incidence", "emergence"
     motor_roles = "omega_t", "mu", "gamma", "delta"
 
     def __init__(self, inst, props, *args, **kwargs):
