@@ -79,7 +79,11 @@ def recur_map(fun, data, keep_none=False):
 
 
 def console_width():
-    return int(os.popen('stty size', 'r').read().split()[1])
+    try:
+        width = int(os.popen('stty size', 'r').read().split()[1])
+    except Exception:
+        width = float('inf')
+    return width
 
 
 class Attr(Logger, EventGenerator):
