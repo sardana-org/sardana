@@ -27,6 +27,7 @@
 
 __all__ = ["ExpDescriptionEditor"]
 
+import os
 from taurus.external.qt import Qt
 import copy
 import taurus
@@ -320,6 +321,21 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
                                            Qt.QMessageBox.Ok)
                 self.changeActiveMntGrp(mgname)
                 return False
+
+        # check path
+        path = self._localConfig['ScanDir']
+        if not os.access(path, os.F_OK):
+            try:
+                os.mkdir(path)
+            except:
+                Qt.QMessageBox.information(self, "Invalid Path",
+                                           "Storage / Path has a not valid path."
+                                           "\nPlease check path syntax",
+                                           Qt.QMessageBox.Ok)
+                self.changeActiveMntGrp(mgname)
+                return False
+            finally:
+                os.rmdir(path)
 
         # check if the currently displayed mntgrp is changed
         if self.ui.channelEditor.getQModel().isDataChanged():
