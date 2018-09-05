@@ -327,15 +327,14 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         if not os.access(path, os.F_OK):
             try:
                 os.mkdir(path)
-            except:
-                Qt.QMessageBox.information(self, "Invalid Path",
-                                           "Storage / Path has a not valid path."
-                                           "\nPlease check path syntax",
-                                           Qt.QMessageBox.Ok)
+                os.rmdir(path)
+            except Exception:
+                title = "Invalid Path"
+                msg = "Storage / Path has a not valid path.\n" + \
+                    "Please check path syntax"
+                Qt.QMessageBox.information(self, title, msg, Qt.QMessageBox.Ok)
                 self.changeActiveMntGrp(mgname)
                 return False
-            finally:
-                os.rmdir(path)
 
         # check if the currently displayed mntgrp is changed
         if self.ui.channelEditor.getQModel().isDataChanged():
