@@ -944,8 +944,13 @@ class GScan(Logger):
             pass
 
     def step_scan(self):
-        self.start()
         try:
+            if hasattr(self.macro, 'getHooks'):
+                for hook in self.macro.getHooks('pre-scan'):
+                    hook()
+
+            self.start()
+
             for i in self.scan_loop():
                 self.macro.pausePoint()
                 yield i
@@ -1003,10 +1008,6 @@ class SScan(GScan):
             scream = True
         else:
             yield 0.0
-
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
-                hook()
 
         self._sum_motion_time = 0
         self._sum_acq_time = 0
@@ -1755,10 +1756,6 @@ class CSScan(CScan):
         point_nb, step = -1, None
         # data = self.data
 
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
-                hook()
-
         # start move & acquisition as close as possible
         # from this point on synchronization becomes critical
         manager.add_job(self.go_through_waypoints)
@@ -2452,10 +2449,6 @@ class CTScan(CScan, CAcquisition):
         # point_nb, step = -1, None
         # data = self.data
 
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
-                hook()
-
         self.go_through_waypoints()
 
         if hasattr(macro, 'getHooks'):
@@ -2612,6 +2605,7 @@ class TScan(GScan, CAcquisition):
                        extrainfodesc=extrainfodesc)
         CAcquisition.__init__(self)
         self._synchronization = None
+        self.macro.info('init')
 
     def _create_synchronization(self, active_time, repeats, latency_time=0):
         delay_time = 0
@@ -2663,14 +2657,11 @@ class TScan(GScan, CAcquisition):
                   (measurement_group.getName(), macro.getName())
             raise ScanException(msg)
 
+
         theoretical_timestamps = generate_timestamps(synchronization)
         self.data.initial_data = theoretical_timestamps
         msg = "Relative timestamp (dt) column contains theoretical values"
         self.macro.warning(msg)
-
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
-                hook()
 
         if hasattr(macro, 'getHooks'):
             for hook in macro.getHooks('pre-acq'):
@@ -2680,9 +2671,20 @@ class TScan(GScan, CAcquisition):
         measurement_group.measure(synchronization,
                                   self.value_buffer_changed)
         self.debug("Waiting for value buffer events to be processed")
+
         self.wait_value_buffer()
         self.join_thread_pool()
-        self._fill_missing_records()
+
+            # measurement_group = self.measurement_group
+            # if hasattr(measurement_group, "stateObj"):
+            #     state = measurement_group.stateObj.read().rvalue
+            # else:
+            #     state = measurement_group.state()
+            # print 5555555, state
+            # if state == PyTango.DevState.MOVING:
+            #     self.macro.info('stopping')
+            #     measurement_group.Stop()
+        # self._fill_missing_records()
         yield 100
 
         if hasattr(macro, 'getHooks'):
@@ -2721,3 +2723,4 @@ class TScan(GScan, CAcquisition):
             time += total * repeats
             intervals += repeats
         return time, intervals
+
