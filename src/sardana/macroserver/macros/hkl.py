@@ -602,7 +602,7 @@ class wh(Macro, _diffrac):
 
         self.output("%s %7.5f" % ("Wavelength = ", self.diffrac.WaveLength))
         self.output("")
-        
+
         if self.nb_motors == 6:
             str_pos1 = "%7.5f" % self.getDevice(
                 self.angle_device_names[self.labelmotor["Delta"]]).Position
@@ -653,7 +653,10 @@ class wh(Macro, _diffrac):
             str_pos7 = "%7.5f" % self.getDevice(
                 self.angle_device_names[self.labelmotor["Delta"]]).Position
             self.output("%10s %11s %12s %11s %10s %11s %11s" %
-                        (self.labelmotor["Omega_t"], self.labelmotor["Mu"], self.labelmotor["Omega"], self.labelmotor["Chi"], self.labelmotor["Phi"], self.labelmotor["Gamma"], self.labelmotor["Delta"]))
+                        (self.labelmotor["Omega_t"], self.labelmotor["Mu"],
+                         self.labelmotor["Omega"], self.labelmotor["Chi"],
+                         self.labelmotor["Phi"], self.labelmotor["Gamma"],
+                         self.labelmotor["Delta"]))
             self.output("%10s %11s %12s %11s %10s %11s %11s" %
                         (str_pos1, str_pos2, str_pos3, str_pos4, str_pos5,
                          str_pos6, str_pos7))
