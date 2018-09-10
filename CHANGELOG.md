@@ -7,7 +7,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 - Support to "PETRA3 P23 6C" and "PETRA3 P23 4C" diffractometers by means
-of new controller classes (#923)
+of new controller classes and necessary adaptation to macros (#923, #921)
 
 ## [2.5.0] 2018-08-10
 
