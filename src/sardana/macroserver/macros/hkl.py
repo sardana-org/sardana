@@ -35,7 +35,7 @@
 # using getDevice. However this getter seems to accept only the elements names
 # and not the full names.
 
-__all__ = ["addreflexion", "affine", "br", "ca", "caa", "ci", "computeub",
+__all__ = ["addreflection", "affine", "br", "ca", "caa", "ci", "computeub",
            "freeze", "getmode", "hklscan", "hscan", "kscan", "latticecal",
            "loadcrystal", "lscan", "newcrystal", "or0", "or1", "orswap",
            "pa", "savecrystal", "setaz", "setlat", "setmode", "setor0",
