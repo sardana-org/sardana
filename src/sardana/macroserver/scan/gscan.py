@@ -944,6 +944,10 @@ class GScan(Logger):
             pass
 
     def step_scan(self):
+        macro = self.macro
+        if hasattr(macro, 'getHooks'):
+            for hook in macro.getHooks('pre-scan'):
+                hook()
         self.start()
         try:
             for i in self.scan_loop():
@@ -960,7 +964,11 @@ class GScan(Logger):
             self._env["endstatus"] = endstatus
             self.end()
             self.do_restore()
-            if endstatus != ScanEndStatus.Normal:
+            if endstatus == ScanEndStatus.Normal:
+                if hasattr(macro, 'getHooks'):
+                    for hook in macro.getHooks('post-scan'):
+                        hook()
+            else:
                 raise
 
     def scan_loop(self):
@@ -1004,10 +1012,6 @@ class SScan(GScan):
         else:
             yield 0.0
 
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
-                hook()
-
         self._sum_motion_time = 0
         self._sum_acq_time = 0
 
@@ -1018,10 +1022,6 @@ class SScan(GScan):
             lstep = step
             if scream:
                 yield ((i + 1) / nr_points) * 100.0
-
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('post-scan'):
-                hook()
 
         if not scream:
             yield 100.0
@@ -1755,10 +1755,6 @@ class CSScan(CScan):
         point_nb, step = -1, None
         # data = self.data
 
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
-                hook()
-
         # start move & acquisition as close as possible
         # from this point on synchronization becomes critical
         manager.add_job(self.go_through_waypoints)
@@ -1871,10 +1867,6 @@ class CSScan(CScan):
                 sum_delay += (curr_time - old_curr_time) - integ_time
 
         self.motion_end_event.wait()
-
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('post-scan'):
-                hook()
 
         env = self._env
         env['acqtime'] = sum_integ_time
@@ -2452,15 +2444,7 @@ class CTScan(CScan, CAcquisition):
         # point_nb, step = -1, None
         # data = self.data
 
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
-                hook()
-
         self.go_through_waypoints()
-
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('post-scan'):
-                hook()
 
         env = self._env
         env['acqtime'] = sum_integ_time
@@ -2669,10 +2653,6 @@ class TScan(GScan, CAcquisition):
         self.macro.warning(msg)
 
         if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
-                hook()
-
-        if hasattr(macro, 'getHooks'):
             for hook in macro.getHooks('pre-acq'):
                 hook()
 
@@ -2687,10 +2667,6 @@ class TScan(GScan, CAcquisition):
 
         if hasattr(macro, 'getHooks'):
             for hook in macro.getHooks('post-acq'):
-                hook()
-
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('post-scan'):
                 hook()
 
     def _fill_missing_records(self):
