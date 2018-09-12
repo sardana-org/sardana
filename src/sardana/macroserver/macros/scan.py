@@ -1666,10 +1666,12 @@ class meshct(Macro, Hookable):
     first motor scan is nested within the second motor scan.
     """
 
-    hints = {'scan': 'meshct', 'allowsHooks': ('pre-scan', 'pre-move',
-                                               'post-move', 'pre-acq',
-                                               'post-acq', 'post-step',
-                                               'post-scan')}
+    hints = {"scan": "meshct",
+             "allowsHooks": ("pre-scan", "pre-configuration",
+                             "post-configuration", "pre-move",
+                             "post-move", "pre-acq", "pre-start",
+                             "post-acq", "pre-cleanup", "post-cleanup",
+                             "post-scan")}
     env = ('ActiveMntGrp',)
 
     param_def = [
