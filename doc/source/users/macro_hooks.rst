@@ -29,14 +29,16 @@ General Hooks
 
 The general hooks were implemented in Sardana after the programmatic hooks.
 The motivation for this implementation was to allow the customization
-of the scan macros without having to redefine them.
-The general hooks apply to all hookable macros and allow the definition
-of new hints.
-They can be controlled using dedicated macros: :class:`~sardana.macroserver.macros.env.lsgh`,
-:class:`~sardana.macroserver.macros.env.defgh` and :class:`~sardana.macroserver.macros.env.udefgh`.
-For each hook position, hint, several hooks can be run, they will be run in the
-order they were added. The same hook can be run several times in the same position
-if it's added several times.
+of the scan macros without having to redefine them. The general hooks apply
+to all hookable macros.
+
+They can be controlled using dedicated macros:
+:class:`~sardana.macroserver.macros.env.lsgh`,
+:class:`~sardana.macroserver.macros.env.defgh` and
+:class:`~sardana.macroserver.macros.env.udefgh`.
+For each hook place, several hooks can be attached, they will be run in the
+order they were added. The same hook can be run several times in the same
+place if it was added several times.
 
 Examples:
 
