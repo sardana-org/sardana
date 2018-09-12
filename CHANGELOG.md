@@ -7,7 +7,11 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 - Support to "PETRA3 P23 6C" and "PETRA3 P23 4C" diffractometers by means
-of new controller classes and necessary adaptation to macros (#923, #921)
+  of new controller classes and necessary adaptation to macros (#923, #921)
+
+### Changed
+- Move pre-scan and post-scan hooks out of `scan_loop` method (#920, #922,
+  #933)
 
 ## [2.5.0] 2018-08-10
 
