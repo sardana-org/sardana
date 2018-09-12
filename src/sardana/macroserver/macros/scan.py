@@ -1536,6 +1536,19 @@ class a4scanct(aNscan, Macro):
                       latency_time=latency_time, **opts)
 
 
+class dNscanct(dNscan):
+    """N-dimensional continuous scan. This is **not** meant to be called by
+    the user, but as a generic base to construct ascanct, a2scanct, a3scanct,
+    ..."""
+
+    hints = {"scan": "dNscanct",
+             "allowsHooks": ("pre-scan", "pre-configuration",
+                             "post-configuration", "pre-move",
+                             "post-move", "pre-acq", "pre-start",
+                             "post-acq", "pre-cleanup", "post-cleanup",
+                             "post-scan")}
+
+
 class dscanct(dNscan, Macro):
     """Do an a relative continuous motor scan,
     dscanct scans a motor, as specified by motor1.
