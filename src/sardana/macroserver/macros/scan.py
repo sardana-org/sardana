@@ -1549,7 +1549,7 @@ class dNscanct(dNscan):
                              "post-scan")}
 
 
-class dscanct(dNscan, Macro):
+class dscanct(dNscanct, Macro):
     """Do an a relative continuous motor scan,
     dscanct scans a motor, as specified by motor1.
     The Motor starts before the position given by its start_pos in order to
@@ -1571,7 +1571,7 @@ class dscanct(dNscan, Macro):
                       latency_time=latency_time, **opts)
 
 
-class d2scanct(dNscan, Macro):
+class d2scanct(dNscanct, Macro):
     """continuous two-motor scan relative to the starting positions,
     d2scanct scans three motors, as specified by motor1 and motor2.
     Each motor starts before the position given by its start_pos in order to
@@ -1595,7 +1595,7 @@ class d2scanct(dNscan, Macro):
                       mode=ContinuousHwTimeMode, **opts)
 
 
-class d3scanct(dNscan, Macro):
+class d3scanct(dNscanct, Macro):
     """continuous three-motor scan relative to the starting positions,
     d3scanct scans three motors, as specified by motor1, motor2 and motor3.
     Each motor starts before the position given by its start_pos in order to
@@ -1623,7 +1623,7 @@ class d3scanct(dNscan, Macro):
                       integ_time, mode=ContinuousHwTimeMode, **opts)
 
 
-class d4scanct(dNscan, Macro):
+class d4scanct(dNscanct, Macro):
     """continuous four-motor scan relative to the starting positions,
     d4scanct scans three motors, as specified by motor1, motor2, motor3 and
     motor4.
