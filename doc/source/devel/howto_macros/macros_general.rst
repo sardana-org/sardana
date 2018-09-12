@@ -853,6 +853,25 @@ identifiers::
             for hook in self.getHooks("another-hook-place"):
                 hook()
 
+Hooks can be programmatically attached to a macro before its execution either
+using the :attr:`~sardana.macroserver.macro.Hookable.hooks` property or
+using the :meth:`~sardana.macroserver.macro.Hookable.appendHook` method::
+
+    def hook_function():
+        pass
+
+    class wrapping_macro(Macro):
+        """A wrapping macro that attaches hooks to a hookable macro
+        and executes it."""
+
+        def run(self):
+            hookable_macro, _ = self.createMacro("hookable_macro")
+            hook_macro = ExecMacroHook(self, "mv", [["mot01", 1]])
+            hookable_macro.hooks = [(hook_macro, ["hook-place"])]
+            hookable_macro.appendHook((hook_function, ["another-hook-place"]))
+            self.runMacro(hookable_macro)
+
+
 Using external python libraries
 -------------------------------
 
