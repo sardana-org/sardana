@@ -778,7 +778,7 @@ prepare HelloWorld to run only after year 1989:
         def run(self):
             print "Hello, World!"
 
-.. _sardana-macro-using-external-libraries:
+.. _sardana-macro-handling-macro-stop-and-abort:
 
 Handling macro stop and abort
 -----------------------------
@@ -824,6 +824,8 @@ of user's interruption you must override the
 .. note:: Currently it is not possible to use any of the *Macro API* calls
     withing the :meth:`~sardana.macroserver.macro.Macro.on_stop` or
     :meth:`~sardana.macroserver.macro.Macro.on_abort`.
+
+.. _sardana-macro-adding-hooks-support:
 
 Adding hooks support
 --------------------
@@ -871,6 +873,8 @@ using the :meth:`~sardana.macroserver.macro.Hookable.appendHook` method::
             hookable_macro.appendHook((hook_function, ["another-hook-place"]))
             self.runMacro(hookable_macro)
 
+
+.. _sardana-macro-using-external-libraries:
 
 Using external python libraries
 -------------------------------
