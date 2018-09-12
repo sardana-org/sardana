@@ -11,16 +11,18 @@ Macro Hooks
 ===========
 
 A hook is an extra code that can be run at certain points of a macro execution.
-These points are predefined for each hookable macro and passed via a "hints" mechanism.
-The hint tells the macro how and when to run the attached hook.
-Hooks allow the customization of already existing macros and can be added using
-three different ways:
+These points, called *hook places* are predefined for each *hookable* macro.
+The hook place tells the macro how and when to run the attached hook.
+Hooks allow the customization of already existing macros and can be added
+using three different ways:
 
-- General Hooks
+- :ref:`General Hooks <sardana-macros-hooks-general>`
 - :ref:`Sequencer Hooks <sequencer_ui>`
-- :ref:`Programmatic Hooks <sardana-macros-scanframework>`
+- :ref:`Programmatic Hooks <sardana-macro-adding-hooks-support>`
 
 All available macros can be used as a hook.
+
+.. _sardana-macros-hooks-general:
   
 General Hooks
 -------------
