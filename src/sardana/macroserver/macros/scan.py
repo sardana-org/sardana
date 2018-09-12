@@ -1415,6 +1415,19 @@ class dmeshc(meshc):
         self._motion.move(self.originalPositions)
 
 
+class aNscanct(aNscan):
+    """N-dimensional continuous scan. This is **not** meant to be called by
+    the user, but as a generic base to construct ascanct, a2scanct, a3scanct,
+    ..."""
+
+    hints = {"scan": "aNscanct",
+             "allowsHooks": ("pre-scan", "pre-configuration",
+                             "post-configuration", "pre-move",
+                             "post-move", "pre-acq", "pre-start",
+                             "post-acq", "pre-cleanup", "post-cleanup",
+                             "post-scan")}
+
+
 class ascanct(aNscan, Macro):
     """Do an absolute continuous scan of the specified motor.
     ascanct scans one motor, as specified by motor. The motor starts before the
