@@ -1428,20 +1428,12 @@ class aNscanct(aNscan):
                              "post-scan")}
 
 
-class ascanct(aNscan, Macro):
+class ascanct(aNscanct, Macro):
     """Do an absolute continuous scan of the specified motor.
     ascanct scans one motor, as specified by motor. The motor starts before the
     position given by start_pos in order to reach the constant velocity at the
     start_pos and finishes at the position after the final_pos in order to
     maintain the constant velocity until the final_pos."""
-
-    hints = {'scan': 'ascanct', 'allowsHooks': ('pre-configuration',
-                                                'post-configuration',
-                                                'pre-start',
-                                                'pre-acq',
-                                                'post-acq',
-                                                'pre-cleanup',
-                                                'post-cleanup')}
 
     param_def = [['motor', Type.Moveable, None, 'Moveable name'],
                  ['start_pos', Type.Float, None, 'Scan start position'],
@@ -1457,21 +1449,13 @@ class ascanct(aNscan, Macro):
                       latency_time=latency_time, **opts)
 
 
-class a2scanct(aNscan, Macro):
+class a2scanct(aNscanct, Macro):
     """Two-motor continuous scan.
     a2scanct scans two motors, as specified by motor1 and motor2. Each motor
     starts before the position given by its start_pos in order to reach the
     constant velocity at its start_pos and finishes at the position after
     its final_pos in order to maintain the constant velocity until its
     final_pos."""
-
-    hints = {'scan': 'a2scanct', 'allowsHooks': ('pre-configuration',
-                                                 'post-configuration',
-                                                 'pre-start',
-                                                 'pre-acq',
-                                                 'post-acq',
-                                                 'pre-cleanup',
-                                                 'post-cleanup')}
 
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
@@ -1491,21 +1475,13 @@ class a2scanct(aNscan, Macro):
                       latency_time=latency_time, **opts)
 
 
-class a3scanct(aNscan, Macro):
+class a3scanct(aNscanct, Macro):
     """Three-motor continuous scan.
     a2scanct scans three motors, as specified by motor1, motor2 and motor3.
     Each motor starts before the position given by its start_pos in order to
     reach the constant velocity at its start_pos and finishes at the position
     after its final_pos in order to maintain the constant velocity until its
     final_pos."""
-
-    hints = {'scan': 'a2scanct', 'allowsHooks': ('pre-configuration',
-                                                 'post-configuration',
-                                                 'pre-start',
-                                                 'pre-acq',
-                                                 'post-acq',
-                                                 'pre-cleanup',
-                                                 'post-cleanup')}
 
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
@@ -1535,14 +1511,6 @@ class a4scanct(aNscan, Macro):
     order to reach the constant velocity at its start_pos and finishes at the
     position after its final_pos in order to maintain the constant velocity
     until its final_pos."""
-
-    hints = {'scan': 'a2scanct', 'allowsHooks': ('pre-configuration',
-                                                 'post-configuration',
-                                                 'pre-start',
-                                                 'pre-acq',
-                                                 'post-acq',
-                                                 'pre-cleanup',
-                                                 'post-cleanup')}
 
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
