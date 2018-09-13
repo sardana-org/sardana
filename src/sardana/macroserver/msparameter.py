@@ -424,7 +424,7 @@ class ParamDecoder:
                     value = param_def['default_value']
                 if value is None:
                     raise MissingParam("'%s' not specified" % name)
-                elif isinstance(value, OptionalParamClass):
+                elif value is OptionalParam:
                     param = None
                     optional_param = True
                 else:
