@@ -299,8 +299,10 @@ being a composed of four elements:
     - parameter name
     - parameter type
     - parameter default value:
-        * None means no default value
-        * :ref:`OptionalParam <sardana-macro-optional-parameters>`
+        - ``None`` means no default value
+        - ``OptionalParam`` means that
+          :ref:`the parameter value is optional <sardana-macro-optional-parameters>`
+
     - parameter description
     
 Here is a list of the most common allowed parameter types:
@@ -328,10 +330,10 @@ all available sardana interfaces (:obj:`~sardana.sardanadefs.Interface`)
 Optional parameters
 ~~~~~~~~~~~~~~~~~~~
 
-A special default value is the *OptionalParam*. It allows to the macro
-identify if the user introduces a value or not to take a decision.
+A special parameter default value is the ``OptionalParam``. It allows to
+execute a macro even the given parameter value is not specified by the user.
 
-So, here is an example how to define and use a optional parameter::
+So, here is an example how to define and use the optional parameter::
 
     from sardana.macroserver.macro import Macro, Type, OptionalParam
 
@@ -347,9 +349,9 @@ So, here is an example how to define and use a optional parameter::
             try:
                 if mntgrp is not None:
                     bkp_active_mntgrp = self.getEnv('ActiveMntGrp')
-                    self.setEnv('ActiveMntGrp', mntgrp.name)
-                self.info('Use "{0}" measurement '
-                          'group'.format(self.getEnv('ActiveMntGrp')))
+                    mntgrp_name = mntgrp.name
+                    self.setEnv('ActiveMntGrp', mntgrp_name)
+                self.info('Use "{0}" measurement group'.format(mntgrp_name))
                 self.ct(itime)
             finally:
                 if bkp_active_mntgrp is not None:
