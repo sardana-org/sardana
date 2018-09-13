@@ -11,6 +11,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Support to "PETRA3 P23 6C" and "PETRA3 P23 4C" diffractometers by means
   of new controller classes and necessary adaptation to macros (#923, #921)
 
+### Fixed
+- Avoid final padding in timescan when it was stopped by user (#869, #935)
+
 ### Changed
 - Move pre-scan and post-scan hooks out of `scan_loop` method (#920, #922,
   #933)
