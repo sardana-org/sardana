@@ -2662,6 +2662,7 @@ class TScan(GScan, CAcquisition):
         self.debug("Waiting for value buffer events to be processed")
         self.wait_value_buffer()
         self.join_thread_pool()
+        self.macro.checkPoint()
         self._fill_missing_records()
         yield 100
 
