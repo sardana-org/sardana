@@ -298,7 +298,11 @@ being a composed of four elements:
 
     - parameter name
     - parameter type
-    - parameter default value (None means no default value)
+    - parameter default value:
+        - ``None`` means no default value
+        - ``Optional`` means that
+          :ref:`the parameter value is optional <sardana-macro-optional-parameters>`
+
     - parameter description
     
 Here is a list of the most common allowed parameter types:
@@ -320,6 +324,39 @@ Here is a list of the most common allowed parameter types:
 The complete list of types distributed with sardana is made up by these five
 simple types: ``Integer``, ``Float``, ``Boolean``, ``String``, ``Any``, plus
 all available sardana interfaces (:obj:`~sardana.sardanadefs.Interface`)
+
+.. _sardana-macro-optional-parameters:
+
+Optional parameters
+~~~~~~~~~~~~~~~~~~~
+
+A special parameter default value is the ``Optional``. It allows to
+execute a macro even the given parameter value is not specified by the user.
+
+So, here is an example how to define and use the optional parameter::
+
+    from sardana.macroserver.macro import Macro, Type, Optional
+
+    class count(Macro):
+
+        param_def = [
+            ['itime', Type.Float, 1, 'integration time'],
+            ['mntgrp', Type.MeasurementGroup, Optional, 'MntGrp to use']
+        ]
+
+        def run(self, itime, mntgrp):
+            bkp_active_mntgrp = None
+            try:
+                if mntgrp is not None:
+                    bkp_active_mntgrp = self.getEnv('ActiveMntGrp')
+                    mntgrp_name = mntgrp.name
+                    self.setEnv('ActiveMntGrp', mntgrp_name)
+                self.info('Use "{0}" measurement group'.format(mntgrp_name))
+                self.ct(itime)
+            finally:
+                if bkp_active_mntgrp is not None:
+                    self.setEnv('ActiveMntGrp', bkp_active_mntgrp)
+
 
 .. _sardana-macro-repeat-parameters:
 
