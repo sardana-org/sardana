@@ -41,7 +41,7 @@ import PyTango
 
 from taurus.core.util.user import USER_NAME
 from taurus.core.util.codecs import CodecFactory
-from sardana.macroserver.msparameter import OptionalParam
+from sardana.macroserver.msparameter import Optional
 
 
 class MacroRunException(Exception):
@@ -552,7 +552,7 @@ class SingleParamNode(ParamNode):
             if self.defValue() is None:
                 alert = "Parameter <b>" + self.name() + "</b> is missing.<br>"
                 return ([val], alert)
-            elif self._defValue == OptionalParam:
+            elif self._defValue == Optional:
                 val = ''
             else:
                 val = self.defValue()

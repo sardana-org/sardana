@@ -57,13 +57,13 @@ class OptionalParamClass(dict):
         self.__setattr__ = self.raise_error
 
     def __repr__(self):
-        return 'OptionalParam'
+        return 'Optional'
 
     def raise_error(*args, **kwargs):
         raise RuntimeError('can not be accessed')
 
 
-OptionalParam = OptionalParamClass({'___optional_parameter__': True})
+Optional = OptionalParamClass({'___optional_parameter__': True})
 
 
 class WrongParam(MacroServerException):
@@ -424,7 +424,7 @@ class ParamDecoder:
                     value = param_def['default_value']
                 if value is None:
                     raise MissingParam("'%s' not specified" % name)
-                elif value is OptionalParam:
+                elif value is Optional:
                     param = None
                     optional_param = True
                 else:

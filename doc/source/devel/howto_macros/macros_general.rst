@@ -300,7 +300,7 @@ being a composed of four elements:
     - parameter type
     - parameter default value:
         - ``None`` means no default value
-        - ``OptionalParam`` means that
+        - ``Optional`` means that
           :ref:`the parameter value is optional <sardana-macro-optional-parameters>`
 
     - parameter description
@@ -330,18 +330,18 @@ all available sardana interfaces (:obj:`~sardana.sardanadefs.Interface`)
 Optional parameters
 ~~~~~~~~~~~~~~~~~~~
 
-A special parameter default value is the ``OptionalParam``. It allows to
+A special parameter default value is the ``Optional``. It allows to
 execute a macro even the given parameter value is not specified by the user.
 
 So, here is an example how to define and use the optional parameter::
 
-    from sardana.macroserver.macro import Macro, Type, OptionalParam
+    from sardana.macroserver.macro import Macro, Type, Optional
 
     class count(Macro):
 
         param_def = [
             ['itime', Type.Float, 1, 'integration time'],
-            ['mntgrp', Type.MeasurementGroup, OptionalParam, 'MntGrp to use']
+            ['mntgrp', Type.MeasurementGroup, Optional, 'MntGrp to use']
         ]
 
         def run(self, itime, mntgrp):
