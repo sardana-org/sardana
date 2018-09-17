@@ -334,8 +334,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self._diff = ''
         try:
             self._diff = self._getDiff()
-        except Exception:
-            return
+        except Exception as e:
+            raise RuntimeError('Error on processing! {0}'.format(e))
 
         if len(self._diff) > 0:
             if self._autoUpdate:
