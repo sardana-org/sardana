@@ -323,7 +323,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             self._reloadConf(force=True)
 
     @QtCore.pyqtSlot()
-    def _experimentalConfigurationChanged(self):
+    def _experimentConfigurationChanged(self):
+        self._diff = ''
         try:
             self._diff = self._getDiff()
         except Exception:
@@ -388,7 +389,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self.ui.taurusModelTree.setModel(tghost)
         self.ui.sardanaElementTree.setModel(msname)
         self.connect(door, Qt.SIGNAL("experimentConfigurationChanged"),
-                     self._experimentalConfigurationChanged)
+                     self._experimentConfigurationChanged)
 
     def _reloadConf(self, force=False):
         if not force and self.isDataChanged():
@@ -681,7 +682,7 @@ def main():
         parser.usage = "%prog [options] <door name>"
         parser.add_option('--auto-update', dest='auto_update',
                           action='store_true',
-                          help='Set auto update of experimental configuration')
+                          help='Set auto update of experiment configuration')
         app = Application(app_name="Exp. Description demo", app_version="1.0",
                           org_domain="Sardana", org_name="Tango community",
                           cmd_line_parser=parser)
