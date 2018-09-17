@@ -115,8 +115,8 @@ def find_diff(first, second):
     diff = {}
     sd1 = set(first)
     sd2 = set(second)
-    # Keys missing in the second dict
 
+    # Keys missing in the second dict
     for key in sd1.difference(sd2):
         if key in SKIPKEYS:
             continue
@@ -126,18 +126,25 @@ def find_diff(first, second):
         if key in SKIPKEYS:
             continue
         diff[key] = (KEYNOTFOUNDIN1, second[key])
+
     # Check for differences
     for key in sd1.intersection(sd2):
         value1 = first[key]
         value2 = second[key]
         if type(value1) in DICT_TYPES:
-            idiff = find_diff(value1, value2)
+            try:
+                idiff = find_diff(value1, value2)
+            except Exception:
+                idiff = 'Error on processing'
             if len(idiff) > 0:
                 diff[key] = idiff
         elif type(value1) == list and key.lower() not in SKIPLIST:
             ldiff = []
             for v1, v2 in zip(value1, value2):
-                idiff = find_diff(v1, v2)
+                try:
+                    idiff = find_diff(v1, v2)
+                except Exception:
+                    idiff = 'Error on processing'
                 ldiff.append(idiff)
             if len(ldiff) > 0:
                 diff[key] = ldiff
