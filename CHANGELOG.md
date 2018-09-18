@@ -10,6 +10,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   ones in the definition (#285, #876)
 - Support to "PETRA3 P23 6C" and "PETRA3 P23 4C" diffractometers by means
   of new controller classes and necessary adaptation to macros (#923, #921)
+- Top LICENSE file that applies to the whole project (#938)
 
 ### Fixed
 - Avoid final padding in timescan when it was stopped by user (#869, #935)
