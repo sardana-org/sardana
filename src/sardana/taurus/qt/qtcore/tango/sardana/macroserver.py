@@ -59,7 +59,7 @@ class QDoor(BaseDoor, Qt.QObject):
     def __init__(self, name, qt_parent=None, **kw):
         self.call__init__wo_kw(Qt.QObject, qt_parent)
         self.call__init__(BaseDoor, name, **kw)
-        self._mntgrp_connected = []
+        self._mntgrps_connected = []
         self._use_experimet_configuration = False
         self._connections_prepared = False
 
@@ -118,18 +118,20 @@ class QDoor(BaseDoor, Qt.QObject):
             self._connections_prepared = True
 
     def _elementsChanged(self):
-        len_mnt_grps_connected = len(self._mntgrp_connected)
-        elements = self.macro_server.getElementsOfType("MeasurementGroup")
-        for name, mg in elements.items():
-            if name in self._mntgrp_connected:
-                continue
-            else:
+        mntgrps = self.macro_server.getElementsOfType("MeasurementGroup")
+        # one or more measurement group was deleted
+        mntgrp_changed = len(self._mntgrps_connected) > len(mntgrps)
+        new_mntgrp_connected = []
+        for name, mg in mntgrps.items():
+            if name not in self._mntgrps_connected:
+                mntgrp_changed = True  # this measurement group is new
                 obj = mg.getObj()
                 self.connect(obj, Qt.SIGNAL("configurationChanged"),
                              self._experimentConfigurationChanged)
-                self._mntgrp_connected.append(name)
+            new_mntgrp_connected.append(name)
+        self._mntgrp_connected = new_mntgrp_connected
 
-        if len(self._mntgrp_connected) != len_mnt_grps_connected:
+        if mntgrp_changed:
             self.emit(Qt.SIGNAL("experimentConfigurationChanged"))
 
     def _experimentConfigurationChanged(self, *args):
