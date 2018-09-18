@@ -659,11 +659,10 @@ class ct(Macro, Hookable):
         if mnt_grp is None:
             self.mnt_grp_name = self.getEnv('ActiveMntGrp')
             self.mnt_grp = self.getObj(self.mnt_grp_name,
-                                   type_class=Type.MeasurementGroup)
+                                       type_class=Type.MeasurementGroup)
         else:
             self.mnt_grp_name = mnt_grp.name
             self.mnt_grp = mnt_grp
-
 
     def run(self, integ_time, mnt_grp):
         if self.mnt_grp is None:
@@ -721,7 +720,7 @@ class uct(Macro):
         if mnt_grp is None:
             self.mnt_grp_name = self.getEnv('ActiveMntGrp')
             self.mnt_grp = self.getObj(self.mnt_grp_name,
-                                   type_class=Type.MeasurementGroup)
+                                       type_class=Type.MeasurementGroup)
         else:
             self.mnt_grp_name = mnt_grp.name
             self.mnt_grp = mnt_grp
@@ -838,6 +837,7 @@ class logmacro(Macro):
             self.setEnv('LogMacro', True)
         else:
             self.setEnv('LogMacro', False)
+
 
 class repeat(Hookable, Macro):
     """This macro executes as many repetitions of a set of macros as
