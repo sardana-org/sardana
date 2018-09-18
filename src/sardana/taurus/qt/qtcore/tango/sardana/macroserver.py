@@ -111,7 +111,7 @@ class QDoor(BaseDoor, Qt.QObject):
         if not self._use_experimet_configuration and \
                 not self._connections_prepared:
             self.connect(self.macro_server, Qt.SIGNAL("environmentChanged"),
-                         self._experimentConfiguration)
+                         self._experimentConfigurationChanged)
             self.connect(self.macro_server, Qt.SIGNAL("elementsChanged"),
                          self._elementsChanged)
             self._connections_prepared = True
@@ -125,13 +125,13 @@ class QDoor(BaseDoor, Qt.QObject):
             else:
                 obj = mg.getObj()
                 self.connect(obj, Qt.SIGNAL("configurationChanged"),
-                             self._experimentConfiguration)
+                             self._experimentConfigurationChanged)
                 self._mntgrp_connected.append(name)
 
         if len(self._mntgrp_connected) != len_mnt_grps_connected:
             self.emit(Qt.SIGNAL("experimentConfigurationChanged"))
 
-    def _experimentConfiguration(self, *args):
+    def _experimentConfigurationChanged(self, *args):
         self.emit(Qt.SIGNAL("experimentConfigurationChanged"))
 
     def getExperimentConfigurationObj(self):
@@ -151,7 +151,7 @@ class QMacroServer(BaseMacroServer, Qt.QObject):
         elementsUpdated = Qt.pyqtSignal()
         elementsChanged = Qt.pyqtSignal()
         macrosUpdated = Qt.pyqtSignal()
-        environmentChange = Qt.pyqtSignal(list)
+        environmentChanged = Qt.pyqtSignal(list)
     except AttributeError:
         pass
 
