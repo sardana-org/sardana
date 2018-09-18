@@ -114,6 +114,7 @@ class QDoor(BaseDoor, Qt.QObject):
                          self._experimentConfigurationChanged)
             self.connect(self.macro_server, Qt.SIGNAL("elementsChanged"),
                          self._elementsChanged)
+            self._elementsChanged()
             self._connections_prepared = True
 
     def _elementsChanged(self):
