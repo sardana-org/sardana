@@ -102,9 +102,9 @@ def find_diff(first, second):
     """
     Return a dict of keys that differ with another config object.  If a value
     is not found in one fo the configs, it will be represented by KEYNOTFOUND.
-    @param first:   Fist configuration to diff.
-    @param second:  Second configuration to diff.
-    @return diff:   Dict of Key => (first.val, second.val)
+    :param first: Fist configuration to diff.
+    :param second: Second configuration to diff.
+    :return: Dict of Key => (first.val, second.val)
     """
 
     KEYNOTFOUNDIN1 = 'KeyNotFoundInRemote'
