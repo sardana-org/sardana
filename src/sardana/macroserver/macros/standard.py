@@ -41,7 +41,7 @@ from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, \
     ViewOption, iMacro, Hookable
 from sardana.macroserver.msexception import StopException
 from sardana.macroserver.scan.scandata import Record
-from sardana.macroserver.msparameter import Optional
+from sardana.macroserver.macro import Optional
 
 ##########################################################################
 #
@@ -651,7 +651,8 @@ class ct(Macro, Hookable):
     hints = {'allowsHooks': ('pre-acq', 'post-acq')}
     param_def = [
         ['integ_time', Type.Float, 1.0, 'Integration time'],
-        ['mnt_grp', Type.MeasurementGroup, Optional, 'MntGrp to use']
+        ['mnt_grp', Type.MeasurementGroup, Optional, 'Measurement Group to '
+                                                     'use']
 
     ]
 
@@ -709,7 +710,8 @@ class uct(Macro):
 
     param_def = [
         ['integ_time', Type.Float, 1.0, 'Integration time'],
-        ['mnt_grp', Type.MeasurementGroup, Optional, 'MntGrp to use']
+        ['mnt_grp', Type.MeasurementGroup, Optional, 'Measurement Group to '
+                                                     'use']
 
     ]
 
