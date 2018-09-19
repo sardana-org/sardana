@@ -109,8 +109,14 @@ def find_diff(first, second):
 
     KEYNOTFOUNDIN1 = 'KeyNotFoundInRemote'
     KEYNOTFOUNDIN2 = 'KeyNotFoundInLocal'
-    SKIPKEYS = ['_controller_name']
+
+    # The GUI can not change these keys. They are changed by the server.
+    SKIPKEYS = ['_controller_name', 'description', 'timer', 'monitor', 'ndim',
+                'source']
+
+    # These keys can have a list as value.
     SKIPLIST = ['scanfile', 'plot_axes', 'prescansnapshot', 'shape']
+
     DICT_TYPES = [taurus.core.util.containers.CaselessDict, dict]
     diff = {}
     sd1 = set(first)
@@ -129,6 +135,8 @@ def find_diff(first, second):
 
     # Check for differences
     for key in sd1.intersection(sd2):
+        if key in SKIPKEYS:
+            continue
         value1 = first[key]
         value2 = second[key]
         if type(value1) in DICT_TYPES:
