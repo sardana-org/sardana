@@ -263,16 +263,33 @@ class ControllerClass(SardanaClass):
         self.types = []
         self.dict_extra = {}
         self.api_version = 1
-
         klass = self.klass
         # Generic controller information
         self.ctrl_features = tuple(klass.ctrl_features)
 
         self.ctrl_properties = props = CaselessDict()
+        self.ctrl_properties_descriptions = []
+        dep_msg = ("Defining the controller property description using a "
+                   + "string is deprecated, use "
+                   + "sardana.pool.controller.Description constant instead.")
         for k, v in klass.class_prop.items():  # old member
             props[k] = DataInfo.toDataInfo(k, v)
+            try:
+                self.ctrl_properties_descriptions.append(v[Description])
+            except KeyError:
+                self.warning(dep_msg)
+                self.ctrl_properties_descriptions.append(v['Description'])
+
         for k, v in klass.ctrl_properties.items():
             props[k] = DataInfo.toDataInfo(k, v)
+            try:
+                self.ctrl_properties_descriptions.append(v[Description])
+            except KeyError:
+                self.warning(dep_msg)
+                self.ctrl_properties_descriptions.append(v['Description'])
+
+        self.dict_extra['properties'] = tuple(klass.ctrl_properties)
+        self.dict_extra['properties_desc'] = self.ctrl_properties_descriptions
 
         self.ctrl_attributes = ctrl_attrs = CaselessDict()
         for k, v in klass.ctrl_attributes.items():

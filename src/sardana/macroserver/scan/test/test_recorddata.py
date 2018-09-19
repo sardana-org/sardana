@@ -69,6 +69,12 @@ class ScanDataTestCase(unittest.TestCase):
             self.nxs = nxs
         except ImportError:
             self.skipTest("nxs module is not available")
+        # In real world addData are always called sequentially.
+        # This test was developed assuming that these may arrive in
+        # parallel and that addData would protect the critical section, this
+        # is no more the case.
+        self.skipTest("this test wrongly assumes that data may arrive in "
+                      "parallel")
 
         unittest.TestCase.setUp(self)
         self.data_handler = DataHandler()

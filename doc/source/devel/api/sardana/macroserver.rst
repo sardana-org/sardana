@@ -11,6 +11,7 @@
     :maxdepth: 1
     
     macros <macroserver/macros>
+    scan <macroserver/scan>
     macroserver <macroserver/macroserver>
     msbase <macroserver/msbase>
     mscontainer <macroserver/mscontainer>

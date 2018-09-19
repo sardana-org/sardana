@@ -9,5 +9,6 @@
 
 .. toctree::
     :maxdepth: 1
-    
+
+    MacroSever <macroserver/MacroServer>
     MacroExecutor <macroserver/test/macroexecutor>
