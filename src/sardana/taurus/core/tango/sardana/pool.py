@@ -1786,15 +1786,15 @@ class MeasurementGroup(PoolElement):
     def _start(self, *args, **kwargs):
         try:
             self.Start()
-        except Exception as e:
-            while True:
-                try:
-                    self.stop()
-                    break
-                except Exception:
-                    pass
-            # TODO: Do more friendly user the exception message.
+        except DevFailed as e:
+            # TODO: Workaround for CORBA timeout on measurement group start
+            # remove it whenever sardana-org/sardana#93 gets implemented
+            if e[-1].reason == "API_DeviceTimedOut":
+                self.error("start timed out, trying to stop")
+                self.stop()
+                self.debug("stopped")
             raise e
+
 
     def go(self, *args, **kwargs):
         start_time = time.time()
