@@ -16,6 +16,11 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Top LICENSE file that applies to the whole project (#938)
 
 ### Fixed
+- Make `expconf` react on events of environment, measurement groups and their
+  configurations. An event offers an option to reload the whole experiment
+  configuration or keep the local changes. `expconf` started with
+  `--auto-update` option will automatically reload the whole experiment
+  configuration (#806, #882)
 - Avoid final padding in timescan when it was stopped by user (#869, #935)
 - Hook places advertised by continuous scans so the `allowHooks` hint and the
   code are coherent (#936)
