@@ -8,6 +8,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Added
 - Possibility to define macros with optional parameters. These must be the last
   ones in the definition (#285, #876)
+- Workaround for API_DeviceTimedOut errors on MeasurementGroup Start. Call Stop
+  in case this error occured (#764).
 - Support to "PETRA3 P23 6C" and "PETRA3 P23 4C" diffractometers by means
   of new controller classes and necessary adaptation to macros (#923, #921)
 - Top LICENSE file that applies to the whole project (#938)
