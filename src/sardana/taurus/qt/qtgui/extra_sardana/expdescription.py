@@ -110,7 +110,7 @@ def find_diff(first, second):
     KEYNOTFOUNDIN1 = 'KeyNotFoundInRemote'
     KEYNOTFOUNDIN2 = 'KeyNotFoundInLocal'
     SKIPKEYS = ['_controller_name']
-    SKIPLIST = ['scanfile', 'plot_axes', 'prescansnapshot']
+    SKIPLIST = ['scanfile', 'plot_axes', 'prescansnapshot', 'shape']
     DICT_TYPES = [taurus.core.util.containers.CaselessDict, dict]
     diff = {}
     sd1 = set(first)
