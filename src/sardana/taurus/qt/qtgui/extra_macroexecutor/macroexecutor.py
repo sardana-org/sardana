@@ -47,6 +47,8 @@ from sardana.taurus.qt.qtgui.extra_macroexecutor.macroparameterseditor import Pa
 from .favouriteseditor import FavouritesMacrosEditor, HistoryMacrosViewer
 from .common import MacroComboBox, MacroExecutionWindow, standardPlotablesFilter
 
+from sardana.macroserver.msparameter import Optional
+
 
 class MacroProgressBar(Qt.QProgressBar):
 
@@ -256,11 +258,16 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
             self.setStyleSheet("")
             self.setToolTip('<br>'.join(problems))
             return
-
         self.currentIndex = Qt.QModelIndex()
         ix = self.getIndex()
         self.currentIndex = ix
         counter = 1
+
+        # Get the parameters information to check if there are optional
+        # paramters
+        macro_obj = self.getModelObj()
+        macro_params_info = macro_obj.getElementInfo(mlist[0]).parameters
+
         while not ix == Qt.QModelIndex():
             try:
                 propValue = mlist[counter]
@@ -274,13 +281,20 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
                     message = "<b>" + txt + "</b> " + e[0]
                     problems.append(message)
             except IndexError:
-                txt = str(Qt.from_qvariant(
-                    ix.sibling(ix.row(), 0).data(), str))
-                problems.append("<b>" + txt + "</b> is missing!")
+                param_info = macro_params_info[counter-1]
+                # Skip validation in case of optional parameters
+                if param_info['default_value'] == Optional:
+                    self.model().setData(self.currentIndex,
+                                         Qt.QVariant(None))
+                else:
+                    txt = str(Qt.from_qvariant(
+                        ix.sibling(ix.row(), 0).data(), str))
+                    problems.append("<b>" + txt + "</b> is missing!")
 
-                data = str(Qt.from_qvariant(ix.data(), str))
-                if data != 'None':
-                    self.model().setData(self.currentIndex, Qt.QVariant('None'))
+                    data = str(Qt.from_qvariant(ix.data(), str))
+                    if data != 'None':
+                        self.model().setData(self.currentIndex,
+                                             Qt.QVariant('None'))
             counter += 1
             ix = self.getIndex()
             self.currentIndex = ix

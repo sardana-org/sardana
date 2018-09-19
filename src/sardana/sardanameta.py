@@ -141,7 +141,7 @@ class SardanaLibrary(SardanaBaseObject):
         """Returns the module name for this library.
 
         :return: the module name
-        :rtype: str"""
+        :rtype: :obj:`str`"""
         return self.name
 
     @property
@@ -169,7 +169,7 @@ class SardanaLibrary(SardanaBaseObject):
         library.
 
         :param meta_class_name: the meta class name
-        :type meta_class_name: str
+        :type meta_class_name: :obj:`str`
         :return: a meta class or None
         :rtype: :class:~`sardana.sardanameta.SardanaClass`"""
         return self.meta_classes.get(meta_class_name)
@@ -186,7 +186,7 @@ class SardanaLibrary(SardanaBaseObject):
         or False otherwise.
 
         :param meta_class_name: the meta class name
-        :type meta_class_name: str
+        :type meta_class_name: :obj:`str`
 
         :return: True if the given meta class name belongs to this library
                  or False otherwise
@@ -207,7 +207,7 @@ class SardanaLibrary(SardanaBaseObject):
         this library.
 
         :param meta_function_name: the meta function name
-        :type meta_function_name: str
+        :type meta_function_name: :obj:`str`
         :return: a meta function or None
         :rtype: :class:~`sardana.sardanameta.SardanaFunction`"""
         return self.meta_functions.get(meta_function_name)
@@ -224,7 +224,7 @@ class SardanaLibrary(SardanaBaseObject):
         or False otherwise.
 
         :param meta_function_name: the meta function name
-        :type meta_function_name: str
+        :type meta_function_name: :obj:`str`
 
         :return: True if the given meta function name belongs to this library
                  or False otherwise
@@ -236,7 +236,7 @@ class SardanaLibrary(SardanaBaseObject):
         given meta name or None if the meta does not exist in this library.
 
         :param meta_name: the meta name (class, function)
-        :type meta_name: str
+        :type meta_name: :obj:`str`
         :return: a meta or None
         :rtype: :class:~`sardana.sardanameta.SardanaCode`"""
         ret = self.get_meta_class(meta_name)
@@ -249,7 +249,7 @@ class SardanaLibrary(SardanaBaseObject):
         or False otherwise.
 
         :param meta_name: the meta name
-        :type meta_name: str
+        :type meta_name: :obj:`str`
 
         :return:
             True if the given meta (class or function) name belongs to this
@@ -287,7 +287,7 @@ class SardanaLibrary(SardanaBaseObject):
         :meth:~sardana.sardanameta.SardanaLibrary.get_module_name).
 
         :return: the module name
-        :rtype: str"""
+        :rtype: :obj:`str`"""
         return self.name
 
     def get_module_name(self):
@@ -295,7 +295,7 @@ class SardanaLibrary(SardanaBaseObject):
         :meth:~sardana.sardanameta.SardanaLibrary.get_name).
 
         :return: the module name
-        :rtype: str"""
+        :rtype: :obj:`str`"""
         return self.module_name
 
     def get_module(self):
@@ -310,7 +310,7 @@ class SardanaLibrary(SardanaBaseObject):
         documentation exists.
 
         :return: this library documentation or None
-        :rtype: str"""
+        :rtype: :obj:`str`"""
         return self.description
 
     def get_code(self):
@@ -325,7 +325,7 @@ class SardanaLibrary(SardanaBaseObject):
         like: /abs/path/filename.py
 
         :return: this library file path
-        :rtype: str"""
+        :rtype: :obj:`str`"""
         if self.file_path is None:
             return None
         if self.file_path.endswith('.pyc'):
@@ -337,7 +337,7 @@ class SardanaLibrary(SardanaBaseObject):
         like: filename.py
 
         :return: this library file name
-        :rtype: str"""
+        :rtype: :obj:`str`"""
         return self.file_name
 
     def has_errors(self):
@@ -436,7 +436,7 @@ class SardanaCode(SardanaBaseObject):
         """Returns the module name for this class.
 
         :return: the module name
-        :rtype: str"""
+        :rtype: :obj:`str`"""
         return self.lib.get_module_name()
 
     @property
@@ -445,7 +445,7 @@ class SardanaCode(SardanaBaseObject):
         posix systems is something like: /abs/path/filename.py
 
         :return: the file path for for the library where this class is
-        :rtype: str"""
+        :rtype: :obj:`str`"""
         return self.lib.file_path
 
     @property
@@ -454,7 +454,7 @@ class SardanaCode(SardanaBaseObject):
         systems is something like: filename.py
 
         :return: the file name for the library where this class is
-        :rtype: str"""
+        :rtype: :obj:`str`"""
         return self.lib.file_name
 
     @property
@@ -463,7 +463,7 @@ class SardanaCode(SardanaBaseObject):
         posix systems is something like: /abs/path
 
         :return: the absolute path for the library where this class is
-        :rtype: str"""
+        :rtype: :obj:`str`"""
         return self.lib.path
 
     @property

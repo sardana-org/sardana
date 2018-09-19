@@ -298,9 +298,9 @@ class EnvironmentManager(MacroServerManager):
         door.
 
         :param door_name:  the door name (case insensitive)
-        :type door_name: str
+        :type door_name: :obj:`str`
         :param macro_name: the macro name
-        :type macro_name: str
+        :type macro_name: :obj:`str`
 
         :return: a dictionary with the resulting environment"""
         door_name = door_name.lower()

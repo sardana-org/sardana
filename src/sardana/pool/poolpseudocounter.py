@@ -62,11 +62,13 @@ class ValueBuffer(ValueBuffer_):
                     return
                 except LateValueException:
                     self.remove_physical_values(idx)
-                    return
+                    break
                 physical_values.append(value)
-            value = self.obj.calc(physical_values)
-            self.append(value, idx)
-            self.remove_physical_values(idx)
+            else:
+                # loop collected all values so we can proceed to calculate
+                value = self.obj.calc(physical_values)
+                self.append(value, idx)
+                self.remove_physical_values(idx)
 
     def remove_physical_values(self, idx, force=False):
         for value_buf in self.obj.get_physical_value_buffer_iterator():

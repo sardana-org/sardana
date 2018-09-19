@@ -101,12 +101,6 @@ How to use the standard macros?
 -------------------------------
 The list of all standard macros and their usage can be found here **<LINK>**.
 
-How to add conditions in macros?
---------------------------------
-Executing macros and moving elements can be subject to external conditions 
-(for example an interlock). New types of software interlocks can be easily
-added to the system and are documented here **<LINK>**.
-
 How to write your own Taurus application?
 -----------------------------------------
 You have basically two possibilities to write your own Taurus_ application
