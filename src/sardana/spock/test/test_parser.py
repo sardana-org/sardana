@@ -30,25 +30,25 @@ from taurus.test import insertTest
 from sardana.spock.parser import ParamParser
 
 
-@insertTest(helper_name="parse",
-            params_str='ScanFile "[\\"file.nxs\\", \\"file.dat\\"]"',
-            params=["ScanFile", '["file.nxs", "file.dat"]'])
-@insertTest(helper_name="parse", params_str="[1 [] 3]",
-            params=[["1", [], "3"]])
-@insertTest(helper_name="parse",
-            params_str="2 3 ['Hello world!' 'How are you?']",
-            params=["2", "3", ["Hello world!", "How are you?"]])
-@insertTest(helper_name="parse", params_str="ScanFile file.dat",
-            params=["ScanFile", "file.dat"])
-@insertTest(helper_name="parse", params_str="'2 3'", params=["2 3"])
-@insertTest(helper_name="parse", params_str='"2 3"', params=["2 3"])
-@insertTest(helper_name="parse", params_str="[[mot01 3][mot02 5]] ct01 999",
-            params=[[["mot01", "3"], ["mot02", "5"]], "ct01", "999"])
-@insertTest(helper_name="parse", params_str="[[2 3][4 5]]",
-            params=[[["2", "3"], ["4", "5"]]])
-@insertTest(helper_name="parse", params_str="1 [2 3]",
-            params=["1", ["2", "3"]])
-@insertTest(helper_name="parse", params_str="2 3", params=["2", "3"])
+# @insertTest(helper_name="parse",
+#             params_str='ScanFile "[\\"file.nxs\\", \\"file.dat\\"]"',
+#             params=["ScanFile", '["file.nxs", "file.dat"]'])
+# @insertTest(helper_name="parse", params_str="[1 [] 3]",
+#             params=[["1", [], "3"]])
+# @insertTest(helper_name="parse",
+#             params_str="2 3 ['Hello world!' 'How are you?']",
+#             params=["2", "3", ["Hello world!", "How are you?"]])
+# @insertTest(helper_name="parse", params_str="ScanFile file.dat",
+#             params=["ScanFile", "file.dat"])
+# @insertTest(helper_name="parse", params_str="'2 3'", params=["2 3"])
+# @insertTest(helper_name="parse", params_str='"2 3"', params=["2 3"])
+# @insertTest(helper_name="parse", params_str="[[mot01 3][mot02 5]] ct01 999",
+#             params=[[["mot01", "3"], ["mot02", "5"]], "ct01", "999"])
+# @insertTest(helper_name="parse", params_str="[[2 3][4 5]]",
+#             params=[[["2", "3"], ["4", "5"]]])
+# @insertTest(helper_name="parse", params_str="1 [2 3]",
+#             params=["1", ["2", "3"]])
+# @insertTest(helper_name="parse", params_str="2 3", params=["2", "3"])
 class ParamParserTestCase(unittest.TestCase):
     """Unit tests for ParamParser class."""
 
