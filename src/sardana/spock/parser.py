@@ -58,6 +58,26 @@ def generate_tokens(text):
             yield tok
 
 
+def is_repeat_param(param_def):
+    return isinstance(param_def["type"], list)
+
+
+def is_repeat_param_single(param_def):
+    return len(param_def) == 1
+
+
+class ParseError(Exception):
+    pass
+
+
+class UnrecognizedParamValue(ParseError):
+    pass
+
+
+class ExcessParamValue(ParseError):
+    pass
+
+
 class ParamParser:
     """Implementation of a recursive descent parser. Use the ._accept() method
     to test and accept the current lookahead token. Use the ._expect()
@@ -67,12 +87,17 @@ class ParamParser:
     Inspired on Python Cookbook 3 (chapter 2.19)
     """
 
+    def __init__(self, params_def=None):
+        self._params_def = params_def
+
     def parse(self, text):
         self.tokens = generate_tokens(text)
         self.tok = None             # Last symbol consumed
         self.nexttok = None         # Next symbol tokenized
         self._advance()             # Load first lookahead token
-        return self.param()
+        params = self._params()
+        self._end_check()
+        return params
 
     def _advance(self):
         """Advance one token ahead"""
@@ -93,24 +118,146 @@ class ParamParser:
 
     # Grammar rules follow
 
-    def param(self):
-        """Interpret parameters by iterating over generated tokens. Respect
-        quotes for string parameters and parenthesis for repeat parameters.
+    def _params(self, params_def=None):
+        """Interpret parameter values by iterating over generated tokens
+        according to parameters definition.
+
+        It is used either at the macro level or a the repeat parameter
+        repetition level.
+
+        :param params_def: parameters definition as used by the
+            :meth:`sardana.macroserver.msmetamacro.Parametrizable.get_parameter`
+            or by the
+            `attr:`sardana.taurus.core.tango.sardana.macro.MacroInfo.parameters`
+        :type params_def: list<dict>
+        :param end_check: whether to check if there are parameter values
+            exceeding parameters definition
+        :type end_check: bool
+        :return: parameter values
+        :rtype: list
         """
+        params_def = params_def or self._params_def
+        len_params_def = len(params_def)
         params = []
-        while True:
-            if self._accept("QUOTEDPARAM"):
-                # quoted parameters allows using quotes escaped by \\
-                string = self.tok.value
-                string = string.replace('\\"', '"')
-                params.append(string)
-            elif self._accept("SINGQUOTEDPARAM"):
-                params.append(self.tok.value)
-            elif self._accept("PARAM"):
-                params.append(self.tok.value)
-            elif self._accept("LPAREN"):
-                params.append(self.param())
-                self._expect("RPAREN")
-            else:
-                break
+        if self.nexttok is not None:
+            for param_idx, param_def in enumerate(params_def):
+                if is_repeat_param(param_def):
+                    last_param = False
+                    if param_idx == len_params_def - 1:
+                        last_param = True
+                    repeat_param_def = param_def["type"]
+                    param_value = self._repeat_param(repeat_param_def, last_param)
+                else:
+                    param_value = self._param()
+                params.append(param_value)
         return params
+
+    def _param(self):
+        """Interpret normal parameter value. Respect quotes for string
+        parameters.
+
+        :return: parameter value
+        :rtype: str
+        """
+        if self._accept("QUOTEDPARAM"):
+            # quoted parameters allows using quotes escaped by \\
+            string = self.tok.value
+            string = string.replace('\\"', '"')
+            param = string
+        elif self._accept("SINGQUOTEDPARAM"):
+            param = self.tok.value
+        elif self._accept("PARAM"):
+            tok_value = self.tok.value
+            param = tok_value
+        else:
+            msg = "%s is not a valid param value" % self.tok.value
+            raise UnrecognizedParamValue(msg)
+        return param
+
+    def _repeat_param(self, repeat_param_def, last_param):
+        """Interpret repeat parameter.
+
+        Accepts repeat parameters using the following rules:
+        * enclosed in parenthesis
+        * non-enclosed in parenthesis multiple repetitions of the last repeat
+          parameter (can be single or multiple)
+        * non-enclosed in parenthesis one repetition of single repeat
+        parameter at arbitrary position
+
+        :param repeat_param_def: repeat parameter definition
+        :type repeat_param_def: list<dict>
+        :param last_param: whether this repeat parameter is the last in the
+            definition
+        :type last_param: bool
+        :return: repeat parameter value
+        :rtype: list
+        """
+        repeats = []
+
+        if self._accept("LPAREN"):
+            while True:
+                repeat = self._repeat(repeat_param_def)
+                if repeat is None:
+                    break
+                repeats.append(repeat)
+            self._expect("RPAREN")
+        else:
+            single = is_repeat_param_single(repeat_param_def)
+            if last_param:
+                while True:
+                    repeat = []
+                    for _ in repeat_param_def:
+                        try:
+                            param = self._param()
+                        except UnrecognizedParamValue:
+                            return repeats
+                        if single:
+                            repeat = param
+                        else:
+                            repeat.append(param)
+                    repeats.append(repeat)
+            elif single:
+                param = self._param()
+                repeats = [param]
+        return repeats
+
+    def _repeat(self, repeat_param_def):
+        """Interpret one repetition of the repeat parameter.
+
+        :param repeat_param_def: repeat parameter definition
+        :type repeat_param_def: list<dict>
+        :return: repeat value
+        :rtype: list or None
+        """
+        repeat = None
+        if self._accept("LPAREN"):
+            # empty brackets will be interpreted as a default value
+            if self._accept("RPAREN"):
+                repeat = []
+            else:
+                repeat = self._params(repeat_param_def)
+                # repetitions of single repeat parameters are not enclosed
+                # in parenthesis so remove it
+                if is_repeat_param_single(repeat_param_def):
+                    repeat = repeat[0]
+                self._expect("RPAREN")
+        else:
+            try:
+                repeat = self._param()
+            except UnrecognizedParamValue:
+                # no repeat found - return None
+                pass
+        return repeat
+
+    def _end_check(self):
+        """Check if there are excessive tokens."""
+        excess_tokens = ""
+        if len(self._params_def) == 0 and self.nexttok is not None:
+            excess_tokens += self.nexttok.value
+        while True:
+            self._advance()
+            if self.nexttok is None:
+                break
+            excess_tokens += self.nexttok.value
+        if len(excess_tokens) > 0:
+            raise ExcessParamValue("excess tokens are %s" % excess_tokens)
