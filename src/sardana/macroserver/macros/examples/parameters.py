@@ -56,6 +56,19 @@ class pt1(Macro):
         pass
 
 
+class pt1d(Macro):
+    """Macro with one float parameter with default value..
+    Usage from Spock, ex.:
+    pt1d 1
+    pt1d
+    """
+
+    param_def = [['value', Type.Float, None, 'some bloody float']]
+
+    def run(self, f):
+        pass
+
+
 class pt2(Macro):
     """Macro with one Motor parameter: Each parameter is described in the
     param_def sequence as being a sequence of four elements: name, type,
