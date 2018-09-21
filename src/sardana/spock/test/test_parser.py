@@ -61,3 +61,255 @@ class ParamParserTestCase(unittest.TestCase):
         msg = "Parsing failed (result: %r; expected: %r)" %\
             (result, params)
         self.assertListEqual(result, params, msg)
+
+
+pt0_params_def = []
+
+pt1d_params_def = [
+    {
+        "default_value": 99,
+        "description": "some bloody float",
+        "max": None,
+        "min": 1,
+        "name": "value",
+        "type": "Float"
+    }
+]
+
+pt3_params_def = [
+    {
+        "default_value": None,
+        "description": "List of values",
+        "max": None,
+        "min": 1,
+        "name": "numb_list",
+        "type": [
+            {
+                "default_value": None,
+                "description": "value",
+                "max": None,
+                "min": 1,
+                "name": "position",
+                "type": "Float"
+            }
+        ]
+    }
+]
+
+pt3d_params_def = [
+    {
+        "default_value": None,
+        "description": "List of values",
+        "max": None,
+        "min": 1,
+        "name": "numb_list",
+        "type": [
+            {
+                "default_value": 21,
+                "description": "value",
+                "max": None,
+                "min": 1,
+                "name": "position",
+                "type": "Float"
+            }
+        ]
+    }
+]
+
+pt5_params_def = [
+    {
+        "default_value": None,
+        "description": "Motor to move",
+        "max": None,
+        "min": 1,
+        "name": "motor",
+        "type": "Motor"
+    },
+    {
+        "default_value": None,
+        "description": "List of values",
+        "max": None,
+        "min": 1,
+        "name": "numb_list",
+        "type": [
+            {
+                "default_value": None,
+                "description": "value",
+                "max": None,
+                "min": 1,
+                "name": "position",
+                "type": "Float"
+            }
+        ]
+    }
+]
+
+pt7_params_def = [
+    {
+        "default_value": None,
+        "description": "List of motor/position pairs",
+        "max": None,
+        "min": 1,
+        "name": "m_p_pair",
+        "type": [
+            {
+                "default_value": None,
+                "description": "Motor to move",
+                "max": None,
+                "min": 1,
+                "name": "motor",
+                "type": "Motor"
+            },
+            {
+                "default_value": None,
+                "description": "Position to move to",
+                "max": None,
+                "min": 1,
+                "name": "position",
+                "type": "Float"
+            }
+        ]
+    }
+]
+
+pt10_params_def = [
+    {
+        "default_value": None,
+        "description": "List of values",
+        "max": None,
+        "min": 1,
+        "name": "numb_list",
+        "type": [
+            {
+                "default_value": None,
+                "description": "value",
+                "max": None,
+                "min": 1,
+                "name": "pos",
+                "type": "Float"
+            }
+        ]
+    },
+    {
+        "default_value": None,
+        "description": "Motor to move",
+        "max": None,
+        "min": 1,
+        "name": "motor",
+        "type": "Motor"
+    },
+]
+
+pt13_params_def = [
+    {
+        "default_value": None,
+        "description": "Motor groups",
+        "max": None,
+        "min": 1,
+        "name": "motor_group_list",
+        "type": [
+            {
+                "default_value": None,
+                "description": "List of motors",
+                "max": None,
+                "min": 1,
+                "name": "motor list",
+                "type": [
+                    {
+                        "default_value": None,
+                        "description": "Motor to move",
+                        "max": None,
+                        "min": 1,
+                        "name": "motor",
+                        "type": "Motor"
+                    }
+                ]
+            }
+        ]
+    }
+]
+
+pt14_params_def = [
+    {
+        "default_value": None,
+        "description": "Motor groups",
+        "max": None,
+        "min": 1,
+        "name": "motor_group_list",
+        "type": [
+            {
+                "default_value": None,
+                "description": "List of motors",
+                "max": None,
+                "min": 1,
+                "name": "motor list",
+                "type": [
+                    {
+                        "default_value": None,
+                        "description": "Motor to move",
+                        "max": None,
+                        "min": 1,
+                        "name": "motor",
+                        "type": "Motor"
+                    }
+                ]
+            },
+            {
+                "default_value": None,
+                "description": "Number",
+                "max": None,
+                "min": 1,
+                "name": "float",
+                "type": "Float"
+            }
+        ]
+    }
+]
+
+
+@insertTest(helper_name="parse", params_def=pt0_params_def,
+            params_str="", params=[])
+@insertTest(helper_name="parse", params_def=pt1d_params_def,
+            params_str="1", params=["1"])
+@insertTest(helper_name="parse", params_def=pt1d_params_def,
+            params_str="", params=[])
+@insertTest(helper_name="parse", params_def=pt3_params_def,
+            params_str="1 34 15", params=[["1", "34", "15"]])
+@insertTest(helper_name="parse", params_def=pt3_params_def,
+            params_str="[1 34 15]", params=[["1", "34", "15"]])
+@insertTest(helper_name="parse", params_def=pt3d_params_def,
+            params_str="1 34 15", params=[["1", "34", "15"]])
+@insertTest(helper_name="parse", params_def=pt3d_params_def,
+            params_str="[1 34 15]", params=[["1", "34", "15"]])
+@insertTest(helper_name="parse", params_def=pt3d_params_def,
+            params_str="[1 [] 15]", params=[["1", [], "15"]])
+@insertTest(helper_name="parse", params_def=pt5_params_def,
+            params_str="mot1 1 3", params=["mot1", ["1", "3"]])
+@insertTest(helper_name="parse", params_def=pt5_params_def,
+            params_str="mot1 [1 3]", params=["mot1", ["1", "3"]])
+@insertTest(helper_name="parse", params_def=pt7_params_def,
+            params_str="mot1 1 mot2 3",
+            params=[[["mot1", "1"], ["mot2", "3"]]])
+@insertTest(helper_name="parse", params_def=pt7_params_def,
+            params_str="[[mot1 1] [mot2 3]]",
+            params=[[["mot1", "1"], ["mot2", "3"]]])
+@insertTest(helper_name="parse", params_def=pt10_params_def,
+            params_str="[1 3] mot1", params=[["1", "3"], "mot1"])
+@insertTest(helper_name="parse", params_def=pt10_params_def,
+            params_str="1 mot1", params=[["1"], "mot1"])
+@insertTest(helper_name="parse", params_def=pt13_params_def,
+            params_str="[[mot1 mot2] [mot3 mot4]]",
+            params=[[["mot1", "mot2"], ["mot3", "mot4"]]])
+@insertTest(helper_name="parse", params_def=pt14_params_def,
+            params_str="[[[mot1 mot2] 3] [[mot3] 5]]",
+            params=[[[["mot1", "mot2"], "3"], [["mot3"], "5"]]])
+class ParamParserWithDefTestCase(unittest.TestCase):
+    """Unit tests for ParamParser class initialized with parameters
+    definition.
+    """
+    def parse(self, params_def, params_str, params):
+        p = ParamParser(params_def)
+        result = p.parse(params_str)
+        msg = "Parsing failed (result: %r; expected: %r)" % \
+              (result, params)
+        self.assertListEqual(result, params, msg)
