@@ -59,6 +59,7 @@ class SardanaBaseObject(EventGenerator, EventReceiver, Logger):
         Logger.__init__(self, self._name)
         self._manager = weakref.ref(kwargs.pop('manager'))
         self._parent = weakref.ref(kwargs.pop('parent', self.manager))
+        self.isoverwritten = kwargs.pop('isoverwritten', False)
 
     def get_manager(self):
         """Return the :class:`sardana.Manager` which *owns* this sardana
