@@ -21,6 +21,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   configuration or keep the local changes. `expconf` started with
   `--auto-update` option will automatically reload the whole experiment
   configuration (#806, #882)
+- Reload macro library overriding another library (#927, #946)
 - Avoid final padding in timescan when it was stopped by user (#869, #935)
 - Hook places advertised by continuous scans so the `allowHooks` hint and the
   code are coherent (#936)
