@@ -383,7 +383,7 @@ class _ca(Macro, _diffrac):
                              str_pos[self.labelmotor["Mu"]],
                              str_pos[self.labelmotor["Omega"]],
                              str_pos[self.labelmotor["Chi"]],
-                             str_pos[self.labelmotor["Phui"]],
+                             str_pos[self.labelmotor["Phi"]],
                              str_pos[self.labelmotor["Gamma"]],
                              str_pos[self.labelmotor["Delta"]]))
 
