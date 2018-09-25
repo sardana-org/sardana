@@ -146,7 +146,8 @@ class ParamParser:
                     if param_idx == len_params_def - 1:
                         last_param = True
                     repeat_param_def = param_def["type"]
-                    param_value = self._repeat_param(repeat_param_def, last_param)
+                    param_value = self._repeat_param(repeat_param_def,
+                                                     last_param)
                 else:
                     param_value = self._param()
                 params.append(param_value)

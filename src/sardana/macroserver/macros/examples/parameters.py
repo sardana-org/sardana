@@ -23,7 +23,7 @@
 
 """This module contains macros that demonstrate the usage of macro parameters"""
 
-from sardana.macroserver.macro import *
+from sardana.macroserver.macro import Macro, Type, ParamRepeat
 
 __all__ = ["pt0", "pt1", "pt2", "pt3", "pt3d", "pt4", "pt5", "pt6", "pt7",
            "pt7d1", "pt7d2", "pt8", "pt9", "pt10", "pt11", "pt12", "pt13",
