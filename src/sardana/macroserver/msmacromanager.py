@@ -719,9 +719,14 @@ class MacroManager(MacroServerManager):
             ret.append(json_codec.encode(('', macro_meta.serialize()))[1])
         return ret
 
-    def _createMacroNode(self, macro_name, macro_params):
+    def _createMacroNode(self, macro_name, macro_params_raw):
         macro = self.getMacro(macro_name)
         params_def = macro.get_parameter()
+        # merge params to a single, space separated, string (spock like)
+        macro_params_str = " ".join(macro_params_raw)
+        param_parser = ParamParser(params_def)
+        # parse string with macro params to the correct list representation
+        macro_params = param_parser.parse(macro_params_str)
         return createMacroNode(macro_name, params_def, macro_params)
 
     def decodeMacroParameters(self, door, raw_params):
