@@ -95,7 +95,6 @@ class ParamParser:
         self.tok = None             # Last symbol consumed
         self.nexttok = None         # Next symbol tokenized
         self._advance()             # Load first lookahead token
-        #import pdb; pdb.set_trace()
         params = self._params()
         self._end_check()
         return params

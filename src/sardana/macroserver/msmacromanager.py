@@ -733,9 +733,9 @@ class MacroManager(MacroServerManager):
         """Decode macro parameters
 
         :param door: (sardana.macroserver.msdoor.MSDoor) door object
-        :param raw_params: (lxml.etree._Element or list) xml element representing
-                          macro with subelements representing parameters or list
-                          with macro name followed by parameter values
+        :param raw_params: (lxml.etree._Element or list) xml element
+            representing macro with subelements representing parameters or
+            list with macro name followed by parameter values
         """
         if isinstance(raw_params, etree._Element):
             macro_name = raw_params.get("name")
