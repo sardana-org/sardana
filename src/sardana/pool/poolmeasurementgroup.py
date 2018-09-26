@@ -203,6 +203,22 @@ class PoolMeasurementGroup(PoolGroupElement):
             if element.get_type() is ElementType.TriggerGate:
                 return
         return PoolGroupElement.add_user_element(self, element, index)
+
+    def rename_element(self, old_name, new_name, propagate=1):
+        """Rename element in the controller.
+
+        :param old_name: old name of the element
+        :type old_name: :obj:`str`
+        :param new_name: new name of the element
+        :type new_name: :obj:`str`
+        :param propagate: 0 for not propagating, 1 to propagate,
+               2 propagate with priority
+        :type propagate: :obj:`int`
+        """
+        self._config['label'] = new_name
+        self.fire_event(EventType("configuration", priority=propagate),
+                        self._config)
+
     # -------------------------------------------------------------------------
     # configuration
     # -------------------------------------------------------------------------
