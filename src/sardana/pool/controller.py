@@ -891,7 +891,8 @@ class MotorController(Controller, Startable, Stopable, Readable):
         pass
 
 
-class CounterTimerController(Controller, Readable, Startable, Stopable, Loadable):
+class CounterTimerController(Controller, Readable, Startable, Stopable,
+                             Loadable, Preparable):
     """Base class for a counter/timer controller. Inherit from this class to
     implement your own counter/timer controller for the device pool.
 
@@ -1054,7 +1055,8 @@ class ZeroDController(Controller, Readable, Stopable):
         pass
 
 
-class OneDController(Controller, Readable, Startable, Stopable, Loadable):
+class OneDController(Controller, Readable, Startable, Stopable, Loadable,
+                     Preparable):
     """Base class for a 1D controller. Inherit from this class to
     implement your own 1D controller for the device pool.
 
@@ -1092,7 +1094,8 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable):
         return self.GetPar(axis, parameter)
 
 
-class TwoDController(Controller, Readable, Startable, Stopable, Loadable):
+class TwoDController(Controller, Readable, Startable, Stopable, Loadable,
+                     Preparable):
     """Base class for a 2D controller. Inherit from this class to
     implement your own 2D controller for the device pool."""
 
