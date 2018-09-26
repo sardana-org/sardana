@@ -655,6 +655,28 @@ class Readable(object):
         raise NotImplementedError("ReadOne must be defined in the controller")
 
 
+class Preparable(object):
+    """A Preparable interface. A controller for which its axis are
+    'pareparable' for a measurement (like a counter, 1D or 2D for example)
+    should implement this interface
+
+    .. note: Do not inherit directly from Preparable."""
+
+    def PrepareOne(self, axis, value, repetitions):
+        """**Controller API**. Override if necessary.
+        Called to load the integration time / monitor value and number of
+        repetitions.
+        Default implementation does nothing.
+
+        :param int axis: axis number
+        :param float value: integration time /monitor value
+        :param int repetitions: number of repetitions
+        :param float value: integration time /monitor value
+        """
+        raise NotImplementedError("PrepareOne must be defined in the "
+                                  "controller")
+
+
 class Loadable(object):
     """A Loadable interface. A controller for which it's axis are 'loadable'
     (like a counter, 1D or 2D for example) should implement this interface
