@@ -25,6 +25,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Avoid final padding in timescan when it was stopped by user (#869, #935)
 - Hook places advertised by continuous scans so the `allowHooks` hint and the
   code are coherent (#936)
+- Macro/controller module description when module does not have a docstring
+  (#945)
 
 ### Changed
 - Move pre-scan and post-scan hooks out of `scan_loop` method (#920, #922,
