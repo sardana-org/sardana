@@ -299,7 +299,9 @@ class BaseDoor(MacroServerDevice):
     log_streams = (Error, Warning, Info, Output, Debug, Result)
 
     # maximum execution time without user interruption
-    InteractiveTimeout = 0.1
+    # this also means a time window within door state events must arrive
+    # 0.1 s was not enough on Windows (see sardana-ord/sardana#725)
+    InteractiveTimeout = .3
 
     def __init__(self, name, **kw):
         self._log_attr = CaselessDict()
@@ -785,13 +787,21 @@ class BaseMacroServer(MacroServerDevice):
         self.call__init__(MacroServerDevice, name, **kw)
 
         self.__elems_attr = self.getAttribute("Elements")
-        self.__elems_attr.setSerializationMode(TaurusSerializationMode.Serial)
+        try:
+            serialization_mode = TaurusSerializationMode.TangoSerial
+        except AttributeError:
+            serialization_mode = TaurusSerializationMode.Serial
+        self.__elems_attr.setSerializationMode(serialization_mode)
         self.__elems_attr.addListener(self.on_elements_changed)
         self.__elems_attr.setSerializationMode(
             TaurusSerializationMode.Concurrent)
 
         self.__env_attr = self.getAttribute('Environment')
-        self.__env_attr.setSerializationMode(TaurusSerializationMode.Serial)
+        try:
+            serialization_mode = TaurusSerializationMode.TangoSerial
+        except AttributeError:
+            serialization_mode = TaurusSerializationMode.Serial
+        self.__env_attr.setSerializationMode(serialization_mode)
         self.__env_attr.addListener(self.on_environment_changed)
         self.__env_attr.setSerializationMode(
             TaurusSerializationMode.Concurrent)

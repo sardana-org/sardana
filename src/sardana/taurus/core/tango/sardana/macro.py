@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from __future__ import absolute_import
 ##############################################################################
 ##
 # This file is part of Sardana
@@ -41,6 +41,7 @@ import PyTango
 
 from taurus.core.util.user import USER_NAME
 from taurus.core.util.codecs import CodecFactory
+from sardana.macroserver.msparameter import Optional
 
 
 class MacroRunException(Exception):
@@ -487,10 +488,10 @@ class SingleParamNode(ParamNode):
         if param is None:
             return
         self.setType(str(param.get('type')))
-        self.setDefValue(str(param.get('default_value', '')))
+        self.setDefValue(param.get('default_value', None))
         if self.type() == "User":
-            self.setDefValue(str(USER_NAME))
-        self.setValue(self.defValue())
+            self.setDefValue(USER_NAME)
+        self._value = None
 
     def __len__(self):
         return 0
@@ -507,7 +508,9 @@ class SingleParamNode(ParamNode):
         self._value = value
 
     def defValue(self):
-        return self._defValue
+        if self._defValue is None:
+            return None
+        return str(self._defValue)
 
     def setDefValue(self, defValue):
         if defValue == "None":
@@ -523,8 +526,11 @@ class SingleParamNode(ParamNode):
     def toXml(self):
         value = self.value()
         paramElement = etree.Element("param", name=self.name())
-        if not value is None:
-            paramElement.set("value", value)
+        # set value attribute only if it is different than the default value
+        # the server will assign the default value anyway.
+        if value is not None or str(value).lower() != 'none':
+            if value != self.defValue():
+                paramElement.set("value", value)
         return paramElement
 
     def fromXml(self, xmlElement):
@@ -542,9 +548,14 @@ class SingleParamNode(ParamNode):
 
     def toRun(self):
         val = self.value()
-        if val is None or val == "None" or val == "":
-            alert = "Parameter <b>" + self.name() + "</b> is missing.<br>"
-            return ([val], alert)
+        if val is None or val == "None":
+            if self.defValue() is None:
+                alert = "Parameter <b>" + self.name() + "</b> is missing.<br>"
+                return ([val], alert)
+            elif self._defValue == Optional:
+                val = ''
+            else:
+                val = self.defValue()
         return ([val], "")
 
     def toList(self):

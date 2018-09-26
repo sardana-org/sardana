@@ -641,7 +641,7 @@ class Controller(PoolElement):
         return sorted(axes)
 
     def getUsedAxis(self):
-        msg = ("getUsedAxis is deprecated since version Jul18. ",
+        msg = ("getUsedAxis is deprecated since version 2.5.0. ",
                "Use getUsedAxes instead.")
         self.warning(msg)
         self.getUsedAxes()
@@ -1784,7 +1784,17 @@ class MeasurementGroup(PoolElement):
         self.setConfiguration(cfg.raw_data)
 
     def _start(self, *args, **kwargs):
-        self.Start()
+        try:
+            self.Start()
+        except DevFailed as e:
+            # TODO: Workaround for CORBA timeout on measurement group start
+            # remove it whenever sardana-org/sardana#93 gets implemented
+            if e[-1].reason == "API_DeviceTimedOut":
+                self.error("start timed out, trying to stop")
+                self.stop()
+                self.debug("stopped")
+            raise e
+
 
     def go(self, *args, **kwargs):
         start_time = time.time()

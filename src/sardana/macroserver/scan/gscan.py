@@ -788,6 +788,13 @@ class GScan(Logger):
     MAX_ITER = 100000
 
     def _estimate(self, max_iter=None):
+        """Estimate time and intervals of a scan.
+
+        Time estimation considers motion time (including going to the start
+        position) and acquisition time.
+
+        Interval estimation is a number of scan trajectory intervals.
+        """
         with_time = hasattr(self.macro, "getTimeEstimation")
         with_interval = hasattr(self.macro, "getIntervalEstimation")
         if with_time and with_interval:
@@ -937,6 +944,10 @@ class GScan(Logger):
             pass
 
     def step_scan(self):
+        macro = self.macro
+        if hasattr(macro, 'getHooks'):
+            for hook in macro.getHooks('pre-scan'):
+                hook()
         self.start()
         try:
             for i in self.scan_loop():
@@ -953,7 +964,11 @@ class GScan(Logger):
             self._env["endstatus"] = endstatus
             self.end()
             self.do_restore()
-            if endstatus != ScanEndStatus.Normal:
+            if endstatus == ScanEndStatus.Normal:
+                if hasattr(macro, 'getHooks'):
+                    for hook in macro.getHooks('post-scan'):
+                        hook()
+            else:
                 raise
 
     def scan_loop(self):
@@ -997,10 +1012,6 @@ class SScan(GScan):
         else:
             yield 0.0
 
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
-                hook()
-
         self._sum_motion_time = 0
         self._sum_acq_time = 0
 
@@ -1011,10 +1022,6 @@ class SScan(GScan):
             lstep = step
             if scream:
                 yield ((i + 1) / nr_points) * 100.0
-
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('post-scan'):
-                hook()
 
         if not scream:
             yield 100.0
@@ -1748,10 +1755,6 @@ class CSScan(CScan):
         point_nb, step = -1, None
         # data = self.data
 
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
-                hook()
-
         # start move & acquisition as close as possible
         # from this point on synchronization becomes critical
         manager.add_job(self.go_through_waypoints)
@@ -1864,10 +1867,6 @@ class CSScan(CScan):
                 sum_delay += (curr_time - old_curr_time) - integ_time
 
         self.motion_end_event.wait()
-
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('post-scan'):
-                hook()
 
         env = self._env
         env['acqtime'] = sum_integ_time
@@ -2108,6 +2107,32 @@ class CTScan(CScan, CAcquisition):
                                   decel_time=dec_time,
                                   min_vel=base_vel)
             ideal_path = MotionPath(ideal_vmotor, start, end, active_time)
+
+            # check if calculated ideal velocity is accepted by hardware
+            backup_vel = moveable.getVelocity(force=True)
+            ideal_max_vel = try_vel = ideal_path.max_vel
+            try:
+                while True:
+                    moveable.setVelocity(try_vel)
+                    get_vel = moveable.getVelocity(force=True)
+                    if get_vel < ideal_max_vel:
+                        msg = 'Ideal scan velocity {0} of motor {1} cannot ' \
+                              'be reached, {2} will be used instead'.format(
+                                  ideal_max_vel, moveable.name, get_vel)
+                        self.macro.warning(msg)
+                        ideal_path.max_vel = get_vel
+                        break
+                    elif get_vel > ideal_max_vel:
+                        try_vel -= (get_vel - try_vel)
+                    else:
+                        break
+            except Exception:
+                self.macro.debug("Unknown error when trying if hardware "
+                                 "accepts ideal scan velocity", exc_info=1)
+                ideal_path.max_vel = ideal_max_vel
+            finally:
+                moveable.setVelocity(backup_vel)
+
             ideal_path.moveable = moveable
             ideal_path.apply_correction = True
             ideal_paths.append(ideal_path)
@@ -2419,15 +2444,7 @@ class CTScan(CScan, CAcquisition):
         # point_nb, step = -1, None
         # data = self.data
 
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
-                hook()
-
         self.go_through_waypoints()
-
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('post-scan'):
-                hook()
 
         env = self._env
         env['acqtime'] = sum_integ_time
@@ -2636,7 +2653,7 @@ class TScan(GScan, CAcquisition):
         self.macro.warning(msg)
 
         if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
+            for hook in macro.getHooks('pre-acq'):
                 hook()
 
         yield 0
@@ -2645,11 +2662,12 @@ class TScan(GScan, CAcquisition):
         self.debug("Waiting for value buffer events to be processed")
         self.wait_value_buffer()
         self.join_thread_pool()
+        self.macro.checkPoint()
         self._fill_missing_records()
         yield 100
 
         if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('post-scan'):
+            for hook in macro.getHooks('post-acq'):
                 hook()
 
     def _fill_missing_records(self):

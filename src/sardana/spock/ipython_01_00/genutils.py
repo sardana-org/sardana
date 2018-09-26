@@ -304,7 +304,8 @@ def get_macroserver_for_door(door_name):
             if dev.lower() == door_name:
                 for i, klass in enumerate(klasses):
                     if klass == 'MacroServer':
-                        return "%s:%s/%s" % (db.get_db_host(), db.get_db_port(), devs[i])
+                        full_name, _, _ = from_name_to_tango(devs[i])
+                        return full_name
     else:
         return None
 
@@ -444,6 +445,14 @@ def print_dev_from_class(classname, dft=None):
 
 
 def from_name_to_tango(name):
+    try:
+        from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
+        return TangoDeviceNameValidator().getNames(name)
+    except ImportError:
+        return _from_name_to_tango(name)
+
+
+def _from_name_to_tango(name):
 
     db = get_tango_db()
 
@@ -609,7 +618,9 @@ def _get_dev(dev_type):
         taurus_dev = getattr(spock_config, taurus_dev_var)
     if taurus_dev is None:
         # TODO: For Taurus 4 compatibility
-        dev_name = "tango://%s" % getattr(spock_config, dev_type + '_name')
+        dev_name = getattr(spock_config, dev_type + '_name')
+        if not dev_name.startswith("tango://"):
+            dev_name = "tango://%s" % dev_name
         factory = Factory()
         taurus_dev = factory.getDevice(dev_name)
         import PyTango
@@ -653,7 +664,10 @@ def _macro_completer(self, event):
     if possible_params:
         res = []
         for param in possible_params:
-            res.extend(ms.getElementNamesWithInterface(param['type']))
+            if param['type'].lower() == 'boolean':
+                res.extend(['True', 'False'])
+            else:
+                res.extend(ms.getElementNamesWithInterface(param['type']))
         return res
 
 
@@ -1122,6 +1136,7 @@ object?   -> Details about 'object'. ?object also works, ?? prints more.
     term_app.display_banner = True
     term_app.gui = gui_mode
     term_app.pylab = 'qt'
+    term_app.pylab_import_all = False
     #term_app.nosep = False
     #term_app.classic = True
 
