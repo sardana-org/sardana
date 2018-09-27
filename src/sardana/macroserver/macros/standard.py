@@ -380,7 +380,7 @@ class wm(Macro):
                 try:
                     val1 = fmt % motor.getDialPosition(force=True)
                     val1 = str_fmt % val1
-                except Exception as e:
+                except Exception:
                     val1 = str_fmt % motor.getDialPosition(force=True)
 
                 dPosObj = motor.getDialPositionObj()
