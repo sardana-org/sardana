@@ -662,14 +662,12 @@ class Preparable(object):
 
     .. note: Do not inherit directly from Preparable."""
 
-    def PrepareOne(self, axis, value, repetitions):
+    def PrepareOne(self, axis, repetitions):
         """**Controller API**. Override if necessary.
-        Called to load the integration time / monitor value and number of
-        repetitions.
+        Called to load the number of repetitions.
         Default implementation does nothing.
 
         :param int axis: axis number
-        :param float value: integration time /monitor value
         :param int repetitions: number of repetitions
         :param float value: integration time /monitor value
         """
