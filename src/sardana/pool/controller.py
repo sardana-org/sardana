@@ -671,8 +671,7 @@ class Preparable(object):
         :param int repetitions: number of repetitions
         :param float value: integration time /monitor value
         """
-        raise NotImplementedError("PrepareOne must be defined in the "
-                                  "controller")
+        pass
 
 
 class Loadable(object):
