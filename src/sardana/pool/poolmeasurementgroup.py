@@ -46,6 +46,7 @@ from sardana.pool.pooldefs import (AcqMode, AcqSynchType, SynchParam, AcqSynch,
                                    SynchDomain)
 from sardana.pool.poolgroupelement import PoolGroupElement
 from sardana.pool.poolacquisition import PoolAcquisition
+from sardana.pool.poolsynchronization import SynchronizationDescription
 from sardana.pool.poolexternal import PoolExternalObject
 
 from sardana.taurus.core.tango.sardana import PlotType, Normalization
@@ -120,53 +121,6 @@ def _to_fqdn(name, logger=None):
                " Re-apply configuration in order to upgrade.")
         logger.warning(msg)
     return full_name
-
-
-class SynchronizationDescription(list):
-    """Synchronization description. It is composed from groups - repetitions
-    of equidistant synchronization events. Each group is described by
-    :class:`~sardana.pool.pooldefs.SynchParam` parameters which may have
-    values in :class:`~sardana.pool.pooldefs.SynchDomain` domains.
-    """
-
-    @property
-    def repetitions(self):
-        repetitions = 0
-        for group in self:
-            repetitions += group[SynchParam.Repeats]
-        return repetitions
-
-    @property
-    def integration_time(self):
-        return self._get_param(SynchParam.Active)
-
-    @property
-    def total_time(self):
-        return self._get_param(SynchParam.Total)
-
-    def _get_param(self, param, domain=SynchDomain.Time):
-        """
-        Extract parameter from synchronization description and its groups. If
-        there is only one group in the synchronization then returns float
-        with the value. Otherwise a list of floats with different values.
-
-        :param param: parameter type
-        :type param: :class:`~sardana.pool.pooldefs.SynchParam`
-        :param domain: domain
-        :type param: :class:`~sardana.pool.pooldefs.SynchDomain`
-        :return: parameter value(s)
-        :rtype float or [float]
-        """
-
-        if len(self) == 1:
-            return self[0][param][domain]
-
-        values = []
-        for group in self:
-            value = group[param][domain]
-            repeats = group[SynchParam.Repeats]
-            values += [value] * repeats
-        return values
 
 
 class PoolMeasurementGroup(PoolGroupElement):
