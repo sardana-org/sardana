@@ -123,18 +123,23 @@ def _to_fqdn(name, logger=None):
 
 
 class SynchronizationDescription(list):
+    """Synchronization description. It is composed from groups - repetitions
+    of equidistant synchronization events. Each group is described by
+    :class:`~sardana.pool.pooldefs.SynchParam` parameters which may have
+    values in :class:`~sardana.pool.pooldefs.SynchDomain` domains.
+    """
 
     def _get_param(self, param, domain=SynchDomain.Time):
         """
-        Extract parameter from synchronization dict. If there is only
-        one group in the synchronization than returns float with the value.
-        Otherwise a list of floats with different values.
+        Extract parameter from synchronization description and its groups. If
+        there is only one group in the synchronization then returns float
+        with the value. Otherwise a list of floats with different values.
 
         :param param: parameter type
-        :type param: SynchParam
+        :type param: :class:`~sardana.pool.pooldefs.SynchParam`
         :param domain: domain
-        :type param: SynchDomain
-        :return:
+        :type param: :class:`~sardana.pool.pooldefs.SynchDomain`
+        :return: parameter value(s)
         :rtype float or [float]
         """
 
