@@ -122,6 +122,48 @@ def _to_fqdn(name, logger=None):
     return full_name
 
 
+class PoolMGSynchronization(list):
+
+    def _get_param(self, param, domain=SynchDomain.Time):
+        """
+        Extract parameter from synchronization dict. If there is only
+        one group in the synchronization than returns float with the value.
+        Otherwise a list of floats with different values.
+
+        :param param: parameter type
+        :type param: SynchParam
+        :param domain: domain
+        :type param: SynchDomain
+        :return:
+        :rtype float or [float]
+        """
+
+        if len(self) == 1:
+            return self[0][param][domain]
+
+        values = []
+        for group in self:
+            value = group[param][domain]
+            repeats = group[SynchParam.Repeats]
+            values += [value] * repeats
+        return values
+
+    @property
+    def repetitions(self):
+        repetitions = 0
+        for group in self:
+            repetitions += group[SynchParam.Repeats]
+        return repetitions
+
+    @property
+    def integration_time(self):
+        return self._get_param(SynchParam.Active)
+
+    @property
+    def total_time(self):
+        return self._get_param(SynchParam.Total)
+
+
 class PoolMeasurementGroup(PoolGroupElement):
 
     DFT_DESC = 'General purpose measurement group'
