@@ -180,7 +180,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         # by default software synchronizer initial domain is set to Position
         self._sw_synch_initial_domain = SynchDomain.Position
 
-        self._synchronization = []
+        self._synchronization = PoolMGSynchronization()
         # dict with channel and its acquisition synchronization
         # key: PoolBaseChannel; value: AcqSynch
         self._channel_to_acq_synch = {}
@@ -623,14 +623,14 @@ class PoolMeasurementGroup(PoolGroupElement):
     # -------------------------------------------------------------------------
 
     def get_integration_time(self):
-        if len(self._synchronization) == 0:
+        integration_time = self._synchronization.integration_time
+        if type(integration_time) == float:
+            return integration_time
+        elif len(integration_time) == 0:
             raise Exception("The synchronization group has not been"
                             " initialized")
-        elif len(self._synchronization) > 1:
+        elif len(integration_time) > 1:
             raise Exception("There are more than one synchronization groups")
-        else:
-            return self._synchronization[0][SynchParam.Active][
-                SynchDomain.Time]
 
     def set_integration_time(self, integration_time, propagate=1):
         total_time = integration_time + self.latency_time
@@ -691,7 +691,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         return self._synchronization
 
     def set_synchronization(self, synchronization, propagate=1):
-        self._synchronization = synchronization
+        self._synchronization = PoolMGSynchronization(synchronization)
         self._config_dirty = True  # acquisition mode goes to configuration
         if not propagate:
             return
