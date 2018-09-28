@@ -58,5 +58,50 @@ Design
     * Per acquisition preparation with repetitions=1 e.g. Load(One|All)
 6. Modify acquisition actions (and synchronization action if necessary) so 
 they support the new concepts added in points 2 and 4.
-5. Extend GSF (step mode) with measurement preparation (repetitions=n) if 
-possible i.e. scan macro knows beforehand the number of points.
+5. *Extend Generic Scan Framework* (GSF), more preciselly scan in step mode 
+with measurement preparation (repetitions=n) if possible i.e. scan macro knows
+beforehand the number of points.
+
+Implementation
+--------------
+
+Measurement group is extended by the *prepare* command with two parameters: 
+synchronization description and number of repeats (these repeats is a 
+different concept then the one from the synchronization description). The 
+second one indicates  how many times measurement group will be started, with
+the *start* command, to measure according to the synchronization description. 
+
+1. Measurement group - Tango device class
+    * Add `Prepare` command. TODO: investigate the best way to pass 
+    synchronization description, as JSON serialized string, together with the 
+    repeats integer.
+    * Remove `synchronization` attribute (experimental API) - no backwards 
+    compatibility.
+2. Measurement group - core class
+    * Add `prepare(synchronization, repeats=1)` method
+    * Remove `synchronization` property  (experimental API) - no backwards 
+    compatibility. 
+3. Measurement group - Taurus extension
+    * Add `prepare` method which simply maps to `Prepare` Tango command
+    * Add `acquire` method according to the following pseudo code:
+        * `Start()`
+        * `waitFinish()`
+    * Implement `count` method according to the following pseudo code:
+        * `prepare(synchronization & repeats = 1)` where synchronization 
+        contains the integration time
+        * `acquire()`
+    * Implement `count_continuous` (previous `measure`) method according to 
+    the following pseudo code:
+        * `prepare(synchronization & repeats = 1)` where synchronization may
+        contain the continuous acquisition description
+        * `subscribeValueBuffer()`
+        * `acquire()`
+        * `unsubscribeValueBuffer()`
+4. GSF - step scan
+    * `SScan` implemented according to the following pseudo code:
+        * If number of points is known:
+            * `prepare(synchronization, repeats=n)` where synchronization 
+            contains the integration time and n means number of points
+            * `for step in range(n): acquire()`
+        * If number of points is unknown:
+            * `while new_step: acquire()`
