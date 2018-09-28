@@ -129,6 +129,21 @@ class SynchronizationDescription(list):
     values in :class:`~sardana.pool.pooldefs.SynchDomain` domains.
     """
 
+    @property
+    def repetitions(self):
+        repetitions = 0
+        for group in self:
+            repetitions += group[SynchParam.Repeats]
+        return repetitions
+
+    @property
+    def integration_time(self):
+        return self._get_param(SynchParam.Active)
+
+    @property
+    def total_time(self):
+        return self._get_param(SynchParam.Total)
+
     def _get_param(self, param, domain=SynchDomain.Time):
         """
         Extract parameter from synchronization description and its groups. If
@@ -152,21 +167,6 @@ class SynchronizationDescription(list):
             repeats = group[SynchParam.Repeats]
             values += [value] * repeats
         return values
-
-    @property
-    def repetitions(self):
-        repetitions = 0
-        for group in self:
-            repetitions += group[SynchParam.Repeats]
-        return repetitions
-
-    @property
-    def integration_time(self):
-        return self._get_param(SynchParam.Active)
-
-    @property
-    def total_time(self):
-        return self._get_param(SynchParam.Total)
 
 
 class PoolMeasurementGroup(PoolGroupElement):
