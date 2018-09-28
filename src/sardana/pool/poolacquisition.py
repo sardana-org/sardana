@@ -164,50 +164,6 @@ def getTGConfiguration(MGcfg):
     return TGcfg, _tg_element_list
 
 
-def extract_integ_time(synchronization):
-    """Extract integration time(s) from synchronization dict. If there is only
-    one group in the synchronization than returns float with the integration
-    time. Otherwise a list of floats with different integration times.
-
-    TODO: (technical debt) All the MeasurementGroup synchronization
-    logic should be encapsulate in a dedicated class instead of
-    using a basic data structures like dict or lists...
-
-    :param synchronization: group(s) where each group is described by
-        SynchParam(s)
-    :type synchronization: list(dict)
-    :return list(float) or float
-    """
-    if len(synchronization) == 1:
-        integ_time = synchronization[0][SynchParam.Active][SynchDomain.Time]
-    else:
-        integ_time = []
-        for group in synchronization:
-            active_time = group[SynchParam.Active][SynchDomain.Time]
-            repeats = group[SynchParam.Repeats]
-            integ_time += [active_time] * repeats
-    return integ_time
-
-
-def extract_repetitions(synchronization):
-    """Extract repetitions from synchronization dict.
-
-    TODO: (technical debt) All the MeasurementGroup synchronization
-    logic should be encapsulate in a dedicated class instead of
-    using a basic data structures like dict or lists...
-
-    :param synchronization: group(s) where each group is described by
-        SynchParam(s)
-    :type synchronization: list(dict)
-    :return: number of repetitions
-    :rtype: int
-    """
-    repetitions = 0
-    for group in synchronization:
-        repetitions += group[SynchParam.Repeats]
-    return repetitions
-
-
 def is_value_error(value):
     if isinstance(value, SardanaValue) and value.error:
         return True
@@ -308,8 +264,8 @@ class PoolAcquisition(PoolAction):
                 pseudo_elem.clear_value_buffer()
         config = kwargs['config']
         synchronization = kwargs["synchronization"]
-        integ_time = extract_integ_time(synchronization)
-        repetitions = extract_repetitions(synchronization)
+        integ_time = synchronization.integration_time
+        repetitions = synchronization.repetitions
         # TODO: this code splits the global mg configuration into
         # experimental channels triggered by hw and experimental channels
         # triggered by sw. Refactor it!!!!
