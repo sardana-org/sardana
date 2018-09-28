@@ -122,7 +122,7 @@ def _to_fqdn(name, logger=None):
     return full_name
 
 
-class PoolMGSynchronization(list):
+class SynchronizationDescription(list):
 
     def _get_param(self, param, domain=SynchDomain.Time):
         """
@@ -180,7 +180,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         # by default software synchronizer initial domain is set to Position
         self._sw_synch_initial_domain = SynchDomain.Position
 
-        self._synchronization = PoolMGSynchronization()
+        self._synchronization = SynchronizationDescription()
         # dict with channel and its acquisition synchronization
         # key: PoolBaseChannel; value: AcqSynch
         self._channel_to_acq_synch = {}
@@ -691,7 +691,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         return self._synchronization
 
     def set_synchronization(self, synchronization, propagate=1):
-        self._synchronization = PoolMGSynchronization(synchronization)
+        self._synchronization = SynchronizationDescription(synchronization)
         self._config_dirty = True  # acquisition mode goes to configuration
         if not propagate:
             return
