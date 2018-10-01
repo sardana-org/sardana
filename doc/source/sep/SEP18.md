@@ -67,21 +67,20 @@ Implementation
 
 ### Measurement Group
 
-Measurement group is extended by the *prepare* command with two parameters: 
-synchronization description and number of repeats (these repeats is a 
-different concept then the one from the synchronization description). The 
-second one indicates  how many times measurement group will be started, with
-the *start* command, to measure according to the synchronization description. 
+Measurement group is extended by the *prepare* command with two parameters:
+synchronization description and number of starts. The second one indicates
+how many times measurement group will be started, with the *start* command,
+to measure according to the synchronization description.
 
 1. Measurement group - Tango device class
     * Add `Prepare` command. TODO: investigate the best way to pass 
-    synchronization description, as JSON serialized string, together with the 
-    repeats integer.
-    * Remove `synchronization` attribute (experimental API) - no backwards 
+    synchronization description, as JSON serialized string, together with the
+    starts integer.
+    * Remove `synchronization` attribute (experimental API) - no backwards
     compatibility.
 2. Measurement group - core class
-    * Add `prepare(synchronization, repeats=1)` method
-    * Remove `synchronization` property  (experimental API) - no backwards 
+    * Add `prepare(synchronization, starts=1)` method
+    * Remove `synchronization` property  (experimental API) - no backwards
     compatibility. 
 3. Measurement group - Taurus extension
     * Add `prepare` method which simply maps to `Prepare` Tango command
@@ -91,12 +90,12 @@ the *start* command, to measure according to the synchronization description.
         * `Start()`
         * `waitFinish()`
     * Implement `count` method according to the following pseudo code:
-        * `prepare(synchronization & repeats = 1)` where synchronization 
+        * `prepare(synchronization & starts = 1)` where synchronization
         contains the integration time
         * `count_single()`
-    * Implement `count_continuous` (previous `measure`) method according to 
+    * Implement `count_continuous` (previous `measure`) method according to
     the following pseudo code:
-        * `prepare(synchronization & repeats = 1)` where synchronization may
+        * `prepare(synchronization & starts = 1)` where synchronization may
         contain the continuous acquisition description
         * `subscribeValueBuffer()`
         * `count_single()`
@@ -104,7 +103,7 @@ the *start* command, to measure according to the synchronization description.
 4. GSF - step scan
     * `SScan` implemented according to the following pseudo code:
         * If number of points is known:
-            * `prepare(synchronization, repeats=n)` where synchronization 
+            * `prepare(synchronization, start=n)` where synchronization
             contains the integration time and n means number of points
             * `for step in range(n): count_single()`
         * If number of points is unknown:
