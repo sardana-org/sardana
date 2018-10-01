@@ -65,6 +65,8 @@ beforehand the number of points.
 Implementation
 --------------
 
+### Measurement Group
+
 Measurement group is extended by the *prepare* command with two parameters: 
 synchronization description and number of repeats (these repeats is a 
 different concept then the one from the synchronization description). The 
@@ -107,3 +109,134 @@ the *start* command, to measure according to the synchronization description.
             * `for step in range(n): count_single()`
         * If number of points is unknown:
             * `while new_step: count()`
+    * `CTScan` does not require changes, it simply calls `count_continuous`
+
+### Controllers
+
+C/T, 1D and 2D controllers (plugins) API is extended. TODO: Choose between
+the following options:
+
+#### Option 1
+
+* Add `Preparable` interface with `PrepareOne(axis, starts)` method`
+* Make C/T, 1D and 2D controllers inherit from this interface
+* Add extra argument to `LoadOne`, etc. methods of the `Loadable` interface
+`latency_time`: `LoadOne(axis, integ_time, repeats, latency_time)`
+
+This option maintains backwards compatibility.
+
+The following examples demonstrates the sequence of calls (only the ones
+relevant to the SEP18) of one channel (axis 1) involved in the given
+acquisition. This channel is at the same time the timer.
+
+* **step scan** 5 acquisitions x 0.1 s of integration time
+```python
+PrepareOne(1, 5)
+for acquisition in range(5):
+    LoadOne(1, 0.1, 1, 0)
+    StartOne(1)
+```
+
+* **continuous scan (hw trigger)** 5 acquisitions x 0.1 s of integration
+time and 0.05 s of latency time
+```python
+PrepareOne(1, 1)
+LoadOne(1, 0.1, 5, 0.05)  # latency time can be ignored
+StartOne(1)
+```
+
+* **continuous scan (sw trigger)**
+```python
+PrepareOne(1, 5)
+for trigger in range(5):
+    LoadOne(1, 0.1, 1, 0.05)  # latency time can be ignored
+    StartOne(1)
+```
+
+* **continuous scan (hw gate)**
+```python
+PrepareOne(1, 1)
+LoadOne(1, 0.1, 5, 0.05)  # integration time and latency time can be ignored
+StartOne(1)
+```
+
+* **continuous scan (sw gate)**
+```python
+PrepareOne(1, 5)
+for gate in range(5):
+    LoadOne(1, 0.1, 1, 0.05)  # integration time and latency time can be ignored
+    StartOne(1)
+```
+* **continuous scan (hw start)**
+```python
+PrepareOne(1, 1)
+LoadOne(1, 0.1, 5, 0.05)
+StartOne(1)
+```
+
+* **continuous scan (sw start)**
+```python
+PrepareOne(1, 1)
+LoadOne(1, 0.1, 5, 0.05)
+StartOne(1)
+```
+
+#### Option 2
+
+* Add extra arguments to `LoadOne`, etc. methods of the `Loadable` interface
+`latency_time` and `starts` and switch the order of arguments so the API is:
+`LoadOne(axis, integ_time, latency_time, repeats, starts)`
+* Make the `LoadOne`, etc. be called only once, in the measurement group
+prepare command, per measurement.
+
+This option **breaks** backwards compatibility.
+
+The following examples demonstrates the sequence of calls (only the ones
+relevant to the SEP18) of one channel (axis 1) involved in the given
+acquisition. This channel is at the same time the timer.
+
+* **step scan** 5 acquisitions x 0.1 s of integration time
+```python
+LoadOne(1, 0.1, 0, 1, 5)
+for acquisition in range(5):
+    StartOne(1)
+```
+
+* **continuous scan (hw trigger)** 5 acquisitions x 0.1 s of integration
+time and 0.05 s of latency time
+```python
+LoadOne(1, 0.1, 0.05, 5, 1)  # latency time can be ignored
+StartOne(1)
+```
+
+* **continuous scan (sw trigger)**
+```python
+LoadOne(1, 0.1, 0.05, 1, 5)  # latency time can be ignored
+for trigger in range(5):
+    StartOne(1)
+```
+
+* **continuous scan (hw gate)**
+```python
+LoadOne(1, 0.1, 0.05, 5, 1)  # integration time and latency time can be ignored
+StartOne(1)
+```
+
+* **continuous scan (sw gate)**
+```python
+LoadOne(1, 0.1, 0.05, 1, 5)  # integration time and latency time can be ignored
+for gate in range(5):
+    StartOne(1)
+```
+
+* **continuous scan (hw start)**
+```python
+LoadOne(1, 0.1, 0.05, 5, 1)
+StartOne(1)
+```
+
+* **continuous scan (sw start)**
+```python
+LoadOne(1, 0.1, 0.05, 5, 1)
+StartOne(1)
+```
