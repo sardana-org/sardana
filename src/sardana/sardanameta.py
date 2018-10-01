@@ -120,8 +120,9 @@ class SardanaLibrary(SardanaBaseObject):
             name, _ = os.path.splitext(self.file_name)
         self.meta_classes = {}
         self.meta_functions = {}
-        if module is not None and module.__doc__:
-            self.description = module.__doc__
+        if module is not None:
+            if module.__doc__ is not None:
+                self.description = module.__doc__
             self._code = getsourcelines(module)[0]
         else:
             self.description = name + " in error!"

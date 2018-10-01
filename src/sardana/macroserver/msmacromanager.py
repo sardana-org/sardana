@@ -484,13 +484,6 @@ class MacroManager(MacroServerManager):
             means the current MacroPath will be used]
         :return: the MacroLibrary object for the reloaded macro library"""
         path = path or self.getMacroPath()
-        # reverse the path order:
-        # more priority elements last. This way if there are repeated elements
-        # they first ones (lower priority) will be overwritten by the last ones
-        if path:
-            path = copy.copy(path)
-            path.reverse()
-
         mod_manager = ModuleManager()
         m, exc_info = None, None
         valid, exc_info = mod_manager.isValidModule(module_name, path)

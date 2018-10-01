@@ -5,6 +5,33 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
+### Added
+- Possibility to define macros with optional parameters. These must be the last
+  ones in the definition (#285, #876, #943, #941)
+- Workaround for API_DeviceTimedOut errors on MeasurementGroup Start. Call Stop
+  in case this error occured (#764).
+- Optional measurement group parameter to `ct` and `uct` macros (#940, #473)
+- Support to "PETRA3 P23 6C" and "PETRA3 P23 4C" diffractometers by means
+  of new controller classes and necessary adaptation to macros (#923, #921)
+- Top LICENSE file that applies to the whole project (#938)
+
+### Fixed
+- Make `expconf` react on events of environment, measurement groups and their
+  configurations. An event offers an option to reload the whole experiment
+  configuration or keep the local changes. `expconf` started with
+  `--auto-update` option will automatically reload the whole experiment
+  configuration (#806, #882)
+- Reload macro library overriding another library (#927, #946)
+- Avoid final padding in timescan when it was stopped by user (#869, #935)
+- Hook places advertised by continuous scans so the `allowHooks` hint and the
+  code are coherent (#936)
+- Macro/controller module description when module does not have a docstring
+  (#945)
+
+### Changed
+- Move pre-scan and post-scan hooks out of `scan_loop` method (#920, #922,
+  #933)
+
 ## [2.5.0] 2018-08-10
 
 ### Added

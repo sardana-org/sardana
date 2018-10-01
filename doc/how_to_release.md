@@ -1,4 +1,4 @@
-# How to release (draft)
+# How to 
 
 This is a guide for sardana release managers: it details the steps for making
 an official release, including a checklist of stuff that should be manually
