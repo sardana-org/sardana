@@ -299,7 +299,8 @@ class PoolAcquisition(PoolAction):
         elem_type = element.get_type()
         if elem_type in TYPE_TIMERABLE_ELEMENTS:
             main_element = self.main_element
-            channel_to_acq_synch = main_element._channel_to_acq_synch
+            channel_to_acq_synch = \
+                main_element.configuration.channel_to_acq_synch
             acq_synch = channel_to_acq_synch.get(element)
             if acq_synch in (AcqSynch.SoftwareTrigger,
                              AcqSynch.SoftwareGate):
