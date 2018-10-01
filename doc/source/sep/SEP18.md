@@ -83,25 +83,27 @@ the *start* command, to measure according to the synchronization description.
     compatibility. 
 3. Measurement group - Taurus extension
     * Add `prepare` method which simply maps to `Prepare` Tango command
-    * Add `acquire` method according to the following pseudo code:
+    * Add `count_single` (TODO: find the best name for this 
+    method, other candidates are `count_raw`, `acquire`) method according to 
+    the following pseudo code:
         * `Start()`
         * `waitFinish()`
     * Implement `count` method according to the following pseudo code:
         * `prepare(synchronization & repeats = 1)` where synchronization 
         contains the integration time
-        * `acquire()`
+        * `count_single()`
     * Implement `count_continuous` (previous `measure`) method according to 
     the following pseudo code:
         * `prepare(synchronization & repeats = 1)` where synchronization may
         contain the continuous acquisition description
         * `subscribeValueBuffer()`
-        * `acquire()`
+        * `count_single()`
         * `unsubscribeValueBuffer()`
 4. GSF - step scan
     * `SScan` implemented according to the following pseudo code:
         * If number of points is known:
             * `prepare(synchronization, repeats=n)` where synchronization 
             contains the integration time and n means number of points
-            * `for step in range(n): acquire()`
+            * `for step in range(n): count_single()`
         * If number of points is unknown:
-            * `while new_step: acquire()`
+            * `while new_step: count()`
