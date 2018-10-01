@@ -65,6 +65,18 @@ beforehand the number of points.
 Implementation
 --------------
 
+### GSF
+
+* `SScan` (step scan) implemented according to the following pseudo code:
+    * If number of points is known:
+        * `prepare(synchronization, start=n)` where synchronization
+        contains the integration time and n means number of points
+        * `for step in range(n): count_single()`
+    * If number of points is unknown:
+        * `while new_step: count()`
+* `CTScan` (continuous scan) does not require changes, it simply calls 
+`count_continuous`
+
 ### Measurement Group
 
 Measurement group is extended by the *prepare* command with two parameters:
@@ -100,15 +112,6 @@ to measure according to the synchronization description.
         * `subscribeValueBuffer()`
         * `count_single()`
         * `unsubscribeValueBuffer()`
-4. GSF - step scan
-    * `SScan` implemented according to the following pseudo code:
-        * If number of points is known:
-            * `prepare(synchronization, start=n)` where synchronization
-            contains the integration time and n means number of points
-            * `for step in range(n): count_single()`
-        * If number of points is unknown:
-            * `while new_step: count()`
-    * `CTScan` does not require changes, it simply calls `count_continuous`
 
 ### Controllers
 
