@@ -279,10 +279,10 @@ StartOne(1)
 
 The same as option 2 but maintaining the backwards compatibility in the 
 following way:
-* Developing a new C/T, 1D, 2D will require implementing `ControllerAPI` 
-class member with 2.6 value.
 * Acquisition actions will call the `LoadOne`, etc. methods depending on the
-`ControllerAPI` values.
+controllers implementations (more preciselly using the `inspect.getargspec`
+and counting the number of arguments). This will require much more complicated
+acquisition actions.
 
 ### Dummy C/T controller
 Implement `SoftwareStart` and `HardwareStart` in the
