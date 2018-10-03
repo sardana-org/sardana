@@ -113,6 +113,17 @@ to measure according to the synchronization description.
         * `count_single()`
         * `unsubscribeValueBuffer()`
 
+### Software synchronizer
+
+* Add `start` and `end` events. Start is emitted before the first `active`
+event and end is emitted after the last `passive` event. 
+
+### Acquisition actions
+
+* Add `PoolAcquisitionSoftwareStart` action that will start channels on
+software synchronizer `start` event and stop channels on software 
+synchronizer `end` event.  
+
 ### Controllers
 
 C/T, 1D and 2D controllers (plugins) API is extended. TODO: Choose between
@@ -249,3 +260,8 @@ StartOne(1)
 LoadOne(1, 0.1, 0.05, 5, 1)
 StartOne(1)
 ```
+
+### Dummy C/T controller
+Implement `SoftwareStart` and `HardwareStart` in the
+`DummyCounterTimerController` - minimal implementation.
+  
