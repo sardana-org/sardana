@@ -132,6 +132,9 @@ class MGConfiguration(object):
         self._mg = weakref.ref(mg)()
         self._config = None
         self.use_fqdn = True
+        self._init_data()
+
+    def _init_data(self):
         # list of controller with channels enabled.
         self.enabled_ctrls = []
         # dict with channel and its acquisition synchronization
@@ -140,6 +143,18 @@ class MGConfiguration(object):
         # dict with controller and its acquisition synchronization
         # key: PoolController; value: AcqSynch
         self.ctrl_to_acq_synch = {}
+        # TODO: Do the documentation
+        self.ctrl_sw_sync = {}
+        self.ctrl_hw_sync = {}
+        self.ctrl_sw_start = {}
+        self.ctrl_0d_sync = {}
+        # TODO: Do the documentation
+        self.sw_sync_timer = None
+        self.sw_sync_monitor = None
+        self.sw_start_timer = None
+        self.sw_start_monitor = None
+        self.hw_sync_timer = None
+        self.hw_sync_monitor = None
 
     def __check_config(func):
         def wrapper(self, *args, **kwargs):
@@ -359,6 +374,8 @@ class MGConfiguration(object):
 
     def _build_configuration(self, config=None):
         """Builds a configuration object from the list of elements"""
+        self._init_data()
+
         if config is None:
             config = {}
             user_elements = self._mg.get_user_elements()
@@ -380,7 +397,6 @@ class MGConfiguration(object):
             config['controllers'] = controllers = {}
 
             external_user_elements = []
-            self.enabled_ctrls = []
             for index, element in enumerate(user_elements):
                 elem_type = element.get_type()
                 if elem_type == ElementType.External:
@@ -415,6 +431,7 @@ class MGConfiguration(object):
                 channel_data['index'] = user_elements.index(element)
                 channel_data = self._build_channel_defaults(channel_data,
                                                             element)
+
             config['label'] = self._mg.name
             config['description'] = self.DFT_DESC
 
@@ -428,7 +445,6 @@ class MGConfiguration(object):
                                                                 element)
         else:
             # create a configuration based on a new configuration
-            self.enabled_ctrls = []
             user_elem_ids = {}
             tg_elem_ids = []
             pool = self._mg.pool
@@ -500,7 +516,65 @@ class MGConfiguration(object):
                                monitor_ctrl_data['monitor'].name,
                                g_monitor.name)
                 monitor_ctrl_data['monitor'] != g_monitor
+
         self._config = config
+        self._prepare_data()
+
+    def _prepare_data(self):
+        """
+        Split MeasurementGroup configuration with channels
+        triggered by SW Trigger and channels triggered by HW trigger
+
+        """
+
+        ctrls_in = self._config['controllers']
+        for ctrl, ctrl_info in ctrls_in.items():
+            external = isinstance(ctrl, str) and ctrl.startswith('__')
+            # skipping external controllers e.g. Tango attributes
+            if external:
+                continue
+            # splitting ZeroD based on the type
+            if ctrl.get_ctrl_types()[0] == ElementType.ZeroDExpChannel:
+                self.ctrl_0d_sync[ctrl] = ctrl_info
+            # ignoring PseudoCounter
+            elif ctrl.get_ctrl_types()[0] == ElementType.PseudoCounter:
+                pass
+            # splitting rest of the channels based on the assigned trigger
+            else:
+                synchronizer = ctrl_info.get('synchronizer')
+                if synchronizer is None or synchronizer == 'software':
+                    synchronization = ctrl_info.get('synchronization')
+                    if synchronization in [AcqSynch.SoftwareTrigger,
+                                           AcqSynch.SoftwareGate]:
+                        self.ctrl_sw_sync[ctrl] = ctrl_info
+                    else:
+                        self.ctrl_sw_start[ctrl] = ctrl_info
+                else:
+                    self.ctrl_hw_sync[ctrl] = ctrl_info
+
+        def find_master(ctrls, role):
+            master_idx = float("+inf")
+            master = None
+            for ctrl_info in ctrls.values():
+                element = ctrl_info[role]
+                if element in ctrl_info["channels"]:
+                    element_idx = ctrl_info["channels"][element]["index"]
+                    element_enabled = ctrl_info["channels"][element]["enabled"]
+                    # Find master only if is enabled
+                    if element_idx < master_idx and element_enabled:
+                        master = element
+                        master_idx = element_idx
+            return master
+
+        if len(self.ctrl_sw_sync):
+            self.sw_sync_timer = find_master(self.ctrl_sw_sync, "timer")
+            self.sw_sync_monitor = find_master(self.ctrl_sw_sync, "monitor")
+        if len(self.ctrl_sw_start):
+            self.sw_start_timer = find_master(self.ctrl_sw_start, "timer")
+            self.sw_start_monitor = find_master(self.ctrl_sw_start, "monitor")
+        if len(self.ctrl_hw_sync):
+            self.hw_sync_timer = find_master(self.ctrl_hw_sync, "timer")
+            self.hw_sync_monitor = find_master(self.ctrl_hw_sync, "monitor")
 
 
 class PoolMeasurementGroup(PoolGroupElement):
