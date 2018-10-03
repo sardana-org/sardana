@@ -274,7 +274,15 @@ LoadOne(1, 0.1, 0.05, 5, 1)
 StartOne(1)
 ```
 
+#### Option 3
+
+The same as option 2 but maintaining the backwards compatibility in the 
+following way:
+* Developing a new C/T, 1D, 2D will require implementing `ControllerAPI` 
+class member with 2.6 value.
+* Acquisition actions will call the `LoadOne`, etc. methods depending on the
+`ControllerAPI` values.
+
 ### Dummy C/T controller
 Implement `SoftwareStart` and `HardwareStart` in the
 `DummyCounterTimerController` - minimal implementation.
-  
