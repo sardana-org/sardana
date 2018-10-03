@@ -109,21 +109,19 @@ the following way: setting of integration time attribute will allow starts
 until the next preparation.
 4. Measurement group - Taurus extension
     * Add `prepare` method which simply maps to `Prepare` Tango command
-    * Add `count_single` (TODO: find the best name for this 
-    method, other candidates are `count_raw`, `acquire`) method according to 
-    the following pseudo code:
-        * `Start()`
+    * Add `count_raw` method according to the following pseudo code:
+        * `start()`
         * `waitFinish()`
     * Implement `count` method according to the following pseudo code:
         * `prepare(synchronization & starts = 1)` where synchronization
         contains the integration time
-        * `count_single()`
+        * `count_raw()`
     * Implement `count_continuous` (previous `measure`) method according to
     the following pseudo code:
         * `prepare(synchronization & starts = 1)` where synchronization may
         contain the continuous acquisition description
         * `subscribeValueBuffer()`
-        * `count_single()`
+        * `count_raw()`
         * `unsubscribeValueBuffer()`
 
 ### Software synchronizer
