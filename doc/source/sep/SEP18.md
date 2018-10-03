@@ -46,7 +46,7 @@ Design
     * The measurement group will be armed for as many starts as specified in
     the preparation and the preparation will expire whenever all starts gets
     called or in case of stop/abort.
-    * Setting the integration time via the attribute will de deprecated in
+    * Setting the integration time via the attribute will be deprecated in
     favor of using prepare command with the synchronization description, but
     backwards compatibility will be maintained.
 2. Allow different types of preparation of channels - this still depends on
@@ -79,9 +79,9 @@ Implementation
 
 * `SScan` (step scan) implemented according to the following pseudo code:
     * If number of points is known:
-        * `prepare(synchronization, start=n)` where synchronization
-        contains the integration time and n means number of points
-        * `for step in range(n): count_single()`
+        * `prepare(synchronization, starts=n)` where synchronization
+        contains the integration time and n means number of scan points
+        * `for step in range(n): count_raw()`
     * If number of points is unknown:
         * `while new_step: count()`
 * `CTScan` (continuous scan) does not require changes, it simply calls 
