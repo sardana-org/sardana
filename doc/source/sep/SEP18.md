@@ -65,43 +65,180 @@ beforehand the number of points.
 Implementation
 --------------
 
-Measurement group is extended by the *prepare* command with two parameters: 
-synchronization description and number of repeats (these repeats is a 
-different concept then the one from the synchronization description). The 
-second one indicates  how many times measurement group will be started, with
-the *start* command, to measure according to the synchronization description. 
+### GSF
+
+* `SScan` (step scan) implemented according to the following pseudo code:
+    * If number of points is known:
+        * `prepare(synchronization, start=n)` where synchronization
+        contains the integration time and n means number of points
+        * `for step in range(n): count_single()`
+    * If number of points is unknown:
+        * `while new_step: count()`
+* `CTScan` (continuous scan) does not require changes, it simply calls 
+`count_continuous`
+
+### Measurement Group
+
+Measurement group is extended by the *prepare* command with two parameters:
+synchronization description and number of starts. The second one indicates
+how many times measurement group will be started, with the *start* command,
+to measure according to the synchronization description.
 
 1. Measurement group - Tango device class
     * Add `Prepare` command. TODO: investigate the best way to pass 
-    synchronization description, as JSON serialized string, together with the 
-    repeats integer.
-    * Remove `synchronization` attribute (experimental API) - no backwards 
+    synchronization description, as JSON serialized string, together with the
+    starts integer.
+    * Remove `synchronization` attribute (experimental API) - no backwards
     compatibility.
 2. Measurement group - core class
-    * Add `prepare(synchronization, repeats=1)` method
-    * Remove `synchronization` property  (experimental API) - no backwards 
+    * Add `prepare(synchronization, starts=1)` method
+    * Remove `synchronization` property  (experimental API) - no backwards
     compatibility. 
 3. Measurement group - Taurus extension
     * Add `prepare` method which simply maps to `Prepare` Tango command
-    * Add `acquire` method according to the following pseudo code:
+    * Add `count_single` (TODO: find the best name for this 
+    method, other candidates are `count_raw`, `acquire`) method according to 
+    the following pseudo code:
         * `Start()`
         * `waitFinish()`
     * Implement `count` method according to the following pseudo code:
-        * `prepare(synchronization & repeats = 1)` where synchronization 
+        * `prepare(synchronization & starts = 1)` where synchronization
         contains the integration time
-        * `acquire()`
-    * Implement `count_continuous` (previous `measure`) method according to 
+        * `count_single()`
+    * Implement `count_continuous` (previous `measure`) method according to
     the following pseudo code:
-        * `prepare(synchronization & repeats = 1)` where synchronization may
+        * `prepare(synchronization & starts = 1)` where synchronization may
         contain the continuous acquisition description
         * `subscribeValueBuffer()`
-        * `acquire()`
+        * `count_single()`
         * `unsubscribeValueBuffer()`
-4. GSF - step scan
-    * `SScan` implemented according to the following pseudo code:
-        * If number of points is known:
-            * `prepare(synchronization, repeats=n)` where synchronization 
-            contains the integration time and n means number of points
-            * `for step in range(n): acquire()`
-        * If number of points is unknown:
-            * `while new_step: acquire()`
+
+### Controllers
+
+C/T, 1D and 2D controllers (plugins) API is extended. TODO: Choose between
+the following options:
+
+#### Option 1
+
+* Add `Preparable` interface with `PrepareOne(axis, starts)` method`
+* Make C/T, 1D and 2D controllers inherit from this interface
+* Add extra argument to `LoadOne`, etc. methods of the `Loadable` interface
+`latency_time`: `LoadOne(axis, integ_time, repeats, latency_time)`
+
+This option maintains backwards compatibility.
+
+The following examples demonstrates the sequence of calls (only the ones
+relevant to the SEP18) of one channel (axis 1) involved in the given
+acquisition. This channel is at the same time the timer.
+
+* **step scan** 5 acquisitions x 0.1 s of integration time
+```python
+PrepareOne(1, 5)
+for acquisition in range(5):
+    LoadOne(1, 0.1, 1, 0)
+    StartOne(1)
+```
+
+* **continuous scan (hw trigger)** 5 acquisitions x 0.1 s of integration
+time and 0.05 s of latency time
+```python
+PrepareOne(1, 1)
+LoadOne(1, 0.1, 5, 0.05)  # latency time can be ignored
+StartOne(1)
+```
+
+* **continuous scan (sw trigger)**
+```python
+PrepareOne(1, 5)
+for trigger in range(5):
+    LoadOne(1, 0.1, 1, 0.05)  # latency time can be ignored
+    StartOne(1)
+```
+
+* **continuous scan (hw gate)**
+```python
+PrepareOne(1, 1)
+LoadOne(1, 0.1, 5, 0.05)  # integration time and latency time can be ignored
+StartOne(1)
+```
+
+* **continuous scan (sw gate)**
+```python
+PrepareOne(1, 5)
+for gate in range(5):
+    LoadOne(1, 0.1, 1, 0.05)  # integration time and latency time can be ignored
+    StartOne(1)
+```
+* **continuous scan (hw start)**
+```python
+PrepareOne(1, 1)
+LoadOne(1, 0.1, 5, 0.05)
+StartOne(1)
+```
+
+* **continuous scan (sw start)**
+```python
+PrepareOne(1, 1)
+LoadOne(1, 0.1, 5, 0.05)
+StartOne(1)
+```
+
+#### Option 2
+
+* Add extra arguments to `LoadOne`, etc. methods of the `Loadable` interface
+`latency_time` and `starts` and switch the order of arguments so the API is:
+`LoadOne(axis, integ_time, latency_time, repeats, starts)`
+* Make the `LoadOne`, etc. be called only once, in the measurement group
+prepare command, per measurement.
+
+This option **breaks** backwards compatibility.
+
+The following examples demonstrates the sequence of calls (only the ones
+relevant to the SEP18) of one channel (axis 1) involved in the given
+acquisition. This channel is at the same time the timer.
+
+* **step scan** 5 acquisitions x 0.1 s of integration time
+```python
+LoadOne(1, 0.1, 0, 1, 5)
+for acquisition in range(5):
+    StartOne(1)
+```
+
+* **continuous scan (hw trigger)** 5 acquisitions x 0.1 s of integration
+time and 0.05 s of latency time
+```python
+LoadOne(1, 0.1, 0.05, 5, 1)  # latency time can be ignored
+StartOne(1)
+```
+
+* **continuous scan (sw trigger)**
+```python
+LoadOne(1, 0.1, 0.05, 1, 5)  # latency time can be ignored
+for trigger in range(5):
+    StartOne(1)
+```
+
+* **continuous scan (hw gate)**
+```python
+LoadOne(1, 0.1, 0.05, 5, 1)  # integration time and latency time can be ignored
+StartOne(1)
+```
+
+* **continuous scan (sw gate)**
+```python
+LoadOne(1, 0.1, 0.05, 1, 5)  # integration time and latency time can be ignored
+for gate in range(5):
+    StartOne(1)
+```
+
+* **continuous scan (hw start)**
+```python
+LoadOne(1, 0.1, 0.05, 5, 1)
+StartOne(1)
+```
+
+* **continuous scan (sw start)**
+```python
+LoadOne(1, 0.1, 0.05, 5, 1)
+StartOne(1)
+```

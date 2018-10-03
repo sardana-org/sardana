@@ -655,6 +655,25 @@ class Readable(object):
         raise NotImplementedError("ReadOne must be defined in the controller")
 
 
+class Preparable(object):
+    """A Preparable interface. A controller for which its axis are
+    'pareparable' for a measurement (like a counter, 1D or 2D for example)
+    should implement this interface
+
+    .. note: Do not inherit directly from Preparable."""
+
+    def PrepareOne(self, axis, repetitions):
+        """**Controller API**. Override if necessary.
+        Called to load the number of repetitions.
+        Default implementation does nothing.
+
+        :param int axis: axis number
+        :param int repetitions: number of repetitions
+        :param float value: integration time /monitor value
+        """
+        pass
+
+
 class Loadable(object):
     """A Loadable interface. A controller for which it's axis are 'loadable'
     (like a counter, 1D or 2D for example) should implement this interface
@@ -869,7 +888,8 @@ class MotorController(Controller, Startable, Stopable, Readable):
         pass
 
 
-class CounterTimerController(Controller, Readable, Startable, Stopable, Loadable):
+class CounterTimerController(Controller, Readable, Startable, Stopable,
+                             Loadable, Preparable):
     """Base class for a counter/timer controller. Inherit from this class to
     implement your own counter/timer controller for the device pool.
 
@@ -1032,7 +1052,8 @@ class ZeroDController(Controller, Readable, Stopable):
         pass
 
 
-class OneDController(Controller, Readable, Startable, Stopable, Loadable):
+class OneDController(Controller, Readable, Startable, Stopable, Loadable,
+                     Preparable):
     """Base class for a 1D controller. Inherit from this class to
     implement your own 1D controller for the device pool.
 
@@ -1070,7 +1091,8 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable):
         return self.GetPar(axis, parameter)
 
 
-class TwoDController(Controller, Readable, Startable, Stopable, Loadable):
+class TwoDController(Controller, Readable, Startable, Stopable, Loadable,
+                     Preparable):
     """Base class for a 2D controller. Inherit from this class to
     implement your own 2D controller for the device pool."""
 
