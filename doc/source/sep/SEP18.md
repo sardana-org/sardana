@@ -40,27 +40,37 @@ Overcome the above limitations.
 
 Design
 ------
-
-1. Document well that:
-    * Software(Trigger|Gate) are synonyms to Internal (Trigger|Gate). 
+1. Use of the measurement group will change:
+    * From now on, in order to start the measurement group, it is mandatory
+    to prepare it.
+    * The measurement group will be armed for as many starts as specified in
+    the preparation and the preparation will expire whenever all starts gets
+    called or in case of stop/abort.
+    * Setting the integration time via the attribute will de deprecated in
+    favor of using prepare command with the synchronization description, but
+    backwards compatibility will be maintained.
+2. Allow different types of preparation of channels - this still depends on
+the option selected in the implementation of controllers. The following
+assumes option 1.
+    * Per measurement preparation with number of starts = n e.g.
+    Prepare(One|All) or a controller parameter
+    * Per acquisition preparation with repetitions = n e.g. Load(One|All)
+3. Extend AcqSynch with two new options:
+    * SoftwareStart (which means internal start)
+    * HardwareStart (which means external start)
+4. Extend AcqSynchType with one new option (supported from expconf):
+    * Start
+5. Modify acquisition actions (and synchronization action if necessary) so
+they support the new concepts added in points 2 and 3.
+6. *Extend Generic Scan Framework* (GSF), more precisely scan in step mode
+with measurement preparation (number of starts = n) if possible i.e. scan
+macro knows beforehand the number of points.
+7. Document well that:
+    * Software(Trigger|Gate) are synonyms to Internal (Trigger|Gate).
     Internal means that Sardana will synchronize the acquisitions.
     * Hardware(Trigger|Gate) are synonyms to External(Trigger|Gate).
     External means that an external to Sardana object (could be hardware)
     will synchronize the acquisitions.
-2. Extend AcqSynch with two new options:
-    * SoftwareStart (which means internal start)
-    * HardwareStart (which means external start)
-3. Extend AcqSynchType with one new option (supported from expconf):
-    * Start
-4. Allow different types of preparation of channels:
-    * Per measurement preparation with repetitions=n e.g. Prepare(One|All) 
-    or a controller parameter
-    * Per acquisition preparation with repetitions=1 e.g. Load(One|All)
-6. Modify acquisition actions (and synchronization action if necessary) so 
-they support the new concepts added in points 2 and 4.
-5. *Extend Generic Scan Framework* (GSF), more preciselly scan in step mode 
-with measurement preparation (repetitions=n) if possible i.e. scan macro knows
-beforehand the number of points.
 
 Implementation
 --------------
