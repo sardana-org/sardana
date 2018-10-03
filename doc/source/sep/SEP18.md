@@ -132,8 +132,11 @@ event and end is emitted after the last `passive` event.
 ### Acquisition actions
 
 * Add `PoolAcquisitionSoftwareStart` action that will start channels on
-software synchronizer `start` event and stop channels on software 
-synchronizer `end` event.  
+software synchronizer `start` event.
+* `PoolAcquisitionSoftware` will stop channels on software synchronizer
+`end` event. TODO: decide if we wait for the acquisition in progress
+until it finises or we stop immediatelly (finish hook could be used if
+we choose to wait).
 
 ### Controllers
 
