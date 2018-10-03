@@ -1007,6 +1007,7 @@ class SScan(GScan):
         scream = False
 
         if hasattr(macro, "nr_points"):
+            self.measurement_group.prepare()
             nr_points = float(macro.nr_points)
             scream = True
         else:

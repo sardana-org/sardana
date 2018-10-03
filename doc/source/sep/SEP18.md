@@ -194,9 +194,9 @@ StartOne(1)
 
 * Add extra arguments to `LoadOne`, etc. methods of the `Loadable` interface
 `latency_time` and `starts` and switch the order of arguments so the API is:
-`LoadOne(axis, integ_time, latency_time, repeats, starts)`
-* Make the `LoadOne`, etc. be called only once, in the measurement group
-prepare command, per measurement.
+`LoadOne(axis, integ_time, latency_time, repeats, starts)`.
+* Make the `LoadOne`, etc. be called only once per measurement, in the
+measurement group prepare command.
 
 This option **breaks** backwards compatibility.
 

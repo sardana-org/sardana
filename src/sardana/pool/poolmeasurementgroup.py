@@ -715,6 +715,13 @@ class PoolMeasurementGroup(PoolGroupElement):
     # acquisition
     # -------------------------------------------------------------------------
 
+    def prepare(self):
+        self.load_configuration()
+        config = self.get_configuration()
+        repetitions = self.synchronization.repetitions
+        self.acquisition.prepare(config, repetitions)
+
+
     def start_acquisition(self, value=None, multiple=1):
         self._aborted = False
         if not self._simulation_mode:
