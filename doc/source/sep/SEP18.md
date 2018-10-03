@@ -104,7 +104,10 @@ to measure according to the synchronization description.
     * Add `prepare(synchronization, starts=1)` method
     * Remove `synchronization` property  (experimental API) - no backwards
     compatibility. 
-3. Measurement group - Taurus extension
+3. Backwards compatibility for integration time attribute will be solved in 
+the following way: setting of integration time attribute will allow starts 
+until the next preparation.
+4. Measurement group - Taurus extension
     * Add `prepare` method which simply maps to `Prepare` Tango command
     * Add `count_single` (TODO: find the best name for this 
     method, other candidates are `count_raw`, `acquire`) method according to 
