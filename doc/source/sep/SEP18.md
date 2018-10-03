@@ -120,7 +120,9 @@ the following options:
 
 #### Option 1
 
-* Add `Preparable` interface with `PrepareOne(axis, starts)` method`
+* Add `Preparable` interface with
+`PrepareOne(axis, integ_time, repeats, latency_time, starts)` TODO: or
+directly add it to the Loadable interface
 * Make C/T, 1D and 2D controllers inherit from this interface
 * Add extra argument to `LoadOne`, etc. methods of the `Loadable` interface
 `latency_time`: `LoadOne(axis, integ_time, repeats, latency_time)`
@@ -133,7 +135,7 @@ acquisition. This channel is at the same time the timer.
 
 * **step scan** 5 acquisitions x 0.1 s of integration time
 ```python
-PrepareOne(1, 5)
+PrepareOne(1, 0.1, 1, 0, 5)
 for acquisition in range(5):
     LoadOne(1, 0.1, 1, 0)
     StartOne(1)
@@ -142,43 +144,48 @@ for acquisition in range(5):
 * **continuous scan (hw trigger)** 5 acquisitions x 0.1 s of integration
 time and 0.05 s of latency time
 ```python
-PrepareOne(1, 1)
+PrepareOne(1, 0.1, 5, 0.05, 1)  # latency time can be ignored
 LoadOne(1, 0.1, 5, 0.05)  # latency time can be ignored
 StartOne(1)
 ```
 
-* **continuous scan (sw trigger)**
+* **continuous scan (sw trigger)** 5 acquisitions x 0.1 s of integration
+time and 0.05 s of latency time
 ```python
-PrepareOne(1, 5)
+PrepareOne(1, 0.1, 1, 0.05, 5)  # latency time can be ignored
 for trigger in range(5):
     LoadOne(1, 0.1, 1, 0.05)  # latency time can be ignored
     StartOne(1)
 ```
 
-* **continuous scan (hw gate)**
+* **continuous scan (hw gate)** 5 acquisitions x 0.1 s of integration
+time and 0.05 s of latency time
 ```python
-PrepareOne(1, 1)
+PrepareOne(1, 0.1, 5, 0.05, 1)  # integration time and latency time can be ignored
 LoadOne(1, 0.1, 5, 0.05)  # integration time and latency time can be ignored
 StartOne(1)
 ```
 
-* **continuous scan (sw gate)**
+* **continuous scan (sw gate)** 5 acquisitions x 0.1 s of integration
+time and 0.05 s of latency time
 ```python
-PrepareOne(1, 5)
+PrepareOne(1, 0.1, 1, 0.05, 5)
 for gate in range(5):
     LoadOne(1, 0.1, 1, 0.05)  # integration time and latency time can be ignored
     StartOne(1)
 ```
-* **continuous scan (hw start)**
+* **continuous scan (hw start)** 5 acquisitions x 0.1 s of integration
+time and 0.05 s of latency time
 ```python
-PrepareOne(1, 1)
+PrepareOne(1, 0.1, 5, 0.05, 1)
 LoadOne(1, 0.1, 5, 0.05)
 StartOne(1)
 ```
 
-* **continuous scan (sw start)**
+* **continuous scan (sw start)** 5 acquisitions x 0.1 s of integration
+time and 0.05 s of latency time
 ```python
-PrepareOne(1, 1)
+PrepareOne(1, 0.1, 5, 0.05, 1)
 LoadOne(1, 0.1, 5, 0.05)
 StartOne(1)
 ```
