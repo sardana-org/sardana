@@ -62,62 +62,6 @@ AcquisitionMap = {
 }
 
 
-def split_MGConfigurations(mg_cfg_in):
-    """Split MeasurementGroup configuration with channels
-    triggered by SW Trigger and channels triggered by HW trigger
-
-    TODO: (technical debt) All the MeasurementGroup configuration
-    logic should be encapsulate in a dedicated class instead of
-    using a basic data structures like dict or lists...
-    """
-    ctrls_in = mg_cfg_in['controllers']
-    mg_sw_cfg_out = {}
-    mg_0d_cfg_out = {}
-    mg_hw_cfg_out = {}
-    mg_sw_cfg_out['controllers'] = ctrls_sw_out = {}
-    mg_0d_cfg_out['controllers'] = ctrls_0d_out = {}
-    mg_hw_cfg_out['controllers'] = ctrls_hw_out = {}
-    for ctrl, ctrl_info in ctrls_in.items():
-        external = isinstance(ctrl, str) and ctrl.startswith('__')
-        # skipping external controllers e.g. Tango attributes
-        if external:
-            continue
-        # splitting ZeroD based on the type
-        if ctrl.get_ctrl_types()[0] == ElementType.ZeroDExpChannel:
-            ctrls_0d_out[ctrl] = ctrl_info
-        # ignoring PseudoCounter
-        elif ctrl.get_ctrl_types()[0] == ElementType.PseudoCounter:
-            pass
-        # splitting rest of the channels based on the assigned trigger
-        else:
-            synchronizer = ctrl_info.get('synchronizer')
-            if synchronizer is None or synchronizer == 'software':
-                ctrls_sw_out[ctrl] = ctrl_info
-            else:
-                ctrls_hw_out[ctrl] = ctrl_info
-
-    def find_master(ctrls, role):
-        master_idx = float("+inf")
-        master = None
-        for ctrl_info in ctrls.values():
-            element = ctrl_info[role]
-            element_idx = ctrl_info["channels"][element]["index"]
-            element_enabled = ctrl_info["channels"][element]["enabled"]
-            # Find master only if is enabled
-            if element_idx < master_idx and element_enabled:
-                master = element
-                master_idx = element_idx
-        return master
-
-    if len(ctrls_sw_out):
-        mg_sw_cfg_out["timer"] = find_master(ctrls_sw_out, "timer")
-        mg_sw_cfg_out["monitor"] = find_master(ctrls_sw_out, "monitor")
-    if len(ctrls_hw_out):
-        mg_hw_cfg_out["timer"] = find_master(ctrls_hw_out, "timer")
-        mg_hw_cfg_out["monitor"] = find_master(ctrls_hw_out, "monitor")
-    return (mg_hw_cfg_out, mg_sw_cfg_out, mg_0d_cfg_out)
-
-
 def getTGConfiguration(MGcfg):
     '''Build TG configuration from complete MG configuration.
 
@@ -266,30 +210,24 @@ class PoolAcquisition(PoolAction):
         synchronization = kwargs["synchronization"]
         integ_time = synchronization.integration_time
         repetitions = synchronization.repetitions
-        # TODO: this code splits the global mg configuration into
-        # experimental channels triggered by hw and experimental channels
-        # triggered by sw. Refactor it!!!!
-        (hw_acq_cfg, sw_acq_cfg, zerod_acq_cfg) = split_MGConfigurations(
-            config)
+
         synch_cfg, _ = getTGConfiguration(config)
         # starting continuous acquisition only if there are any controllers
-        if len(hw_acq_cfg['controllers']):
+        if len(config.ctrl_hw_sync):
             cont_acq_kwargs = dict(kwargs)
-            cont_acq_kwargs['config'] = hw_acq_cfg
             cont_acq_kwargs['integ_time'] = integ_time
             cont_acq_kwargs['repetitions'] = repetitions
             self._hw_acq.run(*args, **cont_acq_kwargs)
-        if len(sw_acq_cfg['controllers']) or len(zerod_acq_cfg['controllers']):
+        if len(config.ctrl_sw_sync) or len(config.ctrl_0d_sync):
             self._synch.add_listener(self)
-            if len(sw_acq_cfg['controllers']):
+            if len(config.ctrl_sw_sync):
                 sw_acq_kwargs = dict(kwargs)
-                sw_acq_kwargs['config'] = sw_acq_cfg
                 sw_acq_kwargs['integ_time'] = integ_time
                 sw_acq_kwargs['repetitions'] = 1
                 self.set_sw_config(sw_acq_kwargs)
-            if len(zerod_acq_cfg['controllers']):
+            if len(config.ctrl_0d_sync):
                 zerod_acq_kwargs = dict(kwargs)
-                zerod_acq_kwargs['config'] = zerod_acq_cfg
+                # TODO: Ask why
                 self.set_0d_config(zerod_acq_kwargs)
         synch_kwargs = dict(kwargs)
         synch_kwargs['config'] = synch_cfg
@@ -453,7 +391,6 @@ class PoolAcquisitionBase(PoolAction):
             involved controllers and channels)
         """
         pool = self.pool
-
         self._aborted = False
         self._stopped = False
 
@@ -475,14 +412,18 @@ class PoolAcquisitionBase(PoolAction):
         _ = kwargs.get("items", self.get_elements())
         cfg = kwargs['config']
         # determine which is the controller which holds the master channel
-
+        master = None
+        if integ_time is not None and mon_count is not None:
+            raise RuntimeError('The acquisition must have only one role: '
+                               'timer or count')
         if integ_time is not None:
             master_key = 'timer'
             master_value = integ_time
+            master = cfg.timer
         if mon_count is not None:
             master_key = 'monitor'
             master_value = -mon_count
-        master = cfg[master_key]
+            master = cfg.monitor
         if master is None:
             self.main_element.set_state(State.Fault, propagate=2)
             msg = "master {0} is unknown (probably disabled)".format(
@@ -490,7 +431,7 @@ class PoolAcquisitionBase(PoolAction):
             raise RuntimeError(msg)
         master_ctrl = master.controller
 
-        pool_ctrls_dict = dict(cfg['controllers'])
+        pool_ctrls_dict = dict(cfg.controllers)
         pool_ctrls_dict.pop('__tango__', None)
 
         # controllers to be started (only enabled) in the right order
@@ -906,7 +847,7 @@ class Pool0DAcquisition(PoolAction):
             items = self.get_elements()
         cfg = kwargs['config']
 
-        pool_ctrls_dict = dict(cfg['controllers'])
+        pool_ctrls_dict = dict(cfg.controllers)
         pool_ctrls_dict.pop('__tango__', None)
         pool_ctrls = []
         for ctrl in pool_ctrls_dict:
