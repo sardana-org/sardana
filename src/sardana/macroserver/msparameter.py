@@ -50,8 +50,9 @@ class OptionalParamClass(dict):
         attributes = dir(self)
 
         for attr in attributes:
+            # iteritems is necessary fo python 2.6 implementation of json
             if attr in ['__setattr__', '__repr__', 'raise_error', '__class__',
-                        '__dict__', '__weakref__']:
+                        '__dict__', '__weakref__', 'iteritems']:
                 continue
             self.__setattr__(attr, self.raise_error)
         self.__setattr__ = self.raise_error
