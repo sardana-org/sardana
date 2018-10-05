@@ -331,7 +331,7 @@ Optional parameters
 ~~~~~~~~~~~~~~~~~~~
 
 A special parameter default value is the ``Optional``. It allows to
-execute a macro even the given parameter value is not specified by the user.
+execute a macro even if the given parameter value is not specified by the user.
 
 So, here is an example how to define and use the optional parameter::
 
