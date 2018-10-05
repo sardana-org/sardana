@@ -215,7 +215,7 @@ class FunctionGenerator(EventGenerator, Logger):
             time.sleep(nap)
 
     def fire_start(self):
-        self.fire_event(EventType("start"))
+        self.fire_event(EventType("start"), self._id)
         self._start_fired = True
         if self._id > 0:
             msg = "start was fired with {0} delay".format(self._id)
