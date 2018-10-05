@@ -7,7 +7,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 - Possibility to define macros with optional parameters. These must be the last
-  ones in the definition (#285, #876, #943, #941)
+  ones in the definition (#285, #876, #943, #941, #955)
 - Workaround for API_DeviceTimedOut errors on MeasurementGroup Start. Call Stop
   in case this error occured (#764).
 - Optional measurement group parameter to `ct` and `uct` macros (#940, #473)
