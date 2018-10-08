@@ -139,6 +139,13 @@ class MeasurementConfiguration(object):
     def _clean_variables(self):
         # list of controller with channels enabled.
         self.enabled_ctrls = []
+        # list of timers and monitors by synchronization type.
+        self.sw_sync_timers_enabled = []
+        self.sw_sync_monitors_enabled = []
+        self.sw_start_timers_enabled = []
+        self.sw_start_monitors_enabled = []
+        self.hw_sync_timers_enabled = []
+        self.hw_sync_monitors_enabled = []
         # dict with channel and its acquisition synchronization
         # key: PoolBaseChannel; value: AcqSynch
         self.channel_to_acq_synch = {}
@@ -547,29 +554,52 @@ class MeasurementConfiguration(object):
                 else:
                     self.ctrl_hw_sync[ctrl] = ctrl_info
 
-        def find_master(ctrls, role):
+        def get_master_enables(ctrls, role):
             master_idx = float("+inf")
             master = None
+            elements = []
             for ctrl_info in ctrls.values():
                 element = ctrl_info[role]
                 if element in ctrl_info["channels"]:
                     element_idx = ctrl_info["channels"][element]["index"]
                     element_enabled = ctrl_info["channels"][element]["enabled"]
                     # Find master only if is enabled
-                    if element_idx < master_idx and element_enabled:
-                        master = element
-                        master_idx = element_idx
-            return master
+                    if element_enabled:
+                        elements.append(element)
+                        if element_idx < master_idx:
+                            master = element
+                            master_idx = element_idx
+            return master, elements
 
         if len(self.ctrl_sw_sync):
-            self.sw_sync_timer = find_master(self.ctrl_sw_sync, "timer")
-            self.sw_sync_monitor = find_master(self.ctrl_sw_sync, "monitor")
+            timer, timers = get_master_enables(self.ctrl_sw_sync, "timer")
+            self.sw_sync_timer = timer
+            self.sw_sync_timers_enabled = timers
+
+            monitor, monitors = get_master_enables(self.ctrl_sw_sync,
+                                                   "monitor")
+            self.sw_sync_monitor = monitor
+            self.sw_sync_monitors_enabled = monitors
+
         if len(self.ctrl_sw_start):
-            self.sw_start_timer = find_master(self.ctrl_sw_start, "timer")
-            self.sw_start_monitor = find_master(self.ctrl_sw_start, "monitor")
+            timer, timers = get_master_enables(self.ctrl_sw_start, "timer")
+            self.sw_start_timer = timer
+            self.sw_start_timers_enabled = timers
+
+            monitor, monitors = get_master_enables(self.ctrl_sw_start,
+                                                   "monitor")
+            self.sw_start_monitor = monitor
+            self.sw_start_monitors_enabled = monitors
+
         if len(self.ctrl_hw_sync):
-            self.hw_sync_timer = find_master(self.ctrl_hw_sync, "timer")
-            self.hw_sync_monitor = find_master(self.ctrl_hw_sync, "monitor")
+            timer, timers = get_master_enables(self.ctrl_hw_sync, "timer")
+            self.hw_sync_timer = timer
+            self.hw_sync_timers_enabled = timers
+
+            monitor, monitors = get_master_enables(self.ctrl_hw_sync,
+                                                   "monitor")
+            self.hw_sync_monitor = monitor
+            self.hw_sync_monitors_enabled = monitors
 
     def _split_tg(self):
         """
