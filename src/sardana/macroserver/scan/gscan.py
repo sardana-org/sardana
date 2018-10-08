@@ -1008,6 +1008,11 @@ class SScan(GScan):
 
         if hasattr(macro, "nr_points"):
             nr_points = float(macro.nr_points)
+            if hasattr(macro, "integ_time"):
+                integ_time = macro.integ_time
+                group = {SynchParam.Active: {SynchDomain.Time: integ_time}}
+                synchronization = [group]
+                self.measurement_group.prepare(synchronization, nr_points)
             scream = True
         else:
             yield 0.0

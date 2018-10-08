@@ -40,27 +40,37 @@ Overcome the above limitations.
 
 Design
 ------
-
-1. Document well that:
-    * Software(Trigger|Gate) are synonyms to Internal (Trigger|Gate). 
+1. Use of the measurement group will change:
+    * From now on, in order to start the measurement group, it is mandatory
+    to prepare it.
+    * The measurement group will be armed for as many starts as specified in
+    the preparation and the preparation will expire whenever all starts gets
+    called or in case of stop/abort.
+    * Setting the integration time via the attribute will be deprecated in
+    favor of using prepare command with the synchronization description, but
+    backwards compatibility will be maintained.
+2. Allow different types of preparation of channels - this still depends on
+the option selected in the implementation of controllers. The following
+assumes option 1.
+    * Per measurement preparation with number of starts = n e.g.
+    Prepare(One|All) or a controller parameter
+    * Per acquisition preparation with repetitions = n e.g. Load(One|All)
+3. Extend AcqSynch with two new options:
+    * SoftwareStart (which means internal start)
+    * HardwareStart (which means external start)
+4. Extend AcqSynchType with one new option (supported from expconf):
+    * Start
+5. Modify acquisition actions (and synchronization action if necessary) so
+they support the new concepts added in points 2 and 3.
+6. *Extend Generic Scan Framework* (GSF), more precisely scan in step mode
+with measurement preparation (number of starts = n) if possible i.e. scan
+macro knows beforehand the number of points.
+7. Document well that:
+    * Software(Trigger|Gate) are synonyms to Internal (Trigger|Gate).
     Internal means that Sardana will synchronize the acquisitions.
     * Hardware(Trigger|Gate) are synonyms to External(Trigger|Gate).
     External means that an external to Sardana object (could be hardware)
     will synchronize the acquisitions.
-2. Extend AcqSynch with two new options:
-    * SoftwareStart (which means internal start)
-    * HardwareStart (which means external start)
-3. Extend AcqSynchType with one new option (supported from expconf):
-    * Start
-4. Allow different types of preparation of channels:
-    * Per measurement preparation with repetitions=n e.g. Prepare(One|All) 
-    or a controller parameter
-    * Per acquisition preparation with repetitions=1 e.g. Load(One|All)
-6. Modify acquisition actions (and synchronization action if necessary) so 
-they support the new concepts added in points 2 and 4.
-5. *Extend Generic Scan Framework* (GSF), more preciselly scan in step mode 
-with measurement preparation (repetitions=n) if possible i.e. scan macro knows
-beforehand the number of points.
 
 Implementation
 --------------
@@ -69,9 +79,9 @@ Implementation
 
 * `SScan` (step scan) implemented according to the following pseudo code:
     * If number of points is known:
-        * `prepare(synchronization, start=n)` where synchronization
-        contains the integration time and n means number of points
-        * `for step in range(n): count_single()`
+        * `prepare(synchronization, starts=n)` where synchronization
+        contains the integration time and n means number of scan points
+        * `for step in range(n): count_raw()`
     * If number of points is unknown:
         * `while new_step: count()`
 * `CTScan` (continuous scan) does not require changes, it simply calls 
@@ -94,24 +104,39 @@ to measure according to the synchronization description.
     * Add `prepare(synchronization, starts=1)` method
     * Remove `synchronization` property  (experimental API) - no backwards
     compatibility. 
-3. Measurement group - Taurus extension
+3. Backwards compatibility for integration time attribute will be solved in 
+the following way: setting of integration time attribute will allow starts 
+until the next preparation.
+4. Measurement group - Taurus extension
     * Add `prepare` method which simply maps to `Prepare` Tango command
-    * Add `count_single` (TODO: find the best name for this 
-    method, other candidates are `count_raw`, `acquire`) method according to 
-    the following pseudo code:
-        * `Start()`
+    * Add `count_raw` method according to the following pseudo code:
+        * `start()`
         * `waitFinish()`
     * Implement `count` method according to the following pseudo code:
         * `prepare(synchronization & starts = 1)` where synchronization
         contains the integration time
-        * `count_single()`
+        * `count_raw()`
     * Implement `count_continuous` (previous `measure`) method according to
     the following pseudo code:
         * `prepare(synchronization & starts = 1)` where synchronization may
         contain the continuous acquisition description
         * `subscribeValueBuffer()`
-        * `count_single()`
+        * `count_raw()`
         * `unsubscribeValueBuffer()`
+
+### Software synchronizer
+
+* Add `start` and `end` events. Start is emitted before the first `active`
+event and end is emitted after the last `passive` event. 
+
+### Acquisition actions
+
+* Add `PoolAcquisitionSoftwareStart` action that will start channels on
+software synchronizer `start` event.
+* `PoolAcquisitionSoftware` will stop channels on software synchronizer
+`end` event. TODO: decide if we wait for the acquisition in progress
+until it finises or we stop immediatelly (finish hook could be used if
+we choose to wait).
 
 ### Controllers
 
@@ -120,7 +145,9 @@ the following options:
 
 #### Option 1
 
-* Add `Preparable` interface with `PrepareOne(axis, starts)` method`
+* Add `Preparable` interface with
+`PrepareOne(axis, integ_time, repeats, latency_time, starts)` TODO: or
+directly add it to the Loadable interface
 * Make C/T, 1D and 2D controllers inherit from this interface
 * Add extra argument to `LoadOne`, etc. methods of the `Loadable` interface
 `latency_time`: `LoadOne(axis, integ_time, repeats, latency_time)`
@@ -133,7 +160,7 @@ acquisition. This channel is at the same time the timer.
 
 * **step scan** 5 acquisitions x 0.1 s of integration time
 ```python
-PrepareOne(1, 5)
+PrepareOne(1, 0.1, 1, 0, 5)
 for acquisition in range(5):
     LoadOne(1, 0.1, 1, 0)
     StartOne(1)
@@ -142,43 +169,48 @@ for acquisition in range(5):
 * **continuous scan (hw trigger)** 5 acquisitions x 0.1 s of integration
 time and 0.05 s of latency time
 ```python
-PrepareOne(1, 1)
+PrepareOne(1, 0.1, 5, 0.05, 1)  # latency time can be ignored
 LoadOne(1, 0.1, 5, 0.05)  # latency time can be ignored
 StartOne(1)
 ```
 
-* **continuous scan (sw trigger)**
+* **continuous scan (sw trigger)** 5 acquisitions x 0.1 s of integration
+time and 0.05 s of latency time
 ```python
-PrepareOne(1, 5)
+PrepareOne(1, 0.1, 1, 0.05, 5)  # latency time can be ignored
 for trigger in range(5):
     LoadOne(1, 0.1, 1, 0.05)  # latency time can be ignored
     StartOne(1)
 ```
 
-* **continuous scan (hw gate)**
+* **continuous scan (hw gate)** 5 acquisitions x 0.1 s of integration
+time and 0.05 s of latency time
 ```python
-PrepareOne(1, 1)
+PrepareOne(1, 0.1, 5, 0.05, 1)  # integration time and latency time can be ignored
 LoadOne(1, 0.1, 5, 0.05)  # integration time and latency time can be ignored
 StartOne(1)
 ```
 
-* **continuous scan (sw gate)**
+* **continuous scan (sw gate)** 5 acquisitions x 0.1 s of integration
+time and 0.05 s of latency time
 ```python
-PrepareOne(1, 5)
+PrepareOne(1, 0.1, 1, 0.05, 5)
 for gate in range(5):
     LoadOne(1, 0.1, 1, 0.05)  # integration time and latency time can be ignored
     StartOne(1)
 ```
-* **continuous scan (hw start)**
+* **continuous scan (hw start)** 5 acquisitions x 0.1 s of integration
+time and 0.05 s of latency time
 ```python
-PrepareOne(1, 1)
+PrepareOne(1, 0.1, 5, 0.05, 1)
 LoadOne(1, 0.1, 5, 0.05)
 StartOne(1)
 ```
 
-* **continuous scan (sw start)**
+* **continuous scan (sw start)** 5 acquisitions x 0.1 s of integration
+time and 0.05 s of latency time
 ```python
-PrepareOne(1, 1)
+PrepareOne(1, 0.1, 5, 0.05, 1)
 LoadOne(1, 0.1, 5, 0.05)
 StartOne(1)
 ```
@@ -187,9 +219,9 @@ StartOne(1)
 
 * Add extra arguments to `LoadOne`, etc. methods of the `Loadable` interface
 `latency_time` and `starts` and switch the order of arguments so the API is:
-`LoadOne(axis, integ_time, latency_time, repeats, starts)`
-* Make the `LoadOne`, etc. be called only once, in the measurement group
-prepare command, per measurement.
+`LoadOne(axis, integ_time, latency_time, repeats, starts)`.
+* Make the `LoadOne`, etc. be called only once per measurement, in the
+measurement group prepare command.
 
 This option **breaks** backwards compatibility.
 
@@ -242,3 +274,16 @@ StartOne(1)
 LoadOne(1, 0.1, 0.05, 5, 1)
 StartOne(1)
 ```
+
+#### Option 3
+
+The same as option 2 but maintaining the backwards compatibility in the 
+following way:
+* Acquisition actions will call the `LoadOne`, etc. methods depending on the
+controllers implementations (more preciselly using the `inspect.getargspec`
+and counting the number of arguments). This will require much more complicated
+acquisition actions.
+
+### Dummy C/T controller
+Implement `SoftwareStart` and `HardwareStart` in the
+`DummyCounterTimerController` - minimal implementation.

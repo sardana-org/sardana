@@ -64,6 +64,7 @@ class FunctionGenerator(EventGenerator, Logger):
         self._initial_domain = None
         self._active_domain = None
         self._position_event = threading.Event()
+        self._position = None
         self._initial_domain_in_use = None
         self._active_domain_in_use = None
         self._active_events = list()
@@ -75,6 +76,7 @@ class FunctionGenerator(EventGenerator, Logger):
         self._direction = None
         self._condition = None
         self._id = None
+        self._start_fired = False
 
     def get_name(self):
         return self._name
@@ -167,6 +169,7 @@ class FunctionGenerator(EventGenerator, Logger):
         self._stopped = False
         self._started = True
         self._position = None
+        self._start_fired = False
         self._position_event.clear()
         self._id = 0
         self.fire_event(EventType("state"), State.Moving)
@@ -211,6 +214,13 @@ class FunctionGenerator(EventGenerator, Logger):
                 break
             time.sleep(nap)
 
+    def fire_start(self):
+        self.fire_event(EventType("start"), self._id)
+        self._start_fired = True
+        if self._id > 0:
+            msg = "start was fired with {0} delay".format(self._id)
+            self.warning(msg)
+
     def wait_active(self):
         candidate = self.active_events[0]
         if self.initial_domain_in_use == SynchDomain.Time:
@@ -244,6 +254,8 @@ class FunctionGenerator(EventGenerator, Logger):
             else:
                 break
         self._id += i
+        if not self._start_fired:
+            self.fire_start()
         self.fire_event(EventType("active"), self._id)
         self.active_events = self.active_events[i + 1:]
         self.passive_events = self.passive_events[i:]
