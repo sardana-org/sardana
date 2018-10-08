@@ -128,10 +128,10 @@ class MeasurementConfiguration(object):
 
     DFT_DESC = 'General purpose measurement group'
 
-    def __init__(self, mg=None):
-        self._mg = None
-        if mg is not None:
-            self._mg = weakref.ref(mg)()
+    def __init__(self, parent=None):
+        self._parent = None
+        if parent is not None:
+            self._parent = weakref.ref(parent)()
         self._config = None
         self.use_fqdn = True
         self._init_data()
@@ -194,8 +194,8 @@ class MeasurementConfiguration(object):
 
     def set_configuration_from_user(self, cfg, to_fqdn=True):
         config = {}
-        user_elements = self._mg.get_user_elements()
-        pool = self._mg.pool
+        user_elements = self._parent.get_user_elements()
+        pool = self._parent.pool
         if len(user_elements) == 0:
             # All timers were disabled
             default_timer = None
@@ -205,10 +205,10 @@ class MeasurementConfiguration(object):
         timer_name = cfg.get('timer', default_timer)
         monitor_name = cfg.get('monitor', default_timer)
         if to_fqdn:
-            timer_name = _to_fqdn(timer_name, logger=self._mg)
+            timer_name = _to_fqdn(timer_name, logger=self._parent)
         config['timer'] = pool.get_element_by_full_name(timer_name)
         if to_fqdn:
-            monitor_name = _to_fqdn(monitor_name, logger=self._mg)
+            monitor_name = _to_fqdn(monitor_name, logger=self._parent)
         config['monitor'] = pool.get_element_by_full_name(monitor_name)
         config['controllers'] = controllers = {}
 
@@ -231,7 +231,7 @@ class MeasurementConfiguration(object):
                 ctrl = c_name
             else:
                 if to_fqdn:
-                    c_name = _to_fqdn(c_name, logger=self._mg)
+                    c_name = _to_fqdn(c_name, logger=self._parent)
                 ctrl = pool.get_element_by_full_name(c_name)
                 assert ctrl.get_type() == ElementType.Controller
             controllers[ctrl] = ctrl_data = {}
@@ -240,12 +240,12 @@ class MeasurementConfiguration(object):
             if not external and ctrl.is_timerable():
                 timer_name = c_data['timer']
                 if to_fqdn:
-                    timer_name = _to_fqdn(timer_name, logger=self._mg)
+                    timer_name = _to_fqdn(timer_name, logger=self._parent)
                 timer = pool.get_element_by_full_name(timer_name)
                 ctrl_data['timer'] = timer
                 monitor_name = c_data['monitor']
                 if to_fqdn:
-                    monitor_name = _to_fqdn(monitor_name, logger=self._mg)
+                    monitor_name = _to_fqdn(monitor_name, logger=self._parent)
                 monitor = pool.get_element_by_full_name(monitor_name)
                 ctrl_data['monitor'] = monitor
                 synchronizer = c_data.get('synchronizer')
@@ -255,7 +255,8 @@ class MeasurementConfiguration(object):
                     synchronizer = 'software'
                 elif synchronizer != 'software':
                     if to_fqdn:
-                        synchronizer = _to_fqdn(synchronizer, logger=self._mg)
+                        synchronizer = _to_fqdn(synchronizer,
+                                                logger=self._parent)
                     synchronizer = pool.get_element_by_full_name(synchronizer)
                 ctrl_data['synchronizer'] = synchronizer
                 try:
@@ -266,22 +267,22 @@ class MeasurementConfiguration(object):
                     msg = ("trigger_type configuration parameter is deprecated"
                            " in favor of synchronization. Re-apply "
                            "configuration in order to upgrade.")
-                    self._mg.warning(msg)
+                    self._parent.warning(msg)
                 ctrl_data['synchronization'] = synchronization
             ctrl_data['channels'] = channels = {}
             for ch_name, ch_data in c_data['channels'].items():
                 if external:
                     validator = TangoAttributeNameValidator()
                     params = validator.getParams(ch_data['full_name'])
-                    params['pool'] = self._mg.pool
+                    params['pool'] = self._parent.pool
                     channel = PoolExternalObject(**params)
                 else:
                     if to_fqdn:
-                        ch_name = _to_fqdn(ch_name, logger=self._mg)
+                        ch_name = _to_fqdn(ch_name, logger=self._parent)
                     channel = pool.get_element_by_full_name(ch_name)
                 channels[channel] = dict(ch_data)
 
-        config['label'] = cfg.get('label', self._mg.name)
+        config['label'] = cfg.get('label', self._parent.name)
         config['description'] = cfg.get('description', self.DFT_DESC)
         self.use_fqdn = to_fqdn
         self._build_configuration(config)
@@ -380,8 +381,8 @@ class MeasurementConfiguration(object):
 
         if config is None:
             config = {}
-            user_elements = self._mg.get_user_elements()
-            ctrls = self._mg.get_pool_controllers()
+            user_elements = self._parent.get_user_elements()
+            ctrls = self._parent.get_pool_controllers()
 
             # find the first CT
             first_timerable = None
@@ -434,7 +435,7 @@ class MeasurementConfiguration(object):
                 channel_data = self._build_channel_defaults(channel_data,
                                                             element)
 
-            config['label'] = self._mg.name
+            config['label'] = self._parent.name
             config['description'] = self.DFT_DESC
 
             if len(external_user_elements) > 0:
@@ -449,7 +450,7 @@ class MeasurementConfiguration(object):
             # create a configuration based on a new configuration
             user_elem_ids = {}
             tg_elem_ids = []
-            pool = self._mg.pool
+            pool = self._parent.pool
             for c, c_data in config['controllers'].items():
                 synchronizer = c_data.get('synchronizer')
                 acq_synch_type = c_data.get('synchronization')
@@ -469,7 +470,8 @@ class MeasurementConfiguration(object):
                     else:
                         full_name = channel_data['full_name']
                         if self.use_fqdn:
-                            full_name = _to_fqdn(full_name, logger=self._mg)
+                            full_name = _to_fqdn(full_name,
+                                                 logger=self._parent)
                         element = pool.get_element_by_full_name(full_name)
                         _id = element.id
                     channel_data = self._build_channel_defaults(
@@ -492,31 +494,31 @@ class MeasurementConfiguration(object):
             indexes = sorted(user_elem_ids.keys())
             user_elem_ids_list = [user_elem_ids[idx] for idx in indexes]
             user_elem_ids_list.extend(tg_elem_ids)
-            self._mg.set_user_element_ids(user_elem_ids_list)
+            self._parent.set_user_element_ids(user_elem_ids_list)
 
             g_timer, g_monitor = config['timer'], config['monitor']
 
             timer_ctrl_data = config['controllers'][g_timer.controller]
             if timer_ctrl_data['timer'] != g_timer:
-                self._mg.warning('controller timer and global timer '
-                                 'mismatch. Using global timer')
-                self._mg.debug('For controller %s, timer is defined as '
-                               'channel %s. The global timer is set to '
-                               'channel %s which belongs to the same '
-                               'controller', g_timer.controller.name,
-                               timer_ctrl_data['timer'].name, g_timer.name)
+                self._parent.warning('controller timer and global timer '
+                                     'mismatch. Using global timer')
+                self._parent.debug('For controller %s, timer is defined as '
+                                   'channel %s. The global timer is set to '
+                                   'channel %s which belongs to the same '
+                                   'controller', g_timer.controller.name,
+                                   timer_ctrl_data['timer'].name, g_timer.name)
                 timer_ctrl_data['timer'] = g_timer
 
             monitor_ctrl_data = config['controllers'][g_monitor.controller]
             if monitor_ctrl_data['monitor'] != g_monitor:
-                self._mg.warning('controller monitor and global '
-                                 'monitor mismatch. Using global monitor')
-                self._mg.debug('For controller %s, monitor is defined as '
-                               'channel %s. The global timer is set to '
-                               'channel %s which belongs to the same '
-                               'controller', g_monitor.controller.name,
-                               monitor_ctrl_data['monitor'].name,
-                               g_monitor.name)
+                self._parent.warning('controller monitor and global '
+                                     'monitor mismatch. Using global monitor')
+                self._parent.debug('For controller %s, monitor is defined as '
+                                   'channel %s. The global timer is set to '
+                                   'channel %s which belongs to the same '
+                                   'controller', g_monitor.controller.name,
+                                   monitor_ctrl_data['monitor'].name,
+                                   g_monitor.name)
 
         self._config = config
         self._prepare_data()
