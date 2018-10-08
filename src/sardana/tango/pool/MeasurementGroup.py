@@ -74,9 +74,9 @@ class MeasurementGroup(PoolGroupDevice):
         PoolGroupDevice.init_device(self)
         # state and status are already set by the super class
         detect_evts = "latencytime", "moveable", "synchronization", \
-                      "softwaresynchronizerinitialdomain"
+                      "softwaresynchronizerinitialdomain", "nrofstarts"
         non_detect_evts = "configuration", "integrationtime", "monitorcount", \
-                          "acquisitionmode", "elementlist", "repetitions"
+                          "acquisitionmode", "elementlist"
         self.set_change_events(detect_evts, non_detect_evts)
 
         self.Elements = list(self.Elements)
@@ -220,14 +220,14 @@ class MeasurementGroup(PoolGroupDevice):
         cfg = CodecFactory().decode(('json', data), ensure_ascii=True)
         self.measurement_group.set_configuration_from_user(cfg)
 
-    def read_Repetitions(self, attr):
-        repetitions = self.measurement_group.repetitions
-        if repetitions is None:
-            repetitions = int('nan')
-        attr.set_value(repetitions)
+    def read_NrOfStarts(self, attr):
+        nr_of_starts = self.measurement_group.nr_of_starts
+        if nr_of_starts is None:
+            nr_of_starts = int('nan')
+        attr.set_value(nr_of_starts)
 
-    def write_Repetitions(self, attr):
-        self.measurement_group.repetitions = attr.get_write_value()
+    def write_NrOfStarts(self, attr):
+        self.measurement_group.nr_of_starts = attr.get_write_value()
 
     def read_Moveable(self, attr):
         moveable = self.measurement_group.moveable
@@ -323,9 +323,9 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
         'Configuration': [[DevString, SCALAR, READ_WRITE],
                           {'Memorized': "true",
                            'Display level': DispLevel.EXPERT}],
-        'Repetitions': [[DevLong, SCALAR, READ_WRITE],
-                        {'Memorized': "true",
-                         'Display level': DispLevel.OPERATOR}],
+        'NrOfStarts': [[DevLong, SCALAR, READ_WRITE],
+                       {'Memorized': "true",
+                        'Display level': DispLevel.OPERATOR}],
         'Moveable': [[DevString, SCALAR, READ_WRITE],
                      {'Memorized': "true",
                       'Display level': DispLevel.EXPERT}],
