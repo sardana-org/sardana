@@ -150,6 +150,7 @@ class MeasurementConfiguration(object):
         self.ctrl_hw_sync = {}
         self.ctrl_sw_start = {}
         self.ctrl_0d_sync = {}
+        self.ctrl_tg_sync = {}
         # TODO: Do the documentation
         self.sw_sync_timer = None
         self.sw_sync_monitor = None
@@ -522,6 +523,7 @@ class MeasurementConfiguration(object):
 
         self._config = config
         self._split_sync()
+        self._split_tg()
 
     def _split_sync(self):
         """
@@ -578,6 +580,39 @@ class MeasurementConfiguration(object):
         if len(self.ctrl_hw_sync):
             self.hw_sync_timer = find_master(self.ctrl_hw_sync, "timer")
             self.hw_sync_monitor = find_master(self.ctrl_hw_sync, "monitor")
+
+    def _split_tg(self):
+        """
+        Build TG configuration from complete configuration.
+        """
+
+        # Create list with not repeated elements
+        _tg_element_list = []
+
+        for ctrl in self._config["controllers"]:
+            tg_element = self._config["controllers"][ctrl].get('synchronizer',
+                                                               None)
+            if (tg_element is not None and
+                    tg_element != "software" and
+                    tg_element not in _tg_element_list):
+                _tg_element_list.append(tg_element)
+
+        # Intermediate dictionary to organize each ctrl with its elements.
+        ctrl_tgelem_dict = {}
+        for tgelem in _tg_element_list:
+            tg_ctrl = tgelem.get_controller()
+            if tg_ctrl not in ctrl_tgelem_dict.keys():
+                ctrl_tgelem_dict[tg_ctrl] = [tgelem]
+            else:
+                ctrl_tgelem_dict[tg_ctrl].append(tgelem)
+
+        # Build TG configuration dictionary.
+        for ctrl in ctrl_tgelem_dict:
+            self.ctrl_tg_sync[ctrl] = ctrls = {}
+            ctrls['channels'] = {}
+            for tg_elem in ctrl_tgelem_dict[ctrl]:
+                ch = ctrls['channels'][tg_elem] = {}
+                ch['full_name'] = tg_elem.full_name
 
 
 class PoolMeasurementGroup(PoolGroupElement):
