@@ -1670,6 +1670,16 @@ class MeasurementGroup(PoolElement):
         self.getSynchronizationObj().write(data)
         self._last_integ_time = None
 
+    # NrOfStarts Methods
+    def getNrOfStartsObj(self):
+        return self._getAttrEG('NrOfStarts')
+
+    def setNrOfStarts(self, starts):
+        self.getNrOfStartsObj().write(starts)
+
+    def getNrOfStarts(self):
+        return self._getAttrValue('NrOfStarts')
+
     def getMoveableObj(self):
         return self._getAttrEG('Moveable')
 
