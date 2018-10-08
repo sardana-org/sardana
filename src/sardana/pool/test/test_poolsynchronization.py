@@ -63,6 +63,8 @@ class PoolTriggerGateTestCase(unittest.TestCase):
         self.mock_tg_ctrl.StateOne.return_value = (State.Moving, 'triggering')
 
         dummy_tg_ctrl.ctrl = self.mock_tg_ctrl
+        # TODO: The TriggerGate should have a configuration
+        self.dummy_tg.configuration = self.cfg
         self.tgaction = PoolSynchronization(self.dummy_tg)
         self.tgaction.add_element(self.dummy_tg)
 

@@ -61,7 +61,10 @@ class SynchronizationTestCase(object):
         self.pool.add_element(self.tg_elem)
         # create Synchronization action and its configuration
         self.tg_cfg = createPoolSynchronizationConfiguration((self.tg_ctrl,),
-                                                             ((self.tg_elem,),),)
+                                                             ((self.tg_elem,),)
+                                                             ,)
+        # TODO: The TriggerGate should have a configuration
+        self.tg_elem.configuration = self.tg_cfg
         self.tgaction = PoolSynchronization(self.tg_elem)
         self.tgaction.add_element(self.tg_elem)
 

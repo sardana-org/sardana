@@ -99,8 +99,10 @@ class AcquisitionTestCase(BasePoolTestCase):
         self.l = AttributeListener()
         self.channel_names = []
 
-    def createPoolSynchronization(self, tg_list):
+    def createPoolSynchronization(self, tg_list, tg_config=None):
         self.main_element = FakeElement(self.pool)
+        # TODO: The TriggerGate should have a configuration
+        self.main_element.configuration = tg_config
         self.tggeneration = PoolSynchronization(self.main_element)
         for tg in tg_list:
             self.tggeneration.add_element(tg)
@@ -119,7 +121,7 @@ class AcquisitionTestCase(BasePoolTestCase):
         tg_cfg = createPoolSynchronizationConfiguration((tg_ctrl,),
                                                         ((tg,),))
         # creating PoolSynchronization action
-        self.createPoolSynchronization([tg])
+        self.createPoolSynchronization([tg], tg_config=tg_cfg)
 
         channels = []
         for name in self.channel_names:
@@ -305,7 +307,7 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         tg_cfg = createPoolSynchronizationConfiguration((tg_ctrl_2,),
                                                         ((tg_2_1,),))
         # creating TGGeneration action
-        self.createPoolSynchronization([tg_2_1])
+        self.createPoolSynchronization([tg_2_1], tg_config=tg_cfg)
         # add_listeners
         self.addListeners([ct_1_1, ct_2_1])
         # creating acquisition configurations

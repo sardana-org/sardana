@@ -174,7 +174,11 @@ def createPoolSynchronizationConfiguration(ctrls, ctrl_channels):
             ctrl_data['channels'][channel] = channel_conf
         ctrls_configuration[ctrl] = ctrl_data
     configuration = {'controllers': ctrls_configuration}
-    return configuration
+
+    mc = MeasurementConfiguration()
+    mc._config = configuration
+    mc.ctrl_tg_sync = ctrls_configuration
+    return mc
 
 
 def createCTAcquisitionConfiguration(ctrls, ctrl_channels):
