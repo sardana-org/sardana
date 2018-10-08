@@ -384,7 +384,6 @@ class Motion(BaseMotion):
             moveable.waitMove(timeout=timeout, id=id[i])
 
     def move(self, new_pos, timeout=None):
-        start_time = time.time()
         if len(self.moveable_list) == 1:
             moveable = self.moveable_list[0]
             ret = moveable.move(new_pos, timeout=timeout)
