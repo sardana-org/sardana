@@ -311,6 +311,9 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         self.sw_acq_cfg = createCTAcquisitionConfiguration((ct_ctrl_2,),
                                                            ((ct_2_1,),))
         # creating acquisition actions
+        # TODO: The CTExpChannel should have a configuration
+        ct_1_1.configuration = self.hw_acq_cfg
+        ct_2_1.configuration = self.sw_acq_cfg
         self.hw_acq = PoolAcquisitionHardware(ct_1_1)
         self.sw_acq = PoolAcquisitionSoftware(ct_2_1)
         # Since we deposit the software acquisition action on the PoolThread's
