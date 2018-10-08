@@ -206,7 +206,8 @@ class PoolAcquisition(PoolAction):
             # participate directly in the acquisition
             for pseudo_elem in elem.get_pseudo_elements():
                 pseudo_elem.clear_value_buffer()
-        config = kwargs['config']
+
+        config = self.main_element.configuration
         synchronization = kwargs["synchronization"]
         integ_time = synchronization.integration_time
         repetitions = synchronization.repetitions
@@ -434,7 +435,6 @@ class PoolAcquisitionBase(PoolAction):
             raise Exception(msg)
 
         _ = kwargs.get("items", self.get_elements())
-        cfg = kwargs['config']
         # determine which is the controller which holds the master channel
         master = None
 
