@@ -269,6 +269,9 @@ class MeasurementGroup(PoolGroupDevice):
             raise Exception("Invalid domain (can be either Position or Time)")
         self.measurement_group.sw_synch_initial_domain = domain
 
+    def Prepare(self):
+        self.measurement_group.prepare()
+
     def Start(self):
         try:
             self.wait_for_operation()
@@ -300,6 +303,7 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
 
     #    Command definitions
     cmd_list = {
+        'Prepare': [[DevVoid, ""], [DevVoid, ""]],
         'Start': [[DevVoid, ""], [DevVoid, ""]],
         'StartMultiple': [[DevLong, ""], [DevVoid, ""]],
     }
