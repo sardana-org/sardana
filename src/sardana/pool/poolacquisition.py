@@ -241,14 +241,14 @@ class PoolAcquisition(PoolAction):
                 self.debug('Stopping ZeroD acquisition.')
                 self._0d_acq.stop_action()
 
-    def prepare(self, config, repetitions):
+    def prepare(self, config, nr_of_starts):
         """Prepare measurement."""
-        timers = config.get_timers(enabled=True)
+        timers = [] #config.get_timers(enabled=True)
         for timer in timers:
             axis = timer.axis
             timer_ctrl = timer.controller
             ctrl = timer_ctrl.ctrl
-            ctrl.PrepareOne(axis, repetitions)
+            ctrl.PrepareOne(axis, nr_of_starts)
 
     def is_running(self):
         return self._0d_acq.is_running() or\
