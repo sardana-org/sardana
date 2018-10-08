@@ -89,36 +89,36 @@ Implementation
 
 ### Measurement Group
 
-Measurement group is extended by the *prepare* command with two parameters:
-synchronization description and number of starts. The second one indicates
-how many times measurement group will be started, with the *start* command,
-to measure according to the synchronization description.
+Measurement group is extended by the *prepare* command (with no arguments)
+*number of starts* attribute. The use of the attribute is optional and 
+it indicates how many times measurement group will be started, with the 
+*start* command, to measure according to the synchronization description or 
+integration time. When it is not used number of starts of 1 will be assumed.
 
 1. Measurement group - Tango device class
-    * Add `Prepare` command. TODO: investigate the best way to pass 
-    synchronization description, as JSON serialized string, together with the
-    starts integer.
-    * Remove `synchronization` attribute (experimental API) - no backwards
-    compatibility.
+    * Add `Prepare` command.
+    * Add `NrOfStarts` (`DevLong`) attribute.
 2. Measurement group - core class
-    * Add `prepare(synchronization, starts=1)` method
-    * Remove `synchronization` property  (experimental API) - no backwards
-    compatibility. 
-3. Backwards compatibility for integration time attribute will be solved in 
-the following way: setting of integration time attribute will allow starts 
-until the next preparation.
+    * Add `prepare()` method.
+    * Add `nr_of_starts` property. 
+3. Backwards compatibility for using just the integration time attribute with
+the start command (without calling prepare command in-between) will be
+solved in the following way: start command will internally call the prepare.
 4. Measurement group - Taurus extension
-    * Add `prepare` method which simply maps to `Prepare` Tango command
+    * Add `prepare()` method which simply maps to `Prepare` Tango command
     * Add `count_raw` method according to the following pseudo code:
         * `start()`
         * `waitFinish()`
-    * Implement `count` method according to the following pseudo code:
-        * `prepare(synchronization & starts = 1)` where synchronization
-        contains the integration time
+    * Implement `count(integration_time)` method according to the following 
+    pseudo 
+    code:
+        * set `integration_time`
+        * set `nr_of_starts=1`
+        * `prepare()`
         * `count_raw()`
     * Implement `count_continuous` (previous `measure`) method according to
     the following pseudo code:
-        * `prepare(synchronization & starts = 1)` where synchronization may
+        * `prepare()` where synchronization may
         contain the continuous acquisition description
         * `subscribeValueBuffer()`
         * `count_raw()`
@@ -280,7 +280,7 @@ StartOne(1)
 The same as option 2 but maintaining the backwards compatibility in the 
 following way:
 * Acquisition actions will call the `LoadOne`, etc. methods depending on the
-controllers implementations (more preciselly using the `inspect.getargspec`
+controllers implementations (more precisely using the `inspect.getargspec`
 and counting the number of arguments). This will require much more complicated
 acquisition actions.
 
