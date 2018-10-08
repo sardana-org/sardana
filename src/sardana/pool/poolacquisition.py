@@ -363,6 +363,30 @@ class PoolAcquisitionBase(PoolAction):
         # acquisition actions, uncomment this line
         # self.add_finish_hook(self.clear_value_buffers, True)
 
+    def _get_ctrls(self):
+        """
+        Method to get the controller dict for the acquisition type
+        :return:
+        :rtype dict
+        """
+        raise NotImplementedError()
+
+    def _get_timer(self):
+        """
+        Method to get the controller dict for the acquisition type
+        :return:
+        :rtype dict
+        """
+        raise NotImplementedError()
+
+    def _get_monitor(self):
+        """
+        Method to get the controller dict for the acquisition type
+        :return:
+        :rtype dict
+        """
+        raise NotImplementedError()
+
     def in_acquisition(self, states):
         """Determines if we are in acquisition or if the acquisition has ended
         based on the current unit trigger modes and states returned by the
@@ -413,25 +437,25 @@ class PoolAcquisitionBase(PoolAction):
         cfg = kwargs['config']
         # determine which is the controller which holds the master channel
         master = None
+
         if integ_time is not None and mon_count is not None:
             raise RuntimeError('The acquisition must have only one role: '
                                'timer or count')
         if integ_time is not None:
             master_key = 'timer'
             master_value = integ_time
-            master = cfg.timer
+            master = self._get_timer()
         if mon_count is not None:
             master_key = 'monitor'
             master_value = -mon_count
-            master = cfg.monitor
+            master = self._get_monitor()
         if master is None:
             self.main_element.set_state(State.Fault, propagate=2)
-            msg = "master {0} is unknown (probably disabled)".format(
-                master_key)
+            msg = "master {0} ({1})is unknown (probably disabled)".format(
+                master_key, master)
             raise RuntimeError(msg)
         master_ctrl = master.controller
-
-        pool_ctrls_dict = dict(cfg.controllers)
+        pool_ctrls_dict = dict(self._get_ctrls())
         pool_ctrls_dict.pop('__tango__', None)
 
         # controllers to be started (only enabled) in the right order
@@ -587,6 +611,31 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
     def __init__(self, main_element, name="AcquisitionHardware"):
         PoolAcquisitionBase.__init__(self, main_element, name)
 
+    def _get_ctrls(self):
+        """
+        Method to get the controller dict for the acquisition type
+        :return:
+        :rtype dict
+        """
+        return self.main_element.configuration.ctrl_hw_sync
+
+    def _get_timer(self):
+        """
+        Method to get the controller dict for the acquisition type
+        :return:
+        :rtype dict
+        """
+        return self.main_element.configuration.hw_sync_timer
+
+    def _get_monitor(self):
+        """
+        Method to get the controller dict for the acquisition type
+        :return:
+        :rtype dict
+        """
+        return self.main_element.configuration.hw_sync_monitor
+
+
     @DebugIt()
     def action_loop(self):
         i = 0
@@ -656,6 +705,31 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
         if slaves is None:
             slaves = ()
         self._slaves = slaves
+
+    def _get_ctrls(self):
+        """
+        Method to get the controller dict for the acquisition type
+        :return:
+        :rtype dict
+        """
+        return self.main_element.configuration.ctrl_sw_sync
+
+    def _get_timer(self):
+        """
+        Method to get the controller dict for the acquisition type
+        :return:
+        :rtype dict
+        """
+
+        return self.main_element.configuration.sw_sync_timer
+
+    def _get_monitor(self):
+        """
+        Method to get the controller dict for the acquisition type
+        :return:
+        :rtype dict
+        """
+        return self.main_element.configuration.sw_sync_monitor
 
     @DebugIt()
     def start_action(self, *args, **kwargs):
