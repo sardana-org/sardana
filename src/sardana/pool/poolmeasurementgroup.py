@@ -131,6 +131,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         self._state_lock = threading.Lock()
         self._monitor_count = None
         self._nr_of_starts = 1
+        self._pending_starts = 0
         self._acquisition_mode = AcqMode.Timer
         self._config = None
         self._config_dirty = True
@@ -741,13 +742,24 @@ class PoolMeasurementGroup(PoolGroupElement):
         self.load_configuration()
         config = self.get_configuration()
         nr_of_starts = self.nr_of_starts
+        self._pending_starts = nr_of_starts
         self.acquisition.prepare(config, nr_of_starts)
 
     def start_acquisition(self, value=None, multiple=1):
+        if self._pending_starts == 0:
+            msg = "starting acquisition without prior preparing is " \
+                  "deprecated since version Jan18."
+            self.warning(msg)
+            self.debug("Preparing with number_of_starts equal to 1")
+            nr_of_starts = self.nr_of_starts
+            self.set_nr_of_starts(1, propagate=0)
+            try:
+                self.prepare()
+            finally:
+                self.set_nr_of_starts(nr_of_starts, propagate=0)
         self._aborted = False
+        self._pending_starts -= 1
         if not self._simulation_mode:
-            # load configuration into controller(s) if necessary
-            self.load_configuration()
             # determining the acquisition parameters
             kwargs = dict(head=self, config=self._config, multiple=multiple)
             acquisition_mode = self.acquisition_mode
@@ -770,5 +782,10 @@ class PoolMeasurementGroup(PoolGroupElement):
     acquisition = property(get_acquisition, doc="acquisition object")
 
     def stop(self):
+        self._pending_starts = 0
         self.acquisition._synch._synch_soft.stop()
         PoolGroupElement.stop(self)
+
+    def abort(self):
+        self._pending_starts = 0
+        PoolGroupElement.abort(self)
