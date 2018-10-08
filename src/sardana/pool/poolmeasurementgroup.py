@@ -517,7 +517,6 @@ class MGConfiguration(object):
                                'controller', g_monitor.controller.name,
                                monitor_ctrl_data['monitor'].name,
                                g_monitor.name)
-                monitor_ctrl_data['monitor'] != g_monitor
 
         self._config = config
         self._prepare_data()
