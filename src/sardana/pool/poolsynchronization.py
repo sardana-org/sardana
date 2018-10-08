@@ -140,11 +140,12 @@ class PoolSynchronization(PoolAction):
         - sw_synch_initial_domain (optional) - initial domain for software
           synchronizer, can be either SynchDomain.Time or SynchDomain.Position
         '''
-        cfg = kwargs['config']
+
+        cfg = self.main_element.configuration
         synchronization = kwargs.get('synchronization')
         moveable = kwargs.get('moveable')
         sw_synch_initial_domain = kwargs.get('sw_synch_initial_domain', None)
-        ctrls_config = cfg.get('controllers')
+        ctrls_config = cfg.ctrl_tg_sync
         pool_ctrls = ctrls_config.keys()
 
         # Prepare a dictionary with the involved channels
