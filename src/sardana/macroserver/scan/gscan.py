@@ -1010,9 +1010,9 @@ class SScan(GScan):
             nr_points = float(macro.nr_points)
             if hasattr(macro, "integ_time"):
                 integ_time = macro.integ_time
-                group = {SynchParam.Active: {SynchDomain.Time: integ_time}}
-                synchronization = [group]
-                self.measurement_group.prepare(synchronization, nr_points)
+                self.measurement_group.putIntegrationTime(integ_time)
+                self.measurement_group.setNrOfStarts(nr_points)
+                self.measurement_group.prepare()
             scream = True
         else:
             yield 0.0
@@ -2662,8 +2662,8 @@ class TScan(GScan, CAcquisition):
                 hook()
 
         yield 0
-        measurement_group.measure(synchronization,
-                                  self.value_buffer_changed)
+        measurement_group.count_continuous(synchronization,
+                                           self.value_buffer_changed)
         self.debug("Waiting for value buffer events to be processed")
         self.wait_value_buffer()
         self.join_thread_pool()
