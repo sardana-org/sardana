@@ -128,8 +128,10 @@ class MGConfiguration(object):
 
     DFT_DESC = 'General purpose measurement group'
 
-    def __init__(self, mg):
-        self._mg = weakref.ref(mg)()
+    def __init__(self, mg=None):
+        self._mg = None
+        if mg is not None:
+            self._mg = weakref.ref(mg)()
         self._config = None
         self.use_fqdn = True
         self._init_data()
