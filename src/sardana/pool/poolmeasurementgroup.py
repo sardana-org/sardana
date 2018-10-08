@@ -171,16 +171,6 @@ class MeasurementConfiguration(object):
 
     @property
     @__check_config
-    def timer(self):
-        return self._config['timer']
-
-    @property
-    @__check_config
-    def monitor(self):
-        return self._config['monitor']
-
-    @property
-    @__check_config
     def controllers(self):
         return self._config['controllers']
 
