@@ -1670,6 +1670,16 @@ class MeasurementGroup(PoolElement):
         self.getSynchronizationObj().write(data)
         self._last_integ_time = None
 
+    # NrOfStarts Methods
+    def getNrOfStartsObj(self):
+        return self._getAttrEG('NrOfStarts')
+
+    def setNrOfStarts(self, starts):
+        self.getNrOfStartsObj().write(starts)
+
+    def getNrOfStarts(self):
+        return self._getAttrValue('NrOfStarts')
+
     def getMoveableObj(self):
         return self._getAttrEG('Moveable')
 
@@ -1795,19 +1805,21 @@ class MeasurementGroup(PoolElement):
                 self.debug("stopped")
             raise e
 
-    def prepare(self, synchronization, nr_of_starts=1):
-        pass
+    def prepare(self):
+        self.command_inout("Prepare")
 
     def go(self, *args, **kwargs):
         start_time = time.time()
         cfg = self.getConfiguration()
         cfg.prepare()
-        duration = args[0]
-        if duration is None or duration == 0:
+        integration_time = args[0]
+        if integration_time is None or integration_time == 0:
             return self.getStateEG().readValue(), self.getValues()
-        self.putIntegrationTime(duration)
+        self.putIntegrationTime(integration_time)
         self.setMoveable(None)
-        PoolElement.go(self, *args, **kwargs)
+        self.setNrOfStarts(1)
+        self.prepare()
+        self.count_raw(self)
         state = self.getStateEG().readValue()
         if state == Fault:
             msg = "Measurement group ended acquisition with Fault state"
@@ -1817,7 +1829,7 @@ class MeasurementGroup(PoolElement):
         self._total_go_time = time.time() - start_time
         return ret
 
-    def measure(self, synchronization, value_buffer_cb=None):
+    def count_continuous(self, synchronization, value_buffer_cb=None):
         """Execute measurement process according to the given synchronization
         description.
 
@@ -1840,7 +1852,7 @@ class MeasurementGroup(PoolElement):
         cfg.prepare()
         self.setSynchronization(synchronization)
         self.subscribeValueBuffer(value_buffer_cb)
-        PoolElement.go(self)
+        self.count_raw(self)
         self.unsubscribeValueBuffer(value_buffer_cb)
         state = self.getStateEG().readValue()
         if state == Fault:
@@ -1857,6 +1869,7 @@ class MeasurementGroup(PoolElement):
     startCount = PoolElement.start
     waitCount = PoolElement.waitFinish
     count = go
+    count_raw = PoolElement.go
     stopCount = PoolElement.abort
     stop = PoolElement.stop
 
