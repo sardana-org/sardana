@@ -62,52 +62,6 @@ AcquisitionMap = {
 }
 
 
-def getTGConfiguration(MGcfg):
-    '''Build TG configuration from complete MG configuration.
-
-    TODO: (technical debt) All the MeasurementGroup configuration
-    logic should be encapsulate in a dedicated class instead of
-    using a basic data structures like dict or lists...
-
-    :param MGcfg: configuration dictionary of the whole Measurement Group.
-    :type MGcfg: dict<>
-    :return: a configuration dictionary of TG elements organized by controller
-    :rtype: dict<>
-    '''
-
-    # Create list with not repeated elements
-    _tg_element_list = []
-
-    for ctrl in MGcfg["controllers"]:
-        tg_element = MGcfg["controllers"][ctrl].get('synchronizer', None)
-        if (tg_element is not None and
-                tg_element != "software" and
-                tg_element not in _tg_element_list):
-            _tg_element_list.append(tg_element)
-
-    # Intermediate dictionary to organize each ctrl with its elements.
-    ctrl_tgelem_dict = {}
-    for tgelem in _tg_element_list:
-        tg_ctrl = tgelem.get_controller()
-        if tg_ctrl not in ctrl_tgelem_dict.keys():
-            ctrl_tgelem_dict[tg_ctrl] = [tgelem]
-        else:
-            ctrl_tgelem_dict[tg_ctrl].append(tgelem)
-
-    # Build TG configuration dictionary.
-    TGcfg = {}
-    TGcfg['controllers'] = {}
-
-    for ctrl in ctrl_tgelem_dict:
-        TGcfg['controllers'][ctrl] = ctrls = {}
-        ctrls['channels'] = {}
-        for tg_elem in ctrl_tgelem_dict[ctrl]:
-            ch = ctrls['channels'][tg_elem] = {}
-            ch['full_name'] = tg_elem.full_name
-    # TODO: temporary returning tg_elements
-    return TGcfg, _tg_element_list
-
-
 def is_value_error(value):
     if isinstance(value, SardanaValue) and value.error:
         return True
@@ -221,7 +175,6 @@ class PoolAcquisition(PoolAction):
         integ_time = synchronization.integration_time
         repetitions = synchronization.repetitions
 
-        synch_cfg, _ = getTGConfiguration(config)
         # starting continuous acquisition only if there are any controllers
         if len(config.ctrl_hw_sync):
             cont_acq_kwargs = dict(kwargs)
@@ -240,7 +193,6 @@ class PoolAcquisition(PoolAction):
                 # TODO: Ask why
                 self.set_0d_config(zerod_acq_kwargs)
         synch_kwargs = dict(kwargs)
-        synch_kwargs['config'] = synch_cfg
         self._synch.run(*args, **synch_kwargs)
 
     def _get_action_for_element(self, element):
