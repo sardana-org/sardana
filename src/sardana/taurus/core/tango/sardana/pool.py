@@ -1864,9 +1864,17 @@ class MeasurementGroup(PoolElement):
         self._total_go_time = time.time() - start_time
         return ret
 
+
+    def count(self, integration_time):
+        self.setIntegrationTime(integration_time)
+        self.setNrOfStarts(1)
+        self.prepare()
+        self.count_raw(self)
+
     startCount = PoolElement.start
     waitCount = PoolElement.waitFinish
     count = go
+    count_raw = PoolElement.go
     stopCount = PoolElement.abort
     stop = PoolElement.stop
 
