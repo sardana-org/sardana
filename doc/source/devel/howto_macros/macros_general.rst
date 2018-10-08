@@ -330,8 +330,13 @@ all available sardana interfaces (:obj:`~sardana.sardanadefs.Interface`)
 Optional parameters
 ~~~~~~~~~~~~~~~~~~~
 
-A special parameter default value is the ``Optional``. It allows to
-execute a macro even if the given parameter value is not specified by the user.
+A special parameter default value is the ``Optional`` keyword. A parameter 
+whose default value is set to ``Optional`` behaves just as one with a default 
+value, except that if the user does not provide a value explicitly, the 
+handling of its value is deferred to the run method (which gets ``None`` as
+the parameter value). This allows for more complex handling of the value 
+(e.g. interactive prompting to the user, system introspection, reading from 
+files, etc.)
 
 So, here is an example how to define and use the optional parameter::
 
