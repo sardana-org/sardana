@@ -124,7 +124,7 @@ def _to_fqdn(name, logger=None):
     return full_name
 
 
-class MGConfiguration(object):
+class MeasurementConfiguration(object):
 
     DFT_DESC = 'General purpose measurement group'
 
@@ -585,7 +585,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         self._monitor_count = None
         self._repetitions = 1
         self._acquisition_mode = AcqMode.Timer
-        self._config = MGConfiguration(self)
+        self._config = MeasurementConfiguration(self)
         self._config_dirty = True
         self._moveable = None
         self._moveable_obj = None

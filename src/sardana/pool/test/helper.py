@@ -42,7 +42,7 @@ from sardana.pool.poolmotor import PoolMotor
 from sardana.pool.poolpseudocounter import PoolPseudoCounter
 from sardana.pool.poolpseudomotor import PoolPseudoMotor
 from sardana.pool.poolmeasurementgroup import PoolMeasurementGroup, \
-    MGConfiguration
+    MeasurementConfiguration
 
 
 def createPoolController(pool, conf):
@@ -206,7 +206,7 @@ def createCTAcquisitionConfiguration(ctrls, ctrl_channels):
         ctrl_data['timer'] = channels[master_idx]
         ctrls_configuration[ctrl] = ctrl_data
     configuration['controllers'] = ctrls_configuration
-    mg_cfg = MGConfiguration()
+    mg_cfg = MeasurementConfiguration()
     mg_cfg._config = configuration
     mg_cfg.hw_sync_monitor = timer
     mg_cfg.hw_sync_timer = timer
