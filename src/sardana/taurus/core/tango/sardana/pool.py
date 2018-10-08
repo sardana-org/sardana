@@ -1795,8 +1795,8 @@ class MeasurementGroup(PoolElement):
                 self.debug("stopped")
             raise e
 
-    def prepare(self, synchronization, nr_of_starts=1):
-        pass
+    def prepare(self):
+        self.command_inout("Prepare")
 
     def go(self, *args, **kwargs):
         start_time = time.time()
