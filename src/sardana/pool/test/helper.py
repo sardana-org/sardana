@@ -41,7 +41,8 @@ from sardana.pool.pooltriggergate import PoolTriggerGate
 from sardana.pool.poolmotor import PoolMotor
 from sardana.pool.poolpseudocounter import PoolPseudoCounter
 from sardana.pool.poolpseudomotor import PoolPseudoMotor
-from sardana.pool.poolmeasurementgroup import PoolMeasurementGroup
+from sardana.pool.poolmeasurementgroup import PoolMeasurementGroup, \
+    MGConfiguration
 
 
 def createPoolController(pool, conf):
@@ -195,7 +196,7 @@ def createCTAcquisitionConfiguration(ctrls, ctrl_channels):
     master_idx = 0
     configuration = {}
     ctrls_configuration = {}
-    configuration['timer'] = ctrl_channels[master_ctrl_idx][master_idx]
+    configuration['timer'] = timer = ctrl_channels[master_ctrl_idx][master_idx]
     for ctrl, channels in zip(ctrls, ctrl_channels):
         ctrl_data = createConfFromObj(ctrl)
         ctrl_data['channels'] = {}
@@ -205,7 +206,16 @@ def createCTAcquisitionConfiguration(ctrls, ctrl_channels):
         ctrl_data['timer'] = channels[master_idx]
         ctrls_configuration[ctrl] = ctrl_data
     configuration['controllers'] = ctrls_configuration
-    return configuration
+    mg_cfg = MGConfiguration()
+    mg_cfg._config = configuration
+    mg_cfg.hw_sync_monitor = timer
+    mg_cfg.hw_sync_timer = timer
+    mg_cfg.sw_sync_timer = timer
+    mg_cfg.sw_sync_monitor = timer
+    mg_cfg.ctrl_hw_sync = ctrls_configuration
+    mg_cfg.ctrl_sw_sync = ctrls_configuration
+
+    return mg_cfg
 
 
 def createMGUserConfiguration(pool, channels):
