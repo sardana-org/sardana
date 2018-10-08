@@ -1812,12 +1812,12 @@ class MeasurementGroup(PoolElement):
         start_time = time.time()
         cfg = self.getConfiguration()
         cfg.prepare()
-        duration = args[0]
-        if duration is None or duration == 0:
+        integration_time = args[0]
+        if integration_time is None or integration_time == 0:
             return self.getStateEG().readValue(), self.getValues()
-        self.putIntegrationTime(duration)
+        self.putIntegrationTime(integration_time)
         self.setMoveable(None)
-        PoolElement.go(self, *args, **kwargs)
+        self.count_raw(self)
         state = self.getStateEG().readValue()
         if state == Fault:
             msg = "Measurement group ended acquisition with Fault state"
@@ -1827,7 +1827,7 @@ class MeasurementGroup(PoolElement):
         self._total_go_time = time.time() - start_time
         return ret
 
-    def measure(self, synchronization, value_buffer_cb=None):
+    def count_continuous(self, synchronization, value_buffer_cb=None):
         """Execute measurement process according to the given synchronization
         description.
 
@@ -1850,7 +1850,7 @@ class MeasurementGroup(PoolElement):
         cfg.prepare()
         self.setSynchronization(synchronization)
         self.subscribeValueBuffer(value_buffer_cb)
-        PoolElement.go(self)
+        self.count_raw(self)
         self.unsubscribeValueBuffer(value_buffer_cb)
         state = self.getStateEG().readValue()
         if state == Fault:

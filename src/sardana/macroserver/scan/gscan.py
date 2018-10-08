@@ -2662,8 +2662,8 @@ class TScan(GScan, CAcquisition):
                 hook()
 
         yield 0
-        measurement_group.measure(synchronization,
-                                  self.value_buffer_changed)
+        measurement_group.count_continuous(synchronization,
+                                           self.value_buffer_changed)
         self.debug("Waiting for value buffer events to be processed")
         self.wait_value_buffer()
         self.join_thread_pool()
