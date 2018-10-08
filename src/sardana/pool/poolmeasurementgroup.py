@@ -938,7 +938,7 @@ class PoolMeasurementGroup(PoolGroupElement):
     def prepare(self):
         # load configuration into controller(s) if necessary
         self.load_configuration()
-        config = self.get_configuration()
+        config = self.configuration
         nr_of_starts = self.nr_of_starts
         self._pending_starts = nr_of_starts
         self.acquisition.prepare(config, nr_of_starts)

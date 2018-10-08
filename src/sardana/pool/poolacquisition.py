@@ -141,7 +141,10 @@ class PoolAcquisition(PoolAction):
 
     def prepare(self, config, repetitions):
         """Prepare measurement."""
-        timers = config.get_timers(enabled=True)
+        timers = config.sw_sync_timers_enabled + \
+                 config.sw_start_timers_enabled + \
+                 config.hw_sync_timers_enabled
+
         for timer in timers:
             axis = timer.axis
             timer_ctrl = timer.controller
