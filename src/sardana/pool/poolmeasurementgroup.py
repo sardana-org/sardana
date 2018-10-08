@@ -134,9 +134,9 @@ class MeasurementConfiguration(object):
             self._parent = weakref.ref(parent)()
         self._config = None
         self.use_fqdn = True
-        self._init_data()
+        self._clean_variables()
 
-    def _init_data(self):
+    def _clean_variables(self):
         # list of controller with channels enabled.
         self.enabled_ctrls = []
         # dict with channel and its acquisition synchronization
@@ -377,7 +377,7 @@ class MeasurementConfiguration(object):
 
     def _build_configuration(self, config=None):
         """Builds a configuration object from the list of elements"""
-        self._init_data()
+        self._clean_variables()
 
         if config is None:
             config = {}
@@ -521,9 +521,9 @@ class MeasurementConfiguration(object):
                                    g_monitor.name)
 
         self._config = config
-        self._prepare_data()
+        self._split_sync()
 
-    def _prepare_data(self):
+    def _split_sync(self):
         """
         Split MeasurementGroup configuration with channels
         triggered by SW Trigger and channels triggered by HW trigger
