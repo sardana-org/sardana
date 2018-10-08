@@ -34,6 +34,26 @@ import time
 from taurus.core.util.containers import CaselessDict
 
 
+def get_pytango_devstate_match(states):
+    """
+    Retrieve PyTango.DevState match
+    :param states:
+    :return:
+    """
+
+    import PyTango
+    state = PyTango.DevState.ON
+    if PyTango.DevState.FAULT in states:
+        state = PyTango.DevState.FAULT
+    elif PyTango.DevState.ALARM in states:
+        state = PyTango.DevState.ALARM
+    elif PyTango.DevState.UNKNOWN in states:
+        state = PyTango.DevState.UNKNOWN
+    elif PyTango.DevState.MOVING in states:
+        state = PyTango.DevState.MOVING
+    return state
+
+
 class Moveable:
     """ An item that can 'move'. In order to move it you need to provide a list
     of values (normally interpreted as motor positions).
@@ -181,16 +201,7 @@ class MotionGroup(BaseMotion):
             res = moveable.move(pos, timeout=timeout)
             states.append(res[0])
             positions.extend(res[1])
-        import PyTango
-        state = PyTango.DevState.ON
-        if PyTango.DevState.FAULT in states:
-            state = PyTango.DevState.FAULT
-        elif PyTango.DevState.ALARM in states:
-            state = PyTango.DevState.ALARM
-        elif PyTango.DevState.UNKNOWN in states:
-            state = PyTango.DevState.UNKNOWN
-        elif PyTango.DevState.MOVING in states:
-            state = PyTango.DevState.MOVING
+        state = get_pytango_devstate_match(states)
         self.__total_motion_time = time.time() - start_time
         return state, positions
 
@@ -388,16 +399,7 @@ class Motion(BaseMotion):
             for moveable, id in zip(self.moveable_list, ids):
                 moveable.waitMove(id=id, timeout=timeout)
             states, positions = self.readState(), self.readPosition()
-            import PyTango
-            state = PyTango.DevState.ON
-            if PyTango.DevState.FAULT in states:
-                state = PyTango.DevState.FAULT
-            elif PyTango.DevState.ALARM in states:
-                state = PyTango.DevState.ALARM
-            elif PyTango.DevState.UNKNOWN in states:
-                state = PyTango.DevState.UNKNOWN
-            elif PyTango.DevState.MOVING in states:
-                state = PyTango.DevState.MOVING
+            state = get_pytango_devstate_match(states)
             ret = state, positions
         self.__total_motion_time = time.time()
         return ret
