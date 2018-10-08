@@ -130,7 +130,7 @@ class PoolMeasurementGroup(PoolGroupElement):
     def __init__(self, **kwargs):
         self._state_lock = threading.Lock()
         self._monitor_count = None
-        self._repetitions = 1
+        self._nr_of_starts = 1
         self._acquisition_mode = AcqMode.Timer
         self._config = None
         self._config_dirty = True
@@ -698,6 +698,10 @@ class PoolMeasurementGroup(PoolGroupElement):
                             doc="latency time between two consecutive "
                                 "acquisitions")
 
+    # -------------------------------------------------------------------------
+    # software synchronizer initial domain
+    # -------------------------------------------------------------------------
+
     def get_sw_synch_initial_domain(self):
         return self._sw_synch_initial_domain
 
@@ -712,15 +716,32 @@ class PoolMeasurementGroup(PoolGroupElement):
     )
 
     # -------------------------------------------------------------------------
+    # number of starts
+    # -------------------------------------------------------------------------
+
+    def get_nr_of_starts(self):
+        return self._nr_of_starts
+
+    def set_nr_of_starts(self, nr_of_starts, propagate=1):
+        self._nr_of_starts = nr_of_starts
+        if not propagate:
+            return
+        self.fire_event(EventType("nr_of_starts", priority=propagate),
+                        nr_of_starts)
+
+    nr_of_starts = property(get_nr_of_starts, set_nr_of_starts,
+                            doc="current number of starts")
+
+    # -------------------------------------------------------------------------
     # acquisition
     # -------------------------------------------------------------------------
 
     def prepare(self):
+        # load configuration into controller(s) if necessary
         self.load_configuration()
         config = self.get_configuration()
-        repetitions = self.synchronization.repetitions
-        self.acquisition.prepare(config, repetitions)
-
+        nr_of_starts = self.nr_of_starts
+        self.acquisition.prepare(config, nr_of_starts)
 
     def start_acquisition(self, value=None, multiple=1):
         self._aborted = False
