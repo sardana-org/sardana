@@ -279,6 +279,11 @@ class FunctionGenerator(EventGenerator, Logger):
     def fire_passive(self):
         self.fire_event(EventType("passive"), self._id)
         self.set_passive_events(self.passive_events[1:])
+        if len(self.passive_events) == 0:
+            self.fire_end()
+
+    def fire_end(self):
+        self.fire_event("end", self._id)
 
     def set_configuration(self, configuration):
         # make a copy since we may inject the initial time
