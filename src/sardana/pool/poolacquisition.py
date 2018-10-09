@@ -142,8 +142,8 @@ class PoolAcquisition(PoolAction):
     def prepare(self, config, repetitions):
         """Prepare measurement."""
         timers = config.sw_sync_timers_enabled + \
-                 config.sw_start_timers_enabled + \
-                 config.hw_sync_timers_enabled
+            config.sw_start_timers_enabled + \
+            config.hw_sync_timers_enabled
 
         for timer in timers:
             axis = timer.axis
@@ -598,7 +598,6 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
         :rtype dict
         """
         return self.main_element.configuration.hw_sync_monitor
-
 
     @DebugIt()
     def action_loop(self):

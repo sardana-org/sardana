@@ -60,9 +60,8 @@ class SynchronizationTestCase(object):
         self.pool.add_element(self.tg_ctrl)
         self.pool.add_element(self.tg_elem)
         # create Synchronization action and its configuration
-        self.tg_cfg = createPoolSynchronizationConfiguration((self.tg_ctrl,),
-                                                             ((self.tg_elem,),)
-                                                             ,)
+        self.tg_cfg = createPoolSynchronizationConfiguration(
+            (self.tg_ctrl,), ((self.tg_elem,),),)
         # TODO: The TriggerGate should have a configuration
         self.tg_elem.configuration = self.tg_cfg
         self.tgaction = PoolSynchronization(self.tg_elem)
@@ -86,7 +85,8 @@ class SynchronizationTestCase(object):
        :type offset: float
        :param active_interval: signal at which triggers will be generated
        :type active_interval: float
-       :param passive_interval: temporal passive period between two active periods
+       :param passive_interval: temporal passive period between two active
+                                periods
        :type passive_interval: float
        :param repetitions: number of generated triggers
        :type repetitions: int
@@ -131,11 +131,12 @@ class SynchronizationTestCase(object):
        :type offset: float
        :param active_interval: signal at which triggers will be generated
        :type active_interval: float
-       :param passive_interval: temporal passive period between two active periods
+       :param passive_interval: temporal passive period between two active
+                                periods
        :type passive_interval: float
        :param repetitions: number of generated triggers
        :type repetitions: int
-       :param abort_time: wait this time before stopping the trigger generation.
+       :param abort_time: wait this time before stopping the trigger generation
        :type abort_time: float
         """
 
