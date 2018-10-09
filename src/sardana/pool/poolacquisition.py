@@ -868,9 +868,9 @@ class Pool0DAcquisition(PoolAction):
         items = kwargs.get("items")
         if items is None:
             items = self.get_elements()
-        cfg = kwargs['config']
+        cfg = self.main_element.configuration
 
-        pool_ctrls_dict = dict(cfg.controllers)
+        pool_ctrls_dict = dict(cfg.ctrl_0d_sync)
         pool_ctrls_dict.pop('__tango__', None)
         pool_ctrls = []
         for ctrl in pool_ctrls_dict:
