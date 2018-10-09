@@ -472,36 +472,53 @@ class PoolAcquisitionBase(PoolAction):
         pool_ctrls.remove(master_ctrl)
         pool_ctrls.append(master_ctrl)
 
+        def load(ctrl, master_axis, value, repetitions, latency=0):
+            ctrl.PreLoadAll()
+            try:
+                res = ctrl.PreLoadOne(master_axis, value, repetitions,
+                                      latency)
+            except TypeError:
+                try:
+                    res = ctrl.PreLoadOne(master_axis, value, repetitions)
+                    msg = ("PreLoadOne(axis, value, repetitions) is "
+                           "deprecated since version Jan19. Use PreLoadOne("
+                           "axis, value, repetitions, latency_time) instead.")
+                    self.warning(msg)
+                except TypeError:
+                    res = ctrl.PreLoadOne(master_axis, value)
+                    msg = ("PreLoadOne(axis, value) is deprecated since "
+                           "version 2.3.0. Use PreLoadOne(axis, value, "
+                           "repetitions, latency_time) instead.")
+                    self.warning(msg)
+            if not res:
+                msg = ("%s.PreLoadOne(%d) returned False" %
+                       (pool_ctrl.name, master_axis))
+                raise Exception(msg)
+            try:
+                ctrl.LoadOne(master_axis, value, repetitions, latency)
+            except TypeError:
+                try:
+                    ctrl.LoadOne(master_axis, value, repetitions)
+                    msg = ("LoadOne(axis, value, repetitions) is deprecated "
+                           "since version Jan18. Use LoadOne(axis, value, "
+                           "repetitions, latency_time) instead.")
+                    self.warning(msg)
+                except TypeError:
+                    ctrl.LoadOne(master_axis, value)
+                    msg = ("LoadOne(axis, value) is deprecated since "
+                           "version 2.3.0. Use LoadOne(axis, value, "
+                           "repetitions) instead.")
+                    self.warning(msg)
+            ctrl.LoadAll()
+
         with ActionContext(self):
             # PreLoadAll, PreLoadOne, LoadOne and LoadAll
             for pool_ctrl in pool_ctrls:
                 try:
                     ctrl = pool_ctrl.ctrl
                     pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-                    ctrl.PreLoadAll()
                     master = pool_ctrl_data[master_key]
-                    axis = master.axis
-                    try:
-                        res = ctrl.PreLoadOne(axis, master_value, repetitions)
-                    except TypeError:
-                        msg = ("PreLoadOne(axis, value) is deprecated since "
-                               "version 2.3.0. Use PreLoadOne(axis, value, "
-                               "repetitions) instead.")
-                        self.warning(msg)
-                        res = ctrl.PreLoadOne(axis, master_value)
-                    if not res:
-                        msg = ("%s.PreLoadOne(%d) returned False" %
-                               (pool_ctrl.name, axis))
-                        raise Exception(msg)
-                    try:
-                        ctrl.LoadOne(axis, master_value, repetitions)
-                    except TypeError:
-                        msg = ("LoadOne(axis, value) is deprecated since "
-                               "version 2.3.0. Use LoadOne(axis, value, "
-                               "repetitions) instead.")
-                        self.warning(msg)
-                        ctrl.LoadOne(axis, master_value)
-                    ctrl.LoadAll()
+                    load(ctrl, master.axis, master_value, repetitions)
                 except Exception, e:
                     self.debug(e, exc_info=True)
                     master.set_state(State.Fault, propagate=2)
