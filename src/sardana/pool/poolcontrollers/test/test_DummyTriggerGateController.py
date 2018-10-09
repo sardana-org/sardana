@@ -46,6 +46,9 @@ class PoolDummyTriggerGateTestCase(unittest.TestCase):
         self.cfg = createPoolSynchronizationConfiguration((dummy_tg_ctrl,),
                                                           ((self.dummy_tg,),))
 
+        # TODO: The TriggerGate should have a configuration
+        self.dummy_tg.configuration = self.cfg
+
         # marrying the element with the action
         self.tg_action = PoolSynchronization(self.dummy_tg)
         self.tg_action.add_element(self.dummy_tg)
