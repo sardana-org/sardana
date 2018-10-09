@@ -404,7 +404,7 @@ class PoolAcquisitionBase(PoolAction):
 
         if integ_time is not None and mon_count is not None:
             raise RuntimeError('The acquisition must have only one role: '
-                               'timer or count')
+                               'timer or monitor')
         if integ_time is not None:
             master_key = 'timer'
             master_value = integ_time
