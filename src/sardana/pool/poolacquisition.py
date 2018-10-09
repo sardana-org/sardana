@@ -193,7 +193,6 @@ class PoolAcquisition(PoolAction):
                 self.set_sw_config(sw_acq_kwargs)
             if len(config.ctrl_0d_sync):
                 zerod_acq_kwargs = dict(kwargs)
-                # TODO: Ask why
                 self.set_0d_config(zerod_acq_kwargs)
         synch_kwargs = dict(kwargs)
         self._synch.run(*args, **synch_kwargs)
