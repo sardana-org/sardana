@@ -338,7 +338,7 @@ class PoolAcquisitionBase(PoolAction):
 
     def _get_timer(self):
         """
-        Method to get the controller dict for the acquisition type
+        Method to get the master timer for the acquisition type
         :return:
         :rtype dict
         """
@@ -346,7 +346,7 @@ class PoolAcquisitionBase(PoolAction):
 
     def _get_monitor(self):
         """
-        Method to get the controller dict for the acquisition type
+        Method to get the master monitor  for the acquisition type
         :return:
         :rtype dict
         """
@@ -593,27 +593,12 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
         PoolAcquisitionBase.__init__(self, main_element, name)
 
     def _get_ctrls(self):
-        """
-        Method to get the controller dict for the acquisition type
-        :return:
-        :rtype dict
-        """
         return self.main_element.configuration.ctrl_hw_sync
 
     def _get_timer(self):
-        """
-        Method to get the controller dict for the acquisition type
-        :return:
-        :rtype dict
-        """
         return self.main_element.configuration.hw_sync_timer
 
     def _get_monitor(self):
-        """
-        Method to get the controller dict for the acquisition type
-        :return:
-        :rtype dict
-        """
         return self.main_element.configuration.hw_sync_monitor
 
     @DebugIt()
@@ -687,28 +672,12 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
         self._slaves = slaves
 
     def _get_ctrls(self):
-        """
-        Method to get the controller dict for the acquisition type
-        :return:
-        :rtype dict
-        """
         return self.main_element.configuration.ctrl_sw_sync
 
     def _get_timer(self):
-        """
-        Method to get the controller dict for the acquisition type
-        :return:
-        :rtype dict
-        """
-
         return self.main_element.configuration.sw_sync_timer
 
     def _get_monitor(self):
-        """
-        Method to get the controller dict for the acquisition type
-        :return:
-        :rtype dict
-        """
         return self.main_element.configuration.sw_sync_monitor
 
     @DebugIt()
