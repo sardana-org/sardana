@@ -767,7 +767,8 @@ class PoolMeasurementGroup(PoolGroupElement):
         self._config_dirty = False
 
     def get_timer(self):
-        return self._config.timer
+        # TODO: Adapt to the new future MeasurementConfiguration API
+        return self._config.configuration['timer']
 
     timer = property(get_timer)
 
