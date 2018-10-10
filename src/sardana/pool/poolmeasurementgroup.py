@@ -178,11 +178,6 @@ class MeasurementConfiguration(object):
 
     @property
     @__check_config
-    def controllers(self):
-        return self._config['controllers']
-
-    @property
-    @__check_config
     def configuration(self):
         return self._config
 
