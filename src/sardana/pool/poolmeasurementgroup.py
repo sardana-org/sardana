@@ -739,12 +739,10 @@ class PoolMeasurementGroup(PoolGroupElement):
         """Loads the current configuration to all involved controllers"""
 
         # g_timer, g_monitor = cfg['timer'], cfg['monitor']
-        for ctrl, ctrl_data in self._config.controllers.items():
+        for ctrl in self._config.enabled_ctrls:
             if isinstance(ctrl, str):  # skip external channels
                 continue
             if not ctrl.is_online():
-                continue
-            if ctrl not in self._config.enabled_ctrls:
                 continue
 
             ctrl.set_ctrl_par('acquisition_mode', self.acquisition_mode)
@@ -753,6 +751,8 @@ class PoolMeasurementGroup(PoolGroupElement):
                 continue
             ctrl.operator = self
             if ctrl.is_timerable():
+                # TODO: Implement API to extract controller data
+                ctrl_data = self._config.configuration['controllers'][ctrl]
                 # if ctrl == g_timer.controller:
                 #    ctrl.set_ctrl_par('timer', g_timer.axis)
                 # if ctrl == g_monitor.controller:
