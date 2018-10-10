@@ -48,9 +48,11 @@ Design
     stop/abort. Afterwards measurement group requires another preparation. 
     **IMPORTANT**: Whenever we drop backwards compatibility explained in the 
     following point starting of the measurement group without prior
-    preparation will be considered as wrong usage and will cause exception.  
-    * Direct start of the measurement group (after prior configuration of 
-    the integration time or synchronization) will be supported as backwards 
+    preparation will be considered as wrong usage and will cause exception.
+    This will break step scans with attached hooks which measure with the
+    same measurement group as used by the scan.
+    * Direct start of the measurement group (after prior configuration of
+    the integration time or synchronization) will be supported as backwards
     compatibility and the corresponding warning will be logged.
 2. Allow different types of preparation of channels - this still depends on
 the option selected in the implementation of controllers. The following
