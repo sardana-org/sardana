@@ -43,12 +43,15 @@ Design
 1. Use of the measurement group will change:
     * From now on, in order to start the measurement group, it is mandatory
     to prepare it.
-    * The measurement group will be armed for as many starts as specified in
-    the preparation and the preparation will expire whenever all starts gets
-    called or in case of stop/abort.
-    * Setting the integration time via the attribute will be deprecated in
-    favor of using prepare command with the synchronization description, but
-    backwards compatibility will be maintained.
+    * The measurement group is prepared for a number of starts. The 
+    preparation will expire whenever all starts gets called or in case of 
+    stop/abort. Afterwards measurement group requires another preparation. 
+    **IMPORTANT**: Whenever we drop backwards compatibility explained in the 
+    following point starting of the measurement group without prior
+    preparation will be considered as wrong usage and will cause exception.  
+    * Direct start of the measurement group (after prior configuration of 
+    the integration time or synchronization) will be supported as backwards 
+    compatibility and the corresponding warning will be logged.
 2. Allow different types of preparation of channels - this still depends on
 the option selected in the implementation of controllers. The following
 assumes option 1.
