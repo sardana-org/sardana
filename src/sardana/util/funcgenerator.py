@@ -283,7 +283,7 @@ class FunctionGenerator(EventGenerator, Logger):
             self.fire_end()
 
     def fire_end(self):
-        self.fire_event("end", self._id)
+        self.fire_event(EventType("end"), self._id)
 
     def set_configuration(self, configuration):
         # make a copy since we may inject the initial time
