@@ -384,6 +384,7 @@ class Motion(BaseMotion):
             moveable.waitMove(timeout=timeout, id=id[i])
 
     def move(self, new_pos, timeout=None):
+        start_time = time.time()
         if len(self.moveable_list) == 1:
             moveable = self.moveable_list[0]
             ret = moveable.move(new_pos, timeout=timeout)
@@ -400,7 +401,7 @@ class Motion(BaseMotion):
             states, positions = self.readState(), self.readPosition()
             state = _get_tango_devstate_match(states)
             ret = state, positions
-        self.__total_motion_time = time.time()
+        self.__total_motion_time = time.time() - start_time
         return ret
 
     def iterMove(self, new_pos, timeout=None):
