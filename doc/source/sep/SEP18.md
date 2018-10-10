@@ -57,9 +57,8 @@ Design
 2. Allow different types of preparation of channels - this still depends on
 the option selected in the implementation of controllers. The following
 assumes option 1.
-    * Per measurement preparation with number of starts = n e.g.
-    Prepare(One|All) or a controller parameter
-    * Per acquisition preparation with repetitions = n e.g. Load(One|All)
+    * Per measurement preparation with number of starts = n - `PrepareOne`
+    * Per acquisition preparation with repetitions = n - `Load(One|All)`
 3. Extend AcqSynch with two new options:
     * SoftwareStart (which means internal start)
     * HardwareStart (which means external start)
@@ -95,9 +94,9 @@ Implementation
 ### Measurement Group
 
 Measurement group is extended by the *prepare* command (with no arguments)
-*number of starts* attribute. The use of the attribute is optional and 
-it indicates how many times measurement group will be started, with the 
-*start* command, to measure according to the synchronization description or 
+and *number of starts* attribute. The use of the attribute is optional and 
+it indicates how many times measurement group will be started (with the 
+*start* command) to measure according to the synchronization description or 
 integration time. When it is not used number of starts of 1 will be assumed.
 
 1. Measurement group - Tango device class
@@ -111,7 +110,7 @@ the start command (without calling prepare command in-between) will be
 solved in the following way: start command will internally call the prepare.
 4. Measurement group - Taurus extension
     * Add `prepare()` method which simply maps to `Prepare` Tango command
-    * Add `count_raw` method according to the following pseudo code:
+    * Add `count_raw()` method according to the following pseudo code:
         * `start()`
         * `waitFinish()`
     * Implement `count(integration_time)` method according to the following 
@@ -140,7 +139,7 @@ event and end is emitted after the last `passive` event.
 software synchronizer `start` event.
 * `PoolAcquisitionSoftware` will stop channels on software synchronizer
 `end` event. TODO: decide if we wait for the acquisition in progress
-until it finises or we stop immediatelly (finish hook could be used if
+until it finishes or we stop immediately (finish hook could be used if
 we choose to wait).
 
 ### Controllers
