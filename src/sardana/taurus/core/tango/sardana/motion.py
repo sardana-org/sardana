@@ -34,7 +34,7 @@ import time
 from taurus.core.util.containers import CaselessDict
 
 
-def get_pytango_devstate_match(states):
+def _get_tango_devstate_match(states):
     """
     Retrieve PyTango.DevState match
     :param states:
@@ -201,7 +201,7 @@ class MotionGroup(BaseMotion):
             res = moveable.move(pos, timeout=timeout)
             states.append(res[0])
             positions.extend(res[1])
-        state = get_pytango_devstate_match(states)
+        state = _get_tango_devstate_match(states)
         self.__total_motion_time = time.time() - start_time
         return state, positions
 
@@ -398,7 +398,7 @@ class Motion(BaseMotion):
             for moveable, id in zip(self.moveable_list, ids):
                 moveable.waitMove(id=id, timeout=timeout)
             states, positions = self.readState(), self.readPosition()
-            state = get_pytango_devstate_match(states)
+            state = _get_tango_devstate_match(states)
             ret = state, positions
         self.__total_motion_time = time.time()
         return ret
