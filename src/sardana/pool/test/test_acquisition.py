@@ -281,8 +281,8 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
                 return
             else:
                 self.sw_acq_busy.set()
-                args = dict(self.sw_acq_args)
-                kwargs = dict(self.sw_acq_kwargs)
+                args = self.sw_acq_args
+                kwargs = self.sw_acq_kwargs
                 kwargs['idx'] = value
                 get_thread_pool().add(self.sw_acq.run,
                                       None,
@@ -303,6 +303,11 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         ct_ctrl_2 = ct_2_1.get_controller()
         self.channel_names.append('_test_ct_1_1')
         self.channel_names.append('_test_ct_2_1')
+
+        acq_hw_ctrl_channels = {ct_ctrl_1: [ct_1_1]}
+        acq_hw_ctrl_loadable = {ct_ctrl_1: ct_1_1}
+        acq_sw_ctrl_channels = {ct_ctrl_2: [ct_2_1]}
+        acq_sw_ctrl_loadable = {ct_ctrl_2: ct_2_1}
         # crating configuration for TGGeneration
         tg_cfg = createPoolSynchronizationConfiguration((tg_ctrl_2,),
                                                         ((tg_2_1,),))
@@ -310,15 +315,7 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         self.createPoolSynchronization([tg_2_1], tg_config=tg_cfg)
         # add_listeners
         self.addListeners([ct_1_1, ct_2_1])
-        # creating acquisition configurations
-        self.hw_acq_cfg = createCTAcquisitionConfiguration((ct_ctrl_1,),
-                                                           ((ct_1_1,),))
-        self.sw_acq_cfg = createCTAcquisitionConfiguration((ct_ctrl_2,),
-                                                           ((ct_2_1,),))
         # creating acquisition actions
-        # TODO: The CTExpChannel should have a configuration
-        ct_1_1.configuration = self.hw_acq_cfg
-        ct_2_1.configuration = self.sw_acq_cfg
         self.hw_acq = PoolAcquisitionHardware(ct_1_1)
         self.sw_acq = PoolAcquisitionSoftware(ct_2_1)
         # Since we deposit the software acquisition action on the PoolThread's
@@ -338,21 +335,13 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         # get the current number of jobs
         jobs_before = get_thread_pool().qsize
 
-        self.sw_acq_args = ()
-        self.sw_acq_kwargs = {
-            'synch': True,
-            'integ_time': integ_time,
-            'repetitions': 1,
-            'config': self.sw_acq_cfg
-        }
+        self.sw_acq_args = (acq_sw_ctrl_channels, acq_sw_ctrl_loadable,
+                            integ_time)
+        self.sw_acq_kwargs = {"master": ct_2_1}
         ct_ctrl_1.set_ctrl_par('synchronization', AcqSynch.HardwareTrigger)
-        hw_acq_args = ()
-        hw_acq_kwargs = {
-            'integ_time': integ_time,
-            'repetitions': repetitions,
-            'config': self.hw_acq_cfg,
-        }
-        self.hw_acq.run(*hw_acq_args, **hw_acq_kwargs)
+        hw_acq_args = (acq_hw_ctrl_channels, acq_hw_ctrl_loadable,
+                       integ_time, repetitions)
+        self.hw_acq.run(*hw_acq_args)
         tg_args = ()
         total_interval = active_interval + passive_interval
         synchronization = [{SynchParam.Delay: {SynchDomain.Time: offset},
