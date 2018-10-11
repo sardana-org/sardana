@@ -125,6 +125,10 @@ def _to_fqdn(name, logger=None):
 
 
 class MeasurementConfiguration(object):
+    """
+    .. todo: Reject configuration with errors:
+             * Controllers with timer and monitor disable
+    """
 
     DFT_DESC = 'General purpose measurement group'
 
