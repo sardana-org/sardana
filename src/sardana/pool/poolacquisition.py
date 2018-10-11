@@ -61,6 +61,14 @@ AcquisitionMap = {
     AS.Invalid: State.Invalid,
 }
 
+MeasurementActions = Enumeration("MeasurementActions", (
+    "AcquisitionHardware",
+    "AcquisitionSoftware",
+    "AcquisitionSoftwareStart",
+    "Acquisition0D",
+    "Synchronization")
+)
+
 
 def is_value_error(value):
     if isinstance(value, SardanaValue) and value.error:
@@ -177,7 +185,8 @@ class PoolAcquisition(PoolAction):
         synchronization = kwargs["synchronization"]
         integ_time = synchronization.integration_time
         repetitions = synchronization.repetitions
-
+        latency_time = 0
+        ctrls_channels_acq_hw = config.get_ctrls_channels()
         # starting continuous acquisition only if there are any controllers
         if len(config.ctrl_hw_sync):
             cont_acq_kwargs = dict(kwargs)
@@ -316,7 +325,7 @@ class PoolAcquisitionBase(PoolAction):
 
     def __init__(self, main_element, name):
         PoolAction.__init__(self, main_element, name)
-        self._channels = None
+        self._channels = []
         # TODO: for the moment we can not clear value buffers at the end of
         # the acquisition. This is because of the pseudo counters that are
         # based on channels synchronized by hardware and software.
@@ -367,7 +376,9 @@ class PoolAcquisitionBase(PoolAction):
                 return True
 
     @DebugIt()
-    def start_action(self, *args, **kwargs):
+    def start_action(self, ctrls_channels, ctrls_loadables, value,
+                     repetitions=1, latency=0, master=None, *args,
+                     **kwargs):
         """Prepares everything for acquisition and starts it.
         :param acq_sleep_time: sleep time between state queries
         :param nb_states_per_value: how many state queries between readouts
@@ -387,123 +398,131 @@ class PoolAcquisitionBase(PoolAction):
         self._nb_states_per_value = kwargs.pop("nb_states_per_value",
                                                pool.acq_loop_states_per_value)
 
-        self._integ_time = integ_time = kwargs.get("integ_time")
-        self._mon_count = mon_count = kwargs.get("monitor_count")
-        self._repetitions = repetitions = kwargs.get("repetitions")
-        if integ_time is None and mon_count is None:
-            raise Exception("must give integration time or monitor counts")
-        if integ_time is not None and mon_count is not None:
-            msg = ("must give either integration time or monitor counts "
-                   "(not both)")
-            raise Exception(msg)
-
-        _ = kwargs.get("items", self.get_elements())
-        # determine which is the controller which holds the master channel
-        master = None
-
-        if integ_time is not None and mon_count is not None:
-            raise RuntimeError('The acquisition must have only one role: '
-                               'timer or monitor')
-        if integ_time is not None:
-            master_key = 'timer'
-            master_value = integ_time
-            master = self._get_timer()
-        if mon_count is not None:
-            master_key = 'monitor'
-            master_value = -mon_count
-            master = self._get_monitor()
-        if master is None:
-            self.main_element.set_state(State.Fault, propagate=2)
-            msg = "master {0} ({1})is unknown (probably disabled)".format(
-                master_key, master)
-            raise RuntimeError(msg)
-        master_ctrl = master.controller
-        pool_ctrls_dict = dict(self._get_ctrls())
-        pool_ctrls_dict.pop('__tango__', None)
+        # self._integ_time = integ_time = kwargs.get("integ_time")
+        # self._mon_count = mon_count = kwargs.get("monitor_count")
+        # self._repetitions = repetitions = kwargs.get("repetitions")
+        # # if integ_time is None and mon_count is None:
+        #     raise Exception("must give integration time or monitor counts")
+        # if integ_time is not None and mon_count is not None:
+        #     msg = ("must give either integration time or monitor counts "
+        #            "(not both)")
+        #     raise Exception(msg)
+        #
+        # _ = kwargs.get("items", self.get_elements())
+        # # determine which is the controller which holds the master channel
+        # master = None
+        #
+        # if integ_time is not None and mon_count is not None:
+        #     raise RuntimeError('The acquisition must have only one role: '
+        #                        'timer or monitor')
+        # if integ_time is not None:
+        #     master_key = 'timer'
+        #     master_value = integ_time
+        #     master = self._get_timer()
+        # if mon_count is not None:
+        #     master_key = 'monitor'
+        #     master_value = -mon_count
+        #     master = self._get_monitor()
+        # if master is None:
+        #     self.main_element.set_state(State.Fault, propagate=2)
+        #     msg = "master {0} ({1})is unknown (probably disabled)".format(
+        #         master_key, master)
+        #     raise RuntimeError(msg)
 
         # controllers to be started (only enabled) in the right order
-        pool_ctrls = []
-        # controllers that will be read at the end of the action
-        self._pool_ctrl_dict_loop = _pool_ctrl_dict_loop = {}
-        # channels that are acquired (only enabled)
-        self._channels = channels = {}
-
-        # select only suitable e.g. enabled, timerable controllers & channels
-        for ctrl, pool_ctrl_data in pool_ctrls_dict.items():
-            # skip not timerable controllers e.g. 0D
-            if not ctrl.is_timerable():
-                continue
-            ctrl_enabled = False
-            elements = pool_ctrl_data['channels']
-            for element, element_info in elements.items():
-                # skip disabled elements
-                if not element_info['enabled']:
-                    continue
-                # Add only the enabled channels
-                channel = Channel(element, info=element_info)
-                channels[element] = channel
-                ctrl_enabled = True
-            # check if the ctrl has enabled channels
-            if ctrl_enabled:
-                # enabled controller can no be offline
-                if not ctrl.is_online():
-                    self.main_element.set_state(State.Fault, propagate=2)
-                    msg = "controller {0} is offline".format(ctrl.name)
-                    raise RuntimeError(msg)
-                pool_ctrls.append(ctrl)
-                # only CT will be read in the loop, 1D and 2D not
-                if ElementType.CTExpChannel in ctrl.get_ctrl_types():
-                    _pool_ctrl_dict_loop[ctrl] = pool_ctrl_data
-
-        # timer/monitor channels can not be disabled
-        for pool_ctrl in pool_ctrls:
-            ctrl = pool_ctrl.ctrl
-            pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-            timer_monitor = pool_ctrl_data[master_key]
-            if timer_monitor not in channels:
-                self.main_element.set_state(State.Fault, propagate=2)
-                msg = "timer/monitor ({0}) of {1} controller is "\
-                      "disabled)".format(timer_monitor.name, pool_ctrl.name)
-                raise RuntimeError(msg)
+        pool_ctrls = ctrls_channels.keys()
 
         # make sure the controller which has the master channel is the last to
         # be called
-        pool_ctrls.remove(master_ctrl)
-        pool_ctrls.append(master_ctrl)
+        if master is not None:
+            master_ctrl = master.controller
+            pool_ctrls.remove(master_ctrl)
+            pool_ctrls.append(master_ctrl)
 
-        def load(ctrl, master_axis, value, repetitions, latency=0):
+        # pool_ctrls_dict = dict(self._get_ctrls())
+        # pool_ctrls_dict.pop('__tango__', None)
+
+        # controllers that will be read at the end of the action
+        self._pool_ctrl_dict_loop = ctrls_channels
+        # channels that are acquired (only enabled)
+        self._channels = []
+
+        # # select only suitable e.g. enabled, timerable controllers & channels
+        # for ctrl, pool_ctrl_data in pool_ctrls_dict.items():
+        #     # skip not timerable controllers e.g. 0D
+        #     if not ctrl.is_timerable():
+        #         continue
+        #     ctrl_enabled = False
+        #     elements = pool_ctrl_data['channels']
+        #     for element, element_info in elements.items():
+        #         # skip disabled elements
+        #         if not element_info['enabled']:
+        #             continue
+        #         # Add only the enabled channels
+        #         channel = Channel(element, info=element_info)
+        #         channels[element] = channel
+        #         ctrl_enabled = True
+        #     # check if the ctrl has enabled channels
+        #     if ctrl_enabled:
+        #         # enabled controller can no be offline
+        #         if not ctrl.is_online():
+        #             self.main_element.set_state(State.Fault, propagate=2)
+        #             msg = "controller {0} is offline".format(ctrl.name)
+        #             raise RuntimeError(msg)
+        #         pool_ctrls.append(ctrl)
+        #         # only CT will be read in the loop, 1D and 2D not
+        #         if ElementType.CTExpChannel in ctrl.get_ctrl_types():
+        #             _pool_ctrl_dict_loop[ctrl] = pool_ctrl_data
+
+        # timer/monitor channels can not be disabled
+        # for pool_ctrl in pool_ctrls:
+        #     ctrl = pool_ctrl.ctrl
+        #     pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
+        #     timer_monitor = pool_ctrl_data[master_key]
+        #     if timer_monitor not in channels:
+        #         self.main_element.set_state(State.Fault, propagate=2)
+        #         msg = "timer/monitor ({0}) of {1} controller is "\
+        #               "disabled)".format(timer_monitor.name, pool_ctrl.name)
+        #         raise RuntimeError(msg)
+
+
+
+        def load(channel, value, repetitions, latency=0):
+            axis = channel.axis
+            pool_ctrl = channel.controller
+            ctrl = pool_ctrl.ctrl
             ctrl.PreLoadAll()
             try:
-                res = ctrl.PreLoadOne(master_axis, value, repetitions,
+                res = ctrl.PreLoadOne(axis, value, repetitions,
                                       latency)
             except TypeError:
                 try:
-                    res = ctrl.PreLoadOne(master_axis, value, repetitions)
+                    res = ctrl.PreLoadOne(axis, value, repetitions)
                     msg = ("PreLoadOne(axis, value, repetitions) is "
                            "deprecated since version Jan19. Use PreLoadOne("
                            "axis, value, repetitions, latency_time) instead.")
                     self.warning(msg)
                 except TypeError:
-                    res = ctrl.PreLoadOne(master_axis, value)
+                    res = ctrl.PreLoadOne(axis, value)
                     msg = ("PreLoadOne(axis, value) is deprecated since "
                            "version 2.3.0. Use PreLoadOne(axis, value, "
                            "repetitions, latency_time) instead.")
                     self.warning(msg)
             if not res:
                 msg = ("%s.PreLoadOne(%d) returned False" %
-                       (pool_ctrl.name, master_axis))
+                       (pool_ctrl.name, axis))
                 raise Exception(msg)
             try:
-                ctrl.LoadOne(master_axis, value, repetitions, latency)
+                ctrl.LoadOne(axis, value, repetitions, latency)
             except TypeError:
                 try:
-                    ctrl.LoadOne(master_axis, value, repetitions)
+                    ctrl.LoadOne(axis, value, repetitions)
                     msg = ("LoadOne(axis, value, repetitions) is deprecated "
                            "since version Jan18. Use LoadOne(axis, value, "
                            "repetitions, latency_time) instead.")
                     self.warning(msg)
                 except TypeError:
-                    ctrl.LoadOne(master_axis, value)
+                    ctrl.LoadOne(axis, value)
                     msg = ("LoadOne(axis, value) is deprecated since "
                            "version 2.3.0. Use LoadOne(axis, value, "
                            "repetitions) instead.")
@@ -512,64 +531,61 @@ class PoolAcquisitionBase(PoolAction):
 
         with ActionContext(self):
             # PreLoadAll, PreLoadOne, LoadOne and LoadAll
-            for pool_ctrl in pool_ctrls:
-                try:
-                    ctrl = pool_ctrl.ctrl
-                    pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-                    master = pool_ctrl_data[master_key]
-                    load(ctrl, master.axis, master_value, repetitions)
-                except Exception, e:
-                    self.debug(e, exc_info=True)
-                    master.set_state(State.Fault, propagate=2)
-                    msg = ("Load sequence of %s failed" % pool_ctrl.name)
-                    raise Exception(msg)
+            loadables = ctrls_loadables.values()
+            for channel in loadables:
+                load(channel, value, repetitions, latency)
+
+            # TODO: remove when the action allows to use tango attributes
+            try:
+                pool_ctrls.pop('__tango__')
+            except Exception:
+                pass
 
             # PreStartAll on all enabled controllers
             for pool_ctrl in pool_ctrls:
                 pool_ctrl.ctrl.PreStartAll()
 
+            channels_started = []
             # PreStartOne & StartOne on all enabled elements
             for pool_ctrl in pool_ctrls:
+                channels = ctrls_channels[pool_ctrl]
                 ctrl = pool_ctrl.ctrl
-                pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-                elements = pool_ctrl_data['channels'].keys()
-                timer_monitor = pool_ctrl_data[master_key]
+
                 # make sure that the timer/monitor is started as the last one
-                elements.remove(timer_monitor)
-                elements.append(timer_monitor)
-                for element in elements:
-                    try:
-                        channel = channels[element]
-                    except KeyError:
-                        continue
-                    axis = element.axis
-                    ret = ctrl.PreStartOne(axis, master_value)
+                loadable = ctrls_loadables[pool_ctrl]
+                channels.remove(loadable)
+                channels.append(loadable)
+                for channel in channels:
+                    axis = channel.axis
+                    ret = ctrl.PreStartOne(axis, value)
                     if not ret:
                         msg = ("%s.PreStartOne(%d) returns False" %
                                (pool_ctrl.name, axis))
                         raise Exception(msg)
                     try:
-                        ctrl.StartOne(axis, master_value)
+                        ctrl.StartOne(axis, value)
                     except Exception, e:
                         self.debug(e, exc_info=True)
-                        element.set_state(State.Fault, propagate=2)
+                        channel.set_state(State.Fault, propagate=2)
                         msg = ("%s.StartOne(%d) failed" %
                                (pool_ctrl.name, axis))
                         raise Exception(msg)
 
+                    self._channels.append(channel)
+
             # set the state of all elements to  and inform their listeners
-            for channel in channels:
+            for channel in self._channels:
                 channel.set_state(State.Moving, propagate=2)
 
             # StartAll on all enabled controllers
             for pool_ctrl in pool_ctrls:
+                channels = ctrls_channels[pool_ctrl]
                 try:
                     pool_ctrl.ctrl.StartAll()
                 except Exception, e:
                     self.debug(e, exc_info=True)
-                    elements = pool_ctrl_data['channels'].keys()
-                    for element in elements:
-                        element.set_state(State.Fault, propagate=2)
+                    for channel in channels:
+                        channel.set_state(State.Fault, propagate=2)
                     msg = ("%s.StartAll() failed" % pool_ctrl.name)
                     raise Exception(msg)
 
