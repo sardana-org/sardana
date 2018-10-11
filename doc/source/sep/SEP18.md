@@ -1,6 +1,6 @@
     Title: Extend acquisition and synchronization concepts for SEP2 needs.
     SEP: 18
-    State: DRAFT
+    State: CANDIDATE
     Reason:
      New acquisition and synchronization concepts are necessary in order to
       properly integrate 1D and 2D experimental channels in Sardana (SEP2).
