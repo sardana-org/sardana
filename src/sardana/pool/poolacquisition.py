@@ -593,24 +593,6 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
         self._slaves = slaves
 
     @DebugIt()
-    def start_action(self, *args, **kwargs):
-        """Prepares everything for acquisition and starts it.
-        :param acq_sleep_time: sleep time between state queries
-        :param nb_states_per_value: how many state queries between readouts
-        :param integ_time: integration time(s)
-        :type integ_time: float or seq<float>
-        :param repetitions: repetitions
-        :type repetitions: int
-        :param config: configuration dictionary (with information about
-            involved controllers and channels)
-        :param index: trigger index that will be assigned to the acquired value
-        :type index: int
-        """
-
-        PoolAcquisitionBase.start_action(self, *args, **kwargs)
-        self.index = kwargs.get("idx")
-
-    @DebugIt()
     def action_loop(self):
         states, values = {}, {}
         for element in self._channels:
@@ -656,7 +638,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
                 if is_value_error(value):
                     self.error("Loop final read value error for: %s" %
                                acquirable.name)
-                acquirable.append_value_buffer(value, self.index)
+                acquirable.append_value_buffer(value, self._index)
             with acquirable:
                 acquirable.clear_operation()
                 state_info = acquirable._from_ctrl_state_info(state_info)
