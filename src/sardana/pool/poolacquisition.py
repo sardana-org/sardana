@@ -362,16 +362,33 @@ class PoolAcquisitionBase(PoolAction):
                      index=None, acq_sleep_time=None,
                      nb_states_per_value=None, *args,
                      **kwargs):
-        """Prepares everything for acquisition and starts it.
-        :param acq_sleep_time: sleep time between state queries
-        :param nb_states_per_value: how many state queries between readouts
-        :param integ_time: integration time(s)
-        :type integ_time: float or seq<float>
+        """
+        Prepares everything for acquisition and starts it
+        :param ctrl_channels: Dictionary with controllers as key and its
+        enabled channels
+        :type ctrl_channels: dict
+        :param ctrl_loadable: Dictionary with controllers as key and its
+        timerable channel
+        :type ctrl_loadable: dict
+        :param value: integration time/monitor counts
+        :type value: float/int or seq<float/int>
         :param repetitions: repetitions
         :type repetitions: int
-        :param config: configuration dictionary (with information about
-            involved controllers and channels)
+        :param latency:
+        :type latency: float
+        :param master: master channel is the last one to start
+        :type master: Channel
+        :param index:
+        :type index: int
+        :param acq_sleep_time: sleep time between state queries
+        :type acq_sleep_time: float
+        :param nb_states_per_value: how many state queries between readouts
+        :type nb_states_per_value: int
+        :param args:
+        :param kwargs:
+        :return:
         """
+
         pool = self.pool
         self._aborted = False
         self._stopped = False
