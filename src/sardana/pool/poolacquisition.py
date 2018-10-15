@@ -479,7 +479,7 @@ class PoolAcquisitionBase(PoolAction):
                         raise Exception(msg)
                     try:
                         ctrl.StartOne(axis, value)
-                    except Exception, e:
+                    except Exception as e:
                         self.debug(e, exc_info=True)
                         channel.set_state(State.Fault, propagate=2)
                         msg = ("%s.StartOne(%d) failed" %
@@ -497,7 +497,7 @@ class PoolAcquisitionBase(PoolAction):
                 channels = ctrls_channels[pool_ctrl]
                 try:
                     pool_ctrl.ctrl.StartAll()
-                except Exception, e:
+                except Exception as e:
                     self.debug(e, exc_info=True)
                     for channel in channels:
                         channel.set_state(State.Fault, propagate=2)
