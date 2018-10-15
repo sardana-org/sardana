@@ -137,7 +137,7 @@ class MeasurementConfiguration(object):
         if parent is not None:
             self._parent = weakref.ref(parent)()
         self._config = None
-        self.use_fqdn = True
+        self._use_fqdn = True
         self._clean_variables()
 
     def _clean_variables(self):
@@ -281,7 +281,7 @@ class MeasurementConfiguration(object):
 
         config['label'] = cfg.get('label', self._parent.name)
         config['description'] = cfg.get('description', self.DFT_DESC)
-        self.use_fqdn = to_fqdn
+        self._use_fqdn = to_fqdn
         self._build_configuration(config)
 
     def get_configuration_for_user(self):
@@ -466,7 +466,7 @@ class MeasurementConfiguration(object):
                         channel_data['source'] = _id
                     else:
                         full_name = channel_data['full_name']
-                        if self.use_fqdn:
+                        if self._use_fqdn:
                             full_name = _to_fqdn(full_name,
                                                  logger=self._parent)
                         element = pool.get_element_by_full_name(full_name)
@@ -721,7 +721,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         return self._config
 
     def set_configuration(self, config=None, propagate=1, to_fqdn=True):
-        self._config.use_fqdn = to_fqdn
+        self._config._use_fqdn = to_fqdn
         self._config.configuration = config
         self._config_dirty = True
         if not propagate:
