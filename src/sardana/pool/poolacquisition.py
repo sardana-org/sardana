@@ -326,6 +326,11 @@ class PoolAcquisitionBase(PoolAction):
     def __init__(self, main_element, name):
         PoolAction.__init__(self, main_element, name)
         self._channels = []
+        self._index = None
+        self._nb_states_per_value = None
+        self._acq_sleep_time = None
+        self._pool_ctrl_dict_loop = None
+
         # TODO: for the moment we can not clear value buffers at the end of
         # the acquisition. This is because of the pseudo counters that are
         # based on channels synchronized by hardware and software.
@@ -353,7 +358,9 @@ class PoolAcquisitionBase(PoolAction):
 
     @DebugIt()
     def start_action(self, ctrls_channels, ctrls_loadables, value,
-                     repetitions=1, latency=0, master=None, *args,
+                     repetitions=1, latency=0, master=None,
+                     index=None, acq_sleep_time=None,
+                     nb_states_per_value=None, *args,
                      **kwargs):
         """Prepares everything for acquisition and starts it.
         :param acq_sleep_time: sleep time between state queries
@@ -369,10 +376,16 @@ class PoolAcquisitionBase(PoolAction):
         self._aborted = False
         self._stopped = False
 
-        self._acq_sleep_time = kwargs.pop("acq_sleep_time",
-                                          pool.acq_loop_sleep_time)
-        self._nb_states_per_value = kwargs.pop("nb_states_per_value",
-                                               pool.acq_loop_states_per_value)
+        self._index = index
+
+        self._acq_sleep_time = acq_sleep_time
+        if self._acq_sleep_time is None:
+            self._acq_sleep_time = pool.acq_loop_sleep_time
+
+        self._nb_states_per_value = nb_states_per_value
+        if self._nb_states_per_value is None:
+            self._nb_states_per_value = pool.acq_loop_states_per_value
+
 
         # controllers to be started (only enabled) in the right order
         pool_ctrls = ctrls_channels.keys()
