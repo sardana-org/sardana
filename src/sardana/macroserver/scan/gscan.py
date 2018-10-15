@@ -271,6 +271,8 @@ class GScan(Logger):
             moveable_names.append(moveable.moveable.getName())
             self._moveables.append(moveable)
 
+        self._check_moveables_limits()
+
         name = self.__class__.__name__
         self.call__init__(Logger, name)
 
@@ -368,6 +370,30 @@ class GScan(Logger):
         # Setup environment
         # ---------------------------------------------------------------------
         self._setupEnvironment(env)
+
+    def _check_moveables_limits(self):
+        for m in self._moveables:
+            config = PyTango.AttributeProxy(
+                m.moveable.getName() + '/position').get_config()
+            try:
+                high = float(config.max_value)
+            except ValueError:
+                high = None
+            try:
+                low = float(config.min_value)
+            except ValueError:
+                low = None
+            for pos in (m.min_value, m.max_value):
+                if high is not None:
+                    if float(pos) > high:
+                        raise RuntimeError(
+                            "requested movement of %s is above its upper limit"
+                            % m.moveable.getName())
+                if low is not None:
+                    if float(pos) < low:
+                        raise RuntimeError(
+                            "requested movement of %s is below its lower limit"
+                            % m.moveable.getName())
 
     def _getExtraColumns(self):
         ret = []
