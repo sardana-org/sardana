@@ -398,37 +398,6 @@ class PoolAcquisitionBase(PoolAction):
         self._nb_states_per_value = kwargs.pop("nb_states_per_value",
                                                pool.acq_loop_states_per_value)
 
-        # self._integ_time = integ_time = kwargs.get("integ_time")
-        # self._mon_count = mon_count = kwargs.get("monitor_count")
-        # self._repetitions = repetitions = kwargs.get("repetitions")
-        # # if integ_time is None and mon_count is None:
-        #     raise Exception("must give integration time or monitor counts")
-        # if integ_time is not None and mon_count is not None:
-        #     msg = ("must give either integration time or monitor counts "
-        #            "(not both)")
-        #     raise Exception(msg)
-        #
-        # _ = kwargs.get("items", self.get_elements())
-        # # determine which is the controller which holds the master channel
-        # master = None
-        #
-        # if integ_time is not None and mon_count is not None:
-        #     raise RuntimeError('The acquisition must have only one role: '
-        #                        'timer or monitor')
-        # if integ_time is not None:
-        #     master_key = 'timer'
-        #     master_value = integ_time
-        #     master = self._get_timer()
-        # if mon_count is not None:
-        #     master_key = 'monitor'
-        #     master_value = -mon_count
-        #     master = self._get_monitor()
-        # if master is None:
-        #     self.main_element.set_state(State.Fault, propagate=2)
-        #     msg = "master {0} ({1})is unknown (probably disabled)".format(
-        #         master_key, master)
-        #     raise RuntimeError(msg)
-
         # controllers to be started (only enabled) in the right order
         pool_ctrls = ctrls_channels.keys()
 
@@ -439,53 +408,10 @@ class PoolAcquisitionBase(PoolAction):
             pool_ctrls.remove(master_ctrl)
             pool_ctrls.append(master_ctrl)
 
-        # pool_ctrls_dict = dict(self._get_ctrls())
-        # pool_ctrls_dict.pop('__tango__', None)
-
         # controllers that will be read at the end of the action
         self._pool_ctrl_dict_loop = ctrls_channels
         # channels that are acquired (only enabled)
         self._channels = []
-
-        # # select only suitable e.g. enabled, timerable controllers & channels
-        # for ctrl, pool_ctrl_data in pool_ctrls_dict.items():
-        #     # skip not timerable controllers e.g. 0D
-        #     if not ctrl.is_timerable():
-        #         continue
-        #     ctrl_enabled = False
-        #     elements = pool_ctrl_data['channels']
-        #     for element, element_info in elements.items():
-        #         # skip disabled elements
-        #         if not element_info['enabled']:
-        #             continue
-        #         # Add only the enabled channels
-        #         channel = Channel(element, info=element_info)
-        #         channels[element] = channel
-        #         ctrl_enabled = True
-        #     # check if the ctrl has enabled channels
-        #     if ctrl_enabled:
-        #         # enabled controller can no be offline
-        #         if not ctrl.is_online():
-        #             self.main_element.set_state(State.Fault, propagate=2)
-        #             msg = "controller {0} is offline".format(ctrl.name)
-        #             raise RuntimeError(msg)
-        #         pool_ctrls.append(ctrl)
-        #         # only CT will be read in the loop, 1D and 2D not
-        #         if ElementType.CTExpChannel in ctrl.get_ctrl_types():
-        #             _pool_ctrl_dict_loop[ctrl] = pool_ctrl_data
-
-        # timer/monitor channels can not be disabled
-        # for pool_ctrl in pool_ctrls:
-        #     ctrl = pool_ctrl.ctrl
-        #     pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-        #     timer_monitor = pool_ctrl_data[master_key]
-        #     if timer_monitor not in channels:
-        #         self.main_element.set_state(State.Fault, propagate=2)
-        #         msg = "timer/monitor ({0}) of {1} controller is "\
-        #               "disabled)".format(timer_monitor.name, pool_ctrl.name)
-        #         raise RuntimeError(msg)
-
-
 
         def load(channel, value, repetitions, latency=0):
             axis = channel.axis
