@@ -357,7 +357,7 @@ class PoolAcquisitionBase(PoolAction):
                 return True
 
     @DebugIt()
-    def start_action(self, ctrls_channels, ctrls_loadables, value,
+    def start_action(self, ctrl_channels, ctrl_loadable, value,
                      repetitions=1, latency=0, master=None,
                      index=None, acq_sleep_time=None,
                      nb_states_per_value=None, *args,
@@ -388,7 +388,7 @@ class PoolAcquisitionBase(PoolAction):
 
 
         # controllers to be started (only enabled) in the right order
-        pool_ctrls = ctrls_channels.keys()
+        pool_ctrls = ctrl_channels.keys()
 
         # make sure the controller which has the master channel is the last to
         # be called
@@ -398,7 +398,7 @@ class PoolAcquisitionBase(PoolAction):
             pool_ctrls.append(master_ctrl)
 
         # controllers that will be read at the end of the action
-        self._pool_ctrl_dict_loop = ctrls_channels
+        self._pool_ctrl_dict_loop = ctrl_channels
         # channels that are acquired (only enabled)
         self._channels = []
 
@@ -446,7 +446,7 @@ class PoolAcquisitionBase(PoolAction):
 
         with ActionContext(self):
             # PreLoadAll, PreLoadOne, LoadOne and LoadAll
-            loadables = ctrls_loadables.values()
+            loadables = ctrl_loadable.values()
             for channel in loadables:
                 load(channel, value, repetitions, latency)
 
@@ -463,11 +463,11 @@ class PoolAcquisitionBase(PoolAction):
             channels_started = []
             # PreStartOne & StartOne on all enabled elements
             for pool_ctrl in pool_ctrls:
-                channels = ctrls_channels[pool_ctrl]
+                channels = ctrl_channels[pool_ctrl]
                 ctrl = pool_ctrl.ctrl
 
                 # make sure that the timer/monitor is started as the last one
-                loadable = ctrls_loadables[pool_ctrl]
+                loadable = ctrl_loadable[pool_ctrl]
                 channels.remove(loadable)
                 channels.append(loadable)
                 for channel in channels:
@@ -494,7 +494,7 @@ class PoolAcquisitionBase(PoolAction):
 
             # StartAll on all enabled controllers
             for pool_ctrl in pool_ctrls:
-                channels = ctrls_channels[pool_ctrl]
+                channels = ctrl_channels[pool_ctrl]
                 try:
                     pool_ctrl.ctrl.StartAll()
                 except Exception as e:
