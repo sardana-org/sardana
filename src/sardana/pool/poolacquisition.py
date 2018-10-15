@@ -336,30 +336,6 @@ class PoolAcquisitionBase(PoolAction):
         # acquisition actions, uncomment this line
         # self.add_finish_hook(self.clear_value_buffers, True)
 
-    def _get_ctrls(self):
-        """
-        Method to get the controller dict for the acquisition type
-        :return:
-        :rtype dict
-        """
-        raise NotImplementedError()
-
-    def _get_timer(self):
-        """
-        Method to get the master timer for the acquisition type
-        :return:
-        :rtype dict
-        """
-        raise NotImplementedError()
-
-    def _get_monitor(self):
-        """
-        Method to get the master monitor  for the acquisition type
-        :return:
-        :rtype dict
-        """
-        raise NotImplementedError()
-
     def in_acquisition(self, states):
         """Determines if we are in acquisition or if the acquisition has ended
         based on the current unit trigger modes and states returned by the
@@ -533,15 +509,6 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
     def __init__(self, main_element, name="AcquisitionHardware"):
         PoolAcquisitionBase.__init__(self, main_element, name)
 
-    def _get_ctrls(self):
-        return self.main_element.configuration.ctrl_hw_sync
-
-    def _get_timer(self):
-        return self.main_element.configuration.hw_sync_timer
-
-    def _get_monitor(self):
-        return self.main_element.configuration.hw_sync_monitor
-
     @DebugIt()
     def action_loop(self):
         i = 0
@@ -611,15 +578,6 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
         if slaves is None:
             slaves = ()
         self._slaves = slaves
-
-    def _get_ctrls(self):
-        return self.main_element.configuration.ctrl_sw_sync
-
-    def _get_timer(self):
-        return self.main_element.configuration.sw_sync_timer
-
-    def _get_monitor(self):
-        return self.main_element.configuration.sw_sync_monitor
 
     @DebugIt()
     def start_action(self, *args, **kwargs):
