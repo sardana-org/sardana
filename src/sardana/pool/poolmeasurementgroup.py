@@ -135,7 +135,7 @@ class MeasurementConfiguration(object):
     def __init__(self, parent=None):
         self._parent = None
         if parent is not None:
-            self._parent = weakref.ref(parent)()
+            self._parent = weakref.proxy(parent)
         self._config = None
         self._use_fqdn = True
         self._clean_variables()
