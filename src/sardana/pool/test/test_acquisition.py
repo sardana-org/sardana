@@ -304,10 +304,10 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         self.channel_names.append('_test_ct_1_1')
         self.channel_names.append('_test_ct_2_1')
 
-        acq_hw_ctrl_channels = {ct_ctrl_1: [ct_1_1]}
-        acq_hw_ctrl_loadable = {ct_ctrl_1: ct_1_1}
-        acq_sw_ctrl_channels = {ct_ctrl_2: [ct_2_1]}
-        acq_sw_ctrl_loadable = {ct_ctrl_2: ct_2_1}
+        ct_ctrl_1.channels = [ct_1_1]
+        ct_ctrl_1.master = ct_1_1
+        ct_ctrl_2.channels = [ct_2_1]
+        ct_ctrl_2.master = ct_2_1
         # crating configuration for TGGeneration
         tg_cfg = createPoolSynchronizationConfiguration((tg_ctrl_2,),
                                                         ((tg_2_1,),))
@@ -335,12 +335,10 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         # get the current number of jobs
         jobs_before = get_thread_pool().qsize
 
-        self.sw_acq_args = (acq_sw_ctrl_channels, acq_sw_ctrl_loadable,
-                            integ_time)
+        self.sw_acq_args = ([ct_ctrl_2], integ_time)
         self.sw_acq_kwargs = {"master": ct_2_1}
         ct_ctrl_1.set_ctrl_par('synchronization', AcqSynch.HardwareTrigger)
-        hw_acq_args = (acq_hw_ctrl_channels, acq_hw_ctrl_loadable,
-                       integ_time, repetitions)
+        hw_acq_args = ([ct_ctrl_1], integ_time, repetitions)
         self.hw_acq.run(*hw_acq_args)
         tg_args = ()
         total_interval = active_interval + passive_interval

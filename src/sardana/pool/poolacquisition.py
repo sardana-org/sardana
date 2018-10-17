@@ -357,19 +357,14 @@ class PoolAcquisitionBase(PoolAction):
                 return True
 
     @DebugIt()
-    def start_action(self, ctrl_channels, ctrl_loadable, value,
-                     repetitions=1, latency=0, master=None,
-                     index=None, acq_sleep_time=None,
+    def start_action(self, pool_ctrls, value, repetitions=1, latency=0,
+                     master=None, index=None, acq_sleep_time=None,
                      nb_states_per_value=None, *args,
                      **kwargs):
         """
         Prepares everything for acquisition and starts it
-        :param ctrl_channels: Dictionary with controllers as key and its
-        enabled channels
-        :type ctrl_channels: dict
-        :param ctrl_loadable: Dictionary with controllers as key and its
-        timerable channel
-        :type ctrl_loadable: dict
+        :param pool_ctrls: List of enabled controllers
+        :type pool_ctrls: list
         :param value: integration time/monitor counts
         :type value: float/int or seq<float/int>
         :param repetitions: repetitions
@@ -403,10 +398,6 @@ class PoolAcquisitionBase(PoolAction):
         if self._nb_states_per_value is None:
             self._nb_states_per_value = pool.acq_loop_states_per_value
 
-
-        # controllers to be started (only enabled) in the right order
-        pool_ctrls = ctrl_channels.keys()
-
         # make sure the controller which has the master channel is the last to
         # be called
         if master is not None:
@@ -415,7 +406,11 @@ class PoolAcquisitionBase(PoolAction):
             pool_ctrls.append(master_ctrl)
 
         # controllers that will be read at the end of the action
+        ctrl_channels = {}
+        for pool_ctrl in pool_ctrls:
+            ctrl_channels[pool_ctrl] = pool_ctrl.channels
         self._pool_ctrl_dict_loop = ctrl_channels
+
         # channels that are acquired (only enabled)
         self._channels = []
 
@@ -463,9 +458,8 @@ class PoolAcquisitionBase(PoolAction):
 
         with ActionContext(self):
             # PreLoadAll, PreLoadOne, LoadOne and LoadAll
-            loadables = ctrl_loadable.values()
-            for channel in loadables:
-                load(channel, value, repetitions, latency)
+            for pool_ctrl in pool_ctrls:
+                load(pool_ctrl.master, value, repetitions, latency)
 
             # TODO: remove when the action allows to use tango attributes
             try:
@@ -477,16 +471,15 @@ class PoolAcquisitionBase(PoolAction):
             for pool_ctrl in pool_ctrls:
                 pool_ctrl.ctrl.PreStartAll()
 
-            channels_started = []
             # PreStartOne & StartOne on all enabled elements
             for pool_ctrl in pool_ctrls:
-                channels = ctrl_channels[pool_ctrl]
+                channels = pool_ctrl.channels
                 ctrl = pool_ctrl.ctrl
 
-                # make sure that the timer/monitor is started as the last one
-                loadable = ctrl_loadable[pool_ctrl]
-                channels.remove(loadable)
-                channels.append(loadable)
+                # make sure that the master timer/monitor is started as the
+                # last one
+                channels.remove(pool_ctrl.master)
+                channels.append(pool_ctrl.master)
                 for channel in channels:
                     axis = channel.axis
                     ret = ctrl.PreStartOne(axis, value)
