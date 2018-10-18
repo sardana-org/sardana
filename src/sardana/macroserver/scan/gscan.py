@@ -384,6 +384,10 @@ class GScan(Logger):
             except ValueError:
                 low = None
             for pos in (m.min_value, m.max_value):
+                if pos is None:
+                    self._macro.warning("Macro did not define position for %s. "
+                        "Limit check was not possible." % m.moveable.getName())
+                    continue
                 if high is not None:
                     if float(pos) > high:
                         raise RuntimeError(
