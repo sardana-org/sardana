@@ -124,6 +124,35 @@ def _to_fqdn(name, logger=None):
     return full_name
 
 
+class ConfigurationItem(object):
+    def __init__(self, element, conf=None):
+        self._element = weakref.ref(element)
+        if conf is not None:
+            self.__dict__.update(conf)
+
+    def __getattr__(self, item):
+        return getattr(self.element, item)
+
+    def get_element(self):
+        """Returns the element associated with this item"""
+        return self._element()
+
+    def set_element(self, element):
+        """Sets the element for this item"""
+        self._element = weakref.ref(element)
+
+    element = property(get_element)
+
+
+class ControllerConfiguration(ConfigurationItem):
+    """Configuration: 'timer', 'monitor', 'synchronization', 'channels'"""
+
+
+class ChannelConfiguration(ConfigurationItem):
+    """Configuration: 'id', 'enabled', 'output', 'plot_type', 'plot_axes',
+                      'label', 'scale', 'plot_color'"""
+
+
 class MeasurementConfiguration(object):
     """
     .. todo: Reject configuration with errors:
