@@ -118,7 +118,7 @@ class ParamParser:
 
     # Grammar rules follow
 
-    def _params(self, params_def=None):
+    def _params(self, params_def=None, is_repeat=False):
         """Interpret parameter values by iterating over generated tokens
         according to parameters definition.
 
@@ -151,7 +151,14 @@ class ParamParser:
                 param_value = self._repeat_param(repeat_param_def,
                                                  last_param)
             else:
-                param_value = self._param()
+                try:
+                    param_value = self._param()
+                except UnrecognizedParamValue:
+                    # this exception may occur if repeat is not complete -
+                    # uses default values
+                    if is_repeat:
+                        return params
+                    raise
             params.append(param_value)
         return params
 
@@ -238,7 +245,7 @@ class ParamParser:
             if self._accept("RPAREN"):
                 repeat = []
             else:
-                repeat = self._params(repeat_param_def)
+                repeat = self._params(repeat_param_def, is_repeat=True)
                 # repetitions of single repeat parameters are not enclosed
                 # in parenthesis so remove it
                 if is_repeat_param_single(repeat_param_def):
