@@ -144,12 +144,12 @@ class ParamParser:
             if self.nexttok is None:
                 break
             if is_repeat_param(param_def):
-                last_param = False
+                is_last_param = False
                 if param_idx == len_params_def - 1:
-                    last_param = True
+                    is_last_param = True
                 repeat_param_def = param_def["type"]
                 param_value = self._repeat_param(repeat_param_def,
-                                                 last_param)
+                                                 is_last_param)
             else:
                 try:
                     param_value = self._param()
@@ -184,7 +184,7 @@ class ParamParser:
             raise UnrecognizedParamValue(msg)
         return param
 
-    def _repeat_param(self, repeat_param_def, last_param):
+    def _repeat_param(self, repeat_param_def, is_last_param):
         """Interpret repeat parameter.
 
         Accepts repeat parameters using the following rules:
@@ -196,9 +196,9 @@ class ParamParser:
 
         :param repeat_param_def: repeat parameter definition
         :type repeat_param_def: list<dict>
-        :param last_param: whether this repeat parameter is the last in the
+        :param is_last_param: whether this repeat parameter is the last in the
             definition
-        :type last_param: bool
+        :type is_last_param: bool
         :return: repeat parameter value
         :rtype: list
         """
@@ -213,7 +213,7 @@ class ParamParser:
             self._expect("RPAREN")
         else:
             single = is_repeat_param_single(repeat_param_def)
-            if last_param:
+            if is_last_param:
                 while True:
                     repeat = []
                     for _ in repeat_param_def:
