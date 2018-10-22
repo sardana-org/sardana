@@ -5,6 +5,12 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
+## [2.5.1] 2018-10-??
+
+### Fixed
+- Do not read 1D and 2D experimental channels during software acquisition loop
+  (#967)
+
 ## [2.5.0] 2018-08-10
 
 ### Added
@@ -471,7 +477,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.5.0...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.5.1...HEAD
+[2.5.1]: https://github.com/sardana-org/sardana/compare/2.5.0...2.5.1
 [2.5.0]: https://github.com/sardana-org/sardana/compare/2.4.0...2.5.0
 [2.4.0]: https://github.com/sardana-org/sardana/compare/2.3.2...2.4.0
 [2.3.2]: https://github.com/sardana-org/sardana/compare/2.3.1...2.3.2
