@@ -492,7 +492,7 @@ pt14_params_def = [
     }
 ]
 
-pt15_params_def = [
+extra1_params_def = [
     {
         "default_value": None,
         "description": "Parameter",
@@ -520,27 +520,7 @@ pt15_params_def = [
     }
 ]
 
-pt16_params_def = [
-    {
-        "default_value": None,
-        "description": "List of values",
-        "max": None,
-        "min": 1,
-        "name": "numb_list",
-        "type": [
-            {
-                "default_value": 2,
-                "description": "value",
-                "max": None,
-                "min": 1,
-                "name": "position",
-                "type": "Float"
-            }
-        ]
-    }
-]
-
-pt17_params_def = [
+extra2_params_def = [
 
     {
         "default_value": None,
@@ -576,7 +556,7 @@ pt17_params_def = [
         ]
     },
 ]
-pt18_params_def = [
+extra3_params_def = [
 
     {
         "default_value": None,
@@ -596,7 +576,7 @@ pt18_params_def = [
     },
 ]
 
-pt19_params_def = [
+extra4_params_def = [
 
     {
         "default_value": None,
@@ -617,7 +597,7 @@ pt19_params_def = [
 ]
 
 
-pt20_params_def = [
+extra5_params_def = [
 
     {
         "default_value": None,
@@ -661,7 +641,7 @@ pt20_params_def = [
         "type": "Float"
     }
 ]
-pt21_params_def = [
+extra6_params_def = [
 
     {
         "default_value": None,
@@ -690,7 +670,7 @@ pt21_params_def = [
     }
 ]
 
-pt22_params_def = [
+extra7_params_def = [
 
     {
         "default_value": None,
@@ -726,7 +706,7 @@ pt22_params_def = [
         ]
     }
 ]
-pt23_params_def = [
+extra8_params_def = [
 
     {
         "default_value": None,
@@ -747,6 +727,7 @@ pt23_params_def = [
 ]
 
 
+# parameters examples tests
 @insertTest(helper_name="parse", params_def=pt0_params_def,
             params_str="", params=[])
 @insertTest(helper_name="parse", params_def=pt1d_params_def,
@@ -828,29 +809,28 @@ pt23_params_def = [
 @insertTest(helper_name="parse", params_def=pt14_params_def,
             params_str="[[[mot1 mot2] 3] [[mot3] 5]]",
             params=[[[["mot1", "mot2"], "3"], [["mot3"], "5"]]])
-@insertTest(helper_name="parse", params_def=pt15_params_def,
+# extra tests for complex parameter values
+@insertTest(helper_name="parse", params_def=extra1_params_def,
             params_str="ScanFile ['file.nxs' 'file.dat']",
             params=["ScanFile", ["file.nxs", "file.dat"]])
-@insertTest(helper_name="parse", params_def=pt16_params_def,
-            params_str="[1 [] 3]", params=[["1", [], "3"]])
-@insertTest(helper_name="parse", params_def=pt17_params_def,
+@insertTest(helper_name="parse", params_def=extra2_params_def,
             params_str="2 3 ['Hello world!' 'How are you?']",
             params=["2", "3", ["Hello world!", "How are you?"]])
-@insertTest(helper_name="parse", params_def=pt18_params_def,
+@insertTest(helper_name="parse", params_def=extra3_params_def,
             params_str="ScanFile file.dat",
             params=["ScanFile", "file.dat"])
-@insertTest(helper_name="parse", params_def=pt19_params_def,
+@insertTest(helper_name="parse", params_def=extra4_params_def,
             params_str="'2 3'", params=["2 3"])
-@insertTest(helper_name="parse", params_def=pt20_params_def,
+@insertTest(helper_name="parse", params_def=extra5_params_def,
             params_str="[[mot01 3][mot02 5]] ct01 999",
             params=[[["mot01", "3"], ["mot02", "5"]], "ct01", "999"])
-@insertTest(helper_name="parse", params_def=pt21_params_def,
+@insertTest(helper_name="parse", params_def=extra6_params_def,
             params_str="[[2 3][4 5]]",
             params=[[["2", "3"], ["4", "5"]]])
-@insertTest(helper_name="parse", params_def=pt22_params_def,
+@insertTest(helper_name="parse", params_def=extra7_params_def,
             params_str="1 [2 3]",
             params=["1", ["2", "3"]])
-@insertTest(helper_name="parse", params_def=pt23_params_def,
+@insertTest(helper_name="parse", params_def=extra8_params_def,
             params_str="2 3", params=["2", "3"])
 class ParamParserWithDefTestCase(unittest.TestCase):
     """Unit tests for ParamParser class initialized with parameters
