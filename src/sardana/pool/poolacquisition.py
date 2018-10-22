@@ -814,7 +814,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
 
         with ActionContext(self):
             self.raw_read_state_info(ret=states)
-            self.raw_read_value_loop(ret=values)
+            self.raw_read_value(ret=values)
 
         for acquirable, state_info in states.items():
             # first update the element state so that value calculation
