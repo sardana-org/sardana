@@ -759,6 +759,9 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
             slaves = ()
         self._slaves = slaves
 
+    def get_read_value_loop_ctrls(self):
+        return self._pool_ctrl_dict_loop
+
     @DebugIt()
     def start_action(self, *args, **kwargs):
         """Prepares everything for acquisition and starts it.
@@ -782,7 +785,6 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
         states, values = {}, {}
         for element in self._channels:
             states[element] = None
-            values[element] = None
 
         nap = self._acq_sleep_time
         nb_states_per_value = self._nb_states_per_value
