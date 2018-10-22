@@ -30,20 +30,6 @@ from taurus.test import insertTest
 from sardana.spock.parser import ParamParser
 
 
-class ParamParserTestCase(unittest.TestCase):
-    """Unit tests for ParamParser class."""
-
-    def parse(self, params_str, params):
-        """Helper method to test parameters parsing. To be used with insertTest
-        decorator.
-        """
-        p = ParamParser()
-        result = p.parse(params_str)
-        msg = "Parsing failed (result: %r; expected: %r)" %\
-            (result, params)
-        self.assertListEqual(result, params, msg)
-
-
 pt0_params_def = []
 
 pt1d_params_def = [
@@ -832,11 +818,14 @@ extra8_params_def = [
             params=["1", ["2", "3"]])
 @insertTest(helper_name="parse", params_def=extra8_params_def,
             params_str="2 3", params=["2", "3"])
-class ParamParserWithDefTestCase(unittest.TestCase):
-    """Unit tests for ParamParser class initialized with parameters
-    definition.
+class ParamParserTestCase(unittest.TestCase):
+    """Unit tests for ParamParser class. Mainly based on macro examples for
+    parameters definition.
     """
     def parse(self, params_def, params_str, params):
+        """Helper method to test parameters parsing. To be used with
+        insertTest decorator.
+        """
         p = ParamParser(params_def)
         result = p.parse(params_str)
         msg = "Parsing failed (result: %r; expected: %r)" % \
