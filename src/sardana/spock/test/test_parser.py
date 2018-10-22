@@ -30,25 +30,6 @@ from taurus.test import insertTest
 from sardana.spock.parser import ParamParser
 
 
-# @insertTest(helper_name="parse",
-#             params_str='ScanFile "[\\"file.nxs\\", \\"file.dat\\"]"',
-#             params=["ScanFile", '["file.nxs", "file.dat"]'])
-# @insertTest(helper_name="parse", params_str="[1 [] 3]",
-#             params=[["1", [], "3"]])
-# @insertTest(helper_name="parse",
-#             params_str="2 3 ['Hello world!' 'How are you?']",
-#             params=["2", "3", ["Hello world!", "How are you?"]])
-# @insertTest(helper_name="parse", params_str="ScanFile file.dat",
-#             params=["ScanFile", "file.dat"])
-# @insertTest(helper_name="parse", params_str="'2 3'", params=["2 3"])
-# @insertTest(helper_name="parse", params_str='"2 3"', params=["2 3"])
-# @insertTest(helper_name="parse", params_str="[[mot01 3][mot02 5]] ct01 999",
-#             params=[[["mot01", "3"], ["mot02", "5"]], "ct01", "999"])
-# @insertTest(helper_name="parse", params_str="[[2 3][4 5]]",
-#             params=[[["2", "3"], ["4", "5"]]])
-# @insertTest(helper_name="parse", params_str="1 [2 3]",
-#             params=["1", ["2", "3"]])
-# @insertTest(helper_name="parse", params_str="2 3", params=["2", "3"])
 class ParamParserTestCase(unittest.TestCase):
     """Unit tests for ParamParser class."""
 
@@ -511,6 +492,260 @@ pt14_params_def = [
     }
 ]
 
+pt15_params_def = [
+    {
+        "default_value": None,
+        "description": "Parameter",
+        "max": None,
+        "min": 1,
+        "name": "param",
+        "type": "String"
+    },
+    {
+        "default_value": None,
+        "description": "List of Scan files",
+        "max": None,
+        "min": 1,
+        "name": "ScanFiles List",
+        "type": [
+            {
+                "default_value": None,
+                "description": "ScanFile",
+                "max": None,
+                "min": 1,
+                "name": "ScanFile",
+                "type": "String",
+            }
+        ]
+    }
+]
+
+pt16_params_def = [
+    {
+        "default_value": None,
+        "description": "List of values",
+        "max": None,
+        "min": 1,
+        "name": "numb_list",
+        "type": [
+            {
+                "default_value": 2,
+                "description": "value",
+                "max": None,
+                "min": 1,
+                "name": "position",
+                "type": "Float"
+            }
+        ]
+    }
+]
+
+pt17_params_def = [
+
+    {
+        "default_value": None,
+        "description": "Value 1",
+        "max": None,
+        "min": 1,
+        "name": "value1",
+        "type": "Float"
+    },
+    {
+        "default_value": None,
+        "description": "Value 2",
+        "max": None,
+        "min": 1,
+        "name": "value2",
+        "type": "float"
+    },
+    {
+        "default_value": None,
+        "description": "List of Strings",
+        "max": None,
+        "min": 1,
+        "name": "string_list",
+        "type": [
+            {
+                "default_value": None,
+                "description": "string",
+                "max": None,
+                "min": 1,
+                "name": "string",
+                "type": "String"
+            },
+        ]
+    },
+]
+pt18_params_def = [
+
+    {
+        "default_value": None,
+        "description": "param",
+        "max": None,
+        "min": 1,
+        "name": "param",
+        "type": "String"
+    },
+    {
+        "default_value": None,
+        "description": "Value",
+        "max": None,
+        "min": 1,
+        "name": "value",
+        "type": "String"
+    },
+]
+
+pt19_params_def = [
+
+    {
+        "default_value": None,
+        "description": "value 1",
+        "max": None,
+        "min": 1,
+        "name": "value1",
+        "type": "Float"
+    },
+    {
+        "default_value": None,
+        "description": "Value 2",
+        "max": None,
+        "min": 1,
+        "name": "value2",
+        "type": "Float"
+    },
+]
+
+
+pt20_params_def = [
+
+    {
+        "default_value": None,
+        "description": "List of Motor and Values",
+        "max": None,
+        "min": 1,
+        "name": "numb_list",
+        "type": [
+            {
+                "default_value": None,
+                "description": "Motor",
+                "max": None,
+                "min": 1,
+                "name": "pos",
+                "type": "Motor"
+            },
+            {
+                "default_value": None,
+                "description": "Position to move to",
+                "max": 2,
+                "min": 1,
+                "name": "pos",
+                "type": "Float"
+            }
+        ]
+    },
+    {
+        "default_value": None,
+        "description": "Counter to use",
+        "max": None,
+        "min": 1,
+        "name": "counter",
+        "type": "ExpChan"
+    },
+    {
+        "default_value": None,
+        "description": "Value",
+        "max": None,
+        "min": 1,
+        "name": "Value",
+        "type": "Float"
+    }
+]
+pt21_params_def = [
+
+    {
+        "default_value": None,
+        "description": "List of Values",
+        "max": None,
+        "min": 1,
+        "name": "numb_list",
+        "type": [
+            {
+                "default_value": None,
+                "description": "Value 1",
+                "max": None,
+                "min": 1,
+                "name": "value1",
+                "type": "Float"
+            },
+            {
+                "default_value": None,
+                "description": "Value 2",
+                "max": None,
+                "min": 1,
+                "name": "value2",
+                "type": "Float"
+            }
+        ]
+    }
+]
+
+pt22_params_def = [
+
+    {
+        "default_value": None,
+        "description": "value 1",
+        "max": None,
+        "min": 1,
+        "name": "value1",
+        "type": "Float"
+    },
+    {
+        "default_value": None,
+        "description": "List of Values",
+        "max": None,
+        "min": 1,
+        "name": "numb_list",
+        "type": [
+            {
+                "default_value": None,
+                "description": "Value 2.1",
+                "max": None,
+                "min": 1,
+                "name": "value21",
+                "type": "Float"
+            },
+            {
+                "default_value": None,
+                "description": "Value 2.2",
+                "max": None,
+                "min": 1,
+                "name": "value22",
+                "type": "Float"
+            }
+        ]
+    }
+]
+pt23_params_def = [
+
+    {
+        "default_value": None,
+        "description": "value 1",
+        "max": None,
+        "min": 1,
+        "name": "value1",
+        "type": "Float"
+    },
+    {
+        "default_value": None,
+        "description": "Value 2",
+        "max": None,
+        "min": 1,
+        "name": "value2",
+        "type": "Float"
+    },
+]
+
 
 @insertTest(helper_name="parse", params_def=pt0_params_def,
             params_str="", params=[])
@@ -593,6 +828,30 @@ pt14_params_def = [
 @insertTest(helper_name="parse", params_def=pt14_params_def,
             params_str="[[[mot1 mot2] 3] [[mot3] 5]]",
             params=[[[["mot1", "mot2"], "3"], [["mot3"], "5"]]])
+@insertTest(helper_name="parse", params_def=pt15_params_def,
+            params_str="ScanFile ['file.nxs' 'file.dat']",
+            params=["ScanFile", ["file.nxs", "file.dat"]])
+@insertTest(helper_name="parse", params_def=pt16_params_def,
+            params_str="[1 [] 3]", params=[["1", [], "3"]])
+@insertTest(helper_name="parse", params_def=pt17_params_def,
+            params_str="2 3 ['Hello world!' 'How are you?']",
+            params=["2", "3", ["Hello world!", "How are you?"]])
+@insertTest(helper_name="parse", params_def=pt18_params_def,
+            params_str="ScanFile file.dat",
+            params=["ScanFile", "file.dat"])
+@insertTest(helper_name="parse", params_def=pt19_params_def,
+            params_str="'2 3'", params=["2 3"])
+@insertTest(helper_name="parse", params_def=pt20_params_def,
+            params_str="[[mot01 3][mot02 5]] ct01 999",
+            params=[[["mot01", "3"], ["mot02", "5"]], "ct01", "999"])
+@insertTest(helper_name="parse", params_def=pt21_params_def,
+            params_str="[[2 3][4 5]]",
+            params=[[["2", "3"], ["4", "5"]]])
+@insertTest(helper_name="parse", params_def=pt22_params_def,
+            params_str="1 [2 3]",
+            params=["1", ["2", "3"]])
+@insertTest(helper_name="parse", params_def=pt23_params_def,
+            params_str="2 3", params=["2", "3"])
 class ParamParserWithDefTestCase(unittest.TestCase):
     """Unit tests for ParamParser class initialized with parameters
     definition.
