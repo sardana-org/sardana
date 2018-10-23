@@ -127,11 +127,21 @@ def _to_fqdn(name, logger=None):
 class ConfigurationItem(object):
     def __init__(self, element, conf=None):
         self._element = weakref.ref(element)
+
+        if conf is None:
+            conf = {'acq_synch': None}
+        else:
+            conf['acq_synch'] = None
+
         if conf is not None:
             self.__dict__.update(conf)
 
     def __getattr__(self, item):
         return getattr(self.element, item)
+
+    def get_config(self):
+        """ Returns the configuration dictionary"""
+        raise NotImplementedError()
 
     def get_element(self):
         """Returns the element associated with this item"""
@@ -147,10 +157,76 @@ class ConfigurationItem(object):
 class ControllerConfiguration(ConfigurationItem):
     """Configuration: 'timer', 'monitor', 'synchronization', 'channels'"""
 
+    def __init__(self, element, conf=None):
+        self._channels = []
+        self._channels_enabled = []
+        self._channels_disabled = []
+        self.enabled = False
+
+        ConfigurationItem.__init__(self, element, conf)
+
+    def get_config(self):
+        config = {}
+        # the external controllers: Tango attributes does not have timer and
+        #  monitor
+        config['timer'] = self.timer.full_name
+        config['monitor'] = self.monitor.full_name
+
+        if isinstance(self.synchronizer, (str, unicode)):
+            synchronizer = self.synchronizer
+        else:
+            synchronizer = self.synchronizer.full_name
+        config['synchronizer'] = synchronizer
+        config['synchronization'] = self.synchronization
+        config['channels'] = {}
+        for ch_item in self._channels:
+            config['channels'][ch_item.full_name] = ch_item.get_config()
+        return config
+
+    def add_channel(self, channel_item):
+        self._channels.append(channel_item)
+        if channel_item.enabled:
+            self.enabled = True
+            if self._channels_enabled is None:
+                self._channels_enabled = []
+            self._channels_enabled.append(channel_item)
+        else:
+            if self._channels_disabled is None:
+                self._channels_disabled = []
+            self._channels_disabled.append(channel_item)
+
+    def get_channels(self, enabled=None):
+        if enabled is None:
+            return list(self.channels)
+        elif enabled:
+            return list(self._channels_enabled)
+        else:
+            return list(self._channels_disabled)
+
 
 class ChannelConfiguration(ConfigurationItem):
-    """Configuration: 'id', 'enabled', 'output', 'plot_type', 'plot_axes',
+    """Configuration: 'index', 'enabled', 'output', 'plot_type', 'plot_axes',
                       'label', 'scale', 'plot_color'"""
+
+    def get_config(self):
+        config = {}
+        config['index'] = self.index
+        config['name'] = self.name
+        config['full_name'] = self.full_name
+        config['source'] = self.source
+        config['enabled'] = self.enabled
+        config['label'] = self.label
+        config['ndim'] = self.ndim
+        config['output'] = self.output
+        config['plot_type'] = self.plot_type
+        config['plot_axes'] = self.plot_axes
+        config['conditioning'] = self.conditioning
+        config['normalization'] = self.normalization
+        config['data_type'] = self.data_type
+        config['data_units'] = self.data_units
+        config['nexus_path'] = self.nexus_path
+        config['shape'] = self.shape
+        return config
 
 
 class MeasurementConfiguration(object):
