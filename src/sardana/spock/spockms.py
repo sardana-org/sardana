@@ -37,7 +37,7 @@ from taurus.core import TaurusEventType, TaurusSWDevState
 
 from sardana.sardanautils import is_pure_str, is_non_str_seq
 from sardana.spock import genutils
-from sardana.spock.parser import ParamParser
+from sardana.util.parser import ParamParser
 from sardana.spock.inputhandler import SpockInputHandler, InputHandler
 from sardana import sardanacustomsettings
 

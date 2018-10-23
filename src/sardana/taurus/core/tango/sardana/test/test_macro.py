@@ -41,7 +41,7 @@ from sardana.taurus.core.tango.sardana.test import (pt3d_param_def,
                                                     pt14d_param_def)
 # TODO: Use unittest.mock instead of this fake class.
 from sardana.macroserver.mstypemanager import TypeManager
-from sardana.spock.parser import ParamParser
+from sardana.util.parser import ParamParser
 
 
 class FakeMacroServer(object):

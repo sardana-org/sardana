@@ -70,7 +70,7 @@ from sardana.macroserver.macro import Macro, MacroFunc, ExecMacroHook, \
 from sardana.macroserver.msexception import UnknownMacroLibrary, \
     LibraryError, UnknownMacro, MissingEnv, AbortException, StopException, \
     MacroServerException, UnknownEnv
-from sardana.spock.parser import ParamParser
+from sardana.util.parser import ParamParser
 
 # These classes are imported from the "client" part of sardana, if finally
 # both the client and the server side needs them, place them in some
