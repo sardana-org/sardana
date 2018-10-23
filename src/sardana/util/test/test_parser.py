@@ -27,7 +27,7 @@
 
 from taurus.external import unittest
 from taurus.test import insertTest
-from sardana.spock.parser import ParamParser
+from sardana.util.parser import ParamParser
 
 
 pt0_params_def = []
