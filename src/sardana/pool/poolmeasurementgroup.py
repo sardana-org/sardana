@@ -197,6 +197,13 @@ class ChannelConfiguration(ConfigurationItem):
                       'label', 'scale', 'plot_color'"""
 
 
+class SynchronizerConfiguration(ConfigurationItem):
+
+    def __init__(self, element, conf=None):
+        self.enabled = False
+
+        ConfigurationItem.__init__(self, element, conf)
+
 
 class MeasurementConfiguration(object):
     """
