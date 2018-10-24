@@ -217,224 +217,329 @@ class MeasurementConfiguration(object):
         self._parent = None
         if parent is not None:
             self._parent = weakref.proxy(parent)
+
         self._config = None
         self._use_fqdn = True
-        self._clean_variables()
 
-    def _clean_variables(self):
-        # list of controller with channels enabled.
-        self.enabled_ctrls = []
-        # list of timers and monitors by synchronization type.
-        self.sw_sync_timers_enabled = []
-        self.sw_sync_monitors_enabled = []
-        self.sw_start_timers_enabled = []
-        self.sw_start_monitors_enabled = []
-        self.hw_sync_timers_enabled = []
-        self.hw_sync_monitors_enabled = []
-        # dict with channel and its acquisition synchronization
-        # key: PoolBaseChannel; value: AcqSynch
-        self.channel_to_acq_synch = {}
-        # dict with controller and its acquisition synchronization
-        # key: PoolController; value: AcqSynch
-        self.ctrl_to_acq_synch = {}
-        # TODO: Do the documentation
-        self.ctrl_sw_sync = {}
-        self.ctrl_hw_sync = {}
-        self.ctrl_sw_start = {}
-        self.ctrl_0d_sync = {}
-        self.ctrl_tg_sync = {}
-        # TODO: Do the documentation
-        self.sw_sync_timer = None
-        self.sw_sync_monitor = None
-        self.sw_start_timer = None
-        self.sw_start_monitor = None
-        self.hw_sync_timer = None
-        self.hw_sync_monitor = None
+        # Structure to store the controllers and their channels
+        self._timerable_ctrls = {}
+        self._zerod_ctrls = []
+        self._synch_ctrls = {}
+        self._other_ctrls = []
+        self._master_timer_sw = None
+        self._master_monitor_sw = None
+        self._master_timer_sw_start = None
+        self._master_monitor_sw_start = None
+        self._label = None
+        self._description = None
+        self._master_timer = None
+        self._master_monitor = None
+        self._user_confg = {}
+        self._element_acq_synch = {}
 
-    def __check_config(func):
-        def wrapper(self, *args, **kwargs):
-            if self._config is None:
-                raise RuntimeError('The configuration is empty.')
-            return func(self, *args, **kwargs)
-        return wrapper
+    def get_acq_synch_by_element(self, element):
+        return self._element_acq_synch[element.id]
 
-    def __getitem__(self, item):
-        return self._config.__getitem__(item)
+    def _filter_ctrls(self, ctrls, enabled):
+        if enabled is None:
+            return ctrls
 
-    @property
-    @__check_config
-    def configuration(self):
-        return self._config
+        filtered_ctrls = []
+        for ctrl in ctrls:
+            if ctrl.enabled == enabled:
+                filtered_ctrls.append(ctrl)
+        return filtered_ctrls
 
-    @configuration.setter
-    def configuration(self, config=None):
-        self._build_configuration(config)
+    def get_timerable_ctrls(self, acq_synch=None, enabled=None):
+        timerable_ctrls = []
+        if acq_synch is None:
+            for ctrls in self._timerable_ctrls.values():
+                timerable_ctrls += ctrls
+        elif isinstance(acq_synch, list):
+            acq_synch_list = acq_synch
+            for acq_synch in acq_synch_list:
+                timerable_ctrls += self._timerable_ctrls[acq_synch]
+        else:
+            timerable_ctrls = list(self._timerable_ctrls[acq_synch])
+
+        return self._filter_ctrls(timerable_ctrls, enabled)
+
+    def get_zerod_ctrls(self, enabled=None):
+        return self._filter_ctrls(self._zerod_ctrls, enabled)
+
+    def get_synch_ctrls(self, enabled=None):
+        return self._filter_ctrls(self._synch_ctrls, enabled)
+
+    def get_master_timer_software(self):
+        return self._master_timer_sw
+
+    def get_master_monitor_software(self):
+        return self._master_monitor_sw
+
+    def get_master_timer_software_start(self):
+        return self._master_monitor_sw_start
+
+    def get_master_monitor_software_start(self):
+        return self._master_timer_sw_start
+
+    def get_configuration_for_user(self):
+        return self._user_confg
 
     def set_configuration_from_user(self, cfg, to_fqdn=True):
-        config = {}
         user_elements = self._parent.get_user_elements()
-        pool = self._parent.pool
         if len(user_elements) == 0:
-            # All timers were disabled
-            default_timer = None
-        else:
-            default_timer = user_elements[0].full_name
+            # All channels were disabled
+            raise ValueError('The configuration has all the channels disabled')
 
-        timer_name = cfg.get('timer', default_timer)
-        monitor_name = cfg.get('monitor', default_timer)
-        if to_fqdn:
-            timer_name = _to_fqdn(timer_name, logger=self._parent)
-        config['timer'] = pool.get_element_by_full_name(timer_name)
-        if to_fqdn:
-            monitor_name = _to_fqdn(monitor_name, logger=self._parent)
-        config['monitor'] = pool.get_element_by_full_name(monitor_name)
-        config['controllers'] = controllers = {}
+        pool = self._parent.pool
 
-        for c_name, c_data in cfg['controllers'].items():
+        label = cfg.get('label', self._parent.name)
+        description = cfg.get('description', self.DFT_DESC)
+
+        timerable_ctrls = {AcqSynch.HardwareGate: [],
+                           AcqSynch.HardwareStart: [],
+                           AcqSynch.HardwareTrigger: [],
+                           AcqSynch.SoftwareStart: [],
+                           AcqSynch.SoftwareTrigger: [],
+                           AcqSynch.SoftwareGate: []}
+        zerod_ctrls = []
+        synch_ctrls = []
+        other_ctrls = []
+        master_timer_sw = None
+        master_monitor_sw = None
+        master_timer_sw_start = None
+        master_monitor_sw_start = None
+        master_timer = None
+        master_monitor = None
+        element_acq_synch = {}
+        master_timer_idx_sw = float("+inf")
+        master_monitor_idx_sw = float("+inf")
+        user_elem_ids = {}
+        user_config = {}
+
+        # Update the configuration for user
+        user_config['controllers'] = {}
+        user_config = {}
+        if 'timer' in cfg:
+            user_config['timer'] = cfg['timer']
+        if 'monitor' in cfg:
+            user_config['monitor'] = cfg['monitor']
+        user_config['controllers'] = {}
+        user_config['label'] = label
+        user_config['description'] = description
+
+        for ctrl_name, ctrl_data in cfg['controllers'].items():
             # backwards compatibility for measurement groups created before
             # implementing feature-372:
             # https://sourceforge.net/p/sardana/tickets/372/
             # WARNING: this is one direction backwards compatibility - it just
             # reads channels from the units, but does not write channels to the
             # units back
-            if 'units' in c_data:
-                c_data = c_data['units']['0']
+            if 'units' in ctrl_data:
+                ctrl_data = ctrl_data['units']['0']
             # discard controllers which don't have items (garbage)
-            ch_count = len(c_data['channels'])
+            ch_count = len(ctrl_data['channels'])
             if ch_count == 0:
                 continue
 
-            external = c_name.startswith('__')
+            external = ctrl_name.startswith('__')
             if external:
-                ctrl = c_name
+                ctrl = ctrl_name
             else:
                 if to_fqdn:
-                    c_name = _to_fqdn(c_name, logger=self._parent)
-                ctrl = pool.get_element_by_full_name(c_name)
+                    ctrl_name = _to_fqdn(ctrl_name, logger=self._parent)
+                ctrl = pool.get_element_by_full_name(ctrl_name)
                 assert ctrl.get_type() == ElementType.Controller
-            controllers[ctrl] = ctrl_data = {}
 
-            # exclude external and not timerable elements
-            if not external and ctrl.is_timerable():
-                timer_name = c_data['timer']
+            user_config['controllers'][ctrl_name] = user_config_ctrl = {}
+            ctrl_conf = {}
+
+            synchronizer = ctrl_data.get('synchronizer', None)
+            conf_synch = None
+            if synchronizer is None or synchronizer == 'software':
+                ctrl_conf['synchronizer'] = 'software'
+                user_config_ctrl['synchronizer'] = 'software'
+            else:
                 if to_fqdn:
-                    timer_name = _to_fqdn(timer_name, logger=self._parent)
-                timer = pool.get_element_by_full_name(timer_name)
-                ctrl_data['timer'] = timer
-                monitor_name = c_data['monitor']
-                if to_fqdn:
-                    monitor_name = _to_fqdn(monitor_name, logger=self._parent)
-                monitor = pool.get_element_by_full_name(monitor_name)
-                ctrl_data['monitor'] = monitor
-                synchronizer = c_data.get('synchronizer')
-                # for backwards compatibility purposes
-                # protect measurement groups without synchronizer defined
-                if synchronizer is None:
-                    synchronizer = 'software'
-                elif synchronizer != 'software':
-                    if to_fqdn:
-                        synchronizer = _to_fqdn(synchronizer,
-                                                logger=self._parent)
-                    synchronizer = pool.get_element_by_full_name(synchronizer)
-                ctrl_data['synchronizer'] = synchronizer
+                    synchronizer = _to_fqdn(synchronizer,
+                                            logger=self._parent)
+
+                user_config_ctrl['synchronizer'] = synchronizer
+                pool_synch = pool.get_element_by_full_name(synchronizer)
+                pool_synch_ctrl = pool_synch.controller
+                conf_synch = SynchronizerConfiguration(pool_synch)
+                conf_synch_ctrl = None
+                if len(synch_ctrls) > 0:
+                    conf_synch_ctrl = None
+                    for conf_ctrl in synch_ctrls:
+                        if pool_synch_ctrl == conf_ctrl.element:
+                            conf_synch_ctrl = conf_ctrl
+                if conf_synch_ctrl is None:
+                    conf_synch_ctrl = ControllerConfiguration(pool_synch_ctrl)
+                conf_synch_ctrl.add_channel(conf_synch)
+                synch_ctrls.append(conf_synch_ctrl)
+                ctrl_conf['synchronizer'] = conf_synch
+
+            try:
+                synchronization = ctrl_data['synchronization']
+            except KeyError:
+                # backwards compatibility for configurations before SEP6
                 try:
-                    synchronization = c_data['synchronization']
-                except KeyError:
-                    # backwards compatibility for configurations before SEP6
-                    synchronization = c_data['trigger_type']
+                    synchronization = ctrl_data['trigger_type']
                     msg = ("trigger_type configuration parameter is deprecated"
                            " in favor of synchronization. Re-apply "
                            "configuration in order to upgrade.")
                     self._parent.warning(msg)
-                ctrl_data['synchronization'] = synchronization
-            ctrl_data['channels'] = channels = {}
-            for ch_name, ch_data in c_data['channels'].items():
+                except KeyError:
+                    synchronization = None
+
+            ctrl_conf['synchronization'] = synchronization
+            user_config_ctrl['synchronization'] = synchronization
+            ctrl_conf['timer'] = None
+            ctrl_conf['monitor'] = None
+            ctrl_item = ControllerConfiguration(ctrl, ctrl_conf)
+
+            acq_synch = None
+            if not external and ctrl.is_timerable():
+                is_software = synchronizer == 'software'
+                acq_synch = AcqSynch.from_synch_type(is_software,
+                                                     synchronization)
+                element_acq_synch[ctrl.id] = acq_synch
+
+            ctrl_enabled = False
+            if 'channels' in ctrl_data:
+                user_config_ctrl['channels'] = user_config_channel = {}
+            for ch_name, ch_data in ctrl_data['channels'].items():
+
                 if external:
                     validator = TangoAttributeNameValidator()
                     params = validator.getParams(ch_data['full_name'])
-                    params['pool'] = self._parent.pool
+                    params['pool'] = pool
                     channel = PoolExternalObject(**params)
                 else:
                     if to_fqdn:
                         ch_name = _to_fqdn(ch_name, logger=self._parent)
                     channel = pool.get_element_by_full_name(ch_name)
-                channels[channel] = dict(ch_data)
 
-        config['label'] = cfg.get('label', self._parent.name)
-        config['description'] = cfg.get('description', self.DFT_DESC)
-        self._use_fqdn = to_fqdn
-        self._build_configuration(config)
+                ch_data = self._fill_channel_data(channel, ch_data)
+                user_config_channel[ch_name] = ch_data
+                ch_item = ChannelConfiguration(channel, ch_data)
+                ch_item.controller = ctrl_item
+                ctrl_item.add_channel(ch_item)
+                if ch_item.enabled:
+                    user_elem_ids[ch_item.index] = channel.id
 
-    def get_configuration_for_user(self):
-        cfg = self._config
-        config = {}
+                # Update controller timer
+                if ch_name == ctrl_data['timer']:
+                    ctrl_item.timer = ch_item
 
-        config['timer'] = cfg['timer'].full_name
-        config['monitor'] = cfg['monitor'].full_name
-        config['controllers'] = controllers = {}
+                # Update controller monitor
+                if ch_name == ctrl_data['monitor']:
+                    ctrl_item.monitor = ch_item
 
-        for c, c_data in cfg['controllers'].items():
-            ctrl_name = c
-            if not isinstance(c, (str, unicode)):
-                ctrl_name = c.full_name
-            external = ctrl_name.startswith('__')
-            controllers[ctrl_name] = ctrl_data = {}
-            if not external and c.is_timerable():
-                if 'timer' in c_data:
-                    ctrl_data['timer'] = c_data['timer'].full_name
-                if 'monitor' in c_data:
-                    ctrl_data['monitor'] = c_data['monitor'].full_name
-                if 'synchronizer' in c_data:
-                    synchronizer = c_data['synchronizer']
-                    if synchronizer != 'software':
-                        synchronizer = synchronizer.full_name
-                    ctrl_data['synchronizer'] = synchronizer
-                if 'synchronization' in c_data:
-                    ctrl_data['synchronization'] = c_data['synchronization']
-            ctrl_data['channels'] = channels = {}
-            for ch, ch_data in c_data['channels'].items():
-                channels[ch.full_name] = dict(ch_data)
+                # Update measurement configuration master timer
+                if ch_name == cfg.get('timer', None):
+                    master_timer = ch_item
 
-        config['label'] = cfg['label']
-        config['description'] = cfg['description']
-        return config
+                # Update measurement configuration master timer
+                if ch_name == cfg.get('monitor', None):
+                    master_monitor = ch_item
 
-    def _build_channel_defaults(self, channel_data, channel):
+                if ch_item.enabled:
+                    ctrl_enabled = True
+
+                if acq_synch is not None:
+                   element_acq_synch[channel.id] = acq_synch
+
+            # Update syncrhonizer state
+            if conf_synch is not None:
+                conf_synch.enabled = ctrl_enabled
+
+            # validate if the timer and monitor are disabled if the
+            # controller is enabled
+            if ctrl_enabled and not ctrl_item.timer.enabled and \
+                    not ctrl_item.monitor.enabled:
+                timer_label = ctrl_item.timer.label
+                monitor_label = ctrl_item.monitor.label
+
+                err_msg = 'The channel {0} used as timer and the channel ' \
+                          '{1} used as monitor are disabled. One of them ' \
+                          'must be enabled'.format(timer_label, monitor_label)
+                raise ValueError(err_msg)
+
+            if not external and ctrl.is_timerable():
+                timerable_ctrls[acq_synch].append(ctrl_item)
+                # Find master timer/monitor the system take the channel with
+                # less index
+                if ctrl_item.synchronizer == 'software':
+                    if ctrl_item.timer.index < master_timer_idx_sw:
+                        master_timer_sw = ctrl_item.timer
+                        master_timer_idx_sw = ctrl_item.timer.index
+                    if ctrl_item.monitor.index < master_monitor_idx_sw:
+                        master_monitor_sw = ctrl_item.monitor
+                        master_monitor_idx_sw = ctrl_item.monitor.index
+            elif ctrl.get_ctrl_types()[0] == ElementType.ZeroDExpChannel:
+                zerod_ctrls.append(ctrl_item)
+            else:
+                other_ctrls.append(ctrl_item)
+
+        # Update synchronizer controller states
+        for conf_synch_ctrl in synch_ctrls:
+            conf_synch_ctrl.update_state()
+
+
+        # Update internals values
+        self._master_monitor = master_monitor
+        self._master_timer = master_timer
+        self._label = label
+        self._description = description
+        self._timerable_ctrls = timerable_ctrls
+        self._zerod_ctrls = zerod_ctrls
+        self._synch_ctrls = synch_ctrls
+        self._other_ctrls = other_ctrls
+        self._master_timer_sw = master_timer_sw
+        self._master_monitor_sw = master_monitor_sw
+        self._element_acq_synch = element_acq_synch
+        self._user_confg = user_config
+
+        # sorted ids may not be consecutive (if a channel is disabled)
+        indexes = sorted(user_elem_ids.keys())
+        user_elem_ids_list = [user_elem_ids[idx] for idx in indexes]
+        for conf_synch_ctrl in synch_ctrls:
+            for conf_synch in conf_synch_ctrl.get_channels(enabled=True):
+                user_elem_ids_list.append(conf_synch.id)
+        self._parent.set_user_element_ids(user_elem_ids_list)
+
+    def _fill_channel_data(self, channel, channel_data):
         """
         Fills the channel default values for the given channel dictionary
         """
 
-        external_from_name = isinstance(channel, (str, unicode))
+        name = channel.name
+        full_name = channel.full_name
+        source = channel.get_source()
         ndim = None
-        if external_from_name:
-            name = full_name = source = channel
-            ndim = 0  # TODO: this should somehow verify the dimension
-        else:
-            name = channel.name
-            full_name = channel.full_name
-            source = channel.get_source()
-            ndim = None
-            ctype = channel.get_type()
-            if ctype == ElementType.CTExpChannel:
-                ndim = 0
-            elif ctype == ElementType.PseudoCounter:
-                ndim = 0
-            elif ctype == ElementType.ZeroDExpChannel:
-                ndim = 0
-            elif ctype == ElementType.OneDExpChannel:
-                ndim = 1
-            elif ctype == ElementType.TwoDExpChannel:
-                ndim = 2
-            elif ctype == ElementType.External:
-                config = channel.get_config()
-                if config is not None:
-                    ndim = int(config.data_format)
-            elif ctype == ElementType.IORegister:
-                ndim = 0
+        ctype = channel.get_type()
+        if ctype == ElementType.CTExpChannel:
+            ndim = 0
+        elif ctype == ElementType.PseudoCounter:
+            ndim = 0
+        elif ctype == ElementType.ZeroDExpChannel:
+            ndim = 0
+        elif ctype == ElementType.OneDExpChannel:
+            ndim = 1
+        elif ctype == ElementType.TwoDExpChannel:
+            ndim = 2
+        elif ctype == ElementType.External:
+            config = channel.get_config()
+            if config is not None:
+                ndim = int(config.data_format)
+        elif ctype == ElementType.IORegister:
+            ndim = 0
 
         # Definitively should be initialized by measurement group
         # index MUST be here already (asserting this in the following line)
-        channel_data['index'] = channel_data['index']
+        channel_data['index'] = channel_data.get('index', None)
         channel_data['name'] = channel_data.get('name', name)
         channel_data['full_name'] = channel_data.get('full_name', full_name)
         channel_data['source'] = channel_data.get('source', source)
@@ -448,271 +553,15 @@ class MeasurementConfiguration(object):
         channel_data['plot_type'] = channel_data.get('plot_type', PlotType.No)
         channel_data['plot_axes'] = channel_data.get('plot_axes', [])
         channel_data['conditioning'] = channel_data.get('conditioning', '')
-        channel_data['normalization'] = channel_data.get(
-            'normalization', Normalization.No)
+        channel_data['normalization'] = channel_data.get('normalization',
+                                                         Normalization.No)
+        # TODO use real values
+        channel_data['data_type'] = channel_data.get('data_type', None)
+        channel_data['data_units'] = channel_data.get('data_units', None)
+        channel_data['nexus_path'] = channel_data.get('nexus_path', '')
+        channel_data['shape'] = channel_data.get('shape', [])
 
         return channel_data
-
-    def _build_configuration(self, config=None):
-        """Builds a configuration object from the list of elements"""
-        self._clean_variables()
-
-        if config is None:
-            config = {}
-            user_elements = self._parent.get_user_elements()
-            ctrls = self._parent.get_pool_controllers()
-
-            # find the first CT
-            first_timerable = None
-            for elem in user_elements:
-                if elem.get_type() in TYPE_TIMERABLE_ELEMENTS:
-                    first_timerable = elem
-                    break
-            if first_timerable is None:
-                raise Exception("It is not possible to construct a "
-                                "measurement group without at least one "
-                                "timer able channel (Counter/timer, 1D or 2D)")
-            g_timer = g_monitor = first_timerable
-            config['timer'] = g_timer
-            config['monitor'] = g_monitor
-            config['controllers'] = controllers = {}
-
-            external_user_elements = []
-            for index, element in enumerate(user_elements):
-                elem_type = element.get_type()
-                if elem_type == ElementType.External:
-                    external_user_elements.append((index, element))
-                    continue
-
-                ctrl = element.controller
-                ctrl_data = controllers.get(ctrl)
-                # include all controller in the enabled list
-                self.enabled_ctrls.append(ctrl)
-                if ctrl_data is None:
-                    controllers[ctrl] = ctrl_data = {}
-                    ctrl_data['channels'] = channels = {}
-                    if elem_type in TYPE_TIMERABLE_ELEMENTS:
-                        elements = ctrls[ctrl]
-                        if g_timer in elements:
-                            ctrl_data['timer'] = g_timer
-                        else:
-                            ctrl_data['timer'] = elements[0]
-                        if g_monitor in elements:
-                            ctrl_data['monitor'] = g_monitor
-                        else:
-                            ctrl_data['monitor'] = elements[0]
-                        ctrl_data['synchronization'] = AcqSynchType.Trigger
-                        ctrl_data['synchronizer'] = 'software'
-                        self.ctrl_to_acq_synch[ctrl] = AcqSynch.SoftwareTrigger
-                        self.channel_to_acq_synch[
-                            element] = AcqSynch.SoftwareTrigger
-                else:
-                    channels = ctrl_data['channels']
-                channels[element] = channel_data = {}
-                channel_data['index'] = user_elements.index(element)
-                channel_data = self._build_channel_defaults(channel_data,
-                                                            element)
-
-            config['label'] = self._parent.name
-            config['description'] = self.DFT_DESC
-
-            if len(external_user_elements) > 0:
-                controllers['__tango__'] = ctrl_data = {}
-                ctrl_data['channels'] = channels = {}
-                for index, element in external_user_elements:
-                    channels[element] = channel_data = {}
-                    channel_data['index'] = index
-                    channel_data = self._build_channel_defaults(channel_data,
-                                                                element)
-        else:
-            # create a configuration based on a new configuration
-            user_elem_ids = {}
-            tg_elem_ids = []
-            pool = self._parent.pool
-            for c, c_data in config['controllers'].items():
-                synchronizer = c_data.get('synchronizer')
-                acq_synch_type = c_data.get('synchronization')
-                software = synchronizer == 'software'
-                external = isinstance(c, (str, unicode))
-                # only timerable elements are configured with acq_synch
-                acq_synch = None
-                ctrl_enabled = False
-                ctrl_to_acq_synch = False
-                if not external and c.is_timerable():
-                    acq_synch = AcqSynch.from_synch_type(
-                        software, acq_synch_type)
-                for channel_data in c_data['channels'].values():
-                    if external:
-                        element = _id = channel_data['full_name']
-                        channel_data['source'] = _id
-                    else:
-                        full_name = channel_data['full_name']
-                        if self._use_fqdn:
-                            full_name = _to_fqdn(full_name,
-                                                 logger=self._parent)
-                        element = pool.get_element_by_full_name(full_name)
-                        _id = element.id
-                    channel_data = self._build_channel_defaults(
-                        channel_data, element)
-                    if channel_data["enabled"]:
-                        ctrl_enabled = True
-                        if acq_synch is not None:
-                            ctrl_to_acq_synch = True
-                            self.channel_to_acq_synch[element] = acq_synch
-                            if not software:
-                                tg_elem_ids.append(synchronizer.id)
-                        user_elem_ids[channel_data['index']] = _id
-
-                if ctrl_to_acq_synch:
-                    self.ctrl_to_acq_synch[c] = acq_synch
-                if ctrl_enabled:
-                    self.enabled_ctrls.append(c)
-
-            # sorted ids may not be consecutive (if a channel is disabled)
-            indexes = sorted(user_elem_ids.keys())
-            user_elem_ids_list = [user_elem_ids[idx] for idx in indexes]
-            user_elem_ids_list.extend(tg_elem_ids)
-            self._parent.set_user_element_ids(user_elem_ids_list)
-
-            g_timer, g_monitor = config['timer'], config['monitor']
-
-            timer_ctrl_data = config['controllers'][g_timer.controller]
-            if timer_ctrl_data['timer'] != g_timer:
-                self._parent.warning('controller timer and global timer '
-                                     'mismatch. Using global timer')
-                self._parent.debug('For controller %s, timer is defined as '
-                                   'channel %s. The global timer is set to '
-                                   'channel %s which belongs to the same '
-                                   'controller', g_timer.controller.name,
-                                   timer_ctrl_data['timer'].name, g_timer.name)
-                timer_ctrl_data['timer'] = g_timer
-
-            monitor_ctrl_data = config['controllers'][g_monitor.controller]
-            if monitor_ctrl_data['monitor'] != g_monitor:
-                self._parent.warning('controller monitor and global '
-                                     'monitor mismatch. Using global monitor')
-                self._parent.debug('For controller %s, monitor is defined as '
-                                   'channel %s. The global timer is set to '
-                                   'channel %s which belongs to the same '
-                                   'controller', g_monitor.controller.name,
-                                   monitor_ctrl_data['monitor'].name,
-                                   g_monitor.name)
-
-        self._config = config
-        self._split_sync()
-        self._split_tg()
-
-    def _split_sync(self):
-        """
-        Split MeasurementGroup configuration with channels
-        triggered by SW Trigger and channels triggered by HW trigger
-
-        """
-
-        ctrls_in = self._config['controllers']
-        for ctrl, ctrl_info in ctrls_in.items():
-            external = isinstance(ctrl, str) and ctrl.startswith('__')
-            # skipping external controllers e.g. Tango attributes
-            if external:
-                continue
-            # splitting ZeroD based on the type
-            if ctrl.get_ctrl_types()[0] == ElementType.ZeroDExpChannel:
-                self.ctrl_0d_sync[ctrl] = ctrl_info
-            # ignoring PseudoCounter
-            elif ctrl.get_ctrl_types()[0] == ElementType.PseudoCounter:
-                pass
-            # splitting rest of the channels based on the assigned trigger
-            else:
-                synchronizer = ctrl_info.get('synchronizer')
-                if synchronizer is None or synchronizer == 'software':
-                    synchronization = ctrl_info.get('synchronization')
-                    if synchronization in [AcqSynch.SoftwareTrigger,
-                                           AcqSynch.SoftwareGate]:
-                        self.ctrl_sw_sync[ctrl] = ctrl_info
-                    else:
-                        self.ctrl_sw_start[ctrl] = ctrl_info
-                else:
-                    self.ctrl_hw_sync[ctrl] = ctrl_info
-
-        def get_master_enables(ctrls, role):
-            master_idx = float("+inf")
-            master = None
-            elements = []
-            for ctrl_info in ctrls.values():
-                element = ctrl_info[role]
-                if element in ctrl_info["channels"]:
-                    element_idx = ctrl_info["channels"][element]["index"]
-                    element_enabled = ctrl_info["channels"][element]["enabled"]
-                    # Find master only if is enabled
-                    if element_enabled:
-                        elements.append(element)
-                        if element_idx < master_idx:
-                            master = element
-                            master_idx = element_idx
-            return master, elements
-
-        if len(self.ctrl_sw_sync):
-            timer, timers = get_master_enables(self.ctrl_sw_sync, "timer")
-            self.sw_sync_timer = timer
-            self.sw_sync_timers_enabled = timers
-
-            monitor, monitors = get_master_enables(self.ctrl_sw_sync,
-                                                   "monitor")
-            self.sw_sync_monitor = monitor
-            self.sw_sync_monitors_enabled = monitors
-
-        if len(self.ctrl_sw_start):
-            timer, timers = get_master_enables(self.ctrl_sw_start, "timer")
-            self.sw_start_timer = timer
-            self.sw_start_timers_enabled = timers
-
-            monitor, monitors = get_master_enables(self.ctrl_sw_start,
-                                                   "monitor")
-            self.sw_start_monitor = monitor
-            self.sw_start_monitors_enabled = monitors
-
-        if len(self.ctrl_hw_sync):
-            timer, timers = get_master_enables(self.ctrl_hw_sync, "timer")
-            self.hw_sync_timer = timer
-            self.hw_sync_timers_enabled = timers
-
-            monitor, monitors = get_master_enables(self.ctrl_hw_sync,
-                                                   "monitor")
-            self.hw_sync_monitor = monitor
-            self.hw_sync_monitors_enabled = monitors
-
-    def _split_tg(self):
-        """
-        Build TG configuration from complete configuration.
-        """
-
-        # Create list with not repeated elements
-        _tg_element_list = []
-
-        for ctrl in self._config["controllers"]:
-            tg_element = self._config["controllers"][ctrl].get('synchronizer',
-                                                               None)
-            if (tg_element is not None and
-                    tg_element != "software" and
-                    tg_element not in _tg_element_list):
-                _tg_element_list.append(tg_element)
-
-        # Intermediate dictionary to organize each ctrl with its elements.
-        ctrl_tgelem_dict = {}
-        for tgelem in _tg_element_list:
-            tg_ctrl = tgelem.get_controller()
-            if tg_ctrl not in ctrl_tgelem_dict.keys():
-                ctrl_tgelem_dict[tg_ctrl] = [tgelem]
-            else:
-                ctrl_tgelem_dict[tg_ctrl].append(tgelem)
-
-        # Build TG configuration dictionary.
-        for ctrl in ctrl_tgelem_dict:
-            self.ctrl_tg_sync[ctrl] = ctrls = {}
-            ctrls['channels'] = {}
-            for tg_elem in ctrl_tgelem_dict[ctrl]:
-                ch = ctrls['channels'][tg_elem] = {}
-                ch['full_name'] = tg_elem.full_name
 
 
 class PoolMeasurementGroup(PoolGroupElement):
