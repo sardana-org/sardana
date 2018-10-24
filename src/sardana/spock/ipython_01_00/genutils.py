@@ -319,7 +319,7 @@ def get_device_from_user(expected_class, dft=None):
     prompt += "? "
     from_user = raw_input(prompt).strip() or dft
 
-    name = ''
+    name = None
     try:
         full_name, name, _ = from_name_to_tango(from_user)
     except:
