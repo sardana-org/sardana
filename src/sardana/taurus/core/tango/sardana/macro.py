@@ -1274,8 +1274,9 @@ class SequenceNode(BranchNode):
 
 
 def ParamFactory(paramInfo):
-    """Factory method returning param element, depends of the paramInfo argument."""
-
+    """Factory method returning param element, depends of the paramInfo
+    argument.
+    """
     if isinstance(paramInfo.get('type'), list):
         param = RepeatParamNode(param=paramInfo)
         if param.min() > 0:
@@ -1286,21 +1287,14 @@ def ParamFactory(paramInfo):
 
 
 def createMacroNode(macro_name, params_def, macro_params):
-    """The best effort creation of the macro XML object. It tries to
-    convert flat list of string parameter values to the correct macro XML
-    object.
-
-    Default values allow in ParamRepeat parameters or the last single ones
+    """Create of the macro node object.
 
     :param macro_name: (str) macro name
     :param params_def: (list<dict>) list of param definitions
-    :param macro_params: (sequence[str]) list of parameter values
+    :param macro_params: (sequence[str]) list of parameter values, if repeat
+        parameters are used parameter values may be sequences itself.
 
-    :return (lxml.etree._Element) macro XML element
-
-    .. todo:: This method implements exactly the same logic as :meth:
-    `sardana.taurus.core.tango.sardana.macroserver.BaseDoor._createMacroXmlFromStr`
-    unify them and place in some common location.
+    :return (MacroNode) macro node object
     """
     macro_node = MacroNode(name=macro_name, params_def=params_def)
     macro_node.fromList(macro_params)
