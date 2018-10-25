@@ -223,7 +223,7 @@ class PoolAcquisition(PoolAction):
                                      master=master)
                 self.set_sw_config(sw_acq_kwargs)
             if len(ctrls_acq_0d):
-                zerod_acq_kwargs = dict(conf_ctrls=ctrls_acq_0d, value=value)
+                zerod_acq_kwargs = dict(conf_ctrls=ctrls_acq_0d)
                 self.set_0d_config(zerod_acq_kwargs)
 
         #start the synchonization action
@@ -779,57 +779,43 @@ class Pool0DAcquisition(PoolAction):
 
     def __init__(self, main_element, name="0DAcquisition"):
         self._channels = None
+        self._index = None
         PoolAction.__init__(self, main_element, name)
 
-    def start_action(self, *args, **kwargs):
+    def start_action(self, conf_ctrls, index=None, acq_sleep_time=None,
+                     nb_states_per_value=None, *args, **kwargs):
         """Prepares everything for acquisition and starts it.
 
            :param: config"""
 
         pool = self.pool
-
-        self._index = kwargs.get("idx")
-
-        # prepare data structures
         # TODO: rollback this change when a proper synchronization between
         # acquisition actions will be develop.
         # Now the meta acquisition action is resettung them to 0.
-#         self._aborted = False
-#         self._stopped = False
+        # self._aborted = False
+        # self._stopped = False
 
-        self._acq_sleep_time = kwargs.pop("acq_sleep_time",
-                                          pool.acq_loop_sleep_time)
-        self._nb_states_per_value = \
-            kwargs.pop("nb_states_per_value",
-                       pool.acq_loop_states_per_value)
+        self._index = index
 
-        items = kwargs.get("items")
-        if items is None:
-            items = self.get_elements()
-        cfg = self.main_element.configuration
+        self._acq_sleep_time = acq_sleep_time
+        if self._acq_sleep_time is None:
+            self._acq_sleep_time = pool.acq_loop_sleep_time
 
-        pool_ctrls_dict = cfg.get_zerod_ctrls(enabled=True)
-        pool_ctrls = []
-        for ctrl in pool_ctrls_dict:
-            if ElementType.ZeroDExpChannel in ctrl.get_ctrl_types():
-                pool_ctrls.append(ctrl)
+        self._nb_states_per_value = nb_states_per_value
+        if self._nb_states_per_value is None:
+            self._nb_states_per_value = pool.acq_loop_states_per_value
 
-        # Determine which channels are active
-        self._channels = channels = {}
-        for pool_ctrl in pool_ctrls:
-            ctrl = pool_ctrl.ctrl
-            pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-            elements = pool_ctrl_data['channels']
-
-            for element, element_info in elements.items():
-                channel = Channel(element, info=element_info)
-                channels[element] = channel
+        # channels that are acquired (only enabled)
+        self._channels = []
 
         with ActionContext(self):
             # set the state of all elements to  and inform their listeners
-            for channel in channels:
-                channel.clear_buffer()
-                channel.set_state(State.Moving, propagate=2)
+
+            for conf_ctrl in conf_ctrls:
+                for conf_channel in conf_ctrl.get_channels(enabled=True):
+                    conf_channel.clear_buffer()
+                    conf_channel.set_state(State.Moving, propagate=2)
+                    self._channels.append(conf_channel)
 
     def in_acquisition(self, states):
         """Determines if we are in acquisition or if the acquisition has ended
@@ -848,7 +834,8 @@ class Pool0DAcquisition(PoolAction):
 
     def action_loop(self):
         states, values = {}, {}
-        for element in self._channels:
+        for conf_channel in self._channels:
+            element = conf_channel.element
             states[element] = None
             values[element] = None
 
