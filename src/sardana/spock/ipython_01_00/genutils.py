@@ -790,7 +790,8 @@ def create_spock_profile(userdir, profile, door_name=None):
 
     try:
         _create_config_file(ipy_profile_dir)
-    except Exception:
+    # catch BaseException in order to catch also KeyboardInterrupt
+    except BaseException:
         import shutil
         try:
             shutil.rmtree(ipy_profile_dir)
