@@ -23,7 +23,6 @@
 ##
 ##############################################################################
 import time
-import datetime
 import numpy
 import threading
 
@@ -33,17 +32,13 @@ from taurus.test import insertTest
 from sardana.pool import AcqSynch
 from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.pool.poolsynchronization import PoolSynchronization
-from sardana.pool.poolacquisition import (PoolAcquisitionHardware,
-                                          PoolAcquisitionSoftware,
-                                          PoolCTAcquisition)
-from sardana.pool.poolmeasurementgroup import ControllerConfiguration
-from sardana.sardanautils import is_non_str_seq
+from sardana.pool.poolacquisition import PoolAcquisitionHardware, \
+    PoolAcquisitionSoftware
 from sardana.sardanathreadpool import get_thread_pool
-from sardana.pool.test import (createControllerConfiguration,
-                               createTimerableControllerConfiguration,
-                               createPoolSynchronizationConfiguration,
-                               createCTAcquisitionConfiguration,
-                               BasePoolTestCase, FakeElement)
+from sardana.pool.test import createControllerConfiguration, \
+    createTimerableControllerConfiguration, \
+    createPoolSynchronizationConfiguration, \
+    createCTAcquisitionConfiguration, BasePoolTestCase, FakeElement
 
 
 class AttributeListener(object):
