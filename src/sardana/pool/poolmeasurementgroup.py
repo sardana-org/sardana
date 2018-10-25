@@ -592,15 +592,16 @@ class PoolMeasurementGroup(PoolGroupElement):
 
         kwargs['elem_type'] = ElementType.MeasurementGroup
         PoolGroupElement.__init__(self, **kwargs)
-        configuration = kwargs.get("configuration")
-        self.set_configuration(configuration)
-        # if the configuration was never "really" written e.g. newly created MG
-        # just sets it now so the _channe_to_acq_synch and ctrl_to_acq_synch
-        # are properly populated
-        # TODO: make it more elegant
-        if configuration is None:
-            configuration = self.configuration.configuration
-            self.set_configuration(configuration, propagate=0, to_fqdn=False)
+        # TODO: Check if it needed
+        # configuration = kwargs.get("configuration")
+        # self.set_configuration(configuration)
+        # # if the configuration was never "really" written e.g. newly created MG
+        # # just sets it now so the _channe_to_acq_synch and ctrl_to_acq_synch
+        # # are properly populated
+        # # TODO: make it more elegant
+        # if configuration is None:
+        #     configuration = self.configuration.configuration
+        #     self.set_configuration(configuration, propagate=0, to_fqdn=False)
 
     def _create_action_cache(self):
         acq_name = "%s.Acquisition" % self._name
@@ -659,6 +660,7 @@ class PoolMeasurementGroup(PoolGroupElement):
     def configuration(self):
         return self._config
 
+    # TODO: Check if it needed
     def set_configuration(self, config=None, propagate=1, to_fqdn=True):
         self._config._use_fqdn = to_fqdn
         self._config.configuration = config
@@ -673,7 +675,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         if not propagate:
             return
         self.fire_event(EventType("configuration", priority=propagate),
-                        self._config.configuration)
+                        self._config.get_configuration_for_user())
 
     def get_user_configuration(self):
         return self._config.get_configuration_for_user()
@@ -682,9 +684,9 @@ class PoolMeasurementGroup(PoolGroupElement):
         """Loads the current configuration to all involved controllers"""
 
         # g_timer, g_monitor = cfg['timer'], cfg['monitor']
-        for ctrl in self._config.enabled_ctrls:
-            if isinstance(ctrl, str):  # skip external channels
-                continue
+
+        for ctrl_item in self._config.get_timerable_ctrls(enabled=True):
+            ctrl = ctrl_item.element
             if not ctrl.is_online():
                 continue
 
@@ -693,25 +695,23 @@ class PoolMeasurementGroup(PoolGroupElement):
             if ctrl.operator == self and not force and not self._config_dirty:
                 continue
             ctrl.operator = self
-            if ctrl.is_timerable():
-                # TODO: Implement API to extract controller data
-                ctrl_data = self._config.configuration['controllers'][ctrl]
-                # if ctrl == g_timer.controller:
-                #    ctrl.set_ctrl_par('timer', g_timer.axis)
-                # if ctrl == g_monitor.controller:
-                #    ctrl.set_ctrl_par('monitor', g_monitor.axis)
-                ctrl.set_ctrl_par('timer', ctrl_data['timer'].axis)
-                ctrl.set_ctrl_par('monitor', ctrl_data['monitor'].axis)
-                synchronization = self._config.ctrl_to_acq_synch.get(ctrl)
-                self.debug('load_configuration: setting trigger_type: %s '
-                           'to ctrl: %s' % (synchronization, ctrl))
-                ctrl.set_ctrl_par('synchronization', synchronization)
+            # ctrl_data = self._config.configuration['controllers'][ctrl]
+            # # if ctrl == g_timer.controller:
+            # #    ctrl.set_ctrl_par('timer', g_timer.axis)
+            # # if ctrl == g_monitor.controller:
+            # #    ctrl.set_ctrl_par('monitor', g_monitor.axis)
+            ctrl.set_ctrl_par('timer', ctrl_item.timer.axis)
+            ctrl.set_ctrl_par('monitor', ctrl_item.monitor.axis)
+            synchronization = self._config.get_acq_synch_by_controller(ctrl)
+            self.debug('load_configuration: setting trigger_type: %s '
+                       'to ctrl: %s' % (synchronization, ctrl))
+            ctrl.set_ctrl_par('synchronization', synchronization)
 
         self._config_dirty = False
 
     def get_timer(self):
         # TODO: Adapt to the new future MeasurementConfiguration API
-        return self._config.configuration['timer']
+        return self._config._master_timer
 
     timer = property(get_timer)
 
@@ -877,10 +877,21 @@ class PoolMeasurementGroup(PoolGroupElement):
     def prepare(self):
         # load configuration into controller(s) if necessary
         self.load_configuration()
-        config = self.configuration
+        ctrls = self.configuration.get_timerable_ctrls(enabled=True)
+        ctrl_lodeable = {}
+        for ctrl in ctrls:
+            if self.acquisition_mode == AcqMode.Timer:
+                lodeable = ctrl.timer
+            elif self.acquisition_mode == AcqMode.Monitor:
+                lodeable = ctrl.monitor
+            else:
+                continue
+            ctrl_lodeable[ctrl] = lodeable
+
         nr_of_starts = self.nr_of_starts
         self._pending_starts = nr_of_starts
-        self.acquisition.prepare(config, nr_of_starts)
+
+        self.acquisition.prepare(ctrl_lodeable, nr_of_starts)
 
     def start_acquisition(self, value=None, multiple=1):
         if self._pending_starts == 0:
@@ -898,17 +909,33 @@ class PoolMeasurementGroup(PoolGroupElement):
         self._pending_starts -= 1
         if not self._simulation_mode:
             # determining the acquisition parameters
-            kwargs = dict(head=self, config=self._config, multiple=multiple)
-            acquisition_mode = self.acquisition_mode
-            if acquisition_mode is AcqMode.Timer:
-                kwargs['integ_time'] = self.get_integration_time()
-            elif acquisition_mode is AcqMode.Monitor:
-                kwargs['monitor'] = self._monitor
-            kwargs['synchronization'] = self._synchronization
-            kwargs['moveable'] = self._moveable_obj
-            kwargs['sw_synch_initial_domain'] = self._sw_synch_initial_domain
-            # start acquisition
-            self.acquisition.run(**kwargs)
+            if self._acquisition_mode is AcqMode.Timer:
+                value = self.get_integration_time()
+            elif self.acquisition_mode is AcqMode.Monitor:
+                value = self._monitor_count
+
+            self.acquisition.run(
+                head=self,
+                config=self._config,
+                multiple=multiple,
+                acq_mode=self.acquisition_mode,
+                value=value,
+                synchronization=self._synchronization,
+                moveable=self._moveable_obj,
+                sw_synch_initial_domain=self.sw_synch_initial_domain)
+
+            #
+            # kwargs = dict(head=self, config=self._config, multiple=multiple)
+            # acquisition_mode = self.acquisition_mode
+            # if acquisition_mode is AcqMode.Timer:
+            #     kwargs['integ_time'] = self.get_integration_time()
+            # elif acquisition_mode is AcqMode.Monitor:
+            #     kwargs['monitor'] = self._monitor
+            # kwargs['synchronization'] = self._synchronization
+            # kwargs['moveable'] = self._moveable_obj
+            # kwargs['sw_synch_initial_domain'] = self._sw_synch_initial_domain
+            # # start acquisition
+            # self.acquisition.run(**kwargs)
 
     def set_acquisition(self, acq_cache):
         self.set_action_cache(acq_cache)

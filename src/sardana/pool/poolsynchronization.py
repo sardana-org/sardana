@@ -141,37 +141,32 @@ class PoolSynchronization(PoolAction):
           synchronizer, can be either SynchDomain.Time or SynchDomain.Position
         '''
 
-        cfg = self.main_element.configuration
-        synchronization = kwargs.get('synchronization')
-        moveable = kwargs.get('moveable')
-        sw_synch_initial_domain = kwargs.get('sw_synch_initial_domain', None)
-        ctrls_config = cfg.ctrl_tg_sync
-        pool_ctrls = ctrls_config.keys()
-
-        # Prepare a dictionary with the involved channels
-        self._channels = channels = {}
-        for pool_ctrl in pool_ctrls:
-            pool_ctrl_data = ctrls_config[pool_ctrl]
-            elements = pool_ctrl_data['channels']
-
-            for element, element_info in elements.items():
-                channel = TGChannel(element, info=element_info)
-                channels[element] = channel
+        # cfg = self.main_element.configuration
+        # ctrls_config = cfg.ctrl_tg_sync
+        # pool_ctrls = ctrls_config.keys()
+        #
+        # # Prepare a dictionary with the involved channels
+        # self._channels = channels = {}
+        # for pool_ctrl in pool_ctrls:
+        #     pool_ctrl_data = ctrls_config[pool_ctrl]
+        #     elements = pool_ctrl_data['channels']
+        #
+        #     for element, element_info in elements.items():
+        #         channel = TGChannel(element, info=element_info)
+        #         channels[element] = channel
 
         with ActionContext(self):
 
             # loads synchronization description
-            for pool_ctrl in pool_ctrls:
-                ctrl = pool_ctrl.ctrl
-                pool_ctrl_data = ctrls_config[pool_ctrl]
+            for conf_ctrl in conf_ctrls:
+                ctrl = conf_ctrl.ctrl
                 ctrl.PreSynchAll()
-                elements = pool_ctrl_data['channels']
-                for element in elements:
-                    axis = element.axis
+                for conf_channel in conf_ctrl.get_channels(enabled=True):
+                    axis = conf_channel.axis
                     ret = ctrl.PreSynchOne(axis, synchronization)
                     if not ret:
                         msg = ("%s.PreSynchOne(%d) returns False" %
-                               (pool_ctrl.name, axis))
+                               (conf_ctrl.name, axis))
                         raise Exception(msg)
                     ctrl.SynchOne(axis, synchronization)
                 ctrl.SynchAll()
@@ -206,30 +201,30 @@ class PoolSynchronization(PoolAction):
                 get_thread_pool().add(self._synch_soft.run)
 
             # PreStartAll on all controllers
-            for pool_ctrl in pool_ctrls:
-                pool_ctrl.ctrl.PreStartAll()
+            for conf_ctrl in conf_ctrls:
+                conf_ctrl.ctrl.PreStartAll()
 
             # PreStartOne & StartOne on all elements
-            for pool_ctrl in pool_ctrls:
-                ctrl = pool_ctrl.ctrl
-                pool_ctrl_data = ctrls_config[pool_ctrl]
-                elements = pool_ctrl_data['channels']
-                for element in elements:
-                    axis = element.axis
-                    channel = channels[element]
+            for conf_ctrl in conf_ctrls:
+                ctrl = conf_ctrl.ctrl
+                for conf_channel in conf_ctrl.get_channels(enabled=True):
+                    axis = conf_channel.axis
                     ret = ctrl.PreStartOne(axis)
                     if not ret:
                         raise Exception("%s.PreStartOne(%d) returns False"
-                                        % (pool_ctrl.name, axis))
+                                        % (ctrl.name, axis))
                     ctrl.StartOne(axis)
 
             # set the state of all elements to inform their listeners
-            for channel in channels:
-                channel.set_state(State.Moving, propagate=2)
+            self._channels = []
+            for conf_ctrl in conf_ctrls:
+                for conf_channel in conf_ctrl.get_channels(enabled=True):
+                    conf_channel.set_state(State.Moving, propagate=2)
+                    self._channels.append(conf_channel)
 
             # StartAll on all controllers
-            for pool_ctrl in pool_ctrls:
-                pool_ctrl.ctrl.StartAll()
+            for conf_ctrl in conf_ctrls:
+                conf_ctrl.ctrl.StartAll()
 
     def is_triggering(self, states):
         """Determines if we are triggering or if the triggering has ended
@@ -254,7 +249,8 @@ class PoolSynchronization(PoolAction):
         '''action_loop method
         '''
         states = {}
-        for element in self._channels:
+        for conf_channel in self._channels:
+            element = conf_channel.element
             states[element] = None
 
         # Triggering loop
