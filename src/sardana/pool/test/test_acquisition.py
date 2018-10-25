@@ -26,14 +26,14 @@ import time
 import numpy
 import threading
 
-from taurus.external import unittest
+from taurus.external.unittest import TestCase
 from taurus.test import insertTest
 
 from sardana.pool import AcqSynch
 from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.pool.poolsynchronization import PoolSynchronization
 from sardana.pool.poolacquisition import PoolAcquisitionHardware, \
-    PoolAcquisitionSoftware
+    PoolAcquisitionSoftware, PoolAcquisitionSoftwareStart
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool.test import createControllerConfiguration, \
     createTimerableControllerConfiguration, BasePoolTestCase, FakeElement
@@ -146,7 +146,7 @@ class AcquisitionTestCase(BasePoolTestCase):
 @insertTest(helper_name='continuous_acquisition', offset=0,
             active_interval=0.001, passive_interval=0.1, repetitions=10,
             integ_time=0.01)
-class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
+class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
     """Integration test of PoolSynchronization, PoolAcquisitionHardware and
     PoolAcquisitionSoftware actions. This test plays the role of the
     PoolAcquisition macro action (it aggregates the sub-actions and assign the
@@ -158,7 +158,7 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         """Create a Controller, TriggerGate and PoolSynchronization objects from
         dummy configurations.
         """
-        unittest.TestCase.setUp(self)
+        TestCase.setUp(self)
         AcquisitionTestCase.setUp(self)
 
     def event_received(self, *args, **kwargs):
@@ -246,4 +246,74 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
 
     def tearDown(self):
         AcquisitionTestCase.tearDown(self)
-        unittest.TestCase.tearDown(self)
+        TestCase.tearDown(self)
+
+
+@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
+            latency_time=0.02)
+class AcquisitionSoftwareStartTestCase(AcquisitionTestCase, TestCase):
+
+    def setUp(self):
+        """Create a Controller, TriggerGate and PoolSynchronization objects from
+        dummy configurations.
+        """
+        TestCase.setUp(self)
+        AcquisitionTestCase.setUp(self)
+
+    def event_received(self, *args, **kwargs):
+        """Execute software start acquisition."""
+        _, type_, value = args
+        name = type_.name
+        if name != "start":
+            return
+        args = self.acq_args
+        kwargs = self.acq_kwargs
+        kwargs['idx'] = value
+        get_thread_pool().add(self.acquisition.run, None, *args, **kwargs)
+
+    def acquire(self, integ_time, repetitions, latency_time):
+        # obtain elements/controllers involved in the test
+        tg_1_1 = self.tgs['_test_tg_1_1']
+        tg_ctrl_1 = tg_1_1.get_controller()
+        ct_1_1 = self.cts['_test_ct_1_1']
+        ct_ctrl_1 = ct_1_1.get_controller()
+        ct_ctrl_1.set_ctrl_par("synchronization", AcqSynch.SoftwareStart)
+
+        self.channel_names.append('_test_ct_1_1')
+
+        conf_ct_ctrl_1 = createTimerableControllerConfiguration(ct_ctrl_1,
+                                                                [ct_1_1])
+        conf_ct_1_1 = conf_ct_ctrl_1.timer
+        conf_tg_ctrl_1 = createControllerConfiguration(tg_ctrl_1, [tg_1_1])
+        # creating synchronization action
+        self.synchronization = self.create_action(PoolSynchronization,
+                                                  [tg_1_1])
+        self.synchronization.add_listener(self)
+        # add_listeners
+        self.add_listeners([ct_1_1])
+        # creating acquisition actions
+        self.acquisition = self.create_action(PoolAcquisitionSoftwareStart,
+                                              [ct_1_1])
+        self.acq_args = ([conf_ct_ctrl_1], integ_time)
+        self.acq_kwargs = {"master": conf_ct_1_1}
+
+        total_interval = integ_time + latency_time
+        group = {
+            SynchParam.Delay: {SynchDomain.Time: 0},
+            SynchParam.Active: {SynchDomain.Time: integ_time},
+            SynchParam.Total: {SynchDomain.Time: total_interval},
+            SynchParam.Repeats: repetitions
+        }
+        synchronization = [group]
+        # get the current number of jobs
+        jobs_before = get_thread_pool().qsize
+        self.synchronization.run([conf_tg_ctrl_1], synchronization)
+        # waiting for acquisition and synchronization to finish
+        while (self.acquisition.is_running()
+               or self.synchronization.is_running()):
+            time.sleep(.1)
+        self.do_asserts(self.channel_names, repetitions, jobs_before)
+
+    def tearDown(self):
+        AcquisitionTestCase.tearDown(self)
+        TestCase.tearDown(self)
