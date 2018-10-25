@@ -720,7 +720,7 @@ class PoolMeasurementGroup(PoolGroupElement):
     # -------------------------------------------------------------------------
 
     def get_integration_time(self):
-        integration_time = self._synchronization.integration_time
+        integration_time = self._synchronization.active_time
         if type(integration_time) == float:
             return integration_time
         elif len(integration_time) == 0:

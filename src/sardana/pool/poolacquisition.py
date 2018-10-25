@@ -184,7 +184,7 @@ class PoolAcquisition(PoolAction):
                 pseudo_elem.clear_value_buffer()
 
         if acq_mode is AcqMode.Timer:
-            value = synchronization.integration_time
+            value = synchronization.active_time
         repetitions = synchronization.repetitions
         latency_time = 0
 

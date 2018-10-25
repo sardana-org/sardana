@@ -76,12 +76,16 @@ class SynchronizationDescription(list):
         return repetitions
 
     @property
-    def integration_time(self):
+    def active_time(self):
         return self._get_param(SynchParam.Active)
 
     @property
     def total_time(self):
         return self._get_param(SynchParam.Total)
+
+    @property
+    def passive_time(self):
+        return self.total_time - self.active_time
 
     def _get_param(self, param, domain=SynchDomain.Time):
         """
