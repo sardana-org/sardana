@@ -340,8 +340,8 @@ config_12 = [[('_test_ct_1_1', 'software', AcqSynchType.Trigger),
 
 doc_13 = 'Test acquisition of zerod using software gate.'
 config_13 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger), ],
-             [('_test_ct_2_1', 'software', AcqSynchType.Trigger), ],
-             [('_test_0d_1_1', 'software', AcqSynchType.Gate), ]]
+             [('_test_ct_2_1', 'software', AcqSynchType.Trigger), ],]
+             # [('_test_0d_1_1', 'software', AcqSynchType.Gate), ]]
 
 
 @insertTest(helper_name='meas_contpos_acquisition', test_method_doc=doc_12,

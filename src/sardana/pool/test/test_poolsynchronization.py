@@ -75,10 +75,8 @@ class PoolTriggerGateTestCase(unittest.TestCase):
     def test_tggeneration(self):
         """Verify trigger element states before and after action_loop."""
         from mock import call
-        args = ()
-        kwargs = {'config': self.cfg}
         # starting action
-        self.tgaction.start_action(*args, **kwargs)
+        self.tgaction.start_action(conf_ctrls)
         # verifying that the action correctly started the involved controller
         self.mock_tg_ctrl.assert_has_calls([call.PreStartAll(),
                                             (call.PreStartOne(1,)),

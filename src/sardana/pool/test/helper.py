@@ -27,6 +27,8 @@ __all__ = ['createPoolController', 'createPoolCounterTimer',
            'createPoolZeroDExpChannel', 'createPoolTriggerGate',
            'createPoolMotor', 'createPoolPseudoCounter',
            'createPoolPseudoMotor', 'createPoolMeasurementGroup',
+           'createControllerConfiguration',
+           'createTimerableControllerConfiguration',
            'createPoolSynchronizationConfiguration',
            'createCTAcquisitionConfiguration', 'createMGConfiguration',
            'createElemConf', 'createCtrlConf', 'createConfbyCtrlKlass',
@@ -42,7 +44,7 @@ from sardana.pool.poolmotor import PoolMotor
 from sardana.pool.poolpseudocounter import PoolPseudoCounter
 from sardana.pool.poolpseudomotor import PoolPseudoMotor
 from sardana.pool.poolmeasurementgroup import PoolMeasurementGroup, \
-    MeasurementConfiguration
+    MeasurementConfiguration, ControllerConfiguration, ChannelConfiguration
 
 
 def createPoolController(pool, conf):
@@ -149,6 +151,23 @@ def createPoolMeasurementGroup(pool, conf):
         kwargs['id'] = pool.get_free_id()
     kwargs['pool'] = pool
     return PoolMeasurementGroup(**kwargs)
+
+
+def createControllerConfiguration(pool_ctrl, pool_channels):
+    conf_ctrl = ControllerConfiguration(pool_ctrl)
+    for pool_channel in pool_channels:
+        channel = ChannelConfiguration(pool_channel)
+        channel.controller = conf_ctrl
+        conf_ctrl.add_channel(channel)
+    return conf_ctrl
+
+
+def createTimerableControllerConfiguration(pool_ctrl, pool_channels):
+    conf_ctrl = createControllerConfiguration(pool_ctrl, pool_channels)
+    channel = conf_ctrl.get_channels(enabled=True)[0]
+    conf_ctrl.timer = channel
+    conf_ctrl.monitor = channel
+    return conf_ctrl
 
 
 def createPoolSynchronizationConfiguration(ctrls, ctrl_channels):

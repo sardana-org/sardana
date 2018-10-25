@@ -36,9 +36,12 @@ from sardana.pool.poolsynchronization import PoolSynchronization
 from sardana.pool.poolacquisition import (PoolAcquisitionHardware,
                                           PoolAcquisitionSoftware,
                                           PoolCTAcquisition)
+from sardana.pool.poolmeasurementgroup import ControllerConfiguration
 from sardana.sardanautils import is_non_str_seq
 from sardana.sardanathreadpool import get_thread_pool
-from sardana.pool.test import (createPoolSynchronizationConfiguration,
+from sardana.pool.test import (createControllerConfiguration,
+                               createTimerableControllerConfiguration,
+                               createPoolSynchronizationConfiguration,
                                createCTAcquisitionConfiguration,
                                BasePoolTestCase, FakeElement)
 
@@ -295,8 +298,8 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         according the test parameters. Checks the lengths of the acquired data.
         """
         # obtaining elements created in the BasePoolTestCase.setUp
-        tg_2_1 = self.tgs['_test_tg_1_1']
-        tg_ctrl_2 = tg_2_1.get_controller()
+        tg_1_1 = self.tgs['_test_tg_1_1']
+        tg_ctrl_1 = tg_1_1.get_controller()
         ct_1_1 = self.cts['_test_ct_1_1']  # hw synchronized
         ct_2_1 = self.cts['_test_ct_2_1']  # sw synchronized
         ct_ctrl_1 = ct_1_1.get_controller()
@@ -304,15 +307,18 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         self.channel_names.append('_test_ct_1_1')
         self.channel_names.append('_test_ct_2_1')
 
-        ct_ctrl_1.channels = [ct_1_1]
-        ct_ctrl_1.master = ct_1_1
-        ct_ctrl_2.channels = [ct_2_1]
-        ct_ctrl_2.master = ct_2_1
+        conf_ct_ctrl_1 = createTimerableControllerConfiguration(ct_ctrl_1,
+                                                                [ct_1_1])
+        conf_ct_ctrl_2 = createTimerableControllerConfiguration(ct_ctrl_2,
+                                                                [ct_2_1])
+        conf_ct_2_1 = conf_ct_ctrl_2.timer
+        conf_tg_ctrl_1 = createControllerConfiguration(tg_ctrl_1, [tg_1_1])
+
         # crating configuration for TGGeneration
-        tg_cfg = createPoolSynchronizationConfiguration((tg_ctrl_2,),
-                                                        ((tg_2_1,),))
+        tg_cfg = createPoolSynchronizationConfiguration((tg_ctrl_1,),
+                                                        ((tg_1_1,),))
         # creating TGGeneration action
-        self.createPoolSynchronization([tg_2_1], tg_config=tg_cfg)
+        self.createPoolSynchronization([tg_1_1], tg_config=tg_cfg)
         # add_listeners
         self.addListeners([ct_1_1, ct_2_1])
         # creating acquisition actions
@@ -335,22 +341,19 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         # get the current number of jobs
         jobs_before = get_thread_pool().qsize
 
-        self.sw_acq_args = ([ct_ctrl_2], integ_time)
-        self.sw_acq_kwargs = {"master": ct_2_1}
+        self.sw_acq_args = ([conf_ct_ctrl_2], integ_time)
+        self.sw_acq_kwargs = {"master": conf_ct_2_1}
         ct_ctrl_1.set_ctrl_par('synchronization', AcqSynch.HardwareTrigger)
-        hw_acq_args = ([ct_ctrl_1], integ_time, repetitions)
+        hw_acq_args = ([conf_ct_ctrl_1], integ_time, repetitions)
         self.hw_acq.run(*hw_acq_args)
-        tg_args = ()
+        
         total_interval = active_interval + passive_interval
         synchronization = [{SynchParam.Delay: {SynchDomain.Time: offset},
                             SynchParam.Active: {SynchDomain.Time: active_interval},
                             SynchParam.Total: {SynchDomain.Time: total_interval},
                             SynchParam.Repeats: repetitions}]
-        tg_kwargs = {
-            'config': tg_cfg,
-            'synchronization': synchronization
-        }
-        self.tggeneration.run(*tg_args, **tg_kwargs)
+        tg_args = ([conf_tg_ctrl_1], synchronization)
+        self.tggeneration.run(*tg_args)
         # waiting for acquisition and tggeneration to finish
         while (self.hw_acq.is_running() or
                self.sw_acq.is_running() or
