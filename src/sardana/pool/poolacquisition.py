@@ -687,6 +687,73 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
                 acquirable.set_state_info(state_info, propagate=2)
 
 
+class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
+    """Acquisition action for controllers synchronized by software start
+
+    .. note::
+        The PoolAcquisitionSoftwareStart class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the module) may occur if
+        deemed necessary by the core developers.
+    """
+
+    def __init__(self, main_element, name="AcquisitionSoftwareStart"):
+        PoolAcquisitionBase.__init__(self, main_element, name)
+
+    @DebugIt()
+    def action_loop(self):
+        i = 0
+
+        states, values = {}, {}
+        for channel in self._channels:
+            element = channel.element
+            states[element] = None
+            values[element] = None
+
+        nap = self._acq_sleep_time
+        nb_states_per_value = self._nb_states_per_value
+
+        while True:
+            self.read_state_info(ret=states)
+            if not self.in_acquisition(states):
+                break
+
+            # read value every n times
+            if not i % nb_states_per_value:
+                self.read_value_loop(ret=values)
+                for acquirable, value in values.items():
+                    if is_value_error(value):
+                        self.error("Loop read value error for %s" %
+                                   acquirable.name)
+                        acquirable.put_value(value)
+                    else:
+                        acquirable.extend_value_buffer(value)
+
+            time.sleep(nap)
+            i += 1
+
+        with ActionContext(self):
+            self.raw_read_state_info(ret=states)
+            self.raw_read_value_loop(ret=values)
+
+        for acquirable, state_info in states.items():
+            # first update the element state so that value calculation
+            # that is done after takes the updated state into account
+            acquirable.set_state_info(state_info, propagate=0)
+            if acquirable in values:
+                value = values[acquirable]
+                if is_value_error(value):
+                    self.error("Loop final read value error for: %s" %
+                               acquirable.name)
+                    acquirable.put_value(value)
+                else:
+                    acquirable.extend_value_buffer(value, propagate=2)
+            with acquirable:
+                acquirable.clear_operation()
+                state_info = acquirable._from_ctrl_state_info(state_info)
+                acquirable.set_state_info(state_info, propagate=2)
+
+
 class PoolCTAcquisition(PoolAcquisitionBase):
 
     def __init__(self, main_element, name="CTAcquisition", slaves=None):
