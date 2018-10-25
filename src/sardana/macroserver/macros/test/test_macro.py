@@ -1,7 +1,10 @@
-from sardana.tango.macroserver.test import BaseMacroServerTestCase
-from sardana.macroserver.macros.test import RunMacroTestCase, testRun
-from taurus.external import unittest
 import os
+
+from taurus.external import unittest
+
+from sardana.macroserver.macros.test import RunMacroTestCase, testRun
+from sardana.tango.macroserver.test import BaseMacroServerTestCase
+
 
 @testRun(macro_name="runMacro")
 @testRun(macro_name="createMacro")
@@ -10,16 +13,14 @@ class MacroTest(BaseMacroServerTestCase, RunMacroTestCase, unittest.TestCase):
 
     def setUp(self):
         macros_test_path = '../../test/res/macros'
-        path = os.path.abspath(os.path.join(os.path.dirname( __file__ ),
-                                           macros_test_path))
+        source = os.path.join(os.path.dirname(__file__), macros_test_path)
+        path = os.path.abspath(source)
         environment = {'MacroPath': [path]}
         unittest.TestCase.setUp(self)
         BaseMacroServerTestCase.setUp(self, properties=environment)
         RunMacroTestCase.setUp(self)
 
-
     def tearDown(self):
         BaseMacroServerTestCase.tearDown(self)
         RunMacroTestCase.tearDown(self)
         unittest.TestCase.tearDown(self)
-
