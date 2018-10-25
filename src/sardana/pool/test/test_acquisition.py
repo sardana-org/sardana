@@ -294,7 +294,7 @@ class AcquisitionSoftwareStartTestCase(AcquisitionTestCase, TestCase):
         # creating acquisition actions
         self.acquisition = self.create_action(PoolAcquisitionSoftwareStart,
                                               [ct_1_1])
-        self.acq_args = ([conf_ct_ctrl_1], integ_time)
+        self.acq_args = ([conf_ct_ctrl_1], integ_time, repetitions)
         self.acq_kwargs = {"master": conf_ct_1_1}
 
         total_interval = integ_time + latency_time
