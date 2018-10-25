@@ -36,9 +36,7 @@ from sardana.pool.poolacquisition import PoolAcquisitionHardware, \
     PoolAcquisitionSoftware
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool.test import createControllerConfiguration, \
-    createTimerableControllerConfiguration, \
-    createPoolSynchronizationConfiguration, \
-    createCTAcquisitionConfiguration, BasePoolTestCase, FakeElement
+    createTimerableControllerConfiguration, BasePoolTestCase, FakeElement
 
 
 class AttributeListener(object):
@@ -90,132 +88,25 @@ class AttributeListener(object):
 class AcquisitionTestCase(BasePoolTestCase):
 
     def setUp(self):
-        """Create a Controller, TriggerGate and PoolSynchronization objects from
-        dummy configurations.
-        """
+        """Create dummy controllers and elements."""
         BasePoolTestCase.setUp(self)
-        self.l = AttributeListener()
+        self.data_listener = AttributeListener()
         self.channel_names = []
-
-    def createPoolSynchronization(self, tg_list, tg_config=None):
         self.main_element = FakeElement(self.pool)
-        # TODO: The TriggerGate should have a configuration
-        self.main_element.configuration = tg_config
-        self.tggeneration = PoolSynchronization(self.main_element)
-        for tg in tg_list:
-            self.tggeneration.add_element(tg)
-        self.tggeneration.add_listener(self)
 
-    def hw_continuous_acquisition(self, offset, active_interval,
-                                  passive_interval, repetitions, integ_time):
-        """Executes measurement running the TGGeneration and Acquisition
-        actions according the test parameters. Checks the lengths of the
-        acquired data.
-        """
-        # obtaining elements created in the BasePoolTestCase.setUp
-        tg = self.tgs[self.tg_elem_name]
-        tg_ctrl = tg.get_controller()
-        # crating configuration for TGGeneration
-        tg_cfg = createPoolSynchronizationConfiguration((tg_ctrl,),
-                                                        ((tg,),))
-        # creating PoolSynchronization action
-        self.createPoolSynchronization([tg], tg_config=tg_cfg)
+    def create_action(self, class_, elements):
+        action = class_(self.main_element)
+        for element in elements:
+            action.add_element(element)
+        return action
 
-        channels = []
-        for name in self.channel_names:
-            channels.append(self.cts[name])
-
-        ct_ctrl = self.ctrls[self.chn_ctrl_name]
-
-        # add_listeners
-        self.addListeners(channels)
-        # creating acquisition configurations
-        self.hw_acq_cfg = createCTAcquisitionConfiguration((ct_ctrl,),
-                                                           (channels,))
-        # creating acquisition actions
-        self.hw_acq = PoolAcquisitionHardware(channels[0])
-        for channel in channels:
-            self.hw_acq.add_element(channel)
-
-        # get the current number of jobs
-        jobs_before = get_thread_pool().qsize
-
-        ct_ctrl.set_ctrl_par('synchronization', AcqSynch.HardwareTrigger)
-
-        hw_acq_args = ()
-        hw_acq_kwargs = {
-            'integ_time': integ_time,
-            'repetitions': repetitions,
-            'config': self.hw_acq_cfg,
-        }
-        self.hw_acq.run(hw_acq_args, **hw_acq_kwargs)
-        tg_args = ()
-        tg_kwargs = {
-            'offset': offset,
-            'active_interval': active_interval,
-            'passive_interval': passive_interval,
-            'repetitions': repetitions,
-            'config': tg_cfg
-        }
-        self.tggeneration.run(*tg_args, **tg_kwargs)
-        # waiting for acquisition and tggeneration to finish
-        while self.hw_acq.is_running() or self.tggeneration.is_running():
-            time.sleep(1)
-
-        self.do_asserts(self.channel_names, repetitions, jobs_before)
-
-    def hw_step_acquisition(self, repetitions, integ_time):
-        """Executes measurement running the TGGeneration and Acquisition
-        actions according the test parameters. Checks the lengths of the
-        acquired data.
-        """
-
-        channels = []
-        for name in self.channel_names:
-            channels.append(self.cts[name])
-
-        ct_ctrl = self.ctrls[self.chn_ctrl_name]
-
-        # creating acquisition configurations
-        self.acq_cfg = createCTAcquisitionConfiguration((ct_ctrl,),
-                                                        (channels,))
-        # creating acquisition actions
-        main_element = FakeElement(self.pool)
-        # TODO: The main_element should have a configuration
-        main_element.configuration = self.acq_cfg
-
-        self.ct_acq = PoolAcquisitionSoftware(main_element)
-        for channel in channels:
-            self.ct_acq.add_element(channel)
-
-        ct_ctrl.set_ctrl_par('synchronization', AcqSynch.SoftwareTrigger)
-
-        ct_acq_args = ()
-        ct_acq_kwargs = {
-            'integ_time': integ_time,
-            'repetitions': repetitions,
-            'config': self.acq_cfg,
-        }
-        self.ct_acq.run(ct_acq_args, **ct_acq_kwargs)
-        # waiting for acquisition
-        while self.ct_acq.is_running():
-            time.sleep(0.02)
-
-        for channel in channels:
-            name = channel.name
-            value = channel.value.value
-            print 'channel: %s = %s' % (name, value)
-            msg = ('Value for channel %s is of type %s, should be <float>' %
-                   (name, type(value)))
-            self.assertIsInstance(value, float, msg)
-
-    def addListeners(self, chn_list):
+    def add_listeners(self, chn_list):
         for chn in chn_list:
-            chn.add_listener(self.l)
+            chn.add_listener(self.data_listener)
 
     def do_asserts(self, channel_names, repetitions, jobs_before):
         # print acquisition records
-        table = self.l.get_table()
+        table = self.data_listener.get_table()
         header = table.dtype.names
         print header
         n_rows = table.shape[0]
@@ -239,8 +130,9 @@ class AcquisitionTestCase(BasePoolTestCase):
 
     def tearDown(self):
         BasePoolTestCase.tearDown(self)
-        self.l = None
+        self.data_listener = None
         self.channel_names = None
+        self.main_element = None
 
 
 @insertTest(helper_name='continuous_acquisition', offset=0, active_interval=0.1,
@@ -298,6 +190,7 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         ct_1_1 = self.cts['_test_ct_1_1']  # hw synchronized
         ct_2_1 = self.cts['_test_ct_2_1']  # sw synchronized
         ct_ctrl_1 = ct_1_1.get_controller()
+        ct_ctrl_1.set_ctrl_par("synchronization", AcqSynch.HardwareTrigger)
         ct_ctrl_2 = ct_2_1.get_controller()
         self.channel_names.append('_test_ct_1_1')
         self.channel_names.append('_test_ct_2_1')
@@ -308,17 +201,15 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
                                                                 [ct_2_1])
         conf_ct_2_1 = conf_ct_ctrl_2.timer
         conf_tg_ctrl_1 = createControllerConfiguration(tg_ctrl_1, [tg_1_1])
-
-        # crating configuration for TGGeneration
-        tg_cfg = createPoolSynchronizationConfiguration((tg_ctrl_1,),
-                                                        ((tg_1_1,),))
-        # creating TGGeneration action
-        self.createPoolSynchronization([tg_1_1], tg_config=tg_cfg)
+        # creating synchronization action
+        self.synchronization = self.create_action(PoolSynchronization,
+                                                  [tg_1_1])
+        self.synchronization.add_listener(self)
         # add_listeners
-        self.addListeners([ct_1_1, ct_2_1])
+        self.add_listeners([ct_1_1, ct_2_1])
         # creating acquisition actions
-        self.hw_acq = PoolAcquisitionHardware(ct_1_1)
-        self.sw_acq = PoolAcquisitionSoftware(ct_2_1)
+        self.hw_acq = self.create_action(PoolAcquisitionHardware, [ct_1_1])
+        self.sw_acq = self.create_action(PoolAcquisitionSoftware, [ct_2_1])
         # Since we deposit the software acquisition action on the PoolThread's
         # queue we can not rely on the action's state - one may still wait
         # in the queue (its state has not changed to running yet) and we would
@@ -330,30 +221,27 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, unittest.TestCase):
         self.sw_acq_busy = threading.Event()
         self.sw_acq.add_finish_hook(self.sw_acq_busy.clear)
 
-        self.hw_acq.add_element(ct_1_1)
-        self.sw_acq.add_element(ct_2_1)
+        self.sw_acq_args = ([conf_ct_ctrl_2], integ_time)
+        self.sw_acq_kwargs = {"master": conf_ct_2_1}
 
         # get the current number of jobs
         jobs_before = get_thread_pool().qsize
-
-        self.sw_acq_args = ([conf_ct_ctrl_2], integ_time)
-        self.sw_acq_kwargs = {"master": conf_ct_2_1}
-        ct_ctrl_1.set_ctrl_par('synchronization', AcqSynch.HardwareTrigger)
-        hw_acq_args = ([conf_ct_ctrl_1], integ_time, repetitions)
-        self.hw_acq.run(*hw_acq_args)
+        self.hw_acq.run([conf_ct_ctrl_1], integ_time, repetitions)
         
         total_interval = active_interval + passive_interval
-        synchronization = [{SynchParam.Delay: {SynchDomain.Time: offset},
-                            SynchParam.Active: {SynchDomain.Time: active_interval},
-                            SynchParam.Total: {SynchDomain.Time: total_interval},
-                            SynchParam.Repeats: repetitions}]
-        tg_args = ([conf_tg_ctrl_1], synchronization)
-        self.tggeneration.run(*tg_args)
-        # waiting for acquisition and tggeneration to finish
+        group = {
+            SynchParam.Delay: {SynchDomain.Time: offset},
+            SynchParam.Active: {SynchDomain.Time: active_interval},
+            SynchParam.Total: {SynchDomain.Time: total_interval},
+            SynchParam.Repeats: repetitions
+        }
+        synchronization = [group]
+        self.synchronization.run([conf_tg_ctrl_1], synchronization)
+        # waiting for acquisition and synchronization to finish
         while (self.hw_acq.is_running() or
                self.sw_acq.is_running() or
-               self.tggeneration.is_running()):
-            time.sleep(1)
+               self.synchronization.is_running()):
+            time.sleep(.1)
         self.do_asserts(self.channel_names, repetitions, jobs_before)
 
     def tearDown(self):
