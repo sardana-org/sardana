@@ -204,7 +204,6 @@ class SynchronizerConfiguration(ConfigurationItem):
         self.enabled = False
 
 
-
 class MeasurementConfiguration(object):
     """
     .. todo: Reject configuration with errors:
@@ -235,10 +234,18 @@ class MeasurementConfiguration(object):
         self._master_timer = None
         self._master_monitor = None
         self._user_confg = {}
-        self._element_acq_synch = {}
+        self._channel_acq_synch = {}
+        self._ctrl_acq_synch = {}
 
-    def get_acq_synch_by_element(self, element):
-        return self._element_acq_synch[element.id]
+    def get_acq_synch_by_channel(self, element):
+        if isinstance(element, ConfigurationItem):
+            element = element.element
+        return self._channel_acq_synch[element]
+
+    def get_acq_synch_by_controller(self, element):
+        if isinstance(element, ConfigurationItem):
+            element = element.element
+        return self._ctrl_acq_synch[element]
 
     def _filter_ctrls(self, ctrls, enabled):
         if enabled is None:
@@ -315,6 +322,8 @@ class MeasurementConfiguration(object):
         master_timer_idx_sw = float("+inf")
         master_monitor_idx_sw = float("+inf")
         user_elem_ids = {}
+        channel_acq_synch = {}
+        ctrl_acq_synch = {}
         user_config = {}
 
         # Update the configuration for user
@@ -404,7 +413,7 @@ class MeasurementConfiguration(object):
                 is_software = synchronizer == 'software'
                 acq_synch = AcqSynch.from_synch_type(is_software,
                                                      synchronization)
-                element_acq_synch[ctrl.id] = acq_synch
+                ctrl_acq_synch[ctrl] = acq_synch
 
             ctrl_enabled = False
             if 'channels' in ctrl_data:
@@ -449,7 +458,7 @@ class MeasurementConfiguration(object):
                     ctrl_enabled = True
 
                 if acq_synch is not None:
-                   element_acq_synch[channel.id] = acq_synch
+                    channel_acq_synch[channel] = acq_synch
 
             # Update syncrhonizer state
             if conf_synch is not None:
@@ -487,7 +496,6 @@ class MeasurementConfiguration(object):
         for conf_synch_ctrl in synch_ctrls:
             conf_synch_ctrl.update_state()
 
-
         # Update internals values
         self._master_monitor = master_monitor
         self._master_timer = master_timer
@@ -499,8 +507,9 @@ class MeasurementConfiguration(object):
         self._other_ctrls = other_ctrls
         self._master_timer_sw = master_timer_sw
         self._master_monitor_sw = master_monitor_sw
-        self._element_acq_synch = element_acq_synch
         self._user_confg = user_config
+        self._channel_acq_synch = channel_acq_synch
+        self._ctrl_acq_synch = ctrl_acq_synch
 
         # sorted ids may not be consecutive (if a channel is disabled)
         indexes = sorted(user_elem_ids.keys())
