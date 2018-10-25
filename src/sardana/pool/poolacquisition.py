@@ -149,15 +149,13 @@ class PoolAcquisition(PoolAction):
                 self.debug('Stopping ZeroD acquisition.')
                 self._0d_acq.stop_action()
 
-    def prepare(self, ctrl_lodeable, nr_of_starts):
+    def prepare(self, ctrl_lodeable, value, repetitions, latency,
+                nr_of_starts):
         """Prepare measurement."""
 
         for ctrl, lodeable in ctrl_lodeable.items():
             axis = lodeable.axis
-            try:
-                ctrl.PrepareOne(axis, nr_of_starts)
-            except Exception:
-                pass
+            ctrl.PrepareOne(axis, value, repetitions, latency, nr_of_starts)
 
     def is_running(self):
         return self._0d_acq.is_running() or\

@@ -877,21 +877,24 @@ class PoolMeasurementGroup(PoolGroupElement):
     def prepare(self):
         # load configuration into controller(s) if necessary
         self.load_configuration()
-        ctrls = self.configuration.get_timerable_ctrls(enabled=True)
+        conf_ctrls = self.configuration.get_timerable_ctrls(enabled=True)
         ctrl_lodeable = {}
-        for ctrl in ctrls:
+        for conf_ctrl in conf_ctrls:
             if self.acquisition_mode == AcqMode.Timer:
-                lodeable = ctrl.timer
+                lodeable = conf_ctrl.timer
             elif self.acquisition_mode == AcqMode.Monitor:
-                lodeable = ctrl.monitor
+                lodeable = conf_ctrl.monitor
             else:
                 continue
-            ctrl_lodeable[ctrl] = lodeable
+            ctrl_lodeable[conf_ctrl] = lodeable
 
-        nr_of_starts = self.nr_of_starts
-        self._pending_starts = nr_of_starts
+        value = self._get_value()
+        repetitions = self.synchronization.repetitions
+        latency = self.synchronization.passive_time
+        self._pending_starts = self.nr_of_starts
 
-        self.acquisition.prepare(ctrl_lodeable, nr_of_starts)
+        self.acquisition.prepare(ctrl_lodeable, value, repetitions,
+                                 latency, self.nr_of_starts)
 
     def start_acquisition(self, value=None, multiple=1):
         if self._pending_starts == 0:
@@ -909,10 +912,7 @@ class PoolMeasurementGroup(PoolGroupElement):
         self._pending_starts -= 1
         if not self._simulation_mode:
             # determining the acquisition parameters
-            if self._acquisition_mode is AcqMode.Timer:
-                value = self.get_integration_time()
-            elif self.acquisition_mode is AcqMode.Monitor:
-                value = self._monitor_count
+            value = self._get_value()
 
             self.acquisition.run(
                 head=self,
@@ -936,6 +936,13 @@ class PoolMeasurementGroup(PoolGroupElement):
             # kwargs['sw_synch_initial_domain'] = self._sw_synch_initial_domain
             # # start acquisition
             # self.acquisition.run(**kwargs)
+
+    def _get_value(self):
+        if self._acquisition_mode is AcqMode.Timer:
+            value = self.get_integration_time()
+        elif self.acquisition_mode is AcqMode.Monitor:
+            value = self._monitor_count
+        return value
 
     def set_acquisition(self, acq_cache):
         self.set_action_cache(acq_cache)

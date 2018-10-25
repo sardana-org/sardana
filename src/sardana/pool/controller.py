@@ -662,7 +662,7 @@ class Preparable(object):
 
     .. note: Do not inherit directly from Preparable."""
 
-    def PrepareOne(self, axis, repetitions):
+    def PrepareOne(self, axis, value, repetitions, latency, nr_of_starts):
         """**Controller API**. Override if necessary.
         Called to load the number of repetitions.
         Default implementation does nothing.
