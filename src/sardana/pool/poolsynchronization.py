@@ -127,7 +127,8 @@ class PoolSynchronization(PoolAction):
     def add_listener(self, listener):
         self._listener = listener
 
-    def start_action(self, *args, **kwargs):
+    def start_action(self, conf_ctrls, synchronization=None, moveable=None,
+                     sw_synch_initial_domain=None, *args, **kwargs):
         '''Start action method. Expects the following kwargs:
 
         - config - dictionary containing measurement group configuration

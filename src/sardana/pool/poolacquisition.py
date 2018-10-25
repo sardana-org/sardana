@@ -39,7 +39,7 @@ from taurus.core.util.enumeration import Enumeration
 
 from sardana import SardanaValue, State, ElementType, TYPE_TIMERABLE_ELEMENTS
 from sardana.sardanathreadpool import get_thread_pool
-from sardana.pool import SynchParam, SynchDomain, AcqSynch
+from sardana.pool import SynchParam, SynchDomain, AcqSynch, AcqMode
 from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
 from sardana.pool.poolsynchronization import PoolSynchronization
 
@@ -121,8 +121,9 @@ class PoolAcquisition(PoolAction):
                     self.debug('Executing software acquisition.')
                     args = ()
                     kwargs = self._sw_acq_config
+                    # TODO: key synch is not used on the code, remove it
                     kwargs['synch'] = True
-                    kwargs['idx'] = value
+                    kwargs['index'] = value
                     self._sw_acq._started = True
                     get_thread_pool().add(self._sw_acq.run, *args, **kwargs)
             if self._0d_config:
@@ -135,8 +136,9 @@ class PoolAcquisition(PoolAction):
                     self.debug('Executing ZeroD acquisition.')
                     args = ()
                     kwargs = self._0d_config
+                    # TODO: key synch is not used on the code, remove it
                     kwargs['synch'] = True
-                    kwargs['idx'] = value
+                    kwargs['index'] = value
                     self._0d_acq._started = True
                     self._0d_acq._stopped = False
                     self._0d_acq._aborted = False
@@ -163,7 +165,9 @@ class PoolAcquisition(PoolAction):
             self._hw_acq.is_running() or\
             self._synch.is_running()
 
-    def run(self, *args, **kwargs):
+    def run(self, head, config, multiple, acq_mode, value, synchronization,
+            moveable, sw_synch_initial_domain=None, *args, **kwargs):
+
         for elem in self.get_elements():
             elem.put_state(None)
             # TODO: temporarily clear value buffers at the beginning of the
@@ -378,14 +382,14 @@ class PoolAcquisitionBase(PoolAction):
                 return True
 
     @DebugIt()
-    def start_action(self, pool_ctrls, value, repetitions=1, latency=0,
+    def start_action(self, conf_ctrls, value, repetitions=1, latency=0,
                      master=None, index=None, acq_sleep_time=None,
                      nb_states_per_value=None, *args,
                      **kwargs):
         """
         Prepares everything for acquisition and starts it
-        :param pool_ctrls: List of enabled controllers
-        :type pool_ctrls: list
+        :param conf_ctrls: List of enabled controllers
+        :type conf_ctrls: list
         :param value: integration time/monitor counts
         :type value: float/int or seq<float/int>
         :param repetitions: repetitions
