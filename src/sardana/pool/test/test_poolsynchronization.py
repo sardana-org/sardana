@@ -28,10 +28,9 @@ from taurus.external import unittest
 
 from sardana.pool.poolsynchronization import PoolSynchronization
 from sardana.sardanadefs import State
-from sardana.pool.test import (FakePool, createPoolController,
-                               createPoolTriggerGate, dummyPoolTGCtrlConf01,
-                               dummyTriggerGateConf01,
-                               createPoolSynchronizationConfiguration)
+from sardana.pool.test import FakePool, createPoolController, \
+    createPoolTriggerGate, dummyPoolTGCtrlConf01, dummyTriggerGateConf01, \
+    createControllerConfiguration
 
 
 class PoolTriggerGateTestCase(unittest.TestCase):
@@ -53,8 +52,11 @@ class PoolTriggerGateTestCase(unittest.TestCase):
         dummy_tg_ctrl.add_element(self.dummy_tg)
         pool.add_element(dummy_tg_ctrl)
         pool.add_element(self.dummy_tg)
-        self.cfg = createPoolSynchronizationConfiguration((dummy_tg_ctrl,),
-                                                          ((self.dummy_tg,),),)
+        conf_ctrl = createControllerConfiguration(dummy_tg_ctrl,
+                                                  [self.dummy_tg])
+        self.conf_ctrls = [conf_ctrl]
+        # self.cfg = createPoolSynchronizationConfiguration((dummy_tg_ctrl,),
+        #                                                   ((self.dummy_tg,),),)
         # Create mock and define its functions
         ctrl_methods = ['PreStartAll', 'StartAll', 'PreStartOne', 'StartOne',
                         'PreStateAll', 'StateAll', 'PreStateOne', 'StateOne',
@@ -63,8 +65,6 @@ class PoolTriggerGateTestCase(unittest.TestCase):
         self.mock_tg_ctrl.StateOne.return_value = (State.Moving, 'triggering')
 
         dummy_tg_ctrl.ctrl = self.mock_tg_ctrl
-        # TODO: The TriggerGate should have a configuration
-        self.dummy_tg.configuration = self.cfg
         self.tgaction = PoolSynchronization(self.dummy_tg)
         self.tgaction.add_element(self.dummy_tg)
 
@@ -76,7 +76,7 @@ class PoolTriggerGateTestCase(unittest.TestCase):
         """Verify trigger element states before and after action_loop."""
         from mock import call
         # starting action
-        self.tgaction.start_action(conf_ctrls)
+        self.tgaction.start_action(self.conf_ctrls)
         # verifying that the action correctly started the involved controller
         self.mock_tg_ctrl.assert_has_calls([call.PreStartAll(),
                                             (call.PreStartOne(1,)),
