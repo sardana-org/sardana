@@ -41,10 +41,9 @@ except ImportError:
     from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 
 from sardana import State, ElementType, \
-    TYPE_EXP_CHANNEL_ELEMENTS, TYPE_TIMERABLE_ELEMENTS
+    TYPE_EXP_CHANNEL_ELEMENTS
 from sardana.sardanaevent import EventType
-from sardana.pool.pooldefs import (AcqMode, AcqSynchType, SynchParam, AcqSynch,
-                                   SynchDomain)
+from sardana.pool.pooldefs import AcqMode, SynchParam, AcqSynch, SynchDomain
 from sardana.pool.poolgroupelement import PoolGroupElement
 from sardana.pool.poolacquisition import PoolAcquisition
 from sardana.pool.poolsynchronization import SynchronizationDescription

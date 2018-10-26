@@ -39,7 +39,7 @@ from taurus.core.util.enumeration import Enumeration
 
 from sardana import SardanaValue, State, ElementType, TYPE_TIMERABLE_ELEMENTS
 from sardana.sardanathreadpool import get_thread_pool
-from sardana.pool import SynchParam, SynchDomain, AcqSynch, AcqMode
+from sardana.pool import AcqSynch, AcqMode
 from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
 from sardana.pool.poolsynchronization import PoolSynchronization
 
