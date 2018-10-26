@@ -321,6 +321,8 @@ class MeasurementConfiguration(object):
         master_monitor = None
         master_timer_idx_sw = float("+inf")
         master_monitor_idx_sw = float("+inf")
+        master_timer_idx_sw_start = float("+inf")
+        master_monitor_idx_sw_start = float("+inf")
         user_elem_ids = {}
         channel_acq_synch = {}
         ctrl_acq_synch = {}
@@ -480,13 +482,21 @@ class MeasurementConfiguration(object):
                 timerable_ctrls[acq_synch].append(ctrl_item)
                 # Find master timer/monitor the system take the channel with
                 # less index
-                if ctrl_item.synchronizer == 'software':
+                if acq_synch in (AcqSynch.SoftwareTrigger,
+                                 AcqSynch.SoftwareGate):
                     if ctrl_item.timer.index < master_timer_idx_sw:
                         master_timer_sw = ctrl_item.timer
                         master_timer_idx_sw = ctrl_item.timer.index
                     if ctrl_item.monitor.index < master_monitor_idx_sw:
                         master_monitor_sw = ctrl_item.monitor
                         master_monitor_idx_sw = ctrl_item.monitor.index
+                elif acq_synch == AcqSynch.SoftwareStart:
+                    if ctrl_item.timer.index < master_timer_idx_sw_start:
+                        master_timer_sw_start = ctrl_item.timer
+                        master_timer_idx_sw_start = ctrl_item.timer.index
+                    if ctrl_item.monitor.index < master_monitor_idx_sw_start:
+                        master_monitor_sw_start = ctrl_item.monitor
+                        master_monitor_idx_sw_start = ctrl_item.monitor.index
             elif ctrl.get_ctrl_types()[0] == ElementType.ZeroDExpChannel:
                 zerod_ctrls.append(ctrl_item)
             else:
