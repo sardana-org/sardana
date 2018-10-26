@@ -235,7 +235,7 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
 
         self.sw_acq_args = ([conf_ct_ctrl_2], integ_time)
         self.sw_acq_kwargs = {"master": conf_ct_2_1}
-        
+
         total_interval = active_interval + passive_interval
         group = {
             SynchParam.Delay: {SynchDomain.Time: offset},
@@ -249,9 +249,9 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
         self.hw_acq.run([conf_ct_ctrl_1], integ_time, repetitions)
         self.synchronization.run([conf_tg_ctrl_1], synchronization)
         # waiting for acquisition and synchronization to finish
-        while (self.hw_acq.is_running() or
-               self.sw_acq.is_running() or
-               self.synchronization.is_running()):
+        while (self.hw_acq.is_running()
+               or self.sw_acq.is_running()
+               or self.synchronization.is_running()):
             time.sleep(.1)
         self.do_asserts(repetitions, jobs_before)
 
@@ -263,6 +263,7 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
 @insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
             latency_time=0.02)
 class AcquisitionSoftwareStartTestCase(AcquisitionTestCase, TestCase):
+    """Integration test of PoolSynchronization and PoolAcquisitionHardware"""
 
     def setUp(self):
         """Create test actors (controllers and elements)"""
@@ -310,6 +311,53 @@ class AcquisitionSoftwareStartTestCase(AcquisitionTestCase, TestCase):
         # get the current number of jobs
         jobs_before = get_thread_pool().qsize
         self.synchronization.run([], synchronization)
+        self.wait_finish()
+        self.do_asserts(repetitions, jobs_before)
+
+    def tearDown(self):
+        AcquisitionTestCase.tearDown(self)
+        TestCase.tearDown(self)
+
+
+@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
+            latency_time=0.02)
+class AcquisitionHardwareStartTestCase(AcquisitionTestCase, TestCase):
+    """Integration test of PoolSynchronization and PoolAcquisitionHardware"""
+
+    def setUp(self):
+        """Create test actors (controllers and elements)"""
+        TestCase.setUp(self)
+        AcquisitionTestCase.setUp(self)
+
+    def acquire(self, integ_time, repetitions, latency_time):
+        """Acquire with a dummy C/T synchronized by a hardware start
+        trigger from a dummy T/G."""
+        self.ct_ctrl_1.set_ctrl_par("synchronization", AcqSynch.HardwareStart)
+        conf_ct_ctrl_1 = createTimerableControllerConfiguration(
+            self.ct_ctrl_1, [self.ct_1_1])
+        conf_tg_ctrl_1 = createControllerConfiguration(self.tg_ctrl_1,
+                                                       [self.tg_1_1])
+        self.synchronization = self.create_action(PoolSynchronization,
+                                                  [self.tg_1_1])
+        # add data listeners
+        self.add_listeners([self.ct_1_1])
+        # creating acquisition actions
+        self.acquisition = self.create_action(PoolAcquisitionHardware,
+                                              [self.ct_1_1])
+        self.acq_args = ([conf_ct_ctrl_1], integ_time, repetitions)
+        # prepare synchronization description
+        total_interval = integ_time + latency_time
+        group = {
+            SynchParam.Delay: {SynchDomain.Time: 0},
+            SynchParam.Active: {SynchDomain.Time: integ_time},
+            SynchParam.Total: {SynchDomain.Time: total_interval},
+            SynchParam.Repeats: repetitions
+        }
+        synchronization = [group]
+        # get the current number of jobs
+        jobs_before = get_thread_pool().qsize
+        self.acquisition.run([conf_ct_ctrl_1], integ_time, repetitions)
+        self.synchronization.run([conf_tg_ctrl_1], synchronization)
         self.wait_finish()
         self.do_asserts(repetitions, jobs_before)
 
