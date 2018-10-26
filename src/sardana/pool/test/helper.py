@@ -29,7 +29,7 @@ __all__ = ['createPoolController', 'createPoolCounterTimer',
            'createPoolPseudoMotor', 'createPoolMeasurementGroup',
            'createControllerConfiguration',
            'createTimerableControllerConfiguration',
-           'createCTAcquisitionConfiguration', 'createMGConfiguration',
+           'createCTAcquisitionConfiguration',
            'createElemConf', 'createCtrlConf', 'createConfbyCtrlKlass',
            'createMGUserConfiguration']
 import copy
@@ -285,63 +285,6 @@ def createMGUserConfiguration(pool, channels):
 
     MG_configuration.update({'controllers': all_ctrls_d})
     return (MG_configuration, channel_ids, channel_names)
-
-
-def createMGConfiguration(ctrls, ctrls_conf, ctrl_channels, ctrl_channels_conf,
-                          ctrl_trigger_elements, synchronizations):
-    '''Method to create general MeasurementGroup (and CT) configuration.
-    Order of the sequences is important. For all sequences, the element of a
-    given position refers the same controller.
-
-    :param ctrls: sequence of the controllers used by the action
-    :type ctrls: seq<sardana.pool.PoolController>
-    :param ctrls_conf: sequence of the controllers configuration dictionaries
-    :type ctrls_conf: dict
-    :param ctrl_channels: sequence of the sequences of the channels
-    corresponding to the controllers
-    :type ctrl_channels: seq<seq<sardana.pool.PoolCounterTimer>>
-    :param ctrl_channels_conf: sequence of the sequences of the channels
-    configuration dictionaries
-    :type ctrl_channels_conf: seq<seq<dict>>
-    :param trigger_elements: sequence of the sequences of the trigger elements
-    :type trigger_elements: seq<seq<sardana.pool.PoolTriggerGate>>
-    :param synchronizations: sequence of the sequences of the synchronizations
-    :type synchronizations: seq<seq<str>>
-    :return: a configuration dictionary
-    :rtype: dict<>
-    '''
-
-    synchronizers = []
-    master_ctrl_idx = 0
-    master_idx = 0
-    MG_configuration = {}
-    ctrls_configuration = {}
-    MG_configuration['timer'] = ctrl_channels[master_ctrl_idx][master_idx]
-    MG_configuration['monitor'] = ctrl_channels[master_ctrl_idx][master_idx]
-    for ctrl, ctrl_data, channels, channels_conf, trigger_elements, \
-            trigger_types in zip(ctrls, ctrls_conf, ctrl_channels,
-                                 ctrl_channels_conf, ctrl_trigger_elements, synchronizations):
-        ctrl_data['channels'] = {}
-        index = 0
-        for channel, channel_conf, synchronizer, synchronization in \
-                zip(channels, channels_conf, trigger_elements, trigger_types):
-            ctrl_data['channels'][channel] = channel_conf
-            # this way we are forcing the synchronization of the last channel
-            ctrl_data['synchronization'] = synchronization
-            ctrl_data['synchronizer'] = synchronizer
-            # TODO: investigate why we need the index!
-            # adding a dummy index
-            ctrl_data['channels'][channel]['index'] = index
-            if synchronizer not in synchronizers:
-                synchronizers.append(synchronizer)
-            index += 1
-
-        ctrl_data['timer'] = channels[master_idx]
-        ctrl_data['monitor'] = channels[master_idx]
-        ctrls_configuration[ctrl] = ctrl_data
-    MG_configuration['controllers'] = ctrls_configuration
-
-    return MG_configuration
 
 
 def createConfbyCtrlKlass(pool, ctrl_klass, ctrl_name):
