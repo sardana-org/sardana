@@ -90,9 +90,15 @@ class AcquisitionTestCase(BasePoolTestCase):
     def setUp(self):
         """Create dummy controllers and elements."""
         BasePoolTestCase.setUp(self)
+        self.acquisition = None
+        self.synchronization = None
         self.data_listener = AttributeListener()
-        self.channel_names = []
         self.main_element = FakeElement(self.pool)
+        self.tg_1_1 = self.tgs['_test_tg_1_1']
+        self.tg_ctrl_1 = self.tg_1_1.get_controller()
+        self.ct_1_1 = self.cts['_test_ct_1_1']
+        self.ct_ctrl_1 = self.ct_1_1.get_controller()
+        self.channel_names = ['_test_ct_1_1']
 
     def create_action(self, class_, elements):
         action = class_(self.main_element)
@@ -104,7 +110,13 @@ class AcquisitionTestCase(BasePoolTestCase):
         for chn in chn_list:
             chn.add_listener(self.data_listener)
 
-    def do_asserts(self, channel_names, repetitions, jobs_before):
+    def wait_finish(self):
+        # waiting for acquisition and synchronization to finish
+        while (self.acquisition.is_running()
+               or self.synchronization.is_running()):
+            time.sleep(.1)
+
+    def do_asserts(self, repetitions, jobs_before):
         # print acquisition records
         table = self.data_listener.get_table()
         header = table.dtype.names
@@ -113,7 +125,7 @@ class AcquisitionTestCase(BasePoolTestCase):
         for row in xrange(n_rows):
             print row, table[row]
         # checking if all channels produced data
-        for channel in channel_names:
+        for channel in self.channel_names:
             msg = 'data from channel %s were not acquired' % channel
             self.assertIn(channel, header, msg)
         # checking if all the data were acquired
@@ -223,10 +235,6 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
 
         self.sw_acq_args = ([conf_ct_ctrl_2], integ_time)
         self.sw_acq_kwargs = {"master": conf_ct_2_1}
-
-        # get the current number of jobs
-        jobs_before = get_thread_pool().qsize
-        self.hw_acq.run([conf_ct_ctrl_1], integ_time, repetitions)
         
         total_interval = active_interval + passive_interval
         group = {
@@ -236,13 +244,16 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
             SynchParam.Repeats: repetitions
         }
         synchronization = [group]
+        # get the current number of jobs
+        jobs_before = get_thread_pool().qsize
+        self.hw_acq.run([conf_ct_ctrl_1], integ_time, repetitions)
         self.synchronization.run([conf_tg_ctrl_1], synchronization)
         # waiting for acquisition and synchronization to finish
         while (self.hw_acq.is_running() or
                self.sw_acq.is_running() or
                self.synchronization.is_running()):
             time.sleep(.1)
-        self.do_asserts(self.channel_names, repetitions, jobs_before)
+        self.do_asserts(repetitions, jobs_before)
 
     def tearDown(self):
         AcquisitionTestCase.tearDown(self)
@@ -254,46 +265,37 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
 class AcquisitionSoftwareStartTestCase(AcquisitionTestCase, TestCase):
 
     def setUp(self):
-        """Create a Controller, TriggerGate and PoolSynchronization objects from
-        dummy configurations.
-        """
+        """Create test actors (controllers and elements)"""
         TestCase.setUp(self)
         AcquisitionTestCase.setUp(self)
 
     def event_received(self, *args, **kwargs):
-        """Execute software start acquisition."""
+        """Callback to execute software start acquisition."""
         _, type_, value = args
         name = type_.name
         if name != "start":
             return
         args = self.acq_args
         kwargs = self.acq_kwargs
-        kwargs['idx'] = value
         get_thread_pool().add(self.acquisition.run, None, *args, **kwargs)
 
     def acquire(self, integ_time, repetitions, latency_time):
-        # obtain elements/controllers involved in the test
-        tg_1_1 = self.tgs['_test_tg_1_1']
-        tg_ctrl_1 = tg_1_1.get_controller()
-        ct_1_1 = self.cts['_test_ct_1_1']
-        ct_ctrl_1 = ct_1_1.get_controller()
-        ct_ctrl_1.set_ctrl_par("synchronization", AcqSynch.SoftwareStart)
+        """Acquire with a dummy C/T synchronized by a hardware start
+        trigger from a dummy T/G."""
+        self.ct_ctrl_1.set_ctrl_par("synchronization", AcqSynch.SoftwareStart)
 
-        self.channel_names.append('_test_ct_1_1')
-
-        conf_ct_ctrl_1 = createTimerableControllerConfiguration(ct_ctrl_1,
-                                                                [ct_1_1])
+        conf_ct_ctrl_1 = createTimerableControllerConfiguration(self.ct_ctrl_1,
+                                                                [self.ct_1_1])
         conf_ct_1_1 = conf_ct_ctrl_1.timer
-        conf_tg_ctrl_1 = createControllerConfiguration(tg_ctrl_1, [tg_1_1])
         # creating synchronization action
         self.synchronization = self.create_action(PoolSynchronization,
-                                                  [tg_1_1])
+                                                  [self.tg_1_1])
         self.synchronization.add_listener(self)
         # add_listeners
-        self.add_listeners([ct_1_1])
+        self.add_listeners([self.ct_1_1])
         # creating acquisition actions
         self.acquisition = self.create_action(PoolAcquisitionSoftwareStart,
-                                              [ct_1_1])
+                                              [self.ct_1_1])
         self.acq_args = ([conf_ct_ctrl_1], integ_time, repetitions)
         self.acq_kwargs = {"master": conf_ct_1_1}
 
@@ -307,12 +309,9 @@ class AcquisitionSoftwareStartTestCase(AcquisitionTestCase, TestCase):
         synchronization = [group]
         # get the current number of jobs
         jobs_before = get_thread_pool().qsize
-        self.synchronization.run([conf_tg_ctrl_1], synchronization)
-        # waiting for acquisition and synchronization to finish
-        while (self.acquisition.is_running()
-               or self.synchronization.is_running()):
-            time.sleep(.1)
-        self.do_asserts(self.channel_names, repetitions, jobs_before)
+        self.synchronization.run([], synchronization)
+        self.wait_finish()
+        self.do_asserts(repetitions, jobs_before)
 
     def tearDown(self):
         AcquisitionTestCase.tearDown(self)
