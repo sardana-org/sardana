@@ -29,7 +29,6 @@ __all__ = ['createPoolController', 'createPoolCounterTimer',
            'createPoolPseudoMotor', 'createPoolMeasurementGroup',
            'createControllerConfiguration',
            'createTimerableControllerConfiguration',
-           'createPoolSynchronizationConfiguration',
            'createCTAcquisitionConfiguration', 'createMGConfiguration',
            'createElemConf', 'createCtrlConf', 'createConfbyCtrlKlass',
            'createMGUserConfiguration']
@@ -168,36 +167,6 @@ def createTimerableControllerConfiguration(pool_ctrl, pool_channels):
     conf_ctrl.timer = channel
     conf_ctrl.monitor = channel
     return conf_ctrl
-
-
-def createPoolSynchronizationConfiguration(ctrls, ctrl_channels):
-    '''Method to create PoolSynchronization configuration. Order of the
-    sequences is important. For all sequences, the element of a given position
-    refers the same controller.
-
-    :param ctrls: sequence of the controllers used by the action
-    :type ctrls: seq<sardana.pool.PoolController>
-    :param ctrl_channels: sequence of the sequences of the channels
-    corresponding to the controllers
-    :type ctrl_channels: seq<seq<sardana.pool.PoolTriggerGate>>
-
-    :return: a configuration dictionary
-    :rtype: dict<>
-    '''
-    ctrls_configuration = {}
-    for ctrl, channels in zip(ctrls, ctrl_channels):
-        ctrl_data = createConfFromObj(ctrl)
-        ctrl_data['channels'] = {}
-        for channel in channels:
-            channel_conf = createConfFromObj(channel)
-            ctrl_data['channels'][channel] = channel_conf
-        ctrls_configuration[ctrl] = ctrl_data
-    configuration = {'controllers': ctrls_configuration}
-
-    mc = MeasurementConfiguration()
-    mc._config = configuration
-    mc.ctrl_tg_sync = ctrls_configuration
-    return mc
 
 
 def createCTAcquisitionConfiguration(ctrls, ctrl_channels):
