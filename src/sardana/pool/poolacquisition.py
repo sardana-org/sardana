@@ -32,6 +32,7 @@ __all__ = ["AcquisitionState", "AcquisitionMap", "PoolCTAcquisition",
 __docformat__ = 'restructuredtext'
 
 import time
+import weakref
 import datetime
 
 from taurus.core.util.log import DebugIt
@@ -76,6 +77,35 @@ def is_value_error(value):
     return False
 
 
+class ActionArgs(object):
+
+    def __init__(self, args, kwargs=None):
+        self.args = args
+        if kwargs is None:
+            kwargs = {}
+        self.kwargs = kwargs
+
+
+class CtrlActionItem(object):
+
+    def __init__(self, element, master=None):
+        self._element = weakref.ref(element)
+        self.master = master
+
+    def __getattr__(self, item):
+        return getattr(self.element, item)
+
+    def get_element(self):
+        """Returns the element associated with this item"""
+        return self._element()
+
+    def set_element(self, element):
+        """Sets the element for this item"""
+        self._element = weakref.ref(element)
+
+    element = property(get_element)
+
+
 class PoolAcquisition(PoolAction):
 
     def __init__(self, main_element, name="Acquisition"):
@@ -83,27 +113,21 @@ class PoolAcquisition(PoolAction):
         zerodname = name + ".0DAcquisition"
         hwname = name + ".HardwareAcquisition"
         swname = name + ".SoftwareAcquisition"
-        sw_start_name = name  + ".SoftwareStartAcquisition"
+        sw_start_name = name + ".SoftwareStartAcquisition"
         synchname = name + ".Synchronization"
 
-        self._sw_acq_config = None
-        self._sw_start_acq_config = None
-        self._0d_config = None
-        self._0d_acq = Pool0DAcquisition(main_element, name=zerodname)
+        self._sw_acq_args = None
+        self._sw_start_acq_args = None
+        self._0d_acq_args = None
+        self._hw_acq_args = None
+        self._synch_args = None
+
         self._sw_acq = PoolAcquisitionSoftware(main_element, name=swname)
         self._sw_start_acq = PoolAcquisitionSoftwareStart(
             main_element, name=sw_start_name)
+        self._0d_acq = Pool0DAcquisition(main_element, name=zerodname)
         self._hw_acq = PoolAcquisitionHardware(main_element, name=hwname)
         self._synch = PoolSynchronization(main_element, name=synchname)
-
-    def set_sw_config(self, config):
-        self._sw_acq_config = config
-
-    def set_sw_start_config(self, config):
-        self._sw_start_acq_config = config
-
-    def set_0d_config(self, config):
-        self._0d_config = config
 
     def event_received(self, *args, **kwargs):
         timestamp = time.time()
@@ -116,17 +140,15 @@ class PoolAcquisition(PoolAction):
         msg = '%s event with id: %d received at: %s' % (name, value, t_str)
         self.debug(msg)
         if name == "start":
-            if self._sw_start_acq_config:
+            if self._sw_start_acq_args is not None:
                 self.debug('Executing software start acquisition.')
-                args = ()
-                kwargs = self._sw_start_acq_config
-                # TODO: key synch is not used on the code, remove it
-                kwargs['synch'] = True
-                get_thread_pool().add(self._sw_start_acq.run, *args, **kwargs)
-        if name == "active":
+                get_thread_pool().add(self._sw_start_acq.run,
+                                      *self._sw_start_acq_args.args,
+                                      **self._sw_start_acq_args.kwargs)
+        elif name == "active":
             # this code is not thread safe, but for the moment we assume that
             # only one EventGenerator will work at the same time
-            if self._sw_acq_config:
+            if self._sw_acq_args is not None:
                 if self._sw_acq._is_started() or self._sw_acq.is_running():
                     msg = ('Skipping trigger: software acquisition is still'
                            ' in progress.')
@@ -134,14 +156,12 @@ class PoolAcquisition(PoolAction):
                     return
                 else:
                     self.debug('Executing software acquisition.')
-                    args = ()
-                    kwargs = self._sw_acq_config
-                    # TODO: key synch is not used on the code, remove it
-                    kwargs['synch'] = True
-                    kwargs['index'] = value
+                    self._sw_acq_args.kwargs.update({'index': value})
                     self._sw_acq._started = True
-                    get_thread_pool().add(self._sw_acq.run, *args, **kwargs)
-            if self._0d_config:
+                    get_thread_pool().add(self._sw_acq.run,
+                                          *self._sw_acq_args.args,
+                                          **self._sw_acq_args.kwargs)
+            if self._0d_acq_args is not None:
                 if self._0d_acq._is_started() or self._0d_acq.is_running():
                     msg = ('Skipping trigger: ZeroD acquisition is still in'
                            ' progress.')
@@ -149,24 +169,26 @@ class PoolAcquisition(PoolAction):
                     return
                 else:
                     self.debug('Executing ZeroD acquisition.')
-                    args = ()
-                    kwargs = self._0d_config
-                    # TODO: key synch is not used on the code, remove it
-                    kwargs['synch'] = True
-                    kwargs['index'] = value
+                    self._0d_acq_args.kwargs.update({'index': value})
                     self._0d_acq._started = True
                     self._0d_acq._stopped = False
                     self._0d_acq._aborted = False
-                    get_thread_pool().add(self._0d_acq.run, *args, **kwargs)
+                    get_thread_pool().add(self._0d_acq.run,
+                                          *self._0d_acq_args.args,
+                                          **self._0d_acq_args.kwargs)
         elif name == "passive":
-            if self._0d_config and (self._0d_acq._is_started() or
-                                    self._0d_acq.is_running()):
+            # TODO: _0d_acq_args comparison may not be necessary
+            if (self._0d_acq_args is not None
+                    and (self._0d_acq._is_started()
+                         or self._0d_acq.is_running())):
                 self.debug('Stopping ZeroD acquisition.')
                 self._0d_acq.stop_action()
 
     def prepare(self, ctrl_lodeable, value, repetitions, latency,
                 nr_of_starts):
         """Prepare measurement."""
+        # TODO: set synch to true for software, software start and 0D acq
+        # kwargs['synch'] = True
 
         for conf_ctrl, lodeable in ctrl_lodeable.items():
             axis = lodeable.axis
