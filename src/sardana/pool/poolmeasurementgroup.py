@@ -318,7 +318,6 @@ class MeasurementConfiguration(object):
         master_monitor_sw_start = None
         master_timer = None
         master_monitor = None
-        element_acq_synch = {}
         master_timer_idx_sw = float("+inf")
         master_monitor_idx_sw = float("+inf")
         user_elem_ids = {}
@@ -507,6 +506,8 @@ class MeasurementConfiguration(object):
         self._other_ctrls = other_ctrls
         self._master_timer_sw = master_timer_sw
         self._master_monitor_sw = master_monitor_sw
+        self._master_timer_sw_start = master_timer_sw_start
+        self._master_monitor_sw_start = master_monitor_sw_start
         self._user_confg = user_config
         self._channel_acq_synch = channel_acq_synch
         self._ctrl_acq_synch = ctrl_acq_synch
@@ -595,7 +596,8 @@ class PoolMeasurementGroup(PoolGroupElement):
         # TODO: Check if it needed
         # configuration = kwargs.get("configuration")
         # self.set_configuration(configuration)
-        # # if the configuration was never "really" written e.g. newly created MG
+        # # if the configuration was never "really" written e.g. newly created
+        # # MG
         # # just sets it now so the _channe_to_acq_synch and ctrl_to_acq_synch
         # # are properly populated
         # # TODO: make it more elegant

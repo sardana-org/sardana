@@ -193,7 +193,6 @@ class PoolAcquisition(PoolAction):
         ctrls_acq_hw = config.get_timerable_ctrls(acq_synch=acq_sync_hw,
                                                   enabled=True)
 
-
         if len(ctrls_acq_hw):
             self._hw_acq.run(conf_ctrls=ctrls_acq_hw,
                              value=value,
@@ -225,7 +224,7 @@ class PoolAcquisition(PoolAction):
                 zerod_acq_kwargs = dict(conf_ctrls=ctrls_acq_0d)
                 self.set_0d_config(zerod_acq_kwargs)
 
-        #start the synchonization action
+        # start the synchonization action
         ctrls_synch = config.get_synch_ctrls(enabled=True)
         self._synch.run(conf_ctrls=ctrls_synch,
                         synchronization=synchronization,
