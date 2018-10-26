@@ -33,21 +33,18 @@ from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool import AcqSynchType, AcqMode
 from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.pool.test import BasePoolTestCase, createPoolMeasurementGroup,\
-    dummyMeasurementGroupConf01, createMGUserConfiguration
+    dummyMeasurementGroupConf01, createMGUserConfiguration, AttributeListener
 
 
 class BaseAcquisition(object):
 
     def setUp(self, pool):
-        """
-        """
         self.pool = pool
         self.pmg = None
         self.attr_listener = None
 
     def prepare_meas(self, config):
-        """ Prepare the measurement group and returns the channel names
-        """
+        """ Prepare measurement group and returns the channel names"""
         pool = self.pool
         # creating mg user configuration and obtaining channel ids
         mg_conf, channel_ids, channel_names = \
@@ -63,13 +60,13 @@ class BaseAcquisition(object):
 
     def prepare_attribute_listener(self):
         self.attr_listener = AttributeListener()
-        # Add listeners
+        # Add data listener
         attributes = self.pmg.get_user_elements()
         for attr in attributes:
             attr.add_listener(self.attr_listener)
 
     def remove_attribute_listener(self):
-        # Remove listeners
+        # Remove data listener
         attributes = self.pmg.get_user_elements()
         for attr in attributes:
             attr.remove_listener(self.attr_listener)
@@ -79,9 +76,8 @@ class BaseAcquisition(object):
         """
         self.pmg.start_acquisition()
         acq = self.pmg.acquisition
-        # waiting for acquisition
         while acq.is_running():
-            time.sleep(1)
+            time.sleep(.1)
 
     def acq_asserts(self, channel_names, repetitions):
         # printing acquisition records
@@ -188,7 +184,7 @@ class BaseAcquisition(object):
                '(before: %d)') % (jobs_after, jobs_before)
         self.assertEqual(jobs_before, jobs_after, msg)
 
-    def stopAcquisition(self):
+    def stop_acquisition(self):
         """Method used to abort a running acquisition"""
         self.pmg.stop()
 
@@ -207,7 +203,7 @@ class BaseAcquisition(object):
         acq = self.pmg.acquisition
 
         # starting timer (0.05 s) which will stop the acquisiton
-        threading.Timer(0.2, self.stopAcquisition).start()
+        threading.Timer(0.2, self.stop_acquisition).start()
         # waiting for acquisition and tggeneration to be stoped by thread
         while acq.is_running():
             time.sleep(0.05)
