@@ -153,9 +153,10 @@ class PoolAcquisition(PoolAction):
                 nr_of_starts):
         """Prepare measurement."""
 
-        for ctrl, lodeable in ctrl_lodeable.items():
+        for conf_ctrl, lodeable in ctrl_lodeable.items():
             axis = lodeable.axis
-            ctrl.PrepareOne(axis, value, repetitions, latency, nr_of_starts)
+            conf_ctrl.ctrl.PrepareOne(axis, value, repetitions, latency,
+                                      nr_of_starts)
 
     def is_running(self):
         return self._0d_acq.is_running() or\
