@@ -36,9 +36,9 @@ from taurus.external import unittest
 from sardana.pool.poolsynchronization import PoolSynchronization
 from sardana.sardanadefs import State
 from sardana.pool.pooldefs import SynchDomain, SynchParam
-from sardana.pool.test import (FakePool, createCtrlConf, createElemConf,
-                               createPoolController, createPoolTriggerGate,
-                               createPoolSynchronizationConfiguration)
+from sardana.pool.test import FakePool, createCtrlConf, createElemConf, \
+    createPoolController, createPoolTriggerGate, \
+    createControllerConfiguration
 
 
 class SynchronizationTestCase(object):
@@ -60,10 +60,8 @@ class SynchronizationTestCase(object):
         self.pool.add_element(self.tg_ctrl)
         self.pool.add_element(self.tg_elem)
         # create Synchronization action and its configuration
-        self.tg_cfg = createPoolSynchronizationConfiguration(
-            (self.tg_ctrl,), ((self.tg_elem,),),)
-        # TODO: The TriggerGate should have a configuration
-        self.tg_elem.configuration = self.tg_cfg
+        conf_ctrl = createControllerConfiguration(self.tg_ctrl, [self.tg_elem])
+        self.tg_cfg = [conf_ctrl]
         self.tgaction = PoolSynchronization(self.tg_elem)
         self.tgaction.add_element(self.tg_elem)
 
@@ -97,7 +95,7 @@ class SynchronizationTestCase(object):
 
         # create start_action arguments
         args = ()
-        kwargs = {'config': self.tg_cfg,
+        kwargs = {'conf_ctrls': self.tg_cfg,
                   'synchronization': synchronization
                   }
         # starting action
@@ -145,7 +143,7 @@ class SynchronizationTestCase(object):
 
         # create start_action arguments
         args = ()
-        kwargs = {'config': self.tg_cfg,
+        kwargs = {'conf_ctrls': self.tg_cfg,
                   'synchronization': synchronization
                   }
         # starting action
