@@ -23,7 +23,6 @@
 ##
 ##############################################################################
 import time
-import numpy
 import threading
 
 from taurus.external.unittest import TestCase
@@ -36,53 +35,8 @@ from sardana.pool.poolacquisition import PoolAcquisitionHardware, \
     PoolAcquisitionSoftware, PoolAcquisitionSoftwareStart
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool.test import createControllerConfiguration, \
-    createTimerableControllerConfiguration, BasePoolTestCase, FakeElement
-
-
-class AttributeListener(object):
-
-    def __init__(self):
-        self.data = {}
-        self.data_lock = threading.RLock()
-
-    def event_received(self, *args, **kwargs):
-        # s - type: sardana.sardanavalue.SardanaValue
-        # t - type: sardana.sardanaevent.EventType
-        # v - type: sardana.sardanaattribute.SardanaAttribute e.g.
-        #           sardana.pool.poolbasechannel.Value
-        s, t, v = args
-        if t.name.lower() != "valuebuffer":
-            return
-        # obtaining sardana element e.g. exp. channel (the attribute owner)
-        obj_name = s.name
-        # obtaining the SardanaValue(s) either from the value_chunk (in case
-        # of buffered attributes) or from the value in case of normal
-        # attributes
-        chunk = v
-        idx = chunk.keys()
-        value = [sardana_value.value for sardana_value in chunk.values()]
-        # filling the measurement records
-        with self.data_lock:
-            channel_data = self.data.get(obj_name, [])
-            expected_idx = len(channel_data)
-            pad = [None] * (idx[0] - expected_idx)
-            channel_data.extend(pad + value)
-            self.data[obj_name] = channel_data
-
-    def get_table(self):
-        '''Construct a table-like array with padded  channel data as columns.
-        Return the '''
-        with self.data_lock:
-            max_len = max([len(d) for d in self.data.values()])
-            dtype_spec = []
-            table = []
-            for k in sorted(self.data.keys()):
-                v = self.data[k]
-                v.extend([None] * (max_len - len(v)))
-                table.append(v)
-                dtype_spec.append((k, 'float64'))
-            a = numpy.array(zip(*table), dtype=dtype_spec)
-            return a
+    createTimerableControllerConfiguration, BasePoolTestCase, FakeElement, \
+    AttributeListener
 
 
 class AcquisitionTestCase(BasePoolTestCase):

@@ -33,6 +33,7 @@ __all__ = ['createPoolController', 'createPoolCounterTimer',
            'createElemConf', 'createCtrlConf', 'createConfbyCtrlKlass',
            'createMGUserConfiguration']
 import copy
+
 from sardana.sardanadefs import ElementType
 from sardana.pool.poolcontroller import PoolController,\
     PoolPseudoMotorController, PoolPseudoCounterController

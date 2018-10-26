@@ -32,11 +32,8 @@ from taurus.test import insertTest
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool import AcqSynchType, AcqMode
 from sardana.pool.pooldefs import SynchDomain, SynchParam
-from sardana.pool.test import (BasePoolTestCase, createPoolMeasurementGroup,
-                               dummyMeasurementGroupConf01,
-                               createMGUserConfiguration)
-# TODO Import AttributeListener from the right location.
-from sardana.pool.test.test_acquisition import AttributeListener
+from sardana.pool.test import BasePoolTestCase, createPoolMeasurementGroup,\
+    dummyMeasurementGroupConf01, createMGUserConfiguration
 
 
 class BaseAcquisition(object):
