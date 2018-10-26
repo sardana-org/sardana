@@ -83,17 +83,24 @@ class PoolAcquisition(PoolAction):
         zerodname = name + ".0DAcquisition"
         hwname = name + ".HardwareAcquisition"
         swname = name + ".SoftwareAcquisition"
+        sw_start_name = name  + ".SoftwareStartAcquisition"
         synchname = name + ".Synchronization"
 
         self._sw_acq_config = None
+        self._sw_start_acq_config = None
         self._0d_config = None
         self._0d_acq = Pool0DAcquisition(main_element, name=zerodname)
         self._sw_acq = PoolAcquisitionSoftware(main_element, name=swname)
+        self._sw_start_acq = PoolAcquisitionSoftwareStart(
+            main_element, name=sw_start_name)
         self._hw_acq = PoolAcquisitionHardware(main_element, name=hwname)
         self._synch = PoolSynchronization(main_element, name=synchname)
 
     def set_sw_config(self, config):
         self._sw_acq_config = config
+
+    def set_sw_start_config(self, config):
+        self._sw_start_acq_config = config
 
     def set_0d_config(self, config):
         self._0d_config = config
@@ -108,6 +115,14 @@ class PoolAcquisition(PoolAction):
         t_str = datetime.datetime.fromtimestamp(timestamp).strftime(t_fmt)
         msg = '%s event with id: %d received at: %s' % (name, value, t_str)
         self.debug(msg)
+        if name == "start":
+            if self._sw_start_acq_config:
+                self.debug('Executing software start acquisition.')
+                args = ()
+                kwargs = self._sw_start_acq_config
+                # TODO: key synch is not used on the code, remove it
+                kwargs['synch'] = True
+                get_thread_pool().add(self._sw_start_acq.run, *args, **kwargs)
         if name == "active":
             # this code is not thread safe, but for the moment we assume that
             # only one EventGenerator will work at the same time
@@ -203,10 +218,25 @@ class PoolAcquisition(PoolAction):
         acq_sync_sw = [AcqSynch.SoftwareGate, AcqSynch.SoftwareTrigger]
         ctrls_acq_sw = config.get_timerable_ctrls(acq_synch=acq_sync_sw,
                                                   enabled=True)
+        ctrls_acq_sw_start = config.get_timerable_ctrls(
+            acq_synch=AcqSynch.SoftwareStart, enabled=True)
         ctrls_acq_0d = config.get_zerod_ctrls(enabled=True)
 
-        if len(ctrls_acq_sw) or len(ctrls_acq_0d):
+        if len(ctrls_acq_sw) or len(ctrls_acq_0d) or len(ctrls_acq_sw_start):
             self._synch.add_listener(self)
+            if len(ctrls_acq_sw_start):
+                master = None
+                if acq_mode is AcqMode.Timer:
+                    master = config.get_master_timer_software_start()
+                elif acq_mode is AcqMode.Monitor:
+                    master = config.get_master_monitor_software_start()
+
+                sw_acq_kwargs = dict(conf_ctrls=ctrls_acq_sw_start,
+                                     value=value,
+                                     repetitions=repetitions,
+                                     latency_time=latency_time,
+                                     master=master)
+                self.set_sw_start_config(sw_acq_kwargs)
             if len(ctrls_acq_sw):
                 master = None
                 if acq_mode is AcqMode.Timer:
@@ -239,12 +269,12 @@ class PoolAcquisition(PoolAction):
             if acq_synch in (AcqSynch.SoftwareTrigger,
                              AcqSynch.SoftwareGate):
                 return self._sw_acq
+            elif acq_synch == AcqSynch.SoftwareStart:
+                return self._sw_start_acq
             elif acq_synch in (AcqSynch.HardwareTrigger,
-                               AcqSynch.HardwareGate):
+                               AcqSynch.HardwareGate,
+                               AcqSynch.HardwareStart):
                 return self._hw_acq
-            else:
-                # by default software synchronization is in use
-                return self._sw_acq
         elif elem_type == ElementType.ZeroDExpChannel:
             return self._0d_acq
         elif elem_type == ElementType.TriggerGate:
