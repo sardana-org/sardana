@@ -258,27 +258,10 @@ def createMGUserConfiguration(pool, channels):
             channel_element = pool.get_element_by_full_name(channel_name_str)
             channel_ids.append(channel_element.id)
             one_channel_d = {}
-            one_channel_d.update({'plot_type': 1})
-            one_channel_d.update({'plot_axes': ['<mov>']})
-            one_channel_d.update({'data_type': 'float64'})
-            one_channel_d.update({'index': index})
-            one_channel_d.update({'enabled': True})
-            one_channel_d.update({'nexus_path': ''})
-            one_channel_d.update({'shape': []})
-            ctrl_from_channel = channel_element.get_controller()
-            ctrl_name = ctrl_from_channel.full_name
-            one_channel_d.update({'_controller_name': ctrl_name})
-            one_channel_d.update({'conditioning': ''})
             one_channel_d.update({'full_name': channel_name_str})
-            one_channel_d.update({'id': channel_element.id})
-            one_channel_d.update({'normalization': 0})
-            one_channel_d.update({'output': True})
-            one_channel_d.update({'label': channel_element.name})
-            one_channel_d.update({'data_units': 'No unit'})
-            one_channel_d.update({'name': channel_element.name})
+            one_channel_d.update({'index': index})
             channels_d.update({channel_name_str: one_channel_d})
             index += 1
-
         ctrl_data['channels'] = {}
         ctrl_data['channels'].update(channels_d)
         ctrl_d[ctrl_full_name] = ctrl_data

@@ -43,7 +43,9 @@ except ImportError:
 from sardana import State, ElementType, \
     TYPE_EXP_CHANNEL_ELEMENTS
 from sardana.sardanaevent import EventType
-from sardana.pool.pooldefs import AcqMode, SynchParam, AcqSynch, SynchDomain
+from sardana.pool.pooldefs import AcqMode, SynchParam, AcqSynch, \
+    SynchDomain, AcqSynchType
+
 from sardana.pool.poolgroupelement import PoolGroupElement
 from sardana.pool.poolacquisition import PoolAcquisition
 from sardana.pool.poolsynchronization import SynchronizationDescription
@@ -398,7 +400,7 @@ class MeasurementConfiguration(object):
                            "configuration in order to upgrade.")
                     self._parent.warning(msg)
                 except KeyError:
-                    synchronization = None
+                    synchronization = AcqSynchType.Trigger
 
             ctrl_conf['synchronization'] = synchronization
             user_config_ctrl['synchronization'] = synchronization
@@ -526,6 +528,7 @@ class MeasurementConfiguration(object):
 
         name = channel.name
         full_name = channel.full_name
+        ctrl_name = channel.controller.full_name
         source = channel.get_source()
         ndim = None
         ctype = channel.get_type()
@@ -548,7 +551,7 @@ class MeasurementConfiguration(object):
 
         # Definitively should be initialized by measurement group
         # index MUST be here already (asserting this in the following line)
-        channel_data['index'] = channel_data.get('index', None)
+        channel_data['index'] = channel_data['index']
         channel_data['name'] = channel_data.get('name', name)
         channel_data['full_name'] = channel_data.get('full_name', full_name)
         channel_data['source'] = channel_data.get('source', source)
@@ -565,11 +568,12 @@ class MeasurementConfiguration(object):
         channel_data['normalization'] = channel_data.get('normalization',
                                                          Normalization.No)
         # TODO use real values
-        channel_data['data_type'] = channel_data.get('data_type', None)
-        channel_data['data_units'] = channel_data.get('data_units', None)
+        channel_data['data_type'] = channel_data.get('data_type', 'float64')
+        channel_data['data_units'] = channel_data.get('data_units', 'No unit')
         channel_data['nexus_path'] = channel_data.get('nexus_path', '')
         channel_data['shape'] = channel_data.get('shape', [])
-
+        channel_data['_controller_name'] = channel_data.get('_controller_name',
+                                                            ctrl_name)
         return channel_data
 
 
