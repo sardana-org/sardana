@@ -336,7 +336,17 @@ config_13 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger), ],
              [('_test_ct_2_1', 'software', AcqSynchType.Trigger), ],
              [('_test_0d_1_1', 'software', AcqSynchType.Gate), ]]
 
+doc_14 = 'Acquisition using 2 controllers, with 2 channels in each '\
+         + 'controller, using software and hardware start synchronization'
 
+config_14 = [[('_test_ct_1_1', 'software', AcqSynchType.Start),
+              ('_test_ct_1_2', 'software', AcqSynchType.Start)],
+             [('_test_ct_2_1', '_test_tg_1_1', AcqSynchType.Start),
+              ('_test_ct_2_2', '_test_tg_1_1', AcqSynchType.Start)]]
+
+
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_14,
+            config=config_14, synchronization=synchronization1)
 @insertTest(helper_name='meas_contpos_acquisition', test_method_doc=doc_12,
             config=config_12, synchronization=synchronization4,
             moveable="_test_mot_1_1")

@@ -285,7 +285,7 @@ def createMGUserConfiguration(pool, channels):
         all_ctrls_d.update(ctrl_d)
 
     MG_configuration.update({'controllers': all_ctrls_d})
-    return (MG_configuration, channel_ids, channel_names)
+    return MG_configuration, channel_ids, channel_names
 
 
 def createConfbyCtrlKlass(pool, ctrl_klass, ctrl_name):
