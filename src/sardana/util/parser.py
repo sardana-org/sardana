@@ -50,9 +50,9 @@ def generate_tokens(text):
     for m in iter(scanner.match, None):
         # quoted parameters must be returned without the quotes that's why we
         # extract a given group, otherwise we would extract the whole match
-        group = (m.group("QUOTEDPARAM") or
-                 m.group("SINGQUOTEDPARAM") or
-                 m.group())
+        group = (m.group("QUOTEDPARAM")
+                 or m.group("SINGQUOTEDPARAM")
+                 or m.group())
         tok = Token(m.lastgroup, group)
         if tok.type != "WS":
             yield tok
