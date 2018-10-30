@@ -698,35 +698,6 @@ class PoolMeasurementGroup(PoolGroupElement):
     def get_user_configuration(self):
         return self._config.get_configuration_for_user()
 
-    def load_configuration(self, force=False):
-        """Loads the current configuration to all involved controllers"""
-
-        # g_timer, g_monitor = cfg['timer'], cfg['monitor']
-
-        for ctrl_item in self._config.get_timerable_ctrls(enabled=True):
-            ctrl = ctrl_item.element
-            if not ctrl.is_online():
-                continue
-
-            ctrl.set_ctrl_par('acquisition_mode', self.acquisition_mode)
-            # @TODO: fix optimization and enable it again
-            if ctrl.operator == self and not force and not self._config_dirty:
-                continue
-            ctrl.operator = self
-            # ctrl_data = self._config.configuration['controllers'][ctrl]
-            # # if ctrl == g_timer.controller:
-            # #    ctrl.set_ctrl_par('timer', g_timer.axis)
-            # # if ctrl == g_monitor.controller:
-            # #    ctrl.set_ctrl_par('monitor', g_monitor.axis)
-            ctrl.set_ctrl_par('timer', ctrl_item.timer.axis)
-            ctrl.set_ctrl_par('monitor', ctrl_item.monitor.axis)
-            synchronization = self._config.get_acq_synch_by_controller(ctrl)
-            self.debug('load_configuration: setting trigger_type: %s '
-                       'to ctrl: %s' % (synchronization, ctrl))
-            ctrl.set_ctrl_par('synchronization', synchronization)
-
-        self._config_dirty = False
-
     def get_timer(self):
         # TODO: Adapt to the new future MeasurementConfiguration API
         return self._config._master_timer
