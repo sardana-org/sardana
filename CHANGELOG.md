@@ -27,6 +27,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   code are coherent (#936)
 - Macro/controller module description when module does not have a docstring
   (#945)
+- Make cleanup (remove configuration) if spock profile creation was interrupted
+  or failed (#791, #793)
 
 ### Changed
 - Move pre-scan and post-scan hooks out of `scan_loop` method (#920, #922,
