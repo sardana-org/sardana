@@ -52,8 +52,13 @@ from sardana.pool.poolobject import PoolObject
 class PoolActionItem(object):
     """The base class for an atomic action item"""
 
-    def __init__(self, element):
+    def __init__(self, element, config=None):
         self._element = weakref.ref(element)
+        if config is not None:
+            self.__dict__.update(config)
+
+    def __getattr__(self, item):
+        return getattr(self.element, item)
 
     def get_element(self):
         """Returns the element associated with this item"""
