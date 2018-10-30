@@ -86,24 +86,20 @@ class ActionArgs(object):
         self.kwargs = kwargs
 
 
-class CtrlActionItem(object):
-
-    def __init__(self, element, master=None):
-        self._element = weakref.ref(element)
-        self.master = master
-
-    def __getattr__(self, item):
-        return getattr(self.element, item)
-
-    def get_element(self):
-        """Returns the element associated with this item"""
-        return self._element()
-
-    def set_element(self, element):
-        """Sets the element for this item"""
-        self._element = weakref.ref(element)
-
-    element = property(get_element)
+class PoolActionController(PoolActionItem):
+    def __init__(self, element, config=None):
+        self._channels = []
+        self._channels_enabled = []
+        self._channels_disabled = []
+        ch_config = {'controller': self}
+        for conf_channel in element._channels:
+            action_channel = PoolActionItem(conf_channel, ch_config)
+            self._channels.append(action_channel)
+            if conf_channel in element._channels_enabled:
+                self._channels_enabled.append(action_channel)
+            if conf_channel in element._channels_disabled:
+                self._channels_disabled.append(action_channel)
+        PoolActionItem.__init__(self, element, config)
 
 
 class PoolAcquisition(PoolAction):
