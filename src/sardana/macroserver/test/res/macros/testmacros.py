@@ -8,14 +8,14 @@ class runMacro(Macro):
     def run(self, *args):
 
         expect_params = (99, [1., 2.])
-        macro, _ = self.prepareMacro("testParamMacros1", *expect_params)
+        macro, _ = self.prepareMacro("pt6_base", *expect_params)
         self.runMacro(macro)
         result = macro.data
         msg = MSG_TEMP % (result, expect_params)
         assert expect_params == result, msg
 
         params = (99, 1., 2.)
-        macro, _ = self.prepareMacro("testParamMacros1", *params)
+        macro, _ = self.prepareMacro("pt6_base", *params)
         expect_params = (99, [1., 2.])
         self.runMacro(macro)
         result = macro.data
@@ -23,7 +23,7 @@ class runMacro(Macro):
         assert expect_params == result, msg
 
         expect_params = ([92], True)
-        macro, _ = self.prepareMacro("testParamsFirstRepeat", *expect_params)
+        macro, _ = self.prepareMacro("pt10_base", *expect_params)
         self.runMacro(macro)
         result = macro.data
         msg = MSG_TEMP % (result, expect_params)
@@ -31,7 +31,7 @@ class runMacro(Macro):
 
         params = (91, True)
         expect_params = ([91], True)
-        macro, _ = self.prepareMacro("testParamsFirstRepeat", *params)
+        macro, _ = self.prepareMacro("pt10_base", *params)
         self.runMacro(macro)
         result = macro.data
         msg = MSG_TEMP % (result, expect_params)
@@ -43,7 +43,7 @@ class createMacro(Macro):
     def run(self, *args):
 
         expect_params = (99, [1., 2.])
-        macro, pars = self.createMacro('testParamMacros1', *expect_params)
+        macro, pars = self.createMacro('pt6_base', *expect_params)
         self.runMacro(macro)
         result = macro.data
         msg = MSG_TEMP % (result, expect_params)
@@ -52,14 +52,14 @@ class createMacro(Macro):
         params = (99, 1., 2.)
         expect_params = (99, [1., 2.])
         self.runMacro(macro)
-        macro, pars = self.createMacro('testParamMacros1', *params)
+        macro, pars = self.createMacro('pt6_base', *params)
         self.runMacro(macro)
         result = macro.data
         msg = MSG_TEMP % (result, expect_params)
         assert expect_params == result, msg
 
         expect_params = ([92], True)
-        macro, _ = self.createMacro("testParamsFirstRepeat", *expect_params)
+        macro, _ = self.createMacro("pt10_base", *expect_params)
         self.runMacro(macro)
         result = macro.data
         msg = MSG_TEMP % (result, expect_params)
@@ -67,7 +67,7 @@ class createMacro(Macro):
 
         params = (91, True)
         expect_params = ([91.], True)
-        macro, _ = self.createMacro("testParamsFirstRepeat", *params)
+        macro, _ = self.createMacro("pt10_base", *params)
         self.runMacro(macro)
         result = macro.data
         msg = MSG_TEMP % (result, expect_params)
@@ -79,45 +79,45 @@ class execMacro(Macro):
     def run(self, *args):
 
         expect_params = (99, [1., 2.])
-        macro = self.execMacro('testParamMacros1', *expect_params)
+        macro = self.execMacro('pt6_base', *expect_params)
         result = macro.data
         msg = MSG_TEMP % (result, expect_params)
         assert expect_params == result, msg
 
         params = (99, 1., 2.)
-        macro = self.execMacro('testParamMacros1', *params)
+        macro = self.execMacro('pt6_base', *params)
         result = macro.data
         expect_params = (99, [1., 2.])
         msg = MSG_TEMP % (result, expect_params)
         assert expect_params == result, msg
 
         expect_params = ([92], True)
-        macro = self.execMacro('testParamsFirstRepeat', *expect_params)
+        macro = self.execMacro('pt10_base', *expect_params)
         self.runMacro(macro)
         result = macro.data
         msg = MSG_TEMP % (result, expect_params)
         assert expect_params == result, msg
 
         expect_params = ([99.], True)
-        macro = self.execMacro("testParamsFirstRepeat [99] True")
+        macro = self.execMacro("pt10_base [99] True")
         self.runMacro(macro)
         result = macro.data
         msg = MSG_TEMP % (result, expect_params)
         assert expect_params == result, msg
 
         expect_params = ([999.], True)
-        macro = self.execMacro("testParamsFirstRepeat", 999, True)
+        macro = self.execMacro("pt10_base", 999, True)
         self.runMacro(macro)
         result = macro.data
         msg = MSG_TEMP % (result, expect_params)
         assert expect_params == result, msg
 
 
-class testParamMacros1(Macro):
-    """Macro with a motor parameter followed by a list of numbers.
+class pt6_base(Macro):
+    """Macro with a number parameter followed by a list of numbers.
     Usages from Spock, ex.:
-    pt5 99 [1 3]
-    pt5 99 1 3
+    pt6_base 99 [1 3]
+    pt6_base 99 1 3
     """
 
     param_def = [
@@ -130,17 +130,17 @@ class testParamMacros1(Macro):
         self.data = args
 
 
-class testParamsFirstRepeat(Macro):
-    """Macro with a motor parameter followed by a list of numbers.
+class pt10_base(Macro):
+    """Macro with a list of numbers followed by a number parameter.
     Usages from Spock, ex.:
-    pt5 99 [1 3]
-    pt5 99 1 3
+    pt10_base 99 [1 3]
+    pt10_base 99 1 3
     """
 
     param_def = [
 
-        ['numb_list', [['pos', Type.Float, None, 'value']], None, 'List of '
-                                                                  'values'],
+        ['numb_list', [['pos', Type.Float, None, 'value']], None,
+         'List of values'],
         ['val1', Type.Boolean, None, 'value 1'],
     ]
 
