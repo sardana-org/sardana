@@ -186,7 +186,7 @@ class ControllerConfiguration(ConfigurationItem):
 
     def get_channels(self, enabled=None):
         if enabled is None:
-            return list(self.channels)
+            return list(self._channels)
         elif enabled:
             return list(self._channels_enabled)
         else:
