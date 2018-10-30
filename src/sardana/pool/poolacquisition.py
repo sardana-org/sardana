@@ -138,7 +138,7 @@ class PoolAcquisition(PoolAction):
         if name == "start":
             if self._sw_start_acq_args is not None:
                 self.debug('Executing software start acquisition.')
-                get_thread_pool().add(self._sw_start_acq.run,
+                get_thread_pool().add(self._sw_start_acq.run, None,
                                       *self._sw_start_acq_args.args,
                                       **self._sw_start_acq_args.kwargs)
         elif name == "active":
@@ -154,7 +154,7 @@ class PoolAcquisition(PoolAction):
                     self.debug('Executing software acquisition.')
                     self._sw_acq_args.kwargs.update({'index': value})
                     self._sw_acq._started = True
-                    get_thread_pool().add(self._sw_acq.run,
+                    get_thread_pool().add(self._sw_acq.run, None,
                                           *self._sw_acq_args.args,
                                           **self._sw_acq_args.kwargs)
             if self._0d_acq_args is not None:
@@ -169,7 +169,7 @@ class PoolAcquisition(PoolAction):
                     self._0d_acq._started = True
                     self._0d_acq._stopped = False
                     self._0d_acq._aborted = False
-                    get_thread_pool().add(self._0d_acq.run,
+                    get_thread_pool().add(self._0d_acq.run, None,
                                           *self._0d_acq_args.args,
                                           **self._0d_acq_args.kwargs)
         elif name == "passive":
