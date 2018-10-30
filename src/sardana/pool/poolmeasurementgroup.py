@@ -863,27 +863,21 @@ class PoolMeasurementGroup(PoolGroupElement):
     # acquisition
     # -------------------------------------------------------------------------
 
-    def prepare(self):
-        # load configuration into controller(s) if necessary
-        self.load_configuration()
-        conf_ctrls = self.configuration.get_timerable_ctrls(enabled=True)
-        ctrl_lodeable = {}
-        for conf_ctrl in conf_ctrls:
-            if self.acquisition_mode == AcqMode.Timer:
-                lodeable = conf_ctrl.timer
-            elif self.acquisition_mode == AcqMode.Monitor:
-                lodeable = conf_ctrl.monitor
-            else:
-                continue
-            ctrl_lodeable[conf_ctrl] = lodeable
-
+    def prepare(self, multiple=1):
         value = self._get_value()
-        repetitions = self.synchronization.repetitions
-        latency = self.synchronization.passive_time
         self._pending_starts = self.nr_of_starts
 
-        self.acquisition.prepare(ctrl_lodeable, value, repetitions,
-                                 latency, self.nr_of_starts)
+        kwargs = {'head': self,
+                  'multiple': multiple}
+
+        self.acquisition.prepare(self.configuration,
+                                 self.acquisition_mode,
+                                 value,
+                                 self._synchronization,
+                                 self._moveable_obj,
+                                 self.sw_synch_initial_domain,
+                                 self.nr_of_starts,
+                                 **kwargs)
 
     def start_acquisition(self, value=None, multiple=1):
         if self._pending_starts == 0:
@@ -894,37 +888,13 @@ class PoolMeasurementGroup(PoolGroupElement):
             nr_of_starts = self.nr_of_starts
             self.set_nr_of_starts(1, propagate=0)
             try:
-                self.prepare()
+                self.prepare(multiple)
             finally:
                 self.set_nr_of_starts(nr_of_starts, propagate=0)
         self._aborted = False
         self._pending_starts -= 1
         if not self._simulation_mode:
-            # determining the acquisition parameters
-            value = self._get_value()
-
-            self.acquisition.run(
-                head=self,
-                config=self._config,
-                multiple=multiple,
-                acq_mode=self.acquisition_mode,
-                value=value,
-                synchronization=self._synchronization,
-                moveable=self._moveable_obj,
-                sw_synch_initial_domain=self.sw_synch_initial_domain)
-
-            #
-            # kwargs = dict(head=self, config=self._config, multiple=multiple)
-            # acquisition_mode = self.acquisition_mode
-            # if acquisition_mode is AcqMode.Timer:
-            #     kwargs['integ_time'] = self.get_integration_time()
-            # elif acquisition_mode is AcqMode.Monitor:
-            #     kwargs['monitor'] = self._monitor
-            # kwargs['synchronization'] = self._synchronization
-            # kwargs['moveable'] = self._moveable_obj
-            # kwargs['sw_synch_initial_domain'] = self._sw_synch_initial_domain
-            # # start acquisition
-            # self.acquisition.run(**kwargs)
+            self.acquisition.run()
 
     def _get_value(self):
         if self._acquisition_mode is AcqMode.Timer:
