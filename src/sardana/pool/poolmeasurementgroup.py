@@ -237,6 +237,7 @@ class MeasurementConfiguration(object):
         self._user_confg = {}
         self._channel_acq_synch = {}
         self._ctrl_acq_synch = {}
+        self.changed = False
 
     def get_acq_synch_by_channel(self, element):
         if isinstance(element, ConfigurationItem):
@@ -530,6 +531,8 @@ class MeasurementConfiguration(object):
             for conf_synch in conf_synch_ctrl.get_channels(enabled=True):
                 user_elem_ids_list.append(conf_synch.id)
         self._parent.set_user_element_ids(user_elem_ids_list)
+
+        self.changed = True
 
     def _fill_channel_data(self, channel, channel_data):
         """
