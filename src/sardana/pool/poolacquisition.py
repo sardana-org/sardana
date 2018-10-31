@@ -510,14 +510,14 @@ class PoolAcquisitionBase(PoolAction):
                 return True
 
     @DebugIt()
-    def start_action(self, conf_ctrls, value, repetitions=1, latency=0,
+    def start_action(self, ctrls, value, repetitions=1, latency=0,
                      master=None, index=None, acq_sleep_time=None,
                      nb_states_per_value=None, *args,
                      **kwargs):
         """
         Prepares everything for acquisition and starts it
-        :param conf_ctrls: List of enabled controllers
-        :type conf_ctrls: list
+        :param ctrls: List of enabled pool acquisition controllers
+        :type ctrls: list
         :param value: integration time/monitor counts
         :type value: float/int or seq<float/int>
         :param repetitions: repetitions
@@ -554,18 +554,18 @@ class PoolAcquisitionBase(PoolAction):
         # make sure the controller which has the master channel is the last to
         # be called
         if master is not None:
-            conf_ctrls.remove(master.controller)
-            conf_ctrls.append(master.controller)
+            ctrls.remove(master.controller)
+            ctrls.append(master.controller)
 
         # controllers that will be read at during the action
-        self._set_pool_ctrl_dict_loop(conf_ctrls)
+        self._set_pool_ctrl_dict_loop(ctrls)
 
         # channels that are acquired (only enabled)
         self._channels = []
 
-        def load(conf_channel, value, repetitions, latency=0):
-            axis = conf_channel.axis
-            pool_ctrl = conf_channel.controller
+        def load(channel, value, repetitions, latency=0):
+            axis = channel.axis
+            pool_ctrl = channel.controller
             ctrl = pool_ctrl.ctrl
             ctrl.PreLoadAll()
             try:
@@ -607,70 +607,74 @@ class PoolAcquisitionBase(PoolAction):
 
         with ActionContext(self):
             # PreLoadAll, PreLoadOne, LoadOne and LoadAll
-            for conf_ctrl in conf_ctrls:
+            for ctrl in ctrls:
                 # TODO find solution for master now sardana only use timer
-                load(conf_ctrl.timer, value, repetitions, latency)
+                load(ctrl.timer, value, repetitions, latency)
 
             # TODO: remove when the action allows to use tango attributes
             try:
-                conf_ctrls.pop('__tango__')
+                ctrls.pop('__tango__')
             except Exception:
                 pass
 
             # PreStartAll on all enabled controllers
-            for conf_ctrl in conf_ctrls:
-                conf_ctrl.ctrl.PreStartAll()
+            for ctrl in ctrls:
+                pool_ctrl = ctrl.element
+                pool_ctrl.ctrl.PreStartAll()
 
             # PreStartOne & StartOne on all enabled elements
-            for conf_ctrl in conf_ctrls:
-                conf_channels = conf_ctrl.get_channels(enabled=True)
+            for ctrl in ctrls:
+                channels = ctrl.get_channels(enabled=True)
 
                 # make sure that the master timer/monitor is started as the
                 # last one
-                conf_channels.remove(conf_ctrl.timer)
-                conf_channels.append(conf_ctrl.timer)
-                for conf_channel in conf_channels:
-                    axis = conf_channel.axis
-                    ret = conf_ctrl.ctrl.PreStartOne(axis, value)
+                channels.remove(ctrl.master)
+                channels.append(ctrl.master)
+                for channel in channels:
+                    axis = channel.axis
+                    pool_ctrl = ctrl.element
+                    ret = pool_ctrl.ctrl.PreStartOne(axis, value)
                     if not ret:
                         msg = ("%s.PreStartOne(%d) returns False" %
-                               (conf_ctrl.name, axis))
+                               (ctrl.name, axis))
                         raise Exception(msg)
                     try:
-                        conf_ctrl.ctrl.StartOne(axis, value)
+                        pool_ctrl = ctrl.element
+                        pool_ctrl.ctrl.StartOne(axis, value)
                     except Exception as e:
                         self.debug(e, exc_info=True)
-                        conf_channel.set_state(State.Fault, propagate=2)
+                        channel.set_state(State.Fault, propagate=2)
                         msg = ("%s.StartOne(%d) failed" %
-                               (conf_ctrl.name, axis))
+                               (ctrl.name, axis))
                         raise Exception(msg)
 
-                    self._channels.append(conf_channel)
+                    self._channels.append(channel)
 
             # set the state of all elements to  and inform their listeners
-            for conf_channel in self._channels:
-                conf_channel.set_state(State.Moving, propagate=2)
+            for channel in self._channels:
+                channel.set_state(State.Moving, propagate=2)
 
             # StartAll on all enabled controllers
-            for conf_ctrl in conf_ctrls:
+            for ctrl in ctrls:
                 try:
-                    conf_ctrl.ctrl.StartAll()
+                    pool_ctrl = ctrl.element
+                    pool_ctrl.ctrl.StartAll()
                 except Exception as e:
-                    conf_channels = conf_ctrl.get_channels(enabled=True)
+                    channels = ctrl.get_channels(enabled=True)
                     self.debug(e, exc_info=True)
-                    for conf_channel in conf_channels:
-                        conf_channel.set_state(State.Fault, propagate=2)
-                    msg = ("%s.StartAll() failed" % conf_ctrl.name)
+                    for channel in channels:
+                        channel.set_state(State.Fault, propagate=2)
+                    msg = ("%s.StartAll() failed" % ctrl.name)
                     raise Exception(msg)
 
-    def _set_pool_ctrl_dict_loop(self, conf_ctrls):
+    def _set_pool_ctrl_dict_loop(self, ctrls):
         ctrl_channels = {}
-        for conf_ctrl in conf_ctrls:
+        for ctrl in ctrls:
             pool_channels = []
-            pool_ctrl = conf_ctrl.element
+            pool_ctrl = ctrl.element
             # TODO: filter 1D and 2D for software synchronize acquisition
-            for conf_channel in conf_ctrl.get_channels(enabled=True):
-                pool_channels.append(conf_channel.element)
+            for channel in ctrl.get_channels(enabled=True):
+                pool_channels.append(channel.element)
             ctrl_channels[pool_ctrl] = pool_channels
         self._pool_ctrl_dict_loop = ctrl_channels
 
