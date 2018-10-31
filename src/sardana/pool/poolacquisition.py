@@ -402,7 +402,6 @@ class PoolAcquisition(PoolAction):
                             nr_of_starts)
         self._prepared = True
 
-
     def _prepare_ctrls(self, ctrls, value, repetitions, latency,
                        nr_of_starts):
         for ctrl in ctrls:
@@ -576,8 +575,7 @@ class PoolAcquisitionBase(PoolAction):
     @DebugIt()
     def start_action(self, ctrls, value, repetitions=1, latency=0,
                      master=None, index=None, acq_sleep_time=None,
-                     nb_states_per_value=None, *args,
-                     **kwargs):
+                     nb_states_per_value=None, **kwargs):
         """
         Prepares everything for acquisition and starts it
         :param ctrls: List of enabled pool acquisition controllers
@@ -1046,7 +1044,7 @@ class Pool0DAcquisition(PoolAction):
         PoolAction.__init__(self, main_element, name)
 
     def start_action(self, conf_ctrls, index=None, acq_sleep_time=None,
-                     nb_states_per_value=None, *args, **kwargs):
+                     nb_states_per_value=None, **kwargs):
         """Prepares everything for acquisition and starts it.
 
            :param: config"""
