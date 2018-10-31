@@ -126,12 +126,12 @@ def _to_fqdn(name, logger=None):
 
 
 class ConfigurationItem(object):
-    def __init__(self, element, conf=None):
+    def __init__(self, element, attrs=None):
         self._element = weakref.ref(element)
         self.enabled = True
 
-        if conf is not None:
-            self.__dict__.update(conf)
+        if attrs is not None:
+            self.__dict__.update(attrs)
 
     def __getattr__(self, item):
         return getattr(self.element, item)
@@ -150,8 +150,8 @@ class ConfigurationItem(object):
 class ControllerConfiguration(ConfigurationItem):
     """Configuration: 'timer', 'monitor', 'synchronization', 'channels'"""
 
-    def __init__(self, element, conf=None):
-        ConfigurationItem.__init__(self, element, conf)
+    def __init__(self, element, attrs=None):
+        ConfigurationItem.__init__(self, element, attrs)
         self.enabled = False
         self._channels = []
         self._channels_enabled = []
@@ -196,8 +196,8 @@ class ChannelConfiguration(ConfigurationItem):
 
 class SynchronizerConfiguration(ConfigurationItem):
 
-    def __init__(self, element, conf=None):
-        ConfigurationItem.__init__(self, element, conf)
+    def __init__(self, element, attrs=None):
+        ConfigurationItem.__init__(self, element, attrs)
         self.enabled = False
 
 
