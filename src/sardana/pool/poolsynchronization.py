@@ -131,11 +131,11 @@ class PoolSynchronization(PoolAction):
     def add_listener(self, listener):
         self._listener = listener
 
-    def start_action(self, conf_ctrls, synchronization=None, moveable=None,
+    def start_action(self, ctrls, synchronization, moveable=None,
                      sw_synch_initial_domain=None, *args, **kwargs):
         '''Start action method. Expects the following kwargs:
 
-        - config - dictionary containing measurement group configuration
+        - ctrls - dictionary containing measurement group configuration
         - synchronization - list of dictionaries containing information about
           the expected synchronization
         - moveable (optional)- moveable object used as the synchronization
@@ -145,36 +145,21 @@ class PoolSynchronization(PoolAction):
         - sw_synch_initial_domain (optional) - initial domain for software
           synchronizer, can be either SynchDomain.Time or SynchDomain.Position
         '''
-
-        # cfg = self.main_element.configuration
-        # ctrls_config = cfg.ctrl_tg_sync
-        # pool_ctrls = ctrls_config.keys()
-        #
-        # # Prepare a dictionary with the involved channels
-        # self._channels = channels = {}
-        # for pool_ctrl in pool_ctrls:
-        #     pool_ctrl_data = ctrls_config[pool_ctrl]
-        #     elements = pool_ctrl_data['channels']
-        #
-        #     for element, element_info in elements.items():
-        #         channel = TGChannel(element, info=element_info)
-        #         channels[element] = channel
-
         with ActionContext(self):
 
             # loads synchronization description
-            for conf_ctrl in conf_ctrls:
-                ctrl = conf_ctrl.ctrl
-                ctrl.PreSynchAll()
-                for conf_channel in conf_ctrl.get_channels(enabled=True):
-                    axis = conf_channel.axis
-                    ret = ctrl.PreSynchOne(axis, synchronization)
+            for ctrl in ctrls:
+                pool_ctrl = ctrl.element
+                pool_ctrl.ctrl.PreSynchAll()
+                for channel in ctrl.get_channels(enabled=True):
+                    axis = channel.axis
+                    ret = pool_ctrl.ctrl.PreSynchOne(axis, synchronization)
                     if not ret:
                         msg = ("%s.PreSynchOne(%d) returns False" %
-                               (conf_ctrl.name, axis))
+                               (ctrl.name, axis))
                         raise Exception(msg)
-                    ctrl.SynchOne(axis, synchronization)
-                ctrl.SynchAll()
+                    pool_ctrl.ctrl.SynchOne(axis, synchronization)
+                pool_ctrl.ctrl.SynchAll()
 
             # attaching listener (usually acquisition action)
             # to the software trigger gate generator
@@ -206,30 +191,32 @@ class PoolSynchronization(PoolAction):
                 get_thread_pool().add(self._synch_soft.run)
 
             # PreStartAll on all controllers
-            for conf_ctrl in conf_ctrls:
-                conf_ctrl.ctrl.PreStartAll()
+            for ctrl in ctrls:
+                pool_ctrl = ctrl.element
+                pool_ctrl.ctrl.PreStartAll()
 
             # PreStartOne & StartOne on all elements
-            for conf_ctrl in conf_ctrls:
-                ctrl = conf_ctrl.ctrl
-                for conf_channel in conf_ctrl.get_channels(enabled=True):
-                    axis = conf_channel.axis
-                    ret = ctrl.PreStartOne(axis)
+            for ctrl in ctrls:
+                pool_ctrl = ctrl.element
+                for channel in ctrl.get_channels(enabled=True):
+                    axis = channel.axis
+                    ret = pool_ctrl.ctrl.PreStartOne(axis)
                     if not ret:
                         raise Exception("%s.PreStartOne(%d) returns False"
-                                        % (ctrl.name, axis))
-                    ctrl.StartOne(axis)
+                                        % (pool_ctrl.name, axis))
+                    pool_ctrl.ctrl.StartOne(axis)
 
             # set the state of all elements to inform their listeners
             self._channels = []
-            for conf_ctrl in conf_ctrls:
-                for conf_channel in conf_ctrl.get_channels(enabled=True):
-                    conf_channel.set_state(State.Moving, propagate=2)
-                    self._channels.append(conf_channel)
+            for ctrl in ctrls:
+                for channel in ctrl.get_channels(enabled=True):
+                    channel.set_state(State.Moving, propagate=2)
+                    self._channels.append(channel)
 
             # StartAll on all controllers
-            for conf_ctrl in conf_ctrls:
-                conf_ctrl.ctrl.StartAll()
+            for ctrl in ctrls:
+                pool_ctrl = ctrl.element
+                pool_ctrl.ctrl.StartAll()
 
     def is_triggering(self, states):
         """Determines if we are triggering or if the triggering has ended
@@ -254,8 +241,8 @@ class PoolSynchronization(PoolAction):
         '''action_loop method
         '''
         states = {}
-        for conf_channel in self._channels:
-            element = conf_channel.element
+        for channel in self._channels:
+            element = channel.element
             states[element] = None
 
         # Triggering loop
@@ -268,11 +255,11 @@ class PoolSynchronization(PoolAction):
             time.sleep(nap)
 
         # Set element states after ending the triggering
-        for triggerelement, state_info in states.items():
-            with triggerelement:
-                triggerelement.clear_operation()
-                state_info = triggerelement._from_ctrl_state_info(state_info)
-                triggerelement.set_state_info(state_info, propagate=2)
+        for element, state_info in states.items():
+            with element:
+                element.clear_operation()
+                state_info = element._from_ctrl_state_info(state_info)
+                element.set_state_info(state_info, propagate=2)
 
         # wait for software synchronizer to finish
         if self._listener is not None:
