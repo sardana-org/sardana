@@ -26,7 +26,9 @@
 """This module is part of the Python Pool library. It defines the base classes
 for"""
 
-__all__ = ["PoolMeasurementGroup"]
+__all__ = ["PoolMeasurementGroup", "MeasurementConfiguration",
+           "ControllerConfiguration", "ChannelConfiguration",
+           "SynchronizerConfiguration"]
 
 __docformat__ = 'restructuredtext'
 
