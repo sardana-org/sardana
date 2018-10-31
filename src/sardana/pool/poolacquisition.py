@@ -434,7 +434,14 @@ class PoolAcquisition(PoolAction):
         elem_type = element.get_type()
         if elem_type in TYPE_TIMERABLE_ELEMENTS:
             config = self.main_element.configuration
-            acq_synch = config.get_acq_synch_by_channel(element)
+            try:
+                acq_synch = config.get_acq_synch_by_channel(element)
+            # when configuration was not yet set and one sets the
+            # measurement group's integration time (this may happen on Tango
+            # device initialization when memorized attributes are set we
+            # fallback to software acquisition
+            except KeyError:
+                acq_synch = AcqSynch.SoftwareTrigger
             if acq_synch in (AcqSynch.SoftwareTrigger,
                              AcqSynch.SoftwareGate):
                 return self._sw_acq
