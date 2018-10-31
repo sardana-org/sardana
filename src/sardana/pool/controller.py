@@ -655,12 +655,11 @@ class Readable(object):
         raise NotImplementedError("ReadOne must be defined in the controller")
 
 
-class Preparable(object):
-    """A Preparable interface. A controller for which its axis are
-    'pareparable' for a measurement (like a counter, 1D or 2D for example)
-    should implement this interface
+class Loadable(object):
+    """A Loadable interface. A controller for which it's axis are 'loadable'
+    (like a counter, 1D or 2D for example) should implement this interface
 
-    .. note: Do not inherit directly from Preparable."""
+    .. note: Do not inherit directly from Loadable."""
 
     def PrepareOne(self, axis, value, repetitions, latency, nr_of_starts):
         """**Controller API**. Override if necessary.
@@ -669,16 +668,11 @@ class Preparable(object):
 
         :param int axis: axis number
         :param int repetitions: number of repetitions
-        :param float value: integration time /monitor value
+        :param float value: integration time / monitor count
+        :param float latency: latency time
+        :param int nr_of_starts: number of starts
         """
         pass
-
-
-class Loadable(object):
-    """A Loadable interface. A controller for which it's axis are 'loadable'
-    (like a counter, 1D or 2D for example) should implement this interface
-
-    .. note: Do not inherit directly from Loadable."""
 
     def PreLoadAll(self):
         """**Controller API**. Override if necessary.
@@ -686,7 +680,7 @@ class Loadable(object):
         Default implementation does nothing."""
         pass
 
-    def PreLoadOne(self, axis, value, repetitions):
+    def PreLoadOne(self, axis, value, repetitions, latency):
         """**Controller API**. Override if necessary.
         Called to prepare loading the master channel axis with the integration
         time / monitor value.
@@ -695,6 +689,7 @@ class Loadable(object):
         :param int axis: axis number
         :param float value: integration time /monitor value
         :param int repetitions: number of repetitions
+        :param float latency: latency time
         :return: True means a successfull PreLoadOne or False for a failure
         :rtype: bool"""
         return True
@@ -705,7 +700,7 @@ class Loadable(object):
         Default implementation does nothing."""
         pass
 
-    def LoadOne(self, axis, value, repetitions):
+    def LoadOne(self, axis, value, repetitions, latency):
         """**Controller API**. Override is MANDATORY!
         Called to load the integration time / monitor value.
         Default implementation raises :exc:`NotImplementedError`.
@@ -713,6 +708,7 @@ class Loadable(object):
         :param int axis: axis number
         :param float value: integration time /monitor value
         :param int repetitions: number of repetitions
+        :param float latency: latency time
         :param float value: integration time /monitor value"""
         raise NotImplementedError("LoadOne must be defined in the controller")
 
@@ -889,7 +885,7 @@ class MotorController(Controller, Startable, Stopable, Readable):
 
 
 class CounterTimerController(Controller, Readable, Startable, Stopable,
-                             Loadable, Preparable):
+                             Loadable):
     """Base class for a counter/timer controller. Inherit from this class to
     implement your own counter/timer controller for the device pool.
 
@@ -1052,8 +1048,7 @@ class ZeroDController(Controller, Readable, Stopable):
         pass
 
 
-class OneDController(Controller, Readable, Startable, Stopable, Loadable,
-                     Preparable):
+class OneDController(Controller, Readable, Startable, Stopable, Loadable):
     """Base class for a 1D controller. Inherit from this class to
     implement your own 1D controller for the device pool.
 
@@ -1091,8 +1086,7 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable,
         return self.GetPar(axis, parameter)
 
 
-class TwoDController(Controller, Readable, Startable, Stopable, Loadable,
-                     Preparable):
+class TwoDController(Controller, Readable, Startable, Stopable, Loadable):
     """Base class for a 2D controller. Inherit from this class to
     implement your own 2D controller for the device pool."""
 
