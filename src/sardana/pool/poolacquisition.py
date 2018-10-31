@@ -222,13 +222,13 @@ class PoolAcquisition(PoolAction):
 
     def event_received(self, *args, **kwargs):
         timestamp = time.time()
-        _, type_, value = args
+        _, type_, index = args
         name = type_.name
         if name == "state":
             return
         t_fmt = '%Y-%m-%d %H:%M:%S.%f'
         t_str = datetime.datetime.fromtimestamp(timestamp).strftime(t_fmt)
-        msg = '%s event with id: %d received at: %s' % (name, value, t_str)
+        msg = '%s event with id: %d received at: %s' % (name, index, t_str)
         self.debug(msg)
         if name == "start":
             if self._sw_start_acq_args is not None:
@@ -247,7 +247,7 @@ class PoolAcquisition(PoolAction):
                     return
                 else:
                     self.debug('Executing software acquisition.')
-                    self._sw_acq_args.kwargs.update({'index': value})
+                    self._sw_acq_args.kwargs.update({'index': index})
                     self._sw_acq._started = True
                     get_thread_pool().add(self._sw_acq.run, None,
                                           *self._sw_acq_args.args,
@@ -260,7 +260,7 @@ class PoolAcquisition(PoolAction):
                     return
                 else:
                     self.debug('Executing ZeroD acquisition.')
-                    self._0d_acq_args.kwargs.update({'index': value})
+                    self._0d_acq_args.kwargs.update({'index': index})
                     self._0d_acq._started = True
                     self._0d_acq._stopped = False
                     self._0d_acq._aborted = False
