@@ -509,6 +509,7 @@ class PoolAcquisition(PoolAction):
         ret = {}
         ret.update(self._hw_acq.get_pool_controllers())
         ret.update(self._sw_acq.get_pool_controllers())
+        ret.update(self._sw_start_acq.get_pool_controllers())
         ret.update(self._0d_acq.get_pool_controllers())
         return ret
 
