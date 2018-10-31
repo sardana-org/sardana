@@ -27,6 +27,7 @@ import threading
 from taurus.external import unittest
 
 from sardana.pool.poolsynchronization import PoolSynchronization
+from sardana.pool.poolacquisition import get_acq_ctrls
 from sardana.sardanadefs import State
 from sardana.pool.test import FakePool, createPoolController, \
     createPoolTriggerGate, dummyPoolTGCtrlConf01, dummyTriggerGateConf01, \
@@ -52,9 +53,10 @@ class PoolTriggerGateTestCase(unittest.TestCase):
         dummy_tg_ctrl.add_element(self.dummy_tg)
         pool.add_element(dummy_tg_ctrl)
         pool.add_element(self.dummy_tg)
-        conf_ctrl = createControllerConfiguration(dummy_tg_ctrl,
-                                                  [self.dummy_tg])
-        self.conf_ctrls = [conf_ctrl]
+        self.conf_ctrl = createControllerConfiguration(dummy_tg_ctrl,
+                                                       [self.dummy_tg])
+
+        self.ctrls = get_acq_ctrls([self.conf_ctrl])
         # self.cfg = createPoolSynchronizationConfiguration((dummy_tg_ctrl,),
         #                                                   ((self.dummy_tg,),),)
         # Create mock and define its functions
@@ -74,9 +76,10 @@ class PoolTriggerGateTestCase(unittest.TestCase):
 
     def test_tggeneration(self):
         """Verify trigger element states before and after action_loop."""
-        from mock import call
+        from mock import call, MagicMock
         # starting action
-        self.tgaction.start_action(self.conf_ctrls)
+        synchronization = MagicMock()
+        self.tgaction.start_action(self.ctrls, synchronization)
         # verifying that the action correctly started the involved controller
         self.mock_tg_ctrl.assert_has_calls([call.PreStartAll(),
                                             (call.PreStartOne(1,)),
