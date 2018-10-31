@@ -136,10 +136,6 @@ class ConfigurationItem(object):
     def __getattr__(self, item):
         return getattr(self.element, item)
 
-    def get_config(self):
-        """ Returns the configuration dictionary"""
-        raise NotImplementedError()
-
     def get_element(self):
         """Returns the element associated with this item"""
         return self._element()
