@@ -77,6 +77,60 @@ def is_value_error(value):
     return False
 
 
+def get_acq_ctrls(ctrls, acq_mode=None):
+    action_ctrls = []
+    for ctrl in ctrls:
+        attrs = {}
+        if acq_mode is not None:
+            master = None
+            if acq_mode is AcqMode.Timer:
+                master = ctrl.timer
+            elif acq_mode is AcqMode.Monitor:
+                master = ctrl.monitor
+            attrs = {'master': master}
+        action_ctrl = AcqController(ctrl, attrs)
+        action_ctrls.append(action_ctrl)
+    return action_ctrls
+
+
+def get_synch_acq_items(ctrls):
+    ctrls = get_acq_ctrls(ctrls)
+    # ctrls = config.get_synch_ctrls(enabled=True)
+    return ctrls
+
+
+def get_0d_acq_items(ctrls):
+    ctrls = get_acq_ctrls(ctrls)
+    return ctrls
+
+
+def get_sw_acq_items(ctrls, master, acq_mode=AcqMode.Timer):
+    ctrls = get_acq_ctrls(ctrls, acq_mode)
+    # Search master AcqConfigurationItem obj
+    for ctrl in ctrls:
+        for channel in ctrl.get_channels():
+            if channel.configuration == master:
+                master = channel
+                break
+    return ctrls, master
+
+
+def get_sw_start_acq_items(ctrls, master, acq_mode=AcqMode.Timer):
+    ctrls = get_acq_ctrls(ctrls, acq_mode)
+    # Search master AcqConfigurationItem obj
+    for ctrl in ctrls:
+        for channel in ctrl.get_channels():
+            if channel.configuration == master:
+                master = channel
+                break
+    return ctrls, master
+
+
+def get_hw_acq_items(ctrls, acq_mode=AcqMode.Timer):
+    ctrls = get_acq_ctrls(ctrls, acq_mode)
+    return ctrls
+
+
 class ActionArgs(object):
 
     def __init__(self, args, kwargs=None):
