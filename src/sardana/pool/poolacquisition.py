@@ -86,20 +86,59 @@ class ActionArgs(object):
         self.kwargs = kwargs
 
 
-class PoolActionController(PoolActionItem):
-    def __init__(self, element, config=None):
+class AcqConfigurationItem(object):
+
+    def __init__(self, configuration, attrs=None):
+        self._configuration = weakref.ref(configuration)
+        self.enabled = True
+
+        if attrs is not None:
+            self.__dict__.update(attrs)
+
+    def __getattr__(self, item):
+        return getattr(self.configuration, item)
+
+    def get_configuration(self):
+        """Returns the element associated with this item"""
+        return self._configuration()
+
+    def set_configuration(self, configuration):
+        """Sets the element for this item"""
+        self._configuration = weakref.ref(configuration)
+
+    configuration = property(get_configuration)
+
+
+class AcqController(AcqConfigurationItem):
+
+    def __init__(self, configuration, attrs=None):
+        if attrs is not None:
+            master = attrs.get('master')
         self._channels = []
         self._channels_enabled = []
         self._channels_disabled = []
-        ch_config = {'controller': self}
-        for conf_channel in element._channels:
-            action_channel = PoolActionItem(conf_channel, ch_config)
+        ch_attrs = {'controller': self}
+        for conf_channel in configuration._channels:
+            action_channel = AcqConfigurationItem(conf_channel, ch_attrs)
             self._channels.append(action_channel)
-            if conf_channel in element._channels_enabled:
+            if conf_channel in configuration._channels_enabled:
                 self._channels_enabled.append(action_channel)
-            if conf_channel in element._channels_disabled:
+            if conf_channel in configuration._channels_disabled:
                 self._channels_disabled.append(action_channel)
-        PoolActionItem.__init__(self, element, config)
+            if master is None:
+                continue
+            if master == conf_channel:
+                attrs['master'] = action_channel
+                master = None
+        AcqConfigurationItem.__init__(self, configuration, attrs)
+
+    def get_channels(self, enabled=None):
+        if enabled is None:
+            return list(self._channels)
+        elif enabled:
+            return list(self._channels_enabled)
+        else:
+            return list(self._channels_disabled)
 
 
 class PoolAcquisition(PoolAction):
