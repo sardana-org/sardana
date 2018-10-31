@@ -4,7 +4,10 @@ MSG_TEMP = "Parsing failed (result: %r; expected: %r)"
 
 
 class runMacro(Macro):
-
+    """
+    Macro to test the parameters parsing/decoding using the macro API,
+    'runMacro'
+    """
     def run(self, *args):
 
         expect_params = (99, [1., 2.])
@@ -39,7 +42,10 @@ class runMacro(Macro):
 
 
 class createMacro(Macro):
-
+    """
+    Macro to test the parameters parsing/decoding using the macro API,
+    'createMacro'
+    """
     def run(self, *args):
 
         expect_params = (99, [1., 2.])
@@ -75,7 +81,10 @@ class createMacro(Macro):
 
 
 class execMacro(Macro):
-
+    """
+    Macro to test the parameters parsing/decoding using the macro API,
+    'execMacro'
+    """
     def run(self, *args):
 
         expect_params = (99, [1., 2.])
@@ -131,10 +140,10 @@ class pt6_base(Macro):
 
 
 class pt10_base(Macro):
-    """Macro with a list of numbers followed by a number parameter.
+    """Macro with a list of numbers followed by a boolean parameter.
     Usages from Spock, ex.:
-    pt10_base 99 [1 3]
-    pt10_base 99 1 3
+    pt10_base [1] True
+    pt10_base 1 True
     """
 
     param_def = [
