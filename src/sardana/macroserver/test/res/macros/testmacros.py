@@ -1,6 +1,6 @@
 from sardana.macroserver.macro import Type, Macro
 
-MSG_TEMP = "Parsing failed (result: %r; expected: %r)"
+FAIL_MSG = "Parsing or decoding failed (result: %r; expected: %r)"
 
 
 class runMacro(Macro):
@@ -14,7 +14,7 @@ class runMacro(Macro):
         macro, _ = self.prepareMacro("pt6_base", *expect_params)
         self.runMacro(macro)
         result = macro.data
-        msg = MSG_TEMP % (result, expect_params)
+        msg = FAIL_MSG % (result, expect_params)
         assert expect_params == result, msg
 
         params = (99, 1., 2.)
@@ -22,14 +22,14 @@ class runMacro(Macro):
         expect_params = (99, [1., 2.])
         self.runMacro(macro)
         result = macro.data
-        msg = MSG_TEMP % (result, expect_params)
+        msg = FAIL_MSG % (result, expect_params)
         assert expect_params == result, msg
 
         expect_params = ([92], True)
         macro, _ = self.prepareMacro("pt10_base", *expect_params)
         self.runMacro(macro)
         result = macro.data
-        msg = MSG_TEMP % (result, expect_params)
+        msg = FAIL_MSG % (result, expect_params)
         assert expect_params == result, msg
 
         params = (91, True)
@@ -37,7 +37,7 @@ class runMacro(Macro):
         macro, _ = self.prepareMacro("pt10_base", *params)
         self.runMacro(macro)
         result = macro.data
-        msg = MSG_TEMP % (result, expect_params)
+        msg = FAIL_MSG % (result, expect_params)
         assert expect_params == result, msg
 
 
@@ -52,7 +52,7 @@ class createMacro(Macro):
         macro, pars = self.createMacro('pt6_base', *expect_params)
         self.runMacro(macro)
         result = macro.data
-        msg = MSG_TEMP % (result, expect_params)
+        msg = FAIL_MSG % (result, expect_params)
         assert expect_params == result, msg
 
         params = (99, 1., 2.)
@@ -61,14 +61,14 @@ class createMacro(Macro):
         macro, pars = self.createMacro('pt6_base', *params)
         self.runMacro(macro)
         result = macro.data
-        msg = MSG_TEMP % (result, expect_params)
+        msg = FAIL_MSG % (result, expect_params)
         assert expect_params == result, msg
 
         expect_params = ([92], True)
         macro, _ = self.createMacro("pt10_base", *expect_params)
         self.runMacro(macro)
         result = macro.data
-        msg = MSG_TEMP % (result, expect_params)
+        msg = FAIL_MSG % (result, expect_params)
         assert expect_params == result, msg
 
         params = (91, True)
@@ -76,7 +76,7 @@ class createMacro(Macro):
         macro, _ = self.createMacro("pt10_base", *params)
         self.runMacro(macro)
         result = macro.data
-        msg = MSG_TEMP % (result, expect_params)
+        msg = FAIL_MSG % (result, expect_params)
         assert expect_params == result, msg
 
 
@@ -90,35 +90,35 @@ class execMacro(Macro):
         expect_params = (99, [1., 2.])
         macro = self.execMacro('pt6_base', *expect_params)
         result = macro.data
-        msg = MSG_TEMP % (result, expect_params)
+        msg = FAIL_MSG % (result, expect_params)
         assert expect_params == result, msg
 
         params = (99, 1., 2.)
         macro = self.execMacro('pt6_base', *params)
         result = macro.data
         expect_params = (99, [1., 2.])
-        msg = MSG_TEMP % (result, expect_params)
+        msg = FAIL_MSG % (result, expect_params)
         assert expect_params == result, msg
 
         expect_params = ([92], True)
         macro = self.execMacro('pt10_base', *expect_params)
         self.runMacro(macro)
         result = macro.data
-        msg = MSG_TEMP % (result, expect_params)
+        msg = FAIL_MSG % (result, expect_params)
         assert expect_params == result, msg
 
         expect_params = ([99.], True)
         macro = self.execMacro("pt10_base [99] True")
         self.runMacro(macro)
         result = macro.data
-        msg = MSG_TEMP % (result, expect_params)
+        msg = FAIL_MSG % (result, expect_params)
         assert expect_params == result, msg
 
         expect_params = ([999.], True)
         macro = self.execMacro("pt10_base", 999, True)
         self.runMacro(macro)
         result = macro.data
-        msg = MSG_TEMP % (result, expect_params)
+        msg = FAIL_MSG % (result, expect_params)
         assert expect_params == result, msg
 
 
