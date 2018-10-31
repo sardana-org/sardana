@@ -28,11 +28,11 @@ import threading
 from taurus.external.unittest import TestCase
 from taurus.test import insertTest
 
-from sardana.pool import AcqSynch
+from sardana.pool import AcqSynch, AcqMode
 from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.pool.poolsynchronization import PoolSynchronization
 from sardana.pool.poolacquisition import PoolAcquisitionHardware, \
-    PoolAcquisitionSoftware, PoolAcquisitionSoftwareStart
+    PoolAcquisitionSoftware, PoolAcquisitionSoftwareStart, get_acq_ctrls
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool.test import createControllerConfiguration, \
     createTimerableControllerConfiguration, BasePoolTestCase, FakeElement, \
@@ -165,8 +165,11 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
                                                                 [ct_1_1])
         conf_ct_ctrl_2 = createTimerableControllerConfiguration(ct_ctrl_2,
                                                                 [ct_2_1])
-        conf_ct_2_1 = conf_ct_ctrl_2.timer
+        hw_ctrls = get_acq_ctrls([conf_ct_ctrl_1], acq_mode=AcqMode.Timer)
+        sw_ctrls = get_acq_ctrls([conf_ct_ctrl_2], acq_mode=AcqMode.Timer)
+        sw_master = sw_ctrls[0].master
         conf_tg_ctrl_1 = createControllerConfiguration(tg_ctrl_1, [tg_1_1])
+        synch_ctrls = get_acq_ctrls([conf_tg_ctrl_1])
         # creating synchronization action
         self.synchronization = self.create_action(PoolSynchronization,
                                                   [tg_1_1])
@@ -187,8 +190,8 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
         self.sw_acq_busy = threading.Event()
         self.sw_acq.add_finish_hook(self.sw_acq_busy.clear)
 
-        self.sw_acq_args = ([conf_ct_ctrl_2], integ_time)
-        self.sw_acq_kwargs = {"master": conf_ct_2_1}
+        self.sw_acq_args = (sw_ctrls, integ_time)
+        self.sw_acq_kwargs = {"master": sw_master}
 
         total_interval = active_interval + passive_interval
         group = {
@@ -200,8 +203,8 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
         synchronization = [group]
         # get the current number of jobs
         jobs_before = get_thread_pool().qsize
-        self.hw_acq.run([conf_ct_ctrl_1], integ_time, repetitions)
-        self.synchronization.run([conf_tg_ctrl_1], synchronization)
+        self.hw_acq.run(hw_ctrls, integ_time, repetitions)
+        self.synchronization.run(synch_ctrls, synchronization)
         # waiting for acquisition and synchronization to finish
         while (self.hw_acq.is_running()
                or self.sw_acq.is_running()
@@ -241,7 +244,8 @@ class AcquisitionSoftwareStartTestCase(AcquisitionTestCase, TestCase):
 
         conf_ct_ctrl_1 = createTimerableControllerConfiguration(self.ct_ctrl_1,
                                                                 [self.ct_1_1])
-        conf_ct_1_1 = conf_ct_ctrl_1.timer
+        ctrls = get_acq_ctrls([conf_ct_ctrl_1], AcqMode.Timer)
+        master = ctrls[0].master
         # creating synchronization action
         self.synchronization = self.create_action(PoolSynchronization,
                                                   [self.tg_1_1])
@@ -251,8 +255,9 @@ class AcquisitionSoftwareStartTestCase(AcquisitionTestCase, TestCase):
         # creating acquisition actions
         self.acquisition = self.create_action(PoolAcquisitionSoftwareStart,
                                               [self.ct_1_1])
-        self.acq_args = ([conf_ct_ctrl_1], integ_time, repetitions)
-        self.acq_kwargs = {"master": conf_ct_1_1}
+
+        self.acq_args = (ctrls, integ_time, repetitions)
+        self.acq_kwargs = {"master": master}
 
         total_interval = integ_time + latency_time
         group = {
@@ -289,8 +294,10 @@ class AcquisitionHardwareStartTestCase(AcquisitionTestCase, TestCase):
         self.ct_ctrl_1.set_ctrl_par("synchronization", AcqSynch.HardwareStart)
         conf_ct_ctrl_1 = createTimerableControllerConfiguration(
             self.ct_ctrl_1, [self.ct_1_1])
+        ctrls = get_acq_ctrls([conf_ct_ctrl_1], AcqMode.Timer)
         conf_tg_ctrl_1 = createControllerConfiguration(self.tg_ctrl_1,
                                                        [self.tg_1_1])
+        synch_ctrls = get_acq_ctrls([conf_tg_ctrl_1])
         self.synchronization = self.create_action(PoolSynchronization,
                                                   [self.tg_1_1])
         # add data listeners
@@ -310,8 +317,8 @@ class AcquisitionHardwareStartTestCase(AcquisitionTestCase, TestCase):
         synchronization = [group]
         # get the current number of jobs
         jobs_before = get_thread_pool().qsize
-        self.acquisition.run([conf_ct_ctrl_1], integ_time, repetitions)
-        self.synchronization.run([conf_tg_ctrl_1], synchronization)
+        self.acquisition.run(ctrls, integ_time, repetitions)
+        self.synchronization.run(synch_ctrls, synchronization)
         self.wait_finish()
         self.do_asserts(repetitions, jobs_before)
 
