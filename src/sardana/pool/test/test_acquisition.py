@@ -129,7 +129,7 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
 
     def event_received(self, *args, **kwargs):
         """Executes a single software triggered acquisition."""
-        _, type_, value = args
+        _, type_, index = args
         name = type_.name
         if name == "active":
             if self.sw_acq_busy.is_set():
@@ -139,7 +139,7 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
                 self.sw_acq_busy.set()
                 args = self.sw_acq_args
                 kwargs = self.sw_acq_kwargs
-                kwargs['idx'] = value
+                kwargs['index'] = index
                 get_thread_pool().add(self.sw_acq.run,
                                       None,
                                       *args,
@@ -189,9 +189,8 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
         # acquisition action pending.
         self.sw_acq_busy = threading.Event()
         self.sw_acq.add_finish_hook(self.sw_acq_busy.clear)
-
-        self.sw_acq_args = (sw_ctrls, integ_time)
-        self.sw_acq_kwargs = {"master": sw_master}
+        self.sw_acq_args = (sw_ctrls, integ_time, sw_master)
+        self.sw_acq_kwargs = {}
 
         total_interval = active_interval + passive_interval
         group = {
@@ -203,7 +202,7 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
         synchronization = [group]
         # get the current number of jobs
         jobs_before = get_thread_pool().qsize
-        self.hw_acq.run(hw_ctrls, integ_time, repetitions)
+        self.hw_acq.run(hw_ctrls, integ_time, repetitions, 0)
         self.synchronization.run(synch_ctrls, synchronization)
         # waiting for acquisition and synchronization to finish
         while (self.hw_acq.is_running()
@@ -256,8 +255,8 @@ class AcquisitionSoftwareStartTestCase(AcquisitionTestCase, TestCase):
         self.acquisition = self.create_action(PoolAcquisitionSoftwareStart,
                                               [self.ct_1_1])
 
-        self.acq_args = (ctrls, integ_time, repetitions)
-        self.acq_kwargs = {"master": master}
+        self.acq_args = (ctrls, integ_time, master, repetitions, 0)
+        self.acq_kwargs = {}
 
         total_interval = integ_time + latency_time
         group = {
@@ -317,7 +316,7 @@ class AcquisitionHardwareStartTestCase(AcquisitionTestCase, TestCase):
         synchronization = [group]
         # get the current number of jobs
         jobs_before = get_thread_pool().qsize
-        self.acquisition.run(ctrls, integ_time, repetitions)
+        self.acquisition.run(ctrls, integ_time, repetitions, 0)
         self.synchronization.run(synch_ctrls, synchronization)
         self.wait_finish()
         self.do_asserts(repetitions, jobs_before)

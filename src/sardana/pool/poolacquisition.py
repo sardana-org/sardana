@@ -310,9 +310,8 @@ class PoolAcquisition(PoolAction):
         ctrls = config.get_timerable_ctrls(acq_synch=acq_sync_hw, enabled=True)
         ctrls_hw = get_hw_acq_items(ctrls, acq_mode)
         if len(ctrls_hw) > 0:
-            hw_args = (ctrls_hw, value)
-            hw_kwargs = {'repetitions': repetitions,
-                         'latency': latency}
+            hw_args = (ctrls_hw, value, repetitions, latency)
+            hw_kwargs = {}
             hw_kwargs.update(kwargs)
             self._hw_acq_args = ActionArgs(hw_args, hw_kwargs)
 
@@ -326,10 +325,8 @@ class PoolAcquisition(PoolAction):
 
         ctrls_sw, master_sw = get_sw_acq_items(ctrls, master, acq_mode)
         if len(ctrls_sw) > 0:
-            sw_args = (ctrls_sw, value)
-            sw_kwargs = {'latency': latency,
-                         'master': master_sw,
-                         'synch': True}
+            sw_args = (ctrls_sw, value, master_sw)
+            sw_kwargs = {'synch': True}
             sw_kwargs.update(kwargs)
             self._sw_acq_args = ActionArgs(sw_args, sw_kwargs)
 
@@ -345,11 +342,9 @@ class PoolAcquisition(PoolAction):
                                                                  master,
                                                                  acq_mode)
         if len(ctrls_sw_start) > 0:
-            sw_start_args = (ctrls_sw_start, value)
-            sw_start_kwargs = {'repetitions': repetitions,
-                               'latency': latency,
-                               'master': master_sw_start,
-                               'synch': True}
+            sw_start_args = (ctrls_sw_start, value, master_sw_start,
+                             repetitions, latency)
+            sw_start_kwargs = {'synch': True}
             sw_start_kwargs.update(kwargs)
             self._sw_start_acq_args = ActionArgs(sw_start_args,
                                                  sw_start_kwargs)
@@ -402,8 +397,8 @@ class PoolAcquisition(PoolAction):
                             nr_of_starts)
         self._prepared = True
 
-    def _prepare_ctrls(self, ctrls, value, repetitions, latency,
-                       nr_of_starts):
+    @staticmethod
+    def _prepare_ctrls(ctrls, value, repetitions, latency, nr_of_starts):
         for ctrl in ctrls:
             axis = ctrl.master.axis
             pool_ctrl = ctrl.element
@@ -418,7 +413,7 @@ class PoolAcquisition(PoolAction):
 
     def run(self, *args, **kwargs):
         if not self._prepared:
-            raise RuntimeError('You must call first to prepare method.')
+            raise RuntimeError('You must call first "prepare" method.')
 
         if self._hw_acq_args is not None:
             self._hw_acq.run(*self._hw_acq_args.args,
@@ -573,9 +568,9 @@ class PoolAcquisitionBase(PoolAction):
                 return True
 
     @DebugIt()
-    def start_action(self, ctrls, value, repetitions=1, latency=0,
-                     master=None, index=None, acq_sleep_time=None,
-                     nb_states_per_value=None, **kwargs):
+    def start_action(self, ctrls, value, master, repetitions, latency,
+                     index, acq_sleep_time, nb_states_per_value,
+                     **kwargs):
         """
         Prepares everything for acquisition and starts it
         :param ctrls: List of enabled pool acquisition controllers
@@ -758,6 +753,14 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
     def __init__(self, main_element, name="AcquisitionHardware"):
         PoolAcquisitionBase.__init__(self, main_element, name)
 
+    def start_action(self, ctrls, value, repetitions, latency,
+                     acq_sleep_time=None, nb_states_per_value=None,
+                     **kwargs):
+        PoolAcquisitionBase.start_action(self, ctrls, value, None,
+                                         repetitions, latency, None,
+                                         acq_sleep_time, nb_states_per_value,
+                                         **kwargs)
+
     @DebugIt()
     def action_loop(self):
         i = 0
@@ -829,6 +832,12 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
             slaves = ()
         self._slaves = slaves
 
+    def start_action(self, ctrls, value, master, index, acq_sleep_time=None,
+                     nb_states_per_value=None, **kwargs):
+        PoolAcquisitionBase.start_action(self, ctrls, value, master, 1, 0,
+                                         index, acq_sleep_time,
+                                         nb_states_per_value, **kwargs)
+
     @DebugIt()
     def action_loop(self):
         states, values = {}, {}
@@ -895,6 +904,14 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
 
     def __init__(self, main_element, name="AcquisitionSoftwareStart"):
         PoolAcquisitionBase.__init__(self, main_element, name)
+
+    def start_action(self, ctrls, value, master, repetitions, latency,
+                     acq_sleep_time=None, nb_states_per_value=None,
+                     **kwargs):
+        PoolAcquisitionBase.start_action(self, ctrls, value, master,
+                                         repetitions, latency, None,
+                                         acq_sleep_time, nb_states_per_value,
+                                         **kwargs)
 
     @DebugIt()
     def action_loop(self):
@@ -1043,7 +1060,7 @@ class Pool0DAcquisition(PoolAction):
         self._index = None
         PoolAction.__init__(self, main_element, name)
 
-    def start_action(self, conf_ctrls, index=None, acq_sleep_time=None,
+    def start_action(self, conf_ctrls, index, acq_sleep_time=None,
                      nb_states_per_value=None, **kwargs):
         """Prepares everything for acquisition and starts it.
 
