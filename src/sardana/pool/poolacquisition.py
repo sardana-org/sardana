@@ -210,7 +210,7 @@ class PoolAcquisition(PoolAction):
         self._0d_acq_args = None
         self._hw_acq_args = None
         self._synch_args = None
-
+        self._prepared = False
         self._sw_acq = PoolAcquisitionSoftware(main_element, name=swname)
         self._sw_start_acq = PoolAcquisitionSoftwareStart(
             main_element, name=sw_start_name)
@@ -273,25 +273,16 @@ class PoolAcquisition(PoolAction):
                 self.debug('Stopping ZeroD acquisition.')
                 self._0d_acq.stop_action()
 
-    def prepare(self, ctrl_lodeable, value, repetitions, latency,
-                nr_of_starts):
+    def prepare(self, config, acq_mode, value, synchronization=None,
+                moveable=None, sw_synch_initial_domain=None,
+                nr_of_starts=1, **kwargs):
         """Prepare measurement."""
-        # TODO: set synch to true for software, software start and 0D acq
-        # kwargs['synch'] = True
-
-        for conf_ctrl, lodeable in ctrl_lodeable.items():
-            axis = lodeable.axis
-            conf_ctrl.ctrl.PrepareOne(axis, value, repetitions, latency,
-                                      nr_of_starts)
-
-    def is_running(self):
-        return self._0d_acq.is_running() or\
-            self._sw_acq.is_running() or\
-            self._hw_acq.is_running() or\
-            self._synch.is_running()
-
-    def run(self, head, config, multiple, acq_mode, value, synchronization,
-            moveable, sw_synch_initial_domain=None, *args, **kwargs):
+        self._sw_acq_args = None
+        self._sw_start_acq_args = None
+        self._0d_acq_args = None
+        self._hw_acq_args = None
+        self._synch_args = None
+        self._prepared = False
 
         for elem in self.get_elements():
             elem.put_state(None)
@@ -308,69 +299,140 @@ class PoolAcquisition(PoolAction):
             for pseudo_elem in elem.get_pseudo_elements():
                 pseudo_elem.clear_value_buffer()
 
-        if acq_mode is AcqMode.Timer:
-            value = synchronization.active_time
         repetitions = synchronization.repetitions
-        latency_time = 0
+        latency = synchronization.passive_time
 
-        # starting continuous acquisition only if there are any controllers
+        # Prepare controllers synchronized by hardware
         acq_sync_hw = [AcqSynch.HardwareTrigger, AcqSynch.HardwareStart,
                        AcqSynch.HardwareGate]
-        ctrls_acq_hw = config.get_timerable_ctrls(acq_synch=acq_sync_hw,
-                                                  enabled=True)
+        ctrls = config.get_timerable_ctrls(acq_synch=acq_sync_hw, enabled=True)
+        ctrls_hw = get_hw_acq_items(ctrls, acq_mode)
+        if len(ctrls_hw) > 0:
+            hw_args = (ctrls_hw, value)
+            hw_kwargs = {'repetitions': repetitions,
+                         'latency': latency}
+            hw_kwargs.update(kwargs)
+            self._hw_acq_args = ActionArgs(hw_args, hw_kwargs)
 
-        if len(ctrls_acq_hw):
-            self._hw_acq.run(conf_ctrls=ctrls_acq_hw,
-                             value=value,
-                             repetitions=repetitions,
-                             latency_time=latency_time)
-
-        # starting software acquisition only if there are any controller
+        # Prepare controllers synchronized by software Trigger and Gate
         acq_sync_sw = [AcqSynch.SoftwareGate, AcqSynch.SoftwareTrigger]
-        ctrls_acq_sw = config.get_timerable_ctrls(acq_synch=acq_sync_sw,
-                                                  enabled=True)
-        ctrls_acq_sw_start = config.get_timerable_ctrls(
-            acq_synch=AcqSynch.SoftwareStart, enabled=True)
-        ctrls_acq_0d = config.get_zerod_ctrls(enabled=True)
+        ctrls = config.get_timerable_ctrls(acq_synch=acq_sync_sw, enabled=True)
+        if acq_mode is AcqMode.Timer:
+            master = config.get_master_timer_software()
+        elif acq_mode is AcqMode.Monitor:
+            master = config.get_master_monitor_software()
 
-        if len(ctrls_acq_sw) or len(ctrls_acq_0d) or len(ctrls_acq_sw_start):
+        ctrls_sw, master_sw = get_sw_acq_items(ctrls, master, acq_mode)
+        if len(ctrls_sw) > 0:
+            sw_args = (ctrls_sw, value)
+            sw_kwargs = {'latency': latency,
+                         'master': master_sw,
+                         'synch': True}
+            sw_kwargs.update(kwargs)
+            self._sw_acq_args = ActionArgs(sw_args, sw_kwargs)
+
+        # Prepare controllers synchronized by software Start
+        ctrls = config.get_timerable_ctrls(acq_synch=AcqSynch.SoftwareStart,
+                                           enabled=True)
+        if acq_mode is AcqMode.Timer:
+            master = config.get_master_timer_software_start()
+        elif acq_mode is AcqMode.Monitor:
+            master = config.get_master_monitor_software_start()
+
+        ctrls_sw_start, master_sw_start = get_sw_start_acq_items(ctrls,
+                                                                 master,
+                                                                 acq_mode)
+        if len(ctrls_sw_start) > 0:
+            sw_start_args = (ctrls_sw_start, value)
+            sw_start_kwargs = {'repetitions': repetitions,
+                               'latency': latency,
+                               'master': master_sw_start,
+                               'synch': True}
+            sw_start_kwargs.update(kwargs)
+            self._sw_start_acq_args = ActionArgs(sw_start_args,
+                                                 sw_start_kwargs)
+
+        # Prepare 0D controllers
+        ctrls = config.get_zerod_ctrls(enabled=True)
+        ctrls_acq_0d = get_0d_acq_items(ctrls)
+        if len(ctrls_acq_0d) > 0:
+            zerod_args = (ctrls_acq_0d,)
+            zerod_kwargs = {'synch': True}
+            zerod_kwargs.update(kwargs)
+            self._0d_acq_args = ActionArgs(zerod_args, zerod_kwargs)
+
+        # Prepare synchronizer controllers
+        ctrls = config.get_synch_ctrls(enabled=True)
+        ctrls_synch = get_synch_acq_items(ctrls)
+        synch_args = (ctrls_synch,)
+        synch_kwargs = {'synchronization': synchronization,
+                        'moveable': moveable,
+                        'sw_synch_initial_domain': sw_synch_initial_domain}
+        synch_kwargs.update(kwargs)
+        self._synch_args = ActionArgs(synch_args, synch_kwargs)
+
+        # Load the configuration to the timerable controllers if it changed:
+        if config.changed:
+            ctrls = ctrls_hw + ctrls_sw_start + ctrls_sw
+
+            for ctrl in ctrls:
+                pool_ctrl = ctrl.element
+                if not pool_ctrl.is_online():
+                    raise RuntimeError('The controller {0} is '
+                                       'offline'.format(pool_ctrl.name))
+                pool_ctrl.set_ctrl_par('acquisition_mode', acq_mode)
+                pool_ctrl.operator = self.main_element
+                pool_ctrl.set_ctrl_par('timer', ctrl.timer.axis)
+                pool_ctrl.set_ctrl_par('monitor', ctrl.monitor.axis)
+                synch = config.get_acq_synch_by_controller(pool_ctrl)
+                pool_ctrl.set_ctrl_par('synchronization', synch)
+            config.changed = False
+
+        # Call hardware and software start controllers prepare method
+        ctrls = ctrls_hw + ctrls_sw_start
+        self._prepare_ctrls(ctrls, value, repetitions, latency,
+                            nr_of_starts)
+
+        # Call software controllers prepare method
+        nr_of_starts = repetitions
+        repetitions = 1
+        self._prepare_ctrls(ctrls_sw, value, repetitions, latency,
+                            nr_of_starts)
+        self._prepared = True
+
+
+    def _prepare_ctrls(self, ctrls, value, repetitions, latency,
+                       nr_of_starts):
+        for ctrl in ctrls:
+            axis = ctrl.master.axis
+            pool_ctrl = ctrl.element
+            pool_ctrl.ctrl.PrepareOne(axis, value, repetitions, latency,
+                                      nr_of_starts)
+
+    def is_running(self):
+        return self._0d_acq.is_running() or\
+            self._sw_acq.is_running() or\
+            self._hw_acq.is_running() or\
+            self._synch.is_running()
+
+    def run(self, *args, **kwargs):
+        if not self._prepared:
+            raise RuntimeError('You must call first to prepare method.')
+
+        if self._hw_acq_args is not None:
+            self._hw_acq.run(*self._hw_acq_args.args,
+                             **self._hw_acq_args.kwargs)
+
+        if self._sw_acq_args is not None\
+                or self._sw_start_acq_args is not None\
+                or self._0d_acq_args is not None:
             self._synch.add_listener(self)
-            if len(ctrls_acq_sw_start):
-                master = None
-                if acq_mode is AcqMode.Timer:
-                    master = config.get_master_timer_software_start()
-                elif acq_mode is AcqMode.Monitor:
-                    master = config.get_master_monitor_software_start()
 
-                sw_acq_kwargs = dict(conf_ctrls=ctrls_acq_sw_start,
-                                     value=value,
-                                     repetitions=repetitions,
-                                     latency_time=latency_time,
-                                     master=master)
-                self.set_sw_start_config(sw_acq_kwargs)
-            if len(ctrls_acq_sw):
-                master = None
-                if acq_mode is AcqMode.Timer:
-                    master = config.get_master_timer_software()
-                elif acq_mode is AcqMode.Monitor:
-                    master = config.get_master_monitor_software()
+        if self._synch_args is not None:
+            self._synch.run(*self._synch_args.args,
+                            **self._synch_args.kwargs)
 
-                sw_acq_kwargs = dict(conf_ctrls=ctrls_acq_sw,
-                                     value=value,
-                                     repetitions=1,
-                                     latency_time=latency_time,
-                                     master=master)
-                self.set_sw_config(sw_acq_kwargs)
-            if len(ctrls_acq_0d):
-                zerod_acq_kwargs = dict(conf_ctrls=ctrls_acq_0d)
-                self.set_0d_config(zerod_acq_kwargs)
-
-        # start the synchonization action
-        ctrls_synch = config.get_synch_ctrls(enabled=True)
-        self._synch.run(conf_ctrls=ctrls_synch,
-                        synchronization=synchronization,
-                        moveable=moveable,
-                        sw_synch_initial_domain=sw_synch_initial_domain)
+        self._prepared = False
 
     def _get_action_for_element(self, element):
         elem_type = element.get_type()
