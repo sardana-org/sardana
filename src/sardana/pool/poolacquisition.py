@@ -27,7 +27,9 @@
 acquisition"""
 
 __all__ = ["get_acq_ctrls", "AcquisitionState", "AcquisitionMap",
-           "PoolCTAcquisition", "Pool0DAcquisition", "PoolIORAcquisition"]
+           "PoolCTAcquisition", "Pool0DAcquisition", "PoolIORAcquisition",
+           "PoolAcquisitionHardware", "PoolAcquisitionSoftware",
+           "PoolAcquisitionSoftwareStart"]
 
 __docformat__ = 'restructuredtext'
 
@@ -1057,7 +1059,6 @@ class Pool0DAcquisition(PoolAction):
         # self._stopped = False
 
         self._index = index
-
         self._acq_sleep_time = acq_sleep_time
         if self._acq_sleep_time is None:
             self._acq_sleep_time = pool.acq_loop_sleep_time
