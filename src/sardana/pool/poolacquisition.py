@@ -26,8 +26,8 @@
 """This module is part of the Python Pool libray. It defines the class for an
 acquisition"""
 
-__all__ = ["AcquisitionState", "AcquisitionMap", "PoolCTAcquisition",
-           "Pool0DAcquisition", "Channel", "PoolIORAcquisition"]
+__all__ = ["get_acq_ctrls", "AcquisitionState", "AcquisitionMap",
+           "PoolCTAcquisition", "Pool0DAcquisition", "PoolIORAcquisition"]
 
 __docformat__ = 'restructuredtext'
 
@@ -464,17 +464,6 @@ class PoolAcquisition(PoolAction):
         ret = self._ct_acq.read_value(ret=ret, serial=serial)
         ret.update(self._0d_acq.read_value(ret=ret, serial=serial))
         return ret
-
-
-class Channel(PoolActionItem):
-
-    def __init__(self, acquirable, info=None):
-        PoolActionItem.__init__(self, acquirable)
-        if info:
-            self.__dict__.update(info)
-
-    def __getattr__(self, name):
-        return getattr(self.element, name)
 
 
 class PoolAcquisitionBase(PoolAction):
