@@ -469,7 +469,7 @@ class ParamDecoder:
         if max_rep and len_rep > max_rep:
             msg = 'Found %d repetitions of param %s, max is %d' % \
                   (len_rep, name, max_rep)
-            raise SupernumeraryRepeat, msg
+            raise SupernumeraryRepeat(msg)
         # repeat params with only one member and only one repetition value are
         # allowed - encapsulate it in list and try to decode anyway
         if not is_non_str_seq(raw_param_repeat):
