@@ -9,17 +9,21 @@ class runMacro(Macro):
     'runMacro'
     """
     def run(self, *args):
-
-        expect_params = (99, [1., 2.])
-        macro, _ = self.prepareMacro("pt6_base", *expect_params)
+        params = expected_params = (99, [1., 2.])
+        macro, _ = self.prepareMacro("pt6_base", *params)
         self.runMacro(macro)
         result = macro.data
-        msg = FAIL_MSG % (result, expect_params)
-        assert expect_params == result, msg
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
 
         params = (99, 1., 2.)
         macro, _ = self.prepareMacro("pt6_base", *params)
-        expect_params = (99, [1., 2.])
+        expected_params = (99, [1., 2.])
+        self.runMacro(macro)
+        result = macro.data
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
+
         self.runMacro(macro)
         result = macro.data
         msg = FAIL_MSG % (result, expect_params)
@@ -31,14 +35,20 @@ class runMacro(Macro):
         result = macro.data
         msg = FAIL_MSG % (result, expect_params)
         assert expect_params == result, msg
-
-        params = (91, True)
-        expect_params = ([91], True)
+        params = expected_params = ([92], True)
         macro, _ = self.prepareMacro("pt10_base", *params)
         self.runMacro(macro)
         result = macro.data
-        msg = FAIL_MSG % (result, expect_params)
-        assert expect_params == result, msg
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
+
+        params = (91, True)
+        expected_params = ([91], True)
+        macro, _ = self.prepareMacro("pt10_base", *params)
+        self.runMacro(macro)
+        result = macro.data
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
 
 
 class createMacro(Macro):
@@ -48,21 +58,21 @@ class createMacro(Macro):
     """
     def run(self, *args):
 
-        expect_params = (99, [1., 2.])
-        macro, pars = self.createMacro('pt6_base', *expect_params)
+        params = expected_params = (99, [1., 2.])
+        macro, pars = self.createMacro('pt6_base', *params)
         self.runMacro(macro)
         result = macro.data
-        msg = FAIL_MSG % (result, expect_params)
-        assert expect_params == result, msg
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
 
         params = (99, 1., 2.)
-        expect_params = (99, [1., 2.])
+        expected_params = (99, [1., 2.])
         self.runMacro(macro)
         macro, pars = self.createMacro('pt6_base', *params)
         self.runMacro(macro)
         result = macro.data
-        msg = FAIL_MSG % (result, expect_params)
-        assert expect_params == result, msg
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
 
         expect_params = ([92], True)
         macro, _ = self.createMacro("pt10_base", *expect_params)
@@ -70,14 +80,20 @@ class createMacro(Macro):
         result = macro.data
         msg = FAIL_MSG % (result, expect_params)
         assert expect_params == result, msg
-
-        params = (91, True)
-        expect_params = ([91.], True)
+        params = expected_params = ([92], True)
         macro, _ = self.createMacro("pt10_base", *params)
         self.runMacro(macro)
         result = macro.data
-        msg = FAIL_MSG % (result, expect_params)
-        assert expect_params == result, msg
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
+
+        params = (91, True)
+        expected_params = ([91.], True)
+        macro, _ = self.createMacro("pt10_base", *params)
+        self.runMacro(macro)
+        result = macro.data
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
 
 
 class execMacro(Macro):
@@ -86,19 +102,18 @@ class execMacro(Macro):
     'execMacro'
     """
     def run(self, *args):
-
-        expect_params = (99, [1., 2.])
-        macro = self.execMacro('pt6_base', *expect_params)
+        params = expected_params = (99, [1., 2.])
+        macro = self.execMacro('pt6_base', *params)
         result = macro.data
-        msg = FAIL_MSG % (result, expect_params)
-        assert expect_params == result, msg
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
 
         params = (99, 1., 2.)
         macro = self.execMacro('pt6_base', *params)
         result = macro.data
-        expect_params = (99, [1., 2.])
-        msg = FAIL_MSG % (result, expect_params)
-        assert expect_params == result, msg
+        expected_params = (99, [1., 2.])
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
 
         expect_params = ([92], True)
         macro = self.execMacro('pt10_base', *expect_params)
@@ -107,19 +122,23 @@ class execMacro(Macro):
         msg = FAIL_MSG % (result, expect_params)
         assert expect_params == result, msg
 
-        expect_params = ([99.], True)
-        macro = self.execMacro("pt10_base [99] True")
-        self.runMacro(macro)
+        params = expected_params = ([92], True)
+        macro = self.execMacro('pt10_base', *params)
         result = macro.data
-        msg = FAIL_MSG % (result, expect_params)
-        assert expect_params == result, msg
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
 
-        expect_params = ([999.], True)
-        macro = self.execMacro("pt10_base", 999, True)
-        self.runMacro(macro)
+        expected_params = ([99.], True)
+        macro = self.execMacro("pt10_base [99] True")
         result = macro.data
-        msg = FAIL_MSG % (result, expect_params)
-        assert expect_params == result, msg
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
+
+        expected_params = ([999.], True)
+        macro = self.execMacro("pt10_base", 999, True)
+        result = macro.data
+        msg = FAIL_MSG % (result, expected_params)
+        assert expected_params == result, msg
 
 
 class pt6_base(Macro):
