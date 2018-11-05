@@ -71,6 +71,7 @@ class runMacro(Macro):
         msg = FAIL_MSG % (result, expected_params)
         assert expected_params == result, msg
 
+
 class createMacro(Macro):
     """
     Macro to test the parameters parsing/decoding using the macro API,
@@ -141,6 +142,7 @@ class createMacro(Macro):
         msg = FAIL_MSG % (result, expected_params)
         assert expected_params == result, msg
 
+
 class execMacro(Macro):
     """
     Macro to test the parameters parsing/decoding using the macro API,
@@ -205,6 +207,7 @@ class execMacro(Macro):
         result = macro.data
         msg = FAIL_MSG % (result, expected_params)
         assert expected_params == result, msg
+
 
 class pt6_base(Macro):
     """Macro with a number parameter followed by a list of numbers.
