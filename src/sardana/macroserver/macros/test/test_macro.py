@@ -15,9 +15,9 @@ class MacroTest(BaseMacroServerTestCase, RunMacroTestCase, unittest.TestCase):
         macros_test_path = '../../test/res/macros'
         source = os.path.join(os.path.dirname(__file__), macros_test_path)
         path = os.path.abspath(source)
-        environment = {'MacroPath': [path]}
+        properties = {'MacroPath': [path]}
         unittest.TestCase.setUp(self)
-        BaseMacroServerTestCase.setUp(self, properties=environment)
+        BaseMacroServerTestCase.setUp(self, properties)
         RunMacroTestCase.setUp(self)
 
     def tearDown(self):
