@@ -383,11 +383,14 @@ class GScan(Logger):
                 low = float(config.min_value)
             except ValueError:
                 low = None
+
+            if any((high, low)) and not any((m.min_value, m.max_value)):
+                self._macro.info("Scan range is not defined for %s and could "
+                                 "not be verified against motor limits."
+                                 % m.moveable.getName())
+
             for pos in (m.min_value, m.max_value):
                 if pos is None:
-                    self._macro.warning("Macro did not define position for %s."
-                                        " Limit check was not possible."
-                                        % m.moveable.getName())
                     continue
                 if high is not None:
                     if float(pos) > high:
