@@ -24,7 +24,8 @@
 ##############################################################################
 
 __all__ = ['createPoolController', 'createPoolCounterTimer',
-           'createPoolZeroDExpChannel', 'createPoolTriggerGate',
+           'createPoolZeroDExpChannel', 'createPoolTwoDExpChannel',
+           'createPoolTriggerGate',
            'createPoolMotor', 'createPoolPseudoCounter',
            'createPoolPseudoMotor', 'createPoolMeasurementGroup',
            'createControllerConfiguration',
@@ -39,6 +40,7 @@ from sardana.pool.poolcontroller import PoolController,\
     PoolPseudoMotorController, PoolPseudoCounterController
 from sardana.pool.poolcountertimer import PoolCounterTimer
 from sardana.pool.poolzerodexpchannel import Pool0DExpChannel
+from sardana.pool.pooltwodexpchannel import Pool2DExpChannel
 from sardana.pool.pooltriggergate import PoolTriggerGate
 from sardana.pool.poolmotor import PoolMotor
 from sardana.pool.poolpseudocounter import PoolPseudoCounter
@@ -102,6 +104,14 @@ def createPoolZeroDExpChannel(pool, poolcontroller, conf):
     kwargs['pool'] = pool
     kwargs['ctrl'] = poolcontroller
     return Pool0DExpChannel(**kwargs)
+
+def createPoolTwoDExpChannel(pool, poolcontroller, conf):
+    '''Method to create a ZeroDExpChannel using a configuration dictionary
+    '''
+    kwargs = copy.deepcopy(conf)
+    kwargs['pool'] = pool
+    kwargs['ctrl'] = poolcontroller
+    return Pool2DExpChannel(**kwargs)
 
 
 def createPoolTriggerGate(pool, poolcontroller, conf):

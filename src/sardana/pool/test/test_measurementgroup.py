@@ -344,7 +344,13 @@ config_14 = [[('_test_ct_1_1', 'software', AcqSynchType.Start),
              [('_test_ct_2_1', '_test_tg_1_1', AcqSynchType.Start),
               ('_test_ct_2_2', '_test_tg_1_1', AcqSynchType.Start)]]
 
+doc_15 = 'Acquisition using with 1 2D channel using software synchronization'
 
+config_15 = [[('_test_2d_1_1', 'software', AcqSynchType.Trigger)]]
+
+# TODO: listener is not ready to handle 2D
+# @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_15,
+#             config=config_15, synchronization=synchronization1)
 @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_14,
             config=config_14, synchronization=synchronization1)
 @insertTest(helper_name='meas_contpos_acquisition', test_method_doc=doc_12,
