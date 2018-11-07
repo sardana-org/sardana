@@ -230,8 +230,6 @@ class MeasurementConfiguration(object):
         self._master_monitor_sw_start = None
         self._label = None
         self._description = None
-        self._master_timer = None
-        self._master_monitor = None
         self._user_confg = {}
         self._channel_acq_synch = {}
         self._ctrl_acq_synch = {}
@@ -316,8 +314,6 @@ class MeasurementConfiguration(object):
         master_monitor_sw = None
         master_timer_sw_start = None
         master_monitor_sw_start = None
-        master_timer = None
-        master_monitor = None
         master_timer_idx_sw = float("+inf")
         master_monitor_idx_sw = float("+inf")
         master_timer_idx_sw_start = float("+inf")
@@ -327,13 +323,6 @@ class MeasurementConfiguration(object):
         ctrl_acq_synch = {}
         user_config = {}
 
-        # Update the configuration for user
-        user_config['controllers'] = {}
-        user_config = {}
-        if 'timer' in cfg:
-            user_config['timer'] = cfg['timer']
-        if 'monitor' in cfg:
-            user_config['monitor'] = cfg['monitor']
         user_config['controllers'] = {}
         user_config['label'] = label
         user_config['description'] = description
@@ -447,13 +436,6 @@ class MeasurementConfiguration(object):
                 if ch_name == ctrl_data['monitor']:
                     ctrl_item.monitor = ch_item
 
-                # Update measurement configuration master timer
-                if ch_name == cfg.get('timer', None):
-                    master_timer = ch_item
-
-                # Update measurement configuration master timer
-                if ch_name == cfg.get('monitor', None):
-                    master_monitor = ch_item
 
                 if ch_item.enabled:
                     ctrl_enabled = True
@@ -505,9 +487,23 @@ class MeasurementConfiguration(object):
         for conf_synch_ctrl in synch_ctrls:
             conf_synch_ctrl.update_state()
 
+        # Fill user configuration with measurement group's timer & monitor
+        # This is a backwards compatibility cause the measurement group's
+        # timer & monitor are not used
+        if master_timer_sw is not None:
+            user_config['timer'] = master_timer_sw.full_name
+        elif master_timer_sw_start is not None:
+            user_config['timer'] = master_timer_sw_start.full_name
+        else:
+            user_config['timer'] = cfg['timer']
+
+        if master_monitor_sw is not None:
+            user_config['monitor'] = master_monitor_sw.full_name
+        elif master_monitor_sw_start is not None:
+            user_config['monitor'] = master_monitor_sw_start.full_name
+        else:
+            user_config['monitor'] = cfg['monitor']
         # Update internals values
-        self._master_monitor = master_monitor
-        self._master_timer = master_timer
         self._label = label
         self._description = description
         self._timerable_ctrls = timerable_ctrls
