@@ -42,8 +42,7 @@ except ImportError:
     # TODO: For Taurus 4 compatibility
     from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 
-from sardana import State, ElementType, \
-    TYPE_EXP_CHANNEL_ELEMENTS
+from sardana import State, ElementType, TYPE_EXP_CHANNEL_ELEMENTS
 from sardana.sardanaevent import EventType
 from sardana.pool.pooldefs import AcqMode, SynchParam, AcqSynch, \
     SynchDomain, AcqSynchType
@@ -503,6 +502,7 @@ class MeasurementConfiguration(object):
             user_config['monitor'] = master_monitor_sw_start.full_name
         else:
             user_config['monitor'] = cfg['monitor']
+
         # Update internals values
         self._label = label
         self._description = description
