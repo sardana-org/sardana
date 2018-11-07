@@ -119,6 +119,8 @@ def _to_fqdn(name, logger=None):
     # if Taurus3 in use just continue
     except ImportError:
         pass
+    if full_name is None:
+        full_name = name
     if full_name != name and logger:
         msg = ("PQDN full name is deprecated in favor of FQDN full name."
                " Re-apply configuration in order to upgrade.")
