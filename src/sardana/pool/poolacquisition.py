@@ -285,6 +285,9 @@ class PoolAcquisition(PoolAction):
         self._hw_acq_args = None
         self._synch_args = None
         self._prepared = False
+        ctrls_hw = []
+        ctrls_sw = []
+        ctrls_sw_start = []
 
         for elem in self.get_elements():
             elem.put_state(None)
@@ -303,13 +306,12 @@ class PoolAcquisition(PoolAction):
 
         repetitions = synchronization.repetitions
         latency = synchronization.passive_time
-
         # Prepare controllers synchronized by hardware
         acq_sync_hw = [AcqSynch.HardwareTrigger, AcqSynch.HardwareStart,
                        AcqSynch.HardwareGate]
         ctrls = config.get_timerable_ctrls(acq_synch=acq_sync_hw, enabled=True)
-        ctrls_hw = get_hw_acq_items(ctrls, acq_mode)
-        if len(ctrls_hw) > 0:
+        if len(ctrls) > 0:
+            ctrls_hw = get_hw_acq_items(ctrls, acq_mode)
             hw_args = (ctrls_hw, value, repetitions, latency)
             hw_kwargs = {}
             hw_kwargs.update(kwargs)
@@ -318,13 +320,14 @@ class PoolAcquisition(PoolAction):
         # Prepare controllers synchronized by software Trigger and Gate
         acq_sync_sw = [AcqSynch.SoftwareGate, AcqSynch.SoftwareTrigger]
         ctrls = config.get_timerable_ctrls(acq_synch=acq_sync_sw, enabled=True)
-        if acq_mode is AcqMode.Timer:
-            master = config.get_master_timer_software()
-        elif acq_mode is AcqMode.Monitor:
-            master = config.get_master_monitor_software()
+        if len(ctrls) > 0:
+            if acq_mode is AcqMode.Timer:
+                master = config.get_master_timer_software()
+            elif acq_mode is AcqMode.Monitor:
+                master = config.get_master_monitor_software()
 
-        ctrls_sw, master_sw = get_sw_acq_items(ctrls, master, acq_mode)
-        if len(ctrls_sw) > 0:
+            ctrls_sw, master_sw = get_sw_acq_items(ctrls, master, acq_mode)
+
             sw_args = (ctrls_sw, value, master_sw)
             sw_kwargs = {'synch': True}
             sw_kwargs.update(kwargs)
@@ -333,15 +336,15 @@ class PoolAcquisition(PoolAction):
         # Prepare controllers synchronized by software Start
         ctrls = config.get_timerable_ctrls(acq_synch=AcqSynch.SoftwareStart,
                                            enabled=True)
-        if acq_mode is AcqMode.Timer:
-            master = config.get_master_timer_software_start()
-        elif acq_mode is AcqMode.Monitor:
-            master = config.get_master_monitor_software_start()
+        if len(ctrls) > 0:
+            if acq_mode is AcqMode.Timer:
+                master = config.get_master_timer_software_start()
+            elif acq_mode is AcqMode.Monitor:
+                master = config.get_master_monitor_software_start()
 
-        ctrls_sw_start, master_sw_start = get_sw_start_acq_items(ctrls,
-                                                                 master,
-                                                                 acq_mode)
-        if len(ctrls_sw_start) > 0:
+            ctrls_sw_start, master_sw_start = get_sw_start_acq_items(ctrls,
+                                                                     master,
+                                                                     acq_mode)
             sw_start_args = (ctrls_sw_start, value, master_sw_start,
                              repetitions, latency)
             sw_start_kwargs = {'synch': True}
@@ -351,8 +354,8 @@ class PoolAcquisition(PoolAction):
 
         # Prepare 0D controllers
         ctrls = config.get_zerod_ctrls(enabled=True)
-        ctrls_acq_0d = get_0d_acq_items(ctrls)
-        if len(ctrls_acq_0d) > 0:
+        if len(ctrls) > 0:
+            ctrls_acq_0d = get_0d_acq_items(ctrls)
             zerod_args = (ctrls_acq_0d,)
             zerod_kwargs = {'synch': True}
             zerod_kwargs.update(kwargs)
