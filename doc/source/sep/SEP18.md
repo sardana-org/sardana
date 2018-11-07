@@ -149,12 +149,10 @@ the following options:
 
 #### Option 1
 
-* Add `Preparable` interface with
-`PrepareOne(axis, integ_time, repeats, latency_time, starts)` TODO: or
-directly add it to the Loadable interface
-* Make C/T, 1D and 2D controllers inherit from this interface
+* Add `PrepareOne(axis, value, repeats, latency, starts)`
+to the Loadable interface
 * Add extra argument to `LoadOne`, etc. methods of the `Loadable` interface
-`latency_time`: `LoadOne(axis, integ_time, repeats, latency_time)`
+`latency_time`: `LoadOne(axis, value, repeats, latency)`
 
 This option maintains backwards compatibility.
 
@@ -222,8 +220,8 @@ StartOne(1)
 #### Option 2
 
 * Add extra arguments to `LoadOne`, etc. methods of the `Loadable` interface
-`latency_time` and `starts` and switch the order of arguments so the API is:
-`LoadOne(axis, integ_time, latency_time, repeats, starts)`.
+`latency` and `nr_of_starts` and switch the order of arguments so the API is:
+`LoadOne(axis, value, latency, repeats, nr_of_starts)`.
 * Make the `LoadOne`, etc. be called only once per measurement, in the
 measurement group prepare command.
 
