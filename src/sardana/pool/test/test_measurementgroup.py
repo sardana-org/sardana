@@ -348,6 +348,7 @@ doc_15 = 'Acquisition using with 1 2D channel using software synchronization'
 
 config_15 = [[('_test_2d_1_1', 'software', AcqSynchType.Trigger)]]
 
+
 # TODO: listener is not ready to handle 2D
 # @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_15,
 #             config=config_15, synchronization=synchronization1)
