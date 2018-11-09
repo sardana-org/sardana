@@ -663,7 +663,8 @@ class Loadable(object):
 
     def PrepareOne(self, axis, value, repetitions, latency, nb_starts):
         """**Controller API**. Override if necessary.
-        Called to load the number of repetitions.
+        Called to prepare the master channel axis with the measurement
+        parameters.
         Default implementation does nothing.
 
         :param int axis: axis number
@@ -682,15 +683,15 @@ class Loadable(object):
 
     def PreLoadOne(self, axis, value, repetitions, latency):
         """**Controller API**. Override if necessary.
-        Called to prepare loading the master channel axis with the integration
-        time / monitor value.
+        Called to prepare loading the master channel axis with the
+        acquisition parameters.
         Default implementation returns True.
 
         :param int axis: axis number
         :param float value: integration time /monitor value
         :param int repetitions: number of repetitions
         :param float latency: latency time
-        :return: True means a successfull PreLoadOne or False for a failure
+        :return: True means a successful PreLoadOne or False for a failure
         :rtype: bool"""
         return True
 

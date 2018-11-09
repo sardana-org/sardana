@@ -26,7 +26,8 @@ Proposals list
   [SEP13][]    | REJECTED (moved to [TEP13][])     | Unified plugins support in Taurus & Sardana
   [SEP14][]    | DRAFT     | MSENV taurus schema
   [SEP15][]   | ACCEPTED     | Moving Sardana to Github
-  [SEP18][]   | DRAFT     | Extend acquisition and synchronization concepts for SEP2 needs
+  [SEP18][]   | CANDIDATE     | Extend acquisition and synchronization 
+  concepts for SEP2 needs
 
 
 
