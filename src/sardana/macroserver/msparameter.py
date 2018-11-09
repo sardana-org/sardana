@@ -471,8 +471,11 @@ class ParamDecoder:
                   (len_rep, name, max_rep)
             raise SupernumeraryRepeat(msg)
         # repeat params with only one member and only one repetition value are
-        # allowed - encapsulate it in list and try to decode anyway
-        if not is_non_str_seq(raw_param_repeat):
+        # allowed - encapsulate it in list and try to decode anyway;
+        # for the moment this only works for non XML decoding but could be
+        # extended in the future to support XML as well
+        if not is_non_str_seq(raw_param_repeat)\
+                and not isinstance(raw_param_repeat, etree._Element):
             raw_param_repeat = [raw_param_repeat]
         for raw_repeat in raw_param_repeat:
             if len(param_type) > 1:
