@@ -101,7 +101,7 @@ integration time. When it is not used number of starts of 1 will be assumed.
 
 1. Measurement group - Tango device class
     * Add `Prepare` command.
-    * Add `NrOfStarts` (`DevLong`) attribute.
+    * Add `NbStarts` (`DevLong`) attribute.
 2. Measurement group - core class
     * Add `prepare()` method.
     * Add `nr_of_starts` property. 

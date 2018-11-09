@@ -660,7 +660,7 @@ class PoolMeasurementGroup(PoolGroupElement):
     def __init__(self, **kwargs):
         self._state_lock = threading.Lock()
         self._monitor_count = None
-        self._nr_of_starts = 1
+        self._nb_starts = 1
         self._pending_starts = 0
         self._acquisition_mode = AcqMode.Timer
         self._config = MeasurementConfiguration(self)
@@ -905,17 +905,17 @@ class PoolMeasurementGroup(PoolGroupElement):
     # number of starts
     # -------------------------------------------------------------------------
 
-    def get_nr_of_starts(self):
-        return self._nr_of_starts
+    def get_nb_starts(self):
+        return self._nb_starts
 
-    def set_nr_of_starts(self, nr_of_starts, propagate=1):
-        self._nr_of_starts = nr_of_starts
+    def set_nb_starts(self, nb_starts, propagate=1):
+        self._nb_starts = nb_starts
         if not propagate:
             return
-        self.fire_event(EventType("nr_of_starts", priority=propagate),
-                        nr_of_starts)
+        self.fire_event(EventType("nb_starts", priority=propagate),
+                        nb_starts)
 
-    nr_of_starts = property(get_nr_of_starts, set_nr_of_starts,
+    nb_starts = property(get_nb_starts, set_nb_starts,
                             doc="current number of starts")
 
     # -------------------------------------------------------------------------
@@ -924,7 +924,7 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     def prepare(self, multiple=1):
         value = self._get_value()
-        self._pending_starts = self.nr_of_starts
+        self._pending_starts = self.nb_starts
 
         kwargs = {'head': self,
                   'multiple': multiple}
@@ -935,7 +935,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                                  self._synchronization,
                                  self._moveable_obj,
                                  self.sw_synch_initial_domain,
-                                 self.nr_of_starts,
+                                 self.nb_starts,
                                  **kwargs)
 
     def start_acquisition(self, value=None, multiple=1):
@@ -944,12 +944,12 @@ class PoolMeasurementGroup(PoolGroupElement):
                   "deprecated since version Jan18."
             self.warning(msg)
             self.debug("Preparing with number_of_starts equal to 1")
-            nr_of_starts = self.nr_of_starts
-            self.set_nr_of_starts(1, propagate=0)
+            nb_starts = self.nb_starts
+            self.set_nb_starts(1, propagate=0)
             try:
                 self.prepare(multiple)
             finally:
-                self.set_nr_of_starts(nr_of_starts, propagate=0)
+                self.set_nb_starts(nb_starts, propagate=0)
         self._aborted = False
         self._pending_starts -= 1
         if not self._simulation_mode:

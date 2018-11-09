@@ -661,7 +661,7 @@ class Loadable(object):
 
     .. note: Do not inherit directly from Loadable."""
 
-    def PrepareOne(self, axis, value, repetitions, latency, nr_of_starts):
+    def PrepareOne(self, axis, value, repetitions, latency, nb_starts):
         """**Controller API**. Override if necessary.
         Called to load the number of repetitions.
         Default implementation does nothing.
@@ -670,7 +670,7 @@ class Loadable(object):
         :param int repetitions: number of repetitions
         :param float value: integration time / monitor count
         :param float latency: latency time
-        :param int nr_of_starts: number of starts
+        :param int nb_starts: number of starts
         """
         pass
 

@@ -1011,7 +1011,7 @@ class SScan(GScan):
             if hasattr(macro, "integ_time"):
                 integ_time = macro.integ_time
                 self.measurement_group.putIntegrationTime(integ_time)
-                self.measurement_group.setNrOfStarts(nr_points)
+                self.measurement_group.setNbStarts(nr_points)
                 self.measurement_group.prepare()
             scream = True
         else:

@@ -1670,15 +1670,15 @@ class MeasurementGroup(PoolElement):
         self.getSynchronizationObj().write(data)
         self._last_integ_time = None
 
-    # NrOfStarts Methods
-    def getNrOfStartsObj(self):
-        return self._getAttrEG('NrOfStarts')
+    # NbStarts Methods
+    def getNbStartsObj(self):
+        return self._getAttrEG('NbStarts')
 
-    def setNrOfStarts(self, starts):
-        self.getNrOfStartsObj().write(starts)
+    def setNbStarts(self, starts):
+        self.getNbStartsObj().write(starts)
 
-    def getNrOfStarts(self):
-        return self._getAttrValue('NrOfStarts')
+    def getNbStarts(self):
+        return self._getAttrValue('NbStarts')
 
     def getMoveableObj(self):
         return self._getAttrEG('Moveable')
@@ -1817,7 +1817,7 @@ class MeasurementGroup(PoolElement):
             return self.getStateEG().readValue(), self.getValues()
         self.putIntegrationTime(integration_time)
         self.setMoveable(None)
-        self.setNrOfStarts(1)
+        self.setNbStarts(1)
         self.prepare()
         self.count_raw(self)
         state = self.getStateEG().readValue()

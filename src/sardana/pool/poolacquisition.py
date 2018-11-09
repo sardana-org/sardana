@@ -277,7 +277,7 @@ class PoolAcquisition(PoolAction):
 
     def prepare(self, config, acq_mode, value, synchronization=None,
                 moveable=None, sw_synch_initial_domain=None,
-                nr_of_starts=1, **kwargs):
+                nb_starts=1, **kwargs):
         """Prepare measurement."""
         self._sw_acq_args = None
         self._sw_start_acq_args = None
@@ -391,22 +391,22 @@ class PoolAcquisition(PoolAction):
         # Call hardware and software start controllers prepare method
         ctrls = ctrls_hw + ctrls_sw_start
         self._prepare_ctrls(ctrls, value, repetitions, latency,
-                            nr_of_starts)
+                            nb_starts)
 
         # Call software controllers prepare method
-        nr_of_starts = repetitions
+        nb_starts = repetitions
         repetitions = 1
         self._prepare_ctrls(ctrls_sw, value, repetitions, latency,
-                            nr_of_starts)
+                            nb_starts)
         self._prepared = True
 
     @staticmethod
-    def _prepare_ctrls(ctrls, value, repetitions, latency, nr_of_starts):
+    def _prepare_ctrls(ctrls, value, repetitions, latency, nb_starts):
         for ctrl in ctrls:
             axis = ctrl.master.axis
             pool_ctrl = ctrl.element
             pool_ctrl.ctrl.PrepareOne(axis, value, repetitions, latency,
-                                      nr_of_starts)
+                                      nb_starts)
 
     def is_running(self):
         return self._0d_acq.is_running() or\
