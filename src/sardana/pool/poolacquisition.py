@@ -64,14 +64,6 @@ AcquisitionMap = {
     AS.Invalid: State.Invalid,
 }
 
-MeasurementActions = Enumeration("MeasurementActions", (
-    "AcquisitionHardware",
-    "AcquisitionSoftware",
-    "AcquisitionSoftwareStart",
-    "Acquisition0D",
-    "Synchronization")
-)
-
 
 def is_value_error(value):
     if isinstance(value, SardanaValue) and value.error:
