@@ -916,7 +916,7 @@ class PoolMeasurementGroup(PoolGroupElement):
                         nb_starts)
 
     nb_starts = property(get_nb_starts, set_nb_starts,
-                            doc="current number of starts")
+                         doc="current number of starts")
 
     # -------------------------------------------------------------------------
     # acquisition
