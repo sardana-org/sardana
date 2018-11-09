@@ -73,14 +73,15 @@ def is_value_error(value):
 
 def get_acq_ctrls(ctrls, acq_mode=None):
     """Converts configuration controllers objects into acquisition
-    controllers objects. It takes care about converting the internals as well.
+    controllers objects. It takes care about converting their internals as
+    well.
 
     :param ctrls: sequence of configuration controllers objects
     :type ctrls: sardana.pool.poolmeasurementgroup.ControllerConfiguration
     :param acq_mode: acquisition mode (timer/monitor)
-    :type acq_mode: sardana.pool.AcqMode
+    :type acq_mode: :class:`sardana.pool.AcqMode`
     :return: sequence of acquisition controllers
-    :rtype: sardana.pool.poolacquisition.AcqController
+    :rtype: :class:`~sardana.pool.poolacquisition.AcqController`
     """
     action_ctrls = []
     for ctrl in ctrls:
