@@ -8,6 +8,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Added
 - Possibility to define macros with optional parameters. These must be the last
   ones in the definition (#285, #876, #943, #941, #955)
+- Possibility to pass values of repeat paramters with just one member without
+  the need to encapsulate them in square brackets (spock syntax) or list
+  (macro API) (#781)
 - Workaround for API_DeviceTimedOut errors on MeasurementGroup Start. Call Stop
   in case this error occured (#764).
 - Optional measurement group parameter to `ct` and `uct` macros (#940, #473)
@@ -29,10 +32,15 @@ This file follows the formats and conventions from [keepachangelog.com]
   (#945)
 - Make cleanup (remove configuration) if spock profile creation was interrupted
   or failed (#791, #793)
+- Spock considers passing supernumerary parameters as errors (#438, #781)
+- MacroServer starts without the Qt library installed (#781, #907, #908)
 
 ### Changed
+- Spock syntax and advanced spock syntax are considered as one in documentaion
+  (#781)
 - Move pre-scan and post-scan hooks out of `scan_loop` method (#920, #922,
   #933)
+- Move `ParamParser` to `sardana.util.parser` (#781, #907, #908)
 
 ## [2.5.0] 2018-08-10
 
