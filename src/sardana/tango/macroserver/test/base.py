@@ -44,8 +44,12 @@ class BaseMacroServerTestCase(object):
     door_name = getattr(sardanacustomsettings, 'UNITTEST_DOOR_NAME',
                         "door/demo1/1")
 
-    def setUp(self, pool_name):
-        """Start MacroServer DS.
+    def setUp(self, properties=None):
+        """
+        Start MacroServer DS.
+
+        :param properties: dictionary with the macroserver properies.
+
         """
         try:
             db = PyTango.Database()
@@ -68,7 +72,11 @@ class BaseMacroServerTestCase(object):
             start_from = int(dev_name_parts[2])
             self.door_name = get_free_device(db, prefix, start_from)
             self._msstarter.addNewDevice(self.door_name, klass='Door')
-            db.put_device_property(self.ms_name, {'PoolNames': pool_name})
+            # Add properties
+            if properties:
+                for key, values in properties.items():
+                    db.put_device_property(self.ms_name,
+                                           {key: values})
             # start MS server
             self._msstarter.startDs()
             self.door = PyTango.DeviceProxy(self.door_name)

@@ -63,7 +63,8 @@ class ScanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
 
     def setUp(self):
         MeasSarTestTestCase.setUp(self)
-        BaseMacroServerTestCase.setUp(self, self.pool_name)
+        properties = {'PoolNames': self.pool_name}
+        BaseMacroServerTestCase.setUp(self, properties)
         RunStopMacroTestCase.setUp(self)
 
     def configure_motors(self, motor_names):

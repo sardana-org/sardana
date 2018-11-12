@@ -70,7 +70,7 @@ from sardana.macroserver.macro import Macro, MacroFunc, ExecMacroHook, \
 from sardana.macroserver.msexception import UnknownMacroLibrary, \
     LibraryError, UnknownMacro, MissingEnv, AbortException, StopException, \
     MacroServerException, UnknownEnv
-from sardana.spock.parser import ParamParser
+from sardana.util.parser import ParamParser
 
 # These classes are imported from the "client" part of sardana, if finally
 # both the client and the server side needs them, place them in some
@@ -712,18 +712,23 @@ class MacroManager(MacroServerManager):
             ret.append(json_codec.encode(('', macro_meta.serialize()))[1])
         return ret
 
-    def _createMacroNode(self, macro_name, macro_params):
+    def _createMacroNode(self, macro_name, macro_params_raw):
         macro = self.getMacro(macro_name)
         params_def = macro.get_parameter()
+        # merge params to a single, space separated, string (spock like)
+        macro_params_str = " ".join(macro_params_raw)
+        param_parser = ParamParser(params_def)
+        # parse string with macro params to the correct list representation
+        macro_params = param_parser.parse(macro_params_str)
         return createMacroNode(macro_name, params_def, macro_params)
 
     def decodeMacroParameters(self, door, raw_params):
         """Decode macro parameters
 
         :param door: (sardana.macroserver.msdoor.MSDoor) door object
-        :param raw_params: (lxml.etree._Element or list) xml element representing
-                          macro with subelements representing parameters or list
-                          with macro name followed by parameter values
+        :param raw_params: (lxml.etree._Element or list) xml element
+            representing macro with subelements representing parameters or
+            list with macro name followed by parameter values
         """
         if isinstance(raw_params, etree._Element):
             macro_name = raw_params.get("name")

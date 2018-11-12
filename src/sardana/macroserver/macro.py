@@ -1186,7 +1186,7 @@ class Macro(Logger):
             self.execMacro('mv', th, 0) # backwards compatibility - see note
 
             # a sequence of parameters:
-            self.execMacro(['ascan', 'th', '0', '100', '10', '1.0')
+            self.execMacro(['ascan', 'th', '0', '100', '10', '1.0'])
             self.execMacro(['mv', [[motor.getName(), '0']]])
             self.execMacro(['mv', motor.getName(), '0']) # backwards compatibility - see note
             self.execMacro(('ascan', 'th', 0, 100, 10, 1.0))
