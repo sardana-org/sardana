@@ -34,6 +34,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   or failed (#791, #793)
 - Spock considers passing supernumerary parameters as errors (#438, #781)
 - MacroServer starts without the Qt library installed (#781, #907, #908)
+- Make `Description` an optional part of controller's properties definition (#976)
 
 ### Changed
 - Spock syntax and advanced spock syntax are considered as one in documentaion
