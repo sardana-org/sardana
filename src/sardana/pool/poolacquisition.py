@@ -23,7 +23,7 @@
 ##
 ##############################################################################
 
-"""This module is part of the Python Pool libray. It defines the class for an
+"""This module is part of the Python Pool library. It defines the class for an
 acquisition"""
 
 __all__ = ["get_acq_ctrls", "AcquisitionState", "AcquisitionMap",
@@ -72,9 +72,9 @@ def is_value_error(value):
 
 
 def get_acq_ctrls(ctrls, acq_mode=None):
-    """Converts configuration controllers objects into acquisition
-    controllers objects. It takes care about converting their internals as
-    well.
+    """Converts configuration controllers into acquisition controllers.
+
+    It takes care about converting their internals as well.
 
     :param ctrls: sequence of configuration controllers objects
     :type ctrls: sardana.pool.poolmeasurementgroup.ControllerConfiguration
@@ -145,8 +145,19 @@ class ActionArgs(object):
 
 
 class AcqConfigurationItem(object):
+    """Wrapper for configuration item that will be used in an action."""
 
     def __init__(self, configuration, attrs=None):
+        """Constructs action item from a configuration item.
+
+        Eventually it can be enriched with attrs.
+
+        :param configuration: item configuration object
+        :type configuration:
+            :class:`sardana.pool.poolmeasurementgroup.ConfigurationItem`
+        :param attrs: extra attributes to be inserted
+        :type attrs: dict
+        """
         self._configuration = weakref.ref(configuration)
         self.enabled = True
 
@@ -168,8 +179,19 @@ class AcqConfigurationItem(object):
 
 
 class AcqController(AcqConfigurationItem):
+    """Wrapper for controller configuration that will be used in an action."""
 
     def __init__(self, configuration, attrs=None):
+        """Constructs action controller from a configuration controller.
+
+        Eventually it can be enriched with attrs.
+
+        :param configuration: controller configuration object
+        :type configuration:
+            :class:`sardana.pool.poolmeasurementgroup.ControllerConfiguration`
+        :param attrs: extra attributes to be inserted
+        :type attrs: dict
+        """
         if attrs is not None:
             master = attrs.get('master')
         self._channels = []
@@ -200,6 +222,15 @@ class AcqController(AcqConfigurationItem):
 
 
 class PoolAcquisition(PoolAction):
+    """Acquisition action which is internally composed for sub-actions.
+
+    Handle acquisition of experimental channels of the following types:
+    * timerable (C/T, 1D and 2D) synchronized by software or hardware
+    trigger/gate/start
+    * 0D
+
+    Synchronized by T/G elements or sofware synchronizer.
+    """
 
     def __init__(self, main_element, name="Acquisition"):
         PoolAction.__init__(self, main_element, name)
@@ -223,6 +254,10 @@ class PoolAcquisition(PoolAction):
         self._synch = PoolSynchronization(main_element, name=synchname)
 
     def event_received(self, *args, **kwargs):
+        """Callback executed on event of software synchronizer.
+
+        Reacts on start, active, passive or end type of events
+        """
         timestamp = time.time()
         _, type_, index = args
         name = type_.name
@@ -280,7 +315,11 @@ class PoolAcquisition(PoolAction):
     def prepare(self, config, acq_mode, value, synchronization=None,
                 moveable=None, sw_synch_initial_domain=None,
                 nb_starts=1, **kwargs):
-        """Prepare measurement."""
+        """Prepare measurement process.
+
+        Organize sub-action arguments and loads configuration parameters to
+        the hardware controllers.
+        """
         self._sw_acq_args = None
         self._sw_start_acq_args = None
         self._0d_acq_args = None
@@ -411,12 +450,18 @@ class PoolAcquisition(PoolAction):
                                       nb_starts)
 
     def is_running(self):
-        return self._0d_acq.is_running() or\
-            self._sw_acq.is_running() or\
-            self._hw_acq.is_running() or\
-            self._synch.is_running()
+        """Checks if acquisition is running.
+
+        Acquisition is runnin if any of its sub-actions is running.
+        """
+        return self._sw_start_acq.is_running()\
+            or self._0d_acq.is_running()\
+            or self._sw_acq.is_running()\
+            or self._hw_acq.is_running()\
+            or self._synch.is_running()
 
     def run(self, *args, **kwargs):
+        """Runs acquisition according to previous preparation."""
         if not self._prepared:
             raise RuntimeError('You must call first "prepare" method.')
 
@@ -761,6 +806,9 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the module) may occur if
         deemed necessary by the core developers.
+
+    .. todo:: Try to move the action loop logic to base class it is
+    basically the same as in PoolAcquisitionSoftwareStart.
     """
 
     def __init__(self, main_element, name="AcquisitionHardware"):
@@ -913,6 +961,9 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the module) may occur if
         deemed necessary by the core developers.
+
+    .. todo:: Try to move the action loop logic to base class it is
+    basically the same as in PoolAcquisitionHardware.
     """
 
     def __init__(self, main_element, name="AcquisitionSoftwareStart"):
