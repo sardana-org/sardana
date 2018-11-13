@@ -294,7 +294,7 @@ class MacroButton(TaurusWidget):
 
     # For backward compatibility
     def abort(self):
-        self.warning("abort method is deprecated. Use stop instead")
+        self.warning("abort is not implemented, stop is being called instead")
         self.stop()
 
     def stop(self):
@@ -309,7 +309,7 @@ class MacroButton(TaurusWidget):
         title = 'Stopping macro'
         message = 'The following macro is still running:\n\n'
         message += '%s %s\n\n' % (self.macro_name, ' '.join(self.macro_args))
-        message += 'Are you sure you want to Stop?\n'
+        message += 'Are you sure you want to stop?\n'
         buttons = Qt.QMessageBox.Ok | Qt.QMessageBox.Cancel
         ans = Qt.QMessageBox.warning(
             self, title, message, buttons, Qt.QMessageBox.Ok)
