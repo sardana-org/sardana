@@ -45,7 +45,7 @@ a macro class you can benefit from all advantages of object-oriented
 programming. This means that, in theory:
 
     - it would reduce the amount of code you need to write
-    - reduce the complexity of your code y by dividing it into small,
+    - reduce the complexity of your code by dividing it into small,
       reasonably independent and re-usable components, that talk to each other
       using only well-defined interfaces
     - Improvement of productivity by using easily adaptable pre-defined
