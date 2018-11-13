@@ -110,26 +110,45 @@ class SynchParam(SynchEnum):
     Repeats = 3
     Initial = 4
 
-# TODO: convert to to python enums, but having in ming problems with
-# JSON serialization: https://bugs.python.org/issue18264
-# class AcqSynchType(Enumeration):
-#
-#     Trigger = 0
-#     Gate = 1
+
+class AcqSynchType(Enumeration):
+    """Enumeration of synchronization types.
+
+    .. todo:: convert to python enums, but having in mind problems with
+             JSON serialization: https://bugs.python.org/issue18264
+    """
+    #: Start each acquisition (experimental channel will decide on
+    #: itself when to end - based on integration time / monitor count)
+    Trigger = 0
+    #: Start and end each acquisition
+    Gate = 1
+    #: Start only the first acquisition (experimental channel will drive
+    #: the acquisition based on integration time / monitor count, latency
+    #: time and number of repetitions)
+    Start = 2
 
 
-AcqSynchType = Enumeration("AcqSynchType", ["Trigger", "Gate", "Start"])
-
-
-# TODO: convert to to python enums, but having in ming problems with
-# JSON serialization: https://bugs.python.org/issue18264
 class AcqSynch(Enumeration):
+    """Enumeration of synchronization options.
 
+    Uses software/hardware naming to refer to internal (software
+    synchronizer) or external (hardware synchronization device)
+    synchronization modes
+
+    .. todo:: convert to python enums, but having in mind problems with
+             JSON serialization: https://bugs.python.org/issue18264
+    """
+    #: Internal (software) trigger
     SoftwareTrigger = 0
+    #: External (hardware) trigger
     HardwareTrigger = 1
+    #: Internal (software) gate
     SoftwareGate = 2
+    #: External (hardware) gate
     HardwareGate = 3
+    #: Internal (software) start (triggers just the first acquisition)
     SoftwareStart = 4
+    #: External (hardware) start (triggers just the first acquisition)
     HardwareStart = 5
 
     @classmethod

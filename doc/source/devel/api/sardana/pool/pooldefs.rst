@@ -15,16 +15,29 @@
     :columns: 3
 
     * :class:`~AcqSynch`
+    * :class:`~AcqSynchType`
     * :class:`~SynchParam`
     * :class:`~SynchDomain`
 
 AcqSynch
-----------
+--------
 
 .. inheritance-diagram:: AcqSynch
     :parts: 1
 
 .. autoclass:: AcqSynch
+    :show-inheritance:
+    :members:
+    :undoc-members:
+
+
+AcqSynchType
+------------
+
+.. inheritance-diagram:: AcqSynchType
+    :parts: 1
+
+.. autoclass:: AcqSynchType
     :show-inheritance:
     :members:
     :undoc-members:
