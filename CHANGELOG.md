@@ -37,6 +37,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Make `Description` an optional part of controller's properties definition (#976)
 
 ### Changed
+- MacroButton stops macros instead of aborting them (#931, #943)
 - Spock syntax and advanced spock syntax are considered as one in documentaion
   (#781)
 - Move pre-scan and post-scan hooks out of `scan_loop` method (#920, #922,
