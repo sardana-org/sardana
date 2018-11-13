@@ -274,17 +274,17 @@ class ControllerClass(SardanaClass):
                    + "sardana.pool.controller.Description constant instead.")
         for k, v in klass.class_prop.items():  # old member
             props[k] = DataInfo.toDataInfo(k, v)
-            try:
+            if Description in v:
                 self.ctrl_properties_descriptions.append(v[Description])
-            except KeyError:
+            elif 'Description' in v:
                 self.warning(dep_msg)
                 self.ctrl_properties_descriptions.append(v['Description'])
 
         for k, v in klass.ctrl_properties.items():
             props[k] = DataInfo.toDataInfo(k, v)
-            try:
+            if Description in v:
                 self.ctrl_properties_descriptions.append(v[Description])
-            except KeyError:
+            elif 'Description' in v:
                 self.warning(dep_msg)
                 self.ctrl_properties_descriptions.append(v['Description'])
 
