@@ -31,6 +31,8 @@ from sardana.tango.macroserver.test import BaseMacroServerTestCase
 
 @testRun(macro_name="lsgh", wait_timeout=1)
 @testRun(macro_name="defgh", macro_params=["lsm", "pre-acq"], wait_timeout=1)
+@testRun(macro_name="defgh", macro_params=["lsm mot.*", "pre-acq"],
+         wait_timeout=1)
 @testRun(macro_name="udefgh", wait_timeout=1)
 class GeneralHooksTest(BaseMacroServerTestCase, RunMacroTestCase,
                   unittest.TestCase):
