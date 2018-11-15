@@ -64,4 +64,3 @@ class GeneralHooksTest(MeasSarTestTestCase, BaseMacroServerTestCase,
         RunMacroTestCase.tearDown(self)
         BaseMacroServerTestCase.tearDown(self)
         MeasSarTestTestCase.tearDown(self)
-
