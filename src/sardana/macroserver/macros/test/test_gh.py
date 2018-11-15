@@ -35,7 +35,7 @@ from sardana.tango.macroserver.test import BaseMacroServerTestCase
          wait_timeout=1)
 @testRun(macro_name="udefgh", wait_timeout=1)
 class GeneralHooksTest(BaseMacroServerTestCase, RunMacroTestCase,
-                  unittest.TestCase):
+                       unittest.TestCase):
 
     def setUp(self):
         unittest.TestCase.setUp(self)
