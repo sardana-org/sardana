@@ -45,7 +45,7 @@ class GeneralHooksTest(BaseMacroServerTestCase, RunMacroTestCase,
     def test_gh(self):
         self.macro_runs(macro_name="defgh", macro_params=["lsm", "pre-acq"],
                         wait_timeout=1)
-        self.macro_runs(macro_name="ct", macro_params=[".1"], wait_timeout=1)
+        self.macro_runs(macro_name="ct", macro_params=[".1"], wait_timeout=3)
         self.macro_runs(macro_name="udefgh", macro_params=["lsm", "pre-acq"],
                         wait_timeout=1)
 
