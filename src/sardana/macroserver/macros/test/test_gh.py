@@ -27,6 +27,8 @@ from taurus.external import unittest
 
 from sardana.macroserver.macros.test import RunMacroTestCase, testRun
 from sardana.tango.macroserver.test import BaseMacroServerTestCase
+from sardana.tango.pool.test.test_measurementgroup import MeasSarTestTestCase
+from sardana.macroserver.macros.test.test_scanct import mg_config4
 
 
 @testRun(macro_name="lsgh", wait_timeout=1)
@@ -34,22 +36,32 @@ from sardana.tango.macroserver.test import BaseMacroServerTestCase
 @testRun(macro_name="defgh", macro_params=["lsm mot.*", "pre-acq"],
          wait_timeout=1)
 @testRun(macro_name="udefgh", wait_timeout=1)
-class GeneralHooksTest(BaseMacroServerTestCase, RunMacroTestCase,
-                       unittest.TestCase):
+class GeneralHooksTest(MeasSarTestTestCase, BaseMacroServerTestCase,
+                       RunMacroTestCase, unittest.TestCase):
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        MeasSarTestTestCase.setUp(self)
         BaseMacroServerTestCase.setUp(self)
         RunMacroTestCase.setUp(self)
+        unittest.TestCase.setUp(self)
+
+    def create_meas(self, config):
+        MeasSarTestTestCase.create_meas(self, config)
+        self.macro_executor.run(macro_name='senv',
+                                macro_params=['ActiveMntGrp', '_test_mg_1'],
+                                sync=True, timeout=1.)
 
     def test_gh(self):
         self.macro_runs(macro_name="defgh", macro_params=["lsm", "pre-acq"],
                         wait_timeout=1)
-        self.macro_runs(macro_name="ct", macro_params=[".1"], wait_timeout=3)
+        self.create_meas(mg_config4)
+        self.macro_runs(macro_name="ct", macro_params=[".1"], wait_timeout=1)
         self.macro_runs(macro_name="udefgh", macro_params=["lsm", "pre-acq"],
                         wait_timeout=1)
 
     def tearDown(self):
-        BaseMacroServerTestCase.tearDown(self)
-        RunMacroTestCase.tearDown(self)
         unittest.TestCase.tearDown(self)
+        RunMacroTestCase.tearDown(self)
+        BaseMacroServerTestCase.tearDown(self)
+        MeasSarTestTestCase.tearDown(self)
+
