@@ -1198,7 +1198,16 @@ class MacroExecutor(Logger):
         if len(general_hooks) == 0:
             return
         for hook_info_raw, hook_places in general_hooks:
-            hook_info = ParamParser().parse(hook_info_raw)
+            hook_info_tokens = hook_info_raw.split(" ", 1)
+            hook_name = hook_info_tokens[0]
+            hook_info = [hook_name]
+            if len(hook_info_tokens) == 2:
+                hook_params_raw = hook_info_tokens[1]
+                hook_param_def = self.macro_manager.getMacro(
+                    hook_name).get_parameter()
+                param_parser = ParamParser(hook_param_def)
+                hook_params = param_parser.parse(hook_params_raw)
+                hook_info += hook_params
             hook = ExecMacroHook(macro_obj, hook_info)
             macro_obj.appendHook((hook, hook_places))
 
