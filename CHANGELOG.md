@@ -10,7 +10,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   ones in the definition (#285, #876, #943, #941, #955)
 - Possibility to pass values of repeat paramters with just one member without
   the need to encapsulate them in square brackets (spock syntax) or list
-  (macro API) (#781)
+  (macro API) (#781, #983)
 - Workaround for API_DeviceTimedOut errors on MeasurementGroup Start. Call Stop
   in case this error occured (#764).
 - Optional measurement group parameter to `ct` and `uct` macros (#940, #473)
