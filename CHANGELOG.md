@@ -17,6 +17,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Support to "PETRA3 P23 6C" and "PETRA3 P23 4C" diffractometers by means
   of new controller classes and necessary adaptation to macros (#923, #921)
 - Top LICENSE file that applies to the whole project (#938)
+- Document remote connection to MacroServer Python process (RConsolePort Tango
+  property) (#984)
 
 ### Fixed
 - Make `expconf` react on events of environment, measurement groups and their
