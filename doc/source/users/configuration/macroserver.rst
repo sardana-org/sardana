@@ -62,8 +62,8 @@ Second, in order to open a connection to a MacroServer just type::
 The most convenient way to debug the MacroServer internals is to use the
 `Tango Util <https://pytango.readthedocs.io/en/stable/server_api/util
 .html#util>`_ singleton object. It is used to store Tango device server
-process data and to provide the user with a set of utilities method.
-For example, to access the MacroServer Sardana core object, in the a rconsole
+process data and to provide the user with a set of utility methods.
+For example, to access the MacroServer Sardana core object, in the rconsole
 session, just type::
 
     >>> import tango
