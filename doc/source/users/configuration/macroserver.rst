@@ -50,5 +50,22 @@ instance. In case Sardana is used with Tango this configuration is
 accessible via the ``LogstashHost`` and ``LogstashPort``
 :class:`~sardana.tango.macroserver.MacroServer.MacroServer` device properties.
 
-.. todo::
-    Document RConsolePort
+You can debug the MacroServer at runtime using the Python remote
+console - ``rconsole`` (part of the `rfoo <https://pypi.org/project/rfoo/>`_
+project). First, you need to specify at which port the MacroServer will
+accept connections. For that, simply set the ``RConsolePort``
+:class:`~sardana.tango.macroserver.MacroServer.MacroServer` property.
+Second, in order to open a connection to a MacroServer just type::
+
+    $> rconsole -p <port>
+
+The most convenient way to debug the MacroServer internals is to use the
+`Tango Util <https://pytango.readthedocs.io/en/stable/server_api/util
+.html#util>`_ singleton object. It is used to store Tango device server
+process data and to provide the user with a set of utility methods.
+For example, to access the MacroServer Sardana core object, in the rconsole
+session, just type::
+
+    >>> import tango
+    >>> util = tango.Util.instance()
+    >>> ms = util.get_device_by_name("<ms_device_name>").macro_server
