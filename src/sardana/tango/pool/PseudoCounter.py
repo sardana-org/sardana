@@ -175,9 +175,9 @@ class PseudoCounter(PoolExpChannelDevice):
             PoolExpChannelDevice.get_dynamic_attributes(self)
 
         if not cache_built:
-        # For value attribute, listen to what the controller says for data
-        # type (between long and float) and data format (scalar, spectrum or
-        # image)
+            # For value attribute, listen to what the controller says for data
+            # type (between long and float) and data format (scalar, spectrum
+            # or image)
             value = std_attrs.get('value')
             if value is not None:
                 _, data_info, attr_info = value
