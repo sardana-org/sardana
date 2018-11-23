@@ -224,7 +224,7 @@ class PseudoCounter(PoolExpChannelDevice):
         state = pseudo_counter.get_state(cache=use_cache, propagate=0)
         if state == State.Moving:
             quality = AttrQuality.ATTR_CHANGING
-        timestamp = value_attr.value
+        timestamp = value_attr.timestamp
         self.set_attribute(attr, value=value, quality=quality,
                            priority=0, timestamp=timestamp)
 
