@@ -76,7 +76,7 @@ is feed with the result of the
 default it expects values of ``float`` type and scalar shape. You can easily
 :ref:`change the default interface <sardana-controller-howto-change-default-interface>`.
 This way you could program a pseudo counter to obtain an image :term:`ROI`
-of a :ref:`2D experimental channel <sardana-2d-overview2D>`.
+of a :ref:`2D experimental channel <sardana-2d-overview>`.
 
 Here is an example of how to change *value* attribute's shape to an image
 and specify its maximum dimension of 1024 x 1024 pixels:
