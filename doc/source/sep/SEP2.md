@@ -1,73 +1,110 @@
-	Title: Lima integration
+	Title: Improve integration of 1D and 2D experimental channels
 	SEP: 2
 	State: DRAFT
-	Date: 2013-06-25
-	Drivers: Gabriel Jover-Manas gjover@cells.es
+	Date: 2018-11-26
+	Drivers: Zbigniew Reszelaz zreszela@cells.es
 	URL: http://www.sardana-controls.org/sep/?SEP2.md
 	License: http://www.jclark.com/xml/copying.txt
 	Abstract:
-	Lima is a powerful library adding an abstraction layer to control a 
-	broad collection of detectors and perform image post processing.
-	This SEP proposes the integration of Lima in order to get full access 
-	from Sardana.
+	1D and 2D experimental channels may produce big arrays of data at high
+	frame rate. Extracting this data and storing it using Sardana recorders, 
+	as it is currently implemented, is not always optimal. This SEP will add
+	a data saving duality, optionally, leaving the data storage at the
+	responsibility of the detector (or an intermediate software layer e.g. 
+	Lima). In this case Sardana will be just notified about the URI of the 
+	data which could be used for eventual reference.
+	Furthermore, the experimental channel data may require to be 
+	reduced/pre-processes either externally or internally by Sardana. 
+	Typical operations are ROI and binning. This SEP will not implement them.
 
 
-Introduction
-------------
+# Description of current situation
 
-This SEP describes how to integrate Lima with Sardana at different levels.
+It is possible to execute the following measurements: single count, 
+step scans or continuous scans with 1D and 2D experimental channels 
+(continuous scans work only with 1D).
+
+In the measurement group one can add either a 1D/2D experimental channel 
+or its ``Datasource`` attribute and both these work in a single count or a 
+step scan. In the continuous scan the ``Datasource`` attribute do not work
+directly. 
+
+Data source is by default composed by Sardana, but could be returned by
+the controller with the ``GetPar`` method.
+
+In a single count or in a step scan data is transferred via ``Value`` 
+attribute readout and the Data source is transferred via ``Datasource`` 
+attribute readout at the end of the acquisition.
+
+In a continuous scan 1D experimental channel data is transferred via `Data` 
+(`ValueBuffer`) attribute change events after prior serialization with JSON.
+
+The following example shows how a single count or a step scan work:
+
+```
+Door> defmeas mntgrp-1d2d ct01 oned01 twod01 oned01/datasource twod01/datasource
+Door> senv ActiveMntGrp mntgrp-1d2d
+Door> ct
+Door> ascan mot01 0 1 1 0.1
+```
 
 
-Description of current situation
---------------------------------
+## H5 recorder (`NXscanH5_FileRecorder`)
 
-A Lima controller has been developed in order to control one camera via a LimaCCDs Tango Device Server. Currently ReadOne method returns a numpy array with the image. Moving such amount of data in the Pool is far from optimal and we have the limitation of controlling just one camera per controller
+1D and 2D data from a step scan are correctly stored in the file:
+
+```
+import h5py
+h5py.File("<path-to-file>").items()[-1][1]["measurement"]["twod01"][0]`
+```
+
+Data source is not stored in the file:
+
+```
+import h5py
+h5py.File("<path-to-file>").items()[-1][1]["measurement"].keys()
+```
+
+## Spec recorder:
+
+1D is stored in the file. Scan header is annotated with: `#@MCA`, `#@CHANN`,
+`#@MCA_NB`, `#@DET`; and the 1D data starting with `@A` are preceding the 
+records.
+
+2D is not stored in the file.
+
+Data source is correctly stored in the file. This is not compatible
+with the [Spec format](https://certif.com/spec_manual/user_1_4_1.html)
+which says:
+
+> Following the scan header is the scan data. These are just lines of
+space-separated numbers that correspond to the column headers given with #L.
 
 
-Requirements
-------------
+## Output recorder:
 
-The following requirements are given in rough order of importance 
+1D and 2D data are displayed as their shapes.
 
- 1. Avoid passing image data via ReadOne. We may define the data source and fix the recorder to read/write the image in final destination.
- 2. Create a controller that calls Lima directly
- 3. Implement multi-camera controller synchronizing acquisitions with different cameras
+Data source is not displayed, just `<string>` placeholder is displayed.
+
+
+# Scope
+
+1. Allow data saving duality for 1D/2D controllers axes which may:
+  * report the data
+  * report the URI
+  * report both
+2. Add (optional) interface for 1D/2D experimental channels for 
+saving configuration. Which would translate into the 1D/2D controllers 
+saving configuration interface.
+3. Add persistent saving configuration on the experiment configuration / 
+measurement group level.
 
 
 Links to more details and discussions
 -------------------------------------
 
 The discussions about the SEP2 itself are in the sardana-devel mailing list.
-
-
-License
--------
-
-The following copyright statement and license apply to SEP2 (this
-document).
-
-Copyright (c) 2013  Gabriel Jover-Manas
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be included
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
 
 
 Changes
