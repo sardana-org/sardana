@@ -23,9 +23,11 @@ be able to create a CounterTimerController with:
 .. code-block:: python
 
     import springfieldlib
-
+		
     from sardana.pool.controller import CounterTimerController
 
+    from sardana import State
+		
     class SpringfieldCounterTimerController(CounterTimerController):
 
         def __init__(self, inst, props, *args, **kwargs):

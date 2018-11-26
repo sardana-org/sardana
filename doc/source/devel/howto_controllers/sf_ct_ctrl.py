@@ -116,7 +116,7 @@ class SpringfieldCounterTimerController(CounterTimerController):
         self.springfield.LoadChannel(axis, value)
 
     def StartOne(self, axis, position):
-        self.springfield.StartChennel(axis, position)
+        self.springfield.StartChannel(axis, position)
 
     def StopOne(self, axis):
         self.springfield.stop(axis)

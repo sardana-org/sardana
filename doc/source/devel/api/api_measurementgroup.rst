@@ -57,6 +57,22 @@ moveable
     basis. Backwards incompatible changes (up to and including its removal)
     may occur if deemed necessary by the core developers.
 
+software synchronizer initial domain
+    Initial domain to be used by the software synchronizer.
+
+    If the *initial* parameter is described redundantly in the
+    synchronization description i.e. both in the *position* and in the
+    *time* domains, then this attribute will specify the one that will be
+    used by the software synchronizer.
+
+    If the synchronization description does not contain value in this domain
+    the software synchronizer will silently try to use the other one.
+
+    **Note:** This attribute has been included in Sardana on a provisional
+    basis. Backwards incompatible changes (up to and including its removal)
+    may occur if deemed necessary by the core developers.
+
+
 The available operations are:
 
 start acquisition()

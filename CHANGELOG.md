@@ -6,20 +6,119 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
-- `repeat` macro for executing n-times the hooks attached in its body (#310,
-  #745)
+- Possibility to define macros with optional parameters. These must be the last
+  ones in the definition (#285, #876, #943, #941, #955)
+- Possibility to pass values of repeat paramters with just one member without
+  the need to encapsulate them in square brackets (spock syntax) or list
+  (macro API) (#781, #983)
+- Workaround for API_DeviceTimedOut errors on MeasurementGroup Start. Call Stop
+  in case this error occured (#764).
+- Optional measurement group parameter to `ct` and `uct` macros (#940, #473)
+- Support to "PETRA3 P23 6C" and "PETRA3 P23 4C" diffractometers by means
+  of new controller classes and necessary adaptation to macros (#923, #921)
+- Top LICENSE file that applies to the whole project (#938)
+- Document remote connection to MacroServer Python process (RConsolePort Tango
+  property) (#984)
 
 ### Fixed
+- Make `expconf` react on events of environment, measurement groups and their
+  configurations. An event offers an option to reload the whole experiment
+  configuration or keep the local changes. `expconf` started with
+  `--auto-update` option will automatically reload the whole experiment
+  configuration (#806, #882)
+- Reload macro library overriding another library (#927, #946)
+- Avoid final padding in timescan when it was stopped by user (#869, #935)
+- Hook places advertised by continuous scans so the `allowHooks` hint and the
+  code are coherent (#936)
+- Macro/controller module description when module does not have a docstring
+  (#945)
+- Make cleanup (remove configuration) if spock profile creation was interrupted
+  or failed (#791, #793)
+- Spock considers passing supernumerary parameters as errors (#438, #781)
+- MacroServer starts without the Qt library installed (#781, #907, #908)
+- Make `Description` an optional part of controller's properties definition (#976)
+
+### Changed
+- MacroButton stops macros instead of aborting them (#931, #943)
+- Spock syntax and advanced spock syntax are considered as one in documentaion
+  (#781)
+- Move pre-scan and post-scan hooks out of `scan_loop` method (#920, #922,
+  #933)
+- Move `ParamParser` to `sardana.util.parser` (#781, #907, #908)
+
+## [2.5.0] 2018-08-10
+
+### Added
+- `def_discr_pos`, `udef_discr_pos` and `prdef_discr` macros for configuring
+  discrete pseudo motors (#801)
+- `Configuration` attribute to discrete pseudo motor (#801)
+- Avoid desynchronization of motion and acquisition in time synchronized
+  continuous scans by checking whether the motor controller accepts the scan
+  velocity and in case it rounds it up, reduce the scan velocity (#757)
+- `repeat` macro for executing n-times a set of macros passed as parameters
+  or attached as hooks (#310, #745, #892)
+- `pre-acq` and `post-acq` hooks to the `ct` macro (#808)
+- `pre-acq` and `post-acq` hooks to the continuous scans: `ascanct` family
+  macros (#780)
+- `pre-acq` and `post-acq` hooks to `timescan` macro (#885)
+- `SoftwareSynhronizerInitialDomain` Tango attribute to
+  the Measurement Group Tango device and `sw_synch_initial_domain` attribute
+  to the `PoolMeasurementGroup` (#759) - experimental
+- Default macro logging filter which improves the output of logging messages.
+  Filter can be configured with sardanacustomsettings (#730)
+- Possibiltiy to configure ORB end point for Tango servers with Tango DB
+  free property (#874)
+- Enhance software synchronization by allowing function generation when
+  group has 1 repeat only (#786)
+- Tab completion in spock for Boolean macro parameters (#871)
+- Information about controller properties in `sar_info` macro (#855, #866)
+
+### Fixed
+- Ensure that value buffer (data) events are handled sequentially so data
+  are not wrongly interpreted as lost (#794, #813)
 - Push change events from code for measurement group attributes: moveable,
   latency time and synchronization (#736, #738)
+- `getPoolObj` random `AttributeErrors: _pool_obj` errors in macros (#865, #57)
+- Pre-scan snapshot (#753)
+- Avoid loading configuration to disabled controllers in measurement group
+  acquisition (#758)
+- Spock returning prompt too early not allowing to stop macros on Windows
+  (#717, #725, #905)
 - Validation of starts and finals for a2scanct, a3scanct, meshct, ... (#734)
+- `defelem` macro when using default axis number (#568, #609)
+- Boolean macro parameter validation - now works only True, true, 1
+  or False, false, 0 (#871)
+- Remove numpy and pylab symbols from spock namespace in order to
+  not collide with macros e.g. repeat, where, etc. (#893)
 - Make SPEC_FileRecorder use LF instead of CRLF even on windows (#750)
-- Fix appending of hooks from sequence XML (#747)
-- Avoid errors if selected trajectory in HKL controller does not exists (#752)
+- Appending of hooks from sequence XML (#747)
+- Avoid problems with MacroServer attributes (Environment and Elements) in
+  taurus extesnions by using newly introduced (in taurus 4.4.0) TangoSerial
+  serialization mode (#897)
+- Pseudo counters in continuous acquisition (#899)
+- Split of `PoolPath`, `MacroPath` and `RecorderPath` with OS separator (#762)
+- `lsgh` list hooks multiple times to reflect the configuration (#774)
+- Avoid errors if selected trajectory in HKL controller doesnot exists (#752)
+- Pass motion range information with `MoveableDesc` in `mesh` scan (#864)
+- `getElementByAxis` and `getElementByName` of Controller Taurus extension
+  class (#872)
+- `GScan` intervals estimation (#772)
+- `meshct` intervals estimation (#768)
 - Documentation on how to install and use Sardana from Git clone (#751)
+- Documentation (Sphinx) build warnings (#859, #179, #219, #393)
 
 ### Changed
 - Change epoch from float to formatted date & time in Spec recorder (#766)
+- Documentation hosting from ReadTheDocs to Github Pages (build on Travis) (#826)
+- Door and MacroServer references in spock configuration file (profile) to
+  use FQDN URI references (#894, #668)
+
+### Deprecated
+- `Label` and `Calibration` attributes of discrete pseudo motor in favor
+  of `Configuration` attribute (#801)
+- `PoolMotorSlim` widget in favor of `PoolMotorTV` widget (#163, #785) 
+- `Controller.getUsedAxis` (Taurus device extension) in favor
+of `Controller.getUsedAxes` (#609)
 
 ## [2.4.0] 2018-03-14
 
@@ -413,7 +512,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.3.2...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.5.0...HEAD
+[2.5.0]: https://github.com/sardana-org/sardana/compare/2.4.0...2.5.0
 [2.4.0]: https://github.com/sardana-org/sardana/compare/2.3.2...2.4.0
 [2.3.2]: https://github.com/sardana-org/sardana/compare/2.3.1...2.3.2
 [2.3.1]: https://github.com/sardana-org/sardana/compare/2.3.0...2.3.1

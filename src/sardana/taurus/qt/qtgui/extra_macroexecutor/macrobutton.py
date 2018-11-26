@@ -214,7 +214,7 @@ class MacroButton(TaurusWidget):
         '''same as :meth:`setText`
         '''
         # SHOULD ALSO BE POSSIBLE TO SET AN ICON
-        self.ui.button.setText("Run/Abort:\n" + text)
+        self.ui.button.setText("Run/Stop:\n" + text)
 
     def setMacroName(self, name):
         '''set the name of the macro to be executed
@@ -271,7 +271,7 @@ class MacroButton(TaurusWidget):
         if self.ui.button.isChecked():
             self.runMacro()
         else:
-            self.abort()
+            self.stop()
 
     @ProtectTaurusMessageBox(msg='Error while executing the macro.')
     def runMacro(self):
@@ -292,8 +292,13 @@ class MacroButton(TaurusWidget):
             self.ui.button.setChecked(False)
             raise e
 
+    # For backward compatibility
     def abort(self):
-        '''abort the macro.'''
+        self.warning("abort is not implemented, stop is being called instead")
+        self.stop()
+
+    def stop(self):
+        '''stop the macro.'''
         if self.door is None:
             return
         self.door.PauseMacro()
@@ -301,15 +306,15 @@ class MacroButton(TaurusWidget):
         # we provide a warning message that does not make the process too slow
         # It may also be useful and 'ABORT' at TaurusApplication level
         # (macros+motions+acquisitions)
-        title = 'Aborting macro'
+        title = 'Stopping macro'
         message = 'The following macro is still running:\n\n'
         message += '%s %s\n\n' % (self.macro_name, ' '.join(self.macro_args))
-        message += 'Are you sure you want to abort?\n'
+        message += 'Are you sure you want to stop?\n'
         buttons = Qt.QMessageBox.Ok | Qt.QMessageBox.Cancel
         ans = Qt.QMessageBox.warning(
             self, title, message, buttons, Qt.QMessageBox.Ok)
         if ans == Qt.QMessageBox.Ok:
-            self.door.abort(synch=True)
+            self.door.stop(synch=True)
         else:
             self.ui.button.setChecked(True)
             self.door.ResumeMacro()

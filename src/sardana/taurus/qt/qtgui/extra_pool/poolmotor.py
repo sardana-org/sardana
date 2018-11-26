@@ -309,6 +309,9 @@ class PoolMotorSlim(TaurusWidget, PoolMotorClient):
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent)
+        msg = ("PoolMotorSlim is deprecated since 2.5.0. Use PoolMotorTV "
+               "instead.")
+        self.deprecated(msg)
 
         #self.call__init__wo_kw(Qt.QWidget, parent)
         #self.call__init__(TaurusBaseWidget, str(self.objectName()), designMode=designMode)
