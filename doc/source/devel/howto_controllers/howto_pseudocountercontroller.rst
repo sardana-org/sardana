@@ -37,6 +37,13 @@ These names are used when creating the controller instance and their order is
 important when writing the controller itself. Each controller will define its
 own roles.
 
+.. note::
+
+    It is possible to omit the
+    :obj:`~sardana.pool.controller.PseudoCounterController.pseudo_counter_roles`
+    definition if the controller provides only one axis. The controller class
+    name will be assumed as the pseudo counter role.
+
 The constructor does nothing apart of calling the parent class constructor but
 could be used to implement any necessary initialization.
 
