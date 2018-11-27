@@ -91,26 +91,44 @@ Data source is not displayed, just `<string>` placeholder is displayed.
 # Scope
 
 1. Allow data saving duality for 1D/2D controllers axes which may:
-  * report the data
-  * report the URI
-  * report both
-2. Add (optional) interface for 1D/2D experimental channels for 
+  * report only the data
+  * report only the URI
+  * report both data (for eventual pre-processing by the pseudo counters) and
+  URI
+2. Implement data referencing with URI in H5 file recorder.
+3. Add (optional) interface for 1D/2D experimental channels for 
 saving configuration. Which would translate into the 1D/2D controllers 
 saving configuration interface.
-3. Add persistent saving configuration on the experiment configuration / 
+4. Add persistent saving configuration on the experiment configuration / 
 measurement group level.
+
+# Out of scope
+
+1. Data referencing with URI in Spec file recorder - will be handled as a 
+separate PR *a posteriori*.
+2. Saving configuration widgets (both at the channel level and at the 
+experiment configuration / measurement group level) - will be handled as a 
+separate PR *a posteriori*.
+3. Internal/external data pre-processing and its configuration e.g. pseudo 
+counters for ROI, binning, etc. - will be handled as a separate PR/SEP *a 
+posteriori*.
 
 
 Links to more details and discussions
 -------------------------------------
 
-The discussions about the SEP2 itself are in the sardana-devel mailing list.
+The discussions about the SEP2 itself:
+* [SEP2 PR](https://github.com/sardana-org/sardana/pull/775)
+* [ROI pseudocounters from 2Dcounter issue](https://github.com/sardana-org/sardana/issues/982)
+* [scanID and pointNb in controller issue](https://github.com/sardana-org/sardana/issues/979)
 
 
 Changes
 -------
 
-2016-11-30 
+2018-11-27
+[reszelaz](https://github.com/reszelaz) Change driver and rewrite SEP2
+2016-11-30
 [mrosanes](https://github.com/sagiss) Migrate SEP2 from SF wiki to independent markdown language file and correct formatting.
  
 
