@@ -1482,6 +1482,12 @@ class CScan(GScan):
         pos_obj = motor.getPositionObj()
         min_pos, _ = pos_obj.getRange()
         try:
+            # Taurus 4 uses quantities however Sardana does not support them
+            # yet - use magnitude for the moment.
+            min_pos = min_pos.magnitude
+        except AttributeError:
+            pass
+        try:
             min_pos = float(min_pos)
         except ValueError:
             min_pos = float('-Inf')
@@ -1494,6 +1500,12 @@ class CScan(GScan):
         '''
         pos_obj = motor.getPositionObj()
         _, max_pos = pos_obj.getRange()
+        try:
+            # Taurus 4 uses quantities however Sardana does not support them
+            # yet - use magnitude for the moment.
+            max_pos = max_pos.magnitude
+        except AttributeError:
+            pass
         try:
             max_pos = float(max_pos)
         except ValueError:
