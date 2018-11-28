@@ -73,6 +73,31 @@ negative. The value close to the zero indicates the beam centered in the middle.
 Similarly behaves the horizontal pseudo counter. The total pseudo counter is
 the mean value of all the four sensors and indicates the beam intensity.
 
+Changing default interface
+--------------------------
+
+Pseudo counters instantiated from your controller will have a default
+interface, which among others, comprises the *value* attribute. This attribute
+is feed with the result of the
+:meth:`~sardana.pool.controller.PseudoCounterController.calc` method and by
+default it expects values of ``float`` type and scalar shape. You can easily
+:ref:`change the default interface <sardana-controller-howto-change-default-interface>`.
+This way you could program a pseudo counter to obtain an image :term:`ROI`
+of a :ref:`2D experimental channel <sardana-2d-overview>`.
+
+Here is an example of how to change *value* attribute's shape to an image
+and specify its maximum dimension of 1024 x 1024 pixels:
+
+.. code-block:: python
+
+        def GetAxisAttributes(self, axis):
+        axis_attrs = PseudoCounterController.GetAxisAttributes(self, axis)
+        axis_attrs = dict(axis_attrs)
+        axis_attrs['Value'][Type] = ((float, ), )
+        axis_attrs['Value'][MaxDimSize] = (1024, 1024)
+        return axis_attrs
+
+
 Including external variables in the calculation
 -----------------------------------------------
 
