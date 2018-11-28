@@ -173,7 +173,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
     '''
 
     try:
-        #TODO: For Taurus 4 compatibility
+        # TODO: For Taurus 4 compatibility
         createExpConfChangedDialog = Qt.pyqtSignal()
     except AttributeError:
         pass
