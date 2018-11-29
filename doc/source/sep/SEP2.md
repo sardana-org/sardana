@@ -92,10 +92,10 @@ Data source is not displayed, just `<string>` placeholder is displayed.
 
 1. Allow data saving duality for 1D/2D controllers axes which may:
   * report only the data
-  * report only the URI
+  * report only the data source
   * report both data (for eventual pre-processing by the pseudo counters) and
-  URI
-2. Implement data referencing with URI in H5 file recorder.
+  data source
+2. Implement data referencing with data source in H5 file recorder.
 3. Add (optional) interface for 1D/2D experimental channels for 
 saving configuration. Which would translate into the 1D/2D controllers 
 saving configuration interface.
@@ -104,8 +104,8 @@ measurement group level.
 
 # Out of scope
 
-1. Data referencing with URI in Spec file recorder - will be handled as a 
-separate PR *a posteriori*.
+1. Data referencing with data source in Spec file recorder - will be handled 
+as a separate PR *a posteriori*.
 2. Saving configuration widgets (both at the channel level and at the 
 experiment configuration / measurement group level) - will be handled as a 
 separate PR *a posteriori*.
