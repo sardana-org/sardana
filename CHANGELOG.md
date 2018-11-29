@@ -29,6 +29,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   configuration (#806, #882)
 - Reload macro library overriding another library (#927, #946)
 - Avoid final padding in timescan when it was stopped by user (#869, #935)
+- Moveables limits check in continuous scans when moveables position attribute
+  has unit configured and Taurus 4 is used (quantities) (#989, #990)
 - Hook places advertised by continuous scans so the `allowHooks` hint and the
   code are coherent (#936)
 - Macro/controller module description when module does not have a docstring
