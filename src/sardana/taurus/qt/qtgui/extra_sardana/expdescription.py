@@ -172,6 +172,12 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
     using the `ExperimentConfiguration` environmental variable for that Door.
     '''
 
+    try:
+        # TODO: For Taurus 4 compatibility
+        createExpConfChangedDialog = Qt.pyqtSignal()
+    except AttributeError:
+        pass
+
     def __init__(self, parent=None, door=None, plotsButton=True,
                  autoUpdate=False):
         Qt.QWidget.__init__(self, parent)
@@ -205,7 +211,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
         # Pending event variables
         self._expConfChangedDialog = None
-        self.createExpConfChangedDialog = Qt.pyqtSignal()
+
         self.connect(self, Qt.SIGNAL('createExpConfChangedDialog'),
                      self._createExpConfChangedDialog)
 
@@ -351,6 +357,9 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             else:
                 if self._expConfChangedDialog is None:
                     self.emit(Qt.SIGNAL('createExpConfChangedDialog'))
+                    # TODO: For Taurus 4 compatibility
+                    if hasattr(self, 'createExpConfChangedDialog'):
+                        self.createExpConfChangedDialog.emit()
                 else:
                     msg_details = self._getDetialsText()
                     msg_info = self._getResumeText()
