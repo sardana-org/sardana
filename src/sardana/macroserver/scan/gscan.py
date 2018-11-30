@@ -373,14 +373,19 @@ class GScan(Logger):
 
     def _check_moveables_limits(self):
         for m in self._moveables:
-            config = PyTango.AttributeProxy(
-                m.moveable.getName() + '/position').get_config()
+            pos_range = m.moveable.getAttribute("Position").range
             try:
-                high = float(config.max_value)
+                if type(pos_range[1]) == str:
+                    high = float(pos_range[1])              # Taurus 3
+                else:
+                    high = float(pos_range[1].magnitude)    # Taurus 4
             except ValueError:
                 high = None
             try:
-                low = float(config.min_value)
+                if type(pos_range[0]) == str:
+                    low = float(pos_range[0])               # Taurus 3
+                else:
+                    low = float(pos_range[0].magnitude)     # Taurus 4
             except ValueError:
                 low = None
 
