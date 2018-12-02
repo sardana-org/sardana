@@ -12,6 +12,7 @@
 	a data saving duality, optionally, leaving the data storage at the
 	responsibility of the detector (or an intermediate software layer e.g. 
 	Lima). In this case Sardana will be just notified about the data source
+	which could be used for eventual reference.
 	Furthermore, the experimental channel data may require to be 
 	pre-processes/reduced either externally or internally by Sardana. 
 	Typical operations are ROI and binning. This SEP will not implement them.
