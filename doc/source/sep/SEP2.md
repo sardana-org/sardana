@@ -11,10 +11,9 @@
 	as it is currently implemented, is not always optimal. This SEP will add
 	a data saving duality, optionally, leaving the data storage at the
 	responsibility of the detector (or an intermediate software layer e.g. 
-	Lima). In this case Sardana will be just notified about the URI of the 
-	data which could be used for eventual reference.
+	Lima). In this case Sardana will be just notified about the data source
 	Furthermore, the experimental channel data may require to be 
-	reduced/pre-processes either externally or internally by Sardana. 
+	pre-processes/reduced either externally or internally by Sardana. 
 	Typical operations are ROI and binning. This SEP will not implement them.
 
 
@@ -26,18 +25,19 @@ step scans or continuous scans with 1D and 2D experimental channels
 
 In the measurement group one can add either a 1D/2D experimental channel 
 or its ``Datasource`` attribute and both these work in a single count or a 
-step scan. In the continuous scan the ``Datasource`` attribute do not work
+step scan. In continuous scan the ``Datasource`` attribute do not work
 directly. 
 
 Data source is by default composed by Sardana, but could be returned by
 the controller with the ``GetPar`` method.
 
 In a single count or in a step scan data is transferred via ``Value`` 
-attribute readout and the Data source is transferred via ``Datasource`` 
+attribute readout and the data source is transferred via ``Datasource`` 
 attribute readout at the end of the acquisition.
 
 In a continuous scan 1D experimental channel data is transferred via `Data` 
-(`ValueBuffer`) attribute change events after prior serialization with JSON.
+(to be renamed to `ValueBuffer`) attribute change events after prior
+serialization with JSON.
 
 The following example shows how a single count or a step scan work:
 
@@ -73,7 +73,7 @@ records.
 
 2D is not stored in the file.
 
-Data source is correctly stored in the file. This is not compatible
+Data source is stored in the file. This is not compatible
 with the [Spec format](https://certif.com/spec_manual/user_1_4_1.html)
 which says:
 
@@ -93,25 +93,28 @@ Data source is not displayed, just `<string>` placeholder is displayed.
 1. Allow data saving duality for 1D/2D controllers axes which may:
   * report only the data
   * report only the data source
-  * report both data (for eventual pre-processing by the pseudo counters) and
-  data source
-2. Implement data referencing with data source in H5 file recorder.
-3. Add (optional) interface for 1D/2D experimental channels for 
-saving configuration. Which would translate into the 1D/2D controllers 
-saving configuration interface.
-4. Add persistent saving configuration on the experiment configuration / 
-measurement group level.
+  * report both data and data source (TODO: not sure if this is necessary)
+Here, it is important to stress the difference between the data reading and data
+reporting. Data may be read for eventual pre-processing by the pseudo counters
+but this data does not need to be reported as experimental channels data.
+For example only the pseudo counters data may be reported.
+2. Implement data referencing to data source in H5 file recorder.
+3. Add optional (only the channels with the saving capability would export it)
+interface for 1D/2D experimental channels for saving configuration.
+This interface translate directly to the 1D/2D controllers saving configuration
+interface.
+4. Add interface on the experiment configuration / measurement group for saving
+configuration.
 
 # Out of scope
 
-1. Data referencing with data source in Spec file recorder - will be handled 
-as a separate PR *a posteriori*.
+1. Data referencing to data source in Spec file recorder - will be driven 
+as a separate PR.
 2. Saving configuration widgets (both at the channel level and at the 
-experiment configuration / measurement group level) - will be handled as a 
-separate PR *a posteriori*.
+experiment configuration / measurement group level) - will be driven as a 
+separate PR.
 3. Internal/external data pre-processing and its configuration e.g. pseudo 
-counters for ROI, binning, etc. - will be handled as a separate PR/SEP *a 
-posteriori*.
+counters for ROI, binning, etc. - will be driven as a separate PR/SEP.
 
 
 Links to more details and discussions
@@ -131,7 +134,3 @@ Changes
 
 2016-11-30
 [mrosanes](https://github.com/sagiss) Migrate SEP2 from SF wiki to independent markdown language file and correct formatting.
- 
-
-
-
