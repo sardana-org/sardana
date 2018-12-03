@@ -1,7 +1,7 @@
 	Title: Improve integration of 1D and 2D experimental channels
 	SEP: 2
 	State: DRAFT
-	Date: 2018-11-26
+	Date: 2018-12-03
 	Drivers: Zbigniew Reszela zreszela@cells.es
 	URL: http://www.sardana-controls.org/sep/?SEP2.md
 	License: http://www.jclark.com/xml/copying.txt
@@ -25,7 +25,7 @@ step scans or continuous scans with 1D and 2D experimental channels
 
 In the measurement group one can add either a 1D/2D experimental channel 
 or its ``Datasource`` attribute and both these work in a single count or a 
-step scan. In continuous scan the ``Datasource`` attribute do not work. 
+step scan. In continuous scan the ``Datasource`` attribute does not work. 
 
 Data source is by default composed by Sardana, but could be returned by
 the controller with the ``GetAxisPar`` method.
@@ -66,11 +66,11 @@ h5py.File("<path-to-file>").items()[-1][1]["measurement"].keys()
 
 ## Spec recorder:
 
-1D is stored in the file. Scan header is annotated with: `#@MCA`, `#@CHANN`,
-`#@MCA_NB`, `#@DET`; and the 1D data starting with `@A` are preceding the 
-records.
+1D data are stored in the file. Scan header is annotated with: `#@MCA`,
+`#@CHANN`, `#@MCA_NB`, `#@DET`; and the 1D data starting with `@A` are
+preceding the records.
 
-2D is not stored in the file.
+2D data are not stored in the file.
 
 Data source is stored in the file. This is not compatible
 with the [Spec format](https://certif.com/spec_manual/user_1_4_1.html)
@@ -86,6 +86,18 @@ space-separated numbers that correspond to the column headers given with #L.
 
 Data source is not displayed, just `<string>` placeholder is displayed.
 
+# Terminology
+
+* **saving capability** (external saving) - Applies to a controller or a
+channel. Controller (plugin) announces the external saving capability if it
+implements the necessary API for handling saving e.g. value source readout or
+saving configuration.
+For the moment, all channels proceeding from a controller with saving capbility
+autmatically announce saving capability.
+* **value source** - source in form of the URI to the value of a single
+acquisition. It is prefered to use the term **value source** instead of the
+**data source** because sardana refers to the acquisition result with the term
+value.
 
 # Scope
 
@@ -95,7 +107,7 @@ Data source is not displayed, just `<string>` placeholder is displayed.
 the values and sardana reads the value sources and uses them to refer to the
 data.
 Here, it is important to stress the difference between the data reading and data
-saving. Values may be read for eventual pre-processing by pseudo counters
+saving. Channel values may be read for eventual pre-processing by pseudo counters
 but these values do not need to be saved as experimental channel's values by
 sardana. Instead, for example, only the pseudo counter's values may be saved by
 sardana.
@@ -118,19 +130,6 @@ measurement group level) - will be driven as a separate PR.
 counters for ROI, binning, etc. - will be driven as a separate PR/SEP.
 
 # Specification
-
-## Terminology
-
-* **saving capability** (external saving) - Applies to a controller or a
-channel. Controller (plugin) announces the external saving capability if it
-implements the necessary API for handling saving e.g. value source readout or
-saving configuration.
-For the moment, all channels proceeding from a controller with saving capbility
-autmatically announce saving capability.
-* **value source** - source in form of the URI to the value of a single
-acquisition. It is prefered to use the term **value source** instead of the
-**data source** because sardana refers to the acquisition result with the term
-value.
 
 ## Changes in the current implementation
 
@@ -210,8 +209,6 @@ e.g. `file:/tmp/sample1_{index:02d}`)
 enumeration type (abort, overwrite, append)
 * `SavingEnabled` (Tango) and `saving_enabled` (core) attributes of the boolean
 type.
-* `ReportingEnabled` (Tango) and `reporting_enabled` (core) attributes of the
-boolean type.
 
 ## Measurement Group API for saving configuration
 
