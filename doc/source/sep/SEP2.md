@@ -2,12 +2,12 @@
 	SEP: 2
 	State: DRAFT
 	Date: 2018-11-26
-	Drivers: Zbigniew Reszelaz zreszela@cells.es
+	Drivers: Zbigniew Reszela zreszela@cells.es
 	URL: http://www.sardana-controls.org/sep/?SEP2.md
 	License: http://www.jclark.com/xml/copying.txt
 	Abstract:
 	1D and 2D experimental channels may produce big arrays of data at high
-	frame rate. Extracting this data and storing it using Sardana recorders, 
+	frame rate. Reading this data and storing it using sardana recorders, 
 	as it is currently implemented, is not always optimal. This SEP will add
 	a data saving duality, optionally, leaving the data storage at the
 	responsibility of the detector (or an intermediate software layer e.g. 
@@ -25,11 +25,10 @@ step scans or continuous scans with 1D and 2D experimental channels
 
 In the measurement group one can add either a 1D/2D experimental channel 
 or its ``Datasource`` attribute and both these work in a single count or a 
-step scan. In continuous scan the ``Datasource`` attribute do not work
-directly. 
+step scan. In continuous scan the ``Datasource`` attribute do not work. 
 
 Data source is by default composed by Sardana, but could be returned by
-the controller with the ``GetPar`` method.
+the controller with the ``GetAxisPar`` method.
 
 In a single count or in a step scan data is transferred via ``Value`` 
 attribute readout and the data source is transferred via ``Datasource`` 
@@ -90,31 +89,144 @@ Data source is not displayed, just `<string>` placeholder is displayed.
 
 # Scope
 
-1. Allow data saving duality for 1D/2D controllers axes which may:
-  * report only the data
-  * report only the data source
-  * report both data and data source (TODO: not sure if this is necessary)
+1. Allow data saving duality (internal vs. external) for 1D/2D controller axes.
+* **internal** - sardana reads the values and saves them.
+* **external** - hardware (or an intermediate software layer e.g. Lima) saves
+the values and sardana reads the value sources and uses them to refer to the
+data.
 Here, it is important to stress the difference between the data reading and data
-reporting. Data may be read for eventual pre-processing by the pseudo counters
-but this data does not need to be reported as experimental channels data.
-For example only the pseudo counters data may be reported.
-2. Implement data referencing to data source in H5 file recorder.
-3. Add optional (only the channels with the saving capability would export it)
-interface for 1D/2D experimental channels for saving configuration.
-This interface translate directly to the 1D/2D controllers saving configuration
-interface.
-4. Add interface on the experiment configuration / measurement group for saving
-configuration.
+saving. Values may be read for eventual pre-processing by pseudo counters
+but these values do not need to be saved as experimental channel's values by
+sardana. Instead, for example, only the pseudo counter's values may be saved by
+sardana.
+TODO: decide whether both, internal and external saving, can be used at the same
+time.
+2. Add saving configuration API to channels and controllers (plugins) with
+saving capability. Channels and controllers without saving capability will not
+expose this API.
+3. Add saving configuration API to the measurement group.
+4. Add saving configuration API to the scan framework.
+5. Implement referencing to value sources in the HDF5 file recorder.
 
 # Out of scope
 
-1. Data referencing to data source in Spec file recorder - will be driven 
+1. Referencing to value sources in Spec file recorder - will be driven
 as a separate PR.
 2. Saving configuration widgets (both at the channel level and at the 
-experiment configuration / measurement group level) - will be driven as a 
-separate PR.
+measurement group level) - will be driven as a separate PR.
 3. Internal/external data pre-processing and its configuration e.g. pseudo 
 counters for ROI, binning, etc. - will be driven as a separate PR/SEP.
+
+# Specification
+
+## Terminology
+
+* **saving capability** (external saving) - Applies to a controller or a
+channel. Controller (plugin) announces the external saving capability if it
+implements the necessary API for handling saving e.g. value source readout or
+saving configuration.
+For the moment, all channels proceeding from a controller with saving capbility
+autmatically announce saving capability.
+* **value source** - source in form of the URI to the value of a single
+acquisition. It is prefered to use the term **value source** instead of the
+**data source** because sardana refers to the acquisition result with the term
+value.
+
+## Changes in the current implementation
+
+1. Rename `Datasource` (Tango) and `data_source` (core) attributes to
+`ValueSource` (Tango) and `value_source` (core).
+TODO: vote for the best names. Alternative names (for simplicity):
+`Source` (Tango) and `source` (core).
+2. Make `data_source` parameter deprecated in the `GetAxisPar`.
+3. Rename `Data` (Tango) attribute (marked as experimental API) to `ValueBuffer`
+4. Change `ValueBuffer` informatin format from
+`{"index": seq<int>, "data": seq<str>}` to `{"index": seq<int>, "value": seq<str>}`
+
+## When to read the value and when to read the value source?
+
+* When to read the value (currently using the `[Pre]Read{One,All}` methods
+of the `Readable` interface)? When any of these conditions applies:
+    * the channel does not have saving capability
+    * the channel has saving capability but it is disabled
+    * internal saving is enabled for the channel
+    * there is a pseudo counter based on this channel
+* When to read the value source?
+    * the channel have saving capability and it is enabled
+
+## Controller (plugin) API for reading value source
+
+* Controller which would like to read the value source must inherit from the
+`Sourceable` interface.
+TODO: vote for the best name. Alternative name is `Savable`.
+* This controller must implement the `SourceOne` method which receives as
+argument the axis number and returns either a single value source (if software
+trigger/gate synchronization is in use) or a sequence of value sources.
+In the future, if necessary, other methods could be added `[Pre]Source{One|All}`
+to allow multi axis queries.
+
+## Channel API for reading value source
+
+* `ValueSourceBuffer` (Tango) and `value_source_buffer` attributes are used for
+passing value source sequences (chunks). The Tango attribute is of the
+`DevString` type and will work with the JSON serialized data structures of the
+following format: `{"index": seq<int>, "value_source": seq<str>}`.
+TODO: vote for the best name. Alternative names: `SourceBuffer` (Tango)
+and `source_buffer` (core) for attributes, and the following data structure:
+`{"index": seq<int>, "source": seq<str>}`.
+
+## Single count (Taurus extension) read
+
+* If channel has saving enabled then the `count` method returns value source,
+otherwise it returns value.
+
+## How to determine if channel/controller has saving capability
+
+* Saving capability is based on inheriting from the `Sourceable` interface.
+Inheriting from this interface is optional. 
+    
+Now all channels provided by the controller will have saving capability. In the
+future we could allow specifying it per channel (e.g. timer channel (scalar)
+could not have this capability).
+
+## Controller API for saving configuration
+
+This API is based on axis parameters
+* `GetAxisPar(axis, parameter)`
+* `SetAxisPar(axis, parameter, value)`
+    
+Parameters: `value_source_template` (str), `overwrite_policy` (enum),
+`saving_enabled` (bool). See "Channel API for saving configuration" for more
+details about the format.
+    
+## Channel API for saving configuration
+
+A channel with saving capability exports the following additional interface:
+
+* `ValueSourceTemplate` (Tango) and `value_source_template` (core) attributes 
+of the string type (use Python str.format() convention
+e.g. `file:/tmp/sample1_{index:02d}`)
+* `OverwritePolicy` (Tango) and `overwrite_policy` (core) attributes of the
+enumeration type (abort, overwrite, append)
+* `SavingEnabled` (Tango) and `saving_enabled` (core) attributes of the boolean
+type.
+* `ReportingEnabled` (Tango) and `reporting_enabled` (core) attributes of the
+boolean type.
+
+## Measurement Group API for saving configuration
+
+Measurement Group configuration has the following configuration parameters per
+channel `saving` (internal and/or external), `value_source_template` and
+`overwrite_policy`. The last two have the same format as explained in "Channel
+API for saving configuration".
+
+## Scan framework API for saving configuration
+
+The `ScanValueSourceTemplate` environment variable is used to alternate the
+Measurement Group's configuration (value_source_template) during the scan
+(backup/restore). It uses Python str.format() convention
+e.g. `file:/tmp/sample1_{index:02d}`
+or `file:/{scan_dir}/{scan_file}/{channel}/sample1_{index:02d}`.
 
 
 Links to more details and discussions
@@ -129,8 +241,9 @@ The discussions about the SEP2 itself:
 Changes
 -------
 
-2018-11-27
+2018-12-03
 [reszelaz](https://github.com/reszelaz) Change driver and rewrite SEP2
 
 2016-11-30
-[mrosanes](https://github.com/sagiss) Migrate SEP2 from SF wiki to independent markdown language file and correct formatting.
+[mrosanes](https://github.com/sagiss) Migrate SEP2 from SF wiki to independent
+markdown language file and correct formatting.
