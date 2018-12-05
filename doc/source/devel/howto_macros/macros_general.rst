@@ -45,7 +45,7 @@ a macro class you can benefit from all advantages of object-oriented
 programming. This means that, in theory:
 
     - it would reduce the amount of code you need to write
-    - reduce the complexity of your code y by dividing it into small,
+    - reduce the complexity of your code by dividing it into small,
       reasonably independent and re-usable components, that talk to each other
       using only well-defined interfaces
     - Improvement of productivity by using easily adaptable pre-defined
@@ -330,8 +330,13 @@ all available sardana interfaces (:obj:`~sardana.sardanadefs.Interface`)
 Optional parameters
 ~~~~~~~~~~~~~~~~~~~
 
-A special parameter default value is the ``Optional``. It allows to
-execute a macro even the given parameter value is not specified by the user.
+A special parameter default value is the ``Optional`` keyword. A parameter 
+whose default value is set to ``Optional`` behaves just as one with a default 
+value, except that if the user does not provide a value explicitly, the 
+handling of its value is deferred to the run method (which gets ``None`` as
+the parameter value). This allows for more complex handling of the value 
+(e.g. interactive prompting to the user, system introspection, reading from 
+files, etc.)
 
 So, here is an example how to define and use the optional parameter::
 

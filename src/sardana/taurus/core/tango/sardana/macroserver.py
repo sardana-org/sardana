@@ -490,16 +490,12 @@ class BaseDoor(MacroServerDevice):
         self._block_lines = 0
 
     def _createMacroXml(self, macro_name, macro_params):
-        """The best effort creation of the macro XML object. It tries to
-        convert flat list of string parameter values to the correct macro XML
-        object. The cases that can not be converted are:
-            * repeat parameter containing repeat parameters
-            * two repeat parameters
-            * repeat parameter that is not the last parameter
+        """Creation of the macro XML object.
 
         :param macro_name: (str) macro name
-        :param macro_params: (sequence[str]) list of parameter values
-
+        :param macro_params: (sequence[str]) list of parameter values,
+            if repeat parameters are used parameter values may be sequences
+            itself.
         :return (lxml.etree._Element) macro XML element
         """
         macro_info = self.macro_server.getMacroInfoObj(macro_name)

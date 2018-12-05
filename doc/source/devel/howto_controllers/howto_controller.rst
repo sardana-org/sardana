@@ -404,6 +404,33 @@ spock), sardana assignes the default value
 has no default value, if it is not specified by the user, sardana will complain
 and fail to create and instance of SpringfieldMotorController.
 
+.. _sardana-controller-howto-change-default-interface:
+
+Changing default interface
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Elements instantiated from your controller will have a default interface
+corresponding to the controller's type. For example a moveable will have a
+*position* attribute or an experimental channel will have a *value*
+attribute. However this default interface can be changed if necessary.
+
+For example, the default type of a moveable's *position* attribute ``float``
+can be changed to ``long`` if the given axis only allows discrete positions.
+To do that simple override the
+:class:`~sardana.pool.controller.Controller.GetAxisAttributes` where you can
+apply the necessary changes.
+
+Here is an example of how to change motor's *position* attribute to ``long``:
+
+.. code-block:: python
+
+    def GetAxisAttributes(self, axis):
+        axis_attrs = MotorController.GetAxisAttributes(self, axis)
+        axis_attrs = dict(axis_attrs)
+        axis_attrs['Position']['type'] = float
+        return axis_attrs
+
+
 .. _sardana-controller-howto-error-handling:
 
 Error handling

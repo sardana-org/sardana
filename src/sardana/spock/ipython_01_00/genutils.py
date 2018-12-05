@@ -319,7 +319,7 @@ def get_device_from_user(expected_class, dft=None):
     prompt += "? "
     from_user = raw_input(prompt).strip() or dft
 
-    name = ''
+    name = None
     try:
         full_name, name, _ = from_name_to_tango(from_user)
     except:
@@ -753,6 +753,8 @@ config.IPKernelApp.pylab = 'inline'
     else:
         full_door_name, door_name, _ = from_name_to_tango(door_name)
         door_name = full_door_name
+    if door_name is None:
+        raise RuntimeError('unknown door name')
 
     #
     # Discover macro server name
@@ -786,7 +788,18 @@ def create_spock_profile(userdir, profile, door_name=None):
 
     ipy_profile_dir = p_dir.location
 
-    _create_config_file(ipy_profile_dir)
+    try:
+        _create_config_file(ipy_profile_dir)
+    # catch BaseException in order to catch also KeyboardInterrupt
+    except BaseException:
+        import shutil
+        try:
+            shutil.rmtree(ipy_profile_dir)
+        except OSError:
+            msg = ('Could not remove spock profile directory {0}. '
+                   'Remove it by hand e.g. rmdir {0}').format(ipy_profile_dir)
+            print(msg)
+        sys.exit(-1)
 
 
 def upgrade_spock_profile(ipy_profile_dir, door_name):
