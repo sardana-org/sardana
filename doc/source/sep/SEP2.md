@@ -13,7 +13,7 @@
 	responsibility of the detector (or an intermediate software layer e.g. 
 	Lima). In this case Sardana will be just notified about the data source
 	Furthermore, the experimental channel data may require to be 
-	pre-processes/reduced either externally or internally by Sardana. 
+	pre-processed/reduced either externally or internally by Sardana. 
 	Typical operations are ROI and binning. This SEP will not implement them.
 
 
