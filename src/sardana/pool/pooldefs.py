@@ -133,7 +133,9 @@ class AcqSynch(Enumeration):
 
     Uses software/hardware naming to refer to internal (software
     synchronizer) or external (hardware synchronization device)
-    synchronization modes
+    synchronization modes. See :class:`~sardana.pool.pooldefs.AcqSynchType`
+    to get more details about the synchronization type e.g. trigger, gate or
+    start.
 
     .. todo:: convert to python enums, but having in mind problems with
              JSON serialization: https://bugs.python.org/issue18264
