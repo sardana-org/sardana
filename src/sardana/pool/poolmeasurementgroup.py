@@ -129,8 +129,28 @@ def _to_fqdn(name, logger=None):
 
 
 class ConfigurationItem(object):
+    """Container of configuration attributes related to a given element.
+
+    Wrap an element to pretend its API.
+    Manage the element's configuration.
+    Hold an information whether the element is enabled.
+    By default it is enabled.
+
+    .. note::
+        The ConfigurationItem class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the class) may occur if
+        deemed necessary by the core developers.
+    """
 
     def __init__(self, element, attrs=None):
+        """Construct a wrapper around the element
+
+        :param element: element to wrap
+        :type element: obj
+        :param: attrs: configuration attributes and their values
+        :type attrs: dict
+        """
         self._element = weakref.ref(element)
         self.enabled = True
 
@@ -152,7 +172,19 @@ class ConfigurationItem(object):
 
 
 class ControllerConfiguration(ConfigurationItem):
-    """Configuration: 'timer', 'monitor', 'synchronization', 'channels'"""
+    """Container of configuration attributes related to a given controller.
+
+    Inherit behavior from
+    :class:`~sardana.pool.poolmeasurementgroup.ConfigurationItem`
+    and additionally hold information about its enabled/disabled channels.
+    By default it is disabled.
+
+    .. note::
+        The ControllerConfiguration class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the class) may occur if
+        deemed necessary by the core developers.
+    """
 
     def __init__(self, element, attrs=None):
         ConfigurationItem.__init__(self, element, attrs)
@@ -162,6 +194,7 @@ class ControllerConfiguration(ConfigurationItem):
         self._channels_disabled = []
 
     def add_channel(self, channel_item):
+        """Aggregate a channel configuration item."""
         self._channels.append(channel_item)
         if channel_item.enabled:
             self.enabled = True
@@ -174,6 +207,7 @@ class ControllerConfiguration(ConfigurationItem):
             self._channels_disabled.append(channel_item)
 
     def update_state(self):
+        """Update internal state based on the aggregated channels."""
         self.enabled = False
         self._channels_enabled = []
         self._channels_disabled = []
@@ -185,6 +219,15 @@ class ControllerConfiguration(ConfigurationItem):
                 self._channels_disabled.append(channel_item)
 
     def get_channels(self, enabled=None):
+        """Return aggregated channels.
+
+        :param enabled: which channels to return
+         - True - only enabled
+         - False - only disabled
+         - None - all
+
+        :type enabled: bool or None
+        """
         if enabled is None:
             return list(self._channels)
         elif enabled:
@@ -197,6 +240,19 @@ class ControllerConfiguration(ConfigurationItem):
 
 
 class TimerableControllerConfiguration(ControllerConfiguration):
+    """Container of configuration attributes related to a given
+    timerable controller.
+
+    Inherit behavior from
+    :class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`
+    and additionally validate *timer* and *monitor* configuration.
+
+    .. note::
+        The TimerableControllerConfiguration class has been included in
+        Sardana on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the class) may occur if
+        deemed necessary by the core developers.
+    """
 
     def update_timer(self):
         self._update_master("timer")
@@ -233,6 +289,18 @@ class TimerableControllerConfiguration(ControllerConfiguration):
 
 
 class ExternalControllerConfiguration(ControllerConfiguration):
+    """Container of configuration attributes related to a given
+    external controller.
+
+    Inherit behavior from
+    :class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`.
+
+    .. note::
+        The ExternalControllerConfiguration class has been included in
+        Sardana on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the class) may occur if
+        deemed necessary by the core developers.
+    """
 
     def __init__(self, element, attrs=None):
         ControllerConfiguration.__init__(self, self, attrs)
@@ -240,11 +308,34 @@ class ExternalControllerConfiguration(ControllerConfiguration):
 
 
 class ChannelConfiguration(ConfigurationItem):
-    """Configuration: 'index', 'enabled', 'output', 'plot_type', 'plot_axes',
-                      'label', 'scale', 'plot_color'"""
+    """Container of configuration attributes related to a given
+    experimental channel.
+
+    Inherit behavior from
+    :class:`~sardana.pool.poolmeasurementgroup.ConfigurationItem`.
+
+    .. note::
+        The ChannelConfiguration class has been included in
+        Sardana on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the class) may occur if
+        deemed necessary by the core developers.
+    """
 
 
 class SynchronizerConfiguration(ConfigurationItem):
+    """Container of configuration attributes related to a given
+    synchronizer element.
+
+    Inherit behavior from
+    :class:`~sardana.pool.poolmeasurementgroup.ConfigurationItem`.
+    By default it is disabled.
+
+    .. note::
+        The ChannelConfiguration class has been included in
+        Sardana on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the class) may occur if
+        deemed necessary by the core developers.
+    """
 
     def __init__(self, element, attrs=None):
         ConfigurationItem.__init__(self, element, attrs)
