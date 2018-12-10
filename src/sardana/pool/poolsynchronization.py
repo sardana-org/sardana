@@ -24,8 +24,8 @@
 ##############################################################################
 
 
-"""This module is part of the Python Pool libray. It defines the class for the
-trigger/gate generation"""
+"""This module is part of the Python Pool library. It defines the classes
+for the synchronization"""
 
 __all__ = ["PoolSynchronization", "SynchronizationDescription", "TGChannel"]
 
@@ -113,8 +113,10 @@ class SynchronizationDescription(list):
 
 
 class PoolSynchronization(PoolAction):
-    '''Action class responsible for trigger/gate generation
-    '''
+    """Synchronization action.
+
+    It coordinates trigger/gate elements and software synchronizer.
+    """
 
     def __init__(self, main_element, name="Synchronization"):
         PoolAction.__init__(self, main_element, name)
@@ -133,18 +135,22 @@ class PoolSynchronization(PoolAction):
 
     def start_action(self, ctrls, synchronization, moveable=None,
                      sw_synch_initial_domain=None, *args, **kwargs):
-        '''Start action method. Expects the following kwargs:
+        """Start synchronization action.
 
-        - ctrls - dictionary containing measurement group configuration
-        - synchronization - list of dictionaries containing information about
-          the expected synchronization
-        - moveable (optional)- moveable object used as the synchronization
-          source in the Position domain
-        - monitor (optional) - counter/timer object used as the synchronization
-          source in the Monitor domain
-        - sw_synch_initial_domain (optional) - initial domain for software
-          synchronizer, can be either SynchDomain.Time or SynchDomain.Position
-        '''
+        :param ctrls: list of enabled trigger/gate controllers
+        :type ctrls: list
+        :param synchronization: synchronization description
+        :type synchronization:
+         :class:`~sardana.pool.poolsynchronization.SynchronizationDescription`
+        :param moveable: (optional) moveable object used as the
+         synchronization source in the Position domain
+        :type moveable: :class:`~sardna.pool.poolmotor.PoolMotor` or
+         :class:`~sardana.pool.poolpseudomotor.PoolPseudoMotor`
+        :param sw_synch_initial_domain: (optional) - initial domain for
+         software synchronizer, can be either
+         :obj:`~sardana.pool.pooldefs.SynchDomain.Time` or
+         :obj:`~sardana.pool.pooldefs.SynchDomain.Position`
+        """
         with ActionContext(self):
 
             # loads synchronization description
@@ -219,15 +225,15 @@ class PoolSynchronization(PoolAction):
                 pool_ctrl.ctrl.StartAll()
 
     def is_triggering(self, states):
-        """Determines if we are triggering or if the triggering has ended
-        based on the states returned by the controller(s) and the software
-        TG generation.
+        """Determines if we are synchronizing or not based on the states
+        returned by the controller(s) and the software synchronizer.
 
         :param states: a map containing state information as returned by
                        read_state_info: ((state, status), exception_error)
         :type states: dict<PoolElement, tuple(tuple(int, str), str))
         :return: returns True if is triggering or False otherwise
-        :rtype: bool"""
+        :rtype: bool
+        """
         for elem in states:
             state_info_idx = 0
             state_idx = 0
@@ -238,8 +244,8 @@ class PoolSynchronization(PoolAction):
 
     @DebugIt()
     def action_loop(self):
-        '''action_loop method
-        '''
+        """action_loop method
+        """
         states = {}
         for channel in self._channels:
             element = channel.element

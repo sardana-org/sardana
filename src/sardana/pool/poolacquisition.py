@@ -405,9 +405,8 @@ class PoolAcquisition(PoolAction):
         # Prepare synchronizer controllers
         ctrls = config.get_synch_ctrls(enabled=True)
         ctrls_synch = get_synch_acq_items(ctrls)
-        synch_args = (ctrls_synch,)
-        synch_kwargs = {'synchronization': synchronization,
-                        'moveable': moveable,
+        synch_args = (ctrls_synch, synchronization)
+        synch_kwargs = {'moveable': moveable,
                         'sw_synch_initial_domain': sw_synch_initial_domain}
         synch_kwargs.update(kwargs)
         self._synch_args = ActionArgs(synch_args, synch_kwargs)
