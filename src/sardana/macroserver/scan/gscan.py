@@ -375,19 +375,19 @@ class GScan(Logger):
         for m in self._moveables:
             pos_range = m.moveable.getAttribute("Position").range
             try:
-                if type(pos_range[1]) == str:
-                    high = float(pos_range[1])              # Taurus 3
-                else:
-                    high = float(pos_range[1].magnitude)    # Taurus 4
-            except ValueError:
-                high = None
+                high = float(pos_range[1].magnitude)    # Taurus 4
+            except AttributeError:
+                try:
+                    high = float(pos_range[1])          # Taurus 3
+                except ValueError:
+                    high = None
             try:
-                if type(pos_range[0]) == str:
-                    low = float(pos_range[0])               # Taurus 3
-                else:
-                    low = float(pos_range[0].magnitude)     # Taurus 4
-            except ValueError:
-                low = None
+                low = float(pos_range[0].magnitude)     # Taurus 4
+            except AttributeError:
+                try:
+                    low = float(pos_range[0])           # Taurus 3
+                except ValueError:
+                    low = None
 
             if any((high, low)) and not any((m.min_value, m.max_value)):
                 self._macro.info("Scan range is not defined for %s and could "
