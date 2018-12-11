@@ -936,12 +936,7 @@ def prepare_logstash(args):
             props = db.get_device_property(dev_name, "LogstashCacheDbPath")
             cache_db_path = props["LogstashCacheDbPath"][0]
         except IndexError:
-            if class_name == "Pool":
-                cache_db_path = "/tmp/sardana-pool-logstash-cache.db"
-            elif class_name == "MacroServer":
-                cache_db_path = "/tmp/sardana-ms-logstash-cache.db"
-            else:
-                cache_db_path = "/tmp/sardana-logstash-cache.db"
+            cache_db_path = None
         return host, port, cache_db_path
 
     db = Database()

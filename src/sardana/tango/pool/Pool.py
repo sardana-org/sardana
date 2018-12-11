@@ -1383,8 +1383,9 @@ class PoolClass(PyTango.DeviceClass):
              None],
         'LogstashCacheDbPath':
             [PyTango.DevString,
-             "Path to the Logstash cache database [default: "
-             "/tmp/sardana-pool-logstash-cache.db]. "
+             "Path to the Logstash cache database [default: None]. "
+             "It is advised not to use the database cache, as it may "
+             "have negative effects on logging performance. See #895. "
              "This property has been included in Sardana on a provisional "
              "basis. Backwards incompatible changes (up to and including "
              "its removal) may occur if deemed necessary by the "
