@@ -5,6 +5,13 @@
 
 .. automodule:: sardana.pool.poolmeasurementgroup
 
+.. rubric:: Functions
+
+.. hlist::
+    :columns: 3
+
+    * :func:`build_measurement_configuration`
+
 .. rubric:: Classes
 
 .. hlist::
@@ -18,6 +25,7 @@
     * :class:`ChannelConfiguration`
     * :class:`SynchronizerConfiguration`
 
+.. autofunction:: build_measurement_configuration
 
 PoolMeasurementGroup
 --------------------

@@ -28,7 +28,7 @@ for"""
 
 __all__ = ["PoolMeasurementGroup", "MeasurementConfiguration",
            "ControllerConfiguration", "ChannelConfiguration",
-           "SynchronizerConfiguration"]
+           "SynchronizerConfiguration", "build_measurement_configuration"]
 
 __docformat__ = 'restructuredtext'
 
@@ -343,6 +343,30 @@ class SynchronizerConfiguration(ConfigurationItem):
 
 
 def build_measurement_configuration(user_elements):
+    """Create a minimal measurement configuration data structure from the
+    user_elements list.
+
+    .. highlight:: none
+
+    Minimal configuration data structure::
+
+        dict <str, dict> with keys:
+        - 'controllers' : where value is a dict<str, dict> where:
+            - key: controller's full name
+            - value: dict<str, dict> with keys:
+                - 'channels' where value is a dict<str, obj> where:
+                    - key: channel's full name
+                    - value: dict<str, obj> with keys:
+                        - 'index' : where value is the channel's index <int>
+
+    .. highlight:: default
+
+    .. note::
+        The build_measurement_configuration function has been included in
+        Sardana on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the function) may occur if
+        deemed necessary by the core developers.
+    """
     user_config = {}
     external_user_elements = []
     user_config["controllers"] = controllers = {}
@@ -374,9 +398,8 @@ def build_measurement_configuration(user_elements):
 
 
 class MeasurementConfiguration(object):
-    """
-    .. todo: Reject configuration with errors:
-             * Controllers with timer and monitor disable
+    """Configuration of measurement group.
+
     """
 
     DFT_DESC = 'General purpose measurement group'
