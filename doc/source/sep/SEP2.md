@@ -108,8 +108,8 @@ the values and sardana reads the value sources and uses them to refer to the
 data.
 Here, it is important to stress the difference between the data reading and data
 saving. Channel values may be read for eventual pre-processing by pseudo counters
-but these values do not need to be saved as experimental channel's values by
-sardana. Instead, for example, only the pseudo counter's values may be saved by
+but these values do not need to be saved as experimental channel values by
+sardana. Instead, for example, only the pseudo counter values may be saved by
 sardana.
 TODO: decide whether both, internal and external saving, can be used at the same
 time.
@@ -139,7 +139,7 @@ TODO: vote for the best names. Alternative names (for simplicity):
 `Source` (Tango) and `source` (core).
 2. Make `data_source` parameter deprecated in the `GetAxisPar`.
 3. Rename `Data` (Tango) attribute (marked as experimental API) to `ValueBuffer`
-4. Change `ValueBuffer` informatin format from
+4. Change `ValueBuffer` format from
 `{"index": seq<int>, "data": seq<str>}` to `{"index": seq<int>, "value": seq<str>}`
 
 ## When to read the value and when to read the value source?
