@@ -1390,7 +1390,7 @@ class PoolClass(PyTango.DeviceClass):
              "basis. Backwards incompatible changes (up to and including "
              "its removal) may occur if deemed necessary by the "
              "core developers.",
-             "/tmp/sardana-pool-logstash-cache.db"]
+             None]
     }
 
     #    Command definitions
