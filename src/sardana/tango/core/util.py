@@ -916,7 +916,7 @@ def prepare_logstash(args):
     try:
         from logstash_async.handler import AsynchronousLogstashHandler
     except ImportError:
-        msg = ("Unable to import logstash. Skipping logstash "
+        msg = ("Unable to import logstash_async. Skipping logstash "
                + "configuration...", )
         log_messages.append(msg,)
         return log_messages
