@@ -89,11 +89,11 @@ Data source is not displayed, just `<string>` placeholder is displayed.
 # Terminology
 
 * **saving capability** (external saving) - Applies to a controller or a
-channel. Controller (plugin) announces the external saving capability if it
+channel. The controller (plugin) announces the external saving capability if it
 implements the necessary API for handling saving e.g. value source readout or
 saving configuration.
-For the moment, all channels proceeding from a controller with saving capbility
-autmatically announce saving capability.
+For the moment, all channels proceeding from a controller with saving capability
+automatically announce saving capability.
 * **value source** - source in form of the URI to the value of a single
 acquisition. It is prefered to use the term **value source** instead of the
 **data source** because sardana refers to the acquisition result with the term
