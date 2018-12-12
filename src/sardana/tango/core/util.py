@@ -931,7 +931,7 @@ def prepare_logstash(args):
             props = db.get_device_property(dev_name, "LogstashPort")
             port = int(props["LogstashPort"][0])
         except IndexError:
-            port = 12345
+            port = None
         try:
             props = db.get_device_property(dev_name, "LogstashCacheDbPath")
             cache_db_path = props["LogstashCacheDbPath"][0]
