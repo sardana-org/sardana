@@ -138,23 +138,18 @@ event and end is emitted after the last `passive` event.
 * Add `PoolAcquisitionSoftwareStart` action that will start channels on
 software synchronizer `start` event.
 * `PoolAcquisitionSoftware` will stop channels on software synchronizer
-`end` event. TODO: decide if we wait for the acquisition in progress
-until it finishes or we stop immediately (finish hook could be used if
-we choose to wait).
+`end` event.
 
 ### Controllers
 
-C/T, 1D and 2D controllers (plugins) API is extended. TODO: Choose between
-the following options:
-
-#### Option 1
+C/T, 1D and 2D controllers (plugins) API is extended as follows:
 
 * Add `PrepareOne(axis, value, repeats, latency, starts)`
 to the Loadable interface
 * Add extra argument to `LoadOne`, etc. methods of the `Loadable` interface
 `latency_time`: `LoadOne(axis, value, repeats, latency)`
 
-This option maintains backwards compatibility.
+This maintains backwards compatibility.
 
 The following examples demonstrates the sequence of calls (only the ones
 relevant to the SEP18) of one channel (axis 1) involved in the given
@@ -217,7 +212,32 @@ LoadOne(1, 0.1, 5, 0.05)
 StartOne(1)
 ```
 
-#### Option 2
+See *Appendix 1* and *Appendix 2* for alternative options which were finally
+**not selected** for additional controllers API. 
+
+### Dummy C/T controller
+Implement `SoftwareStart` and `HardwareStart` in the
+`DummyCounterTimerController` - minimal implementation.
+
+## Follow-up actions (TODOs)
+
+* **Stop channels using software trigger/gate on software synchronizer's `end`
+event.** This is necessary since we introduced the preparation of channels,
+and they may be aware in how many software trigger/gates they will
+participates. Sardana does not guarantee to acquire on all triggers/gates,
+for example if the previous acquisition is still in progress and a new
+trigger/gate should be issued, and some channels may be waiting for them -
+this is the case of Lima.
+
+* **Documentation**:
+    * Update [Measurement group API reference](https://sardana-controls.org/devel/api/api_measurementgroup.html#sardana-measurementgroup-api)
+    * Update [How to write a counter/timer controller](https://sardana-controls.org/devel/howto_controllers/howto_countertimercontroller.html)
+    or any other timerable controller
+    
+* **Remove `StartMultiple` Tango command** and its underneath core
+implementation.
+
+## Appendix 1 - alternative option 2 for extending controllers API
 
 * Add extra arguments to `LoadOne`, etc. methods of the `Loadable` interface
 `latency` and `nr_of_starts` and switch the order of arguments so the API is:
@@ -277,7 +297,7 @@ LoadOne(1, 0.1, 0.05, 5, 1)
 StartOne(1)
 ```
 
-#### Option 3
+## Appendix 2 - alternative option 3 for extending controllers API
 
 The same as option 2 but maintaining the backwards compatibility in the 
 following way:
@@ -285,7 +305,3 @@ following way:
 controllers implementations (more precisely using the `inspect.getargspec`
 and counting the number of arguments). This will require much more complicated
 acquisition actions.
-
-### Dummy C/T controller
-Implement `SoftwareStart` and `HardwareStart` in the
-`DummyCounterTimerController` - minimal implementation.
