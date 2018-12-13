@@ -447,28 +447,29 @@ class MeasurementConfiguration(object):
     def get_acq_synch_by_channel(self, channel):
         """Return acquisition synchronization configured for this element.
 
-        :param channel: element to look for its acquisition synchronization
+        :param channel: channel to look for its acquisition synchronization
         :type channel: :class:`~sardana.pool.poolbasechannel.PoolBaseChannel`
          or :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`
         :return: acquisition synchronization
         :rtype: :obj:`~sardana.pool.pooldefs.AcqSynch`
         """
         if isinstance(channel, ChannelConfiguration):
-            element = channel.element
-        return self._channel_acq_synch[element]
+            channel = channel.element
+        return self._channel_acq_synch[channel]
 
     def get_acq_synch_by_controller(self, controller):
         """Return acquisition synchronization configured for this controller.
 
-        :param controller: element to look for its acquisition synchronization
+        :param controller: controller to look for its acquisition
+         synchronization
         :type controller: :class:`~sardana.pool.poolcontroller.PoolController`
          or :class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`
         :return: acquisition synchronization
         :rtype: :obj:`~sardana.pool.pooldefs.AcqSynch`
         """
         if isinstance(controller, ConfigurationItem):
-            element = controller.element
-        return self._ctrl_acq_synch[element]
+            controller = controller.element
+        return self._ctrl_acq_synch[controller]
 
     def _filter_ctrls(self, ctrls, enabled):
         if enabled is None:
@@ -498,7 +499,7 @@ class MeasurementConfiguration(object):
 
         :type enabled: :obj:`bool` or :obj:`None`
         :return: timerable controllers that fulfils the filtering criteria
-        :rtype: list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>
+        :rtype: list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>  # noqa
         """
         timerable_ctrls = []
         if acq_synch is None:
@@ -527,7 +528,7 @@ class MeasurementConfiguration(object):
 
         :type enabled: :obj:`bool` or :obj:`None`
         :return: 0D controllers that fulfils the filtering criteria
-        :rtype: list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>
+        :rtype: list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>  # noqa
         """
         return self._filter_ctrls(self._zerod_ctrls, enabled)
 
@@ -545,7 +546,7 @@ class MeasurementConfiguration(object):
 
         :type enabled: :obj:`bool` or :obj:`None`
         :return: synchronizer controllers that fulfils the filtering criteria
-        :rtype: list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>
+        :rtype: list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>  # noqa
         """
         return self._filter_ctrls(self._synch_ctrls, enabled)
 
@@ -553,7 +554,7 @@ class MeasurementConfiguration(object):
         """Return master timer in software acquisition.
 
         :return: master timer in software acquisition
-        :rtype: :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`
+        :rtype: :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`  # noqa
         """
         return self._master_timer_sw
 
@@ -561,7 +562,7 @@ class MeasurementConfiguration(object):
         """Return master monitor in software acquisition.
 
         :return: master monitor in software acquisition
-        :rtype: :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`
+        :rtype: :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`  # noqa
         """
         return self._master_monitor_sw
 
@@ -569,7 +570,7 @@ class MeasurementConfiguration(object):
         """Return master timer in software start acquisition.
 
         :return: master timer in software start acquisition
-        :rtype: :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`
+        :rtype: :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`  # noqa
         """
         return self._master_monitor_sw_start
 
@@ -577,7 +578,7 @@ class MeasurementConfiguration(object):
         """Return master monitor in software start acquisition.
 
         :return: master monitor in software start acquisition
-        :rtype: :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`
+        :rtype: :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`  # noqa
         """
         return self._master_timer_sw_start
 
