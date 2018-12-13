@@ -1138,6 +1138,12 @@ class PoolMeasurementGroup(PoolGroupElement):
     # -------------------------------------------------------------------------
 
     def prepare(self, multiple=1):
+        """Prepare for measurement.
+
+        Delegate measurement preparation to the acquisition action.
+
+        ..todo:: remove multiple argument
+        """
         value = self._get_value()
         self._pending_starts = self.nb_starts
 
@@ -1154,6 +1160,13 @@ class PoolMeasurementGroup(PoolGroupElement):
                                  **kwargs)
 
     def start_acquisition(self, value=None, multiple=1):
+        """Start measurement.
+
+        Delegate start measurement to the acquisition action.
+        Provide backwards compatibility for starts without previous prepare.
+
+        ..todo:: remove value and multiple arguments.
+        """
         if self._pending_starts == 0:
             msg = "starting acquisition without prior preparing is " \
                   "deprecated since version Jan18."
