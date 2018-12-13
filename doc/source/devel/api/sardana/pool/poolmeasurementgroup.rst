@@ -24,6 +24,7 @@
     * :class:`ExternalControllerConfiguration`
     * :class:`ChannelConfiguration`
     * :class:`SynchronizerConfiguration`
+    * :class:`MeasurementConfiguration`
 
 .. autofunction:: build_measurement_configuration
 
@@ -100,6 +101,17 @@ SynchronizerConfiguration
     :parts: 1
 
 .. autoclass:: SynchronizerConfiguration
+    :show-inheritance:
+    :members:
+    :undoc-members:
+
+MeasurementConfiguration
+------------------------
+
+.. inheritance-diagram:: MeasurementConfiguration
+    :parts: 1
+
+.. autoclass:: MeasurementConfiguration
     :show-inheritance:
     :members:
     :undoc-members:

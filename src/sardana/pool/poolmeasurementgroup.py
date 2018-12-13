@@ -398,13 +398,29 @@ def build_measurement_configuration(user_elements):
 
 
 class MeasurementConfiguration(object):
-    """Configuration of measurement group.
+    """Configuration of a measurement.
 
+    Accepts import and export from/to a serializable data structure (based on
+    dictionaries/lists and strings).
+    Provides getter methods that facilitate extracting of information e.g.
+    controllers of different types, master timers/monitors, etc.
+
+    .. note::
+        The build_measurement_configuration function has been included in
+        Sardana on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the function) may occur if
+        deemed necessary by the core developers.
     """
 
-    DFT_DESC = 'General purpose measurement group'
+    DFT_DESC = 'General purpose measurement configuration'
 
     def __init__(self, parent=None):
+        """Initialize measurement configuration object
+
+        :param parent: (optional) object that this measurement configuration
+        refers to (usually
+         :class:`~sardana.pool.poolmeasurementgroup.PoolMeasurementGroup)`
+        """
         self._parent = None
         if parent is not None:
             self._parent = weakref.proxy(parent)
@@ -428,14 +444,30 @@ class MeasurementConfiguration(object):
         self._ctrl_acq_synch = {}
         self.changed = False
 
-    def get_acq_synch_by_channel(self, element):
-        if isinstance(element, ConfigurationItem):
-            element = element.element
+    def get_acq_synch_by_channel(self, channel):
+        """Return acquisition synchronization configured for this element.
+
+        :param channel: element to look for its acquisition synchronization
+        :type channel: :class:`~sardana.pool.poolbasechannel.PoolBaseChannel`
+         or :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`
+        :return: acquisition synchronization
+        :rtype: :obj:`~sardana.pool.pooldefs.AcqSynch`
+        """
+        if isinstance(channel, ChannelConfiguration):
+            element = channel.element
         return self._channel_acq_synch[element]
 
-    def get_acq_synch_by_controller(self, element):
-        if isinstance(element, ConfigurationItem):
-            element = element.element
+    def get_acq_synch_by_controller(self, controller):
+        """Return acquisition synchronization configured for this controller.
+
+        :param controller: element to look for its acquisition synchronization
+        :type controller: :class:`~sardana.pool.poolcontroller.PoolController`
+         or :class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`
+        :return: acquisition synchronization
+        :rtype: :obj:`~sardana.pool.pooldefs.AcqSynch`
+        """
+        if isinstance(controller, ConfigurationItem):
+            element = controller.element
         return self._ctrl_acq_synch[element]
 
     def _filter_ctrls(self, ctrls, enabled):
@@ -449,6 +481,25 @@ class MeasurementConfiguration(object):
         return filtered_ctrls
 
     def get_timerable_ctrls(self, acq_synch=None, enabled=None):
+        """Return timerable controllers.
+
+        Allow to filter controllers based on acquisition synchronization or
+        whether these are enabled/disabled.
+
+        :param acq_synch: (optional) filter controller based on acquisition
+         synchronization
+        :type acq_synch: :class:`~sardana.pool.pooldefs.AcqSynch`
+        :param enabled: (optional) filter controllers whether these are
+         enabled/disabled:
+
+         - :obj:`True` - enabled only
+         - :obj:`False` - disabled only
+         - :obj:`None` - all
+
+        :type enabled: :obj:`bool` or :obj:`None`
+        :return: timerable controllers that fulfils the filtering criteria
+        :rtype: list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>
+        """
         timerable_ctrls = []
         if acq_synch is None:
             for ctrls in self._timerable_ctrls.values():
@@ -463,27 +514,79 @@ class MeasurementConfiguration(object):
         return self._filter_ctrls(timerable_ctrls, enabled)
 
     def get_zerod_ctrls(self, enabled=None):
+        """Return 0D controllers.
+
+        Allow to filter controllers whether these are enabled/disabled.
+
+        :param enabled: (optional) filter controllers whether these are
+         enabled/disabled:
+
+         - :obj:`True` - enabled only
+         - :obj:`False` - disabled only
+         - :obj:`None` - all
+
+        :type enabled: :obj:`bool` or :obj:`None`
+        :return: 0D controllers that fulfils the filtering criteria
+        :rtype: list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>
+        """
         return self._filter_ctrls(self._zerod_ctrls, enabled)
 
     def get_synch_ctrls(self, enabled=None):
+        """Return synchronizer (currently only trigger/gate) controllers.
+
+        Allow to filter controllers whether these are enabled/disabled.
+
+        :param enabled: (optional) filter controllers whether these are
+         enabled/disabled:
+
+         - :obj:`True` - enabled only
+         - :obj:`False` - disabled only
+         - :obj:`None` - all
+
+        :type enabled: :obj:`bool` or :obj:`None`
+        :return: synchronizer controllers that fulfils the filtering criteria
+        :rtype: list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>
+        """
         return self._filter_ctrls(self._synch_ctrls, enabled)
 
     def get_master_timer_software(self):
+        """Return master timer in software acquisition.
+
+        :return: master timer in software acquisition
+        :rtype: :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`
+        """
         return self._master_timer_sw
 
     def get_master_monitor_software(self):
+        """Return master monitor in software acquisition.
+
+        :return: master monitor in software acquisition
+        :rtype: :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`
+        """
         return self._master_monitor_sw
 
     def get_master_timer_software_start(self):
+        """Return master timer in software start acquisition.
+
+        :return: master timer in software start acquisition
+        :rtype: :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`
+        """
         return self._master_monitor_sw_start
 
     def get_master_monitor_software_start(self):
+        """Return master monitor in software start acquisition.
+
+        :return: master monitor in software start acquisition
+        :rtype: :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`
+        """
         return self._master_timer_sw_start
 
     def get_configuration_for_user(self):
+        """Return measurement configuration serializable data structure."""
         return self._user_confg
 
     def set_configuration_from_user(self, cfg, to_fqdn=True):
+        """Load measurement configuration from serializable data structure."""
         user_elements = self._parent.get_user_elements()
         if len(user_elements) == 0:
             # All channels were disabled
@@ -713,9 +816,7 @@ class MeasurementConfiguration(object):
         self.changed = True
 
     def _fill_channel_data(self, channel, channel_data):
-        """
-        Fills the channel default values for the given channel dictionary
-        """
+        """Fill channel default values for the given channel dictionary"""
         name = channel.name
         full_name = channel.full_name
         source = channel.get_source()
@@ -898,7 +999,6 @@ class PoolMeasurementGroup(PoolGroupElement):
                   SynchParam.Total: {SynchDomain.Time: total_time},
                   SynchParam.Repeats: 1}]
         self.set_synchronization(synch)
-        self._integration_time = integration_time
         if not propagate:
             return
         self.fire_event(EventType("integration_time", priority=propagate),
