@@ -921,7 +921,7 @@ def prepare_logstash(args):
         log_messages.append(msg,)
         return log_messages
 
-    def get_logstash_conf(dev_name, class_name=None):
+    def get_logstash_conf(dev_name):
         try:
             props = db.get_device_property(dev_name, "LogstashHost")
             host = props["LogstashHost"][0]
