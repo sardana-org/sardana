@@ -242,12 +242,12 @@ class AcqController(AcqConfigurationItem):
         self._channels_enabled = []
         self._channels_disabled = []
         ch_attrs = {'controller': self}
-        for conf_channel in configuration._channels:
+        for conf_channel in configuration.get_channels():
             action_channel = AcqConfigurationItem(conf_channel, ch_attrs)
             self._channels.append(action_channel)
-            if conf_channel in configuration._channels_enabled:
+            if conf_channel in configuration.get_channels(enabled=True):
                 self._channels_enabled.append(action_channel)
-            if conf_channel in configuration._channels_disabled:
+            if conf_channel in configuration.get_channels(enabled=False):
                 self._channels_disabled.append(action_channel)
             if master is None:
                 continue
