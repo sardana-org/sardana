@@ -500,7 +500,8 @@ class PoolElement(BaseElement, TangoDevice):
         self._total_go_time = 0
         start_time = time.time()
         eid = self.start(*args, **kwargs)
-        self.waitFinish(id=eid)
+        timeout = kwargs.get('timeout')
+        self.waitFinish(id=eid, timeout=timeout)
         self._total_go_time = time.time() - start_time
 
     def getLastGoTime(self):
