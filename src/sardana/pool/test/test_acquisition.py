@@ -32,7 +32,8 @@ from sardana.pool import AcqSynch, AcqMode
 from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.pool.poolsynchronization import PoolSynchronization
 from sardana.pool.poolacquisition import PoolAcquisitionHardware, \
-    PoolAcquisitionSoftware, PoolAcquisitionSoftwareStart, get_acq_ctrls
+    PoolAcquisitionSoftware, PoolAcquisitionSoftwareStart, \
+    get_acq_ctrls, get_timerable_ctrls
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool.test import createControllerConfiguration, \
     createTimerableControllerConfiguration, BasePoolTestCase, FakeElement, \
@@ -165,8 +166,8 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
                                                                 [ct_1_1])
         conf_ct_ctrl_2 = createTimerableControllerConfiguration(ct_ctrl_2,
                                                                 [ct_2_1])
-        hw_ctrls = get_acq_ctrls([conf_ct_ctrl_1], acq_mode=AcqMode.Timer)
-        sw_ctrls = get_acq_ctrls([conf_ct_ctrl_2], acq_mode=AcqMode.Timer)
+        hw_ctrls = get_timerable_ctrls([conf_ct_ctrl_1], acq_mode=AcqMode.Timer)
+        sw_ctrls = get_timerable_ctrls([conf_ct_ctrl_2], acq_mode=AcqMode.Timer)
         sw_master = sw_ctrls[0].master
         conf_tg_ctrl_1 = createControllerConfiguration(tg_ctrl_1, [tg_1_1])
         synch_ctrls = get_acq_ctrls([conf_tg_ctrl_1])
@@ -243,7 +244,7 @@ class AcquisitionSoftwareStartTestCase(AcquisitionTestCase, TestCase):
 
         conf_ct_ctrl_1 = createTimerableControllerConfiguration(self.ct_ctrl_1,
                                                                 [self.ct_1_1])
-        ctrls = get_acq_ctrls([conf_ct_ctrl_1], AcqMode.Timer)
+        ctrls = get_timerable_ctrls([conf_ct_ctrl_1], AcqMode.Timer)
         master = ctrls[0].master
         # creating synchronization action
         self.synchronization = self.create_action(PoolSynchronization,
@@ -293,7 +294,7 @@ class AcquisitionHardwareStartTestCase(AcquisitionTestCase, TestCase):
         self.ct_ctrl_1.set_ctrl_par("synchronization", AcqSynch.HardwareStart)
         conf_ct_ctrl_1 = createTimerableControllerConfiguration(
             self.ct_ctrl_1, [self.ct_1_1])
-        ctrls = get_acq_ctrls([conf_ct_ctrl_1], AcqMode.Timer)
+        ctrls = get_timerable_ctrls([conf_ct_ctrl_1], AcqMode.Timer)
         conf_tg_ctrl_1 = createControllerConfiguration(self.tg_ctrl_1,
                                                        [self.tg_1_1])
         synch_ctrls = get_acq_ctrls([conf_tg_ctrl_1])
