@@ -71,10 +71,10 @@ def is_value_error(value):
     return False
 
 
-def get_acq_ctrls(ctrls, acq_mode=None):
+def get_acq_ctrls(ctrls):
     """Converts configuration controllers into acquisition controllers.
 
-    It takes care about converting their internals as well.
+    Takes care about converting their internals as well.
 
     :param ctrls: sequence of configuration controllers objects
     :type ctrls: sardana.pool.poolmeasurementgroup.ControllerConfiguration
@@ -82,6 +82,39 @@ def get_acq_ctrls(ctrls, acq_mode=None):
     :type acq_mode: :class:`sardana.pool.AcqMode`
     :return: sequence of acquisition controllers
     :rtype: :class:`~sardana.pool.poolacquisition.AcqController`
+
+    .. note::
+        The get_acq_ctrls function has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the class) may occur if
+        deemed necessary by the core developers.
+    """
+    action_ctrls = []
+    for ctrl in ctrls:
+        action_ctrl = AcqController(ctrl)
+        action_ctrls.append(action_ctrl)
+    return action_ctrls
+
+
+def _get_timerable_ctrls(ctrls, acq_mode):
+    """Converts timerable configuration controllers into acquisition
+    controllers.
+
+    Take care about converting their internals as well.
+    Take care about assigning master according to acq_mode.
+
+    :param ctrls: sequence of configuration controllers objects
+    :type ctrls: sardana.pool.poolmeasurementgroup.ControllerConfiguration
+    :param acq_mode: acquisition mode (timer/monitor)
+    :type acq_mode: :class:`sardana.pool.AcqMode`
+    :return: sequence of acquisition controllers
+    :rtype: :class:`~sardana.pool.poolacquisition.AcqController`
+
+    .. note::
+        The get_timerable_ctrls function has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the class) may occur if
+        deemed necessary by the core developers.
     """
     action_ctrls = []
     for ctrl in ctrls:
@@ -98,18 +131,31 @@ def get_acq_ctrls(ctrls, acq_mode=None):
     return action_ctrls
 
 
-def get_synch_acq_items(ctrls):
-    ctrls = get_acq_ctrls(ctrls)
-    return ctrls
+def get_timerable_items(ctrls, master, acq_mode=AcqMode.Timer):
+    """Converts timerable configuration items into acquisition items.
 
+    The timerable items are controllers and master. Convert these into
+    the corresponding acquisition items.
 
-def get_0d_acq_items(ctrls):
-    ctrls = get_acq_ctrls(ctrls)
-    return ctrls
+    Take care about converting their internals as well.
+    Take care about assigning master according to acq_mode.
 
+    :param ctrls: sequence of configuration controllers objects
+    :type ctrls: :obj:list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>  # noqa
+    :param master: master configuration object
+    :type master: :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`  # noqa
+    :param acq_mode: acquisition mode (timer/monitor)
+    :type acq_mode: :class:`sardana.pool.AcqMode`
+    :return: sequence of acquisition controllers
+    :rtype: :class:`~sardana.pool.poolacquisition.AcqController`
 
-def get_sw_acq_items(ctrls, master, acq_mode=AcqMode.Timer):
-    ctrls = get_acq_ctrls(ctrls, acq_mode)
+    .. note::
+        The get_timerable_ctrls function has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the class) may occur if
+        deemed necessary by the core developers.
+    """
+    ctrls = _get_timerable_ctrls(ctrls, acq_mode)
     # Search master AcqConfigurationItem obj
     for ctrl in ctrls:
         for channel in ctrl.get_channels():
@@ -117,22 +163,6 @@ def get_sw_acq_items(ctrls, master, acq_mode=AcqMode.Timer):
                 master = channel
                 break
     return ctrls, master
-
-
-def get_sw_start_acq_items(ctrls, master, acq_mode=AcqMode.Timer):
-    ctrls = get_acq_ctrls(ctrls, acq_mode)
-    # Search master AcqConfigurationItem obj
-    for ctrl in ctrls:
-        for channel in ctrl.get_channels():
-            if channel.configuration == master:
-                master = channel
-                break
-    return ctrls, master
-
-
-def get_hw_acq_items(ctrls, acq_mode=AcqMode.Timer):
-    ctrls = get_acq_ctrls(ctrls, acq_mode)
-    return ctrls
 
 
 class ActionArgs(object):
@@ -145,7 +175,14 @@ class ActionArgs(object):
 
 
 class AcqConfigurationItem(object):
-    """Wrapper for configuration item that will be used in an action."""
+    """Wrapper for configuration item that will be used in an action.
+
+    .. note::
+        The AcqConfigurationItem function has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the class) may occur if
+        deemed necessary by the core developers.
+    """
 
     def __init__(self, configuration, attrs=None):
         """Constructs action item from a configuration item.
@@ -179,7 +216,14 @@ class AcqConfigurationItem(object):
 
 
 class AcqController(AcqConfigurationItem):
-    """Wrapper for controller configuration that will be used in an action."""
+    """Wrapper for controller configuration that will be used in an action.
+
+    .. note::
+        The AcqController function has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the class) may occur if
+        deemed necessary by the core developers.
+    """
 
     def __init__(self, configuration, attrs=None):
         """Constructs action controller from a configuration controller.
@@ -352,7 +396,7 @@ class PoolAcquisition(PoolAction):
                        AcqSynch.HardwareGate]
         ctrls = config.get_timerable_ctrls(acq_synch=acq_sync_hw, enabled=True)
         if len(ctrls) > 0:
-            ctrls_hw = get_hw_acq_items(ctrls, acq_mode)
+            ctrls_hw = get_acq_ctrls(ctrls, acq_mode)
             hw_args = (ctrls_hw, value, repetitions, latency)
             hw_kwargs = {}
             hw_kwargs.update(kwargs)
@@ -367,7 +411,7 @@ class PoolAcquisition(PoolAction):
             elif acq_mode is AcqMode.Monitor:
                 master = config.get_master_monitor_software()
 
-            ctrls_sw, master_sw = get_sw_acq_items(ctrls, master, acq_mode)
+            ctrls_sw, master_sw = get_timerable_items(ctrls, master, acq_mode)
 
             sw_args = (ctrls_sw, value, master_sw)
             sw_kwargs = {'synch': True}
@@ -383,9 +427,9 @@ class PoolAcquisition(PoolAction):
             elif acq_mode is AcqMode.Monitor:
                 master = config.get_master_monitor_software_start()
 
-            ctrls_sw_start, master_sw_start = get_sw_start_acq_items(ctrls,
-                                                                     master,
-                                                                     acq_mode)
+            ctrls_sw_start, master_sw_start = get_timerable_items(ctrls,
+                                                                  master,
+                                                                  acq_mode)
             sw_start_args = (ctrls_sw_start, value, master_sw_start,
                              repetitions, latency)
             sw_start_kwargs = {'synch': True}
@@ -396,7 +440,7 @@ class PoolAcquisition(PoolAction):
         # Prepare 0D controllers
         ctrls = config.get_zerod_ctrls(enabled=True)
         if len(ctrls) > 0:
-            ctrls_acq_0d = get_0d_acq_items(ctrls)
+            ctrls_acq_0d = get_acq_ctrls(ctrls)
             zerod_args = (ctrls_acq_0d,)
             zerod_kwargs = {'synch': True}
             zerod_kwargs.update(kwargs)
@@ -404,7 +448,7 @@ class PoolAcquisition(PoolAction):
 
         # Prepare synchronizer controllers
         ctrls = config.get_synch_ctrls(enabled=True)
-        ctrls_synch = get_synch_acq_items(ctrls)
+        ctrls_synch = get_acq_ctrls(ctrls)
         synch_args = (ctrls_synch, synchronization)
         synch_kwargs = {'moveable': moveable,
                         'sw_synch_initial_domain': sw_synch_initial_domain}
