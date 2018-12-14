@@ -78,8 +78,6 @@ def get_acq_ctrls(ctrls):
 
     :param ctrls: sequence of configuration controllers objects
     :type ctrls: sardana.pool.poolmeasurementgroup.ControllerConfiguration
-    :param acq_mode: acquisition mode (timer/monitor)
-    :type acq_mode: :class:`sardana.pool.AcqMode`
     :return: sequence of acquisition controllers
     :rtype: :class:`~sardana.pool.poolacquisition.AcqController`
 
@@ -96,7 +94,7 @@ def get_acq_ctrls(ctrls):
     return action_ctrls
 
 
-def _get_timerable_ctrls(ctrls, acq_mode):
+def get_timerable_ctrls(ctrls, acq_mode):
     """Converts timerable configuration controllers into acquisition
     controllers.
 
@@ -155,7 +153,7 @@ def get_timerable_items(ctrls, master, acq_mode=AcqMode.Timer):
         (up to and including removal of the class) may occur if
         deemed necessary by the core developers.
     """
-    ctrls = _get_timerable_ctrls(ctrls, acq_mode)
+    ctrls = get_timerable_ctrls(ctrls, acq_mode)
     # Search master AcqConfigurationItem obj
     for ctrl in ctrls:
         for channel in ctrl.get_channels():
@@ -236,6 +234,7 @@ class AcqController(AcqConfigurationItem):
         :param attrs: extra attributes to be inserted
         :type attrs: dict
         """
+        master = None
         if attrs is not None:
             master = attrs.get('master')
         self._channels = []
@@ -396,7 +395,7 @@ class PoolAcquisition(PoolAction):
                        AcqSynch.HardwareGate]
         ctrls = config.get_timerable_ctrls(acq_synch=acq_sync_hw, enabled=True)
         if len(ctrls) > 0:
-            ctrls_hw = get_acq_ctrls(ctrls, acq_mode)
+            ctrls_hw = get_timerable_ctrls(ctrls, acq_mode)
             hw_args = (ctrls_hw, value, repetitions, latency)
             hw_kwargs = {}
             hw_kwargs.update(kwargs)
