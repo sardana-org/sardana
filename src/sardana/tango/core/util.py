@@ -947,7 +947,7 @@ def prepare_logstash(args):
     if bin_name in ["Pool", "MacroServer"]:
         class_name = bin_name
         dev_name = get_dev_from_class_server(db, class_name, server_name)[0]
-        host, port, cache = get_logstash_conf(dev_name, class_name)
+        host, port, cache = get_logstash_conf(dev_name)
     else:
         dev_name = get_dev_from_class_server(db, "Pool", server_name)[0]
         host, port, cache = get_logstash_conf(dev_name)
