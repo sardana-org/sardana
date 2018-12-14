@@ -47,6 +47,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   (#781)
 - Move pre-scan and post-scan hooks out of `scan_loop` method (#920, #922,
   #933)
+- Logstash handler from python-logstash to python-logstash-async (#895)
 - Move `ParamParser` to `sardana.util.parser` (#781, #907, #908)
 
 ## [2.5.0] 2018-08-10
