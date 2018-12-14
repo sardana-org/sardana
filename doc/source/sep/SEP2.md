@@ -90,8 +90,7 @@ Data source is not displayed, just `<string>` placeholder is displayed.
 
 * **saving capability** (external saving) - Applies to a controller or a
 channel. The controller (plugin) announces the external saving capability if it
-implements the necessary API for handling saving e.g. value source readout or
-saving configuration.
+implements the necessary API for handling saving.
 For the moment, all channels proceeding from a controller with saving capability
 automatically announce saving capability.
 * **value source** - source in form of the URI to the value of a single
@@ -110,15 +109,16 @@ Here, it is important to stress the difference between the data reading and data
 saving. Channel values may be read for eventual pre-processing by pseudo counters
 but these values do not need to be saved as experimental channel values by
 sardana. Instead, for example, only the pseudo counter values may be saved by
-sardana.
-TODO: decide whether both, internal and external saving, can be used at the same
-time.
+sardana. 
 2. Add saving configuration API to channels and controllers (plugins) with
 saving capability. Channels and controllers without saving capability will not
 expose this API.
 3. Add saving configuration API to the measurement group.
 4. Add saving configuration API to the scan framework.
 5. Implement referencing to value sources in the HDF5 file recorder.
+If the referred value source is a dataset in another HDF5 file this means
+creating an external link. Otherwise this means just having a strings 
+reference.
 
 # Out of scope
 
@@ -128,6 +128,8 @@ as a separate PR.
 measurement group level) - will be driven as a separate PR.
 3. Internal/external data pre-processing and its configuration e.g. pseudo 
 counters for ROI, binning, etc. - will be driven as a separate PR/SEP.
+4. Consolidation of data in the HDF5 file.
+5. Overwrite policy configuration.
 
 # Specification
 
@@ -151,13 +153,13 @@ of the `Readable` interface)? When any of these conditions applies:
     * internal saving is enabled for the channel
     * there is a pseudo counter based on this channel
 * When to read the value source?
-    * the channel have saving capability and it is enabled
+    * the channel has saving capability and it is enabled
 
 ## Controller (plugin) API for reading value source
 
 * Controller which would like to read the value source must inherit from the
 `Sourceable` interface.
-TODO: vote for the best name. Alternative name is `Savable`.
+TODO: vote for the best name. Alternative name is `Saveable`.
 * This controller must implement the `SourceOne` method which receives as
 argument the axis number and returns either a single value source (if software
 trigger/gate synchronization is in use) or a sequence of value sources.
@@ -174,10 +176,11 @@ TODO: vote for the best name. Alternative names: `SourceBuffer` (Tango)
 and `source_buffer` (core) for attributes, and the following data structure:
 `{"index": seq<int>, "source": seq<str>}`.
 
-## Single count (Taurus extension) read
+## Single count (MeasurementGroup Taurus extension) read
 
-* If channel has saving enabled then the `count` method returns value source,
-otherwise it returns value.
+* If channel does not read the value but read the value source the `count` 
+method return `None` for this channel. When channel reads the value
+then it returns value for this channel as it is now.
 
 ## How to determine if channel/controller has saving capability
 
@@ -194,9 +197,8 @@ This API is based on axis parameters
 * `GetAxisPar(axis, parameter)`
 * `SetAxisPar(axis, parameter, value)`
     
-Parameters: `value_source_template` (str), `overwrite_policy` (enum),
-`saving_enabled` (bool). See "Channel API for saving configuration" for more
-details about the format.
+Parameters: `value_source_template` (str), `saving_enabled` (bool). See 
+"Channel API for saving configuration" for more details about the format.
     
 ## Channel API for saving configuration
 
@@ -205,17 +207,15 @@ A channel with saving capability exports the following additional interface:
 * `ValueSourceTemplate` (Tango) and `value_source_template` (core) attributes 
 of the string type (use Python str.format() convention
 e.g. `file:/tmp/sample1_{index:02d}`)
-* `OverwritePolicy` (Tango) and `overwrite_policy` (core) attributes of the
-enumeration type (abort, overwrite, append)
 * `SavingEnabled` (Tango) and `saving_enabled` (core) attributes of the boolean
 type.
 
 ## Measurement Group API for saving configuration
 
 Measurement Group configuration has the following configuration parameters per
-channel `saving` (internal and/or external), `value_source_template` and
-`overwrite_policy`. The last two have the same format as explained in "Channel
-API for saving configuration".
+channel `saving` (internal and/or external) and `value_source_template`.
+The last one has the same format as explained in "Channel API for saving 
+configuration".
 
 ## Scan framework API for saving configuration
 
