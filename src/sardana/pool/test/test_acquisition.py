@@ -166,8 +166,10 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
                                                                 [ct_1_1])
         conf_ct_ctrl_2 = createTimerableControllerConfiguration(ct_ctrl_2,
                                                                 [ct_2_1])
-        hw_ctrls = get_timerable_ctrls([conf_ct_ctrl_1], acq_mode=AcqMode.Timer)
-        sw_ctrls = get_timerable_ctrls([conf_ct_ctrl_2], acq_mode=AcqMode.Timer)
+        hw_ctrls = get_timerable_ctrls([conf_ct_ctrl_1],
+                                       acq_mode=AcqMode.Timer)
+        sw_ctrls = get_timerable_ctrls([conf_ct_ctrl_2],
+                                       acq_mode=AcqMode.Timer)
         sw_master = sw_ctrls[0].master
         conf_tg_ctrl_1 = createControllerConfiguration(tg_ctrl_1, [tg_1_1])
         synch_ctrls = get_acq_ctrls([conf_tg_ctrl_1])
