@@ -1,6 +1,6 @@
     Title: Extend acquisition and synchronization concepts for SEP2 needs.
     SEP: 18
-    State: CANDIDATE
+    State: ACCEPTED
     Reason:
      New acquisition and synchronization concepts are necessary in order to
       properly integrate 1D and 2D experimental channels in Sardana (SEP2).
@@ -305,3 +305,7 @@ following way:
 controllers implementations (more precisely using the `inspect.getargspec`
 and counting the number of arguments). This will require much more complicated
 acquisition actions.
+
+## Changes
+
+- 2018-12-17 [reszelaz][]. CANDIDATE -> ACCEPTED
