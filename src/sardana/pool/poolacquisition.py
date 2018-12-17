@@ -937,7 +937,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
 
     def get_read_value_loop_ctrls(self):
         return self._pool_ctrl_dict_loop
-      
+
     def start_action(self, ctrls, value, master, index, acq_sleep_time=None,
                      nb_states_per_value=None, **kwargs):
         PoolAcquisitionBase.start_action(self, ctrls, value, master, 1, 0,
