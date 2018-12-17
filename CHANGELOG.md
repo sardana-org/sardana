@@ -6,6 +6,19 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
+- New acquisition and synchronization concepts (SEP18, #773):
+  - Preparation of measurement group for a group of acquisitions is mandatory
+    (`Prepare` Tango command and `prepare` core method; `NbStarts` Tango
+    attribute and `nb_starts` core attribute; `count`, `count_raw` and
+    `count_continuous` methods in Taurus extension)
+  - Preparation of timerable controllers is optional (`PrepareOne` method)
+  - `SoftwareStart` and `HardwareStart` options in `AcqSynch` enumeration and
+    `Start` in `AcqSynchType` enumeration (the second one is available in
+    the `expconf` as synchronization option)
+  - `start` and `end` events in software synchronizer
+  - `PoolAcquisitionSoftwareStart` acquisition action
+  - `SoftwareStart` and `HardwareStart` synchronization in
+    `DummyCounterTimerController`
 - Possibility to define macros with optional parameters. These must be the last
   ones in the definition (#285, #876, #943, #941, #955)
 - Possibility to pass values of repeat paramters with just one member without
@@ -51,6 +64,10 @@ This file follows the formats and conventions from [keepachangelog.com]
   #933)
 - Logstash handler from python-logstash to python-logstash-async (#895)
 - Move `ParamParser` to `sardana.util.parser` (#781, #907, #908)
+
+### Deprecated
+- Measurement group start without prior preparation (SEP18, #773)
+
 
 ## [2.5.0] 2018-08-10
 
