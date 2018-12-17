@@ -1,6 +1,6 @@
 	Title: Improve integration of 1D and 2D experimental channels
 	SEP: 2
-	State: DRAFT
+	State: CANDIDATE
 	Date: 2018-12-03
 	Drivers: Zbigniew Reszela zreszela@cells.es
 	URL: http://www.sardana-controls.org/sep/?SEP2.md
