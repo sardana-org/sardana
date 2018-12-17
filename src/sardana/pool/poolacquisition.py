@@ -935,6 +935,9 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
             slaves = ()
         self._slaves = slaves
 
+    def get_read_value_loop_ctrls(self):
+        return self._pool_ctrl_dict_loop
+      
     def start_action(self, ctrls, value, master, index, acq_sleep_time=None,
                      nb_states_per_value=None, **kwargs):
         PoolAcquisitionBase.start_action(self, ctrls, value, master, 1, 0,
@@ -947,7 +950,6 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
         for channel in self._channels:
             element = channel.element
             states[element] = None
-            values[element] = None
 
         nap = self._acq_sleep_time
         nb_states_per_value = self._nb_states_per_value
@@ -977,7 +979,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
 
         with ActionContext(self):
             self.raw_read_state_info(ret=states)
-            self.raw_read_value_loop(ret=values)
+            self.raw_read_value(ret=values)
 
         for acquirable, state_info in states.items():
             # first update the element state so that value calculation

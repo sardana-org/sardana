@@ -39,6 +39,7 @@ from lxml import etree
 from taurus.core.util.containers import CaselessDict
 
 from sardana import ElementType, INTERFACES_EXPANDED
+from sardana.sardanautils import is_non_str_seq
 from sardana.macroserver.msbase import MSBaseObject
 from sardana.macroserver.msexception import MacroServerException, \
     UnknownMacro, UnknownMacroLibrary
@@ -50,8 +51,9 @@ class OptionalParamClass(dict):
         attributes = dir(self)
 
         for attr in attributes:
+            # iteritems is necessary fo python 2.6 implementation of json
             if attr in ['__setattr__', '__repr__', 'raise_error', '__class__',
-                        '__dict__', '__weakref__']:
+                        '__dict__', '__weakref__', 'iteritems']:
                 continue
             self.__setattr__(attr, self.raise_error)
         self.__setattr__ = self.raise_error
@@ -468,7 +470,14 @@ class ParamDecoder:
         if max_rep and len_rep > max_rep:
             msg = 'Found %d repetitions of param %s, max is %d' % \
                   (len_rep, name, max_rep)
-            raise SupernumeraryRepeat, msg
+            raise SupernumeraryRepeat(msg)
+        # repeat params with only one member and only one repetition value are
+        # allowed - encapsulate it in list and try to decode anyway;
+        # for the moment this only works for non XML decoding but could be
+        # extended in the future to support XML as well
+        if not is_non_str_seq(raw_param_repeat)\
+                and not isinstance(raw_param_repeat, etree._Element):
+            raw_param_repeat = [raw_param_repeat]
         for raw_repeat in raw_param_repeat:
             if len(param_type) > 1:
                 repeat = []
