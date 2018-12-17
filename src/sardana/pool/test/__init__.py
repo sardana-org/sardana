@@ -27,6 +27,7 @@
 
 from .fake import *  # NOQA
 from .helper import *  # NOQA
+from .util import *  # NOQA
 from .dummyconfs import *  # NOQA
 from .base import *  # NOQA
 from .test_acquisition import *  # NOQA
