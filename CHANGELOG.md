@@ -22,6 +22,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   property) (#984)
 
 ### Fixed
+- Do not read 1D and 2D experimental channels during software acquisition loop
+  (#967)
 - Make `expconf` react on events of environment, measurement groups and their
   configurations. An event offers an option to reload the whole experiment
   configuration or keep the local changes. `expconf` started with
