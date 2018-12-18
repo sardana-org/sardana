@@ -396,7 +396,17 @@ class MacroServerClass(SardanaDeviceClass):
              None],
         'LogstashPort':
             [DevLong,
-             "Port on which Logstash will listen on events. "
+             "Port on which Logstash will listen on events [default: 12345]. "
+             "This property has been included in Sardana on a provisional "
+             "basis. Backwards incompatible changes (up to and including "
+             "its removal) may occur if deemed necessary by the "
+             "core developers.",
+             12345],
+        'LogstashCacheDbPath':
+            [DevString,
+             "Path to the Logstash cache database [default: None]. "
+             "It is advised not to use the database cache, as it may "
+             "have negative effects on logging performance. See #895. "
              "This property has been included in Sardana on a provisional "
              "basis. Backwards incompatible changes (up to and including "
              "its removal) may occur if deemed necessary by the "

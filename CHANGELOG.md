@@ -6,11 +6,25 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
+- New acquisition and synchronization concepts (SEP18, #773):
+  - Preparation of measurement group for a group of acquisitions is mandatory
+    (`Prepare` Tango command and `prepare` core method; `NbStarts` Tango
+    attribute and `nb_starts` core attribute; `count`, `count_raw` and
+    `count_continuous` methods in Taurus extension)
+  - Preparation of timerable controllers is optional (`PrepareOne` method)
+  - `SoftwareStart` and `HardwareStart` options in `AcqSynch` enumeration and
+    `Start` in `AcqSynchType` enumeration (the second one is available in
+    the `expconf` as synchronization option)
+  - `start` and `end` events in software synchronizer
+  - `PoolAcquisitionSoftwareStart` acquisition action
+  - `SoftwareStart` and `HardwareStart` synchronization in
+    `DummyCounterTimerController`
 - Possibility to define macros with optional parameters. These must be the last
   ones in the definition (#285, #876, #943, #941, #955)
 - Possibility to pass values of repeat paramters with just one member without
   the need to encapsulate them in square brackets (spock syntax) or list
   (macro API) (#781, #983)
+- Possibility to change data format (shape) of of pseudo counter values (#986)
 - Workaround for API_DeviceTimedOut errors on MeasurementGroup Start. Call Stop
   in case this error occured (#764).
 - Optional measurement group parameter to `ct` and `uct` macros (#940, #473)
@@ -21,13 +35,17 @@ This file follows the formats and conventions from [keepachangelog.com]
   property) (#984)
 
 ### Fixed
+- Do not read 1D and 2D experimental channels during software acquisition loop
+  (#967)
 - Make `expconf` react on events of environment, measurement groups and their
   configurations. An event offers an option to reload the whole experiment
   configuration or keep the local changes. `expconf` started with
   `--auto-update` option will automatically reload the whole experiment
-  configuration (#806, #882)
+  configuration (#806, #882, #988)
 - Reload macro library overriding another library (#927, #946)
 - Avoid final padding in timescan when it was stopped by user (#869, #935)
+- Moveables limits check in continuous scans when moveables position attribute
+  has unit configured and Taurus 4 is used (quantities) (#989, #990)
 - Hook places advertised by continuous scans so the `allowHooks` hint and the
   code are coherent (#936)
 - Macro/controller module description when module does not have a docstring
@@ -44,7 +62,12 @@ This file follows the formats and conventions from [keepachangelog.com]
   (#781)
 - Move pre-scan and post-scan hooks out of `scan_loop` method (#920, #922,
   #933)
+- Logstash handler from python-logstash to python-logstash-async (#895)
 - Move `ParamParser` to `sardana.util.parser` (#781, #907, #908)
+
+### Deprecated
+- Measurement group start without prior preparation (SEP18, #773)
+
 
 ## [2.5.0] 2018-08-10
 

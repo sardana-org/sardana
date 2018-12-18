@@ -647,7 +647,14 @@ class PoolElementDevice(PoolDevice):
         """
 
         if hasattr(self, "_dynamic_attributes_cache"):
-            return self._standard_attributes_cache, self._dynamic_attributes_cache
+            return self._standard_attributes_cache, \
+                   self._dynamic_attributes_cache
+        std_attrs, dyn_attrs = self._get_dynamic_attributes()
+        self._standard_attributes_cache = std_attrs
+        self._dynamic_attributes_cache = dyn_attrs
+        return std_attrs, dyn_attrs
+
+    def _get_dynamic_attributes(self):
         ctrl = self.ctrl
         if ctrl is None:
             self.warning("no controller: dynamic attributes NOT created")
@@ -656,8 +663,8 @@ class PoolElementDevice(PoolDevice):
             self.warning("controller offline: dynamic attributes NOT created")
             return PoolDevice.get_dynamic_attributes(self)
 
-        self._dynamic_attributes_cache = dyn_attrs = CaselessDict()
-        self._standard_attributes_cache = std_attrs = CaselessDict()
+        dyn_attrs = CaselessDict()
+        std_attrs = CaselessDict()
         dev_class = self.get_device_class()
         axis_attrs = ctrl.get_axis_attributes(self.element.axis)
 

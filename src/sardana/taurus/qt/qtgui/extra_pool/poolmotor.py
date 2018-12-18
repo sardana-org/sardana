@@ -142,11 +142,11 @@ class LabelWidgetDragsDeviceAndAttribute(DefaultLabelWidget):
     """ Offer richer mime data with taurus-device, taurus-attribute, and plain-text. """
 
     def mouseMoveEvent(self, event):
-        model = self.taurusValueBuddy().getModelName()
+        model = self.taurusValueBuddy().getModelName()  # TODO: use bytes
         mimeData = Qt.QMimeData()
         mimeData.setText(self.text())
         attr_name = model
-        dev_name = model.rpartition('/')[0]
+        dev_name = model.rpartition(b'/')[0]
         mimeData.setData(TAURUS_DEV_MIME_TYPE, dev_name)
         mimeData.setData(TAURUS_ATTR_MIME_TYPE, attr_name)
 
@@ -959,8 +959,8 @@ class PoolMotorTVLabelWidget(TaurusWidget):
         model = self.taurusValueBuddy().getModelObj()
         mimeData = Qt.QMimeData()
         mimeData.setText(self.lbl_alias.text())
-        dev_name = model.getFullName()
-        attr_name = dev_name + '/Position'
+        dev_name = model.getFullName()  # TODO: Use bytes
+        attr_name = dev_name + b'/Position'
         mimeData.setData(TAURUS_DEV_MIME_TYPE, dev_name)
         mimeData.setData(TAURUS_ATTR_MIME_TYPE, attr_name)
 

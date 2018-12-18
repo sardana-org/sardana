@@ -1000,9 +1000,9 @@ def prepare_logstash(args):
     log_messages = []
 
     try:
-        import logstash
+        from logstash_async.handler import AsynchronousLogstashHandler
     except ImportError:
-        msg = ("Unable to import logstash. Skipping logstash "
+        msg = ("Unable to import logstash_async. Skipping logstash "
                + "configuration...", )
         log_messages.append(msg,)
         return log_messages
@@ -1017,8 +1017,13 @@ def prepare_logstash(args):
             props = db.get_device_property(dev_name, "LogstashPort")
             port = int(props["LogstashPort"][0])
         except IndexError:
-            port = 12345
-        return host, port
+            port = None
+        try:
+            props = db.get_device_property(dev_name, "LogstashCacheDbPath")
+            cache_db_path = props["LogstashCacheDbPath"][0]
+        except IndexError:
+            cache_db_path = None
+        return host, port, cache_db_path
 
     db = Database()
 
@@ -1034,18 +1039,21 @@ def prepare_logstash(args):
     if bin_name in ["Pool", "MacroServer"]:
         class_name = bin_name
         dev_name = get_dev_from_class_server(db, class_name, server_name)[0]
-        host, port = get_logstash_conf(dev_name)
+        host, port, cache = get_logstash_conf(dev_name)
     else:
         dev_name = get_dev_from_class_server(db, "Pool", server_name)[0]
-        host, port = get_logstash_conf(dev_name)
+        host, port, cache = get_logstash_conf(dev_name)
         if host is None:
             dev_name = get_dev_from_class_server(db, "MacroServer",
                                                  server_name)[0]
-            host, port = get_logstash_conf(dev_name)
+            host, port, cache = get_logstash_conf(dev_name)
 
     if host is not None:
         root = Logger.getRootLog()
-        handler = logstash.TCPLogstashHandler(host, port, version=1)
+        handler = AsynchronousLogstashHandler(host, port, database_path=cache)
+        # don't use full path for program_name
+        handler._create_formatter_if_necessary()
+        _, handler.formatter._program_name = os.path.split(handler.formatter._program_name)
         root.addHandler(handler)
         msg = ("Log is being sent to logstash listening on %s:%d",
                host, port)

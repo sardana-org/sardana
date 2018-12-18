@@ -6,6 +6,12 @@
 How to write a counter/timer controller
 =======================================
 
+.. important::
+    Counter/timer controller :term:`API` was extended in SEP18_ but this is
+    still not documented in this chapter. Please check the said SEP for more
+    information about the additional :term:`API` or eventual changes.
+
+
 The basics
 ----------
 
@@ -512,3 +518,4 @@ and that there are no gaps in between them.
 .. _numpy: http://numpy.scipy.org/
 .. _SPEC: http://www.certif.com/
 .. _EPICS: http://www.aps.anl.gov/epics/
+.. _SEP18: http://www.sardana-controls.org/sep/?SEP18.md

@@ -49,6 +49,9 @@ MacroServer integrates natively with the
 instance. In case Sardana is used with Tango this configuration is
 accessible via the ``LogstashHost`` and ``LogstashPort``
 :class:`~sardana.tango.macroserver.MacroServer.MacroServer` device properties.
+You can use the intermediate SQLite cache database configured with
+``LogstashCacheDbPath`` property, however this is discouraged due to logging
+performance problems.
 
 You can debug the MacroServer at runtime using the Python remote
 console - ``rconsole`` (part of the `rfoo <https://pypi.org/project/rfoo/>`_

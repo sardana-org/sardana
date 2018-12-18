@@ -1008,6 +1008,11 @@ class SScan(GScan):
 
         if hasattr(macro, "nr_points"):
             nr_points = float(macro.nr_points)
+            if hasattr(macro, "integ_time"):
+                integ_time = macro.integ_time
+                self.measurement_group.putIntegrationTime(integ_time)
+                self.measurement_group.setNbStarts(nr_points)
+                self.measurement_group.prepare()
             scream = True
         else:
             yield 0.0
@@ -1482,6 +1487,12 @@ class CScan(GScan):
         pos_obj = motor.getPositionObj()
         min_pos, _ = pos_obj.getRange()
         try:
+            # Taurus 4 uses quantities however Sardana does not support them
+            # yet - use magnitude for the moment.
+            min_pos = min_pos.magnitude
+        except AttributeError:
+            pass
+        try:
             min_pos = float(min_pos)
         except ValueError:
             min_pos = float('-Inf')
@@ -1494,6 +1505,12 @@ class CScan(GScan):
         '''
         pos_obj = motor.getPositionObj()
         _, max_pos = pos_obj.getRange()
+        try:
+            # Taurus 4 uses quantities however Sardana does not support them
+            # yet - use magnitude for the moment.
+            max_pos = max_pos.magnitude
+        except AttributeError:
+            pass
         try:
             max_pos = float(max_pos)
         except ValueError:
@@ -2657,8 +2674,8 @@ class TScan(GScan, CAcquisition):
                 hook()
 
         yield 0
-        measurement_group.measure(synchronization,
-                                  self.value_buffer_changed)
+        measurement_group.count_continuous(synchronization,
+                                           self.value_buffer_changed)
         self.debug("Waiting for value buffer events to be processed")
         self.wait_value_buffer()
         self.join_thread_pool()

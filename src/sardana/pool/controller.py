@@ -661,22 +661,37 @@ class Loadable(object):
 
     .. note: Do not inherit directly from Loadable."""
 
+    def PrepareOne(self, axis, value, repetitions, latency, nb_starts):
+        """**Controller API**. Override if necessary.
+        Called to prepare the master channel axis with the measurement
+        parameters.
+        Default implementation does nothing.
+
+        :param int axis: axis number
+        :param int repetitions: number of repetitions
+        :param float value: integration time / monitor count
+        :param float latency: latency time
+        :param int nb_starts: number of starts
+        """
+        pass
+
     def PreLoadAll(self):
         """**Controller API**. Override if necessary.
         Called to prepare loading the integration time / monitor value.
         Default implementation does nothing."""
         pass
 
-    def PreLoadOne(self, axis, value, repetitions):
+    def PreLoadOne(self, axis, value, repetitions, latency):
         """**Controller API**. Override if necessary.
-        Called to prepare loading the master channel axis with the integration
-        time / monitor value.
+        Called to prepare loading the master channel axis with the
+        acquisition parameters.
         Default implementation returns True.
 
         :param int axis: axis number
         :param float value: integration time /monitor value
         :param int repetitions: number of repetitions
-        :return: True means a successfull PreLoadOne or False for a failure
+        :param float latency: latency time
+        :return: True means a successful PreLoadOne or False for a failure
         :rtype: bool"""
         return True
 
@@ -686,7 +701,7 @@ class Loadable(object):
         Default implementation does nothing."""
         pass
 
-    def LoadOne(self, axis, value, repetitions):
+    def LoadOne(self, axis, value, repetitions, latency):
         """**Controller API**. Override is MANDATORY!
         Called to load the integration time / monitor value.
         Default implementation raises :exc:`NotImplementedError`.
@@ -694,6 +709,7 @@ class Loadable(object):
         :param int axis: axis number
         :param float value: integration time /monitor value
         :param int repetitions: number of repetitions
+        :param float latency: latency time
         :param float value: integration time /monitor value"""
         raise NotImplementedError("LoadOne must be defined in the controller")
 
@@ -869,7 +885,8 @@ class MotorController(Controller, Startable, Stopable, Readable):
         pass
 
 
-class CounterTimerController(Controller, Readable, Startable, Stopable, Loadable):
+class CounterTimerController(Controller, Readable, Startable, Stopable,
+                             Loadable):
     """Base class for a counter/timer controller. Inherit from this class to
     implement your own counter/timer controller for the device pool.
 
