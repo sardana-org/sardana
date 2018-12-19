@@ -71,7 +71,7 @@ class AcquisitionTestCase(BasePoolTestCase):
                or self.synchronization.is_running()):
             time.sleep(.1)
 
-    def do_asserts(self, repetitions, jobs_before):
+    def do_asserts(self, repetitions, jobs_before, strict=True):
         # print acquisition records
         table = self.data_listener.get_table()
         header = table.dtype.names
@@ -83,12 +83,23 @@ class AcquisitionTestCase(BasePoolTestCase):
         for channel in self.channel_names:
             msg = 'data from channel %s were not acquired' % channel
             self.assertIn(channel, header, msg)
-        # checking if all the data were acquired
+        # checking if data were acquired
         for ch_name in header:
             ch_data_len = len(table[ch_name])
-            msg = 'length of data for channel %s is %d and should be %d' %\
-                (ch_name, ch_data_len, repetitions)
-            self.assertEqual(ch_data_len, repetitions, msg)
+            if strict:
+                msg = ('length of data for channel %s is %d and should be '
+                       '%d' % (ch_name, ch_data_len, repetitions))
+                self.assertEqual(repetitions, ch_data_len, msg)
+            else:
+                msg = ('length of data for channel %s is %d and should <= '
+                       '%d' % (ch_name, ch_data_len, repetitions))
+                self.assertGreaterEqual(repetitions, ch_data_len, msg)
+            for value in table[ch_name]:
+                if value not in [float("NaN"), None]:
+                    break
+            else:
+                raise AssertionError('channel %s does not report any '
+                                     'valid data')
         # checking if there are no pending jobs
         jobs_after = get_thread_pool().qsize
         msg = ('there are %d jobs pending to be done after the acquisition ' +
