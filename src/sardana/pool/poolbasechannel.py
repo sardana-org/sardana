@@ -33,7 +33,7 @@ __docformat__ = 'restructuredtext'
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.sardanabuffer import SardanaBuffer
 from sardana.pool.poolelement import PoolElement
-from sardana.pool.poolacquisition import PoolCTAcquisition
+from sardana.pool.poolacquisition import PoolAcquisitionSoftware
 
 
 class ValueBuffer(SardanaBuffer):
@@ -68,7 +68,7 @@ class PoolBaseChannel(PoolElement):
 
     ValueAttributeClass = Value
     ValueBufferClass = ValueBuffer
-    AcquisitionClass = PoolCTAcquisition
+    AcquisitionClass = PoolAcquisitionSoftware
 
     def __init__(self, **kwargs):
         PoolElement.__init__(self, **kwargs)
@@ -79,6 +79,7 @@ class PoolBaseChannel(PoolElement):
         if not self.AcquisitionClass is None:
             acq_name = "%s.Acquisition" % self._name
             self.set_action_cache(self.AcquisitionClass(self, name=acq_name))
+        self._integration_time = False
 
     def has_pseudo_elements(self):
         """Informs whether this channel forms part of any pseudo element
@@ -228,6 +229,37 @@ class PoolBaseChannel(PoolElement):
 
     value = property(get_value, set_value, doc="channel value")
 
+    # --------------------------------------------------------------------------
+    # integration time
+    # --------------------------------------------------------------------------
+
+    def get_integration_time(self, cache=True, propagate=1):
+        """Returns the integration time for this object.
+
+        :param cache: not used [default: True]
+        :type cache: bool
+        :param propagate: [default: 1]
+        :type propagate: int
+        :return: the current integration time
+        :rtype: bool"""
+        return self._integration_time
+
+    def set_integration_time(self, integration_time, propagate=1):
+        self._integration_time = integration_time
+        if not propagate:
+            return
+        if integration_time == self._integration_time:
+            # current state is equal to last state_event. Skip event
+            return
+        self.fire_event(EventType("integration_time", priority=propagate),
+                        integration_time)
+
+    def put_integration_time(self, integration_time):
+        self._integration_time = integration_time
+
+    integration_time = property(get_integration_time, set_integration_time,
+                               doc="channel integration time")
+    
     def extend_value_buffer(self, values, idx=None, propagate=1):
         """Extend value buffer with new values assigning them consecutive
         indexes starting with idx. If idx is omitted, then the new values will

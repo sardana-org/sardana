@@ -33,7 +33,7 @@ import sys
 import time
 
 from PyTango import DevFailed, DevVoid, DevString, DevState, AttrQuality, \
-    Except, READ, SCALAR
+    Except, READ, SCALAR, READ_WRITE
 
 from taurus.core.util.log import DebugIt
 
@@ -223,6 +223,20 @@ class OneDExpChannel(PoolExpChannelDevice):
             data_source = "{0}/value".format(full_name)
         attr.set_value(data_source)
 
+    def read_Timer(self, attr):
+        """Reads the timer for this channel.
+
+        :param attr: tango attribute
+        :type attr: :class:`~PyTango.Attribute`"""
+        attr.set_value(self.element.timer)
+
+    def write_Timer(self, attr):
+        """Sets the timer for this channel.
+
+        :param attr: tango attribute
+        :type attr: :class:`~PyTango.Attribute`"""
+        self.element.timer = attr.get_write_value()
+
     def Start(self):
         self.oned.start_acquisition()
 
@@ -253,6 +267,7 @@ class OneDExpChannelClass(PoolExpChannelDeviceClass):
     #    Attribute definitions
     attr_list = {
         'DataSource': [[DevString, SCALAR, READ]],
+        'Timer': [[DevString, SCALAR, READ_WRITE]]
     }
     attr_list.update(PoolExpChannelDeviceClass.attr_list)
 

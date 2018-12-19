@@ -35,7 +35,7 @@ __docformat__ = 'restructuredtext'
 import time
 import numpy as np
 
-from PyTango import Util, DevVoid, DevLong64, DevBoolean, DevString, \
+from PyTango import Util, DevVoid, DevLong64, DevBoolean, DevString, DevDouble, \
     DevVarStringArray, DispLevel, DevState, SCALAR, SPECTRUM, \
     IMAGE, READ_WRITE, READ, AttrData, CmdArgType, DevFailed, seqStr_2_obj, \
     Except, ErrSeverity
@@ -873,11 +873,35 @@ class PoolExpChannelDevice(PoolElementDevice):
                                desc,
                                "PoolExpChannelDevice.read_Data",
                                ErrSeverity.WARN)
+        
+    def read_IntegrationTime(self, attr):
+        """Reads the integration time.
+
+        :param attr: tango attribute
+        :type attr: :class:`~PyTango.Attribute`"""
+        attr.set_value(self.element.integration_time)
+
+    def write_IntegrationTime(self, attr):
+        """Sets the integration time.
+
+        :param attr: tango attribute
+        :type attr: :class:`~PyTango.Attribute`"""
+        self.element.integration_time = attr.get_write_value()
 
 
 class PoolExpChannelDeviceClass(PoolElementDeviceClass):
 
+    #:
+    #: Sardana device attribute definition
+    #:
+    #: .. seealso:: :ref:`server`
+    #:
+    attr_list = {
+        'IntegrationTime': [[DevDouble, SCALAR, READ_WRITE]]
+    }
+    attr_list.update(PoolElementDeviceClass.attr_list)
+    
     standard_attr_list = {
-        'Data': [[DevString, SCALAR, READ]]  # TODO: think about DevEncoded
+        'Data': [[DevString, SCALAR, READ]],  # TODO: think about DevEncoded
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)

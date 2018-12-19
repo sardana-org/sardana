@@ -33,7 +33,7 @@ import sys
 import time
 
 from PyTango import DevFailed, DevVoid, DevDouble, DevState, AttrQuality, \
-    DevString, Except, READ, SCALAR
+    DevString, Except, READ, SCALAR, READ_WRITE
 
 from taurus.core.util.log import DebugIt
 
@@ -215,6 +215,20 @@ class CTExpChannel(PoolExpChannelDevice):
             return False
         return True
 
+    def read_Timer(self, attr):
+        """Reads the timer for this channel.
+
+        :param attr: tango attribute
+        :type attr: :class:`~PyTango.Attribute`"""
+        attr.set_value(self.element.timer)
+
+    def write_Timer(self, attr):
+        """Sets the timer for this channel.
+
+        :param attr: tango attribute
+        :type attr: :class:`~PyTango.Attribute`"""
+        self.element.timer = attr.get_write_value()
+        
     def Start(self):
         self.ct.start_acquisition()
 
@@ -235,13 +249,16 @@ class CTExpChannelClass(PoolExpChannelDeviceClass):
     cmd_list.update(PoolExpChannelDeviceClass.cmd_list)
 
     #    Attribute definitions
-    attr_list = {}
+    attr_list = {
+        'Timer': [[DevString, SCALAR, READ_WRITE]]
+    }
     attr_list.update(PoolExpChannelDeviceClass.attr_list)
-
+    
     standard_attr_list = {
         'Value': [[DevDouble, SCALAR, READ],
                   {'abs_change': '1.0', }]
     }
+    
     standard_attr_list.update(PoolExpChannelDeviceClass.standard_attr_list)
 
     def _get_class_properties(self):
