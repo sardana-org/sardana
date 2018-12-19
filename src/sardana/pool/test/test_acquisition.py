@@ -232,6 +232,86 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
 
 @insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
             latency_time=0.02)
+class AcquisitionSoftwareTestCase(AcquisitionTestCase, TestCase):
+    """Integration test of PoolSynchronization and PoolAcquisitionSoftware"""
+
+    def setUp(self):
+        """Create test actors (controllers and elements)"""
+        TestCase.setUp(self)
+        AcquisitionTestCase.setUp(self)
+
+    def event_received(self, *args, **kwargs):
+        """Callback to execute software start acquisition."""
+        _, type_, value = args
+        name = type_.name
+        if name == "active":
+            if self.acq_busy.is_set():
+                # skipping acquisition cause the previous on is ongoing
+                return
+            else:
+                self.acq_busy.set()
+                args = list(self.acq_args)
+                kwargs = self.acq_kwargs
+                index = value
+                args[3] = index
+                get_thread_pool().add(self.acquisition.run,
+                                      None,
+                                      *args,
+                                      **kwargs)
+
+    def acquire(self, integ_time, repetitions, latency_time):
+        """Acquire with a dummy C/T synchronized by a hardware start
+        trigger from a dummy T/G."""
+        self.ct_ctrl_1.set_ctrl_par("synchronization",
+                                    AcqSynch.SoftwareTrigger)
+
+        conf_ct_ctrl_1 = createTimerableControllerConfiguration(self.ct_ctrl_1,
+                                                                [self.ct_1_1])
+        ctrls = get_timerable_ctrls([conf_ct_ctrl_1], AcqMode.Timer)
+        master = ctrls[0].master
+        # creating synchronization action
+        self.synchronization = self.create_action(PoolSynchronization,
+                                                  [self.tg_1_1])
+        self.synchronization.add_listener(self)
+        # add_listeners
+        self.add_listeners([self.ct_1_1])
+        # creating acquisition actions
+        self.acquisition = self.create_action(PoolAcquisitionSoftware,
+                                              [self.ct_1_1])
+        # Since we deposit the software acquisition action on the PoolThread's
+        # queue we can not rely on the action's state - one may still wait
+        # in the queue (its state has not changed to running yet) and we would
+        # be depositing another one. This way we may be starting multiple
+        # times the same action (with the same elements involved), what results
+        # in "already involved in operation" errors.
+        # Use an external Event flag to mark if we have any software
+        # acquisition action pending.
+        self.acq_busy = threading.Event()
+        self.acquisition.add_finish_hook(self.acq_busy.clear)
+        self.acq_args = (ctrls, integ_time, master, None)
+        self.acq_kwargs = {}
+
+        total_interval = integ_time + latency_time
+        group = {
+            SynchParam.Delay: {SynchDomain.Time: 0},
+            SynchParam.Active: {SynchDomain.Time: integ_time},
+            SynchParam.Total: {SynchDomain.Time: total_interval},
+            SynchParam.Repeats: repetitions
+        }
+        synchronization = [group]
+        # get the current number of jobs
+        jobs_before = get_thread_pool().qsize
+        self.synchronization.run([], synchronization)
+        self.wait_finish()
+        self.do_asserts(repetitions, jobs_before, strict=False)
+
+    def tearDown(self):
+        AcquisitionTestCase.tearDown(self)
+        TestCase.tearDown(self)
+
+
+@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
+            latency_time=0.02)
 class AcquisitionSoftwareStartTestCase(AcquisitionTestCase, TestCase):
     """Integration test of PoolSynchronization and PoolAcquisitionHardware"""
 
