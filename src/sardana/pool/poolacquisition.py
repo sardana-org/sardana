@@ -773,6 +773,8 @@ class PoolAcquisitionBase(PoolAction):
 
         # controllers that will be read during the action
         self._set_pool_ctrl_dict_loop(ctrls)
+        # controllers that will be read their refs
+        self._set_pool_ctrl_dict_ref(ctrls)
 
         # channels that are acquired (only enabled)
         self._channels = []
@@ -1015,7 +1017,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
 
     @DebugIt()
     def action_loop(self):
-        states, values = {}, {}
+        states, values, value_refs = {}, {}, {}
         for channel in self._channels:
             element = channel.element
             states[element] = None
@@ -1049,6 +1051,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
         with ActionContext(self):
             self.raw_read_state_info(ret=states)
             self.raw_read_value(ret=values)
+            self.raw_read_value_ref(ret=value_refs)
 
         for acquirable, state_info in states.items():
             # first update the element state so that value calculation
@@ -1060,6 +1063,12 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
                     self.error("Loop final read value error for: %s" %
                                acquirable.name)
                 acquirable.append_value_buffer(value, self._index)
+            if acquirable in value_refs:
+                value_ref = value_refs[acquirable]
+                if is_value_error(value_ref):
+                    self.error("Loop final read value ref error for: %s" %
+                               acquirable.name)
+                acquirable.append_value_ref_buffer(value_ref, self._index)
             with acquirable:
                 acquirable.clear_operation()
                 state_info = acquirable._from_ctrl_state_info(state_info)
