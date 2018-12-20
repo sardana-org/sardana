@@ -435,3 +435,18 @@ class AcquisitionHardwareStartTestCase(AcquisitionTestCase, TestCase):
     def tearDown(self):
         AcquisitionTestCase.tearDown(self)
         TestCase.tearDown(self)
+
+
+@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
+            latency_time=0.02)
+class AcquisitionSoftwareRefTestCase(BaseAcquisitionSoftwareTestCase,
+                                     TestCase):
+
+    CHANNEL_NAME = "_test_2d_1_1"
+
+    def setUp(self):
+        """Create test actors (controllers and elements)"""
+        TestCase.setUp(self)
+        AcquisitionTestCase.setUp(self)
+        self.data_listener = AttributeListener(dtype=object,
+                                               attr_name="valuerefbuffer")
