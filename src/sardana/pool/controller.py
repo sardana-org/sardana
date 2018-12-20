@@ -29,6 +29,7 @@ __all__ = ["DataAccess", "SardanaValue", "Type", "Access", "Description",
            "DefaultValue", "FGet", "FSet",
            "Memorized", "MemorizedNoInit", "NotMemorized", "MaxDimSize",
            "Controller", "Readable", "Startable", "Stopable", "Loadable",
+           "Referable", "Synchronizer",
            "MotorController", "CounterTimerController", "ZeroDController",
            "OneDController", "TwoDController",
            "PseudoMotorController", "IORegisterController"]
@@ -712,6 +713,31 @@ class Loadable(object):
         :param float latency: latency time
         :param float value: integration time /monitor value"""
         raise NotImplementedError("LoadOne must be defined in the controller")
+
+
+class Referable(object):
+    """A Referable interface. A controller for which it's axis can
+    report data references (like a 1D or 2D for example) should implement
+    this interface
+
+    .. note: Inherit from Referable together with either OneDController or
+        TwoDController
+
+    .. note::
+        The Referable class has been included in Sardana on a provisional
+        basis. Backwards incompatible changes (up to and including removal
+        of the class) may occur if deemed necessary by the core developers.
+    """
+
+    def RefOne(self, axis):
+        """**Controller API**. Override is MANDATORY!
+        Default implementation raises :exc:`NotImplementedError`
+
+        :param int axis: axis number
+        :return: the axis value
+        :rtype: object
+        """
+        raise NotImplementedError("RefOne must be defined in the controller")
 
 
 class Synchronizer(object):

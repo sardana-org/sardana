@@ -47,6 +47,7 @@ from sardana.sardanautils import is_non_str_seq, is_number
 
 from sardana.pool.poolextension import translate_ctrl_value
 from sardana.pool.poolbaseelement import PoolBaseElement
+from sardana.pool.controller import Referable
 
 
 class PoolBaseController(PoolBaseElement):
@@ -399,6 +400,9 @@ class PoolController(PoolBaseController):
             if t in TYPE_TIMERABLE_ELEMENTS:
                 return True
         return False
+
+    def is_referable(self):
+        return isinstance(self.ctrl, Referable)
 
     def is_pseudo(self):
         for t in self._ctrl_info.types:
