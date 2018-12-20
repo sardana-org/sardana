@@ -151,8 +151,8 @@ class BaseAcquisitionSoftwareTestCase(AcquisitionTestCase):
         self.channel_ctrl.set_ctrl_par("synchronization",
                                        AcqSynch.SoftwareTrigger)
 
-        conf_ct_ctrl_1 = createTimerableControllerConfiguration(self.channel_ctrl,
-                                                                [self.channel])
+        conf_ct_ctrl_1 = createTimerableControllerConfiguration(
+            self.channel_ctrl, [self.channel])
         ctrls = get_timerable_ctrls([conf_ct_ctrl_1], AcqMode.Timer)
         master = ctrls[0].master
         # creating synchronization action
@@ -348,10 +348,11 @@ class AcquisitionSoftwareStartTestCase(AcquisitionTestCase, TestCase):
     def acquire(self, integ_time, repetitions, latency_time):
         """Acquire with a dummy C/T synchronized by a hardware start
         trigger from a dummy T/G."""
-        self.channel_ctrl.set_ctrl_par("synchronization", AcqSynch.SoftwareStart)
+        self.channel_ctrl.set_ctrl_par("synchronization",
+                                       AcqSynch.SoftwareStart)
 
-        conf_ct_ctrl_1 = createTimerableControllerConfiguration(self.channel_ctrl,
-                                                                [self.channel])
+        conf_ct_ctrl_1 = createTimerableControllerConfiguration(
+            self.channel_ctrl, [self.channel])
         ctrls = get_timerable_ctrls([conf_ct_ctrl_1], AcqMode.Timer)
         master = ctrls[0].master
         # creating synchronization action
@@ -401,7 +402,8 @@ class AcquisitionHardwareStartTestCase(AcquisitionTestCase, TestCase):
     def acquire(self, integ_time, repetitions, latency_time):
         """Acquire with a dummy C/T synchronized by a hardware start
         trigger from a dummy T/G."""
-        self.channel_ctrl.set_ctrl_par("synchronization", AcqSynch.HardwareStart)
+        self.channel_ctrl.set_ctrl_par("synchronization",
+                                       AcqSynch.HardwareStart)
         conf_ct_ctrl_1 = createTimerableControllerConfiguration(
             self.channel_ctrl, [self.channel])
         ctrls = get_timerable_ctrls([conf_ct_ctrl_1], AcqMode.Timer)
