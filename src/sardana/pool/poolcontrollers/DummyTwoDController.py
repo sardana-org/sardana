@@ -25,7 +25,7 @@ import time
 import numpy
 
 from sardana import State
-from sardana.pool.controller import TwoDController, MaxDimSize
+from sardana.pool.controller import TwoDController, Referable, MaxDimSize
 
 
 def gauss(x, mean, ymax, fwhm, yoffset=0):
@@ -68,7 +68,7 @@ class TangoValue(BaseValue):
         return self.attr_proxy.read().value
 
 
-class DummyTwoDController(TwoDController):
+class DummyTwoDController(TwoDController, Referable):
     "This class is the Tango Sardana OneDController controller for tests"
 
     gender = "Simulation"
@@ -197,6 +197,17 @@ class DummyTwoDController(TwoDController):
     def ReadOne(self, axis):
         self._log.debug("ReadOne(%s)", axis)
         return self.read_channels[axis].value
+
+    def RefOne(self, axis):
+        self._log.debug("RefOne(%s)", axis)
+        import h5py
+        file_name = "/tmp/data.h5"
+        h5f = h5py.File(file_name, "w")
+        img = self.read_channels[axis].value
+        dset_name = "dataset_1"
+        h5f.create_dataset(dset_name, data=img)
+        ref = "file:" + file_name + "/" + dset_name
+        return ref
 
     def PreStartAll(self):
         self.counting_channels = {}
