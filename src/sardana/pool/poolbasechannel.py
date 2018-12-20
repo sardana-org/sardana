@@ -64,10 +64,45 @@ class Value(SardanaAttribute):
             self.set_value(value, propagate=propagate)
 
 
+class ValueRefBuffer(SardanaBuffer):
+    """Buffer for value refs.
+
+    .. note::
+        The ValueRefBuffer class has been included in Sardana on a provisional
+        basis. Backwards incompatible changes (up to and including removal
+        of the class) may occur if deemed necessary by the core developers.
+    """
+    pass
+
+
+class ValueRef(SardanaAttribute):
+    """Value ref attribute.
+
+    .. note::
+        The ValueRef class has been included in Sardana on a provisional
+        basis. Backwards incompatible changes (up to and including removal
+        of the class) may occur if deemed necessary by the core developers.
+    """
+    def __init__(self, *args, **kwargs):
+        super(ValueRef, self).__init__(*args, **kwargs)
+
+    def update(self, cache=True, propagate=1):
+        if not cache or not self.has_value():
+            value = self.obj.read_value_ref()
+            self.set_value_ref(value, propagate=propagate)
+
+
 class PoolBaseChannel(PoolElement):
+    """Base class for Pool experimental channel
+
+    .. todo:: Value ref API should be exposed only on the channels which
+        belongs to *referable* controllers.
+    """
 
     ValueAttributeClass = Value
     ValueBufferClass = ValueBuffer
+    ValueRefAttributeClass = ValueRef
+    ValueRefBufferClass = ValueRefBuffer
     AcquisitionClass = PoolCTAcquisition
 
     def __init__(self, **kwargs):
@@ -75,8 +110,12 @@ class PoolBaseChannel(PoolElement):
         self._value = self.ValueAttributeClass(self, listeners=self.on_change)
         self._value_buffer = self.ValueBufferClass(self,
                                                    listeners=self.on_change)
+        self._value_ref = self.ValueRefAttributeClass(
+            self, listeners=self.on_change)
+        self._value_ref_buffer = self.ValueRefBufferClass(
+            self, listeners=self.on_change)
         self._pseudo_elements = []
-        if not self.AcquisitionClass is None:
+        if self.AcquisitionClass is not None:
             acq_name = "%s.Acquisition" % self._name
             self.set_action_cache(self.AcquisitionClass(self, name=acq_name))
 
@@ -134,8 +173,34 @@ class PoolBaseChannel(PoolElement):
         """Returns the value attribute object for this experiment channel
 
         :return: the value attribute
-        :rtype: :class:`~sardana.sardanaattribute.SardanaAttribute`"""
+        :rtype: :class:`~sardana.sardanaattribute.SardanaBuffer`"""
         return self._value_buffer
+
+    def get_value_ref_attribute(self):
+        """Returns the value attribute object for this experiment channel
+
+        .. note::
+            The get_value_ref_attribute method has been included in Sardana on
+            a provisional basis. Backwards incompatible changes (up to and
+            including removal of the class) may occur if deemed necessary by
+            the core developers.
+
+        :return: the value attribute
+        :rtype: :class:`~sardana.sardanaattribute.SardanaAttribute`"""
+        return self._value_ref
+
+    def get_value_ref_buffer(self):
+        """Returns the value attribute object for this experiment channel
+
+        .. note::
+            The get_value_ref_buffer method has been included in Sardana on
+            a provisional basis. Backwards incompatible changes (up to and
+            including removal of the class) may occur if deemed necessary by
+            the core developers.
+
+        :return: the value attribute
+        :rtype: :class:`~sardana.sardanaattribute.SardanaBuffer`"""
+        return self._value_ref_buffer
 
     # --------------------------------------------------------------------------
     # Event forwarding
@@ -228,6 +293,10 @@ class PoolBaseChannel(PoolElement):
 
     value = property(get_value, set_value, doc="channel value")
 
+    # ------------------------------------------------------------------------
+    # value buffer
+    # ------------------------------------------------------------------------
+
     def extend_value_buffer(self, values, idx=None, propagate=1):
         """Extend value buffer with new values assigning them consecutive
         indexes starting with idx. If idx is omitted, then the new values will
@@ -276,6 +345,140 @@ class PoolBaseChannel(PoolElement):
 
     def clear_value_buffer(self):
         val_attr = self._value_buffer
+        val_attr.clear()
+
+    # ------------------------------------------------------------------------
+    # value ref
+    # ------------------------------------------------------------------------
+
+    def read_value_ref(self):
+        """Reads the channel value ref from hardware.
+
+        .. note::
+            The read_value_ref method has been included in Sardana on
+            a provisional basis. Backwards incompatible changes (up to and
+            including removal of the class) may occur if deemed necessary by
+            the core developers.
+
+        :return:
+            a *sardana value* containing the channel value
+        :rtype:
+            :class:`~sardana.sardanavalue.SardanaValue`"""
+        return self.acquisition.read_value_ref()[self]
+
+    def put_value_ref(self, value_ref, propagate=1):
+        """Sets a value ref.
+
+        .. note::
+            The put_value_ref method has been included in Sardana on
+            a provisional basis. Backwards incompatible changes (up to and
+            including removal of the class) may occur if deemed necessary by
+            the core developers.
+
+        :param value_ref:
+            the new value
+        :type value_ref:
+            :class:`~sardana.sardanavalue.SardanaValue`
+        :param propagate:
+            0 for not propagating, 1 to propagate, 2 propagate with priority
+        :type propagate:
+            int
+        """
+        val_ref_attr = self._value_ref
+        val_ref_attr.set_value_ref(value_ref, propagate=propagate)
+        return val_ref_attr
+
+    def get_value_ref(self, cache=True, propagate=1):
+        """Returns the channel value ref.
+
+        .. note::
+            The get_value_ref method has been included in Sardana on
+            a provisional basis. Backwards incompatible changes (up to and
+            including removal of the class) may occur if deemed necessary by
+            the core developers.
+
+        :param cache:
+            if ``True`` (default) return value ref in cache, otherwise read
+            value from hardware
+        :type cache:
+            bool
+        :param propagate:
+            0 for not propagating, 1 to propagate, 2 propagate with priority
+        :type propagate:
+            int
+        :return:
+            the channel value
+        :rtype:
+            :class:`~sardana.sardanaattribute.SardanaAttribute`"""
+        return self._get_value_ref(cache=cache, propagate=propagate)
+
+    def _get_value_ref(self, cache=True, propagate=1):
+        value_ref = self.get_value_ref_attribute()
+        value_ref.update(cache=cache, propagate=propagate)
+        return value_ref
+
+    value_ref = property(get_value_ref, doc="channel value ref")
+
+    # ------------------------------------------------------------------------
+    # value ref buffer
+    # ------------------------------------------------------------------------
+
+    def extend_value_ref_buffer(self, value_refs, idx=None, propagate=1):
+        """Extend value ref buffer with new values assigning them consecutive
+        indexes starting with idx. If idx is omitted, then the new values will
+        be added right after the last value ref in the buffer. Also update the
+        read value ref of the attribute with the last element of values.
+
+        :param value_refs:
+            values to be added to the buffer
+        :type value_refs:
+            :class:`~sardana.sardanavalue.SardanaValue`
+        :param idx:
+            index at which to append the value_refs
+        :type idx: :obj:`int`
+        :param propagate:
+            0 for not propagating, 1 to propagate, 2 propagate with priority
+        :type propagate: int
+        """
+        if len(value_refs) == 0:
+            return
+        # fill value ref buffer
+        val_buffer = self._value_ref_buffer
+        val_buffer.extend(value_refs, idx)
+        # update value ref attribute
+        val_attr = self._value_ref
+        val_attr.set_value_ref(value_refs[-1], propagate=propagate)
+        return val_buffer
+
+    def append_value_ref_buffer(self, value_ref, idx=None, propagate=1):
+        """Append new value ref to the value ref buffer at the idx position.
+
+        If idx is omitted, then the new value ref will be added right
+        after the last value ref in the buffer.
+        Also update the read value ref.
+
+        :param value_ref:
+            value ref to be added to the buffer
+        :type value_ref:
+            :class:`~sardana.sardanavalue.SardanaValue`
+        param idx:
+            index at which to append the value_ref
+        :type idx: :obj:`int`
+        :param propagate:
+            0 for not propagating, 1 to propagate, 2 propagate with priority
+        :type propagate: int
+        """
+        # fill value ref buffer
+        val_buffer = self._value_ref_buffer
+        val_buffer.append(value_ref, idx)
+        # update value ref attribute
+        val_attr = self._value_ref
+        val_attr.set_value(value_ref, propagate=propagate)
+        return val_buffer
+
+    def clear_value_ref_buffer(self):
+        """Clear value ref buffer."""
+        val_attr = self._value_ref_buffer
         val_attr.clear()
 
     def start_acquisition(self, value=None):
