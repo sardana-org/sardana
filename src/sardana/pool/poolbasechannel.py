@@ -312,3 +312,37 @@ class PoolBaseChannel(PoolElement):
         self._stopped = False
         if not self._simulation_mode:
             acq = self.acquisition.run(integ_time=self._integration_time)
+
+class PoolTimerableChannel(PoolBaseChannel):
+
+    def __init__(self, **kwargs):
+        PoolBaseChannel.__init__(self, **kwargs)
+
+    # -------------------------------------------------------------------------
+    # timer
+    # -------------------------------------------------------------------------
+
+    def get_timer(self, cache=True, propagate=1):
+        """Returns the timer for this object.
+
+        :param cache: not used [default: True]
+        :type cache: bool
+        :param propagate: [default: 1]
+        :type propagate: int
+        :return: the current timer
+        :rtype: bool"""
+        return self._timer
+
+    def set_timer(self, timer, propagate=1):
+        if timer == self._timer:
+            # timer is not changed. Do nothing
+            return
+        self._timer = timer
+        if not propagate:
+            return
+        self.fire_event(EventType("timer", priority=propagate),
+                        timer)
+
+
+    timer = property(get_timer, set_timer,
+                               doc="timer for the timerable channel")

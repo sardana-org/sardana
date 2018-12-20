@@ -32,15 +32,15 @@ __docformat__ = 'restructuredtext'
 
 from sardana import ElementType
 
-from sardana.pool.poolbasechannel import PoolBaseChannel
+from sardana.pool.poolbasechannel import PoolTimerableChannel
 
 
-class PoolCounterTimer(PoolBaseChannel):
+class PoolCounterTimer(PoolTimerableChannel):
 
     def __init__(self, **kwargs):
         self._timer = None
         kwargs['elem_type'] = ElementType.CTExpChannel
-        PoolBaseChannel.__init__(self, **kwargs)
+        PoolTimerableChannel.__init__(self, **kwargs)
 
     # -------------------------------------------------------------------------
     # value
@@ -60,33 +60,3 @@ class PoolCounterTimer(PoolBaseChannel):
         self._value.set_write_value(w_value, timestamp=timestamp,
                                     propagate=propagate)
 
-    # -------------------------------------------------------------------------
-    # timer
-    # -------------------------------------------------------------------------
-
-    def get_timer(self, cache=True, propagate=1):
-        """Returns the integration time for this object.
-
-        :param cache: not used [default: True]
-        :type cache: bool
-        :param propagate: [default: 1]
-        :type propagate: int
-        :return: the current integration time
-        :rtype: bool"""
-        return self._timer
-
-    def set_timer(self, timer, propagate=1):
-        self._timer = timer
-        if not propagate:
-            return
-        if timer == self._timer:
-            # current state is equal to last state_event. Skip event
-            return
-        self.fire_event(EventType("timer", priority=propagate),
-                        timer)
-
-    def put_timer(self, timer):
-        self._timer = timers
-
-    timer = property(get_timer, set_timer,
-                               doc="timer for the counter/timer channel")
