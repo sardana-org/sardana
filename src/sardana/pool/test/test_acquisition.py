@@ -42,6 +42,8 @@ from sardana.pool.test import createControllerConfiguration, \
 
 class AcquisitionTestCase(BasePoolTestCase):
 
+    CHANNEL_NAME = None
+
     def setUp(self):
         """Create dummy controllers and elements."""
         BasePoolTestCase.setUp(self)
@@ -49,11 +51,11 @@ class AcquisitionTestCase(BasePoolTestCase):
         self.synchronization = None
         self.data_listener = AttributeListener()
         self.main_element = FakeElement(self.pool)
-        self.tg_1_1 = self.tgs['_test_tg_1_1']
-        self.tg_ctrl_1 = self.tg_1_1.get_controller()
-        self.ct_1_1 = self.cts['_test_ct_1_1']
-        self.ct_ctrl_1 = self.ct_1_1.get_controller()
-        self.channel_names = ['_test_ct_1_1']
+        self.tg = self.tgs['_test_tg_1_1']
+        self.tg_ctrl = self.tg.get_controller()
+        self.channel = self.channels[self.CHANNEL_NAME]
+        self.channel_ctrl = self.channel.get_controller()
+        self.channel_names = [self.CHANNEL_NAME]
 
     def create_action(self, class_, elements):
         action = class_(self.main_element)
@@ -131,6 +133,8 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
     elements to corresponding sub-actions) and the PoolMeasurementGroup (it
     configures the elements and controllers).
     """
+
+    CHANNEL_NAME = "_test_ct_1_1"
 
     def setUp(self):
         """Create a Controller, TriggerGate and PoolSynchronization objects from
@@ -235,6 +239,8 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
 class AcquisitionSoftwareTestCase(AcquisitionTestCase, TestCase):
     """Integration test of PoolSynchronization and PoolAcquisitionSoftware"""
 
+    CHANNEL_NAME = "_test_ct_1_1"
+
     def setUp(self):
         """Create test actors (controllers and elements)"""
         TestCase.setUp(self)
@@ -250,34 +256,34 @@ class AcquisitionSoftwareTestCase(AcquisitionTestCase, TestCase):
                 return
             else:
                 self.acq_busy.set()
-                args = list(self.acq_args)
-                kwargs = self.acq_kwargs
+                acq_args = list(self.acq_args)
+                acq_kwargs = self.acq_kwargs
                 index = value
-                args[3] = index
+                acq_args[3] = index
                 get_thread_pool().add(self.acquisition.run,
                                       None,
-                                      *args,
-                                      **kwargs)
+                                      *acq_args,
+                                      **acq_kwargs)
 
     def acquire(self, integ_time, repetitions, latency_time):
         """Acquire with a dummy C/T synchronized by a hardware start
         trigger from a dummy T/G."""
-        self.ct_ctrl_1.set_ctrl_par("synchronization",
-                                    AcqSynch.SoftwareTrigger)
+        self.channel_ctrl.set_ctrl_par("synchronization",
+                                       AcqSynch.SoftwareTrigger)
 
-        conf_ct_ctrl_1 = createTimerableControllerConfiguration(self.ct_ctrl_1,
-                                                                [self.ct_1_1])
+        conf_ct_ctrl_1 = createTimerableControllerConfiguration(self.channel_ctrl,
+                                                                [self.channel])
         ctrls = get_timerable_ctrls([conf_ct_ctrl_1], AcqMode.Timer)
         master = ctrls[0].master
         # creating synchronization action
         self.synchronization = self.create_action(PoolSynchronization,
-                                                  [self.tg_1_1])
+                                                  [self.tg])
         self.synchronization.add_listener(self)
         # add_listeners
-        self.add_listeners([self.ct_1_1])
+        self.add_listeners([self.channel])
         # creating acquisition actions
         self.acquisition = self.create_action(PoolAcquisitionSoftware,
-                                              [self.ct_1_1])
+                                              [self.channel])
         # Since we deposit the software acquisition action on the PoolThread's
         # queue we can not rely on the action's state - one may still wait
         # in the queue (its state has not changed to running yet) and we would
@@ -315,6 +321,8 @@ class AcquisitionSoftwareTestCase(AcquisitionTestCase, TestCase):
 class AcquisitionSoftwareStartTestCase(AcquisitionTestCase, TestCase):
     """Integration test of PoolSynchronization and PoolAcquisitionHardware"""
 
+    CHANNEL_NAME = "_test_ct_1_1"
+
     def setUp(self):
         """Create test actors (controllers and elements)"""
         TestCase.setUp(self)
@@ -333,21 +341,21 @@ class AcquisitionSoftwareStartTestCase(AcquisitionTestCase, TestCase):
     def acquire(self, integ_time, repetitions, latency_time):
         """Acquire with a dummy C/T synchronized by a hardware start
         trigger from a dummy T/G."""
-        self.ct_ctrl_1.set_ctrl_par("synchronization", AcqSynch.SoftwareStart)
+        self.channel_ctrl.set_ctrl_par("synchronization", AcqSynch.SoftwareStart)
 
-        conf_ct_ctrl_1 = createTimerableControllerConfiguration(self.ct_ctrl_1,
-                                                                [self.ct_1_1])
+        conf_ct_ctrl_1 = createTimerableControllerConfiguration(self.channel_ctrl,
+                                                                [self.channel])
         ctrls = get_timerable_ctrls([conf_ct_ctrl_1], AcqMode.Timer)
         master = ctrls[0].master
         # creating synchronization action
         self.synchronization = self.create_action(PoolSynchronization,
-                                                  [self.tg_1_1])
+                                                  [self.tg])
         self.synchronization.add_listener(self)
         # add_listeners
-        self.add_listeners([self.ct_1_1])
+        self.add_listeners([self.channel])
         # creating acquisition actions
         self.acquisition = self.create_action(PoolAcquisitionSoftwareStart,
-                                              [self.ct_1_1])
+                                              [self.channel])
 
         self.acq_args = (ctrls, integ_time, master, repetitions, 0)
         self.acq_kwargs = {}
@@ -376,6 +384,8 @@ class AcquisitionSoftwareStartTestCase(AcquisitionTestCase, TestCase):
 class AcquisitionHardwareStartTestCase(AcquisitionTestCase, TestCase):
     """Integration test of PoolSynchronization and PoolAcquisitionHardware"""
 
+    CHANNEL_NAME = "_test_ct_1_1"
+
     def setUp(self):
         """Create test actors (controllers and elements)"""
         TestCase.setUp(self)
@@ -384,20 +394,20 @@ class AcquisitionHardwareStartTestCase(AcquisitionTestCase, TestCase):
     def acquire(self, integ_time, repetitions, latency_time):
         """Acquire with a dummy C/T synchronized by a hardware start
         trigger from a dummy T/G."""
-        self.ct_ctrl_1.set_ctrl_par("synchronization", AcqSynch.HardwareStart)
+        self.channel_ctrl.set_ctrl_par("synchronization", AcqSynch.HardwareStart)
         conf_ct_ctrl_1 = createTimerableControllerConfiguration(
-            self.ct_ctrl_1, [self.ct_1_1])
+            self.channel_ctrl, [self.channel])
         ctrls = get_timerable_ctrls([conf_ct_ctrl_1], AcqMode.Timer)
-        conf_tg_ctrl_1 = createControllerConfiguration(self.tg_ctrl_1,
-                                                       [self.tg_1_1])
+        conf_tg_ctrl_1 = createControllerConfiguration(self.tg_ctrl,
+                                                       [self.tg])
         synch_ctrls = get_acq_ctrls([conf_tg_ctrl_1])
         self.synchronization = self.create_action(PoolSynchronization,
-                                                  [self.tg_1_1])
+                                                  [self.tg])
         # add data listeners
-        self.add_listeners([self.ct_1_1])
+        self.add_listeners([self.channel])
         # creating acquisition actions
         self.acquisition = self.create_action(PoolAcquisitionHardware,
-                                              [self.ct_1_1])
+                                              [self.channel])
         self.acq_args = ([conf_ct_ctrl_1], integ_time, repetitions)
         # prepare synchronization description
         total_interval = integ_time + latency_time
