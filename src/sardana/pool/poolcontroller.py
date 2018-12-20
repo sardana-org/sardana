@@ -671,8 +671,66 @@ class PoolController(PoolBaseController):
                        all active axis in this controller
         :type axes: seq<int> or None
         :return: a map containing the controller value information for each axis
-        :rtype: dict<PoolElement, SardanaValue>"""
+        :rtype: dict<PoolElement, SardanaValue>
+
+        """
         return self.raw_read_axis_values(axes=axes)
+
+    def _read_axis_value_refs(self, element):
+
+        def is_chunk(obj):
+            if is_non_str_seq(obj):
+                return True
+            return False
+
+        try:
+            axis = element.get_axis()
+            ctrl_value = self.ctrl.RefOne(axis)
+            if ctrl_value is None:
+                msg = ('%s.RefOne(%s[%d]) return error: Expected value '
+                       'ref(s), got None instead' % (self.name,
+                                                     element.name, axis))
+                raise ValueError(msg)
+
+            if is_chunk(ctrl_value):
+                value = [translate_ctrl_value(v) for v in ctrl_value]
+            else:
+                value = translate_ctrl_value(ctrl_value)
+        except Exception:
+            value = SardanaValue(exc_info=sys.exc_info())
+        return value
+
+    def raw_read_axis_value_refs(self, axes=None, ctrl_values=None):
+        """**Unsafe method**. Reads the value refs for the given axes. If axes
+        is None, reads the value of all active axes.
+
+        .. note::
+            The raw_read_axis_value_refs method has been included in Sardana
+            on a provisional basis. Backwards incompatible changes (up to
+            and including removal of the class) may occur if deemed
+            necessary by the core developers.
+
+        .. todo::
+            This method should be available only on the controllers which
+            are *referable*.
+
+        :param axes: the list of axis to get the value. Default is None
+            meaning all active axis in this controller
+        :type axes: seq<int> or None
+        :return: a map containing the controller value information for each
+            axis
+        :rtype: dict<PoolElement, SardanaValue>
+        """
+        if axes is None:
+            axes = self._element_axis.keys()
+        if ctrl_values is None:
+            ctrl_values = {}
+
+        for axis in axes:
+            element = self.get_element(axis=axis)
+            ctrl_values[element] = self._read_axis_value_refs(element)
+
+        return ctrl_values
 
     def stop_axes(self, axes):
         """Stops the given axes.
