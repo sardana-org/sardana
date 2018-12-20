@@ -34,7 +34,7 @@ from sardana.sardanaattribute import SardanaAttribute
 from sardana.sardanabuffer import SardanaBuffer
 from sardana.pool.poolelement import PoolElement
 from sardana.pool.poolacquisition import PoolAcquisitionSoftware
-
+from sardana.sardanaevent import EventType
 
 class ValueBuffer(SardanaBuffer):
 
@@ -245,17 +245,14 @@ class PoolBaseChannel(PoolElement):
         return self._integration_time
 
     def set_integration_time(self, integration_time, propagate=1):
+        if integration_time == self._integration_time:
+            # integration time is not changed. Do nothing
+            return
         self._integration_time = integration_time
         if not propagate:
             return
-        if integration_time == self._integration_time:
-            # current state is equal to last state_event. Skip event
-            return
         self.fire_event(EventType("integration_time", priority=propagate),
                         integration_time)
-
-    def put_integration_time(self, integration_time):
-        self._integration_time = integration_time
 
     integration_time = property(get_integration_time, set_integration_time,
                                doc="channel integration time")
@@ -310,13 +307,8 @@ class PoolBaseChannel(PoolElement):
         val_attr = self._value_buffer
         val_attr.clear()
 
-    def start_acquisition(self, value=None):
+    def start_acquisition(self):
         self._aborted = False
         self._stopped = False
-        if value is None:
-            value = self.get_write_value()
-        if value is None:
-            raise Exception(
-                "Invalid integration_time '%s'. Hint set a new value for 'value' first" % value)
         if not self._simulation_mode:
-            acq = self.acquisition.run(integ_time=value)
+            acq = self.acquisition.run(integ_time=self._integration_time)
