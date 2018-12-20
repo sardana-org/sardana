@@ -598,16 +598,16 @@ class PoolController(PoolBaseController):
 
     def _read_axis_value(self, element):
 
-        def is_chunk(type_, value):
-            if type_ == ElementType.CTExpChannel and is_non_str_seq(value):
+        def is_chunk(type_, obj):
+            if type_ == ElementType.CTExpChannel and is_non_str_seq(obj):
                 return True
-            elif (type_ == ElementType.OneDExpChannel and
-                  is_non_str_seq(value)):
+            elif (type_ == ElementType.OneDExpChannel
+                  and is_non_str_seq(obj)):
                 # empty list is also considered as chunk
-                if (len(value) == 0 or not is_number(value[0])):
+                if len(obj) == 0 or not is_number(obj[0]):
                     return True
-            elif (type_ == ElementType.TwoDExpChannel and len(value) > 0
-                  and not is_number(value[0][0])):
+            elif (type_ == ElementType.TwoDExpChannel and len(obj) > 0
+                  and not is_number(obj[0][0])):
                 return True
             return False
 
