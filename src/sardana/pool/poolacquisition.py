@@ -641,6 +641,7 @@ class PoolAcquisitionBase(PoolAction):
         self._nb_states_per_value = None
         self._acq_sleep_time = None
         self._pool_ctrl_dict_loop = None
+        self._pool_ctrl_dict_ref = None
 
         # TODO: for the moment we can not clear value buffers at the end of
         # the acquisition. This is because of the pseudo counters that are
@@ -651,6 +652,62 @@ class PoolAcquisitionBase(PoolAction):
         # Whenever there will be solution for that, after refactoring of the
         # acquisition actions, uncomment this line
         # self.add_finish_hook(self.clear_value_buffers, True)
+
+    def get_read_value_ref_ctrls(self):
+        return self._pool_ctrl_dict_ref
+
+    def raw_read_value_ref(self, ret=None, serial=False):
+        """**Unsafe**. Reads value ref information of all referable elements
+        involved in this acquisition
+
+        :param ret: output map parameter that should be filled with value
+                    information. If None is given (default), a new map is
+                    created an returned
+        :type ret: dict
+        :param serial: If False (default) perform controller HW value requests
+                       in parallel. If True, access is serialized.
+        :type serial: bool
+        :return: a map containing value information per element
+        :rtype: dict<:class:~`sardana.pool.poolelement.PoolElement,
+                :class:`sardana.sardanavalue.SardanaValue`>
+        """
+        if ret is None:
+            ret = {}
+
+        read = self._raw_read_value_ref_concurrent
+        if serial:
+            read = self._raw_read_value_ref_serial
+
+        value_info = self._value_info
+
+        with value_info:
+            value_info.init(len(self.get_read_value_ref_ctrls()))
+            read(ret)
+            value_info.wait()
+        return ret
+
+    def _raw_read_value_ref_serial(self, ret):
+        """Internal method. Read value ref in a serial mode"""
+        for pool_ctrl in self.get_read_value_ref_ctrls():
+            self._raw_read_ctrl_value_ref(ret, pool_ctrl)
+        return ret
+
+    def _raw_read_value_ref_concurrent(self, ret):
+        """Internal method. Read value ref in a concurrent mode"""
+        th_pool = get_thread_pool()
+        for pool_ctrl in self.get_read_value_ref_ctrls():
+            th_pool.add(self._raw_read_ctrl_value_ref, None, ret, pool_ctrl)
+        return ret
+
+    def _raw_read_ctrl_value_ref(self, ret, pool_ctrl):
+        """Internal method. Read controller value ref information and store
+        it in ret parameter"""
+        try:
+            axes = [elem.axis for elem in self._pool_ctrl_dict_ref[pool_ctrl]]
+            value_infos = pool_ctrl.raw_read_axis_value_refs(axes)
+            ret.update(value_infos)
+        finally:
+            self._value_info.finish_one()
 
     def in_acquisition(self, states):
         """Determines if we are in acquisition or if the acquisition has ended
@@ -714,7 +771,7 @@ class PoolAcquisitionBase(PoolAction):
             ctrls.remove(master.controller)
             ctrls.append(master.controller)
 
-        # controllers that will be read at during the action
+        # controllers that will be read during the action
         self._set_pool_ctrl_dict_loop(ctrls)
 
         # channels that are acquired (only enabled)
@@ -834,6 +891,18 @@ class PoolAcquisitionBase(PoolAction):
                 pool_channels.append(channel.element)
             ctrl_channels[pool_ctrl] = pool_channels
         self._pool_ctrl_dict_loop = ctrl_channels
+
+    def _set_pool_ctrl_dict_ref(self, ctrls):
+        ctrl_channels = {}
+        for ctrl in ctrls:
+            if not ctrl.is_referable():
+                continue
+            pool_channels = []
+            pool_ctrl = ctrl.element
+            for channel in ctrl.get_channels(enabled=True):
+                pool_channels.append(channel.element)
+            ctrl_channels[pool_ctrl] = pool_channels
+        self._pool_ctrl_dict_ref = ctrl_channels
 
     def clear_value_buffers(self):
         for channel in self._channels:
