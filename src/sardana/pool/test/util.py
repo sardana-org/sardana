@@ -31,8 +31,10 @@ import threading
 
 class AttributeListener(object):
 
-    def __init__(self):
+    def __init__(self, dtype="float64", attr_name="valuebuffer"):
         self.data = {}
+        self.dtype = dtype
+        self.attr_name = attr_name
         self.data_lock = threading.RLock()
 
     def event_received(self, *args, **kwargs):
@@ -41,7 +43,7 @@ class AttributeListener(object):
         # v - type: sardana.sardanaattribute.SardanaAttribute e.g.
         #           sardana.pool.poolbasechannel.Value
         s, t, v = args
-        if t.name.lower() != "valuebuffer":
+        if t.name.lower() != self.attr_name:
             return
         # obtaining sardana element e.g. exp. channel (the attribute owner)
         obj_name = s.name
@@ -70,6 +72,6 @@ class AttributeListener(object):
                 v = self.data[k]
                 v.extend([None] * (max_len - len(v)))
                 table.append(v)
-                dtype_spec.append((k, 'float64'))
+                dtype_spec.append((k, self.dtype))
             a = numpy.array(zip(*table), dtype=dtype_spec)
             return a
