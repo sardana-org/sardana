@@ -905,3 +905,41 @@ class PoolExpChannelDeviceClass(PoolElementDeviceClass):
         'Data': [[DevString, SCALAR, READ]],  # TODO: think about DevEncoded
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
+
+class PoolTimerableDevice(PoolExpChannelDevice):
+
+    def __init__(self, dclass, name):
+        """Constructor"""
+        PoolExpChannelDevice.__init__(self, dclass, name)
+
+
+    def read_Timer(self, attr):
+        """Reads the timer for this channel.
+
+        :param attr: tango attribute
+        :type attr: :class:`~PyTango.Attribute`"""
+        attr.set_value(self.element.timer)
+
+    def write_Timer(self, attr):
+        """Sets the timer for this channel.
+
+        :param attr: tango attribute
+        :type attr: :class:`~PyTango.Attribute`"""
+        self.element.timer = attr.get_write_value()
+
+class PoolTimerableDeviceClass(PoolExpChannelDeviceClass):
+
+    #:
+    #: Sardana device attribute definition
+    #:
+    #: .. seealso:: :ref:`server`
+    #:
+    
+    #    Attribute definitions
+    attr_list = {
+        'Timer': [[DevString, SCALAR, READ_WRITE]]
+    }
+    attr_list.update(PoolExpChannelDeviceClass.attr_list)
+    
+    standard_attr_list = {}
+    standard_attr_list.update(PoolExpChannelDeviceClass.standard_attr_list)

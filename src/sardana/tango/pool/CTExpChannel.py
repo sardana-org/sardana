@@ -41,18 +41,18 @@ from sardana import State, SardanaServer
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.tango.core.util import to_tango_type_format, exception_str
 
-from sardana.tango.pool.PoolDevice import PoolExpChannelDevice, \
-    PoolExpChannelDeviceClass
+from sardana.tango.pool.PoolDevice import PoolTimerableDevice, \
+    PoolTimerableDeviceClass
 
 
-class CTExpChannel(PoolExpChannelDevice):
+class CTExpChannel(PoolTimerableDevice):
 
     def __init__(self, dclass, name):
-        PoolExpChannelDevice.__init__(self, dclass, name)
+        PoolTimerableDevice.__init__(self, dclass, name)
         self._first_read_cache = False
 
     def init(self, name):
-        PoolExpChannelDevice.init(self, name)
+        PoolTimerableDevice.init(self, name)
 
     def get_ct(self):
         return self.element
@@ -64,14 +64,14 @@ class CTExpChannel(PoolExpChannelDevice):
 
     @DebugIt()
     def delete_device(self):
-        PoolExpChannelDevice.delete_device(self)
+        PoolTimerableDevice.delete_device(self)
         ct = self.ct
         if ct is not None:
             ct.remove_listener(self.on_ct_changed)
 
     @DebugIt()
     def init_device(self):
-        PoolExpChannelDevice.init_device(self)
+        PoolTimerableDevice.init_device(self)
 
         ct = self.ct
         if ct is None:
@@ -159,7 +159,7 @@ class CTExpChannel(PoolExpChannelDevice):
         cache_built = hasattr(self, "_dynamic_attributes_cache")
 
         std_attrs, dyn_attrs = \
-            PoolExpChannelDevice.get_dynamic_attributes(self)
+            PoolTimerableDevice.get_dynamic_attributes(self)
 
         if not cache_built:
             # For value attribute, listen to what the controller says for data
@@ -172,7 +172,7 @@ class CTExpChannel(PoolExpChannelDevice):
         return std_attrs, dyn_attrs
 
     def initialize_dynamic_attributes(self):
-        attrs = PoolExpChannelDevice.initialize_dynamic_attributes(self)
+        attrs = PoolTimerableDevice.initialize_dynamic_attributes(self)
 
         detect_evts = "value",
         non_detect_evts = "data",
@@ -214,55 +214,39 @@ class CTExpChannel(PoolExpChannelDevice):
         if self.get_state() in [DevState.FAULT, DevState.UNKNOWN]:
             return False
         return True
-
-    def read_Timer(self, attr):
-        """Reads the timer for this channel.
-
-        :param attr: tango attribute
-        :type attr: :class:`~PyTango.Attribute`"""
-        attr.set_value(self.element.timer)
-
-    def write_Timer(self, attr):
-        """Sets the timer for this channel.
-
-        :param attr: tango attribute
-        :type attr: :class:`~PyTango.Attribute`"""
-        self.element.timer = attr.get_write_value()
         
     def Start(self):
         self.ct.start_acquisition()
 
 
-class CTExpChannelClass(PoolExpChannelDeviceClass):
+class CTExpChannelClass(PoolTimerableDeviceClass):
 
     #    Class Properties
     class_property_list = {}
 
     #    Device Properties
     device_property_list = {}
-    device_property_list.update(PoolExpChannelDeviceClass.device_property_list)
+    device_property_list.update(PoolTimerableDeviceClass.device_property_list)
 
     #    Command definitions
     cmd_list = {
         'Start':   [[DevVoid, ""], [DevVoid, ""]],
     }
-    cmd_list.update(PoolExpChannelDeviceClass.cmd_list)
+    cmd_list.update(PoolTimerableDeviceClass.cmd_list)
 
     #    Attribute definitions
-    attr_list = {
-        'Timer': [[DevString, SCALAR, READ_WRITE]]
-    }
-    attr_list.update(PoolExpChannelDeviceClass.attr_list)
+    attr_list = {}
+    attr_list.update(PoolTimerableDeviceClass.attr_list)
     
     standard_attr_list = {
         'Value': [[DevDouble, SCALAR, READ],
                   {'abs_change': '1.0', }]
     }
     
-    standard_attr_list.update(PoolExpChannelDeviceClass.standard_attr_list)
+    standard_attr_list.update(PoolTimerableDeviceClass.standard_attr_list)
 
     def _get_class_properties(self):
-        ret = PoolExpChannelDeviceClass._get_class_properties(self)
+        ret = PoolTimerableDeviceClass._get_class_properties(self)
         ret['Description'] = "Counter/Timer device class"
-        ret['InheritedFrom'].insert(0, 'PoolExpChannelDevice')
+        ret['InheritedFrom'].insert(0, 'PoolTimerableDevice')
         return ret
