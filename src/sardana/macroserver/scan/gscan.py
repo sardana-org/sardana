@@ -2201,6 +2201,9 @@ class CTScan(CScan, CAcquisition):
 
         # add listener of data events
         measurement_group.subscribeValueBuffer(self.value_buffer_changed)
+        # add listener of value ref events
+        measurement_group.subscribeValueRefBuffer(
+            self.value_ref_buffer_changed)
         # initializing mntgrp subscription control variables
         self.__mntGrpSubscribed = True
 
@@ -2503,6 +2506,8 @@ class CTScan(CScan, CAcquisition):
             try:
                 self.measurement_group.unsubscribeValueBuffer(
                     self.value_buffer_changed)
+                self.measurement_group.unsubscribeValueRefBuffer(
+                    self.value_ref_buffer_changed)
                 self.__mntGrpSubscribed = False
             except Exception:
                 msg = "Exception occurred trying to remove data listeners"
