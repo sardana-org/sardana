@@ -673,6 +673,7 @@ class ExpChannel(PoolElement):
         """ExpChannel initialization."""
         self.call__init__(PoolElement, name, **kw)
         self._value_buffer = {}
+        self._value_ref_buffer = {}
 
     def getValueObj_(self):
         """Retrurns Value attribute event generator object.
@@ -703,6 +704,33 @@ class ExpChannel(PoolElement):
         values = value_buffer["data"]
         for index, value in zip(indexes, values):
             self._value_buffer[index] = value
+
+    def getValueRefObj(self):
+        """Return ValueRef attribute event generator object.
+
+        :return: ValueRef attribute event generator
+        :rtype: TangoAttributeEG
+        """
+        return self._getAttrEG('value')
+
+    def getValueRef(self, force=False):
+        return self._getAttrValue('valueref', force=force)
+
+    def getValueRefBufferObj(self):
+        return self._getAttrEG('valuerefbuffer')
+
+    def getValueRefBuffer(self):
+        return self._value_ref_buffer
+
+    def valueBufferRefChanged(self, value_ref_buffer):
+        if value_ref_buffer is None:
+            return
+        _, value_ref_buffer = self._codec.decode(('json', value_ref_buffer),
+                                                 ensure_ascii=True)
+        indexes = value_ref_buffer["index"]
+        value_refs = value_ref_buffer["value_ref"]
+        for index, value_ref in zip(indexes, value_refs):
+            self._value_ref_buffer[index] = value_ref
 
 
 class CTExpChannel(ExpChannel):
