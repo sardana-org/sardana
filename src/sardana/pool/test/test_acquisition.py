@@ -440,7 +440,7 @@ class AcquisitionHardwareStartTestCase(AcquisitionTestCase, TestCase):
 
 
 @insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
-            latency_time=0.02)
+            latency_time=0.1)
 class AcquisitionSoftwareRefTestCase(BaseAcquisitionSoftwareTestCase,
                                      TestCase):
 
