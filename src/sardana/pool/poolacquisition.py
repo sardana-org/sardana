@@ -656,6 +656,23 @@ class PoolAcquisitionBase(PoolAction):
     def get_read_value_ref_ctrls(self):
         return self._pool_ctrl_dict_ref
 
+    def read_value_ref(self, ret=None, serial=False):
+        """Reads value ref information of all elements involved in this action
+
+        :param ret: output map parameter that should be filled with value
+                    information. If None is given (default), a new map is
+                    created an returned
+        :type ret: dict
+        :param serial: If False (default) perform controller HW value requests
+                       in parallel. If True, access is serialized.
+        :type serial: bool
+        :return: a map containing value information per element
+        :rtype: dict<:class:~`sardana.pool.poolelement.PoolElement`,
+                     (value object, Exception or None)>"""
+        with ActionContext(self):
+            return self.raw_read_value_ref(ret=ret, serial=serial)
+
+
     def raw_read_value_ref(self, ret=None, serial=False):
         """**Unsafe**. Reads value ref information of all referable elements
         involved in this acquisition
