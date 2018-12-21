@@ -1559,6 +1559,7 @@ class MeasurementGroup(PoolElement):
         self.__cfg_attr.addListener(self.on_configuration_changed)
 
         self._value_buffer_cb = None
+        self._value_ref_buffer_cb = None
         self._codec = CodecFactory().getCodec("json")
 
     def _create_str_tuple(self):
@@ -1790,6 +1791,68 @@ class MeasurementGroup(PoolElement):
             else:
                 value_buffer_obj.unsubscribeEvent(channel.valueBufferChanged)
 
+    def valueRefBufferChanged(self, channel, value_ref_buffer):
+        """Receive value ref buffer updates, pre-process them, and call
+        the subscribed callback.
+
+        :param channel: channel that reports value ref buffer update
+        :type channel: ExpChannel
+        :param value_ref_buffer: json encoded value ref buffer update,
+            it contains at least value refs and indexes
+        :type value_ref_buffer: :obj:`str`
+        """
+        if value_ref_buffer is None:
+            return
+        _, value_ref_buffer = self._codec.decode(('json', value_ref_buffer),
+                                                 ensure_ascii=True)
+        self._value_ref_buffer_cb(channel, value_ref_buffer)
+
+    def subscribeValueRefBuffer(self, cb=None):
+        """Subscribe to channels' value ref buffer update events. If no
+        callback is passed, the default channel's callback is subscribed which
+        will store the data in the channel's value_buffer attribute.
+
+        :param cb: callback to be subscribed, None means subscribe the default
+            channel's callback
+        :type cb: callable
+        """
+        for channel_info in self.getChannels():
+            full_name = channel_info["full_name"]
+            channel = Device(full_name)
+            if not channel.is_referable():
+                continue
+            value_ref_buffer_obj = channel.getValueRefBufferObj()
+            if cb is not None:
+                self._value_ref_buffer_cb = cb
+                value_ref_buffer_obj.subscribeEvent(
+                    self.valueRefBufferChanged, channel, False)
+            else:
+                value_ref_buffer_obj.subscribeEvent(
+                    channel.valueRefBufferChanged, with_first_event=False)
+
+    def unsubscribeValueRefBuffer(self, cb=None):
+        """Unsubscribe from channels' value ref buffer events. If no
+        callback is passed, unsubscribe the channel's default callback.
+
+        :param cb: callback to be unsubscribed, None means unsubscribe the
+            default channel's callback
+        :type cb: callable
+        """
+        for channel_info in self.getChannels():
+            full_name = channel_info["full_name"]
+            channel = Device(full_name)
+            if not channel.is_referable():
+                continue
+            value_ref_buffer_obj = channel.getValueRefBufferObj()
+            if cb is not None:
+                value_ref_buffer_obj.unsubscribeEvent(
+                    self.valueRefBufferChanged, channel)
+                self._value_ref_buffer_cb = None
+            else:
+                value_ref_buffer_obj.unsubscribeEvent(
+                    channel.valueRefBufferChanged)
+
+                
     def enableChannels(self, channels):
         '''Enable acquisition of the indicated channels.
 
