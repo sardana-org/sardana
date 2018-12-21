@@ -675,6 +675,11 @@ class ExpChannel(PoolElement):
         self._value_buffer = {}
         self._value_ref_buffer = {}
 
+    def is_referable(self):
+        if "valueref" in map(str.lower, self.get_attribute_list()):
+            return True
+        return False
+
     def getValueObj_(self):
         """Retrurns Value attribute event generator object.
 
