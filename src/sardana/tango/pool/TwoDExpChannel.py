@@ -50,6 +50,8 @@ class TwoDExpChannel(PoolExpChannelDevice):
 
     def __init__(self, dclass, name):
         PoolExpChannelDevice.__init__(self, dclass, name)
+        self._first_read_cache = False
+        self._first_read_ref_cache = False
 
     def init(self, name):
         PoolExpChannelDevice.init(self, name)
@@ -120,6 +122,12 @@ class TwoDExpChannel(PoolExpChannelDevice):
             value = self.calculate_tango_state(event_value)
         elif name == "status":
             value = self.calculate_tango_status(event_value)
+        elif name == "valuebuffer":
+            value = self._encode_value_chunk(event_value)
+            self._first_read_cache = True
+        elif name == "valuerefbuffer":
+            value = self._encode_value_ref_chunk(event_value)
+            self._first_read_ref_cache = True
         else:
             if isinstance(event_value, SardanaAttribute):
                 if event_value.error:
@@ -162,6 +170,15 @@ class TwoDExpChannel(PoolExpChannelDevice):
                 data_info[0][4] = shape[1]
         return std_attrs, dyn_attrs
 
+    def initialize_dynamic_attributes(self):
+        attrs = PoolExpChannelDevice.initialize_dynamic_attributes(self)
+
+        non_detect_evts = "valueref", "valuerefbuffer"  # referable channels
+
+        for attr_name in non_detect_evts:
+            if attr_name in attrs:
+                self.set_change_event(attr_name, True, False)
+
     def read_Value(self, attr):
         twod = self.twod
         # TODO: decide if we force the controller developers to store the
@@ -183,6 +200,32 @@ class TwoDExpChannel(PoolExpChannelDevice):
         if self.get_state() in [DevState.FAULT, DevState.UNKNOWN]:
             return False
         return True
+
+    def read_ValueRef(self, attr):
+        twod = self.twod
+        # TODO: decide if we force the controller developers to store the
+        # last acquired value in the controllers or we always will use
+        # cache. This is due to the fact that the clients (MS) read the value
+        # after the acquisition had finished.
+        use_cache = twod.is_in_operation() and not self.Force_HW_Read
+        # For the moment we just check if we recently receive ValueBuffer.
+        # event. In this case, we use cache and clean the flag
+        # so the cached value will be returned only at the first readout
+        # after the acquisition. This is a workaround for the count executed
+        # by the MacroServer e.g. step scans or ct which read the value after
+        # the acquisition.
+        if not use_cache and self._first_read_ref_cache:
+            use_cache = True
+            self._first_read_ref_cache = False
+        value_ref = twod.get_value_ref(cache=use_cache, propagate=0)
+        if value_ref.error:
+            Except.throw_python_exception(*value_ref.exc_info)
+        state = twod.get_state(cache=use_cache, propagate=0)
+        quality = None
+        if state == State.Moving:
+            quality = AttrQuality.ATTR_CHANGING
+        self.set_attribute(attr, value=value_ref.value, quality=quality,
+                           timestamp=value_ref.timestamp, priority=0)
 
     def read_DataSource(self, attr):
         data_source = self.twod.get_data_source()

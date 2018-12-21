@@ -47,7 +47,7 @@ from sardana.sardanautils import is_non_str_seq, is_number
 
 from sardana.pool.poolextension import translate_ctrl_value
 from sardana.pool.poolbaseelement import PoolBaseElement
-from sardana.pool.controller import Referable
+from sardana.pool.controller import Referable, DataAccess, Description, Type
 
 
 class PoolBaseController(PoolBaseElement):
@@ -461,7 +461,18 @@ class PoolController(PoolBaseController):
 
     @check_ctrl
     def get_axis_attributes(self, axis):
-        return self.ctrl.GetAxisAttributes(axis)
+        axis_attrs = self.ctrl.GetAxisAttributes(axis)
+        if self.is_referable():
+            referable_axis_attrs = {
+                "ValueRef": {Type: str,
+                             DataAccess: DataAccess.ReadOnly,
+                             Description: "Value reference", },
+                "ValueRefBuffer": {Type: str,
+                                   DataAccess: DataAccess.ReadOnly,
+                                   Description: "Value reference buffer", }
+                }
+            axis_attrs.update(referable_axis_attrs)
+        return axis_attrs
 
     @check_ctrl
     def get_ctrl_attr(self, name):

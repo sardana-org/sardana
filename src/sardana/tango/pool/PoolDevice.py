@@ -866,12 +866,39 @@ class PoolExpChannelDevice(PoolElementDevice):
         _, encoded_data = self._codec.encode(('', data))
         return encoded_data
 
+    def _encode_value_ref_chunk(self, value_ref_chunk):
+        """Prepare value ref chunk to be passed via communication channel.
+
+        :param value_ref_chunk: value ref chunk
+        :type value_ref_ chunk: seq<SardanaValue>
+
+        :return: json string representing value chunk
+        :rtype: str
+        """
+        index = []
+        value_ref = []
+        for idx, sdn_value in value_ref_chunk.iteritems():
+            index.append(idx)
+            value_ref.append(sdn_value.value)
+        data = dict(index=index, value_ref=value_ref, )
+        _, encoded_data = self._codec.encode(('', data))
+        return encoded_data
+
     def read_Data(self, attr):
         desc = "Data attribute is not foreseen for reading. It is used only "\
                "as the communication channel for the continuous acquisitions."
         Except.throw_exception("UnsupportedFeature",
                                desc,
                                "PoolExpChannelDevice.read_Data",
+                               ErrSeverity.WARN)
+
+    def read_ValueRefBuffer(self, _):
+        desc = ("ValueRefBuffer attribute is not foreseen for reading. "
+                "It is used only as the communication channel for the "
+                "continuous acquisitions.")
+        Except.throw_exception("UnsupportedFeature",
+                               desc,
+                               "PoolExpChannelDevice.read_ValueRefBuffer",
                                ErrSeverity.WARN)
 
 
