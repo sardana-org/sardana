@@ -1940,7 +1940,6 @@ class CAcquisition(object):
         acquisition. Non compatible measurement groups are those with channels
         of the following types:
           - external channels (Tango attributes)
-          - 2D experimental channels
           - pseudo counters that are not based on physical channels
 
         .. todo:: add validation for psuedo counters
@@ -1950,13 +1949,11 @@ class CAcquisition(object):
             full_name = channel_info["full_name"]
             name = channel_info["name"]
             try:
-                channel = taurus.Device(full_name)
+                taurus.Device(full_name)
             except Exception:
                 # external channels are attributes so Device constructor fails
                 non_compatible_channels.append(name)
                 continue
-            if isinstance(channel, TwoDExpChannel):
-                non_compatible_channels.append(name)
         is_compatible = len(non_compatible_channels) == 0
         return is_compatible, non_compatible_channels
 
