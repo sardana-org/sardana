@@ -42,17 +42,17 @@ from sardana.sardanaattribute import SardanaAttribute
 from sardana.pool.controller import TwoDController, MaxDimSize, Type
 from sardana.tango.core.util import to_tango_type_format, exception_str
 
-from sardana.tango.pool.PoolDevice import PoolElementDevice, \
-    PoolElementDeviceClass
+from sardana.tango.pool.PoolDevice import PoolExpChannelDevice, \
+    PoolExpChannelDeviceClass
 
 
-class TwoDExpChannel(PoolElementDevice):
+class TwoDExpChannel(PoolExpChannelDevice):
 
     def __init__(self, dclass, name):
-        PoolElementDevice.__init__(self, dclass, name)
+        PoolExpChannelDevice.__init__(self, dclass, name)
 
     def init(self, name):
-        PoolElementDevice.init(self, name)
+        PoolExpChannelDevice.init(self, name)
 
     def get_twod(self):
         return self.element
@@ -64,14 +64,14 @@ class TwoDExpChannel(PoolElementDevice):
 
     @DebugIt()
     def delete_device(self):
-        PoolElementDevice.delete_device(self)
+        PoolExpChannelDevice.delete_device(self)
         twod = self.twod
         if twod is not None:
             twod.remove_listener(self.on_twod_changed)
 
     @DebugIt()
     def init_device(self):
-        PoolElementDevice.init_device(self)
+        PoolExpChannelDevice.init_device(self)
         twod = self.twod
         if twod is None:
             full_name = self.get_full_name()
@@ -147,7 +147,7 @@ class TwoDExpChannel(PoolElementDevice):
         cache_built = hasattr(self, "_dynamic_attributes_cache")
 
         std_attrs, dyn_attrs = \
-            PoolElementDevice.get_dynamic_attributes(self)
+            PoolExpChannelDevice.get_dynamic_attributes(self)
 
         if not cache_built:
             # For value attribute, listen to what the controller says for data
@@ -204,7 +204,7 @@ _DFT_VALUE_TYPE, _DFT_VALUE_FORMAT = to_tango_type_format(
     _DFT_VALUE_INFO[Type], DataFormat.TwoD)
 
 
-class TwoDExpChannelClass(PoolElementDeviceClass):
+class TwoDExpChannelClass(PoolExpChannelDeviceClass):
 
     #    Class Properties
     class_property_list = {
@@ -213,29 +213,29 @@ class TwoDExpChannelClass(PoolElementDeviceClass):
     #    Device Properties
     device_property_list = {
     }
-    device_property_list.update(PoolElementDeviceClass.device_property_list)
+    device_property_list.update(PoolExpChannelDeviceClass.device_property_list)
 
     #    Command definitions
     cmd_list = {
         'Start':   [[DevVoid, ""], [DevVoid, ""]],
     }
-    cmd_list.update(PoolElementDeviceClass.cmd_list)
+    cmd_list.update(PoolExpChannelDeviceClass.cmd_list)
 
     #    Attribute definitions
     attr_list = {
         'DataSource': [[DevString, SCALAR, READ]],
     }
-    attr_list.update(PoolElementDeviceClass.attr_list)
+    attr_list.update(PoolExpChannelDeviceClass.attr_list)
 
     standard_attr_list = {
         'Value': [[_DFT_VALUE_TYPE, _DFT_VALUE_FORMAT, READ,
                    _DFT_VALUE_MAX_SHAPE[0], _DFT_VALUE_MAX_SHAPE[1]],
                   {'abs_change': '1.0', }],
     }
-    standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
+    standard_attr_list.update(PoolExpChannelDeviceClass.standard_attr_list)
 
     def _get_class_properties(self):
-        ret = PoolElementDeviceClass._get_class_properties(self)
+        ret = PoolExpChannelDeviceClass._get_class_properties(self)
         ret['Description'] = "2D device class"
-        ret['InheritedFrom'].insert(0, 'PoolElementDevice')
+        ret['InheritedFrom'].insert(0, 'PoolExpChannelDevice')
         return ret
