@@ -461,7 +461,7 @@ class PoolBaseChannel(PoolElement):
             value ref to be added to the buffer
         :type value_ref:
             :class:`~sardana.sardanavalue.SardanaValue`
-        param idx:
+        :param idx:
             index at which to append the value_ref
         :type idx: :obj:`int`
         :param propagate:
