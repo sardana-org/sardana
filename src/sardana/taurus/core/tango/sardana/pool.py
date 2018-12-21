@@ -1852,7 +1852,6 @@ class MeasurementGroup(PoolElement):
                 value_ref_buffer_obj.unsubscribeEvent(
                     channel.valueRefBufferChanged)
 
-                
     def enableChannels(self, channels):
         '''Enable acquisition of the indicated channels.
 

@@ -672,7 +672,6 @@ class PoolAcquisitionBase(PoolAction):
         with ActionContext(self):
             return self.raw_read_value_ref(ret=ret, serial=serial)
 
-
     def raw_read_value_ref(self, ret=None, serial=False):
         """**Unsafe**. Reads value ref information of all referable elements
         involved in this acquisition
