@@ -1925,6 +1925,32 @@ class CAcquisition(object):
         self._thread_pool.add(self.data.addData,
                               self._countdown_latch.count_down, info)
 
+    def value_ref_buffer_changed(self, channel, value_ref_buffer):
+        """Delegate processing of value buffer events to a worker thread."""
+        # value_ref_buffer is a dictionary with at least keys:
+        # value_ref, index
+        # and its values are of type sequence
+        # e.g. dict(value_ref=seq<float>, index=seq<int>)
+        if value_ref_buffer is None:
+            return
+
+        full_name = channel.getFullName()
+
+        info = {'label': full_name}
+        idx = np.array(value_ref_buffer['index'])
+        idx += self._index_offset
+        value_ref_buffer['index'] = idx.tolist()
+        info.update(value_ref_buffer)
+        print(info)  # WIP
+        # info is a dictionary with at least keys: label, data,
+        # index and its values are of type string for label and
+        # sequence for data, index
+        # e.g. dict(label=str, data=seq<float>, index=seq<int>)
+        # self._countdown_latch.count_up()
+        # # only one thread is present in the pool so jobs are serialized
+        # self._thread_pool.add(self.data.addData,
+        #                       self._countdown_latch.count_down, info)
+
     def wait_value_buffer(self):
         """Wait until all value buffer events are processed."""
         self._countdown_latch.wait()

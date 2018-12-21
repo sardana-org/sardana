@@ -33,7 +33,7 @@ __docformat__ = 'restructuredtext'
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.sardanabuffer import SardanaBuffer
 from sardana.pool.poolelement import PoolElement
-from sardana.pool.poolacquisition import PoolCTAcquisition
+from sardana.pool.poolacquisition import PoolAcquisitionSoftware
 
 
 class ValueBuffer(SardanaBuffer):
@@ -103,7 +103,7 @@ class PoolBaseChannel(PoolElement):
     ValueBufferClass = ValueBuffer
     ValueRefAttributeClass = ValueRef
     ValueRefBufferClass = ValueRefBuffer
-    AcquisitionClass = PoolCTAcquisition
+    AcquisitionClass = PoolAcquisitionSoftware
 
     def __init__(self, **kwargs):
         PoolElement.__init__(self, **kwargs)
