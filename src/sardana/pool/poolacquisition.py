@@ -288,7 +288,6 @@ class PoolAcquisition(PoolAction):
         self._0d_acq_args = None
         self._hw_acq_args = None
         self._synch_args = None
-        self._prepared = False
         self._sw_acq = PoolAcquisitionSoftware(main_element, name=swname)
         self._sw_start_acq = PoolAcquisitionSoftwareStart(
             main_element, name=sw_start_name)
@@ -368,7 +367,6 @@ class PoolAcquisition(PoolAction):
         self._0d_acq_args = None
         self._hw_acq_args = None
         self._synch_args = None
-        self._prepared = False
         ctrls_hw = []
         ctrls_sw = []
         ctrls_sw_start = []
@@ -481,7 +479,6 @@ class PoolAcquisition(PoolAction):
         repetitions = 1
         self._prepare_ctrls(ctrls_sw, value, repetitions, latency,
                             nb_starts)
-        self._prepared = True
 
     @staticmethod
     def _prepare_ctrls(ctrls, value, repetitions, latency, nb_starts):
@@ -504,9 +501,6 @@ class PoolAcquisition(PoolAction):
 
     def run(self, *args, **kwargs):
         """Runs acquisition according to previous preparation."""
-        if not self._prepared:
-            raise RuntimeError('You must call first "prepare" method.')
-
         if self._hw_acq_args is not None:
             self._hw_acq.run(*self._hw_acq_args.args,
                              **self._hw_acq_args.kwargs)
@@ -519,8 +513,6 @@ class PoolAcquisition(PoolAction):
         if self._synch_args is not None:
             self._synch.run(*self._synch_args.args,
                             **self._synch_args.kwargs)
-
-        self._prepared = False
 
     def _get_action_for_element(self, element):
         elem_type = element.get_type()
