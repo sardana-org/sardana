@@ -207,7 +207,7 @@ class DummyTwoDController(TwoDController, Referable):
         img = self.read_channels[axis].value
         dset_name = "dataset_%d" % self.img_idx
         h5f.create_dataset(dset_name, data=img)
-        ref = "file:" + file_name + "/" + dset_name
+        ref = "h5file:" + file_name + "::" + dset_name
         return ref
 
     def PreStartAll(self):
