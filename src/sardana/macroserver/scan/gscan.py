@@ -1103,6 +1103,13 @@ class SScan(GScan):
             state, data_line = mg.count_raw()
         else:
             state, data_line = mg.count(integ_time)
+        # TODO: try to encapsulate value reference readout in
+        # measurement group count methods
+        for channel_info in mg.getChannels():
+            full_name = channel_info["full_name"]
+            channel = taurus.Device(full_name)
+            if channel.is_referable():
+                data_line[full_name] = channel.getValueRef(force=True)
         for ec in self._extra_columns:
             data_line[ec.getName()] = ec.read()
         self.debug("[ END ] acquisition")
