@@ -1955,15 +1955,16 @@ class CAcquisition(object):
             idx += self._index_offset
             value_ref_buffer['index'] = idx.tolist()
         info.update(value_ref_buffer)
-        print(info)  # WIP
         # info is a dictionary with at least keys: label, data,
         # index and its values are of type string for label and
         # sequence for data, index
         # e.g. dict(label=str, data=seq<float>, index=seq<int>)
-        # self._countdown_latch.count_up()
-        # # only one thread is present in the pool so jobs are serialized
-        # self._thread_pool.add(self.data.addData,
-        #                       self._countdown_latch.count_down, info)
+        self._countdown_latch.count_up()
+        # only one thread is present in the pool so jobs are serialized
+        # TODO: think if the RecordList.addData is the best API for
+        # passing value references
+        self._thread_pool.add(self.data.addData,
+                              self._countdown_latch.count_down, info)
 
     def wait_value_buffer(self):
         """Wait until all value buffer events are processed."""

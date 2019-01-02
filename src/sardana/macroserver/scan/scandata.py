@@ -446,7 +446,9 @@ class RecordList(dict):
                      and data - list of values
         :type data:  dict"""
         label = data['label']
-        rawData = data['data']
+        # TODO: think if the ScanData.addData is the best API for
+        # passing value references
+        rawData = data.get('data') or data.get('value_ref')
         idxs = data['index']
 
         maxIdx = max(idxs)
