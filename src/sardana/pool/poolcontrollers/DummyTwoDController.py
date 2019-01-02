@@ -104,6 +104,7 @@ class DummyTwoDController(TwoDController, Referable):
         self.start_time = None
         self.integ_time = None
         self.monitor_count = None
+        self.img_idx = None
         self.read_channels = {}
         self.counting_channels = {}
 
@@ -204,7 +205,7 @@ class DummyTwoDController(TwoDController, Referable):
         file_name = "/tmp/data.h5"
         h5f = h5py.File(file_name, "w")
         img = self.read_channels[axis].value
-        dset_name = "dataset_1"
+        dset_name = "dataset_%d" % self.img_idx
         h5f.create_dataset(dset_name, data=img)
         ref = "file:" + file_name + "/" + dset_name
         return ref
@@ -220,10 +221,14 @@ class DummyTwoDController(TwoDController, Referable):
         return True
 
     def StartOne(self, axis, value):
+        self.img_idx += 1
         self.counting_channels[axis].is_counting = True
 
     def StartAll(self):
         self.start_time = time.time()
+
+    def PrepareOne(self, axis, value, repetitions, latency, nb_starts):
+        self.img_idx = -1
 
     def LoadOne(self, axis, value):
         idx = axis - 1
