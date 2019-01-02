@@ -1006,6 +1006,7 @@ class SScan(GScan):
         macro = self.macro
         scream = False
 
+        self._deterministic_scan = False
         if hasattr(macro, "nr_points"):
             nr_points = float(macro.nr_points)
             if hasattr(macro, "integ_time"):
@@ -1013,6 +1014,7 @@ class SScan(GScan):
                 self.measurement_group.putIntegrationTime(integ_time)
                 self.measurement_group.setNbStarts(nr_points)
                 self.measurement_group.prepare()
+                self._deterministic_scan = True
             scream = True
         else:
             yield 0.0
@@ -1097,7 +1099,10 @@ class SScan(GScan):
         integ_time = step['integ_time']
         # Acquire data
         self.debug("[START] acquisition")
-        state, data_line = mg.count(integ_time)
+        if self._deterministic_scan:
+            state, data_line = mg.count_raw()
+        else:
+            state, data_line = mg.count(integ_time)
         for ec in self._extra_columns:
             data_line[ec.getName()] = ec.read()
         self.debug("[ END ] acquisition")
