@@ -1924,9 +1924,10 @@ class CAcquisition(object):
         full_name = channel.getFullName()
 
         info = {'label': full_name}
-        idx = np.array(value_buffer['index'])
-        idx += self._index_offset
-        value_buffer['index'] = idx.tolist()
+        if self._index_offset != 0:
+            idx = np.array(value_buffer['index'])
+            idx += self._index_offset
+            value_buffer['index'] = idx.tolist()
         info.update(value_buffer)
         # info is a dictionary with at least keys: label, data,
         # index and its values are of type string for label and
@@ -1949,9 +1950,10 @@ class CAcquisition(object):
         full_name = channel.getFullName()
 
         info = {'label': full_name}
-        idx = np.array(value_ref_buffer['index'])
-        idx += self._index_offset
-        value_ref_buffer['index'] = idx.tolist()
+        if self._index_offset != 0:
+            idx = np.array(value_ref_buffer['index'])
+            idx += self._index_offset
+            value_ref_buffer['index'] = idx.tolist()
         info.update(value_ref_buffer)
         print(info)  # WIP
         # info is a dictionary with at least keys: label, data,
