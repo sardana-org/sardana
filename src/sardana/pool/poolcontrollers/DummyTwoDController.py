@@ -21,8 +21,14 @@
 ##
 ##############################################################################
 
+import sys
 import time
+
 import numpy
+try:
+    import h5py
+except ImportError:
+    pass
 
 from sardana import State
 from sardana.pool.controller import TwoDController, Referable, MaxDimSize
@@ -201,12 +207,15 @@ class DummyTwoDController(TwoDController, Referable):
 
     def RefOne(self, axis):
         self._log.debug("RefOne(%s)", axis)
-        import h5py
         file_name = "/tmp/data.h5"
-        h5f = h5py.File(file_name, "w")
-        img = self.read_channels[axis].value
         dset_name = "dataset_%d" % self.img_idx
-        h5f.create_dataset(dset_name, data=img)
+        if "h5py" in sys.modules:
+            h5f = h5py.File(file_name, "w")
+            img = self.read_channels[axis].value
+            h5f.create_dataset(dset_name, data=img)
+        else:
+            self._log.warning("RefOne(%d): not able to store h5 file (h5py "
+                              "is not available)", axis)
         ref = "h5file:" + file_name + "::" + dset_name
         return ref
 
