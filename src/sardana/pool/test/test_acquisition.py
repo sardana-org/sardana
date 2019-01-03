@@ -441,7 +441,7 @@ class AcquisitionHardwareStartTestCase(AcquisitionTestCase, TestCase):
         TestCase.tearDown(self)
 
 
-@insertTest(helper_name='acquire', integ_time=0.1, repetitions=10,
+@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
             latency_time=0.1)
 class AcquisitionSoftwareRefTestCase(BaseAcquisitionSoftwareTestCase,
                                      TestCase):
