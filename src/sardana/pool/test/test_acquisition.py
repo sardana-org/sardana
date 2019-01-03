@@ -150,6 +150,8 @@ class BaseAcquisitionSoftwareTestCase(AcquisitionTestCase):
         trigger from a dummy T/G."""
         self.channel_ctrl.set_ctrl_par("synchronization",
                                        AcqSynch.SoftwareTrigger)
+        self.channel_ctrl.ctrl.PrepareOne(self.channel.axis, integ_time, 1,
+                                          latency_time, repetitions)
 
         conf_ct_ctrl_1 = createTimerableControllerConfiguration(
             self.channel_ctrl, [self.channel])
