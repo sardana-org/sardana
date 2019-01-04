@@ -937,7 +937,8 @@ class PoolTimerableDeviceClass(PoolExpChannelDeviceClass):
     
     #    Attribute definitions
     attr_list = {
-        'Timer': [[DevString, SCALAR, READ_WRITE]]
+        'Timer': [[DevString, SCALAR, READ_WRITE],
+                  {'Memorized': "true", }]
     }
     attr_list.update(PoolExpChannelDeviceClass.attr_list)
     
