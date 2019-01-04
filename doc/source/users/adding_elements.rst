@@ -14,9 +14,21 @@ If not, you can :ref:`write the plugin yourself <sardana-controller-howto>`.
 Controllers
 ===========
 
-The controller is a Sardana object that handles the communication with the hardware.
-To create the controller you can use :class:`~sardana.macroserver.macros.expert.defctrl`
-macro::
+The controller is a Sardana object that handles the communication with the
+hardware (physical controller) or provides an abstraction layer (pseudo
+controller).
+
+Before creating the controller instance you need to load the controller
+plugin class into the Sardana. To check if it is already loaded use the
+:class:`~sardana.macroserver.macros.lists.lsctrl` macro. If it is not, you will
+need to configure the :ref:`controller plugin discovery path <sardana-configuration-pool>`
+(``PoolPath`` property) and either restart the Sardana server or call the
+:class:`~sardana.macroserver.macros.expert.addctrllib` macro. After that
+check again with the list macro if the controller class is present and if
+yes let's continue...
+
+To create a controller instance you can use
+:class:`~sardana.macroserver.macros.expert.defctrl` macro::
 
   defctrl <class> <name> <roles/properties>
 
