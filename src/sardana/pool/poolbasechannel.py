@@ -33,8 +33,11 @@ __docformat__ = 'restructuredtext'
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.sardanabuffer import SardanaBuffer
 from sardana.pool.poolelement import PoolElement
-from sardana.pool.poolacquisition import PoolAcquisitionSoftware
+from sardana.pool.poolacquisition import PoolAcquisitionSoftware, get_timerable_ctrls, AcqController
+from sardana.pool.poolmeasurementgroup import TimerableControllerConfiguration, ChannelConfiguration, ControllerConfiguration
 from sardana.sardanaevent import EventType
+
+from sardana.pool import AcqSynch, AcqMode
 
 class ValueBuffer(SardanaBuffer):
 
@@ -80,6 +83,8 @@ class PoolBaseChannel(PoolElement):
             acq_name = "%s.Acquisition" % self._name
             self.set_action_cache(self.AcquisitionClass(self, name=acq_name))
         self._integration_time = False
+        self._timer = None
+        self.ctrls = None
 
     def has_pseudo_elements(self):
         """Informs whether this channel forms part of any pseudo element
@@ -311,8 +316,37 @@ class PoolBaseChannel(PoolElement):
         self._aborted = False
         self._stopped = False
         if not self._simulation_mode:
-            acq = self.acquisition.run(integ_time=self._integration_time)
+            if self.ctrls is None:
+                self.create_config()
+            acq = self.acquisition.run(self.ctrls, self.integration_time, self.master, None)
 
+    def create_config(self):
+    
+        ctrl = self.get_controller()
+        ctrl.set_ctrl_par("synchronization",
+                          AcqSynch.SoftwareTrigger)
+        
+        self.conf_ctrl = ControllerConfiguration(ctrl)
+        # self has to be used. If not it is removed
+        self.conf_channel = ChannelConfiguration(self)
+        self.conf_ctrl.add_channel(self.conf_channel)
+        channel = self.conf_ctrl.get_channels(enabled=True)[0]
+        if self.timer == "__self":
+            self.conf_ctrl.timer = channel
+        else:
+            self.conf_timer = ChannelConfiguration(self.pool.get_element_by_name(self.timer))
+            self.conf_ctrl.add_channel(self.conf_timer)
+            ctimer = self.conf_ctrl.get_channels(enabled=True)[1]
+            self.conf_ctrl.timer = ctimer
+            
+        self.conf_ctrl.monitor = channel
+        self.ctrls = get_timerable_ctrls([self.conf_ctrl], AcqMode.Timer)
+        self.master = self.ctrls[0].master
+        comp_self = "__self"
+        if self.timer != "__self":
+            self.acquisition.add_element(self.pool.get_element_by_name(self.timer))
+
+        
 class PoolTimerableChannel(PoolBaseChannel):
 
     def __init__(self, **kwargs):
@@ -334,10 +368,18 @@ class PoolTimerableChannel(PoolBaseChannel):
         return self._timer
 
     def set_timer(self, timer, propagate=1):
+
         if timer == self._timer:
             # timer is not changed. Do nothing
             return
+
+        if self._timer is not None and self._timer != "__self":
+            self.acquisition.remove_element(self.pool.get_element_by_name(self._timer))
+            
         self._timer = timer
+
+        self.create_config()
+        
         if not propagate:
             return
         self.fire_event(EventType("timer", priority=propagate),
