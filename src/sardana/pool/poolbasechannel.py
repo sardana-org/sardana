@@ -316,12 +316,16 @@ class PoolBaseChannel(PoolElement):
         self._aborted = False
         self._stopped = False
         if not self._simulation_mode:
-            if self.ctrls is None:
-                self.create_config()
-            acq = self.acquisition.run(self.ctrls, self.integration_time, self.master, None)
+            if self._timer is not None:
+                if self.ctrls is None:
+                    self.create_config()
+                acq = self.acquisition.run(self.ctrls, self.integration_time, self.master, None)
 
     def create_config(self):
-    
+
+        if self._timer is None:
+            return
+        
         ctrl = self.get_controller()
         ctrl.set_ctrl_par("synchronization",
                           AcqSynch.SoftwareTrigger)
@@ -368,16 +372,25 @@ class PoolTimerableChannel(PoolBaseChannel):
         return self._timer
 
     def set_timer(self, timer, propagate=1):
-
+        
         if timer == self._timer:
             # timer is not changed. Do nothing
             return
 
+        if timer is not None and timer != "__self":
+            try:
+                self.acquisition.remove_element(self.pool.get_element_by_name(timer))
+            except: # The new timer does not belong to action
+                pass
+
         if self._timer is not None and self._timer != "__self":
-            self.acquisition.remove_element(self.pool.get_element_by_name(self._timer))
+            try:
+                self.acquisition.remove_element(self.pool.get_element_by_name(timer))
+            except: # Action does not contain
+                pass
             
         self._timer = timer
-
+        
         self.create_config()
         
         if not propagate:
