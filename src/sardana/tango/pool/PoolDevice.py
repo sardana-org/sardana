@@ -918,14 +918,20 @@ class PoolTimerableDevice(PoolExpChannelDevice):
 
         :param attr: tango attribute
         :type attr: :class:`~PyTango.Attribute`"""
-        attr.set_value(self.element.timer)
+        timer = self.element.timer
+        if timer is None:
+            timer = 'None'
+        attr.set_value(timer)
 
     def write_Timer(self, attr):
         """Sets the timer for this channel.
 
         :param attr: tango attribute
         :type attr: :class:`~PyTango.Attribute`"""
-        self.element.timer = attr.get_write_value()
+        timer = attr.get_write_value()
+        if timer == 'None':
+            timer = None
+        self.element.timer = timer
 
 class PoolTimerableDeviceClass(PoolExpChannelDeviceClass):
 
