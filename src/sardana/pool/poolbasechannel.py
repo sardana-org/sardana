@@ -338,7 +338,10 @@ class PoolBaseChannel(PoolElement):
         if self.timer == "__self":
             self.conf_ctrl.timer = channel
         else:
-            self.conf_timer = ChannelConfiguration(self.pool.get_element_by_name(self.timer))
+            if self.timer == "__default":
+                self.conf_timer = ChannelConfiguration(self.pool.get_element_by_axis(self.default_axis))
+            else:    
+                self.conf_timer = ChannelConfiguration(self.pool.get_element_by_name(self.timer))
             self.conf_ctrl.add_channel(self.conf_timer)
             ctimer = self.conf_ctrl.get_channels(enabled=True)[1]
             self.conf_ctrl.timer = ctimer
@@ -348,7 +351,10 @@ class PoolBaseChannel(PoolElement):
         self.master = self.ctrls[0].master
         comp_self = "__self"
         if self.timer != "__self":
-            self.acquisition.add_element(self.pool.get_element_by_name(self.timer))
+            if self.timer == "__default":
+                self.acquisition.add_element(self.pool.get_element_by_axis(self.default_axis))
+            else:
+                self.acquisition.add_element(self.pool.get_element_by_name(self.timer))
 
         
 class PoolTimerableChannel(PoolBaseChannel):
@@ -377,16 +383,21 @@ class PoolTimerableChannel(PoolBaseChannel):
             # timer is not changed. Do nothing
             return
 
+        if timer == "__default":
+            try:
+                ctrl = self.get_controller()
+                self.default_axis = ctrl.defaut_axis
+            except:
+                raise ValueError("Not default axis in controller")
+                return
+            
         if timer is not None and timer != "__self":
             try:
-                self.acquisition.remove_element(self.pool.get_element_by_name(timer))
+                if timer != "__default":
+                    self.acquisition.remove_element(self.pool.get_element_by_name(timer))
+                else:
+                    self.acquisition.remove_element(self.pool.get_element_by_axis(default_axis))
             except: # The new timer does not belong to action
-                pass
-
-        if self._timer is not None and self._timer != "__self":
-            try:
-                self.acquisition.remove_element(self.pool.get_element_by_name(timer))
-            except: # Action does not contain
                 pass
             
         self._timer = timer
