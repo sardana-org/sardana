@@ -500,6 +500,17 @@ class PoolBaseChannel(PoolElement):
         val_attr = self._value_ref_buffer
         val_attr.clear()
 
+    def is_referable(self):
+        """Check if channel has referable capability.
+
+        .. note::
+            The is_referable method has been included in Sardana on
+            a provisional basis. Backwards incompatible changes (up to and
+            including removal of the class) may occur if deemed necessary by
+            the core developers.
+        """
+        return self.controller.is_referable()
+
     def start_acquisition(self, value=None):
         self._aborted = False
         self._stopped = False
