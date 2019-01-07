@@ -429,6 +429,12 @@ class PoolBaseChannel(PoolElement):
         be added right after the last value ref in the buffer. Also update the
         read value ref of the attribute with the last element of values.
 
+        .. note::
+            The extend_value_ref_buffer method has been included in Sardana on
+            a provisional basis. Backwards incompatible changes (up to and
+            including removal of the class) may occur if deemed necessary by
+            the core developers.
+
         :param value_refs:
             values to be added to the buffer
         :type value_refs:
@@ -457,6 +463,12 @@ class PoolBaseChannel(PoolElement):
         after the last value ref in the buffer.
         Also update the read value ref.
 
+        .. note::
+            The append_value_ref_buffer method has been included in Sardana on
+            a provisional basis. Backwards incompatible changes (up to and
+            including removal of the class) may occur if deemed necessary by
+            the core developers.
+
         :param value_ref:
             value ref to be added to the buffer
         :type value_ref:
@@ -477,7 +489,14 @@ class PoolBaseChannel(PoolElement):
         return val_buffer
 
     def clear_value_ref_buffer(self):
-        """Clear value ref buffer."""
+        """Clear value ref buffer.
+
+        .. note::
+            The clear_value_ref_buffer method has been included in Sardana on
+            a provisional basis. Backwards incompatible changes (up to and
+            including removal of the class) may occur if deemed necessary by
+            the core developers.
+        """
         val_attr = self._value_ref_buffer
         val_attr.clear()
 
