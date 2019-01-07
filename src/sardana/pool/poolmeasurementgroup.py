@@ -1070,12 +1070,17 @@ class PoolMeasurementGroup(PoolGroupElement):
 
     def set_moveable(self, moveable, propagate=1, to_fqdn=True):
         self._moveable = moveable
-        if self._moveable != 'None' and self._moveable is not None:
+        if self._moveable is not None:
             if to_fqdn:
                 moveable = _to_fqdn(moveable, logger=self)
             self._moveable_obj = self.pool.get_element_by_full_name(moveable)
-        self.fire_event(EventType("moveable", priority=propagate),
-                        moveable)
+        
+            self.fire_event(EventType("moveable", priority=propagate),
+                            moveable)
+        else:
+            self.fire_event(EventType("moveable", priority=propagate),
+                            'None')
+            
 
     moveable = property(get_moveable, set_moveable,
                         doc="moveable source used in synchronization")
