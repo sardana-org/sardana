@@ -111,21 +111,22 @@ class SynchParam(SynchEnum):
     Initial = 4
 
 
-class AcqSynchType(Enumeration):
+AcqSynchType = Enumeration("AcqSynchType", ["Trigger", "Gate", "Start"])
+AcqSynchType.__doc__ = \
     """Enumeration of synchronization types.
+
+    Options:
+
+    - Trigger - Start each acquisition (experimental channel will decide on
+      itself when to end, based on integration time / monitor count)
+    - Gate - Start and end each acquisition
+    - Start - Start only the first acquisition (experimental channel will
+      drive the acquisition based on integration time / monitor count, latency
+      time and number of repetitions)
 
     .. todo:: convert to python enums, but having in mind problems with
              JSON serialization: https://bugs.python.org/issue18264
     """
-    #: Start each acquisition (experimental channel will decide on
-    #: itself when to end - based on integration time / monitor count)
-    Trigger = 0
-    #: Start and end each acquisition
-    Gate = 1
-    #: Start only the first acquisition (experimental channel will drive
-    #: the acquisition based on integration time / monitor count, latency
-    #: time and number of repetitions)
-    Start = 2
 
 
 class AcqSynch(Enumeration):
