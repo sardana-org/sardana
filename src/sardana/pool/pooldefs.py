@@ -129,17 +129,14 @@ AcqSynchType.__doc__ = \
     """
 
 
-class AcqSynch(Enumeration):
+class AcqSynch(IntEnum):
     """Enumeration of synchronization options.
 
     Uses software/hardware naming to refer to internal (software
     synchronizer) or external (hardware synchronization device)
-    synchronization modes. See :class:`~sardana.pool.pooldefs.AcqSynchType`
+    synchronization modes. See :obj:`~sardana.pool.pooldefs.AcqSynchType`
     to get more details about the synchronization type e.g. trigger, gate or
     start.
-
-    .. todo:: convert to python enums, but having in mind problems with
-             JSON serialization: https://bugs.python.org/issue18264
     """
     #: Internal (software) trigger
     SoftwareTrigger = 0
