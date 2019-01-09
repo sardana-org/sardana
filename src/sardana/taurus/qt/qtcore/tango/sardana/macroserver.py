@@ -146,17 +146,17 @@ class QMacroServer(BaseMacroServer, Qt.QObject):
 
     def typesChanged(self, s, t, v):
         res = BaseMacroServer.typesChanged(self, s, t, v)
-        self.typesUpdated.emit(res)
+        self.typesUpdated.emit()
         return res
 
     def elementsChanged(self, s, t, v):
         res = BaseMacroServer.elementsChanged(self, s, t, v)
-        self.elementsUpdated.emit(res)
+        self.elementsUpdated.emit()
         return res
 
     def macrosChanged(self, s, t, v):
         res = BaseMacroServer.macrosChanged(self, s, t, v)
-        self.macrosUpdated.emit(res)
+        self.macrosUpdated.emit()
         return res
 
     def on_elements_changed(self, s, t, v):
