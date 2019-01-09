@@ -50,6 +50,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   code are coherent (#936)
 - Macro/controller module description when module does not have a docstring
   (#945)
+- Make `wu` macro respect view options (#1000, #1002)
 - Make cleanup (remove configuration) if spock profile creation was interrupted
   or failed (#791, #793)
 - Spock considers passing supernumerary parameters as errors (#438, #781)
