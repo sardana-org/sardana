@@ -158,6 +158,7 @@ class _wum(Macro):
         motor_names = []
         motor_pos = []
         motor_list = sorted(motor_list)
+        pos_format = self.getViewOption(ViewOption.PosFormat)
         for motor in motor_list:
             name = motor.getName()
             motor_names.append([name])
@@ -168,6 +169,8 @@ class _wum(Macro):
             motor_width = max(motor_width, len(name))
 
         fmt = '%c*.%df' % ('%', motor_width - 5)
+        if pos_format > -1:
+            fmt = '%c*.%df' % ('%', int(pos_format))
 
         table = Table(motor_pos, elem_fmt=[fmt],
                       col_head_str=motor_names, col_head_width=motor_width,
