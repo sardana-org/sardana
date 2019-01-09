@@ -53,12 +53,14 @@ class QDoor(BaseDoor, Qt.QObject):
     outputUpdated = Qt.pyqtSignal(object)
     debugUpdated = Qt.pyqtSignal(object)
     experimentConfigurationChanged = Qt.pyqtSignal()
+    elementsChanged = Qt.pyqtSignal()
+    environmentChanged = Qt.pyqtSignal()
 
     def __init__(self, name, qt_parent=None, **kw):
         self.call__init__wo_kw(Qt.QObject, qt_parent)
         self.call__init__(BaseDoor, name, **kw)
         self._mntgrps_connected = []
-        self._use_experimet_configuration = False
+        self._use_experiment_configuration = False
         self._connections_prepared = False
 
     def resultReceived(self, log_name, result):
@@ -92,12 +94,11 @@ class QDoor(BaseDoor, Qt.QObject):
         return res
 
     def _prepare_connections(self):
-        if not self._use_experimet_configuration and \
+        if not self._use_experiment_configuration and \
                 not self._connections_prepared:
-            self.connect(self.macro_server, Qt.SIGNAL("environmentChanged"),
-                         self._experimentConfigurationChanged)
-            self.connect(self.macro_server, Qt.SIGNAL("elementsChanged"),
-                         self._elementsChanged)
+            self.macro_server.environmentChanged.connect(
+                self._experimentConfigurationChanged)
+            self.macro_server.elementsChanged.connect(self._elementsChanged)
             self._elementsChanged()
             self._connections_prepared = True
 
@@ -110,8 +111,8 @@ class QDoor(BaseDoor, Qt.QObject):
             if name not in self._mntgrps_connected:
                 mntgrp_changed = True  # this measurement group is new
                 obj = mg.getObj()
-                self.connect(obj, Qt.SIGNAL("configurationChanged"),
-                             self._experimentConfigurationChanged)
+                obj.configurationChanged.connect(
+                    self._experimentConfigurationChanged)
             new_mntgrp_connected.append(name)
         self._mntgrp_connected = new_mntgrp_connected
 
@@ -170,9 +171,9 @@ class QMacroServer(BaseMacroServer, Qt.QObject):
             if elements and macros:
                 break
         if elements:
-            self.emit(Qt.SIGNAL("elementsChanged"))
+            self.elementsChanged.emit()
         if macros:
-            self.emit(Qt.SIGNAL("macrosUpdated"))
+            self.macrosUpdated.emit()
         return ret
 
     def on_environment_changed(self, s, t, v):
