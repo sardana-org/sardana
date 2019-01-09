@@ -1,4 +1,4 @@
-    Title: Migration of third-party repositories (controllers and macros)
+    Title: Plugins (controllers, macros, etc.) register
     SEP: 16
     State: DRAFT
     Reason:
