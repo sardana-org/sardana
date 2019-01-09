@@ -41,20 +41,18 @@ class QDoor(BaseDoor, Qt.QObject):
     __pyqtSignals__ = ["resultUpdated",
                        "recordDataUpdated", "macroStatusUpdated"]
     __pyqtSignals__ += ["%sUpdated" % l.lower() for l in BaseDoor.log_streams]
-    # TODO: For Taurus 4 compatibility
-    try:
-        # sometimes we emit None hence the type is object
-        # (but most of the data are passed with type list)
-        resultUpdated = Qt.pyqtSignal(object)
-        recordDataUpdated = Qt.pyqtSignal(object)
-        errorUpdated = Qt.pyqtSignal(object)
-        warningUpdated = Qt.pyqtSignal(object)
-        infoUpdated = Qt.pyqtSignal(object)
-        outputUpdated = Qt.pyqtSignal(object)
-        debugUpdated = Qt.pyqtSignal(object)
-        experimentConfigurationChanged = Qt.pyqtSignal()
-    except AttributeError:
-        pass
+
+    # sometimes we emit None hence the type is object
+    # (but most of the data are passed with type list)
+    resultUpdated = Qt.pyqtSignal(object)
+    recordDataUpdated = Qt.pyqtSignal(object)
+    macroStatusUpdated = Qt.pyqtSignal(object)
+    errorUpdated = Qt.pyqtSignal(object)
+    warningUpdated = Qt.pyqtSignal(object)
+    infoUpdated = Qt.pyqtSignal(object)
+    outputUpdated = Qt.pyqtSignal(object)
+    debugUpdated = Qt.pyqtSignal(object)
+    experimentConfigurationChanged = Qt.pyqtSignal()
 
     def __init__(self, name, qt_parent=None, **kw):
         self.call__init__wo_kw(Qt.QObject, qt_parent)
@@ -65,20 +63,14 @@ class QDoor(BaseDoor, Qt.QObject):
 
     def resultReceived(self, log_name, result):
         res = BaseDoor.resultReceived(self, log_name, result)
-        self.emit(Qt.SIGNAL("resultUpdated"), res)
-        # TODO: For Taurus 4 compatibility
-        if hasattr(self, "resultUpdated"):
-            self.resultUpdated.emit(res)
+        self.resultUpdated.emit(res)
         return res
 
     def recordDataReceived(self, s, t, v):
         if t not in CHANGE_EVTS:
             return
         res = BaseDoor.recordDataReceived(self, s, t, v)
-        self.emit(Qt.SIGNAL("recordDataUpdated"), res)
-        # TODO: For Taurus 4 compatibility
-        if hasattr(self, "recordDataUpdated"):
-            self.recordDataUpdated.emit(res)
+        self.recordDataUpdated.emit(res)
         return res
 
     def macroStatusReceived(self, s, t, v):
@@ -89,22 +81,14 @@ class QDoor(BaseDoor, Qt.QObject):
             macro = self.getRunningMacro()
         if macro is None:
             return
-        self.emit(Qt.SIGNAL("macroStatusUpdated"), (macro, res))
-        # TODO: For Taurus 4 compatibility
-        if hasattr(self, "macroStatusUpdated"):
-            self.macroStatusUpdated.emit(res)
+        self.macroStatusUpdated.emit(res)
         return res
 
     def logReceived(self, log_name, output):
         res = BaseDoor.logReceived(self, log_name, output)
         log_name = log_name.lower()
-        self.emit(Qt.SIGNAL("%sUpdated" % log_name), output)
-        # TODO: For Taurus 4 compatibility
-        try:
-            recordDataUpdated = getattr(self, "%sUpdated" % log_name)
-            recordDataUpdated.emit(output)
-        except AttributeError:
-            pass
+        recordDataUpdated = getattr(self, "%sUpdated" % log_name)
+        recordDataUpdated.emit(output)
         return res
 
     def _prepare_connections(self):
@@ -132,10 +116,10 @@ class QDoor(BaseDoor, Qt.QObject):
         self._mntgrp_connected = new_mntgrp_connected
 
         if mntgrp_changed:
-            self.emit(Qt.SIGNAL("experimentConfigurationChanged"))
+            self.experimentConfigurationChanged.emit()
 
     def _experimentConfigurationChanged(self, *args):
-        self.emit(Qt.SIGNAL("experimentConfigurationChanged"))
+        self.experimentConfigurationChanged.emit()
 
     def getExperimentConfigurationObj(self):
         self._prepare_connections()
@@ -148,15 +132,12 @@ class QDoor(BaseDoor, Qt.QObject):
 
 
 class QMacroServer(BaseMacroServer, Qt.QObject):
-    # TODO: For Taurus 4 compatibility
-    try:
-        typesUpdated = Qt.pyqtSignal()
-        elementsUpdated = Qt.pyqtSignal()
-        elementsChanged = Qt.pyqtSignal()
-        macrosUpdated = Qt.pyqtSignal()
-        environmentChanged = Qt.pyqtSignal(list)
-    except AttributeError:
-        pass
+
+    typesUpdated = Qt.pyqtSignal()
+    elementsUpdated = Qt.pyqtSignal()
+    elementsChanged = Qt.pyqtSignal()
+    macrosUpdated = Qt.pyqtSignal()
+    environmentChanged = Qt.pyqtSignal(list)
 
     def __init__(self, name, qt_parent=None, **kw):
         self.call__init__wo_kw(Qt.QObject, qt_parent)
@@ -164,17 +145,17 @@ class QMacroServer(BaseMacroServer, Qt.QObject):
 
     def typesChanged(self, s, t, v):
         res = BaseMacroServer.typesChanged(self, s, t, v)
-        self.emit(Qt.SIGNAL("typesUpdated"))
+        self.typesUpdated.emit(res)
         return res
 
     def elementsChanged(self, s, t, v):
         res = BaseMacroServer.elementsChanged(self, s, t, v)
-        self.emit(Qt.SIGNAL("elementsUpdated"))
+        self.elementsUpdated.emit(res)
         return res
 
     def macrosChanged(self, s, t, v):
         res = BaseMacroServer.macrosChanged(self, s, t, v)
-        self.emit(Qt.SIGNAL("macrosUpdated"))
+        self.macrosUpdated.emit(res)
         return res
 
     def on_elements_changed(self, s, t, v):
@@ -198,7 +179,7 @@ class QMacroServer(BaseMacroServer, Qt.QObject):
         ret = added, removed, changed = \
             BaseMacroServer.on_environment_changed(self, s, t, v)
         if added or removed or changed:
-            self.emit(Qt.SIGNAL("environmentChanged"), ret)
+            self.environmentChanged.emit(ret)
         return ret
 
 
