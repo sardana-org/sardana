@@ -70,7 +70,7 @@ class QMeasurementGroup(Qt.QObject, TangoDevice):
             self._config = None
         else:
             self._config = json.loads(v.value)
-        self.emit(Qt.SIGNAL("configurationChanged"))
+        self.configurationChanged.emit()
 
     def getConfiguration(self, cache=True):
         if self._config is None or not cache:
