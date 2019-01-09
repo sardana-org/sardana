@@ -46,11 +46,8 @@ class QPool(Qt.QObject, TangoDevice):
 
 
 class QMeasurementGroup(Qt.QObject, TangoDevice):
-    # TODO: For Taurus 4 compatibility
-    try:
-        configurationChanged = Qt.pyqtSignal()
-    except AttributeError:
-        pass
+
+    configurationChanged = Qt.pyqtSignal()
 
     def __init__(self, name, qt_parent=None, **kw):
         self.call__init__wo_kw(Qt.QObject, qt_parent)
