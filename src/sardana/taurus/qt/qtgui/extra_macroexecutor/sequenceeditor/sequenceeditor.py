@@ -34,7 +34,7 @@ from lxml import etree
 import PyTango
 
 from taurus import Device
-from taurus.external.qt import Qt
+from taurus.external.qt import Qt, compat
 from taurus.qt.qtgui.container import TaurusMainWindow, TaurusWidget
 from taurus.qt.qtcore.configuration import BaseConfigurableClass
 from taurus.qt.qtgui.display import TaurusLed
@@ -642,11 +642,11 @@ class TaurusSequencerWidget(TaurusWidget):
                 self.tree.clearTree()
 
         sequencesPath = self.sequencesPath()
-        fileName = str(Qt.QFileDialog.getOpenFileName(
+        fileName, _ = compat.getOpenFileName(
             self,
             "Choose a sequence to open...",
             sequencesPath,
-            "*"))
+            "*")
         self.loadFile(fileName)
 
 
@@ -656,11 +656,11 @@ class TaurusSequencerWidget(TaurusWidget):
             sequencesPath = str(Qt.QDir.homePath())
 
         sequencesPath = os.path.join(sequencesPath, "Untitled.xml")
-        fileName = str(Qt.QFileDialog.getSaveFileName(
+        fileName, _ = compat.getSaveFileName(
             self,
             "Choose a sequence file name...",
             sequencesPath,
-            "*.xml"))
+            "*.xml")
         if fileName == "":
             return
         try:

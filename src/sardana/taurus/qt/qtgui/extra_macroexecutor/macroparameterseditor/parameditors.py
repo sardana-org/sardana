@@ -29,7 +29,7 @@ parameditors.py:
 
 import os
 
-from taurus.external.qt import Qt
+from taurus.external.qt import Qt, compat
 from taurus.qt.qtgui.input import TaurusAttrListComboBox
 
 from sardana.taurus.qt.qtgui.extra_macroexecutor import globals
@@ -286,7 +286,7 @@ class FileDialogParam(ParamBase, Qt.QWidget):
             "clicked()"), self._chooseAFile)
 
     def _chooseAFile(self):
-        path = Qt.QFileDialog().getOpenFileName()
+        path, _ = compat.getOpenFileName()
         self.filePath.setText(path)
 
     def _readFileContent(self, path):

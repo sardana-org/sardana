@@ -23,7 +23,7 @@
 ##
 ##############################################################################
 
-from taurus.external.qt import Qt
+from taurus.external.qt import Qt, compat
 from PyQt4 import Qsci
 
 from taurus.qt.qtgui.resource import getThemeIcon
@@ -117,7 +117,7 @@ class MacroEditor(Qsci.QsciScintilla):
 
     def openFile(self):
         if self.maybeSave():
-            fileName = Qt.QFileDialog.getOpenFileName(self)
+            fileName, _ = compat.getOpenFileName(self)
         if not fileName is None and file != "":
             self.loadFile(fileName)
 
@@ -128,7 +128,7 @@ class MacroEditor(Qsci.QsciScintilla):
             return self.__saveFile(self.curFile)
 
     def __saveAs(self):
-        self.fileName = Qt.QFileDialog.getSaveFileName(self)
+        self.fileName, _ = compat.getSaveFileName(self)
         if self.fileName == "":
             return False
         return self.__saveFile(self.fileName)
