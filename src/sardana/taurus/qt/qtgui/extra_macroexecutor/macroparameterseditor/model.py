@@ -184,8 +184,7 @@ class ParamEditorModel(Qt.QAbstractItemModel):
 #        if index.isValid() and 0 <= index.row() < len(node.parent()):
         if index.column() == 1:
             node.setValue(Qt.from_qvariant(value, str))
-            self.emit(
-                Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index)
+            self.dataChanged.emit(index, index)
             return True
         return False
 
