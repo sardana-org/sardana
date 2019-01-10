@@ -140,7 +140,7 @@ class QMacroServer(BaseMacroServer, Qt.QObject):
     elementsUpdated = Qt.pyqtSignal()
     elementsChanged = Qt.pyqtSignal()
     macrosUpdated = Qt.pyqtSignal()
-    environmentChanged = Qt.pyqtSignal(list)
+    environmentChanged = Qt.pyqtSignal(object)
 
     def __init__(self, name, qt_parent=None, **kw):
         self.call__init__wo_kw(Qt.QObject, qt_parent)
