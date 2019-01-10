@@ -42,7 +42,7 @@ def str2bool(text):
     return text in ("True", "1")
 
 
-class ParamBase:
+class ParamBase(object):
 
     def __init__(self, paramModel=None):
         self.setParamModel(paramModel)
@@ -66,7 +66,6 @@ class ParamBase:
         self._index = index
         paramModel = index.model().nodeFromIndex(index)
         self.setParamModel(paramModel)
-        self.connect(self, Qt.SIGNAL("modelChanged()"), self.onModelChanged)
         self.setValue(paramModel.value())
 
     def onModelChanged(self):
@@ -97,7 +96,7 @@ class ComboBoxBoolean(ParamBase, Qt.QComboBox):
             self.setCurrentIndex(idx)
 
     def onCurrentIndexChanged(self):
-        self.emit(Qt.SIGNAL("modelChanged()"))
+        self.onModelChanged()
 
 
 class ComboBoxParam(ParamBase, Qt.QComboBox):
@@ -121,7 +120,7 @@ class ComboBoxParam(ParamBase, Qt.QComboBox):
             self.setCurrentIndex(idx)
 
     def onCurrentIndexChanged(self):
-        self.emit(Qt.SIGNAL("modelChanged()"))
+        self.onModelChanged()
 
 
 class MSAttrListComboBoxParam(ParamBase, MSAttrListComboBox):
@@ -141,7 +140,7 @@ class MSAttrListComboBoxParam(ParamBase, MSAttrListComboBox):
         self.setCurrentText(value)
 
     def onCurrentIndexChanged(self):
-        self.emit(Qt.SIGNAL("modelChanged()"))
+        self.onModelChanged()
 
 
 class AttrListComboBoxParam(ParamBase, TaurusAttrListComboBox):
@@ -182,7 +181,7 @@ class LineEditParam(ParamBase, Qt.QLineEdit):
             "textChanged(const QString&)"), self.onTextChanged)
 
     def onTextChanged(self):
-        self.emit(Qt.SIGNAL("modelChanged()"))
+        self.onModelChanged()
 
 #    def setDefaultValue(self):
 #        defVal = self.paramModel().defValue()
@@ -214,7 +213,7 @@ class CheckBoxParam(ParamBase, Qt.QCheckBox):
         self.setChecked(str2bool(value))
 
     def onStateChanged(self):
-        self.emit(Qt.SIGNAL("modelChanged()"))
+        self.onModelChanged()
 
 
 class SpinBoxParam(ParamBase, Qt.QSpinBox):
@@ -330,7 +329,7 @@ class DirPathParam(ParamBase, Qt.QWidget):
             "textChanged(const QString&)"), self.onDirPathChanged)
 
     def onDirPathChanged(self):
-        self.emit(Qt.SIGNAL("modelChanged()"))
+        self.onModelChanged()
 
     def __chooseDirPath(self):
         path = Qt.QFileDialog().getExistingDirectory()

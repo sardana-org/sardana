@@ -146,6 +146,11 @@ This file follows the formats and conventions from [keepachangelog.com]
 - `Controller.getUsedAxis` (Taurus device extension) in favor
 of `Controller.getUsedAxes` (#609)
 
+### Removed
+- Signal `modelChanged()` from ParamBase class to use the call to 
+  method onModelChanged directly instead
+
+
 ## [2.4.0] 2018-03-14
 
 ### Added

@@ -171,14 +171,14 @@ class ExtraColumnsEditor(ParamBase, Qt.QWidget):
 
     def onAddNewColumn(self):
         self.extraColumnsTable.insertRows()
-        self.emit(Qt.SIGNAL("modelChanged()"))
+        self.onModelChanged()
 
     def onRemoveSelectedColumns(self):
         self.extraColumnsTable.removeRows()
-        self.emit(Qt.SIGNAL("modelChanged()"))
+        self.onModelChanged()
 
     def onExtraColumnsChanged(self):
-        self.emit(Qt.SIGNAL("modelChanged()"))
+        self.onModelChanged()
 
 
 class ExtraColumnsTable(Qt.QTableView):
