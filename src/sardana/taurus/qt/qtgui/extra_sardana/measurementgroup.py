@@ -273,6 +273,8 @@ def getElementTypeToolTip(t):
 class BaseMntGrpChannelItem(TaurusBaseTreeItem):
     """ """
 
+    dataChanged = Qt.pyqtSignal(const QModelIndex &, const QModelIndex &)
+
     def data(self, index):
         """Returns the data of this node for the given index
 
@@ -591,8 +593,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         item = index.internalPointer()
         item.setData(index, qvalue)
         self._dirty = True
-        self.emit(Qt.SIGNAL("dataChanged(const QModelIndex &, const QModelIndex &)"),
-                  index, index)
+        self.dataChanged.emit(index, index)
         return True
 
     # @todo: Very inefficient implementation. We should use {begin|end}InsertRows
@@ -683,11 +684,9 @@ class MntGrpChannelModel(BaseMntGrpChannelModel):
 
     def setDataSource(self, mg):
         if self._data_src is not None:
-            Qt.QObject.disconnect(self._data_src, Qt.SIGNAL(
-                'configurationChanged'), self.configurationChanged)
+            self._data_src.configurationChanged.disconnect(self.configurationChanged)
         if mg is not None:
-            Qt.QObject.connect(mg, Qt.SIGNAL(
-                'configurationChanged'), self.configurationChanged)
+            mg.configurationChanged.connect(self.configurationChanged)
         BaseMntGrpChannelModel.setDataSource(self, mg)
 
     def configurationChanged(self):
@@ -971,8 +970,7 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
         self.setContextMenuPolicy(Qt.Qt.ActionsContextMenu)
         self._simpleViewAction = Qt.QAction("Simple View", self)
         self._simpleViewAction.setCheckable(True)
-        self.connect(self._simpleViewAction, Qt.SIGNAL(
-            "toggled(bool)"), self.setSimpleView)
+        self._simpleViewAction.toggled.connect(self.setSimpleView)
         self.addAction(self._simpleViewAction)
         self.registerConfigProperty(
             self.isSimpleView, self.setSimpleView, "simpleView")
@@ -1004,34 +1002,12 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
         # causes a segfault when calling ChannelDelegate.createEditor
         tableView.setItemDelegate(self._delegate)
         tableView.setSortingEnabled(False)
-        self.connect(self._editorBar, Qt.SIGNAL(
-            "addTriggered"), self.addChannel)
-        # TODO: For Taurus 4 compatibility
-        if hasattr(self._editorBar, "addTriggered"):
-            self._editorBar.addTriggered.connect(self.addChannel)
-        self.connect(self._editorBar, Qt.SIGNAL(
-            "removeTriggered"), self.removeChannels)
-        # TODO: For Taurus 4 compatibility
-        if hasattr(self._editorBar, "removeTriggered"):
-            self._editorBar.removeTriggered.connect(self.removeChannels)
-        self.connect(self._editorBar, Qt.SIGNAL(
-            "moveUpTriggered"), self.moveUpChannel)
-        # TODO: For Taurus 4 compatibility
-        if hasattr(self._editorBar, "moveUpTriggered"):
-            self._editorBar.moveUpTriggered.connect(self.moveUpChannel)
-        self.connect(self._editorBar, Qt.SIGNAL(
-            "moveDownTriggered"), self.moveDownChannel)
-        # TODO: For Taurus 4 compatibility
-        if hasattr(self._editorBar, "moveDownTriggered"):
-            self._editorBar.moveDownTriggered.connect(self.moveDownChannel)
-        self.connect(self._editorBar, Qt.SIGNAL(
-            "moveTopTriggered"), self.moveTopChannel)
-        if hasattr(self._editorBar, "moveTopTriggered"):
-            self._editorBar.moveTopTriggered.connect(self.moveTopChannel)
-        self.connect(self._editorBar, Qt.SIGNAL(
-            "moveBottomTriggered"), self.moveBottomChannel)
-        if hasattr(self._editorBar, "moveBottomTriggered"):
-            self._editorBar.moveBottomTriggered.connect(self.moveBottomChannel)
+        self._editorBar.addTriggered.connect(self.addChannel)
+        self._editorBar.removeTriggered.connect(self.removeChannels)
+        self._editorBar.moveUpTriggered.connect(self.moveUpChannel)
+        self._editorBar.moveDownTriggered.connect(self.moveDownChannel)
+        self._editorBar.moveTopTriggered.connect(self.moveTopChannel)
+        self._editorBar.moveBottomTriggered.connect(self.moveBottomChannel)
         return tableView
 
     def createToolArea(self):

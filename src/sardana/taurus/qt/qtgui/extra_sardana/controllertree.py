@@ -122,13 +122,13 @@ class ControllerBaseModel(TaurusBaseModel):
     ColumnRoles = (PoolControllerView.ControllerModule,
                    PoolControllerView.ControllerModule, PoolControllerView.ControllerClass),
 
+
+    
     def setDataSource(self, pool):
         if self._data_src is not None:
-            Qt.QObject.disconnect(self._data_src, Qt.SIGNAL(
-                'controllerClassesUpdated'), self.controllerClassesUpdated)
+            self._data_src.controllerClassesUpdated.disconnect(self.controllerClassesUpdated)
         if pool is not None:
-            Qt.QObject.connect(pool, Qt.SIGNAL(
-                'controllerClassesUpdated'), self.controllerClassesUpdated)
+            self.pool.controllerClassesUpdated.connect(self.controllerClassesUpdated)
         TaurusBaseModel.setDataSource(self, pool)
 
     def controllerClassesUpdated(self):
@@ -277,7 +277,11 @@ class ControllerClassTreeWidget(TaurusBaseTreeWidget):
 
 
 class ControllerClassSelectionDialog(Qt.QDialog):
+    
 
+    __pyqtSignals__ = ["accepted",
+                       "rejected"]
+ 
     def __init__(self, parent=None, designMode=False, model_name=None, perspective=None):
         Qt.QDialog.__init__(self, parent)
 
@@ -297,8 +301,8 @@ class ControllerClassSelectionDialog(Qt.QDialog):
         self._buttonBox.setStandardButtons(bts)
         layout.addWidget(self._panel)
         layout.addWidget(self._buttonBox)
-        self.connect(self._buttonBox, Qt.SIGNAL("accepted()"), self.accept)
-        self.connect(self._buttonBox, Qt.SIGNAL("rejected()"), self.reject)
+        self._buttonBox.accepted.connect(self.accept)
+        self._buttonBox.rejected.connect(self.reject)
 
     def selectedItems(self):
         return self._panel.selectedItems()

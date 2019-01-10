@@ -150,12 +150,8 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
             SardanaLibTreeWidget(self, with_navigation_bar=False,
                                  with_filter_widget=False,)
         elementTree.treeView().setColumnHidden(1, True)
-        try:
-            self._elementTree.itemDoubleClicked.connect(
-                self.on_element_clicked)
-        except AttributeError:
-            self.connect(self._elementTree, Qt.SIGNAL("itemDoubleClicked"),
-                         self.on_element_clicked)
+        self._elementTree.itemDoubleClicked.connect(
+            self.on_element_clicked)
         self.insertWidget(0, self._elementTree)
         self.setAutoTooltip(False)
 
@@ -206,12 +202,8 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
 
     def register_editorstack(self, editorstack):
         TaurusBaseEditor.register_editorstack(self, editorstack)
-        try:
-            self.editorstack.refresh_save_all_action.connect(
-                self.refresh_save_and_apply_action)
-        except AttributeError:
-            self.connect(editorstack, Qt.SIGNAL('refresh_save_all_action()'),
-                         self.refresh_save_and_apply_action)
+        self.editorstack.refresh_save_all_action.connect(
+            self.refresh_save_and_apply_action)
 
     def refresh_save_and_apply_action(self):
         self.save_and_apply_action.setEnabled(self.save_action.isEnabled())
