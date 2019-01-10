@@ -175,6 +175,8 @@ class SardanaElementTreeItem(SardanaBaseTreeItem):
 
 class SardanaBaseElementModel(TaurusBaseModel):
 
+    elementsChanged = Qt.pyqtSignal()
+
     ColumnNames = ["Elements", "Controller/Module/Parent"]
     ColumnRoles = ('Root', 'type', 'name', 'name'), "parent"
 
@@ -185,11 +187,9 @@ class SardanaBaseElementModel(TaurusBaseModel):
     def setDataSource(self, data_source):
         old_ds = self.dataSource()
         if old_ds is not None:
-            Qt.QObject.disconnect(old_ds, Qt.SIGNAL('elementsChanged'),
-                                  self.on_elements_changed)
+            old_ds.elementsChanged.disconnect(self.on_elements_changed)
         if data_source is not None:
-            Qt.QObject.connect(data_source, Qt.SIGNAL('elementsChanged'),
-                               self.on_elements_changed)
+            data_source.elementsChanged.connect(self.on_elements_changed)
         TaurusBaseModel.setDataSource(self, data_source)
 
     def on_elements_changed(self):
