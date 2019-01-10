@@ -80,8 +80,7 @@ class ComboBoxBoolean(ParamBase, Qt.QComboBox):
         ParamBase.__init__(self, paramModel)
 
         self.addItems(['True', 'False'])
-        self.connect(self, Qt.SIGNAL("currentIndexChanged(int)"),
-                     self.onCurrentIndexChanged)
+        self.currentIndexChanged.connect(self.onCurrentIndexChanged)
 
     def getValue(self):
         return str(self.currentText())
@@ -90,8 +89,7 @@ class ComboBoxBoolean(ParamBase, Qt.QComboBox):
         currentIdx = self.currentIndex()
         idx = self.findText(value)
         if currentIdx == idx:
-            self.emit(Qt.SIGNAL("currentIndexChanged(int)"),
-                      self.currentIndex())
+            self.currentIndexChanged.emit(self.currentIndex())
         else:
             self.setCurrentIndex(idx)
 
@@ -104,8 +102,7 @@ class ComboBoxParam(ParamBase, Qt.QComboBox):
     def __init__(self, parent=None, paramModel=None):
         Qt.QComboBox.__init__(self, parent)
         ParamBase.__init__(self, paramModel)
-        self.connect(self, Qt.SIGNAL("currentIndexChanged(int)"),
-                     self.onCurrentIndexChanged)
+        self.currentIndexChanged.connect(self.onCurrentIndexChanged)
 
     def getValue(self):
         return str(self.currentText())
@@ -114,8 +111,7 @@ class ComboBoxParam(ParamBase, Qt.QComboBox):
         currentIdx = self.currentIndex()
         idx = self.findText(value)
         if currentIdx == idx:
-            self.emit(Qt.SIGNAL("currentIndexChanged(int)"),
-                      self.currentIndex())
+            self.currentIndexChanged.emit(self.currentIndex())
         else:
             self.setCurrentIndex(idx)
 
@@ -130,8 +126,7 @@ class MSAttrListComboBoxParam(ParamBase, MSAttrListComboBox):
         ParamBase.__init__(self, paramModel)
 #        self.setUseParentModel(True)
 #        self.setModel("/" + self.paramModel().type() + "List")
-        self.connect(self, Qt.SIGNAL("currentIndexChanged(int)"),
-                     self.onCurrentIndexChanged)
+        self.currentIndexChanged.connect(self.onCurrentIndexChanged)
 
     def getValue(self):
         return str(self.currentText())
@@ -177,8 +172,7 @@ class LineEditParam(ParamBase, Qt.QLineEdit):
     def __init__(self, parent=None, paramModel=None):
         Qt.QLineEdit.__init__(self, parent)
         ParamBase.__init__(self, paramModel)
-        self.connect(self, Qt.SIGNAL(
-            "textChanged(const QString&)"), self.onTextChanged)
+        self.textChanged.connect(self.onTextChanged)
 
     def onTextChanged(self):
         self.onModelChanged()
@@ -204,7 +198,7 @@ class CheckBoxParam(ParamBase, Qt.QCheckBox):
     def __init__(self, parent=None, paramModel=None):
         Qt.QCheckBox.__init__(self, parent)
         ParamBase.__init__(self, paramModel)
-        self.connect(self, Qt.SIGNAL("stateChanged(int)"), self.onStateChanged)
+        self.stateChanged.connect(self.onStateChanged)
 
     def getValue(self):
         return str(self.isChecked())
@@ -281,8 +275,7 @@ class FileDialogParam(ParamBase, Qt.QWidget):
 
         self.text = ""
 
-        Qt.QObject.connect(self.button, Qt.SIGNAL(
-            "clicked()"), self._chooseAFile)
+        self.button.clicked.connect(self._chooseAFile)
 
     def _chooseAFile(self):
         path, _ = compat.getOpenFileName()
@@ -324,9 +317,8 @@ class DirPathParam(ParamBase, Qt.QWidget):
         self.button.setText("...")
         self.layout.addWidget(self.button)
 
-        self.connect(self.button, Qt.SIGNAL("clicked()"), self.__chooseDirPath)
-        self.connect(self.dirPath, Qt.SIGNAL(
-            "textChanged(const QString&)"), self.onDirPathChanged)
+        self.button.clicked.connect(self.__chooseDirPath)
+        self.dirPath.textChanged.connect(self.onDirPathChanged)
 
     def onDirPathChanged(self):
         self.onModelChanged()
