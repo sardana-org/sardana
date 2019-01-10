@@ -131,33 +131,38 @@ class QDoor(BaseDoor, Qt.QObject):
         return BaseDoor.getExperimentConfiguration(self)
 
 
-
 class QMacroServer(BaseMacroServer, Qt.QObject):
 
+    # TODO: Choose and homogenize signals named ...Updated and ...Changed.
+    #  e.g: there should exist only one signal for elementsUpdated
+    #  and elementsChanged.
     typesUpdated = Qt.pyqtSignal()
     elementsUpdated = Qt.pyqtSignal()
     elementsChanged = Qt.pyqtSignal()
     macrosUpdated = Qt.pyqtSignal()
-    environmentChanged = Qt.pyqtSignal(list)
+    environmentChanged = Qt.pyqtSignal(object)
 
     def __init__(self, name, qt_parent=None, **kw):
         self.call__init__wo_kw(Qt.QObject, qt_parent)
         self.call__init__(BaseMacroServer, name, **kw)
 
-    def typesChanged(self, s, t, v):
-        res = BaseMacroServer.typesChanged(self, s, t, v)
-        self.typesUpdated.emit()
-        return res
-
-    def elementsChanged(self, s, t, v):
-        res = BaseMacroServer.elementsChanged(self, s, t, v)
-        self.elementsUpdated.emit()
-        return res
-
-    def macrosChanged(self, s, t, v):
-        res = BaseMacroServer.macrosChanged(self, s, t, v)
-        self.macrosUpdated.emit()
-        return res
+    # TODO: The following three methods are not used, and are not
+    #  implemented in the base class 'BaseMacroServer': Implement them.
+    #  (Now commented because they give conflicts with new style PyQt signals).
+    # def typesChanged(self, s, t, v):
+    #     res = BaseMacroServer.typesChanged(self, s, t, v)
+    #     self.typesUpdated.emit()
+    #     return res
+    #
+    # def elementsChanged(self, s, t, v):
+    #     res = BaseMacroServer.elementsChanged(self, s, t, v)
+    #     self.elementsUpdated.emit()
+    #     return res
+    #
+    # def macrosChanged(self, s, t, v):
+    #     res = BaseMacroServer.macrosChanged(self, s, t, v)
+    #     self.macrosUpdated.emit()
+    #     return res
 
     def on_elements_changed(self, s, t, v):
         ret = added, removed, changed = \
