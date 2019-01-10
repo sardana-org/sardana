@@ -379,6 +379,8 @@ class EnvironmentTreeItem(TaurusBaseTreeItem):
 
 class SardanaEnvironmentModel(TaurusBaseModel):
 
+    environmentChanged = Qt.pyqtSignal()
+
     ColumnNames = ["Environment", "Value", "Data Type"]
     ColumnRoles = ('Root', 'key'), 'value', 'datatype'
 
@@ -389,11 +391,9 @@ class SardanaEnvironmentModel(TaurusBaseModel):
     def setDataSource(self, data_source):
         old_ds = self.dataSource()
         if old_ds is not None:
-            Qt.QObject.disconnect(old_ds, Qt.SIGNAL('environmentChanged'),
-                                  self.on_environment_changed)
+            old_ds.environmentChanged(self.on_environment_changed)
         if data_source is not None:
-            Qt.QObject.connect(data_source, Qt.SIGNAL('environmentChanged'),
-                               self.on_environment_changed)
+            data_source.environmentChanged(self.on_environment_changed)
         TaurusBaseModel.setDataSource(self, data_source)
 
     def on_environment_changed(self):
