@@ -222,9 +222,9 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             self.onPathLEEdited)
         self.ui.filenameLE.textEdited.connect(
             self.onFilenameLEEdited)
-        self.ui.channelEditor.getQModel.dataChanged.connect(
+        self.ui.channelEditor.getQModel().dataChanged.connect(
             self._updateButtonBox)
-        self.ui.channelEditor.getQModel.modelReset.connect(
+        self.ui.channelEditor.getQModel().modelReset.connect(
             self._updateButtonBox)
         preScanList = self.ui.preScanList
         preScanList.dataChanged.connect(
