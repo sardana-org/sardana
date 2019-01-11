@@ -273,7 +273,7 @@ def getElementTypeToolTip(t):
 class BaseMntGrpChannelItem(TaurusBaseTreeItem):
     """ """
 
-    dataChanged = Qt.pyqtSignal(const QModelIndex &, const QModelIndex &)
+    dataChanged = Qt.pyqtSignal('QModelIndex', 'QModelIndex')
 
     def data(self, index):
         """Returns the data of this node for the given index
