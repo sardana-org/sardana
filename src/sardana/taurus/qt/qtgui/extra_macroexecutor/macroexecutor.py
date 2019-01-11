@@ -63,6 +63,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
     elementUp = Qt.pyqtSignal()
     elementDown = Qt.pyqtSignal()
     setHistoryFocus = Qt.pyqtSignal()
+    expandTree = Qt.pyqtSignal()
 
     def __init__(self, name, parent=None, designMode=False):
         # self.newValue - is used as a flag to indicate whether a controlUp controlDown actions are used to iterate existing element or put new one
@@ -314,7 +315,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
                     index = self.findParamRepeat(i)
                     self.currentIndex = self.model()._insertRow(index)
                     nn = self.model().nodeFromIndex(self.currentIndex)
-                    self.emit(Qt.SIGNAL("expandTree"))
+                    self.expandTree.emit()
                     ix = self.getIndex()
                     if not secValidation:
                         self.validateAllExpresion(True)
@@ -375,7 +376,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
     def returnPressed(self):
         # SLOT called when return is pressed
         if self.toolTip() == "":
-            self.emit(Qt.SIGNAL("pressedReturn"))
+            self.pressedReturn.emit()
         else:
             raise Exception(
                 "Cannot start macro. Please correct following mistakes: <br>" + self.toolTip())
@@ -431,7 +432,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
         # line when model is changed. (when new row in history is chosen)
 
         self.disableSpockCommandUpdate = False
-        self.emit(Qt.SIGNAL("elementDown"))
+        self.elementDown.emit()
         text = str(self.text()).split()
         if len(text) > 0:
             self.validateMacro(text[0])
@@ -439,7 +440,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
 
     def upAction(self):
         self.disableSpockCommandUpdate = False
-        self.emit(Qt.SIGNAL("elementUp"))
+        self.elementUp.emit()
         text = str(self.text()).split()
         if len(text) > 0:
             self.validateMacro(text[0])
@@ -601,7 +602,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
         # I had to make the macroname lowered as macros in comboBox (with macros), has names with all letter low.
         # Because of that sometimes it was not loading macros in MacroEditor
         # TO FIX
-        self.emit(Qt.SIGNAL("spockComboBox"), str(macroName).lower())
+        self.spockComboBox.emit(str(macroName).lower())
 
     def measureSelection(self, position):
         s = str(self.text()) + " "
@@ -626,6 +627,8 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
 
 
 class TaurusMacroExecutorWidget(TaurusWidget):
+
+    doorChanged = Qt.pyqtSignal('QString')
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
@@ -741,7 +744,7 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         self.spockCommand.spockComboBox.connect(self.setComboBoxItem)
         self.spockCommand.elementUp.connect(self.setHistoryUp)
         self.spockCommand.elementDown.connect(self.setHistoryDown)
-        self.spockCommand.expandTree(
+        self.spockCommand.expandTree.connect(
             self.standardMacroParametersEditor.tree.expandAll)
 
     def macroId(self):
@@ -1086,22 +1089,20 @@ class TaurusMacroExecutor(MacroExecutionWindow):
 def createMacroExecutorWidget(args):
     macroExecutor = TaurusMacroExecutorWidget()
     macroExecutor.setModelInConfig(True)
-    Qt.QObject.connect(macroExecutor, Qt.SIGNAL(
-        "doorChanged"), macroExecutor.onDoorChanged)
+    macroExecutor.doorChanged.connect(macroExecutor.onDoorChanged)
     if len(args) == 2:
         macroExecutor.setModel(args[0])
-        macroExecutor.emit(Qt.SIGNAL('doorChanged'), args[1])
+        macroExecutor.doorChanged.emit(args[1])
     return macroExecutor
 
 
 def createMacroExecutor(args):
     macroExecutor = TaurusMacroExecutor()
     macroExecutor.setModelInConfig(True)
-    Qt.QObject.connect(macroExecutor, Qt.SIGNAL(
-        "doorChanged"), macroExecutor.onDoorChanged)
+    macroExecutor.doorChanged.connect(macroExecutor.onDoorChanged)
     if len(args) == 2:
         macroExecutor.setModel(args[0])
-        macroExecutor.emit(Qt.SIGNAL('doorChanged'), args[1])
+        macroExecutor.doorChanged.emit(args[1])
     macroExecutor.loadSettings()
     return macroExecutor
 
