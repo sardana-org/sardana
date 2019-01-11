@@ -74,19 +74,13 @@ class UBMatrixBase(TaurusWidget):
 
         self.loadUi(filename="ubmatrix.ui")
 
-        self.connect(self._ui.UpdateButton, Qt.SIGNAL(
-            "clicked()"), self.update_values)
-        self.connect(self._ui.ComputeUButton,
-                     Qt.SIGNAL("clicked()"), self.compute_ub)
-        self.connect(self._ui.ReflectionsListButton, Qt.SIGNAL(
-            "clicked()"), self.reflections_list_window)
-        self.connect(self._ui.EditReflectionsButton, Qt.SIGNAL(
-            "clicked()"), self.edit_reflections_window)
-        self.connect(self._ui.AffineButton,
-                     Qt.SIGNAL("clicked()"), self.affine)
-        self.connect(self._ui.AddCrystalButton, Qt.SIGNAL(
-            "clicked()"), self.add_select_crystal)
-#        self.connect(self._ui.alattice_value, Qt.SIGNAL("textEdited()"), self.on_alattice_value_textEdited)
+        self._ui.UpdateButton.clicked.connect(self.update_values)
+        self._ui.ComputeUButton.clicked.connect(self.compute_ub)
+        self._ui.ReflectionsListButton.clicked.connect(self.reflections_list_window)
+        self._ui.EditReflectionsButton.clicked.connect(self.edit_reflections_window)
+        self._ui.AffineButton.clicked.connect(self.affine)
+        self._ui.AddCrystalButton.clicked.connect(self.add_select_crystal)
+#        self._ui.alattice_value.textEdited.connect(self.on_alattice_value_textEdited)
 #       Funciona con puro QEditValue pero no con TaurusQEdit ...
 
     @classmethod
@@ -157,8 +151,7 @@ class UBMatrixBase(TaurusWidget):
 
         self.enginescombobox.loadItems(self.device.enginelist)
 
-        self.connect(self.enginescombobox, Qt.SIGNAL(
-            "currentIndexChanged(QString)"), self.onEngineChanged)
+        self.enginescombobox.currentIndexChanged.connect(self.onEngineChanged)
 
         enginemodemodel = model + '/enginemode'
         self._ui.taurusLabelEngineMode.setModel(enginemodemodel)
@@ -169,8 +162,7 @@ class UBMatrixBase(TaurusWidget):
 
         self.enginemodescombobox.loadItems(self.device.enginemodelist)
 
-        self.connect(self.enginemodescombobox, Qt.SIGNAL(
-            "currentIndexChanged(QString)"), self.onModeChanged)
+        self.enginemodescombobox.currentIndexChanged.connect(self.onModeChanged)
 
         # Set model to crystal
 
@@ -183,8 +175,7 @@ class UBMatrixBase(TaurusWidget):
 
         self.crystalscombobox.loadItems(self.device.crystallist)
 
-        self.connect(self.crystalscombobox, Qt.SIGNAL(
-            "currentIndexChanged(QString)"), self.onCrystalChanged)
+        self.crystalscombobox.currentIndexChanged.connect(self.onCrystalChanged)
 
     def onEngineChanged(self, enginename):
         self.device.write_attribute("engine", str(enginename))

@@ -44,8 +44,8 @@ class ReflectionsEditor(TaurusWidget):
 
         self.loadUi(filename="reflectionseditor.ui")
 
-        self.connect(self._ui.ApplyButton, Qt.SIGNAL("clicked()"), self.apply)
-        self.connect(self._ui.ClearButton, Qt.SIGNAL("clicked()"), self.clear)
+        self._ui.ApplyButton.clicked.connect(self.apply)
+        self._ui.ClearButton.clicked.connect(self.clear)
 
     @classmethod
     def getQtDesignerPluginInfo(cls):

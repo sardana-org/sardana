@@ -69,8 +69,7 @@ class SelectSignal(TaurusWidget):
         self.signalComboBox.setGeometry(QtCore.QRect(70, 50, 161, 27))
         self.signalComboBox.setObjectName("SignalcomboBox")
 
-        self.connect(self.signalComboBox, Qt.SIGNAL(
-            "currentIndexChanged(QString)"), self.onSignalChanged)
+        self.signalComboBox.currentIndexChanged.connect(self.onSignalChanged)
 
         self.doorName = None
         self.door_device = None
