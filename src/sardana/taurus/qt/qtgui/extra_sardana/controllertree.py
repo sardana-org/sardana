@@ -128,7 +128,7 @@ class ControllerBaseModel(TaurusBaseModel):
         if self._data_src is not None:
             self._data_src.controllerClassesUpdated.disconnect(self.controllerClassesUpdated)
         if pool is not None:
-            self.pool.controllerClassesUpdated.connect(self.controllerClassesUpdated)
+            pool.controllerClassesUpdated.connect(self.controllerClassesUpdated)
         TaurusBaseModel.setDataSource(self, pool)
 
     def controllerClassesUpdated(self):
