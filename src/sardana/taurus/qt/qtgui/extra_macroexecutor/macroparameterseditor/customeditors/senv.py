@@ -52,8 +52,8 @@ class SenvEditor(Qt.QWidget, MacroParametersEditor):
         self.nameComboBox.addItems(
             ["ActiveMntGrp", "ExtraColumns", "JsonRecorder", "ScanFile", "ScanDir"])
         self.nameComboBox.setEditable(True)
-        self.connect(self.nameComboBox, Qt.SIGNAL(
-            "currentIndexChanged(int)"), self.onNameComboBoxChanged)
+        self.nameComboBox.currentIndexChanged.connect(
+            self.onNameComboBoxChanged)
         self.layout().addRow("name:", self.nameComboBox)
 
         nameIndex = self.model().index(0, 1, self.rootIndex())
@@ -150,14 +150,11 @@ class ExtraColumnsEditor(ParamBase, Qt.QWidget):
 
         self.layout().addWidget(self.extraColumnsTable)
 
-        self.connect(addNewColumnButton, Qt.SIGNAL(
-            "clicked()"), self.onAddNewColumn)
-        self.connect(removeSelectedColumnsButton, Qt.SIGNAL(
-            "clicked()"), self.onRemoveSelectedColumns)
-        self.connect(self.extraColumnsModel, Qt.SIGNAL(
-            "dataChanged (const QModelIndex&,const QModelIndex&)"), self.onExtraColumnsChanged)
-        self.connect(self.extraColumnsModel, Qt.SIGNAL(
-            "modelReset()"), self.onExtraColumnsChanged)
+        addNewColumnButton.clicked.connect(self.onAddNewColumn)
+        removeSelectedColumnsButton.clicked.connect(
+            self.onRemoveSelectedColumns)
+        self.extraColumnsModel.dataChanged.connect(self.onExtraColumnsChanged)
+        self.extraColumnsModel.modelReset.connect(self.onExtraColumnsChanged)
 
     def getValue(self):
         return repr(self.extraColumnsTable.model().columns())
@@ -351,8 +348,7 @@ class ExtraColumnsModel(Qt.QAbstractTableModel):
                 self.__columns[row]['model'] = value
             elif column == 2:
                 self.__columns[row]['instrument'] = value
-            self.emit(
-                Qt.SIGNAL("dataChanged(QModelIndex,QModelIndex)"), index, index)
+            self.dataChanged.emit(index, index)
             return True
         return False
 
