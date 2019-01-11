@@ -104,9 +104,8 @@ class DoorOutput(Qt.QPlainTextEdit):
         if not len(self.toPlainText()):
             clearAction.setEnabled(False)
 
-        Qt.QObject.connect(clearAction, Qt.SIGNAL("triggered()"), self.clear)
-        Qt.QObject.connect(self.stopAction, Qt.SIGNAL(
-            "toggled(bool)"), self.stopScrolling)
+        clearAction.triggered.connect(self.clear)
+        self.stopAction.toggled.connect(self.stopScrolling)
         menu.exec_(event.globalPos())
 
     def stopScrolling(self, stop):
@@ -143,9 +142,8 @@ class DoorDebug(Qt.QPlainTextEdit):
         if not len(self.toPlainText()):
             clearAction.setEnabled(False)
 
-        Qt.QObject.connect(clearAction, Qt.SIGNAL("triggered()"), self.clear)
-        Qt.QObject.connect(self.stopAction, Qt.SIGNAL(
-            "toggled(bool)"), self.stopScrolling)
+        clearAction.triggered.connect(self.clear)
+        self.stopAction.toggled.connect(self.stopScrolling)
         menu.exec_(event.globalPos())
 
     def stopScrolling(self, stop):
@@ -175,7 +173,7 @@ class DoorResult(Qt.QPlainTextEdit):
         if not len(self.toPlainText()):
             clearAction.setEnabled(False)
 
-        Qt.QObject.connect(clearAction, Qt.SIGNAL("triggered()"), self.clear)
+        clearAction.triggered.connect(self.clear)
         menu.exec_(event.globalPos())
 
 
@@ -202,6 +200,7 @@ class DoorAttrListener(Qt.QObject):
             return
         self.emit(Qt.SIGNAL('door%sChanged' % self.attrName), value.value)
 
+
 if __name__ == "__main__":
     import sys
     import taurus
@@ -213,6 +212,7 @@ if __name__ == "__main__":
     doorOutput = DoorOutput()
     if len(args) == 1:
         door = taurus.Device(args[0])
+
         Qt.QObject.connect(door, Qt.SIGNAL("outputUpdated"),
                            doorOutput.onDoorOutputChanged)
         Qt.QObject.connect(door, Qt.SIGNAL("infoUpdated"),

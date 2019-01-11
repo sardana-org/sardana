@@ -119,10 +119,13 @@ class MacroComboBox(Qt.QComboBox, TaurusBaseWidget):
         index = self.findText(macroName)
         self.setCurrentIndex(index)
         if currentIdx == index:
-            self.emit(Qt.SIGNAL("currentIndexChanged(QString)"), macroName)
+            self.currentIndexChanged.emit(macroName)
 
 
 class TaurusMacroConfigurationDialog(Qt.QDialog):
+
+    macroserverNameChanged = Qt.pyqtSignal('QString')
+    doorNameChanged = Qt.pyqtSignal('QString')
 
     def __init__(self, parent=None, initMacroServer=None, initDoor=None):
         Qt.QDialog.__init__(self, parent)
@@ -130,14 +133,13 @@ class TaurusMacroConfigurationDialog(Qt.QDialog):
         self.initDoor = initDoor
         configureAction = Qt.QAction(getThemeIcon(
             "folder-open"), "Change custom macro editors paths", self)
-        self.connect(configureAction, Qt.SIGNAL(
-            "triggered()"), self.onReloadMacroServers)
+        self.configureAction.triggered.connect(self.onReloadMacroServers)
         configureAction.setToolTip("Change custom macro editors paths")
         configureAction.setShortcut("F11")
         self.refreshMacroServersAction = Qt.QAction(
             getThemeIcon("view-refresh"), "Reload macroservers", self)
-        self.connect(self.refreshMacroServersAction, Qt.SIGNAL(
-            "triggered()"), self.onReloadMacroServers)
+        self.refreshMacroServersAction.triggered.connect(
+            self.onReloadMacroServers)
         self.refreshMacroServersAction.setToolTip(
             "This will reload list of all macroservers from Tango DB")
         self.refreshMacroServersAction.setShortcut("F5")
@@ -171,20 +173,18 @@ class TaurusMacroConfigurationDialog(Qt.QDialog):
         self.layout().addWidget(self.buttonBox)
         self.adjustSize()
 
-        self.connect(self.buttonBox, Qt.SIGNAL(
-            "accepted()"), self, Qt.SLOT("accept()"))
-        self.connect(self.buttonBox, Qt.SIGNAL(
-            "rejected()"), self, Qt.SLOT("reject()"))
-        self.connect(self.macroServerComboBox, Qt.SIGNAL(
-            "currentIndexChanged(const QString&)"), self.onMacroServerComboBoxChanged)
+        self.buttonBox.accepted.connect(Qt.SLOT("accept()"))
+        self.buttonBox.rejected.connect(Qt.SLOT("reject()"))
+        self.macroServerComboBox.currentIndexChanged.connect(
+            self.onMacroServerComboBoxChanged)
         self.selectMacroServer(self.initMacroServer)
         self.selectDoor(self.initDoor)
 
     def accept(self):
-        self.emit(Qt.SIGNAL("macroserverNameChanged"), str(
-            self.macroServerComboBox.currentText()))
-        self.emit(Qt.SIGNAL("doorNameChanged"), str(
-            self.doorComboBox.currentText()))
+        self.macroserverNameChanged.emit(
+            str(self.macroServerComboBox.currentText()))
+        self.doorNameChanged.emit(
+            str(self.doorComboBox.currentText()))
         Qt.QDialog.accept(self)
 
     def __retriveMacroServersFromDB(self):
@@ -252,6 +252,8 @@ class TaurusMacroConfigurationDialog(Qt.QDialog):
 
 class MacroExecutionWindow(TaurusMainWindow):
 
+    doorChanged = Qt.pyqtSignal('QString')
+
     def __init__(self, parent=None, designMode=False):
         TaurusMainWindow.__init__(self, parent, designMode)
         self.statusBar().showMessage("")
@@ -273,7 +275,7 @@ class MacroExecutionWindow(TaurusMainWindow):
         self.addToolBar(toolBar)
         self.initComponents()
         self.splashScreen().finish(self)
-        self.connect(self, Qt.SIGNAL("doorChanged"), self.onDoorChanged)
+        self.doorChanged.connect(self.onDoorChanged)
 
     def doorName(self):
         return self._doorName
@@ -310,8 +312,7 @@ class MacroExecutionWindow(TaurusMainWindow):
     def createConfigureAction(self):
         configureAction = Qt.QAction(getThemeIcon(
             "preferences-system-session"), "Change configuration", self)
-        self.connect(configureAction, Qt.SIGNAL(
-            "triggered()"), self.changeConfiguration)
+        configureAction.triggered.connect(self.changeConfiguration)
         configureAction.setToolTip("Configuring MacroServer and Door")
         configureAction.setShortcut("F10")
         return configureAction
@@ -319,8 +320,7 @@ class MacroExecutionWindow(TaurusMainWindow):
     def createCustomMacroEditorPathsAction(self):
         configureAction = Qt.QAction(getThemeIcon(
             "folder-open"), "Change custom macro editors paths", self)
-        self.connect(configureAction, Qt.SIGNAL(
-            "triggered()"), self.onCustomMacroEditorPaths)
+        configureAction.triggered.connect(self.onCustomMacroEditorPaths)
         configureAction.setToolTip("Change custom macro editors paths")
         configureAction.setShortcut("F11")
         return configureAction
@@ -333,8 +333,7 @@ class MacroExecutionWindow(TaurusMainWindow):
             self, self.modelName, self.doorName())
         if dialog.exec_():
             self.setModel(str(dialog.macroServerComboBox.currentText()))
-            self.emit(Qt.SIGNAL("doorChanged"), str(
-                dialog.doorComboBox.currentText()))
+            self.doorChanged.emit(str(dialog.doorComboBox.currentText()))
         else:
             return
 
