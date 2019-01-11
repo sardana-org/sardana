@@ -53,8 +53,7 @@ class TaurusMotorH(Qt.QWidget, TaurusBaseWidget):
         self.call__init__(TaurusBaseWidget, str(
             self.objectName()), designMode=designMode)
         self.loadUi()
-        Qt.QObject.connect(self.ui.config, Qt.SIGNAL(
-            "clicked()"), self.configureMotor)
+        self.ui.config.clicked.connect(self.configureMotor)
 
     def sizeHint(self):
         return Qt.QSize(330, 50)
@@ -112,8 +111,7 @@ class TaurusMotorH2(Qt.QWidget, TaurusBaseWidget):
         self.call__init__(TaurusBaseWidget, str(
             self.objectName()), designMode=designMode)
         self.loadUi()
-        Qt.QObject.connect(self.ui.config, Qt.SIGNAL(
-            "clicked()"), self.configureMotor)
+        self.ui.config.clicked.connect(self.configureMotor)
 
     def sizeHint(self):
         return Qt.QSize(215, 85)
@@ -171,8 +169,7 @@ class TaurusMotorV(Qt.QWidget, TaurusBaseWidget):
         self.call__init__(TaurusBaseWidget, str(
             self.objectName()), designMode=designMode)
         self.loadUi()
-        Qt.QObject.connect(self.ui.config, Qt.SIGNAL(
-            "clicked()"), self.configureMotor)
+        self.ui.config.clicked.connect(self.configureMotor)
 
     def sizeHint(self):
         return Qt.QSize(120, 145)
