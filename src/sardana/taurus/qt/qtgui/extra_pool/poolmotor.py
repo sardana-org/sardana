@@ -71,7 +71,7 @@ class LimitsListener(Qt.QObject):
         if evt_type not in [TaurusEventType.Change, TaurusEventType.Periodic]:
             return
         limits = evt_value.value
-        self.emit(Qt.SIGNAL('updateLimits(PyQt_PyObject)'), limits.tolist())
+        self.updateLimits.emit(limits.tolist())
 
 
 class PoolMotorClient():
@@ -382,32 +382,24 @@ class PoolMotorSlim(TaurusWidget, PoolMotorClient):
         self.__setTaurusIcons()
 
         self.ui.motorGroupBox.setContextMenuPolicy(Qt.Qt.CustomContextMenu)
-        self.connect(self.ui.motorGroupBox, Qt.SIGNAL(
-            'customContextMenuRequested(QPoint)'), self.buildContextMenu)
 
-        self.connect(self.ui.btnGoToNeg, Qt.SIGNAL('clicked()'), self.jogNeg)
-        self.connect(self.ui.btnGoToNegPress,
-                     Qt.SIGNAL('pressed()'), self.jogNeg)
-        self.connect(self.ui.btnGoToNegPress,
-                     Qt.SIGNAL('released()'), self.abort)
-        self.connect(self.ui.btnGoToNegInc, Qt.SIGNAL(
-            'clicked()'), self.goToNegInc)
-        self.connect(self.ui.btnGoToPos, Qt.SIGNAL('clicked()'), self.jogPos)
-        self.connect(self.ui.btnGoToPosPress,
-                     Qt.SIGNAL('pressed()'), self.jogPos)
-        self.connect(self.ui.btnGoToPosPress,
-                     Qt.SIGNAL('released()'), self.abort)
-        self.connect(self.ui.btnGoToPosInc, Qt.SIGNAL(
-            'clicked()'), self.goToPosInc)
+        self.ui.motorGroupBox.customContextMenuRequested.connect(
+            self.buildContextMenu)
+        self.ui.btnGoToNeg.clicked.connect(self.jogNeg)
+        self.ui.btnGoToNegPress.pressed.connect(self.jogNeg)
+        self.ui.btnGoToNegPress.released.connect(self.abort)
+        self.ui.btnGoToNegInc.clicked.connect(self.goToNegInc)
+        self.ui.btnGoToPos.clicked.connect(self.jogPos)
+        self.ui.btnGoToPosPress.pressed.connect(self.jogPos)
+        self.ui.btnGoToPosPress.released.connect(self.abort)
+        self.ui.btnGoToPosInc.clicked.connect(self.goToPosInc)
 
-        self.connect(self.ui.btnHome, Qt.SIGNAL('clicked()'), self.goHome)
-        self.connect(self.ui.btnStop, Qt.SIGNAL('clicked()'), self.abort)
+        self.ui.btnHome.clicked.connect(self.goHome)
+        self.ui.btnStop.clicked.connect(self.abort)
 
         # ALSO UPDATE THE WIDGETS EVERYTIME THE FORM HAS TO BE SHOWN
-        self.connect(self.ui.btnCfg, Qt.SIGNAL('clicked()'),
-                     taurus_attr_form._updateAttrWidgets)
-        self.connect(self.ui.btnCfg, Qt.SIGNAL('clicked()'),
-                     self.buildBetterCfgDialogTitle)
+        self.ui.btnCfg.clicke.connect(taurus_attr_form._updateAttrWidgets)
+        self.ui.btnCfg.clicked.connect(self.buildBetterCfgDialogTitle)
 
         #######################################################################
         ########################################
@@ -566,28 +558,17 @@ class PoolMotorSlim(TaurusWidget, PoolMotorClient):
         action_status.setChecked(self.ui.lblStatus.isVisible())
         menu.addAction(action_status)
 
-        self.connect(action_hide_all, Qt.SIGNAL(
-            'triggered()'), self.toggleHideAll)
-        self.connect(action_show_all, Qt.SIGNAL(
-            'triggered()'), self.toggleShowAll)
-        self.connect(action_move_absolute, Qt.SIGNAL(
-            'toggled(bool)'), self.toggleMoveAbsolute)
-        self.connect(action_move_relative, Qt.SIGNAL(
-            'toggled(bool)'), self.toggleMoveRelative)
-        self.connect(action_move_continuous, Qt.SIGNAL(
-            'toggled(bool)'), self.toggleMoveContinuous)
-        self.connect(action_move_to_limits, Qt.SIGNAL(
-            'toggled(bool)'), self.toggleMoveToLimits)
-        self.connect(action_encoder, Qt.SIGNAL(
-            'toggled(bool)'), self.toggleEncoder)
-        self.connect(action_stop_move, Qt.SIGNAL(
-            'toggled(bool)'), self.toggleStopMove)
-        self.connect(action_homing, Qt.SIGNAL(
-            'toggled(bool)'), self.toggleHoming)
-        self.connect(action_config, Qt.SIGNAL(
-            'toggled(bool)'), self.toggleConfig)
-        self.connect(action_status, Qt.SIGNAL(
-            'toggled(bool)'), self.toggleStatus)
+        action_hide_all.triggered.connect(self.toggleHideAll)
+        action_show_all.triggered.connect(self.toggleShowAll)
+        action_move_absolute.toggled.connect(self.toggleMoveAbsolute)
+        action_move_relative.toggled.connect(self.toggleMoveRelative)
+        action_move_continuous.toggled.connect(self.toggleMoveContinuous)
+        action_move_to_limits.toggled.connect(self.toggleMoveToLimits)
+        action_encoder.toggled.connect(self.toggleEncoder)
+        action_stop_move.toggled.connect(self.toggleStopMove)
+        action_homing.toggled.connect(self.toggleHoming)
+        action_config.toggled.connect(self.toggleConfig)
+        action_statu.stoggled.connect(self.toggleStatus)
 
         menu.popup(self.cursor().pos())
 
@@ -748,8 +729,8 @@ class PoolMotorSlim(TaurusWidget, PoolMotorClient):
 
             # CONFIGURE A LISTENER IN ORDER TO UPDATE LIMIT SWITCHES STATES
             self.limits_listener = LimitsListener()
-            self.connect(self.limits_listener, Qt.SIGNAL(
-                'updateLimits(PyQt_PyObject)'), self.updateLimits)
+            self.limits_listener.updateLimits.connect(
+                self.updateLimits)
             limits_visible = False
             if self.has_limits:
                 limits_attribute = self.motor_dev.getAttribute(
@@ -830,7 +811,7 @@ class TaurusAttributeListener(Qt.QObject):
         if evt_type not in [TaurusEventType.Change, TaurusEventType.Periodic]:
             return
         value = evt_value.value
-        self.emit(Qt.SIGNAL('eventReceived'), value)
+        self.eventReceived.emit(value)
 
 
 ##################################################
@@ -894,10 +875,9 @@ class PoolMotorTVLabelWidget(TaurusWidget):
 
     def setModel(self, model):
         # Handle User/Expert view
-        self.disconnect(self.taurusValueBuddy(), Qt.SIGNAL(
-            'expertViewChanged(bool)'), self.setExpertView)
-        self.disconnect(self.btn_poweron, Qt.SIGNAL(
-            'clicked()'), self.setPowerOn)
+        self.taurusValueBuddy.expertViewChanged.disconnect(
+            self.setExpertView)
+        self.btn_poweron.clicked.disconnect(self.setPowerOn)
         if model in (None, ''):
             self.lbl_alias.setModel(model)
             TaurusWidget.setModel(self, model)
@@ -905,10 +885,10 @@ class PoolMotorTVLabelWidget(TaurusWidget):
         self.lbl_alias.taurusValueBuddy = self.taurusValueBuddy
         self.lbl_alias.setModel(model)
         TaurusWidget.setModel(self, model + '/Status')
-        self.connect(self.taurusValueBuddy(), Qt.SIGNAL(
-            'expertViewChanged(bool)'), self.setExpertView)
+        self.taurusValueBuddy.expertViewChanged.connect(
+            self.setExpertView)
         # Handle Power ON/OFF
-        self.connect(self.btn_poweron, Qt.SIGNAL('clicked()'), self.setPowerOn)
+        self.btn_poweron.clicked.connect(self.setPowerOn)
         self.setExpertView(self.taurusValueBuddy()._expertView)
 
     def calculateExtendedTooltip(self, cache=False):
@@ -935,22 +915,21 @@ class PoolMotorTVLabelWidget(TaurusWidget):
         action_expert_view.setCheckable(True)
         action_expert_view.setChecked(self.taurusValueBuddy()._expertView)
         menu.addAction(action_expert_view)
-        self.connect(action_expert_view, Qt.SIGNAL(
-            'toggled(bool)'), self.taurusValueBuddy().setExpertView)
+        action_expert_view.toggled.connect(
+            self.taurusValueBuddy().setExpertView)
 
         action_tango_attributes = Qt.QAction(self)
         action_tango_attributes.setIcon(
             getIcon(':/categories/preferences-system.svg'))
         action_tango_attributes.setText('Tango Attributes')
         menu.addAction(action_tango_attributes)
-        self.connect(action_tango_attributes, Qt.SIGNAL(
-            'triggered()'), self.taurusValueBuddy().showTangoAttributes)
+        action_tango_attributes.triggered.connect(
+            self.taurusValueBuddy().showTangoAttributes)
 
         cm_action = menu.addAction("Compact")
         cm_action.setCheckable(True)
         cm_action.setChecked(self.taurusValueBuddy().isCompact())
-        self.connect(cm_action, Qt.SIGNAL("toggled(bool)"),
-                     self.taurusValueBuddy().setCompact)
+        cm_action.toggled.connect(self.taurusValueBuddy().setCompact)
 
         menu.exec_(event.globalPos())
         event.accept()
@@ -1022,7 +1001,7 @@ class PoolMotorTVReadWidget(TaurusWidget):
         self.btn_stop.setIcon(getIcon(':/actions/media_playback_stop.svg'))
         self.layout().addWidget(self.btn_stop, 0, 2)
 
-        self.connect(self.btn_stop, Qt.SIGNAL('clicked()'), self.abort)
+        self.btn_stop.clicked.connect(self.abort)
 
         # WITH COMPACT VIEW, WE NEED TO FORWARD DOUBLE CLICK EVENT
         self.lbl_read.installEventFilter(self)
@@ -1096,8 +1075,8 @@ class PoolMotorTVReadWidget(TaurusWidget):
 
     def setModel(self, model):
         if hasattr(self, 'taurusValueBuddy'):
-            self.disconnect(self.taurusValueBuddy(), Qt.SIGNAL(
-                'expertViewChanged(bool)'), self.setExpertView)
+            self.taurusValueBuddy().expertViewChanged.disconnect(
+                self.setExpertView)
         if model in (None, ''):
             TaurusWidget.setModel(self, model)
             self.lbl_read.setModel(model)
@@ -1108,8 +1087,8 @@ class PoolMotorTVReadWidget(TaurusWidget):
         self.lbl_enc_read.setModel(model + '/Encoder')
         # Handle User/Expert view
         self.setExpertView(self.taurusValueBuddy()._expertView)
-        self.connect(self.taurusValueBuddy(), Qt.SIGNAL(
-            'expertViewChanged(bool)'), self.setExpertView)
+        self.taurusValueBuddy().expertViewChanged.connect(
+            self.setExpertView)
 
 ##################################################
 #                  WRITE WIDGET                  #
@@ -1164,8 +1143,8 @@ class PoolMotorTVWriteWidget(TaurusWidget):
         self.layout().addWidget(self.qw_write_relative, 0, 0)
 
         self.cbAbsoluteRelative = Qt.QComboBox()
-        self.connect(self.cbAbsoluteRelative, Qt.SIGNAL(
-            'currentIndexChanged(QString)'), self.cbAbsoluteRelativeChanged)
+        self.cbAbsoluteRelative.currentIndexChanged.connect(
+            self.cbAbsoluteRelativeChanged)
         self.cbAbsoluteRelative.addItems(['Abs', 'Rel'])
         self.layout().addWidget(self.cbAbsoluteRelative, 0, 1)
 
@@ -1219,19 +1198,15 @@ class PoolMotorTVWriteWidget(TaurusWidget):
 
         self.layout().addLayout(btns_layout, 1, 0, 1, 3)
 
-        self.connect(self.btn_step_down, Qt.SIGNAL('clicked()'), self.stepDown)
-        self.connect(self.btn_step_up, Qt.SIGNAL('clicked()'), self.stepUp)
-        ###self.connect(self.btn_stop, Qt.SIGNAL('clicked()'), self.abort)
-        self.connect(self.btn_to_neg, Qt.SIGNAL('clicked()'), self.goNegative)
-        self.connect(self.btn_to_neg_press, Qt.SIGNAL(
-            'pressed()'), self.goNegative)
-        self.connect(self.btn_to_neg_press,
-                     Qt.SIGNAL('released()'), self.abort)
-        self.connect(self.btn_to_pos, Qt.SIGNAL('clicked()'), self.goPositive)
-        self.connect(self.btn_to_pos_press, Qt.SIGNAL(
-            'pressed()'), self.goPositive)
-        self.connect(self.btn_to_pos_press,
-                     Qt.SIGNAL('released()'), self.abort)
+        self.btn_step_down.clicked.connect(self.stepDown)
+        self.btn_step_up.clicked.connect(self.stepUp)
+        ###self.btn_stop.clicked.connect(self.abort)
+        self.btn_to_neg.clicked.connect(self.goNegative)
+        self.btn_to_neg_press.pressed.connect(self.goNegative)
+        self.btn_to_neg_press.released.connect(self.abort)
+        self.btn_to_pos.clicked.connect(self.goPositive)
+        self.btn_to_pos_press.pressed.connect(self.goPositive)
+        self.btn_to_pos_press.released.connect(self.abort)
 
         # Align everything on top
         self.layout().addItem(Qt.QSpacerItem(
@@ -1249,20 +1224,11 @@ class PoolMotorTVWriteWidget(TaurusWidget):
 
         # IN EXPERT VIEW, WE HAVE TO FORWARD THE ''editingFinished()' SIGNAL
         # FROM TaurusValueLineEdit TO Switcher
-        try:
-            self.connect(self.le_write_absolute, Qt.SIGNAL(
-                TaurusBaseWritableWidget.appliedSignalSignature), self.emitEditingFinished)
-        except AttributeError:
-            # TODO: For Taurus 4 adaptation
-            self.le_write_absolute.applied.connect(self.emitEditingFinished)
-        self.connect(self.btn_step_down, Qt.SIGNAL(
-            "clicked()"), self.emitEditingFinished)
-        self.connect(self.btn_step_up, Qt.SIGNAL(
-            "clicked()"), self.emitEditingFinished)
-        self.connect(self.btn_to_neg, Qt.SIGNAL(
-            "clicked()"), self.emitEditingFinished)
-        self.connect(self.btn_to_pos, Qt.SIGNAL(
-            "clicked()"), self.emitEditingFinished)
+        self.le_write_absolute.applied.connect(self.emitEditingFinished)
+        self.btn_step_down.clicked.connect(self.emitEditingFinished)
+        self.btn_step_up.clicked.connect(self.emitEditingFinished)
+        self.btn_to_neg.clicked.connect(self.emitEditingFinished)
+        self.btn_to_pos.clicked.connect(self.emitEditingFinished)
 
         # list of widgets used for edition
         editingWidgets = (self.le_write_absolute, self.cbAbsoluteRelative,
@@ -1361,8 +1327,8 @@ class PoolMotorTVWriteWidget(TaurusWidget):
 
     def setModel(self, model):
         if hasattr(self, 'taurusValueBuddy'):
-            self.disconnect(self.taurusValueBuddy(), Qt.SIGNAL(
-                'expertViewChanged(bool)'), self.setExpertView)
+            self.taurusValueBuddy.expertViewChanged.disconnect(
+                self.setExpertView)
         if model in (None, ''):
             TaurusWidget.setModel(self, model)
             self.le_write_absolute.setModel(model)
@@ -1372,8 +1338,8 @@ class PoolMotorTVWriteWidget(TaurusWidget):
 
         # Handle User/Expert View
         self.setExpertView(self.taurusValueBuddy()._expertView)
-        self.connect(self.taurusValueBuddy(), Qt.SIGNAL(
-            'expertViewChanged(bool)'), self.setExpertView)
+        self.taurusValueBuddy().expertViewChanged.connect(
+            self.setExpertView)
 
     def keyPressEvent(self, key_event):
         if key_event.key() == Qt.Qt.Key_Escape:
@@ -1382,11 +1348,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
         TaurusWidget.keyPressEvent(self, key_event)
 
     def emitEditingFinished(self):
-        try:
-            self.emit(Qt.SIGNAL(TaurusBaseWritableWidget.appliedSignalSignature))
-        except AttributeError:
-            # TODO: For Taurus 4 adaptation
-            self.applied.emit()
+        self.applied.emit()
 
 
 ##################################################
@@ -1436,7 +1398,7 @@ class PoolMotorTV(TaurusValue):
 
     def setExpertView(self, expertView):
         self._expertView = expertView
-        self.emit(Qt.SIGNAL('expertViewChanged(bool)'), expertView)
+        self.expertViewChanged.emit(expertView)
 
     def minimumHeight(self):
         return None  # @todo: UGLY HACK to avoid subwidgets being forced to minimumheight=20
@@ -1446,17 +1408,17 @@ class PoolMotorTV(TaurusValue):
         try:
             # disconnect signals
             if self.limits_listener is not None:
-                self.disconnect(self.limits_listener, Qt.SIGNAL(
-                    'eventReceived'), self.updateLimits)
+                self.limits_listener.eventReceived.disconnect(
+                    self.updateLimits)
             if self.poweron_listener is not None:
-                self.disconnect(self.poweron_listener, Qt.SIGNAL(
-                    'eventReceived'), self.updatePowerOn)
+                self.poweron_listener.eventReceived.disconnect(
+                    self.updatePowerOn)
             if self.status_listener is not None:
-                self.disconnect(self.status_listener, Qt.SIGNAL(
-                    'eventReceived'), self.updateStatus)
+                self.status_listener.eventReceived.disconnect(
+                    self.updateStatus)
             if self.position_listener is not None:
-                self.disconnect(self.position_listener, Qt.SIGNAL(
-                    'eventReceived'), self.updatePosition)
+                self.position_listener.eventReceived.disconnect(
+                    self.updatePosition)
 
             # remove listeners
             if self.motor_dev is not None:
@@ -1479,8 +1441,8 @@ class PoolMotorTV(TaurusValue):
             # CONFIGURE A LISTENER IN ORDER TO UPDATE LIMIT SWITCHES STATES
             self.limits_listener = TaurusAttributeListener()
             if self.hasHwLimits():
-                self.connect(self.limits_listener, Qt.SIGNAL(
-                    'eventReceived'), self.updateLimits)
+                self.limits_listener.eventReceived.connect(
+                    self.updateLimits)
                 self.motor_dev.getAttribute(
                     'Limit_Switches').addListener(self.limits_listener)
 
@@ -1488,23 +1450,23 @@ class PoolMotorTV(TaurusValue):
             # True/False EXPERT OPERATION
             self.poweron_listener = TaurusAttributeListener()
             if self.hasPowerOn():
-                self.connect(self.poweron_listener, Qt.SIGNAL(
-                    'eventReceived'), self.updatePowerOn)
+                self.poweron_listener.eventReceived.connect(
+                    self.updatePowerOn)
                 self.motor_dev.getAttribute(
                     'PowerOn').addListener(self.poweron_listener)
 
             # CONFIGURE AN EVENT RECEIVER IN ORDER TO UPDATED STATUS TOOLTIP
             self.status_listener = TaurusAttributeListener()
-            self.connect(self.status_listener, Qt.SIGNAL(
-                'eventReceived'), self.updateStatus)
+            self.status_listener.eventReceived.connect(
+                self.updateStatus)
             self.motor_dev.getAttribute(
                 'Status').addListener(self.status_listener)
 
             # CONFIGURE AN EVENT RECEIVER IN ORDER TO ACTIVATE LIMIT BUTTONS ON
             # SOFTWARE LIMITS
             self.position_listener = TaurusAttributeListener()
-            self.connect(self.position_listener, Qt.SIGNAL(
-                'eventReceived'), self.updatePosition)
+            self.position_listener.eventReceived.connect(
+                self.updatePosition)
             self.motor_dev.getAttribute(
                 'Position').addListener(self.position_listener)
 
