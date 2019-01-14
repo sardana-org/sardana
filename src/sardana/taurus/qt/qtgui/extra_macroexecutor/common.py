@@ -132,7 +132,7 @@ class TaurusMacroConfigurationDialog(Qt.QDialog):
         self.initDoor = initDoor
         configureAction = Qt.QAction(getThemeIcon(
             "folder-open"), "Change custom macro editors paths", self)
-        self.configureAction.triggered.connect(self.onReloadMacroServers)
+        configureAction.triggered.connect(self.onReloadMacroServers)
         configureAction.setToolTip("Change custom macro editors paths")
         configureAction.setShortcut("F11")
         self.refreshMacroServersAction = Qt.QAction(
@@ -172,8 +172,8 @@ class TaurusMacroConfigurationDialog(Qt.QDialog):
         self.layout().addWidget(self.buttonBox)
         self.adjustSize()
 
-        self.buttonBox.accepted.connect(Qt.SLOT("accept()"))
-        self.buttonBox.rejected.connect(Qt.SLOT("reject()"))
+        self.buttonBox.accepted.connect(self.accept)
+        self.buttonBox.rejected.connect(self.reject)
         self.macroServerComboBox.currentIndexChanged.connect(
             self.onMacroServerComboBoxChanged)
         self.selectMacroServer(self.initMacroServer)
