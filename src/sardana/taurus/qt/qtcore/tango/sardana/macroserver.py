@@ -83,7 +83,8 @@ class QDoor(BaseDoor, Qt.QObject):
             macro = self.getRunningMacro()
         if macro is None:
             return
-        self.macroStatusUpdated.emit(res)
+
+        self.macroStatusUpdated.emit((macro, res))
         return res
 
     def logReceived(self, log_name, output):
