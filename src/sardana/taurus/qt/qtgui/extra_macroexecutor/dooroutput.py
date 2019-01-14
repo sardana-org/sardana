@@ -185,8 +185,11 @@ class DoorAttrListener(Qt.QObject):
 
     def __init__(self, attrName):
         Qt.QObject.__init__(self)
+        from taurus.core.util.log import deprecated
+        deprecated(msg="Do not use", rel="Jan19")
         self.attrName = attrName
         self.attrObj = None
+        setattr(self, 'door%sChanged' % self.attrName, Qt.pyqtSignal('object'))
 
     def setDoorName(self, doorName):
         if not self.attrObj is None:
@@ -198,7 +201,10 @@ class DoorAttrListener(Qt.QObject):
         if (type == taurus.core.taurusbasetypes.TaurusEventType.Error or
                 type == taurus.core.taurusbasetypes.TaurusEventType.Config):
             return
-        self.emit(Qt.SIGNAL('door%sChanged' % self.attrName), value.value)
+
+        # self.emit(Qt.SIGNAL('door%sChanged' % self.attrName), value.value)
+        signal = getattr(self, 'door%sChanged' % self.attrName)
+        signal.emit(value.value)
 
 
 if __name__ == "__main__":
@@ -212,14 +218,10 @@ if __name__ == "__main__":
     doorOutput = DoorOutput()
     if len(args) == 1:
         door = taurus.Device(args[0])
+        door.outputUpdated.connect(doorOutput.onDoorOutputChanged)
+        door.infoUpdated.connect(doorOutput.onDoorInfoChanged)
+        door.warningUpdated.connect(doorOutput.onDoorWarningChanged)
+        door.errorUpdated.connect(doorOutput.onDoorErrorChanged)
 
-        Qt.QObject.connect(door, Qt.SIGNAL("outputUpdated"),
-                           doorOutput.onDoorOutputChanged)
-        Qt.QObject.connect(door, Qt.SIGNAL("infoUpdated"),
-                           doorOutput.onDoorInfoChanged)
-        Qt.QObject.connect(door, Qt.SIGNAL("warningUpdated"),
-                           doorOutput.onDoorWarningChanged)
-        Qt.QObject.connect(door, Qt.SIGNAL("errorUpdated"),
-                           doorOutput.onDoorErrorChanged)
     doorOutput.show()
     sys.exit(app.exec_())

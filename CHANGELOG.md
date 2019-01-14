@@ -70,6 +70,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Measurement group start without prior preparation (SEP18, #773)
 - Loadable controller's API: `LoadOne(axis, value, repeats)`
   in favor of `LoadOne(axis, value, repeats, latency)` (SEP18, #773)
+- Unused class `sardana.taurus.qt.qtgui.extra_macroexecutor.dooroutput.DoorAttrListener`
+
 
 
 ## [2.5.0] 2018-08-10
