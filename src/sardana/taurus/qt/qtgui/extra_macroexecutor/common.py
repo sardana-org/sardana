@@ -174,7 +174,7 @@ class TaurusMacroConfigurationDialog(Qt.QDialog):
 
         self.buttonBox.accepted.connect(self.accept)
         self.buttonBox.rejected.connect(self.reject)
-        self.macroServerComboBox.currentIndexChanged.connect(
+        self.macroServerComboBox.currentIndexChanged['QString'].connect(
             self.onMacroServerComboBoxChanged)
         self.selectMacroServer(self.initMacroServer)
         self.selectDoor(self.initDoor)
