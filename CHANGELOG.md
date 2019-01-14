@@ -65,6 +65,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   #933)
 - Logstash handler from python-logstash to python-logstash-async (#895)
 - Move `ParamParser` to `sardana.util.parser` (#781, #907, #908)
+- SpockCommandWidget.returnPressed method renamed to onReturnPressed
+- SpockCommandWidget.textChanged method renamed to onTextChanged
 
 ### Deprecated
 - Measurement group start without prior preparation (SEP18, #773)

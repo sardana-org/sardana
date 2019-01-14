@@ -87,8 +87,8 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
         self.setEnabled(False)
 
         self.setActions()
-        self.textChanged.connect(self.textChanged)
-        self.returnPressed.connect(self.returnPressed)
+        self.textChanged.connect(self.onTextChanged)
+        self.returnPressed.connect(self.onReturnPressed)
 
     def setActions(self):
         self._downAction = Qt.QAction("downAction", self)
@@ -372,7 +372,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
         paramNode.setValue(value)
         return self.getModelObj().validateSingleParam(paramNode)
 
-    def returnPressed(self):
+    def onReturnPressed(self):
         # SLOT called when return is pressed
         if self.toolTip() == "":
             self.pressedReturn.emit()
@@ -380,7 +380,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
             raise Exception(
                 "Cannot start macro. Please correct following mistakes: <br>" + self.toolTip())
 
-    def textChanged(self, strs):
+    def onTextChanged(self, strs):
         # SLOT called when QLineEdit text is changed
         if strs == "":
             self.updateMacroEditor("")
@@ -630,7 +630,7 @@ class TaurusMacroExecutorWidget(TaurusWidget):
     doorChanged = Qt.pyqtSignal('QString')
     macroNameChanged = Qt.pyqtSignal('QString')
     macroStarted = Qt.pyqtSignal('QString')
-    plotablesFilterChanged = Qt.pyqtSignal('object')
+    plotablesFilterChanged = Qt.pyqtSignal(object)
     shortMessageEmitted = Qt.pyqtSignal('QString')
 
     def __init__(self, parent=None, designMode=False):
