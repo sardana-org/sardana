@@ -119,8 +119,7 @@ class MacroComboBox(Qt.QComboBox, TaurusBaseWidget):
         index = self.findText(macroName)
         self.setCurrentIndex(index)
         if currentIdx == index:
-            self.currentIndexChanged.emit(macroName)
-
+            self.currentIndexChanged['QString'].emit(macroName)
 
 class TaurusMacroConfigurationDialog(Qt.QDialog):
 

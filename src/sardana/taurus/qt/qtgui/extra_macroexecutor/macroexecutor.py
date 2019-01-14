@@ -736,7 +736,7 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         spockCommandLayout.addWidget(self.spockCommand)
         self.layout().addLayout(spockCommandLayout)
 
-        self.macroComboBox.currentIndexChanged.connect(
+        self.macroComboBox.currentIndexChanged['QString'].connect(
             self.onMacroComboBoxChanged)
         self.favouritesMacrosEditor.list.favouriteSelected.connect(
             self.onFavouriteSelected)
@@ -822,6 +822,7 @@ class TaurusMacroExecutorWidget(TaurusWidget):
     def setComboBoxItem(self, macroName):
         self.macroComboBox.selectMacro(macroName)
 
+    @Qt.pyqtSlot('QString')
     def onMacroComboBoxChanged(self, macroName):
         macroName = str(macroName)
         if macroName == "":
