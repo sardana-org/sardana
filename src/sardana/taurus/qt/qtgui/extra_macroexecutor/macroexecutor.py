@@ -141,9 +141,8 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
         self.disableEditMode = not enable
         self.setEnabled(enable)
         self._model = model
-        self.connect(self._model, Qt.SIGNAL(
-            "dataChanged(QModelIndex,QModelIndex)"), self.onDataChanged)
-        self.connect(self._model, Qt.SIGNAL("modelReset()"), self.setCommand)
+        self._model.dataChanged.connect(self.onDataChanged)
+        self._model.modelReset.connect(self.setCommand)
 
     def model(self):
         return self._model
@@ -629,6 +628,10 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
 class TaurusMacroExecutorWidget(TaurusWidget):
 
     doorChanged = Qt.pyqtSignal('QString')
+    macroNameChanged = Qt.pyqtSignal('QString')
+    macroStarted = Qt.pyqtSignal('QString')
+    plotablesFilterChanged = Qt.pyqtSignal('object')
+    shortMessageEmitted = Qt.pyqtSignal('QString')
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
@@ -859,7 +862,7 @@ class TaurusMacroExecutorWidget(TaurusWidget):
             self.standardMacroParametersEditor.setModel(
                 self.paramEditorModel())
 
-        self.emit(Qt.SIGNAL("macroNameChanged"), macroName)
+        self.macroNameChanged.emit(macroName)
 
     def onFavouriteSelected(self, macroNode):
         self.setFavouritesBuffer(macroNode)
@@ -975,14 +978,13 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         macroName = macro.name
         shortMessage = ""
         if state == "start":
-            self.emit(Qt.SIGNAL("macroStarted"), "DoorOutput")
+            self.macroStarted.emit("DoorOutput")
             self.macroProgressBar.setRange(range[0], range[1])
             self.playMacroAction.setEnabled(False)
             self.pauseMacroAction.setEnabled(True)
             self.stopMacroAction.setEnabled(True)
-            self.emit(Qt.SIGNAL("plotablesFilterChanged"), None)
-            self.emit(Qt.SIGNAL("plotablesFilterChanged"),
-                      standardPlotablesFilter)
+            self.plotablesFilterChanged.emit(None)
+            self.plotablesFilterChanged.emit(standardPlotablesFilter)
             shortMessage = "Macro %s started." % macroName
         elif state == "pause":
             self.playMacroAction.setText("Resume macro")
@@ -1019,7 +1021,7 @@ class TaurusMacroExecutorWidget(TaurusWidget):
             shortMessage = "Macro %s stopped." % macroName
         elif state == "step":
             shortMessage = "Macro %s at %d %% of progress." % (macroName, step)
-        self.emit(Qt.SIGNAL("shortMessageEmitted"), shortMessage)
+        self.shortMessageEmitted.emit(shortMessage)
         self.macroProgressBar.setValue(step)
 
     def disableControlActions(self):
@@ -1030,12 +1032,13 @@ class TaurusMacroExecutorWidget(TaurusWidget):
     def setModel(self, model):
         oldModelObj = self.getModelObj()
         if oldModelObj is not None:
-            self.disconnect(oldModelObj, Qt.SIGNAL(
-                "macrosUpdated"), self.macroComboBox.onMacrosUpdated)
+            # TODO: check if macrosUpdated signal exists
+            oldModelObj.macrosUpdated.disconnect(
+                self.macroComboBox.onMacrosUpdated)
         TaurusWidget.setModel(self, model)
         newModelObj = self.getModelObj()
-        self.connect(newModelObj, Qt.SIGNAL("macrosUpdated"),
-                     self.macroComboBox.onMacrosUpdated)
+        newModelObj.macrosUpdated.connect(
+            self.macroComboBox.onMacrosUpdated)
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
@@ -1055,8 +1058,8 @@ class TaurusMacroExecutor(MacroExecutionWindow):
         self.registerConfigDelegate(self.taurusMacroExecutorWidget)
         self.taurusMacroExecutorWidget.setUseParentModel(True)
         self.setCentralWidget(self.taurusMacroExecutorWidget)
-        self.connect(self.taurusMacroExecutorWidget, Qt.SIGNAL(
-            'shortMessageEmitted'), self.onShortMessage)
+        self.taurusMacroExecutorWidget.shortMessageEmitted.connect(
+            self.onShortMessage)
         self.statusBar().showMessage("MacroExecutor ready")
 
     def setCustomMacroEditorPaths(self, customMacroEditorPaths):
