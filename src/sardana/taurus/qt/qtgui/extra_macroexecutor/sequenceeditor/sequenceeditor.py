@@ -209,8 +209,9 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
         return self.model().root()
 
     def setRoot(self, root):
+        self.model().beginResetModel()
         self.model().setRoot(root)
-        self.model().reset()
+        self.model().endResetModel()
 
     def addMacro(self, macroNode):
         node, proxyIndex = self.selectedNodeAndIndex()

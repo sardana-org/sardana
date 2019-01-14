@@ -96,9 +96,10 @@ class MacrosListModel(Qt.QAbstractListModel):
         return xmlString
 
     def fromXmlString(self, xmlString):
+        self.beginResetModel()
         listElement = etree.fromstring(xmlString)
         for childElement in listElement.iterchildren("macro"):
             macroNode = macro.MacroNode()
             macroNode.fromXml(childElement)
             self.list.append(macroNode)
-        self.reset()
+        self.endResetModel()

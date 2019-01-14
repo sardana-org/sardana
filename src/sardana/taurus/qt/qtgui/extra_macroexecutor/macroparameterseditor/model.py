@@ -48,10 +48,11 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         return self._root
 
     def setRoot(self, node=None):
+        self.beginResetModel()
         if node is None:
             node = macro.MacroNode()
         self._root = node
-        self.reset()
+        self.endResetModel()
 
     def flags(self, index):
         if index.column() == 0:
@@ -123,7 +124,8 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         paramRepeatNode = self.nodeFromIndex(index)
         paramRepeatNode.addRepeat()
         if callReset:
-            self.reset()
+            self.beginResetModel()
+            self.endResetModel()
 
     def delRepeat(self, index, callReset=True):
         branchIndex = self.parent(index)
@@ -131,7 +133,8 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         child = self.nodeFromIndex(index)
         branch.removeChild(child)
         if callReset:
-            self.reset()
+            self.beginResetModel()
+            self.endResetModel()
 
     def upRepeat(self, index, callReset=True):
         branchIndex = self.parent(index)
@@ -139,7 +142,8 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         child = self.nodeFromIndex(index)
         branch.upChild(child)
         if callReset:
-            self.reset()
+            self.beginResetModel()
+            self.endResetModel()
 
     def downRepeat(self, index, callReset=True):
         branchIndex = self.parent(index)
@@ -147,7 +151,8 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         child = self.nodeFromIndex(index)
         branch.downChild(child)
         if callReset:
-            self.reset()
+            self.beginResetModel()
+            self.endResetModel()
 
     def DuplicateRepeat(self, index, callReset=True):
         branchIndex = self.parent(index)
@@ -155,7 +160,8 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         child = self.nodeFromIndex(index)
         branch.downChild(child)
         if callReset:
-            self.reset()
+            self.beginResetModel()
+            self.endResetModel()
 
     def rowCount(self, index):
         node = self.nodeFromIndex(index)

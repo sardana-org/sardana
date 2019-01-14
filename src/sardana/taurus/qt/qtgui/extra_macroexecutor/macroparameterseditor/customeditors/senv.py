@@ -283,8 +283,9 @@ class ExtraColumnsModel(Qt.QAbstractTableModel):
         self.__columns = columns
 
     def setColumns(self, columns):
+        self.beginResetModel()
         self.__columns = columns
-        self.reset()
+        self.endResetModel()
 
     def columns(self):
         return self.__columns

@@ -46,8 +46,9 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         return self._root
 
     def setRoot(self, root):
+        self.beginResetModel()
         self._root = root
-        self.reset()
+        self.endResetModel()
 
     def clearSequence(self):
         self.setRoot(macro.SequenceNode())
@@ -243,18 +244,20 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         return xmlString
 
     def fromXmlString(self, xmlString):
+        self.beginResetModel()
         xmlElement = etree.fromstring(xmlString)
         newRoot = macro.SequenceNode(None)
         newRoot.fromXml(xmlElement)
         self.setRoot(newRoot)
-        self.reset()
+        self.endResetModel()
         return newRoot
 
     def fromPlainText(self, text):
+        self.beginResetModel()
         newRoot = macro.SequenceNode(None)
         newRoot.fromPlainText(text)
         self.setRoot(newRoot)
-        self.reset()
+        self.endResetModel()
         return newRoot
 
     def assignIds(self):
