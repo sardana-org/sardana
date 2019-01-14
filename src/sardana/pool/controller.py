@@ -298,7 +298,7 @@ class Controller(object):
 
     #: A :obj:`str` containning the path to the image logo file
     logo = None
-
+    
     def __init__(self, inst, props, *args, **kwargs):
         self._inst_name = inst
         self._log = Logger("Controller.%s" % inst)
@@ -661,6 +661,8 @@ class Loadable(object):
 
     .. note: Do not inherit directly from Loadable."""
 
+    default_timer = None
+    
     def PrepareOne(self, axis, value, repetitions, latency, nb_starts):
         """**Controller API**. Override if necessary.
         Called to prepare the master channel axis with the measurement

@@ -64,12 +64,13 @@ class DummyCounterTimerController(CounterTimerController):
     TimerMode = 1
     MonitorMode = 2
     CounterMode = 3
+
+    default_timer = 1
     
     def __init__(self, inst, props, *args, **kwargs):
         CounterTimerController.__init__(self, inst, props, *args, **kwargs)
         self._synchronization = AcqSynch.SoftwareTrigger
         self._latency_time = 0
-        self._default_timer = 1
         self.channels = self.MaxDevice * [None, ]
         self.reset()
 
@@ -266,8 +267,6 @@ class DummyCounterTimerController(CounterTimerController):
             return self._synchronization
         elif par == 'latency_time':
             return self._latency_time
-        elif par == 'default_timer':
-            return self._default_timer
 
     def SetCtrlPar(self, par, value):
         if par == 'synchronization':
@@ -275,5 +274,3 @@ class DummyCounterTimerController(CounterTimerController):
             for channel in self.channels:
                 if channel:
                     channel.mode = value
-        elif par == 'default_timer':
-            self._default_timer = value

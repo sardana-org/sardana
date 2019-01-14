@@ -339,7 +339,7 @@ class PoolBaseChannel(PoolElement):
             self.conf_ctrl.timer = channel
         else:
             if self.timer == "__default":
-                self.conf_timer = ChannelConfiguration(ctrl.get_element(axis=ctrl.get_ctrl_par("default_timer")))
+                self.conf_timer = ChannelConfiguration(ctrl.get_element(axis=ctrl.ctrl.default_timer))
             else:    
                 self.conf_timer = ChannelConfiguration(self.pool.get_element_by_name(self.timer))
             self.conf_ctrl.add_channel(self.conf_timer)
@@ -352,7 +352,7 @@ class PoolBaseChannel(PoolElement):
         comp_self = "__self"
         if self.timer != "__self":
             if self.timer == "__default":
-                self.acquisition.add_element(ctrl.get_element(axis=ctrl.get_ctrl_par("default_timer")))
+                self.acquisition.add_element(ctrl.get_element(axis=ctrl.ctrl.default_timer))
             else:
                 self.acquisition.add_element(self.pool.get_element_by_name(self.timer))
 
@@ -386,11 +386,13 @@ class PoolTimerableChannel(PoolBaseChannel):
         if timer == "__default":
             try:
                 ctrl = self.get_controller()
-                self.default_timer_axis = ctrl.get_ctrl_par("default_timer")
+                self.default_timer_axis = ctrl.ctrl.default_timer
             except:
-                raise ValueError("Not default axis in controller")
+                raise ValueError("Error reading default_timer")
                 return
-            
+            if self.default_timer_axis == None:
+                raise ValueError("default_timer not defined in controller")
+    
         if timer is not None and timer != "__self":
             try:
                 if timer != "__default":
