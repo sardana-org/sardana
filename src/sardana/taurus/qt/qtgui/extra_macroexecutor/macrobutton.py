@@ -258,7 +258,7 @@ class MacroButton(TaurusWidget):
 
         :param signals: (seq<pyqtsignals>) An ordered sequence of signals
         """
-        _pyqtsignals = []
+
         for i, signal in enumerate(signals):
             # TODO: if possible, better check that this is not a pyqtsignal
             if isinstance(signal, (tuple, list, set)):

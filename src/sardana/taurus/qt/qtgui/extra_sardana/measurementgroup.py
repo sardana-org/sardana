@@ -684,7 +684,8 @@ class MntGrpChannelModel(BaseMntGrpChannelModel):
 
     def setDataSource(self, mg):
         if self._data_src is not None:
-            self._data_src.configurationChanged.disconnect(self.configurationChanged)
+            self._data_src.configurationChanged.disconnect(
+                self.configurationChanged)
         if mg is not None:
             mg.configurationChanged.connect(self.configurationChanged)
         BaseMntGrpChannelModel.setDataSource(self, mg)

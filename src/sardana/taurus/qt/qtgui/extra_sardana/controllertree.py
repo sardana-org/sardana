@@ -122,13 +122,13 @@ class ControllerBaseModel(TaurusBaseModel):
     ColumnRoles = (PoolControllerView.ControllerModule,
                    PoolControllerView.ControllerModule, PoolControllerView.ControllerClass),
 
-
-    
     def setDataSource(self, pool):
         if self._data_src is not None:
-            self._data_src.controllerClassesUpdated.disconnect(self.controllerClassesUpdated)
+            self._data_src.controllerClassesUpdated.disconnect(
+                self.controllerClassesUpdated)
         if pool is not None:
-            pool.controllerClassesUpdated.connect(self.controllerClassesUpdated)
+            pool.controllerClassesUpdated.connect(
+                self.controllerClassesUpdated)
         TaurusBaseModel.setDataSource(self, pool)
 
     def controllerClassesUpdated(self):
@@ -277,11 +277,10 @@ class ControllerClassTreeWidget(TaurusBaseTreeWidget):
 
 
 class ControllerClassSelectionDialog(Qt.QDialog):
-    
 
     __pyqtSignals__ = ["accepted",
                        "rejected"]
- 
+
     def __init__(self, parent=None, designMode=False, model_name=None, perspective=None):
         Qt.QDialog.__init__(self, parent)
 

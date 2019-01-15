@@ -229,7 +229,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         preScanList = self.ui.preScanList
         preScanList.dataChanged.connect(
             self.onPreScanSnapshotChanged)
-        
+
         if hasattr(preScanList, "dataChangedSignal"):
             preScanList.dataChangedSignal.connect(
                 self.onPreScanSnapshotChanged)
@@ -404,7 +404,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         msname = door.macro_server.getFullName()
         self.ui.taurusModelTree.setModel(tghost)
         self.ui.sardanaElementTree.setModel(msname)
-        door.experimentConfigurationChanged.connect(self._experimentConfigurationChanged)
+        door.experimentConfigurationChanged.connect(
+            self._experimentConfigurationChanged)
 
     def _reloadConf(self, force=False):
         if not force and self.isDataChanged():

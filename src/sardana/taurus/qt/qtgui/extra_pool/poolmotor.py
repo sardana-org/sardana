@@ -568,7 +568,7 @@ class PoolMotorSlim(TaurusWidget, PoolMotorClient):
         action_stop_move.toggled.connect(self.toggleStopMove)
         action_homing.toggled.connect(self.toggleHoming)
         action_config.toggled.connect(self.toggleConfig)
-        action_statu.stoggled.connect(self.toggleStatus)
+        action_status.stoggled.connect(self.toggleStatus)
 
         menu.popup(self.cursor().pos())
 
@@ -1200,7 +1200,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
 
         self.btn_step_down.clicked.connect(self.stepDown)
         self.btn_step_up.clicked.connect(self.stepUp)
-        ###self.btn_stop.clicked.connect(self.abort)
+        # self.btn_stop.clicked.connect(self.abort)
         self.btn_to_neg.clicked.connect(self.goNegative)
         self.btn_to_neg_press.pressed.connect(self.goNegative)
         self.btn_to_neg_press.released.connect(self.abort)
