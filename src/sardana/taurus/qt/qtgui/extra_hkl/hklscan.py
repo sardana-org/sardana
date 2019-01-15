@@ -79,7 +79,7 @@ class HKLScan(TaurusWidget):
         self._ui.hklStopScanButton.clicked.connect(self.stop_hklscan)
         self._ui.hklDisplayAnglesButton.clicked.connect(self.display_angles)
         self._ui.MacroServerConnectionButton.clicked.connect(
-        self.open_macroserver_connection_panel)
+            self.open_macroserver_connection_panel)
 
         # Create a global SharedDataManager
         Qt.qApp.SDM = SharedDataManager(self)
