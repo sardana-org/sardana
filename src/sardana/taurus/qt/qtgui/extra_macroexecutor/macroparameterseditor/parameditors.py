@@ -70,7 +70,7 @@ class ParamBase(object):
 
     def onModelChanged(self):
         model = self.index().model()
-        model.setData(self.index(), Qt.QVariant(self.getValue()))
+        model.setData(self.index(), self.getValue())
 
 
 class ComboBoxBoolean(ParamBase, Qt.QComboBox):

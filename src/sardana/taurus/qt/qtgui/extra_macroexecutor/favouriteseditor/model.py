@@ -45,9 +45,9 @@ class MacrosListModel(Qt.QAbstractListModel):
     def data(self, index, role):
         if index.isValid() and role == Qt.Qt.DisplayRole:
             macroNode = self.list[index.row()]
-            return Qt.QVariant(self.list[index.row()].toSpockCommand())
+            return self.list[index.row()].toSpockCommand()
         else:
-            return Qt.QVariant()
+            return None
 
     def index(self, row, column=0, parent=Qt.QModelIndex()):
         if self.rowCount():

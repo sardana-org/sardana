@@ -170,19 +170,19 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         if role == Qt.Qt.DisplayRole:
             node = self.nodeFromIndex(index)
             if index.column() == 0:
-                return Qt.QVariant(node.name())
+                return node.name()
             elif index.column() == 1:
-                return Qt.QVariant(str(node.value()))
+                return str(node.value())
             elif index.column() == 2:
                 if isinstance(node, macro.MacroNode):
-                    return Qt.QVariant(node.progress())
+                    return node.progress()
         elif role == Qt.Qt.DecorationRole:
             node = self.nodeFromIndex(index)
             if index.column() == 3:
                 if isinstance(node, macro.MacroNode):
                     if node.isPause():
-                        return Qt.QVariant(Qt.QIcon(":/actions/media-playback-pause.svg"))
-        return Qt.QVariant()
+                        return Qt.QIcon(":/actions/media-playback-pause.svg")
+        return None
 
     def setData(self, index, value, role=Qt.Qt.EditRole):
         node = self.nodeFromIndex(index)
@@ -208,8 +208,8 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
 
     def headerData(self, section, orientation, role):
         if orientation == Qt.Qt.Horizontal and role == Qt.Qt.DisplayRole:
-            return Qt.QVariant(self.headers[section])
-        return Qt.QVariant()
+            return self.headers[section]
+        return None
 
     def index(self, row, column, parent):
         assert self.root() is not None
@@ -393,8 +393,8 @@ class MacroParametersProxyModel(Qt.QSortFilterProxyModel):
 
     def headerData(self, section, orientation, role):
         if orientation == Qt.Qt.Horizontal and role == Qt.Qt.DisplayRole:
-            return Qt.QVariant(self.headers[section])
-        return Qt.QVariant()
+            return self.headers[section]
+        return None
 
     def nodeFromIndex(self, index):
         sourceIndex = self.mapToSource(index)

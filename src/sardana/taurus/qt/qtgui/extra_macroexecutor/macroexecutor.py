@@ -280,9 +280,9 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
                 propValue = mlist[counter]
                 try:
                     self.validateOneValue(propValue)
-                    self.model().setData(self.currentIndex, Qt.QVariant(propValue))
+                    self.model().setData(self.currentIndex, propValue)
                 except Exception as e:
-                    self.model().setData(self.currentIndex, Qt.QVariant('None'))
+                    self.model().setData(self.currentIndex, 'None')
                     txt = str(Qt.from_qvariant(
                         ix.sibling(ix.row(), 0).data(), str))
                     message = "<b>" + txt + "</b> " + e[0]
@@ -291,8 +291,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
                 param_info = macro_params_info[counter-1]
                 # Skip validation in case of optional parameters
                 if param_info['default_value'] == Optional:
-                    self.model().setData(self.currentIndex,
-                                         Qt.QVariant(None))
+                    self.model().setData(self.currentIndex, None)
                 else:
                     txt = str(Qt.from_qvariant(
                         ix.sibling(ix.row(), 0).data(), str))
@@ -300,8 +299,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
 
                     data = str(Qt.from_qvariant(ix.data(), str))
                     if data != 'None':
-                        self.model().setData(self.currentIndex,
-                                             Qt.QVariant('None'))
+                        self.model().setData(self.currentIndex, 'None')
             counter += 1
             ix = self.getIndex()
             self.currentIndex = ix
@@ -473,7 +471,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
             value = self.prevValue("")
             self.backspace()
             self.insert(value)
-            self.model().setData(self.currentIndex, Qt.QVariant(value))
+            self.model().setData(self.currentIndex, value)
         else:
             self.currentIndex = self.getIndex(len(elementsNum) - 1)
             if not self.currentIndex.isValid():
@@ -485,7 +483,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
             c = c - (sel[1] - len(str(value)))
             self.insert(value)
             self.setCursorPosition(c)
-            self.model().setData(self.currentIndex, Qt.QVariant(value))
+            self.model().setData(self.currentIndex, value)
 
     def controlUpAction(self):
         c = self.cursorPosition()
@@ -515,7 +513,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
             value = self.nextValue("")
             self.backspace()
             self.insert(value)
-            self.model().setData(self.currentIndex, Qt.QVariant(value))
+            self.model().setData(self.currentIndex, value)
         else:
             self.currentIndex = self.getIndex(len(elementsNum) - 1)
             if not self.currentIndex.isValid():
@@ -527,7 +525,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
             c = c - (sel[1] - len(str(value)))
             self.insert(value)
             self.setCursorPosition(c)
-            self.model().setData(self.currentIndex, Qt.QVariant(value))
+            self.model().setData(self.currentIndex, value)
 
     def getParamItems(self, index):
         # Returns list of items that can be chosen for the node corresponding

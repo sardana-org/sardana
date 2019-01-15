@@ -245,9 +245,9 @@ class ExtraColumnsDelegate(Qt.QItemDelegate):
             taurusTreeAttributeItem = selectedItems[0]
             itemData = taurusTreeAttributeItem.itemData()
             if isinstance(itemData, TaurusAttrInfo):
-                model.setData(index, Qt.QVariant(itemData.fullName()))
+                model.setData(index, itemData.fullName())
         elif column == 2:
-            model.setData(index, Qt.QVariant(editor.currentText()))
+            model.setData(index, editor.currentText())
         else:
             Qt.QItemDelegate.setModelData(self, editor, model, index)
 
@@ -298,37 +298,37 @@ class ExtraColumnsModel(Qt.QAbstractTableModel):
 
     def data(self, index, role=Qt.Qt.DisplayRole):
         if not index.isValid() or not (0 <= index.row() < self.rowCount()):
-            return Qt.QVariant()
+            return None
         row = index.row()
         column = index.column()
         # Display Role
         if role == Qt.Qt.DisplayRole:
             if column == 0:
-                return Qt.QVariant(Qt.QString(self.__columns[row]['label']))
+                return Qt.QString(self.__columns[row]['label'])
             elif column == 1:
-                return Qt.QVariant(Qt.QString(self.__columns[row]['model']))
+                return Qt.QString(self.__columns[row]['model'])
             elif column == 2:
-                return Qt.QVariant(Qt.QString(self.__columns[row]['instrument']))
-        return Qt.QVariant()
+                return Qt.QString(self.__columns[row]['instrument'])
+        return None
 
     def headerData(self, section, orientation, role=Qt.Qt.DisplayRole):
         if role == Qt.Qt.TextAlignmentRole:
             if orientation == Qt.Qt.Horizontal:
-                return Qt.QVariant(int(Qt.Qt.AlignLeft | Qt.Qt.AlignVCenter))
-            return Qt.QVariant(int(Qt.Qt.AlignRight | Qt.Qt.AlignVCenter))
+                return int(Qt.Qt.AlignLeft | Qt.Qt.AlignVCenter)
+            return int(Qt.Qt.AlignRight | Qt.Qt.AlignVCenter)
         if role != Qt.Qt.DisplayRole:
-            return Qt.QVariant()
+            return None
         # So this is DisplayRole...
         if orientation == Qt.Qt.Horizontal:
             if section == 0:
-                return Qt.QVariant("Label")
+                return "Label"
             elif section == 1:
-                return Qt.QVariant("Attribute")
+                return "Attribute"
             elif section == 2:
-                return Qt.QVariant("Instrument")
-            return Qt.QVariant()
+                return "Instrument"
+            return None
         else:
-            return Qt.QVariant(Qt.QString.number(section + 1))
+            return Qt.QString.number(section + 1)
 
     def flags(self, index):
         flags = Qt.Qt.ItemIsEnabled | Qt.Qt.ItemIsSelectable

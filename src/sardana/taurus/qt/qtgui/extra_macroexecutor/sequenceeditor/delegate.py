@@ -75,7 +75,7 @@ class SequenceEditorDelegate(Qt.QItemDelegate):
 
     def setModelData(self, editor, model, index):
         if index.column() == 3:
-            model.setData(index, Qt.QVariant(editor.isChecked()))
+            model.setData(index, editor.isChecked())
 
 
 class MacroParametersProxyDelegate(Qt.QItemDelegate):
@@ -131,7 +131,7 @@ class MacroParametersProxyDelegate(Qt.QItemDelegate):
 
     def setModelData(self, editor, model, index):
         if index.column() == 1:
-            model.setData(index, Qt.QVariant(editor.getValue()))
+            model.setData(index, editor.getValue())
 
     def sizeHint(self, option, index):
         if index.column() == 0:

@@ -102,7 +102,7 @@ class ParamEditorDelegate(Qt.QStyledItemDelegate):
 
     def setModelData(self, editor, model, index):
         if index.column() == 1:
-            model.setData(index, Qt.QVariant(editor.getValue()))
+            model.setData(index, editor.getValue())
         else:
             Qt.QStyledItemDelegate.setModelData(self, editor, model, index)
 

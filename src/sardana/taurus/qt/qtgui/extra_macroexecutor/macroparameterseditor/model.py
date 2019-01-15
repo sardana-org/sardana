@@ -174,16 +174,15 @@ class ParamEditorModel(Qt.QAbstractItemModel):
 
     def data(self, index, role):
         if not index.isValid() or not (0 <= index.row() < self.rowCount(index.parent())):
-            return Qt.QVariant()
+            return None
 
         if role == Qt.Qt.DisplayRole:
             node = self.nodeFromIndex(index)
             if index.column() == 0:
-                return Qt.QVariant(node.name())
+                return node.name()
             elif index.column() == 1:
-                return Qt.QVariant(str(node.value()))
-
-        return Qt.QVariant()
+                return str(node.value())
+        return None
 
     def setData(self, index, value, role=Qt.Qt.EditRole):
         node = self.nodeFromIndex(index)
@@ -196,8 +195,8 @@ class ParamEditorModel(Qt.QAbstractItemModel):
 
     def headerData(self, section, orientation, role):
         if orientation == Qt.Qt.Horizontal and role == Qt.Qt.DisplayRole:
-            return Qt.QVariant(self.headers[section])
-        return Qt.QVariant()
+            return self.headers[section]
+        return None
 
     def index(self, row, column, parent):
         if not parent.isValid():

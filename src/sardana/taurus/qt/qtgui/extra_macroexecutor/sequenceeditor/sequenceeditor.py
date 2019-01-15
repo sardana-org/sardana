@@ -296,7 +296,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
             return
         progressIndex = persistentIndex.sibling(persistentIndex.row(), 2)
         index = Qt.QModelIndex(progressIndex)
-        self.model().setData(index, Qt.QVariant(progress))
+        self.model().setData(index, progress)
 
     def setRangeForMacro(self, macroId, range):
         persistentIndex = self._idIndexDict.get(macroId, None)

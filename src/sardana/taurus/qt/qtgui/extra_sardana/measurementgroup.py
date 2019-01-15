@@ -514,12 +514,12 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
                            " in favor of synchronization. Re-apply"
                            " configuration in order to upgrade.")
                     self.warning(msg)
-            return Qt.QVariant(AcqSynchType[synchronization])
+            return AcqSynchType[synchronization]
         elif taurus_role in (ChannelView.Timer, ChannelView.Monitor):
             ch_name, ch_data = index.internalPointer().itemData()
             ctrlname = ch_data['_controller_name']
             if ctrlname.startswith("__"):
-                return Qt.QVariant()
+                return None
             ch_info = self.getAvailableChannels()[ch_name]
             if ch_info['type'] in ('CTExpChannel', 'OneDExpChannel', 'TwoDExpChannel'):
                 unitdict = self.getPyData(ctrlname=ctrlname)
@@ -529,10 +529,10 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
                 key = taurus_role == ChannelView.Timer and 'timer' or 'monitor'
                 master_full_name = self._mgconfig.get(key, None)
             if master_full_name is None:
-                return Qt.QVariant()
+                return None
             else:
                 master_info = self.getAvailableChannels()[master_full_name]
-                return Qt.QVariant(master_info['name'])
+                return master_info['name']
         elif taurus_role == ChannelView.Synchronizer:
             ch_name, ch_data = index.internalPointer().itemData()
             ctrlname = ch_data['_controller_name']
@@ -541,12 +541,12 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
             trigger_fullname = ctrl_data.get(key, None)
             all_triggers = self.getAvailableTriggers()
             if trigger_fullname is None:
-                return Qt.QVariant()
+                return None
             else:
                 trigger_name = all_triggers[trigger_fullname]
-                return Qt.QVariant(trigger_name['name'])
+                return trigger_name['name']
 
-        return Qt.QVariant()
+        return None
 
     def setData(self, index, qvalue, role=Qt.Qt.EditRole):
         # For those things which are at the unit level, we handle them here
@@ -804,17 +804,16 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
             if all_channels[ch_name]['type'] in ('CTExpChannel', 'OneDExpChannel', 'TwoDExpChannel'):
                 for full_name, channel_data in ctrl_dict:
                     editor.addItem(
-                        channel_data['name'], Qt.QVariant(full_name))
+                        channel_data['name'], full_name)
                 current = Qt.from_qvariant(model.data(index), str)
                 editor.setCurrentIndex(editor.findText(current))
             else:
                 for ctrl_data in dataSource['controllers'].values():
                     if key in ctrl_data:
                         channel = all_channels[ctrl_data[key]]
-                        editor.addItem(channel['name'],
-                                       Qt.QVariant(channel['full_name']))
+                        editor.addItem(channel['name'], channel['full_name'])
                 current = dataSource.get(key)  # current global timer/monitor
-                editor.setCurrentIndex(editor.findData(Qt.QVariant(current)))
+                editor.setCurrentIndex(editor.findData(current))
         elif taurus_role == ChannelView.Synchronization:
             editor.addItems(AcqSynchType.keys())
             current = Qt.from_qvariant(model.data(index), str)
@@ -829,7 +828,7 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
             # add the triggergates to the editor
             all_triggers = model.getAvailableTriggers()
             for full_name, tg_data in all_triggers.items():
-                editor.addItem(tg_data['name'], Qt.QVariant(full_name))
+                editor.addItem(tg_data['name'], full_name)
                 current = Qt.from_qvariant(model.data(index), str)
                 editor.setCurrentIndex(editor.findText(current))
         else:
@@ -839,7 +838,7 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
         taurus_role = model.role(index.column())
         dataSource = model.dataSource()
         if taurus_role in (ChannelView.Channel, ChannelView.PlotType, ChannelView.Normalization):
-            data = Qt.QVariant(editor.currentText())
+            data = editor.currentText()
             model.setData(index, data)
         elif taurus_role == ChannelView.Synchronization:
             old_value = Qt.from_qvariant(model.data(index), str)
@@ -857,7 +856,7 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
                                              Qt.QMessageBox.Yes | Qt.QMessageBox.Cancel)
                 if op != Qt.QMessageBox.Yes:
                     return
-            data = Qt.QVariant(new_value)
+            data = new_value
             model.setData(index, data)
         elif taurus_role in (ChannelView.Timer, ChannelView.Monitor):
             key = taurus_role == ChannelView.Timer and 'timer' or 'monitor'
@@ -915,7 +914,7 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
                         return
             model.setData(index, selected_master)
         elif taurus_role == ChannelView.PlotAxes:
-            data = Qt.QVariant(editor.text())
+            data = editor.text()
             model.setData(index, data)
         elif taurus_role == ChannelView.Synchronizer:
             old_value = Qt.from_qvariant(model.data(index), str)
