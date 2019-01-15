@@ -64,6 +64,8 @@ class LimitsListener(Qt.QObject):
     can do whatever with it.
     """
 
+    updateLimits = Qt.pyqtSignal(object)
+
     def __init__(self):
         Qt.QObject.__init__(self)
 
@@ -804,6 +806,8 @@ class TaurusAttributeListener(Qt.QObject):
     If that is the case it emits a signal with the event's value.
     """
 
+    eventReceivedSignal = Qt.pyqtSignal(object)
+
     def __init__(self):
         Qt.QObject.__init__(self)
 
@@ -811,7 +815,7 @@ class TaurusAttributeListener(Qt.QObject):
         if evt_type not in [TaurusEventType.Change, TaurusEventType.Periodic]:
             return
         value = evt_value.value
-        self.eventReceived.emit(value)
+        self.eventReceivedSignal.emit(value)
 
 
 ##################################################
@@ -891,7 +895,7 @@ class PoolMotorTVLabelWidget(TaurusWidget):
         self.lbl_alias.taurusValueBuddy = self.taurusValueBuddy
         self.lbl_alias.setModel(model)
         TaurusWidget.setModel(self, model + '/Status')
-        self.taurusValueBuddy.expertViewChanged.connect(
+        self.taurusValueBuddy().expertViewChanged.connect(
             self.setExpertView)
         # Handle Power ON/OFF
         self.btn_poweron.clicked.connect(self.setPowerOn)
@@ -1422,16 +1426,16 @@ class PoolMotorTV(TaurusValue):
         try:
             # disconnect signals
             if self.limits_listener is not None:
-                self.limits_listener.eventReceived.disconnect(
+                self.limits_listener.eventReceivedSignal.disconnect(
                     self.updateLimits)
             if self.poweron_listener is not None:
-                self.poweron_listener.eventReceived.disconnect(
+                self.poweron_listener.eventReceivedSignal.disconnect(
                     self.updatePowerOn)
             if self.status_listener is not None:
-                self.status_listener.eventReceived.disconnect(
+                self.status_listener.eventReceivedSignal.disconnect(
                     self.updateStatus)
             if self.position_listener is not None:
-                self.position_listener.eventReceived.disconnect(
+                self.position_listener.eventReceivedSignal.disconnect(
                     self.updatePosition)
 
             # remove listeners
@@ -1455,7 +1459,7 @@ class PoolMotorTV(TaurusValue):
             # CONFIGURE A LISTENER IN ORDER TO UPDATE LIMIT SWITCHES STATES
             self.limits_listener = TaurusAttributeListener()
             if self.hasHwLimits():
-                self.limits_listener.eventReceived.connect(
+                self.limits_listener.eventReceivedSignal.connect(
                     self.updateLimits)
                 self.motor_dev.getAttribute(
                     'Limit_Switches').addListener(self.limits_listener)
@@ -1464,14 +1468,14 @@ class PoolMotorTV(TaurusValue):
             # True/False EXPERT OPERATION
             self.poweron_listener = TaurusAttributeListener()
             if self.hasPowerOn():
-                self.poweron_listener.eventReceived.connect(
+                self.poweron_listener.eventReceivedSignal.connect(
                     self.updatePowerOn)
                 self.motor_dev.getAttribute(
                     'PowerOn').addListener(self.poweron_listener)
 
             # CONFIGURE AN EVENT RECEIVER IN ORDER TO UPDATED STATUS TOOLTIP
             self.status_listener = TaurusAttributeListener()
-            self.status_listener.eventReceived.connect(
+            self.status_listener.eventReceivedSignal.connect(
                 self.updateStatus)
             self.motor_dev.getAttribute(
                 'Status').addListener(self.status_listener)
@@ -1479,7 +1483,7 @@ class PoolMotorTV(TaurusValue):
             # CONFIGURE AN EVENT RECEIVER IN ORDER TO ACTIVATE LIMIT BUTTONS ON
             # SOFTWARE LIMITS
             self.position_listener = TaurusAttributeListener()
-            self.position_listener.eventReceived.connect(
+            self.position_listener.eventReceivedSignal.connect(
                 self.updatePosition)
             self.motor_dev.getAttribute(
                 'Position').addListener(self.position_listener)
