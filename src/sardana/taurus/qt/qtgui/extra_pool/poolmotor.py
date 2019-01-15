@@ -105,6 +105,7 @@ class PoolMotorClient():
     def moveInc(self, inc):
         self.moveMotor(self.motor_dev['position'].value + inc)
 
+    @Qt.pyqtSlot()
     def jogNeg(self):
         neg_limit = -((self.maxint_in_32_bits / 2) - 1)
         # THERE IS A BUG IN THE ICEPAP THAT DOES NOT ALLOW MOVE ABSOLUTE FURTHER THAN 32 BIT
@@ -119,6 +120,7 @@ class PoolMotorClient():
             pass
         self.moveMotor(neg_limit)
 
+    @Qt.pyqtSlot()
     def jogPos(self):
         pos_limit = (self.maxint_in_32_bits / 2) - 1
         # THERE IS A BUG IN THE ICEPAP THAT DOES NOT ALLOW MOVE ABSOLUTE FURTHER THAN 32 BIT
@@ -133,9 +135,11 @@ class PoolMotorClient():
             pass
         self.moveMotor(pos_limit)
 
+    @Qt.pyqtSlot()
     def goHome(self):
         pass
 
+    @Qt.pyqtSlot()
     def abort(self):
         self.motor_dev.abort()
 
@@ -485,9 +489,11 @@ class PoolMotorSlim(TaurusWidget, PoolMotorClient):
     # def sizeHint(self):
     #    return Qt.QSize(300,30)
 
+    @Qt.pyqtSlot()
     def goToNegInc(self):
         self.moveInc(-1 * self.ui.inc.value())
 
+    @Qt.pyqtSlot()
     def goToPosInc(self):
         self.moveInc(self.ui.inc.value())
 
@@ -570,7 +576,7 @@ class PoolMotorSlim(TaurusWidget, PoolMotorClient):
         action_stop_move.toggled.connect(self.toggleStopMove)
         action_homing.toggled.connect(self.toggleHoming)
         action_config.toggled.connect(self.toggleConfig)
-        action_status.stoggled.connect(self.toggleStatus)
+        action_status.toggled.connect(self.toggleStatus)
 
         menu.popup(self.cursor().pos())
 
@@ -870,6 +876,7 @@ class PoolMotorTVLabelWidget(TaurusWidget):
         btn_poweron_visible = expertView and self.taurusValueBuddy().hasPowerOn()
         self.btn_poweron.setVisible(btn_poweron_visible)
 
+    @Qt.pyqtSlot()
     @ProtectTaurusMessageBox(msg='An error occurred trying to write PowerOn Attribute.')
     def setPowerOn(self):
         motor_dev = self.taurusValueBuddy().motor_dev
@@ -1055,6 +1062,7 @@ class PoolMotorTVReadWidget(TaurusWidget):
             pass
         return True
 
+    @Qt.pyqtSlot()
     @ProtectTaurusMessageBox(msg='An error occurred trying to abort the motion.')
     def abort(self):
         motor_dev = self.taurusValueBuddy().motor_dev
@@ -1156,7 +1164,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
         self.layout().addWidget(self.qw_write_relative, 0, 0)
 
         self.cbAbsoluteRelative = Qt.QComboBox()
-        self.cbAbsoluteRelative.currentIndexChanged.connect(
+        self.cbAbsoluteRelative.currentIndexChanged['QString'].connect(
             self.cbAbsoluteRelativeChanged)
         self.cbAbsoluteRelative.addItems(['Abs', 'Rel'])
         self.layout().addWidget(self.cbAbsoluteRelative, 0, 1)
@@ -1276,9 +1284,11 @@ class PoolMotorTVWriteWidget(TaurusWidget):
         self.le_write_absolute.setVisible(abs_visible)
         self.qw_write_relative.setVisible(rel_visible)
 
+    @Qt.pyqtSlot()
     def stepDown(self):
         self.goRelative(-1)
 
+    @Qt.pyqtSlot()
     def stepUp(self):
         self.goRelative(+1)
 
@@ -1291,6 +1301,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
             target_position = position + increment
             motor_dev.getAttribute('Position').write(target_position)
 
+    @Qt.pyqtSlot()
     @ProtectTaurusMessageBox(msg='An error occurred trying to move the motor.')
     def goNegative(self):
         motor_dev = self.taurusValueBuddy().motor_dev
@@ -1298,6 +1309,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
             min_value = float(motor_dev.getAttribute('Position').min_value)
             motor_dev.getAttribute('Position').write(min_value)
 
+    @Qt.pyqtSlot()
     @ProtectTaurusMessageBox(msg='An error occurred trying to move the motor.')
     def goPositive(self):
         motor_dev = self.taurusValueBuddy().motor_dev
@@ -1305,6 +1317,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
             max_value = float(motor_dev.getAttribute('Position').max_value)
             motor_dev.getAttribute('Position').write(max_value)
 
+    @Qt.pyqtSlot()
     @ProtectTaurusMessageBox(msg='An error occurred trying to abort the motion.')
     def abort(self):
         motor_dev = self.taurusValueBuddy().motor_dev
@@ -1363,6 +1376,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
             key_event.accept()
         TaurusWidget.keyPressEvent(self, key_event)
 
+    @Qt.pyqtSlot()
     def emitEditingFinished(self):
         self.applied.emit()
 
