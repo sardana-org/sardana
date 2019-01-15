@@ -875,9 +875,15 @@ class PoolMotorTVLabelWidget(TaurusWidget):
 
     def setModel(self, model):
         # Handle User/Expert view
-        self.taurusValueBuddy.expertViewChanged.disconnect(
-            self.setExpertView)
-        self.btn_poweron.clicked.disconnect(self.setPowerOn)
+        try:
+            self.taurusValueBuddy().expertViewChanged.disconnect(
+                self.setExpertView)
+        except TypeError:
+            pass
+        try:
+            self.btn_poweron.clicked.disconnect(self.setPowerOn)
+        except TypeError:
+            pass
         if model in (None, ''):
             self.lbl_alias.setModel(model)
             TaurusWidget.setModel(self, model)
@@ -1075,8 +1081,11 @@ class PoolMotorTVReadWidget(TaurusWidget):
 
     def setModel(self, model):
         if hasattr(self, 'taurusValueBuddy'):
-            self.taurusValueBuddy().expertViewChanged.disconnect(
-                self.setExpertView)
+            try:
+                self.taurusValueBuddy().expertViewChanged.disconnect(
+                    self.setExpertView)
+            except TypeError:
+                pass
         if model in (None, ''):
             TaurusWidget.setModel(self, model)
             self.lbl_read.setModel(model)
@@ -1327,8 +1336,11 @@ class PoolMotorTVWriteWidget(TaurusWidget):
 
     def setModel(self, model):
         if hasattr(self, 'taurusValueBuddy'):
-            self.taurusValueBuddy.expertViewChanged.disconnect(
-                self.setExpertView)
+            try:
+                self.taurusValueBuddy().expertViewChanged.disconnect(
+                    self.setExpertView)
+            except TypeError:
+                pass
         if model in (None, ''):
             TaurusWidget.setModel(self, model)
             self.le_write_absolute.setModel(model)
@@ -1381,6 +1393,8 @@ class PoolMotorTV(TaurusValue):
     @TODO it would be nice if the neg/pos limits could react also when software limits are 'active'
     @TODO expert view for read widget should include signals (indexer/encoder/inpos)...
     '''
+
+    expertViewChanged = Qt.pyqtSignal(bool)
 
     def __init__(self, parent=None, designMode=False):
         TaurusValue.__init__(self, parent=parent, designMode=designMode)
