@@ -76,8 +76,10 @@ class UBMatrixBase(TaurusWidget):
 
         self._ui.UpdateButton.clicked.connect(self.update_values)
         self._ui.ComputeUButton.clicked.connect(self.compute_ub)
-        self._ui.ReflectionsListButton.clicked.connect(self.reflections_list_window)
-        self._ui.EditReflectionsButton.clicked.connect(self.edit_reflections_window)
+        self._ui.ReflectionsListButton.clicked.connect(
+            self.reflections_list_window)
+        self._ui.EditReflectionsButton.clicked.connect(
+            self.edit_reflections_window)
         self._ui.AffineButton.clicked.connect(self.affine)
         self._ui.AddCrystalButton.clicked.connect(self.add_select_crystal)
 #        self._ui.alattice_value.textEdited.connect(self.on_alattice_value_textEdited)
@@ -162,7 +164,8 @@ class UBMatrixBase(TaurusWidget):
 
         self.enginemodescombobox.loadItems(self.device.enginemodelist)
 
-        self.enginemodescombobox.currentIndexChanged.connect(self.onModeChanged)
+        self.enginemodescombobox.currentIndexChanged.connect(
+            self.onModeChanged)
 
         # Set model to crystal
 
@@ -175,7 +178,8 @@ class UBMatrixBase(TaurusWidget):
 
         self.crystalscombobox.loadItems(self.device.crystallist)
 
-        self.crystalscombobox.currentIndexChanged.connect(self.onCrystalChanged)
+        self.crystalscombobox.currentIndexChanged.connect(
+            self.onCrystalChanged)
 
     def onEngineChanged(self, enginename):
         self.device.write_attribute("engine", str(enginename))

@@ -76,9 +76,10 @@ class HKLScan(TaurusWidget):
         self.loadUi(filename="hklscan.ui")
 
         self._ui.hklStartScanButton.clicked.connect(self.start_hklscan)
-        self._ui.hklStopScanButton.clicked.connectself.stop_hklscan)
-        self._ui.hklDisplayAnglesButton.clicked.connectself.display_angles)
-        self._ui.MacroServerConnectionButton.clicked.connect(self.open_macroserver_connection_panel)
+        self._ui.hklStopScanButton.clicked.connect(self.stop_hklscan)
+        self._ui.hklDisplayAnglesButton.clicked.connect(self.display_angles)
+        self._ui.MacroServerConnectionButton.clicked.connect(
+        self.open_macroserver_connection_panel)
 
         # Create a global SharedDataManager
         Qt.qApp.SDM = SharedDataManager(self)
@@ -178,7 +179,8 @@ class HKLScan(TaurusWidget):
 
         self.enginemodescombobox.loadEngineModeNames(self.device.hklmodelist)
 
-        self.enginemodescombobox.currentIndexChanged.connect(self.onModeChanged)
+        self.enginemodescombobox.currentIndexChanged.connect(
+            self.onModeChanged)
 
     def onModeChanged(self, modename):
         if self.device.engine != "hkl":

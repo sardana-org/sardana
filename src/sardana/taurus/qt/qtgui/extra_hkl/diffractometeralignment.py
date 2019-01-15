@@ -80,11 +80,14 @@ class DiffractometerAlignment(TaurusWidget):
         self.selectsignal = SelectSignal()
 
         self._ui.AlignmentStopButton.clicked.connect(self.stop_movements)
-        self._ui.AlignmentStoreReflectionButton.clicked.connect(self.store_reflection)
+        self._ui.AlignmentStoreReflectionButton.clicked.connect(
+            self.store_reflection)
 
-        self._ui.MacroServerConnectionButton.clicked.connect(self.open_macroserver_connection_panel)
+        self._ui.MacroServerConnectionButton.clicked.connect(
+            self.open_macroserver_connection_panel)
 
-        self._ui.SelectSignalButton.clicked.connect(self.open_selectsignal_panel)
+        self._ui.SelectSignalButton.clicked.connect(
+            self.open_selectsignal_panel)
 
         # Create a global SharedDataManager
         Qt.qApp.SDM = SharedDataManager(self)
@@ -199,7 +202,8 @@ class DiffractometerAlignment(TaurusWidget):
 
         self.enginemodescombobox.loadEngineModeNames(self.device.hklmodelist)
 
-        self.enginemodescombobox.currentIndexChanged.connect(self.onModeChanged)
+        self.enginemodescombobox.currentIndexChanged.connect(
+            self.onModeChanged)
 
         # Add dynamically the scan buttons, range inputs and 'to max' buttons
 
