@@ -398,7 +398,7 @@ class PoolMotorSlim(TaurusWidget, PoolMotorClient):
         self.ui.btnStop.clicked.connect(self.abort)
 
         # ALSO UPDATE THE WIDGETS EVERYTIME THE FORM HAS TO BE SHOWN
-        self.ui.btnCfg.clicke.connect(taurus_attr_form._updateAttrWidgets)
+        self.ui.btnCfg.clicked.connect(taurus_attr_form._updateAttrWidgets)
         self.ui.btnCfg.clicked.connect(self.buildBetterCfgDialogTitle)
 
         #######################################################################
