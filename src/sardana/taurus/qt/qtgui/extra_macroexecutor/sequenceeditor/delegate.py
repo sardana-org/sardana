@@ -104,8 +104,7 @@ class MacroParametersProxyDelegate(Qt.QItemDelegate):
 
     def setEditorData(self, editor, index):
         if index.column() == 1:
-            text = Qt.from_qvariant(index.model().data(
-                index, Qt.Qt.DisplayRole), str)
+            text = index.model().data(index, Qt.Qt.DisplayRole)
             if text in ["None", "", None]:
                 Qt.QItemDelegate.setEditorData(self, editor, index)
             else:
@@ -136,8 +135,7 @@ class MacroParametersProxyDelegate(Qt.QItemDelegate):
     def sizeHint(self, option, index):
         if index.column() == 0:
             fm = option.fontMetrics
-            text = Qt.from_qvariant(index.model().data(
-                index, Qt.Qt.DisplayRole), str)
+            text = index.model().data(index, Qt.Qt.DisplayRole)
             document = Qt.QTextDocument()
             document.setDefaultFont(option.font)
             document.setHtml(text)

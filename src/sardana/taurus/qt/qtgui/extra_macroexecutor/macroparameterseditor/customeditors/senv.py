@@ -230,8 +230,7 @@ class ExtraColumnsDelegate(Qt.QItemDelegate):
 
     def setEditorData(self, editor, index):
         if index.column() == 2:
-            text = Qt.from_qvariant(index.model().data(
-                index, Qt.Qt.DisplayRole), str)
+            text = index.model().data(index, Qt.Qt.DisplayRole)
             editor.setCurrentText(text)
         else:
             Qt.QItemDelegate.setEditorData(self, editor, index)
@@ -254,8 +253,7 @@ class ExtraColumnsDelegate(Qt.QItemDelegate):
     def sizeHint(self, option, index):
         if index.column() == 0:
             fm = option.fontMetrics
-            text = Qt.from_qvariant(index.model().data(
-                index, Qt.Qt.DisplayRole), str)
+            text = index.model().data(index, Qt.Qt.DisplayRole)
             document = Qt.QTextDocument()
             document.setDefaultFont(option.font)
             document.setHtml(text)
@@ -342,7 +340,6 @@ class ExtraColumnsModel(Qt.QAbstractTableModel):
         if index.isValid() and (0 <= index.row() < self.rowCount()):
             row = index.row()
             column = index.column()
-            value = Qt.from_qvariant(value, str)
             if column == 0:
                 self.__columns[row]['label'] = value
             elif column == 1:

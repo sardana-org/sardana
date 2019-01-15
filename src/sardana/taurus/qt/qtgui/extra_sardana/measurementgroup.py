@@ -331,20 +331,18 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
 
     def setData(self, index, qvalue):
         taurus_role = index.model().role(index.column())
-        str_value = Qt.from_qvariant(qvalue, str)
         if taurus_role in (ChannelView.Channel, ChannelView.Conditioning,
-                           ChannelView.NXPath, ChannelView.DataType):
-            data = str_value
-        elif taurus_role in (ChannelView.Enabled, ChannelView.Output):
-            data = Qt.from_qvariant(qvalue, bool)
+                           ChannelView.NXPath, ChannelView.DataType,
+                           ChannelView.Enabled, ChannelView.Output):
+            data = qvalue
         elif taurus_role == ChannelView.PlotType:
-            data = PlotType[str_value]
+            data = PlotType[qvalue]
         elif taurus_role == ChannelView.Normalization:
-            data = Normalization[str_value]
+            data = Normalization[qvalue]
         elif taurus_role == ChannelView.PlotAxes:
-            data = [a for a in str_value.split('|')]
+            data = [a for a in qvalue.split('|')]
         elif taurus_role == ChannelView.Shape:
-            s = str_value
+            s = qvalue
             try:
                 data = eval(s, {}, {})
                 if not isinstance(data, (tuple, list)):
@@ -556,8 +554,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
             ch_info = self.getAvailableChannels()[ch_name]
             ctrl_data = self.getPyData(ctrlname=ch_data['_controller_name'])
             key = self.data_keys_map[taurus_role]
-            data = Qt.from_qvariant(qvalue, str)
-
+            data = qvalue
             self._dirty = True
             self.beginResetModel()
             is_settable = ch_info['type'] in (
@@ -575,16 +572,15 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
                     self._mgconfig[key] = data
             self.endResetModel()
             return True
-        if taurus_role == ChannelView.Synchronizer:
+        elif taurus_role == ChannelView.Synchronizer:
             ch_name, ch_data = index.internalPointer().itemData()
             ctrlname = ch_data['_controller_name']
             key = self.data_keys_map[taurus_role]
-            data = Qt.from_qvariant(qvalue, str)
             self._dirty = True
             self.beginResetModel()
             ctrl_data = self.getPyData(ctrlname=ctrlname)
-            ctrl_data[key] = data
-            self._mgconfig[key] = data
+            ctrl_data[key] = qvalue
+            self._mgconfig[key] = qvalue
             self.endResetModel()
             return True
         # for the rest, we use the regular TaurusBaseModel item-oriented approach
@@ -788,11 +784,11 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
         taurus_role = model.role(index.column())
         if taurus_role == ChannelView.PlotType:
             editor.addItems(PlotType.keys())
-            current = Qt.from_qvariant(model.data(index), str)
+            current = model.data(index)
             editor.setCurrentIndex(editor.findText(current))
         elif taurus_role == ChannelView.Normalization:
             editor.addItems(Normalization.keys())
-            current = Qt.from_qvariant(model.data(index), str)
+            current = model.data(index)
             editor.setCurrentIndex(editor.findText(current))
         elif taurus_role in (ChannelView.Timer, ChannelView.Monitor):
             key = taurus_role == ChannelView.Timer and 'timer' or 'monitor'
@@ -805,7 +801,7 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
                 for full_name, channel_data in ctrl_dict:
                     editor.addItem(
                         channel_data['name'], full_name)
-                current = Qt.from_qvariant(model.data(index), str)
+                current = model.data(index)
                 editor.setCurrentIndex(editor.findText(current))
             else:
                 for ctrl_data in dataSource['controllers'].values():
@@ -816,20 +812,20 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
                 editor.setCurrentIndex(editor.findData(current))
         elif taurus_role == ChannelView.Synchronization:
             editor.addItems(AcqSynchType.keys())
-            current = Qt.from_qvariant(model.data(index), str)
+            current = model.data(index)
             editor.setCurrentIndex(editor.findText(current))
         elif taurus_role == ChannelView.PlotAxes:
             selectables = ['<idx>', '<mov>'] + \
                 [n for n, d in getChannelConfigs(dataSource)]
             editor.setChoices(selectables)
-            current = Qt.from_qvariant(model.data(index), str)
+            current = model.data(index)
             editor.setCurrentChoices(current)
         elif taurus_role == ChannelView.Synchronizer:
             # add the triggergates to the editor
             all_triggers = model.getAvailableTriggers()
             for full_name, tg_data in all_triggers.items():
                 editor.addItem(tg_data['name'], full_name)
-                current = Qt.from_qvariant(model.data(index), str)
+                current = model.data(index)
                 editor.setCurrentIndex(editor.findText(current))
         else:
             Qt.QStyledItemDelegate.setEditorData(self, editor, index)
@@ -841,7 +837,7 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
             data = editor.currentText()
             model.setData(index, data)
         elif taurus_role == ChannelView.Synchronization:
-            old_value = Qt.from_qvariant(model.data(index), str)
+            old_value = model.data(index)
             new_value = str(editor.currentText())
             if new_value == old_value:
                 return
@@ -860,7 +856,7 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
             model.setData(index, data)
         elif taurus_role in (ChannelView.Timer, ChannelView.Monitor):
             key = taurus_role == ChannelView.Timer and 'timer' or 'monitor'
-            old_value = Qt.from_qvariant(model.data(index), str)
+            old_value = model.data(index)
             new_value = str(editor.currentText())
             if new_value == old_value:
                 return
@@ -917,7 +913,7 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
             data = editor.text()
             model.setData(index, data)
         elif taurus_role == ChannelView.Synchronizer:
-            old_value = Qt.from_qvariant(model.data(index), str)
+            old_value = model.data(index)
             new_value = str(editor.currentText())
             if new_value == old_value:
                 return

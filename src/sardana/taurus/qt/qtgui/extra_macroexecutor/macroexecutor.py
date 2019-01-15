@@ -283,8 +283,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
                     self.model().setData(self.currentIndex, propValue)
                 except Exception as e:
                     self.model().setData(self.currentIndex, 'None')
-                    txt = str(Qt.from_qvariant(
-                        ix.sibling(ix.row(), 0).data(), str))
+                    txt = str(ix.sibling(ix.row(), 0).data())
                     message = "<b>" + txt + "</b> " + e[0]
                     problems.append(message)
             except IndexError:
@@ -293,11 +292,10 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
                 if param_info['default_value'] == Optional:
                     self.model().setData(self.currentIndex, None)
                 else:
-                    txt = str(Qt.from_qvariant(
-                        ix.sibling(ix.row(), 0).data(), str))
+                    txt = str(ix.sibling(ix.row(), 0).data())
                     problems.append("<b>" + txt + "</b> is missing!")
 
-                    data = str(Qt.from_qvariant(ix.data(), str))
+                    data = str(ix.data(), str)
                     if data != 'None':
                         self.model().setData(self.currentIndex, 'None')
             counter += 1

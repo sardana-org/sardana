@@ -79,8 +79,7 @@ class ParamEditorDelegate(Qt.QStyledItemDelegate):
 
     def setEditorData(self, editor, index):
         if index.column() == 1:
-            text = Qt.from_qvariant(index.model().data(
-                index, Qt.Qt.DisplayRole), str)
+            text = index.model().data(index, Qt.Qt.DisplayRole)
             if text == "None" or text == "" or text is None:
                 Qt.QStyledItemDelegate.setEditorData(self, editor, index)
             else:
@@ -109,8 +108,7 @@ class ParamEditorDelegate(Qt.QStyledItemDelegate):
     def sizeHint(self, option, index):
         if index.column() == 0:
             fm = option.fontMetrics
-            text = Qt.from_qvariant(index.model().data(
-                index, Qt.Qt.DisplayRole), str)
+            text = index.model().data(index, Qt.Qt.DisplayRole)
             document = Qt.QTextDocument()
             document.setDefaultFont(option.font)
             document.setHtml(text)
