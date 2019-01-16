@@ -681,11 +681,11 @@ class PoolMotorSlim(TaurusWidget, PoolMotorClient):
     #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
     # QT properties
     #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
-    @Qt.pyqtSignature("getModel()")
+    @Qt.pyqtSlot()
     def getModel(self):
         return self.ui.motorGroupBox.getModel()
 
-    @Qt.pyqtSignature("setModel(QString)")
+    @Qt.pyqtSlot("QString")
     def setModel(self, model):
         # DUE TO A BUG IN TAUGROUPBOX, WE NEED THE FULL MODEL NAME
         try:
@@ -754,43 +754,43 @@ class PoolMotorSlim(TaurusWidget, PoolMotorClient):
                       (model, repr(e)))
             self.traceback()
 
-    @Qt.pyqtSignature("resetModel()")
+    @Qt.pyqtSlot()
     def resetModel(self):
         self.ui.motorGroupBox.resetModel()
 
-    @Qt.pyqtSignature("getShowContextMenu()")
+    @Qt.pyqtSlot()
     def getShowContextMenu(self):
         return self.show_context_menu
 
-    @Qt.pyqtSignature("setShowContextMenu(bool)")
+    @Qt.pyqtSlot()
     def setShowContextMenu(self, showContextMenu):
         self.show_context_menu = showContextMenu
 
-    @Qt.pyqtSignature("resetShowContextMenu()")
+    @Qt.pyqtSlot()
     def resetShowContextMenu(self):
         self.show_context_menu = True
 
-    @Qt.pyqtSignature("getStepSize()")
+    @Qt.pyqtSlot()
     def getStepSize(self):
         return self.ui.inc.value()
 
-    @Qt.pyqtSignature("setStepSize(double)")
+    @Qt.pyqtSlot(float)
     def setStepSize(self, stepSize):
         self.ui.inc.setValue(stepSize)
 
-    @Qt.pyqtSignature("resetStepSize()")
+    @Qt.pyqtSlot()
     def resetStepSize(self):
         self.setStepSize(1)
 
-    @Qt.pyqtSignature("getStepSizeIncrement()")
+    @Qt.pyqtSlot()
     def getStepSizeIncrement(self):
         return self.ui.inc.singleStep()
 
-    @Qt.pyqtSignature("setStepSizeIncrement(double)")
+    @Qt.pyqtSlot(float)
     def setStepSizeIncrement(self, stepSizeIncrement):
         self.ui.inc.setSingleStep(stepSizeIncrement)
 
-    @Qt.pyqtSignature("resetStepSizeIncrement()")
+    @Qt.pyqtSlot()
     def resetStepSizeIncrement(self):
         self.setStepSizeIncrement(1)
 
