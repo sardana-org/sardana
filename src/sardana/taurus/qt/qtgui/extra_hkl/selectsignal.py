@@ -95,7 +95,7 @@ class SelectSignal(TaurusWidget):
             signals = []
             conf = self.door_device.getExperimentConfiguration()
             mg_name = conf['ActiveMntGrp']
-            mg = PyTango.DeviceProxy('mntgrp04')
+            mg = PyTango.DeviceProxy(mg_name)
             signals = mg.ElementList
             
             self.signalComboBox.loadSignals(signals)
