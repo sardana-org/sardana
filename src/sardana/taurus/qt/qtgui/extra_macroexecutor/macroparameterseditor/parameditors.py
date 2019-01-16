@@ -80,7 +80,6 @@ class ComboBoxBoolean(ParamBase, Qt.QComboBox):
         ParamBase.__init__(self, paramModel)
 
         self.addItems(['True', 'False'])
-        self.currentIndexChanged.connect(self.onCurrentIndexChanged)
 
     def getValue(self):
         return str(self.currentText())
@@ -92,9 +91,6 @@ class ComboBoxBoolean(ParamBase, Qt.QComboBox):
             self.currentIndexChanged.emit(self.currentIndex())
         else:
             self.setCurrentIndex(idx)
-
-    def onCurrentIndexChanged(self):
-        self.onModelChanged()
 
 
 class ComboBoxParam(ParamBase, Qt.QComboBox):
@@ -102,7 +98,6 @@ class ComboBoxParam(ParamBase, Qt.QComboBox):
     def __init__(self, parent=None, paramModel=None):
         Qt.QComboBox.__init__(self, parent)
         ParamBase.__init__(self, paramModel)
-        self.currentIndexChanged.connect(self.onCurrentIndexChanged)
 
     def getValue(self):
         return str(self.currentText())
@@ -114,9 +109,6 @@ class ComboBoxParam(ParamBase, Qt.QComboBox):
             self.currentIndexChanged.emit(self.currentIndex())
         else:
             self.setCurrentIndex(idx)
-
-    def onCurrentIndexChanged(self):
-        self.onModelChanged()
 
 
 class MSAttrListComboBoxParam(ParamBase, MSAttrListComboBox):
@@ -126,16 +118,12 @@ class MSAttrListComboBoxParam(ParamBase, MSAttrListComboBox):
         ParamBase.__init__(self, paramModel)
 #        self.setUseParentModel(True)
 #        self.setModel("/" + self.paramModel().type() + "List")
-        self.currentIndexChanged.connect(self.onCurrentIndexChanged)
 
     def getValue(self):
         return str(self.currentText())
 
     def setValue(self, value):
         self.setCurrentText(value)
-
-    def onCurrentIndexChanged(self):
-        self.onModelChanged()
 
 
 class AttrListComboBoxParam(ParamBase, TaurusAttrListComboBox):
