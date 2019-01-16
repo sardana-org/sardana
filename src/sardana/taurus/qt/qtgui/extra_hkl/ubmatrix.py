@@ -293,13 +293,13 @@ class UBMatrixBase(TaurusWidget):
                 # 4circles diffractometer
                     if len(ref) == 10:
                         self.rl_label1_7.setText(QtGui.QApplication.translate(
-                            "Form", self.angle_names[0], None, QtGui.QApplication.UnicodeUTF8))
+                            "Form", self.angle_names[0], None))
                         self.rl_label1_8.setText(QtGui.QApplication.translate(
-                            "Form", self.angle_names[1], None, QtGui.QApplication.UnicodeUTF8))
+                            "Form", self.angle_names[1], None))
                         self.rl_label1_9.setText(QtGui.QApplication.translate(
-                            "Form", self.angle_names[2], None, QtGui.QApplication.UnicodeUTF8))
+                            "Form", self.angle_names[2], None))
                         self.rl_label1_10.setText(QtGui.QApplication.translate(
-                            "Form", self.angle_names[3], None, QtGui.QApplication.UnicodeUTF8))
+                            "Form", self.angle_names[3], None))
                 # 6 circles diffractometer
                     elif len(ref) == 12:
                         self.rl_label1_11 = QtGui.QLabel(w)
@@ -311,17 +311,17 @@ class UBMatrixBase(TaurusWidget):
                             QtCore.QRect(xangle6 + 20, 70, 41, 20))
                         self.rl_label1_12.setObjectName("rl_label1_12")
                         self.rl_label1_7.setText(QtGui.QApplication.translate(
-                            "Form", self.angle_names[0], None, QtGui.QApplication.UnicodeUTF8))
+                            "Form", self.angle_names[0], None))
                         self.rl_label1_8.setText(QtGui.QApplication.translate(
-                            "Form", self.angle_names[1], None, QtGui.QApplication.UnicodeUTF8))
+                            "Form", self.angle_names[1], None))
                         self.rl_label1_9.setText(QtGui.QApplication.translate(
-                            "Form", self.angle_names[2], None, QtGui.QApplication.UnicodeUTF8))
+                            "Form", self.angle_names[2], None))
                         self.rl_label1_10.setText(QtGui.QApplication.translate(
-                            "Form", self.angle_names[3], None, QtGui.QApplication.UnicodeUTF8))
+                            "Form", self.angle_names[3], None))
                         self.rl_label1_11.setText(QtGui.QApplication.translate(
-                            "Form", self.angle_names[4], None, QtGui.QApplication.UnicodeUTF8))
+                            "Form", self.angle_names[4], None))
                         self.rl_label1_12.setText(QtGui.QApplication.translate(
-                            "Form", self.angle_names[5], None, QtGui.QApplication.UnicodeUTF8))
+                            "Form", self.angle_names[5], None))
 
                 self.taurusValueIndex.append(TaurusValueLineEdit(w))
                 self.taurusValueIndex[nb_ref].setGeometry(
@@ -436,7 +436,7 @@ class UBMatrixBase(TaurusWidget):
             self.rl_label_nor.setFont(font)
             self.rl_label_nor.setObjectName("rl_label_nor")
             self.rl_label_nor.setText(QtGui.QApplication.translate(
-                "Form", "NO REFLECTIONS", None, QtGui.QApplication.UnicodeUTF8))
+                "Form", "NO REFLECTIONS", None))
 
         w.show()
         w.show()

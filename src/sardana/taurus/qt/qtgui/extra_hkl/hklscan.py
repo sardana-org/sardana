@@ -146,7 +146,7 @@ class HKLScan(TaurusWidget):
             alname = "angleslabel" + str(i)
             angles_labels[i].setObjectName(alname)
             angles_labels[i].setText(QtGui.QApplication.translate(
-                "HKLScan", angles_names[i], None, QtGui.QApplication.UnicodeUTF8))
+                "HKLScan", angles_names[i], None))
             angles_taurus_label.append(TaurusLabel(self))
             angles_taurus_label[i].setGeometry(
                 QtCore.QRect(50 + gap_x * i, 320, 81, 19))
@@ -256,7 +256,7 @@ class HKLScan(TaurusWidget):
             label_name = "dsa_label_" + str(i)
             dsa_label[i].setObjectName(label_name)
             dsa_label[i].setText(QtGui.QApplication.translate(
-                "Form", angles_names[i], None, QtGui.QApplication.UnicodeUTF8))
+                "Form", angles_names[i], None))
 
         start_hkl = []
         stop_hkl = []
