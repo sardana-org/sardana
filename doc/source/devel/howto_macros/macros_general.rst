@@ -922,7 +922,7 @@ Note the following differences between using the property or the method:
   appends hooks one by one.
 
 - the property :attr:`~sardana.macroserver.macro.Hookable.hooks` deactivate the
-  general hooks for the macro it is used with, the the method
+  general hooks for the macro it is used with, the method
   :meth:`~sardana.macroserver.macro.Hookable.appendHook` keeps the general
   hooks for this macro.
       
