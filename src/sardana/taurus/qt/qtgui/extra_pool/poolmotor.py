@@ -159,7 +159,7 @@ class LabelWidgetDragsDeviceAndAttribute(DefaultLabelWidget):
         drag = Qt.QDrag(self)
         drag.setMimeData(mimeData)
         drag.setHotSpot(event.pos() - self.rect().topLeft())
-        drag.start(Qt.Qt.CopyAction)
+        drag.exec_(Qt.Qt.CopyAction, Qt.Qt.CopyAction)
 
 
 class PoolMotorConfigurationForm(TaurusAttrForm):
@@ -963,7 +963,7 @@ class PoolMotorTVLabelWidget(TaurusWidget):
         drag = Qt.QDrag(self)
         drag.setMimeData(mimeData)
         drag.setHotSpot(event.pos() - self.rect().topLeft())
-        drag.start(Qt.Qt.CopyAction)
+        drag.exec_(Qt.Qt.CopyAction, Qt.Qt.CopyAction)
 
 ##################################################
 #                   READ WIDGET                  #
@@ -1469,7 +1469,6 @@ class PoolMotorTV(TaurusValue):
                 self.motor_dev = None
                 return
             self.motor_dev = taurus.Device(model)
-
             # CONFIGURE A LISTENER IN ORDER TO UPDATE LIMIT SWITCHES STATES
             self.limits_listener = TaurusAttributeListener()
             if self.hasHwLimits():
@@ -1501,7 +1500,6 @@ class PoolMotorTV(TaurusValue):
                 self.updatePosition)
             self.motor_dev.getAttribute(
                 'Position').addListener(self.position_listener)
-
             self.motor_dev.getAttribute('Position').enablePolling(force=True)
 
             self.setExpertView(self._expertView)
