@@ -245,7 +245,7 @@ class DiffractometerAlignment(TaurusWidget):
             self.tomax_buttons[i].setText(QtGui.QApplication.translate(
                 "DiffractometerAlignment", 'n.n.', None,
                 QtGui.QApplication.UnicodeUTF8))
-            self.tomax_buttons[i].clicked().connect(tomax_functions[i])
+            self.tomax_buttons[i].clicked.connect(tomax_functions[i])
 
     def exec_scan1(self):
         self.exec_scan(0)
