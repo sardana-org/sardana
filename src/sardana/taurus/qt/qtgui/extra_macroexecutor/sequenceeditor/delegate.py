@@ -45,7 +45,7 @@ class SequenceEditorDelegate(Qt.QItemDelegate):
     def paint(self, painter, option, index):
         if index.column() == 2:
             macroNode = index.model().nodeFromIndex(index)
-            opts = Qt.QStyleOptionProgressBarV2()
+            opts = Qt.QStyleOptionProgressBar()
             opts.rect = option.rect
             range = macroNode.range()
             opts.minimum = range[0]
