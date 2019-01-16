@@ -295,7 +295,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
                     txt = str(ix.sibling(ix.row(), 0).data())
                     problems.append("<b>" + txt + "</b> is missing!")
 
-                    data = str(ix.data(), str)
+                    data = str(ix.data())
                     if data != 'None':
                         self.model().setData(self.currentIndex, 'None')
             counter += 1
