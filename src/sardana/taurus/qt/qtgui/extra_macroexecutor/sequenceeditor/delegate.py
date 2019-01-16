@@ -54,7 +54,7 @@ class SequenceEditorDelegate(Qt.QItemDelegate):
             percent = macroNode.progress()
             opts.progress = percent
 #            opts.text = Qt.QString('Unavailable' if percent == 0 else '%d%%'%percent)
-            opts.text = Qt.QString('%d%%' % percent)
+            opts.text = str('%d%%' % percent)
 #            opts.text = Qt.QString(percent)
             Qt.QApplication.style().drawControl(Qt.QStyle.CE_ProgressBar, opts, painter)
         else:
