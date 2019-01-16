@@ -1437,21 +1437,37 @@ class PoolMotorTV(TaurusValue):
 
     def setModel(self, model):
         TaurusValue.setModel(self, model)
+
+        # disconnect signals
         try:
-            # disconnect signals
             if self.limits_listener is not None:
                 self.limits_listener.eventReceivedSignal.disconnect(
                     self.updateLimits)
+        except TypeError:
+            pass
+
+        try:
             if self.poweron_listener is not None:
                 self.poweron_listener.eventReceivedSignal.disconnect(
                     self.updatePowerOn)
+        except TypeError:
+            pass
+
+        try:
             if self.status_listener is not None:
                 self.status_listener.eventReceivedSignal.disconnect(
                     self.updateStatus)
+        except TypeError:
+            pass
+
+        try:
             if self.position_listener is not None:
                 self.position_listener.eventReceivedSignal.disconnect(
                     self.updatePosition)
-
+        except TypeError:
+            pass
+        
+        try:
             # remove listeners
             if self.motor_dev is not None:
                 if self.hasHwLimits():
