@@ -105,7 +105,7 @@ class FavouritesMacrosList(Qt.QListView, BaseConfigurableClass):
 
     favouriteSelected = Qt.pyqtSignal(object)
 
-    def __init__(self, parent):
+    def __init__(self, parent=None):
         Qt.QListView.__init__(self, parent)
 
         self.setSelectionMode(Qt.QListView.ExtendedSelection)

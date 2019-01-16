@@ -65,7 +65,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
     setHistoryFocus = Qt.pyqtSignal()
     expandTree = Qt.pyqtSignal()
 
-    def __init__(self, name, parent=None, designMode=False):
+    def __init__(self, name='', parent=None, designMode=False):
         # self.newValue - is used as a flag to indicate whether a controlUp controlDown actions are used to iterate existing element or put new one
         # self.disableEditMode - flag, used to disable edition, when user enters name of the macro which is not valid (not allowed to edit in the yellow line)
         #                   switches off validation
