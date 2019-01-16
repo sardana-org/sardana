@@ -202,7 +202,7 @@ class SardanaEditor(TaurusBaseEditor, TaurusBaseWidget):
 
     def register_editorstack(self, editorstack):
         TaurusBaseEditor.register_editorstack(self, editorstack)
-        self.editorstack.refresh_save_all_action.connect(
+        editorstack.refresh_save_all_action.connect(
             self.refresh_save_and_apply_action)
 
     def refresh_save_and_apply_action(self):
