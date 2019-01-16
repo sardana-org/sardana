@@ -173,6 +173,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
     '''
 
     createExpConfChangedDialog = Qt.pyqtSignal()
+    experimentConfigurationChanged = Qt.pyqtSignal(object)
 
     def __init__(self, parent=None, door=None, plotsButton=True,
                  autoUpdate=False):
@@ -210,7 +211,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
         self.createExpConfChangedDialog.connect(
             self._createExpConfChangedDialog)
-        self.ui.activeMntGrpCB.activated.connect(
+        self.ui.activeMntGrpCB.activated['QString'].connect(
             self.changeActiveMntGrp)
         self.ui.createMntGrpBT.clicked.connect(
             self.createMntGrp)
@@ -227,12 +228,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self.ui.channelEditor.getQModel().modelReset.connect(
             self._updateButtonBox)
         preScanList = self.ui.preScanList
-        preScanList.dataChanged.connect(
-            self.onPreScanSnapshotChanged)
-
-        if hasattr(preScanList, "dataChangedSignal"):
-            preScanList.dataChangedSignal.connect(
-                self.onPreScanSnapshotChanged)
+        preScanList.dataChangedSignal.connect(self.onPreScanSnapshotChanged)
         self.ui.choosePathBT.clicked.connect(
             self.onChooseScanDirButtonClicked)
 
@@ -530,8 +526,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self.experimentConfigurationChanged.emit(copy.deepcopy(conf))
         return True
 
+    @Qt.pyqtSlot('QString')
     def changeActiveMntGrp(self, activeMntGrpName):
-        activeMntGrpName = str(activeMntGrpName)
         if self._localConfig is None:
             return
         if activeMntGrpName == self._localConfig['ActiveMntGrp']:
