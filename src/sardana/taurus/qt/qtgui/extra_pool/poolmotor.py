@@ -148,7 +148,7 @@ class LabelWidgetDragsDeviceAndAttribute(DefaultLabelWidget):
     """ Offer richer mime data with taurus-device, taurus-attribute, and plain-text. """
 
     def mouseMoveEvent(self, event):
-        model = self.taurusValueBuddy().getModelName()  # TODO: use bytes
+        model = self.taurusValueBuddy().getModelName().encode('utf-8')
         mimeData = Qt.QMimeData()
         mimeData.setText(self.text())
         attr_name = model
@@ -159,7 +159,7 @@ class LabelWidgetDragsDeviceAndAttribute(DefaultLabelWidget):
         drag = Qt.QDrag(self)
         drag.setMimeData(mimeData)
         drag.setHotSpot(event.pos() - self.rect().topLeft())
-        drag.start(Qt.Qt.CopyAction)
+        drag.exec_(Qt.Qt.CopyAction, Qt.Qt.CopyAction)
 
 
 class PoolMotorConfigurationForm(TaurusAttrForm):
@@ -681,11 +681,11 @@ class PoolMotorSlim(TaurusWidget, PoolMotorClient):
     #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
     # QT properties
     #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
-    @Qt.pyqtSignature("getModel()")
+    @Qt.pyqtSlot()
     def getModel(self):
         return self.ui.motorGroupBox.getModel()
 
-    @Qt.pyqtSignature("setModel(QString)")
+    @Qt.pyqtSlot("QString")
     def setModel(self, model):
         # DUE TO A BUG IN TAUGROUPBOX, WE NEED THE FULL MODEL NAME
         try:
@@ -754,43 +754,43 @@ class PoolMotorSlim(TaurusWidget, PoolMotorClient):
                       (model, repr(e)))
             self.traceback()
 
-    @Qt.pyqtSignature("resetModel()")
+    @Qt.pyqtSlot()
     def resetModel(self):
         self.ui.motorGroupBox.resetModel()
 
-    @Qt.pyqtSignature("getShowContextMenu()")
+    @Qt.pyqtSlot()
     def getShowContextMenu(self):
         return self.show_context_menu
 
-    @Qt.pyqtSignature("setShowContextMenu(bool)")
+    @Qt.pyqtSlot()
     def setShowContextMenu(self, showContextMenu):
         self.show_context_menu = showContextMenu
 
-    @Qt.pyqtSignature("resetShowContextMenu()")
+    @Qt.pyqtSlot()
     def resetShowContextMenu(self):
         self.show_context_menu = True
 
-    @Qt.pyqtSignature("getStepSize()")
+    @Qt.pyqtSlot()
     def getStepSize(self):
         return self.ui.inc.value()
 
-    @Qt.pyqtSignature("setStepSize(double)")
+    @Qt.pyqtSlot(float)
     def setStepSize(self, stepSize):
         self.ui.inc.setValue(stepSize)
 
-    @Qt.pyqtSignature("resetStepSize()")
+    @Qt.pyqtSlot()
     def resetStepSize(self):
         self.setStepSize(1)
 
-    @Qt.pyqtSignature("getStepSizeIncrement()")
+    @Qt.pyqtSlot()
     def getStepSizeIncrement(self):
         return self.ui.inc.singleStep()
 
-    @Qt.pyqtSignature("setStepSizeIncrement(double)")
+    @Qt.pyqtSlot(float)
     def setStepSizeIncrement(self, stepSizeIncrement):
         self.ui.inc.setSingleStep(stepSizeIncrement)
 
-    @Qt.pyqtSignature("resetStepSizeIncrement()")
+    @Qt.pyqtSlot()
     def resetStepSizeIncrement(self):
         self.setStepSizeIncrement(1)
 
@@ -842,7 +842,7 @@ class PoolMotorTVLabelWidget(TaurusWidget):
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
         self.setLayout(Qt.QGridLayout())
-        self.layout().setMargin(0)
+        self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(0)
 
         self.lbl_alias = DefaultLabelWidget(parent, designMode)
@@ -955,7 +955,7 @@ class PoolMotorTVLabelWidget(TaurusWidget):
         model = self.taurusValueBuddy().getModelObj()
         mimeData = Qt.QMimeData()
         mimeData.setText(self.lbl_alias.text())
-        dev_name = model.getFullName()  # TODO: Use bytes
+        dev_name = model.getFullName().encode('utf-8')
         attr_name = dev_name + b'/Position'
         mimeData.setData(TAURUS_DEV_MIME_TYPE, dev_name)
         mimeData.setData(TAURUS_ATTR_MIME_TYPE, attr_name)
@@ -963,7 +963,7 @@ class PoolMotorTVLabelWidget(TaurusWidget):
         drag = Qt.QDrag(self)
         drag.setMimeData(mimeData)
         drag.setHotSpot(event.pos() - self.rect().topLeft())
-        drag.start(Qt.Qt.CopyAction)
+        drag.exec_(Qt.Qt.CopyAction, Qt.Qt.CopyAction)
 
 ##################################################
 #                   READ WIDGET                  #
@@ -982,11 +982,11 @@ class PoolMotorTVReadWidget(TaurusWidget):
         TaurusWidget.__init__(self, parent, designMode)
 
         self.setLayout(Qt.QGridLayout())
-        self.layout().setMargin(0)
+        self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(0)
 
         limits_layout = Qt.QHBoxLayout()
-        limits_layout.setMargin(0)
+        limits_layout.setContentsMargins(0, 0, 0, 0)
         limits_layout.setSpacing(0)
 
         self.btn_lim_neg = Qt.QPushButton()
@@ -1128,7 +1128,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
         self.setLayout(Qt.QGridLayout())
-        self.layout().setMargin(0)
+        self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(0)
 
         self.le_write_absolute = TaurusValueLineEdit()
@@ -1136,7 +1136,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
 
         self.qw_write_relative = Qt.QWidget()
         self.qw_write_relative.setLayout(Qt.QHBoxLayout())
-        self.qw_write_relative.layout().setMargin(0)
+        self.qw_write_relative.layout().setContentsMargins(0, 0, 0, 0)
         self.qw_write_relative.layout().setSpacing(0)
 
         self.cb_step = Qt.QComboBox()
@@ -1178,7 +1178,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
         #self.layout().addWidget(self.btn_stop, 0, 2)
 
         btns_layout = Qt.QHBoxLayout()
-        btns_layout.setMargin(0)
+        btns_layout.setContentsMargins(0, 0, 0, 0)
         btns_layout.setSpacing(0)
 
         btns_layout.addItem(Qt.QSpacerItem(
@@ -1437,21 +1437,37 @@ class PoolMotorTV(TaurusValue):
 
     def setModel(self, model):
         TaurusValue.setModel(self, model)
+
+        # disconnect signals
         try:
-            # disconnect signals
             if self.limits_listener is not None:
                 self.limits_listener.eventReceivedSignal.disconnect(
                     self.updateLimits)
+        except TypeError:
+            pass
+
+        try:
             if self.poweron_listener is not None:
                 self.poweron_listener.eventReceivedSignal.disconnect(
                     self.updatePowerOn)
+        except TypeError:
+            pass
+
+        try:
             if self.status_listener is not None:
                 self.status_listener.eventReceivedSignal.disconnect(
                     self.updateStatus)
+        except TypeError:
+            pass
+
+        try:
             if self.position_listener is not None:
                 self.position_listener.eventReceivedSignal.disconnect(
                     self.updatePosition)
-
+        except TypeError:
+            pass
+        
+        try:
             # remove listeners
             if self.motor_dev is not None:
                 if self.hasHwLimits():
@@ -1469,7 +1485,6 @@ class PoolMotorTV(TaurusValue):
                 self.motor_dev = None
                 return
             self.motor_dev = taurus.Device(model)
-
             # CONFIGURE A LISTENER IN ORDER TO UPDATE LIMIT SWITCHES STATES
             self.limits_listener = TaurusAttributeListener()
             if self.hasHwLimits():
@@ -1501,7 +1516,6 @@ class PoolMotorTV(TaurusValue):
                 self.updatePosition)
             self.motor_dev.getAttribute(
                 'Position').addListener(self.position_listener)
-
             self.motor_dev.getAttribute('Position').enablePolling(force=True)
 
             self.setExpertView(self._expertView)
