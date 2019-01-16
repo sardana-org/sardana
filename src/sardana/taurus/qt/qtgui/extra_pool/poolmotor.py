@@ -842,7 +842,7 @@ class PoolMotorTVLabelWidget(TaurusWidget):
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
         self.setLayout(Qt.QGridLayout())
-        self.layout().setMargin(0)
+        self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(0)
 
         self.lbl_alias = DefaultLabelWidget(parent, designMode)
@@ -982,11 +982,11 @@ class PoolMotorTVReadWidget(TaurusWidget):
         TaurusWidget.__init__(self, parent, designMode)
 
         self.setLayout(Qt.QGridLayout())
-        self.layout().setMargin(0)
+        self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(0)
 
         limits_layout = Qt.QHBoxLayout()
-        limits_layout.setMargin(0)
+        limits_layout.setContentsMargins(0, 0, 0, 0)
         limits_layout.setSpacing(0)
 
         self.btn_lim_neg = Qt.QPushButton()
@@ -1128,7 +1128,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
         self.setLayout(Qt.QGridLayout())
-        self.layout().setMargin(0)
+        self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(0)
 
         self.le_write_absolute = TaurusValueLineEdit()
@@ -1136,7 +1136,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
 
         self.qw_write_relative = Qt.QWidget()
         self.qw_write_relative.setLayout(Qt.QHBoxLayout())
-        self.qw_write_relative.layout().setMargin(0)
+        self.qw_write_relative.layout().setContentsMargins(0, 0, 0, 0)
         self.qw_write_relative.layout().setSpacing(0)
 
         self.cb_step = Qt.QComboBox()
@@ -1178,7 +1178,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
         #self.layout().addWidget(self.btn_stop, 0, 2)
 
         btns_layout = Qt.QHBoxLayout()
-        btns_layout.setMargin(0)
+        btns_layout.setContentsMargins(0, 0, 0, 0)
         btns_layout.setSpacing(0)
 
         btns_layout.addItem(Qt.QSpacerItem(
