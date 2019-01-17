@@ -233,8 +233,20 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             self.onChooseScanDirButtonClicked)
 
         self.__plotManager = None
+        tooltip = "Show/Hide plots"
+
+        # TODO: Disable show scan button since scan plot have to be
+        # adapted to support QT5
+        # --------------------------------------------------------------------
+        import os
+        if os.getenv('QT_API') == 'pyqt5':
+            self.debug('Show plots is not ready for QT5')
+            plotsButton = False
+            tooltip = "Show/Hide plots is not ready for QT5"
+        # --------------------------------------------------------------------
+
         icon = resource.getIcon(":/actions/view.svg")
-        self.togglePlotsAction = Qt.QAction(icon, "Show/Hide plots", self)
+        self.togglePlotsAction = Qt.QAction(icon, tooltip, self)
         self.togglePlotsAction.setCheckable(True)
         self.togglePlotsAction.setChecked(False)
         self.togglePlotsAction.setEnabled(plotsButton)
