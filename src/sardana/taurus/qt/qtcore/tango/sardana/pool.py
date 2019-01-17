@@ -41,8 +41,8 @@ CHANGE_EVTS = TaurusEventType.Change, TaurusEventType.Periodic
 class QPool(Qt.QObject, TangoDevice):
 
     def __init__(self, name='', qt_parent=None, **kw):
-        self.call__init__wo_kw(Qt.QObject, qt_parent)
         self.call__init__(TangoDevice, name, **kw)
+        self.call__init__wo_kw(Qt.QObject, qt_parent)
 
 
 class QMeasurementGroup(Qt.QObject, TangoDevice):
@@ -50,8 +50,8 @@ class QMeasurementGroup(Qt.QObject, TangoDevice):
     configurationChanged = Qt.pyqtSignal()
 
     def __init__(self, name='', qt_parent=None, **kw):
-        self.call__init__wo_kw(Qt.QObject, qt_parent)
         self.call__init__(TangoDevice, name, **kw)
+        self.call__init__wo_kw(Qt.QObject, qt_parent)
 
         self._config = None
         self.__configuration = self.getAttribute("Configuration")
