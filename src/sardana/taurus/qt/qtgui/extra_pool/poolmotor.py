@@ -1115,18 +1115,22 @@ class PoolMotorTVReadWidget(TaurusWidget):
 #                  WRITE WIDGET                  #
 ##################################################
 
-
 class PoolMotorTVWriteWidget(TaurusWidget):
 
     layoutAlignment = Qt.Qt.AlignTop
-    try:
-        # TODO: For Taurus 4 compatibility
-        applied = Qt.pyqtSignal()
-    except AttributeError:
-        pass
+
+    applied = Qt.pyqtSignal()
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
+
+        # ------------------------------------------------------------
+        # Workaround for Taurus3 support
+        if int(taurus.Release.version.split('.')[0]) < 4:
+            from taurus.qt.qtgui.base.taurusbase import baseOldSignal
+            self.applied = baseOldSignal('applied', self)
+        # ------------------------------------------------------------
+
         self.setLayout(Qt.QGridLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(0)
