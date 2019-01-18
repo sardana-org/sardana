@@ -1,4 +1,4 @@
-# How to 
+# How to release
 
 This is a guide for sardana release managers: it details the steps for making
 an official release, including a checklist of stuff that should be manually
@@ -34,6 +34,7 @@ tested.
     3. The version numbers used in the man pages of the Sardana scripts are
        bumped (you may use `taurus/doc/makeman` script executing it from the
        doc directory e.g. `sardana/doc`) and committing the changes.
+       There is a known [problem with the spock version number](https://github.com/sardana-org/sardana/issues/518).
     4. In the code use version number instead of milestone in deprecation
        warnings (if any) e.g. replace *Jul18* with *2.5.0*.
     5. Create a PR to merge the `release-XXX` against the **`master`** branch
