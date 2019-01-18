@@ -441,6 +441,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         for tg_info in tg_elements.values():
             avail_triggers[tg_info.full_name] = tg_info.getData()
         self.ui.channelEditor.getQModel().setAvailableTriggers(avail_triggers)
+        self.emit(Qt.SIGNAL('experimentConfigurationChanged'),
+                  copy.deepcopy(conf))
 
     def _setDirty(self, dirty):
         self._dirty = dirty
