@@ -1470,7 +1470,7 @@ class PoolMotorTV(TaurusValue):
                     self.updatePosition)
         except TypeError:
             pass
-        
+
         try:
             # remove listeners
             if self.motor_dev is not None:

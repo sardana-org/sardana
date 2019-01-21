@@ -97,7 +97,6 @@ class SelectSignal(TaurusWidget):
             mg_name = conf['ActiveMntGrp']
             mg = PyTango.DeviceProxy(mg_name)
             signals = mg.ElementList
-            
             self.signalComboBox.loadSignals(signals)
 
     def onSignalChanged(self, signalname):
