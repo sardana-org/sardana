@@ -182,15 +182,15 @@ class UBMatrixBase(TaurusWidget):
         self.crystalscombobox.currentIndexChanged['QString'].connect(
             self.onCrystalChanged)
 
-    Qt.pyqtSlot('Qstring')
+    Qt.pyqtSlot('QString')
     def onEngineChanged(self, enginename):
         self.device.write_attribute("engine", str(enginename))
 
-    Qt.pyqtSlot('Qstring')
+    Qt.pyqtSlot('QString')
     def onModeChanged(self, modename):
         self.device.write_attribute("enginemode", str(modename))
 
-    Qt.pyqtSlot('Qstring')
+    Qt.pyqtSlot('QString')
     def onCrystalChanged(self, crystalname):
         if str(crystalname) != "":
             self.device.write_attribute("crystal", str(crystalname))
