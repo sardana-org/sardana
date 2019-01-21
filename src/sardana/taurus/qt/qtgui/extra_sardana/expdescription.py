@@ -664,7 +664,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
     def onPlotsButtonToggled(self, checked):
         if checked:
-            from taurus.qt.qtgui.taurusgui.macrolistener import \
+            from sardana.taurus.qt.qtgui.macrolistener import \
                 DynamicPlotManager
             self.__plotManager = DynamicPlotManager(self)
             self.__plotManager.setModel(self.getModelName())
