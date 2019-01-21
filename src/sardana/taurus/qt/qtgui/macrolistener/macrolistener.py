@@ -27,8 +27,8 @@
 This module provides objects to manage macro-related tasks. Its primary use is
 to be used within a TaurusGui for managing panels for:
 - setting preferences in the sardana control system for data I/O
-- displaying results of macro executions, including creating/removing panels for
-  plotting results of scans
+- displaying results of macro executions, including creating/removing panels
+  for plotting results of scans
 - editing macros
 
 .. note:: This module was originally implemented in taurus as
@@ -108,12 +108,12 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         '''Checks if JsonRecorder env var is set and offers to set it'''
         door = self.getModelObj()
         if 'JsonRecorder' not in door.getEnvironment():
-            msg = ('JsonRecorder environment variable is not set, but it ' +
-                   'is needed for displaying trend plots.\n' +
-                   'Enable it globally for %s?') % door.fullname
-            result = Qt.QMessageBox.question(self.parent(),
-                                             'JsonRecorder not set', msg,
-                                             Qt.QMessageBox.Yes | Qt.QMessageBox.No)
+            msg = ('JsonRecorder environment variable is not set, but it '
+                   + 'is needed for displaying trend plots.\n'
+                   + 'Enable it globally for %s?') % door.fullname
+            result = Qt.QMessageBox.question(
+                self.parent(), 'JsonRecorder not set', msg,
+                Qt.QMessageBox.Yes | Qt.QMessageBox.No)
             if result == Qt.QMessageBox.Yes:
                 door.putEnvironment('JsonRecorder', True)
                 self.info('JsonRecorder Enabled for %s' % door.fullname)
@@ -145,8 +145,6 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         # classify by type of plot:
         trends1d = {}
         trends2d = {}
-        plots1d = {}
-        images = {}
 
         for chname, chdata in channels.items():
             ptype = chdata['plot_type']
@@ -186,7 +184,7 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
             new1d, removed1d = self._updateTemporaryTrends1D(trends1d)
             self.newShortMessage.emit("Changed panels (%i new, %i removed)"
                                       % (len(new1d), len(removed1d)))
-        except:
+        except Exception:
             self.warning(
                 'Plots cannot be updated. Only qwt5 is supported for now'
             )
@@ -217,7 +215,7 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
                                          permanent=False)
                 try:  # if the panel is a dockwidget, raise it
                     panel.raise_()
-                except:
+                except Exception:
                     pass
                 self._trends1d[axes] = pname
                 newpanels.append(pname)
@@ -251,10 +249,11 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         try:
             from taurus.qt.qtgui.extra_guiqwt.taurustrend2d import \
                 TaurusTrend2DDialog
-            from taurus.qt.qtgui.extra_guiqwt.image import TaurusTrend2DScanItem
-        except:
-            self.info('guiqwt extension cannot be loaded. ' +
-                      '2D Trends will not be created')
+            from taurus.qt.qtgui.extra_guiqwt.image import (
+                TaurusTrend2DScanItem)
+        except Exception:
+            self.info('guiqwt extension cannot be loaded. '
+                      + '2D Trends will not be created')
             raise
             return
 
@@ -314,7 +313,8 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
                       given (default), all the panels are removed.
         '''
         if names is None:
-            names = list(self._trends1d.values()) + list(self._trends2d.values())
+            names = (list(self._trends1d.values())
+                     + list(self._trends2d.values()))
             # TODO: do the same for other temporary panels
         for pname in names:
             self.removePanel(pname)
@@ -354,39 +354,43 @@ class MacroBroker(DynamicPlotManager):
         if door is not None:  # disconnect it from *all* shared data providing
             SDM = Qt.qApp.SDM
             try:
-                SDM.disconnectWriter("macroStatus", door, "macroStatusUpdated")
-            except:
+                SDM.disconnectWriter("macroStatus", door,
+                                     "macroStatusUpdated")
+            except Exception:
                 self.info("Could not disconnect macroStatusUpdated")
             try:
-                SDM.disconnectWriter("doorOutputChanged", door, "outputUpdated")
-            except:
+                SDM.disconnectWriter("doorOutputChanged", door,
+                                     "outputUpdated")
+            except Exception:
                 self.info("Could not disconnect outputUpdated")
             try:
                 SDM.disconnectWriter("doorInfoChanged", door, "infoUpdated")
-            except:
+            except Exception:
                 self.info("Could not disconnect infoUpdated")
             try:
                 SDM.disconnectWriter("doorWarningChanged", door,
                                      "warningUpdated")
-            except:
+            except Exception:
                 self.info("Could not disconnect warningUpdated")
             try:
                 SDM.disconnectWriter("doorErrorChanged", door, "errorUpdated")
-            except:
+            except Exception:
                 self.info("Could not disconnect errorUpdated")
             try:
                 SDM.disconnectWriter("doorDebugChanged", door, "debugUpdated")
-            except:
+            except Exception:
                 self.info("Could not disconnect debugUpdated")
             try:
-                SDM.disconnectWriter("doorResultChanged", door, "resultUpdated")
-            except:
+                SDM.disconnectWriter("doorResultChanged", door,
+                                     "resultUpdated")
+            except Exception:
                 self.info("Could not disconnect resultUpdated")
             try:
                 SDM.disconnectWriter("expConfChanged", door,
                                      "experimentConfigurationChanged")
-            except:
-                self.info("Could not disconnect experimentConfigurationChanged")
+            except Exception:
+                self.info(
+                    "Could not disconnect experimentConfigurationChanged")
         # set the model
         DynamicPlotManager.setModel(self, doorname)
 
@@ -412,7 +416,7 @@ class MacroBroker(DynamicPlotManager):
             DoorOutput, DoorDebug, DoorResult
 
         from sardana.taurus.qt.qtgui.extra_sardana import \
-            ExpDescriptionEditor, SardanaEditor
+            ExpDescriptionEditor
 
         mainwindow = self.parent()
 
@@ -470,7 +474,8 @@ class MacroBroker(DynamicPlotManager):
         self.__sequencer = TaurusSequencerWidget()
         SDM.connectReader("macroserverName", self.__sequencer.setModel)
         SDM.connectReader("doorName", self.__sequencer.onDoorChanged)
-        SDM.connectReader("macroStatus", self.__sequencer.onMacroStatusUpdated)
+        SDM.connectReader("macroStatus",
+                          self.__sequencer.onMacroStatusUpdated)
         SDM.connectWriter("macroName", self.__sequencer.tree,
                           "macroNameChanged")
         SDM.connectWriter("macroName", self.__sequencer,
@@ -564,11 +569,10 @@ class MacroBroker(DynamicPlotManager):
             self.info('Sending %s command to %s' % (cmd, pool.getFullName()))
             try:
                 pool.getObj().command_inout(cmd)
-            except:
+            except Exception:
                 self.info('%s command failed on %s', cmd, pool.getFullName(),
                           exc_info=1)
-        self.newShortMessage.emit("%s command sent to all pools" %
-                  cmd)
+        self.newShortMessage.emit("%s command sent to all pools" % cmd)
         self.__lastAbortTime = now
 
     def createPanel(self, widget, name, **kwargs):
