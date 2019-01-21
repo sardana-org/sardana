@@ -179,9 +179,10 @@ class HKLScan(TaurusWidget):
 
         self.enginemodescombobox.loadEngineModeNames(self.device.hklmodelist)
 
-        self.enginemodescombobox.currentIndexChanged.connect(
+        self.enginemodescombobox.currentIndexChanged['QString'].connect(
             self.onModeChanged)
 
+    @Qt.pyqtSlot('QString')
     def onModeChanged(self, modename):
         if self.device.engine != "hkl":
             self.device.write_attribute("engine", "hkl")

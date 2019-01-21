@@ -153,7 +153,8 @@ class UBMatrixBase(TaurusWidget):
 
         self.enginescombobox.loadItems(self.device.enginelist)
 
-        self.enginescombobox.currentIndexChanged.connect(self.onEngineChanged)
+        self.enginescombobox.currentIndexChanged['QString'].connect(
+            self.onEngineChanged)
 
         enginemodemodel = model + '/enginemode'
         self._ui.taurusLabelEngineMode.setModel(enginemodemodel)
@@ -164,7 +165,7 @@ class UBMatrixBase(TaurusWidget):
 
         self.enginemodescombobox.loadItems(self.device.enginemodelist)
 
-        self.enginemodescombobox.currentIndexChanged.connect(
+        self.enginemodescombobox.currentIndexChanged['QString'].connect(
             self.onModeChanged)
 
         # Set model to crystal
@@ -178,15 +179,18 @@ class UBMatrixBase(TaurusWidget):
 
         self.crystalscombobox.loadItems(self.device.crystallist)
 
-        self.crystalscombobox.currentIndexChanged.connect(
+        self.crystalscombobox.currentIndexChanged['QString'].connect(
             self.onCrystalChanged)
 
+    Qt.pyqtSlot('Qstring')
     def onEngineChanged(self, enginename):
         self.device.write_attribute("engine", str(enginename))
 
+    Qt.pyqtSlot('Qstring')
     def onModeChanged(self, modename):
         self.device.write_attribute("enginemode", str(modename))
 
+    Qt.pyqtSlot('Qstring')
     def onCrystalChanged(self, crystalname):
         if str(crystalname) != "":
             self.device.write_attribute("crystal", str(crystalname))

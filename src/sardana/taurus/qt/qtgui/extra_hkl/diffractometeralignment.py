@@ -201,7 +201,7 @@ class DiffractometerAlignment(TaurusWidget):
 
         self.enginemodescombobox.loadEngineModeNames(self.device.hklmodelist)
 
-        self.enginemodescombobox.currentIndexChanged.connect(
+        self.enginemodescombobox.currentIndexChanged['QString'].connect(
             self.onModeChanged)
 
         # Add dynamically the scan buttons, range inputs and 'to max' buttons
@@ -313,6 +313,7 @@ class DiffractometerAlignment(TaurusWidget):
         macro_command = ["mv", motor, position]
         self.door_device.RunMacro(macro_command)
 
+    @Qt.pyqtSlot('QString')
     def onModeChanged(self, modename):
         if self.device.engine != "hkl":
             self.device.write_attribute("engine", "hkl")
