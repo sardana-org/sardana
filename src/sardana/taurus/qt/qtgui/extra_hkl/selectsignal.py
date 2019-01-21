@@ -69,7 +69,7 @@ class SelectSignal(TaurusWidget):
         self.signalComboBox.setGeometry(QtCore.QRect(70, 50, 161, 27))
         self.signalComboBox.setObjectName("SignalcomboBox")
 
-        self.signalComboBox.currentTextChanged.connect(self.onSignalChanged)
+        self.signalComboBox.currentIndexChanged['QString'].connect(self.onSignalChanged)
 
         self.doorName = None
         self.door_device = None
@@ -95,7 +95,7 @@ class SelectSignal(TaurusWidget):
             signals = []
             conf = self.door_device.getExperimentConfiguration()
             mg_name = conf['ActiveMntGrp']
-            mg = PyTango.DeviceProxy(mg_name)
+            mg = taurus.Device(mg_name)
             signals = mg.ElementList
             self.signalComboBox.loadSignals(signals)
 
