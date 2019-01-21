@@ -181,10 +181,15 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
                     pass  # TODO: implement
                 else:
                     self.warning('Cannot create plot for %s', chname)
-
-        new1d, removed1d = self._updateTemporaryTrends1D(trends1d)
-        self.newShortMessage.emit("Changed panels (%i new, %i removed)" % (len(new1d),
-                                                           len(removed1d)))
+        try:
+            # TODO: adapt _updateTemporaryTrends1D to use tpg
+            new1d, removed1d = self._updateTemporaryTrends1D(trends1d)
+            self.newShortMessage.emit("Changed panels (%i new, %i removed)"
+                                      % (len(new1d), len(removed1d)))
+        except:
+            self.warning(
+                'Plots cannot be updated. Only qwt5 is supported for now'
+            )
 #        self._updateTemporaryTrends2D(trends2d)
 
     def _updateTemporaryTrends1D(self, trends1d):
