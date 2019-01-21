@@ -33,6 +33,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Top LICENSE file that applies to the whole project (#938)
 - Document remote connection to MacroServer Python process (RConsolePort Tango
   property) (#984)
+- sardana.taurus.qt.qtgui.macrolistener (moved from taurus.qt.qtgui.taurusgui)
 
 ### Fixed
 - Do not read 1D and 2D experimental channels during software acquisition loop
