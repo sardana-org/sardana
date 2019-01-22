@@ -75,6 +75,7 @@ class SenvEditor(Qt.QWidget, MacroParametersEditor):
             self.setRootIndex(Qt.QModelIndex())
 
     def onNameComboBoxChanged(self, index):
+        # note that the index parameter is ignored!
         text = str(self.nameComboBox.currentText())
         if self.valueWidget is not None:
             label = self.layout().labelForField(self.valueWidget)
@@ -326,7 +327,7 @@ class ExtraColumnsModel(Qt.QAbstractTableModel):
                 return "Instrument"
             return None
         else:
-            return Qt.QString.number(section + 1)
+            return str(section + 1)
 
     def flags(self, index):
         flags = Qt.Qt.ItemIsEnabled | Qt.Qt.ItemIsSelectable
