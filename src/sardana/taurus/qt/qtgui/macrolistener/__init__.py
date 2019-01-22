@@ -29,4 +29,3 @@ to sardana"""
 __docformat__ = 'restructuredtext'
 
 from .macrolistener import *  # noqa: F401,F403
-
