@@ -238,11 +238,11 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         # TODO: Disable show scan button since scan plot have to be
         # adapted to support QT5
         # --------------------------------------------------------------------
-        import os
-        if os.getenv('QT_API') == 'pyqt5':
-            self.debug('Show plots is not ready for QT5')
+        from taurus.external.qt import PYQT4, QT_API
+        if not PYQT4:
+            self.debug('Show plots is only supported with PyQt4 for now')
             plotsButton = False
-            tooltip = "Show/Hide plots is not ready for QT5"
+            tooltip = "Show/Hide plots is not ready for %s" % QT_API
         # --------------------------------------------------------------------
 
         icon = resource.getIcon(":/actions/view.svg")
