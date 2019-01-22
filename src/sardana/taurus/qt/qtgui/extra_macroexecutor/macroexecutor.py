@@ -59,7 +59,7 @@ class MacroProgressBar(Qt.QProgressBar):
 class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
 
     pressedReturn = Qt.pyqtSignal()
-    spockComboBox = Qt.pyqtSignal(str)
+    spockComboBox = Qt.pyqtSignal('Qstring')
     elementUp = Qt.pyqtSignal()
     elementDown = Qt.pyqtSignal()
     setHistoryFocus = Qt.pyqtSignal()
