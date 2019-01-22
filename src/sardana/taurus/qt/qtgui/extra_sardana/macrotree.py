@@ -273,10 +273,8 @@ class MacroSelectionDialog(Qt.QDialog):
         self._buttonBox.setStandardButtons(bts)
         layout.addWidget(self._panel)
         layout.addWidget(self._buttonBox)
-        self._buttonBox.accepted.connect(
-            self.accept)
-        self._buttonBox.rejected.connect(
-            self.reject)
+        self._buttonBox.accepted.connect(self.accept)
+        self._buttonBox.rejected.connect(self.reject)
 
     def selectedItems(self):
         return self._panel.selectedItems()

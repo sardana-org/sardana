@@ -664,7 +664,7 @@ class TaurusSequencerWidget(TaurusWidget):
             file = open(fileName, "w")
             file.write(self.tree.toXmlString(pretty=True, withId=False))
             self.setSequencesPath(str.join("/", fileName.rsplit("/")[:-1]))
-        except Exception, e:
+        except Exception as e:
             Qt.QMessageBox.warning(
                 self,
                 "Error while saving macros sequence",
@@ -896,7 +896,7 @@ class TaurusSequencerWidget(TaurusWidget):
             try:
                 macroServerObj.recreateMacroNodeAndFillAdditionalInfos(
                     macroNode)
-            except Exception, e:
+            except Exception as e:
                 Qt.QMessageBox.warning(self,
                                        "Error while parsing the sequence",
                                        "Sequence line number %d contains "

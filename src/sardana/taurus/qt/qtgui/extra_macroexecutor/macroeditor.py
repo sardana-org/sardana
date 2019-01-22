@@ -193,7 +193,7 @@ class MacroEditor(Qsci.QsciScintilla):
     def loadFile(self, fileName):
         try:
             fileHandle = open(fileName, 'r')
-        except IOError, e:
+        except IOError as e:
             Qt.QMessageBox.warning(self, "MacroEditor",
                                    "Cannot read file %s:\n%s." % (fileName, e))
             return False
@@ -208,7 +208,7 @@ class MacroEditor(Qsci.QsciScintilla):
     def __saveFile(self, fileName):
         try:
             file = open(fileName, 'w')
-        except IOError, e:
+        except IOError as e:
             Qt.QMessageBox.warning(
                 self, "MacroEditor", "Cannot write file %s:\n%s." % (fileName, e))
             return False
