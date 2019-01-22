@@ -217,7 +217,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             self.createMntGrp)
         self.ui.deleteMntGrpBT.clicked.connect(
             self.deleteMntGrp)
-        self.ui.compressionCB.currentIndexChanged.connect(
+        self.ui.compressionCB.currentIndexChanged['int'].connect(
             self.onCompressionCBChanged)
         self.ui.pathLE.textEdited.connect(
             self.onPathLEEdited)
@@ -631,6 +631,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self.ui.channelEditor.getQModel().setDataSource({})
         self._setDirty(True)
 
+    @Qt.pyqtSlot('int')
     def onCompressionCBChanged(self, idx):
         if self._localConfig is None:
             return
