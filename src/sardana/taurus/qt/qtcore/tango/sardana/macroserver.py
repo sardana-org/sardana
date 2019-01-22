@@ -28,6 +28,7 @@
 __all__ = ["QDoor", "QMacroServer",
            "MacroServerMessageErrorHandler", "registerExtensions"]
 
+import copy
 from taurus.core.taurusbasetypes import TaurusEventType
 from taurus.external.qt import Qt
 
@@ -52,7 +53,7 @@ class QDoor(BaseDoor, Qt.QObject):
     infoUpdated = Qt.pyqtSignal(object)
     outputUpdated = Qt.pyqtSignal(object)
     debugUpdated = Qt.pyqtSignal(object)
-    experimentConfigurationChanged = Qt.pyqtSignal()
+    experimentConfigurationChanged = Qt.pyqtSignal(object)
     elementsChanged = Qt.pyqtSignal()
     environmentChanged = Qt.pyqtSignal()
 
@@ -98,7 +99,7 @@ class QDoor(BaseDoor, Qt.QObject):
         if not self._use_experiment_configuration and \
                 not self._connections_prepared:
             self.macro_server.environmentChanged.connect(
-                self._experimentConfigurationChanged)
+                self._onExperimentConfigurationChanged)
             self.macro_server.elementsChanged.connect(self._elementsChanged)
             self._elementsChanged()
             self._connections_prepared = True
@@ -113,15 +114,16 @@ class QDoor(BaseDoor, Qt.QObject):
                 mntgrp_changed = True  # this measurement group is new
                 obj = mg.getObj()
                 obj.configurationChanged.connect(
-                    self._experimentConfigurationChanged)
+                    self._onExperimentConfigurationChanged)
             new_mntgrp_connected.append(name)
         self._mntgrp_connected = new_mntgrp_connected
 
         if mntgrp_changed:
-            self.experimentConfigurationChanged.emit()
+            self._onExperimentConfigurationChanged()
 
-    def _experimentConfigurationChanged(self, *args):
-        self.experimentConfigurationChanged.emit()
+    def _onExperimentConfigurationChanged(self, *args):
+        conf = copy.deepcopy(BaseDoor.getExperimentConfiguration(self))
+        self.experimentConfigurationChanged.emit(conf)
 
     def getExperimentConfigurationObj(self):
         self._prepare_connections()
