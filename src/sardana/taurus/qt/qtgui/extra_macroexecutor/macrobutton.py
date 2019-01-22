@@ -260,13 +260,27 @@ class MacroButton(TaurusWidget):
         """
 
         for i, signal in enumerate(signals):
-            # TODO: if possible, better check that this is not a pyqtsignal
-            if isinstance(signal, (tuple, list, set)):
-                obj, sig = signal
-                msg = "Old style PyQt signals is deprecated: %s"
-                self.deprecated(msg)
-                signal = getattr(obj, sig.split('(')[0])
+            if not self.__isSignal(signal):
+                # bck-compat: (sender, sig) tuples used instead of pyqtsignals
+                sender, sig = signal
+                msg = "Old style signals are deprecated: "
+                self.deprecated(
+                    dep='Passing (sender, signature) tuples',
+                    alt='pyqtSignal objects',
+                    rel='2.5.1'
+                )
+                signal = getattr(sender, sig.split('(')[0])
             signal.connect(functools.partial(self.updateMacroArgument, i))
+
+    @staticmethod
+    def __isSignal(obj):
+        if not hasattr(obj, 'emit'):
+            return False
+        if not hasattr(obj, 'connect'):
+            return False
+        if not hasattr(obj, 'disconnect'):
+            return False
+        return True
 
     def _onButtonClicked(self):
         if self.ui.button.isChecked():
