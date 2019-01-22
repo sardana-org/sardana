@@ -24,7 +24,13 @@
 ##############################################################################
 
 from taurus.external.qt import Qt, compat
-from PyQt4 import Qsci
+
+try:
+    # TODO: Check if qscintilla can be used with other bindings
+    from PyQt4 import Qsci
+except Exception as e:
+    raise ImportError('MacroEditor requires Qsci  (qscintilla): %r', e)
+
 
 from taurus.qt.qtgui.resource import getThemeIcon
 
