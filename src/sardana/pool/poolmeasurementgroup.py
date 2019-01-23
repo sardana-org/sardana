@@ -717,6 +717,7 @@ class MeasurementConfiguration(object):
                 else:
                     if to_fqdn:
                         ch_name = _to_fqdn(ch_name, logger=self._parent)
+                        ch_data['full_name'] = ch_name
                     channel = pool.get_element_by_full_name(ch_name)
                 ch_data = self._fill_channel_data(channel, ch_data)
                 user_config_channel[ch_name] = ch_data
