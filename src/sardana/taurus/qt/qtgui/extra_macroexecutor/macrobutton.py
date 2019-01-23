@@ -263,8 +263,7 @@ class MacroButton(TaurusWidget):
             if not self.__isSignal(signal):
                 # bck-compat: (sender, sig) tuples used instead of pyqtsignals
                 sender, sig = signal
-                msg = "Old style signals are deprecated: "
-                self.deprecated(msg, dep='Passing (sender, signature) tuples',
+                self.deprecated(dep='Passing (sender, signature) tuples',
                                 alt='pyqtSignal objects', rel='2.5.1')
                 signal = getattr(sender, sig.split('(')[0])
             signal.connect(functools.partial(self.updateMacroArgument, i))
