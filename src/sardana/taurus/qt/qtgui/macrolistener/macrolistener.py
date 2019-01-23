@@ -104,6 +104,9 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         expconf = door.getExperimentConfiguration()
         self.onExpConfChanged(expconf)
 
+        # Connect experiment configuration changes
+        door.experimentConfigurationChanged.connect(self.onExpConfChanged)
+
     def _checkJsonRecorder(self):
         '''Checks if JsonRecorder env var is set and offers to set it'''
         door = self.getModelObj()
