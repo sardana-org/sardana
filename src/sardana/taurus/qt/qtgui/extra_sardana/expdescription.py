@@ -441,8 +441,6 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         for tg_info in tg_elements.values():
             avail_triggers[tg_info.full_name] = tg_info.getData()
         self.ui.channelEditor.getQModel().setAvailableTriggers(avail_triggers)
-        self.experimentConfigurationChanged.emit(copy.deepcopy(conf))
-
 
     def _setDirty(self, dirty):
         self._dirty = dirty
@@ -537,7 +535,6 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self._dirtyMntGrps = set()
         self.ui.channelEditor.getQModel().setDataChanged(False)
         self._setDirty(False)
-        self.experimentConfigurationChanged.emit(copy.deepcopy(conf))
         return True
 
     @Qt.pyqtSlot('QString')
@@ -669,11 +666,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
                 DynamicPlotManager
             self.__plotManager = DynamicPlotManager(self)
             self.__plotManager.setModel(self.getModelName())
-            self.experimentConfigurationChanged.connect(
-                self.__plotManager.onExpConfChanged)
         else:
-            self.experimentConfigurationChanged.disconnect(
-                self.__plotManager.onExpConfChanged)
             self.__plotManager.removePanels()
             self.__plotManager.setModel(None)
             self.__plotManager = None
