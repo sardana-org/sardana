@@ -80,3 +80,20 @@ class TestMeasurementGroup(SarTestTestCase, TestCase):
 
     def tearDown(self):
         SarTestTestCase.tearDown(self)
+
+
+class TestMotor(SarTestTestCase, TestCase):
+
+    def setUp(self):
+        SarTestTestCase.setUp(self)
+        registerExtensions()
+
+    def test_move(self):
+        mot = Device("_test_mt_1_1")
+        _, values = mot.move(1)
+
+    def tearDown(self):
+        SarTestTestCase.tearDown(self)
+        # TODO: This sleep is just to demonstrate API_EventTimeout. Remove it!
+        import time
+        time.sleep(20)
