@@ -371,21 +371,6 @@ class PoolAcquisition(PoolAction):
         ctrls_sw = []
         ctrls_sw_start = []
 
-        for elem in self.get_elements():
-            elem.put_state(None)
-            # TODO: temporarily clear value buffers at the beginning of the
-            # acquisition instead of doing it in the finish hook of each
-            # acquisition sub-actions. See extensive explanation in the
-            # constructor of PoolAcquisitionBase.
-            try:
-                elem.clear_value_buffer()
-            except AttributeError:
-                continue
-            # clean also the pseudo counters, even the ones that do not
-            # participate directly in the acquisition
-            for pseudo_elem in elem.get_pseudo_elements():
-                pseudo_elem.clear_value_buffer()
-
         repetitions = synchronization.repetitions
         latency = synchronization.passive_time
         # Prepare controllers synchronized by hardware
@@ -501,6 +486,22 @@ class PoolAcquisition(PoolAction):
 
     def run(self, *args, **kwargs):
         """Runs acquisition according to previous preparation."""
+
+        for elem in self.get_elements():
+            elem.put_state(None)
+            # TODO: temporarily clear value buffers at the beginning of the
+            # acquisition instead of doing it in the finish hook of each
+            # acquisition sub-actions. See extensive explanation in the
+            # constructor of PoolAcquisitionBase.
+            try:
+                elem.clear_value_buffer()
+            except AttributeError:
+                continue
+            # clean also the pseudo counters, even the ones that do not
+            # participate directly in the acquisition
+            for pseudo_elem in elem.get_pseudo_elements():
+                pseudo_elem.clear_value_buffer()
+
         if self._hw_acq_args is not None:
             self._hw_acq.run(*self._hw_acq_args.args,
                              **self._hw_acq_args.kwargs)
