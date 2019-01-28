@@ -1,25 +1,3 @@
-##############################################################################
-##
-# This file is part of Sardana
-##
-# http://www.sardana-controls.org/
-##
-# Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
-##
-# Sardana is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Lesser General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-##
-# Sardana is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Lesser General Public License for more details.
-##
-# You should have received a copy of the GNU Lesser General Public License
-# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
-##
-##############################################################################
 
 """
     Macro library containning diffractometer related macros for the macros
@@ -35,7 +13,7 @@
 # using getDevice. However this getter seems to accept only the elements names
 # and not the full names.
 
-__all__ = ["addreflection", "affine", "br", "ca", "caa", "ci", "computeub",
+__all__ = ["addreflexion", "affine", "br", "ca", "caa", "ci", "computeub",
            "freeze", "getmode", "hklscan", "hscan", "kscan", "latticecal",
            "loadcrystal", "lscan", "newcrystal", "or0", "or1", "orswap",
            "pa", "savecrystal", "setaz", "setlat", "setmode", "setor0",
@@ -107,25 +85,11 @@ class _diffrac:
                 self.angle_names.append("delta")
 
         if self.nb_motors == 4:
-            self.labelmotor = {'Omega': self.angle_names[0],
-                               'Chi': self.angle_names[1],
-                               'Phi': self.angle_names[2],
-                               'Tth': self.angle_names[3]}
+            self.labelmotor = {'Omega': "omega",
+                               'Chi': "chi", 'Phi': "phi", 'Tth': "tth"}
         elif self.nb_motors == 6:
-            self.labelmotor = {'Mu': self.angle_names[0],
-                               'Theta': self.angle_names[1],
-                               'Chi': self.angle_names[2],
-                               'Phi': self.angle_names[3],
-                               'Gamma': self.angle_names[4],
-                               'Delta': self.angle_names[5]}
-        elif self.nb_motors == 7:
-            self.labelmotor = {'Omega_t': self.angle_names[0],
-                               'Mu': self.angle_names[1],
-                               'Omega': self.angle_names[2],
-                               'Chi': self.angle_names[3],
-                               'Phi': self.angle_names[4],
-                               'Gamma': self.angle_names[5],
-                               'Delta': self.angle_names[6]}
+            self.labelmotor = {'Mu': "mu", 'Theta': "omega", 'Chi': "chi",
+                               'Phi': "phi", 'Gamma': "gamma", 'Delta': "delta"}
 
         prop = self.diffrac.get_property(['DiffractometerType'])
         for v in prop['DiffractometerType']:
@@ -375,17 +339,22 @@ class _ca(Macro, _diffrac):
                              str_pos[self.labelmotor["Chi"]],
                              str_pos[self.labelmotor["Phi"]]))
             elif self.nb_motors == 7:
-                self.output("%10s %11s %12s %11s %10s %11s %11s" %
-                            ("Omega_t", "Mu", "Omega", "Chi",
-                             "Phi", "Gamma", "Delta"))
-                self.output("%10s %11s %12s %11s %10s %11s %11s" %
-                            (str_pos[self.labelmotor["Omega_t"]],
-                             str_pos[self.labelmotor["Mu"]],
-                             str_pos[self.labelmotor["Omega"]],
-                             str_pos[self.labelmotor["Chi"]],
-                             str_pos[self.labelmotor["Phi"]],
-                             str_pos[self.labelmotor["Gamma"]],
-                             str_pos[self.labelmotor["Delta"]]))
+                self.output("%10s %11s %12s %11s %11s %11s %11s" %
+                            (self.angle_names[0],
+                             self.angle_names[1],
+                             self.angle_names[2],
+                             self.angle_names[3],
+                             self.angle_names[4],
+                             self.angle_names[5],
+                             self.angle_names[6]))
+                self.output("%10s %11s %12s %11s %11s %11s %11s" %
+                            (str_pos[self.angle_names[0]],
+                             str_pos[self.angle_names[1]],
+                             str_pos[self.angle_names[2]],
+                             str_pos[self.angle_names[3]],
+                             str_pos[self.angle_names[4]],
+                             str_pos[self.angle_names[5]],
+                             str_pos[self.angle_names[6]]))
 
 
 
@@ -439,18 +408,23 @@ class ci(Macro, _diffrac):
         ['phi', Type.Float, None, "Phi value"],
         ['gamma', Type.Float, -999, "Gamma value"],
         ['delta', Type.Float, -999, "Delta value"],
+        ['omega_t', Type.Float, -999, "Omega_t value"],
     ]
 
-    def prepare(self, mu, theta, chi, phi, gamma, delta):
+    def prepare(self, mu, theta, chi, phi, gamma, delta, omega_t):
         _diffrac.prepare(self)
 
-    def run(self, mu, theta, chi, phi, gamma, delta):
+    def run(self, mu, theta, chi, phi, gamma, delta, omega_t):
 
         if delta == -999 and self.nb_motors == 6:
             self.error("Six angle values are need as argument")
+        elif omega_t == -999 and self.nb_motors == 7:
+            self.error("Seven angle values are need as argument (omega_t is missed - last argument)")
         else:
-
-            angles = [mu, theta, chi, phi, gamma, delta]
+            if self.nb_motors != 7:
+                angles = [mu, theta, chi, phi, gamma, delta]
+            else:
+                angles = [omega_t, mu, theta, chi, phi, gamma, delta]
 
             self.diffrac.write_attribute("computehkl", angles)
 
@@ -639,9 +613,7 @@ class wh(Macro, _diffrac):
             str_pos6 = "%7.5f" % self.getDevice(
                 self.angle_device_names[self.labelmotor["Gamma"]]).Position
             self.output("%10s %11s %12s %11s %10s %11s" %
-                        (self.labelmotor["Delta"], self.labelmotor["Theta"],
-                         self.labelmotor["Chi"], self.labelmotor["Phi"],
-                         self.labelmotor["Mu"], self.labelmotor["Gamma"]))
+                        ("Delta", "Theta", "Chi", "Phi", "Mu", "Gamma"))
             self.output("%10s %11s %12s %11s %10s %11s" %
                         (str_pos1, str_pos2, str_pos3, str_pos4, str_pos5,
                          str_pos6))
@@ -655,33 +627,41 @@ class wh(Macro, _diffrac):
             str_pos4 = "%7.5f" % self.getDevice(
                 self.angle_device_names[self.labelmotor["Phi"]]).Position
             self.output("%10s %11s %12s %11s" %
-                        (self.labelmotor["Tth"], self.labelmotor["Omega"],
-                         self.labelmotor["Chi"], self.labelmotor["Phi"]))
+                        ("Tth", "Omega", "Chi", "Phi"))
             self.output("%10s %11s %12s %11s" %
                         (str_pos1, str_pos2, str_pos3, str_pos4))
         elif self.nb_motors == 7:
             str_pos1 = "%7.5f" % self.getDevice(
-                self.angle_device_names[self.labelmotor["Omega_t"]]).Position
+                self.angle_device_names[self.angles_names[0]]).Position
             str_pos2 = "%7.5f" % self.getDevice(
-                self.angle_device_names[self.labelmotor["Mu"]]).Position
+                self.angle_device_names[self.angles_names[1]]).Position
             str_pos3 = "%7.5f" % self.getDevice(
-                self.angle_device_names[self.labelmotor["Omega"]]).Position
+                self.angle_device_names[self.angles_names[2]]).Position
             str_pos4 = "%7.5f" % self.getDevice(
-                self.angle_device_names[self.labelmotor["Chi"]]).Position
+                self.angle_device_names[self.angles_names[3]]).Position
             str_pos5 = "%7.5f" % self.getDevice(
-                self.angle_device_names[self.labelmotor["Phi"]]).Position
+                self.angle_device_names[self.angles_names[4]]).Position
             str_pos6 = "%7.5f" % self.getDevice(
-                self.angle_device_names[self.labelmotor["Gamma"]]).Position
+                self.angle_device_names[self.angles_names[5]]).Position
             str_pos7 = "%7.5f" % self.getDevice(
-                self.angle_device_names[self.labelmotor["Delta"]]).Position
-            self.output("%10s %11s %12s %11s %10s %11s %11s" %
-                        (self.labelmotor["Omega_t"], self.labelmotor["Mu"],
-                         self.labelmotor["Omega"], self.labelmotor["Chi"],
-                         self.labelmotor["Phi"], self.labelmotor["Gamma"],
-                         self.labelmotor["Delta"]))
-            self.output("%10s %11s %12s %11s %10s %11s %11s" %
-                        (str_pos1, str_pos2, str_pos3, str_pos4, str_pos5,
-                         str_pos6, str_pos7))
+                self.angle_device_names[self.angles_names[6]]).Position
+            self.output("%10s %11s %12s %11s %11s %11s %11s" %
+                        (self.angle_names[0],
+                         self.angle_names[1],
+                         self.angle_names[2],
+                         self.angle_names[3],
+                         self.angle_names[4],
+                         self.angle_names[5],
+                         self.angle_names[6]))
+            self.output("%10s %11s %12s %11s %11s %11s %11s" %
+                        (str_pos1,
+                         str_pos2,
+                         str_pos3,
+                         str_pos4,
+                         str_pos5,
+                         str_pos6,
+                         str_pos7))
+
 
         self.setEnv('Q', [self.h_device.position, self.k_device.position,
                           self.l_device.position, self.diffrac.WaveLength])
@@ -913,80 +893,93 @@ class or1(Macro, _diffrac):
 
 
 class setor0(Macro, _diffrac):
-    """Set primary orientation reflection choosing hkl and angle values"""
+    """Set primary orientation reflection choosing hkl and angle values.
+       Run it without any argument to see the order real positions"""
 
     param_def = [
         ['H', Type.Float, -999, "H value"],
         ['K', Type.Float, -999, "K value"],
         ['L', Type.Float, -999, "L value"],
-        ['mu', Type.Float, -999, "Mu value"],
-        ['theta', Type.Float, -999, "Theta value"],
-        ['chi', Type.Float, -999, "Chi value"],
-        ['phi', Type.Float, -999, "Phi value"],
-        ['gamma', Type.Float, -999, "Gamma value"],
-        ['delta', Type.Float, -999, "Delta value"],
+        ['ang1', Type.Float, -999, "Real position"],
+        ['ang2', Type.Float, -999, "Real position"],
+        ['ang3', Type.Float, -999, "Real position"],
+        ['ang4', Type.Float, -999, "Real position"],
+        ['ang5', Type.Float, -999, "Real position"],
+        ['ang6', Type.Float, -999, "Real position"],
+        ['ang7', Type.Float, -999, "Real position"],
     ]
 
-    def prepare(self, H, K, L, mu, theta, chi, phi, gamma, delta):
+    def prepare(self, H, K, L, ang1, ang2, ang3, ang4, ang5, ang6, ang7):
         _diffrac.prepare(self)
 
-    def run(self, H, K, L, mu, theta, chi, phi, gamma, delta):
-
+    def run(self, H, K, L, ang1, ang2, ang3, ang4, ang5, ang6, ang7):
         setorn, pars = self.createMacro(
-            "setorn", 0, H, K, L, mu, theta, chi, phi, gamma, delta)
+            "setorn", 0, H, K, L, ang1, ang2, ang3, ang4, ang5, ang6, ang7)
 
         self.runMacro(setorn)
 
 
 class setor1(Macro, _diffrac):
-    """Set secondary orientation reflection choosing hkl and angle values"""
+    """Set secondary orientation reflection choosing hkl and angle values.
+       Run it without any argument to see the order real positions"""
 
     param_def = [
         ['H', Type.Float, -999, "H value"],
         ['K', Type.Float, -999, "K value"],
         ['L', Type.Float, -999, "L value"],
-        ['mu', Type.Float, -999, "Mu value"],
-        ['theta', Type.Float, -999, "Theta value"],
-        ['chi', Type.Float, -999, "Chi value"],
-        ['phi', Type.Float, -999, "Phi value"],
-        ['gamma', Type.Float, -999, "Gamma value"],
-        ['delta', Type.Float, -999, "Delta value"],
+        ['ang1', Type.Float, -999, "Real position"],
+        ['ang2', Type.Float, -999, "Real position"],
+        ['ang3', Type.Float, -999, "Real position"],
+        ['ang4', Type.Float, -999, "Real position"],
+        ['ang5', Type.Float, -999, "Real position"],
+        ['ang6', Type.Float, -999, "Real position"],
+        ['ang7', Type.Float, -999, "Real position"],
     ]
 
-    def prepare(self, H, K, L, mu, theta, chi, phi, gamma, delta):
+    def prepare(self, H, K, L, ang1, ang2, ang3, ang4, ang5, ang6, ang7):
+        self.output("setor1 prepare")
+        self.output(ang3)
+        self.output(ang7)
         _diffrac.prepare(self)
 
-    def run(self, H, K, L, mu, theta, chi, phi, gamma, delta):
-
+    def run(self, H, K, L, ang1, ang2, ang3, ang4, ang5, ang6, ang7):
         setorn, pars = self.createMacro(
-            "setorn", 1, H, K, L, mu, theta, chi, phi, gamma, delta)
+            "setorn", 1, H, K, L, ang1, ang2, ang3, ang4, ang5, ang6, ang7)
 
         self.runMacro(setorn)
 
 
 class setorn(iMacro, _diffrac):
-    """Set orientation reflection indicated by the index."""
+    """Set orientation reflection indicated by the index.
+       Run it without any argument to see the order of the angles to be set"""
 
     param_def = [
         ['ref_id', Type.Integer, None, "reflection index (starting at 0)"],
         ['H', Type.Float, -999, "H value"],
         ['K', Type.Float, -999, "K value"],
         ['L', Type.Float, -999, "L value"],
-        ['mu', Type.Float, -999, "Mu value"],
-        ['theta', Type.Float, -999, "Theta value"],
-        ['chi', Type.Float, -999, "Chi value"],
-        ['phi', Type.Float, -999, "Phi value"],
-        ['gamma', Type.Float, -999, "Gamma value"],
-        ['delta', Type.Float, -999, "Delta value"],
+        ['ang1', Type.Float, -999, "Real position"],
+        ['ang2', Type.Float, -999, "Real position"],
+        ['ang3', Type.Float, -999, "Real position"],
+        ['ang4', Type.Float, -999, "Real position"],
+        ['ang5', Type.Float, -999, "Real position"],
+        ['ang6', Type.Float, -999, "Real position"],
+        ['ang7', Type.Float, -999, "Real position"],
     ]
 
-    def prepare(self, ref_id, H, K, L, mu, theta, chi, phi, gamma, delta):
+    def prepare(self, ref_id, H, K, L, ang1, ang2, ang3, ang4, ang5, ang6, ang7):
         _diffrac.prepare(self)
 
-    def run(self, ref_id, H, K, L, mu, theta, chi, phi, gamma, delta):
+    def run(self, ref_id, H, K, L, ang1, ang2, ang3, ang4, ang5, ang6, ang7):
 
-        if (delta == -999 and self.nb_motors == 6) or (
-                phi == -999 and self.nb_motors == 4):
+        if H == -999.0:
+            self.output("Order of the real motor positions to be given as argument:")
+            for el in self.angle_names:
+                self.output(el)
+            return
+        
+        if (ang6 == -999 and self.nb_motors == 6) or (
+                ang4 == -999 and self.nb_motors == 4) or (ang7 == -999 and self.nb_motors == 7):
             reflections = []
             try:
                 reflections = self.diffrac.reflectionlist
@@ -1021,30 +1014,10 @@ class setorn(iMacro, _diffrac):
                 ref_txt = "reflection " + str(ref_id)
 
             self.output("Enter %s angles" % ref_txt)
-            if self.nb_motors == 6:
-                delta = float(self.input(" Delta?", default_value=tmp_ref[
-                    "delta"], data_type=Type.String))
-
-                theta = float(self.input(" Theta? ", default_value=tmp_ref[
-                          "omega"], data_type=Type.String))
-                chi = float(self.input(" Chi?", default_value=tmp_ref[
-                    "chi"], data_type=Type.String))
-                phi = float(self.input(" Phi?", default_value=tmp_ref[
-                    "phi"], data_type=Type.String))
-                gamma = float(self.input(" Gamma?", default_value=tmp_ref[
-                    "gamma"], data_type=Type.String))
-                mu = float(self.input(" Mu?", default_value=tmp_ref[
-                    "mu"], data_type=Type.String))
-            if self.nb_motors == 4:
-
-                omega = float(self.input(" Omega?", default_value=tmp_ref[
-                    "omega"], data_type=Type.String))
-                chi = float(self.input(" Chi?", default_value=tmp_ref[
-                    "chi"], data_type=Type.String))
-                phi = float(self.input(" Phi?", default_value=tmp_ref[
-                    "phi"], data_type=Type.String))
-                tth = float(self.input(" Tth?", default_value=tmp_ref[
-                    "omega"], data_type=Type.String))
+            angles_to_set = []
+            for el in self.angle_names:
+                angles_to_set.append(float(self.input(el+"?", default_value=tmp_ref[
+                    el], data_type=Type.String)))
 
 
             self.output("")
@@ -1056,7 +1029,12 @@ class setorn(iMacro, _diffrac):
             L = float(self.input(" L?", default_value=tmp_ref[
                       "l"], data_type=Type.String))
             self.output("")
-
+        else: 
+            angles = [ang1, ang2, ang3, ang4, ang5, ang6, ang7]
+            angles_to_set = []
+            for i in range(0, self.nb_motors):
+                angles_to_set.append(angles[i])
+            
         # Check collinearity
 
         if ref_id == 0:
@@ -1077,22 +1055,10 @@ class setorn(iMacro, _diffrac):
         values = [ref_id, H, K, L]
         self.diffrac.write_attribute("SubstituteReflection", values)
 
-        # Adjust angles
-
-        if self.nb_motors == 6:
-            self.angle_values = {"mu": mu, "omega": theta,
-                                 "chi": chi, "phi": phi, "gamma": gamma,
-                                 "delta": delta}
-        elif self.nb_motors == 4:
-            self.angle_values = {"omega": omega, "chi": chi,
-                                 "phi": phi, "tth": tth}
-
-
         values = []
         values.append(ref_id)
-
-        for angle_name in self.angle_names:
-            values.append(self.angle_values[angle_name])
+        for el in angles_to_set:
+            values.append(el)
 
         self.diffrac.write_attribute("AdjustAnglesToReflection", values)
 
