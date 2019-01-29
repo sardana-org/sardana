@@ -19,6 +19,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   - `PoolAcquisitionSoftwareStart` acquisition action
   - `SoftwareStart` and `HardwareStart` synchronization in
     `DummyCounterTimerController`
+- Support to Qt5 for Sardana-Taurus widgets and Sardana-Taurus extensions (#1006,
+  #1009)
 - Possibility to define macros with optional parameters. These must be the last
   ones in the definition (#285, #876, #943, #941, #955)
 - Possibility to pass values of repeat paramters with just one member without
@@ -76,7 +78,9 @@ This file follows the formats and conventions from [keepachangelog.com]
   in favor of `LoadOne(axis, value, repeats, latency)` (SEP18, #773)
 - Unused class `sardana.taurus.qt.qtgui.extra_macroexecutor.dooroutput.DoorAttrListener`
 
+### Removed
 
+- Support to Qt < 4.7.4 (#1006, #1009)
 
 ## [2.5.0] 2018-08-10
 
