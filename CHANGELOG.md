@@ -25,6 +25,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   the need to encapsulate them in square brackets (spock syntax) or list
   (macro API) (#781, #983)
 - Possibility to change data format (shape) of of pseudo counter values (#986)
+- Check scan range agains motor limits wheneve possible (#46, #963)
 - Workaround for API_DeviceTimedOut errors on MeasurementGroup Start. Call Stop
   in case this error occured (#764).
 - Optional measurement group parameter to `ct` and `uct` macros (#940, #473)
