@@ -95,6 +95,3 @@ class TestMotor(SarTestTestCase, TestCase):
 
     def tearDown(self):
         SarTestTestCase.tearDown(self)
-        # TODO: This sleep is just to demonstrate API_EventTimeout. Remove it!
-        import time
-        time.sleep(20)
