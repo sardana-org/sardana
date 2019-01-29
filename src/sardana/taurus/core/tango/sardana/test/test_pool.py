@@ -63,21 +63,21 @@ class TestMeasurementGroup(SarTestTestCase, TestCase):
 
     def setUp(self):
         SarTestTestCase.setUp(self)
-        self.mg_name = str(uuid.uuid1())
         registerExtensions()
 
     def count(self, elements):
-        argin = [self.mg_name] + elements
+        mg_name = str(uuid.uuid1())
+        argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
         try:
-            self.mg = Device(self.mg_name)
-            _, values = self.mg.count(1)
+            mg = Device(mg_name)
+            _, values = mg.count(1)
             for channel, value in values.iteritems():
                 msg = "Value for %s is not numerical" % channel
                 self.assertTrue(is_numerical(value), msg)
         finally:
-            self.mg.cleanUp()
-            self.pool.DeleteElement(self.mg_name)
+            mg.cleanUp()
+            self.pool.DeleteElement(mg_name)
 
     def tearDown(self):
         SarTestTestCase.tearDown(self)
