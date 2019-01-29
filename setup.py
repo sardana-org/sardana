@@ -65,8 +65,10 @@ requires = [
 install_requires = [
     'PyTango>=7.2.3',
     'itango>=0.0.1',
-    # for Taurus3 requires >= 3.7.5; for Taurus4 requires >= 4.4.0
-    'taurus>=3.7.5,!=4.0.0,!=4.0.1,!=4.0.3,!=4.1.0,!=4.1.1,!=4.3.0,!=4.3.1',
+    # for Taurus3 requires >= 3.10 (special version from
+    # taurus-org/taurus@3.x-sdn2.5.1 branch)
+    # for Taurus4 requires >= 4.5.0
+    'taurus>=3.10,!=4.0,!=4.1,!=4.3,!=4.4',
     'lxml>=2.1'
 ]
 

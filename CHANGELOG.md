@@ -34,6 +34,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Top LICENSE file that applies to the whole project (#938)
 - Document remote connection to MacroServer Python process (RConsolePort Tango
   property) (#984)
+- sardana.taurus.qt.qtgui.macrolistener (moved from taurus.qt.qtgui.taurusgui)
 
 ### Fixed
 - Do not read 1D and 2D experimental channels during software acquisition loop
@@ -66,11 +67,15 @@ This file follows the formats and conventions from [keepachangelog.com]
   #933)
 - Logstash handler from python-logstash to python-logstash-async (#895)
 - Move `ParamParser` to `sardana.util.parser` (#781, #907, #908)
+- SpockCommandWidget.returnPressed method renamed to onReturnPressed
+- SpockCommandWidget.textChanged method renamed to onTextChanged
 
 ### Deprecated
 - Measurement group start without prior preparation (SEP18, #773)
 - Loadable controller's API: `LoadOne(axis, value, repeats)`
   in favor of `LoadOne(axis, value, repeats, latency)` (SEP18, #773)
+- Unused class `sardana.taurus.qt.qtgui.extra_macroexecutor.dooroutput.DoorAttrListener`
+
 
 
 ## [2.5.0] 2018-08-10
@@ -146,6 +151,11 @@ This file follows the formats and conventions from [keepachangelog.com]
 - `PoolMotorSlim` widget in favor of `PoolMotorTV` widget (#163, #785) 
 - `Controller.getUsedAxis` (Taurus device extension) in favor
 of `Controller.getUsedAxes` (#609)
+
+### Removed
+- Signal `modelChanged()` from ParamBase class to use the call to 
+  method onModelChanged directly instead
+
 
 ## [2.4.0] 2018-03-14
 

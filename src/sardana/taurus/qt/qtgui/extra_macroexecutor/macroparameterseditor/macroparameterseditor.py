@@ -118,35 +118,30 @@ class MacroParametersTree(Qt.QTreeView):
 
         self.addAction = Qt.QAction(getThemeIcon(
             "list-add"), "Add new repetition", self)
-        self.connect(self.addAction, Qt.SIGNAL(
-            "triggered()"), self.onAddRepeat)
+        self.addAction.triggered.connect(self.onAddRepeat)
         self.addAction.setToolTip(
             "Clicking this button will add new repetition to current parameter.")
 
         self.deleteAction = Qt.QAction(getThemeIcon(
             "list-remove"), "Remove repetition", self)
-        self.connect(self.deleteAction, Qt.SIGNAL(
-            "triggered()"), self.onDelRepeat)
+        self.deleteAction.triggered.connect(self.onDelRepeat)
         self.deleteAction.setToolTip(
             "Clicking this button will remove current repetition.")
 
         self.moveUpAction = Qt.QAction(getThemeIcon("go-up"), "Move up", self)
-        self.connect(self.moveUpAction, Qt.SIGNAL(
-            "triggered()"), self.onUpRepeat)
+        self.moveUpAction.triggered.connect(self.onUpRepeat)
         self.moveUpAction.setToolTip(
             "Clicking this button will move current repetition up.")
 
         self.moveDownAction = Qt.QAction(
             getThemeIcon("go-down"), "Move down", self)
-        self.connect(self.moveDownAction, Qt.SIGNAL(
-            "triggered()"), self.onDownRepeat)
+        self.moveDownAction.triggered.connect(self.onDownRepeat)
         self.moveDownAction.setToolTip(
             "Clicking this button will move current repetition down.")
 
         self.duplicateAction = Qt.QAction(getThemeIcon("edit-copy"),
                                           "Duplicate", self)
-        self.connect(self.duplicateAction, Qt.SIGNAL("triggered()"),
-                     self.onDuplicateRepeat)
+        self.duplicateAction.triggered.connect(self.onDuplicateRepeat)
         msg = "Clicking this button will duplicate the given node."
         self.duplicateAction.setToolTip(msg)
 

@@ -79,16 +79,15 @@ class DiffractometerAlignment(TaurusWidget):
 
         self.selectsignal = SelectSignal()
 
-        self.connect(self._ui.AlignmentStopButton,
-                     Qt.SIGNAL("clicked()"), self.stop_movements)
-        self.connect(self._ui.AlignmentStoreReflectionButton,
-                     Qt.SIGNAL("clicked()"), self.store_reflection)
+        self._ui.AlignmentStopButton.clicked.connect(self.stop_movements)
+        self._ui.AlignmentStoreReflectionButton.clicked.connect(
+            self.store_reflection)
 
-        self.connect(self._ui.MacroServerConnectionButton, Qt.SIGNAL(
-            "clicked()"), self.open_macroserver_connection_panel)
+        self._ui.MacroServerConnectionButton.clicked.connect(
+            self.open_macroserver_connection_panel)
 
-        self.connect(self._ui.SelectSignalButton, Qt.SIGNAL(
-            "clicked()"), self.open_selectsignal_panel)
+        self._ui.SelectSignalButton.clicked.connect(
+            self.open_selectsignal_panel)
 
         # Create a global SharedDataManager
         Qt.qApp.SDM = SharedDataManager(self)
@@ -173,8 +172,7 @@ class DiffractometerAlignment(TaurusWidget):
             alname = "angleslabel" + str(i)
             angles_labels[i].setObjectName(alname)
             angles_labels[i].setText(QtGui.QApplication.translate(
-                "HKLScan", self.angles_names[i], None,
-                QtGui.QApplication.UnicodeUTF8))
+                "HKLScan", self.angles_names[i], None))
 
             angles_taurus_label.append(TaurusLabel(self))
             angles_taurus_label[i].setGeometry(
@@ -203,8 +201,8 @@ class DiffractometerAlignment(TaurusWidget):
 
         self.enginemodescombobox.loadEngineModeNames(self.device.hklmodelist)
 
-        self.connect(self.enginemodescombobox, Qt.SIGNAL(
-            "currentIndexChanged(QString)"), self.onModeChanged)
+        self.enginemodescombobox.currentIndexChanged['QString'].connect(
+            self.onModeChanged)
 
         # Add dynamically the scan buttons, range inputs and 'to max' buttons
 
@@ -227,10 +225,8 @@ class DiffractometerAlignment(TaurusWidget):
             wname = "scanbutton" + str(i)
             scan_buttons[i].setObjectName(wname)
             scan_buttons[i].setText(QtGui.QApplication.translate(
-                "DiffractometerAlignment", self.angles_names[i], None,
-                QtGui.QApplication.UnicodeUTF8))
-            self.connect(scan_buttons[i], Qt.SIGNAL(
-                "clicked()"), exec_functions[i])
+                "DiffractometerAlignment", self.angles_names[i], None))
+            scan_buttons[i].clicked.connect(exec_functions[i])
 
             self.range_inputs.append(QtGui.QLineEdit(self))
             self.range_inputs[i].setGeometry(
@@ -245,10 +241,8 @@ class DiffractometerAlignment(TaurusWidget):
             wname = "tomaxbutton" + str(i)
             self.tomax_buttons[i].setObjectName(wname)
             self.tomax_buttons[i].setText(QtGui.QApplication.translate(
-                "DiffractometerAlignment", 'n.n.', None,
-                QtGui.QApplication.UnicodeUTF8))
-            self.connect(self.tomax_buttons[i], Qt.SIGNAL(
-                "clicked()"), tomax_functions[i])
+                "DiffractometerAlignment", 'n.n.', None))
+            self.tomax_buttons[i].clicked.connect(tomax_functions[i])
 
     def exec_scan1(self):
         self.exec_scan(0)
@@ -293,7 +287,7 @@ class DiffractometerAlignment(TaurusWidget):
                 if output_values[i] == "Position to move":
                     self.tomax_buttons[imot].setText(QtGui.QApplication.translate(
                         "DiffractometerAlignment", str(output_values[i + 1]),
-                        None, QtGui.QApplication.UnicodeUTF8))
+                        None))
 
     def tomax_scan1(self):
         self.tomax_scan(0)
@@ -319,6 +313,7 @@ class DiffractometerAlignment(TaurusWidget):
         macro_command = ["mv", motor, position]
         self.door_device.RunMacro(macro_command)
 
+    @Qt.pyqtSlot('QString')
     def onModeChanged(self, modename):
         if self.device.engine != "hkl":
             self.device.write_attribute("engine", "hkl")
