@@ -76,6 +76,7 @@ class TestMeasurementGroup(SarTestTestCase, TestCase):
                 msg = "Value for %s is not numerical" % channel
                 self.assertTrue(is_numerical(value), msg)
         finally:
+            self.mg.cleanUp()
             self.pool.DeleteElement(self.mg_name)
 
     def tearDown(self):
