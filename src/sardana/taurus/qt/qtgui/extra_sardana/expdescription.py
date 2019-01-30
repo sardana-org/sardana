@@ -243,11 +243,14 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
         self.__plotManager = None
         icon = resource.getIcon(":/actions/view.svg")
-        self.togglePlotsAction = Qt.QAction(icon, "Show/Hide plots", self)
+        measGrpTab = self.ui.tabWidget.widget(0)
+        self.togglePlotsAction = Qt.QAction(icon, "Show/Hide plots",
+                                            measGrpTab)
         self.togglePlotsAction.setCheckable(True)
         self.togglePlotsAction.setChecked(False)
         self.togglePlotsAction.setEnabled(plotsButton)
-        self.addAction(self.togglePlotsAction)
+        measGrpTab.addAction(self.togglePlotsAction)
+        measGrpTab.setContextMenuPolicy(Qt.Qt.ActionsContextMenu)
         self.connect(self.togglePlotsAction, Qt.SIGNAL("toggled(bool)"),
                      self.onPlotsButtonToggled)
         self.ui.plotsButton.setDefaultAction(self.togglePlotsAction)
