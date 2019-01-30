@@ -9,7 +9,7 @@ Experiment Configuration user interface
 
 .. contents::
 
-Experiment Configuration widget a.k.a. expconf is a complete interface to
+Experiment Configuration widget a.k.a. ``expconf`` is a complete interface to
 define the experiment configuration. It consists of three main groups of
 parameters organized in tabs:
 
@@ -22,7 +22,9 @@ will be maintained as pending to apply until either applied or reset by the
 user.
 
 This widget is usually present in sardana-aware Taurus GUIs and is also invoked
-by the `expconf` command in :ref:`Spock<sardana-spock>`
+by the ``expconf`` command in :ref:`Spock<sardana-spock>`.
+
+
 
 .. _expconf_ui_measurementgroup:
 
