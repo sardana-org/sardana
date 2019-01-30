@@ -238,7 +238,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             self.onChooseScanDirButtonClicked)
 
         self.__plotManager = None
-        tooltip = "Show/Hide plots"
+        tooltip = None
 
         # TODO: Disable show scan button since scan plot have to be
         # adapted to support QT5
@@ -252,7 +252,9 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
         icon = resource.getIcon(":/actions/view.svg")
         measGrpTab = self.ui.tabWidget.widget(0)
-        self.togglePlotsAction = Qt.QAction(icon, tooltip, self)
+        self.togglePlotsAction = Qt.QAction(icon, "Show/Hide plots", self)
+        if tooltip is not None:
+            self.togglePlotsAction.setToolTip(tooltip)
         self.togglePlotsAction.setCheckable(True)
         self.togglePlotsAction.setChecked(False)
         self.togglePlotsAction.setEnabled(plotsButton)
