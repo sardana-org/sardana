@@ -273,6 +273,8 @@ def getElementTypeToolTip(t):
 class BaseMntGrpChannelItem(TaurusBaseTreeItem):
     """ """
 
+    dataChanged = Qt.pyqtSignal('QModelIndex', 'QModelIndex')
+
     def data(self, index):
         """Returns the data of this node for the given index
 
@@ -329,20 +331,18 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
 
     def setData(self, index, qvalue):
         taurus_role = index.model().role(index.column())
-        str_value = Qt.from_qvariant(qvalue, str)
         if taurus_role in (ChannelView.Channel, ChannelView.Conditioning,
-                           ChannelView.NXPath, ChannelView.DataType):
-            data = str_value
-        elif taurus_role in (ChannelView.Enabled, ChannelView.Output):
-            data = Qt.from_qvariant(qvalue, bool)
+                           ChannelView.NXPath, ChannelView.DataType,
+                           ChannelView.Enabled, ChannelView.Output):
+            data = qvalue
         elif taurus_role == ChannelView.PlotType:
-            data = PlotType[str_value]
+            data = PlotType[qvalue]
         elif taurus_role == ChannelView.Normalization:
-            data = Normalization[str_value]
+            data = Normalization[qvalue]
         elif taurus_role == ChannelView.PlotAxes:
-            data = [a for a in str_value.split('|')]
+            data = [a for a in qvalue.split('|')]
         elif taurus_role == ChannelView.Shape:
-            s = str_value
+            s = qvalue
             try:
                 data = eval(s, {}, {})
                 if not isinstance(data, (tuple, list)):
@@ -512,12 +512,12 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
                            " in favor of synchronization. Re-apply"
                            " configuration in order to upgrade.")
                     self.warning(msg)
-            return Qt.QVariant(AcqSynchType[synchronization])
+            return AcqSynchType[synchronization]
         elif taurus_role in (ChannelView.Timer, ChannelView.Monitor):
             ch_name, ch_data = index.internalPointer().itemData()
             ctrlname = ch_data['_controller_name']
             if ctrlname.startswith("__"):
-                return Qt.QVariant()
+                return None
             ch_info = self.getAvailableChannels()[ch_name]
             if ch_info['type'] in ('CTExpChannel', 'OneDExpChannel', 'TwoDExpChannel'):
                 unitdict = self.getPyData(ctrlname=ctrlname)
@@ -527,10 +527,10 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
                 key = taurus_role == ChannelView.Timer and 'timer' or 'monitor'
                 master_full_name = self._mgconfig.get(key, None)
             if master_full_name is None:
-                return Qt.QVariant()
+                return None
             else:
                 master_info = self.getAvailableChannels()[master_full_name]
-                return Qt.QVariant(master_info['name'])
+                return master_info['name']
         elif taurus_role == ChannelView.Synchronizer:
             ch_name, ch_data = index.internalPointer().itemData()
             ctrlname = ch_data['_controller_name']
@@ -539,12 +539,12 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
             trigger_fullname = ctrl_data.get(key, None)
             all_triggers = self.getAvailableTriggers()
             if trigger_fullname is None:
-                return Qt.QVariant()
+                return None
             else:
                 trigger_name = all_triggers[trigger_fullname]
-                return Qt.QVariant(trigger_name['name'])
+                return trigger_name['name']
 
-        return Qt.QVariant()
+        return None
 
     def setData(self, index, qvalue, role=Qt.Qt.EditRole):
         # For those things which are at the unit level, we handle them here
@@ -554,8 +554,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
             ch_info = self.getAvailableChannels()[ch_name]
             ctrl_data = self.getPyData(ctrlname=ch_data['_controller_name'])
             key = self.data_keys_map[taurus_role]
-            data = Qt.from_qvariant(qvalue, str)
-
+            data = qvalue
             self._dirty = True
             self.beginResetModel()
             is_settable = ch_info['type'] in (
@@ -573,16 +572,15 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
                     self._mgconfig[key] = data
             self.endResetModel()
             return True
-        if taurus_role == ChannelView.Synchronizer:
+        elif taurus_role == ChannelView.Synchronizer:
             ch_name, ch_data = index.internalPointer().itemData()
             ctrlname = ch_data['_controller_name']
             key = self.data_keys_map[taurus_role]
-            data = Qt.from_qvariant(qvalue, str)
             self._dirty = True
             self.beginResetModel()
             ctrl_data = self.getPyData(ctrlname=ctrlname)
-            ctrl_data[key] = data
-            self._mgconfig[key] = data
+            ctrl_data[key] = qvalue
+            self._mgconfig[key] = qvalue
             self.endResetModel()
             return True
         # for the rest, we use the regular TaurusBaseModel item-oriented approach
@@ -591,8 +589,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         item = index.internalPointer()
         item.setData(index, qvalue)
         self._dirty = True
-        self.emit(Qt.SIGNAL("dataChanged(const QModelIndex &, const QModelIndex &)"),
-                  index, index)
+        self.dataChanged.emit(index, index)
         return True
 
     # @todo: Very inefficient implementation. We should use {begin|end}InsertRows
@@ -683,11 +680,10 @@ class MntGrpChannelModel(BaseMntGrpChannelModel):
 
     def setDataSource(self, mg):
         if self._data_src is not None:
-            Qt.QObject.disconnect(self._data_src, Qt.SIGNAL(
-                'configurationChanged'), self.configurationChanged)
+            self._data_src.configurationChanged.disconnect(
+                self.configurationChanged)
         if mg is not None:
-            Qt.QObject.connect(mg, Qt.SIGNAL(
-                'configurationChanged'), self.configurationChanged)
+            mg.configurationChanged.connect(self.configurationChanged)
         BaseMntGrpChannelModel.setDataSource(self, mg)
 
     def configurationChanged(self):
@@ -788,11 +784,11 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
         taurus_role = model.role(index.column())
         if taurus_role == ChannelView.PlotType:
             editor.addItems(PlotType.keys())
-            current = Qt.from_qvariant(model.data(index), str)
+            current = model.data(index)
             editor.setCurrentIndex(editor.findText(current))
         elif taurus_role == ChannelView.Normalization:
             editor.addItems(Normalization.keys())
-            current = Qt.from_qvariant(model.data(index), str)
+            current = model.data(index)
             editor.setCurrentIndex(editor.findText(current))
         elif taurus_role in (ChannelView.Timer, ChannelView.Monitor):
             key = taurus_role == ChannelView.Timer and 'timer' or 'monitor'
@@ -804,33 +800,32 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
             if all_channels[ch_name]['type'] in ('CTExpChannel', 'OneDExpChannel', 'TwoDExpChannel'):
                 for full_name, channel_data in ctrl_dict:
                     editor.addItem(
-                        channel_data['name'], Qt.QVariant(full_name))
-                current = Qt.from_qvariant(model.data(index), str)
+                        channel_data['name'], full_name)
+                current = model.data(index)
                 editor.setCurrentIndex(editor.findText(current))
             else:
                 for ctrl_data in dataSource['controllers'].values():
                     if key in ctrl_data:
                         channel = all_channels[ctrl_data[key]]
-                        editor.addItem(channel['name'],
-                                       Qt.QVariant(channel['full_name']))
+                        editor.addItem(channel['name'], channel['full_name'])
                 current = dataSource.get(key)  # current global timer/monitor
-                editor.setCurrentIndex(editor.findData(Qt.QVariant(current)))
+                editor.setCurrentIndex(editor.findData(current))
         elif taurus_role == ChannelView.Synchronization:
             editor.addItems(AcqSynchType.keys())
-            current = Qt.from_qvariant(model.data(index), str)
+            current = model.data(index)
             editor.setCurrentIndex(editor.findText(current))
         elif taurus_role == ChannelView.PlotAxes:
             selectables = ['<idx>', '<mov>'] + \
                 [n for n, d in getChannelConfigs(dataSource)]
             editor.setChoices(selectables)
-            current = Qt.from_qvariant(model.data(index), str)
+            current = model.data(index)
             editor.setCurrentChoices(current)
         elif taurus_role == ChannelView.Synchronizer:
             # add the triggergates to the editor
             all_triggers = model.getAvailableTriggers()
             for full_name, tg_data in all_triggers.items():
-                editor.addItem(tg_data['name'], Qt.QVariant(full_name))
-                current = Qt.from_qvariant(model.data(index), str)
+                editor.addItem(tg_data['name'], full_name)
+                current = model.data(index)
                 editor.setCurrentIndex(editor.findText(current))
         else:
             Qt.QStyledItemDelegate.setEditorData(self, editor, index)
@@ -839,10 +834,10 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
         taurus_role = model.role(index.column())
         dataSource = model.dataSource()
         if taurus_role in (ChannelView.Channel, ChannelView.PlotType, ChannelView.Normalization):
-            data = Qt.QVariant(editor.currentText())
+            data = editor.currentText()
             model.setData(index, data)
         elif taurus_role == ChannelView.Synchronization:
-            old_value = Qt.from_qvariant(model.data(index), str)
+            old_value = model.data(index)
             new_value = str(editor.currentText())
             if new_value == old_value:
                 return
@@ -857,11 +852,11 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
                                              Qt.QMessageBox.Yes | Qt.QMessageBox.Cancel)
                 if op != Qt.QMessageBox.Yes:
                     return
-            data = Qt.QVariant(new_value)
+            data = new_value
             model.setData(index, data)
         elif taurus_role in (ChannelView.Timer, ChannelView.Monitor):
             key = taurus_role == ChannelView.Timer and 'timer' or 'monitor'
-            old_value = Qt.from_qvariant(model.data(index), str)
+            old_value = model.data(index)
             new_value = str(editor.currentText())
             if new_value == old_value:
                 return
@@ -915,10 +910,10 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
                         return
             model.setData(index, selected_master)
         elif taurus_role == ChannelView.PlotAxes:
-            data = Qt.QVariant(editor.text())
+            data = editor.text()
             model.setData(index, data)
         elif taurus_role == ChannelView.Synchronizer:
-            old_value = Qt.from_qvariant(model.data(index), str)
+            old_value = model.data(index)
             new_value = str(editor.currentText())
             if new_value == old_value:
                 return
@@ -971,8 +966,7 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
         self.setContextMenuPolicy(Qt.Qt.ActionsContextMenu)
         self._simpleViewAction = Qt.QAction("Simple View", self)
         self._simpleViewAction.setCheckable(True)
-        self.connect(self._simpleViewAction, Qt.SIGNAL(
-            "toggled(bool)"), self.setSimpleView)
+        self._simpleViewAction.toggled.connect(self.setSimpleView)
         self.addAction(self._simpleViewAction)
         self.registerConfigProperty(
             self.isSimpleView, self.setSimpleView, "simpleView")
@@ -1004,34 +998,12 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
         # causes a segfault when calling ChannelDelegate.createEditor
         tableView.setItemDelegate(self._delegate)
         tableView.setSortingEnabled(False)
-        self.connect(self._editorBar, Qt.SIGNAL(
-            "addTriggered"), self.addChannel)
-        # TODO: For Taurus 4 compatibility
-        if hasattr(self._editorBar, "addTriggered"):
-            self._editorBar.addTriggered.connect(self.addChannel)
-        self.connect(self._editorBar, Qt.SIGNAL(
-            "removeTriggered"), self.removeChannels)
-        # TODO: For Taurus 4 compatibility
-        if hasattr(self._editorBar, "removeTriggered"):
-            self._editorBar.removeTriggered.connect(self.removeChannels)
-        self.connect(self._editorBar, Qt.SIGNAL(
-            "moveUpTriggered"), self.moveUpChannel)
-        # TODO: For Taurus 4 compatibility
-        if hasattr(self._editorBar, "moveUpTriggered"):
-            self._editorBar.moveUpTriggered.connect(self.moveUpChannel)
-        self.connect(self._editorBar, Qt.SIGNAL(
-            "moveDownTriggered"), self.moveDownChannel)
-        # TODO: For Taurus 4 compatibility
-        if hasattr(self._editorBar, "moveDownTriggered"):
-            self._editorBar.moveDownTriggered.connect(self.moveDownChannel)
-        self.connect(self._editorBar, Qt.SIGNAL(
-            "moveTopTriggered"), self.moveTopChannel)
-        if hasattr(self._editorBar, "moveTopTriggered"):
-            self._editorBar.moveTopTriggered.connect(self.moveTopChannel)
-        self.connect(self._editorBar, Qt.SIGNAL(
-            "moveBottomTriggered"), self.moveBottomChannel)
-        if hasattr(self._editorBar, "moveBottomTriggered"):
-            self._editorBar.moveBottomTriggered.connect(self.moveBottomChannel)
+        self._editorBar.addTriggered.connect(self.addChannel)
+        self._editorBar.removeTriggered.connect(self.removeChannels)
+        self._editorBar.moveUpTriggered.connect(self.moveUpChannel)
+        self._editorBar.moveDownTriggered.connect(self.moveDownChannel)
+        self._editorBar.moveTopTriggered.connect(self.moveTopChannel)
+        self._editorBar.moveBottomTriggered.connect(self.moveBottomChannel)
         return tableView
 
     def createToolArea(self):

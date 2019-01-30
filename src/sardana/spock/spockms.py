@@ -516,8 +516,7 @@ class QSpockDoor(SpockBaseDoor):
     def __init__(self, name, **kw):
         self.call__init__(SpockBaseDoor, name, **kw)
 
-        Qt.QObject.connect(self, Qt.SIGNAL('recordDataUpdated'),
-                           self.processRecordData)
+        self.recordDataUpdated.connect(self.processRecordData)
 
     def recordDataReceived(self, s, t, v):
         if genutils.get_pylab_mode() == "inline":

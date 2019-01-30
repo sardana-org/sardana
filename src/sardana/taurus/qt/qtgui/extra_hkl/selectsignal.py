@@ -47,7 +47,7 @@ class SignalComboBox(Qt.QComboBox, TaurusBaseWidget):
     def __init__(self, parent=None):
         name = self.__class__.__name__
         self.call__init__wo_kw(Qt.QComboBox, parent)
-        self.call__init__(TaurusBaseWidget, name)
+        self.call__init__(TaurusBaseWidget, name='')
         self.setSizeAdjustPolicy(Qt.QComboBox.AdjustToContentsOnFirstShow)
         self.setToolTip("Choose a signal ...")
         QtCore.QMetaObject.connectSlotsByName(self)
@@ -61,7 +61,7 @@ class SignalComboBox(Qt.QComboBox, TaurusBaseWidget):
 class SelectSignal(TaurusWidget):
 
     def __init__(self, parent=None, designMode=False):
-        TaurusWidget.__init__(self, parent, designMode=designMode)
+        TaurusWidget.__init__(self, parent=None, designMode=designMode)
 
         self.loadUi(filename="selectsignal.ui")
 
@@ -69,8 +69,8 @@ class SelectSignal(TaurusWidget):
         self.signalComboBox.setGeometry(QtCore.QRect(70, 50, 161, 27))
         self.signalComboBox.setObjectName("SignalcomboBox")
 
-        self.connect(self.signalComboBox, Qt.SIGNAL(
-            "currentIndexChanged(QString)"), self.onSignalChanged)
+        self.signalComboBox.currentIndexChanged['QString'].connect(
+            self.onSignalChanged)
 
         self.doorName = None
         self.door_device = None
@@ -86,7 +86,7 @@ class SelectSignal(TaurusWidget):
         ret['container'] = False
         return ret
 
-    def update_signals(self, doorname):
+    def update_signals(self, doorname=''):
         if self.doorName != doorname:
             self.doorName = doorname
             self.door_device = taurus.Device(self.doorName)
@@ -98,7 +98,6 @@ class SelectSignal(TaurusWidget):
             mg_name = conf['ActiveMntGrp']
             mg = taurus.Device(mg_name)
             signals = mg.ElementList
-
             self.signalComboBox.loadSignals(signals)
 
     def onSignalChanged(self, signalname):

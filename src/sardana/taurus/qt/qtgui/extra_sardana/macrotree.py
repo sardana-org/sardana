@@ -126,11 +126,11 @@ class MacroBaseModel(TaurusBaseModel):
 
     def setDataSource(self, ms):
         if self._data_src is not None:
-            Qt.QObject.disconnect(self._data_src, Qt.SIGNAL(
-                'macrosUpdated'), self.macrosUpdated)
+            self._data_src.macrosUpdated.disconnect(
+                self.macrosUpdated)
         if ms is not None:
-            Qt.QObject.connect(ms, Qt.SIGNAL(
-                'macrosUpdated'), self.macrosUpdated)
+            ms.macrosUpdated.connect(
+                self.macrosUpdated)
         TaurusBaseModel.setDataSource(self, ms)
 
     def macrosUpdated(self):
@@ -273,8 +273,8 @@ class MacroSelectionDialog(Qt.QDialog):
         self._buttonBox.setStandardButtons(bts)
         layout.addWidget(self._panel)
         layout.addWidget(self._buttonBox)
-        self.connect(self._buttonBox, Qt.SIGNAL("accepted()"), self.accept)
-        self.connect(self._buttonBox, Qt.SIGNAL("rejected()"), self.reject)
+        self._buttonBox.accepted.connect(self.accept)
+        self._buttonBox.rejected.connect(self.reject)
 
     def selectedItems(self):
         return self._panel.selectedItems()

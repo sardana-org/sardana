@@ -172,11 +172,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
     using the `ExperimentConfiguration` environmental variable for that Door.
     '''
 
-    try:
-        # TODO: For Taurus 4 compatibility
-        createExpConfChangedDialog = Qt.pyqtSignal()
-    except AttributeError:
-        pass
+    createExpConfChangedDialog = Qt.pyqtSignal()
+    experimentConfigurationChanged = Qt.pyqtSignal(object)
 
     def __init__(self, parent=None, door=None, plotsButton=True,
                  autoUpdate=False):
@@ -218,53 +215,57 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         # Pending event variables
         self._expConfChangedDialog = None
 
-        self.connect(self, Qt.SIGNAL('createExpConfChangedDialog'),
-                     self._createExpConfChangedDialog)
-
-        self.connect(self.ui.activeMntGrpCB, Qt.SIGNAL(
-            'activated (QString)'), self.changeActiveMntGrp)
-        self.connect(self.ui.createMntGrpBT, Qt.SIGNAL(
-            'clicked ()'), self.createMntGrp)
-        self.connect(self.ui.deleteMntGrpBT, Qt.SIGNAL(
-            'clicked ()'), self.deleteMntGrp)
-        self.connect(self.ui.compressionCB, Qt.SIGNAL(
-            'currentIndexChanged (int)'), self.onCompressionCBChanged)
-        self.connect(self.ui.pathLE, Qt.SIGNAL(
-            'textEdited (QString)'), self.onPathLEEdited)
-        self.connect(self.ui.filenameLE, Qt.SIGNAL(
-            'textEdited (QString)'), self.onFilenameLEEdited)
-        self.connect(self.ui.channelEditor.getQModel(), Qt.SIGNAL(
-            'dataChanged (QModelIndex, QModelIndex)'), self._updateButtonBox)
-        self.connect(self.ui.channelEditor.getQModel(), Qt.SIGNAL(
-            'modelReset ()'), self._updateButtonBox)
+        self.createExpConfChangedDialog.connect(
+            self._createExpConfChangedDialog)
+        self.ui.activeMntGrpCB.activated['QString'].connect(
+            self.changeActiveMntGrp)
+        self.ui.createMntGrpBT.clicked.connect(
+            self.createMntGrp)
+        self.ui.deleteMntGrpBT.clicked.connect(
+            self.deleteMntGrp)
+        self.ui.compressionCB.currentIndexChanged['int'].connect(
+            self.onCompressionCBChanged)
+        self.ui.pathLE.textEdited.connect(
+            self.onPathLEEdited)
+        self.ui.filenameLE.textEdited.connect(
+            self.onFilenameLEEdited)
+        self.ui.channelEditor.getQModel().dataChanged.connect(
+            self._updateButtonBox)
+        self.ui.channelEditor.getQModel().modelReset.connect(
+            self._updateButtonBox)
         preScanList = self.ui.preScanList
-        self.connect(preScanList, Qt.SIGNAL('dataChanged'),
-                     self.onPreScanSnapshotChanged)
-        # TODO: For Taurus 4 compatibility
-        if hasattr(preScanList, "dataChangedSignal"):
-            preScanList.dataChangedSignal.connect(
-                self.onPreScanSnapshotChanged)
-        self.connect(self.ui.choosePathBT, Qt.SIGNAL(
-            'clicked ()'), self.onChooseScanDirButtonClicked)
+        preScanList.dataChangedSignal.connect(self.onPreScanSnapshotChanged)
+        self.ui.choosePathBT.clicked.connect(
+            self.onChooseScanDirButtonClicked)
 
         self.__plotManager = None
+        tooltip = "Show/Hide plots"
+
+        # TODO: Disable show scan button since scan plot have to be
+        # adapted to support QT5
+        # --------------------------------------------------------------------
+        from taurus.external.qt import PYQT4, QT_API
+        if not PYQT4:
+            self.debug('Show plots is only supported with PyQt4 for now')
+            plotsButton = False
+            tooltip = "Show/Hide plots is not ready for %s" % QT_API
+        # --------------------------------------------------------------------
+
         icon = resource.getIcon(":/actions/view.svg")
         measGrpTab = self.ui.tabWidget.widget(0)
-        self.togglePlotsAction = Qt.QAction(icon, "Show/Hide plots",
-                                            measGrpTab)
+        self.togglePlotsAction = Qt.QAction(icon, tooltip, self)
         self.togglePlotsAction.setCheckable(True)
         self.togglePlotsAction.setChecked(False)
         self.togglePlotsAction.setEnabled(plotsButton)
         measGrpTab.addAction(self.togglePlotsAction)
         measGrpTab.setContextMenuPolicy(Qt.Qt.ActionsContextMenu)
-        self.connect(self.togglePlotsAction, Qt.SIGNAL("toggled(bool)"),
-                     self.onPlotsButtonToggled)
+        self.togglePlotsAction.toggled.connect(self.onPlotsButtonToggled)
         self.ui.plotsButton.setDefaultAction(self.togglePlotsAction)
 
         if door is not None:
             self.setModel(door)
-        self.connect(self.ui.buttonBox, Qt.SIGNAL(
-            "clicked(QAbstractButton *)"), self.onDialogButtonClicked)
+
+        self.ui.buttonBox.clicked.connect(self.onDialogButtonClicked)
 
         # Taurus Configuration properties and delegates
         self.registerConfigDelegate(self.ui.channelEditor)
@@ -378,8 +379,6 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
                 self._reloadConf(force=True)
             else:
                 if self._expConfChangedDialog is None:
-                    self.emit(Qt.SIGNAL('createExpConfChangedDialog'))
-                    # TODO: For Taurus 4 compatibility
                     if hasattr(self, 'createExpConfChangedDialog'):
                         self.createExpConfChangedDialog.emit()
                 else:
@@ -406,7 +405,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             self, 'Choose directory for saving files', self.ui.pathLE.text())
         if ret:
             self.ui.pathLE.setText(ret)
-            self.ui.pathLE.emit(Qt.SIGNAL('textEdited (QString)'), ret)
+            self.ui.pathLE.emit.textEdited.emit(ret)
 
     def onDialogButtonClicked(self, button):
         role = self.ui.buttonBox.buttonRole(button)
@@ -434,8 +433,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         msname = door.macro_server.getFullName()
         self.ui.taurusModelTree.setModel(tghost)
         self.ui.sardanaElementTree.setModel(msname)
-        self.connect(door, Qt.SIGNAL("experimentConfigurationChanged"),
-                     self._experimentConfigurationChanged)
+        door.experimentConfigurationChanged.connect(
+            self._experimentConfigurationChanged)
 
     def _reloadConf(self, force=False):
         if not force and self.isDataChanged():
@@ -463,8 +462,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         for tg_info in tg_elements.values():
             avail_triggers[tg_info.full_name] = tg_info.getData()
         self.ui.channelEditor.getQModel().setAvailableTriggers(avail_triggers)
-        self.emit(Qt.SIGNAL('experimentConfigurationChanged'),
-                  copy.deepcopy(conf))
+        self.experimentConfigurationChanged.emit(copy.deepcopy(conf))
+
 
     def _setDirty(self, dirty):
         self._dirty = dirty
@@ -559,12 +558,11 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self._dirtyMntGrps = set()
         self.ui.channelEditor.getQModel().setDataChanged(False)
         self._setDirty(False)
-        self.emit(Qt.SIGNAL('experimentConfigurationChanged'),
-                  copy.deepcopy(conf))
+        self.experimentConfigurationChanged.emit(copy.deepcopy(conf))
         return True
 
+    @Qt.pyqtSlot('QString')
     def changeActiveMntGrp(self, activeMntGrpName):
-        activeMntGrpName = str(activeMntGrpName)
         if self._localConfig is None:
             return
         if activeMntGrpName == self._localConfig['ActiveMntGrp']:
@@ -654,6 +652,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self.ui.channelEditor.getQModel().setDataSource({})
         self._setDirty(True)
 
+    @Qt.pyqtSlot('int')
     def onCompressionCBChanged(self, idx):
         if self._localConfig is None:
             return
@@ -687,15 +686,15 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
     def onPlotsButtonToggled(self, checked):
         if checked:
-            from taurus.qt.qtgui.taurusgui.macrolistener import \
+            from sardana.taurus.qt.qtgui.macrolistener import \
                 DynamicPlotManager
             self.__plotManager = DynamicPlotManager(self)
             self.__plotManager.setModel(self.getModelName())
-            self.connect(self, Qt.SIGNAL('experimentConfigurationChanged'),
-                         self.__plotManager.onExpConfChanged)
+            self.experimentConfigurationChanged.connect(
+                self.__plotManager.onExpConfChanged)
         else:
-            self.disconnect(self, Qt.SIGNAL('experimentConfigurationChanged'),
-                            self.__plotManager.onExpConfChanged)
+            self.experimentConfigurationChanged.disconnect(
+                self.__plotManager.onExpConfChanged)
             self.__plotManager.removePanels()
             self.__plotManager.setModel(None)
             self.__plotManager = None

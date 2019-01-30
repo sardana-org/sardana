@@ -485,6 +485,7 @@ class SingleParamNode(ParamNode):
 
     def __init__(self, parent=None, param=None):
         ParamNode.__init__(self, parent, param)
+        self._defValue = None
         if param is None:
             return
         self.setType(str(param.get('type')))

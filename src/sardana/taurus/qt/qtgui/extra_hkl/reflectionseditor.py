@@ -44,8 +44,8 @@ class ReflectionsEditor(TaurusWidget):
 
         self.loadUi(filename="reflectionseditor.ui")
 
-        self.connect(self._ui.ApplyButton, Qt.SIGNAL("clicked()"), self.apply)
-        self.connect(self._ui.ClearButton, Qt.SIGNAL("clicked()"), self.clear)
+        self._ui.ApplyButton.clicked.connect(self.apply)
+        self._ui.ClearButton.clicked.connect(self.clear)
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
@@ -128,7 +128,7 @@ class ReflectionsEditor(TaurusWidget):
             object_name = "anglelabel" + str(i)
             self.angle_labels[i].setObjectName(object_name)
             self.angle_labels[i].setText(QtGui.QApplication.translate(
-                "Form", angle_names[i], None, QtGui.QApplication.UnicodeUTF8))
+                "Form", angle_names[i], None))
             self.angle_values.append([])
             for jref in range(0, 10):
                 self.angle_values[i].append(QtGui.QLineEdit(self))

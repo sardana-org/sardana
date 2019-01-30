@@ -175,6 +175,8 @@ class SardanaElementTreeItem(SardanaBaseTreeItem):
 
 class SardanaBaseElementModel(TaurusBaseModel):
 
+    elementsChanged = Qt.pyqtSignal()
+
     ColumnNames = ["Elements", "Controller/Module/Parent"]
     ColumnRoles = ('Root', 'type', 'name', 'name'), "parent"
 
@@ -185,11 +187,9 @@ class SardanaBaseElementModel(TaurusBaseModel):
     def setDataSource(self, data_source):
         old_ds = self.dataSource()
         if old_ds is not None:
-            Qt.QObject.disconnect(old_ds, Qt.SIGNAL('elementsChanged'),
-                                  self.on_elements_changed)
+            old_ds.elementsChanged.disconnect(self.on_elements_changed)
         if data_source is not None:
-            Qt.QObject.connect(data_source, Qt.SIGNAL('elementsChanged'),
-                               self.on_elements_changed)
+            data_source.elementsChanged.connect(self.on_elements_changed)
         TaurusBaseModel.setDataSource(self, data_source)
 
     def on_elements_changed(self):
@@ -379,6 +379,8 @@ class EnvironmentTreeItem(TaurusBaseTreeItem):
 
 class SardanaEnvironmentModel(TaurusBaseModel):
 
+    environmentChanged = Qt.pyqtSignal()
+
     ColumnNames = ["Environment", "Value", "Data Type"]
     ColumnRoles = ('Root', 'key'), 'value', 'datatype'
 
@@ -389,11 +391,9 @@ class SardanaEnvironmentModel(TaurusBaseModel):
     def setDataSource(self, data_source):
         old_ds = self.dataSource()
         if old_ds is not None:
-            Qt.QObject.disconnect(old_ds, Qt.SIGNAL('environmentChanged'),
-                                  self.on_environment_changed)
+            old_ds.environmentChanged.disconnect(self.on_environment_changed)
         if data_source is not None:
-            Qt.QObject.connect(data_source, Qt.SIGNAL('environmentChanged'),
-                               self.on_environment_changed)
+            data_source.environmentChanged.connect(self.on_environment_changed)
         TaurusBaseModel.setDataSource(self, data_source)
 
     def on_environment_changed(self):
