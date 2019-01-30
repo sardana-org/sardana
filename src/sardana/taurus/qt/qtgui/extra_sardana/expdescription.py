@@ -203,11 +203,17 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self._dirty = False
         self._dirtyMntGrps = set()
 
-        # Add warning message to the Widget
-        self._autoUpdate = autoUpdate
-        if self._autoUpdate:
-            w = self._getWarningWidget()
-            self.ui.verticalLayout_3.insertWidget(0, w)
+        self._warningWidget = None
+        self._autoUpdate = False
+        self.setAutoUpdate(autoUpdate)
+        self.setContextMenuPolicy(Qt.Qt.ActionsContextMenu)
+        self._autoUpdateAction = Qt.QAction("Auto update", self)
+        self._autoUpdateAction.setCheckable(True)
+        self.connect(self._autoUpdateAction, Qt.SIGNAL(
+            "toggled(bool)"), self.setAutoUpdate)
+        self.addAction(self._autoUpdateAction)
+        self.registerConfigProperty(
+            self.isAutoUpdate, self.setAutoUpdate, "autoUpdate")
 
         # Pending event variables
         self._expConfChangedDialog = None
@@ -262,6 +268,19 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
         # Taurus Configuration properties and delegates
         self.registerConfigDelegate(self.ui.channelEditor)
+
+    def setAutoUpdate(self, auto_update):
+        if auto_update and not self._autoUpdate:
+            self._warningWidget = self._getWarningWidget()
+            self.ui.verticalLayout_3.insertWidget(0, self._warningWidget)
+        if not auto_update and self._autoUpdate:
+            self.ui.verticalLayout_3.removeWidget(self._warningWidget)
+            self._warningWidget.deleteLater()
+            self._warningWidget = None
+        self._autoUpdate = auto_update
+
+    def isAutoUpdate(self):
+        return self._autoUpdate
 
     def _getWarningWidget(self):
         w = Qt.QWidget()
