@@ -206,8 +206,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self.setContextMenuPolicy(Qt.Qt.ActionsContextMenu)
         self._autoUpdateAction = Qt.QAction("Auto update", self)
         self._autoUpdateAction.setCheckable(True)
-        self.connect(self._autoUpdateAction, Qt.SIGNAL(
-            "toggled(bool)"), self.setAutoUpdate)
+        self._autoUpdateAction.toggled.connect(self.setAutoUpdate)
         self.addAction(self._autoUpdateAction)
         self.registerConfigProperty(
             self.isAutoUpdate, self.setAutoUpdate, "autoUpdate")
