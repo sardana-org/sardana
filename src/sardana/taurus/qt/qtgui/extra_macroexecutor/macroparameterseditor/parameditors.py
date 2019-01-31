@@ -160,10 +160,6 @@ class LineEditParam(ParamBase, Qt.QLineEdit):
     def __init__(self, parent=None, paramModel=None):
         Qt.QLineEdit.__init__(self, parent)
         ParamBase.__init__(self, paramModel)
-        self.textChanged.connect(self.onTextChanged)
-
-    def onTextChanged(self):
-        self.onModelChanged()
 
 #    def setDefaultValue(self):
 #        defVal = self.paramModel().defValue()
@@ -186,16 +182,12 @@ class CheckBoxParam(ParamBase, Qt.QCheckBox):
     def __init__(self, parent=None, paramModel=None):
         Qt.QCheckBox.__init__(self, parent)
         ParamBase.__init__(self, paramModel)
-        self.stateChanged.connect(self.onStateChanged)
 
     def getValue(self):
         return str(self.isChecked())
 
     def setValue(self, value):
         self.setChecked(str2bool(value))
-
-    def onStateChanged(self):
-        self.onModelChanged()
 
 
 class SpinBoxParam(ParamBase, Qt.QSpinBox):
