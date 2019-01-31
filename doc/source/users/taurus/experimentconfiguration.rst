@@ -9,7 +9,7 @@ Experiment Configuration user interface
 
 .. contents::
 
-Experiment Configuration widget a.k.a. expconf is a complete interface to
+Experiment Configuration widget a.k.a. ``expconf`` is a complete interface to
 define the experiment configuration. It consists of three main groups of
 parameters organized in tabs:
 
@@ -21,8 +21,23 @@ The parameters may be modified in an arbitrary order, at any of the tabs, and
 will be maintained as pending to apply until either applied or reset by the
 user.
 
+.. important::
+  While editing configuration in the ``expconf`` widget, the experiment
+  configuration on the server may have changed, for example, another
+  ``expconf`` instance applied changes or a running macro changed it
+  programmatically. This is notified to the user with a pop-up dialog
+  offering the user to either keep the local version of the experiment
+  configuration or to load the new configuration from the server. Be aware that
+  the second option will **override all your local changes**. It is also
+  possible to use the ``expconf`` widget in *slave* mode and automatically
+  update on the server changes. You can enable/disable the "Auto update" mode
+  from the context menu.
+
+
 This widget is usually present in sardana-aware Taurus GUIs and is also invoked
-by the `expconf` command in :ref:`Spock<sardana-spock>`
+by the ``expconf`` command in :ref:`Spock<sardana-spock>`.
+
+
 
 .. _expconf_ui_measurementgroup:
 
