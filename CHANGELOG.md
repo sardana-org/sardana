@@ -6,6 +6,10 @@ This file follows the formats and conventions from [keepachangelog.com]
 ## [Unreleased]
 
 ### Added
+
+## [2.6.0] 2019-01-31
+
+### Added
 - New acquisition and synchronization concepts (SEP18, #773):
   - Preparation of measurement group for a group of acquisitions is mandatory
     (`Prepare` Tango command and `prepare` core method; `NbStarts` Tango
@@ -79,7 +83,6 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Unused class `sardana.taurus.qt.qtgui.extra_macroexecutor.dooroutput.DoorAttrListener`
 
 ### Removed
-
 - Support to Qt < 4.7.4 (#1006, #1009)
 
 ## [2.5.0] 2018-08-10
@@ -553,7 +556,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.5.0...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.6.0...HEAD
+[2.6.0]: https://github.com/sardana-org/sardana/compare/2.5.0...2.6.0
 [2.5.0]: https://github.com/sardana-org/sardana/compare/2.4.0...2.5.0
 [2.4.0]: https://github.com/sardana-org/sardana/compare/2.3.2...2.4.0
 [2.3.2]: https://github.com/sardana-org/sardana/compare/2.3.1...2.3.2
