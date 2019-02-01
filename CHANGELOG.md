@@ -37,6 +37,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Document remote connection to MacroServer Python process (RConsolePort Tango
   property) (#984)
 - sardana.taurus.qt.qtgui.macrolistener (moved from taurus.qt.qtgui.taurusgui)
+- Documentation on differences between `Hookable.hooks` and `Hookable.appendHook`
+  (#962, #1013)
 
 ### Fixed
 - Do not read 1D and 2D experimental channels during software acquisition loop
