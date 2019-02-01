@@ -1114,8 +1114,11 @@ class BaseMacroServer(MacroServerDevice):
         macroName = macroNode.name()
         macroInfoObj = self.getMacroInfoObj(macroName)
         if macroInfoObj is None:
-            raise Exception(
-                "It was not possible to get information about %s macro.\nCheck if MacroServer is alive and if this macro exist." % macroName)
+            msg = "It was not possible to get information about {0} " \
+                  "macro. Check if MacroServer is alive and if this macro " \
+                  "exist.".format(macroName)
+            self.info(msg)
+            raise Exception("no info about macro {0}".format(macroName))
         allowedHookPlaces = []
         hints = macroInfoObj.hints or {}
         for hook in hints.get("allowsHooks", []):
