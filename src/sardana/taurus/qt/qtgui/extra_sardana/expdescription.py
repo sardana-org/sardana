@@ -200,8 +200,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self._dirty = False
         self._dirtyMntGrps = set()
 
-        self._warningWidget = None
         self._autoUpdate = False
+        self._warningWidget = None
         self.setContextMenuPolicy(Qt.Qt.ActionsContextMenu)
         self._autoUpdateAction = Qt.QAction("Auto update", self)
         self._autoUpdateAction.setCheckable(True)
@@ -209,7 +209,9 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self.addAction(self._autoUpdateAction)
         self._autoUpdateAction.setChecked(autoUpdate)
         self.registerConfigProperty(
-            self.isAutoUpdate, self.setAutoUpdate, "autoUpdate")
+            self._autoUpdateAction.isChecked,
+            self._autoUpdateAction.setChecked,
+            "autoUpdate")
 
         # Pending event variables
         self._expConfChangedDialog = None
@@ -280,9 +282,6 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             self._warningWidget.deleteLater()
             self._warningWidget = None
         self._autoUpdate = auto_update
-
-    def isAutoUpdate(self):
-        return self._autoUpdate
 
     def _getWarningWidget(self):
         w = Qt.QWidget()
