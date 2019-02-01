@@ -23,14 +23,6 @@ using three different ways:
 All available macros can be used as a hook.
 
 .. _sardana-macros-hooks-general:
-  
-**Note:**If hooks are attached programmatically to a macro using the
-:attr:`~sardana.macroserver.macro.Hookable.hooks` property
-the general hooks are deactivated when running this macro.
-The method :meth:`~sardana.macroserver.macro.Hookable.appendHook`
-has to be used if the general hooks want to be kept. The Sequencer Hooks
-do not have any effect on the general hooks, they will be run if they
-are defined.
 
 General Hooks
 -------------
