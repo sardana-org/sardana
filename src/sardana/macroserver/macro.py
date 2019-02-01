@@ -244,7 +244,7 @@ class Hookable(Logger):
             accepts hook in the :obj:`list`\<callable\> format.
         :type: :obj:`list`\<:obj:`tuple`\> where each tuple has two
             elements: callable and :obj:`list`\<:obj:`str`\>
-        """
+        """  # noqa
         return self._getHooks()
 
     @hooks.setter
@@ -272,8 +272,9 @@ class Hookable(Logger):
                 self._hooks.append(h)
             else:  # we assume that hooks is a list<callable>
                 self._hooks.append((h, []))
-                self.info(
-                    'Deprecation warning: hooks should be set with a list of hints. See Hookable API docs')
+                msg = ("Deprecation warning: hooks should be set with a"
+                       " list of hints. See Hookable API docs")
+                self.info(msg)
 
         # delete _hookHintsDict to force its recreation on the next access
         if hasattr(self, '_hookHintsDict'):
