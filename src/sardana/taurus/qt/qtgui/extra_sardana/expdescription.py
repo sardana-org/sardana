@@ -200,11 +200,16 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self._dirty = False
         self._dirtyMntGrps = set()
 
-        # Add warning message to the Widget
-        self._autoUpdate = autoUpdate
-        if self._autoUpdate:
-            w = self._getWarningWidget()
-            self.ui.verticalLayout_3.insertWidget(0, w)
+        self._warningWidget = None
+        self._autoUpdate = False
+        self.setContextMenuPolicy(Qt.Qt.ActionsContextMenu)
+        self._autoUpdateAction = Qt.QAction("Auto update", self)
+        self._autoUpdateAction.setCheckable(True)
+        self._autoUpdateAction.toggled.connect(self.setAutoUpdate)
+        self.addAction(self._autoUpdateAction)
+        self._autoUpdateAction.setChecked(autoUpdate)
+        self.registerConfigProperty(
+            self.isAutoUpdate, self.setAutoUpdate, "autoUpdate")
 
         # Pending event variables
         self._expConfChangedDialog = None
@@ -233,7 +238,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             self.onChooseScanDirButtonClicked)
 
         self.__plotManager = None
-        tooltip = "Show/Hide plots"
+        tooltip = None
 
         # TODO: Disable show scan button since scan plot have to be
         # adapted to support QT5
@@ -246,11 +251,15 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         # --------------------------------------------------------------------
 
         icon = resource.getIcon(":/actions/view.svg")
-        self.togglePlotsAction = Qt.QAction(icon, tooltip, self)
+        measGrpTab = self.ui.tabWidget.widget(0)
+        self.togglePlotsAction = Qt.QAction(icon, "Show/Hide plots", self)
+        if tooltip is not None:
+            self.togglePlotsAction.setToolTip(tooltip)
         self.togglePlotsAction.setCheckable(True)
         self.togglePlotsAction.setChecked(False)
         self.togglePlotsAction.setEnabled(plotsButton)
-        self.addAction(self.togglePlotsAction)
+        measGrpTab.addAction(self.togglePlotsAction)
+        measGrpTab.setContextMenuPolicy(Qt.Qt.ActionsContextMenu)
         self.togglePlotsAction.toggled.connect(self.onPlotsButtonToggled)
         self.ui.plotsButton.setDefaultAction(self.togglePlotsAction)
 
@@ -261,6 +270,19 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
         # Taurus Configuration properties and delegates
         self.registerConfigDelegate(self.ui.channelEditor)
+
+    def setAutoUpdate(self, auto_update):
+        if auto_update and not self._autoUpdate:
+            self._warningWidget = self._getWarningWidget()
+            self.ui.verticalLayout_3.insertWidget(0, self._warningWidget)
+        if not auto_update and self._autoUpdate:
+            self.ui.verticalLayout_3.removeWidget(self._warningWidget)
+            self._warningWidget.deleteLater()
+            self._warningWidget = None
+        self._autoUpdate = auto_update
+
+    def isAutoUpdate(self):
+        return self._autoUpdate
 
     def _getWarningWidget(self):
         w = Qt.QWidget()

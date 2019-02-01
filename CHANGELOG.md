@@ -45,7 +45,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   configurations. An event offers an option to reload the whole experiment
   configuration or keep the local changes. `expconf` started with
   `--auto-update` option will automatically reload the whole experiment
-  configuration (#806, #882, #988)
+  configuration (#806, #882, #988, #1028)
 - Reload macro library overriding another library (#927, #946)
 - Avoid final padding in timescan when it was stopped by user (#869, #935)
 - Moveables limits check in continuous scans when moveables position attribute
