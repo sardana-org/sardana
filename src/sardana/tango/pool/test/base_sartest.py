@@ -23,9 +23,10 @@
 ##
 ##############################################################################
 
-import PyTango
+import taurus
+
 from sardana.tango.pool.test import BasePoolTestCase
-from sardana.tango.core.util import get_free_alias
+
 
 __all__ = ['SarTestTestCase']
 
@@ -130,13 +131,28 @@ class SarTestTestCase(BasePoolTestCase):
         """
         dirty_elems = []
         dirty_ctrls = []
+        f = taurus.Factory()
         for elem_name in self.elem_list:
+            # Cleanup eventual taurus devices. This is especially important
+            # if the sardana-taurus extensions are in use since this
+            # devices are created and destroyed within the testsuite.
+            # Persisting taurus device may react on API_EventTimeouts, enabled
+            # polling, etc.
+            if elem_name in f.tango_alias_devs:
+                taurus.Device(elem_name).cleanUp()
             try:
                 self.pool.DeleteElement(elem_name)
             except:
                 dirty_elems.append(elem_name)
 
         for ctrl_name in self.ctrl_list:
+            # Cleanup eventual taurus devices. This is especially important
+            # if the sardana-taurus extensions are in use since this
+            # devices are created and destroyed within the testsuite.
+            # Persisting taurus device may react on API_EventTimeouts, enabled
+            # polling, etc.
+            if elem_name in f.tango_alias_devs:
+                taurus.Device(elem_name).cleanUp()
             try:
                 self.pool.DeleteElement(ctrl_name)
             except:

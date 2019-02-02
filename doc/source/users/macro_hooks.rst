@@ -23,7 +23,7 @@ using three different ways:
 All available macros can be used as a hook.
 
 .. _sardana-macros-hooks-general:
-  
+
 General Hooks
 -------------
 
@@ -39,6 +39,7 @@ They can be controlled using dedicated macros:
 For each hook place, several hooks can be attached, they will be run in the
 order they were added. The same hook can be run several times in the same
 place if it was added several times.
+
 
 Examples:
 

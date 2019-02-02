@@ -915,6 +915,13 @@ using the :meth:`~sardana.macroserver.macro.Hookable.appendHook` method::
             hookable_macro.appendHook((hook_function, ["another-hook-place"]))
             self.runMacro(hookable_macro)
 
+.. note:: Be aware of the following difference between setting the
+    :attr:`~sardana.macroserver.macro.Hookable.hooks` property and using the
+    :meth:`~sardana.macroserver.macro.Hookable.appendHook` method.
+    Setting the property applies all hooks at once but may override
+    :ref:`general hooks<sardana-macros-hooks-general>` eventually attached to
+    the macro. Using the method appends just one hook but does not affect
+    the general hooks eventually attached to the macro.
 
 .. _sardana-macro-using-external-libraries:
 

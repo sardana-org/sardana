@@ -19,12 +19,15 @@ This file follows the formats and conventions from [keepachangelog.com]
   - `PoolAcquisitionSoftwareStart` acquisition action
   - `SoftwareStart` and `HardwareStart` synchronization in
     `DummyCounterTimerController`
+- Support to Qt5 for Sardana-Taurus widgets and Sardana-Taurus extensions (#1006,
+  #1009)
 - Possibility to define macros with optional parameters. These must be the last
   ones in the definition (#285, #876, #943, #941, #955)
 - Possibility to pass values of repeat paramters with just one member without
   the need to encapsulate them in square brackets (spock syntax) or list
   (macro API) (#781, #983)
 - Possibility to change data format (shape) of of pseudo counter values (#986)
+- Check scan range agains motor limits wheneve possible (#46, #963)
 - Workaround for API_DeviceTimedOut errors on MeasurementGroup Start. Call Stop
   in case this error occured (#764).
 - Optional measurement group parameter to `ct` and `uct` macros (#940, #473)
@@ -33,6 +36,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Top LICENSE file that applies to the whole project (#938)
 - Document remote connection to MacroServer Python process (RConsolePort Tango
   property) (#984)
+- sardana.taurus.qt.qtgui.macrolistener (moved from taurus.qt.qtgui.taurusgui)
+- Documentation on differences between `Hookable.hooks` and `Hookable.appendHook`
+  (#962, #1013)
 
 ### Fixed
 - Do not read 1D and 2D experimental channels during software acquisition loop
@@ -41,7 +47,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   configurations. An event offers an option to reload the whole experiment
   configuration or keep the local changes. `expconf` started with
   `--auto-update` option will automatically reload the whole experiment
-  configuration (#806, #882, #988)
+  configuration (#806, #882, #988, #1028, #1033)
 - Reload macro library overriding another library (#927, #946)
 - Avoid final padding in timescan when it was stopped by user (#869, #935)
 - Moveables limits check in continuous scans when moveables position attribute
@@ -65,12 +71,18 @@ This file follows the formats and conventions from [keepachangelog.com]
   #933)
 - Logstash handler from python-logstash to python-logstash-async (#895)
 - Move `ParamParser` to `sardana.util.parser` (#781, #907, #908)
+- SpockCommandWidget.returnPressed method renamed to onReturnPressed
+- SpockCommandWidget.textChanged method renamed to onTextChanged
 
 ### Deprecated
 - Measurement group start without prior preparation (SEP18, #773)
 - Loadable controller's API: `LoadOne(axis, value, repeats)`
   in favor of `LoadOne(axis, value, repeats, latency)` (SEP18, #773)
+- Unused class `sardana.taurus.qt.qtgui.extra_macroexecutor.dooroutput.DoorAttrListener`
 
+### Removed
+
+- Support to Qt < 4.7.4 (#1006, #1009)
 
 ## [2.5.0] 2018-08-10
 
@@ -145,6 +157,11 @@ This file follows the formats and conventions from [keepachangelog.com]
 - `PoolMotorSlim` widget in favor of `PoolMotorTV` widget (#163, #785) 
 - `Controller.getUsedAxis` (Taurus device extension) in favor
 of `Controller.getUsedAxes` (#609)
+
+### Removed
+- Signal `modelChanged()` from ParamBase class to use the call to 
+  method onModelChanged directly instead
+
 
 ## [2.4.0] 2018-03-14
 
