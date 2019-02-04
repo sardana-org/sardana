@@ -7,6 +7,13 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 
+## [2.6.1] 2019-02-04
+
+### Fixed
+- String parameter editor in macroexecutor and sequencer (#1030, #1031)
+- Documentation on differences between `Hookable.hooks` and `Hookable.appendHook`
+  (#962, #1013)
+
 ## [2.6.0] 2019-01-31
 
 ### Added
@@ -24,7 +31,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   - `SoftwareStart` and `HardwareStart` synchronization in
     `DummyCounterTimerController`
 - Support to Qt5 for Sardana-Taurus widgets and Sardana-Taurus extensions (#1006,
-  #1009, #1031)
+  #1009)
 - Possibility to define macros with optional parameters. These must be the last
   ones in the definition (#285, #876, #943, #941, #955)
 - Possibility to pass values of repeat paramters with just one member without
@@ -41,8 +48,6 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Document remote connection to MacroServer Python process (RConsolePort Tango
   property) (#984)
 - sardana.taurus.qt.qtgui.macrolistener (moved from taurus.qt.qtgui.taurusgui)
-- Documentation on differences between `Hookable.hooks` and `Hookable.appendHook`
-  (#962, #1013)
 
 ### Fixed
 - Do not read 1D and 2D experimental channels during software acquisition loop
@@ -558,7 +563,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.6.0...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.6.1...HEAD
+[2.6.1]: https://github.com/sardana-org/sardana/compare/2.6.0...2.6.1
 [2.6.0]: https://github.com/sardana-org/sardana/compare/2.5.0...2.6.0
 [2.5.0]: https://github.com/sardana-org/sardana/compare/2.4.0...2.5.0
 [2.4.0]: https://github.com/sardana-org/sardana/compare/2.3.2...2.4.0
