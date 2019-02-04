@@ -24,7 +24,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   - `SoftwareStart` and `HardwareStart` synchronization in
     `DummyCounterTimerController`
 - Support to Qt5 for Sardana-Taurus widgets and Sardana-Taurus extensions (#1006,
-  #1009)
+  #1009, #1031)
 - Possibility to define macros with optional parameters. These must be the last
   ones in the definition (#285, #876, #943, #941, #955)
 - Possibility to pass values of repeat paramters with just one member without
