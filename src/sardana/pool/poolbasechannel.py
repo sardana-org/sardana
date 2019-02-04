@@ -236,30 +236,6 @@ class PoolBaseChannel(PoolElement):
 
     value = property(get_value, set_value, doc="channel value")
 
-    # --------------------------------------------------------------------------
-    # integration time
-    # --------------------------------------------------------------------------
-
-    def get_integration_time(self):
-        """Returns the integration time for this object.
-
-        :return: the current integration time
-        :rtype: :ob:`float`"""
-        return self._integration_time
-
-    def set_integration_time(self, integration_time, propagate=1):
-        if integration_time == self._integration_time:
-            # integration time is not changed. Do nothing
-            return
-        self._integration_time = integration_time
-        if not propagate:
-            return
-        self.fire_event(EventType("integration_time", priority=propagate),
-                        integration_time)
-
-    integration_time = property(get_integration_time, set_integration_time,
-                                doc="channel integration time")
-
     def extend_value_buffer(self, values, idx=None, propagate=1):
         """Extend value buffer with new values assigning them consecutive
         indexes starting with idx. If idx is omitted, then the new values will
@@ -309,6 +285,30 @@ class PoolBaseChannel(PoolElement):
     def clear_value_buffer(self):
         val_attr = self._value_buffer
         val_attr.clear()
+
+        # --------------------------------------------------------------------------
+        # integration time
+        # --------------------------------------------------------------------------
+
+    def get_integration_time(self):
+        """Returns the integration time for this object.
+
+        :return: the current integration time
+        :rtype: :ob:`float`"""
+        return self._integration_time
+
+    def set_integration_time(self, integration_time, propagate=1):
+        if integration_time == self._integration_time:
+            # integration time is not changed. Do nothing
+            return
+        self._integration_time = integration_time
+        if not propagate:
+            return
+        self.fire_event(EventType("integration_time", priority=propagate),
+                        integration_time)
+
+    integration_time = property(get_integration_time, set_integration_time,
+                                doc="channel integration time")
 
     def start_acquisition(self):
         self._aborted = False
