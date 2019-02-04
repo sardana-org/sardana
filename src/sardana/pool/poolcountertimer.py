@@ -59,4 +59,3 @@ class PoolCounterTimer(PoolTimerableChannel):
             int"""
         self._value.set_write_value(w_value, timestamp=timestamp,
                                     propagate=propagate)
-

@@ -35,8 +35,8 @@ __docformat__ = 'restructuredtext'
 import time
 import numpy as np
 
-from PyTango import Util, DevVoid, DevLong64, DevBoolean, DevString, DevDouble, \
-    DevVarStringArray, DispLevel, DevState, SCALAR, SPECTRUM, \
+from PyTango import Util, DevVoid, DevLong64, DevBoolean, DevString,\
+    DevDouble, DevVarStringArray, DispLevel, DevState, SCALAR, SPECTRUM, \
     IMAGE, READ_WRITE, READ, AttrData, CmdArgType, DevFailed, seqStr_2_obj, \
     Except, ErrSeverity
 
@@ -873,7 +873,7 @@ class PoolExpChannelDevice(PoolElementDevice):
                                desc,
                                "PoolExpChannelDevice.read_Data",
                                ErrSeverity.WARN)
-        
+
     def read_IntegrationTime(self, attr):
         """Reads the integration time.
 
@@ -900,18 +900,18 @@ class PoolExpChannelDeviceClass(PoolElementDeviceClass):
         'IntegrationTime': [[DevDouble, SCALAR, READ_WRITE]]
     }
     attr_list.update(PoolElementDeviceClass.attr_list)
-    
+
     standard_attr_list = {
         'Data': [[DevString, SCALAR, READ]],  # TODO: think about DevEncoded
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
+
 
 class PoolTimerableDevice(PoolExpChannelDevice):
 
     def __init__(self, dclass, name):
         """Constructor"""
         PoolExpChannelDevice.__init__(self, dclass, name)
-
 
     def read_Timer(self, attr):
         """Reads the timer for this channel.
@@ -933,6 +933,7 @@ class PoolTimerableDevice(PoolExpChannelDevice):
             timer = None
         self.element.timer = timer
 
+
 class PoolTimerableDeviceClass(PoolExpChannelDeviceClass):
 
     #:
@@ -940,13 +941,13 @@ class PoolTimerableDeviceClass(PoolExpChannelDeviceClass):
     #:
     #: .. seealso:: :ref:`server`
     #:
-    
+
     #    Attribute definitions
     attr_list = {
         'Timer': [[DevString, SCALAR, READ_WRITE],
                   {'Memorized': "true", }]
     }
     attr_list.update(PoolExpChannelDeviceClass.attr_list)
-    
+
     standard_attr_list = {}
     standard_attr_list.update(PoolExpChannelDeviceClass.standard_attr_list)

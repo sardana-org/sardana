@@ -33,8 +33,10 @@ __docformat__ = 'restructuredtext'
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.sardanabuffer import SardanaBuffer
 from sardana.pool.poolelement import PoolElement
-from sardana.pool.poolacquisition import PoolAcquisitionSoftware, get_timerable_ctrls, AcqController
-from sardana.pool.poolmeasurementgroup import TimerableControllerConfiguration, ChannelConfiguration, ControllerConfiguration
+from sardana.pool.poolacquisition import PoolAcquisitionSoftware,\
+    get_timerable_ctrls
+from sardana.pool.poolmeasurementgroup import ChannelConfiguration,\
+    ControllerConfiguration
 from sardana.sardanaevent import EventType
 
 from sardana.pool import AcqSynch, AcqMode
@@ -260,8 +262,8 @@ class PoolBaseChannel(PoolElement):
                         integration_time)
 
     integration_time = property(get_integration_time, set_integration_time,
-                               doc="channel integration time")
-    
+                                doc="channel integration time")
+
     def extend_value_buffer(self, values, idx=None, propagate=1):
         """Extend value buffer with new values assigning them consecutive
         indexes starting with idx. If idx is omitted, then the new values will
@@ -319,17 +321,19 @@ class PoolBaseChannel(PoolElement):
             if self._timer is not None:
                 if self.ctrls is None:
                     self.create_config()
-                acq = self.acquisition.run(self.ctrls, self.integration_time, self.master, None)
+                self.acquisition.run(self.ctrls,
+                                     self.integration_time,
+                                     self.master,
+                                     None)
 
     def create_config(self):
-
         if self._timer is None:
             return
-        
+
         ctrl = self.get_controller()
         ctrl.set_ctrl_par("synchronization",
                           AcqSynch.SoftwareTrigger)
-        
+
         self.conf_ctrl = ControllerConfiguration(ctrl)
         # self has to be used. If not it is removed
         self.conf_channel = ChannelConfiguration(self)
@@ -339,24 +343,27 @@ class PoolBaseChannel(PoolElement):
             self.conf_ctrl.timer = channel
         else:
             if self.timer == "__default":
-                self.conf_timer = ChannelConfiguration(ctrl.get_element(axis=ctrl.ctrl.default_timer))
-            else:    
-                self.conf_timer = ChannelConfiguration(self.pool.get_element_by_name(self.timer))
+                self.conf_timer = ChannelConfiguration(
+                    ctrl.get_element(axis=ctrl.ctrl.default_timer))
+            else:
+                self.conf_timer = ChannelConfiguration(
+                    self.pool.get_element_by_name(self.timer))
             self.conf_ctrl.add_channel(self.conf_timer)
             ctimer = self.conf_ctrl.get_channels(enabled=True)[1]
             self.conf_ctrl.timer = ctimer
-            
+
         self.conf_ctrl.monitor = channel
         self.ctrls = get_timerable_ctrls([self.conf_ctrl], AcqMode.Timer)
         self.master = self.ctrls[0].master
-        comp_self = "__self"
         if self.timer != "__self":
             if self.timer == "__default":
-                self.acquisition.add_element(ctrl.get_element(axis=ctrl.ctrl.default_timer))
+                self.acquisition.add_element(
+                    ctrl.get_element(axis=ctrl.ctrl.default_timer))
             else:
-                self.acquisition.add_element(self.pool.get_element_by_name(self.timer))
+                self.acquisition.add_element(
+                    self.pool.get_element_by_name(self.timer))
 
-        
+
 class PoolTimerableChannel(PoolBaseChannel):
 
     def __init__(self, **kwargs):
@@ -378,7 +385,7 @@ class PoolTimerableChannel(PoolBaseChannel):
         return self._timer
 
     def set_timer(self, timer, propagate=1):
-        
+
         if timer == self._timer:
             # timer is not changed. Do nothing
             return
@@ -387,34 +394,32 @@ class PoolTimerableChannel(PoolBaseChannel):
             try:
                 ctrl = self.get_controller()
                 self.default_timer_axis = ctrl.ctrl.default_timer
-            except:
+            except Exception:
                 raise ValueError("Error reading default_timer")
                 return
-            if self.default_timer_axis == None:
+            if self.default_timer_axis is None:
                 raise ValueError("default_timer not defined in controller")
-    
+
         if timer is not None and timer != "__self":
             try:
                 if timer != "__default":
-                    self.acquisition.remove_element(self.pool.get_element_by_name(timer))
+                    self.acquisition.remove_element(
+                        self.pool.get_element_by_name(timer))
                 else:
-                    self.acquisition.remove_element(ctrl.get_element(axis = self.default_timer_axis))
-            except: # The new timer does not belong to action
+                    self.acquisition.remove_element(
+                        ctrl.get_element(axis=self.default_timer_axis))
+            except Exception:  # The new timer does not belong to action
                 pass
-            
         self._timer = timer
-        
         self.create_config()
-        
+
         if not propagate:
             return
 
         if timer is None:
             timer = 'None'
-        
-        self.fire_event(EventType("timer", priority=propagate),
-                        timer)
 
+        self.fire_event(EventType("timer", priority=propagate), timer)
 
     timer = property(get_timer, set_timer,
-                               doc="timer for the timerable channel")
+                     doc="timer for the timerable channel")

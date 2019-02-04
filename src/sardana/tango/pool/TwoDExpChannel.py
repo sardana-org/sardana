@@ -45,6 +45,7 @@ from sardana.tango.core.util import to_tango_type_format, exception_str
 from sardana.tango.pool.PoolDevice import PoolTimerableDevice, \
     PoolTimerableDeviceClass
 
+
 class TwoDExpChannel(PoolTimerableDevice):
 
     def __init__(self, dclass, name):

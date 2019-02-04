@@ -214,7 +214,7 @@ class CTExpChannel(PoolTimerableDevice):
         if self.get_state() in [DevState.FAULT, DevState.UNKNOWN]:
             return False
         return True
-        
+
     def Start(self):
         self.ct.start_acquisition()
 
@@ -237,12 +237,12 @@ class CTExpChannelClass(PoolTimerableDeviceClass):
     #    Attribute definitions
     attr_list = {}
     attr_list.update(PoolTimerableDeviceClass.attr_list)
-    
+
     standard_attr_list = {
         'Value': [[DevDouble, SCALAR, READ],
                   {'abs_change': '1.0', }]
     }
-    
+
     standard_attr_list.update(PoolTimerableDeviceClass.standard_attr_list)
 
     def _get_class_properties(self):
