@@ -47,7 +47,7 @@ import os
 import re
 import numpy as np
 
-from sardana.macroserver.macro import *
+from sardana.macroserver.macro import Macro, iMacro, Type
 from sardana.macroserver.macros.scan import aNscan
 from sardana.macroserver.msexception import UnknownEnv
 
@@ -111,7 +111,8 @@ class _diffrac:
                                'Chi': "chi", 'Phi': "phi", 'Tth': "tth"}
         elif self.nb_motors == 6:
             self.labelmotor = {'Mu': "mu", 'Theta': "omega", 'Chi': "chi",
-                               'Phi': "phi", 'Gamma': "gamma", 'Delta': "delta"}
+                               'Phi': "phi", 'Gamma': "gamma",
+                               'Delta': "delta"}
 
         prop = self.diffrac.get_property(['DiffractometerType'])
         for v in prop['DiffractometerType']:
@@ -441,7 +442,9 @@ class ci(Macro, _diffrac):
         if delta == -999 and self.nb_motors == 6:
             self.error("Six angle values are need as argument")
         elif omega_t == -999 and self.nb_motors == 7:
-            self.error("Seven angle values are need as argument (omega_t is missed - last argument)")
+            msg = ("Seven angle values are need as argument (omega_t is "
+                   "missed - last argument)")
+            self.error(msg)
         else:
             if self.nb_motors != 7:
                 angles = [mu, theta, chi, phi, gamma, delta]
@@ -989,19 +992,22 @@ class setorn(iMacro, _diffrac):
         ['ang7', Type.Float, -999, "Real position"],
     ]
 
-    def prepare(self, ref_id, H, K, L, ang1, ang2, ang3, ang4, ang5, ang6, ang7):
+    def prepare(self, ref_id, H, K, L, ang1, ang2, ang3, ang4, ang5, ang6,
+                ang7):
         _diffrac.prepare(self)
 
     def run(self, ref_id, H, K, L, ang1, ang2, ang3, ang4, ang5, ang6, ang7):
 
         if H == -999.0:
-            self.output("Order of the real motor positions to be given as argument:")
+            msg = "Order of the real motor positions to be given as argument:"
+            self.output(msg)
             for el in self.angle_names:
                 self.output(el)
             return
-        
-        if (ang6 == -999 and self.nb_motors == 6) or (
-                ang4 == -999 and self.nb_motors == 4) or (ang7 == -999 and self.nb_motors == 7):
+
+        if ((ang6 == -999 and self.nb_motors == 6)
+                or (ang4 == -999 and self.nb_motors == 4)
+                or (ang7 == -999 and self.nb_motors == 7)):
             reflections = []
             try:
                 reflections = self.diffrac.reflectionlist
@@ -1038,8 +1044,12 @@ class setorn(iMacro, _diffrac):
             self.output("Enter %s angles" % ref_txt)
             angles_to_set = []
             for el in self.angle_names:
-                angles_to_set.append(float(self.input(el+"?", default_value=tmp_ref[
-                    el], data_type=Type.String)))
+                angles_to_set.append(
+                    float(self.input(el+"?",
+                                     default_value=tmp_ref[el],
+                                     data_type=Type.String)
+                          )
+                )
 
 
             self.output("")
@@ -1051,12 +1061,12 @@ class setorn(iMacro, _diffrac):
             L = float(self.input(" L?", default_value=tmp_ref[
                       "l"], data_type=Type.String))
             self.output("")
-        else: 
+        else:
             angles = [ang1, ang2, ang3, ang4, ang5, ang6, ang7]
             angles_to_set = []
             for i in range(0, self.nb_motors):
                 angles_to_set.append(angles[i])
-            
+
         # Check collinearity
 
         if ref_id == 0:
