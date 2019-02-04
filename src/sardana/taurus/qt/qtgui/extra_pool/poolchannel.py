@@ -115,8 +115,7 @@ class PoolChannel(TaurusWidget):
         self._devButton.setText('')
         self.layout().addWidget(self._devButton)
 
-        self.connect(self, Qt.SIGNAL(
-            'modelChanged(const QString &)'), self._updateTaurusValue)
+        self.modelChanged.connect(self._updateTaurusValue)
 
     def _updateTaurusValue(self):
         m = self.getModelName()

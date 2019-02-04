@@ -1528,6 +1528,11 @@ class MeasurementGroup(PoolElement):
         self._value_buffer_cb = None
         self._codec = CodecFactory().getCodec("json")
 
+    def cleanUp(self):
+        PoolElement.cleanUp(self)
+        f = self.factory()
+        f.removeExistingAttribute(self.__cfg_attr)
+
     def _create_str_tuple(self):
         channel_names = ", ".join(self.getChannelNames())
         return self.getName(), self.getTimerName(), channel_names
@@ -1857,7 +1862,7 @@ class MeasurementGroup(PoolElement):
         cfg.prepare()
         self.setSynchronization(synchronization)
         self.subscribeValueBuffer(value_buffer_cb)
-        self.count_raw(self)
+        self.count_raw(start_time)
         self.unsubscribeValueBuffer(value_buffer_cb)
         state = self.getStateEG().readValue()
         if state == Fault:
