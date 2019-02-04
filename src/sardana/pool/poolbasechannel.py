@@ -240,15 +240,11 @@ class PoolBaseChannel(PoolElement):
     # integration time
     # --------------------------------------------------------------------------
 
-    def get_integration_time(self, cache=True, propagate=1):
+    def get_integration_time(self):
         """Returns the integration time for this object.
 
-        :param cache: not used [default: True]
-        :type cache: bool
-        :param propagate: [default: 1]
-        :type propagate: int
         :return: the current integration time
-        :rtype: bool"""
+        :rtype: :ob:`float`"""
         return self._integration_time
 
     def set_integration_time(self, integration_time, propagate=1):
@@ -373,15 +369,11 @@ class PoolTimerableChannel(PoolBaseChannel):
     # timer
     # -------------------------------------------------------------------------
 
-    def get_timer(self, cache=True, propagate=1):
+    def get_timer(self):
         """Returns the timer for this object.
 
-        :param cache: not used [default: True]
-        :type cache: bool
-        :param propagate: [default: 1]
-        :type propagate: int
         :return: the current timer
-        :rtype: bool"""
+        :rtype: :obj:`str`"""
         return self._timer
 
     def set_timer(self, timer, propagate=1):
