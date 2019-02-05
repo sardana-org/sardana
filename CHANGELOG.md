@@ -23,7 +23,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   #1009)
 - Possibility to define macros with optional parameters. These must be the last
   ones in the definition (#285, #876, #943, #941, #955)
-- Possibility to pass values of repeat paramters with just one member without
+- Possibility to pass values of repeat parameters with just one member without
   the need to encapsulate them in square brackets (spock syntax) or list
   (macro API) (#781, #983)
 - Possibility to change data format (shape) of of pseudo counter values (#986)
@@ -62,6 +62,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Spock considers passing supernumerary parameters as errors (#438, #781)
 - MacroServer starts without the Qt library installed (#781, #907, #908)
 - Make `Description` an optional part of controller's properties definition (#976)
+- Correcting bug in hkl macros introduced when extending macros for new
+  diffractometer types: angle order was switched
 
 ### Changed
 - MacroButton stops macros instead of aborting them (#931, #943)
