@@ -291,13 +291,23 @@ class PoolBaseChannel(PoolElement):
         # --------------------------------------------------------------------------
 
     def get_integration_time(self):
-        """Returns the integration time for this object.
+        """Return the integration time for this object.
 
         :return: the current integration time
-        :rtype: :ob:`float`"""
+        :rtype: :obj:`float`"""
         return self._integration_time
 
     def set_integration_time(self, integration_time, propagate=1):
+        """Set the integration time for this object.
+
+        :param integration_time: integration time in seconds to set
+        :type integration_time: :obj:`float`
+        :param propagate:
+            0 for not propagating, 1 to propagate, 2 propagate with priority
+        :type propagate: :obj:`int`
+        :return: the current integration time
+        :rtype: :obj:`float`
+        """
         if integration_time == self._integration_time:
             # integration time is not changed. Do nothing
             return
