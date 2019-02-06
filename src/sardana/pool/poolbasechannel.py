@@ -417,10 +417,6 @@ class PoolTimerableChannel(PoolBaseChannel):
 
         if not propagate:
             return
-
-        if timer is None:
-            timer = 'None'
-
         self.fire_event(EventType("timer", priority=propagate), timer)
 
     timer = property(get_timer, set_timer,

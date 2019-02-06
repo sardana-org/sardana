@@ -127,8 +127,12 @@ class TwoDExpChannel(PoolTimerableDevice):
                 else:
                     value = event_value.value
                 timestamp = event_value.timestamp
+            else:
+                value = event_value
 
-            if name == "value":
+            if name == "timer" and value is None:
+                value = "None"
+            elif name == "value":
                 state = self.twod.get_state()
                 if state == State.Moving:
                     quality = AttrQuality.ATTR_CHANGING

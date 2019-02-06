@@ -138,7 +138,9 @@ class OneDExpChannel(PoolTimerableDevice):
                 timestamp = event_value.timestamp
             else:
                 value = event_value
-            if name == "value":
+            if name == "timer" and value is None:
+                value = "None"
+            elif name == "value":
                 w_value = event_source.get_value_attribute().w_value
                 state = self.oned.get_state()
                 if state == State.Moving:
