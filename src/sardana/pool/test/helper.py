@@ -94,7 +94,9 @@ def createPoolCounterTimer(pool, poolcontroller, conf):
     kwargs = copy.deepcopy(conf)
     kwargs['pool'] = pool
     kwargs['ctrl'] = poolcontroller
-    return PoolCounterTimer(**kwargs)
+    ct = PoolCounterTimer(**kwargs)
+    poolcontroller.add_element(ct)
+    return ct
 
 
 def createPoolZeroDExpChannel(pool, poolcontroller, conf):
