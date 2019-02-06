@@ -40,7 +40,7 @@ from PyTango import DevState
 
 from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, \
     ViewOption, iMacro, Hookable
-from sardana.macroserver.msexception import StopException
+from sardana.macroserver.msexception import StopException, UnknownEnv
 from sardana.macroserver.scan.scandata import Record
 from sardana.macroserver.macro import Optional
 
@@ -927,13 +927,14 @@ class newfile(Hookable, Macro):
                 # first entry and no given ScanDir: check if ScanDir exists
                 try:
                     ScanDir = self.getEnv('ScanDir')
-                except:
+                except UnknownEnv:
                     ScanDir = ''
-                if not ScanDir:
-                    self.warning('Data is not stored until ScanDir is set! '
-                                 'Provide ScanDir with newfile macro: '
-                                 'newfile [<ScanDir>/<ScanFile>] <ScanID> or '
-                                 'senv ScanDir <ScanDir> or with %expconf')
+                if not (isinstance(ScanDir, basestring) and len(ScanDir) > 0):
+                    msg = ('Data is not stored until ScanDir is correctly '
+                           'set! Provide ScanDir with newfile macro: '
+                           '`newfile [<ScanDir>/<ScanFile>] <ScanID>` '
+                           'or `senv ScanDir <ScanDir>` or with %expconf')
+                    self.warning(msg)
                 else:
                     path = ScanDir
             elif not path and i > 0:
