@@ -934,7 +934,8 @@ class newfile(Hookable, Macro):
                            'set! Provide ScanDir with newfile macro: '
                            '`newfile [<ScanDir>/<ScanFile>] <ScanID>` '
                            'or `senv ScanDir <ScanDir>` or with %expconf')
-                    self.warning(msg)
+                    self.error(msg)
+                    return
                 else:
                     path = ScanDir
             elif not path and i > 0:
