@@ -913,7 +913,7 @@ class newfile(Hookable, Macro):
         ['ScanFilePath_list',
          [['ScanFilePath', Type.String, None, '(ScanDir/)ScanFile']],
          None, 'List of (ScanDir/)ScanFile'],
-        ['ScanID', Type.Integer, -1, 'Scan ID'],
+        ['ScanID', Type.Integer, 0, 'Scan ID'],
     ]
 
     def run(self, ScanFilePath_list, ScanID):
