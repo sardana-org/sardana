@@ -7,7 +7,11 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 
+* `newfile` macro for setting `ScanDir`, `ScanFile` and `ScanID` env variables (#777)
+
 ## [2.6.1] 2019-02-04
+
+This is a special release for meeting the deadline of debian buster freeze (debian 10).
 
 ### Fixed
 - String parameter editor in macroexecutor and sequencer (#1030, #1031)
@@ -15,6 +19,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   (#962, #1013)
 
 ## [2.6.0] 2019-01-31
+
+This is a special release for meeting the deadline of debian buster freeze (debian 10).
 
 ### Added
 - New acquisition and synchronization concepts (SEP18, #773):
