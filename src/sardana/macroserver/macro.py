@@ -264,6 +264,9 @@ class Hookable(Logger):
                 'the hooks must be passed as a list<callable,list<str>>')
             return
 
+        if len(self.hooks) > 0:
+            self.warning("previously set hooks, these may include general"
+                         "hooks, are being overridden now")
         # store self._hooks, making sure it is of type:
         # list<callable,list<str>>
         self._hooks = []
