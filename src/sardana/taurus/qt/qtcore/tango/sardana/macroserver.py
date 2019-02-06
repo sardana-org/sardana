@@ -43,6 +43,9 @@ class QDoor(BaseDoor, Qt.QObject):
                        "recordDataUpdated", "macroStatusUpdated"]
     __pyqtSignals__ += ["%sUpdated" % l.lower() for l in BaseDoor.log_streams]
 
+    envExpConfigChangesAllowed = ['ActiveMntGrp', 'ScanDir', 'ScanFile',
+                                  'DataCompressionRank']
+
     # sometimes we emit None hence the type is object
     # (but most of the data are passed with type list)
     resultUpdated = Qt.pyqtSignal(object)
@@ -99,7 +102,7 @@ class QDoor(BaseDoor, Qt.QObject):
         if not self._use_experiment_configuration and \
                 not self._connections_prepared:
             self.macro_server.environmentChanged.connect(
-                self._onExperimentConfigurationChanged)
+                self._onExperimentConfigurationEnvironmentChanged)
             self.macro_server.elementsChanged.connect(self._elementsChanged)
             self._elementsChanged()
             self._connections_prepared = True
@@ -120,6 +123,38 @@ class QDoor(BaseDoor, Qt.QObject):
 
         if mntgrp_changed:
             self._onExperimentConfigurationChanged()
+
+    def _onExperimentConfigurationEnvironmentChanged(self, args):
+        """
+        Filter environment changes that affect to the experiment
+        configuration.
+
+
+        :param args:
+        The args order is :
+        added (environment added)
+        removed (environment removed)
+        changed (environment changed)
+        :return:
+        """
+
+        try:
+            envExpChanged = False
+            # Filter only the Environment added/removed/changes related with
+            # the experiment, not for all.
+            for envs in args:
+                val = envs.intersection(self.envExpConfigChangesAllowed)
+                if len(val) > 1:
+                    envExpChanged = True
+                    break
+
+            if not envExpChanged:
+                return
+        except Exception as e:
+            print e
+            pass
+
+        self._onExperimentConfigurationChanged()
 
     def _onExperimentConfigurationChanged(self, *args):
         conf = copy.deepcopy(BaseDoor.getExperimentConfiguration(self))
