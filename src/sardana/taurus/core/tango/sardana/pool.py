@@ -720,6 +720,24 @@ class ExpChannel(PoolElement):
         for index, value in zip(indexes, values):
             self._value_buffer[index] = value
 
+    def _start(self, *args, **kwargs):
+        self.Start()
+
+    def go(self, *args, **kwargs):
+        start_time = time.time()
+        integration_time = args[0]
+        if integration_time is None or integration_time == 0:
+            return self.getStateEG().readValue(), self.getValues()
+        self.putIntegrationTime(integration_time)
+        PoolElement.go(self)
+        state = self.getStateEG().readValue()
+        values = self.getValue()
+        ret = state, values
+        self._total_go_time = time.time() - start_time
+        return ret
+
+    count = go
+
 
 class CTExpChannel(ExpChannel):
     """ Class encapsulating CTExpChannel functionality."""
