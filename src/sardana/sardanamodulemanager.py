@@ -260,7 +260,7 @@ class ModuleManager(Singleton, Logger):
         into this python interpreter, nothing is done.
 
         :param module_name: the module to be loaded.
-        :type module_name: str
+        :type module_name: :obj:`str`
         :param path: list of paths to look for modules [default: None]
         :type path: seq<str> or None
         :return: python module

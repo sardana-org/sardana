@@ -4,7 +4,7 @@
 ##
 # This file is part of Sardana
 ##
-# http://www.tango-controls.org/static/sardana/latest/doc/html/index.html
+# http://www.sardana-controls.org/
 ##
 # Copyright 2011 CELLS / ALBA Synchrotron, Bellaterra, Spain
 ##
@@ -23,29 +23,29 @@
 ##
 ##############################################################################
 
+import os
+
 from taurus.external import unittest
-from taurus.test import insertTest
-from sardana.pool.poolsynchronization import PoolSynchronization
-from sardana.pool.test.test_acquisition import AcquisitionTestCase
-import logging
+
+from sardana.macroserver.macros.test import RunMacroTestCase, testRun
+from sardana.tango.macroserver.test import BaseMacroServerTestCase
 
 
-@insertTest(helper_name='hw_step_acquisition', repetitions=1,
-            integ_time=0.4)
-class DummyCounterTimerControllerTestCase(AcquisitionTestCase, unittest.TestCase):
-    """Integration test.
-    """
-    chn_ctrl_name = '_test_ct_ctrl_1'
-    chn_elem_name1 = '_test_ct_1_1'
+@testRun(macro_name="runMacro")
+@testRun(macro_name="createMacro")
+@testRun(macro_name="execMacro")
+class MacroTest(BaseMacroServerTestCase, RunMacroTestCase, unittest.TestCase):
 
     def setUp(self):
-        """#Create a Controller, TriggerGate and PoolSynchronization objects from
-        #Ni660XTriggerGateController and Ni660XPositionCTCtrl configurations.
-        """
+        macros_test_path = '../../test/res/macros'
+        source = os.path.join(os.path.dirname(__file__), macros_test_path)
+        path = os.path.abspath(source)
+        properties = {'MacroPath': [path]}
         unittest.TestCase.setUp(self)
-        AcquisitionTestCase.setUp(self)
-        self.channel_names.append(self.chn_elem_name1)
+        BaseMacroServerTestCase.setUp(self, properties)
+        RunMacroTestCase.setUp(self)
 
     def tearDown(self):
-        AcquisitionTestCase.tearDown(self)
+        BaseMacroServerTestCase.tearDown(self)
+        RunMacroTestCase.tearDown(self)
         unittest.TestCase.tearDown(self)

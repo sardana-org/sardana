@@ -27,11 +27,15 @@
 
 __all__ = ['BaseMacroServerTestCase']
 
+import os
+
 import PyTango
+from taurus.core.util import whichexecutable
 from taurus.core.tango.starter import ProcessStarter
+
 from sardana import sardanacustomsettings
 from sardana.tango.core.util import (get_free_server, get_free_device)
-from taurus.core.util import whichexecutable
+from sardana.tango.macroserver.MacroServer import MacroServerClass
 
 
 class BaseMacroServerTestCase(object):
@@ -44,17 +48,21 @@ class BaseMacroServerTestCase(object):
     door_name = getattr(sardanacustomsettings, 'UNITTEST_DOOR_NAME',
                         "door/demo1/1")
 
-    def setUp(self, pool_name):
-        """Start MacroServer DS.
+    def setUp(self, properties=None):
+        """
+        Start MacroServer DS.
+
+        :param properties: dictionary with the macroserver properies.
+
         """
         try:
             db = PyTango.Database()
             # Discover the MS launcher script
             msExec = whichexecutable.whichfile("MacroServer")
             # register MS server
-            ms_ds_name = "MacroServer/" + self.ms_ds_name
-            ms_free_ds_name = get_free_server(db, ms_ds_name)
-            self._msstarter = ProcessStarter(msExec, ms_free_ds_name)
+            ms_ds_name_base = "MacroServer/" + self.ms_ds_name
+            self.ms_ds_name = get_free_server(db, ms_ds_name_base)
+            self._msstarter = ProcessStarter(msExec, self.ms_ds_name)
             # register MS device
             dev_name_parts = self.ms_name.split('/')
             prefix = '/'.join(dev_name_parts[0:2])
@@ -68,7 +76,11 @@ class BaseMacroServerTestCase(object):
             start_from = int(dev_name_parts[2])
             self.door_name = get_free_device(db, prefix, start_from)
             self._msstarter.addNewDevice(self.door_name, klass='Door')
-            db.put_device_property(self.ms_name, {'PoolNames': pool_name})
+            # Add properties
+            if properties:
+                for key, values in properties.items():
+                    db.put_device_property(self.ms_name,
+                                           {key: values})
             # start MS server
             self._msstarter.startDs()
             self.door = PyTango.DeviceProxy(self.door_name)
@@ -80,10 +92,17 @@ class BaseMacroServerTestCase(object):
     def tearDown(self):
         """Remove the Pool instance.
         """
+        dft_ms_properties = os.path.join(MacroServerClass.DefaultEnvBaseDir,
+                                         MacroServerClass.DefaultEnvRelDir)
+        ds_inst_name = self.ms_ds_name.split("/")[1]
+        ms_properties = dft_ms_properties % {"ds_exec_name": "MacroServer",
+                                             "ds_inst_name": ds_inst_name}
+        os.remove(ms_properties)
         self._msstarter.cleanDb(force=True)
         self._msstarter = None
         self.macroserver = None
         self.door = None
+
 
 if __name__ == '__main__':
     bms = BaseMacroServerTestCase()

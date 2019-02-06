@@ -189,7 +189,8 @@ class PoolBaseElement(PoolObject):
         """Looks at the current cached value of status
 
         :return: the current object status
-        :rtype: str"""
+        :rtype: :obj:`str`
+        """
         return self._status
 
     def get_status(self, cache=True, propagate=1):
@@ -208,7 +209,8 @@ class PoolBaseElement(PoolObject):
             [default: 1]
         :type propagate: int
         :return: the current object status
-        :rtype: str"""
+        :rtype: :obj:`str`
+        """
         if not cache or self._status is None:
             state_info = self.read_state_info()
             self._set_state_info(state_info, propagate=propagate)

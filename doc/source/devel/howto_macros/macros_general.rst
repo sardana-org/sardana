@@ -45,7 +45,7 @@ a macro class you can benefit from all advantages of object-oriented
 programming. This means that, in theory:
 
     - it would reduce the amount of code you need to write
-    - reduce the complexity of your code y by dividing it into small,
+    - reduce the complexity of your code by dividing it into small,
       reasonably independent and re-usable components, that talk to each other
       using only well-defined interfaces
     - Improvement of productivity by using easily adaptable pre-defined
@@ -108,7 +108,9 @@ to write your macros. Unless configured otherwise, spock will use the editor
 specified by the system environment variable :envvar:`EDITOR`. If this variable
 is not set, it will default to vi under Linux/Unix and to notepad under
 Windows. The following line explains how to set the :envvar:`EDITOR`
-environment variable to gedit under linux using bash shell::
+environment variable to gedit under linux using bash shell:
+
+.. code-block:: bash
 
     $ export EDITOR=gedit
 
@@ -296,7 +298,11 @@ being a composed of four elements:
 
     - parameter name
     - parameter type
-    - parameter default value (None means no default value)
+    - parameter default value:
+        - ``None`` means no default value
+        - ``Optional`` means that
+          :ref:`the parameter value is optional <sardana-macro-optional-parameters>`
+
     - parameter description
     
 Here is a list of the most common allowed parameter types:
@@ -318,6 +324,44 @@ Here is a list of the most common allowed parameter types:
 The complete list of types distributed with sardana is made up by these five
 simple types: ``Integer``, ``Float``, ``Boolean``, ``String``, ``Any``, plus
 all available sardana interfaces (:obj:`~sardana.sardanadefs.Interface`)
+
+.. _sardana-macro-optional-parameters:
+
+Optional parameters
+~~~~~~~~~~~~~~~~~~~
+
+A special parameter default value is the ``Optional`` keyword. A parameter 
+whose default value is set to ``Optional`` behaves just as one with a default 
+value, except that if the user does not provide a value explicitly, the 
+handling of its value is deferred to the run method (which gets ``None`` as
+the parameter value). This allows for more complex handling of the value 
+(e.g. interactive prompting to the user, system introspection, reading from 
+files, etc.)
+
+So, here is an example how to define and use the optional parameter::
+
+    from sardana.macroserver.macro import Macro, Type, Optional
+
+    class count(Macro):
+
+        param_def = [
+            ['itime', Type.Float, 1, 'integration time'],
+            ['mntgrp', Type.MeasurementGroup, Optional, 'MntGrp to use']
+        ]
+
+        def run(self, itime, mntgrp):
+            bkp_active_mntgrp = None
+            try:
+                if mntgrp is not None:
+                    bkp_active_mntgrp = self.getEnv('ActiveMntGrp')
+                    mntgrp_name = mntgrp.name
+                    self.setEnv('ActiveMntGrp', mntgrp_name)
+                self.info('Use "{0}" measurement group'.format(mntgrp_name))
+                self.ct(itime)
+            finally:
+                if bkp_active_mntgrp is not None:
+                    self.setEnv('ActiveMntGrp', bkp_active_mntgrp)
+
 
 .. _sardana-macro-repeat-parameters:
 
@@ -371,6 +415,46 @@ each item is an internal list of the members.
 A set of macro parameter examples can be found
 :ref:`here <sardana-devel-macro-parameter-examples>`.
 
+.. _sardana-macro-result:
+
+Returning a macro result
+------------------------
+
+A macro can produce one or more results to be returned.
+The macro :term:`API` enforces to specify certain information about
+these result values.
+Here's an example of how to define and return the results::
+
+  class twice(Macro):
+    """A macro that returns its input and twice its input."""
+
+    param_def = [ [ "value", Type.Float, 23, "value to be doubled" ] ]
+    result_def = [ [ "input_value", Type.Float, None, "the input value" ],
+    [ "result", Type.Float, None, "the double of the given value" ] ]
+
+    def run(self, n):
+        ret = 2*n
+        return n, ret
+
+If a macro with a result is called from another macro the results can be
+retrieved as shown in this example::
+
+  class get_result(Macro):
+    """Different ways of getting the result of a macro"""
+
+    def run(self):
+
+        mymacro, pars= self.createMacro("twice 1")
+        value = self.runMacro(mymacro)
+        self.output(value)
+
+	value = self.execMacro("twice 1")
+        self.output(value.getResult())
+
+        value = self.twice(1)
+        self.output(value.getResult())
+
+
 .. _sardana-macro-context:
 
 Macro context
@@ -382,8 +466,11 @@ sardana elements by means of the first parameter on your macro (you can give
 this parameter any name but usually, by convention it is called ``self``).
 
 ``self`` provides access to an extensive catalog of functions you can use in
-your macro to do all kinds of things. The complete catalog of functions can be
-found :ref:`here <sardana-macro-api>`.
+your macro to do all kinds of things, among others, to obtain the sardana
+elements. The :ref:`Macro API reference <sardana-macro-api>` describes all
+these functions and the
+:ref:`Sardana-Taurus extensions API reference <sardana-taurus-api>`
+describes the obtained sardana elements.
 
 Let's say you want to write a macro that explicitly moves a known *theta* motor
 to a certain position. You could write a macro which receives the motor as
@@ -472,6 +559,8 @@ outputs the new ``ScanID`` value:
         self.ascan(moveable, 0, 100, 10, 0.1)
         scan_id = self.getEnv('ScanID')
         self.output("ScanID is now %d", scan_id)
+
+
 
 .. _sardana-macro-logging:
 
@@ -622,7 +711,7 @@ parameters with different *flavors*:
 
 
 Accessing macro data
-~~~~~~~~~~~~~~~~~~~~
+--------------------
 
 Sometimes it is desirable to access data generated by the macro we just called.
 For these cases, the Macro :term:`API` provides a pair of low level methods
@@ -730,6 +819,109 @@ prepare HelloWorld to run only after year 1989:
     
         def run(self):
             print "Hello, World!"
+
+.. _sardana-macro-handling-macro-stop-and-abort:
+
+Handling macro stop and abort
+-----------------------------
+
+While macro is being executed the user has a possibility to stop or abort it
+at any time. The way of performing this operation may vary between the
+client application being used, for example see :ref:`sardana-spock-stopping`
+in Spock.
+
+It may be desired to stop or abort objects in use when the macro
+execution gets interrupted. This does not need to be implemented by
+each of the macros. One simply needs to use a special :term:`API` to reserve
+this objects in the macro context and the magic will happen to stop or abort
+them when needed. For example if you get an object using the
+:meth:`~sardana.macroserver.macro.Macro.getObj` method it is automatically
+reserved. It is also worth mentioning the difference between the
+:meth:`~sardana.macroserver.macro.Macro.getMotion` and
+:meth:`~sardana.macroserver.macro.Macro.getMotor` methods. The first one
+will reserve the moveable while the second will not.
+
+And of course we need to clarify the difference between the stop and the abort
+operations. It is commonly agreed that stop is more gentle and
+respectful than abort and is supposed to bring the system to a stable state
+according to a particular protocol and respecting a nominal configuration e.g.
+stop motors respecting the nominal deceleration time. While abort is
+foreseen for more emergency situations and is supposed to bring the system
+to a stable state as fast as possible e.g. stop motors instantly, possibly
+loosing track of position.
+
+While the reserved objects are stopped or aborted immediately after user's
+interruption, the macro execution is not. The macro will not stop until its
+execution thread encounters the next *Macro API* call e.g.
+:meth:`~sardana.macroserver.macro.Macro.output` or
+:meth:`~sardana.macroserver.macro.Macro.getMotor`. There is also a special
+method :meth:`~sardana.macroserver.macro.Macro.checkPoint` that does nothing
+else but mark this place in your code as suitable for stopping or aborting.
+
+If you want to execute a special procedure that should be executed in case
+of user's interruption you must override the
+:meth:`~sardana.macroserver.macro.Macro.on_stop` or
+:meth:`~sardana.macroserver.macro.Macro.on_abort` methods.
+
+.. note:: Currently it is not possible to use any of the *Macro API* calls
+    withing the :meth:`~sardana.macroserver.macro.Macro.on_stop` or
+    :meth:`~sardana.macroserver.macro.Macro.on_abort`.
+
+.. _sardana-macro-adding-hooks-support:
+
+Adding hooks support
+--------------------
+
+Your macros may accept to :ref:`attach an arbitrary <sardana-macros-hooks>`
+code, a simple Python callable or even another macro, that will be executed
+at given places. In Sardana this code are called *hooks*, and the places are
+called *hook places*.
+
+In order to allow attaching hooks to your macro you must :ref:`write you
+macro as a class <sardana-macro-class-writing>` while at the same time
+inheriting from the :class:`~sardana.macroserver.macro.Hookable` class.
+
+The hook places can be defined in the ``hints`` class member dictionary with
+the ``allowsHooks`` key and a tuple of strings with the hook places
+identifiers::
+
+    class hookable_macro(Macro, Hookable):
+        """A macro that accepts and executes hooks."""
+
+        hints = {"allowsHooks": ("hook-place", "another-hook-place")}
+
+        def run(self):
+            for hook in self.getHooks("hook-place"):
+                hook()
+            self.info("In between hook places")
+            for hook in self.getHooks("another-hook-place"):
+                hook()
+
+Hooks can be programmatically attached to a macro before its execution either
+using the :attr:`~sardana.macroserver.macro.Hookable.hooks` property or
+using the :meth:`~sardana.macroserver.macro.Hookable.appendHook` method::
+
+    def hook_function():
+        pass
+
+    class wrapping_macro(Macro):
+        """A wrapping macro that attaches hooks to a hookable macro
+        and executes it."""
+
+        def run(self):
+            hookable_macro, _ = self.createMacro("hookable_macro")
+            hook_macro = ExecMacroHook(self, "mv", [["mot01", 1]])
+            hookable_macro.hooks = [(hook_macro, ["hook-place"])]
+            hookable_macro.appendHook((hook_function, ["another-hook-place"]))
+            self.runMacro(hookable_macro)
+
+.. note:: Be aware of the following difference between setting the
+    :attr:`~sardana.macroserver.macro.Hookable.hooks` property and using the
+    :meth:`~sardana.macroserver.macro.Hookable.appendHook` method.
+    Setting the property applies all hooks at once but may override
+    :ref:`general hooks<sardana-macros-hooks-general>` eventually attached to
+    the macro. Using the method appends just one hook but does not affect
+    the general hooks eventually attached to the macro.
 
 .. _sardana-macro-using-external-libraries:
 

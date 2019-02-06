@@ -42,6 +42,8 @@ from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, \
     ViewOption, iMacro, Hookable
 from sardana.macroserver.msexception import StopException
 from sardana.macroserver.scan.scandata import Record
+from sardana.macroserver.macro import Optional
+
 ##########################################################################
 #
 # Motion related macros
@@ -157,6 +159,7 @@ class _wum(Macro):
         motor_names = []
         motor_pos = []
         motor_list = sorted(motor_list)
+        pos_format = self.getViewOption(ViewOption.PosFormat)
         for motor in motor_list:
             name = motor.getName()
             motor_names.append([name])
@@ -167,6 +170,8 @@ class _wum(Macro):
             motor_width = max(motor_width, len(name))
 
         fmt = '%c*.%df' % ('%', motor_width - 5)
+        if pos_format > -1:
+            fmt = '%c*.%df' % ('%', int(pos_format))
 
         table = Table(motor_pos, elem_fmt=[fmt],
                       col_head_str=motor_names, col_head_width=motor_width,
@@ -649,17 +654,25 @@ class ct(Macro, Hookable):
     env = ('ActiveMntGrp',)
     hints = {'allowsHooks': ('pre-acq', 'post-acq')}
     param_def = [
-        ['integ_time', Type.Float, 1.0, 'Integration time']
+        ['integ_time', Type.Float, 1.0, 'Integration time'],
+        ['mnt_grp', Type.MeasurementGroup, Optional, 'Measurement Group to '
+                                                     'use']
+
     ]
 
-    def prepare(self, integ_time, **opts):
-        mnt_grp_name = self.getEnv('ActiveMntGrp')
-        self.mnt_grp = self.getObj(
-            mnt_grp_name, type_class=Type.MeasurementGroup)
+    def prepare(self, integ_time, mnt_grp, **opts):
+        if mnt_grp is None:
+            self.mnt_grp_name = self.getEnv('ActiveMntGrp')
+            self.mnt_grp = self.getObj(self.mnt_grp_name,
+                                       type_class=Type.MeasurementGroup)
+        else:
+            self.mnt_grp_name = mnt_grp.name
+            self.mnt_grp = mnt_grp
 
-    def run(self, integ_time):
+    def run(self, integ_time, mnt_grp):
         if self.mnt_grp is None:
-            self.error('ActiveMntGrp is not defined or has invalid value')
+            self.error('The MntGrp {} is not defined or has invalid '
+                       'value'.format(self.mnt_grp_name))
             return
         # integration time has to be accessible from with in the hooks
         # so declare it also instance attribute
@@ -700,16 +713,23 @@ class uct(Macro):
     env = ('ActiveMntGrp',)
 
     param_def = [
-        ['integ_time', Type.Float, 1.0, 'Integration time']
+        ['integ_time', Type.Float, 1.0, 'Integration time'],
+        ['mnt_grp', Type.MeasurementGroup, Optional, 'Measurement Group to '
+                                                     'use']
+
     ]
 
-    def prepare(self, integ_time, **opts):
+    def prepare(self, integ_time, mnt_grp, **opts):
 
         self.print_value = False
 
-        mnt_grp_name = self.getEnv('ActiveMntGrp')
-        self.mnt_grp = self.getObj(
-            mnt_grp_name, type_class=Type.MeasurementGroup)
+        if mnt_grp is None:
+            self.mnt_grp_name = self.getEnv('ActiveMntGrp')
+            self.mnt_grp = self.getObj(self.mnt_grp_name,
+                                       type_class=Type.MeasurementGroup)
+        else:
+            self.mnt_grp_name = mnt_grp.name
+            self.mnt_grp = mnt_grp
 
         if self.mnt_grp is None:
             return
@@ -727,9 +747,10 @@ class uct(Macro):
             valueObj = channel.getValueObj_()
             valueObj.subscribeEvent(self.counterChanged, channel)
 
-    def run(self, integ_time):
+    def run(self, integ_time, mnt_grp):
         if self.mnt_grp is None:
-            self.error('ActiveMntGrp is not defined or has invalid value')
+            self.error('The MntGrp {} is not defined or has invalid '
+                       'value'.format(self.mnt_grp_name))
             return
 
         self.print_value = True
@@ -825,28 +846,45 @@ class logmacro(Macro):
 
 
 class repeat(Hookable, Macro):
-    """This macro executes as many repetitions of it's body hook macros as
-    specified by nr parameter. If nr parameter has negative value,
-    repetitions will be executed until you stop repeat macro."""
+    """This macro executes as many repetitions of a set of macros as
+    specified by nr parameter. The macros to be repeated can be
+    given as parameters or as body hooks.
+    If both are given first will be executed the ones given as
+    parameters and then the ones given as body hooks.
+    If nr has negative value, repetitions will be executed until you
+    stop repeat macro.
 
-    # hints = { 'allowsHooks': ('body', 'break', 'continue') }
+    .. note::
+        The repeat macro has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the macro) may occur if
+        deemed necessary by the core developers."""
+
     hints = {'allowsHooks': ('body',)}
 
     param_def = [
-        ['nr', Type.Integer, None, 'Nr of iterations']
+        ['nr', Type.Integer, None, 'Nr of iterations'],
+        ['macro_name_params', [
+                ['token', Type.String,
+                 None, 'Macro name and parameters (if any)'],
+                {'min': 0}
+            ],
+            None, "List with macro name and parameters (if any)"]
     ]
 
-    def prepare(self, nr):
-        # self.breakHooks = self.getHooks("break")
-        # self.continueHooks = self.getHooks("continue")
+    def prepare(self, nr, macro_name_params):
         self.bodyHooks = self.getHooks("body")
+        self.macro_name_params = macro_name_params
 
     def __loop(self):
         self.checkPoint()
+        if len(self.macro_name_params) > 0:
+            for macro_cmd in self.macro_name_params:
+                self.execMacro(macro_cmd)
         for bodyHook in self.bodyHooks:
             bodyHook()
 
-    def run(self, nr):
+    def run(self, nr, macro_name_params):
         if nr < 0:
             while True:
                 self.__loop()

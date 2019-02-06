@@ -12,7 +12,13 @@ User's Guide
     Spock <spock>
     Sardana-Taurus Widgets <taurus/index>
     Scans <scan>
+    Diffractometer <diffractometer>
+    Adding real elements <adding_elements>
+    Macro Hooks <macro_hooks>
+    Macro Environment <macro_environment>
+    Macro Logging and Reports <macro_logging_and_reports>
+    Environment Variable Catalog <environment_variable_catalog>
     Standard macro catalog <standard_macro_catalog>
+    Configuration <configuration/index>
     Screenshots <screenshots>
     FAQ <faq>
-

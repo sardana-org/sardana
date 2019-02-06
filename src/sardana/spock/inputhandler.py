@@ -71,14 +71,16 @@ class SpockInputHandler(BaseInputHandler):
 
 class MessageHandler(Qt.QObject):
 
+    messageArrived = Qt.pyqtSignal(object)
+
     def __init__(self, conn, parent=None):
         Qt.QObject.__init__(self, parent)
         self._conn = conn
         self._dialog = None
-        self.connect(self, Qt.SIGNAL("messageArrived"), self.on_message)
+        self.messageArrived.connect(self.on_message)
 
     def handle_message(self, input_data):
-        self.emit(Qt.SIGNAL("messageArrived"), input_data)
+        self.messageArrived.emit(input_data)
 
     def on_message(self, input_data):
         msg_type = input_data['type']
