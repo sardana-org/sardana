@@ -866,6 +866,16 @@ class PoolExpChannelDevice(PoolElementDevice):
         _, encoded_data = self._codec.encode(('', data))
         return encoded_data
 
+    def initialize_dynamic_attributes(self):
+        attrs = PoolElementDevice.initialize_dynamic_attributes(self)
+
+        non_detect_evts = "integrationtime",
+
+        for attr_name in non_detect_evts:
+            if attr_name in attrs:
+                self.set_change_event(attr_name, True, False)
+        return attrs
+
     def read_Data(self, attr):
         desc = "Data attribute is not foreseen for reading. It is used only "\
                "as the communication channel for the continuous acquisitions."
@@ -912,6 +922,16 @@ class PoolTimerableDevice(PoolExpChannelDevice):
     def __init__(self, dclass, name):
         """Constructor"""
         PoolExpChannelDevice.__init__(self, dclass, name)
+
+    def initialize_dynamic_attributes(self):
+        attrs = PoolExpChannelDevice.initialize_dynamic_attributes(self)
+
+        detect_evts = "timer",
+
+        for attr_name in detect_evts:
+            if attr_name in attrs:
+                self.set_change_event(attr_name, True, True)
+        return attrs
 
     def read_Timer(self, attr):
         """Reads the timer for this channel.
