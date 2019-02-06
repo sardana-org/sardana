@@ -858,11 +858,8 @@ class MeasurementConfiguration(object):
         channel_data['conditioning'] = channel_data.get('conditioning', '')
         channel_data['normalization'] = channel_data.get('normalization',
                                                          Normalization.No)
-        # TODO use real values
-        channel_data['data_type'] = channel_data.get('data_type', 'float64')
-        channel_data['data_units'] = channel_data.get('data_units', 'No unit')
-        channel_data['nexus_path'] = channel_data.get('nexus_path', '')
-        channel_data['shape'] = channel_data.get('shape', [])
+        # TODO: think of filling other keys: data_type, data_units, nexus_path
+        # shape here instead of feeling them on the Taurus extension level
 
         if ctype != ElementType.External:
             ctrl_name = channel.controller.full_name

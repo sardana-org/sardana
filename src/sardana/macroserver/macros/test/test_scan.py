@@ -167,3 +167,9 @@ class MeshTest(RunStopMacroTestCase, unittest.TestCase):
     stoped. See :class:`.RunStopMacroTestCase` for requirements.
     """
     macro_name = 'mesh'
+
+
+@testRun(macro_params=['10', '0.1'], wait_timeout=30)
+class TimescanTest(RunStopMacroTestCase, unittest.TestCase):
+
+    macro_name = 'timescan'

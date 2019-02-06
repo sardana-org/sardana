@@ -29,7 +29,7 @@ parameditors.py:
 
 import os
 
-from taurus.external.qt import Qt
+from taurus.external.qt import Qt, compat
 from taurus.qt.qtgui.input import TaurusAttrListComboBox
 
 from sardana.taurus.qt.qtgui.extra_macroexecutor import globals
@@ -42,7 +42,7 @@ def str2bool(text):
     return text in ("True", "1")
 
 
-class ParamBase:
+class ParamBase(object):
 
     def __init__(self, paramModel=None):
         self.setParamModel(paramModel)
@@ -66,12 +66,11 @@ class ParamBase:
         self._index = index
         paramModel = index.model().nodeFromIndex(index)
         self.setParamModel(paramModel)
-        self.connect(self, Qt.SIGNAL("modelChanged()"), self.onModelChanged)
         self.setValue(paramModel.value())
 
     def onModelChanged(self):
         model = self.index().model()
-        model.setData(self.index(), Qt.QVariant(self.getValue()))
+        model.setData(self.index(), self.getValue())
 
 
 class ComboBoxBoolean(ParamBase, Qt.QComboBox):
@@ -81,8 +80,6 @@ class ComboBoxBoolean(ParamBase, Qt.QComboBox):
         ParamBase.__init__(self, paramModel)
 
         self.addItems(['True', 'False'])
-        self.connect(self, Qt.SIGNAL("currentIndexChanged(int)"),
-                     self.onCurrentIndexChanged)
 
     def getValue(self):
         return str(self.currentText())
@@ -91,13 +88,9 @@ class ComboBoxBoolean(ParamBase, Qt.QComboBox):
         currentIdx = self.currentIndex()
         idx = self.findText(value)
         if currentIdx == idx:
-            self.emit(Qt.SIGNAL("currentIndexChanged(int)"),
-                      self.currentIndex())
+            self.currentIndexChanged.emit(self.currentIndex())
         else:
             self.setCurrentIndex(idx)
-
-    def onCurrentIndexChanged(self):
-        self.emit(Qt.SIGNAL("modelChanged()"))
 
 
 class ComboBoxParam(ParamBase, Qt.QComboBox):
@@ -105,8 +98,6 @@ class ComboBoxParam(ParamBase, Qt.QComboBox):
     def __init__(self, parent=None, paramModel=None):
         Qt.QComboBox.__init__(self, parent)
         ParamBase.__init__(self, paramModel)
-        self.connect(self, Qt.SIGNAL("currentIndexChanged(int)"),
-                     self.onCurrentIndexChanged)
 
     def getValue(self):
         return str(self.currentText())
@@ -115,13 +106,9 @@ class ComboBoxParam(ParamBase, Qt.QComboBox):
         currentIdx = self.currentIndex()
         idx = self.findText(value)
         if currentIdx == idx:
-            self.emit(Qt.SIGNAL("currentIndexChanged(int)"),
-                      self.currentIndex())
+            self.currentIndexChanged.emit(self.currentIndex())
         else:
             self.setCurrentIndex(idx)
-
-    def onCurrentIndexChanged(self):
-        self.emit(Qt.SIGNAL("modelChanged()"))
 
 
 class MSAttrListComboBoxParam(ParamBase, MSAttrListComboBox):
@@ -131,17 +118,12 @@ class MSAttrListComboBoxParam(ParamBase, MSAttrListComboBox):
         ParamBase.__init__(self, paramModel)
 #        self.setUseParentModel(True)
 #        self.setModel("/" + self.paramModel().type() + "List")
-        self.connect(self, Qt.SIGNAL("currentIndexChanged(int)"),
-                     self.onCurrentIndexChanged)
 
     def getValue(self):
         return str(self.currentText())
 
     def setValue(self, value):
         self.setCurrentText(value)
-
-    def onCurrentIndexChanged(self):
-        self.emit(Qt.SIGNAL("modelChanged()"))
 
 
 class AttrListComboBoxParam(ParamBase, TaurusAttrListComboBox):
@@ -178,11 +160,6 @@ class LineEditParam(ParamBase, Qt.QLineEdit):
     def __init__(self, parent=None, paramModel=None):
         Qt.QLineEdit.__init__(self, parent)
         ParamBase.__init__(self, paramModel)
-        self.connect(self, Qt.SIGNAL(
-            "textChanged(const QString&)"), self.onTextChanged)
-
-    def onTextChanged(self):
-        self.emit(Qt.SIGNAL("modelChanged()"))
 
 #    def setDefaultValue(self):
 #        defVal = self.paramModel().defValue()
@@ -205,16 +182,12 @@ class CheckBoxParam(ParamBase, Qt.QCheckBox):
     def __init__(self, parent=None, paramModel=None):
         Qt.QCheckBox.__init__(self, parent)
         ParamBase.__init__(self, paramModel)
-        self.connect(self, Qt.SIGNAL("stateChanged(int)"), self.onStateChanged)
 
     def getValue(self):
         return str(self.isChecked())
 
     def setValue(self, value):
         self.setChecked(str2bool(value))
-
-    def onStateChanged(self):
-        self.emit(Qt.SIGNAL("modelChanged()"))
 
 
 class SpinBoxParam(ParamBase, Qt.QSpinBox):
@@ -282,11 +255,10 @@ class FileDialogParam(ParamBase, Qt.QWidget):
 
         self.text = ""
 
-        Qt.QObject.connect(self.button, Qt.SIGNAL(
-            "clicked()"), self._chooseAFile)
+        self.button.clicked.connect(self._chooseAFile)
 
     def _chooseAFile(self):
-        path = Qt.QFileDialog().getOpenFileName()
+        path, _ = compat.getOpenFileName()
         self.filePath.setText(path)
 
     def _readFileContent(self, path):
@@ -325,12 +297,11 @@ class DirPathParam(ParamBase, Qt.QWidget):
         self.button.setText("...")
         self.layout.addWidget(self.button)
 
-        self.connect(self.button, Qt.SIGNAL("clicked()"), self.__chooseDirPath)
-        self.connect(self.dirPath, Qt.SIGNAL(
-            "textChanged(const QString&)"), self.onDirPathChanged)
+        self.button.clicked.connect(self.__chooseDirPath)
+        self.dirPath.textChanged.connect(self.onDirPathChanged)
 
     def onDirPathChanged(self):
-        self.emit(Qt.SIGNAL("modelChanged()"))
+        self.onModelChanged()
 
     def __chooseDirPath(self):
         path = Qt.QFileDialog().getExistingDirectory()
