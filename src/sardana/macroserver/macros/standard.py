@@ -897,9 +897,12 @@ class repeat(Hookable, Macro):
 
 class newfile(Hookable, Macro):
     """ Sets the ScanDir and ScanFile as well as ScanID in the environment.
-    If ScanFilePath is only a file name, the ScanDir must be set externally via
-    senv ScanDir PathToScanFile or using the %expconf. Otherwise, the path in
-    ScanFilePath must be absolute and existing on the MacroServer host.
+
+    If ScanFilePath is only a file name, the ScanDir must be set externally
+    via `senv ScanDir <PathToScanFile>` or using the %expconf. Otherwise,
+    the path in ScanFilePath must be absolute and existing on the
+    MacroServer host.
+
     The ScanID should be set to the value before the upcoming scan number.
     Default value is 0.
     """
@@ -907,20 +910,20 @@ class newfile(Hookable, Macro):
     hints = {'allowsHooks': ('post-newfile')}
 
     param_def = [
-        ['ScanFileDir_list',
-         ParamRepeat(['ScanFileDir', Type.String, None,
+        ['ScanFilePath_list',
+         ParamRepeat(['ScanFilePath', Type.String, None,
                       '(ScanDir/)ScanFile']),
          None, 'List of (ScanDir/)ScanFile'],
         ['ScanID', Type.Integer, -1, 'Scan ID'],
     ]
 
-    def run(self, ScanFileDir_list, ScanID):
+    def run(self, ScanFilePath_list, ScanID):
         path_list = []
         fileName_list = []
         # traverse the repeat parameters for the ScanFilePath_list
-        for i, ScanFileDir in enumerate(ScanFileDir_list):
-            path = os.path.dirname(ScanFileDir)
-            fileName = os.path.basename(ScanFileDir)
+        for i, ScanFilePath in enumerate(ScanFilePath_list):
+            path = os.path.dirname(ScanFilePath)
+            fileName = os.path.basename(ScanFilePath)
             if not path and i == 0:
                 # first entry and no given ScanDir: check if ScanDir exists
                 try:
