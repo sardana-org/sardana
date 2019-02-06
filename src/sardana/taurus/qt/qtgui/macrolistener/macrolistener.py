@@ -82,6 +82,10 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         self._trends1d = {}
         self._trends2d = {}
 
+        self._parent_can_notify_changes = False
+        if hasattr(parent, 'experimentConfigurationChanged'):
+            self._parent_can_notify_changes = True
+
     def setModel(self, doorname):
         '''reimplemented from :meth:`TaurusBaseComponent`
 
@@ -91,9 +95,10 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         # self._onDoorChanged(doorname)
         if not doorname:
             return
-        door = self.getModelObj()
-        if not isinstance(door, Qt.QObject):
-            msg = "Unexpected type (%s) for %s" % (repr(type(door)), doorname)
+        self.door = self.getModelObj()
+        if not isinstance(self.door, Qt.QObject):
+            msg = "Unexpected type (%s) for %s" % (repr(type(self.door)),
+                                                   doorname)
             Qt.QMessageBox.critical(
                 self.parent(), 'Door connection error', msg)
             return
@@ -101,8 +106,18 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         self._checkJsonRecorder()
 
         # read the expconf
-        expconf = door.getExperimentConfiguration()
+        expconf = self.door.getExperimentConfiguration()
         self.onExpConfChanged(expconf)
+
+        # Connect experimentConfigurationChanged signal,
+        # The event can be emitted by parents like expconf or emitted by QDoor
+        if self._parent_can_notify_changes:
+            self.parent().experimentConfigurationChanged.connect(
+                self.onExpConfChanged)
+        else:
+            self.door.recordDataUpdated.connect(self.onRecordDataUpdated)
+            self.old_arg = None
+
 
     def _checkJsonRecorder(self):
         '''Checks if JsonRecorder env var is set and offers to set it'''
@@ -117,6 +132,33 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
             if result == Qt.QMessageBox.Yes:
                 door.putEnvironment('JsonRecorder', True)
                 self.info('JsonRecorder Enabled for %s' % door.fullname)
+
+    def onRecordDataUpdated(self, arg):
+        """
+        Receive RecordDataUpdated tuple, the method detects when the event
+        type is 'data_desc' (come with new data description), it will call
+        to 'onExpConfChanged' to refresh the plots configuration,
+        adding/removing plots based in the new Experimental configuration.
+
+        Note: After the plots reorder, the data description event is resend
+        to reconfig the plot with the new data description.
+
+        :param arg: RecordData Tuple
+        :return:
+        """
+
+        # Filter events sent by itself
+        if arg == self.old_arg:
+            return
+
+        self.old_arg = arg
+
+        data = arg[1]
+        if data.has_key('type'):
+            if data['type'] == 'data_desc':
+                expconf = self.door.getExperimentConfiguration()
+                self.onExpConfChanged(expconf)
+                self.door.recordDataUpdated.emit(arg)
 
     def onExpConfChanged(self, expconf):
         '''
@@ -184,11 +226,24 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
             new1d, removed1d = self._updateTemporaryTrends1D(trends1d)
             self.newShortMessage.emit("Changed panels (%i new, %i removed)"
                                       % (len(new1d), len(removed1d)))
-        except Exception:
+        except Exception as e:
             self.warning(
                 'Plots cannot be updated. Only qwt5 is supported for now'
             )
-#        self._updateTemporaryTrends2D(trends2d)
+            self.error(e)
+
+        # try:
+        #     # TODO: adapt _updateTemporaryTrends2D to use tpg
+        #     print(trends2d)
+        #     new2d, removed2d = self._updateTemporaryTrends2D(trends2d)
+        #     self.newShortMessage.emit("Changed panels (%i new, %i removed)"
+        #                               % (len(new2d), len(removed2d)))
+        # except Exception as e:
+        #     self.warning(
+        #         'Plots 2d cannot be updated. Only qwt5 is supported for now'
+        #     )
+        #     self.error(e)
+
 
     def _updateTemporaryTrends1D(self, trends1d):
         '''adds necessary trend1D panels and removes no longer needed ones
@@ -257,6 +312,8 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
             raise
             return
 
+
+        newpanels = []
         for axes, plotables in trends2d.items():
             for chname in plotables:
                 pname = u'Trend2D - %s' % chname
@@ -272,6 +329,19 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
                     self.createPanel(w, pname, registerconfig=False,
                                      permanent=False)
                     self._trends2d[(axes, chname)] = pname
+                    newpanels.append(pname)
+
+        # remove trends that are no longer configured
+        removedpanels = []
+        olditems = list(self._trends2d.items())
+        for axes, name in olditems:
+            if axes not in trends2d:
+                removedpanels.append(name)
+                self.removePanel(name)
+                self._trends2d.pop(axes)
+
+        return newpanels, removedpanels
+
 
     def createPanel(self, widget, name, **kwargs):
         '''Creates a "panel" from a widget. In this basic implementation this
