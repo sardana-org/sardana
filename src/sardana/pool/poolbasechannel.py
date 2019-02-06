@@ -34,7 +34,7 @@ from sardana.sardanaattribute import SardanaAttribute
 from sardana.sardanabuffer import SardanaBuffer
 from sardana.pool.poolelement import PoolElement
 from sardana.pool.poolacquisition import PoolAcquisitionSoftware,\
-    get_timerable_ctrls
+    get_timerable_items
 from sardana.pool.poolmeasurementgroup import ChannelConfiguration,\
     ControllerConfiguration
 from sardana.sardanaevent import EventType
@@ -84,9 +84,7 @@ class PoolBaseChannel(PoolElement):
         if not self.AcquisitionClass is None:
             acq_name = "%s.Acquisition" % self._name
             self.set_action_cache(self.AcquisitionClass(self, name=acq_name))
-        self._integration_time = False
-        self._timer = None
-        self.ctrls = None
+        self._integration_time = 0
 
     def has_pseudo_elements(self):
         """Informs whether this channel forms part of any pseudo element
@@ -305,8 +303,6 @@ class PoolBaseChannel(PoolElement):
         :param propagate:
             0 for not propagating, 1 to propagate, 2 propagate with priority
         :type propagate: :obj:`int`
-        :return: the current integration time
-        :rtype: :obj:`float`
         """
         if integration_time == self._integration_time:
             # integration time is not changed. Do nothing
@@ -321,103 +317,97 @@ class PoolBaseChannel(PoolElement):
                                 doc="channel integration time")
 
     def start_acquisition(self):
-        self._aborted = False
-        self._stopped = False
-        if not self._simulation_mode:
-            if self._timer is not None:
-                if self.ctrls is None:
-                    self.create_config()
-                self.acquisition.run(self.ctrls,
-                                     self.integration_time,
-                                     self.master,
-                                     None)
-
-    def create_config(self):
-        if self._timer is None:
-            return
-
-        ctrl = self.get_controller()
-        ctrl.set_ctrl_par("synchronization",
-                          AcqSynch.SoftwareTrigger)
-
-        self.conf_ctrl = ControllerConfiguration(ctrl)
-        # self has to be used. If not it is removed
-        self.conf_channel = ChannelConfiguration(self)
-        self.conf_ctrl.add_channel(self.conf_channel)
-        channel = self.conf_ctrl.get_channels(enabled=True)[0]
-        if self.timer == "__self":
-            self.conf_ctrl.timer = channel
-        else:
-            if self.timer == "__default":
-                self.conf_timer = ChannelConfiguration(
-                    ctrl.get_element(axis=ctrl.ctrl.default_timer))
-            else:
-                self.conf_timer = ChannelConfiguration(
-                    self.pool.get_element_by_name(self.timer))
-            self.conf_ctrl.add_channel(self.conf_timer)
-            ctimer = self.conf_ctrl.get_channels(enabled=True)[1]
-            self.conf_ctrl.timer = ctimer
-
-        self.conf_ctrl.monitor = channel
-        self.ctrls = get_timerable_ctrls([self.conf_ctrl], AcqMode.Timer)
-        self.master = self.ctrls[0].master
-        if self.timer != "__self":
-            if self.timer == "__default":
-                self.acquisition.add_element(
-                    ctrl.get_element(axis=ctrl.ctrl.default_timer))
-            else:
-                self.acquisition.add_element(
-                    self.pool.get_element_by_name(self.timer))
+        msg = "{0} does not support independent acquisition".format(
+            self.__class__.__name__)
+        raise NotImplementedError(msg)
 
 
 class PoolTimerableChannel(PoolBaseChannel):
 
     def __init__(self, **kwargs):
         PoolBaseChannel.__init__(self, **kwargs)
+        # TODO: part of the configuration could be moved to the base class
+        # so other experimental channels could reuse it
+        self._conf_channel = ChannelConfiguration(self)
+        self._conf_ctrl = ControllerConfiguration(self.controller)
+        self._conf_ctrl.add_channel(self._conf_channel)
+        self._timer = "__default"
+        self._conf_timer = None
 
-    # -------------------------------------------------------------------------
+    # ------------------------------------------------------------------------
     # timer
-    # -------------------------------------------------------------------------
+    # ------------------------------------------------------------------------
 
     def get_timer(self):
-        """Returns the timer for this object.
+        """Return the timer for this object.
 
         :return: the current timer
-        :rtype: :obj:`str`"""
+        :rtype: :obj:`str`
+        """
         return self._timer
 
     def set_timer(self, timer, propagate=1):
+        """Set timer for this object.
 
+        :param timer: new timer to set
+        :type timer: :obj:`str`
+        :param propagate:
+            0 for not propagating, 1 to propagate, 2 propagate with priority
+        :type propagate: :obj:`int`
+        """
         if timer == self._timer:
-            # timer is not changed. Do nothing
             return
-
-        if timer == "__default":
-            try:
-                ctrl = self.get_controller()
-                self.default_timer_axis = ctrl.ctrl.default_timer
-            except Exception:
-                raise ValueError("Error reading default_timer")
-                return
-            if self.default_timer_axis is None:
-                raise ValueError("default_timer not defined in controller")
-
-        if timer is not None and timer != "__self":
-            try:
-                if timer != "__default":
-                    self.acquisition.remove_element(
-                        self.pool.get_element_by_name(timer))
-                else:
-                    self.acquisition.remove_element(
-                        ctrl.get_element(axis=self.default_timer_axis))
-            except Exception:  # The new timer does not belong to action
-                pass
+        if self._conf_timer is not None:
+            timer_elem = self._conf_timer.element
+            if timer_elem is not self:
+                self.acquisition.remove_element(timer_elem)
+                self._conf_ctrl.remove_channel(self._conf_timer)
         self._timer = timer
-        self.create_config()
-
+        self._conf_timer = None
         if not propagate:
             return
         self.fire_event(EventType("timer", priority=propagate), timer)
 
     timer = property(get_timer, set_timer,
                      doc="timer for the timerable channel")
+
+    def _configure_timer(self):
+        timer = self.timer
+        if timer == "__self":
+            conf_timer = self._conf_channel
+        else:
+            ctrl = self.get_controller()
+            if timer == "__default":
+                axis = ctrl.get_default_timer()
+                if axis is None:
+                    msg = "default_timer not defined in controller"
+                    raise ValueError(msg)
+                timer_elem = ctrl.get_element(axis=axis)
+            else:
+                timer_elem = self.pool.get_element_by_name(timer)
+            if timer_elem is self:
+                conf_timer = self._conf_channel
+            else:
+                self.acquisition.add_element(timer_elem)
+                conf_timer = ChannelConfiguration(timer_elem)
+                self._conf_ctrl.add_channel(conf_timer)
+        self._conf_ctrl.timer = conf_timer
+        self._conf_timer = conf_timer
+
+    def start_acquisition(self):
+        """Start software triggered acquisition"""
+        self._aborted = False
+        self._stopped = False
+        if self._simulation_mode:
+            return
+        if self.timer is None:
+            msg = "no timer configured - acquisition is not possible"
+            raise RuntimeError(msg)
+
+        if self._conf_timer is None:
+            self._configure_timer()
+        self.controller.set_ctrl_par("synchronization",
+                                     AcqSynch.SoftwareTrigger)
+        ctrls, master = get_timerable_items(
+            [self._conf_ctrl], self._conf_timer, AcqMode.Timer)
+        self.acquisition.run(ctrls, self.integration_time, master, None)
