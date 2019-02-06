@@ -672,7 +672,23 @@ class ExpChannel(PoolElement):
     def __init__(self, name, **kw):
         """ExpChannel initialization."""
         self.call__init__(PoolElement, name, **kw)
+        self._last_integ_time = None
         self._value_buffer = {}
+
+    def getIntegrationTime(self):
+        return self._getAttrValue('IntegrationTime')
+
+    def getIntegrationTimeObj(self):
+        return self._getAttrEG('IntegrationTime')
+
+    def setIntegrationTime(self, ctime):
+        self.getIntegrationTimeObj().write(ctime)
+
+    def putIntegrationTime(self, ctime):
+        if self._last_integ_time == ctime:
+            return
+        self._last_integ_time = ctime
+        self.getIntegrationTimeObj().write(ctime)
 
     def getValueObj_(self):
         """Retrurns Value attribute event generator object.
