@@ -895,18 +895,17 @@ class repeat(Hookable, Macro):
                 yield progress
 
 
-class newfile(Macro):
+class newfile(Hookable, Macro):
     """ Sets the ScanDir and ScanFile as well as ScanID in the environment.
     If ScanFilePath is only a file name, the ScanDir must be set externally via
     senv ScanDir PathToScanFile or using the %expconf. Otherwise, the path in
     ScanFilePath must be absolute and existing on the MacroServer host.
-    The ScanID should be set to the value before the upcoming scan number. 
+    The ScanID should be set to the value before the upcoming scan number.
     Default value is 0.
     """
 
-    env = ('ScanDir', 'ScanFile', 'ScanID')
     hints = {'allowsHooks': ('post-newfile')}
-    
+
     param_def = [
         ['ScanFileDir_list',
          ParamRepeat(['ScanFileDir', Type.String, None,
@@ -924,11 +923,14 @@ class newfile(Macro):
             fileName = os.path.basename(ScanFileDir)
             if not path and i == 0:
                 # first entry and no given ScanDir: check if ScanDir exists
-                ScanDir = self.getEnv('ScanDir')
+                try:
+                    ScanDir = self.getEnv('ScanDir')
+                except:
+                    ScanDir = ''
                 if not ScanDir:
                     self.warning('Data is not stored until ScanDir is set! '
                                  'Provide ScanDir with newfile macro: '
-                                 'newfile [<ScanDir>/<ScanFile>] <ScanID> or'
+                                 'newfile [<ScanDir>/<ScanFile>] <ScanID> or '
                                  'senv ScanDir <ScanDir> or with %expconf')
                 else:
                     path = ScanDir
@@ -967,18 +969,20 @@ class newfile(Macro):
                 self.debug('Filename is %s.' % fileName)
                 fileName_list.append(fileName)
 
-            if ScanID < 1:
-                ScanID = 0
+        if ScanID < 1:
+            ScanID = 0
 
-            self.setEnv('ScanFile', fileName_list)
-            self.setEnv('ScanDir', path_list[0])
-            self.setEnv('ScanID', ScanID)
+        self.setEnv('ScanFile', fileName_list)
+        self.setEnv('ScanDir', path_list[0])
+        self.setEnv('ScanID', ScanID)
 
-            self.output('ScanDir is: %s', path_list[0])
-            self.output('ScanFile set to: ')
-            for ScanFile in fileName_list:
-                self.output(' %s', ScanFile)
-            self.output('Next scan is #%d', ScanID+1)
+        self.output('ScanDir is\t: %s', path_list[0])
+        for i, ScanFile in enumerate(fileName_list):
+            if i == 0:
+                self.output('ScanFile set to\t: %s', ScanFile)
+            else:
+                self.output('\t\t  %s', ScanFile)
+        self.output('Next scan is\t: #%d', ScanID+1)
 
         for postNewfileHook in self.getHooks('post-newfile'):
             postNewfileHook()
