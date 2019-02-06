@@ -862,12 +862,13 @@ class newfile(Macro):
     If ScanFilePath is only a file name, the ScanDir must be set externally via
     senv ScanDir PathToScanFile or using the %expconf. Otherwise, the path in
     ScanFilePath must be absolute and existing on the MacroServer host.
-    The ScanID should be set to the value of the upcoming scan number. Default
-    value is 1.
+    The ScanID should be set to the value before the upcoming scan number. 
+    Default value is 0.
     """
 
     env = ('ScanDir', 'ScanFile', 'ScanID')
-
+    hints = {'allowsHooks': ('post-newfile')}
+    
     param_def = [
         ['ScanFileDir_list',
          ParamRepeat(['ScanFileDir', Type.String, None,
@@ -930,8 +931,6 @@ class newfile(Macro):
 
             if ScanID < 1:
                 ScanID = 0
-            else:
-                ScanID = ScanID-1
 
             self.setEnv('ScanFile', fileName_list)
             self.setEnv('ScanDir', path_list[0])
@@ -942,3 +941,6 @@ class newfile(Macro):
             for ScanFile in fileName_list:
                 self.output(' %s', ScanFile)
             self.output('Next scan is #%d', ScanID+1)
+
+        for postNewfileHook in self.getHooks('post-newfile'):
+            postNewfileHook()
