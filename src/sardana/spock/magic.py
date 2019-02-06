@@ -31,9 +31,9 @@ __all__ = ['expconf', 'showscan', 'spsplot', 'debug_completer',
            'post_mortem', 'macrodata', 'edmac', 'spock_late_startup_hook',
            'spock_pre_prompt_hook']
 
-from .genutils import page, get_door, get_macro_server, ask_yes_no, arg_split
 from .genutils import MSG_DONE, MSG_FAILED
 from .genutils import get_ipapi
+from .genutils import page, get_door, get_macro_server, ask_yes_no, arg_split
 
 
 def expconf(self, parameter_s=''):
@@ -69,7 +69,6 @@ def expconf(self, parameter_s=''):
     subprocess.Popen(args)
     # ===========================================================================
 
-
 def showscan(self, parameter_s=''):
     """Shows a scan in a GUI.
 
@@ -79,11 +78,33 @@ def showscan(self, parameter_s=''):
     online, scan_nb = False, None
     if len(params) > 0:
         if params[0].lower() == 'online':
-            msg = 'To see the scans online, launch "expconf" and ' + \
-                  'enable the plots from the "plots" button ' + \
-                  '(top-right in the first tab)'
-            print msg
-            return
+            try:
+                from sardana.taurus.qt.qtgui.extra_sardana import \
+                    ShowScanOnline
+
+            except:
+                print "Error importing ShowScanOnline"
+                return
+            try:
+                doorname = get_door().name()
+            except TypeError:
+                # TODO: For Taurus 4 adaptation
+                doorname = get_door().fullname
+            # =========================================================================
+            # ugly hack to avoid ipython/qt thread problems #e.g. see
+            # https://sourceforge.net/p/sardana/tickets/10/
+            # this hack does not allow inter-process communication and leaves the
+            # widget open after closing spock
+            # @todo: investigate cause of segfaults when using launching qt widgets from ipython
+            #
+
+            # https://sourceforge.net/p/sardana/tickets/10/
+            import subprocess
+            import sys
+            fname = sys.modules[ShowScanOnline.__module__].__file__
+            args = ['python', fname, doorname]
+            subprocess.Popen(args)
+
         # show the scan plot, ignoring the plot configuration
         elif params[0].lower() == 'online_raw':
             online = True
@@ -126,7 +147,7 @@ def debug(self, parameter_s=''):
 
 def www(self, parameter_s=''):
     """What went wrong. Prints the error message from the last macro execution"""
-    import PyTango
+
 
     door = get_door()
     try:

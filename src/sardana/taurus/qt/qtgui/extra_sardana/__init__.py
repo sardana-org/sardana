@@ -28,9 +28,10 @@ to sardana"""
 
 __docformat__ = 'restructuredtext'
 
-from .measurementgroup import *
-from .expdescription import *
 from .elementtree import *
+from .expdescription import *
+from .measurementgroup import *
+from .showscanonline import *
 
 try:
     from .sardanaeditor import *
