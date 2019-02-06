@@ -911,8 +911,7 @@ class newfile(Hookable, Macro):
 
     param_def = [
         ['ScanFilePath_list',
-         ParamRepeat(['ScanFilePath', Type.String, None,
-                      '(ScanDir/)ScanFile']),
+         [['ScanFilePath', Type.String, None, '(ScanDir/)ScanFile']],
          None, 'List of (ScanDir/)ScanFile'],
         ['ScanID', Type.Integer, -1, 'Scan ID'],
     ]
