@@ -107,6 +107,7 @@ class CTExpChannel(PoolTimerableDevice):
 
         timestamp = time.time()
         name = event_type.name.lower()
+        name = name.replace('_', '')  # for integration_time events
         attr_name = name
         # TODO: remove this condition when Data attribute will be substituted
         # by ValueBuffer

@@ -106,6 +106,7 @@ class TwoDExpChannel(PoolTimerableDevice):
 
         timestamp = time.time()
         name = event_type.name.lower()
+        name = name.replace('_', '')  # for integration_time events
 
         try:
             attr = self.get_attribute_by_name(name)
