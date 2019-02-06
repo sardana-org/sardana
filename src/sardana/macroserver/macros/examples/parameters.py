@@ -23,7 +23,7 @@
 
 """This module contains macros that demonstrate the usage of macro parameters"""
 
-from sardana.macroserver.macro import *
+from sardana.macroserver.macro import Macro, Type, ParamRepeat
 
 __all__ = ["pt0", "pt1", "pt2", "pt3", "pt3d", "pt4", "pt5", "pt6", "pt7",
            "pt7d1", "pt7d2", "pt8", "pt9", "pt10", "pt11", "pt12", "pt13",
@@ -48,6 +48,19 @@ class pt1(Macro):
     default value and description.
     Usage from Spock, ex.:
     pt1 1
+    """
+
+    param_def = [['value', Type.Float, None, 'some bloody float']]
+
+    def run(self, f):
+        pass
+
+
+class pt1d(Macro):
+    """Macro with one float parameter with default value..
+    Usage from Spock, ex.:
+    pt1d 1
+    pt1d
     """
 
     param_def = [['value', Type.Float, None, 'some bloody float']]
@@ -186,6 +199,7 @@ class pt7d1(Macro):
     pt7d1 mot1 1 mot2 3
     Using default value, ex.:
     pt7d1 [[mot1] [mot2 3]] # at any repetition
+    pt7d1 mot1 # if only one repetition
 
     """
 
@@ -262,6 +276,7 @@ class pt10(Macro):
     parameter may be defined as first one.
     Usage from Spock, ex.:
     pt10 [1 3] mot1
+    pt10 1 mot1 # if only one repetition
     """
 
     param_def = [
@@ -279,6 +294,7 @@ class pt11(Macro):
     parameters.
     Usages from Spock, ex.:
     pt11 ct1 [1 3] mot1
+    pt11 ct1 1 mot1 # if only one repetition
     """
 
     param_def = [
@@ -296,6 +312,7 @@ class pt12(Macro):
     parameters may defined.
     Usage from Spock, ex.:
     pt12 [1 3 4] [mot1 mot2]
+    pt12 1 mot1 # if only one repetition for each repeat parameter
     """
 
     param_def = [

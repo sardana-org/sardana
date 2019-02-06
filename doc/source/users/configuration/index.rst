@@ -28,6 +28,7 @@ details.
     :maxdepth: 2
 
     Spock configuration <spock>
+    Server configuration <server>
     MacroServer configuration <macroserver>
     Device Pool configuration <pool>
     Sardana Custom Settings <sardanacustomsettings>

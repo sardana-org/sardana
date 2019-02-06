@@ -24,16 +24,17 @@
 ##############################################################################
 
 
-"""This module is part of the Python Pool libray. It defines the class for the
-trigger/gate generation"""
+"""This module is part of the Python Pool library. It defines the classes
+for the synchronization"""
 
-__all__ = ["PoolSynchronization", "TGChannel"]
+__all__ = ["PoolSynchronization", "SynchronizationDescription", "TGChannel"]
 
 import time
 from functools import partial
 from taurus.core.util.log import DebugIt
 from sardana import State
 from sardana.sardanathreadpool import get_thread_pool
+from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
 from sardana.util.funcgenerator import FunctionGenerator
 
@@ -60,9 +61,62 @@ class TGChannel(PoolActionItem):
         return getattr(self.element, name)
 
 
+class SynchronizationDescription(list):
+    """Synchronization description. It is composed from groups - repetitions
+    of equidistant synchronization events. Each group is described by
+    :class:`~sardana.pool.pooldefs.SynchParam` parameters which may have
+    values in :class:`~sardana.pool.pooldefs.SynchDomain` domains.
+    """
+
+    @property
+    def repetitions(self):
+        repetitions = 0
+        for group in self:
+            repetitions += group[SynchParam.Repeats]
+        return repetitions
+
+    @property
+    def active_time(self):
+        return self._get_param(SynchParam.Active)
+
+    @property
+    def total_time(self):
+        return self._get_param(SynchParam.Total)
+
+    @property
+    def passive_time(self):
+        return self.total_time - self.active_time
+
+    def _get_param(self, param, domain=SynchDomain.Time):
+        """
+        Extract parameter from synchronization description and its groups. If
+        there is only one group in the synchronization then returns float
+        with the value. Otherwise a list of floats with different values.
+
+        :param param: parameter type
+        :type param: :class:`~sardana.pool.pooldefs.SynchParam`
+        :param domain: domain
+        :type param: :class:`~sardana.pool.pooldefs.SynchDomain`
+        :return: parameter value(s)
+        :rtype float or [float]
+        """
+
+        if len(self) == 1:
+            return self[0][param][domain]
+
+        values = []
+        for group in self:
+            value = group[param][domain]
+            repeats = group[SynchParam.Repeats]
+            values += [value] * repeats
+        return values
+
+
 class PoolSynchronization(PoolAction):
-    '''Action class responsible for trigger/gate generation
-    '''
+    """Synchronization action.
+
+    It coordinates trigger/gate elements and software synchronizer.
+    """
 
     def __init__(self, main_element, name="Synchronization"):
         PoolAction.__init__(self, main_element, name)
@@ -79,53 +133,45 @@ class PoolSynchronization(PoolAction):
     def add_listener(self, listener):
         self._listener = listener
 
-    def start_action(self, *args, **kwargs):
-        '''Start action method. Expects the following kwargs:
-        - config - dictionary containing measurement group configuration
-        - synchronization - list of dictionaries containing information about
-          the expected synchronization
-        - moveable (optional)- moveable object used as the synchronization
-          source in the Position domain
-        - monitor (optional) - counter/timer object used as the synchronization
-          source in the Monitor domain
-        '''
-        cfg = kwargs['config']
-        synchronization = kwargs.get('synchronization')
-        moveable = kwargs.get('moveable')
-        ctrls_config = cfg.get('controllers')
-        pool_ctrls = ctrls_config.keys()
+    def start_action(self, ctrls, synchronization, moveable=None,
+                     sw_synch_initial_domain=None, *args, **kwargs):
+        """Start synchronization action.
 
-        # Prepare a dictionary with the involved channels
-        self._channels = channels = {}
-        for pool_ctrl in pool_ctrls:
-            pool_ctrl_data = ctrls_config[pool_ctrl]
-            elements = pool_ctrl_data['channels']
-
-            for element, element_info in elements.items():
-                channel = TGChannel(element, info=element_info)
-                channels[element] = channel
-
+        :param ctrls: list of enabled trigger/gate controllers
+        :type ctrls: list
+        :param synchronization: synchronization description
+        :type synchronization:
+         :class:`~sardana.pool.poolsynchronization.SynchronizationDescription`
+        :param moveable: (optional) moveable object used as the
+         synchronization source in the Position domain
+        :type moveable: :class:`~sardna.pool.poolmotor.PoolMotor` or
+         :class:`~sardana.pool.poolpseudomotor.PoolPseudoMotor`
+        :param sw_synch_initial_domain: (optional) - initial domain for
+         software synchronizer, can be either
+         :obj:`~sardana.pool.pooldefs.SynchDomain.Time` or
+         :obj:`~sardana.pool.pooldefs.SynchDomain.Position`
+        """
         with ActionContext(self):
 
             # loads synchronization description
-            for pool_ctrl in pool_ctrls:
-                ctrl = pool_ctrl.ctrl
-                pool_ctrl_data = ctrls_config[pool_ctrl]
-                ctrl.PreSynchAll()
-                elements = pool_ctrl_data['channels']
-                for element in elements:
-                    axis = element.axis
-                    ret = ctrl.PreSynchOne(axis, synchronization)
+            for ctrl in ctrls:
+                pool_ctrl = ctrl.element
+                pool_ctrl.ctrl.PreSynchAll()
+                for channel in ctrl.get_channels(enabled=True):
+                    axis = channel.axis
+                    ret = pool_ctrl.ctrl.PreSynchOne(axis, synchronization)
                     if not ret:
                         msg = ("%s.PreSynchOne(%d) returns False" %
-                               (pool_ctrl.name, axis))
+                               (ctrl.name, axis))
                         raise Exception(msg)
-                    ctrl.SynchOne(axis, synchronization)
-                ctrl.SynchAll()
+                    pool_ctrl.ctrl.SynchOne(axis, synchronization)
+                pool_ctrl.ctrl.SynchAll()
 
             # attaching listener (usually acquisition action)
             # to the software trigger gate generator
             if self._listener is not None:
+                if sw_synch_initial_domain is not None:
+                    self._synch_soft.initial_domain = sw_synch_initial_domain
                 self._synch_soft.set_configuration(synchronization)
                 self._synch_soft.add_listener(self._listener)
                 remove_acq_listener = partial(self._synch_soft.remove_listener,
@@ -151,41 +197,43 @@ class PoolSynchronization(PoolAction):
                 get_thread_pool().add(self._synch_soft.run)
 
             # PreStartAll on all controllers
-            for pool_ctrl in pool_ctrls:
+            for ctrl in ctrls:
+                pool_ctrl = ctrl.element
                 pool_ctrl.ctrl.PreStartAll()
 
             # PreStartOne & StartOne on all elements
-            for pool_ctrl in pool_ctrls:
-                ctrl = pool_ctrl.ctrl
-                pool_ctrl_data = ctrls_config[pool_ctrl]
-                elements = pool_ctrl_data['channels']
-                for element in elements:
-                    axis = element.axis
-                    channel = channels[element]
-                    ret = ctrl.PreStartOne(axis)
+            for ctrl in ctrls:
+                pool_ctrl = ctrl.element
+                for channel in ctrl.get_channels(enabled=True):
+                    axis = channel.axis
+                    ret = pool_ctrl.ctrl.PreStartOne(axis)
                     if not ret:
                         raise Exception("%s.PreStartOne(%d) returns False"
                                         % (pool_ctrl.name, axis))
-                    ctrl.StartOne(axis)
+                    pool_ctrl.ctrl.StartOne(axis)
 
             # set the state of all elements to inform their listeners
-            for channel in channels:
-                channel.set_state(State.Moving, propagate=2)
+            self._channels = []
+            for ctrl in ctrls:
+                for channel in ctrl.get_channels(enabled=True):
+                    channel.set_state(State.Moving, propagate=2)
+                    self._channels.append(channel)
 
             # StartAll on all controllers
-            for pool_ctrl in pool_ctrls:
+            for ctrl in ctrls:
+                pool_ctrl = ctrl.element
                 pool_ctrl.ctrl.StartAll()
 
     def is_triggering(self, states):
-        """Determines if we are triggering or if the triggering has ended
-        based on the states returned by the controller(s) and the software
-        TG generation.
+        """Determines if we are synchronizing or not based on the states
+        returned by the controller(s) and the software synchronizer.
 
         :param states: a map containing state information as returned by
                        read_state_info: ((state, status), exception_error)
         :type states: dict<PoolElement, tuple(tuple(int, str), str))
         :return: returns True if is triggering or False otherwise
-        :rtype: bool"""
+        :rtype: bool
+        """
         for elem in states:
             state_info_idx = 0
             state_idx = 0
@@ -196,10 +244,11 @@ class PoolSynchronization(PoolAction):
 
     @DebugIt()
     def action_loop(self):
-        '''action_loop method
-        '''
+        """action_loop method
+        """
         states = {}
-        for element in self._channels:
+        for channel in self._channels:
+            element = channel.element
             states[element] = None
 
         # Triggering loop
@@ -212,11 +261,11 @@ class PoolSynchronization(PoolAction):
             time.sleep(nap)
 
         # Set element states after ending the triggering
-        for triggerelement, state_info in states.items():
-            with triggerelement:
-                triggerelement.clear_operation()
-                state_info = triggerelement._from_ctrl_state_info(state_info)
-                triggerelement.set_state_info(state_info, propagate=2)
+        for element, state_info in states.items():
+            with element:
+                element.clear_operation()
+                state_info = element._from_ctrl_state_info(state_info)
+                element.set_state_info(state_info, propagate=2)
 
         # wait for software synchronizer to finish
         if self._listener is not None:

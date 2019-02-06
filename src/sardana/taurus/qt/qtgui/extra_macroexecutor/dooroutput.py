@@ -104,9 +104,8 @@ class DoorOutput(Qt.QPlainTextEdit):
         if not len(self.toPlainText()):
             clearAction.setEnabled(False)
 
-        Qt.QObject.connect(clearAction, Qt.SIGNAL("triggered()"), self.clear)
-        Qt.QObject.connect(self.stopAction, Qt.SIGNAL(
-            "toggled(bool)"), self.stopScrolling)
+        clearAction.triggered.connect(self.clear)
+        self.stopAction.toggled.connect(self.stopScrolling)
         menu.exec_(event.globalPos())
 
     def stopScrolling(self, stop):
@@ -143,9 +142,8 @@ class DoorDebug(Qt.QPlainTextEdit):
         if not len(self.toPlainText()):
             clearAction.setEnabled(False)
 
-        Qt.QObject.connect(clearAction, Qt.SIGNAL("triggered()"), self.clear)
-        Qt.QObject.connect(self.stopAction, Qt.SIGNAL(
-            "toggled(bool)"), self.stopScrolling)
+        clearAction.triggered.connect(self.clear)
+        self.stopAction.toggled.connect(self.stopScrolling)
         menu.exec_(event.globalPos())
 
     def stopScrolling(self, stop):
@@ -175,7 +173,7 @@ class DoorResult(Qt.QPlainTextEdit):
         if not len(self.toPlainText()):
             clearAction.setEnabled(False)
 
-        Qt.QObject.connect(clearAction, Qt.SIGNAL("triggered()"), self.clear)
+        clearAction.triggered.connect(self.clear)
         menu.exec_(event.globalPos())
 
 
@@ -184,9 +182,12 @@ class DoorResult(Qt.QPlainTextEdit):
 #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
 class DoorAttrListener(Qt.QObject):
+    """Deprecated. Do not use"""
 
     def __init__(self, attrName):
         Qt.QObject.__init__(self)
+        from taurus.core.util.log import deprecated
+        deprecated(dep="DoorAttrListener", rel="2.5.1")
         self.attrName = attrName
         self.attrObj = None
 
@@ -200,7 +201,14 @@ class DoorAttrListener(Qt.QObject):
         if (type == taurus.core.taurusbasetypes.TaurusEventType.Error or
                 type == taurus.core.taurusbasetypes.TaurusEventType.Config):
             return
-        self.emit(Qt.SIGNAL('door%sChanged' % self.attrName), value.value)
+
+        # The old code (using old-style signals) emitted a signal called
+        # door<DOOR_NAME>Changed . Emulating this with new-style signasl
+        # is problematic, and in this case it is not worth it since this class
+        # is unused, deprecated and will disappear soon
+        # self.emit(Qt.SIGNAL('door%sChanged' % self.attrName), value.value)
+
+
 
 if __name__ == "__main__":
     import sys
@@ -213,13 +221,10 @@ if __name__ == "__main__":
     doorOutput = DoorOutput()
     if len(args) == 1:
         door = taurus.Device(args[0])
-        Qt.QObject.connect(door, Qt.SIGNAL("outputUpdated"),
-                           doorOutput.onDoorOutputChanged)
-        Qt.QObject.connect(door, Qt.SIGNAL("infoUpdated"),
-                           doorOutput.onDoorInfoChanged)
-        Qt.QObject.connect(door, Qt.SIGNAL("warningUpdated"),
-                           doorOutput.onDoorWarningChanged)
-        Qt.QObject.connect(door, Qt.SIGNAL("errorUpdated"),
-                           doorOutput.onDoorErrorChanged)
+        door.outputUpdated.connect(doorOutput.onDoorOutputChanged)
+        door.infoUpdated.connect(doorOutput.onDoorInfoChanged)
+        door.warningUpdated.connect(doorOutput.onDoorWarningChanged)
+        door.errorUpdated.connect(doorOutput.onDoorErrorChanged)
+
     doorOutput.show()
     sys.exit(app.exec_())

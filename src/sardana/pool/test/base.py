@@ -31,6 +31,7 @@ from sardana.pool.test import (FakePool, createPoolController, createCtrlConf,
                                createPoolCounterTimer, createPoolTriggerGate,
                                createPoolMotor, createElemConf,
                                createPoolZeroDExpChannel,
+                               createPoolTwoDExpChannel,
                                createPoolPseudoCounter, createPoolPseudoMotor)
 
 
@@ -62,6 +63,15 @@ class BasePoolTestCase(object):
         ctrl_obj.add_element(elem_obj)
         # ZeroD elements
         self.zerods[name] = elem_obj
+        self.pool.add_element(elem_obj)
+        return elem_obj
+
+    def createTwoDElement(self, ctrl_obj, name, axis):
+        e_cfg = createElemConf(self.pool, axis, name)
+        elem_obj = createPoolTwoDExpChannel(self.pool, ctrl_obj, e_cfg)
+        ctrl_obj.add_element(elem_obj)
+        # TwoD elements
+        self.twods[name] = elem_obj
         self.pool.add_element(elem_obj)
         return elem_obj
 
@@ -104,14 +114,17 @@ class BasePoolTestCase(object):
     def setUp(self):
         """Create a collection of controllers and elements.
         """
-        self.nctctrls = self.nzerodctrls = self.ntgctrls = self.nmotctrls = 4
-        self.nctelems = self.nzerodelems = self.ntgelems = self.nmotelems = 5
+        self.nctctrls = self.nzerodctrls = self.ntwodctrls = self.ntgctrls = \
+            self.nmotctrls = 4
+        self.nctelems = self.nzerodelems = self.ntwodelems = self.ntgelems = \
+            self.nmotelems = 5
         self.pool = FakePool(self.POOLPATH, self.LOGLEVEL)
         # Use debug mode
 
         self.ctrls = {}
         self.cts = {}
         self.zerods = {}
+        self.twods = {}
         self.tgs = {}
         self.mots = {}
         self.pcs = {}
@@ -136,6 +149,17 @@ class BasePoolTestCase(object):
             for axis in range(1, self.nzerodelems + 1):
                 name = '_test_0d_%s_%s' % (ctrl, axis)
                 self.createZeroDElement(ctrl_obj, name, axis)
+        # Create ntwodctrls TwoD ctrls
+        for ctrl in range(1, self.ntwodctrls + 1):
+            name = '_test_2d_ctrl_%s' % ctrl
+            ctrl_obj = self.createController(name,
+                                             'DummyTwoDController',
+                                             'DummyTwoDController.py')
+            # Create nelems TwoD elements for each ctrl
+            for axis in range(1, self.ntwodelems + 1):
+                name = '_test_2d_%s_%s' % (ctrl, axis)
+                self.createTwoDElement(ctrl_obj, name, axis)
+
         # Create ntgctrls TG ctrls
         for ctrl in range(1, self.ntgctrls + 1):
             name = '_test_tg_ctrl_%s' % ctrl
