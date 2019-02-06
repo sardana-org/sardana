@@ -661,6 +661,7 @@ class Loadable(object):
 
     .. note: Do not inherit directly from Loadable."""
 
+    #: axis of the default timer
     default_timer = None
 
     def PrepareOne(self, axis, value, repetitions, latency, nb_starts):
