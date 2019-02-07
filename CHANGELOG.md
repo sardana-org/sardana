@@ -18,6 +18,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Fixed
 
+* `expconf` warns only about the following environment variables changes: `ScanFile`,
+  `ScanDir`, `ActiveMntGrp`, `PreScanSnapshot` and `DataCompressionRank` (#1040)
 * MeasurementGroup's Moveable attribute when set to "None" in Tango is used as None
   in the core (#1001)
  
