@@ -113,15 +113,14 @@ def _calculate_positions(moveable_node, start, end):
 
 
 class aNscan(Hookable):
+    """N-dimensional scan. This is **not** meant to be called by the user,
+    but as a generic base to construct ascan, a2scan, a3scan,..."""
 
     hints = {'scan': 'aNscan', 'allowsHooks': ('pre-scan', 'pre-move',
                                                'post-move', 'pre-acq',
                                                'post-acq', 'post-step',
                                                'post-scan')}
     # env = ('ActiveMntGrp',)
-
-    """N-dimensional scan. This is **not** meant to be called by the user,
-    but as a generic base to construct ascan, a2scan, a3scan,..."""
 
     def _prepare(self, motorlist, startlist, endlist, scan_length, integ_time,
                  mode=StepMode, latency_time=0, **opts):
@@ -252,6 +251,9 @@ class aNscan(Hookable):
         post_move_hooks = self.getHooks(
             'post-move') + [self._fill_missing_records]
         step["post-move-hooks"] = post_move_hooks
+        step["pre-acq-hooks"] = self.getHooks('pre-acq')
+        step["post-acq-hooks"] = self.getHooks('post-acq') + self.getHooks(
+            '_NOHINTS_')
         step["check_func"] = []
         step["active_time"] = self.nr_points * (self.integ_time +
                                                 self.latency_time)
@@ -1413,18 +1415,25 @@ class dmeshc(meshc):
         self._motion.move(self.originalPositions)
 
 
-class ascanct(aNscan, Macro):
+class aNscanct(aNscan):
+    """N-dimensional continuous scan. This is **not** meant to be called by
+    the user, but as a generic base to construct ascanct, a2scanct, a3scanct,
+    ..."""
+
+    hints = {"scan": "aNscanct",
+             "allowsHooks": ("pre-scan", "pre-configuration",
+                             "post-configuration", "pre-move",
+                             "post-move", "pre-acq", "pre-start",
+                             "post-acq", "pre-cleanup", "post-cleanup",
+                             "post-scan")}
+
+
+class ascanct(aNscanct, Macro):
     """Do an absolute continuous scan of the specified motor.
     ascanct scans one motor, as specified by motor. The motor starts before the
     position given by start_pos in order to reach the constant velocity at the
     start_pos and finishes at the position after the final_pos in order to
     maintain the constant velocity until the final_pos."""
-
-    hints = {'scan': 'ascanct', 'allowsHooks': ('pre-configuration',
-                                                'post-configuration',
-                                                'pre-start',
-                                                'pre-cleanup',
-                                                'post-cleanup')}
 
     param_def = [['motor', Type.Moveable, None, 'Moveable name'],
                  ['start_pos', Type.Float, None, 'Scan start position'],
@@ -1440,19 +1449,13 @@ class ascanct(aNscan, Macro):
                       latency_time=latency_time, **opts)
 
 
-class a2scanct(aNscan, Macro):
+class a2scanct(aNscanct, Macro):
     """Two-motor continuous scan.
     a2scanct scans two motors, as specified by motor1 and motor2. Each motor
     starts before the position given by its start_pos in order to reach the
     constant velocity at its start_pos and finishes at the position after
     its final_pos in order to maintain the constant velocity until its
     final_pos."""
-
-    hints = {'scan': 'a2scanct', 'allowsHooks': ('pre-configuration',
-                                                 'post-configuration',
-                                                 'pre-start',
-                                                 'pre-cleanup',
-                                                 'post-cleanup')}
 
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
@@ -1472,19 +1475,13 @@ class a2scanct(aNscan, Macro):
                       latency_time=latency_time, **opts)
 
 
-class a3scanct(aNscan, Macro):
+class a3scanct(aNscanct, Macro):
     """Three-motor continuous scan.
     a2scanct scans three motors, as specified by motor1, motor2 and motor3.
     Each motor starts before the position given by its start_pos in order to
     reach the constant velocity at its start_pos and finishes at the position
     after its final_pos in order to maintain the constant velocity until its
     final_pos."""
-
-    hints = {'scan': 'a2scanct', 'allowsHooks': ('pre-configuration',
-                                                 'post-configuration',
-                                                 'pre-start',
-                                                 'pre-cleanup',
-                                                 'post-cleanup')}
 
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
@@ -1515,12 +1512,6 @@ class a4scanct(aNscan, Macro):
     position after its final_pos in order to maintain the constant velocity
     until its final_pos."""
 
-    hints = {'scan': 'a2scanct', 'allowsHooks': ('pre-configuration',
-                                                 'post-configuration',
-                                                 'pre-start',
-                                                 'pre-cleanup',
-                                                 'post-cleanup')}
-
     param_def = [
         ['motor1', Type.Moveable, None, 'Moveable 1 to move'],
         ['start_pos1', Type.Float, None, 'Scan start position 1'],
@@ -1545,7 +1536,20 @@ class a4scanct(aNscan, Macro):
                       latency_time=latency_time, **opts)
 
 
-class dscanct(dNscan, Macro):
+class dNscanct(dNscan):
+    """N-dimensional continuous scan. This is **not** meant to be called by
+    the user, but as a generic base to construct ascanct, a2scanct, a3scanct,
+    ..."""
+
+    hints = {"scan": "dNscanct",
+             "allowsHooks": ("pre-scan", "pre-configuration",
+                             "post-configuration", "pre-move",
+                             "post-move", "pre-acq", "pre-start",
+                             "post-acq", "pre-cleanup", "post-cleanup",
+                             "post-scan")}
+
+
+class dscanct(dNscanct, Macro):
     """Do an a relative continuous motor scan,
     dscanct scans a motor, as specified by motor1.
     The Motor starts before the position given by its start_pos in order to
@@ -1567,7 +1571,7 @@ class dscanct(dNscan, Macro):
                       latency_time=latency_time, **opts)
 
 
-class d2scanct(dNscan, Macro):
+class d2scanct(dNscanct, Macro):
     """continuous two-motor scan relative to the starting positions,
     d2scanct scans three motors, as specified by motor1 and motor2.
     Each motor starts before the position given by its start_pos in order to
@@ -1591,7 +1595,7 @@ class d2scanct(dNscan, Macro):
                       mode=ContinuousHwTimeMode, **opts)
 
 
-class d3scanct(dNscan, Macro):
+class d3scanct(dNscanct, Macro):
     """continuous three-motor scan relative to the starting positions,
     d3scanct scans three motors, as specified by motor1, motor2 and motor3.
     Each motor starts before the position given by its start_pos in order to
@@ -1619,7 +1623,7 @@ class d3scanct(dNscan, Macro):
                       integ_time, mode=ContinuousHwTimeMode, **opts)
 
 
-class d4scanct(dNscan, Macro):
+class d4scanct(dNscanct, Macro):
     """continuous four-motor scan relative to the starting positions,
     d4scanct scans three motors, as specified by motor1, motor2, motor3 and
     motor4.
@@ -1662,10 +1666,12 @@ class meshct(Macro, Hookable):
     first motor scan is nested within the second motor scan.
     """
 
-    hints = {'scan': 'meshct', 'allowsHooks': ('pre-scan', 'pre-move',
-                                               'post-move', 'pre-acq',
-                                               'post-acq', 'post-step',
-                                               'post-scan')}
+    hints = {"scan": "meshct",
+             "allowsHooks": ("pre-scan", "pre-configuration",
+                             "post-configuration", "pre-move",
+                             "post-move", "pre-acq", "pre-start",
+                             "post-acq", "pre-cleanup", "post-cleanup",
+                             "post-scan")}
     env = ('ActiveMntGrp',)
 
     param_def = [
@@ -1702,6 +1708,20 @@ class meshct(Macro, Hookable):
         self.nr_points = self.nr_interv + 1
         self.integ_time = integ_time
         self.bidirectional_mode = bidirectional
+
+        # Prepare the waypoints
+        m1start, m2start = self.starts
+        m1end, m2end = self.finals
+        points1, points2 = self.nr_intervs + 1
+
+        m2_space = numpy.linspace(m2start, m2end, points2)
+        self.waypoints = []
+        self.starts_points = []
+        for i, m2pos in enumerate(m2_space):
+            self.starts_points.append(numpy.array([m1start, m2pos], dtype='d'))
+            self.waypoints.append(numpy.array([m1end, m2pos], dtype='d'))
+            if self.bidirectional_mode:
+                m1start, m1end = m1end, m1start
 
         self.name = opts.get('name', 'meshct')
 
@@ -1751,23 +1771,11 @@ class meshct(Macro, Hookable):
         step["active_time"] = self.nr_points * (self.integ_time +
                                                 self.latency_time)
 
-        m1start, m2start = self.starts
-        m1end, m2end = self.finals
-        points1, points2 = self.nr_intervs + 1
-
-        m2_space = numpy.linspace(m2start, m2end, points2)
-        self.waypoints = []
-        starts_points = []
-        for i, m2pos in enumerate(m2_space):
-            starts_points.append(numpy.array([m1start, m2pos], dtype='d'))
-            self.waypoints.append(numpy.array([m1end, m2pos], dtype='d'))
-            if self.bidirectional_mode:
-                m1start, m1end = m1end, m1start
-
+        points1, _ = self.nr_intervs + 1
         for i, waypoint in enumerate(self.waypoints):
             self.point_id = points1 * i
             step["waypoint_id"] = i
-            self.starts = starts_points[i]
+            self.starts = self.starts_points[i]
             self.finals = waypoint
             step["positions"] = []
             step["start_positions"] = []
@@ -1790,7 +1798,7 @@ class meshct(Macro, Hookable):
         return 0.0
 
     def getIntervalEstimation(self):
-        return self.nr_intervs
+        return len(self.waypoints)
 
     def _fill_missing_records(self):
         # fill record list with dummy records for the final padding
@@ -1808,6 +1816,9 @@ class timescan(Macro, Hookable):
     Count time is given by integ_time. Latency time will be the longer one
     of latency_time and measurement group latency time.
     """
+
+    hints = {'scan': 'timescan', 'allowsHooks': ('pre-scan', 'pre-acq',
+                                                 'post-acq', 'post-scan')}
 
     param_def = [
         ['nr_interv', Type.Integer, None, 'Number of scan intervals'],

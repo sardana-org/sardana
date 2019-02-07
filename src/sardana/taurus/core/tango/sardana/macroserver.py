@@ -299,7 +299,9 @@ class BaseDoor(MacroServerDevice):
     log_streams = (Error, Warning, Info, Output, Debug, Result)
 
     # maximum execution time without user interruption
-    InteractiveTimeout = 0.1
+    # this also means a time window within door state events must arrive
+    # 0.1 s was not enough on Windows (see sardana-ord/sardana#725)
+    InteractiveTimeout = .3
 
     def __init__(self, name, **kw):
         self._log_attr = CaselessDict()
@@ -488,16 +490,12 @@ class BaseDoor(MacroServerDevice):
         self._block_lines = 0
 
     def _createMacroXml(self, macro_name, macro_params):
-        """The best effort creation of the macro XML object. It tries to
-        convert flat list of string parameter values to the correct macro XML
-        object. The cases that can not be converted are:
-            * repeat parameter containing repeat parameters
-            * two repeat parameters
-            * repeat parameter that is not the last parameter
+        """Creation of the macro XML object.
 
         :param macro_name: (str) macro name
-        :param macro_params: (sequence[str]) list of parameter values
-
+        :param macro_params: (sequence[str]) list of parameter values,
+            if repeat parameters are used parameter values may be sequences
+            itself.
         :return (lxml.etree._Element) macro XML element
         """
         macro_info = self.macro_server.getMacroInfoObj(macro_name)
@@ -785,13 +783,21 @@ class BaseMacroServer(MacroServerDevice):
         self.call__init__(MacroServerDevice, name, **kw)
 
         self.__elems_attr = self.getAttribute("Elements")
-        self.__elems_attr.setSerializationMode(TaurusSerializationMode.Serial)
+        try:
+            serialization_mode = TaurusSerializationMode.TangoSerial
+        except AttributeError:
+            serialization_mode = TaurusSerializationMode.Serial
+        self.__elems_attr.setSerializationMode(serialization_mode)
         self.__elems_attr.addListener(self.on_elements_changed)
         self.__elems_attr.setSerializationMode(
             TaurusSerializationMode.Concurrent)
 
         self.__env_attr = self.getAttribute('Environment')
-        self.__env_attr.setSerializationMode(TaurusSerializationMode.Serial)
+        try:
+            serialization_mode = TaurusSerializationMode.TangoSerial
+        except AttributeError:
+            serialization_mode = TaurusSerializationMode.Serial
+        self.__env_attr.setSerializationMode(serialization_mode)
         self.__env_attr.addListener(self.on_environment_changed)
         self.__env_attr.setSerializationMode(
             TaurusSerializationMode.Concurrent)
@@ -1108,8 +1114,11 @@ class BaseMacroServer(MacroServerDevice):
         macroName = macroNode.name()
         macroInfoObj = self.getMacroInfoObj(macroName)
         if macroInfoObj is None:
-            raise Exception(
-                "It was not possible to get information about %s macro.\nCheck if MacroServer is alive and if this macro exist." % macroName)
+            msg = "It was not possible to get information about {0} " \
+                  "macro. Check if MacroServer is alive and if this macro " \
+                  "exist.".format(macroName)
+            self.info(msg)
+            raise Exception("no info about macro {0}".format(macroName))
         allowedHookPlaces = []
         hints = macroInfoObj.hints or {}
         for hook in hints.get("allowsHooks", []):

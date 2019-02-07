@@ -623,14 +623,16 @@ class Controller(PoolElement):
     def getElementByAxis(self, axis):
         pool = self.getPoolObj()
         for _, elem in pool.getElementsOfType(self.getMainType()).items():
-            if elem.controller != self.getName() or elem.getAxis() != axis:
+            if (elem.controller != self.getFullName() or
+                    elem.getAxis() != axis):
                 continue
             return elem
 
     def getElementByName(self, name):
         pool = self.getPoolObj()
-        for name, elem in pool.getElementsOfType(self.getMainType()).items():
-            if elem.controller != self.getName() or elem.getName() != name:
+        for _, elem in pool.getElementsOfType(self.getMainType()).items():
+            if (elem.controller != self.getFullName() or
+                    elem.getName() != name):
                 continue
             return elem
 
@@ -650,7 +652,7 @@ class Controller(PoolElement):
         return sorted(axes)
 
     def getUsedAxis(self):
-        msg = ("getUsedAxis is deprecated since version Jul18. ",
+        msg = ("getUsedAxis is deprecated since version 2.5.0. ",
                "Use getUsedAxes instead.")
         self.warning(msg)
         self.getUsedAxes()
@@ -2089,6 +2091,11 @@ class MeasurementGroup(PoolElement):
         self._value_buffer_cb = None
         self._codec = CodecFactory().getCodec("json")
 
+    def cleanUp(self):
+        PoolElement.cleanUp(self)
+        f = self.factory()
+        f.removeExistingAttribute(self.__cfg_attr)
+
     def __getattr__(self, item):
         try:
             return PoolElement.__getattr__(self, item)
@@ -2180,6 +2187,16 @@ class MeasurementGroup(PoolElement):
         self.getSynchronizationObj().write(data)
         self._last_integ_time = None
 
+    # NbStarts Methods
+    def getNbStartsObj(self):
+        return self._getAttrEG('NbStarts')
+
+    def setNbStarts(self, starts):
+        self.getNbStartsObj().write(starts)
+
+    def getNbStarts(self):
+        return self._getAttrValue('NbStarts')
+
     def getMoveableObj(self):
         return self._getAttrEG('Moveable')
 
@@ -2258,18 +2275,24 @@ class MeasurementGroup(PoolElement):
                 value_buffer_obj.unsubscribeEvent(channel.valueBufferChanged)
 
     def _start(self, *args, **kwargs):
-        self.Start()
+        try:
+            self.Start()
+        except DevFailed as e:
+            # TODO: Workaround for CORBA timeout on measurement group start
+            # remove it whenever sardana-org/sardana#93 gets implemented
+            if e[-1].reason == "API_DeviceTimedOut":
+                self.error("start timed out, trying to stop")
+                self.stop()
+                self.debug("stopped")
+            raise e
 
-    def go(self, *args, **kwargs):
-        start_time = time.time()
-        cfg = self.getConfiguration()
-        cfg.prepare()
-        duration = args[0]
-        if duration is None or duration == 0:
-            return self.getStateEG().readValue(), self.getValues()
-        self.putIntegrationTime(duration)
-        self.setMoveable(None)
-        PoolElement.go(self, *args, **kwargs)
+    def prepare(self):
+        self.command_inout("Prepare")
+
+    def count_raw(self, start_time=None):
+        PoolElement.go(self)
+        if start_time is None:
+            start_time = time.time()
         state = self.getStateEG().readValue()
         if state == Fault:
             msg = "Measurement group ended acquisition with Fault state"
@@ -2279,7 +2302,20 @@ class MeasurementGroup(PoolElement):
         self._total_go_time = time.time() - start_time
         return ret
 
-    def measure(self, synchronization, value_buffer_cb=None):
+    def go(self, *args, **kwargs):
+        start_time = time.time()
+        cfg = self.getConfiguration()
+        cfg.prepare()
+        integration_time = args[0]
+        if integration_time is None or integration_time == 0:
+            return self.getStateEG().readValue(), self.getValues()
+        self.putIntegrationTime(integration_time)
+        self.setMoveable(None)
+        self.setNbStarts(1)
+        self.prepare()
+        return self.count_raw(start_time)
+
+    def count_continuous(self, synchronization, value_buffer_cb=None):
         """Execute measurement process according to the given synchronization
         description.
 
@@ -2302,7 +2338,7 @@ class MeasurementGroup(PoolElement):
         cfg.prepare()
         self.setSynchronization(synchronization)
         self.subscribeValueBuffer(value_buffer_cb)
-        PoolElement.go(self)
+        self.count_raw(start_time)
         self.unsubscribeValueBuffer(value_buffer_cb)
         state = self.getStateEG().readValue()
         if state == Fault:

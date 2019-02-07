@@ -81,13 +81,13 @@ class MoveTest(RunMacroTestCase, unittest.TestCase):
         self.macro_runs("umvr", macro_params=[MOT_NAME1, "-1"], wait_timeout=3)
 
 
-@testRun(macro_params=[MOT_NAME1])
+@testRun(macro_params=[MOT_NAME1], wait_timeout=1)
 class MstateTest(RunMacroTestCase, unittest.TestCase):
 
     macro_name = "mstate"
 
 
-@testRun(macro_params=["blabla"])
+@testRun(macro_params=["blabla"], wait_timeout=1)
 class ReportTest(RunMacroTestCase, unittest.TestCase):
 
     macro_name = "report"

@@ -32,7 +32,7 @@ from __future__ import print_function
 __all__ = ["OverloadPrint", "PauseEvent", "Hookable", "ExecMacroHook",
            "MacroFinder", "Macro", "macro", "iMacro", "imacro",
            "MacroFunc", "Type", "ParamRepeat", "Table", "List", "ViewOption",
-           "LibraryError"]
+           "LibraryError", "Optional"]
 
 __docformat__ = 'restructuredtext'
 
@@ -55,7 +55,8 @@ from taurus.console.list import List
 from sardana.sardanadefs import State
 from sardana.util.wrap import wraps
 
-from sardana.macroserver.msparameter import Type, ParamType, ParamRepeat
+from sardana.macroserver.msparameter import Type, ParamType, ParamRepeat, \
+    Optional
 from sardana.macroserver.msexception import StopException, AbortException, \
     MacroWrongParameterType, UnknownEnv, UnknownMacro, LibraryError
 from sardana.macroserver.msoptions import ViewOption
@@ -187,16 +188,17 @@ class Hookable(Logger):
         return self._getHookHintsDict().keys()
 
     def getHooks(self, hint=None):
-        '''This will return a list of hooks that have the given hint. Two reserved
+        """This will return a list of hooks that have the given hint. Two reserved
         hints are always valid:
-          - "_ALL_": which contains all the hooks
-          - "_NOHINTS_": which contains the hooks that don't provide any hint
+
+        - "_ALL_": which contains all the hooks
+        - "_NOHINTS_": which contains the hooks that don't provide any hint
 
         :param hint: (str) a hint. If None is passed, it returns a list of
                      (hook,hints) tuples
 
         :return: (list) an ordered list of hooks that have the given hint
-        '''
+        """
         if hint is None:
             return self._getHooks()
         else:
@@ -228,57 +230,67 @@ class Hookable(Logger):
                 except KeyError:
                     self._hookHintsDict[hint] = [hook]
 
-    @propertx
-    def hooks():
-        def get(self):
-            return self._getHooks()
+    @property
+    def hooks(self):
+        """Hooks (callables) attached to the macro object together with the
+        hook places (places where they will be called).
 
-        def set(self, hooks):
-            '''hooks must be list<callable,list<str>>. Exceptionally, for
-            backwards compatibility, list<callable> is also admitted, but may
-            not be supported in the future.
-            "two variables are created:
-                - self._hooks (list<callable,list<str>>) (will be a tuple
-                              regardless of what was passed)
-                - self._hookHintsDict (dict<str,list>) a dict of key=hint and
-                                      value=list of hooks with that hint.
-                                      self._hookHintsDict also stores two
-                                      special keys: "_ALL_": which contains all
-                                      the hooks "_NOHINTS_": which contains the
-                                      hooks that don't provide hints
-            '''
-            if not isinstance(hooks, list):
-                self.error(
-                    'the hooks must be passed as a list<callable,list<str>>')
-                return
+        :getter: Return all hooks attached to the macro object (including
+            general hooks).
+        :setter: Set hooks to the object. **This may override eventual
+            general hooks.**
+            Use :meth:`~sardana.macroserver.macro.Hookable.appendHook`
+            if the general hooks want to be kept. For backwards compatibility
+            accepts hook in the :obj:`list`\<callable\> format.
+        :type: :obj:`list`\<:obj:`tuple`\> where each tuple has two
+            elements: callable and :obj:`list`\<:obj:`str`\>
+        """  # noqa
+        return self._getHooks()
 
-            # store self._hooks, making sure it is of type:
-            # list<callable,list<str>>
-            self._hooks = []
-            for h in hooks:
-                if isinstance(h, (tuple, list)) and len(h) == 2:
-                    self._hooks.append(h)
-                else:  # we assume that hooks is a list<callable>
-                    self._hooks.append((h, []))
-                    self.info(
-                        'Deprecation warning: hooks should be set with a list of hints. See Hookable API docs')
+    @hooks.setter
+    def hooks(self, hooks):
+        """Sets hooks. Internally two variables instance members are created:
 
-            # delete _hookHintsDict to force its recreation on the next access
-            if hasattr(self, '_hookHintsDict'):
-                del self._hookHintsDict
-            # create _hookHintsDict
-            self._getHookHintsDict()['_ALL_'] = zip(*self._hooks)[0]
-            nohints = self._hookHintsDict['_NOHINTS_']
-            for hook, hints in self._hooks:
-                if len(hints) == 0:
-                    nohints.append(hook)
-                else:
-                    for hint in hints:
-                        try:
-                            self._hookHintsDict[hint].append(hook)
-                        except KeyError:
-                            self._hookHintsDict[hint] = [hook]
-        return get, set
+        - _hooks (list<callable,list<str>>) (will be a tuple regardless of
+          what was passed)
+        - _hookHintsDict (dict<str,list>) a dict of key=hint and value=list
+          of hooks with that hint. _hookHintsDict also stores two special
+          keys: "_ALL_": which contains all the hooks "_NOHINTS_": which
+          contains the hooks that don't provide hints
+
+        """
+        if not isinstance(hooks, list):
+            self.error(
+                'the hooks must be passed as a list<callable,list<str>>')
+            return
+
+        # store self._hooks, making sure it is of type:
+        # list<callable,list<str>>
+        self._hooks = []
+        for h in hooks:
+            if isinstance(h, (tuple, list)) and len(h) == 2:
+                self._hooks.append(h)
+            else:  # we assume that hooks is a list<callable>
+                self._hooks.append((h, []))
+                msg = ("Deprecation warning: hooks should be set with a"
+                       " list of hints. See Hookable API docs")
+                self.info(msg)
+
+        # delete _hookHintsDict to force its recreation on the next access
+        if hasattr(self, '_hookHintsDict'):
+            del self._hookHintsDict
+        # create _hookHintsDict
+        self._getHookHintsDict()['_ALL_'] = zip(*self._hooks)[0]
+        nohints = self._hookHintsDict['_NOHINTS_']
+        for hook, hints in self._hooks:
+            if len(hints) == 0:
+                nohints.append(hook)
+            else:
+                for hint in hints:
+                    try:
+                        self._hookHintsDict[hint].append(hook)
+                    except KeyError:
+                        self._hookHintsDict[hint] = [hook]
 
 
 class ExecMacroHook(object):
@@ -1184,7 +1196,7 @@ class Macro(Logger):
             self.execMacro('mv', th, 0) # backwards compatibility - see note
 
             # a sequence of parameters:
-            self.execMacro(['ascan', 'th', '0', '100', '10', '1.0')
+            self.execMacro(['ascan', 'th', '0', '100', '10', '1.0'])
             self.execMacro(['mv', [[motor.getName(), '0']]])
             self.execMacro(['mv', motor.getName(), '0']) # backwards compatibility - see note
             self.execMacro(('ascan', 'th', 0, 100, 10, 1.0))

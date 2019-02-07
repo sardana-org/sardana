@@ -15,7 +15,11 @@ position.
 
 The other pseudo motor's attributes are:
 
+.. _sardana-pseudomotor-api-driftcorrection:
+
 drift correction
+----------------
+
     Flag to enable/disable drift correction while calculating physical
     motor(s) position(s). When enabled, the write sibling(s) position(s) will
     be used, when disabled, the read sibiling(s) position(s) will be
@@ -25,22 +29,30 @@ drift correction
     :attr:`~PoolPseudoMotor.drift_correction`
 
 siblings
-    List of other psuedo motor objects that belongs to the same controller.
+--------
+
+    List of other pseudo motor objects that belongs to the same controller.
 
     :attr:`~PoolPseudoMotor.siblings`
 
 The available operations are:
 
 start move absolute
+-------------------
+
     Starts to move the pseudo motor to the given absolute position.
 
     :meth:`~PoolPseudoMotor.start_move`
 
 stop
+----
+
     Stops the pseudo motor motion, by stopping all the physical motors, in an
     orderly fashion.
 
 abort
+-----
+
     Stops the pseudo motor motion, by stopping all the physical motors, as
     fast as possible (possibly without deceleration time and loss of position).
 
@@ -53,8 +65,43 @@ abort
     :class:`~sardana.tango.pool.PseudoMotor.PseudoMotor`
         the pseudo-motor tango device :term:`API`
 
-..    :class:`~sardana.pool.poolpseudomotor.PoolPseudoMotor`
-..        the pseudo-motor class :term:`API`
+
+.. _sardana-pseudomotor-api-position:
+
+PseudoMotor position
+--------------------
+
+The pseudomotor's current position can be obtained by reading the
+position attribute. The diagram shows the internal sequence of calls.
+As it is shown on this picture this process is divided into two parts. First
+the physical :ref:`motor positions are read <sardana-motor-api-position>`
+from the hardware. Later these motor positions are used to calculate the
+pseudo position.
+
+.. image:: /_static/sardana_server_internal_pseudomotor_read_position_flow.png
+    :width: 680
+    :align: center
+
+Motion
+------
+
+The most useful thing to do with a pseudo motor is, of course, to move it. To
+move a pseudo motor to another absolute position you have to write the value
+into the position attribute.
+
+.. image:: /_static/sardana_server_internal_pseudomotor_write_position_flow.png
+    :width: 680
+    :align: center
+
+Please refer to
+:meth:`~sardana.pool.poolpseudomotor.PoolPseudoMotor.get_siblings_positions`
+for more details about ``use`` and ``write_pos`` arguments. The value of the
+last one corresponds to the :ref:`sardana-pseudomotor-api-driftcorrection`
+attribute value.
+
+After all calculations are done, the pseudo motor will deploy a motion *job*
+into the sardana kernel engine which will trigger a series of calls to the
+underlying motor(s) controller.
 
 .. _drift_section:
 

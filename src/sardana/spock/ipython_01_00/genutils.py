@@ -304,7 +304,8 @@ def get_macroserver_for_door(door_name):
             if dev.lower() == door_name:
                 for i, klass in enumerate(klasses):
                     if klass == 'MacroServer':
-                        return "%s:%s/%s" % (db.get_db_host(), db.get_db_port(), devs[i])
+                        full_name, _, _ = from_name_to_tango(devs[i])
+                        return full_name
     else:
         return None
 
@@ -318,7 +319,7 @@ def get_device_from_user(expected_class, dft=None):
     prompt += "? "
     from_user = raw_input(prompt).strip() or dft
 
-    name = ''
+    name = None
     try:
         full_name, name, _ = from_name_to_tango(from_user)
     except:
@@ -444,6 +445,14 @@ def print_dev_from_class(classname, dft=None):
 
 
 def from_name_to_tango(name):
+    try:
+        from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
+        return TangoDeviceNameValidator().getNames(name)
+    except ImportError:
+        return _from_name_to_tango(name)
+
+
+def _from_name_to_tango(name):
 
     db = get_tango_db()
 
@@ -609,7 +618,9 @@ def _get_dev(dev_type):
         taurus_dev = getattr(spock_config, taurus_dev_var)
     if taurus_dev is None:
         # TODO: For Taurus 4 compatibility
-        dev_name = "tango://%s" % getattr(spock_config, dev_type + '_name')
+        dev_name = getattr(spock_config, dev_type + '_name')
+        if not dev_name.startswith("tango://"):
+            dev_name = "tango://%s" % dev_name
         factory = Factory()
         taurus_dev = factory.getDevice(dev_name)
         import PyTango
@@ -653,7 +664,10 @@ def _macro_completer(self, event):
     if possible_params:
         res = []
         for param in possible_params:
-            res.extend(ms.getElementNamesWithInterface(param['type']))
+            if param['type'].lower() == 'boolean':
+                res.extend(['True', 'False'])
+            else:
+                res.extend(ms.getElementNamesWithInterface(param['type']))
         return res
 
 
@@ -739,6 +753,8 @@ config.IPKernelApp.pylab = 'inline'
     else:
         full_door_name, door_name, _ = from_name_to_tango(door_name)
         door_name = full_door_name
+    if door_name is None:
+        raise RuntimeError('unknown door name')
 
     #
     # Discover macro server name
@@ -772,7 +788,18 @@ def create_spock_profile(userdir, profile, door_name=None):
 
     ipy_profile_dir = p_dir.location
 
-    _create_config_file(ipy_profile_dir)
+    try:
+        _create_config_file(ipy_profile_dir)
+    # catch BaseException in order to catch also KeyboardInterrupt
+    except BaseException:
+        import shutil
+        try:
+            shutil.rmtree(ipy_profile_dir)
+        except OSError:
+            msg = ('Could not remove spock profile directory {0}. '
+                   'Remove it by hand e.g. rmdir {0}').format(ipy_profile_dir)
+            print(msg)
+        sys.exit(-1)
 
 
 def upgrade_spock_profile(ipy_profile_dir, door_name):
@@ -1122,6 +1149,7 @@ object?   -> Details about 'object'. ?object also works, ?? prints more.
     term_app.display_banner = True
     term_app.gui = gui_mode
     term_app.pylab = 'qt'
+    term_app.pylab_import_all = False
     #term_app.nosep = False
     #term_app.classic = True
 
