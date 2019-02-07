@@ -248,7 +248,7 @@ class MacroServerMessageErrorHandler(TaurusMessageErrorHandler):
         try:
             import pygments.formatters
             import pygments.lexers
-        except:
+        except Exception:
             pygments = None
         if pygments is not None:
             formatter = pygments.formatters.HtmlFormatter()
