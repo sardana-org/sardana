@@ -136,6 +136,21 @@ counters for ROI, binning, etc. This will be driven as a separate PR/SEP.
 stored in the same HDF5 file.
 6. Overwrite policy configuration.
 
+# General idea
+
+This SEP is divided in two main parts and could be described as two opposite 
+flows of information.
+* First, downstream (from the plugin up the recorder), transfer of value 
+references instead of values.
+* Second, upstream (from the user to the plugin), configuration of value 
+referencing e.g. where to save the image files on disk.
+
+While going through the specification details it is convenient to follow
+schemes of the information flows for each of these two parts. The first part
+is showed on slide 46 and the second on slide 47 of the
+[Sardana: new features and developments](https://indico.helmholtz-berlin.de/getFile.py/access?contribId=31&sessionId=1&resId=0&materialId=slides&confId=11)
+presentation during the ABCDA Workshop at BESSY.
+ 
 # Specification
 
 ## Changes in the current implementation
