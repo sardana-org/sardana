@@ -141,8 +141,8 @@ class MeasurementGroup(PoolGroupDevice):
         elif name == "synchronization":
             codec = CodecFactory().getCodec('json')
             _, event_value = codec.encode(('', event_value))
-        elif name == "moveable" and value == None:
-            value = 'None'
+        elif name == "moveable" and event_value is None:
+            event_value = 'None'
         else:
             if isinstance(event_value, SardanaAttribute):
                 if event_value.error:
