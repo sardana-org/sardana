@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+/#!/usr/bin/env python
 from __future__ import absolute_import
 
 ##############################################################################
@@ -683,7 +683,23 @@ class ExpChannel(PoolElement):
     def __init__(self, name, **kw):
         """ExpChannel initialization."""
         self.call__init__(PoolElement, name, **kw)
+        self._last_integ_time = None
         self._value_buffer = {}
+
+    def getIntegrationTime(self):
+        return self._getAttrValue('IntegrationTime')
+
+    def getIntegrationTimeObj(self):
+        return self._getAttrEG('IntegrationTime')
+
+    def setIntegrationTime(self, ctime):
+        self.getIntegrationTimeObj().write(ctime)
+
+    def putIntegrationTime(self, ctime):
+        if self._last_integ_time == ctime:
+            return
+        self._last_integ_time = ctime
+        self.getIntegrationTimeObj().write(ctime)
 
     def getValueObj_(self):
         """Retrurns Value attribute event generator object.
@@ -715,8 +731,38 @@ class ExpChannel(PoolElement):
         for index, value in zip(indexes, values):
             self._value_buffer[index] = value
 
+    def _start(self, *args, **kwargs):
+        self.Start()
 
-class CTExpChannel(ExpChannel):
+    def go(self, *args, **kwargs):
+        start_time = time.time()
+        integration_time = args[0]
+        if integration_time is None or integration_time == 0:
+            return self.getStateEG().readValue(), self.getValues()
+        self.putIntegrationTime(integration_time)
+        PoolElement.go(self)
+        state = self.getStateEG().readValue()
+        values = self.getValue()
+        ret = state, values
+        self._total_go_time = time.time() - start_time
+        return ret
+
+    count = go
+
+
+class TimerableExpChannel(ExpChannel):
+
+    def getTimer(self):
+        return self._getAttrValue('Timer')
+
+    def getTimerObj(self):
+        return self._getAttrEG('Timer')
+
+    def setTimer(self, timer):
+        self.getTimerObj().write(timer)
+
+
+class CTExpChannel(TimerableExpChannel):
     """ Class encapsulating CTExpChannel functionality."""
     pass
 
@@ -726,12 +772,12 @@ class ZeroDExpChannel(ExpChannel):
     pass
 
 
-class OneDExpChannel(ExpChannel):
+class OneDExpChannel(TimerableExpChannel):
     """ Class encapsulating OneDExpChannel functionality."""
     pass
 
 
-class TwoDExpChannel(ExpChannel):
+class TwoDExpChannel(TimerableExpChannel):
     """ Class encapsulating TwoDExpChannel functionality."""
     pass
 
