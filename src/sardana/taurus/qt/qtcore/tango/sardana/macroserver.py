@@ -44,8 +44,8 @@ class QDoor(BaseDoor, Qt.QObject):
                        "recordDataUpdated", "macroStatusUpdated"]
     __pyqtSignals__ += ["%sUpdated" % l.lower() for l in BaseDoor.log_streams]
 
-    envExpConfigChangesAllowed = ['ActiveMntGrp', 'ScanDir', 'ScanFile',
-                                  'DataCompressionRank', 'PreScanSnapshot']
+    EXP_DESC_ENV_VARS = ['ActiveMntGrp', 'ScanDir', 'ScanFile',
+                         'DataCompressionRank', 'PreScanSnapshot']
 
     # sometimes we emit None hence the type is object
     # (but most of the data are passed with type list)
@@ -103,7 +103,7 @@ class QDoor(BaseDoor, Qt.QObject):
         if not self._use_experiment_configuration and \
                 not self._connections_prepared:
             self.macro_server.environmentChanged.connect(
-                self._onExperimentConfigurationEnvironmentChanged)
+                self._onEnvironmentChanged)
             self.macro_server.elementsChanged.connect(self._elementsChanged)
             self._elementsChanged()
             self._connections_prepared = True
@@ -125,36 +125,29 @@ class QDoor(BaseDoor, Qt.QObject):
         if mntgrp_changed:
             self._onExperimentConfigurationChanged()
 
-    def _onExperimentConfigurationEnvironmentChanged(self, args):
+    def _onEnvironmentChanged(self, env_changes):
         """
         Filter environment changes that affect to the experiment
         configuration.
 
+        :param env_changes: tuple with three elements in the following order:
 
-        :param args:
-        The args order is :
-        added (environment added)
-        removed (environment removed)
-        changed (environment changed)
-        :return:
+        * added (environment variables added)
+        * removed (environment variables removed)
+        * changed (environment variables changed)
+
+        :type env_changes: :obj:`tuple`
         """
-
-        try:
-            envExpChanged = False
-            # Filter only the Environment added/removed/changes related with
-            # the experiment, not for all.
-            for envs in args:
-                val = envs.intersection(self.envExpConfigChangesAllowed)
-                if len(val) > 1:
-                    envExpChanged = True
-                    break
-
-            if not envExpChanged:
-                return
-        except Exception as e:
-            print e
-            pass
-
+        env_exp_changed = False
+        # Filter only the Environment added/removed/changes related with
+        # the experiment, not for all.
+        for envs in env_changes:
+            val = envs.intersection(self.EXP_DESC_ENV_VARS)
+            if len(val) > 0:
+                env_exp_changed = True
+                break
+        if not env_exp_changed:
+            return
         self._onExperimentConfigurationChanged()
 
     def _onExperimentConfigurationChanged(self, *args):
