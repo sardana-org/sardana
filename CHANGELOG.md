@@ -16,6 +16,11 @@ This file follows the formats and conventions from [keepachangelog.com]
     announce the default timer axis
 * `newfile` macro for setting `ScanDir`, `ScanFile` and `ScanID` env variables (#777)
 
+### Fixed
+
+* MeasurementGroup's Moveable attribute when set to "None" in Tango is used as None
+  in the core (#1001)
+ 
 ## [2.6.1] 2019-02-04
 
 This is a special release for meeting the deadline of debian buster freeze (debian 10).
