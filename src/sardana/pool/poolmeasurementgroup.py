@@ -1075,8 +1075,6 @@ class PoolMeasurementGroup(PoolGroupElement):
                 moveable = _to_fqdn(moveable, logger=self)
             self._moveable_obj = self.pool.get_element_by_full_name(moveable)
 
-        if moveable is None:
-            moveable = 'None'
         self.fire_event(EventType("moveable", priority=propagate),
                         moveable)
             
