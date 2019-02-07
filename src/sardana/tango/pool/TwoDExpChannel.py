@@ -221,6 +221,7 @@ class TwoDExpChannel(PoolTimerableDevice):
         if not use_cache and self._first_read_ref_cache:
             use_cache = True
             self._first_read_ref_cache = False
+        use_cache = True
         value_ref = twod.get_value_ref(cache=use_cache, propagate=0)
         if value_ref.error:
             Except.throw_python_exception(*value_ref.exc_info)

@@ -56,11 +56,13 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
     (This is a pure h5py implementation that does not depend on the nxs module)
     """
     formats = {'h5': '.h5'}
+    # from http://docs.h5py.org/en/latest/strings.html
+    str_dt = h5py.special_dtype(vlen=unicode)  # Variable-length UTF-8 (PY2)
+    byte_dt = h5py.special_dtype(vlen=bytes)  # Variable-length UTF-8 (PY2)
     supported_dtypes = ('float32', 'float64', 'int8',
                         'int16', 'int32', 'int64', 'uint8',
                         'uint16', 'uint32',
-                        'uint64')  # note that 'char' is not supported yet!
-    # TODO: support 'char'. See http://docs.h5py.org/en/latest/strings.html
+                        'uint64', str_dt, byte_dt)
     _dataCompressionRank = -1
 
     def __init__(self, filename=None, macro=None, overwrite=False, **pars):
@@ -156,6 +158,10 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             dd.label = self.sanitizeName(dd.label)
             if dd.dtype == 'bool':
                 dd.dtype = 'int8'
+                self.debug('%r will be stored with type=%r', dd.name, dd.dtype)
+            if dd.dtype == 'str':
+                # TODO: pending to decide if strings are stored sa str or byte
+                dd.dtype = NXscanH5_FileRecorder.str_dt
                 self.debug('%r will be stored with type=%r', dd.name, dd.dtype)
             if dd.dtype in self.supported_dtypes:
                 self.datadesc.append(dd)
@@ -301,6 +307,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
 
                 # write the slab of data
                 _ds[record.recordno, ...] = data
+
             else:
                 self.debug('missing data for label %r', dd.label)
         self.fd.flush()
