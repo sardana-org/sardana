@@ -65,6 +65,8 @@ class DummyCounterTimerController(CounterTimerController):
     MonitorMode = 2
     CounterMode = 3
 
+    default_timer = 1
+
     def __init__(self, inst, props, *args, **kwargs):
         CounterTimerController.__init__(self, inst, props, *args, **kwargs)
         self._synchronization = AcqSynch.SoftwareTrigger
