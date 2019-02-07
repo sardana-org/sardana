@@ -50,7 +50,7 @@ def expconf(self, parameter_s=''):
     except TypeError:
         # TODO: For Taurus 4 adaptation
         doorname = get_door().fullname
-    #=======================================================================
+    # =======================================================================
     # ugly hack to avoid ipython/qt thread problems #e.g. see
     # https://sourceforge.net/p/sardana/tickets/10/
     # this hack does not allow inter-process communication and leaves the
@@ -70,6 +70,7 @@ def expconf(self, parameter_s=''):
     subprocess.Popen(args)
     # ======================================================================
 
+
 def showscan(self, parameter_s=''):
     """Shows a scan in a GUI.
 
@@ -85,6 +86,7 @@ def showscan(self, parameter_s=''):
 
             except Exception as e:
                 print "Error importing ShowScanOnline"
+                print e
                 return
             try:
                 doorname = get_door().name()
@@ -139,7 +141,7 @@ def debug(self, parameter_s=''):
         return
     elif len(params) == 1:
         s = params[0].lower()
-        if not s in ('off', 'on'):
+        if s not in ('off', 'on'):
             print "Usage: debug [on|off]"
             return
         door.setDebugMode(s == 'on')
@@ -149,8 +151,10 @@ def debug(self, parameter_s=''):
 
 
 def www(self, parameter_s=''):
-    """What went wrong. Prints the error message from the last macro execution"""
-
+    """
+    What went wrong.
+    Prints the error message from the last macro execution
+    """
 
     door = get_door()
     try:
@@ -158,7 +162,8 @@ def www(self, parameter_s=''):
         if last_macro is None:
             door.writeln("No macro ran from this console yet!")
             return
-        if not hasattr(last_macro, 'exc_stack') or last_macro.exc_stack is None:
+        if not hasattr(last_macro, 'exc_stack') or last_macro.exc_stack is \
+                None:
             door.writeln("Sorry, but no exception occurred running last "
                          "macro (%s)." % last_macro.name)
             return
