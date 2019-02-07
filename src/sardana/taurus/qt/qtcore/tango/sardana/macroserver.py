@@ -32,7 +32,8 @@ import copy
 from taurus.core.taurusbasetypes import TaurusEventType
 from taurus.external.qt import Qt
 
-from sardana.taurus.core.tango.sardana.macroserver import BaseMacroServer, BaseDoor
+from sardana.taurus.core.tango.sardana.macroserver import BaseMacroServer, \
+    BaseDoor
 
 CHANGE_EVTS = TaurusEventType.Change, TaurusEventType.Periodic
 
@@ -44,7 +45,7 @@ class QDoor(BaseDoor, Qt.QObject):
     __pyqtSignals__ += ["%sUpdated" % l.lower() for l in BaseDoor.log_streams]
 
     envExpConfigChangesAllowed = ['ActiveMntGrp', 'ScanDir', 'ScanFile',
-                                  'DataCompressionRank']
+                                  'DataCompressionRank', 'PreScanSnapshot']
 
     # sometimes we emit None hence the type is object
     # (but most of the data are passed with type list)
@@ -247,7 +248,8 @@ class MacroServerMessageErrorHandler(TaurusMessageErrorHandler):
         msg = "<html><body><pre>%s</pre></body></html>" % err_value
         msgbox.setDetailedHtml(msg)
 
-        html_orig = """<html><head><style type="text/css">{style}</style></head><body>"""
+        html_orig = """<html><head><style type="text/css">{
+        style}</style></head><body>"""
         exc_info = "".join(err_traceback)
         style = ""
         try:
@@ -264,13 +266,16 @@ class MacroServerMessageErrorHandler(TaurusMessageErrorHandler):
         else:
             formatter = pygments.formatters.HtmlFormatter()
             html += pygments.highlight(exc_info,
-                                       pygments.lexers.PythonTracebackLexer(), formatter)
+                                       pygments.lexers.PythonTracebackLexer(
+
+                                       ), formatter)
         html += "</body></html>"
         msgbox.setOriginHtml(html)
 
 
 def registerExtensions():
-    """Registers the macroserver extensions in the :class:`taurus.core.tango.TangoFactory`"""
+    """Registers the macroserver extensions in the
+    :class:taurus.core.tango.TangoFactory`"""
     import taurus
     factory = taurus.Factory()
     factory.registerDeviceClass('MacroServer', QMacroServer)
@@ -280,8 +285,8 @@ def registerExtensions():
     # handlers, maybe in TangoFactory & TaurusManager
     import sardana.taurus.core.tango.sardana.macro
     import taurus.qt.qtgui.panel
-    MacroRunException = sardana.taurus.core.tango.sardana.macro.MacroRunException
+    MacroRunExcep = sardana.taurus.core.tango.sardana.macro.MacroRunException
     TaurusMessagePanel = taurus.qt.qtgui.panel.TaurusMessagePanel
 
-    TaurusMessagePanel.registerErrorHandler(
-        MacroRunException, MacroServerMessageErrorHandler)
+    TaurusMessagePanel.registerErrorHandler(MacroRunExcep,
+                                            MacroServerMessageErrorHandler)
