@@ -118,7 +118,6 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
             self.door.recordDataUpdated.connect(self.onRecordDataUpdated)
             self.old_arg = None
 
-
     def _checkJsonRecorder(self):
         '''Checks if JsonRecorder env var is set and offers to set it'''
         door = self.getModelObj()
@@ -244,7 +243,6 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         #     )
         #     self.error(e)
 
-
     def _updateTemporaryTrends1D(self, trends1d):
         '''adds necessary trend1D panels and removes no longer needed ones
 
@@ -312,7 +310,6 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
             raise
             return
 
-
         newpanels = []
         for axes, plotables in trends2d.items():
             for chname in plotables:
@@ -341,7 +338,6 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
                 self._trends2d.pop(axes)
 
         return newpanels, removedpanels
-
 
     def createPanel(self, widget, name, **kwargs):
         '''Creates a "panel" from a widget. In this basic implementation this
