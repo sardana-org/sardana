@@ -265,8 +265,11 @@ class Hookable(Logger):
             return
 
         if len(self.hooks) > 0:
-            self.warning("previously set hooks, these may include general "
-                         "hooks, are being overridden now")
+            msg = ("This macro defines its own hooks. Previously defined "
+                   "hooks, including the general ones, would be only called "
+                   "if these own hooks were added using the appendHook "
+                   "method or appended to the self.hooks.")
+            self.warning(msg)
         # store self._hooks, making sure it is of type:
         # list<callable,list<str>>
         self._hooks = []
