@@ -12,6 +12,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   * `IntegrationTime` (Tango) and `integration_time` (core) attributes to all experimental
     channels
   * `Timer` (Tango) and `timer` (core) attribute to all timerable experimental channels
+  * `default_timer` class attribute to all timerable controllers (plugins) to let them
+    announce the default timer axis
 * `newfile` macro for setting `ScanDir`, `ScanFile` and `ScanID` env variables (#777)
 
 ## [2.6.1] 2019-02-04
