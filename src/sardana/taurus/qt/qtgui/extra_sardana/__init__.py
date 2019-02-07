@@ -28,13 +28,13 @@ to sardana"""
 
 __docformat__ = 'restructuredtext'
 
-from .elementtree import *
-from .expdescription import *
-from .measurementgroup import *
-from .showscanonline import *
+from .elementtree import *  # NOQA
+from .expdescription import *  # NOQA
+from .measurementgroup import *  # NOQA
+from .showscanonline import *  # NOQA
 
 try:
-    from .sardanaeditor import *
+    from .sardanaeditor import *  # NOQA
 except:
     from taurus.qt.qtgui.display import create_taurus_fallback as __create
     SardanaEditor = __create("SardanaEditor")
