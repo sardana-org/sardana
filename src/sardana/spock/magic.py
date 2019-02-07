@@ -50,12 +50,13 @@ def expconf(self, parameter_s=''):
     except TypeError:
         # TODO: For Taurus 4 adaptation
         doorname = get_door().fullname
-    #=========================================================================
+    #=======================================================================
     # ugly hack to avoid ipython/qt thread problems #e.g. see
     # https://sourceforge.net/p/sardana/tickets/10/
     # this hack does not allow inter-process communication and leaves the
     # widget open after closing spock
-    # @todo: investigate cause of segfaults when using launching qt widgets from ipython
+    # @todo: investigate cause of segfaults when using launching qt widgets
+    #  from ipython
     #
     # w = ExpDescriptionEditor(door=doorname)
     # w.show() #launching it like this, produces the problem of
@@ -67,7 +68,7 @@ def expconf(self, parameter_s=''):
     if parameter_s == '--auto-update':
         args.insert(2, parameter_s)
     subprocess.Popen(args)
-    # ===========================================================================
+    # ======================================================================
 
 def showscan(self, parameter_s=''):
     """Shows a scan in a GUI.
@@ -82,7 +83,7 @@ def showscan(self, parameter_s=''):
                 from sardana.taurus.qt.qtgui.extra_sardana import \
                     ShowScanOnline
 
-            except:
+            except Exception as e:
                 print "Error importing ShowScanOnline"
                 return
             try:
@@ -90,12 +91,14 @@ def showscan(self, parameter_s=''):
             except TypeError:
                 # TODO: For Taurus 4 adaptation
                 doorname = get_door().fullname
-            # =========================================================================
+            # ===============================================================
             # ugly hack to avoid ipython/qt thread problems #e.g. see
             # https://sourceforge.net/p/sardana/tickets/10/
-            # this hack does not allow inter-process communication and leaves the
-            # widget open after closing spock
-            # @todo: investigate cause of segfaults when using launching qt widgets from ipython
+            # this hack does not allow inter-process communication and
+            # leaves the widget open after closing spock
+            #
+            # @todo: investigate cause of segfaults when using launching qt
+            #  widgets from ipython
             #
 
             # https://sourceforge.net/p/sardana/tickets/10/

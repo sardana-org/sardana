@@ -154,7 +154,7 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         self.old_arg = arg
 
         data = arg[1]
-        if data.has_key('type'):
+        if 'type' in data:
             if data['type'] == 'data_desc':
                 expconf = self.door.getExperimentConfiguration()
                 self.onExpConfChanged(expconf)
