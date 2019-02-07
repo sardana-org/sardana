@@ -33,7 +33,7 @@ import sys
 import time
 
 from PyTango import DevFailed, DevVoid, DevString, DevState, AttrQuality, \
-    Except, READ, SCALAR
+    Except, READ, SCALAR, READ_WRITE
 
 from taurus.core.util.log import DebugIt
 
@@ -41,20 +41,19 @@ from sardana import State, DataFormat, SardanaServer
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.pool.controller import TwoDController, MaxDimSize, Type
 from sardana.tango.core.util import to_tango_type_format, exception_str
+from sardana.tango.pool.PoolDevice import PoolTimerableDevice, \
+    PoolTimerableDeviceClass
 
-from sardana.tango.pool.PoolDevice import PoolExpChannelDevice, \
-    PoolExpChannelDeviceClass
 
-
-class TwoDExpChannel(PoolExpChannelDevice):
+class TwoDExpChannel(PoolTimerableDevice):
 
     def __init__(self, dclass, name):
-        PoolExpChannelDevice.__init__(self, dclass, name)
+        PoolTimerableDevice.__init__(self, dclass, name)
         self._first_read_cache = False
         self._first_read_ref_cache = False
 
     def init(self, name):
-        PoolExpChannelDevice.init(self, name)
+        PoolTimerableDevice.init(self, name)
 
     def get_twod(self):
         return self.element
@@ -66,14 +65,14 @@ class TwoDExpChannel(PoolExpChannelDevice):
 
     @DebugIt()
     def delete_device(self):
-        PoolExpChannelDevice.delete_device(self)
+        PoolTimerableDevice.delete_device(self)
         twod = self.twod
         if twod is not None:
             twod.remove_listener(self.on_twod_changed)
 
     @DebugIt()
     def init_device(self):
-        PoolExpChannelDevice.init_device(self)
+        PoolTimerableDevice.init_device(self)
         twod = self.twod
         if twod is None:
             full_name = self.get_full_name()
@@ -108,6 +107,7 @@ class TwoDExpChannel(PoolExpChannelDevice):
 
         timestamp = time.time()
         name = event_type.name.lower()
+        name = name.replace('_', '')  # for integration_time events
 
         try:
             attr = self.get_attribute_by_name(name)
@@ -135,8 +135,12 @@ class TwoDExpChannel(PoolExpChannelDevice):
                 else:
                     value = event_value.value
                 timestamp = event_value.timestamp
+            else:
+                value = event_value
 
-            if name == "value":
+            if name == "timer" and value is None:
+                value = "None"
+            elif name == "value":
                 state = self.twod.get_state()
                 if state == State.Moving:
                     quality = AttrQuality.ATTR_CHANGING
@@ -155,7 +159,7 @@ class TwoDExpChannel(PoolExpChannelDevice):
         cache_built = hasattr(self, "_dynamic_attributes_cache")
 
         std_attrs, dyn_attrs = \
-            PoolExpChannelDevice.get_dynamic_attributes(self)
+            PoolTimerableDevice.get_dynamic_attributes(self)
 
         if not cache_built:
             # For value attribute, listen to what the controller says for data
@@ -171,7 +175,7 @@ class TwoDExpChannel(PoolExpChannelDevice):
         return std_attrs, dyn_attrs
 
     def initialize_dynamic_attributes(self):
-        attrs = PoolExpChannelDevice.initialize_dynamic_attributes(self)
+        attrs = PoolTimerableDevice.initialize_dynamic_attributes(self)
 
         non_detect_evts = "valueref", "valuerefbuffer"  # referable channels
 
@@ -247,7 +251,7 @@ _DFT_VALUE_TYPE, _DFT_VALUE_FORMAT = to_tango_type_format(
     _DFT_VALUE_INFO[Type], DataFormat.TwoD)
 
 
-class TwoDExpChannelClass(PoolExpChannelDeviceClass):
+class TwoDExpChannelClass(PoolTimerableDeviceClass):
 
     #    Class Properties
     class_property_list = {
@@ -256,29 +260,31 @@ class TwoDExpChannelClass(PoolExpChannelDeviceClass):
     #    Device Properties
     device_property_list = {
     }
-    device_property_list.update(PoolExpChannelDeviceClass.device_property_list)
+
+    device_property_list.update(PoolTimerableDeviceClass.device_property_list)
 
     #    Command definitions
     cmd_list = {
         'Start':   [[DevVoid, ""], [DevVoid, ""]],
     }
-    cmd_list.update(PoolExpChannelDeviceClass.cmd_list)
+    cmd_list.update(PoolTimerableDeviceClass.cmd_list)
+
 
     #    Attribute definitions
     attr_list = {
         'DataSource': [[DevString, SCALAR, READ]],
     }
-    attr_list.update(PoolExpChannelDeviceClass.attr_list)
+    attr_list.update(PoolTimerableDeviceClass.attr_list)
 
     standard_attr_list = {
         'Value': [[_DFT_VALUE_TYPE, _DFT_VALUE_FORMAT, READ,
                    _DFT_VALUE_MAX_SHAPE[0], _DFT_VALUE_MAX_SHAPE[1]],
                   {'abs_change': '1.0', }],
     }
-    standard_attr_list.update(PoolExpChannelDeviceClass.standard_attr_list)
+    standard_attr_list.update(PoolTimerableDeviceClass.standard_attr_list)
 
     def _get_class_properties(self):
-        ret = PoolExpChannelDeviceClass._get_class_properties(self)
+        ret = PoolTimerableDeviceClass._get_class_properties(self)
         ret['Description'] = "2D device class"
-        ret['InheritedFrom'].insert(0, 'PoolExpChannelDevice')
+        ret['InheritedFrom'].insert(0, 'PoolTimerableDevice')
         return ret

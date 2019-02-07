@@ -202,3 +202,11 @@ scan macros
     * :class:`~sardana.macroserver.macros.scan.d2scanct`
     * :class:`~sardana.macroserver.macros.scan.d3scanct`
     * :class:`~sardana.macroserver.macros.scan.d4scanct`
+
+scan related macros
+-------------------
+
+.. hlist::
+    :columns: 5
+
+    * :class:`~sardana.macroserver.macros.standard.newfile`

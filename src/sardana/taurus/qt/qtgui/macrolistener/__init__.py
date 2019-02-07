@@ -23,9 +23,9 @@
 ##
 ##############################################################################
 
-from sardana.macroserver.scan.recorder.storage import BaseFileRecorder
+"""This package contains a collection of taurus widgets designed to connect
+to sardana"""
 
+__docformat__ = 'restructuredtext'
 
-class FakeScanRecorder(BaseFileRecorder):
-    """ Fake ScanRecorder class for test purpose"""
-    pass
+from .macrolistener import *  # noqa: F401,F403

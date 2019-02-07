@@ -25,11 +25,12 @@
 
 __all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "repeat", "set_lim",
            "set_lm", "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm",
-           "tw", "logmacro"]
+           "tw", "logmacro", "newfile"]
 
 __docformat__ = 'restructuredtext'
 
 import datetime
+import os
 
 import numpy as np
 from taurus import Device
@@ -39,7 +40,7 @@ from PyTango import DevState
 
 from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, \
     ViewOption, iMacro, Hookable
-from sardana.macroserver.msexception import StopException
+from sardana.macroserver.msexception import StopException, UnknownEnv
 from sardana.macroserver.scan.scandata import Record
 from sardana.macroserver.macro import Optional
 
@@ -158,6 +159,7 @@ class _wum(Macro):
         motor_names = []
         motor_pos = []
         motor_list = sorted(motor_list)
+        pos_format = self.getViewOption(ViewOption.PosFormat)
         for motor in motor_list:
             name = motor.getName()
             motor_names.append([name])
@@ -168,6 +170,8 @@ class _wum(Macro):
             motor_width = max(motor_width, len(name))
 
         fmt = '%c*.%df' % ('%', motor_width - 5)
+        if pos_format > -1:
+            fmt = '%c*.%df' % ('%', int(pos_format))
 
         table = Table(motor_pos, elem_fmt=[fmt],
                       col_head_str=motor_names, col_head_width=motor_width,
@@ -889,3 +893,100 @@ class repeat(Hookable, Macro):
                 self.__loop()
                 progress = ((i + 1) / float(nr)) * 100
                 yield progress
+
+
+class newfile(Hookable, Macro):
+    """ Sets the ScanDir and ScanFile as well as ScanID in the environment.
+
+    If ScanFilePath is only a file name, the ScanDir must be set externally
+    via `senv ScanDir <PathToScanFile>` or using the %expconf. Otherwise,
+    the path in ScanFilePath must be absolute and existing on the
+    MacroServer host.
+
+    The ScanID should be set to the value before the upcoming scan number.
+    Default value is 0.
+    """
+
+    hints = {'allowsHooks': ('post-newfile')}
+
+    param_def = [
+        ['ScanFilePath_list',
+         [['ScanFilePath', Type.String, None, '(ScanDir/)ScanFile']],
+         None, 'List of (ScanDir/)ScanFile'],
+        ['ScanID', Type.Integer, 0, 'Scan ID'],
+    ]
+
+    def run(self, ScanFilePath_list, ScanID):
+        path_list = []
+        fileName_list = []
+        # traverse the repeat parameters for the ScanFilePath_list
+        for i, ScanFilePath in enumerate(ScanFilePath_list):
+            path = os.path.dirname(ScanFilePath)
+            fileName = os.path.basename(ScanFilePath)
+            if not path and i == 0:
+                # first entry and no given ScanDir: check if ScanDir exists
+                try:
+                    ScanDir = self.getEnv('ScanDir')
+                except UnknownEnv:
+                    ScanDir = ''
+                if not (isinstance(ScanDir, basestring) and len(ScanDir) > 0):
+                    msg = ('Data is not stored until ScanDir is correctly '
+                           'set! Provide ScanDir with newfile macro: '
+                           '`newfile [<ScanDir>/<ScanFile>] <ScanID>` '
+                           'or `senv ScanDir <ScanDir>` or with %expconf')
+                    self.error(msg)
+                    return
+                else:
+                    path = ScanDir
+            elif not path and i > 0:
+                # not first entry and no given path: use path of last iteration
+                path = path_list[i-1]
+            elif not os.path.isabs(path):
+                # relative path
+                self.error('Only absolute path are allowed!')
+                return
+            else:
+                # absolute path
+                path = os.path.normpath(path)
+
+            if i > 0 and (path not in path_list):
+                # check if paths are equal
+                self.error('Multiple paths to the data files are not allowed')
+                return
+            elif not os.path.exists(path):
+                # check if folder exists
+                self.error('Path %s does not exists on the host of the '
+                           'MacroServer and has to be created in '
+                           'advance.' % path)
+                return
+            else:
+                self.debug('Path %s appended.' % path)
+                path_list.append(path)
+
+            if not fileName:
+                self.error('No filename is given.')
+                return
+            elif fileName in fileName_list:
+                self.error('Duplicate filename %s is not allowed.' % fileName)
+                return
+            else:
+                self.debug('Filename is %s.' % fileName)
+                fileName_list.append(fileName)
+
+        if ScanID < 1:
+            ScanID = 0
+
+        self.setEnv('ScanFile', fileName_list)
+        self.setEnv('ScanDir', path_list[0])
+        self.setEnv('ScanID', ScanID)
+
+        self.output('ScanDir is\t: %s', path_list[0])
+        for i, ScanFile in enumerate(fileName_list):
+            if i == 0:
+                self.output('ScanFile set to\t: %s', ScanFile)
+            else:
+                self.output('\t\t  %s', ScanFile)
+        self.output('Next scan is\t: #%d', ScanID+1)
+
+        for postNewfileHook in self.getHooks('post-newfile'):
+            postNewfileHook()

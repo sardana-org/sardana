@@ -23,8 +23,14 @@
 ##
 ##############################################################################
 
-from taurus.external.qt import Qt
-from PyQt4 import Qsci
+from taurus.external.qt import Qt, compat
+
+try:
+    # TODO: Check if qscintilla can be used with other bindings
+    from PyQt4 import Qsci
+except Exception as e:
+    raise ImportError('MacroEditor requires Qsci  (qscintilla): %r', e)
+
 
 from taurus.qt.qtgui.resource import getThemeIcon
 
@@ -49,37 +55,36 @@ class MacroEditor(Qsci.QsciScintilla):
         self.textEdit.setLexer(self.pythonLexer)
 
         self.newAction = Qt.QAction(getThemeIcon("document-new"), "New", self)
-        self.connect(self.newAction, Qt.SIGNAL("triggered()"), self.newFile)
+        self.newAction.triggered.connect(self.newFile)
         self.newAction.setToolTip("Create new file")
         self.newAction.setShortcut("Ctrl+N")
 
         self.openAction = Qt.QAction(
             getThemeIcon("document-open"), "Open", self)
-        self.connect(self.openAction, Qt.SIGNAL("triggered()"), self.openFile)
+        self.openAction.triggered.connect(self.openFile)
         self.openAction.setToolTip("Open existing file")
         self.openAction.setShortcut("Ctrl+O")
 
         self.saveAction = Qt.QAction(
             getThemeIcon("document-save"), "Save", self)
-        self.connect(self.saveAction, Qt.SIGNAL("triggered()"), self.saveFile)
+        self.saveAction.triggered.connect(self.saveFile)
         self.saveAction.setToolTip("Save document to disk")
         self.saveAction.setShortcut("Ctrl+S")
 
         self.saveAsAction = Qt.QAction(getThemeIcon(
             "document-save-as"), "Save as...", self)
-        self.connect(self.saveAsAction, Qt.SIGNAL(
-            "triggered()"), self.saveFile)
+        self.saveAction.triggered.connect(self.saveFile)
         self.saveAsAction.setToolTip("Save document under a new name")
 
         self.cutAction = Qt.QAction(getThemeIcon("edit-cut"), "Cut", self)
-        self.connect(self.cutAction, Qt.SIGNAL("triggered()"), self.cut)
+        self.cutAction.triggered.connect(self.cut)
         self.cutAction.setToolTip(
             "Cut current selection's contents to the clipboard")
         self.cutAction.setShortcut("Ctrl+X")
         self.cutAction.setEnabled(False)
 
         self.copyAction = Qt.QAction(getThemeIcon("edit-copy"), "Copy", self)
-        self.connect(self.copyAction, Qt.SIGNAL("triggered()"), self.copy)
+        self.copyAction.triggered.connect(self.copy)
         self.copyAction.setToolTip(
             "Copy current selection's contents to the clipboard")
         self.copyAction.setShortcut("Ctrl+C")
@@ -87,19 +92,17 @@ class MacroEditor(Qsci.QsciScintilla):
 
         self.pasteAction = Qt.QAction(
             getThemeIcon("edit-paste"), "Paste", self)
-        self.connect(self.pasteAction, Qt.SIGNAL("triggered()"), self.paste)
+        self.pasteAction.triggered.connect(self.paste)
         self.pasteAction.setToolTip(
             "Paste the clipboard's contents into the current selection")
         self.pasteAction.setShortcut("Ctrl+V")
 
         self.aboutAction = Qt.QAction("About", self)
-        self.connect(self.aboutAction, Qt.SIGNAL("triggered()"), self.about)
+        self.aboutAction.triggered.connect(self.about)
         self.aboutAction.setToolTip("Show the application's About box")
 
-        self.connect(self.textEdit, Qt.SIGNAL(
-            "copyAvailable(bool)"), self.cutAction.setEnabled)
-        self.connect(self.textEdit, Qt.SIGNAL(
-            "copyAvailable(bool)"), self.copyAction.setEnabled)
+        self.textEdit.copyAvailable.connect(self.cutAction.setEnabled)
+        self.textEdit.copyAvailable.connect(self.copyAction.setEnabled)
 
         self.setCurrentFile("")
 
@@ -117,7 +120,7 @@ class MacroEditor(Qsci.QsciScintilla):
 
     def openFile(self):
         if self.maybeSave():
-            fileName = Qt.QFileDialog.getOpenFileName(self)
+            fileName, _ = compat.getOpenFileName(self)
         if not fileName is None and file != "":
             self.loadFile(fileName)
 
@@ -128,7 +131,7 @@ class MacroEditor(Qsci.QsciScintilla):
             return self.__saveFile(self.curFile)
 
     def __saveAs(self):
-        self.fileName = Qt.QFileDialog.getSaveFileName(self)
+        self.fileName, _ = compat.getSaveFileName(self)
         if self.fileName == "":
             return False
         return self.__saveFile(self.fileName)
@@ -190,7 +193,7 @@ class MacroEditor(Qsci.QsciScintilla):
     def loadFile(self, fileName):
         try:
             fileHandle = open(fileName, 'r')
-        except IOError, e:
+        except IOError as e:
             Qt.QMessageBox.warning(self, "MacroEditor",
                                    "Cannot read file %s:\n%s." % (fileName, e))
             return False
@@ -205,7 +208,7 @@ class MacroEditor(Qsci.QsciScintilla):
     def __saveFile(self, fileName):
         try:
             file = open(fileName, 'w')
-        except IOError, e:
+        except IOError as e:
             Qt.QMessageBox.warning(
                 self, "MacroEditor", "Cannot write file %s:\n%s." % (fileName, e))
             return False
