@@ -40,14 +40,14 @@ class ShowScanOnline(DynamicPlotManager):
 
 class TaurusGuiLite(TaurusGui):
 
-    enableJorgBar = False
-    enablePanelsMenu = False
-    enableSharedDataConnections = False
-    enableQuickAccessToolBar = False
-    enableToolsMenu = False
-    enableTaurusMenu = False
-    enableFullScreenToolBar = False
-    enablePerspectivesToolBar = False
+    ENABLE_APPLETS_TOOLBAR = False
+    ENABLE_PANELS_MENU = False
+    ENABLED_SHARE_DATA_CONNECTIONS = False
+    ENABLE_QUICK_ACCESS_TOOLBAR = False
+    ENABLE_TOOLS_MENU = False
+    ENABLE_TAURUS_MENU = False
+    ENABLE_FULLSCREEN_TOOLBAR = False
+    ENABLE_PERSPECTIVE_TOOLBAR = False
 
 
 def main():
