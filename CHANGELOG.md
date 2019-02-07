@@ -9,6 +9,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 * Possibility to directly acquire an experimental channel (without the need to define
   a measurement group) (#185, #997)
+  * `IntegrationTime` (Tango) and `integration_time` (core) attributes to all experimental
+    channels
+  * `Timer` (Tango) and `timer` (core) attribute to all timerable experimental channels
 * `newfile` macro for setting `ScanDir`, `ScanFile` and `ScanID` env variables (#777)
 
 ## [2.6.1] 2019-02-04
