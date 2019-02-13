@@ -15,6 +15,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   * `default_timer` class attribute to all timerable controllers (plugins) to let them
     announce the default timer axis
 * `newfile` macro for setting `ScanDir`, `ScanFile` and `ScanID` env variables (#777)
+* Warning message when hooks gets overridden with `Hookable.hooks` property (#1041)
 
 ### Fixed
 
