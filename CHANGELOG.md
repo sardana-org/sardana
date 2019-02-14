@@ -23,6 +23,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   `ScanDir`, `ActiveMntGrp`, `PreScanSnapshot` and `DataCompressionRank` (#1040)
 * MeasurementGroup's Moveable attribute when set to "None" in Tango is used as None
   in the core (#1001)
+* Compatibility of measurement group plotting configurations created with
+  sardana < 2.4.0 and taurus < 4.3.0 (#1017, #1022)
  
 ## [2.6.1] 2019-02-04
 
