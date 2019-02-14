@@ -439,7 +439,7 @@ class MeasurementConfiguration(object):
         self._master_monitor_sw_start = None
         self._label = None
         self._description = None
-        self._user_confg = {}
+        self._user_config = {}
         self._channel_acq_synch = {}
         self._ctrl_acq_synch = {}
         self.changed = False
@@ -584,7 +584,7 @@ class MeasurementConfiguration(object):
 
     def get_configuration_for_user(self):
         """Return measurement configuration serializable data structure."""
-        return self._user_confg
+        return self._user_config
 
     def set_configuration_from_user(self, cfg, to_fqdn=True):
         """Load measurement configuration from serializable data structure."""
@@ -717,6 +717,7 @@ class MeasurementConfiguration(object):
                 else:
                     if to_fqdn:
                         ch_name = _to_fqdn(ch_name, logger=self._parent)
+                        ch_data['full_name'] = ch_name
                     channel = pool.get_element_by_full_name(ch_name)
                 ch_data = self._fill_channel_data(channel, ch_data)
                 user_config_channel[ch_name] = ch_data
@@ -802,7 +803,7 @@ class MeasurementConfiguration(object):
         self._master_monitor_sw = master_monitor_sw
         self._master_timer_sw_start = master_timer_sw_start
         self._master_monitor_sw_start = master_monitor_sw_start
-        self._user_confg = user_config
+        self._user_config = user_config
         self._channel_acq_synch = channel_acq_synch
         self._ctrl_acq_synch = ctrl_acq_synch
 
