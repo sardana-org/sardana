@@ -16,6 +16,7 @@ This file follows the formats and conventions from [keepachangelog.com]
     announce the default timer axis
 * `newfile` macro for setting `ScanDir`, `ScanFile` and `ScanID` env variables (#777)
 * Warning message when hooks gets overridden with `Hookable.hooks` property (#1041)
+* Acquisition macro examples (#1047)
 
 ### Fixed
 
