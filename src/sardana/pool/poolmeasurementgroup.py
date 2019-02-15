@@ -206,6 +206,16 @@ class ControllerConfiguration(ConfigurationItem):
                 self._channels_disabled = []
             self._channels_disabled.append(channel_item)
 
+    def remove_channel(self, channel_item):
+        """Remove a channel configuration item."""
+        self._channels.remove(channel_item)
+        if channel_item.enabled:
+            self._channels_enabled.remove(channel_item)
+            if len(self._channels_enabled) == 0:
+                self.enabled = False
+        else:
+            self._channels_disabled.remove(channel_item)
+
     def update_state(self):
         """Update internal state based on the aggregated channels."""
         self.enabled = False
