@@ -648,31 +648,43 @@ class tw(iMacro):
 ##########################################################################
 
 
+def _value_to_repr(data):
+    if data is None:
+        return "<nodata>"
+    elif np.rank(data) > 0:
+        return list(np.shape(data))
+    else:
+        return data
+
+
 class ct(Macro, Hookable):
     """Count for the specified time on the active measurement group"""
 
-    env = ('ActiveMntGrp',)
     hints = {'allowsHooks': ('pre-acq', 'post-acq')}
     param_def = [
         ['integ_time', Type.Float, 1.0, 'Integration time'],
-        ['mnt_grp', Type.MeasurementGroup, Optional, 'Measurement Group to '
-                                                     'use']
-
+        ['countable_elem', Type.Countable, Optional,
+         'Countable element e.g. MeasurementGroup or ExpChannel']
     ]
 
-    def prepare(self, integ_time, mnt_grp, **opts):
-        if mnt_grp is None:
-            self.mnt_grp_name = self.getEnv('ActiveMntGrp')
-            self.mnt_grp = self.getObj(self.mnt_grp_name,
-                                       type_class=Type.MeasurementGroup)
+    def prepare(self, integ_time, countable_elem, **opts):
+        if countable_elem is None:
+            try:
+                self.countable_elem_name = self.getEnv('ActiveMntGrp')
+            except UnknownEnv:
+                return
+            self.countable_elem = self.getObj(
+                self.countable_elem_name, type_class=Type.MeasurementGroup)
         else:
-            self.mnt_grp_name = mnt_grp.name
-            self.mnt_grp = mnt_grp
+            self.countable_elem_name = countable_elem.name
+            self.countable_elem = countable_elem
 
-    def run(self, integ_time, mnt_grp):
-        if self.mnt_grp is None:
-            self.error('The MntGrp {} is not defined or has invalid '
-                       'value'.format(self.mnt_grp_name))
+    def run(self, integ_time, countable_elem):
+        if self.countable_elem is None:
+            msg = ('Unknown countable {0} element. Use macro parameter or'
+                   'ActiveMntGrp environment variable'.format(
+                                                    self.countable_elem_name))
+            self.error(msg)
             return
         # integration time has to be accessible from with in the hooks
         # so declare it also instance attribute
@@ -685,21 +697,30 @@ class ct(Macro, Hookable):
         for preAcqHook in self.getHooks('pre-acq'):
             preAcqHook()
 
-        state, data = self.mnt_grp.count(integ_time)
+        state, data = self.countable_elem.count(integ_time)
 
         for postAcqHook in self.getHooks('post-acq'):
             postAcqHook()
 
         names, counts = [], []
-        for ch_info in self.mnt_grp.getChannelsEnabledInfo():
-            names.append('  %s' % ch_info.label)
-            ch_data = data.get(ch_info.full_name)
-            if ch_data is None:
-                counts.append("<nodata>")
-            elif ch_info.shape > [1]:
-                counts.append(list(ch_data.shape))
-            else:
-                counts.append(ch_data)
+        if self.countable_elem.type == Type.MeasurementGroup:
+            # TODO: check if possible to use _value_to_repr helper
+            meas_grp = self.countable_elem
+            for ch_info in meas_grp.getChannelsEnabledInfo():
+                names.append('  %s' % ch_info.label)
+                ch_data = data.get(ch_info.full_name)
+                if ch_data is None:
+                    counts.append("<nodata>")
+                elif ch_info.shape > [1]:
+                    counts.append(list(ch_data.shape))
+                else:
+                    counts.append(ch_data)
+        else:
+            channel = self.countable_elem
+            names.append("  %s" % channel.name)
+            value = channel.getValue()
+            counts.append(_value_to_repr(value))
+            data = {channel.full_name: value}
         self.setData(Record(data))
         table = Table([counts], row_head_str=names, row_head_fmt='%*s',
                       col_sep='  =  ')
@@ -710,52 +731,63 @@ class ct(Macro, Hookable):
 class uct(Macro):
     """Count on the active measurement group and update"""
 
-    env = ('ActiveMntGrp',)
-
     param_def = [
         ['integ_time', Type.Float, 1.0, 'Integration time'],
-        ['mnt_grp', Type.MeasurementGroup, Optional, 'Measurement Group to '
-                                                     'use']
-
+        ['countable_elem', Type.Countable, Optional,
+         'Countable element e.g. MeasurementGroup or ExpChannel']
     ]
 
-    def prepare(self, integ_time, mnt_grp, **opts):
+    def prepare(self, integ_time, countable_elem, **opts):
 
         self.print_value = False
 
-        if mnt_grp is None:
-            self.mnt_grp_name = self.getEnv('ActiveMntGrp')
-            self.mnt_grp = self.getObj(self.mnt_grp_name,
-                                       type_class=Type.MeasurementGroup)
+        if countable_elem is None:
+            try:
+                self.countable_elem_name = self.getEnv('ActiveMntGrp')
+            except UnknownEnv:
+                return
+            self.countable_elem = self.getObj(self.countable_elem_name)
         else:
-            self.mnt_grp_name = mnt_grp.name
-            self.mnt_grp = mnt_grp
+            self.countable_elem_name = countable_elem.name
+            self.countable_elem = countable_elem
 
-        if self.mnt_grp is None:
+        if self.countable_elem is None:
             return
 
-        names = self.mnt_grp.getChannelLabels()
-        self.names = [[n] for n in names]
         self.channels = []
         self.values = []
-        for channel_info in self.mnt_grp.getChannels():
-            full_name = channel_info["full_name"]
-            channel = Device(full_name)
+        if self.countable_elem.type == Type.MeasurementGroup:
+            names = self.countable_elem.getChannelLabels()
+            self.names = [[n] for n in names]
+            for channel_info in self.countable_elem.getChannels():
+                full_name = channel_info["full_name"]
+                channel = Device(full_name)
+                self.channels.append(channel)
+                value = channel.getValue(force=True)
+                self.values.append([value])
+                valueObj = channel.getValueObj_()
+                valueObj.subscribeEvent(self.counterChanged, channel)
+        else:
+            channel = self.countable_elem
+            self.names = [[channel.getName()]]
+            channel = Device(channel.full_name)
             self.channels.append(channel)
             value = channel.getValue(force=True)
             self.values.append([value])
             valueObj = channel.getValueObj_()
             valueObj.subscribeEvent(self.counterChanged, channel)
 
-    def run(self, integ_time, mnt_grp):
-        if self.mnt_grp is None:
-            self.error('The MntGrp {} is not defined or has invalid '
-                       'value'.format(self.mnt_grp_name))
+    def run(self, integ_time, countable_elem):
+        if self.countable_elem is None:
+            msg = ('Unknown countable {0} element. Use macro parameter or'
+                   'ActiveMntGrp environment variable'.format(
+                                                    self.countable_elem_name))
+            self.error(msg)
             return
 
         self.print_value = True
         try:
-            _, data = self.mnt_grp.count(integ_time)
+            _, data = self.countable_elem.count(integ_time)
             self.setData(Record(data))
         finally:
             self.finish()
