@@ -338,7 +338,7 @@ TYPE_ACQUIRABLE_ELEMENTS = set((ET.Motor, ET.CTExpChannel, ET.ZeroDExpChannel,
 #: a set containing the possible measure-able elements.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
 TYPE_COUNTABLE_ELEMENTS = set((ET.CTExpChannel, ET.OneDExpChannel,
-                                ET.TwoDExpChannel, ET.MeasurementGroup))
+                               ET.TwoDExpChannel, ET.MeasurementGroup))
 
 #: a set containing the possible types of experimental channel elements.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
