@@ -660,7 +660,6 @@ def _value_to_repr(data):
 class ct(Macro, Hookable):
     """Count for the specified time on the active measurement group"""
 
-    env = ('ActiveMntGrp',)
     hints = {'allowsHooks': ('pre-acq', 'post-acq')}
     param_def = [
         ['integ_time', Type.Float, 1.0, 'Integration time'],
@@ -670,17 +669,22 @@ class ct(Macro, Hookable):
 
     def prepare(self, integ_time, countable_elem, **opts):
         if countable_elem is None:
-            self.countable_elem_name = self.getEnv('ActiveMntGrp')
-            self.countable_elem = self.getObj(self.countable_elem_name,
-                                       type_class=Type.MeasurementGroup)
+            try:
+                self.countable_elem_name = self.getEnv('ActiveMntGrp')
+            except UnknownEnv:
+                return
+            self.countable_elem = self.getObj(
+                self.countable_elem_name, type_class=Type.MeasurementGroup)
         else:
             self.countable_elem_name = countable_elem.name
             self.countable_elem = countable_elem
 
     def run(self, integ_time, countable_elem):
         if self.countable_elem is None:
-            self.error('The MntGrp {} is not defined or has invalid '
-                       'value'.format(self.countable_elem_name))
+            msg = ('Unknown countable {0} element. Use macro parameter or'
+                   'ActiveMntGrp environment variable'.format(
+                                                    self.countable_elem_name))
+            self.error(msg)
             return
         # integration time has to be accessible from with in the hooks
         # so declare it also instance attribute
@@ -727,13 +731,10 @@ class ct(Macro, Hookable):
 class uct(Macro):
     """Count on the active measurement group and update"""
 
-    env = ('ActiveMntGrp',)
-
     param_def = [
         ['integ_time', Type.Float, 1.0, 'Integration time'],
-        ['countable_elem', Type.Countable, Optional, 'Measurement Group to '
-                                                     'use']
-
+        ['countable_elem', Type.Countable, Optional,
+         'Countable element e.g. MeasurementGroup or ExpChannel']
     ]
 
     def prepare(self, integ_time, countable_elem, **opts):
@@ -741,7 +742,10 @@ class uct(Macro):
         self.print_value = False
 
         if countable_elem is None:
-            self.countable_elem_name = self.getEnv('ActiveMntGrp')
+            try:
+                self.countable_elem_name = self.getEnv('ActiveMntGrp')
+            except UnknownEnv:
+                return
             self.countable_elem = self.getObj(self.countable_elem_name)
         else:
             self.countable_elem_name = countable_elem.name
@@ -775,8 +779,10 @@ class uct(Macro):
 
     def run(self, integ_time, countable_elem):
         if self.countable_elem is None:
-            self.error('The MntGrp {} is not defined or has invalid '
-                       'value'.format(self.countable_elem_name))
+            msg = ('Unknown countable {0} element. Use macro parameter or'
+                   'ActiveMntGrp environment variable'.format(
+                                                    self.countable_elem_name))
+            self.error(msg)
             return
 
         self.print_value = True
