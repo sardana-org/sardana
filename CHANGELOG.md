@@ -14,6 +14,9 @@ This file follows the formats and conventions from [keepachangelog.com]
   * `Timer` (Tango) and `timer` (core) attribute to all timerable experimental channels
   * `default_timer` class attribute to all timerable controllers (plugins) to let them
     announce the default timer axis
+* Possibility to pass an experimental channel (now compatible only with timerable channels) 
+  as a parameter of `ct` and `uct` macros in order to acquire directly on the channel (#1049)
+* `Countable` element type that includes measurement group and experimental channels (#1049)
 * `newfile` macro for setting `ScanDir`, `ScanFile` and `ScanID` env variables (#777)
 * Warning message when hooks gets overridden with `Hookable.hooks` property (#1041)
 * Acquisition macro examples (#1047)
