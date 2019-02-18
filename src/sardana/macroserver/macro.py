@@ -264,6 +264,12 @@ class Hookable(Logger):
                 'the hooks must be passed as a list<callable,list<str>>')
             return
 
+        if len(self.hooks) > 0:
+            msg = ("This macro defines its own hooks. Previously defined "
+                   "hooks, including the general ones, would be only called "
+                   "if these own hooks were added using the appendHook "
+                   "method or appended to the self.hooks.")
+            self.warning(msg)
         # store self._hooks, making sure it is of type:
         # list<callable,list<str>>
         self._hooks = []

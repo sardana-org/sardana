@@ -8,13 +8,18 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Added
 
 * Possibility to directly acquire an experimental channel (without the need to define
-  a measurement group) (#185, #997)
+  a measurement group) (#185, #997, #1048)
   * `IntegrationTime` (Tango) and `integration_time` (core) attributes to all experimental
     channels
   * `Timer` (Tango) and `timer` (core) attribute to all timerable experimental channels
   * `default_timer` class attribute to all timerable controllers (plugins) to let them
     announce the default timer axis
+* Possibility to pass an experimental channel (now compatible only with timerable channels) 
+  as a parameter of `ct` and `uct` macros in order to acquire directly on the channel (#1049)
+* `Countable` element type that includes measurement group and experimental channels (#1049)
 * `newfile` macro for setting `ScanDir`, `ScanFile` and `ScanID` env variables (#777)
+* Warning message when hooks gets overridden with `Hookable.hooks` property (#1041)
+* Acquisition macro examples (#1047)
 
 ### Fixed
 
@@ -22,6 +27,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   `ScanDir`, `ActiveMntGrp`, `PreScanSnapshot` and `DataCompressionRank` (#1040)
 * MeasurementGroup's Moveable attribute when set to "None" in Tango is used as None
   in the core (#1001)
+* Compatibility of measurement group plotting configurations created with
+  sardana < 2.4.0 and taurus < 4.3.0 (#1017, #1022)
  
 ## [2.6.1] 2019-02-04
 

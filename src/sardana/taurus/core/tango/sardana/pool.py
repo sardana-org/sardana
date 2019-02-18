@@ -769,7 +769,11 @@ class ExpChannel(PoolElement):
         self._total_go_time = time.time() - start_time
         return ret
 
+    startCount = PoolElement.start
+    waitCount = PoolElement.waitFinish
     count = go
+    stopCount = PoolElement.abort
+    stop = PoolElement.stop
 
 
 class TimerableExpChannel(ExpChannel):
