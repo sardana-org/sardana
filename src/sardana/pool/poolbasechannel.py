@@ -640,6 +640,18 @@ class PoolTimerableChannel(PoolBaseChannel):
             self._configure_timer()
         self.controller.set_ctrl_par("synchronization",
                                      AcqSynch.SoftwareTrigger)
+        self._prepare()
         ctrls, master = get_timerable_items(
             [self._conf_ctrl], self._conf_timer, AcqMode.Timer)
         self.acquisition.run(ctrls, self.integration_time, master, None)
+
+    def _prepare(self):
+        # TODO: think of implementing the preparation in the software
+        # acquisition action, similarly as it is done for the global
+        # acquisition action
+        axis = self._conf_timer.axis
+        repetitions = 1
+        latency = 0
+        nb_starts = 1
+        self.controller.ctrl.PrepareOne(axis, self.integration_time,
+                                        repetitions, latency, nb_starts)
