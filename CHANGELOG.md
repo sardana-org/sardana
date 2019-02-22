@@ -8,7 +8,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Added
 
 * Possibility to directly acquire an experimental channel (without the need to define
-  a measurement group) (#185, #997, #1048)
+  a measurement group) (#185, #997, #1048, #1061)
   * `IntegrationTime` (Tango) and `integration_time` (core) attributes to all experimental
     channels
   * `Timer` (Tango) and `timer` (core) attribute to all timerable experimental channels
