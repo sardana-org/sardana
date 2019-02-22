@@ -405,7 +405,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             self, 'Choose directory for saving files', self.ui.pathLE.text())
         if ret:
             self.ui.pathLE.setText(ret)
-            self.ui.pathLE.emit.textEdited.emit(ret)
+            self.ui.pathLE.textEdited.emit(ret)
 
     def onDialogButtonClicked(self, button):
         role = self.ui.buttonBox.buttonRole(button)
