@@ -29,6 +29,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   in the core (#1001)
 * Compatibility of measurement group plotting configurations created with
   sardana < 2.4.0 and taurus < 4.3.0 (#1017, #1022)
+* General Hook tests (#1062)
  
 ## [2.6.1] 2019-02-04
 
