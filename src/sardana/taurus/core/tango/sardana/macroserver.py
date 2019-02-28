@@ -457,8 +457,8 @@ class BaseDoor(MacroServerDevice):
         evt_wait = AttributeEventWait(self.getAttribute("state"))
         evt_wait.lock()
         try:
-            time_stamp = time.time()
             evt_wait.clearEventSet()
+            time_stamp = time.time()
             self.command_inout("AbortMacro")
             evt_wait.waitEvent(self.Running, equal=False, after=time_stamp,
                                timeout=self.InteractiveTimeout)
@@ -474,8 +474,8 @@ class BaseDoor(MacroServerDevice):
         evt_wait = AttributeEventWait(self.getAttribute("state"))
         evt_wait.lock()
         try:
-            time_stamp = time.time()
             evt_wait.clearEventSet()
+            time_stamp = time.time()
             self.command_inout("StopMacro")
             evt_wait.waitEvent(self.Running, equal=False, after=time_stamp,
                                timeout=self.InteractiveTimeout)
@@ -557,8 +557,8 @@ class BaseDoor(MacroServerDevice):
         evt_wait.lock()
         try:
             evt_wait.waitEvent(self.Running, equal=False, timeout=timeout)
-            ts = time.time()
             evt_wait.clearEventSet()
+            ts = time.time()
             result = self.command_inout("RunMacro", [etree.tostring(xml)])
             evt_wait.waitEvent(self.Running, after=ts, timeout=timeout)
             if synch:
