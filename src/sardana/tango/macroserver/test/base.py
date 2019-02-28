@@ -95,14 +95,14 @@ class BaseMacroServerTestCase(object):
         dft_ms_properties = os.path.join(MacroServerClass.DefaultEnvBaseDir,
                                          MacroServerClass.DefaultEnvRelDir)
         ds_inst_name = self.ms_ds_name.split("/")[1]
-        ms_properties = dft_ms_properties % {"ds_exec_name": "MacroServer",
-                                             "ds_inst_name": ds_inst_name}
-        ms_properties = os.path.normpath(ms_properties)
-        os.remove(ms_properties)
         self._msstarter.cleanDb(force=True)
         self._msstarter = None
         self.macroserver = None
         self.door = None
+        ms_properties = dft_ms_properties % {"ds_exec_name": "MacroServer",
+                                             "ds_inst_name": ds_inst_name}
+        ms_properties = os.path.normpath(ms_properties)
+        os.remove(ms_properties)
 
 
 if __name__ == '__main__':
