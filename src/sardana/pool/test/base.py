@@ -175,13 +175,13 @@ class BasePoolTestCase(object):
                 name = '_test_tg_%s_%s' % (ctrl, axis)
                 self.createTGElement(ctrl_obj, name, axis)
         # Create nctrls MOT ctrls
-        for ctrl in range(1, self.nctctrls + 1):
+        for ctrl in range(1, self.nmotctrls + 1):
             name = '_test_mot_ctrl_%s' % ctrl
             ctrl_obj = self.createController(name,
                                              'DummyMotorController',
                                              'DummyMotorController.py')
             # Create nelems CT elements for each ctrl
-            for axis in range(1, self.nctelems + 1):
+            for axis in range(1, self.nmotelems + 1):
                 name = '_test_mot_%s_%s' % (ctrl, axis)
                 self.createMotorElement(ctrl_obj, name, axis)
 
@@ -190,7 +190,7 @@ class BasePoolTestCase(object):
         tgs = len(self.tgs.keys())
         mots = len(self.mots.keys())
 
-        expected_cts = self.ntgelems * self.ntgctrls
+        expected_cts = self.nctelems * self.nctctrls
         msg = 'Something happened during the creation of CT elements.\n' + \
               'Expected %s and there are %s, %s' % \
               (expected_cts, cts, self.cts.keys())
