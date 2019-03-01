@@ -114,10 +114,14 @@ class BasePoolTestCase(object):
     def setUp(self):
         """Create a collection of controllers and elements.
         """
-        self.nctctrls = self.nzerodctrls = self.ntwodctrls = self.ntgctrls = \
-            self.nmotctrls = 4
-        self.nctelems = self.nzerodelems = self.ntwodelems = self.ntgelems = \
-            self.nmotelems = 5
+        self.nctctrls = self.nzerodctrls = self.ntgctrls = self.nmotctrls = 4
+        # dummy controller generates an array of zeros (1024x1024) for each
+        # axis, many axes may increase the memory consumption of testsuite
+        self.ntwodctrls = 1
+        self.nctelems = self.nzerodelems = self.ntgelems = self.nmotelems = 5
+        # dummy controller generates an array of zeros (1024x1024) for each
+        # axis, many axes may increase the memory consumption of testsuite
+        self.ntwodelems = 1
         self.pool = FakePool(self.POOLPATH, self.LOGLEVEL)
         # Use debug mode
 
