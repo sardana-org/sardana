@@ -139,7 +139,7 @@ class BasePoolTestCase(object):
             ctrl_obj = self.createController(name,
                                              'DummyCounterTimerController',
                                              'DummyCounterTimerController.py')
-            # Create nelems CT elements for each ctrl
+            # Create nctelems CT elements for each ctrl
             for axis in range(1, self.nctelems + 1):
                 name = '_test_ct_%s_%s' % (ctrl, axis)
                 self.createCTElement(ctrl_obj, name, axis)
@@ -149,7 +149,7 @@ class BasePoolTestCase(object):
             ctrl_obj = self.createController(name,
                                              'DummyZeroDController',
                                              'DummyZeroDController.py')
-            # Create nelems ZeroD elements for each ctrl
+            # Create nzerodelems ZeroD elements for each ctrl
             for axis in range(1, self.nzerodelems + 1):
                 name = '_test_0d_%s_%s' % (ctrl, axis)
                 self.createZeroDElement(ctrl_obj, name, axis)
@@ -159,7 +159,7 @@ class BasePoolTestCase(object):
             ctrl_obj = self.createController(name,
                                              'DummyTwoDController',
                                              'DummyTwoDController.py')
-            # Create nelems TwoD elements for each ctrl
+            # Create ntwodelems TwoD elements for each ctrl
             for axis in range(1, self.ntwodelems + 1):
                 name = '_test_2d_%s_%s' % (ctrl, axis)
                 self.createTwoDElement(ctrl_obj, name, axis)
@@ -170,17 +170,17 @@ class BasePoolTestCase(object):
             ctrl_obj = self.createController(name,
                                              'DummyTriggerGateController',
                                              'DummyTriggerGateController.py')
-            # Create nelems CT elements for each ctrl
+            # Create ntgelems TG elements for each ctrl
             for axis in range(1, self.ntgelems + 1):
                 name = '_test_tg_%s_%s' % (ctrl, axis)
                 self.createTGElement(ctrl_obj, name, axis)
-        # Create nctrls MOT ctrls
+        # Create nmotctrls MOT ctrls
         for ctrl in range(1, self.nmotctrls + 1):
             name = '_test_mot_ctrl_%s' % ctrl
             ctrl_obj = self.createController(name,
                                              'DummyMotorController',
                                              'DummyMotorController.py')
-            # Create nelems CT elements for each ctrl
+            # Create nmotelems MOT elements for each ctrl
             for axis in range(1, self.nmotelems + 1):
                 name = '_test_mot_%s_%s' % (ctrl, axis)
                 self.createMotorElement(ctrl_obj, name, axis)
