@@ -93,7 +93,21 @@ class GUIViewer(BaseGUIViewer):
                 if scan_dir is None or scan_file is None:
                     continue
                 if not isinstance(scan_file, (str, unicode)):
-                    scan_file = scan_file[0]
+                    scan_files = scan_file
+                    scan_file = None
+                    for fname in scan_files:
+                        if '.h5' == os.path.splitext(fname)[1]:
+                            scan_file = fname
+                            break
+                    if scan_file is None:
+                        print("Cannot plot scan:")
+                        print("It only works with h5 files.")
+                        return
+                else:
+                    if '.h5' != os.path.splitext(scan_file)[1]:
+                        print("Cannot plot scan:")
+                        print("It only works with h5 files.")
+                        return
                 break
             else:
                 print "Cannot plot scan:"
