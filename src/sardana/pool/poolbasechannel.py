@@ -118,6 +118,7 @@ class PoolBaseChannel(PoolElement):
             self, listeners=self.on_change)
         self._value_ref_buffer = self.ValueRefBufferClass(
             self, listeners=self.on_change)
+        self._value_ref_template = None
         self._pseudo_elements = []
         if self.AcquisitionClass is not None:
             acq_name = "%s.Acquisition" % self._name
@@ -514,6 +515,91 @@ class PoolBaseChannel(PoolElement):
         """
         val_attr = self._value_ref_buffer
         val_attr.clear()
+
+    # ------------------------------------------------------------------------
+    # value ref template
+    # ------------------------------------------------------------------------
+
+    def get_value_ref_template(self, cache=True, propagate=1):
+        """Returns the channel value reference template.
+
+        .. note::
+            The get_value_ref_template method has been included in Sardana on
+            a provisional basis. Backwards incompatible changes (up to and
+            including removal of the class) may occur if deemed necessary by
+            the core developers.
+
+        :param cache:
+            if ``True`` (default) return value ref template in cache,
+            otherwise read value from hardware
+        :type cache:
+            :obj:`bool`
+        :param propagate:
+            0 for not propagating, 1 to propagate, 2 propagate with priority
+        :type propagate:
+            obj:`int`
+        :return:
+            the channel value
+        :rtype:
+            :obj:`str`
+        """
+        if not cache or self._value_ref_template is None:
+            value_ref_template = self.read_value_ref_template()
+            self._set_value_ref_template(value_ref_template,
+                                         propagate=propagate)
+        return self._value_ref_template
+
+    def set_value_ref_template(self, value_ref_template, propagate=1):
+        """Set a value reference template.
+
+        .. note::
+            The set_value_ref_template method has been included in Sardana on
+            a provisional basis. Backwards incompatible changes (up to and
+            including removal of the class) may occur if deemed necessary by
+            the core developers.
+
+        :param value_ref_template:
+            the new value reference template
+        :type value_ref_template:
+            :obj:`str`
+        :param propagate:
+            0 for not propagating, 1 to propagate, 2 propagate with priority
+        :type propagate:
+            :obj:`int`
+        """
+        self.controller.set_axis_par(self.axis, "value_ref_template",
+                                     value_ref_template)
+        self._set_value_ref_template(value_ref_template, propagate=propagate)
+
+    def _set_value_ref_template(self, value_ref_template, propagate=1):
+        self._value_ref_template = value_ref_template
+        if not propagate:
+            return
+        self.fire_event(
+            EventType("value_ref_template", priority=propagate),
+            value_ref_template)
+
+    def read_value_ref_template(self):
+        """Reads the channel value reference template from hardware.
+
+        .. note::
+            The read_value_ref_template method has been included in Sardana on
+            a provisional basis. Backwards incompatible changes (up to and
+            including removal of the class) may occur if deemed necessary by
+            the core developers.
+
+        :return:
+            value reference template
+        :rtype:
+            :obj:`str` or :obj:`None`
+        """
+        value_ref_template = self.controller.get_axis_par(
+            self.axis, "value_ref_template")
+        return value_ref_template
+
+    value_ref_template = property(get_value_ref_template,
+                                  set_value_ref_template,
+                                  doc="channel value reference template")
 
     def is_referable(self):
         """Check if channel has referable capability.
