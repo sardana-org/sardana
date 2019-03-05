@@ -555,6 +555,10 @@ class BaseDoor(MacroServerDevice):
         evt_wait.lock()
         try:
             evt_wait.waitEvent(self.Running, equal=False, timeout=timeout)
+            # Clear event set to not confuse the value coming from the
+            # connection with the event of of end of the macro execution
+            # in the next wait event. This was observed on Windows where
+            # the time stamp resolution is not better than 1 ms.
             evt_wait.clearEventSet()
             ts = time.time()
             result = self.command_inout("RunMacro", [etree.tostring(xml)])
