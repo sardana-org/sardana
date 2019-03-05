@@ -470,7 +470,7 @@ class PoolController(PoolBaseController):
                              Description: "Value reference", },
                 "ValueRefBuffer": {Type: str,
                                    Access: DataAccess.ReadOnly,
-                                   Description: "Value reference buffer", }
+                                   Description: "Value reference buffer", },
                 "ValueRefTemplate": {Type: str,
                                      Access: DataAccess.ReadWrite,
                                      Description: "Value reference template"}
