@@ -457,7 +457,6 @@ class BaseDoor(MacroServerDevice):
         evt_wait = AttributeEventWait(self.getAttribute("state"))
         evt_wait.lock()
         try:
-            evt_wait.clearEventSet()
             time_stamp = time.time()
             self.command_inout("AbortMacro")
             evt_wait.waitEvent(self.Running, equal=False, after=time_stamp,
@@ -474,7 +473,6 @@ class BaseDoor(MacroServerDevice):
         evt_wait = AttributeEventWait(self.getAttribute("state"))
         evt_wait.lock()
         try:
-            evt_wait.clearEventSet()
             time_stamp = time.time()
             self.command_inout("StopMacro")
             evt_wait.waitEvent(self.Running, equal=False, after=time_stamp,
