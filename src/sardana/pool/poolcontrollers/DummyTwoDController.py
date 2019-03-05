@@ -21,6 +21,7 @@
 ##
 ##############################################################################
 
+import re
 import sys
 import time
 
@@ -46,6 +47,7 @@ class Channel:
         self.is_counting = False
         self.active = True
         self.amplitude = BaseValue('1.0')
+        self.value_ref_template = "h5file:///tmp/dummy2d_default_{index}.h5"
 
 
 class BaseValue(object):
@@ -207,16 +209,37 @@ class DummyTwoDController(TwoDController, Referable):
 
     def RefOne(self, axis):
         self._log.debug("RefOne(%s)", axis)
-        file_name = "/tmp/data.h5"
-        dset_name = "dataset_%d" % self.img_idx
+        idx = axis - 1
+        channel = self.channels[idx]
+        value_ref_template = channel.value_ref_template
+        if value_ref_template is None:
+            value_ref_template = "h5file:///tmp/dummy2d_default_{index}.h5"
+        try:
+            value_ref_uri = value_ref_template.format(index=self.img_idx)
+        except Exception:
+            value_ref_uri = value_ref_template
+            msg = ("Not able to format value reference template "
+                   "with index. Trying to use directly the template...")
+            self._log.warning(msg, exc_info=True)
+        match_res = re.match(r"h5file://(?P<path>\S+)::(?P<dataset>\S+)",
+                             value_ref_uri)
+        if match_res is None:
+            match_res = re.match(r"h5file://(?P<path>\S+)", value_ref_uri)
+        if match_res is None:
+            raise Exception("invalid value reference template")
+        path = match_res.group("path")
+        try:
+            dataset_name = match_res.group("dataset")
+        except IndexError:
+            dataset_name = "dataset"
         if "h5py" in sys.modules:
-            h5f = h5py.File(file_name, "w")
+            h5f = h5py.File(path, "w")
             img = self.read_channels[axis].value
-            h5f.create_dataset(dset_name, data=img)
+            h5f.create_dataset(dataset_name, data=img)
         else:
-            self._log.warning("RefOne(%d): not able to store h5 file (h5py "
-                              "is not available)", axis)
-        ref = "h5file:" + file_name + "::" + dset_name
+            msg = "Not able to store h5 file (h5py is not available)"
+            self._log.warning(msg)
+        ref = "h5file:" + path + "::" + dataset_name
         return ref
 
     def PreStartAll(self):
@@ -267,3 +290,15 @@ class DummyTwoDController(TwoDController, Referable):
         if value.startswith("tango://"):
             klass = TangoValue
         channel.amplitude = klass(value)
+
+    def SetAxisPar(self, axis, parameter, value):
+        idx = axis - 1
+        channel = self.channels[idx]
+        if parameter == "value_ref_template":
+            channel.value_ref_template = value
+
+    def GetAxisPar(self, axis, parameter):
+        idx = axis - 1
+        channel = self.channels[idx]
+        if parameter == "value_ref_template":
+            return channel.value_ref_template
