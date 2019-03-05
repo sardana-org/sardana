@@ -465,12 +465,12 @@ class PoolBaseChannel(PoolElement):
         if len(value_refs) == 0:
             return
         # fill value ref buffer
-        val_buffer = self._value_ref_buffer
-        val_buffer.extend(value_refs, idx)
+        val_ref_buffer = self._value_ref_buffer
+        val_ref_buffer.extend(value_refs, idx)
         # update value ref attribute
-        val_attr = self._value_ref
-        val_attr.set_value_ref(value_refs[-1], propagate=propagate)
-        return val_buffer
+        val_ref_attr = self._value_ref
+        val_ref_attr.set_value_ref(value_refs[-1], propagate=propagate)
+        return val_ref_buffer
 
     def append_value_ref_buffer(self, value_ref, idx=None, propagate=1):
         """Append new value ref to the value ref buffer at the idx position.
@@ -497,12 +497,12 @@ class PoolBaseChannel(PoolElement):
         :type propagate: int
         """
         # fill value ref buffer
-        val_buffer = self._value_ref_buffer
-        val_buffer.append(value_ref, idx)
+        val_ref_buffer = self._value_ref_buffer
+        val_ref_buffer.append(value_ref, idx)
         # update value ref attribute
-        val_attr = self._value_ref
-        val_attr.set_value(value_ref, propagate=propagate)
-        return val_buffer
+        val_ref_attr = self._value_ref
+        val_ref_attr.set_value(value_ref, propagate=propagate)
+        return val_ref_buffer
 
     def clear_value_ref_buffer(self):
         """Clear value ref buffer.
@@ -513,8 +513,8 @@ class PoolBaseChannel(PoolElement):
             including removal of the class) may occur if deemed necessary by
             the core developers.
         """
-        val_attr = self._value_ref_buffer
-        val_attr.clear()
+        val_ref_attr = self._value_ref_buffer
+        val_ref_attr.clear()
 
     # ------------------------------------------------------------------------
     # value ref template
