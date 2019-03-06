@@ -30,7 +30,7 @@ import numpy
 from taurus import Device
 from taurus.external.unittest import TestCase
 from taurus.test.base import insertTest
-from sardana.sardanautils import is_number, is_non_str_seq
+from sardana.sardanautils import is_number, is_non_str_seq, is_pure_str
 from sardana.taurus.core.tango.sardana.pool import registerExtensions
 from sardana.tango.pool.test.base_sartest import SarTestTestCase
 
@@ -72,9 +72,16 @@ class TestMeasurementGroup(SarTestTestCase, TestCase):
         try:
             mg = Device(mg_name)
             _, values = mg.count(1)
-            for channel, value in values.iteritems():
-                msg = "Value for %s is not numerical" % channel
-                self.assertTrue(is_numerical(value), msg)
+            for channel_name, value in values.iteritems():
+                channel = Device(channel_name)
+                if channel.is_referable():
+                    msg = "ValueRef (%s) for %s is not string" %\
+                          (value, channel_name)
+                    self.assertTrue(is_pure_str(value), msg)
+                else:
+                    msg = "Value (%s) for %s is not numerical" % \
+                          (value, channel_name)
+                    self.assertTrue(is_numerical(value), msg)
         finally:
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
