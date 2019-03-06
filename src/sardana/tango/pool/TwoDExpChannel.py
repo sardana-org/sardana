@@ -210,24 +210,10 @@ class TwoDExpChannel(PoolTimerableDevice):
 
     def read_ValueRef(self, attr):
         twod = self.twod
-        # TODO: decide if we force the controller developers to store the
-        # last acquired value in the controllers or we always will use
-        # cache. This is due to the fact that the clients (MS) read the value
-        # after the acquisition had finished.
-        use_cache = twod.is_in_operation() and not self.Force_HW_Read
-        # For the moment we just check if we recently receive ValueBuffer.
-        # event. In this case, we use cache and clean the flag
-        # so the cached value will be returned only at the first readout
-        # after the acquisition. This is a workaround for the count executed
-        # by the MacroServer e.g. step scans or ct which read the value after
-        # the acquisition.
-        if not use_cache and self._first_read_ref_cache:
-            use_cache = True
-            self._first_read_ref_cache = False
-        use_cache = True
-        value_ref = twod.get_value_ref(cache=use_cache, propagate=0)
+        value_ref = twod.get_value_ref()
         if value_ref.error:
             Except.throw_python_exception(*value_ref.exc_info)
+        use_cache = twod.is_in_operation() and not self.Force_HW_Read
         state = twod.get_state(cache=use_cache, propagate=0)
         quality = None
         if state == State.Moving:

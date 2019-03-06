@@ -87,13 +87,7 @@ class ValueRef(SardanaAttribute):
         basis. Backwards incompatible changes (up to and including removal
         of the class) may occur if deemed necessary by the core developers.
     """
-    def __init__(self, *args, **kwargs):
-        super(ValueRef, self).__init__(*args, **kwargs)
-
-    def update(self, cache=True, propagate=1):
-        if not cache or not self.has_value():
-            value = self.obj.read_value_ref()
-            self.set_value_ref(value, propagate=propagate)
+    pass
 
 
 class PoolBaseChannel(PoolElement):
@@ -404,7 +398,7 @@ class PoolBaseChannel(PoolElement):
         val_ref_attr.set_value(value_ref, propagate=propagate)
         return val_ref_attr
 
-    def get_value_ref(self, cache=True, propagate=1):
+    def get_value_ref(self):
         """Returns the channel value ref.
 
         .. note::
@@ -413,25 +407,15 @@ class PoolBaseChannel(PoolElement):
             including removal of the class) may occur if deemed necessary by
             the core developers.
 
-        :param cache:
-            if ``True`` (default) return value ref in cache, otherwise read
-            value from hardware
-        :type cache:
-            bool
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate:
-            int
         :return:
             the channel value
         :rtype:
-            :class:`~sardana.sardanaattribute.SardanaAttribute`"""
-        return self._get_value_ref(cache=cache, propagate=propagate)
-
-    def _get_value_ref(self, cache=True, propagate=1):
-        value_ref = self.get_value_ref_attribute()
-        value_ref.update(cache=cache, propagate=propagate)
-        return value_ref
+            :class:`~sardana.SardanaValue`"""
+        value_ref_attr = self.get_value_ref_attribute()
+        if not value_ref_attr.has_value():
+            raise Exception("ValueRef not available: no successful"
+                            " acquisition done so far!")
+        return value_ref_attr.value_obj
 
     value_ref = property(get_value_ref, doc="channel value ref")
 
