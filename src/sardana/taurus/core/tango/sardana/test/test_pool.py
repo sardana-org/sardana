@@ -27,6 +27,7 @@
 import uuid
 import numpy
 
+import taurus
 from taurus import Device, Attribute
 from taurus.core.taurusdevice import TaurusDevice
 from taurus.external.unittest import TestCase
@@ -63,6 +64,10 @@ def is_numerical(obj):
 class TestMeasurementGroup(SarTestTestCase, TestCase):
 
     def setUp(self):
+        # due to problems with factory cleanup in Taurus 3
+        # the asserts are
+        if taurus.core.release.version_info[0] < 4:
+            self.skipTest("Taurus 3 has problems with factory cleanup")
         SarTestTestCase.setUp(self)
         registerExtensions()
 
@@ -88,6 +93,7 @@ class TestMeasurementGroup(SarTestTestCase, TestCase):
                           (value, channel_name)
                     self.assertTrue(is_numerical(value), msg)
         finally:
+            channel.cleanUp()
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
 
