@@ -48,6 +48,7 @@ class Channel:
         self.active = True
         self.amplitude = BaseValue('1.0')
         self.value_ref_template = "h5file:///tmp/dummy2d_default_{index}.h5"
+        self.value_ref_enabled = True
 
 
 class BaseValue(object):
@@ -296,9 +297,11 @@ class DummyTwoDController(TwoDController, Referable):
         channel = self.channels[idx]
         if parameter == "value_ref_template":
             channel.value_ref_template = value
+        elif parameter == "value_ref_enabled":
+            channel.value_ref_enabled = value
 
     def GetAxisPar(self, axis, parameter):
         idx = axis - 1
         channel = self.channels[idx]
-        if parameter == "value_ref_template":
-            return channel.value_ref_template
+        if parameter == "value_ref_enabled":
+            return channel.value_ref_enabled
