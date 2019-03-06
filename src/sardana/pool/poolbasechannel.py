@@ -113,6 +113,7 @@ class PoolBaseChannel(PoolElement):
         self._value_ref_buffer = self.ValueRefBufferClass(
             self, listeners=self.on_change)
         self._value_ref_template = None
+        self._value_ref_enabled = None
         self._pseudo_elements = []
         if self.AcquisitionClass is not None:
             acq_name = "%s.Acquisition" % self._name
@@ -584,6 +585,91 @@ class PoolBaseChannel(PoolElement):
     value_ref_template = property(get_value_ref_template,
                                   set_value_ref_template,
                                   doc="channel value reference template")
+
+    # ------------------------------------------------------------------------
+    # value ref enabled
+    # ------------------------------------------------------------------------
+
+    def is_value_ref_enabled(self, cache=True, propagate=1):
+        """Check if value reference is enabled.
+
+        .. note::
+            The is_value_ref_enabled method has been included in Sardana on
+            a provisional basis. Backwards incompatible changes (up to and
+            including removal of the class) may occur if deemed necessary by
+            the core developers.
+
+        :param cache:
+            if ``True`` (default) return value ref enabled in cache,
+            otherwise read value from hardware
+        :type cache:
+            :obj:`bool`
+        :param propagate:
+            0 for not propagating, 1 to propagate, 2 propagate with priority
+        :type propagate:
+            obj:`int`
+        :return:
+            the channel value
+        :rtype:
+            :obj:`bool`
+        """
+        if not cache or self._value_ref_enabled is None:
+            value_ref_enabled = self.read_value_ref_enabled()
+            self._set_value_ref_enabled(value_ref_enabled,
+                                        propagate=propagate)
+        return self._value_ref_enabled
+
+    def set_value_ref_enabled(self, value_ref_enabled, propagate=1):
+        """Set value reference enabled flag.
+
+        .. note::
+            The set_value_ref_enabled method has been included in Sardana on
+            a provisional basis. Backwards incompatible changes (up to and
+            including removal of the class) may occur if deemed necessary by
+            the core developers.
+
+        :param value_ref_enabled:
+            the new value reference enabled
+        :type value_ref_enabled:
+            :obj:`bool`
+        :param propagate:
+            0 for not propagating, 1 to propagate, 2 propagate with priority
+        :type propagate:
+            :obj:`int`
+        """
+        self.controller.set_axis_par(self.axis, "value_ref_enabled",
+                                     value_ref_enabled)
+        self._set_value_ref_enabled(value_ref_enabled, propagate=propagate)
+
+    def _set_value_ref_enabled(self, value_ref_enabled, propagate=1):
+        self._value_ref_enabled = value_ref_enabled
+        if not propagate:
+            return
+        self.fire_event(
+            EventType("value_ref_enabled", priority=propagate),
+            value_ref_enabled)
+
+    def read_value_ref_enabled(self):
+        """Reads the channel value reference enabled from hardware.
+
+        .. note::
+            The read_value_ref_enabled method has been included in Sardana on
+            a provisional basis. Backwards incompatible changes (up to and
+            including removal of the class) may occur if deemed necessary by
+            the core developers.
+
+        :return:
+            value reference enabled
+        :rtype:
+            :obj:`bool` or :obj:`None`
+        """
+        value_ref_enabled = self.controller.get_axis_par(
+            self.axis, "value_ref_enabled")
+        return value_ref_enabled
+
+    value_ref_enabled = property(is_value_ref_enabled,
+                                 set_value_ref_enabled,
+                                 doc="channel value reference enabled")
 
     def is_referable(self):
         """Check if channel has referable capability.
