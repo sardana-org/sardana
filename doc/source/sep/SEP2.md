@@ -193,8 +193,12 @@ following format: `{"index": seq<int>, "value_ref": seq<str>}`.
 ## Single count (MeasurementGroup Taurus extension) read
 
 * If channel does not read the value but reads the value reference the `count` 
-method return `None` for this channel. When channel reads the value
-then it returns value for this channel as it is now.
+method return the value reference instead of the value for this channel. When 
+channel reads the value then it returns value for this channel as it is now.
+The fact of returning the value reference is considered as experimental API.
+In the future it may change to also return the value if we achieve to extract
+ it from the URI.
+
 
 ## How to determine if channel/controller has referencing capability
 

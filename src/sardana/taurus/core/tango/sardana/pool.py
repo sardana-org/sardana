@@ -1964,9 +1964,26 @@ class MeasurementGroup(PoolElement):
         self.command_inout("Prepare")
 
     def count_raw(self, start_time=None):
-        PoolElement.go(self)
+        """Raw count and report count values.
+
+        Simply start and wait until finish, no configuration nor preparation.
+
+        .. note::
+            The count_raw method API is partially experimental (value
+            references may be changed to values whenever possible in the
+            future). Backwards incompatible changes may occur if deemed
+            necessary by the core developers.
+
+        :param start_time: start time of the whole count operation, if not
+          passed a current timestamp will be used
+        :type start_time: :obj:`float`
+        :return: channel names and values (or value references - experimental)
+        :rtype: :obj:`dict` where keys are channel full names and values are
+          channel values (or value references - experimental)
+        """
         if start_time is None:
             start_time = time.time()
+        PoolElement.go(self)
         state = self.getStateEG().readValue()
         if state == Fault:
             msg = "Measurement group ended acquisition with Fault state"
@@ -1977,6 +1994,21 @@ class MeasurementGroup(PoolElement):
         return ret
 
     def go(self, *args, **kwargs):
+        """Count and report count values.
+
+        Configuration and prepare for measurement, then start and wait until
+        finish.
+
+        .. note::
+            The count (go) method API is partially experimental (value
+            references may be changed to values whenever possible in the
+            future). Backwards incompatible changes may occur if deemed
+            necessary by the core developers.
+
+        :return: channel names and values (or value references - experimental)
+        :rtype: :obj:`dict` where keys are channel full names and values are
+          channel values (or value references - experimental)
+        """
         start_time = time.time()
         cfg = self.getConfiguration()
         cfg.prepare()
