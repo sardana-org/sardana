@@ -473,7 +473,10 @@ class PoolController(PoolBaseController):
                                    Description: "Value reference buffer", },
                 "ValueRefTemplate": {Type: str,
                                      Access: DataAccess.ReadWrite,
-                                     Description: "Value reference template"}
+                                     Description: "Value reference template"},
+                "ValueRefEnabled": {Type: bool,
+                                    Access: DataAccess.ReadWrite,
+                                    Description: "Value reference enabled"}
                 }
             axis_attrs.update(referable_axis_attrs)
         return axis_attrs

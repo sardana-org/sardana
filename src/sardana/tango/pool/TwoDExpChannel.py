@@ -139,7 +139,8 @@ class TwoDExpChannel(PoolTimerableDevice):
             else:
                 value = event_value
 
-            if name in ("timer", "valuereftemplate") and value is None:
+            if (name in ("timer", "valuereftemplate", "valuerefenabled")
+                    and value is None):
                 value = "None"
             elif name == "value":
                 state = self.twod.get_state()
@@ -179,9 +180,10 @@ class TwoDExpChannel(PoolTimerableDevice):
         attrs = PoolTimerableDevice.initialize_dynamic_attributes(self)
 
         # referable channels
-        # TODO: not 100% sure if valuereftemplate should not belong to
-        # detect_evts
-        non_detect_evts = "valueref", "valuerefbuffer", "valuereftemplate"
+        # TODO: not 100% sure if valuereftemplate and valuerefenabled should
+        # not belong to detect_evts
+        non_detect_evts = ("valueref", "valuerefbuffer", "valuereftemplate",
+                           "valuerefenabled")
         for attr_name in non_detect_evts:
             if attr_name in attrs:
                 self.set_change_event(attr_name, True, False)
@@ -233,6 +235,19 @@ class TwoDExpChannel(PoolTimerableDevice):
         if value_ref_template == "None":
             value_ref_template = None
         self.twod.value_ref_template = value_ref_template
+
+    def read_ValueRefEnabled(self, attr):
+        value_ref_enabled = self.twod.is_value_ref_enabled(cache=False)
+        if value_ref_enabled is None:
+            raise Exception("value reference enabled flag is unknown")
+        attr.set_value(value_ref_enabled)
+
+    @memorize_write_attribute
+    def write_ValueRefEnabled(self, attr):
+        value_ref_enabled = attr.get_write_value()
+        if value_ref_enabled == "None":
+            value_ref_enabled = None
+        self.twod.value_ref_enabled = value_ref_enabled
 
     def read_DataSource(self, attr):
         data_source = self.twod.get_data_source()
