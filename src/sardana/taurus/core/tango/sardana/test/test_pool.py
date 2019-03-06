@@ -27,7 +27,8 @@
 import uuid
 import numpy
 
-from taurus import Device
+from taurus import Device, Attribute
+from taurus.core.taurusdevice import TaurusDevice
 from taurus.external.unittest import TestCase
 from taurus.test.base import insertTest
 from sardana.sardanautils import is_number, is_non_str_seq, is_pure_str
@@ -73,8 +74,12 @@ class TestMeasurementGroup(SarTestTestCase, TestCase):
             mg = Device(mg_name)
             _, values = mg.count(1)
             for channel_name, value in values.iteritems():
-                channel = Device(channel_name)
-                if channel.is_referable():
+                try:
+                    channel = Device(channel_name)
+                except Exception:
+                    channel = Attribute(channel_name)
+                if (isinstance(channel, TaurusDevice)
+                        and channel.is_referable()):
                     msg = "ValueRef (%s) for %s is not string" %\
                           (value, channel_name)
                     self.assertTrue(is_pure_str(value), msg)
