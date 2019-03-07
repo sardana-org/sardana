@@ -84,7 +84,7 @@ class TestMeasurementGroup(SarTestTestCase, TestCase):
                 except Exception:
                     channel = Attribute(channel_name)
                 if (isinstance(channel, TaurusDevice)
-                        and channel.is_referable()):
+                        and channel.isReferable()):
                     msg = "ValueRef (%s) for %s is not string" %\
                           (value, channel_name)
                     self.assertTrue(is_pure_str(value), msg)
