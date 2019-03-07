@@ -911,7 +911,8 @@ class PoolAcquisitionBase(PoolAction):
             pool_channels = []
             pool_ctrl = ctrl.element
             for channel in ctrl.get_channels(enabled=True):
-                pool_channels.append(channel.element)
+                if channel.value_ref_enabled:
+                    pool_channels.append(channel.element)
             ctrl_channels[pool_ctrl] = pool_channels
         self._pool_ctrl_dict_ref = ctrl_channels
 
