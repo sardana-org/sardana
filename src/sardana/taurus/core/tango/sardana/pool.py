@@ -674,6 +674,7 @@ class ExpChannel(PoolElement):
         self.call__init__(PoolElement, name, **kw)
         self._last_integ_time = None
         self._last_value_ref_template = None
+        self._last_value_ref_enabled = None
         self._value_buffer = {}
         self._value_ref_buffer = {}
 
@@ -768,6 +769,22 @@ class ExpChannel(PoolElement):
             return
         self._last_value_ref_template = value_ref_template
         self.getValueRefTemplateObj().write(value_ref_template)
+
+    def isValueRefEnabled(self):
+        return self._getAttrValue('ValueRefEnabled')
+
+    def getValueRefEnabledObj(self):
+        return self._getAttrEG('ValueRefEnabled')
+
+    def setValueRefEnabled(self, value_ref_enabled):
+        self.getValueRefEnabledObj().write(value_ref_enabled)
+
+    def putValueRefEnabled(self, value_ref_enabled):
+        if self._last_value_ref_enabled == value_ref_enabled:
+            return
+        self._last_value_ref_enabled = value_ref_enabled
+        self.getValueRefEnabledObj().write(value_ref_enabled)
+
     def _start(self, *args, **kwargs):
         self.Start()
 
