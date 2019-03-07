@@ -789,15 +789,29 @@ class ExpChannel(PoolElement):
         self.Start()
 
     def go(self, *args, **kwargs):
+        """Count and report count result.
+
+        Configuration measurement, then start and wait until finish.
+
+        .. note::
+            The count (go) method API is partially experimental (value
+            references may be changed to values whenever possible in the
+            future). Backwards incompatible changes may occur if deemed
+            necessary by the core developers.
+
+        :return: state and value (or value reference - experimental)
+        :rtype: :obj:`tuple`
+        """
         start_time = time.time()
         integration_time = args[0]
-        if integration_time is None or integration_time == 0:
-            return self.getStateEG().readValue(), self.getValues()
         self.putIntegrationTime(integration_time)
         PoolElement.go(self)
         state = self.getStateEG().readValue()
-        values = self.getValue()
-        ret = state, values
+        if self.isReferable() and self.isValueRefEnabled():
+            result = self.getValueRef()
+        else:
+            result = self.getValue()
+        ret = state, result
         self._total_go_time = time.time() - start_time
         return ret
 
