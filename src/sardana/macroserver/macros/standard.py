@@ -718,9 +718,9 @@ class ct(Macro, Hookable):
         else:
             channel = self.countable_elem
             names.append("  %s" % channel.name)
-            value = channel.getValue()
-            counts.append(_value_to_repr(value))
-            data = {channel.full_name: value}
+            counts.append(_value_to_repr(data))
+            # to be compatible with measurement group count
+            data = {channel.full_name: data}
         self.setData(Record(data))
         table = Table([counts], row_head_str=names, row_head_fmt='%*s',
                       col_sep='  =  ')
