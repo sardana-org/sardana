@@ -687,14 +687,14 @@ class ExpChannel(PoolElement):
     def getIntegrationTimeObj(self):
         return self._getAttrEG('IntegrationTime')
 
-    def setIntegrationTime(self, ctime):
-        self.getIntegrationTimeObj().write(ctime)
+    def setIntegrationTime(self, integ_time):
+        self.getIntegrationTimeObj().write(integ_time)
 
-    def putIntegrationTime(self, ctime):
-        if self._last_integ_time == ctime:
+    def putIntegrationTime(self, integ_time):
+        if self._last_integ_time == integ_time:
             return
-        self._last_integ_time = ctime
-        self.getIntegrationTimeObj().write(ctime)
+        self._last_integ_time = integ_time
+        self.getIntegrationTimeObj().write(integ_time)
 
     def getValueObj_(self):
         """Retrurns Value attribute event generator object.
