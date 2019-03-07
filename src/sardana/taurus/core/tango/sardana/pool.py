@@ -678,7 +678,7 @@ class ExpChannel(PoolElement):
         self._value_buffer = {}
         self._value_ref_buffer = {}
 
-    def is_referable(self):
+    def isReferable(self):
         if "valueref" in map(str.lower, self.get_attribute_list()):
             return True
         return False
@@ -1911,7 +1911,7 @@ class MeasurementGroup(PoolElement):
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
             channel = Device(full_name)
-            if not channel.is_referable():
+            if not channel.isReferable():
                 continue
             value_ref_buffer_obj = channel.getValueRefBufferObj()
             if cb is not None:
@@ -1933,7 +1933,7 @@ class MeasurementGroup(PoolElement):
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
             channel = Device(full_name)
-            if not channel.is_referable():
+            if not channel.isReferable():
                 continue
             value_ref_buffer_obj = channel.getValueRefBufferObj()
             if cb is not None:

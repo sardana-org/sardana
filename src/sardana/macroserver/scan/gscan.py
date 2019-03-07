@@ -1147,7 +1147,7 @@ class SScan(GScan):
         for channel_info in mg.getChannels():
             full_name = channel_info["full_name"]
             channel = taurus.Device(full_name)
-            if channel.is_referable():
+            if channel.isReferable():
                 data_line[full_name] = channel.getValueRef(force=True)
         for ec in self._extra_columns:
             data_line[ec.getName()] = ec.read()
