@@ -330,7 +330,9 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
         return ret
 
     def setData(self, index, qvalue):
+        ch_name, ch_data = self.itemData()
         taurus_role = index.model().role(index.column())
+        key = self.itemdata_keys_map[taurus_role]
         if taurus_role in (ChannelView.Channel, ChannelView.Conditioning,
                            ChannelView.NXPath, ChannelView.DataType,
                            ChannelView.Enabled, ChannelView.Output):
@@ -353,8 +355,6 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
                 data = ()
         else:
             raise NotImplementedError('Unknown role')
-        ch_name, ch_data = self.itemData()
-        key = self.itemdata_keys_map[taurus_role]
         ch_data[key] = data
 
     def role(self):
