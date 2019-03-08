@@ -334,9 +334,14 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
         taurus_role = index.model().role(index.column())
         key = self.itemdata_keys_map[taurus_role]
         if taurus_role in (ChannelView.Channel, ChannelView.Conditioning,
-                           ChannelView.NXPath, ChannelView.DataType,
-                           ChannelView.Enabled, ChannelView.Output):
+                           ChannelView.NXPath, ChannelView.Enabled,
+                           ChannelView.Output):
             data = qvalue
+        elif taurus_role == ChannelView.DataType:
+            if len(qvalue.strip()) == 0:
+                # empty strings are considered as unspecified data type
+                ch_data.pop(key)
+                return
         elif taurus_role == ChannelView.PlotType:
             data = PlotType[qvalue]
         elif taurus_role == ChannelView.Normalization:
