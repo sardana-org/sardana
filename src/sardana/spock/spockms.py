@@ -37,7 +37,7 @@ from taurus.core import TaurusEventType, TaurusSWDevState
 
 from sardana.sardanautils import is_pure_str, is_non_str_seq
 from sardana.spock import genutils
-from sardana.spock.parser import ParamParser
+from sardana.util.parser import ParamParser
 from sardana.spock.inputhandler import SpockInputHandler, InputHandler
 from sardana import sardanacustomsettings
 
@@ -516,8 +516,7 @@ class QSpockDoor(SpockBaseDoor):
     def __init__(self, name, **kw):
         self.call__init__(SpockBaseDoor, name, **kw)
 
-        Qt.QObject.connect(self, Qt.SIGNAL('recordDataUpdated'),
-                           self.processRecordData)
+        self.recordDataUpdated.connect(self.processRecordData)
 
     def recordDataReceived(self, s, t, v):
         if genutils.get_pylab_mode() == "inline":
@@ -589,16 +588,20 @@ class SpockMacroServer(BaseMacroServer):
         # IPython < 1 magic commands have different API
         if genutils.get_ipython_version_list() < [1, 0]:
             def macro_fn(shell, parameter_s='', name=macro_name):
-                parameters = split_macro_parameters(parameter_s)
                 door = genutils.get_door()
+                ms = genutils.get_macro_server()
+                params_def = ms.getMacroInfoObj(name).parameters
+                parameters = split_macro_parameters(parameter_s, params_def)
                 door.runMacro(macro_name, parameters, synch=True)
                 macro = door.getLastRunningMacro()
                 if macro is not None:  # maybe none if macro was aborted
                     return macro.getResult()
         else:
             def macro_fn(parameter_s='', name=macro_name):
-                parameters = split_macro_parameters(parameter_s)
                 door = genutils.get_door()
+                ms = genutils.get_macro_server()
+                params_def = ms.getMacroInfoObj(name).parameters
+                parameters = split_macro_parameters(parameter_s, params_def)
                 door.runMacro(macro_name, parameters, synch=True)
                 macro = door.getLastRunningMacro()
                 if macro is not None:  # maybe none if macro was aborted
@@ -620,19 +623,18 @@ class SpockMacroServer(BaseMacroServer):
         del self._local_magic[macro_name]
 
 
-def split_macro_parameters(parameters_s):
+def split_macro_parameters(parameters_s, params_def):
     """Split string with macro parameters into a list with macro parameters.
     Whitespaces are the separators between the parameters.
 
-    When the input string contains square brackets it indicates an advanced
-    syntax for representing repeat parameters. Repeat parameters are encapsulated
-    in square brackets and its internal repetitions, if composed from more than
-    one item are also encapsulated in brackets. In this case the output list
-    contains lists internally.
+    Repeat parameters are encapsulated in square brackets and its internal
+    repetitions, if composed from more than one item are also encapsulated
+    in brackets. In this case the output list contains lists internally.
 
-    :param parameters_s (string): input string containing parameters
-    :returns (list): parameters represented as a list (may contain internal
-        lists)
+    :param parameters_s: input string containing parameters
+    :type parameters_s: string
+    :return:  parameters represented as a list (may contain internal lists
+    :rtype: list
     """
-    parser = ParamParser()
+    parser = ParamParser(params_def)
     return parser.parse(parameters_s)

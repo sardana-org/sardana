@@ -23,7 +23,10 @@
 ##
 ##############################################################################
 
+import time
+
 from taurus.external import unittest
+
 from sardana.pool.poolcountertimer import PoolCounterTimer
 from sardana.pool.test import (FakePool, createPoolController,
                                createPoolCounterTimer, dummyCounterTimerConf01,
@@ -46,6 +49,14 @@ class PoolCounterTimerTestCase(unittest.TestCase):
         msg = 'PoolCounterTimer constructor does not create ' +\
               'PoolCounterTimer instance'
         self.assertIsInstance(self.pct, PoolCounterTimer, msg)
+
+    def test_acquisition(self):
+        self.pct.integration_time = 0.1
+        self.pct.start_acquisition()
+        while self.pct.acquisition.is_running():
+            time.sleep(0.01)
+        msg = "wrong value after acquisition"
+        self.assertEqual(self.pct.value.value, 0.1, msg)
 
     def tearDown(self):
         unittest.TestCase.tearDown(self)

@@ -5,6 +5,119 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
+## [2.7.0] 2019-03-11
+
+### Added
+
+* Possibility to directly acquire an experimental channel (without the need to define
+  a measurement group) (#185, #997)
+  * `IntegrationTime` (Tango) and `integration_time` (core) attributes to all experimental
+    channels
+  * `Timer` (Tango) and `timer` (core) attribute to all timerable experimental channels
+  * `default_timer` class attribute to all timerable controllers (plugins) to let them
+    announce the default timer axis
+* `newfile` macro for setting `ScanDir`, `ScanFile` and `ScanID` env variables (#777)
+
+### Fixed
+
+* `expconf` warns only about the following environment variables changes: `ScanFile`,
+  `ScanDir`, `ActiveMntGrp`, `PreScanSnapshot` and `DataCompressionRank` (#1040)
+* MeasurementGroup's Moveable attribute when set to "None" in Tango is used as None
+  in the core (#1001)
+ 
+## [2.6.1] 2019-02-04
+
+This is a special release for meeting the deadline of debian buster freeze (debian 10).
+
+### Fixed
+- String parameter editor in macroexecutor and sequencer (#1030, #1031)
+- Documentation on differences between `Hookable.hooks` and `Hookable.appendHook`
+  (#962, #1013)
+
+## [2.6.0] 2019-01-31
+
+This is a special release for meeting the deadline of debian buster freeze (debian 10).
+
+### Added
+- New acquisition and synchronization concepts (SEP18, #773):
+  - Preparation of measurement group for a group of acquisitions is mandatory
+    (`Prepare` Tango command and `prepare` core method; `NbStarts` Tango
+    attribute and `nb_starts` core attribute; `count`, `count_raw` and
+    `count_continuous` methods in Taurus extension)
+  - Preparation of timerable controllers is optional (`PrepareOne` method)
+  - `SoftwareStart` and `HardwareStart` options in `AcqSynch` enumeration and
+    `Start` in `AcqSynchType` enumeration (the second one is available in
+    the `expconf` as synchronization option)
+  - `start` and `end` events in software synchronizer
+  - `PoolAcquisitionSoftwareStart` acquisition action
+  - `SoftwareStart` and `HardwareStart` synchronization in
+    `DummyCounterTimerController`
+- Support to Qt5 for Sardana-Taurus widgets and Sardana-Taurus extensions (#1006,
+  #1009)
+- Possibility to define macros with optional parameters. These must be the last
+  ones in the definition (#285, #876, #943, #941, #955)
+- Possibility to pass values of repeat parameters with just one member without
+  the need to encapsulate them in square brackets (spock syntax) or list
+  (macro API) (#781, #983)
+- Possibility to change data format (shape) of of pseudo counter values (#986)
+- Check scan range agains motor limits wheneve possible (#46, #963)
+- Workaround for API_DeviceTimedOut errors on MeasurementGroup Start. Call Stop
+  in case this error occured (#764).
+- Optional measurement group parameter to `ct` and `uct` macros (#940, #473)
+- Support to "PETRA3 P23 6C" and "PETRA3 P23 4C" diffractometers by means
+  of new controller classes and necessary adaptation to macros (#923, #921)
+- Top LICENSE file that applies to the whole project (#938)
+- Document remote connection to MacroServer Python process (RConsolePort Tango
+  property) (#984)
+- sardana.taurus.qt.qtgui.macrolistener (moved from taurus.qt.qtgui.taurusgui)
+- Documentation on differences between `Hookable.hooks` and `Hookable.appendHook`
+  (#962, #1013)
+
+### Fixed
+- Do not read 1D and 2D experimental channels during software acquisition loop
+  (#967)
+- Make `expconf` react on events of environment, measurement groups and their
+  configurations. An event offers an option to reload the whole experiment
+  configuration or keep the local changes. `expconf` started with
+  `--auto-update` option will automatically reload the whole experiment
+  configuration (#806, #882, #988, #1028, #1033)
+- Reload macro library overriding another library (#927, #946)
+- Avoid final padding in timescan when it was stopped by user (#869, #935)
+- Moveables limits check in continuous scans when moveables position attribute
+  has unit configured and Taurus 4 is used (quantities) (#989, #990)
+- Hook places advertised by continuous scans so the `allowHooks` hint and the
+  code are coherent (#936)
+- Macro/controller module description when module does not have a docstring
+  (#945)
+- Make `wu` macro respect view options (#1000, #1002)
+- Make cleanup (remove configuration) if spock profile creation was interrupted
+  or failed (#791, #793)
+- Spock considers passing supernumerary parameters as errors (#438, #781)
+- MacroServer starts without the Qt library installed (#781, #907, #908)
+- Make `Description` an optional part of controller's properties definition (#976)
+- Correcting bug in hkl macros introduced when extending macros for new
+  diffractometer types: angle order was switched
+
+### Changed
+- MacroButton stops macros instead of aborting them (#931, #943)
+- Spock syntax and advanced spock syntax are considered as one in documentaion
+  (#781)
+- Move pre-scan and post-scan hooks out of `scan_loop` method (#920, #922,
+  #933)
+- Logstash handler from python-logstash to python-logstash-async (#895)
+- Move `ParamParser` to `sardana.util.parser` (#781, #907, #908)
+- SpockCommandWidget.returnPressed method renamed to onReturnPressed
+- SpockCommandWidget.textChanged method renamed to onTextChanged
+
+### Deprecated
+- Measurement group start without prior preparation (SEP18, #773)
+- Loadable controller's API: `LoadOne(axis, value, repeats)`
+  in favor of `LoadOne(axis, value, repeats, latency)` (SEP18, #773)
+- Unused class `sardana.taurus.qt.qtgui.extra_macroexecutor.dooroutput.DoorAttrListener`
+
+### Removed
+- Support to Qt < 4.7.4 (#1006, #1009)
+
 ## [2.5.0] 2018-08-10
 
 ### Added
@@ -78,6 +191,11 @@ This file follows the formats and conventions from [keepachangelog.com]
 - `PoolMotorSlim` widget in favor of `PoolMotorTV` widget (#163, #785) 
 - `Controller.getUsedAxis` (Taurus device extension) in favor
 of `Controller.getUsedAxes` (#609)
+
+### Removed
+- Signal `modelChanged()` from ParamBase class to use the call to 
+  method onModelChanged directly instead
+
 
 ## [2.4.0] 2018-03-14
 
@@ -471,7 +589,10 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.5.0...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.7.0...HEAD
+[2.7.0]: https://github.com/sardana-org/sardana/compare/2.6.1...2.7.0
+[2.6.1]: https://github.com/sardana-org/sardana/compare/2.6.0...2.6.1
+[2.6.0]: https://github.com/sardana-org/sardana/compare/2.5.0...2.6.0
 [2.5.0]: https://github.com/sardana-org/sardana/compare/2.4.0...2.5.0
 [2.4.0]: https://github.com/sardana-org/sardana/compare/2.3.2...2.4.0
 [2.3.2]: https://github.com/sardana-org/sardana/compare/2.3.1...2.3.2

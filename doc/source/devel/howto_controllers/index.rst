@@ -6,7 +6,12 @@
 Writing controllers
 ===================
 
-This chapter provides the necessary information to write controllers in sardana.
+This chapter provides the necessary information to write controllers in
+sardana.
+
+Before writing a new controller you should check the `controller plugin
+register <https://sourceforge.net/p/sardana/controllers.git>`_.
+There's a high chance that somebody already wrote the plugin for your hardware.
 
 An overview of the pool controller concept can be found 
 :ref:`here <sardana-controller-overview>`.

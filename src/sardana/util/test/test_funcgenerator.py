@@ -73,8 +73,10 @@ class Listener(EventReceiver):
         self.init()
 
     def init(self):
+        self.start = False
         self.active_event_ids = list()
         self.passive_event_ids = list()
+        self.end = False
 
     def event_received(self, *args, **kwargs):
         _, type_, value = args
@@ -83,6 +85,10 @@ class Listener(EventReceiver):
             self.active_event_ids.append(value)
         elif name == "passive":
             self.passive_event_ids.append(value)
+        elif name == "start":
+            self.start = True
+        elif name == "end":
+            self.end = True
         else:
             ValueError("wrong event type")
 
@@ -122,9 +128,11 @@ class FuncGeneratorTestCase(TestCase):
         self.event.wait(100)
         active_event_ids = self.listener.active_event_ids
         active_event_ids_ok = range(0, 10)
-        msg = "Received active event ids: %s, expected: %s" % (active_event_ids,
-                                                               active_event_ids_ok)
+        msg = "Received active event ids: %s, expected: %s" % (
+            active_event_ids, active_event_ids_ok)
         self.assertListEqual(active_event_ids, active_event_ids_ok, msg)
+        self.assertTrue(self.listener.start, "Start event is missing")
+        self.assertTrue(self.listener.end, "End event is missing")
 
     def test_stop_time(self):
         self.func_generator.initial_domain = SynchDomain.Time

@@ -452,7 +452,7 @@ class DiffracBasis(PseudoMotorController):
         values = None
         if engine_name == "hkl":
             values = [pseudo_pos[0], pseudo_pos[1], pseudo_pos[2]]
-        elif self.nb_ph_axes == 4:  # noqa "E4CV", "E4CH", "SOLEIL MARS": hkl(3), psi(1), q(1); "K4CV": hkl(3), psi(1), q(1), eulerians(3); "SOLEIL SIXS MED1+2": hkl(3), q2(2), qper_qpar(2)
+        elif self.nb_ph_axes == 4:  # noqa "E4CV", "E4CH", "SOLEIL MARS": hkl(3), psi(1), q(1); "K4CV": hkl(3), psi(1), q(1), eulerians(3); "SOLEIL SIXS MED1+2": hkl(3), q2(2), qper_qpar(2); "PETRA3 P23 4C": hkl(3), q2(2), qper_qpar(2), tth2(2), petra3_p23_4c_incidence(1), _petra3_p23_4c_emergence(1)
             if engine_name == "psi":
                 values = [pseudo_pos[3]]
             elif engine_name == "q":
@@ -463,7 +463,13 @@ class DiffracBasis(PseudoMotorController):
                 values = [pseudo_pos[3], pseudo_pos[4]]
             elif engine_name == "qper_qpar":
                 values = [pseudo_pos[5], pseudo_pos[6]]
-        elif self.nb_ph_axes == 6:  # noqa "E6C", "SOLEIL SIXS MED2+2": hkl(3), psi(1), q2(2), qper_qpar(2); "K6C":  hkl(3), psi(1), q2(2), qper_qpar(2), eulerians(3); "PETRA3 P09 EH2": hkl(3)
+            elif engine_name == "tth2":
+                values = [pseudo_pos[7], pseudo_pos[8]]
+            elif engine_name == "petra3_p23_4c_incidence":
+                values = [pseudo_pos[9]]
+            elif engine_name == "petra3_p23_4c_emergence":
+                values = [pseudo_pos[10]]
+        elif self.nb_ph_axes == 6:  # noqa "E6C", "SOLEIL SIXS MED2+2": hkl(3), psi(1), q2(2), qper_qpar(2); "K6C":  hkl(3), psi(1), q2(2), qper_qpar(2), eulerians(3); "PETRA3 P09 EH2": hkl(3), "PETRA3 P23 6C": hkl(3), psi(1), q2(2), qper_qpar(2), tth2(2), petra3_p23_6c_incidence(1), _petra3_p23_6c_emergence(1)
             if engine_name == "psi":
                 values = [pseudo_pos[3]]
             elif engine_name == "q2":
@@ -472,6 +478,12 @@ class DiffracBasis(PseudoMotorController):
                 values = [pseudo_pos[6], pseudo_pos[7]]
             elif engine_name == "eulerians":
                 values = [pseudo_pos[8], pseudo_pos[9], pseudo_pos[10]]
+            elif engine_name == "tth2":
+                values = [pseudo_pos[8], pseudo_pos[9]]
+            elif engine_name == "petra3_p23_6c_incidence":
+                values = [pseudo_pos[10]]
+            elif engine_name == "petra3_p23_6c_emergence":
+                values = [pseudo_pos[11]]
 
         # getWavelength updates wavelength in the library in case automatic
         # energy update is set. Needed before computing trajectories.
@@ -1396,6 +1408,22 @@ class DiffracBasis(PseudoMotorController):
 # 6C Diffractometers ####################
 
 
+class Diffrac6Cp23(DiffracBasis):  # DiffractometerType: "PETRA3 P23 6C"
+
+    """ The PseudoMotor controller for the diffractometer"""
+
+    pseudo_motor_roles = "h", "k", "l", "psi", "q", "alpha", "tth2",
+    "alpha_tth2", "incidence", "emergence"
+    motor_roles = "omega_t", "mu", "omega", "chi", "phi", "gamma", "delta"
+
+    def __init__(self, inst, props, *args, **kwargs):
+        """ Do the default init plus the specific diffractometer
+        staff.
+        @param properties of the controller
+        """
+
+        DiffracBasis.__init__(self, inst, props, *args, **kwargs)
+
 class Diffrac6C(DiffracBasis):  # DiffractometerType: "PETRA3 P09 EH2"
 
     """ The PseudoMotor controller for the diffractometer"""
@@ -1429,6 +1457,22 @@ class DiffracE6C(DiffracBasis):
 
 # 4C Diffractometers ####################
 
+
+class Diffrac4Cp23(DiffracBasis):  # DiffractometerType: "PETRA3 P23 4C"
+
+    """ The PseudoMotor controller for the diffractometer"""
+
+    pseudo_motor_roles = "h", "k", "l", "q", "alpha", "qper", "qpar",
+    "tth2", "alpha_tth2", "incidence", "emergence"
+    motor_roles = "omega_t", "mu", "gamma", "delta"
+
+    def __init__(self, inst, props, *args, **kwargs):
+        """ Do the default init plus the specific diffractometer
+        staff.
+        @param properties of the controller
+        """
+
+        DiffracBasis.__init__(self, inst, props, *args, **kwargs)
 
 class DiffracE4C(DiffracBasis):
 

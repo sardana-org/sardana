@@ -271,6 +271,8 @@ class GScan(Logger):
             moveable_names.append(moveable.moveable.getName())
             self._moveables.append(moveable)
 
+        self._check_moveables_limits()
+
         name = self.__class__.__name__
         self.call__init__(Logger, name)
 
@@ -368,6 +370,43 @@ class GScan(Logger):
         # Setup environment
         # ---------------------------------------------------------------------
         self._setupEnvironment(env)
+
+    def _check_moveables_limits(self):
+        for m in self._moveables:
+            pos_range = m.moveable.getAttribute("Position").range
+            try:
+                high = float(pos_range[1].magnitude)    # Taurus 4
+            except AttributeError:
+                try:
+                    high = float(pos_range[1])          # Taurus 3
+                except ValueError:
+                    high = None
+            try:
+                low = float(pos_range[0].magnitude)     # Taurus 4
+            except AttributeError:
+                try:
+                    low = float(pos_range[0])           # Taurus 3
+                except ValueError:
+                    low = None
+
+            if any((high, low)) and not any((m.min_value, m.max_value)):
+                self._macro.info("Scan range is not defined for %s and could "
+                                 "not be verified against motor limits."
+                                 % m.moveable.getName())
+
+            for pos in (m.min_value, m.max_value):
+                if pos is None:
+                    continue
+                if high is not None:
+                    if float(pos) > high:
+                        raise RuntimeError(
+                            "requested movement of %s is above its upper limit"
+                            % m.moveable.getName())
+                if low is not None:
+                    if float(pos) < low:
+                        raise RuntimeError(
+                            "requested movement of %s is below its lower limit"
+                            % m.moveable.getName())
 
     def _getExtraColumns(self):
         ret = []
@@ -944,6 +983,10 @@ class GScan(Logger):
             pass
 
     def step_scan(self):
+        macro = self.macro
+        if hasattr(macro, 'getHooks'):
+            for hook in macro.getHooks('pre-scan'):
+                hook()
         self.start()
         try:
             for i in self.scan_loop():
@@ -960,7 +1003,11 @@ class GScan(Logger):
             self._env["endstatus"] = endstatus
             self.end()
             self.do_restore()
-            if endstatus != ScanEndStatus.Normal:
+            if endstatus == ScanEndStatus.Normal:
+                if hasattr(macro, 'getHooks'):
+                    for hook in macro.getHooks('post-scan'):
+                        hook()
+            else:
                 raise
 
     def scan_loop(self):
@@ -998,15 +1045,18 @@ class SScan(GScan):
         macro = self.macro
         scream = False
 
+        self._deterministic_scan = False
         if hasattr(macro, "nr_points"):
             nr_points = float(macro.nr_points)
+            if hasattr(macro, "integ_time"):
+                integ_time = macro.integ_time
+                self.measurement_group.putIntegrationTime(integ_time)
+                self.measurement_group.setNbStarts(nr_points)
+                self.measurement_group.prepare()
+                self._deterministic_scan = True
             scream = True
         else:
             yield 0.0
-
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
-                hook()
 
         self._sum_motion_time = 0
         self._sum_acq_time = 0
@@ -1018,10 +1068,6 @@ class SScan(GScan):
             lstep = step
             if scream:
                 yield ((i + 1) / nr_points) * 100.0
-
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('post-scan'):
-                hook()
 
         if not scream:
             yield 100.0
@@ -1092,7 +1138,10 @@ class SScan(GScan):
         integ_time = step['integ_time']
         # Acquire data
         self.debug("[START] acquisition")
-        state, data_line = mg.count(integ_time)
+        if self._deterministic_scan:
+            state, data_line = mg.count_raw()
+        else:
+            state, data_line = mg.count(integ_time)
         for ec in self._extra_columns:
             data_line[ec.getName()] = ec.read()
         self.debug("[ END ] acquisition")
@@ -1482,6 +1531,12 @@ class CScan(GScan):
         pos_obj = motor.getPositionObj()
         min_pos, _ = pos_obj.getRange()
         try:
+            # Taurus 4 uses quantities however Sardana does not support them
+            # yet - use magnitude for the moment.
+            min_pos = min_pos.magnitude
+        except AttributeError:
+            pass
+        try:
             min_pos = float(min_pos)
         except ValueError:
             min_pos = float('-Inf')
@@ -1494,6 +1549,12 @@ class CScan(GScan):
         '''
         pos_obj = motor.getPositionObj()
         _, max_pos = pos_obj.getRange()
+        try:
+            # Taurus 4 uses quantities however Sardana does not support them
+            # yet - use magnitude for the moment.
+            max_pos = max_pos.magnitude
+        except AttributeError:
+            pass
         try:
             max_pos = float(max_pos)
         except ValueError:
@@ -1755,10 +1816,6 @@ class CSScan(CScan):
         point_nb, step = -1, None
         # data = self.data
 
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
-                hook()
-
         # start move & acquisition as close as possible
         # from this point on synchronization becomes critical
         manager.add_job(self.go_through_waypoints)
@@ -1871,10 +1928,6 @@ class CSScan(CScan):
                 sum_delay += (curr_time - old_curr_time) - integ_time
 
         self.motion_end_event.wait()
-
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('post-scan'):
-                hook()
 
         env = self._env
         env['acqtime'] = sum_integ_time
@@ -2452,15 +2505,7 @@ class CTScan(CScan, CAcquisition):
         # point_nb, step = -1, None
         # data = self.data
 
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
-                hook()
-
         self.go_through_waypoints()
-
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('post-scan'):
-                hook()
 
         env = self._env
         env['acqtime'] = sum_integ_time
@@ -2669,28 +2714,21 @@ class TScan(GScan, CAcquisition):
         self.macro.warning(msg)
 
         if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
-                hook()
-
-        if hasattr(macro, 'getHooks'):
             for hook in macro.getHooks('pre-acq'):
                 hook()
 
         yield 0
-        measurement_group.measure(synchronization,
-                                  self.value_buffer_changed)
+        measurement_group.count_continuous(synchronization,
+                                           self.value_buffer_changed)
         self.debug("Waiting for value buffer events to be processed")
         self.wait_value_buffer()
         self.join_thread_pool()
+        self.macro.checkPoint()
         self._fill_missing_records()
         yield 100
 
         if hasattr(macro, 'getHooks'):
             for hook in macro.getHooks('post-acq'):
-                hook()
-
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('post-scan'):
                 hook()
 
     def _fill_missing_records(self):
