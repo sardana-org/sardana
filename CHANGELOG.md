@@ -5,6 +5,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
+## [2.7.0] 2019-03-11
+
 ### Added
 
 * Possibility to directly acquire an experimental channel (without the need to define
@@ -595,7 +597,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.6.1...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.7.0...HEAD
+[2.7.0]: https://github.com/sardana-org/sardana/compare/2.6.1...2.7.0
 [2.6.1]: https://github.com/sardana-org/sardana/compare/2.6.0...2.6.1
 [2.6.0]: https://github.com/sardana-org/sardana/compare/2.5.0...2.6.0
 [2.5.0]: https://github.com/sardana-org/sardana/compare/2.4.0...2.5.0

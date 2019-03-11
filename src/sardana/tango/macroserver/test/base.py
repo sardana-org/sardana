@@ -90,18 +90,32 @@ class BaseMacroServerTestCase(object):
             self.tearDown()
 
     def tearDown(self):
-        """Remove the Pool instance.
+        """Remove the MacroServer instance and its properties file.
         """
-        dft_ms_properties = os.path.join(MacroServerClass.DefaultEnvBaseDir,
-                                         MacroServerClass.DefaultEnvRelDir)
-        ds_inst_name = self.ms_ds_name.split("/")[1]
-        ms_properties = dft_ms_properties % {"ds_exec_name": "MacroServer",
-                                             "ds_inst_name": ds_inst_name}
-        os.remove(ms_properties)
+
         self._msstarter.cleanDb(force=True)
         self._msstarter = None
         self.macroserver = None
         self.door = None
+
+        db = PyTango.Database()
+        prop = db.get_device_property(self.ms_name, "EnvironmentDb")
+        ms_properties = prop["EnvironmentDb"]
+        if not ms_properties:
+            dft_ms_properties = os.path.join(
+                MacroServerClass.DefaultEnvBaseDir,
+                MacroServerClass.DefaultEnvRelDir)
+            ds_inst_name = self.ms_ds_name.split("/")[1]
+            ms_properties = dft_ms_properties % {
+                "ds_exec_name": "MacroServer",
+                "ds_inst_name": ds_inst_name}
+        ms_properties = os.path.normpath(ms_properties)
+        try:
+            os.remove(ms_properties)
+        except Exception, e:
+            msg = "Not possible to remove macroserver environment file"
+            print(msg)
+            print("Details: %s" % e)
 
 
 if __name__ == '__main__':
