@@ -43,13 +43,14 @@ install:
     - ps: echo "Installing PyTango"
     - ps: msiexec /quiet /i $pytangoinstaller | out-null
     - ps: echo "Creating py2qt5 conda environment"
-    - ps: $env:PATH += ";C:\Miniconda-x64\\Scripts"
+#    - ps: $env:PATH += ";C:\Miniconda-x64\\Scripts"
     - ps: C:\\Miniconda-x64\\Scripts\\conda.exe create -q -y -n py2qt5 python=2.7 pyqt=5 numpy pyqtgraph lxml qt=5 six future ipython cython scipy pillow
     - ps: echo "setting variables"
     - ps: $env:TANGO_HOST='localhost:10000'
     - ps: $env:PYTHONPATH='C:\\Lib\\site-packages'
-    - ps: C:\\Miniconda-x64\\Scripts\\conda.exe activate py2qt5
-    - ps: python -c "import tango; print tango.__version__"
+    - ps: C:\\Miniconda-x64\\Scripts\\conda.exe --version
+#    - ps: C:\\Miniconda-x64\\Scripts\\conda.exe activate py2qt5
+#    - ps: python -c "import tango; print tango.__version__"
 
 
 build_script:
