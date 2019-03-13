@@ -47,7 +47,7 @@ install:
     - ps: echo "setting variables"
     - ps: $env:TANGO_HOST='localhost:10000'
     - ps: $env:PYTHONPATH='C:\\Lib\\site-packages'
-    - ps: conda activate py2qt5
+    - ps: C:\\Miniconda\\Scripts\\conda.exe activate py2qt5
     - ps: python -c "import tango; print tango.__version__"
 
 
