@@ -1,3 +1,5 @@
+image: Visual Studio 2017
+
 # fetch repository as zip archive
 shallow_clone: true
 
@@ -30,6 +32,9 @@ install:
     # Install virtualenv
     - "pip install --upgrade virtualenv"
     - "virtualenv --version"
+
+    # Check docker version
+    - docker version
 
 build_script:
     # Create build virtualenv
