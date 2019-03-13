@@ -46,7 +46,7 @@ install:
 #    - ps: $env:PATH += ";C:\Miniconda-x64\\Scripts"
     - ps: C:\\Miniconda-x64\\Scripts\\conda.exe create -q -y -n py2qt5 python=2.7 pyqt=5 numpy pyqtgraph lxml qt=5 six future ipython cython scipy pillow
     - ps: echo "setting variables"
-    - ps: $env:TANGO_HOST='localhost:10000'
+    - ps: $env:TANGO_HOST='sardana-test:10000'
     - ps: $env:PYTHONPATH='C:\\Lib\\site-packages'
     - ps: ls C:\\Miniconda-x64
     - ps: ls C:\\Miniconda-x64\\Scripts
@@ -55,6 +55,9 @@ install:
     - C:\\Miniconda-x64\\Scripts\\activate py2qt5
     - python -c "import tango; print tango.__version__"
 
+before_test:
+    - docker run -d --name=sardana-test -h sardana-test reszelaz/sardana-test
+    - python -c "import tango; print tango.Database().ping()"
 
 build_script:
     # Create build virtualenv
