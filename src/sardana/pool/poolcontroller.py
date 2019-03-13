@@ -922,6 +922,28 @@ class PoolController(PoolBaseController):
 
     # END SPECIFIC TO IOR CONTROLLER -----------------------------------------
 
+    # START SPECIFIC TO TIMERABLE CONTROLLER ---------------------------------
+
+    def get_default_timer(self):
+        """Get default timer as announced by the controller (plug-in).
+
+        Only for *Timerable* controllers, e.g.
+        :class:`~sardana.pool.controller.CounterTimerController`,
+        :class:`~sardana.pool.controller.OneDController`,
+        :class:`~sardana.pool.controller.TwoDController`.
+
+        :return: axis of the default timer or :obj:`None` if not defined
+        :rtype: :obj:`int` or :obj:`None`
+        """
+        if not self.is_timerable():
+            raise TypeError("non-timerable controller")
+        try:
+            return self.ctrl.default_timer
+        except AttributeError:
+            return None
+
+    # END SPECIFIC TO IOR CONTROLLER -----------------------------------------
+
 
 class PoolPseudoMotorController(PoolController):
 

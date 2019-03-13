@@ -231,6 +231,9 @@ this configuration (axis number) via the controller parameter ``timer``
 and ``monitor``. The currently used acquisition mode is set via the controller
 parameter ``acquisition_mode``.
 
+Controller may announce its default timer axis with the
+:obj:`~sardana.pool.controller.Loadable.default_timer` class attribute.
+
 .. _sardana-countertimercontroller-howto-advanced:
 
 Advanced topics

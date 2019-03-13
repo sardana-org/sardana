@@ -5,6 +5,47 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
+## [2.7.0] 2019-03-11
+
+### Added
+
+* Possibility to directly acquire an experimental channel (without the need to define
+  a measurement group) (#185, #997, #1048, #1061)
+  * `IntegrationTime` (Tango) and `integration_time` (core) attributes to all experimental
+    channels
+  * `Timer` (Tango) and `timer` (core) attribute to all timerable experimental channels
+  * `default_timer` class attribute to all timerable controllers (plugins) to let them
+    announce the default timer axis
+* Possibility to pass an experimental channel (now compatible only with timerable channels) 
+  as a parameter of `ct` and `uct` macros in order to acquire directly on the channel (#1049)
+* `Countable` element type that includes measurement group and experimental channels (#1049)
+* `newfile` macro for setting `ScanDir`, `ScanFile` and `ScanID` env variables (#777)
+* Warning message when hooks gets overridden with `Hookable.hooks` property (#1041)
+* Acquisition macro examples (#1047)
+
+### Fixed
+
+* `expconf` warns only about the following environment variables changes: `ScanFile`,
+  `ScanDir`, `ActiveMntGrp`, `PreScanSnapshot` and `DataCompressionRank` (#1040)
+* MeasurementGroup's Moveable attribute when set to "None" in Tango is used as None
+  in the core (#1001)
+* Compatibility of measurement group plotting configurations created with
+  sardana < 2.4.0 and taurus < 4.3.0 (#1017, #1022)
+* General Hook tests (#1062)
+ 
+## [2.6.1] 2019-02-04
+
+This is a special release for meeting the deadline of debian buster freeze (debian 10).
+
+### Fixed
+- String parameter editor in macroexecutor and sequencer (#1030, #1031)
+- Documentation on differences between `Hookable.hooks` and `Hookable.appendHook`
+  (#962, #1013)
+
+## [2.6.0] 2019-01-31
+
+This is a special release for meeting the deadline of debian buster freeze (debian 10).
+
 ### Added
 - New acquisition and synchronization concepts (SEP18, #773):
   - Preparation of measurement group for a group of acquisitions is mandatory
@@ -23,7 +64,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   #1009)
 - Possibility to define macros with optional parameters. These must be the last
   ones in the definition (#285, #876, #943, #941, #955)
-- Possibility to pass values of repeat paramters with just one member without
+- Possibility to pass values of repeat parameters with just one member without
   the need to encapsulate them in square brackets (spock syntax) or list
   (macro API) (#781, #983)
 - Possibility to change data format (shape) of of pseudo counter values (#986)
@@ -62,6 +103,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Spock considers passing supernumerary parameters as errors (#438, #781)
 - MacroServer starts without the Qt library installed (#781, #907, #908)
 - Make `Description` an optional part of controller's properties definition (#976)
+- Correcting bug in hkl macros introduced when extending macros for new
+  diffractometer types: angle order was switched
 
 ### Changed
 - MacroButton stops macros instead of aborting them (#931, #943)
@@ -81,7 +124,6 @@ This file follows the formats and conventions from [keepachangelog.com]
 - Unused class `sardana.taurus.qt.qtgui.extra_macroexecutor.dooroutput.DoorAttrListener`
 
 ### Removed
-
 - Support to Qt < 4.7.4 (#1006, #1009)
 
 ## [2.5.0] 2018-08-10
@@ -555,7 +597,10 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.5.0...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.7.0...HEAD
+[2.7.0]: https://github.com/sardana-org/sardana/compare/2.6.1...2.7.0
+[2.6.1]: https://github.com/sardana-org/sardana/compare/2.6.0...2.6.1
+[2.6.0]: https://github.com/sardana-org/sardana/compare/2.5.0...2.6.0
 [2.5.0]: https://github.com/sardana-org/sardana/compare/2.4.0...2.5.0
 [2.4.0]: https://github.com/sardana-org/sardana/compare/2.3.2...2.4.0
 [2.3.2]: https://github.com/sardana-org/sardana/compare/2.3.1...2.3.2

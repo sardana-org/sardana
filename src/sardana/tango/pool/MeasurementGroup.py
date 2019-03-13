@@ -141,6 +141,8 @@ class MeasurementGroup(PoolGroupDevice):
         elif name == "synchronization":
             codec = CodecFactory().getCodec('json')
             _, event_value = codec.encode(('', event_value))
+        elif name == "moveable" and event_value is None:
+            event_value = 'None'
         else:
             if isinstance(event_value, SardanaAttribute):
                 if event_value.error:
@@ -236,7 +238,10 @@ class MeasurementGroup(PoolGroupDevice):
         attr.set_value(moveable)
 
     def write_Moveable(self, attr):
-        self.measurement_group.moveable = attr.get_write_value()
+        moveable = attr.get_write_value()
+        if moveable == 'None':
+            moveable = None
+        self.measurement_group.moveable = moveable
 
     def read_Synchronization(self, attr):
         synchronization = self.measurement_group.synchronization
