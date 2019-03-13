@@ -36,13 +36,13 @@ install:
     # Check docker version
     - docker version
 
-    - ps: $pytangoinstallerurl = "https://github.com/NexeyaSGara/pytango/releases/download/9.2.6/pytango-9.2.3.win-amd64-py3.6.msi"
-    - ps: $pytangoinstaller = "$env:TMP\\pytango-9.2.3.win-amd64-py3.6.msi"
+    - ps: $pytangoinstallerurl = "https://github.com/NexeyaSGara/pytango/releases/download/9.2.6/pytango-9.2.3.win-amd64-py2.7.msi"
+    - ps: $pytangoinstaller = "$env:TMP\\pytango-9.2.3.win-amd64-py2.7.msi"
     - ps: wget $pytangoinstallerurl -OutFile $pytangoinstaller
-    - ps: ls "$env:TMP\\pytango-9.2.3.win-amd64-py3.6.msi"
+    - ps: ls "$env:TMP\\pytango-9.2.3.win-amd64-py2.7.msi"
     - ps: echo "Installing PyTango"
     - ps: msiexec /quiet /i $pytangoinstaller | out-null
-    - python3 -c "import tango; print tango.__version__"
+    - python -c "import tango; print tango.__version__"
 
 
 build_script:
