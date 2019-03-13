@@ -50,9 +50,9 @@ install:
     - ps: $env:PYTHONPATH='C:\\Lib\\site-packages'
     - ps: ls C:\\Miniconda-x64
     - ps: ls C:\\Miniconda-x64\\Scripts
-    - ps echo $env:PATH
+    - ps: echo $env:PATH
 #    - ps: C:\\Miniconda-x64\\Scripts\\conda.exe --version
-    - C:\\Miniconda-x64\\Scripts\\conda.exe activate py2qt5
+    - C:\\Miniconda-x64\\Scripts\\activate py2qt5
     - python -c "import tango; print tango.__version__"
 
 
