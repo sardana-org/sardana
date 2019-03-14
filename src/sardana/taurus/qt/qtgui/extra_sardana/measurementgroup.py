@@ -345,6 +345,8 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
                 except KeyError:
                     pass  # data_type key may not be there if not specified
                 return
+            else:
+                data = qvalue
         elif taurus_role == ChannelView.PlotType:
             data = PlotType[qvalue]
         elif taurus_role == ChannelView.Normalization:
