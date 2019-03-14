@@ -531,7 +531,7 @@ class PoolBaseChannel(PoolElement):
         if not cache or self._value_ref_pattern is None:
             value_ref_pattern = self.read_value_ref_pattern()
             self._set_value_ref_pattern(value_ref_pattern,
-                                         propagate=propagate)
+                                        propagate=propagate)
         return self._value_ref_pattern
 
     def set_value_ref_pattern(self, value_ref_pattern, propagate=1):
@@ -583,8 +583,8 @@ class PoolBaseChannel(PoolElement):
         return value_ref_pattern
 
     value_ref_pattern = property(get_value_ref_pattern,
-                                  set_value_ref_pattern,
-                                  doc="channel value reference template")
+                                 set_value_ref_pattern,
+                                 doc="channel value reference template")
 
     # ------------------------------------------------------------------------
     # value ref enabled
