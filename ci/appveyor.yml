@@ -34,11 +34,11 @@ install:
     - "virtualenv --version"
 
     # Install Tango
-    - ps: $tangoinstallerurl = "https://sourceforge.net/projects/tango-cs/files/TangoSetup-9.2.2_win64.exe/download"
-    - ps: $tangoinstaller = "$env:TMP\\TangoSetup-9.2.2_win64.exe"
-    - ps: wget $tangoinstallerurl -OutFile $tangoinstaller
-    - ps: echo "Installing Tango"
-    - ps: Start-Process "$env:TMP\\TangoSetup-9.2.2_win64.exe" /S -Wait
+    #- ps: $tangoinstallerurl = "https://sourceforge.net/projects/tango-cs/files/TangoSetup-9.2.2_win64.exe/download"
+    #- ps: $tangoinstaller = "$env:TMP\\TangoSetup-9.2.2_win64.exe"
+    #- ps: wget $tangoinstallerurl -OutFile $tangoinstaller
+    #- ps: echo "Installing Tango"
+    #- ps: Start-Process "$env:TMP\\TangoSetup-9.2.2_win64.exe" /S -Wait
     
     # Install PyTango
     - ps: $pytangoinstallerurl = "https://github.com/NexeyaSGara/pytango/releases/download/9.2.6/pytango-9.2.3.win-amd64-py2.7.msi"
@@ -55,7 +55,7 @@ install:
     - ps: $env:TANGO_HOST='localhost:10000'
     - ps: $env:PYTHONPATH='C:\\Lib\\site-packages'
     - C:\\Miniconda-x64\\Scripts\\activate py2qt5
-    - python -c "import tango; print tango.__version__"
+    - python -c "import tango; print tango.__file__"
 
 # before_test:
 #     - docker-switch-linux
