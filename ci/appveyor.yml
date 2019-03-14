@@ -33,32 +33,34 @@ install:
     - "pip install --upgrade virtualenv"
     - "virtualenv --version"
 
-    # Check docker version
-    - docker version
-
+    # Install Tango
+    - ps: $tangoinstallerurl = "https://sourceforge.net/projects/tango-cs/files/TangoSetup-9.2.2_win64.exe/download"
+    - ps: $tangoinstaller = "$env:TMP\\TangoSetup-9.2.2_win64.exe"
+    - ps: wget $tangoinstallerurl -OutFile $tangoinstaller
+    - ps: echo "Installing Tango"
+    - ps: Start-Process "$env:TMP\\TangoSetup-9.2.2_win64.exe" /S -Wait
+    
+    # Install PyTango
     - ps: $pytangoinstallerurl = "https://github.com/NexeyaSGara/pytango/releases/download/9.2.6/pytango-9.2.3.win-amd64-py2.7.msi"
     - ps: $pytangoinstaller = "$env:TMP\\pytango-9.2.3.win-amd64-py2.7.msi"
     - ps: wget $pytangoinstallerurl -OutFile $pytangoinstaller
-    - ps: ls "$env:TMP\\pytango-9.2.3.win-amd64-py2.7.msi"
     - ps: echo "Installing PyTango"
     - ps: msiexec /quiet /i $pytangoinstaller | out-null
+
+    # Create Conda env
     - ps: echo "Creating py2qt5 conda environment"
 #    - ps: $env:PATH += ";C:\Miniconda-x64\\Scripts"
     - ps: C:\\Miniconda-x64\\Scripts\\conda.exe create -q -y -n py2qt5 python=2.7 pyqt=5 numpy pyqtgraph lxml qt=5 six future ipython cython scipy pillow
     - ps: echo "setting variables"
-    - ps: $env:TANGO_HOST='sardana-test:10000'
+    - ps: $env:TANGO_HOST='localhost:10000'
     - ps: $env:PYTHONPATH='C:\\Lib\\site-packages'
-    - ps: ls C:\\Miniconda-x64
-    - ps: ls C:\\Miniconda-x64\\Scripts
-    - ps: echo $env:PATH
-#    - ps: C:\\Miniconda-x64\\Scripts\\conda.exe --version
     - C:\\Miniconda-x64\\Scripts\\activate py2qt5
     - python -c "import tango; print tango.__version__"
 
-before_test:
-    - docker-switch-linux
-    - docker run --platform=linux -d --name=sardana-test -h sardana-test reszelaz/sardana-test
-    - python -c "import tango; print tango.Database().ping()"
+# before_test:
+#     - docker-switch-linux
+#     - docker run --platform=linux -d --name=sardana-test -h sardana-test reszelaz/sardana-test
+#     - python -c "import tango; print tango.Database().ping()"
 
 build_script:
     # Create build virtualenv
