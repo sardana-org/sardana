@@ -340,7 +340,10 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
         elif taurus_role == ChannelView.DataType:
             if len(qvalue.strip()) == 0:
                 # empty strings are considered as unspecified data type
-                ch_data.pop(key)
+                try:
+                    ch_data.pop(key)
+                except KeyError:
+                    pass  # data_type key may not be there if not specified
                 return
         elif taurus_role == ChannelView.PlotType:
             data = PlotType[qvalue]
