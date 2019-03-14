@@ -215,14 +215,14 @@ This API is based on axis parameters
 * `GetAxisPar(axis, parameter)`
 * `SetAxisPar(axis, parameter, value)`
     
-Parameters: `value_ref_template` (str), `value_ref_enabled` (bool). See 
+Parameters: `value_ref_pattern` (str), `value_ref_enabled` (bool). See
 "Channel API for referencing configuration" for more details about the format.
     
 ## Channel API for referencing configuration
 
 A channel with referencing capability exports the following additional interface:
 
-* `ValueRefTemplate` (Tango) and `value_ref_template` (core) attributes 
+* `ValueRefPattern` (Tango) and `value_ref_pattern` (core) attributes
 of the string type (use Python str.format() convention
 e.g. `file:///tmp/sample1_{index:02d}`)
 * `ValueRefEnabled` (Tango) and `value_ref_enabled` (core) attributes of the boolean
@@ -231,14 +231,14 @@ type.
 ## Measurement Group API for referencing configuration
 
 Measurement Group configuration has the following configuration parameters per
-channel `saving` (value (internal) or value_ref (external)) and `value_ref_template`.
+channel `saving` (value (internal) or value_ref (external)) and `value_ref_pattern`.
 The last one has the same format as explained in "Channel API for saving 
 configuration".
 
 ## Scan framework API for referencing configuration
 
-The `ScanValueRefTemplate` environment variable is used to alternate the
-Measurement Group's configuration (value_ref_template) during the scan
+The `ScanValueRefPattern` environment variable is used to alternate the
+Measurement Group's configuration (value_ref_pattern) during the scan
 (backup/restore). It uses Python str.format() convention
 e.g. `file:/tmp/sample1_{index:02d}`
 or `file:/{scan_dir}/{scan_file}/{channel}/sample1_{index:02d}`.

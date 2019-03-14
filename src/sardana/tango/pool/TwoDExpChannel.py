@@ -223,18 +223,18 @@ class TwoDExpChannel(PoolTimerableDevice):
         self.set_attribute(attr, value=value_ref.value, quality=quality,
                            timestamp=value_ref.timestamp, priority=0)
 
-    def read_ValueRefTemplate(self, attr):
-        value_ref_template = self.twod.get_value_ref_template(cache=False)
-        if value_ref_template is None:
-            value_ref_template = "None"
-        attr.set_value(value_ref_template)
+    def read_ValueRefPattern(self, attr):
+        value_ref_pattern = self.twod.get_value_ref_pattern(cache=False)
+        if value_ref_pattern is None:
+            value_ref_pattern = "None"
+        attr.set_value(value_ref_pattern)
 
     @memorize_write_attribute
-    def write_ValueRefTemplate(self, attr):
-        value_ref_template = attr.get_write_value()
-        if value_ref_template == "None":
-            value_ref_template = None
-        self.twod.value_ref_template = value_ref_template
+    def write_ValueRefPattern(self, attr):
+        value_ref_pattern = attr.get_write_value()
+        if value_ref_pattern == "None":
+            value_ref_pattern = None
+        self.twod.value_ref_pattern = value_ref_pattern
 
     def read_ValueRefEnabled(self, attr):
         value_ref_enabled = self.twod.is_value_ref_enabled(cache=False)

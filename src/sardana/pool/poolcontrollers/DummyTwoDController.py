@@ -47,7 +47,7 @@ class Channel:
         self.is_counting = False
         self.active = True
         self.amplitude = BaseValue('1.0')
-        self.value_ref_template = "h5file:///tmp/dummy2d_default_{index}.h5"
+        self.value_ref_pattern = "h5file:///tmp/dummy2d_default_{index}.h5"
         self.value_ref_enabled = True
 
 
@@ -212,13 +212,13 @@ class DummyTwoDController(TwoDController, Referable):
         self._log.debug("RefOne(%s)", axis)
         idx = axis - 1
         channel = self.channels[idx]
-        value_ref_template = channel.value_ref_template
-        if value_ref_template is None:
-            value_ref_template = "h5file:///tmp/dummy2d_default_{index}.h5"
+        value_ref_pattern = channel.value_ref_pattern
+        if value_ref_pattern is None:
+            value_ref_pattern = "h5file:///tmp/dummy2d_default_{index}.h5"
         try:
-            value_ref_uri = value_ref_template.format(index=self.img_idx)
+            value_ref_uri = value_ref_pattern.format(index=self.img_idx)
         except Exception:
-            value_ref_uri = value_ref_template
+            value_ref_uri = value_ref_pattern
             msg = ("Not able to format value reference template "
                    "with index. Trying to use directly the template...")
             self._log.warning(msg, exc_info=True)
@@ -295,8 +295,8 @@ class DummyTwoDController(TwoDController, Referable):
     def SetAxisPar(self, axis, parameter, value):
         idx = axis - 1
         channel = self.channels[idx]
-        if parameter == "value_ref_template":
-            channel.value_ref_template = value
+        if parameter == "value_ref_pattern":
+            channel.value_ref_pattern = value
         elif parameter == "value_ref_enabled":
             channel.value_ref_enabled = value
 

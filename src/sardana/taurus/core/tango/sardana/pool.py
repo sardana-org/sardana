@@ -673,7 +673,7 @@ class ExpChannel(PoolElement):
         """ExpChannel initialization."""
         self.call__init__(PoolElement, name, **kw)
         self._last_integ_time = None
-        self._last_value_ref_template = None
+        self._last_value_ref_pattern = None
         self._last_value_ref_enabled = None
         self._value_buffer = {}
         self._value_ref_buffer = {}
@@ -755,20 +755,20 @@ class ExpChannel(PoolElement):
         for index, value_ref in zip(indexes, value_refs):
             self._value_ref_buffer[index] = value_ref
 
-    def getValueRefTemplate(self):
-        return self._getAttrValue('ValueRefTemplate')
+    def getValueRefPattern(self):
+        return self._getAttrValue('ValueRefPattern')
 
-    def getValueRefTemplateObj(self):
-        return self._getAttrEG('ValueRefTemplate')
+    def getValueRefPatternObj(self):
+        return self._getAttrEG('ValueRefPattern')
 
-    def setValueRefTemplate(self, value_ref_template):
-        self.getValueRefTemplateObj().write(value_ref_template)
+    def setValueRefPattern(self, value_ref_pattern):
+        self.getValueRefPatternObj().write(value_ref_pattern)
 
-    def putValueRefTemplate(self, value_ref_template):
-        if self._last_value_ref_template == value_ref_template:
+    def putValueRefPattern(self, value_ref_pattern):
+        if self._last_value_ref_pattern == value_ref_pattern:
             return
-        self._last_value_ref_template = value_ref_template
-        self.getValueRefTemplateObj().write(value_ref_template)
+        self._last_value_ref_pattern = value_ref_pattern
+        self.getValueRefPatternObj().write(value_ref_pattern)
 
     def isValueRefEnabled(self):
         return self._getAttrValue('ValueRefEnabled')
