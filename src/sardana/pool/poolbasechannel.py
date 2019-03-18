@@ -502,11 +502,11 @@ class PoolBaseChannel(PoolElement):
         val_ref_attr.clear()
 
     # ------------------------------------------------------------------------
-    # value ref template
+    # value ref pattern
     # ------------------------------------------------------------------------
 
     def get_value_ref_pattern(self, cache=True, propagate=1):
-        """Returns the channel value reference template.
+        """Returns the channel value reference pattern.
 
         .. note::
             The get_value_ref_pattern method has been included in Sardana on
@@ -535,7 +535,7 @@ class PoolBaseChannel(PoolElement):
         return self._value_ref_pattern
 
     def set_value_ref_pattern(self, value_ref_pattern, propagate=1):
-        """Set a value reference template.
+        """Set a value reference pattern.
 
         .. note::
             The set_value_ref_pattern method has been included in Sardana on
@@ -544,7 +544,7 @@ class PoolBaseChannel(PoolElement):
             the core developers.
 
         :param value_ref_pattern:
-            the new value reference template
+            the new value reference pattern
         :type value_ref_pattern:
             :obj:`str`
         :param propagate:
