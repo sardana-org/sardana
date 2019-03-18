@@ -224,7 +224,7 @@ class TwoDExpChannel(PoolTimerableDevice):
                            timestamp=value_ref.timestamp, priority=0)
 
     def read_ValueRefPattern(self, attr):
-        value_ref_pattern = self.twod.get_value_ref_pattern(cache=False)
+        value_ref_pattern = self.twod.get_value_ref_pattern()
         if value_ref_pattern is None:
             value_ref_pattern = "None"
         attr.set_value(value_ref_pattern)
@@ -237,7 +237,7 @@ class TwoDExpChannel(PoolTimerableDevice):
         self.twod.value_ref_pattern = value_ref_pattern
 
     def read_ValueRefEnabled(self, attr):
-        value_ref_enabled = self.twod.is_value_ref_enabled(cache=False)
+        value_ref_enabled = self.twod.is_value_ref_enabled()
         if value_ref_enabled is None:
             raise Exception("value reference enabled flag is unknown")
         attr.set_value(value_ref_enabled)

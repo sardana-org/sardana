@@ -211,8 +211,8 @@ it per channel (e.g. timer channel (scalar) could not have this capability).
 
 ## Controller API for referencing configuration
 
-This API is based on axis parameters
-* `GetAxisPar(axis, parameter)`
+This API is based on axis parameters - only set (in the future we could
+evaluate having the get part as well).
 * `SetAxisPar(axis, parameter, value)`
     
 Parameters: `value_ref_pattern` (str), `value_ref_enabled` (bool). See

@@ -299,9 +299,3 @@ class DummyTwoDController(TwoDController, Referable):
             channel.value_ref_pattern = value
         elif parameter == "value_ref_enabled":
             channel.value_ref_enabled = value
-
-    def GetAxisPar(self, axis, parameter):
-        idx = axis - 1
-        channel = self.channels[idx]
-        if parameter == "value_ref_enabled":
-            return channel.value_ref_enabled

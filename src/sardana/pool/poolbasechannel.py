@@ -505,7 +505,7 @@ class PoolBaseChannel(PoolElement):
     # value ref pattern
     # ------------------------------------------------------------------------
 
-    def get_value_ref_pattern(self, cache=True, propagate=1):
+    def get_value_ref_pattern(self):
         """Returns the channel value reference pattern.
 
         .. note::
@@ -514,28 +514,15 @@ class PoolBaseChannel(PoolElement):
             including removal of the class) may occur if deemed necessary by
             the core developers.
 
-        :param cache:
-            if ``True`` (default) return value ref template in cache,
-            otherwise read value from hardware
-        :type cache:
-            :obj:`bool`
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate:
-            obj:`int`
         :return:
             the channel value
         :rtype:
             :obj:`str`
         """
-        if not cache or self._value_ref_pattern is None:
-            value_ref_pattern = self.read_value_ref_pattern()
-            self._set_value_ref_pattern(value_ref_pattern,
-                                        propagate=propagate)
         return self._value_ref_pattern
 
     def set_value_ref_pattern(self, value_ref_pattern, propagate=1):
-        """Set a value reference pattern.
+        """Set a value reference pattern in the kernel (not in the hardware).
 
         .. note::
             The set_value_ref_pattern method has been included in Sardana on
@@ -552,8 +539,6 @@ class PoolBaseChannel(PoolElement):
         :type propagate:
             :obj:`int`
         """
-        self.controller.set_axis_par(self.axis, "value_ref_pattern",
-                                     value_ref_pattern)
         self._set_value_ref_pattern(value_ref_pattern, propagate=propagate)
 
     def _set_value_ref_pattern(self, value_ref_pattern, propagate=1):
@@ -564,33 +549,15 @@ class PoolBaseChannel(PoolElement):
             EventType("value_ref_pattern", priority=propagate),
             value_ref_pattern)
 
-    def read_value_ref_pattern(self):
-        """Reads the channel value reference template from hardware.
-
-        .. note::
-            The read_value_ref_pattern method has been included in Sardana on
-            a provisional basis. Backwards incompatible changes (up to and
-            including removal of the class) may occur if deemed necessary by
-            the core developers.
-
-        :return:
-            value reference template
-        :rtype:
-            :obj:`str` or :obj:`None`
-        """
-        value_ref_pattern = self.controller.get_axis_par(
-            self.axis, "value_ref_pattern")
-        return value_ref_pattern
-
     value_ref_pattern = property(get_value_ref_pattern,
                                  set_value_ref_pattern,
-                                 doc="channel value reference template")
+                                 doc="channel value reference pattern")
 
     # ------------------------------------------------------------------------
     # value ref enabled
     # ------------------------------------------------------------------------
 
-    def is_value_ref_enabled(self, cache=True, propagate=1):
+    def is_value_ref_enabled(self):
         """Check if value reference is enabled.
 
         .. note::
@@ -599,28 +566,16 @@ class PoolBaseChannel(PoolElement):
             including removal of the class) may occur if deemed necessary by
             the core developers.
 
-        :param cache:
-            if ``True`` (default) return value ref enabled in cache,
-            otherwise read value from hardware
-        :type cache:
-            :obj:`bool`
-        :param propagate:
-            0 for not propagating, 1 to propagate, 2 propagate with priority
-        :type propagate:
-            obj:`int`
         :return:
             the channel value
         :rtype:
             :obj:`bool`
         """
-        if not cache or self._value_ref_enabled is None:
-            value_ref_enabled = self.read_value_ref_enabled()
-            self._set_value_ref_enabled(value_ref_enabled,
-                                        propagate=propagate)
         return self._value_ref_enabled
 
     def set_value_ref_enabled(self, value_ref_enabled, propagate=1):
-        """Set value reference enabled flag.
+        """Set value reference enabled flag in the kernel (not in the
+        hardware).
 
         .. note::
             The set_value_ref_enabled method has been included in Sardana on
@@ -637,8 +592,6 @@ class PoolBaseChannel(PoolElement):
         :type propagate:
             :obj:`int`
         """
-        self.controller.set_axis_par(self.axis, "value_ref_enabled",
-                                     value_ref_enabled)
         self._set_value_ref_enabled(value_ref_enabled, propagate=propagate)
 
     def _set_value_ref_enabled(self, value_ref_enabled, propagate=1):
@@ -648,24 +601,6 @@ class PoolBaseChannel(PoolElement):
         self.fire_event(
             EventType("value_ref_enabled", priority=propagate),
             value_ref_enabled)
-
-    def read_value_ref_enabled(self):
-        """Reads the channel value reference enabled from hardware.
-
-        .. note::
-            The read_value_ref_enabled method has been included in Sardana on
-            a provisional basis. Backwards incompatible changes (up to and
-            including removal of the class) may occur if deemed necessary by
-            the core developers.
-
-        :return:
-            value reference enabled
-        :rtype:
-            :obj:`bool` or :obj:`None`
-        """
-        value_ref_enabled = self.controller.get_axis_par(
-            self.axis, "value_ref_enabled")
-        return value_ref_enabled
 
     value_ref_enabled = property(is_value_ref_enabled,
                                  set_value_ref_enabled,
@@ -713,6 +648,17 @@ class PoolBaseChannel(PoolElement):
 
     integration_time = property(get_integration_time, set_integration_time,
                                 doc="channel integration time")
+
+    def _prepare(self):
+        # TODO: think of implementing the preparation in the software
+        # acquisition action, similarly as it is done for the global
+        # acquisition action
+        if self.is_referable():
+            self.controller.set_axis_par(self.axis, "value_ref_enabled",
+                                         self.value_ref_enabled)
+            if self.value_ref_enabled:
+                self.controller.set_axis_par(self.axis, "value_ref_pattern",
+                                             self.value_ref_pattern)
 
     def start_acquisition(self):
         msg = "{0} does not support independent acquisition".format(
@@ -801,11 +747,6 @@ class PoolTimerableChannel(PoolBaseChannel):
         if self.timer is None:
             msg = "no timer configured - acquisition is not possible"
             raise RuntimeError(msg)
-
-        if self._conf_timer is None:
-            self._configure_timer()
-        self.controller.set_ctrl_par("synchronization",
-                                     AcqSynch.SoftwareTrigger)
         self._prepare()
         ctrls, master = get_timerable_items(
             [self._conf_ctrl], self._conf_timer, AcqMode.Timer)
@@ -815,9 +756,14 @@ class PoolTimerableChannel(PoolBaseChannel):
         # TODO: think of implementing the preparation in the software
         # acquisition action, similarly as it is done for the global
         # acquisition action
+        PoolBaseChannel._prepare(self)
+        if self._conf_timer is None:
+            self._configure_timer()
         axis = self._conf_timer.axis
         repetitions = 1
         latency = 0
         nb_starts = 1
+        self.controller.set_ctrl_par("synchronization",
+                                     AcqSynch.SoftwareTrigger)
         self.controller.ctrl.PrepareOne(axis, self.integration_time,
                                         repetitions, latency, nb_starts)

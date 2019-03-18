@@ -42,7 +42,8 @@ from sardana.pool.test import createControllerConfiguration, \
 
 class AcquisitionTestCase(BasePoolTestCase):
 
-    CHANNEL_NAME = None
+    CHANNEL_NAME = None  # Override this!
+    SYNCHRONIZATION = None  # Override this!
 
     def setUp(self):
         """Create dummy controllers and elements."""
@@ -66,6 +67,17 @@ class AcquisitionTestCase(BasePoolTestCase):
     def add_listeners(self, chn_list):
         for chn in chn_list:
             chn.add_listener(self.data_listener)
+
+    def _prepare(self, integ_time, repetitions, latency_time, nb_starts):
+        pass
+
+    def prepare(self, integ_time, repetitions, latency_time, nb_starts):
+        self.channel_ctrl.set_ctrl_par("synchronization",
+                                       self.SYNCHRONIZATION)
+        self._prepare(integ_time, repetitions, latency_time, nb_starts)
+        self.channel_ctrl.ctrl.PrepareOne(self.channel.axis, integ_time,
+                                          repetitions, latency_time,
+                                          nb_starts)
 
     def wait_finish(self):
         # waiting for acquisition and synchronization to finish
@@ -148,11 +160,7 @@ class BaseAcquisitionSoftwareTestCase(AcquisitionTestCase):
     def acquire(self, integ_time, repetitions, latency_time):
         """Acquire with a dummy C/T synchronized by a hardware start
         trigger from a dummy T/G."""
-        self.channel_ctrl.set_ctrl_par("synchronization",
-                                       AcqSynch.SoftwareTrigger)
-        self.channel_ctrl.ctrl.PrepareOne(self.channel.axis, integ_time, 1,
-                                          latency_time, repetitions)
-
+        self.prepare(integ_time, repetitions, latency_time, 1)
         conf_ct_ctrl_1 = createTimerableControllerConfiguration(
             self.channel_ctrl, [self.channel])
         ctrls = get_timerable_ctrls([conf_ct_ctrl_1], AcqMode.Timer)
@@ -323,6 +331,7 @@ class AcquisitionSoftwareTestCase(BaseAcquisitionSoftwareTestCase, TestCase):
     """Integration test of PoolSynchronization and PoolAcquisitionSoftware"""
 
     CHANNEL_NAME = "_test_ct_1_1"
+    SYNCHRONIZATION = AcqSynch.SoftwareTrigger
 
 
 @insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
@@ -331,6 +340,7 @@ class AcquisitionSoftwareStartTestCase(AcquisitionTestCase, TestCase):
     """Integration test of PoolSynchronization and PoolAcquisitionHardware"""
 
     CHANNEL_NAME = "_test_ct_1_1"
+    SYNCHRONIZATION = AcqSynch.SoftwareStart
 
     def setUp(self):
         """Create test actors (controllers and elements)"""
@@ -350,9 +360,7 @@ class AcquisitionSoftwareStartTestCase(AcquisitionTestCase, TestCase):
     def acquire(self, integ_time, repetitions, latency_time):
         """Acquire with a dummy C/T synchronized by a hardware start
         trigger from a dummy T/G."""
-        self.channel_ctrl.set_ctrl_par("synchronization",
-                                       AcqSynch.SoftwareStart)
-
+        self.prepare(integ_time, repetitions, latency_time, 1)
         conf_ct_ctrl_1 = createTimerableControllerConfiguration(
             self.channel_ctrl, [self.channel])
         ctrls = get_timerable_ctrls([conf_ct_ctrl_1], AcqMode.Timer)
@@ -395,6 +403,7 @@ class AcquisitionHardwareStartTestCase(AcquisitionTestCase, TestCase):
     """Integration test of PoolSynchronization and PoolAcquisitionHardware"""
 
     CHANNEL_NAME = "_test_ct_1_1"
+    SYNCHRONIZATION = AcqSynch.HardwareStart
 
     def setUp(self):
         """Create test actors (controllers and elements)"""
@@ -404,8 +413,7 @@ class AcquisitionHardwareStartTestCase(AcquisitionTestCase, TestCase):
     def acquire(self, integ_time, repetitions, latency_time):
         """Acquire with a dummy C/T synchronized by a hardware start
         trigger from a dummy T/G."""
-        self.channel_ctrl.set_ctrl_par("synchronization",
-                                       AcqSynch.HardwareStart)
+        self.prepare(integ_time, repetitions, latency_time, 1)
         conf_ct_ctrl_1 = createTimerableControllerConfiguration(
             self.channel_ctrl, [self.channel])
         ctrls = get_timerable_ctrls([conf_ct_ctrl_1], AcqMode.Timer)
@@ -447,6 +455,7 @@ class AcquisitionSoftwareRefTestCase(BaseAcquisitionSoftwareTestCase,
                                      TestCase):
 
     CHANNEL_NAME = "_test_2d_1_1"
+    SYNCHRONIZATION = AcqSynch.SoftwareTrigger
 
     def setUp(self):
         """Create test actors (controllers and elements)"""
@@ -454,3 +463,6 @@ class AcquisitionSoftwareRefTestCase(BaseAcquisitionSoftwareTestCase,
         AcquisitionTestCase.setUp(self)
         self.data_listener = AttributeListener(dtype=object,
                                                attr_name="valuerefbuffer")
+
+    def _prepare(self, integ_time, repetitions, latency_time, nb_starts):
+        self.channel.value_ref_enabled = True
