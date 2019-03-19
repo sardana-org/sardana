@@ -223,7 +223,7 @@ class PoolBaseChannel(PoolElement):
     # --------------------------------------------------------------------------
 
     def get_default_acquisition_channel(self):
-        if self.is_referable():
+        if self.is_referable() and self.is_value_ref_enabled():
             return self.get_value_ref_attribute().name
         else:
             return self.get_default_attribute().name
