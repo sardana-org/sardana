@@ -27,9 +27,7 @@
 import uuid
 import numpy
 
-import taurus
-from taurus import Device, Attribute
-from taurus.core.taurusdevice import TaurusDevice
+from taurus import Device
 from taurus.external.unittest import TestCase
 from taurus.test.base import insertTest
 from sardana.sardanautils import is_number, is_non_str_seq, is_pure_str
@@ -64,10 +62,6 @@ def is_numerical(obj):
 class TestMeasurementGroup(SarTestTestCase, TestCase):
 
     def setUp(self):
-        # due to problems with factory cleanup in Taurus 3
-        # the asserts are
-        if taurus.core.release.version_info[0] < 4:
-            self.skipTest("Taurus 3 has problems with factory cleanup")
         SarTestTestCase.setUp(self)
         registerExtensions()
 
@@ -77,21 +71,17 @@ class TestMeasurementGroup(SarTestTestCase, TestCase):
         self.pool.CreateMeasurementGroup(argin)
         try:
             mg = Device(mg_name)
-            _, values = mg.count(1)
+            _, values = mg.count(.1)
             for channel_name, value in values.iteritems():
-                try:
-                    channel = Device(channel_name)
-                except Exception:
-                    channel = Attribute(channel_name)
-                if (isinstance(channel, TaurusDevice)
-                        and channel.isReferable()):
-                    msg = "ValueRef (%s) for %s is not string" %\
-                          (value, channel_name)
-                    self.assertTrue(is_pure_str(value), msg)
-                else:
-                    msg = "Value (%s) for %s is not numerical" % \
-                          (value, channel_name)
-                    self.assertTrue(is_numerical(value), msg)
+                msg = "Value (%s) for %s is not numerical" % \
+                      (value, channel_name)
+                self.assertTrue(is_numerical(value), msg)
+        finally:
+            mg.cleanUp()
+            self.pool.DeleteElement(mg_name)
+
+    def tearDown(self):
+        SarTestTestCase.tearDown(self)
         finally:
             channel.cleanUp()
             mg.cleanUp()
