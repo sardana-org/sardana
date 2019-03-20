@@ -31,6 +31,20 @@ from sardana.tango.pool.test import BasePoolTestCase
 __all__ = ['SarTestTestCase']
 
 
+def _cleanup_device(dev_name):
+    factory = taurus.Factory()
+    device = taurus.Device(dev_name)
+    # tango_alias_devs contains any names in which we have referred
+    # to the device, could be alias, short name, etc. pop all of them
+    for k, v in factory.tango_alias_devs.items():
+        if v is device:
+            factory.tango_alias_devs.pop(k)
+    full_name = device.getFullName()
+    if full_name in factory.tango_devs:
+        factory.tango_devs.pop(full_name)
+    device.cleanUp()
+
+
 class SarTestTestCase(BasePoolTestCase):
     """ Base class to setup sardana test environment.
         It creates the controllers defined in cls_list and pseudo_cls_list
@@ -139,7 +153,7 @@ class SarTestTestCase(BasePoolTestCase):
             # Persisting taurus device may react on API_EventTimeouts, enabled
             # polling, etc.
             if elem_name in f.tango_alias_devs:
-                taurus.Device(elem_name).cleanUp()
+                _cleanup_device(elem_name)
             try:
                 self.pool.DeleteElement(elem_name)
             except:
@@ -151,12 +165,14 @@ class SarTestTestCase(BasePoolTestCase):
             # devices are created and destroyed within the testsuite.
             # Persisting taurus device may react on API_EventTimeouts, enabled
             # polling, etc.
-            if elem_name in f.tango_alias_devs:
-                taurus.Device(elem_name).cleanUp()
+            if ctrl_name in f.tango_alias_devs:
+                _cleanup_device(ctrl_name)
             try:
                 self.pool.DeleteElement(ctrl_name)
             except:
                 dirty_ctrls.append(ctrl_name)
+
+        _cleanup_device(self.pool_name)
 
         BasePoolTestCase.tearDown(self)
 
