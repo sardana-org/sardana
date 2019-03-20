@@ -704,17 +704,11 @@ class ct(Macro, Hookable):
 
         names, counts = [], []
         if self.countable_elem.type == Type.MeasurementGroup:
-            # TODO: check if possible to use _value_to_repr helper
             meas_grp = self.countable_elem
             for ch_info in meas_grp.getChannelsEnabledInfo():
                 names.append('  %s' % ch_info.label)
                 ch_data = data.get(ch_info.full_name)
-                if ch_data is None:
-                    counts.append("<nodata>")
-                elif ch_info.shape > [1]:
-                    counts.append(list(ch_data.shape))
-                else:
-                    counts.append(ch_data)
+                counts.append(_value_to_repr(ch_data))
         else:
             channel = self.countable_elem
             names.append("  %s" % channel.name)
