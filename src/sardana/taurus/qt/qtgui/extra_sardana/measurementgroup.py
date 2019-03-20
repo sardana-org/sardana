@@ -125,6 +125,8 @@ def createChannelDict(channel, index=None, **kwargs):
         #           'timer': '', #should contain a channel name
         #           'monitor': '', #should contain a channel name
         #           'trigger': '', #should contain a channel name
+        'value_ref_enabled': True,  # bool
+        'value_ref_pattern': '',  # str
         'conditioning': '',  # this is a python expresion to be evaluated for conditioning the data. The data for this channel can be referred as 'x' and data from other channels can be referred by channel name
         'normalization': Normalization.No,  # one of the Normalization enumeration members
         # string indicating the location of the data of this channel within
@@ -259,13 +261,17 @@ def getElementTypeToolTip(t):
         return "The channel to be used as a monitor for stopping the acquisition"
     elif t == ChannelView.Synchronization:
         return "The channel to be used for triggering the acquisition"
+    elif t == ChannelView.ValueRefEnabled:
+        return "Channel value referencing active or not"
+    elif t == ChannelView.ValueRefPattern:
+        return "Channel value referencing pattern"
     elif t == ChannelView.Conditioning:
         return "An expression to evaluate on the data when displaying it"
     elif t == ChannelView.Normalization:
         return "Normalization mode for the data"
     elif t == ChannelView.NXPath:
         return "Location of the data of this channel within the NeXus tree"
-    if t == ChannelView.Synchronizer:
+    elif t == ChannelView.Synchronizer:
         return "Synchronization element"
     return "Unknown"
 
@@ -374,12 +380,18 @@ class MntGrpUnitItem(TaurusBaseTreeItem):
 
 
 class BaseMntGrpChannelModel(TaurusBaseModel):
-    ColumnNames = ("Channel", "enabled", "output", "Shape", "Data Type", "Plot Type", "Plot Axes", "Timer",
-                   "Monitor", "Synchronizer", "Synchronization", "Conditioning", "Normalization", "NeXus Path")
-    ColumnRoles = ((ChannelView.Channel, ChannelView.Channel), ChannelView.Enabled,
-                   ChannelView.Output, ChannelView.Shape, ChannelView.DataType, ChannelView.PlotType,
-                   ChannelView.PlotAxes, ChannelView.Timer, ChannelView.Monitor,
-                   ChannelView.Synchronizer, ChannelView.Synchronization, ChannelView.Conditioning,
+    ColumnNames = ("Channel", "enabled", "output", "Shape", "Data Type",
+                   "Plot Type", "Plot Axes", "Timer", "Monitor",
+                   "Synchronizer", "Synchronization", "Ref Enabled",
+                   "Ref Pattern", "Conditioning",
+                   "Normalization", "NeXus Path")
+    ColumnRoles = ((ChannelView.Channel, ChannelView.Channel),
+                   ChannelView.Enabled, ChannelView.Output, ChannelView.Shape,
+                   ChannelView.DataType, ChannelView.PlotType,
+                   ChannelView.PlotAxes, ChannelView.Timer,
+                   ChannelView.Monitor, ChannelView.Synchronizer,
+                   ChannelView.Synchronization, ChannelView.ValueRefEnabled,
+                   ChannelView.ValueRefPattern, ChannelView.Conditioning,
                    ChannelView.Normalization, ChannelView.NXPath)
     DftFont = Qt.QFont()
 
