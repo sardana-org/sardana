@@ -2183,6 +2183,11 @@ class Pool(TangoDevice, MoveableSource):
         self.__elements_attr = self.getAttribute("Elements")
         self.__elements_attr.addListener(self.on_elements_changed)
 
+    def cleanUp(self):
+        TangoDevice.cleanUp(self)
+        f = self.factory()
+        f.removeExistingAttribute(self.__elements_attr)
+
     def getObject(self, element_info):
         elem_type = element_info.getType()
         data = element_info._data
