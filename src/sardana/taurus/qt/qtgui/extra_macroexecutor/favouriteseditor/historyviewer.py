@@ -28,7 +28,7 @@ historyviewer.py:
 """
 import copy
 
-from taurus.external.qt import Qt
+from taurus.external.qt import Qt, compat
 from taurus.qt.qtgui.resource import getIcon
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtcore.configuration import BaseConfigurableClass
@@ -114,7 +114,7 @@ class HistoryMacrosViewer(TaurusWidget):
 
 class HistoryMacrosList(Qt.QListView, BaseConfigurableClass):
 
-    historySelected = Qt.pyqtSignal(object)
+    historySelected = Qt.pyqtSignal(compat.PY_OBJECT)
 
     def __init__(self, parent=None):
         Qt.QListView.__init__(self, parent)
