@@ -90,6 +90,13 @@ class SarTestTestCase(BasePoolTestCase):
     def setUp(self):
         BasePoolTestCase.setUp(self)
 
+        # due to problems with factory cleanup in Taurus 3
+        # we must skip these tests temporarily, whenever Taurus 3 support will
+        # be dropped, re-enable them
+        if taurus.core.release.version_info[0] < 4:
+            self.skipTest("Taurus 3 has problems with factory cleanup")
+
+
         self.ctrl_list = []
         self.elem_list = []
         try:
