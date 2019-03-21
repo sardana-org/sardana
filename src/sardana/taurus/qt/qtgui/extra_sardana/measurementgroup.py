@@ -234,6 +234,8 @@ def getElementTypeSize(t):
         return Qt.QSize(50, 24)
     elif t == ChannelView.PlotType:
         return Qt.QSize(50, 24)
+    elif t == ChannelView.ValueRefEnabled:
+        return Qt.QSize(50, 24)
     elif t == ChannelView.Synchronizer:
         return Qt.QSize(200, 24)
     return Qt.QSize(50, 24)
@@ -311,6 +313,8 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
                          #                         ChannelView.Timer:'timer',
                          #                         ChannelView.Monitor:'monitor',
                          #                         ChannelView.Synchronization:'trigger',
+                         ChannelView.ValueRefEnabled: 'value_ref_enabled',
+                         ChannelView.ValueRefPattern: 'value_ref_pattern',
                          ChannelView.Conditioning: 'conditioning',
                          ChannelView.Normalization: 'normalization',
                          ChannelView.NXPath: 'nexus_path',
@@ -339,7 +343,9 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
         taurus_role = index.model().role(index.column())
         if taurus_role in (ChannelView.Channel, ChannelView.Conditioning,
                            ChannelView.NXPath, ChannelView.DataType,
-                           ChannelView.Enabled, ChannelView.Output):
+                           ChannelView.Enabled, ChannelView.Output,
+                           ChannelView.ValueRefEnabled,
+                           ChannelView.ValueRefPattern):
             data = qvalue
         elif taurus_role == ChannelView.PlotType:
             data = PlotType[qvalue]
