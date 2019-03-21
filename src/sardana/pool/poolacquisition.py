@@ -452,6 +452,18 @@ class PoolAcquisition(PoolAction):
                 pool_ctrl.set_ctrl_par('monitor', ctrl.monitor.axis)
                 synch = config.get_acq_synch_by_controller(pool_ctrl)
                 pool_ctrl.set_ctrl_par('synchronization', synch)
+
+                if ctrl.is_referable():
+                    for channel in ctrl.get_channels():
+                        value_ref_enabled = channel.value_ref_enabled
+                        pool_ctrl.set_axis_par(channel.axis,
+                                               "value_ref_enabled",
+                                               value_ref_enabled)
+                        if value_ref_enabled:
+                            pool_ctrl.set_axis_par(channel.axis,
+                                                   "value_ref_pattern",
+                                                   channel.value_ref_pattern)
+
             config.changed = False
 
         # Call hardware and software start controllers prepare method
