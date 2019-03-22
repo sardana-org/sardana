@@ -647,6 +647,7 @@ class PoolAcquisitionBase(PoolAction):
         self._acq_sleep_time = None
         self._pool_ctrl_dict_loop = None
         self._pool_ctrl_dict_ref = None
+        self._pool_ctrl_dict_value = None
 
         # TODO: for the moment we can not clear value buffers at the end of
         # the acquisition. This is because of the pseudo counters that are
@@ -660,6 +661,11 @@ class PoolAcquisitionBase(PoolAction):
 
     def get_read_value_ref_ctrls(self):
         return self._pool_ctrl_dict_ref
+
+    def get_read_value_ctrls(self):
+        # technical debt in order to work both in case of meas group and
+        # single channel
+        return self._pool_ctrl_dict_value or self._pool_ctrl_dict
 
     def read_value_ref(self, ret=None, serial=False):
         """Reads value ref information of all elements involved in this action
@@ -794,8 +800,8 @@ class PoolAcquisitionBase(PoolAction):
 
         # controllers that will be read during the action
         self._set_pool_ctrl_dict_loop(ctrls)
-        # controllers that will be read their refs
-        self._set_pool_ctrl_dict_ref(ctrls)
+        # split controllers to read value and value reference
+        self._split_ctrl(ctrls)
 
         # channels that are acquired (only enabled)
         self._channels = []
@@ -917,18 +923,32 @@ class PoolAcquisitionBase(PoolAction):
             ctrl_channels[pool_ctrl] = pool_channels
         self._pool_ctrl_dict_loop = ctrl_channels
 
-    def _set_pool_ctrl_dict_ref(self, ctrls):
-        ctrl_channels = {}
+    def _split_ctrl(self, ctrls):
+        ctrl_channels_value = {}
+        ctrl_channels_ref = {}
         for ctrl in ctrls:
             if not ctrl.is_referable():
-                continue
-            pool_channels = []
-            pool_ctrl = ctrl.element
-            for channel in ctrl.get_channels(enabled=True):
-                if channel.value_ref_enabled:
-                    pool_channels.append(channel.element)
-            ctrl_channels[pool_ctrl] = pool_channels
-        self._pool_ctrl_dict_ref = ctrl_channels
+                pool_channels_value = []
+                pool_ctrl = ctrl.element
+                for channel in ctrl.get_channels(enabled=True):
+                    pool_channels_value.append(channel.element)
+                ctrl_channels_value[pool_ctrl] = pool_channels_value
+            else:
+                pool_channels_value = []
+                pool_channels_ref = []
+                pool_ctrl = ctrl.element
+                for channel in ctrl.get_channels(enabled=True):
+                    if channel.value_ref_enabled:
+                        pool_channels_ref.append(channel.element)
+                    else:
+                        pool_channels_value.append(channel.element)
+                if len(pool_channels_value) > 0:
+                    ctrl_channels_value[pool_ctrl] = pool_channels_value
+                if len(pool_channels_ref) > 0:
+                    ctrl_channels_ref[pool_ctrl] = pool_channels_ref
+
+        self._pool_ctrl_dict_value = ctrl_channels_value
+        self._pool_ctrl_dict_ref = ctrl_channels_ref
 
     def clear_value_buffers(self):
         for channel in self._channels:
