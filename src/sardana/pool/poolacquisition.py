@@ -1212,6 +1212,7 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
 
 
 class PoolCTAcquisition(PoolAcquisitionBase):
+    """..todo:: remove it, still used by pseudo counter"""
 
     def __init__(self, main_element, name="CTAcquisition", slaves=None):
         self._channels = None
