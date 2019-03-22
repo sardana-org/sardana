@@ -38,6 +38,7 @@ from datetime import datetime
 import numpy
 import h5py
 
+from sardana.sardanautils import is_pure_str
 from sardana.taurus.core.tango.sardana import PlotType
 from sardana.macroserver.scan.recorder import BaseFileRecorder, SaveModes
 
@@ -294,7 +295,9 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
 
                 if data is None:
                     data = numpy.zeros(dd.shape, dtype=dd.dtype)
-                if not hasattr(data, 'shape'):
+                if is_pure_str(data):
+                    pass
+                elif not hasattr(data, 'shape'):
                     data = numpy.array([data], dtype=dd.dtype)
                 elif dd.dtype != data.dtype.name:
                     self.debug('%s casted to %s (was %s)',
