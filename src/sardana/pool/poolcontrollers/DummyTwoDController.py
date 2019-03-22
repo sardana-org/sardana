@@ -147,6 +147,7 @@ class DummyTwoDController(TwoDController, Referable):
             if channel.is_counting:
                 sta = State.Moving
                 status = "Acquiring"
+                self._updateChannelValue(axis, elapsed_time)
         return sta, status
 
     def _updateChannelState(self, axis, elapsed_time):
@@ -187,22 +188,6 @@ class DummyTwoDController(TwoDController, Referable):
                 channel.is_counting = False
         self.counting_channels = {}
 
-    def PreReadAll(self):
-        self.read_channels = {}
-
-    def PreReadOne(self, axis):
-        channel = self.channels[axis - 1]
-        self.read_channels[axis] = channel
-
-    def ReadAll(self):
-        # if in acquisition then calculate the values to return
-        if self.counting_channels:
-            now = time.time()
-            elapsed_time = now - self.start_time
-            for axis, channel in self.read_channels.items():
-                self._updateChannelState(axis, elapsed_time)
-                if channel.is_counting:
-                    self._updateChannelValue(axis, elapsed_time)
 
     def ReadOne(self, axis):
         self._log.debug("ReadOne(%s)", axis)
@@ -245,12 +230,14 @@ class DummyTwoDController(TwoDController, Referable):
 
     def PreStartAll(self):
         self.counting_channels = {}
+        self.read_channels = {}
 
     def PreStartOne(self, axis, value):
         idx = axis - 1
         channel = self.channels[idx]
         channel.value = 0.0
         self.counting_channels[axis] = channel
+        self.read_channels[axis] = channel
         return True
 
     def StartOne(self, axis, value):
