@@ -168,7 +168,6 @@ presentation during the ABCDA Workshop at BESSY.
 of the `Readable` interface)? When any of these conditions applies:
     * the channel does not have referencing capability
     * the channel has referencing capability but it is disabled
-    * internal saving is enabled for the channel
     * there is a pseudo counter based on this channel
 * When to read the value reference?
     * the channel has referencing capability and it is enabled
