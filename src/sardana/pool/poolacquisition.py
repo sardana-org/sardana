@@ -1153,7 +1153,7 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
     def action_loop(self):
         i = 0
 
-        states, values = {}, {}
+        states, values, value_refs = {}, {}, {}
         for channel in self._channels:
             element = channel.element
             states[element] = None
@@ -1197,6 +1197,14 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
                     acquirable.put_value(value)
                 else:
                     acquirable.extend_value_buffer(value, propagate=2)
+            if acquirable in value_refs:
+                value_ref = value_refs[acquirable]
+                if is_value_error(value_ref):
+                    self.error("Loop final read value ref error for: %s" %
+                               acquirable.name)
+                    acquirable.put_value(value_ref)
+                else:
+                    acquirable.extend_value_buffer(value_ref, propagate=2)
             with acquirable:
                 acquirable.clear_operation()
                 state_info = acquirable._from_ctrl_state_info(state_info)
