@@ -1440,8 +1440,8 @@ class CScan(GScan):
                 raise ScanException(msg)
 
     def do_restore(self):
-        super(CScan, self).do_restore()
         self._restore_motors()
+        super(CScan, self).do_restore()
 
     def _setFastMotions(self, motors=None):
         '''make given motors go at their max speed and accel'''
