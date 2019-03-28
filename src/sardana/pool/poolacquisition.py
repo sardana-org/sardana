@@ -822,7 +822,9 @@ class PoolAcquisitionBase(PoolAction):
         for ctrl in ctrls:
             pool_channels = []
             pool_ctrl = ctrl.element
-            # TODO: filter 1D and 2D for software synchronize acquisition
+            # only CT will be read in the loop, 1D and 2D not
+            if ElementType.CTExpChannel not in ctrl.get_ctrl_types():
+                continue
             for channel in ctrl.get_channels(enabled=True):
                 pool_channels.append(channel.element)
             ctrl_channels[pool_ctrl] = pool_channels
