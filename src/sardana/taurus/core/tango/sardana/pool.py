@@ -481,7 +481,7 @@ class PoolElement(BaseElement, TangoDevice):
         # Due to taurus-org/taurus #573 we need to divide the timeout
         # in two intervals
         if timeout is not None:
-            timeout = timeout / 2
+            timeout = timeout / 2.
         if id is not None:
             id = id[0]
         evt_wait = self._getEventWait()
