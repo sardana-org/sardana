@@ -10,6 +10,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Restore motor parameters (vel, acc, dec) before going to start position in dNscact
   macros (#1085)
 * expconf when empty (unspecified) DataType (#1076)
+* Output block of scan records which do not fit the console width (#924)
 
 ### Added
 
