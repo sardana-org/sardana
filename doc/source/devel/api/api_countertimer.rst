@@ -13,12 +13,28 @@ A counter/timer has a ``state``, and a ``value`` attributes. The state
 indicates at any time if the counter/timer is stopped, in alarm or moving.
 The value, indicates the current counter/timer value.
 
+The other attributes are:
+
+timer
+    name of the timer channel (proceeding from the same controller) to be used
+    when the channel is acquired independently
+
+    special values:
+
+    * __default - controller's default timer
+    * __self - the same channel acts like a timer
+    * None - independent acquisition is disabled
+
+integration time
+    integration time (in seconds) to be used when the channel is acquired
+    independently
+
 The available operations are:
 
-start acquisition(integration time)
-    starts to acquire the counter/timer with the given integration time
+start acquisition
+    starts to acquire the counter/timer
 
-    :meth:`~PoolCounterTimer.start_acquisition`
+    :meth:`~sardana.pool.poolbasechannel.PoolTimerableChannel.start_acquisition`
 
 stop
     stops the counter/timer acquisition in an orderly fashion

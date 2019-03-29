@@ -32,14 +32,15 @@ __docformat__ = 'restructuredtext'
 
 from sardana import ElementType
 
-from sardana.pool.poolbasechannel import PoolBaseChannel
+from sardana.pool.poolbasechannel import PoolTimerableChannel
 
 
-class PoolCounterTimer(PoolBaseChannel):
+class PoolCounterTimer(PoolTimerableChannel):
 
     def __init__(self, **kwargs):
+        self._timer = None
         kwargs['elem_type'] = ElementType.CTExpChannel
-        PoolBaseChannel.__init__(self, **kwargs)
+        PoolTimerableChannel.__init__(self, **kwargs)
 
     # -------------------------------------------------------------------------
     # value

@@ -30,17 +30,25 @@ from sardana.pool.controller import CounterTimerController, Type, Access,\
     Description, Memorize, NotMemorized
 
 
-class Channel:
+class Channel(object):
 
     def __init__(self, idx):
         self.idx = idx            # 1 based index
         self.value = 0.0
         self.is_counting = False
         self.active = True
-        self.repetitions = 0
+        self.repetitions = 1
+        self.acq_latency_time = 0
         self._counter = 0
         self.mode = AcqSynch.SoftwareTrigger
         self.buffer_values = []
+        self.estimated_duration = None
+
+    def calculate_duration(self, intergration_time):
+        if self.mode not in (AcqSynch.SoftwareStart, AcqSynch.HardwareStart):
+            self.acq_latency_time = 0
+        self.estimated_duration = (intergration_time
+                                   + self.acq_latency_time) * self.repetitions
 
 
 class DummyCounterTimerController(CounterTimerController):
@@ -56,6 +64,8 @@ class DummyCounterTimerController(CounterTimerController):
     TimerMode = 1
     MonitorMode = 2
     CounterMode = 3
+
+    default_timer = 1
 
     def __init__(self, inst, props, *args, **kwargs):
         CounterTimerController.__init__(self, inst, props, *args, **kwargs)
@@ -117,12 +127,13 @@ class DummyCounterTimerController(CounterTimerController):
                 v = int(elapsed_time * 100 * ind)
                 if v >= self.monitor_count:
                     self._finish(elapsed_time)
-        elif channel.mode in (AcqSynch.HardwareTrigger, AcqSynch.HardwareGate):
+        elif channel.mode in (AcqSynch.HardwareTrigger,
+                              AcqSynch.HardwareGate,
+                              AcqSynch.SoftwareStart,
+                              AcqSynch.HardwareStart):
             if self.integ_time is not None:
                 # counting in time
-                # if elapsed_time >= self.integ_time*channel.repetitions:
-                if elapsed_time > channel.repetitions * (self.integ_time +
-                                                         self._latency_time):
+                if elapsed_time > channel.estimated_duration:
                     # if elapsed_time >= self.integ_time:
                     self._finish(elapsed_time)
 
@@ -142,7 +153,10 @@ class DummyCounterTimerController(CounterTimerController):
                 if ind == self._monitor:
                     if not channel.is_counting:
                         channel.value = self.monitor_count
-        elif channel.mode in (AcqSynch.HardwareTrigger, AcqSynch.HardwareGate):
+        elif channel.mode in (AcqSynch.HardwareTrigger,
+                              AcqSynch.HardwareGate,
+                              AcqSynch.SoftwareStart,
+                              AcqSynch.HardwareStart):
             if self.integ_time is not None:
                 t = elapsed_time
                 n = int(t / self.integ_time)
@@ -192,7 +206,10 @@ class DummyCounterTimerController(CounterTimerController):
         self._log.debug('ReadOne(%d): entering...' % ind)
         channel = self.read_channels[ind]
         ret = None
-        if channel.mode in (AcqSynch.HardwareTrigger, AcqSynch.HardwareGate):
+        if channel.mode in (AcqSynch.HardwareTrigger,
+                            AcqSynch.HardwareGate,
+                            AcqSynch.SoftwareStart,
+                            AcqSynch.HardwareStart):
             values = copy.deepcopy(channel.buffer_values)
             ret = []
             for v in values:
@@ -225,17 +242,19 @@ class DummyCounterTimerController(CounterTimerController):
     def StartAll(self):
         self.start_time = time.time()
 
-    def LoadOne(self, ind, value, repetitions):
+    def LoadOne(self, ind, value, repetitions, latency_time):
         if value > 0:
             self.integ_time = value
             self.monitor_count = None
         else:
             self.integ_time = None
             self.monitor_count = -value
-        self._repetitions = repetitions
+
         for channel in self.channels:
             if channel:
                 channel.repetitions = repetitions
+                channel.acq_latency_time = latency_time
+                channel.calculate_duration(value)
 
     def AbortOne(self, ind):
         now = time.time()

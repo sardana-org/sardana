@@ -9,17 +9,18 @@
 
 .. autodata:: sardana.pool.pooldefs.ControllerAPI
 
-.. rubric:: Classes
+.. rubric:: Enumerations
 
 .. hlist::
     :columns: 3
 
     * :class:`~AcqSynch`
+    * :data:`~AcqSynchType`
     * :class:`~SynchParam`
     * :class:`~SynchDomain`
 
 AcqSynch
-----------
+--------
 
 .. inheritance-diagram:: AcqSynch
     :parts: 1
@@ -28,6 +29,12 @@ AcqSynch
     :show-inheritance:
     :members:
     :undoc-members:
+
+
+AcqSynchType
+------------
+
+.. autodata:: AcqSynchType
 
 
 SynchParam

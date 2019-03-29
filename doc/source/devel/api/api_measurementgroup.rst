@@ -6,6 +6,12 @@
 Measurement group API reference
 ================================
 
+.. important::
+    Measurement group :term:`API` was extended in SEP18_ but this is still
+    not documented in this chapter. Please check the said SEP for more
+    information about the additional :term:`API` or eventual changes.
+
+
 The measurement group is a group element. It aggregates other elements like
 experimental channels (counter/timer, 0D, 1D and 2D or external attribute e.g.
 Tango_) and trigger/gates. The measurement group role is to execute acquisitions
@@ -93,3 +99,4 @@ start acquisition()
 ..        the measurement group class :term:`API`
 
 .. _Tango: http://www.tango-controls.org
+.. _SEP18: http://www.sardana-controls.org/sep/?SEP18.md

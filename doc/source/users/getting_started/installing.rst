@@ -54,7 +54,7 @@ You can test the installation by running::
 Windows
 -------
 
-#. Download the latest windows binary from http://pypi.python.org/pypi/sardana
+#. Download the latest windows binary from https://github.com/sardana-org/sardana/releases
 #. Run the installation executable
 #. test the installation::
 

@@ -33,15 +33,16 @@ __docformat__ = 'restructuredtext'
 from sardana import ElementType
 from sardana.sardanaevent import EventType
 
-from sardana.pool.poolbasechannel import PoolBaseChannel
+from sardana.pool.poolbasechannel import PoolTimerableChannel
 
 
-class Pool2DExpChannel(PoolBaseChannel):
+class Pool2DExpChannel(PoolTimerableChannel):
 
     def __init__(self, **kwargs):
         self._data_source = None
+        self._timer = None
         kwargs['elem_type'] = ElementType.TwoDExpChannel
-        PoolBaseChannel.__init__(self, **kwargs)
+        PoolTimerableChannel.__init__(self, **kwargs)
 
     # --------------------------------------------------------------------------
     # data source

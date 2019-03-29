@@ -1,4 +1,4 @@
-# How to release (draft)
+# How to release
 
 This is a guide for sardana release managers: it details the steps for making
 an official release, including a checklist of stuff that should be manually
@@ -34,6 +34,7 @@ tested.
     3. The version numbers used in the man pages of the Sardana scripts are
        bumped (you may use `taurus/doc/makeman` script executing it from the
        doc directory e.g. `sardana/doc`) and committing the changes.
+       There is a known [problem with the spock version number](https://github.com/sardana-org/sardana/issues/518).
     4. In the code use version number instead of milestone in deprecation
        warnings (if any) e.g. replace *Jul18* with *2.5.0*.
     5. Create a PR to merge the `release-XXX` against the **`master`** branch
@@ -65,6 +66,7 @@ tested.
        * Categories: Release
     2. After submitting click on Modify this content text of the area \<\<Content\>\> and provide detailes of the release e.g. changelog.
 12. Notify mailing lists (sardana-users@lists.sourceforge.net, sardana-devel@lists.sourceforge.net, info@tango-controls.org)
+13. Close the milestone for current release, and open a new one (there should be milestones for next 2 releases open).
 
 ## Manual test checklist
 
@@ -111,8 +113,7 @@ Hint: this list can be used as a template to be copy-pasted on a release manual 
   attribute.
 - [ ] Add the `sys/tg_test/1/double_scalar` attribute to the measurement
   group.
-- [ ] Open online plot.
-- [ ] Set JsonRecorder to true. In spock do `senv JsonRecorder True`
+- [ ] Open online plot (This should ask to enable JsonRecorder, set it to true. Otherwise enable it in spock: `senv JsonRecorder True`).
 - [ ] Run step scan
 - [ ] Verify that records appear in spock output.
 - [ ] Verify that records were stored in scan files.

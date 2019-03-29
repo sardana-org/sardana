@@ -672,7 +672,23 @@ class ExpChannel(PoolElement):
     def __init__(self, name, **kw):
         """ExpChannel initialization."""
         self.call__init__(PoolElement, name, **kw)
+        self._last_integ_time = None
         self._value_buffer = {}
+
+    def getIntegrationTime(self):
+        return self._getAttrValue('IntegrationTime')
+
+    def getIntegrationTimeObj(self):
+        return self._getAttrEG('IntegrationTime')
+
+    def setIntegrationTime(self, ctime):
+        self.getIntegrationTimeObj().write(ctime)
+
+    def putIntegrationTime(self, ctime):
+        if self._last_integ_time == ctime:
+            return
+        self._last_integ_time = ctime
+        self.getIntegrationTimeObj().write(ctime)
 
     def getValueObj_(self):
         """Retrurns Value attribute event generator object.
@@ -704,26 +720,65 @@ class ExpChannel(PoolElement):
         for index, value in zip(indexes, values):
             self._value_buffer[index] = value
 
+    def _start(self, *args, **kwargs):
+        self.Start()
 
-class CTExpChannel(ExpChannel):
+    def go(self, *args, **kwargs):
+        start_time = time.time()
+        integration_time = args[0]
+        if integration_time is None or integration_time == 0:
+            return self.getStateEG().readValue(), self.getValues()
+        self.putIntegrationTime(integration_time)
+        PoolElement.go(self)
+        state = self.getStateEG().readValue()
+        values = self.getValue()
+        ret = state, values
+        self._total_go_time = time.time() - start_time
+        return ret
+
+    startCount = PoolElement.start
+    waitCount = PoolElement.waitFinish
+    count = go
+    stopCount = PoolElement.abort
+    stop = PoolElement.stop
+
+
+class TimerableExpChannel(ExpChannel):
+
+    def getTimer(self):
+        return self._getAttrValue('Timer')
+
+    def getTimerObj(self):
+        return self._getAttrEG('Timer')
+
+    def setTimer(self, timer):
+        self.getTimerObj().write(timer)
+
+
+class CTExpChannel(TimerableExpChannel):
     """ Class encapsulating CTExpChannel functionality."""
     pass
+
 
 class ZeroDExpChannel(ExpChannel):
     """ Class encapsulating ZeroDExpChannel functionality."""
     pass
 
-class OneDExpChannel(ExpChannel):
+
+class OneDExpChannel(TimerableExpChannel):
     """ Class encapsulating OneDExpChannel functionality."""
     pass
 
-class TwoDExpChannel(ExpChannel):
+
+class TwoDExpChannel(TimerableExpChannel):
     """ Class encapsulating TwoDExpChannel functionality."""
     pass
+
 
 class PseudoCounter(ExpChannel):
     """ Class encapsulating PseudoCounter functionality."""
     pass
+
 
 class TriggerGate(PoolElement):
     """ Class encapsulating TriggerGate functionality."""
@@ -1528,6 +1583,11 @@ class MeasurementGroup(PoolElement):
         self._value_buffer_cb = None
         self._codec = CodecFactory().getCodec("json")
 
+    def cleanUp(self):
+        PoolElement.cleanUp(self)
+        f = self.factory()
+        f.removeExistingAttribute(self.__cfg_attr)
+
     def _create_str_tuple(self):
         channel_names = ", ".join(self.getChannelNames())
         return self.getName(), self.getTimerName(), channel_names
@@ -1670,6 +1730,16 @@ class MeasurementGroup(PoolElement):
         self.getSynchronizationObj().write(data)
         self._last_integ_time = None
 
+    # NbStarts Methods
+    def getNbStartsObj(self):
+        return self._getAttrEG('NbStarts')
+
+    def setNbStarts(self, starts):
+        self.getNbStartsObj().write(starts)
+
+    def getNbStarts(self):
+        return self._getAttrValue('NbStarts')
+
     def getMoveableObj(self):
         return self._getAttrEG('Moveable')
 
@@ -1784,18 +1854,24 @@ class MeasurementGroup(PoolElement):
         self.setConfiguration(cfg.raw_data)
 
     def _start(self, *args, **kwargs):
-        self.Start()
+        try:
+            self.Start()
+        except DevFailed as e:
+            # TODO: Workaround for CORBA timeout on measurement group start
+            # remove it whenever sardana-org/sardana#93 gets implemented
+            if e[-1].reason == "API_DeviceTimedOut":
+                self.error("start timed out, trying to stop")
+                self.stop()
+                self.debug("stopped")
+            raise e
 
-    def go(self, *args, **kwargs):
-        start_time = time.time()
-        cfg = self.getConfiguration()
-        cfg.prepare()
-        duration = args[0]
-        if duration is None or duration == 0:
-            return self.getStateEG().readValue(), self.getValues()
-        self.putIntegrationTime(duration)
-        self.setMoveable(None)
-        PoolElement.go(self, *args, **kwargs)
+    def prepare(self):
+        self.command_inout("Prepare")
+
+    def count_raw(self, start_time=None):
+        PoolElement.go(self)
+        if start_time is None:
+            start_time = time.time()
         state = self.getStateEG().readValue()
         if state == Fault:
             msg = "Measurement group ended acquisition with Fault state"
@@ -1805,7 +1881,20 @@ class MeasurementGroup(PoolElement):
         self._total_go_time = time.time() - start_time
         return ret
 
-    def measure(self, synchronization, value_buffer_cb=None):
+    def go(self, *args, **kwargs):
+        start_time = time.time()
+        cfg = self.getConfiguration()
+        cfg.prepare()
+        integration_time = args[0]
+        if integration_time is None or integration_time == 0:
+            return self.getStateEG().readValue(), self.getValues()
+        self.putIntegrationTime(integration_time)
+        self.setMoveable(None)
+        self.setNbStarts(1)
+        self.prepare()
+        return self.count_raw(start_time)
+
+    def count_continuous(self, synchronization, value_buffer_cb=None):
         """Execute measurement process according to the given synchronization
         description.
 
@@ -1828,7 +1917,7 @@ class MeasurementGroup(PoolElement):
         cfg.prepare()
         self.setSynchronization(synchronization)
         self.subscribeValueBuffer(value_buffer_cb)
-        PoolElement.go(self)
+        self.count_raw(start_time)
         self.unsubscribeValueBuffer(value_buffer_cb)
         state = self.getStateEG().readValue()
         if state == Fault:
