@@ -9,6 +9,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 * Restore motor parameters (vel, acc, dec) before going to start position in dNscact
   macros (#1085)
+* expconf when empty (unspecified) DataType (#1076)
 
 ## [2.7.0] 2019-03-11
 
