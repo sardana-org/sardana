@@ -11,6 +11,13 @@ This file follows the formats and conventions from [keepachangelog.com]
   macros (#1085)
 * expconf when empty (unspecified) DataType (#1076)
 
+## [2.7.1] 2019-03-29
+
+### Fixed
+
+* Do not read 1D and 2D experimental channels during software acquisition loop
+  reintroduced after fixing it in 2.6.0 (#1086).
+
 ## [2.7.0] 2019-03-11
 
 ### Added
@@ -603,7 +610,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.7.0...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.7.1...HEAD
+[2.7.1]: https://github.com/sardana-org/sardana/compare/2.7.0...2.7.1
 [2.7.0]: https://github.com/sardana-org/sardana/compare/2.6.1...2.7.0
 [2.6.1]: https://github.com/sardana-org/sardana/compare/2.6.0...2.6.1
 [2.6.0]: https://github.com/sardana-org/sardana/compare/2.5.0...2.6.0
