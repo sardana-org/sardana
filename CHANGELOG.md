@@ -11,6 +11,11 @@ This file follows the formats and conventions from [keepachangelog.com]
   macros (#1085)
 * expconf when empty (unspecified) DataType (#1076)
 
+### Added
+
+* Allow to configure timeout on pool element's (Taurus extensions) *go* methods e.g.
+  `move`, `count`, etc. (#992)
+
 ## [2.7.1] 2019-03-29
 
 ### Fixed
