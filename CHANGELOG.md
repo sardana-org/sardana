@@ -5,6 +5,11 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
+### Fixed
+
+* Restore motor parameters (vel, acc, dec) before going to start position in dNscact
+  macros (#1085)
+
 ## [2.7.0] 2019-03-11
 
 ### Added
