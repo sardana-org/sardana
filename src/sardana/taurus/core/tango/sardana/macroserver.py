@@ -706,7 +706,6 @@ class BaseDoor(MacroServerDevice):
                     for i in xrange(self._block_lines):
                         # erase current line, up one line, erase current line
                         nr_lines = int(self._len_last_data_line / max_chrs)
-
                         if self._len_last_data_line % max_chrs > 0:
                             nr_lines += 1
                         o += '\x1b[2K\x1b[1A\x1b[2K' * nr_lines
