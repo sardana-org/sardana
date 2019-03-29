@@ -218,18 +218,6 @@ An example of usage of this recorder is plotting live scans.
 
 .. todo:: Add reference to the jsonrecorder documentation when available.
 
-.. _outputblock:
-
-OutputBlock
-~~~~~~~~~~~
-    *Not mandatory, set by user*
-
-Enable/disable printing the scan output records at the same line instead
-of appending records as new lines a.k.a. block mode. This can save space
-of the console output and facilitate an easy visual access to the scan
-header printed at the beginning of the scan - especially useful for very
-long scans.
-
 .. _outputcols:
 
 OutputCols
