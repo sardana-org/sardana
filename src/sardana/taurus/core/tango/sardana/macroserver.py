@@ -78,7 +78,7 @@ def recur_map(fun, data, keep_none=False):
             return fun(data)
 
 
-def console_width():
+def _get_console_width():
     try:
         width = int(os.popen('stty size', 'r').read().split()[1])
     except Exception:
@@ -691,7 +691,7 @@ class BaseDoor(MacroServerDevice):
         return data
 
     def logReceived(self, log_name, output):
-        max_chrs = console_width()
+        max_chrs = _get_console_width()
         if not output or self._silent or self._ignore_logs:
             return
 
