@@ -241,8 +241,8 @@ class MacroServerMessageErrorHandler(TaurusMessageErrorHandler):
         msg = "<html><body><pre>%s</pre></body></html>" % err_value
         msgbox.setDetailedHtml(msg)
 
-        html_orig = """<html><head><style type="text/css">{
-        style}</style></head><body>"""
+        html_orig = """<html><head><style type="text/css">{style}
+            </style></head><body>"""
         exc_info = "".join(err_traceback)
         style = ""
         try:
