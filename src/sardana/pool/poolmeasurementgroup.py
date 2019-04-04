@@ -738,8 +738,17 @@ class MeasurementConfiguration(object):
             if not external and ctrl.is_timerable():
                 ctrl_item.update_timer()
                 ctrl_item.update_monitor()
-                user_config_ctrl['timer'] = ctrl_item.timer.full_name
-                user_config_ctrl['monitor'] = ctrl_item.monitor.full_name
+                if ctrl_item.enabled:
+                    user_config_ctrl['timer'] = ctrl_item.timer.full_name
+                    user_config_ctrl['monitor'] = ctrl_item.monitor.full_name
+                else:
+                    # TODO: In the future the value should be None, but for
+                    #  backward compatibility with the clients is not
+                    #  implemented, instead it uses the channel selected by
+                    #  expconf
+                    user_config_ctrl['timer'] = ctrl_data['timer']
+                    user_config_ctrl['monitor'] = ctrl_data['monitor']
+
             # Update synchronizer state
             if conf_synch is not None:
                 conf_synch.enabled = ctrl_enabled
