@@ -663,17 +663,26 @@ class MeasurementConfiguration(object):
                 user_config_ctrl['synchronizer'] = synchronizer
                 pool_synch = pool.get_element_by_full_name(synchronizer)
                 pool_synch_ctrl = pool_synch.controller
-                conf_synch = SynchronizerConfiguration(pool_synch)
                 conf_synch_ctrl = None
-                if len(synch_ctrls) > 0:
-                    conf_synch_ctrl = None
-                    for conf_ctrl in synch_ctrls:
-                        if pool_synch_ctrl == conf_ctrl.element:
-                            conf_synch_ctrl = conf_ctrl
+                conf_synch = None
+                for conf_ctrl_created in synch_ctrls:
+                    if pool_synch_ctrl == conf_ctrl_created.element:
+                        conf_synch_ctrl = conf_ctrl_created
+                        for conf_synch_created in \
+                                conf_ctrl_created.get_channels():
+                            if pool_synch == conf_synch_created.element:
+                                conf_synch = conf_synch_created
+                                break
+                        break
+
                 if conf_synch_ctrl is None:
                     conf_synch_ctrl = ControllerConfiguration(pool_synch_ctrl)
-                conf_synch_ctrl.add_channel(conf_synch)
-                synch_ctrls.append(conf_synch_ctrl)
+                    synch_ctrls.append(conf_synch_ctrl)
+
+                if conf_synch is None:
+                    conf_synch = SynchronizerConfiguration(pool_synch)
+                    conf_synch_ctrl.add_channel(conf_synch)
+
                 ctrl_conf['synchronizer'] = conf_synch
 
             try:
@@ -750,8 +759,8 @@ class MeasurementConfiguration(object):
                     user_config_ctrl['monitor'] = ctrl_data['monitor']
 
             # Update synchronizer state
-            if conf_synch is not None:
-                conf_synch.enabled = ctrl_enabled
+            if ctrl_enabled and conf_synch is not None:
+                conf_synch.enabled = True
 
             ctrl_item.validate()
 
