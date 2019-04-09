@@ -5,6 +5,14 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
+## [2.7.2] 2019-04-XX
+
+### Deprecated
+
+* Measurement group configuration `timer` and `monitor` - there are no 
+equivalents, these roles are assigned based on the channel's order per each 
+of the synchronization types: trigger, gate and start (#1090)
+
 ## [2.7.1] 2019-03-29
 
 ### Fixed

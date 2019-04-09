@@ -751,10 +751,16 @@ class MeasurementConfiguration(object):
                     user_config_ctrl['timer'] = ctrl_item.timer.full_name
                     user_config_ctrl['monitor'] = ctrl_item.monitor.full_name
                 else:
-                    # TODO: In the future the value should be None, but for
-                    #  backward compatibility with the clients is not
-                    #  implemented, instead it uses the channel selected by
-                    #  expconf
+                    # TODO: Remove timer and monitor configuration
+                    # timer and monitor configuration are deprecated.
+                    # This is because these may be different for
+                    # SoftwareTrigger, SoftwareGate or SoftwareStart
+                    # synchronization type. To be decided how we will
+                    # specify the new configuration e.g. chosen on the
+                    # server side based on the channel's order or
+                    # specified explicitly on the client side (expconf).
+                    # For backwards compatibility (some clients may rely on
+                    # them) we set them.
                     user_config_ctrl['timer'] = ctrl_data['timer']
                     user_config_ctrl['monitor'] = ctrl_data['monitor']
 
