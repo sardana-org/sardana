@@ -805,24 +805,22 @@ class MeasurementConfiguration(object):
             user_config['timer'] = master_timer_sw.full_name
         elif master_timer_sw_start is not None:
             user_config['timer'] = master_timer_sw_start.full_name
-        else:
-            # Measurement Group with all channel synchronized by hardware
+        else:  # Measurement Group with all channel synchronized by hardware
             if 'timer' in cfg:
                 user_config['timer'] = cfg['timer']
             else:
-                # Use the timer of the last controller configured.
+                # for backwards compatibility use a random monitor
                 user_config['timer'] = user_config_ctrl['timer']
 
         if master_monitor_sw is not None:
             user_config['monitor'] = master_monitor_sw.full_name
         elif master_monitor_sw_start is not None:
             user_config['monitor'] = master_monitor_sw_start.full_name
-        else:
-            # Measurement Group with all channel synchronized by hardware
+        else:  # Measurement Group with all channel synchronized by hardware
             if 'monitor' in cfg:
                 user_config['monitor'] = cfg['monitor']
             else:
-                # Use the monitor of the last controller configured.
+                # for backwards compatibility use a random monitor
                 user_config['monitor'] = user_config_ctrl['monitor']
 
         # Update internals values
