@@ -365,6 +365,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self._expConfChangedDialog = None
         if result == Qt.QMessageBox.Ok:
             self._reloadConf(force=True)
+        elif result == Qt.QMessageBox.Cancel:
+            self.ui.buttonBox.setEnabled(True)
 
     @QtCore.pyqtSlot()
     def _experimentConfigurationChanged(self):
