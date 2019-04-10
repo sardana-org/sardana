@@ -299,7 +299,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         return w
 
     def _getResumeText(self):
-        msg_resume = '<p> Summary of changes: <ul>'
+        msg_resume = '<p> Summary of differences: <ul>'
         mnt_grps = ''
         envs = ''
         for key in self._diff:
@@ -342,13 +342,12 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         # (would eventually overwrite the external changes when applying).
         # </p>'''
         text = '''
-        <p>The experiment configuration has been modified externally.
+        <p>The experiment configuration has been modified externally.<br>
         You can either:
         <ul>
-        <li><strong>Load </strong>the new configuration from the door
-        (discarding local changes)</li>
-        <li><strong>Keep </strong>your local configuration (would eventually
-        overwrite the external changes when applying)</li>
+        <li><strong>Load </strong>the new external configuration</li>
+        <li><strong>Keep </strong>your current expconf configuration<br>
+        (It can be eventually applied globally)</li>
         </ul></p>
         '''
         self._expConfChangedDialog.setText(text)
