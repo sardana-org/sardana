@@ -776,7 +776,11 @@ class MeasurementConfiguration(object):
                 timerable_ctrls[acq_synch].append(ctrl_item)
                 # Find master timer/monitor the system take the channel with
                 # less index
-                if acq_synch in (AcqSynch.SoftwareTrigger,
+
+                if not ctrl_item.enabled:
+                    # Skip controllers disabled
+                    pass
+                elif acq_synch in (AcqSynch.SoftwareTrigger,
                                  AcqSynch.SoftwareGate):
                     if ctrl_item.timer.index < master_timer_idx_sw:
                         master_timer_sw = ctrl_item.timer
