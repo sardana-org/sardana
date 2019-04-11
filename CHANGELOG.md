@@ -5,6 +5,12 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
+
+### Added
+
+* Allow to configure timeout on pool element's (Taurus extensions) *go* methods e.g.
+  `move`, `count`, etc. (#992)
+
 ### Fixed
 
 * Restore motor parameters (vel, acc, dec) before going to start position in dNscact
@@ -12,11 +18,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * expconf when empty (unspecified) DataType (#1076)
 * Output block of scan records which do not fit the console width (#924)
 * Fix bug on exception popups in macroexecutor (#1079, #1088)
-
-### Added
-
-* Allow to configure timeout on pool element's (Taurus extensions) *go* methods e.g.
-  `move`, `count`, etc. (#992)
+* Pop-up message when expconf configuration changed externally (#1094)
 
 ## [2.7.1] 2019-03-29
 
