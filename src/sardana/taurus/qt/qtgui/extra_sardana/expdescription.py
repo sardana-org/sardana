@@ -346,8 +346,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         You can either:
         <ul>
         <li><strong>Load </strong>the new external configuration</li>
-        <li><strong>Keep </strong>your current expconf configuration<br>
-        (It can be eventually applied globally)</li>
+        <li><strong>Keep </strong>your local expconf configuration<br>
+        (It can be eventually applied)</li>
         </ul></p>
         '''
         self._expConfChangedDialog.setText(text)
