@@ -258,7 +258,9 @@ class GScan(Logger):
     def __init__(self, macro, generator=None, moveables=[], env={},
                  constraints=[], extrainfodesc=[]):
         self._macro = weakref.ref(macro)
-        self._generator = CallableRef(generator)
+        if generator is not None:
+            generator = CallableRef(generator)
+        self._generator = generator
         self._extrainfodesc = extrainfodesc
 
         # nasty hack to make sure macro has access to gScan as soon as
