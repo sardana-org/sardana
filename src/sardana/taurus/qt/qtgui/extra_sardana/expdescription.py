@@ -125,8 +125,8 @@ def find_diff(first, second):
     # Look for differences only:
     # If first configuration (remote) is not empty, and,
     # first["MntGrpConfigs"] is not empty in case of existing
-    if bool(first) and ("MntGrpConfigs" not in first or
-                        bool(first["MntGrpConfigs"])):
+    if bool(first) and ("MntGrpConfigs" not in first
+                        or bool(first["MntGrpConfigs"])):
         # Keys missing in the second dict
         for key in sd1.difference(sd2):
             if key in SKIPKEYS:
