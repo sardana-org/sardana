@@ -42,8 +42,7 @@ class ComputeU(TaurusWidget):
 
         self.loadUi(filename="computeu.ui")
 
-        self.connect(self._ui.ComputeButton, Qt.SIGNAL(
-            "clicked()"), self.compute_u)
+        self._ui.ComputeButton.clicked.connect(self.compute_u)
 
     @classmethod
     def getQtDesignerPluginInfo(cls):

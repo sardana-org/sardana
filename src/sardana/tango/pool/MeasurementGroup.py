@@ -73,9 +73,10 @@ class MeasurementGroup(PoolGroupDevice):
     def init_device(self):
         PoolGroupDevice.init_device(self)
         # state and status are already set by the super class
-        detect_evts = "latencytime", "moveable", "synchronization"
+        detect_evts = "latencytime", "moveable", "synchronization", \
+                      "softwaresynchronizerinitialdomain", "nbstarts"
         non_detect_evts = "configuration", "integrationtime", "monitorcount", \
-                          "acquisitionmode", "elementlist", "repetitions"
+                          "acquisitionmode", "elementlist"
         self.set_change_events(detect_evts, non_detect_evts)
 
         self.Elements = list(self.Elements)
@@ -90,15 +91,17 @@ class MeasurementGroup(PoolGroupDevice):
             name = self.alias or full_name
             self.measurement_group = mg = \
                 self.pool.create_measurement_group(name=name,
-                                                   full_name=full_name, id=self.Id,
+                                                   full_name=full_name,
+                                                   id=self.Id,
                                                    user_elements=self.Elements)
         mg.add_listener(self.on_measurement_group_changed)
 
         # force a state read to initialize the state attribute
-        #state = self.measurement_group.state
+        # state = self.measurement_group.state
         self.set_state(DevState.ON)
 
-    def on_measurement_group_changed(self, event_source, event_type, event_value):
+    def on_measurement_group_changed(self, event_source, event_type,
+                                     event_value):
         try:
             self._on_measurement_group_changed(
                 event_source, event_type, event_value)
@@ -109,7 +112,8 @@ class MeasurementGroup(PoolGroupDevice):
                        exception_str(*exc_info[:2]))
             self.debug("Details", exc_info=exc_info)
 
-    def _on_measurement_group_changed(self, event_source, event_type, event_value):
+    def _on_measurement_group_changed(self, event_source, event_type,
+                                      event_value):
         # during server startup and shutdown avoid processing element
         # creation events
         if SardanaServer.server_state != State.Running:
@@ -137,6 +141,8 @@ class MeasurementGroup(PoolGroupDevice):
         elif name == "synchronization":
             codec = CodecFactory().getCodec('json')
             _, event_value = codec.encode(('', event_value))
+        elif name == "moveable" and event_value is None:
+            event_value = 'None'
         else:
             if isinstance(event_value, SardanaAttribute):
                 if event_value.error:
@@ -168,7 +174,7 @@ class MeasurementGroup(PoolGroupDevice):
 
     def always_executed_hook(self):
         pass
-        #state = to_tango_state(self.motor_group.get_state(cache=False))
+        # state = to_tango_state(self.motor_group.get_state(cache=False))
 
     def read_attr_hardware(self, data):
         pass
@@ -216,14 +222,14 @@ class MeasurementGroup(PoolGroupDevice):
         cfg = CodecFactory().decode(('json', data), ensure_ascii=True)
         self.measurement_group.set_configuration_from_user(cfg)
 
-    def read_Repetitions(self, attr):
-        repetitions = self.measurement_group.repetitions
-        if repetitions is None:
-            repetitions = int('nan')
-        attr.set_value(repetitions)
+    def read_NbStarts(self, attr):
+        nb_starts = self.measurement_group.nb_starts
+        if nb_starts is None:
+            nb_starts = int('nan')
+        attr.set_value(nb_starts)
 
-    def write_Repetitions(self, attr):
-        self.measurement_group.repetitions = attr.get_write_value()
+    def write_NbStarts(self, attr):
+        self.measurement_group.nb_starts = attr.get_write_value()
 
     def read_Moveable(self, attr):
         moveable = self.measurement_group.moveable
@@ -232,7 +238,10 @@ class MeasurementGroup(PoolGroupDevice):
         attr.set_value(moveable)
 
     def write_Moveable(self, attr):
-        self.measurement_group.moveable = attr.get_write_value()
+        moveable = attr.get_write_value()
+        if moveable == 'None':
+            moveable = None
+        self.measurement_group.moveable = moveable
 
     def read_Synchronization(self, attr):
         synchronization = self.measurement_group.synchronization
@@ -251,6 +260,22 @@ class MeasurementGroup(PoolGroupDevice):
     def read_LatencyTime(self, attr):
         latency_time = self.measurement_group.latency_time
         attr.set_value(latency_time)
+
+    def read_SoftwareSynchronizerInitialDomain(self, attr):
+        domain = self.measurement_group.sw_synch_initial_domain
+        d = SynchDomain(domain).name
+        attr.set_value(d)
+
+    def write_SoftwareSynchronizerInitialDomain(self, attr):
+        data = attr.get_write_value()
+        try:
+            domain = SynchDomain[data]
+        except KeyError:
+            raise Exception("Invalid domain (can be either Position or Time)")
+        self.measurement_group.sw_synch_initial_domain = domain
+
+    def Prepare(self):
+        self.measurement_group.prepare()
 
     def Start(self):
         try:
@@ -283,6 +308,7 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
 
     #    Command definitions
     cmd_list = {
+        'Prepare': [[DevVoid, ""], [DevVoid, ""]],
         'Start': [[DevVoid, ""], [DevVoid, ""]],
         'StartMultiple': [[DevLong, ""], [DevVoid, ""]],
     }
@@ -302,9 +328,9 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
         'Configuration': [[DevString, SCALAR, READ_WRITE],
                           {'Memorized': "true",
                            'Display level': DispLevel.EXPERT}],
-        'Repetitions': [[DevLong, SCALAR, READ_WRITE],
-                        {'Memorized': "true",
-                         'Display level': DispLevel.OPERATOR}],
+        'NbStarts': [[DevLong, SCALAR, READ_WRITE],
+                     {'Memorized': "true",
+                      'Display level': DispLevel.OPERATOR}],
         'Moveable': [[DevString, SCALAR, READ_WRITE],
                      {'Memorized': "true",
                       'Display level': DispLevel.EXPERT}],
@@ -313,6 +339,11 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
                              'Display level': DispLevel.EXPERT}],
         'LatencyTime': [[DevDouble, SCALAR, READ],
                         {'Display level': DispLevel.EXPERT}],
+        'SoftwareSynchronizerInitialDomain': [[DevString, SCALAR, READ_WRITE],
+                                              {'Memorized': "true",
+                                               'Display level':
+                                               DispLevel.OPERATOR}],
+
     }
     attr_list.update(PoolGroupDeviceClass.attr_list)
 

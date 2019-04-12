@@ -36,6 +36,7 @@ import uuid
 import weakref
 import threading
 import os.path as osp
+import os
 
 from lxml import etree
 
@@ -75,6 +76,14 @@ def recur_map(fun, data, keep_none=False):
             return data
         else:
             return fun(data)
+
+
+def _get_console_width():
+    try:
+        width = int(os.popen('stty size', 'r').read().split()[1])
+    except Exception:
+        width = float('inf')
+    return width
 
 
 class Attr(Logger, EventGenerator):
@@ -299,7 +308,9 @@ class BaseDoor(MacroServerDevice):
     log_streams = (Error, Warning, Info, Output, Debug, Result)
 
     # maximum execution time without user interruption
-    InteractiveTimeout = 0.1
+    # this also means a time window within door state events must arrive
+    # 0.1 s was not enough on Windows (see sardana-ord/sardana#725)
+    InteractiveTimeout = .3
 
     def __init__(self, name, **kw):
         self._log_attr = CaselessDict()
@@ -316,6 +327,7 @@ class BaseDoor(MacroServerDevice):
         self._output_stream = kw.get("output", sys.stdout)
         self._writeLock = threading.Lock()
         self._input_handler = self.create_input_handler()
+        self._len_last_data_line = 1
 
         self.call__init__(MacroServerDevice, name, **kw)
 
@@ -488,16 +500,12 @@ class BaseDoor(MacroServerDevice):
         self._block_lines = 0
 
     def _createMacroXml(self, macro_name, macro_params):
-        """The best effort creation of the macro XML object. It tries to
-        convert flat list of string parameter values to the correct macro XML
-        object. The cases that can not be converted are:
-            * repeat parameter containing repeat parameters
-            * two repeat parameters
-            * repeat parameter that is not the last parameter
+        """Creation of the macro XML object.
 
         :param macro_name: (str) macro name
-        :param macro_params: (sequence[str]) list of parameter values
-
+        :param macro_params: (sequence[str]) list of parameter values,
+            if repeat parameters are used parameter values may be sequences
+            itself.
         :return (lxml.etree._Element) macro XML element
         """
         macro_info = self.macro_server.getMacroInfoObj(macro_name)
@@ -557,6 +565,11 @@ class BaseDoor(MacroServerDevice):
         evt_wait.lock()
         try:
             evt_wait.waitEvent(self.Running, equal=False, timeout=timeout)
+            # Clear event set to not confuse the value coming from the
+            # connection with the event of of end of the macro execution
+            # in the next wait event. This was observed on Windows where
+            # the time stamp resolution is not better than 1 ms.
+            evt_wait.clearEventSet()
             ts = time.time()
             result = self.command_inout("RunMacro", [etree.tostring(xml)])
             evt_wait.waitEvent(self.Running, after=ts, timeout=timeout)
@@ -678,6 +691,7 @@ class BaseDoor(MacroServerDevice):
         return data
 
     def logReceived(self, log_name, output):
+        max_chrs = _get_console_width()
         if not output or self._silent or self._ignore_logs:
             return
 
@@ -691,19 +705,23 @@ class BaseDoor(MacroServerDevice):
                     self._in_block = True
                     for i in xrange(self._block_lines):
                         # erase current line, up one line, erase current line
-                        o += '\x1b[2K\x1b[1A\x1b[2K'
+                        nr_lines = int(self._len_last_data_line / max_chrs)
+                        if self._len_last_data_line % max_chrs > 0:
+                            nr_lines += 1
+                        o += '\x1b[2K\x1b[1A\x1b[2K' * nr_lines
                     self._block_lines = 0
                     continue
                 elif line == self.BlockFinish:
                     self._in_block = False
                     continue
                 else:
+                    self._len_last_data_line = len(line)
                     if self._in_block:
                         self._block_lines += 1
                     else:
                         self._block_lines = 0
-            o += "%s\n" % line
 
+            o += "%s\n" % line
         o += self.log_stop[log_name]
         self.write(o)
 
@@ -785,13 +803,21 @@ class BaseMacroServer(MacroServerDevice):
         self.call__init__(MacroServerDevice, name, **kw)
 
         self.__elems_attr = self.getAttribute("Elements")
-        self.__elems_attr.setSerializationMode(TaurusSerializationMode.Serial)
+        try:
+            serialization_mode = TaurusSerializationMode.TangoSerial
+        except AttributeError:
+            serialization_mode = TaurusSerializationMode.Serial
+        self.__elems_attr.setSerializationMode(serialization_mode)
         self.__elems_attr.addListener(self.on_elements_changed)
         self.__elems_attr.setSerializationMode(
             TaurusSerializationMode.Concurrent)
 
         self.__env_attr = self.getAttribute('Environment')
-        self.__env_attr.setSerializationMode(TaurusSerializationMode.Serial)
+        try:
+            serialization_mode = TaurusSerializationMode.TangoSerial
+        except AttributeError:
+            serialization_mode = TaurusSerializationMode.Serial
+        self.__env_attr.setSerializationMode(serialization_mode)
         self.__env_attr.addListener(self.on_environment_changed)
         self.__env_attr.setSerializationMode(
             TaurusSerializationMode.Concurrent)
@@ -1108,8 +1134,11 @@ class BaseMacroServer(MacroServerDevice):
         macroName = macroNode.name()
         macroInfoObj = self.getMacroInfoObj(macroName)
         if macroInfoObj is None:
-            raise Exception(
-                "It was not possible to get information about %s macro.\nCheck if MacroServer is alive and if this macro exist." % macroName)
+            msg = "It was not possible to get information about {0} " \
+                  "macro. Check if MacroServer is alive and if this macro " \
+                  "exist.".format(macroName)
+            self.info(msg)
+            raise Exception("no info about macro {0}".format(macroName))
         allowedHookPlaces = []
         hints = macroInfoObj.hints or {}
         for hook in hints.get("allowsHooks", []):

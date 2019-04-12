@@ -134,14 +134,12 @@ class BaseElement(object):
         return self.getPoolData()['name']
 
     def getPoolObj(self):
+        """Get reference to this object's Pool."""
         return self._pool_obj
 
     def getPoolData(self):
-        try:
-            return self._pool_data
-        except AttributeError:
-            self._pool_data = self._find_pool_data()
-            return self._pool_data
+        """Get reference to this object's Pool data."""
+        return self._pool_data
 
 
 class ControllerClass(BaseElement):
@@ -297,30 +295,37 @@ class PoolElement(BaseElement, TangoDevice):
         # force the creation of a state attribute
         self.getStateEG()
 
-    # TODO: for Taurus3/Taurus4 compatibility
-    # The sardana code is not fully ready to deal with Taurus4 model names
-    # It is necessary to strip the scheme name that appeared in the
-    # full_name since Taurus4 and come back to the Taurus3 style full name
-    def _find_pool_data(self):
+    def _find_pool_obj(self):
         pool = get_pool_for_device(self.getParentObj(), self.getHWObj())
-        full_name = self.getFullName()
+        return pool
+
+    def _find_pool_data(self):
+        pool = self._find_pool_obj()
+        return pool.getElementInfo(self.getFullName())._data
+
+    # Override BaseElement.getPoolObj because the reference to pool object may
+    # not be filled. This reference is filled when the element is obtained
+    # using Pool.getObject. If one obtain the element directly using Taurus
+    # e.g. mot = taurus.Device(<mot_name>) it won't be filled. In this case
+    # look for the pool object using the database information.
+    def getPoolObj(self):
         try:
-            from taurus.core.tango.tangovalidator import\
-                TangoDeviceNameValidator
-            validator = TangoDeviceNameValidator()
-            uri_groups = validator.getUriGroups(full_name)
-            dev_name = uri_groups["devname"]
-            host = uri_groups["host"]
-            if fqdn_host is not None:
-                port = uri_groups["port"]
-                full_name = host + ":" + port + "/" + dev_name
-        except ImportError:
-            # we are in Taurus 3 so scheme is not in use
-            pass
-        except:
-            msg = "Unknown error in _find_pool_data"
-            self.warning(msg, exc_info=1)
-        return pool.getElementInfo(full_name)._data
+            return self._pool_obj
+        except AttributeError:
+            self._pool_obj = self._find_pool_obj()
+            return self._pool_obj
+
+    # Override BaseElement.getPoolData because the reference to pool data may
+    # not be filled. This reference is filled when the element is obtained
+    # using Pool.getPoolData. If one obtain the element directly using Taurus
+    # e.g. mot = taurus.Device(<mot_name>) it won't be filled. In this case
+    # look for the pool object and its data using the database information.
+    def getPoolData(self):
+        try:
+            return self._pool_data
+        except AttributeError:
+            self._pool_data = self._find_pool_data()
+            return self._pool_data
 
     def cleanUp(self):
         TangoDevice.cleanUp(self)
@@ -414,9 +419,6 @@ class PoolElement(BaseElement, TangoDevice):
     def getType(self):
         return self.getPoolData()['type']
 
-    def getPoolObj(self):
-        return self._pool_obj
-
     def waitReady(self, timeout=None):
         return self.getStateEG().waitEvent(Moving, equal=False,
                                            timeout=timeout)
@@ -479,7 +481,7 @@ class PoolElement(BaseElement, TangoDevice):
         # Due to taurus-org/taurus #573 we need to divide the timeout
         # in two intervals
         if timeout is not None:
-            timeout = timeout / 2
+            timeout = timeout / 2.
         if id is not None:
             id = id[0]
         evt_wait = self._getEventWait()
@@ -498,7 +500,8 @@ class PoolElement(BaseElement, TangoDevice):
         self._total_go_time = 0
         start_time = time.time()
         eid = self.start(*args, **kwargs)
-        self.waitFinish(id=eid)
+        timeout = kwargs.get('timeout')
+        self.waitFinish(id=eid, timeout=timeout)
         self._total_go_time = time.time() - start_time
 
     def getLastGoTime(self):
@@ -610,14 +613,16 @@ class Controller(PoolElement):
     def getElementByAxis(self, axis):
         pool = self.getPoolObj()
         for _, elem in pool.getElementsOfType(self.getMainType()).items():
-            if elem.controller != self.getName() or elem.getAxis() != axis:
+            if (elem.controller != self.getFullName() or
+                    elem.getAxis() != axis):
                 continue
             return elem
 
     def getElementByName(self, name):
         pool = self.getPoolObj()
-        for name, elem in pool.getElementsOfType(self.getMainType()).items():
-            if elem.controller != self.getName() or elem.getName() != name:
+        for _, elem in pool.getElementsOfType(self.getMainType()).items():
+            if (elem.controller != self.getFullName() or
+                    elem.getName() != name):
                 continue
             return elem
 
@@ -637,7 +642,7 @@ class Controller(PoolElement):
         return sorted(axes)
 
     def getUsedAxis(self):
-        msg = ("getUsedAxis is deprecated since version Jul18. ",
+        msg = ("getUsedAxis is deprecated since version 2.5.0. ",
                "Use getUsedAxes instead.")
         self.warning(msg)
         self.getUsedAxes()
@@ -668,7 +673,23 @@ class ExpChannel(PoolElement):
     def __init__(self, name, **kw):
         """ExpChannel initialization."""
         self.call__init__(PoolElement, name, **kw)
+        self._last_integ_time = None
         self._value_buffer = {}
+
+    def getIntegrationTime(self):
+        return self._getAttrValue('IntegrationTime')
+
+    def getIntegrationTimeObj(self):
+        return self._getAttrEG('IntegrationTime')
+
+    def setIntegrationTime(self, ctime):
+        self.getIntegrationTimeObj().write(ctime)
+
+    def putIntegrationTime(self, ctime):
+        if self._last_integ_time == ctime:
+            return
+        self._last_integ_time = ctime
+        self.getIntegrationTimeObj().write(ctime)
 
     def getValueObj_(self):
         """Retrurns Value attribute event generator object.
@@ -700,26 +721,65 @@ class ExpChannel(PoolElement):
         for index, value in zip(indexes, values):
             self._value_buffer[index] = value
 
+    def _start(self, *args, **kwargs):
+        self.Start()
 
-class CTExpChannel(ExpChannel):
+    def go(self, *args, **kwargs):
+        start_time = time.time()
+        integration_time = args[0]
+        if integration_time is None or integration_time == 0:
+            return self.getStateEG().readValue(), self.getValues()
+        self.putIntegrationTime(integration_time)
+        PoolElement.go(self)
+        state = self.getStateEG().readValue()
+        values = self.getValue()
+        ret = state, values
+        self._total_go_time = time.time() - start_time
+        return ret
+
+    startCount = PoolElement.start
+    waitCount = PoolElement.waitFinish
+    count = go
+    stopCount = PoolElement.abort
+    stop = PoolElement.stop
+
+
+class TimerableExpChannel(ExpChannel):
+
+    def getTimer(self):
+        return self._getAttrValue('Timer')
+
+    def getTimerObj(self):
+        return self._getAttrEG('Timer')
+
+    def setTimer(self, timer):
+        self.getTimerObj().write(timer)
+
+
+class CTExpChannel(TimerableExpChannel):
     """ Class encapsulating CTExpChannel functionality."""
     pass
+
 
 class ZeroDExpChannel(ExpChannel):
     """ Class encapsulating ZeroDExpChannel functionality."""
     pass
 
-class OneDExpChannel(ExpChannel):
+
+class OneDExpChannel(TimerableExpChannel):
     """ Class encapsulating OneDExpChannel functionality."""
     pass
 
-class TwoDExpChannel(ExpChannel):
+
+class TwoDExpChannel(TimerableExpChannel):
     """ Class encapsulating TwoDExpChannel functionality."""
     pass
+
 
 class PseudoCounter(ExpChannel):
     """ Class encapsulating PseudoCounter functionality."""
     pass
+
 
 class TriggerGate(PoolElement):
     """ Class encapsulating TriggerGate functionality."""
@@ -1524,6 +1584,11 @@ class MeasurementGroup(PoolElement):
         self._value_buffer_cb = None
         self._codec = CodecFactory().getCodec("json")
 
+    def cleanUp(self):
+        PoolElement.cleanUp(self)
+        f = self.factory()
+        f.removeExistingAttribute(self.__cfg_attr)
+
     def _create_str_tuple(self):
         channel_names = ", ".join(self.getChannelNames())
         return self.getName(), self.getTimerName(), channel_names
@@ -1666,6 +1731,16 @@ class MeasurementGroup(PoolElement):
         self.getSynchronizationObj().write(data)
         self._last_integ_time = None
 
+    # NbStarts Methods
+    def getNbStartsObj(self):
+        return self._getAttrEG('NbStarts')
+
+    def setNbStarts(self, starts):
+        self.getNbStartsObj().write(starts)
+
+    def getNbStarts(self):
+        return self._getAttrValue('NbStarts')
+
     def getMoveableObj(self):
         return self._getAttrEG('Moveable')
 
@@ -1691,7 +1766,7 @@ class MeasurementGroup(PoolElement):
         :type channel: ExpChannel
         :param value_buffer: json encoded value buffer update, it contains
             at least values and indexes
-        :type value_buffer: str
+        :type value_buffer: :obj:`str`
         """
         if value_buffer is None:
             return
@@ -1780,18 +1855,24 @@ class MeasurementGroup(PoolElement):
         self.setConfiguration(cfg.raw_data)
 
     def _start(self, *args, **kwargs):
-        self.Start()
+        try:
+            self.Start()
+        except DevFailed as e:
+            # TODO: Workaround for CORBA timeout on measurement group start
+            # remove it whenever sardana-org/sardana#93 gets implemented
+            if e[-1].reason == "API_DeviceTimedOut":
+                self.error("start timed out, trying to stop")
+                self.stop()
+                self.debug("stopped")
+            raise e
 
-    def go(self, *args, **kwargs):
-        start_time = time.time()
-        cfg = self.getConfiguration()
-        cfg.prepare()
-        duration = args[0]
-        if duration is None or duration == 0:
-            return self.getStateEG().readValue(), self.getValues()
-        self.putIntegrationTime(duration)
-        self.setMoveable(None)
-        PoolElement.go(self, *args, **kwargs)
+    def prepare(self):
+        self.command_inout("Prepare")
+
+    def count_raw(self, start_time=None):
+        PoolElement.go(self)
+        if start_time is None:
+            start_time = time.time()
         state = self.getStateEG().readValue()
         if state == Fault:
             msg = "Measurement group ended acquisition with Fault state"
@@ -1801,7 +1882,20 @@ class MeasurementGroup(PoolElement):
         self._total_go_time = time.time() - start_time
         return ret
 
-    def measure(self, synchronization, value_buffer_cb=None):
+    def go(self, *args, **kwargs):
+        start_time = time.time()
+        cfg = self.getConfiguration()
+        cfg.prepare()
+        integration_time = args[0]
+        if integration_time is None or integration_time == 0:
+            return self.getStateEG().readValue(), self.getValues()
+        self.putIntegrationTime(integration_time)
+        self.setMoveable(None)
+        self.setNbStarts(1)
+        self.prepare()
+        return self.count_raw(start_time)
+
+    def count_continuous(self, synchronization, value_buffer_cb=None):
         """Execute measurement process according to the given synchronization
         description.
 
@@ -1824,7 +1918,7 @@ class MeasurementGroup(PoolElement):
         cfg.prepare()
         self.setSynchronization(synchronization)
         self.subscribeValueBuffer(value_buffer_cb)
-        PoolElement.go(self)
+        self.count_raw(start_time)
         self.unsubscribeValueBuffer(value_buffer_cb)
         state = self.getStateEG().readValue()
         if state == Fault:
@@ -1904,9 +1998,6 @@ class Instrument(BaseElement):
 
     def getType(self):
         return self.klass
-
-    def getPoolObj(self):
-        return self._pool_obj
 
 
 class Pool(TangoDevice, MoveableSource):

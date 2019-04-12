@@ -54,7 +54,7 @@ You can test the installation by running::
 Windows
 -------
 
-#. Download the latest windows binary from http://pypi.python.org/pypi/sardana
+#. Download the latest windows binary from https://github.com/sardana-org/sardana/releases
 #. Run the installation executable
 #. test the installation::
 
@@ -91,6 +91,12 @@ You can clone sardana from the main git repository::
 Then, to work in editable mode, just do::
 
     pip install -e ./sardana
+
+Note that you can also fork the git repository in github to get your own
+github-hosted clone of the sardana repository to which you will have full
+access. This will create a new git repository associated to your personal account in
+github, so that your changes can be easily shared and eventually merged
+into the official repository.
 
 
 .. _dependencies:

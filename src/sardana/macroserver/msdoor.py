@@ -334,11 +334,11 @@ class MSDoor(MSObject):
 
         :param key:
             environment variable name [default: None, meaning all environment]
-        :type key: str
+        :type key: :obj:`str`
         :param macro_name:
             local context for a given macro [default: None, meaning no macro
             context is used]
-        :type macro_name: str
+        :type macro_name: :obj:`str`
 
         :raises: UnknownEnv"""
         return self.macro_server.environment_manager.getAllDoorEnv(self.name)

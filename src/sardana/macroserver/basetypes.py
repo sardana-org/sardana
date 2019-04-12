@@ -57,7 +57,14 @@ class Boolean(ParamType):
     type_class = bool
 
     def getObj(self, str_repr):
-        return str_repr.lower() == "true"
+        str_repr = str_repr.lower()
+        if str_repr in ['true', '1']:
+            value = True
+        elif str_repr in ['false', '0']:
+            value = False
+        else:
+            raise ValueError('{0} is not a boolean'.format(str_repr))
+        return value
 
 
 class String(ParamType):

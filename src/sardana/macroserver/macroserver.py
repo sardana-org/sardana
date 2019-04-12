@@ -180,8 +180,7 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
 
         :param env_db:
             environment database name
-        :type env_db:
-            str
+        :type env_db: :obj:`str`
         """
         self.environment_manager.setEnvironmentDb(environment_db)
 
@@ -323,7 +322,7 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
         or None if no match is found.
 
         :param pool_name: device pool name
-        :type pool_name: str
+        :type pool_name: :obj:`str`
         :return: Pool object or None if no match is found"""
         return self._pools.get(pool_name)
 
@@ -547,12 +546,12 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
 
         :param lib_name:
             module name, python file name, or full file name (with path)
-        :type lib_name: str
+        :type lib_name: :obj:`str`
         :param macro_name:
             an optional macro name. If given a macro template code is appended
             to the end of the file (default is None meaning no macro code is
             added)
-        :type macro_name: str
+        :type macro_name: :obj:`str`
 
         :return:
             a sequence with three items: full_filename, code, line number is 0
@@ -617,15 +616,15 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
 
         :param key:
             environment variable name [default: None, meaning all environment]
-        :type key: str
+        :type key: :obj:`str`
         :param door_name:
             local context for a given door [default: None, meaning no door
             context is used]
-        :type door_name: str
+        :type door_name: :obj:`str`
         :param macro_name:
             local context for a given macro [default: None, meaning no macro
             context is used]
-        :type macro_name: str
+        :type macro_name: :obj:`str`
 
         :return: a :obj:`dict` containing the environment
         :rtype: :obj:`dict`

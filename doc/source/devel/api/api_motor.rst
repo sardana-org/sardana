@@ -145,6 +145,8 @@ sequence of calls.
     :width: 680
     :align: center
 
+.. _sardana-motor-api-position:
+
 Motor position
 --------------
 

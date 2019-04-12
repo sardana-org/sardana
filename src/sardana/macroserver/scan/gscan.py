@@ -165,36 +165,35 @@ class GScan(Logger):
     scan, a generator function pointer, a list of moveable items, an extra
     environment and a sequence of constrains.
 
-    If the referenced macro is hookable, 'pre-scan' and 'post-scan' hook hints
-    will be used to execute callables before the start and after the end of the
-    scan, respectively
+    If the referenced macro is hookable, ``pre-scan`` and ``post-scan`` hook
+    hints will be used to execute callables before the start and after the
+    end of the scan, respectively
 
     The generator must be a function yielding a dictionary with the following
     content (minimum) at each step of the scan:
-      - 'positions'  : In a step scan, the position where the moveables
-                       should go
-      - 'integ_time' : In a step scan, a number representing the integration
-                      time for the step (in seconds)
-      - 'integ_time' : In a continuous scan, the time between acquisitions
-      - 'pre-move-hooks' : (optional) a sequence of callables to be called
-                           in strict order before starting to move.
-      - 'post-move-hooks': (optional) a sequence of callables to be called
-                           in strict order after finishing the move.
-      - 'pre-acq-hooks'  : (optional) a sequence of callables to be called in
-                           strict order before starting to acquire.
-      - 'post-acq-hooks' : (optional) a sequence of callables to be called in
-                           strict order after finishing acquisition but before
-                           recording the step.
-      - 'post-step-hooks' : (optional) a sequence of callables to be called in
-                            strict order after finishing recording the step.
-      - 'hooks' : (deprecated, use post-acq-hooks instead)
-      - 'point_id' : a hashable identifing the scan point.
-      - 'check_func' : (optional) a list of callable objects.
-                       callable(moveables, counters)
-      - 'extravalues': (optional) a dictionary containing the values for
-                       each extra info field. The extra information fields
-                       must be described in extradesc (passed in the
-                       constructor of the Gscan)
+
+    - 'positions' : In a step scan, the position where the moveables
+      should go
+    - 'integ_time' : In a step scan, a number representing the integration
+      time for the step (in seconds)
+    - 'integ_time' : In a continuous scan, the time between acquisitions
+    - 'pre-move-hooks' : (optional) a sequence of callables to be called
+      in strict order before starting to move.
+    - 'post-move-hooks': (optional) a sequence of callables to be called
+      in strict order after finishing the move.
+    - 'pre-acq-hooks' : (optional) a sequence of callables to be called in
+      strict order before starting to acquire.
+    - 'post-acq-hooks' : (optional) a sequence of callables to be called in
+      strict order after finishing acquisition but before recording the step.
+    - 'post-step-hooks' : (optional) a sequence of callables to be called in
+      strict order after finishing recording the step.
+    - 'hooks' : (deprecated, use post-acq-hooks instead)
+    - 'point_id' : a hashable identifing the scan point.
+    - 'check_func' : (optional) a list of callable objects.
+      callable(moveables, counters)
+    - 'extravalues': (optional) a dictionary containing the values for
+      each extra info field. The extra information fields must be described
+      in extradesc (passed in the constructor of the Gscan)
 
 
     The moveables must be a sequence Motion or MoveableDesc objects.
@@ -210,31 +209,31 @@ class GScan(Logger):
     step['extravalues'], where step is what the generator yields.
 
     The Generic Scan will create:
-      - a ScanData
-      - DataHandler with the following recorders:
-        - OutputRecorder (depends on 'OutputCols' environment variable)
-        - SharedMemoryRecorder (depends on 'SharedMemory' environment variable)
-        - FileRecorder (depends on 'ScanDir' and 'ScanData'
-          environment variables)
-      - ScanDataEnvironment with the following contents:
+
+    - a ScanData
+    - DataHandler with the following recorders:
+    - OutputRecorder (depends on ``OutputCols`` environment variable)
+    - SharedMemoryRecorder (depends on ``SharedMemory`` environment variable)
+    - FileRecorder (depends on ``ScanDir`` and ``ScanData``
+      environment variables)
+    - ScanDataEnvironment with the following contents:
+
         - 'serialno' : a integer identifier for the scan operation
         - 'user' : the user which started the scan
         - 'title' : the scan title (build from macro.getCommand)
         - 'datadesc' : a seq<ColumnDesc> describing each column of data
-                     (labels, data format, data shape, etc)
-        - 'estimatedtime' : a float representing an estimation for
-                          the duration of the scan (in seconds). Negative means
-                          the time estimation is known not to be accurate.
-                          Anyway, time estimation has 'at least' semantics.
+          (labels, data format, data shape, etc)
+        - 'estimatedtime' : a float representing an estimation for the duration
+          of the scan (in seconds). Negative means the time estimation is known
+          not to be accurate. Anyway, time estimation has 'at least' semantics.
         - 'total_scan_intervals' : total number of scan intervals. Negative
-                                   means the estimation is known not to be
-                                   accurate. In this case, estimation has
-                                   'at least' semantics.
+          means the estimation is known not to be accurate. In this case,
+          estimation has 'at least' semantics.
         - '' : a datetime.datetime representing the start of the scan
-        - 'instrumentlist' : a list of Instrument objects containing info
-                            about the physical setup of the motors, counters,
-                            ...
+        - 'instrumentlist' : a list of Instrument objects containing info about
+          the physical setup of the motors, counters,
         - <extra environment> given in the constructor
+
         (at the end of the scan, extra keys 'endtime' and 'deadtime' will be
         added representing the time at the end of the scan and the dead time)
 
@@ -244,9 +243,12 @@ class GScan(Logger):
     At each step of the scan, for each Recorder, the writeRecord method will
     be called with a Record object as parameter. The Record.data member will be
     a dictionary containing:
-      - 'point_nb' : the point number of the scan
-      - for each column of the scan (motor or counter), a key with the
-      corresponding column name will contain the value"""
+
+    - 'point_nb' : the point number of the scan
+    - for each column of the scan (motor or counter), a key with the
+      corresponding column name will contain the value
+
+    """
 
     MAX_SCAN_HISTORY = 20
 
@@ -270,6 +272,8 @@ class GScan(Logger):
                 moveable = MoveableDesc(moveable=moveable)
             moveable_names.append(moveable.moveable.getName())
             self._moveables.append(moveable)
+
+        self._check_moveables_limits()
 
         name = self.__class__.__name__
         self.call__init__(Logger, name)
@@ -368,6 +372,43 @@ class GScan(Logger):
         # Setup environment
         # ---------------------------------------------------------------------
         self._setupEnvironment(env)
+
+    def _check_moveables_limits(self):
+        for m in self._moveables:
+            pos_range = m.moveable.getAttribute("Position").range
+            try:
+                high = float(pos_range[1].magnitude)    # Taurus 4
+            except AttributeError:
+                try:
+                    high = float(pos_range[1])          # Taurus 3
+                except ValueError:
+                    high = None
+            try:
+                low = float(pos_range[0].magnitude)     # Taurus 4
+            except AttributeError:
+                try:
+                    low = float(pos_range[0])           # Taurus 3
+                except ValueError:
+                    low = None
+
+            if any((high, low)) and not any((m.min_value, m.max_value)):
+                self._macro.info("Scan range is not defined for %s and could "
+                                 "not be verified against motor limits."
+                                 % m.moveable.getName())
+
+            for pos in (m.min_value, m.max_value):
+                if pos is None:
+                    continue
+                if high is not None:
+                    if float(pos) > high:
+                        raise RuntimeError(
+                            "requested movement of %s is above its upper limit"
+                            % m.moveable.getName())
+                if low is not None:
+                    if float(pos) < low:
+                        raise RuntimeError(
+                            "requested movement of %s is below its lower limit"
+                            % m.moveable.getName())
 
     def _getExtraColumns(self):
         ret = []
@@ -788,6 +829,13 @@ class GScan(Logger):
     MAX_ITER = 100000
 
     def _estimate(self, max_iter=None):
+        """Estimate time and intervals of a scan.
+
+        Time estimation considers motion time (including going to the start
+        position) and acquisition time.
+
+        Interval estimation is a number of scan trajectory intervals.
+        """
         with_time = hasattr(self.macro, "getTimeEstimation")
         with_interval = hasattr(self.macro, "getIntervalEstimation")
         if with_time and with_interval:
@@ -798,42 +846,59 @@ class GScan(Logger):
         max_iter = max_iter or self.MAX_ITER
         iterator = self.generator()
         total_time = 0.0
-        interval_nb = 0
+        point_nb = 0
+        interval_nb = None
         try:
             if not with_time:
-                start_pos = self.motion.readPosition(force=True)
-                v_motors = self.get_virtual_motors()
-                motion_time, acq_time = 0.0, 0.0
-                while interval_nb < max_iter:
-                    step = iterator.next()
-                    end_pos = step['positions']
-                    max_path_duration = 0.0
-                    for v_motor, start, stop in zip(v_motors,
-                                                    start_pos,
-                                                    end_pos):
-                        path = MotionPath(v_motor, start, stop)
-                        max_path_duration = max(
-                            max_path_duration, path.duration)
-                    integ_time = step.get("integ_time", 0.0)
-                    acq_time += integ_time
-                    motion_time += max_path_duration
-                    total_time += integ_time + max_path_duration
-                    interval_nb += 1
-                    start_pos = end_pos
-                if with_interval:
-                    interval_nb = self.macro.getIntervalEstimation()
+                try:
+                    start_pos = self.motion.readPosition(force=True)
+                    v_motors = self.get_virtual_motors()
+                    motion_time, acq_time = 0.0, 0.0
+                    while point_nb < max_iter:
+                        step = iterator.next()
+                        end_pos = step['positions']
+                        max_path_duration = 0.0
+                        for v_motor, start, stop in zip(v_motors,
+                                                        start_pos,
+                                                        end_pos):
+                            path = MotionPath(v_motor, start, stop)
+                            max_path_duration = max(
+                                max_path_duration, path.duration)
+                        integ_time = step.get("integ_time", 0.0)
+                        acq_time += integ_time
+                        motion_time += max_path_duration
+                        total_time += integ_time + max_path_duration
+                        point_nb += 1
+                        start_pos = end_pos
+                finally:
+                    if with_interval:
+                        interval_nb = self.macro.getIntervalEstimation()
             else:
-                while interval_nb < max_iter:
-                    step = iterator.next()
-                    interval_nb += 1
-                total_time = self.macro.getTimeEstimation()
+                try:
+                    while point_nb < max_iter:
+                        step = iterator.next()
+                        point_nb += 1
+                finally:
+                    total_time = self.macro.getTimeEstimation()
         except StopIteration:
-            return total_time, interval_nb
-        # max iteration reached.
-        return -total_time, -interval_nb
+            pass
+        else:
+            # max iteration reached.
+            total_time = -total_time
+            point_nb = -point_nb
+        if interval_nb is None:
+            if point_nb < 1:
+                interval_nb = point_nb + 1
+            elif point_nb > 1:
+                interval_nb = point_nb - 1
+            else:
+                interval_nb = 0
+                self.warning("Estimation of intervals have not succeeded")
+        return total_time, interval_nb
 
     @property
     def data(self):
+        """Scan data."""
         return self._data
 
     @property
@@ -850,6 +915,7 @@ class GScan(Logger):
 
     @property
     def generator(self):
+        """Generator of steps or waypoints used in this scan."""
         return self._generator()
 
     @property
@@ -919,6 +985,10 @@ class GScan(Logger):
             pass
 
     def step_scan(self):
+        macro = self.macro
+        if hasattr(macro, 'getHooks'):
+            for hook in macro.getHooks('pre-scan'):
+                hook()
         self.start()
         try:
             for i in self.scan_loop():
@@ -935,7 +1005,11 @@ class GScan(Logger):
             self._env["endstatus"] = endstatus
             self.end()
             self.do_restore()
-            if endstatus != ScanEndStatus.Normal:
+            if endstatus == ScanEndStatus.Normal:
+                if hasattr(macro, 'getHooks'):
+                    for hook in macro.getHooks('post-scan'):
+                        hook()
+            else:
                 raise
 
     def scan_loop(self):
@@ -973,15 +1047,18 @@ class SScan(GScan):
         macro = self.macro
         scream = False
 
+        self._deterministic_scan = False
         if hasattr(macro, "nr_points"):
             nr_points = float(macro.nr_points)
+            if hasattr(macro, "integ_time"):
+                integ_time = macro.integ_time
+                self.measurement_group.putIntegrationTime(integ_time)
+                self.measurement_group.setNbStarts(nr_points)
+                self.measurement_group.prepare()
+                self._deterministic_scan = True
             scream = True
         else:
             yield 0.0
-
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
-                hook()
 
         self._sum_motion_time = 0
         self._sum_acq_time = 0
@@ -993,10 +1070,6 @@ class SScan(GScan):
             lstep = step
             if scream:
                 yield ((i + 1) / nr_points) * 100.0
-
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('post-scan'):
-                hook()
 
         if not scream:
             yield 100.0
@@ -1067,7 +1140,10 @@ class SScan(GScan):
         integ_time = step['integ_time']
         # Acquire data
         self.debug("[START] acquisition")
-        state, data_line = mg.count(integ_time)
+        if self._deterministic_scan:
+            state, data_line = mg.count_raw()
+        else:
+            state, data_line = mg.count(integ_time)
         for ec in self._extra_columns:
             data_line[ec.getName()] = ec.read()
         self.debug("[ END ] acquisition")
@@ -1159,15 +1235,16 @@ class CScan(GScan):
     def populate_moveables_data_structures(self, moveables):
         """Populates moveables data structures.
         :param moveables: (list<Moveable>) data structures will be generated
-                          for these moveables
+        for these moveables
         :return (moveable_trees, physical_moveables_names, physical_moveables)
-                - moveable_trees (list<Tree>) - each tree represent one
-                     Moveables with its hierarchy of inferior moveables.
-                - physical_moveables_names (list<str> - list of the names of
-                     the physical moveables. List order is important and
-                     preserved.
-                - physical_moveables (list<Moveable> - list of the moveable
-                     objects. List order is important and preserved.
+
+        - moveable_trees (list<Tree>) - each tree represent one Moveable
+          with its hierarchy of inferior moveables.
+        - physical_moveables_names (list<str> - list of the names of
+          the physical moveables. List order is important and preserved.
+        - physical_moveables (list<Moveable> - list of the moveable
+          objects. List order is important and preserved.
+
         """
 
         def generate_moveable_node(macro, moveable):
@@ -1365,8 +1442,12 @@ class CScan(GScan):
                 raise ScanException(msg)
 
     def do_restore(self):
-        super(CScan, self).do_restore()
+        # Restore motor backups (vel, acc, ...) first so the macro's
+        # do_restore finds the system as before GSF found it.
+        # This is especially important for dscan macros which must return
+        # to inital position at nominal speed even after user stop.
         self._restore_motors()
+        super(CScan, self).do_restore()
 
     def _setFastMotions(self, motors=None):
         '''make given motors go at their max speed and accel'''
@@ -1456,6 +1537,12 @@ class CScan(GScan):
         pos_obj = motor.getPositionObj()
         min_pos, _ = pos_obj.getRange()
         try:
+            # Taurus 4 uses quantities however Sardana does not support them
+            # yet - use magnitude for the moment.
+            min_pos = min_pos.magnitude
+        except AttributeError:
+            pass
+        try:
             min_pos = float(min_pos)
         except ValueError:
             min_pos = float('-Inf')
@@ -1468,6 +1555,12 @@ class CScan(GScan):
         '''
         pos_obj = motor.getPositionObj()
         _, max_pos = pos_obj.getRange()
+        try:
+            # Taurus 4 uses quantities however Sardana does not support them
+            # yet - use magnitude for the moment.
+            max_pos = max_pos.magnitude
+        except AttributeError:
+            pass
         try:
             max_pos = float(max_pos)
         except ValueError:
@@ -1729,10 +1822,6 @@ class CSScan(CScan):
         point_nb, step = -1, None
         # data = self.data
 
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
-                hook()
-
         # start move & acquisition as close as possible
         # from this point on synchronization becomes critical
         manager.add_job(self.go_through_waypoints)
@@ -1846,10 +1935,6 @@ class CSScan(CScan):
 
         self.motion_end_event.wait()
 
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('post-scan'):
-                hook()
-
         env = self._env
         env['acqtime'] = sum_integ_time
         env['delaytime'] = sum_delay
@@ -1893,6 +1978,11 @@ class CAcquisition(object):
     def wait_value_buffer(self):
         """Wait until all value buffer events are processed."""
         self._countdown_latch.wait()
+
+    def join_thread_pool(self):
+        """Dispose the thread pool. Call it when you finish with processing
+        value_buffer events."""
+        self._thread_pool.join()
 
     @staticmethod
     def is_measurement_group_compatible(measurement_group):
@@ -2084,6 +2174,32 @@ class CTScan(CScan, CAcquisition):
                                   decel_time=dec_time,
                                   min_vel=base_vel)
             ideal_path = MotionPath(ideal_vmotor, start, end, active_time)
+
+            # check if calculated ideal velocity is accepted by hardware
+            backup_vel = moveable.getVelocity(force=True)
+            ideal_max_vel = try_vel = ideal_path.max_vel
+            try:
+                while True:
+                    moveable.setVelocity(try_vel)
+                    get_vel = moveable.getVelocity(force=True)
+                    if get_vel < ideal_max_vel:
+                        msg = 'Ideal scan velocity {0} of motor {1} cannot ' \
+                              'be reached, {2} will be used instead'.format(
+                                  ideal_max_vel, moveable.name, get_vel)
+                        self.macro.warning(msg)
+                        ideal_path.max_vel = get_vel
+                        break
+                    elif get_vel > ideal_max_vel:
+                        try_vel -= (get_vel - try_vel)
+                    else:
+                        break
+            except Exception:
+                self.macro.debug("Unknown error when trying if hardware "
+                                 "accepts ideal scan velocity", exc_info=1)
+                ideal_path.max_vel = ideal_max_vel
+            finally:
+                moveable.setVelocity(backup_vel)
+
             ideal_path.moveable = moveable
             ideal_path.apply_correction = True
             ideal_paths.append(ideal_path)
@@ -2285,7 +2401,13 @@ class CTScan(CScan, CAcquisition):
             self.data.initial_data = initial_data
 
             if hasattr(macro, 'getHooks'):
-                for hook in macro.getHooks('pre-start'):
+                pre_acq_hooks = macro.getHooks('pre-start')
+                if len(pre_acq_hooks) > 0:
+                    self.macro.warning("pre-start hook place is deprecated,"
+                                       "use pre-acq instead")
+                pre_acq_hooks += waypoint.get('pre-acq-hooks', [])
+
+                for hook in pre_acq_hooks:
                     hook()
             self.macro.checkPoint()
 
@@ -2297,12 +2419,18 @@ class CTScan(CScan, CAcquisition):
 
             try:
                 self.timestamp_to_start = time.time() + delta_start
-
+                end_move = False
                 # move to waypoint end position
                 self.macro.debug(
                     "Moving to waypoint position: %s" % repr(final_pos))
                 motion.move(final_pos)
-            finally:
+                end_move = True
+            except Exception as e:
+                measurement_group.waitFinish(timeout=0, id=mg_id)
+                msg = "Motion did not start properly.\n{0}".format(e)
+                self.debug(msg)
+                raise ScanException("move to final position failed")
+            else:
                 # wait extra 15 s to for the acquisition to finish
                 # if it does not finish, abort the measurement group
                 # (this could be due to missed hardware triggers or
@@ -2310,17 +2438,22 @@ class CTScan(CScan, CAcquisition):
                 # TODO: allow parametrizing timeout
                 timeout = 15
                 measurement_group.waitFinish(timeout=timeout, id=mg_id)
+            finally:
                 # TODO: For Taurus 4 / Taurus 3 compatibility
                 if hasattr(measurement_group, "stateObj"):
                     state = measurement_group.stateObj.read().rvalue
                 else:
                     state = measurement_group.state()
                 if state == PyTango.DevState.MOVING:
-                    msg = "Measurement did not finish acquisition within "\
-                          "timeout. Stopping it..."
-                    self.debug(msg)
                     measurement_group.Stop()
-                    raise ScanException("acquisition timeout reached")
+                    if end_move:
+                        msg = "Measurement did not finish acquisition within "\
+                              "timeout. Stopping it..."
+                        self.debug(msg)
+                        raise ScanException("acquisition timeout reached")
+
+            for hook in waypoint.get('post-acq-hooks', []):
+                hook()
 
             if macro.isStopped():
                 self.on_waypoints_end()
@@ -2355,6 +2488,7 @@ class CTScan(CScan, CAcquisition):
         self.cleanup()
         self.macro.debug("Waiting for data events to be processed")
         self.wait_value_buffer()
+        self.join_thread_pool()
         self.macro.debug("All data events are processed")
 
     def scan_loop(self):
@@ -2377,15 +2511,7 @@ class CTScan(CScan, CAcquisition):
         # point_nb, step = -1, None
         # data = self.data
 
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
-                hook()
-
         self.go_through_waypoints()
-
-        if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('post-scan'):
-                hook()
 
         env = self._env
         env['acqtime'] = sum_integ_time
@@ -2594,19 +2720,21 @@ class TScan(GScan, CAcquisition):
         self.macro.warning(msg)
 
         if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('pre-scan'):
+            for hook in macro.getHooks('pre-acq'):
                 hook()
 
         yield 0
-        measurement_group.measure(synchronization,
-                                  self.value_buffer_changed)
+        measurement_group.count_continuous(synchronization,
+                                           self.value_buffer_changed)
         self.debug("Waiting for value buffer events to be processed")
         self.wait_value_buffer()
+        self.join_thread_pool()
+        self.macro.checkPoint()
         self._fill_missing_records()
         yield 100
 
         if hasattr(macro, 'getHooks'):
-            for hook in macro.getHooks('post-scan'):
+            for hook in macro.getHooks('post-acq'):
                 hook()
 
     def _fill_missing_records(self):

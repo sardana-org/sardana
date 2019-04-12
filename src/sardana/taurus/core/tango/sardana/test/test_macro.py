@@ -41,6 +41,7 @@ from sardana.taurus.core.tango.sardana.test import (pt3d_param_def,
                                                     pt14d_param_def)
 # TODO: Use unittest.mock instead of this fake class.
 from sardana.macroserver.mstypemanager import TypeManager
+from sardana.util.parser import ParamParser
 
 
 class FakeMacroServer(object):
@@ -72,7 +73,7 @@ pt8_params_def = [
         "max": None
     }
 ]
-pt8_params_value = ["mot73", "5.0", "mot74", "8.0"]
+pt8_params_str = "mot73 5.0 mot74 8.0"
 
 #
 pt8_xml = \
@@ -91,7 +92,7 @@ pt8_xml = \
 
 
 @insertTest(helper_name='verifyXML', macro_name="pt8", param_def=pt8_params_def,
-            param_value=pt8_params_value, expected_xml_rep=pt8_xml)
+            param_str=pt8_params_str, expected_xml_rep=pt8_xml)
 class MacroNodeTestCase(unittest.TestCase):
 
     def _validateXML(self, macronode_xml, expected_xml):
@@ -106,7 +107,7 @@ class MacroNodeTestCase(unittest.TestCase):
         # at the end. strips should not be necessary
         self.assertEquals(expected_str.strip(), macronode_str.strip(), msg)
 
-    def verifyXML(self, macro_name, param_def, param_value, expected_xml_rep):
+    def verifyXML(self, macro_name, param_def, param_str, expected_xml_rep):
         """
         Helper to verify the generated XML of a macroNode
         :param macro_name: (str) name of the macro
@@ -116,6 +117,8 @@ class MacroNodeTestCase(unittest.TestCase):
         :param expected_xml_rep: "pretty print" string representation of a XML
             macroNode
         """
+        param_parser = ParamParser(param_def)
+        param_value = param_parser.parse(param_str)
         # Create the MacroNide with the inputs
         macronode = createMacroNode(macro_name, param_def, param_value)
         # Get the MacroNode equivalent XML tree

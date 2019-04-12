@@ -62,9 +62,10 @@ def expconf(self, parameter_s=''):
     # https://sourceforge.net/p/sardana/tickets/10/
     import subprocess
     import sys
-
     fname = sys.modules[ExpDescriptionEditor.__module__].__file__
     args = ['python', fname, doorname]
+    if parameter_s == '--auto-update':
+        args.insert(2, parameter_s)
     subprocess.Popen(args)
     # ===========================================================================
 

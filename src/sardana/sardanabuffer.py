@@ -75,7 +75,7 @@ class SardanaBuffer(EventGenerator):
         :param obj: the object which owns this buffer
         :type obj: obj
         :param name: object name
-        :type name: str
+        :type name: :obj:`str`
         :param persistent: whether values are kept in the buffer until
             being explicitly removed (True) or just until firing the next event
             (False)
@@ -128,7 +128,7 @@ class SardanaBuffer(EventGenerator):
         try:
             return self._buffer[idx]
         except KeyError:
-            msg = "value with %s index is not in buffer"
+            msg = "value with %s index is not in buffer" % idx
             if self.next_idx > idx:
                 raise LateValueException(msg)
             else:
@@ -191,7 +191,7 @@ class SardanaBuffer(EventGenerator):
         try:
             return self._buffer.pop(idx)
         except KeyError:
-            msg = "value with %s index is not in buffer"
+            msg = "value with %s index is not in buffer" % idx
             raise KeyError(msg)
 
     def fire_add_event(self, propagate=1):
