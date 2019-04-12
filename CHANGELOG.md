@@ -18,6 +18,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * expconf when empty (unspecified) DataType (#1076)
 * Output block of scan records which do not fit the console width (#924)
 * Fix bug on exception popups in macroexecutor (#1079, #1088)
+* Cyclic references between scan macros and GSF internals (#816)
 * Enable expconf buttons (Reload and Apply) when local configuration was kept after
   receiving external changes (#959, #1093)
 * Pop-up message when expconf configuration changed externally (#1094)
