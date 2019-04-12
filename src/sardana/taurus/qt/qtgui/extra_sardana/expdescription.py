@@ -102,7 +102,7 @@ def find_diff(first, second):
     """
     Return a dict of keys that differ with another config object.  If a value
     is not found in one fo the configs, it will be represented by KEYNOTFOUND.
-    :param first: Fist configuration to diff.
+    :param first: First configuration to diff.
     :param second: Second configuration to diff.
     :return: Dict of Key => (first.val, second.val)
     """
@@ -122,43 +122,48 @@ def find_diff(first, second):
     sd1 = set(first)
     sd2 = set(second)
 
-    # Keys missing in the second dict
-    for key in sd1.difference(sd2):
-        if key in SKIPKEYS:
-            continue
-        diff[key] = (first[key], KEYNOTFOUNDIN2)
-    # Keys missing in the first dict
-    for key in sd2.difference(sd1):
-        if key in SKIPKEYS:
-            continue
-        diff[key] = (KEYNOTFOUNDIN1, second[key])
+    # Look for differences only:
+    # If first configuration (remote) is not empty, and,
+    # first["MntGrpConfigs"] is not empty in case of existing
+    if bool(first) and ("MntGrpConfigs" not in first or
+                        bool(first["MntGrpConfigs"])):
+        # Keys missing in the second dict
+        for key in sd1.difference(sd2):
+            if key in SKIPKEYS:
+                continue
+            diff[key] = (first[key], KEYNOTFOUNDIN2)
+        # Keys missing in the first dict
+        for key in sd2.difference(sd1):
+            if key in SKIPKEYS:
+                continue
+            diff[key] = (KEYNOTFOUNDIN1, second[key])
 
-    # Check for differences
-    for key in sd1.intersection(sd2):
-        if key in SKIPKEYS:
-            continue
-        value1 = first[key]
-        value2 = second[key]
-        if type(value1) in DICT_TYPES:
-            try:
-                idiff = find_diff(value1, value2)
-            except Exception:
-                idiff = 'Error on processing'
-            if len(idiff) > 0:
-                diff[key] = idiff
-        elif type(value1) == list and key.lower() not in SKIPLIST:
-            ldiff = []
-            for v1, v2 in zip(value1, value2):
+        # Check for differences
+        for key in sd1.intersection(sd2):
+            if key in SKIPKEYS:
+                continue
+            value1 = first[key]
+            value2 = second[key]
+            if type(value1) in DICT_TYPES:
                 try:
-                    idiff = find_diff(v1, v2)
+                    idiff = find_diff(value1, value2)
                 except Exception:
                     idiff = 'Error on processing'
-                ldiff.append(idiff)
-            if len(ldiff) > 0:
-                diff[key] = ldiff
-        else:
-            if value1 != value2:
-                diff[key] = (first[key], second[key])
+                if len(idiff) > 0:
+                    diff[key] = idiff
+            elif type(value1) == list and key.lower() not in SKIPLIST:
+                ldiff = []
+                for v1, v2 in zip(value1, value2):
+                    try:
+                        idiff = find_diff(v1, v2)
+                    except Exception:
+                        idiff = 'Error on processing'
+                    ldiff.append(idiff)
+                if len(ldiff) > 0:
+                    diff[key] = ldiff
+            else:
+                if value1 != value2:
+                    diff[key] = (first[key], second[key])
     return diff
 
 
