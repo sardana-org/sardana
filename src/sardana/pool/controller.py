@@ -31,7 +31,7 @@ __all__ = ["DataAccess", "SardanaValue", "Type", "Access", "Description",
            "Controller", "Readable", "Startable", "Stopable", "Loadable",
            "Referable", "Synchronizer",
            "MotorController", "CounterTimerController", "ZeroDController",
-           "OneDController", "TwoDController",
+           "OneDController", "TwoDController", "TriggerGateController",
            "PseudoMotorController", "IORegisterController"]
 
 __docformat__ = 'restructuredtext'
