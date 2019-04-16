@@ -62,7 +62,7 @@ class TestNXscanH5_FileRecorder(TestCase):
         self.path = os.path.join(self.dir_name, "test_vds.h5")
         try:
             os.remove(self.path)  # remove file just in case
-        except OSError, e:
+        except OSError:
             pass
 
         self.env = {
