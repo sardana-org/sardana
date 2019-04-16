@@ -59,7 +59,7 @@ class TestNXscanH5_FileRecorder(TestCase):
 
     def setUp(self):
         self.dir_name = tempfile.gettempdir()
-        self.path = os.path.join(self.dir_name, "test_vds.h5")
+        self.path = os.path.join(self.dir_name, "test.h5")
         try:
             os.remove(self.path)  # remove file just in case
         except OSError:
@@ -74,6 +74,62 @@ class TestNXscanH5_FileRecorder(TestCase):
             "endtime": None
         }
         self.record_list = RecordList(self.env)
+
+    def test_dtype_floa64(self):
+        """Test creation of dataset with float64 data type"""
+        nb_records = 1
+        # create description of channel data
+        data_desc = [
+            ColumnDesc(name=COL1_NAME, dtype="float64", shape=tuple())
+        ]
+        self.env["datadesc"] = data_desc
+
+        # simulate sardana scan
+        recorder = NXscanH5_FileRecorder(filename=self.path)
+        self.env["starttime"] = datetime.now()
+        recorder._startRecordList(self.record_list)
+        for i in range(nb_records):
+            record = Record({COL1_NAME: 0.1})
+            recorder._writeRecord(record)
+        self.env["endtime"] = datetime.now()
+        recorder._endRecordList(self.record_list)
+
+        # assert if reading datasets from the sardana file access to the
+        # dataset of the partial files
+        file_ = h5py.File(self.path)
+        for i in range(nb_records):
+            expected_data = 0.1
+            data = file_["entry0"]["measurement"][COL1_NAME][i]
+            msg = "data does not match"
+            self.assertEqual(data, expected_data, msg)
+
+    def test_dtype_str(self):
+        """Test creation of dataset with float64 data type"""
+        nb_records = 1
+        # create description of channel data
+        data_desc = [
+            ColumnDesc(name=COL1_NAME, dtype="str", shape=tuple())
+        ]
+        self.env["datadesc"] = data_desc
+
+        # simulate sardana scan
+        recorder = NXscanH5_FileRecorder(filename=self.path)
+        self.env["starttime"] = datetime.now()
+        recorder._startRecordList(self.record_list)
+        for i in range(nb_records):
+            record = Record({COL1_NAME: "file:///tmp/test.edf"})
+            recorder._writeRecord(record)
+        self.env["endtime"] = datetime.now()
+        recorder._endRecordList(self.record_list)
+
+        # assert if reading datasets from the sardana file access to the
+        # dataset of the partial files
+        file_ = h5py.File(self.path)
+        for i in range(nb_records):
+            expected_data = "file:///tmp/test.edf"
+            data = file_["entry0"]["measurement"][COL1_NAME][i]
+            msg = "data does not match"
+            self.assertEqual(data, expected_data, msg)
 
     @expectedFailure
     def test_VDS(self):
