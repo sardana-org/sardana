@@ -336,10 +336,10 @@ class DummyCounterTimerController(CounterTimerController):
         pool = pool_ctrl.pool
         try:
             synchronizer_obj = pool.get_element_by_name(synchronizer)
-        except:
+        except Exception:
             try:
                 synchronizer_obj = pool.get_element_by_full_name(synchronizer)
-            except:
+            except Exception:
                 msg = "Unknown synchronizer {0}".format(synchronizer)
                 raise ValueError(msg)
         self.__synchronizer_obj = synchronizer_obj
