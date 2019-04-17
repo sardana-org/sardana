@@ -112,15 +112,15 @@ class QDoor(BaseDoor, Qt.QObject):
         mntgrps = self.macro_server.getElementsOfType("MeasurementGroup")
         # one or more measurement group was deleted
         mntgrp_changed = len(self._mntgrps_connected) > len(mntgrps)
-        new_mntgrp_connected = []
+        new_mntgrps_connected = []
         for name, mg in mntgrps.items():
             if name not in self._mntgrps_connected:
                 mntgrp_changed = True  # this measurement group is new
                 obj = mg.getObj()
                 obj.configurationChanged.connect(
                     self._onExperimentConfigurationChanged)
-            new_mntgrp_connected.append(name)
-        self._mntgrp_connected = new_mntgrp_connected
+            new_mntgrps_connected.append(name)
+        self._mntgrps_connected = new_mntgrps_connected
 
         if mntgrp_changed:
             self._onExperimentConfigurationChanged()
