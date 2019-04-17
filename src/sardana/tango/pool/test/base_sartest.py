@@ -23,6 +23,7 @@
 ##
 ##############################################################################
 
+import PyTango
 import taurus
 
 from sardana.tango.pool.test import BasePoolTestCase
@@ -85,6 +86,10 @@ class SarTestTestCase(BasePoolTestCase):
                 ctrl_name = prefix + "_ctrl_%s" % (postfix)
                 try:
                     self.pool.CreateController([sar_type, lib, cls, ctrl_name])
+                    if cls == "DummyCounterTimerController":
+                        ctrl = PyTango.DeviceProxy(ctrl_name)
+                        # use the first trigger/gate element by default
+                        ctrl.write_attribute("Synchronizer", "_test_tg_1_1")
                 except Exception, e:
                     print e
                     msg = 'Impossible to create ctrl: "%s"' % (ctrl_name)
