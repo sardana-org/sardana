@@ -493,6 +493,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         if activeMntGrpName in self._localConfig['MntGrpConfigs']:
             mgconfig = self._localConfig['MntGrpConfigs'][activeMntGrpName]
             self.ui.channelEditor.getQModel().setDataSource(mgconfig)
+        else:
+            self.ui.channelEditor.getQModel().setDataSource({})
 
         # set the measurement group ComboBox
         self.ui.activeMntGrpCB.clear()
