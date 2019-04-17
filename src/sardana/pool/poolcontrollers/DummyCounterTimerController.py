@@ -67,6 +67,15 @@ class DummyCounterTimerController(CounterTimerController):
 
     default_timer = 1
 
+    ctrl_attributes = {
+        "Synchronizer": {
+                Type: str,
+                Description: ("Hardware (external) emulated synchronizer. "
+                              "Can be any of dummy trigger/gate elements "
+                              "from the same pool.")
+            },
+    }
+
     def __init__(self, inst, props, *args, **kwargs):
         CounterTimerController.__init__(self, inst, props, *args, **kwargs)
         self._synchronization = AcqSynch.SoftwareTrigger
@@ -80,6 +89,10 @@ class DummyCounterTimerController(CounterTimerController):
         self.monitor_count = None
         self.read_channels = {}
         self.counting_channels = {}
+        # name of synchronizer element
+        self._synchronizer = None
+        # synchronizer element (core)
+        self.__synchronizer_obj = None
 
     def AddDevice(self, ind):
         idx = ind - 1
@@ -274,3 +287,42 @@ class DummyCounterTimerController(CounterTimerController):
             for channel in self.channels:
                 if channel:
                     channel.mode = value
+
+    def getSynchronizer(self):
+        if self._synchronizer is None:
+            return "None"
+        else:
+            # get synchronizer object to only check it exists
+            self._synchronizer_obj
+            return self._synchronizer
+
+    def setSynchronizer(self, synchronizer):
+        if synchronizer == "None":
+            synchronizer = None
+        self._synchronizer = synchronizer
+        self.__synchronizer_obj = None  # invalidate cache
+
+    @property
+    def _synchronizer_obj(self):
+        """Get synchronizer object with cache mechanism.
+
+        If synchronizer object is not cached ("""
+        if self.__synchronizer_obj is not None:
+            return self.__synchronizer_obj
+        synchronizer = self._synchronizer
+        if synchronizer is None:
+            msg = "Hardware (external) emulated synchronizer is not set"
+            raise ValueError(msg)
+        # getting pool (core) element - hack
+        pool_ctrl = self._getPoolController()
+        pool = pool_ctrl.pool
+        try:
+            synchronizer_obj = pool.get_element(name=synchronizer)
+        except KeyError:
+            try:
+                synchronizer_obj = pool.get_element(full_name=synchronizer)
+            except KeyError:
+                msg = "Unknown synchronizer {0}".format(synchronizer)
+                raise ValueError(msg)
+        self.__synchronizer_obj = synchronizer_obj
+        return synchronizer_obj
