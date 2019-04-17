@@ -93,6 +93,8 @@ class DummyCounterTimerController(CounterTimerController):
         self._synchronizer = None
         # synchronizer element (core)
         self.__synchronizer_obj = None
+        # flag whether the controller was armed for hardware synchronization
+        self._armed = False
 
     def AddDevice(self, ind):
         idx = ind - 1
@@ -116,7 +118,10 @@ class DummyCounterTimerController(CounterTimerController):
         idx = ind - 1
         sta = State.On
         status = "Stopped"
-        if ind in self.counting_channels:
+        if self._armed:
+            sta = State.Moving
+            status = "Armed"
+        elif ind in self.counting_channels:
             channel = self.channels[idx]
             now = time.time()
             elapsed_time = now - self.start_time
@@ -197,6 +202,11 @@ class DummyCounterTimerController(CounterTimerController):
             else:
                 channel = self.channels[ind - 1]
                 channel.is_counting = False
+        if self._synchronization in (AcqSynch.HardwareStart,
+                                     AcqSynch.HardwareTrigger,
+                                     AcqSynch.HardwareGate):
+            self._disconnect_hardware_synchronization()
+            self._armed = False
 
     def PreReadAll(self):
         self.read_channels = {}
@@ -206,6 +216,8 @@ class DummyCounterTimerController(CounterTimerController):
         self.read_channels[ind] = channel
 
     def ReadAll(self):
+        if self._armed:
+            return  # still armed - no trigger/gate arrived yet
         # if in acquisition then calculate the values to return
         if self.counting_channels:
             now = time.time()
@@ -253,7 +265,13 @@ class DummyCounterTimerController(CounterTimerController):
         self.counting_channels[ind].is_counting = True
 
     def StartAll(self):
-        self.start_time = time.time()
+        if self._synchronization in (AcqSynch.HardwareStart,
+                                     AcqSynch.HardwareTrigger,
+                                     AcqSynch.HardwareGate):
+            self._connect_hardware_synchronization()
+            self._armed = True
+        else:
+            self.start_time = time.time()
 
     def LoadOne(self, ind, value, repetitions, latency_time):
         if value > 0:
@@ -326,3 +344,26 @@ class DummyCounterTimerController(CounterTimerController):
                 raise ValueError(msg)
         self.__synchronizer_obj = synchronizer_obj
         return synchronizer_obj
+
+    def _connect_hardware_synchronization(self):
+        # obtain dummy trigger/gate controller (plugin) instance - hack
+        tg_ctrl = self._synchronizer_obj.controller.ctrl
+        idx = self._synchronizer_obj.axis - 1
+        func_generator = tg_ctrl.tg[idx]
+        func_generator.add_listener(self)
+
+    def _disconnect_hardware_synchronization(self):
+        # obtain dummy trigger/gate controller (plugin) instance - hack
+        tg_ctrl = self._synchronizer_obj.controller.ctrl
+        idx = self._synchronizer_obj.axis - 1
+        func_generator = tg_ctrl.tg[idx]
+        func_generator.remove_listener(self)
+
+    def event_received(self, src, type_, value):
+        """Callback for dummy trigger/gate function generator events
+        e.g. start, active passive
+        """
+        # for the moment only react on first trigger
+        if type_.name.lower() == "active" and value == 0:
+            self._armed = False
+            self.start_time = time.time()
