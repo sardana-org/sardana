@@ -24,10 +24,9 @@
 import time
 import copy
 from sardana.sardanavalue import SardanaValue
-from sardana import State, DataAccess
+from sardana import State
 from sardana.pool import AcqSynch
-from sardana.pool.controller import CounterTimerController, Type, Access,\
-    Description, Memorize, NotMemorized
+from sardana.pool.controller import CounterTimerController, Type, Description
 
 
 class Channel(object):
