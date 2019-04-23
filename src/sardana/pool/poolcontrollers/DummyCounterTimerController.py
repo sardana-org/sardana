@@ -52,7 +52,7 @@ class Channel(object):
 
 
 class DummyCounterTimerController(CounterTimerController):
-    "This class is the Tango Sardana CounterTimer controller for tests"
+    """This class is the Tango Sardana CounterTimer controller for tests"""
 
     gender = "Simulation"
     model = "Basic"
