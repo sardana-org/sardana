@@ -96,15 +96,6 @@ class DummyCounterTimerController(CounterTimerController):
         idx = axis - 1
         self.channels[idx] = None
 
-    def PreStateAll(self):
-        pass
-
-    def PreStateOne(self, axis):
-        pass
-
-    def StateAll(self):
-        pass
-
     def StateOne(self, axis):
         self._log.debug('StateOne(%d): entering...' % axis)
         idx = axis - 1
@@ -144,7 +135,6 @@ class DummyCounterTimerController(CounterTimerController):
             if self.integ_time is not None:
                 # counting in time
                 if elapsed_time > channel.estimated_duration:
-                    # if elapsed_time >= self.integ_time:
                     self._finish(elapsed_time)
 
     def _updateChannelValue(self, axis, elapsed_time):
@@ -152,7 +142,6 @@ class DummyCounterTimerController(CounterTimerController):
 
         if channel.mode == AcqSynch.SoftwareTrigger:
             if self.integ_time is not None:
-                t = elapsed_time
                 t = min([elapsed_time, self.integ_time])
                 if axis == self._timer:
                     channel.value = t
