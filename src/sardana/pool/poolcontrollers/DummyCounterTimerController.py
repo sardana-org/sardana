@@ -60,11 +60,6 @@ class DummyCounterTimerController(CounterTimerController):
 
     MaxDevice = 1024
 
-    StoppedMode = 0
-    TimerMode = 1
-    MonitorMode = 2
-    CounterMode = 3
-
     default_timer = 1
 
     ctrl_attributes = {
