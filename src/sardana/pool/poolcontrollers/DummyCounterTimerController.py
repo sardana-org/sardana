@@ -88,45 +88,45 @@ class DummyCounterTimerController(CounterTimerController):
         # flag whether the controller was armed for hardware synchronization
         self._armed = False
 
-    def AddDevice(self, ind):
-        idx = ind - 1
-        self.channels[idx] = Channel(ind)
+    def AddDevice(self, axis):
+        idx = axis - 1
+        self.channels[idx] = Channel(axis)
 
-    def DeleteDevice(self, ind):
-        idx = ind - 1
+    def DeleteDevice(self, axis):
+        idx = axis - 1
         self.channels[idx] = None
 
     def PreStateAll(self):
         pass
 
-    def PreStateOne(self, ind):
+    def PreStateOne(self, axis):
         pass
 
     def StateAll(self):
         pass
 
-    def StateOne(self, ind):
-        self._log.debug('StateOne(%d): entering...' % ind)
-        idx = ind - 1
+    def StateOne(self, axis):
+        self._log.debug('StateOne(%d): entering...' % axis)
+        idx = axis - 1
         sta = State.On
         status = "Stopped"
         if self._armed:
             sta = State.Moving
             status = "Armed"
-        elif ind in self.counting_channels:
+        elif axis in self.counting_channels:
             channel = self.channels[idx]
             now = time.time()
             elapsed_time = now - self.start_time
-            self._updateChannelState(ind, elapsed_time)
+            self._updateChannelState(axis, elapsed_time)
             if channel.is_counting:
                 sta = State.Moving
                 status = "Acquiring"
         ret = (sta, status)
-        self._log.debug('StateOne(%d): returning %s' % (ind, repr(ret)))
+        self._log.debug('StateOne(%d): returning %s' % (axis, repr(ret)))
         return sta, status
 
-    def _updateChannelState(self, ind, elapsed_time):
-        channel = self.channels[ind - 1]
+    def _updateChannelState(self, axis, elapsed_time):
+        channel = self.channels[axis - 1]
         if channel.mode == AcqSynch.SoftwareTrigger:
             if self.integ_time is not None:
                 # counting in time
@@ -134,7 +134,7 @@ class DummyCounterTimerController(CounterTimerController):
                     self._finish(elapsed_time)
             elif self.monitor_count is not None:
                 # monitor counts
-                v = int(elapsed_time * 100 * ind)
+                v = int(elapsed_time * 100 * axis)
                 if v >= self.monitor_count:
                     self._finish(elapsed_time)
         elif channel.mode in (AcqSynch.HardwareTrigger,
@@ -147,20 +147,20 @@ class DummyCounterTimerController(CounterTimerController):
                     # if elapsed_time >= self.integ_time:
                     self._finish(elapsed_time)
 
-    def _updateChannelValue(self, ind, elapsed_time):
-        channel = self.channels[ind - 1]
+    def _updateChannelValue(self, axis, elapsed_time):
+        channel = self.channels[axis - 1]
 
         if channel.mode == AcqSynch.SoftwareTrigger:
             if self.integ_time is not None:
                 t = elapsed_time
                 t = min([elapsed_time, self.integ_time])
-                if ind == self._timer:
+                if axis == self._timer:
                     channel.value = t
                 else:
                     channel.value = t * channel.idx
             elif self.monitor_count is not None:
-                channel.value = int(elapsed_time * 100 * ind)
-                if ind == self._monitor:
+                channel.value = int(elapsed_time * 100 * axis)
+                if axis == self._monitor:
                     if not channel.is_counting:
                         channel.value = self.monitor_count
         elif channel.mode in (AcqSynch.HardwareTrigger,
@@ -175,24 +175,24 @@ class DummyCounterTimerController(CounterTimerController):
                     cp = n - channel.repetitions
                 n = n - channel._counter - cp
                 t = self.integ_time
-                if ind == self._timer:
+                if axis == self._timer:
                     channel.buffer_values = [t] * n
                 else:
                     channel.buffer_values = [t * channel.idx] * n
 
-    def _finish(self, elapsed_time, ind=None):
-        if ind is None:
-            for ind, channel in self.counting_channels.items():
+    def _finish(self, elapsed_time, axis=None):
+        if axis is None:
+            for axis, channel in self.counting_channels.items():
                 channel.is_counting = False
-                self._updateChannelValue(ind, elapsed_time)
+                self._updateChannelValue(axis, elapsed_time)
         else:
-            if ind in self.counting_channels:
-                channel = self.counting_channels[ind]
+            if axis in self.counting_channels:
+                channel = self.counting_channels[axis]
                 channel.is_counting = False
-                self._updateChannelValue(ind, elapsed_time)
-                self.counting_channels.pop(ind)
+                self._updateChannelValue(axis, elapsed_time)
+                self.counting_channels.pop(axis)
             else:
-                channel = self.channels[ind - 1]
+                channel = self.channels[axis - 1]
                 channel.is_counting = False
         if self._synchronization in (AcqSynch.HardwareStart,
                                      AcqSynch.HardwareTrigger,
@@ -203,9 +203,9 @@ class DummyCounterTimerController(CounterTimerController):
     def PreReadAll(self):
         self.read_channels = {}
 
-    def PreReadOne(self, ind):
-        channel = self.channels[ind - 1]
-        self.read_channels[ind] = channel
+    def PreReadOne(self, axis):
+        channel = self.channels[axis - 1]
+        self.read_channels[axis] = channel
 
     def ReadAll(self):
         if self._armed:
@@ -214,14 +214,14 @@ class DummyCounterTimerController(CounterTimerController):
         if self.counting_channels:
             now = time.time()
             elapsed_time = now - self.start_time
-            for ind, channel in self.read_channels.items():
-                self._updateChannelState(ind, elapsed_time)
+            for axis, channel in self.read_channels.items():
+                self._updateChannelState(axis, elapsed_time)
                 if channel.is_counting:
-                    self._updateChannelValue(ind, elapsed_time)
+                    self._updateChannelValue(axis, elapsed_time)
 
-    def ReadOne(self, ind):
-        self._log.debug('ReadOne(%d): entering...' % ind)
-        channel = self.read_channels[ind]
+    def ReadOne(self, axis):
+        self._log.debug('ReadOne(%d): entering...' % axis)
+        channel = self.read_channels[axis]
         ret = None
         if channel.mode in (AcqSynch.HardwareTrigger,
                             AcqSynch.HardwareGate,
@@ -236,25 +236,25 @@ class DummyCounterTimerController(CounterTimerController):
         elif channel.mode == AcqSynch.SoftwareTrigger:
             v = channel.value
             ret = SardanaValue(v)
-        self._log.debug('ReadOne(%d): returning %s' % (ind, repr(ret)))
+        self._log.debug('ReadOne(%d): returning %s' % (axis, repr(ret)))
         return ret
 
     def PreStartAll(self):
         self.counting_channels = {}
 
-    def PreStartOne(self, ind, value=None):
-        self._log.debug('PreStartOne(%d): entering...' % ind)
-        idx = ind - 1
+    def PreStartOne(self, axis, value=None):
+        self._log.debug('PreStartOne(%d): entering...' % axis)
+        idx = axis - 1
         channel = self.channels[idx]
         channel.value = 0.0
         channel._counter = 0
         channel.buffer_values = []
-        self.counting_channels[ind] = channel
+        self.counting_channels[axis] = channel
         return True
 
-    def StartOne(self, ind, value=None):
-        self._log.debug('StartOne(%d): entering...' % ind)
-        self.counting_channels[ind].is_counting = True
+    def StartOne(self, axis, value=None):
+        self._log.debug('StartOne(%d): entering...' % axis)
+        self.counting_channels[axis].is_counting = True
 
     def StartAll(self):
         if self._synchronization in (AcqSynch.HardwareStart,
@@ -265,7 +265,7 @@ class DummyCounterTimerController(CounterTimerController):
         else:
             self.start_time = time.time()
 
-    def LoadOne(self, ind, value, repetitions, latency_time):
+    def LoadOne(self, axis, value, repetitions, latency_time):
         if value > 0:
             self.integ_time = value
             self.monitor_count = None
@@ -279,11 +279,11 @@ class DummyCounterTimerController(CounterTimerController):
                 channel.acq_latency_time = latency_time
                 channel.calculate_duration(value)
 
-    def AbortOne(self, ind):
+    def AbortOne(self, axis):
         now = time.time()
-        if ind in self.counting_channels:
+        if axis in self.counting_channels:
             elapsed_time = now - self.start_time
-            self._finish(elapsed_time, ind=ind)
+            self._finish(elapsed_time, axis)
 
     def GetCtrlPar(self, par):
         if par == 'synchronization':
