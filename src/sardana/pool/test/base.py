@@ -139,6 +139,8 @@ class BasePoolTestCase(object):
             ctrl_obj = self.createController(name,
                                              'DummyCounterTimerController',
                                              'DummyCounterTimerController.py')
+            # use the first trigger/gate element by default
+            ctrl_obj.set_ctrl_attr("synchronizer", "_test_tg_1_1")
             # Create nctelems CT elements for each ctrl
             for axis in range(1, self.nctelems + 1):
                 name = '_test_ct_%s_%s' % (ctrl, axis)
