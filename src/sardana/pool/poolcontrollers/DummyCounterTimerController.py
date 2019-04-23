@@ -44,10 +44,10 @@ class Channel(object):
         self.buffer_values = []
         self.estimated_duration = None
 
-    def calculate_duration(self, intergration_time):
+    def calculate_duration(self, integration_time):
         if self.mode not in (AcqSynch.SoftwareStart, AcqSynch.HardwareStart):
             self.acq_latency_time = 0
-        self.estimated_duration = (intergration_time
+        self.estimated_duration = (integration_time
                                    + self.acq_latency_time) * self.repetitions
 
 
