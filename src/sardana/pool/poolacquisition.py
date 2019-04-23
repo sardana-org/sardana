@@ -818,7 +818,7 @@ class PoolAcquisitionBase(PoolAction):
                 try:
                     res = ctrl.PreLoadOne(axis, value, repetitions)
                     msg = ("PreLoadOne(axis, value, repetitions) is "
-                           "deprecated since version Jan19. Use PreLoadOne("
+                           "deprecated since version 2.7.0. Use PreLoadOne("
                            "axis, value, repetitions, latency_time) instead.")
                     self.warning(msg)
                 except TypeError:

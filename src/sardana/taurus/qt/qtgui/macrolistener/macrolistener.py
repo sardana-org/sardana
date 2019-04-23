@@ -110,13 +110,13 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         if 'JsonRecorder' not in door.getEnvironment():
             msg = ('JsonRecorder environment variable is not set, but it '
                    + 'is needed for displaying trend plots.\n'
-                   + 'Enable it globally for %s?') % door.fullname
+                   + 'Enable it globally for %s?') % door.getFullName()
             result = Qt.QMessageBox.question(
                 self.parent(), 'JsonRecorder not set', msg,
                 Qt.QMessageBox.Yes | Qt.QMessageBox.No)
             if result == Qt.QMessageBox.Yes:
                 door.putEnvironment('JsonRecorder', True)
-                self.info('JsonRecorder Enabled for %s' % door.fullname)
+                self.info('JsonRecorder Enabled for %s' % door.getFullName())
 
     def onExpConfChanged(self, expconf):
         '''
@@ -207,7 +207,7 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
             if axes not in self._trends1d:
                 w = TaurusTrend()
                 w.setXIsTime(False)
-                w.setScanDoor(self.getModelObj().fullname)
+                w.setScanDoor(self.getModelObj().getFullName())
                 # TODO: use a standard key for <idx> and <mov>
                 w.setScansXDataKey(axes[0])
                 pname = u'Trend1D - %s' % ":".join(axes)
@@ -266,8 +266,9 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
                     axis = axes[0]
                     w = TaurusTrend2DDialog(stackMode='event')
                     plot = w.get_plot()
+                    name = self.getModelObj().getFullName()
                     t2d = TaurusTrend2DScanItem(chname, axis,
-                                                self.getModelObj().fullname)
+                                                name)
                     plot.add_item(t2d)
                     self.createPanel(w, pname, registerconfig=False,
                                      permanent=False)

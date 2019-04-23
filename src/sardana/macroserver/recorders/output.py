@@ -33,6 +33,7 @@ import numpy
 import datetime
 import operator
 import string
+import weakref
 
 from taurus.core.util.codecs import CodecFactory
 from taurus.core.util.containers import CaselessList
@@ -45,7 +46,7 @@ class JsonRecorder(DataRecorder):
 
     def __init__(self, stream, cols=None, **pars):
         DataRecorder.__init__(self, **pars)
-        self._stream = stream
+        self._stream = weakref.ref(stream)
         self._codec = CodecFactory().getCodec('json')
 
     def _startRecordList(self, recordlist):
@@ -102,8 +103,8 @@ class JsonRecorder(DataRecorder):
         '''creates a JSON packet using the keyword arguments passed
         and then sends it'''
         #data = self._codec.encode(('', kwargs))
-        # self._stream.sendRecordData(*data)
-        self._stream._sendRecordData(kwargs, codec='json')
+        # self._stream().sendRecordData(*data)
+        self._stream()._sendRecordData(kwargs, codec='json')
 
     def _addCustomData(self, value, name, **kwargs):
         '''
@@ -116,7 +117,7 @@ class JsonRecorder(DataRecorder):
             value = value.tolist()
         except:
             pass
-        macro_id = self._stream.getID()
+        macro_id = self._stream().getID()
         data = dict(kwargs)  # shallow copy
         data['name'] = name
         data['value'] = value
@@ -128,7 +129,7 @@ class OutputRecorder(DataRecorder):
     def __init__(self, stream, cols=None, number_fmt='%8.4f', col_width=8,
                  col_sep='  ', output_block=False, **pars):
         DataRecorder.__init__(self, **pars)
-        self._stream = stream
+        self._stream = weakref.ref(stream)
         if not number_fmt.startswith('%'):
             number_fmt = '%%s' % number_fmt
         self._number_fmt = number_fmt
@@ -162,14 +163,14 @@ class OutputRecorder(DataRecorder):
                     fr.getFormat(), fr.__class__.__name__)
             else:
                 message = "%s" % (fr.getFormat())
-            self._stream.info('Operation will be saved in %s (%s)',
+            self._stream().info('Operation will be saved in %s (%s)',
                               fr.getFileName(), message)
 
         msg = "Scan #%d started at %s." % (serialno, starttime)
         if not estimatedtime is None:
             estimatedtime = datetime.timedelta(0, abs(estimatedtime))
             msg += " It will take at least %s" % estimatedtime
-        self._stream.info(msg)
+        self._stream().info(msg)
 
         labels, col_names, col_sizes = [], [], []
         header_rows, header_len = 1, 0
@@ -218,11 +219,11 @@ class OutputRecorder(DataRecorder):
         self._scan_line_t += [(name, cell_t_number % name)
                               for name in col_names[1:]]
 
-        self._stream._output(header)
-        self._stream._flushOutput()
+        self._stream()._output(header)
+        self._stream()._flushOutput()
 
     def _endRecordList(self, recordlist):
-        self._stream._flushOutput()
+        self._stream()._flushOutput()
         starttime = recordlist.getEnvironValue('starttime')
         endtime = recordlist.getEnvironValue('endtime')
         deadtime = recordlist.getEnvironValue('deadtime')
@@ -234,7 +235,7 @@ class OutputRecorder(DataRecorder):
         dh = recordlist.getDataHandler()
 
         for fr in [r for r in dh.recorders if isinstance(r, BaseFileRecorder)]:
-            self._stream.info('Operation saved in %s (%s)', fr.getFileName(),
+            self._stream().info('Operation saved in %s (%s)', fr.getFileName(),
                               fr.getFormat())
 
         endts = recordlist.getEnvironValue('endts')
@@ -244,7 +245,7 @@ class OutputRecorder(DataRecorder):
         motiontime_perc = motiontime * 100.0 / totaltimets
         info_string = 'Scan #%s ended at %s, taking %s. ' + \
                       'Dead time %.1f%% (motion dead time %.1f%%)'
-        self._stream.info(info_string % (serialno, endtime, totaltime,
+        self._stream().info(info_string % (serialno, endtime, totaltime,
                                          deadtime_perc, motiontime_perc))
 
     def _writeRecord(self, record):
@@ -268,11 +269,11 @@ class OutputRecorder(DataRecorder):
         scan_line = self._col_sep.join(cells)
 
         if self._output_block:
-            self._stream._outputBlock(scan_line)
+            self._stream()._outputBlock(scan_line)
         else:
-            self._stream._output(scan_line)
+            self._stream()._output(scan_line)
 
-        self._stream._flushOutput()
+        self._stream()._flushOutput()
 
     def _addCustomData(self, value, name, **kwargs):
         '''
@@ -283,5 +284,5 @@ class OutputRecorder(DataRecorder):
             v = 'Array(%s)' % str(numpy.shape(value))
         else:
             v = str(value)
-        self._stream._output('Custom data: %s : %s' % (name, v))
-        self._stream._flushOutput()
+        self._stream()._output('Custom data: %s : %s' % (name, v))
+        self._stream()._flushOutput()

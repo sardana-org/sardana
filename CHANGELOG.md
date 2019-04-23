@@ -5,10 +5,42 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
+
+### Added
+
+* Allow to configure timeout on pool element's (Taurus extensions) *go* methods e.g.
+  `move`, `count`, etc. (#992)
+* Emulated hardware triggering between dummy counter/timer and trigger/gate elements
+  (#1100)
+
+
+### Fixed
+
+* Restore motor parameters (vel, acc, dec) before going to start position in dNscact
+  macros (#1085)
+* expconf when empty (unspecified) DataType (#1076)
+* Output block of scan records which do not fit the console width (#924)
+* Fix bug on exception popups in macroexecutor (#1079, #1088)
+* Cyclic references between scan macros and GSF internals (#816)
+* Enable expconf buttons (Reload and Apply) when local configuration was kept after
+  receiving external changes (#959, #1093)
+* Show external changes pop-up in expconf when last measurement group is deleted
+  remotelly (#1099)
+* Pop-up message when expconf configuration changed externally (#1094)
+
+## [2.7.1] 2019-03-29
+
+### Fixed
+
+* Do not read 1D and 2D experimental channels during software acquisition loop
+  reintroduced after fixing it in 2.6.0 (#1086).
+
+## [2.7.0] 2019-03-11
+
 ### Added
 
 * Possibility to directly acquire an experimental channel (without the need to define
-  a measurement group) (#185, #997, #1048)
+  a measurement group) (#185, #997, #1048, #1061)
   * `IntegrationTime` (Tango) and `integration_time` (core) attributes to all experimental
     channels
   * `Timer` (Tango) and `timer` (core) attribute to all timerable experimental channels
@@ -29,6 +61,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   in the core (#1001)
 * Compatibility of measurement group plotting configurations created with
   sardana < 2.4.0 and taurus < 4.3.0 (#1017, #1022)
+* General Hook tests (#1062)
  
 ## [2.6.1] 2019-02-04
 
@@ -594,7 +627,9 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.6.1...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.7.1...HEAD
+[2.7.1]: https://github.com/sardana-org/sardana/compare/2.7.0...2.7.1
+[2.7.0]: https://github.com/sardana-org/sardana/compare/2.6.1...2.7.0
 [2.6.1]: https://github.com/sardana-org/sardana/compare/2.6.0...2.6.1
 [2.6.0]: https://github.com/sardana-org/sardana/compare/2.5.0...2.6.0
 [2.5.0]: https://github.com/sardana-org/sardana/compare/2.4.0...2.5.0

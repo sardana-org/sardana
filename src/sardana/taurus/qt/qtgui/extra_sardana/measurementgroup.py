@@ -340,13 +340,24 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
         return ret
 
     def setData(self, index, qvalue):
+        ch_name, ch_data = self.itemData()
         taurus_role = index.model().role(index.column())
+        key = self.itemdata_keys_map[taurus_role]
         if taurus_role in (ChannelView.Channel, ChannelView.Conditioning,
-                           ChannelView.NXPath, ChannelView.DataType,
-                           ChannelView.Enabled, ChannelView.Output,
-                           ChannelView.ValueRefEnabled,
+                           ChannelView.NXPath, ChannelView.Enabled,
+                           ChannelView.Output, ChannelView.ValueRefEnabled,
                            ChannelView.ValueRefPattern):
             data = qvalue
+        elif taurus_role == ChannelView.DataType:
+            if len(qvalue.strip()) == 0:
+                # empty strings are considered as unspecified data type
+                try:
+                    ch_data.pop(key)
+                except KeyError:
+                    pass  # data_type key may not be there if not specified
+                return
+            else:
+                data = qvalue
         elif taurus_role == ChannelView.PlotType:
             data = PlotType[qvalue]
         elif taurus_role == ChannelView.Normalization:
@@ -365,8 +376,6 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
                 data = ()
         else:
             raise NotImplementedError('Unknown role')
-        ch_name, ch_data = self.itemData()
-        key = self.itemdata_keys_map[taurus_role]
         ch_data[key] = data
 
     def role(self):

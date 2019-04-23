@@ -36,6 +36,7 @@ import datetime
 import operator
 import time
 import threading
+import weakref
 import numpy as np
 
 import PyTango
@@ -52,6 +53,7 @@ from taurus.core.util.user import USER_NAME
 from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
 from taurus.core.util.enumeration import Enumeration
 from taurus.core.util.threadpool import ThreadPool
+from taurus.core.util.event import CallableRef
 
 from sardana.util.tree import BranchNode, LeafNode, Tree
 from sardana.util.motion import Motor as VMotor
@@ -255,13 +257,15 @@ class GScan(Logger):
 
     def __init__(self, macro, generator=None, moveables=[], env={},
                  constraints=[], extrainfodesc=[]):
-        self._macro = macro
+        self._macro = weakref.ref(macro)
+        if generator is not None:
+            generator = CallableRef(generator)
         self._generator = generator
         self._extrainfodesc = extrainfodesc
 
-        # nasty hack to make sure macro has access to gScan as soon as possible
-        # TODO: CAUTION! this may be causing a circular reference!
-        self._macro._gScan = self
+        # nasty hack to make sure macro has access to gScan as soon as
+        # possible
+        self.macro._gScan = self
         self._rec_manager = macro.getMacroServer().recorder_manager
 
         self._moveables, moveable_names = [], []
@@ -424,7 +428,7 @@ class GScan(Logger):
                 try:
                     if 'instrument' in kw:
                         type_class = Type.Instrument
-                        instrument = self._macro.getObj(kw['instrument'],
+                        instrument = self.macro.getObj(kw['instrument'],
                                                         type_class=type_class)
                         if instrument:
                             kw['instrument'] = instrument
@@ -761,7 +765,7 @@ class GScan(Logger):
         except Exception:
             env['ScanDir'] = None
         env['estimatedtime'], env['total_scan_intervals'] = self._estimate()
-        env['instrumentlist'] = self._macro.findObjs(
+        env['instrumentlist'] = self.macro.findObjs(
             '.*', type_class=Type.Instrument)
 
         # env.update(self._getExperimentConfiguration) #add all the info from
@@ -905,7 +909,7 @@ class GScan(Logger):
 
     @property
     def macro(self):
-        return self._macro
+        return self._macro()
 
     @property
     def measurement_group(self):
@@ -914,7 +918,7 @@ class GScan(Logger):
     @property
     def generator(self):
         """Generator of steps or waypoints used in this scan."""
-        return self._generator
+        return self._generator()
 
     @property
     def motion(self):
@@ -1440,8 +1444,12 @@ class CScan(GScan):
                 raise ScanException(msg)
 
     def do_restore(self):
-        super(CScan, self).do_restore()
+        # Restore motor backups (vel, acc, ...) first so the macro's
+        # do_restore finds the system as before GSF found it.
+        # This is especially important for dscan macros which must return
+        # to inital position at nominal speed even after user stop.
         self._restore_motors()
+        super(CScan, self).do_restore()
 
     def _setFastMotions(self, motors=None):
         '''make given motors go at their max speed and accel'''
