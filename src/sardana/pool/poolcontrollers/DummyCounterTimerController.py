@@ -89,12 +89,46 @@ class DummyCounterTimerController(CounterTimerController):
         idx = axis - 1
         self.channels[idx] = None
 
-    def calculate_duration(self, integration_time):
-        if self._synchronization not in (AcqSynch.SoftwareStart,
-                                         AcqSynch.HardwareStart):
-            self.acq_latency_time = 0
-        self.estimated_duration = (integration_time
-                                   + self.acq_latency_time) * self.repetitions
+    def LoadOne(self, axis, value, repetitions, latency_time):
+        if value > 0:
+            self.integ_time = value
+            self.monitor_count = None
+            self.estimated_duration = \
+                (value + latency_time) * repetitions - latency_time
+        else:
+            self.integ_time = None
+            self.monitor_count = -value
+        self.repetitions = repetitions
+        self.acq_latency_time = latency_time
+
+    def PreStartAll(self):
+        self.counting_channels = {}
+
+    def PreStartOne(self, axis, value=None):
+        self._log.debug('PreStartOne(%d): entering...' % axis)
+        idx = axis - 1
+        channel = self.channels[idx]
+        channel.value = 0.0
+        channel._counter = 0
+        channel.buffer_values = []
+        self.counting_channels[axis] = channel
+        return True
+
+    def StartOne(self, axis, value=None):
+        self._log.debug('StartOne(%d): entering...' % axis)
+        if self._synchronization in (AcqSynch.SoftwareStart,
+                                     AcqSynch.SoftwareTrigger,
+                                     AcqSynch.SoftwareGateGate):
+            self.counting_channels[axis].is_counting = True
+
+    def StartAll(self):
+        if self._synchronization in (AcqSynch.HardwareStart,
+                                     AcqSynch.HardwareTrigger,
+                                     AcqSynch.HardwareGate):
+            self._connect_hardware_synchronization()
+            self._armed = True
+        else:
+            self.start_time = time.time()
 
     def StateOne(self, axis):
         self._log.debug('StateOne(%d): entering...' % axis)
@@ -135,6 +169,45 @@ class DummyCounterTimerController(CounterTimerController):
                 # counting in time
                 if elapsed_time > self.estimated_duration:
                     self._finish(elapsed_time)
+
+    def PreReadAll(self):
+        self.read_channels = {}
+
+    def PreReadOne(self, axis):
+        channel = self.channels[axis - 1]
+        self.read_channels[axis] = channel
+
+    def ReadAll(self):
+        if self._armed:
+            return  # still armed - no trigger/gate arrived yet
+        # if in acquisition then calculate the values to return
+        if self.counting_channels:
+            now = time.time()
+            elapsed_time = now - self.start_time
+            for axis, channel in self.read_channels.items():
+                self._updateChannelState(axis, elapsed_time)
+                if channel.is_counting:
+                    self._updateChannelValue(axis, elapsed_time)
+
+    def ReadOne(self, axis):
+        self._log.debug('ReadOne(%d): entering...' % axis)
+        channel = self.read_channels[axis]
+        ret = None
+        if self._synchronization in (AcqSynch.HardwareTrigger,
+                                     AcqSynch.HardwareGate,
+                                     AcqSynch.SoftwareStart,
+                                     AcqSynch.HardwareStart):
+            values = copy.deepcopy(channel.buffer_values)
+            ret = []
+            for v in values:
+                ret.append(SardanaValue(v))
+            channel.buffer_values.__init__()
+            channel._counter = channel._counter + len(values)
+        elif self._synchronization == AcqSynch.SoftwareTrigger:
+            v = channel.value
+            ret = SardanaValue(v)
+        self._log.debug('ReadOne(%d): returning %s' % (axis, repr(ret)))
+        return ret
 
     def _updateChannelValue(self, axis, elapsed_time):
         channel = self.channels[axis - 1]
@@ -188,87 +261,12 @@ class DummyCounterTimerController(CounterTimerController):
             self._disconnect_hardware_synchronization()
             self._armed = False
 
-    def PreReadAll(self):
-        self.read_channels = {}
-
-    def PreReadOne(self, axis):
-        channel = self.channels[axis - 1]
-        self.read_channels[axis] = channel
-
-    def ReadAll(self):
-        if self._armed:
-            return  # still armed - no trigger/gate arrived yet
-        # if in acquisition then calculate the values to return
-        if self.counting_channels:
-            now = time.time()
-            elapsed_time = now - self.start_time
-            for axis, channel in self.read_channels.items():
-                self._updateChannelState(axis, elapsed_time)
-                if channel.is_counting:
-                    self._updateChannelValue(axis, elapsed_time)
-
-    def ReadOne(self, axis):
-        self._log.debug('ReadOne(%d): entering...' % axis)
-        channel = self.read_channels[axis]
-        ret = None
-        if self._synchronization in (AcqSynch.HardwareTrigger,
-                                     AcqSynch.HardwareGate,
-                                     AcqSynch.SoftwareStart,
-                                     AcqSynch.HardwareStart):
-            values = copy.deepcopy(channel.buffer_values)
-            ret = []
-            for v in values:
-                ret.append(SardanaValue(v))
-            channel.buffer_values.__init__()
-            channel._counter = channel._counter + len(values)
-        elif self._synchronization == AcqSynch.SoftwareTrigger:
-            v = channel.value
-            ret = SardanaValue(v)
-        self._log.debug('ReadOne(%d): returning %s' % (axis, repr(ret)))
-        return ret
-
-    def PreStartAll(self):
-        self.counting_channels = {}
-
-    def PreStartOne(self, axis, value=None):
-        self._log.debug('PreStartOne(%d): entering...' % axis)
-        idx = axis - 1
-        channel = self.channels[idx]
-        channel.value = 0.0
-        channel._counter = 0
-        channel.buffer_values = []
-        self.counting_channels[axis] = channel
-        return True
-
-    def StartOne(self, axis, value=None):
-        self._log.debug('StartOne(%d): entering...' % axis)
-        self.counting_channels[axis].is_counting = True
-
-    def StartAll(self):
-        if self._synchronization in (AcqSynch.HardwareStart,
-                                     AcqSynch.HardwareTrigger,
-                                     AcqSynch.HardwareGate):
-            self._connect_hardware_synchronization()
-            self._armed = True
-        else:
-            self.start_time = time.time()
-
-    def LoadOne(self, axis, value, repetitions, latency_time):
-        self.repetitions = repetitions
-        self.acq_latency_time = latency_time
-        if value > 0:
-            self.integ_time = value
-            self.monitor_count = None
-            self._calculate_duration(value)
-        else:
-            self.integ_time = None
-            self.monitor_count = -value
-
     def AbortOne(self, axis):
+        if axis not in self.counting_channels:
+            return
         now = time.time()
-        if axis in self.counting_channels:
-            elapsed_time = now - self.start_time
-            self._finish(elapsed_time, axis)
+        elapsed_time = now - self.start_time
+        self._finish(elapsed_time, axis)
 
     def GetCtrlPar(self, par):
         if par == 'synchronization':
@@ -340,4 +338,6 @@ class DummyCounterTimerController(CounterTimerController):
         # for the moment only react on first trigger
         if type_.name.lower() == "active" and value == 0:
             self._armed = False
+            for channel in self.counting_channels:
+                channel.is_counting = True
             self.start_time = time.time()
