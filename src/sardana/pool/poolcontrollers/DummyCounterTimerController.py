@@ -76,9 +76,6 @@ class DummyCounterTimerController(CounterTimerController):
         self._synchronization = AcqSynch.SoftwareTrigger
         self._latency_time = 0
         self.channels = self.MaxDevice * [None, ]
-        self.reset()
-
-    def reset(self):
         self.start_time = None
         self.integ_time = None
         self.monitor_count = None
