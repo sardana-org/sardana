@@ -49,6 +49,7 @@ class DummyCounterTimerController(CounterTimerController):
     MaxDevice = 1024
 
     default_timer = 1
+    default_latency_time = 0.0
 
     ctrl_attributes = {
         "Synchronizer": {
@@ -62,13 +63,12 @@ class DummyCounterTimerController(CounterTimerController):
     def __init__(self, inst, props, *args, **kwargs):
         CounterTimerController.__init__(self, inst, props, *args, **kwargs)
         self._synchronization = AcqSynch.SoftwareTrigger
-        self._latency_time = 0
         self.channels = self.MaxDevice * [None, ]
         self.start_time = None
         self.integ_time = None
         self.monitor_count = None
         self.repetitions = None
-        self.acq_latency_time = None
+        self.latency_time = None
         self.estimated_duration = None
         self.read_channels = {}
         self.counting_channels = {}
@@ -97,7 +97,7 @@ class DummyCounterTimerController(CounterTimerController):
             self.integ_time = None
             self.monitor_count = -value
         self.repetitions = repetitions
-        self.acq_latency_time = latency_time
+        self.latency_time = latency_time
 
     def PreStartAll(self):
         self.counting_channels = {}
@@ -225,7 +225,7 @@ class DummyCounterTimerController(CounterTimerController):
                                        AcqSynch.HardwareStart):
             if self.integ_time is not None:
                 nb_elapsed_acq = int(elapsed_time / (self.integ_time +
-                                                     self.acq_latency_time))
+                                                     self.latency_time))
                 if nb_elapsed_acq > self.repetitions:
                     nb_elapsed_acq = self.repetitions
                 nb_new_acq = nb_elapsed_acq - channel.nb_reported_acq
@@ -263,7 +263,7 @@ class DummyCounterTimerController(CounterTimerController):
         if par == 'synchronization':
             return self._synchronization
         elif par == 'latency_time':
-            return self._latency_time
+            return self.default_latency_time
 
     def SetCtrlPar(self, par, value):
         if par == 'synchronization':
