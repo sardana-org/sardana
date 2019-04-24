@@ -25,7 +25,6 @@ import time
 import copy
 
 from sardana import State
-from sardana.sardanavalue import SardanaValue
 from sardana.pool import AcqSynch
 from sardana.pool.controller import CounterTimerController, Type, Description
 
@@ -36,8 +35,7 @@ class Channel(object):
         self.idx = idx            # 1 based index
         self.value = 0.0
         self.is_counting = False
-        self.active = True
-        self._counter = 0
+        self.nb_reported_acq = 0
         self.buffer_values = []
 
 
@@ -109,7 +107,7 @@ class DummyCounterTimerController(CounterTimerController):
         idx = axis - 1
         channel = self.channels[idx]
         channel.value = 0.0
-        channel._counter = 0
+        channel.nb_reported_acq = 0
         channel.buffer_values = []
         self.counting_channels[axis] = channel
         return True
@@ -118,7 +116,7 @@ class DummyCounterTimerController(CounterTimerController):
         self._log.debug('StartOne(%d): entering...' % axis)
         if self._synchronization in (AcqSynch.SoftwareStart,
                                      AcqSynch.SoftwareTrigger,
-                                     AcqSynch.SoftwareGateGate):
+                                     AcqSynch.SoftwareGate):
             self.counting_channels[axis].is_counting = True
 
     def StartAll(self):
@@ -198,14 +196,11 @@ class DummyCounterTimerController(CounterTimerController):
                                      AcqSynch.SoftwareStart,
                                      AcqSynch.HardwareStart):
             values = copy.deepcopy(channel.buffer_values)
-            ret = []
-            for v in values:
-                ret.append(SardanaValue(v))
             channel.buffer_values.__init__()
-            channel._counter = channel._counter + len(values)
+            channel.nb_reported_acq = channel.nb_reported_acq + len(values)
+            ret = values
         elif self._synchronization == AcqSynch.SoftwareTrigger:
-            v = channel.value
-            ret = SardanaValue(v)
+            ret = channel.value
         self._log.debug('ReadOne(%d): returning %s' % (axis, repr(ret)))
         return ret
 
@@ -229,17 +224,16 @@ class DummyCounterTimerController(CounterTimerController):
                                        AcqSynch.SoftwareStart,
                                        AcqSynch.HardwareStart):
             if self.integ_time is not None:
-                t = elapsed_time
-                n = int(t / self.integ_time)
-                cp = 0
-                if n > self.repetitions:
-                    cp = n - self.repetitions
-                n = n - channel._counter - cp
-                t = self.integ_time
+                nb_elapsed_acq = int(elapsed_time / (self.integ_time +
+                                                     self.acq_latency_time))
+                if nb_elapsed_acq > self.repetitions:
+                    nb_elapsed_acq = self.repetitions
+                nb_new_acq = nb_elapsed_acq - channel.nb_reported_acq
                 if axis == self._timer:
-                    channel.buffer_values = [t] * n
+                    value = self.integ_time
                 else:
-                    channel.buffer_values = [t * channel.idx] * n
+                    value = self.integ_time * channel.idx
+                channel.buffer_values = [value] * nb_new_acq
 
     def _finish(self, elapsed_time, axis=None):
         if axis is None:
@@ -252,9 +246,6 @@ class DummyCounterTimerController(CounterTimerController):
                 channel.is_counting = False
                 self._updateChannelValue(axis, elapsed_time)
                 self.counting_channels.pop(axis)
-            else:
-                channel = self.channels[axis - 1]
-                channel.is_counting = False
         if self._synchronization in (AcqSynch.HardwareStart,
                                      AcqSynch.HardwareTrigger,
                                      AcqSynch.HardwareGate):
@@ -338,6 +329,6 @@ class DummyCounterTimerController(CounterTimerController):
         # for the moment only react on first trigger
         if type_.name.lower() == "active" and value == 0:
             self._armed = False
-            for channel in self.counting_channels:
+            for axis, channel in self.counting_channels.iteritems():
                 channel.is_counting = True
             self.start_time = time.time()
