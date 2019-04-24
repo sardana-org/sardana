@@ -325,6 +325,36 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
 
         env = self.currentlist.getEnviron()
         nxentry = self.fd[self.entryname]
+        for column_description in env['datadesc']:
+            col_type = column_description.getDtype()
+            column_desc = column_description.toDict()
+            dataset_name = column_desc['name']
+
+            # If h5file scheme is used: Creation of a Virtual Dataset
+            if col_type is "str":
+                records = nxentry['measurement'][dataset_name]
+                first_record = records[0]
+
+                if "h5file://" in first_record:
+                    nb_points = len(records)
+                    filename = first_record.split("://")[1]
+                    with h5py.File(filename, 'r') as f:
+                        (dim_1, dim_2) = f['dataset'].shape
+
+                    layout = h5py.VirtualLayout(shape=(nb_points,
+                                                       dim_1, dim_2),
+                                                dtype='f')
+                    for i, record in enumerate(records):
+                        filename = record.split("://")[1]
+                        vsource = h5py.VirtualSource(filename, "dataset",
+                                                     shape=(dim_1, dim_2))
+                        layout[i] = vsource
+
+                    # Substitute dataset by Virtual Dataset in output file
+                    del nxentry['measurement'][dataset_name]
+                    nxentry['measurement'].create_virtual_dataset(
+                        dataset_name, layout, fillvalue=-numpy.inf)
+
         nxentry.create_dataset('end_time', data=env['endtime'].isoformat())
         self.fd.flush()
         self.debug('Finishing recording %d on file %s:',
