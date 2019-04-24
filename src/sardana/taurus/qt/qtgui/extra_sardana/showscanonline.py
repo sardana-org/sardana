@@ -67,7 +67,7 @@ class ShowScanOnline(DynamicPlotManager):
         DynamicPlotManager.removePanels(self, names=names)
 
 
-class TaurusGuiLite(TaurusGui):  
+class TaurusGuiLite(TaurusGui):
     HEARTBEAT = None
     FILE_MENU_ENABLED = False
     VIEW_MENU_ENABLED = False
