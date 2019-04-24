@@ -89,7 +89,7 @@ class TestNXscanH5_FileRecorder(TestCase):
         self.env["starttime"] = datetime.now()
         recorder._startRecordList(self.record_list)
         for i in range(nb_records):
-            record = Record({COL1_NAME: 0.1})
+            record = Record({COL1_NAME: 0.1}, i)
             recorder._writeRecord(record)
         self.env["endtime"] = datetime.now()
         recorder._endRecordList(self.record_list)
@@ -117,7 +117,7 @@ class TestNXscanH5_FileRecorder(TestCase):
         self.env["starttime"] = datetime.now()
         recorder._startRecordList(self.record_list)
         for i in range(nb_records):
-            record = Record({COL1_NAME: "file:///tmp/test.edf"})
+            record = Record({COL1_NAME: "file:///tmp/test.edf"}, i)
             recorder._writeRecord(record)
         self.env["endtime"] = datetime.now()
         recorder._endRecordList(self.record_list)
@@ -161,7 +161,8 @@ class TestNXscanH5_FileRecorder(TestCase):
             self.env["starttime"] = datetime.now()
             recorder._startRecordList(self.record_list)
             for i in range(nb_records):
-                record = Record({COL1_NAME: part_file_name_pattern.format(i)})
+                ref = "h5file://" + part_file_paths[i]
+                record = Record({COL1_NAME: ref}, i)
                 recorder._writeRecord(record)
             self.env["endtime"] = datetime.now()
             recorder._endRecordList(self.record_list)
