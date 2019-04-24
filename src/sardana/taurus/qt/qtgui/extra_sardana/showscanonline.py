@@ -67,16 +67,20 @@ class ShowScanOnline(DynamicPlotManager):
         DynamicPlotManager.removePanels(self, names=names)
 
 
-class TaurusGuiLite(TaurusGui):
-
-    ENABLE_APPLETS_TOOLBAR = False
-    ENABLE_PANELS_MENU = False
-    ENABLED_SHARE_DATA_CONNECTIONS = False
-    ENABLE_QUICK_ACCESS_TOOLBAR = False
-    ENABLE_TOOLS_MENU = False
-    ENABLE_TAURUS_MENU = False
-    ENABLE_FULLSCREEN_TOOLBAR = False
-    ENABLE_PERSPECTIVE_TOOLBAR = False
+class TaurusGuiLite(TaurusGui):  
+    HEARTBEAT = None
+    FILE_MENU_ENABLED = False
+    VIEW_MENU_ENABLED = False
+    TAURUS_MENU_ENABLED = False
+    TOOLS_MENU_ENABLED = False
+    PANELS_MENU_ENABLED = False
+    HELP_MENU_ENABLED = False
+    FULLSCREEN_TOOLBAR_ENABLED = False
+    APPLETS_TOOLBAR_ENABLED = False
+    QUICK_ACCESS_TOOLBAR_ENABLED = False
+    USER_PERSPECTIVES_ENABLED = False
+    LOGGER_WIDGET_ENABLED = False
+    SPLASH_LOGO_NAME = None
 
 
 def main():
