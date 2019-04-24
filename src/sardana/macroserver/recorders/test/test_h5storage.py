@@ -75,7 +75,7 @@ class TestNXscanH5_FileRecorder(TestCase):
         }
         self.record_list = RecordList(self.env)
 
-    def test_dtype_floa64(self):
+    def test_dtype_float64(self):
         """Test creation of dataset with float64 data type"""
         nb_records = 1
         # create description of channel data
@@ -104,7 +104,7 @@ class TestNXscanH5_FileRecorder(TestCase):
             self.assertEqual(data, expected_data, msg)
 
     def test_dtype_str(self):
-        """Test creation of dataset with float64 data type"""
+        """Test creation of dataset with str data type"""
         nb_records = 1
         # create description of channel data
         data_desc = [
@@ -138,11 +138,11 @@ class TestNXscanH5_FileRecorder(TestCase):
         """
         nb_records = 3
         # create partial files
-        part_file_name_patter = "test_vds_part{0}.h5"
+        part_file_name_pattern = "test_vds_part{0}.h5"
         part_file_paths = []
         for i in range(nb_records):
             path = os.path.join(self.dir_name,
-                                part_file_name_patter.format(i))
+                                part_file_name_pattern.format(i))
             part_file_paths.append(path)
             part_file = h5py.File(path, "w")
             img = numpy.array([[i, i], [i, i]])
@@ -161,7 +161,7 @@ class TestNXscanH5_FileRecorder(TestCase):
             self.env["starttime"] = datetime.now()
             recorder._startRecordList(self.record_list)
             for i in range(nb_records):
-                record = Record({COL1_NAME: part_file_name_patter.format(i)})
+                record = Record({COL1_NAME: part_file_name_pattern.format(i)})
                 recorder._writeRecord(record)
             self.env["endtime"] = datetime.now()
             recorder._endRecordList(self.record_list)
