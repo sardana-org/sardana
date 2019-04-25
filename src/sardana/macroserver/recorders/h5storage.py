@@ -337,6 +337,8 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                 if not first_reference.startswith("h5file://"):
                     continue
 
+                bk_name = "_" + name
+                measurement[bk_name] = measurement[name]
                 nb_points = measurement[name].size
                 filename = first_reference.split("://")[1]
                 with h5py.File(filename, 'r') as f:
@@ -353,9 +355,16 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                     layout[i] = vsource
 
                 # Substitute dataset by Virtual Dataset in output file
-                del measurement[name]
-                measurement.create_virtual_dataset(
-                    name, layout, fillvalue=-numpy.inf)
+                try:
+                    del measurement[name]
+                    measurement.create_virtual_dataset(
+                        name, layout, fillvalue=-numpy.inf)
+                except Exception as e:
+                    msg = 'Could not create a Virtual Dataset. Reason: %r'
+                    self.warning(msg, e)
+                else:
+                    del measurement[bk_name]
+
 
         nxentry.create_dataset('end_time', data=env['endtime'].isoformat())
         self.fd.flush()
