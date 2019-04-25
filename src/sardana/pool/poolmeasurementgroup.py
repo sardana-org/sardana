@@ -1173,6 +1173,10 @@ class PoolMeasurementGroup(PoolGroupElement):
 
         ..todo:: remove multiple argument
         """
+        if len(self.get_user_elements()) == 0:
+            # All channels were disabled
+            raise RuntimeError('The measurement group "{}" has all '
+                               'the channels disabled.'.format(self.name))
         value = self._get_value()
         self._pending_starts = self.nb_starts
 
