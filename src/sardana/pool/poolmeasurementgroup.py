@@ -588,10 +588,6 @@ class MeasurementConfiguration(object):
 
     def set_configuration_from_user(self, cfg, to_fqdn=True):
         """Load measurement configuration from serializable data structure."""
-        user_elements = self._parent.get_user_elements()
-        if len(user_elements) == 0:
-            # All channels were disabled
-            raise ValueError('The configuration has all the channels disabled')
 
         pool = self._parent.pool
 
