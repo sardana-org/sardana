@@ -292,7 +292,6 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             if dd.name in record.data:
                 data = record.data[dd.name]
                 _ds = _meas[dd.label]
-
                 if data is None:
                     data = numpy.zeros(dd.shape, dtype=dd.dtype)
                 if is_pure_str(data):
@@ -325,19 +324,20 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
 
         env = self.currentlist.getEnviron()
         nxentry = self.fd[self.entryname]
+
         for column_description in env['datadesc']:
             column_type = column_description.getDtype()
-            dataset_name = column_description.toDict()['name']
+            name = column_description.toDict()['name']
 
             # If h5file scheme is used: Creation of a Virtual Dataset
             if column_type is "str":
-                dataset = nxentry['measurement'][dataset_name]
-                first_reference = dataset[0]
+                measurement = nxentry['measurement']
+                first_reference = measurement[name][0]
 
                 if not first_reference.startswith("h5file://"):
                     continue
 
-                nb_points = len(dataset)
+                nb_points = measurement[name].size
                 filename = first_reference.split("://")[1]
                 with h5py.File(filename, 'r') as f:
                     (dim_1, dim_2) = f['dataset'].shape
@@ -345,16 +345,17 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                 layout = h5py.VirtualLayout(shape=(nb_points,
                                                    dim_1, dim_2),
                                             dtype='f')
-                for i, reference in enumerate(dataset):
+                for i in range(nb_points):
+                    reference = measurement[name][i]
                     filename = reference.split("://")[1]
                     vsource = h5py.VirtualSource(filename, "dataset",
                                                  shape=(dim_1, dim_2))
                     layout[i] = vsource
 
                 # Substitute dataset by Virtual Dataset in output file
-                del nxentry['measurement'][dataset_name]
-                nxentry['measurement'].create_virtual_dataset(
-                    dataset_name, layout, fillvalue=-numpy.inf)
+                del measurement[name]
+                measurement.create_virtual_dataset(
+                    name, layout, fillvalue=-numpy.inf)
 
         nxentry.create_dataset('end_time', data=env['endtime'].isoformat())
         self.fd.flush()
