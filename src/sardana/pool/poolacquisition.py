@@ -509,6 +509,10 @@ class PoolAcquisition(PoolAction):
                 elem.clear_value_buffer()
             except AttributeError:
                 continue
+            try:
+                elem.clear_value_ref_buffer()
+            except AttributeError:
+                continue
             # clean also the pseudo counters, even the ones that do not
             # participate directly in the acquisition
             for pseudo_elem in elem.get_pseudo_elements():
