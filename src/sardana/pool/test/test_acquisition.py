@@ -25,9 +25,12 @@
 import time
 import threading
 
+import numpy
+
 from taurus.external.unittest import TestCase
 from taurus.test import insertTest
 
+from sardana.sardanautils import is_number, is_pure_str
 from sardana.pool import AcqSynch, AcqMode
 from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.pool.poolsynchronization import PoolSynchronization
@@ -109,7 +112,9 @@ class AcquisitionTestCase(BasePoolTestCase):
                        '%d' % (ch_name, ch_data_len, repetitions))
                 self.assertGreaterEqual(repetitions, ch_data_len, msg)
             for value in table[ch_name]:
-                if value not in [float("NaN"), None]:
+                if (isinstance(value, numpy.ndarray)
+                        or is_number(value)
+                        or is_pure_str(value)):
                     break
             else:
                 raise AssertionError('channel %s does not report any '
