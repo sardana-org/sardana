@@ -36,6 +36,7 @@ __docformat__ = 'restructuredtext'
 import time
 import weakref
 import datetime
+import traceback
 
 from taurus.core.util.log import DebugIt
 from taurus.core.util.enumeration import Enumeration
@@ -498,7 +499,6 @@ class PoolAcquisition(PoolAction):
 
     def run(self, *args, **kwargs):
         """Runs acquisition according to previous preparation."""
-
         for elem in self.get_elements():
             elem.put_state(None)
             # TODO: temporarily clear value buffers at the beginning of the
@@ -1004,6 +1004,9 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
                     if is_value_error(value):
                         self.error("Loop read value error for %s" %
                                    acquirable.name)
+                        msg = "Details: " + "".join(
+                            traceback.format_exception(*value.exc_info))
+                        self.debug(msg)
                         acquirable.put_value(value)
                     else:
                         acquirable.extend_value_buffer(value)
@@ -1024,6 +1027,9 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
                 if is_value_error(value):
                     self.error("Loop final read value error for: %s" %
                                acquirable.name)
+                    msg = "Details: " + "".join(
+                        traceback.format_exception(*value.exc_info))
+                    self.debug(msg)
                     acquirable.put_value(value)
                 else:
                     acquirable.extend_value_buffer(value, propagate=2)
@@ -1032,6 +1038,9 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
                 if is_value_error(value_ref):
                     self.error("Loop final read value ref error for: %s" %
                                acquirable.name)
+                    msg = "Details: " + "".join(
+                        traceback.format_exception(*value_ref.exc_info))
+                    self.debug(msg)
                 acquirable.extend_value_ref_buffer(value_ref, propagate=2)
             with acquirable:
                 acquirable.clear_operation()
@@ -1117,12 +1126,18 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
                 if is_value_error(value):
                     self.error("Loop final read value error for: %s" %
                                acquirable.name)
+                    msg = "Details: " + "".join(
+                        traceback.format_exception(*value.exc_info))
+                    self.debug(msg)
                 acquirable.append_value_buffer(value, self._index)
             if acquirable in value_refs:
                 value_ref = value_refs[acquirable]
                 if is_value_error(value_ref):
                     self.error("Loop final read value ref error for: %s" %
                                acquirable.name)
+                    msg = "Details: " + "".join(
+                        traceback.format_exception(*value_ref.exc_info))
+                    self.debug(msg)
                 acquirable.append_value_ref_buffer(value_ref, self._index)
             with acquirable:
                 acquirable.clear_operation()
@@ -1183,6 +1198,9 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
                     if is_value_error(value):
                         self.error("Loop read value error for %s" %
                                    acquirable.name)
+                        msg = "Details: " + "".join(
+                            traceback.format_exception(*value.exc_info))
+                        self.debug(msg)
                         acquirable.put_value(value)
                     else:
                         acquirable.extend_value_buffer(value)
@@ -1204,6 +1222,9 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
                 if is_value_error(value):
                     self.error("Loop final read value error for: %s" %
                                acquirable.name)
+                    msg = "Details: " + "".join(
+                        traceback.format_exception(*value.exc_info))
+                    self.debug(msg)
                     acquirable.put_value(value)
                 else:
                     acquirable.extend_value_buffer(value, propagate=2)
@@ -1212,6 +1233,9 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
                 if is_value_error(value_ref):
                     self.error("Loop final read value ref error for: %s" %
                                acquirable.name)
+                    msg = "Details: " + "".join(
+                        traceback.format_exception(*value_ref.exc_info))
+                    self.debug(msg)
                     acquirable.put_value_ref(value_ref)
                 else:
                     acquirable.extend_value_ref_buffer(value_ref, propagate=2)
