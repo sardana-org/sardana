@@ -224,6 +224,7 @@ class ExperimentConfiguration(object):
                     codec.decode(('json', reply.get_data().value),
                                  ensure_ascii=True)[1]
             except Exception, e:
+                mnt_grp_configs[mnt_grp] = None
                 from taurus.core.util.log import warning
                 warning('Cannot load Measurement group "%s": %s',
                         repr(mnt_grp), repr(e))
