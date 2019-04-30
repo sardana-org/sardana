@@ -182,8 +182,8 @@ class TwoDExpChannel(PoolTimerableDevice):
         # referable channels
         # TODO: not 100% sure if valuereftemplate and valuerefenabled should
         # not belong to detect_evts
-        non_detect_evts = ("valueref", "valuerefbuffer", "valuereftemplate",
-                           "valuerefenabled")
+        non_detect_evts = ("valuebuffer", "valueref", "valuerefbuffer",
+                           "valuereftemplate", "valuerefenabled")
         for attr_name in non_detect_evts:
             if attr_name in attrs:
                 self.set_change_event(attr_name, True, False)
@@ -195,6 +195,15 @@ class TwoDExpChannel(PoolTimerableDevice):
         # cache. This is due to the fact that the clients (MS) read the value
         # after the acquisition had finished.
         use_cache = twod.is_in_operation() and not self.Force_HW_Read
+        # For the moment we just check if we recently receive ValueBuffer.
+        # event. In this case, we use cache and clean the flag
+        # so the cached value will be returned only at the first readout
+        # after the acquisition. This is a workaround for the count executed
+        # by the MacroServer e.g. step scans or ct which read the value after
+        # the acquisition.
+        if not use_cache and self._first_read_cache:
+            use_cache = True
+            self._first_read_cache = False
         value = twod.get_value(cache=use_cache, propagate=0)
         if value.error:
             Except.throw_python_exception(*value.exc_info)

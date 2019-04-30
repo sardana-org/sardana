@@ -714,7 +714,10 @@ class ExpChannel(PoolElement):
         return self._getAttrValue('value', force=force)
 
     def getValueBufferObj(self):
-        return self._getAttrEG('data')
+        obj = self._getAttrEG('valuebuffer')
+        if obj is None:
+            obj = self._getAttrEG('data')
+        return obj
 
     def getValueBuffer(self):
         return self._value_buffer
