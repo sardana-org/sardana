@@ -999,7 +999,7 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
 
             # read value every n times
             if not i % nb_states_per_value:
-                self.read_value_loop(ret=values)
+                self.read_value(ret=values)
                 for acquirable, value in values.items():
                     if is_value_error(value):
                         self.error("Loop read value error for %s" %
@@ -1016,7 +1016,8 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
 
         with ActionContext(self):
             self.raw_read_state_info(ret=states)
-            self.raw_read_value_loop(ret=values)
+            self.raw_read_value(ret=values)
+            self.raw_read_value_ref(ret=value_refs)
 
         for acquirable, state_info in states.items():
             # first update the element state so that value calculation
@@ -1204,7 +1205,17 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
                         acquirable.put_value(value)
                     else:
                         acquirable.extend_value_buffer(value)
-
+                self.read_value_ref(ret=value_refs)
+                for acquirable, value_ref in value_refs.items():
+                    if is_value_error(value_ref):
+                        self.error("Loop read value ref error for %s" %
+                                   acquirable.name)
+                        msg = "Details: " + "".join(
+                            traceback.format_exception(*value.exc_info))
+                        self.debug(msg)
+                        acquirable.put_value_ref(value)
+                    else:
+                        acquirable.extend_value_ref_buffer(value_ref)
             time.sleep(nap)
             i += 1
 
