@@ -254,10 +254,10 @@ class DummyCounterTimerController(CounterTimerController):
                 channel.is_counting = False
                 self._updateChannelValue(axis, elapsed_time)
         elif axis in self.counting_channels:
-                channel = self.counting_channels[axis]
-                channel.is_counting = False
-                self._updateChannelValue(axis, elapsed_time)
-                self.counting_channels.pop(axis)
+            channel = self.counting_channels[axis]
+            channel.is_counting = False
+            self._updateChannelValue(axis, elapsed_time)
+            self.counting_channels.pop(axis)
         if self._synchronization in (AcqSynch.HardwareStart,
                                      AcqSynch.HardwareTrigger,
                                      AcqSynch.HardwareGate):
