@@ -331,9 +331,9 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         env = self.currentlist.getEnviron()
         nxentry = self.fd[self.entryname]
 
-        for column_description in env['datadesc']:
-            column_type = column_description.getDtype()
-            name = column_description.toDict()['name']
+        for dd in env['datadesc']:
+            dtype = dd.getDtype()
+            name = dd.toDict()['name']
 
             # If h5file scheme is used: Creation of a Virtual Dataset
             if dtype == "str":
