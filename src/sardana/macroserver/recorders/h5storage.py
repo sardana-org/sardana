@@ -38,6 +38,12 @@ from datetime import datetime
 import numpy
 import h5py
 
+VDS_available = True
+try:
+    h5py.VirtualSource
+except AttributeError:
+    VDS_available = False
+
 from sardana.sardanautils import is_pure_str
 from sardana.taurus.core.tango.sardana import PlotType
 from sardana.macroserver.scan.recorder import BaseFileRecorder, SaveModes
@@ -335,6 +341,12 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                 first_reference = measurement[name][0]
 
                 if not first_reference.startswith("h5file://"):
+                    continue
+                if not VDS_available:
+                    msg = ("VDS not available in this version of h5py, "
+                           "{0} will be stored as string reference")
+                    msg.format(name)
+                    self.warning(msg)
                     continue
 
                 bk_name = "_" + name

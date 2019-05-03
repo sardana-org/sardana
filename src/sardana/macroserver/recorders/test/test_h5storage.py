@@ -136,6 +136,10 @@ class TestNXscanH5_FileRecorder(TestCase):
         """Test creation of VDS when channel reports URIs (str) of h5file
         scheme in a simulated sardana scan (3 points).
         """
+        try:
+            h5py.VirtualLayout
+        except AttributeError:
+            self.skipTest("VDS not available in this version of h5py")
         nb_records = 3
         # create partial files
         part_file_name_pattern = "test_vds_part{0}.h5"
