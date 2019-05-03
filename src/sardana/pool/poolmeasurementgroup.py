@@ -832,22 +832,14 @@ class MeasurementConfiguration(object):
         name = channel.name
         ctype = channel.get_type()
         full_name = channel.full_name
-        # choose channel source and value_ref_enabled
+        # choose channel source
         if ctype != ElementType.External and channel.is_referable():
             value_ref_enabled = channel_data.get('value_ref_enabled', False)
             channel_data['value_ref_enabled'] = value_ref_enabled
             if value_ref_enabled:
                 attr_name = channel.get_value_ref_attribute().name
-                # we will report value references so shape is scalar and
-                # data type is string
-                channel_data['shape'] = []
-                channel_data['data_type'] = 'str'
             else:
                 attr_name = channel.get_default_attribute().name
-                # we will report values so shape and data_type will be
-                # determined from the value
-                channel_data.pop('shape', None)
-                channel_data.pop('data_type', None)
             source = "{0}/{1}".format(channel.full_name, attr_name)
         else:
             source = channel.get_source()
