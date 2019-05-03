@@ -336,7 +336,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             name = column_description.toDict()['name']
 
             # If h5file scheme is used: Creation of a Virtual Dataset
-            if column_type is "str":
+            if dtype == "str":
                 measurement = nxentry['measurement']
                 first_reference = measurement[name][0]
 
