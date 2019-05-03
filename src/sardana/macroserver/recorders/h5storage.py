@@ -157,11 +157,14 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         for dd in env['datadesc']:
             dd = dd.clone()
             dd.label = self.sanitizeName(dd.label)
+            try:
+                value_ref_enabled = dd.value_ref_enabled
+            except AttributeError:
+                value_ref_enabled = False
             if dd.dtype == 'bool':
                 dd.dtype = 'int8'
                 self.debug('%r will be stored with type=%r', dd.name, dd.dtype)
-            if dd.dtype == 'str':
-                # TODO: pending to decide if strings are stored sa str or byte
+            if value_ref_enabled:
                 dd.dtype = NXscanH5_FileRecorder.str_dt
                 self.debug('%r will be stored with type=%r', dd.name, dd.dtype)
             if dd.dtype in self.supported_dtypes:
