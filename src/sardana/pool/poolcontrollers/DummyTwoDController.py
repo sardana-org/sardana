@@ -67,7 +67,7 @@ def save_img(img, uri):
     try:
         h5f = h5py.File(path, "w")
         h5f.create_dataset(dataset_name, data=img)
-    except:
+    except Exception:
         msg = "Not able to store h5 file."
     ref = "h5file://" + path + "::" + dataset_name
     return ref, msg
