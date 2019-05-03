@@ -62,11 +62,13 @@ def save_img(img, uri):
     except IndexError:
         dataset_name = "dataset"
     msg = None
-    if "h5py" in sys.modules:
+    if "h5py" not in sys.modules:
+        msg = "Not able to store h5 file (h5py is not available)"
+    try:
         h5f = h5py.File(path, "w")
         h5f.create_dataset(dataset_name, data=img)
-    else:
-        msg = "Not able to store h5 file (h5py is not available)"
+    except:
+        msg = "Not able to store h5 file."
     ref = "h5file://" + path + "::" + dataset_name
     return ref, msg
 
