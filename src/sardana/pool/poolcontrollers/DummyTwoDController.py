@@ -168,7 +168,7 @@ class DummyTwoDController(TwoDController, Referable):
         self.latency_time = None
         self.acq_cycle_time = None  # integ_time + latency_time
         self.estimated_duration = None
-        self.img_idx = None
+        self.start_idx = None
         self._synchronization = AcqSynch.SoftwareTrigger
         self.read_channels = {}
         self.counting_channels = {}
@@ -278,18 +278,18 @@ class DummyTwoDController(TwoDController, Referable):
         img = generate_img(x_size, y_size, amplitude)
         if self._synchronization == AcqSynch.SoftwareTrigger:
             if channel.value_ref_enabled:
+                img_idx = self.start_idx * self.repetitions + channel.acq_idx
                 value_ref, msg = generate_ref(channel.value_ref_pattern,
-                                              self.img_idx)
+                                              img_idx)
                 if msg is not None:
                     self._log.warning(msg)
                 value_ref, msg = save_img(img, value_ref)
                 if msg is not None:
                     self._log.warning(msg)
                 channel.value_ref = value_ref
-                channel.acq_idx += 1
             else:
                 channel.value = img
-                channel.acq_idx += 1
+            channel.acq_idx += 1
         elif self._synchronization in (AcqSynch.HardwareTrigger,
                                        AcqSynch.HardwareGate,
                                        AcqSynch.HardwareStart,
@@ -307,7 +307,7 @@ class DummyTwoDController(TwoDController, Referable):
             if nb_new_acq == 0:
                 return
             if channel.value_ref_enabled:
-                start = self.start_idx + channel.acq_idx
+                start = self.start_idx * self.repetitions + channel.acq_idx
                 for idx in xrange(start, start + nb_new_acq):
                     value_ref, msg = generate_ref(channel.value_ref_pattern,
                                                   idx)
