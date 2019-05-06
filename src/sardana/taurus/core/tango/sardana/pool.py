@@ -1499,7 +1499,9 @@ class MGConfiguration(object):
         """
         if not only_enabled:
             return self.tango_dev_channels
-        tango_dev_channels = copy.deepcopy(self.tango_dev_channels)
+        tango_dev_channels = {}
+        for ky, vl in self.tango_dev_channels.items():
+            tango_dev_channels[ky] = [vl[0], copy.deepcopy(vl[1])]
         for _, dev_data in tango_dev_channels.items():
             _, attrs = dev_data
             for attr_name, channel_data in attrs.items():
@@ -1544,7 +1546,6 @@ class MGConfiguration(object):
             except:
                 for _, channel_data in attrs.items():
                     ret[channel_data['full_name']] = None
-
         return ret
 
     def _read(self):
