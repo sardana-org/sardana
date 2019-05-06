@@ -1225,7 +1225,8 @@ object?   -> Details about 'object'. ?object also works, ?? prints more.
     # ------------------------------------
     # ZMQInteractiveShell
     # ------------------------------------
-    #zmq_i_shell = config.ZMQInteractiveShell
+    zmq_i_shell = config.ZMQInteractiveShell
+    zmq_i_shell.banner1 = banner
 
     # Tell console everything is ready.
     config.Spock.ready = True
