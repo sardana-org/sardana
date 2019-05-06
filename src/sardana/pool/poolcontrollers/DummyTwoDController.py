@@ -35,7 +35,7 @@ except ImportError:
 from sardana import State
 from sardana.pool import AcqSynch
 from sardana.pool.controller import TwoDController, Referable, \
-    Type, Description, MaxDimSize
+    Type, Description, MaxDimSize, FGet, FSet, DefaultValue
 
 
 def gauss(x, mean, ymax, fwhm, yoffset=0):
@@ -151,11 +151,12 @@ class DummyTwoDController(TwoDController, Referable):
 
     axis_attributes = {
         'Amplitude': {
-            'type': str,
-            'fget': 'getAmplitude',
-            'fset': 'setAmplitude',
-            'description': 'Amplitude. Maybe a number or a tango attribute(must start with tango://)',
-            'defaultvalue': '1.0'},
+            Type: str,
+            FGet: 'getAmplitude',
+            FSet: 'setAmplitude',
+            Description: ("Amplitude. Maybe a number or a tango attribute "
+                          "(must start with tango://)"),
+            DefaultValue: '1.0'},
     }
 
     def __init__(self, inst, props, *args, **kwargs):
@@ -179,8 +180,8 @@ class DummyTwoDController(TwoDController, Referable):
         self._armed = False
 
     def GetAxisAttributes(self, axis):
-        # the default max shape for 'value' is (16*1024,). We don't need so much
-        # so we set it to BufferSize
+        # the default max shape for 'value' is (16*1024,).
+        # We don't need so much so we set it to BufferSize
         attrs = super(DummyTwoDController, self).GetAxisAttributes(axis)
         attrs['Value'][MaxDimSize] = self.BufferSize
         return attrs
