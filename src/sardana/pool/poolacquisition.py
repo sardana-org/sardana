@@ -1069,7 +1069,10 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
     def get_read_value_ctrls(self):
         # technical debt in order to work both in case of meas group and
         # single channel
-        return self._pool_ctrl_dict_value or self._pool_ctrl_dict
+        if self._pool_ctrl_dict_value is not None:
+            return self._pool_ctrl_dict_value
+        else:
+            return self._pool_ctrl_dict
 
     def get_read_value_loop_ctrls(self):
         return self._pool_ctrl_dict_loop
