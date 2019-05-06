@@ -74,7 +74,7 @@ def save_img(img, uri):
 
 
 def generate_ref(pattern, idx):
-    if pattern is None:
+    if pattern is None or pattern == "":
         pattern = "h5file:///tmp/dummy2d_default_{index}.h5"
     msg = None
     try:
