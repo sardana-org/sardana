@@ -295,11 +295,15 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             if dd.name in record.data:
                 data = record.data[dd.name]
                 _ds = _meas[dd.label]
-
+                try:
+                    value_ref_enabled = dd.value_ref_enabled
+                except AttributeError:
+                    value_ref_enabled = False
                 if data is None:
                     data = numpy.zeros(dd.shape, dtype=dd.dtype)
-                if is_pure_str(data):
-                    pass
+                # skip NaN if value reference is enabled
+                if value_ref_enabled and not is_pure_str(data):
+                    continue
                 elif not hasattr(data, 'shape'):
                     data = numpy.array([data], dtype=dd.dtype)
                 elif dd.dtype != data.dtype.name:
