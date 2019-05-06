@@ -150,7 +150,8 @@ class TestNXscanH5_FileRecorder(TestCase):
             part_file_paths.append(path)
             part_file = h5py.File(path, "w")
             img = numpy.array([[i, i], [i, i]])
-            part_file.create_dataset("dataset", data=img)
+            dataset = "dataset"
+            part_file.create_dataset(dataset, data=img)
             part_file.flush()
             part_file.close()
         try:
@@ -165,7 +166,7 @@ class TestNXscanH5_FileRecorder(TestCase):
             self.env["starttime"] = datetime.now()
             recorder._startRecordList(self.record_list)
             for i in range(nb_records):
-                ref = "h5file://" + part_file_paths[i]
+                ref = "h5file://" + part_file_paths[i] + "::" + dataset
                 record = Record({COL1_NAME: ref}, i)
                 recorder._writeRecord(record)
             self.env["endtime"] = datetime.now()
