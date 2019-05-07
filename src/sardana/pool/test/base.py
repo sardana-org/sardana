@@ -164,6 +164,8 @@ class BasePoolTestCase(object):
             ctrl_obj = self.createController(name,
                                              'DummyTwoDController',
                                              'DummyTwoDController.py')
+            # use the first trigger/gate element by default
+            ctrl_obj.set_ctrl_attr("synchronizer", "_test_tg_1_1")
             # Create ntwodelems TwoD elements for each ctrl
             for axis in range(1, self.ntwodelems + 1):
                 name = '_test_2d_%s_%s' % (ctrl, axis)

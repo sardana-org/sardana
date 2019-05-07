@@ -103,12 +103,13 @@ class TestNXscanH5_FileRecorder(TestCase):
             msg = "data does not match"
             self.assertEqual(data, expected_data, msg)
 
-    def test_dtype_str(self):
+    def test_value_ref(self):
         """Test creation of dataset with str data type"""
         nb_records = 1
         # create description of channel data
         data_desc = [
-            ColumnDesc(name=COL1_NAME, dtype="str", shape=tuple())
+            ColumnDesc(name=COL1_NAME, dtype="float64",
+                       shape=(1024, 1024), value_ref_enabled=True)
         ]
         self.env["datadesc"] = data_desc
 
@@ -157,7 +158,8 @@ class TestNXscanH5_FileRecorder(TestCase):
         try:
             # create description of channel data
             data_desc = [
-                ColumnDesc(name=COL1_NAME, dtype="str", shape=tuple())
+                ColumnDesc(name=COL1_NAME, dtype="float64",
+                           shape=(1024, 1024), value_ref_enabled=True)
             ]
             self.env["datadesc"] = data_desc
 

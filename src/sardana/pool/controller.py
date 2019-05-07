@@ -1142,6 +1142,8 @@ class TwoDController(Controller, Readable, Startable, Stopable, Loadable):
         'Value': {'type': ((float,),),
                   'description': 'Value',
                   'maxdimsize': (4 * 1024, 4 * 1024)},
+        'ValueBuffer': {'type': str,
+                        'description': 'Value buffer', },
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 

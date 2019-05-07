@@ -176,12 +176,18 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         for dd in env['datadesc']:
             dd = dd.clone()
             dd.label = self.sanitizeName(dd.label)
+            try:
+                value_ref_enabled = dd.value_ref_enabled
+            except AttributeError:
+                value_ref_enabled = False
             if dd.dtype == 'bool':
                 dd.dtype = 'int8'
                 self.debug('%r will be stored with type=%r', dd.name, dd.dtype)
-            if dd.dtype == 'str':
-                # TODO: pending to decide if strings are stored sa str or byte
+            if value_ref_enabled:
+                # substitute original data (image or spectrum) type and shape
+                # since we will receive references instead
                 dd.dtype = NXscanH5_FileRecorder.str_dt
+                dd.shape = tuple()
                 self.debug('%r will be stored with type=%r', dd.name, dd.dtype)
             if dd.dtype in self.supported_dtypes:
                 self.datadesc.append(dd)
@@ -311,10 +317,15 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             if dd.name in record.data:
                 data = record.data[dd.name]
                 _ds = _meas[dd.label]
+                try:
+                    value_ref_enabled = dd.value_ref_enabled
+                except AttributeError:
+                    value_ref_enabled = False
                 if data is None:
                     data = numpy.zeros(dd.shape, dtype=dd.dtype)
-                if is_pure_str(data):
-                    pass
+                # skip NaN if value reference is enabled
+                if value_ref_enabled and not is_pure_str(data):
+                    continue
                 elif not hasattr(data, 'shape'):
                     data = numpy.array([data], dtype=dd.dtype)
                 elif dd.dtype != data.dtype.name:

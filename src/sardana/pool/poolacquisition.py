@@ -36,6 +36,7 @@ __docformat__ = 'restructuredtext'
 import time
 import weakref
 import datetime
+import traceback
 
 from taurus.core.util.log import DebugIt
 from taurus.core.util.enumeration import Enumeration
@@ -498,7 +499,6 @@ class PoolAcquisition(PoolAction):
 
     def run(self, *args, **kwargs):
         """Runs acquisition according to previous preparation."""
-
         for elem in self.get_elements():
             elem.put_state(None)
             # TODO: temporarily clear value buffers at the beginning of the
@@ -507,6 +507,10 @@ class PoolAcquisition(PoolAction):
             # constructor of PoolAcquisitionBase.
             try:
                 elem.clear_value_buffer()
+            except AttributeError:
+                continue
+            try:
+                elem.clear_value_ref_buffer()
             except AttributeError:
                 continue
             # clean also the pseudo counters, even the ones that do not
@@ -587,8 +591,9 @@ class PoolAcquisition(PoolAction):
         :type copy_of: bool
         :return: a sequence of all elements involved in this action.
         :rtype: seq<sardana.pool.poolelement.PoolElement>"""
-        return (self._hw_acq.get_elements() + self._sw_acq.get_elements() +
-                self._0d_acq.get_elements() + self._synch.get_elements())
+        return (self._hw_acq.get_elements() + self._sw_acq.get_elements()
+                + self._sw_start_acq.get_elements()
+                + self._0d_acq.get_elements() + self._synch.get_elements())
 
     def get_pool_controller_list(self):
         """Returns a list of all controller elements involved in this action.
@@ -661,11 +666,6 @@ class PoolAcquisitionBase(PoolAction):
 
     def get_read_value_ref_ctrls(self):
         return self._pool_ctrl_dict_ref
-
-    def get_read_value_ctrls(self):
-        # technical debt in order to work both in case of meas group and
-        # single channel
-        return self._pool_ctrl_dict_value or self._pool_ctrl_dict
 
     def read_value_ref(self, ret=None, serial=False):
         """Reads value ref information of all elements involved in this action
@@ -999,11 +999,14 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
 
             # read value every n times
             if not i % nb_states_per_value:
-                self.read_value_loop(ret=values)
+                self.read_value(ret=values)
                 for acquirable, value in values.items():
                     if is_value_error(value):
                         self.error("Loop read value error for %s" %
                                    acquirable.name)
+                        msg = "Details: " + "".join(
+                            traceback.format_exception(*value.exc_info))
+                        self.debug(msg)
                         acquirable.put_value(value)
                     else:
                         acquirable.extend_value_buffer(value)
@@ -1013,7 +1016,8 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
 
         with ActionContext(self):
             self.raw_read_state_info(ret=states)
-            self.raw_read_value_loop(ret=values)
+            self.raw_read_value(ret=values)
+            self.raw_read_value_ref(ret=value_refs)
 
         for acquirable, state_info in states.items():
             # first update the element state so that value calculation
@@ -1024,6 +1028,9 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
                 if is_value_error(value):
                     self.error("Loop final read value error for: %s" %
                                acquirable.name)
+                    msg = "Details: " + "".join(
+                        traceback.format_exception(*value.exc_info))
+                    self.debug(msg)
                     acquirable.put_value(value)
                 else:
                     acquirable.extend_value_buffer(value, propagate=2)
@@ -1032,6 +1039,9 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
                 if is_value_error(value_ref):
                     self.error("Loop final read value ref error for: %s" %
                                acquirable.name)
+                    msg = "Details: " + "".join(
+                        traceback.format_exception(*value_ref.exc_info))
+                    self.debug(msg)
                 acquirable.extend_value_ref_buffer(value_ref, propagate=2)
             with acquirable:
                 acquirable.clear_operation()
@@ -1055,6 +1065,14 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
         if slaves is None:
             slaves = ()
         self._slaves = slaves
+
+    def get_read_value_ctrls(self):
+        # technical debt in order to work both in case of meas group and
+        # single channel
+        if self._pool_ctrl_dict_value is not None:
+            return self._pool_ctrl_dict_value
+        else:
+            return self._pool_ctrl_dict
 
     def get_read_value_loop_ctrls(self):
         return self._pool_ctrl_dict_loop
@@ -1112,12 +1130,18 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
                 if is_value_error(value):
                     self.error("Loop final read value error for: %s" %
                                acquirable.name)
+                    msg = "Details: " + "".join(
+                        traceback.format_exception(*value.exc_info))
+                    self.debug(msg)
                 acquirable.append_value_buffer(value, self._index)
             if acquirable in value_refs:
                 value_ref = value_refs[acquirable]
                 if is_value_error(value_ref):
                     self.error("Loop final read value ref error for: %s" %
                                acquirable.name)
+                    msg = "Details: " + "".join(
+                        traceback.format_exception(*value_ref.exc_info))
+                    self.debug(msg)
                 acquirable.append_value_ref_buffer(value_ref, self._index)
             with acquirable:
                 acquirable.clear_operation()
@@ -1141,6 +1165,11 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
     def __init__(self, main_element, name="AcquisitionSoftwareStart"):
         PoolAcquisitionBase.__init__(self, main_element, name)
 
+    def get_read_value_ctrls(self):
+        # technical debt in order to work both in case of meas group and
+        # single channel
+        return self._pool_ctrl_dict_value
+
     def start_action(self, ctrls, value, master, repetitions, latency,
                      acq_sleep_time=None, nb_states_per_value=None,
                      **kwargs):
@@ -1157,7 +1186,6 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
         for channel in self._channels:
             element = channel.element
             states[element] = None
-            values[element] = None
 
         nap = self._acq_sleep_time
         nb_states_per_value = self._nb_states_per_value
@@ -1169,21 +1197,35 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
 
             # read value every n times
             if not i % nb_states_per_value:
-                self.read_value_loop(ret=values)
+                self.read_value(ret=values)
                 for acquirable, value in values.items():
                     if is_value_error(value):
                         self.error("Loop read value error for %s" %
                                    acquirable.name)
+                        msg = "Details: " + "".join(
+                            traceback.format_exception(*value.exc_info))
+                        self.debug(msg)
                         acquirable.put_value(value)
                     else:
                         acquirable.extend_value_buffer(value)
-
+                self.read_value_ref(ret=value_refs)
+                for acquirable, value_ref in value_refs.items():
+                    if is_value_error(value_ref):
+                        self.error("Loop read value ref error for %s" %
+                                   acquirable.name)
+                        msg = "Details: " + "".join(
+                            traceback.format_exception(*value.exc_info))
+                        self.debug(msg)
+                        acquirable.put_value_ref(value)
+                    else:
+                        acquirable.extend_value_ref_buffer(value_ref)
             time.sleep(nap)
             i += 1
 
         with ActionContext(self):
             self.raw_read_state_info(ret=states)
-            self.raw_read_value_loop(ret=values)
+            self.raw_read_value(ret=values)
+            self.raw_read_value_ref(ret=value_refs)
 
         for acquirable, state_info in states.items():
             # first update the element state so that value calculation
@@ -1194,6 +1236,9 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
                 if is_value_error(value):
                     self.error("Loop final read value error for: %s" %
                                acquirable.name)
+                    msg = "Details: " + "".join(
+                        traceback.format_exception(*value.exc_info))
+                    self.debug(msg)
                     acquirable.put_value(value)
                 else:
                     acquirable.extend_value_buffer(value, propagate=2)
@@ -1202,9 +1247,12 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
                 if is_value_error(value_ref):
                     self.error("Loop final read value ref error for: %s" %
                                acquirable.name)
-                    acquirable.put_value(value_ref)
+                    msg = "Details: " + "".join(
+                        traceback.format_exception(*value_ref.exc_info))
+                    self.debug(msg)
+                    acquirable.put_value_ref(value_ref)
                 else:
-                    acquirable.extend_value_buffer(value_ref, propagate=2)
+                    acquirable.extend_value_ref_buffer(value_ref, propagate=2)
             with acquirable:
                 acquirable.clear_operation()
                 state_info = acquirable._from_ctrl_state_info(state_info)

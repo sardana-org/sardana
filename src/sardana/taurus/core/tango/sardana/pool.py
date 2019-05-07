@@ -714,7 +714,10 @@ class ExpChannel(PoolElement):
         return self._getAttrValue('value', force=force)
 
     def getValueBufferObj(self):
-        return self._getAttrEG('data')
+        obj = self._getAttrEG('valuebuffer')
+        if obj is None:
+            obj = self._getAttrEG('data')
+        return obj
 
     def getValueBuffer(self):
         return self._value_buffer
@@ -1869,7 +1872,10 @@ class MeasurementGroup(PoolElement):
         """
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
+            value_ref_enabled = channel_info.get("value_ref_enabled", False)
             channel = Device(full_name)
+            if channel.isReferable() and value_ref_enabled:
+                continue
             value_buffer_obj = channel.getValueBufferObj()
             if cb is not None:
                 self._value_buffer_cb = cb
@@ -1889,7 +1895,10 @@ class MeasurementGroup(PoolElement):
         """
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
+            value_ref_enabled = channel_info.get("value_ref_enabled", False)
             channel = Device(full_name)
+            if channel.isReferable() and value_ref_enabled:
+                continue
             value_buffer_obj = channel.getValueBufferObj()
             if cb is not None:
                 value_buffer_obj.unsubscribeEvent(self.valueBufferChanged,
@@ -1925,8 +1934,11 @@ class MeasurementGroup(PoolElement):
         """
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
+            value_ref_enabled = channel_info.get("value_ref_enabled", False)
             channel = Device(full_name)
             if not channel.isReferable():
+                continue
+            if not value_ref_enabled:
                 continue
             value_ref_buffer_obj = channel.getValueRefBufferObj()
             if cb is not None:
@@ -1947,8 +1959,11 @@ class MeasurementGroup(PoolElement):
         """
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
+            value_ref_enabled = channel_info.get("value_ref_enabled", False)
             channel = Device(full_name)
             if not channel.isReferable():
+                continue
+            if not value_ref_enabled:
                 continue
             value_ref_buffer_obj = channel.getValueRefBufferObj()
             if cb is not None:

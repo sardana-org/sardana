@@ -691,7 +691,10 @@ class GScan(Logger):
                     i += 1
                 else:
                     plotAxes.append(a)
-
+            try:
+                value_ref_enabled = ci.value_ref_enabled
+            except AttributeError:
+                value_ref_enabled = False
             # create the ColumnDesc object
             column = ColumnDesc(name=ci.full_name,
                                 label=ci.label,
@@ -704,7 +707,8 @@ class GScan(Logger):
                                 normalization=ci.normalization,
                                 plot_type=ci.plot_type,
                                 plot_axes=plotAxes,
-                                data_units=ci.unit)
+                                data_units=ci.unit,
+                                value_ref_enabled=value_ref_enabled)
             data_desc.append(column)
             counters.append(column.name)
         try:
