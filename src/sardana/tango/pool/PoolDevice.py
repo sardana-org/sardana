@@ -33,7 +33,6 @@ __all__ = ["PoolDevice", "PoolDeviceClass",
 __docformat__ = 'restructuredtext'
 
 import time
-import numpy as np
 
 from PyTango import Util, DevVoid, DevLong64, DevBoolean, DevString,\
     DevDouble, DevVarStringArray, DispLevel, DevState, SCALAR, SPECTRUM, \
@@ -842,6 +841,9 @@ class PoolExpChannelDevice(PoolElementDevice):
         PoolElementDevice.__init__(self, dclass, name)
         self._codec = CodecFactory().getCodec('json')
 
+    def _prepare_value_for_encoding(self, value):
+        return value
+
     def _encode_value_chunk(self, value_chunk):
         """Prepare value chunk to be passed via communication channel.
 
@@ -850,19 +852,12 @@ class PoolExpChannelDevice(PoolElementDevice):
 
         :return: json string representing value chunk
         :rtype: str"""
-        data = []
         index = []
+        value = []
         for idx, sdn_value in value_chunk.iteritems():
             index.append(idx)
-            value = sdn_value.value
-            # TODO: Improve it in the future
-            # In case of big arrays e.g. 10k points and higher there are more
-            # optimal solutions but they require complex changes on encoding
-            # and decoding side.
-            if isinstance(value, np.ndarray):
-                value = value.tolist()
-            data.append(value)
-        data = dict(data=data, index=index)
+            value.append(self._prepare_value_for_encoding(sdn_value.value))
+        data = dict(index=index, value=value)
         _, encoded_data = self._codec.encode(('', data))
         return encoded_data
 

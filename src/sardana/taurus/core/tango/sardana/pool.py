@@ -725,7 +725,7 @@ class ExpChannel(PoolElement):
         _, value_buffer = self._codec.decode(('json', value_buffer),
                                              ensure_ascii=True)
         indexes = value_buffer["index"]
-        values = value_buffer["data"]
+        values = value_buffer["value"]
         for index, value in zip(indexes, values):
             self._value_buffer[index] = value
 
@@ -1852,10 +1852,10 @@ class MeasurementGroup(PoolElement):
             return
         _, value_buffer = self._codec.decode(('json', value_buffer),
                                              ensure_ascii=True)
-        values = value_buffer["data"]
+        values = value_buffer["value"]
         if isinstance(values[0], list):
             np_values = map(numpy.array, values)
-            value_buffer["data"] = np_values
+            value_buffer["value"] = np_values
         self._value_buffer_cb(channel, value_buffer)
 
     def subscribeValueBuffer(self, cb=None):

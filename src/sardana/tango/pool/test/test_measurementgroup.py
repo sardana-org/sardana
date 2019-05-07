@@ -78,7 +78,7 @@ class TangoAttributeListener(AttributeListener):
                     else:
                         raise err
             _value = json.loads(event.attr_value.value)
-            value = _value['data']
+            value = _value['value']
             idx = _value['index']
             dev = event.device
             obj_fullname = _get_full_name(dev)
