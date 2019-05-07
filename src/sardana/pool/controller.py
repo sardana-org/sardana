@@ -935,8 +935,8 @@ class CounterTimerController(Controller, Readable, Startable, Stopable,
                   'description': 'Timer used in independent acquisition'},
         'Value': {'type': float,
                   'description': 'Value', },
-        'Data': {'type': str,
-                 'description': 'Data', },
+        'ValueBuffer': {'type': str,
+                        'description': 'Value buffer', },
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 
@@ -1070,8 +1070,8 @@ class ZeroDController(Controller, Readable, Stopable):
                                            'independent acquisition'},
         'Value': {'type': float,
                   'description': 'Value', },
-        'Data': {'type': str,
-                 'description': 'Data', },
+        'ValueBuffer': {'type': str,
+                        'description': 'Value buffer', },
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 
@@ -1101,8 +1101,8 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable):
         'Value': {'type': (float,),
                   'description': 'Value',
                   'maxdimsize': (16 * 1024,)},
-        'Data': {'type': str,
-                 'description': 'Data', },
+        'ValueBuffer': {'type': str,
+                        'description': 'Value buffer', },
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 

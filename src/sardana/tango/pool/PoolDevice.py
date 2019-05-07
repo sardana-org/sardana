@@ -894,14 +894,6 @@ class PoolExpChannelDevice(PoolElementDevice):
                 self.set_change_event(attr_name, True, False)
         return attrs
 
-    def read_Data(self, _):
-        desc = "Data attribute is not foreseen for reading. It is used only "\
-               "as the communication channel for the continuous acquisitions."
-        Except.throw_exception("UnsupportedFeature",
-                               desc,
-                               "PoolExpChannelDevice.read_Data",
-                               ErrSeverity.WARN)
-
     def read_ValueBuffer(self, _):
         desc = "ValueBuffer attribute is not foreseen for reading. It is " \
                "used only as the communication channel for the continuous " \
@@ -948,7 +940,8 @@ class PoolExpChannelDeviceClass(PoolElementDeviceClass):
     attr_list.update(PoolElementDeviceClass.attr_list)
 
     standard_attr_list = {
-        'Data': [[DevString, SCALAR, READ]],  # TODO: think about DevEncoded
+        'ValueBuffer': [[DevString, SCALAR, READ]],  # TODO: think about
+        # DevEncoded
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
 

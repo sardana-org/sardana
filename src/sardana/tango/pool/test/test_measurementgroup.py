@@ -160,7 +160,7 @@ class MeasSarTestTestCase(SarTestTestCase):
                 channel = ch_tg[0]
                 dev = PyTango.DeviceProxy(channel)
                 ch_fullname = _get_full_name(dev)
-                event_id = dev.subscribe_event('Data',
+                event_id = dev.subscribe_event('ValueBuffer',
                                                PyTango.EventType.CHANGE_EVENT,
                                                self.attr_listener)
                 self.event_ids[dev] = event_id
