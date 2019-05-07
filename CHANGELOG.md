@@ -16,6 +16,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Fixed
 
+* Hanging scans by avoiding deepcopy of `DeviceProxy` (#1102)
 * Restore motor parameters (vel, acc, dec) before going to start position in dNscact
   macros (#1085)
 * expconf when empty (unspecified) DataType (#1076)
