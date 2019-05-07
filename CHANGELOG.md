@@ -5,17 +5,29 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
-### Fixed
-
-* Restore motor parameters (vel, acc, dec) before going to start position in dNscact
-  macros (#1085)
-* expconf when empty (unspecified) DataType (#1076)
-* Output block of scan records which do not fit the console width (#924)
 
 ### Added
 
 * Allow to configure timeout on pool element's (Taurus extensions) *go* methods e.g.
   `move`, `count`, etc. (#992)
+* Emulated hardware triggering between dummy counter/timer and trigger/gate elements
+  (#1100)
+
+
+### Fixed
+
+* Hanging scans by avoiding deepcopy of `DeviceProxy` (#1102)
+* Restore motor parameters (vel, acc, dec) before going to start position in dNscact
+  macros (#1085)
+* expconf when empty (unspecified) DataType (#1076)
+* Output block of scan records which do not fit the console width (#924)
+* Fix bug on exception popups in macroexecutor (#1079, #1088)
+* Cyclic references between scan macros and GSF internals (#816)
+* Enable expconf buttons (Reload and Apply) when local configuration was kept after
+  receiving external changes (#959, #1093)
+* Show external changes pop-up in expconf when last measurement group is deleted
+  remotelly (#1099)
+* Pop-up message when expconf configuration changed externally (#1094)
 
 ## [2.7.1] 2019-03-29
 
