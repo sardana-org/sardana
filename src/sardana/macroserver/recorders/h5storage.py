@@ -179,7 +179,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             try:
                 value_ref_enabled = dd.value_ref_enabled
             except AttributeError:
-                value_ref_enabled = False
+                dd.value_ref_enabled = False
             if dd.dtype == 'bool':
                 dd.dtype = 'int8'
                 self.debug('%r will be stored with type=%r', dd.name, dd.dtype)
@@ -317,14 +317,10 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             if dd.name in record.data:
                 data = record.data[dd.name]
                 _ds = _meas[dd.label]
-                try:
-                    value_ref_enabled = dd.value_ref_enabled
-                except AttributeError:
-                    value_ref_enabled = False
                 if data is None:
                     data = numpy.zeros(dd.shape, dtype=dd.dtype)
                 # skip NaN if value reference is enabled
-                if value_ref_enabled and not is_pure_str(data):
+                if dd.value_ref_enabled and not is_pure_str(data):
                     continue
                 elif not hasattr(data, 'shape'):
                     data = numpy.array([data], dtype=dd.dtype)
