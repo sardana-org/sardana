@@ -132,7 +132,6 @@ class TestNXscanH5_FileRecorder(TestCase):
             msg = "data does not match"
             self.assertEqual(data, expected_data, msg)
 
-    @expectedFailure
     def test_VDS(self):
         """Test creation of VDS when channel reports URIs (str) of h5file
         scheme in a simulated sardana scan (3 points).
