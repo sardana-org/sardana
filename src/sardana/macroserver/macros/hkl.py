@@ -657,19 +657,19 @@ class wh(Macro, _diffrac):
                         (str_pos1, str_pos2, str_pos3, str_pos4))
         elif self.nb_motors == 7:
             str_pos1 = "%7.5f" % self.getDevice(
-                self.angle_device_names[self.angles_names[0]]).Position
+                self.angle_device_names[self.angle_names[0]]).Position
             str_pos2 = "%7.5f" % self.getDevice(
-                self.angle_device_names[self.angles_names[1]]).Position
+                self.angle_device_names[self.angle_names[1]]).Position
             str_pos3 = "%7.5f" % self.getDevice(
-                self.angle_device_names[self.angles_names[2]]).Position
+                self.angle_device_names[self.angle_names[2]]).Position
             str_pos4 = "%7.5f" % self.getDevice(
-                self.angle_device_names[self.angles_names[3]]).Position
+                self.angle_device_names[self.angle_names[3]]).Position
             str_pos5 = "%7.5f" % self.getDevice(
-                self.angle_device_names[self.angles_names[4]]).Position
+                self.angle_device_names[self.angle_names[4]]).Position
             str_pos6 = "%7.5f" % self.getDevice(
-                self.angle_device_names[self.angles_names[5]]).Position
+                self.angle_device_names[self.angle_names[5]]).Position
             str_pos7 = "%7.5f" % self.getDevice(
-                self.angle_device_names[self.angles_names[6]]).Position
+                self.angle_device_names[self.angle_names[6]]).Position
             self.output("%10s %11s %12s %11s %11s %11s %11s" %
                         (self.angle_names[0],
                          self.angle_names[1],
