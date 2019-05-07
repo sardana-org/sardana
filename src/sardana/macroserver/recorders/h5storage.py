@@ -165,7 +165,10 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                 dd.dtype = 'int8'
                 self.debug('%r will be stored with type=%r', dd.name, dd.dtype)
             if value_ref_enabled:
+                # substitute original data (image or spectrum) type and shape
+                # since we will receive references instead
                 dd.dtype = NXscanH5_FileRecorder.str_dt
+                dd.shape = tuple()
                 self.debug('%r will be stored with type=%r', dd.name, dd.dtype)
             if dd.dtype in self.supported_dtypes:
                 self.datadesc.append(dd)
