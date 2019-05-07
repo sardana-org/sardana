@@ -33,6 +33,7 @@ __all__ = ["NXscanH5_FileRecorder"]
 __docformat__ = 'restructuredtext'
 
 import os
+import re
 import posixpath
 from datetime import datetime
 import numpy
@@ -83,6 +84,18 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         self.currentlist = None
         self._nxclass_map = {}
         self.entryname = 'entry'
+
+        scheme = '(h5file|file)'
+        authority = ('//(?P<host>([\w\-_]+\.)*[\w\-_]+)'
+                     + '(:(?P<port>\d{1,5}))?')
+        path = ('((?P<filepath>(/(//+)?([A-Za-z]:/)?([\\w.\\-_]+/)*'
+                + '[\\w.\\-_]+.(h5|hdf5|\w+))))'
+                + '(::(?P<dataset>(([\\w.\\-_]+/)*[\\w.\\-_]+)))?')
+        pattern = ('^(?P<scheme>%(scheme)s):'
+                   + '((?P<authority>%(authority)s)'
+                   + '($|(?=[/#?])))?(?P<path>%(path)s)$')
+        self.pattern = pattern % dict(scheme=scheme, authority=authority,
+                                      path=path)
 
     def getFormat(self):
         return 'HDF5::NXscan'
@@ -340,7 +353,14 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                 measurement = nxentry['measurement']
                 first_reference = measurement[name][0]
 
-                if not first_reference.startswith("h5file://"):
+                group = re.match(self.pattern, first_reference)
+                if group is None:
+                    msg = 'Unsupported reference %s' % first_reference
+                    self.warning(msg)
+                    continue
+
+                uri_groups = group.groupdict()
+                if uri_groups['scheme'] != "h5file":
                     continue
                 if not VDS_available:
                     msg = ("VDS not available in this version of h5py, "
@@ -352,7 +372,8 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                 bk_name = "_" + name
                 measurement[bk_name] = measurement[name]
                 nb_points = measurement[name].size
-                filename = first_reference.split("://")[1]
+
+                filename = uri_groups["filepath"]
                 with h5py.File(filename, 'r') as f:
                     (dim_1, dim_2) = f['dataset'].shape
 
@@ -361,8 +382,15 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                                             dtype='f')
                 for i in range(nb_points):
                     reference = measurement[name][i]
-                    filename = reference.split("://")[1]
-                    vsource = h5py.VirtualSource(filename, "dataset",
+                    group = re.match(self.pattern, reference)
+                    if group is None:
+                        msg = 'Unsupported reference %s' % first_reference
+                        self.warning(msg)
+                        continue
+                    uri_groups = group.groupdict()
+                    filename = uri_groups["filepath"]
+                    dataset = uri_groups.get("dataset", "dataset")
+                    vsource = h5py.VirtualSource(filename, dataset,
                                                  shape=(dim_1, dim_2))
                     layout[i] = vsource
 
