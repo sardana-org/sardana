@@ -351,12 +351,11 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         env = self.currentlist.getEnviron()
         nxentry = self.fd[self.entryname]
 
-        for dd in env['datadesc']:
-            dtype = dd.getDtype()
+        for dd in self.datadesc:
             name = dd.toDict()['name']
 
             # If h5file scheme is used: Creation of a Virtual Dataset
-            if dtype == "str":
+            if dd.value_ref_enabled:
                 measurement = nxentry['measurement']
                 first_reference = measurement[name][0]
 
