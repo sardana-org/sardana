@@ -86,12 +86,12 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         self._nxclass_map = {}
         self.entryname = 'entry'
 
-        scheme = '(h5file|file)'
-        authority = ('//(?P<host>([\w\-_]+\.)*[\w\-_]+)'
-                     + '(:(?P<port>\d{1,5}))?')
-        path = ('((?P<filepath>(/(//+)?([A-Za-z]:/)?([\\w.\\-_]+/)*'
-                + '[\\w.\\-_]+.(h5|hdf5|\w+))))'
-                + '(::(?P<dataset>(([\\w.\\-_]+/)*[\\w.\\-_]+)))?')
+        scheme = r'([A-Za-z][A-Za-z0-9\.\+\-]*)'
+        authority = (r'//(?P<host>([\w\-_]+\.)*[\w\-_]+)'
+                     + r'(:(?P<port>\d{1,5}))?')
+        path = (r'((?P<filepath>(/(//+)?([A-Za-z]:/)?([\w.\-_]+/)*'
+                + r'[\w.\-_]+.(h5|hdf5|\w+))))'
+                + r'(::(?P<dataset>(([\w.\-_]+/)*[\w.\-_]+)))?')
         pattern = ('^(?P<scheme>%(scheme)s):'
                    + '((?P<authority>%(authority)s)'
                    + '($|(?=[/#?])))?(?P<path>%(path)s)$')
