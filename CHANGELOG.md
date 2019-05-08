@@ -28,6 +28,11 @@ This file follows the formats and conventions from [keepachangelog.com]
   remotelly (#1099)
 * Pop-up message when expconf configuration changed externally (#1094)
 
+### Deprecated
+
+* DataSource Tango attribute, data_source core attributes and data_source
+1D and 2D controller axis parameter (SEP2, #775).
+
 ## [2.7.1] 2019-03-29
 
 ### Fixed

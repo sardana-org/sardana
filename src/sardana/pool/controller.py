@@ -1117,9 +1117,12 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable):
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
         Called to get a parameter value on the given axis.
-        If parameter == 'data_source', default implementation returns None,
-        meaning let sardana decide the proper URI for accessing the axis value.
-        Otherwise, default implementation calls deprecated
+
+        ``GetAxisPar`` with 'data_source' parameter is deprecated since Jul19.
+        Inherit from :class:`~Referable` class in order to report value
+        references.
+
+        Default implementation calls deprecated
         :meth:`~Controller.GetPar` which, by default, raises
         :exc:`NotImplementedError`.
 
@@ -1157,9 +1160,12 @@ class TwoDController(Controller, Readable, Startable, Stopable, Loadable):
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
         Called to get a parameter value on the given axis.
-        If parameter == 'data_source', default implementation returns None,
-        meaning let sardana decide the proper URI for accessing the axis value.
-        Otherwise, default implementation calls deprecated
+
+        ``GetAxisPar`` with 'data_source' parameter is deprecated since Jul19.
+        Inherit from :class:`~Referable` class in order to report value
+        references.
+
+        Default implementation calls deprecated
         :meth:`~Controller.GetPar` which, by default, raises
         :exc:`NotImplementedError`.
 
