@@ -176,9 +176,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         for dd in env['datadesc']:
             dd = dd.clone()
             dd.label = self.sanitizeName(dd.label)
-            try:
-                value_ref_enabled = dd.value_ref_enabled
-            except AttributeError:
+            if not hasattr(dd, "value_ref_enabled"):
                 dd.value_ref_enabled = False
             if dd.dtype == 'bool':
                 dd.dtype = 'int8'
