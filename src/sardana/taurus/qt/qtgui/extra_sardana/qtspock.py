@@ -64,6 +64,11 @@ class QtSpockWidget(RichJupyterWidget):
 
             self.kernel_client = self.kernel_manager.client()
             self.kernel_client.start_channels()
+            self.in_prompt = self.get_value(
+                "get_ipython().config.Spock.door_alias")
+            self.in_prompt += ' [<span class="in-prompt-number">%i</span>]:'
+            self.out_prompt = ('Result '
+                               '[<span class="out-prompt-number">%i</span>]:')
         else:
             self.append_stream(
                 "Spock profile error: please close the application"
