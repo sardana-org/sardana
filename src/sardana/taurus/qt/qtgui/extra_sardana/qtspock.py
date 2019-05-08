@@ -55,14 +55,27 @@ class QtSpockWidget(RichJupyterWidget):
     ... app.aboutToQuit.connect(widget.shutdown_kernel)
     ... app.exec_()
     """
-    def __init__(self, profile='spockdoor', kernel='python2', **kw):
+    def __init__(
+            self,
+            profile='spockdoor',
+            extensions=None,
+            kernel='python2',
+            **kw):
         super().__init__(**kw)
+
+        if extensions is None:
+            extensions = []
+        extensions.insert(
+            0, "sardana.taurus.qt.qtgui.extra_sardana.qtspock_ext")
+
+        extra_arguments = ["--profile", profile]
+        for ext in extensions:
+            extra_arguments.extend(["--ext", ext])
 
         if self.check_spock_profile(profile):
             self.kernel_manager = QtKernelManager(kernel_name=kernel)
             info('Starting kernel...')
-            self.kernel_manager.start_kernel(
-                extra_arguments=["--profile", profile])
+            self.kernel_manager.start_kernel(extra_arguments=extra_arguments)
 
             self.kernel_client = self.kernel_manager.client()
             self.kernel_client.start_channels()
