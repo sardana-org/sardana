@@ -7,10 +7,21 @@ from builtins import (bytes, str, open, super, range,  # noqa
 
 import sys
 
+from IPython.core.profiledir import ProfileDirError, ProfileDir
+try:
+    # IPython 4.x
+    from IPython.paths import get_ipython_dir
+except:
+    # IPython <4.x
+    from IPython.utils.path import get_ipython_dir
+
 from taurus.external.qt import Qt
 
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.manager import QtKernelManager
+
+from sardana import release
+from sardana.spock.ipython_01_00.genutils import get_profile_metadata
 
 
 class QtSpockWidget(RichJupyterWidget):
@@ -44,17 +55,42 @@ class QtSpockWidget(RichJupyterWidget):
     def __init__(self, profile='spockdoor', kernel='python2', **kw):
         super().__init__(**kw)
 
-        self.kernel_manager = QtKernelManager(kernel_name=kernel)
-        self.kernel_manager.start_kernel(
-            extra_arguments=["--profile", profile])
+        if self.check_spock_profile(profile):
+            self.kernel_manager = QtKernelManager(kernel_name=kernel)
+            self.kernel_manager.start_kernel(
+                extra_arguments=["--profile", profile])
 
-        self.kernel_client = self.kernel_manager.client()
-        self.kernel_client.start_channels()
+            self.kernel_client = self.kernel_manager.client()
+            self.kernel_client.start_channels()
+        else:
+            self.append_stream(
+                "Spock profile error: please close the application"
+                " and run spock in the terminal.")
+
+    def get_spock_profile_dir(self, profile):
+        """Return the path to the profile with the given name."""
+        try:
+            profile_dir = ProfileDir.find_profile_dir_by_name(
+                get_ipython_dir(), profile, self.config)
+        except ProfileDirError:
+            return None
+        return profile_dir.location
+
+    def check_spock_profile(self, profile):
+        """Check if the profile exists and has the correct value"""
+        profile_dir = self.get_spock_profile_dir(profile)
+        if profile_dir:
+            profile_version_str, door_name = get_profile_metadata(profile_dir)
+            if profile_version_str == release.version:
+                return True
+        return False
 
     def shutdown_kernel(self):
         """Cleanly shut down the kernel and client subprocesses"""
-        self.kernel_client.stop_channels()
-        self.kernel_manager.shutdown_kernel()
+        if self.kernel_client:
+            self.kernel_client.stop_channels()
+        if self.kernel_manager and self.kernel_manager.kernel:
+            self.kernel_manager.shutdown_kernel()
 
 
 def main():

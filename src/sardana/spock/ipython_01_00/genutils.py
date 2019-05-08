@@ -812,11 +812,8 @@ def upgrade_spock_profile(ipy_profile_dir, door_name):
     _create_config_file(ipy_profile_dir, door_name)
 
 
-def check_for_upgrade(ipy_profile_dir):
-    """Check if the current profile is up to date with the spock version
-
-    :param ipy_profile_dir: directory with the spock profile
-    """
+def get_profile_metadata(ipy_profile_dir):
+    """Read the profile version string and the door name from the profile"""
     spock_profile_ver_str = '0.0.0'
     door_name = None
 
@@ -839,6 +836,16 @@ def check_for_upgrade(ipy_profile_dir):
                 spock_profile_ver_str = line[line.index('=') + 1:].strip()
             if line.startswith('# door_name = '):
                 door_name = line[line.index('=') + 1:].strip()
+
+    return spock_profile_ver_str, door_name
+
+
+def check_for_upgrade(ipy_profile_dir):
+    """Check if the current profile is up to date with the spock version
+
+    :param ipy_profile_dir: directory with the spock profile
+    """
+    spock_profile_ver_str, door_name = get_profile_metadata(ipy_profile_dir)
 
     # convert version from string to numbers
     spock_lib_ver_str = release.version
