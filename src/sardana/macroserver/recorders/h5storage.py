@@ -351,8 +351,8 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         env = self.currentlist.getEnviron()
         nxentry = self.fd[self.entryname]
 
-        for dd in self.datadesc:
-            name = dd.toDict()['name']
+        for dd, dd_env in zip(self.datadesc, env["datadesc"]):
+            name = dd.name
 
             # If h5file scheme is used: Creation of a Virtual Dataset
             if dd.value_ref_enabled:
@@ -379,10 +379,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                 measurement[bk_name] = measurement[name]
                 nb_points = measurement[name].size
 
-                filename = uri_groups["filepath"]
-                with h5py.File(filename, 'r') as f:
-                    (dim_1, dim_2) = f['dataset'].shape
-
+                (dim_1, dim_2) = dd_env.shape
                 layout = h5py.VirtualLayout(shape=(nb_points,
                                                    dim_1, dim_2),
                                             dtype='f')
@@ -410,7 +407,6 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                     self.warning(msg, e)
                 else:
                     del measurement[bk_name]
-
 
         nxentry.create_dataset('end_time', data=env['endtime'].isoformat())
         self.fd.flush()
