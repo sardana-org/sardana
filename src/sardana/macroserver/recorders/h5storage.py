@@ -380,7 +380,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                 (dim_1, dim_2) = dd_env.shape
                 layout = h5py.VirtualLayout(shape=(nb_points,
                                                    dim_1, dim_2),
-                                            dtype='f')
+                                            dtype=dd_env.dtype)
                 for i in range(nb_points):
                     reference = measurement[name][i]
                     group = re.match(self.pattern, reference)
