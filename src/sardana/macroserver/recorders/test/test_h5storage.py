@@ -158,7 +158,7 @@ class TestNXscanH5_FileRecorder(TestCase):
             # create description of channel data
             data_desc = [
                 ColumnDesc(name=COL1_NAME, dtype="float64",
-                           shape=(1024, 1024), value_ref_enabled=True)
+                           shape=(2, 2), value_ref_enabled=True)
             ]
             self.env["datadesc"] = data_desc
 
