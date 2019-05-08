@@ -78,7 +78,7 @@ class TangoAttributeListener(AttributeListener):
                     else:
                         raise err
             _value = json.loads(event.attr_value.value)
-            value = _value['data']
+            value = _value['value']
             idx = _value['index']
             dev = event.device
             obj_fullname = _get_full_name(dev)
@@ -160,7 +160,7 @@ class MeasSarTestTestCase(SarTestTestCase):
                 channel = ch_tg[0]
                 dev = PyTango.DeviceProxy(channel)
                 ch_fullname = _get_full_name(dev)
-                event_id = dev.subscribe_event('Data',
+                event_id = dev.subscribe_event('ValueBuffer',
                                                PyTango.EventType.CHANGE_EVENT,
                                                self.attr_listener)
                 self.event_ids[dev] = event_id

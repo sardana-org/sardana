@@ -109,10 +109,6 @@ class OneDExpChannel(PoolTimerableDevice):
         name = event_type.name.lower()
         name = name.replace('_', '')  # for integration_time events
         attr_name = name
-        # TODO: remove this condition when Data attribute will be substituted
-        # by ValueBuffer
-        if name == "valuebuffer":
-            attr_name = "data"
 
         try:
             attr = self.get_attribute_by_name(attr_name)
@@ -179,7 +175,7 @@ class OneDExpChannel(PoolTimerableDevice):
     def initialize_dynamic_attributes(self):
         attrs = PoolTimerableDevice.initialize_dynamic_attributes(self)
 
-        non_detect_evts = "data",
+        non_detect_evts = "valuebuffer",
 
         for attr_name in non_detect_evts:
             if attr_name in attrs:
@@ -215,6 +211,16 @@ class OneDExpChannel(PoolTimerableDevice):
         if self.get_state() in [DevState.FAULT, DevState.UNKNOWN]:
             return False
         return True
+
+    def _prepare_value_for_encoding(self, value):
+        """numpy.ndarray can not be JSON encoded. Convert them to a list.
+
+        .. todo:: Improve it in the future. In case of big arrays e.g. 10k
+            points and higher there are more
+            optimal solutions but they require complex changes on encoding
+            and decoding side.
+        """
+        return value.tolist()
 
     def read_DataSource(self, attr):
         data_source = self.oned.get_data_source()
