@@ -39,22 +39,23 @@ from datetime import datetime
 import numpy
 import h5py
 
+from sardana.sardanautils import is_pure_str
+from sardana.taurus.core.tango.sardana import PlotType
+from sardana.macroserver.scan.recorder import BaseFileRecorder, SaveModes
+
 VDS_available = True
 try:
     h5py.VirtualSource
 except AttributeError:
     VDS_available = False
 
-from sardana.sardanautils import is_pure_str
-from sardana.taurus.core.tango.sardana import PlotType
-from sardana.macroserver.scan.recorder import BaseFileRecorder, SaveModes
-
 
 def timedelta_total_seconds(timedelta):
-    """Eqiuvalent to timedelta.total_seconds introduced with python 2.7."""
+    """Equivalent to timedelta.total_seconds introduced with python 2.7."""
     return (
-        timedelta.microseconds + 0.0 +
-        (timedelta.seconds + timedelta.days * 24 * 3600) * 10 ** 6) / 10 ** 6
+        timedelta.microseconds + 0.0
+        + (timedelta.seconds + timedelta.days * 24 * 3600)
+        * 10 ** 6) / 10 ** 6
 
 
 class NXscanH5_FileRecorder(BaseFileRecorder):
@@ -199,8 +200,8 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         for inst in env.get('instrumentlist', []):
             self._nxclass_map[nxentry.name + inst.getFullName()] = inst.klass
         if self._nxclass_map is {}:
-            self.warning('Missing information on NEXUS structure. ' +
-                         'Nexus Tree will not be created')
+            self.warning('Missing information on NEXUS structure. '
+                         + 'Nexus Tree will not be created')
 
         self.debug('Starting new recording %d on file %s', serialno,
                    self.filename)
@@ -302,8 +303,8 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                 if label not in meas_keys:
                     _meas[label] = _ds
             else:
-                self.warning(('Pre-scan snapshot of %s will not be stored. ' +
-                              'Reason: type %s not supported'),
+                self.warning(('Pre-scan snapshot of %s will not be stored. '
+                              + 'Reason: type %s not supported'),
                              dd.name, dtype)
 
     def _writeRecord(self, record):
@@ -378,9 +379,9 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                 nb_points = measurement[name].size
 
                 (dim_1, dim_2) = dd_env.shape
-                layout = h5py.VirtualLayout(shape=(nb_points,
-                                                   dim_1, dim_2),
+                layout = h5py.VirtualLayout(shape=(nb_points, dim_1, dim_2),
                                             dtype=dd_env.dtype)
+
                 for i in range(nb_points):
                     reference = measurement[name][i]
                     group = re.match(self.pattern, reference)
@@ -513,7 +514,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             for axis in axes.split(':'):
                 try:
                     _nxdata[axis] = _meas[axis]
-                except:
+                except Exception:
                     self.warning('cannot create link for "%s". Skipping', axis)
 
     def _createNXpath(self, path, prefix=None):
