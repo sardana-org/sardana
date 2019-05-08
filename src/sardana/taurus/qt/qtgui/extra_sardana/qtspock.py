@@ -6,6 +6,8 @@ from builtins import (bytes, str, open, super, range,  # noqa
                       zip, round, input, int, pow, object)
 
 import sys
+import pickle
+import ast
 
 from IPython.core.profiledir import ProfileDirError, ProfileDir
 try:
@@ -84,6 +86,46 @@ class QtSpockWidget(RichJupyterWidget):
             if profile_version_str == release.version:
                 return True
         return False
+
+    # Adapted from
+    # https://github.com/moble/remote_exec/blob/master/remote_exec.py#L61
+    def get_value(self, var, timeout=None):
+        """Retrieve a value from the user namespace through a blocking call.
+
+        The value must be able to be pickled on the kernel side and unpickled
+        on the frontend side.
+
+        The command will import the pickle module in the user namespace. This
+        may overwrite a user defined variable with the same name.
+
+        Parameters
+        ----------
+        var : str
+            The name of the variable to be retrieved
+        timeout : int or None
+            Number of seconds to wait for reply. If no reply is recieved, a
+            `Queue.Empty` exception is thrown. The default is to wait
+            indefinitely
+
+        Returns
+        -------
+        The value of the variable from the user namespace
+        """
+        pickle_dumps = 'pickle.dumps({})'.format(var)
+        msg_id = self.blocking_client.execute(
+            "import pickle", silent=True,
+            user_expressions={'output': pickle_dumps})
+        reply = self.blocking_client.get_shell_msg(msg_id, timeout=timeout)
+        if reply['content']['status'] != "ok":
+            raise RuntimeError("{}: {}".format(
+                reply['content']['ename'], reply['content']['evalue']))
+        output = reply['content']['user_expressions']['output']
+        if output['status'] != "ok":
+            raise RuntimeError("{}: {}".format(
+                output['ename'], output['evalue']))
+        output_bytes = output['data']['text/plain']
+        output_bytes = ast.literal_eval(output_bytes)
+        return pickle.loads(output_bytes)
 
     def shutdown_kernel(self):
         """Cleanly shut down the kernel and client subprocesses"""
