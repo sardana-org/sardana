@@ -18,6 +18,7 @@ except:
     from IPython.utils.path import get_ipython_dir
 
 from taurus.external.qt import Qt
+from taurus import info
 
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.manager import QtKernelManager
@@ -59,6 +60,7 @@ class QtSpockWidget(RichJupyterWidget):
 
         if self.check_spock_profile(profile):
             self.kernel_manager = QtKernelManager(kernel_name=kernel)
+            info('Starting kernel...')
             self.kernel_manager.start_kernel(
                 extra_arguments=["--profile", profile])
 
@@ -134,6 +136,7 @@ class QtSpockWidget(RichJupyterWidget):
 
     def shutdown_kernel(self):
         """Cleanly shut down the kernel and client subprocesses"""
+        info('Shutting down kernel...')
         if self.kernel_client:
             self.kernel_client.stop_channels()
         if self.kernel_manager and self.kernel_manager.kernel:
