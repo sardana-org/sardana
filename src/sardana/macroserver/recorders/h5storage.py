@@ -392,10 +392,11 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                     uri_groups = group.groupdict()
                     filename = uri_groups["filepath"]
                     dataset = uri_groups.get("dataset", "dataset")
-
-                    with h5py.File(filename, 'r') as f:
-                        ds = f[dataset]
-                        vsource = h5py.VirtualSource(ds)
+                    # TODO: Use VirtualSource directly with the dataset
+                    #   object instead of the filename etc,
+                    #   in order to identify potential shape mismatch issues
+                    vsource = h5py.VirtualSource(filename, dataset,
+                                                 shape=(dim_1, dim_2))
                     layout[i] = vsource
 
                 # Substitute dataset by Virtual Dataset in output file
