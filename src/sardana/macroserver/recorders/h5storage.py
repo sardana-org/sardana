@@ -33,6 +33,7 @@ __all__ = ["NXscanH5_FileRecorder"]
 __docformat__ = 'restructuredtext'
 
 import os
+import re
 import posixpath
 from datetime import datetime
 import numpy
@@ -42,12 +43,19 @@ from sardana.sardanautils import is_pure_str
 from sardana.taurus.core.tango.sardana import PlotType
 from sardana.macroserver.scan.recorder import BaseFileRecorder, SaveModes
 
+VDS_available = True
+try:
+    h5py.VirtualSource
+except AttributeError:
+    VDS_available = False
+
 
 def timedelta_total_seconds(timedelta):
-    """Eqiuvalent to timedelta.total_seconds introduced with python 2.7."""
+    """Equivalent to timedelta.total_seconds introduced with python 2.7."""
     return (
-        timedelta.microseconds + 0.0 +
-        (timedelta.seconds + timedelta.days * 24 * 3600) * 10 ** 6) / 10 ** 6
+        timedelta.microseconds + 0.0
+        + (timedelta.seconds + timedelta.days * 24 * 3600)
+        * 10 ** 6) / 10 ** 6
 
 
 class NXscanH5_FileRecorder(BaseFileRecorder):
@@ -77,6 +85,18 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         self.currentlist = None
         self._nxclass_map = {}
         self.entryname = 'entry'
+
+        scheme = r'([A-Za-z][A-Za-z0-9\.\+\-]*)'
+        authority = (r'//(?P<host>([\w\-_]+\.)*[\w\-_]+)'
+                     + r'(:(?P<port>\d{1,5}))?')
+        path = (r'((?P<filepath>(/(//+)?([A-Za-z]:/)?([\w.\-_]+/)*'
+                + r'[\w.\-_]+.(h5|hdf5|\w+))))'
+                + r'(::(?P<dataset>(([\w.\-_]+/)*[\w.\-_]+)))?')
+        pattern = ('^(?P<scheme>%(scheme)s):'
+                   + '((?P<authority>%(authority)s)'
+                   + '($|(?=[/#?])))?(?P<path>%(path)s)$')
+        self.pattern = pattern % dict(scheme=scheme, authority=authority,
+                                      path=path)
 
     def getFormat(self):
         return 'HDF5::NXscan'
@@ -157,14 +177,12 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         for dd in env['datadesc']:
             dd = dd.clone()
             dd.label = self.sanitizeName(dd.label)
-            try:
-                value_ref_enabled = dd.value_ref_enabled
-            except AttributeError:
-                value_ref_enabled = False
+            if not hasattr(dd, "value_ref_enabled"):
+                dd.value_ref_enabled = False
             if dd.dtype == 'bool':
                 dd.dtype = 'int8'
                 self.debug('%r will be stored with type=%r', dd.name, dd.dtype)
-            if value_ref_enabled:
+            if dd.value_ref_enabled:
                 # substitute original data (image or spectrum) type and shape
                 # since we will receive references instead
                 dd.dtype = NXscanH5_FileRecorder.str_dt
@@ -182,8 +200,8 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         for inst in env.get('instrumentlist', []):
             self._nxclass_map[nxentry.name + inst.getFullName()] = inst.klass
         if self._nxclass_map is {}:
-            self.warning('Missing information on NEXUS structure. ' +
-                         'Nexus Tree will not be created')
+            self.warning('Missing information on NEXUS structure. '
+                         + 'Nexus Tree will not be created')
 
         self.debug('Starting new recording %d on file %s', serialno,
                    self.filename)
@@ -285,8 +303,8 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                 if label not in meas_keys:
                     _meas[label] = _ds
             else:
-                self.warning(('Pre-scan snapshot of %s will not be stored. ' +
-                              'Reason: type %s not supported'),
+                self.warning(('Pre-scan snapshot of %s will not be stored. '
+                              + 'Reason: type %s not supported'),
                              dd.name, dtype)
 
     def _writeRecord(self, record):
@@ -298,14 +316,10 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             if dd.name in record.data:
                 data = record.data[dd.name]
                 _ds = _meas[dd.label]
-                try:
-                    value_ref_enabled = dd.value_ref_enabled
-                except AttributeError:
-                    value_ref_enabled = False
                 if data is None:
                     data = numpy.zeros(dd.shape, dtype=dd.dtype)
                 # skip NaN if value reference is enabled
-                if value_ref_enabled and not is_pure_str(data):
+                if dd.value_ref_enabled and not is_pure_str(data):
                     continue
                 elif not hasattr(data, 'shape'):
                     data = numpy.array([data], dtype=dd.dtype)
@@ -335,6 +349,64 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
 
         env = self.currentlist.getEnviron()
         nxentry = self.fd[self.entryname]
+
+        for dd, dd_env in zip(self.datadesc, env["datadesc"]):
+            name = dd.name
+
+            # If h5file scheme is used: Creation of a Virtual Dataset
+            if dd.value_ref_enabled:
+                measurement = nxentry['measurement']
+                first_reference = measurement[name][0]
+
+                group = re.match(self.pattern, first_reference)
+                if group is None:
+                    msg = 'Unsupported reference %s' % first_reference
+                    self.warning(msg)
+                    continue
+
+                uri_groups = group.groupdict()
+                if uri_groups['scheme'] != "h5file":
+                    continue
+                if not VDS_available:
+                    msg = ("VDS not available in this version of h5py, "
+                           "{0} will be stored as string reference")
+                    msg.format(name)
+                    self.warning(msg)
+                    continue
+
+                bk_name = "_" + name
+                measurement[bk_name] = measurement[name]
+                nb_points = measurement[name].size
+
+                (dim_1, dim_2) = dd_env.shape
+                layout = h5py.VirtualLayout(shape=(nb_points, dim_1, dim_2),
+                                            dtype=dd_env.dtype)
+
+                for i in range(nb_points):
+                    reference = measurement[name][i]
+                    group = re.match(self.pattern, reference)
+                    if group is None:
+                        msg = 'Unsupported reference %s' % first_reference
+                        self.warning(msg)
+                        continue
+                    uri_groups = group.groupdict()
+                    filename = uri_groups["filepath"]
+                    dataset = uri_groups.get("dataset", "dataset")
+                    vsource = h5py.VirtualSource(filename, dataset,
+                                                 shape=(dim_1, dim_2))
+                    layout[i] = vsource
+
+                # Substitute dataset by Virtual Dataset in output file
+                try:
+                    del measurement[name]
+                    measurement.create_virtual_dataset(
+                        name, layout, fillvalue=-numpy.inf)
+                except Exception as e:
+                    msg = 'Could not create a Virtual Dataset. Reason: %r'
+                    self.warning(msg, e)
+                else:
+                    del measurement[bk_name]
+
         nxentry.create_dataset('end_time', data=env['endtime'].isoformat())
         self.fd.flush()
         self.debug('Finishing recording %d on file %s:',
@@ -442,7 +514,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             for axis in axes.split(':'):
                 try:
                     _nxdata[axis] = _meas[axis]
-                except:
+                except Exception:
                     self.warning('cannot create link for "%s". Skipping', axis)
 
     def _createNXpath(self, path, prefix=None):

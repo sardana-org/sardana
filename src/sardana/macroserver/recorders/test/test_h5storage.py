@@ -31,7 +31,7 @@ from datetime import datetime
 
 import h5py
 import numpy
-from taurus.external.unittest import TestCase, expectedFailure
+from taurus.external.unittest import TestCase
 
 from sardana.macroserver.scan import ColumnDesc
 from sardana.macroserver.recorders.h5storage import NXscanH5_FileRecorder
@@ -132,11 +132,14 @@ class TestNXscanH5_FileRecorder(TestCase):
             msg = "data does not match"
             self.assertEqual(data, expected_data, msg)
 
-    @expectedFailure
     def test_VDS(self):
         """Test creation of VDS when channel reports URIs (str) of h5file
         scheme in a simulated sardana scan (3 points).
         """
+        try:
+            h5py.VirtualLayout
+        except AttributeError:
+            self.skipTest("VDS not available in this version of h5py")
         nb_records = 3
         # create partial files
         part_file_name_pattern = "test_vds_part{0}.h5"
@@ -147,14 +150,15 @@ class TestNXscanH5_FileRecorder(TestCase):
             part_file_paths.append(path)
             part_file = h5py.File(path, "w")
             img = numpy.array([[i, i], [i, i]])
-            part_file.create_dataset("dataset", data=img)
+            dataset = "dataset"
+            part_file.create_dataset(dataset, data=img)
             part_file.flush()
             part_file.close()
         try:
             # create description of channel data
             data_desc = [
                 ColumnDesc(name=COL1_NAME, dtype="float64",
-                           shape=(1024, 1024), value_ref_enabled=True)
+                           shape=(2, 2), value_ref_enabled=True)
             ]
             self.env["datadesc"] = data_desc
 
@@ -163,7 +167,7 @@ class TestNXscanH5_FileRecorder(TestCase):
             self.env["starttime"] = datetime.now()
             recorder._startRecordList(self.record_list)
             for i in range(nb_records):
-                ref = "h5file://" + part_file_paths[i]
+                ref = "h5file://" + part_file_paths[i] + "::" + dataset
                 record = Record({COL1_NAME: ref}, i)
                 recorder._writeRecord(record)
             self.env["endtime"] = datetime.now()
