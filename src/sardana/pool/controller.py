@@ -936,6 +936,7 @@ class CounterTimerController(Controller, Readable, Startable, Stopable,
                   'description': 'Timer used in independent acquisition'},
         'Value': {'type': float,
                   'description': 'Value', },
+        # TODO: in case of Tango ValueBuffer type is overridden by DevEncoded
         'ValueBuffer': {'type': str,
                         'description': 'Value buffer', },
     }
@@ -1071,6 +1072,7 @@ class ZeroDController(Controller, Readable, Stopable):
                                            'independent acquisition'},
         'Value': {'type': float,
                   'description': 'Value', },
+        # TODO: in case of Tango ValueBuffer type is overridden by DevEncoded
         'ValueBuffer': {'type': str,
                         'description': 'Value buffer', },
     }
@@ -1102,6 +1104,7 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable):
         'Value': {'type': (float,),
                   'description': 'Value',
                   'maxdimsize': (16 * 1024,)},
+        # TODO: in case of Tango ValueBuffer type is overridden by DevEncoded
         'ValueBuffer': {'type': str,
                         'description': 'Value buffer', },
     }
@@ -1146,6 +1149,7 @@ class TwoDController(Controller, Readable, Startable, Stopable, Loadable):
         'Value': {'type': ((float,),),
                   'description': 'Value',
                   'maxdimsize': (4 * 1024, 4 * 1024)},
+        # TODO: in case of Tango ValueBuffer type is overridden by DevEncoded
         'ValueBuffer': {'type': str,
                         'description': 'Value buffer', },
     }
@@ -1461,6 +1465,7 @@ class PseudoCounterController(Controller):
                                            'independent acquisition'},
         'Value': {'type': float,
                   'description': 'Value', },
+        # TODO: in case of Tango ValueBuffer type is overridden by DevEncoded
         'ValueBuffer': {'type': str,
                         'description': 'Data', },
     }
