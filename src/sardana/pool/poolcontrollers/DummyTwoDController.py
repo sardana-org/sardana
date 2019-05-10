@@ -136,7 +136,7 @@ class DummyTwoDController(TwoDController, Referable):
 
     MaxDevice = 1024
 
-    BufferSize = 4, 4
+    BufferSize = 1024, 1024
 
     default_latency_time = 0.0
 
