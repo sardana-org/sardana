@@ -254,10 +254,6 @@ class TangoAcquisitionTestCase(MeasSarTestTestCase, unittest.TestCase):
         # printing acquisition records
         table = self.attr_listener.get_table()
         header = table.dtype.names
-        print header
-        n_rows = table.shape[0]
-        for row in xrange(n_rows):
-            print row, table[row]
         # checking if any of data was acquired
         self.assertTrue(self.attr_listener.data, 'no data were acquired')
         # checking if all channels produced data
