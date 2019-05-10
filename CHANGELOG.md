@@ -25,6 +25,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Cyclic references between scan macros and GSF internals (#816)
 * Enable expconf buttons (Reload and Apply) when local configuration was kept after
   receiving external changes (#959, #1093)
+* Avoid external changes pop-up when synchronizer is changed in the expconf by
+  removing global measurement group synchronizer (#1103)
 * Show external changes pop-up in expconf when last measurement group is deleted
   remotelly (#1099)
 * Pop-up message when expconf configuration changed externally (#1094)
