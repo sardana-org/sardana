@@ -1460,8 +1460,8 @@ class PseudoCounterController(Controller):
                                            'independent acquisition'},
         'Value': {'type': float,
                   'description': 'Value', },
-        'Data': {'type': str,
-                 'description': 'Data', },
+        'ValueBuffer': {'type': str,
+                        'description': 'Data', },
     }
 
     #: A :obj:`str` representing the controller gender
