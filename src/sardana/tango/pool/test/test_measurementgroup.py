@@ -23,14 +23,16 @@
 ##
 ##############################################################################
 
+import json
 import time
 import threading
-import json
+
 # TODO: decide what to use: taurus or PyTango
 import PyTango
 from taurus.external import unittest
 from taurus.test import insertTest
 from taurus.core.util import CodecFactory
+from sardana import sardanacustomsettings
 from sardana.pool import AcqSynchType, SynchDomain, SynchParam
 from sardana.tango.pool.test import SarTestTestCase
 
@@ -60,6 +62,11 @@ def _get_full_name(device_proxy, logger=None):
 
 class TangoAttributeListener(AttributeListener):
 
+    def __init__(self):
+        AttributeListener.__init__(self)
+        codec_name = getattr(sardanacustomsettings, "VALUE_BUFFER_CODEC")
+        self._codec = CodecFactory().getCodec(codec_name)
+
     def push_event(self, *args, **kwargs):
         self.event_received(*args, **kwargs)
 
@@ -77,7 +84,7 @@ class TangoAttributeListener(AttributeListener):
                         return
                     else:
                         raise err
-            _value = json.loads(event.attr_value.value)
+            _, _value = self._codec.decode(event.attr_value.value)
             value = _value['value']
             idx = _value['index']
             dev = event.device
