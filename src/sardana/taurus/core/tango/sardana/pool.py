@@ -26,6 +26,8 @@
 """The device pool submodule.
 It contains specific part of sardana device pool"""
 
+from __future__ import absolute_import
+
 __all__ = ["InterruptException", "StopException", "AbortException",
            "BaseElement", "ControllerClass", "ControllerLibrary",
            "PoolElement", "Controller", "ComChannel", "ExpChannel",
@@ -66,6 +68,7 @@ from taurus.core.util.event import EventGenerator, AttributeEventWait, \
     AttributeEventIterator
 from taurus.core.tango import TangoDevice, FROM_TANGO_TO_STR_TYPE
 
+from sardana import sardanacustomsettings
 from .sardana import BaseSardanaElementContainer, BaseSardanaElement
 from .motion import Moveable, MoveableSource
 
@@ -676,8 +679,16 @@ class ExpChannel(PoolElement):
         self._last_integ_time = None
         self._last_value_ref_pattern = None
         self._last_value_ref_enabled = None
+
         self._value_buffer = {}
+        self._value_buffer_cb = None
+        codec_name = getattr(sardanacustomsettings, "VALUE_BUFFER_CODEC")
+        self._value_buffer_codec = CodecFactory().getCodec(codec_name)
+
         self._value_ref_buffer = {}
+        self._value_ref_buffer_cb = None
+        codec_name = getattr(sardanacustomsettings, "VALUE_REF_BUFFER_CODEC")
+        self._value_ref_buffer_codec = CodecFactory().getCodec(codec_name)
 
     def isReferable(self):
         if "valueref" in map(str.lower, self.get_attribute_list()):
@@ -722,8 +733,7 @@ class ExpChannel(PoolElement):
     def valueBufferChanged(self, value_buffer):
         if value_buffer is None:
             return
-        _, value_buffer = self._codec.decode(('json', value_buffer),
-                                             ensure_ascii=True)
+        _, value_buffer = self._value_buffer_codec.decode(value_buffer)
         indexes = value_buffer["index"]
         values = value_buffer["value"]
         for index, value in zip(indexes, values):
@@ -749,8 +759,8 @@ class ExpChannel(PoolElement):
     def valueBufferRefChanged(self, value_ref_buffer):
         if value_ref_buffer is None:
             return
-        _, value_ref_buffer = self._codec.decode(('json', value_ref_buffer),
-                                                 ensure_ascii=True)
+        _, value_ref_buffer = self._value_ref_buffercodec.decode(
+            value_ref_buffer)
         indexes = value_ref_buffer["index"]
         value_refs = value_ref_buffer["value_ref"]
         for index, value_ref in zip(indexes, value_refs):
@@ -1661,8 +1671,12 @@ class MeasurementGroup(PoolElement):
         self.__cfg_attr.addListener(self.on_configuration_changed)
 
         self._value_buffer_cb = None
+        codec_name = getattr(sardanacustomsettings, "VALUE_BUFFER_CODEC")
+        self._value_buffer_codec = CodecFactory().getCodec(codec_name)
+
         self._value_ref_buffer_cb = None
-        self._codec = CodecFactory().getCodec("json")
+        codec_name = getattr(sardanacustomsettings, "VALUE_REF_BUFFER_CODEC")
+        self._value_ref_buffer_codec = CodecFactory().getCodec(codec_name)
 
     def cleanUp(self):
         PoolElement.cleanUp(self)
@@ -1850,8 +1864,7 @@ class MeasurementGroup(PoolElement):
         """
         if value_buffer is None:
             return
-        _, value_buffer = self._codec.decode(('json', value_buffer),
-                                             ensure_ascii=True)
+        _, value_buffer = self._value_buffer_codec.decode(value_buffer)
         values = value_buffer["value"]
         if isinstance(values[0], list):
             np_values = map(numpy.array, values)
@@ -1916,8 +1929,8 @@ class MeasurementGroup(PoolElement):
         """
         if value_ref_buffer is None:
             return
-        _, value_ref_buffer = self._codec.decode(('json', value_ref_buffer),
-                                                 ensure_ascii=True)
+        _, value_ref_buffer = self._value_ref_buffer_codec.decode(
+            value_ref_buffer)
         self._value_ref_buffer_cb(channel, value_ref_buffer)
 
     def subscribeValueRefBuffer(self, cb=None):

@@ -35,14 +35,15 @@ __docformat__ = 'restructuredtext'
 import time
 
 from PyTango import Util, DevVoid, DevLong64, DevBoolean, DevString,\
-    DevDouble, DevVarStringArray, DispLevel, DevState, SCALAR, SPECTRUM, \
-    IMAGE, READ_WRITE, READ, AttrData, CmdArgType, DevFailed, seqStr_2_obj, \
-    Except, ErrSeverity
+    DevDouble, DevEncoded, DevVarStringArray, DispLevel, DevState, SCALAR, \
+    SPECTRUM, IMAGE, READ_WRITE, READ, AttrData, CmdArgType, DevFailed,\
+    seqStr_2_obj, Except, ErrSeverity
 
 from taurus.core.util.containers import CaselessDict
 from taurus.core.util.codecs import CodecFactory
 
 from sardana import InvalidId, InvalidAxis, ElementType
+from sardana import sardanacustomsettings
 from sardana.pool.poolmetacontroller import DataInfo
 from sardana.tango.core.SardanaDevice import SardanaDevice, SardanaDeviceClass
 from sardana.tango.core.util import GenericScalarAttr, GenericSpectrumAttr, \
@@ -839,10 +840,10 @@ class PoolExpChannelDevice(PoolElementDevice):
     def __init__(self, dclass, name):
         """Constructor"""
         PoolElementDevice.__init__(self, dclass, name)
-        self._codec = CodecFactory().getCodec('json')
-
-    def _prepare_value_for_encoding(self, value):
-        return value
+        codec_name = getattr(sardanacustomsettings, "VALUE_BUFFER_CODEC")
+        self._value_buffer_codec = CodecFactory().getCodec(codec_name)
+        codec_name = getattr(sardanacustomsettings, "VALUE_REF_BUFFER_CODEC")
+        self._value_ref_buffer_codec = CodecFactory().getCodec(codec_name)
 
     def _encode_value_chunk(self, value_chunk):
         """Prepare value chunk to be passed via communication channel.
@@ -856,9 +857,9 @@ class PoolExpChannelDevice(PoolElementDevice):
         value = []
         for idx, sdn_value in value_chunk.iteritems():
             index.append(idx)
-            value.append(self._prepare_value_for_encoding(sdn_value.value))
+            value.append(sdn_value.value)
         data = dict(index=index, value=value)
-        _, encoded_data = self._codec.encode(('', data))
+        encoded_data = self._value_buffer_codec.encode(('', data))
         return encoded_data
 
     def _encode_value_ref_chunk(self, value_ref_chunk):
@@ -876,7 +877,7 @@ class PoolExpChannelDevice(PoolElementDevice):
             index.append(idx)
             value_ref.append(sdn_value.value)
         data = dict(index=index, value_ref=value_ref, )
-        _, encoded_data = self._codec.encode(('', data))
+        _, encoded_data = self._value_ref_buffer_codec.encode(('', data))
         return encoded_data
 
     def initialize_dynamic_attributes(self):
@@ -935,8 +936,7 @@ class PoolExpChannelDeviceClass(PoolElementDeviceClass):
     attr_list.update(PoolElementDeviceClass.attr_list)
 
     standard_attr_list = {
-        'ValueBuffer': [[DevString, SCALAR, READ]],  # TODO: think about
-        # DevEncoded
+        'ValueBuffer': [[DevEncoded, SCALAR, READ]]
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
 

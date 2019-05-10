@@ -69,3 +69,10 @@ LOG_MACRO_FILTER = "sardana.macroserver.msmacromanager.LogMacroFilter"
 # TODO: Temporary solution, available while Taurus3 is being supported.
 # Maximum number of Taurus deprecation warnings allowed to be displayed.
 TAURUS_MAX_DEPRECATION_COUNTS = 0
+
+#: Type of encoding for ValueBuffer Tango attribute of experimental channels
+VALUE_BUFFER_CODEC = "pickle"
+
+#: Type of encoding for ValueRefBuffer Tango attribute of experimental
+#: channels
+VALUE_REF_BUFFER_CODEC = "pickle"

@@ -33,7 +33,7 @@ import sys
 import time
 
 from PyTango import DevFailed, DevVoid, DevString, DevState, AttrQuality, \
-    Except, READ, SCALAR, READ_WRITE
+    Except, READ, SCALAR, READ_WRITE, DevEncoded
 
 from taurus.core.util.log import DebugIt
 
@@ -218,16 +218,6 @@ class TwoDExpChannel(PoolTimerableDevice):
         if self.get_state() in [DevState.FAULT, DevState.UNKNOWN]:
             return False
         return True
-
-    def _prepare_value_for_encoding(self, value):
-        """numpy.ndarray can not be JSON encoded. Convert them to a list.
-
-        .. todo:: Improve it in the future. In case of big arrays e.g. 10k
-            points and higher there are more
-            optimal solutions but they require complex changes on encoding
-            and decoding side.
-        """
-        return value.tolist()
 
     def read_ValueRef(self, attr):
         twod = self.twod
