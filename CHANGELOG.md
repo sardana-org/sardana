@@ -8,11 +8,22 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 
+* SEP2:
+  * Possibility to include 2D experimental channels in continuous acquisition
+    using value reporting (`ValueBuffer` Tango attribute to 2DExpChannel and
+    value_buffer core attribute)
+  * `VALUE_BUFFER_CODEC` and `VALUE_REF_BUFFER_CODEC` to sardanacustomsettings.
 * Allow to configure timeout on pool element's (Taurus extensions) *go* methods e.g.
   `move`, `count`, etc. (#992)
 * Emulated hardware triggering between dummy counter/timer and trigger/gate elements
   (#1100)
 
+### Changed
+
+* `Data` Tango attribute of experimental channels (CTExpChannel,
+  ZeroDExpChannel, OneDExpChannel, PseudoCounter) to `ValueBuffer` (SEP2, #775)
+* Default encoding of `ValueBuffer` and `ValueRefBuffer` attributes (SEP2, #775)
+  from JSON to pickle
 
 ### Fixed
 
