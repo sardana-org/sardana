@@ -940,6 +940,8 @@ class PoolAcquisitionBase(PoolAction):
                 for channel in ctrl.get_channels(enabled=True):
                     if channel.value_ref_enabled:
                         pool_channels_ref.append(channel.element)
+                        if channel.has_pseudo_elements():
+                            pool_channels_value.append(channel.element)
                     else:
                         pool_channels_value.append(channel.element)
                 if len(pool_channels_value) > 0:
