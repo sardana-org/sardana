@@ -287,10 +287,10 @@ config_1 = {
         "synchronization": AcqSynchType.Trigger,
         "channels": {
             "_test_ct_1_1": {
-                "index": 1
+                "index": 0
             },
             "_test_ct_1_2": {
-                "index": 2
+                "index": 1
             }
         }
     }
@@ -304,10 +304,10 @@ config_2 = {
         "synchronization": AcqSynchType.Trigger,
         "channels": {
             "_test_ct_1_1": {
-                "index": 1
+                "index": 0
             },
             "_test_ct_1_2": {
-                "index": 2
+                "index": 1
             }
         }
     }
@@ -320,10 +320,10 @@ config_3 = {
         "synchronization": AcqSynchType.Trigger,
         "channels": {
             "_test_ct_1_1": {
-                "index": 1
+                "index": 0
             },
             "_test_ct_1_2": {
-                "index": 2
+                "index": 1
             }
         }
     },
@@ -332,10 +332,10 @@ config_3 = {
         "synchronization": AcqSynchType.Trigger,
         "channels": {
             "_test_ct_2_1": {
-                "index": 3
+                "index": 2
             },
             "_test_ct_2_2": {
-                "index": 4
+                "index": 3
             }
         }
     },
@@ -428,7 +428,6 @@ config_6 = {
         }
     }
 }
-
 
 
 # @insertTest(helper_name='meas_cont_acquisition', test_method_doc="TODO",
