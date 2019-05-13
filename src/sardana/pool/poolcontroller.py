@@ -468,6 +468,8 @@ class PoolController(PoolBaseController):
                 "ValueRef": {Type: str,
                              Access: DataAccess.ReadOnly,
                              Description: "Value reference", },
+                # TODO: in case of Tango ValueBuffer type is overridden
+                # by DevEncoded
                 "ValueRefBuffer": {Type: str,
                                    Access: DataAccess.ReadOnly,
                                    Description: "Value reference buffer", },

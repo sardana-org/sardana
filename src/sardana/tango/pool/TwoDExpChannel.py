@@ -307,6 +307,8 @@ class TwoDExpChannelClass(PoolTimerableDeviceClass):
         'Value': [[_DFT_VALUE_TYPE, _DFT_VALUE_FORMAT, READ,
                    _DFT_VALUE_MAX_SHAPE[0], _DFT_VALUE_MAX_SHAPE[1]],
                   {'abs_change': '1.0', }],
+        # TODO: here we override type by DevEncoded
+        'ValueRefBuffer': [[DevEncoded, SCALAR, READ]]
     }
     standard_attr_list.update(PoolTimerableDeviceClass.standard_attr_list)
 

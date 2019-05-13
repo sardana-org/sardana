@@ -876,8 +876,8 @@ class PoolExpChannelDevice(PoolElementDevice):
         for idx, sdn_value in value_ref_chunk.iteritems():
             index.append(idx)
             value_ref.append(sdn_value.value)
-        data = dict(index=index, value_ref=value_ref, )
-        _, encoded_data = self._value_ref_buffer_codec.encode(('', data))
+        data = dict(index=index, value_ref=value_ref)
+        encoded_data = self._value_ref_buffer_codec.encode(('', data))
         return encoded_data
 
     def initialize_dynamic_attributes(self):

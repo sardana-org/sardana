@@ -186,7 +186,7 @@ to allow multi axes queries.
 
 * `ValueRefBuffer` (Tango) and `value_ref_buffer` attributes are used for
 passing value reference sequences (chunks). The Tango attribute is of the
-`DevString` type and will work with the JSON serialized data structures of the
+`DevEncoded` type and its data structures are of the
 following format: `{"index": seq<int>, "value_ref": seq<str>}`.
 
 ## Single count (MeasurementGroup Taurus extension) read
