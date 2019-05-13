@@ -408,12 +408,12 @@ class DummyTwoDController(TwoDController, Referable):
             klass = TangoValue
         channel.amplitude = klass(value)
 
-    def getSavingEnabled(self, axis):
+    def isSavingEnabled(self, axis):
         idx = axis - 1
         channel = self.channels[idx]
         return channel.saving_enabled
 
-    def setAmplitude(self, axis, value):
+    def setSavingEnabled(self, axis, value):
         idx = axis - 1
         channel = self.channels[idx]
         channel.saving_enabled = value
