@@ -88,8 +88,8 @@ class SarTestTestCase(BasePoolTestCase):
          "IoverI0=_test_pc_1_1")
     ]
 
-    def setUp(self):
-        BasePoolTestCase.setUp(self)
+    def setUp(self, pool_properties=None):
+        BasePoolTestCase.setUp(self, pool_properties)
 
         # due to problems with factory cleanup in Taurus 3
         # we must skip these tests temporarily, whenever Taurus 3 support will
