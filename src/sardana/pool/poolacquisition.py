@@ -979,6 +979,9 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
                                          acq_sleep_time, nb_states_per_value,
                                          **kwargs)
 
+    def get_read_value_ctrls(self):
+        return self._pool_ctrl_dict_value
+
     @DebugIt()
     def action_loop(self):
         i = 0
@@ -987,7 +990,6 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
         for channel in self._channels:
             element = channel.element
             states[element] = None
-            values[element] = None
 
         nap = self._acq_sleep_time
         nb_states_per_value = self._nb_states_per_value
