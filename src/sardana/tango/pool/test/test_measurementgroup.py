@@ -23,15 +23,19 @@
 ##
 ##############################################################################
 
+import copy
 import json
+import os
 import time
 import threading
 
 # TODO: decide what to use: taurus or PyTango
 import PyTango
+from PyTango import DeviceProxy
 from taurus.external import unittest
 from taurus.test import insertTest
 from taurus.core.util import CodecFactory
+
 from sardana import sardanacustomsettings
 from sardana.pool import AcqSynchType, SynchDomain, SynchParam
 from sardana.tango.pool.test import SarTestTestCase
@@ -62,10 +66,11 @@ def _get_full_name(device_proxy, logger=None):
 
 class TangoAttributeListener(AttributeListener):
 
-    def __init__(self):
+    def __init__(self, data_key="value"):
         AttributeListener.__init__(self)
         codec_name = getattr(sardanacustomsettings, "VALUE_BUFFER_CODEC")
         self._codec = CodecFactory().getCodec(codec_name)
+        self._data_key = data_key
 
     def push_event(self, *args, **kwargs):
         self.event_received(*args, **kwargs)
@@ -85,7 +90,7 @@ class TangoAttributeListener(AttributeListener):
                     else:
                         raise err
             _, _value = self._codec.decode(event.attr_value.value)
-            value = _value['value']
+            value = _value.get("value") or _value.get("value_ref")
             idx = _value['index']
             dev = event.device
             obj_fullname = _get_full_name(dev)
@@ -104,8 +109,8 @@ class TangoAttributeListener(AttributeListener):
 class MeasSarTestTestCase(SarTestTestCase):
     """ Helper class to setup the need environmet for execute """
 
-    def setUp(self):
-        SarTestTestCase.setUp(self)
+    def setUp(self, pool_properties=None):
+        SarTestTestCase.setUp(self, pool_properties)
         self.event_ids = {}
         self.mg_name = '_test_mg_1'
 
@@ -113,16 +118,32 @@ class MeasSarTestTestCase(SarTestTestCase):
         """ Create a meas with the given configuration
         """
         # creating mg
+        config = copy.deepcopy(config)
         self.expchan_names = []
         self.tg_names = []
-        exp_dict = {}
-        for ctrl in config:
-            for elem_tuple in ctrl:
-                exp_chn, synchronizer, synchronization = elem_tuple
-                self.expchan_names.append(exp_chn)
-                exp_dict[exp_chn] = (synchronizer, synchronization)
-
+        ordered_chns = [None] * 10
+        for ctrl_name, ctrl_config in config.items():
+            channels = ctrl_config["channels"]
+            for chn, chn_config in channels.items():
+                index = chn_config["index"]
+                ordered_chns[index] = chn
+        self.expchan_names = [chn for chn in ordered_chns if chn is not None]
         self.pool.CreateMeasurementGroup([self.mg_name] + self.expchan_names)
+
+        for ctrl_name in config.keys():
+            ctrl_config = config.pop(ctrl_name)
+            channels = ctrl_config["channels"]
+            for chn_name in channels.keys():
+                chn_config = channels.pop(chn_name)
+                chn_full_name = _get_full_name(DeviceProxy(chn_name))
+                channels[chn_full_name] = chn_config
+            ctrl_full_name = _get_full_name(DeviceProxy(ctrl_name))
+            synchronizer = ctrl_config.get("synchronizer")
+            if synchronizer is not None and synchronizer != "software":
+                self.tg_names.append(synchronizer)
+                synchronizer = _get_full_name(DeviceProxy(synchronizer))
+                ctrl_config["synchronizer"] = synchronizer
+            config[ctrl_full_name] = ctrl_config
 
         try:
             self.meas = PyTango.DeviceProxy(self.mg_name)
@@ -136,17 +157,14 @@ class MeasSarTestTestCase(SarTestTestCase):
         jcfg = self.meas.read_attribute('configuration').value
         cfg = json.loads(jcfg)
         for ctrl in cfg['controllers']:
-            ctrl_data = cfg['controllers'][ctrl]
-            channels = ctrl_data['channels']
-            for chn in channels:
-                name = channels[chn]['name']
-                synchronizer, synchronization = exp_dict[name]
-                if synchronizer != 'software':
-                    synchronizer_dev = PyTango.DeviceProxy(synchronizer)
-                    synchronizer = _get_full_name(synchronizer_dev)
-                ctrl_data['synchronizer'] = synchronizer
-                ctrl_data['synchronization'] = synchronization
-                self.tg_names.append(synchronizer)
+            ctrl_config = cfg['controllers'][ctrl]
+            ctrl_test_config = config[ctrl]
+            channels = ctrl_config['channels']
+            channels_test = ctrl_test_config.pop("channels")
+            for chn, chn_config in channels.items():
+                chn_test_config = channels_test[chn]
+                chn_config.update(chn_test_config)
+            ctrl_config.update(ctrl_test_config)
 
         # Write the built configuration
         self.meas.write_attribute('configuration', json.dumps(cfg))
@@ -160,19 +178,84 @@ class MeasSarTestTestCase(SarTestTestCase):
         self.meas.write_attribute('synchronization', data[1])
 
     def _add_attribute_listener(self, config):
-        # Subscribe to events
+        self.attr_listener = TangoAttributeListener()
         chn_names = []
-        for ctrl in config:
-            for ch_tg in ctrl:
-                channel = ch_tg[0]
-                dev = PyTango.DeviceProxy(channel)
+        for ctrl_config in config.values():
+            for chn, chn_config in ctrl_config["channels"].items():
+                if chn_config.get("value_ref_enabled", False):
+                    buffer_attr = "ValueRefBuffer"
+                else:
+                    buffer_attr = "ValueBuffer"
+                dev = PyTango.DeviceProxy(chn)
                 ch_fullname = _get_full_name(dev)
-                event_id = dev.subscribe_event('ValueBuffer',
+                event_id = dev.subscribe_event(buffer_attr,
                                                PyTango.EventType.CHANGE_EVENT,
                                                self.attr_listener)
                 self.event_ids[dev] = event_id
                 chn_names.append(ch_fullname)
         return chn_names
+
+    def _acq_asserts(self, channel_names, repetitions):
+        """ Do the asserts after an acquisition
+        """
+        # printing acquisition records
+        table = self.attr_listener.get_table()
+        header = table.dtype.names
+        # checking if any of data was acquired
+        self.assertTrue(self.attr_listener.data, 'no data were acquired')
+        # checking if all channels produced data
+        for channel in channel_names:
+            msg = 'data from channel %s were not acquired' % channel
+            self.assertIn(channel, header, msg)
+        # checking if all the data were acquired
+        for ch_name in header:
+            ch_data_len = len(table[ch_name])
+            msg = 'length of data for channel %s is %d and should be %d' %\
+                (ch_name, ch_data_len, repetitions)
+            self.assertEqual(ch_data_len, repetitions, msg)
+
+    def meas_cont_acquisition(self, params, config):
+        """ Helper method to do a continous acquisition
+        """
+        self.create_meas(config)
+        self.prepare_meas(params)
+        chn_names = self._add_attribute_listener(config)
+        # Do acquisition
+        self.meas.Start()
+        while self.meas.State() == PyTango.DevState.MOVING:
+            print "Acquiring..."
+            time.sleep(0.1)
+        time.sleep(1)
+        repetitions = params['synchronization'][0][SynchParam.Repeats]
+        self._acq_asserts(chn_names, repetitions)
+
+    def stop_meas_cont_acquisition(self, params, config):
+        '''Helper method to do measurement and stop it'''
+        self.create_meas(config)
+        self.prepare_meas(params)
+        chn_names = self._add_attribute_listener(config)
+        # Do measurement
+        self.meas.Start()
+        # starting timer (0.2 s) which will stop the measurement group
+        threading.Timer(0.2, self.stopMeas).start()
+        while self.meas.State() == PyTango.DevState.MOVING:
+            print "Acquiring..."
+            time.sleep(0.1)
+        state = self.meas.State()
+        desired_state = PyTango.DevState.ON
+        msg = 'mg state after stop is %s (should be %s)' %\
+            (state, desired_state)
+        self.assertEqual(state, desired_state, msg)
+        for name in chn_names:
+            channel = PyTango.DeviceProxy(name)
+            state = channel.state()
+            msg = 'channel %s state after stop is %s (should be %s)' %\
+                (name, state, desired_state)
+            self.assertEqual(state, desired_state, msg)
+
+    def stopMeas(self):
+        '''Method used to stop measreument group'''
+        self.meas.stop()
 
     def tearDown(self):
         for channel, event_id in self.event_ids.items():
@@ -184,6 +267,7 @@ class MeasSarTestTestCase(SarTestTestCase):
             print('Impossible to delete MeasurementGroup: %s' % (self.mg_name))
             print e
         SarTestTestCase.tearDown(self)
+
 
 synchronization1 = [{SynchParam.Delay: {SynchDomain.Time: 0},
                      SynchParam.Active: {SynchDomain.Time: .01},
@@ -197,24 +281,65 @@ params_1 = {
 }
 doc_1 = 'Synchronized acquisition with two channels from the same controller'\
         ' using hardware trigger'
-config_1 = (
-    (('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),
-     ('_test_ct_1_2', '_test_tg_1_1', AcqSynchType.Trigger)),
-)
+config_1 = {
+    "_test_ct_ctrl_1": {
+        "synchronizer": "_test_tg_1_1",
+        "synchronization": AcqSynchType.Trigger,
+        "channels": {
+            "_test_ct_1_1": {
+                "index": 1
+            },
+            "_test_ct_1_2": {
+                "index": 2
+            }
+        }
+    }
+}
+
 doc_2 = 'Synchronized acquisition with two channels from the same controller'\
         ' using software trigger'
-config_2 = (
-    (('_test_ct_1_1', 'software', AcqSynchType.Trigger),
-     ('_test_ct_1_2', 'software', AcqSynchType.Trigger)),
-)
+config_2 = {
+    "_test_ct_ctrl_1": {
+        "synchronizer": "software",
+        "synchronization": AcqSynchType.Trigger,
+        "channels": {
+            "_test_ct_1_1": {
+                "index": 1
+            },
+            "_test_ct_1_2": {
+                "index": 2
+            }
+        }
+    }
+}
 doc_3 = 'Synchronized acquisition with four channels from two different'\
         'controllers using hardware and software triggers'
-config_3 = (
-    (('_test_ct_1_1', 'software', AcqSynchType.Trigger),
-     ('_test_ct_1_2', 'software', AcqSynchType.Trigger)),
-    (('_test_ct_2_1', '_test_tg_1_1', AcqSynchType.Trigger),
-     ('_test_ct_2_2', '_test_tg_1_1', AcqSynchType.Trigger)),
-)
+config_3 = {
+    "_test_ct_ctrl_1": {
+        "synchronizer": "software",
+        "synchronization": AcqSynchType.Trigger,
+        "channels": {
+            "_test_ct_1_1": {
+                "index": 1
+            },
+            "_test_ct_1_2": {
+                "index": 2
+            }
+        }
+    },
+    "_test_ct_ctrl_2": {
+        "synchronizer": "_test_tg_1_1",
+        "synchronization": AcqSynchType.Trigger,
+        "channels": {
+            "_test_ct_2_1": {
+                "index": 3
+            },
+            "_test_ct_2_2": {
+                "index": 4
+            }
+        }
+    },
+}
 doc_4 = 'Stop of the synchronized acquisition with two channels from the same'\
         ' controller using hardware trigger'
 doc_5 = 'Stop of the synchronized acquisition with two channels from the same'\
@@ -244,73 +369,5 @@ doc_6 = 'Stop of the synchronized acquisition with four channels from two'\
 class TangoAcquisitionTestCase(MeasSarTestTestCase, unittest.TestCase):
     """Integration test of TGGeneration and Acquisition actions."""
 
-    def setUp(self):
-        MeasSarTestTestCase.setUp(self)
-        unittest.TestCase.setUp(self)
+    pass
 
-    def _acq_asserts(self, channel_names, repetitions):
-        """ Do the asserts after an acquisition
-        """
-        # printing acquisition records
-        table = self.attr_listener.get_table()
-        header = table.dtype.names
-        # checking if any of data was acquired
-        self.assertTrue(self.attr_listener.data, 'no data were acquired')
-        # checking if all channels produced data
-        for channel in channel_names:
-            msg = 'data from channel %s were not acquired' % channel
-            self.assertIn(channel, header, msg)
-        # checking if all the data were acquired
-        for ch_name in header:
-            ch_data_len = len(table[ch_name])
-            msg = 'length of data for channel %s is %d and should be %d' %\
-                (ch_name, ch_data_len, repetitions)
-            self.assertEqual(ch_data_len, repetitions, msg)
-
-    def meas_cont_acquisition(self, params, config):
-        """ Helper method to do a continous acquisition
-        """
-        self.create_meas(config)
-        self.prepare_meas(params)
-        self.attr_listener = TangoAttributeListener()
-        chn_names = self._add_attribute_listener(config)
-        # Do acquisition
-        self.meas.Start()
-        while self.meas.State() == PyTango.DevState.MOVING:
-            print "Acquiring..."
-            time.sleep(0.1)
-        repetitions = params['synchronization'][0][SynchParam.Repeats]
-        self._acq_asserts(chn_names, repetitions)
-
-    def stop_meas_cont_acquisition(self, params, config):
-        '''Helper method to do measurement and stop it'''
-        self.create_meas(config)
-        self.prepare_meas(params)
-        self.attr_listener = TangoAttributeListener()
-        chn_names = self._add_attribute_listener(config)
-        # Do measurement
-        self.meas.Start()
-        # starting timer (0.2 s) which will stop the measurement group
-        threading.Timer(0.2, self.stopMeas).start()
-        while self.meas.State() == PyTango.DevState.MOVING:
-            print "Acquiring..."
-            time.sleep(0.1)
-        state = self.meas.State()
-        desired_state = PyTango.DevState.ON
-        msg = 'mg state after stop is %s (should be %s)' %\
-            (state, desired_state)
-        self.assertEqual(state, desired_state, msg)
-        for name in chn_names:
-            channel = PyTango.DeviceProxy(name)
-            state = channel.state()
-            msg = 'channel %s state after stop is %s (should be %s)' %\
-                (name, state, desired_state)
-            self.assertEqual(state, desired_state, msg)
-
-    def stopMeas(self):
-        '''Method used to stop measreument group'''
-        self.meas.stop()
-
-    def tearDown(self):
-        unittest.TestCase.tearDown(self)
-        MeasSarTestTestCase.tearDown(self)
