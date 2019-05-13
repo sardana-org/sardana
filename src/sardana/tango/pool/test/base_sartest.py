@@ -107,7 +107,8 @@ class SarTestTestCase(BasePoolTestCase):
                 ctrl_name = prefix + "_ctrl_%s" % (postfix)
                 try:
                     self.pool.CreateController([sar_type, lib, cls, ctrl_name])
-                    if cls == "DummyCounterTimerController":
+                    if cls in ("DummyCounterTimerController",
+                               "DummyTwoDController"):
                         ctrl = PyTango.DeviceProxy(ctrl_name)
                         # use the first trigger/gate element by default
                         ctrl.write_attribute("Synchronizer", "_test_tg_1_1")
