@@ -371,3 +371,60 @@ class TangoAcquisitionTestCase(MeasSarTestTestCase, unittest.TestCase):
 
     pass
 
+
+config_5 = {
+    "_test_2d_ctrl_1": {
+        "synchronizer": "_test_tg_1_1",
+        "synchronization": AcqSynchType.Trigger,
+        "channels": {
+            "_test_2d_1_1": {
+                "index": 1}
+        },
+    },
+    "_test_roi_ctrl_1": {
+        "channels": {
+            "_test_roi_q1": {
+                "index": 2
+            }
+        }
+    }
+}
+
+
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc="TODO",
+            params=params_1, config=config_5)
+class TangoAcquisition2DandPCTestCase(MeasSarTestTestCase, unittest.TestCase):
+
+    pseudo_cls_list = (
+        list(SarTestTestCase.pseudo_cls_list)
+        + [("PseudoCounter", "ROI", "TwoDROI", "_test_roi", "1",
+            "2D=_test_2d_1_1", "Q1=_test_roi_q1",)]
+    )
+
+    def setUp(self):
+        ctrls_test_path = '../../../pool/test/res/controllers'
+        source = os.path.join(os.path.dirname(__file__), ctrls_test_path)
+        path = os.path.abspath(source)
+        pool_properties = {'PoolPath': [path]}
+        MeasSarTestTestCase.setUp(self, pool_properties)
+
+
+config_6 = {
+    "_test_2d_ctrl_1": {
+        "synchronizer": "_test_tg_1_1",
+        "synchronization": AcqSynchType.Trigger,
+        "channels": {
+            "_test_2d_1_1": {
+                "index": 1,
+                "value_ref_enabled": True
+            }
+        },
+    },
+    "_test_roi_ctrl_1": {
+        "channels": {
+            "_test_roi_q1": {
+                "index": 2
+            }
+        }
+    }
+}
