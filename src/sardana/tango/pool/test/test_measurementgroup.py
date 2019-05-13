@@ -428,3 +428,27 @@ config_6 = {
         }
     }
 }
+
+
+
+# @insertTest(helper_name='meas_cont_acquisition', test_method_doc="TODO",
+#             params=params_1, config=config_6)
+class TangoAcquisition2DRefAndPCTestCase(MeasSarTestTestCase,
+                                         unittest.TestCase):
+
+    pseudo_cls_list = (
+        list(SarTestTestCase.pseudo_cls_list)
+        + [("PseudoCounter", "ROI", "TwoDROI", "_test_roi", "1",
+            "2D=_test_2d_1_1", "Q1=_test_roi_q1",)]
+    )
+
+    def setUp(self):
+        ctrls_test_path = '../../../pool/test/res/controllers'
+        source = os.path.join(os.path.dirname(__file__), ctrls_test_path)
+        path = os.path.abspath(source)
+        pool_properties = {'PoolPath': [path]}
+        MeasSarTestTestCase.setUp(self, pool_properties)
+
+    @unittest.expectedFailure
+    def test_meas_cont_acquisition(self):
+        self.meas_cont_acquisition(params_1, config_6)
