@@ -40,8 +40,7 @@ from sardana import sardanacustomsettings
 from sardana.pool import AcqSynchType, SynchDomain, SynchParam
 from sardana.tango.pool.test import SarTestTestCase
 
-# TODO: It will be moved
-from sardana.pool.test.test_acquisition import AttributeListener
+from sardana.pool.test.util import AttributeListener
 
 
 def _get_full_name(device_proxy, logger=None):
@@ -430,8 +429,8 @@ config_6 = {
 }
 
 
-# @insertTest(helper_name='meas_cont_acquisition', test_method_doc="TODO",
-#             params=params_1, config=config_6)
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc="TODO",
+            params=params_1, config=config_6)
 class TangoAcquisition2DRefAndPCTestCase(MeasSarTestTestCase,
                                          unittest.TestCase):
 
@@ -447,7 +446,3 @@ class TangoAcquisition2DRefAndPCTestCase(MeasSarTestTestCase,
         path = os.path.abspath(source)
         pool_properties = {'PoolPath': [path]}
         MeasSarTestTestCase.setUp(self, pool_properties)
-
-    @unittest.expectedFailure
-    def test_meas_cont_acquisition(self):
-        self.meas_cont_acquisition(params_1, config_6)
