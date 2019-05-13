@@ -31,7 +31,7 @@ import threading
 
 class AttributeListener(object):
 
-    def __init__(self, dtype="float64", attr_name="valuebuffer"):
+    def __init__(self, dtype=object, attr_name="valuebuffer"):
         self.data = {}
         self.dtype = dtype
         self.attr_name = attr_name
