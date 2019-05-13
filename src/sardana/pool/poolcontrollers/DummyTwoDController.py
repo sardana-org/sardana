@@ -50,29 +50,6 @@ def generate_img(x_size, y_size, amplitude):
     return img
 
 
-def save_img(img, uri):
-    match_res = re.match(r"h5file://(?P<path>\S+)::(?P<dataset>\S+)", uri)
-    if match_res is None:
-        match_res = re.match(r"h5file://(?P<path>\S+)", uri)
-    if match_res is None:
-        raise Exception("invalid value reference template")
-    path = match_res.group("path")
-    try:
-        dataset_name = match_res.group("dataset")
-    except IndexError:
-        dataset_name = "dataset"
-    msg = None
-    if "h5py" not in sys.modules:
-        msg = "Not able to store h5 file (h5py is not available)"
-    try:
-        h5f = h5py.File(path, "w")
-        h5f.create_dataset(dataset_name, data=img)
-    except Exception:
-        msg = "Not able to store h5 file."
-    ref = "h5file://" + path + "::" + dataset_name
-    return ref, msg
-
-
 def generate_ref(pattern, idx):
     if pattern is None or pattern == "":
         pattern = "h5file:///tmp/dummy2d_default_{index}.h5"
@@ -83,7 +60,29 @@ def generate_ref(pattern, idx):
         uri = pattern
         msg = ("Not able to format value reference template "
                "with index. Trying to use directly the template...")
-    return uri, msg
+    match_res = re.match(r"h5file://(?P<path>\S+)::(?P<dataset>\S+)", uri)
+    if match_res is None:
+        match_res = re.match(r"h5file://(?P<path>\S+)", uri)
+    if match_res is None:
+        raise Exception("invalid value reference template")
+    path = match_res.group("path")
+    try:
+        dataset_name = match_res.group("dataset")
+    except IndexError:
+        dataset_name = "dataset"
+    return path, dataset_name, msg
+
+
+def save_img(img, path, dataset_name):
+    msg = None
+    if "h5py" not in sys.modules:
+        msg = "Not able to store h5 file (h5py is not available)"
+    try:
+        h5f = h5py.File(path, "w")
+        h5f.create_dataset(dataset_name, data=img)
+    except Exception:
+        msg = "Not able to store h5 file."
+    return msg
 
 
 class Channel:
@@ -97,6 +96,7 @@ class Channel:
         self.buffer_values = []
         self.buffer_value_refs = []
         self.amplitude = BaseValue('1.0')
+        self.saving_enabled = False
         self.value_ref_pattern = "h5file:///tmp/dummy2d_default_{index}.h5"
         self.value_ref_enabled = False
 
@@ -157,6 +157,15 @@ class DummyTwoDController(TwoDController, Referable):
             Description: ("Amplitude. Maybe a number or a tango attribute "
                           "(must start with tango://)"),
             DefaultValue: '1.0'},
+        "SavingEnabled": {
+            Type: bool,
+            FGet: "isSavingEnabled",
+            FSet: "setSavingEnabled",
+            Description: ("Enable/disable saving of images in HDF5 files. "
+                          "Use with care in high demanding (fast) "
+                          "acquisitions. Trying to save at high rate may "
+                          "hang the acquisition process.")
+        }
     }
 
     def __init__(self, inst, props, *args, **kwargs):
@@ -277,18 +286,22 @@ class DummyTwoDController(TwoDController, Referable):
         amplitude = axis * self.integ_time * channel.amplitude.get()
         img = generate_img(x_size, y_size, amplitude)
         if self._synchronization == AcqSynch.SoftwareTrigger:
+            channel.value = img
             if channel.value_ref_enabled:
                 img_idx = self.start_idx * self.repetitions + channel.acq_idx
-                value_ref, msg = generate_ref(channel.value_ref_pattern,
-                                              img_idx)
+                value_ref_pattern = channel.value_ref_pattern
+                path, dataset_name, msg = generate_ref(value_ref_pattern,
+                                                       img_idx)
                 if msg is not None:
                     self._log.warning(msg)
-                value_ref, msg = save_img(img, value_ref)
-                if msg is not None:
-                    self._log.warning(msg)
+                value_ref = "file://" + path
+                if channel.saving_enabled:
+                    msg = save_img(img, path, dataset_name)
+                    if msg is not None:
+                        self._log.warning(msg)
+                    else:
+                        value_ref = "h5" + value_ref + "::" + dataset_name
                 channel.value_ref = value_ref
-            else:
-                channel.value = img
             channel.acq_idx += 1
         elif self._synchronization in (AcqSynch.HardwareTrigger,
                                        AcqSynch.HardwareGate,
@@ -306,21 +319,25 @@ class DummyTwoDController(TwoDController, Referable):
             nb_new_acq = nb_elapsed_acq - channel.acq_idx
             if nb_new_acq == 0:
                 return
+            channel.buffer_values.extend([img] * nb_new_acq)
             if channel.value_ref_enabled:
                 start = self.start_idx * self.repetitions + channel.acq_idx
-                for idx in xrange(start, start + nb_new_acq):
-                    value_ref, msg = generate_ref(channel.value_ref_pattern,
-                                                  idx)
+                for img_idx in xrange(start, start + nb_new_acq):
+                    value_ref_pattern = channel.value_ref_pattern
+                    path, dataset_name, msg = generate_ref(value_ref_pattern,
+                                                           img_idx)
                     if msg is not None:
                         self._log.warning(msg)
-                    value_ref, msg = save_img(img, value_ref)
-                    if msg is not None:
-                        self._log.warning(msg)
+                    value_ref = "file://" + path
+                    if channel.saving_enabled:
+                        msg = save_img(img, path, dataset_name)
+                        if msg is not None:
+                            self._log.warning(msg)
+                        else:
+                            # we succeeded to save in HDF5
+                            value_ref = "h5" + value_ref + "::" + dataset_name
                     channel.buffer_value_refs.append(value_ref)
-                    channel.acq_idx += 1
-            else:
-                channel.buffer_values.extend([img] * nb_new_acq)
-                channel.acq_idx += nb_new_acq
+            channel.acq_idx += nb_new_acq
 
     def ReadOne(self, axis):
         self._log.debug('ReadOne(%d): entering...' % axis)
@@ -390,6 +407,16 @@ class DummyTwoDController(TwoDController, Referable):
         if value.startswith("tango://"):
             klass = TangoValue
         channel.amplitude = klass(value)
+
+    def getSavingEnabled(self, axis):
+        idx = axis - 1
+        channel = self.channels[idx]
+        return channel.saving_enabled
+
+    def setAmplitude(self, axis, value):
+        idx = axis - 1
+        channel = self.channels[idx]
+        channel.saving_enabled = value
 
     def SetAxisPar(self, axis, parameter, value):
         idx = axis - 1
