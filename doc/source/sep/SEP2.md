@@ -234,14 +234,6 @@ channel `saving` (value (internal) or value_ref (external)) and `value_ref_patte
 The last one has the same format as explained in "Channel API for saving 
 configuration".
 
-## Scan framework API for referencing configuration
-
-The `ScanValueRefPattern` environment variable is used to alternate the
-Measurement Group's configuration (value_ref_pattern) during the scan
-(backup/restore). It uses Python str.format() convention
-e.g. `file:/tmp/sample1_{index:02d}`
-or `file:/{scan_dir}/{scan_file}/{channel}/sample1_{index:02d}`.
-
 
 Links to more details and discussions
 -------------------------------------
@@ -254,6 +246,10 @@ The discussions about the SEP2 itself:
 
 Changes
 -------
+
+2019-05-14
+[reszelaz](https://github.com/reszelaz) Remove "Scan framework API for 
+referencing configuration" from the scope.
 
 2019-01-21
 [reszelaz](https://github.com/reszelaz) Rename terms e.g. value source to value reference,
