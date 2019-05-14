@@ -351,12 +351,12 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         nxentry = self.fd[self.entryname]
 
         for dd, dd_env in zip(self.datadesc, env["datadesc"]):
-            name = dd.name
+            label = dd.label
 
             # If h5file scheme is used: Creation of a Virtual Dataset
             if dd.value_ref_enabled:
                 measurement = nxentry['measurement']
-                first_reference = measurement[name][0]
+                first_reference = measurement[label][0]
 
                 group = re.match(self.pattern, first_reference)
                 if group is None:
@@ -370,20 +370,20 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                 if not VDS_available:
                     msg = ("VDS not available in this version of h5py, "
                            "{0} will be stored as string reference")
-                    msg.format(name)
+                    msg.format(label)
                     self.warning(msg)
                     continue
 
-                bk_name = "_" + name
-                measurement[bk_name] = measurement[name]
-                nb_points = measurement[name].size
+                bk_label = "_" + label
+                measurement[bk_label] = measurement[label]
+                nb_points = measurement[label].size
 
                 (dim_1, dim_2) = dd_env.shape
                 layout = h5py.VirtualLayout(shape=(nb_points, dim_1, dim_2),
                                             dtype=dd_env.dtype)
 
                 for i in range(nb_points):
-                    reference = measurement[name][i]
+                    reference = measurement[label][i]
                     group = re.match(self.pattern, reference)
                     if group is None:
                         msg = 'Unsupported reference %s' % first_reference
@@ -398,14 +398,14 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
 
                 # Substitute dataset by Virtual Dataset in output file
                 try:
-                    del measurement[name]
+                    del measurement[label]
                     measurement.create_virtual_dataset(
-                        name, layout, fillvalue=-numpy.inf)
+                        label, layout, fillvalue=-numpy.inf)
                 except Exception as e:
                     msg = 'Could not create a Virtual Dataset. Reason: %r'
                     self.warning(msg, e)
                 else:
-                    del measurement[bk_name]
+                    del measurement[bk_label]
 
         nxentry.create_dataset('end_time', data=env['endtime'].isoformat())
         self.fd.flush()

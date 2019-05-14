@@ -80,7 +80,8 @@ class TestNXscanH5_FileRecorder(TestCase):
         nb_records = 1
         # create description of channel data
         data_desc = [
-            ColumnDesc(name=COL1_NAME, dtype="float64", shape=tuple())
+            ColumnDesc(name=COL1_NAME, label=COL1_NAME, dtype="float64",
+                       shape=tuple())
         ]
         self.env["datadesc"] = data_desc
 
@@ -108,7 +109,7 @@ class TestNXscanH5_FileRecorder(TestCase):
         nb_records = 1
         # create description of channel data
         data_desc = [
-            ColumnDesc(name=COL1_NAME, dtype="float64",
+            ColumnDesc(name=COL1_NAME, label=COL1_NAME, dtype="float64",
                        shape=(1024, 1024), value_ref_enabled=True)
         ]
         self.env["datadesc"] = data_desc
@@ -157,7 +158,7 @@ class TestNXscanH5_FileRecorder(TestCase):
         try:
             # create description of channel data
             data_desc = [
-                ColumnDesc(name=COL1_NAME, dtype="float64",
+                ColumnDesc(name=COL1_NAME, label=COL1_NAME, dtype="float64",
                            shape=(2, 2), value_ref_enabled=True)
             ]
             self.env["datadesc"] = data_desc
