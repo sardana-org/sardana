@@ -633,3 +633,43 @@ class ascan_with_addcustomdata(ascan_demo):
         # as a bonus, plot the fit
         self.pyplot.plot(x, y, 'ro')
         self.pyplot.plot(x, fitted_y, 'b-')
+
+
+class ascanct_midtrigger(Macro):
+    """This macro demonstrates how to add an extra scan column with
+    the shifted positions of the motor corresponding to the middle of the
+    space interval. Be aware that the space interval does not
+    necessarily correspond to the middle of the acquisition interval
+    (remember about the latency time).
+
+    This macro does not export all the ascanct features e.g. hooks.
+    """
+
+    param_def = [['motor', Type.Moveable, None, 'Moveable name'],
+                 ['start_pos', Type.Float, None, 'Scan start position'],
+                 ['final_pos', Type.Float, None, 'Scan final position'],
+                 ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
+                 ['integ_time', Type.Float, None, 'Integration time'],
+                 ['latency_time', Type.Float, 0, 'Latency time']]
+
+    def run(self, *args, **kwargs):
+        motor = args[0]
+        scan_macro = self.execMacro("ascanct", *args, **kwargs)
+        # we get the datahandler
+        # TODO: use public api to GScan object whenever
+        # https://github.com/sardana-org/sardana/issues/784 gets solved
+        dh = scan_macro._gScan.data_handler
+        # calculate position corresponding to the middle space interval
+        positions = [r.data[motor.getName()] for r in scan_macro.data.records]
+        first_position = positions[0]
+        second_position = positions[1]
+        positive_direction = second_position > first_position
+        shift = abs(second_position - first_position) / 2.
+        if positive_direction:
+            mid_positions = positions + shift
+        else:
+            mid_positions = positions - shift
+        # add custom data column to the measurement HDF5 group with the
+        # <motor_name>_mid name
+        dh.addCustomData(mid_positions, motor.getName() + '_mid',
+                         nxpath='measurement:NXcollection')
