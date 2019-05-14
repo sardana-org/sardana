@@ -36,10 +36,9 @@ __all__ = ["ascan_demo", "ascanr", "toothedtriangle",
 
 __docformat__ = 'restructuredtext'
 
-import os
 import numpy
 
-from sardana.macroserver.macro import *
+from sardana.macroserver.macro import Macro, Hookable, Type, ParamRepeat
 from sardana.macroserver.scan import *
 
 
