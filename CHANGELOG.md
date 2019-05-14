@@ -8,10 +8,27 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 
-* SEP2:
+* SEP2 (#775):
+  * Possibility to report acquisition results in form of value references (in 
+  the URI format) of 1D and 2D experimental channels:
+    * `Referable` base class to inherit from when developing a controller 
+    plugin
+    * `ValueRef` and `ValueRefBuffer` Tango attributes and `value_ref` and 
+    `value_ref_buffer` core attributes to propagate value references 
+    proceeding from the controllers.
+  * Possibility to configure value referencing from the measurement group level
+    (_Ref Enabled_ and _Ref Pattern_ columns in expconf and 
+    `value_ref_pattern` and `value_ref_enabled` configuration parameters) or
+    a single channel level (`ValueRefPattern` and `ValueRefEnabled` Tango 
+    attributes) which both reach the controller plugin as axis parameters 
+    `value_ref_pattern` and `value_ref_enabled`.
+  * Creation of Virtual Data Sets (VDS) for value references of _h5file_ scheme
+    in HDF5 file recorder.
+  * Possibility to still use pseudo counters based on 1D and 2D experimental
+    channels when value referencing is in use.
   * Possibility to include 2D experimental channels in continuous acquisition
     using value reporting (`ValueBuffer` Tango attribute to 2DExpChannel and
-    value_buffer core attribute)
+    `value_buffer` core attribute)
   * `VALUE_BUFFER_CODEC` and `VALUE_REF_BUFFER_CODEC` to sardanacustomsettings.
 * Allow to configure timeout on pool element's (Taurus extensions) *go* methods e.g.
   `move`, `count`, etc. (#992)
@@ -22,6 +39,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 * `Data` Tango attribute of experimental channels (CTExpChannel,
   ZeroDExpChannel, OneDExpChannel, PseudoCounter) to `ValueBuffer` (SEP2, #775)
+* Value buffer data structure format from `{"index": seq<int>, "data": seq<str>}`
+  to `{"index": seq<int>, "value": seq<str>}` (SEP2, #775)
 * Default encoding of `ValueBuffer` and `ValueRefBuffer` attributes (SEP2, #775)
   from JSON to pickle
 
@@ -41,8 +60,12 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Deprecated
 
-* DataSource Tango attribute, data_source core attributes and data_source
+* Datasource Tango attribute, data_source core attributes and data_source
 1D and 2D controller axis parameter (SEP2, #775).
+
+### Removed
+
+* 
 
 ## [2.7.1] 2019-03-29
 
