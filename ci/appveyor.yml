@@ -58,7 +58,12 @@ install:
     - python -c "import tango; print tango.__file__"
     - pip install pytango-db
     - ps: ls C:\Miniconda-x64\\envs\\py2qt5\\Scripts
-    - ps: Start-Process -NoNewWindow -FilePath "C:\Miniconda-x64\\envs\\py2qt5\\Scripts\\DataBaseds.exe" -ArgumentList "--db_access=sqlite3 --port=10000 2"
+    - ps: Start-Process -NoNewWindow -FilePath "C:\Miniconda-x64\\envs\\py2qt5\\Scripts\\DataBaseds.exe" -ArgumentList "--db_access=sqlite3 --port=10000 2" -RedirectStandardOutput "$env:TMP\\DataBasedsOutput.txt" -RedirectStandardError "$env:TMP\\DataBasedsError.txt"
+    - ps: echo "DataBaseds output:"
+    - ps: get-content -Path "$env:TMP\\DataBasedsOutput.txt"
+    - ps: echo "DataBaseds error:"
+    - ps: get-content -Path "$env:TMP\\DataBasedsError.txt"
+
     - ps: Start-Sleep -s 3
     - python -c "import tango; print(tango.Database().get_server_list())"
 
