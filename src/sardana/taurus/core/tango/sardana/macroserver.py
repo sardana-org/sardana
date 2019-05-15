@@ -226,6 +226,7 @@ class ExperimentConfiguration(object):
             mnt_grps = conf['MntGrpConfigs'].keys()
 
         codec = CodecFactory().getCodec('json')
+        msg_error = ''
         for mnt_grp in mnt_grps:
             try:
                 mnt_grp_cfg = conf['MntGrpConfigs'][mnt_grp]
@@ -249,10 +250,17 @@ class ExperimentConfiguration(object):
                     # mnt_grp.setConfiguration(mnt_grp_cfg)
                     data = codec.encode(('', mnt_grp_cfg))[1]
                     mnt_grp_dev.write_attribute('configuration', data)
-            except Exception, e:
-                from taurus.core.util.log import error
-                error(
-                    'Could not create/delete/modify Measurement group "%s": %s', mnt_grp, repr(e))
+            except PyTango.DevFailed as df:
+                # Take the description of the first exception.
+                desc = df.args[0].desc
+                desc = desc.replace('\r', '')
+                desc = desc.replace('\n', '')
+                msg_error += 'Measurement Group {}:\n* ' \
+                             '{}\n\n'.format(mnt_grp, desc)
+
+        if len(msg_error) > 0:
+            raise RuntimeError(msg_error)
+
         # Send the environment changes
         env = dict(ScanDir=conf.get('ScanDir'),
                    ScanFile=conf.get('ScanFile'),
