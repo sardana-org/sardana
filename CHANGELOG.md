@@ -12,6 +12,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   `move`, `count`, etc. (#992)
 * Emulated hardware triggering between dummy counter/timer and trigger/gate elements
   (#1100)
+* Add macro example demonstrating how to add an extra scan column with motor positions
+  shifted to the middle of the scan interval: `ascanct_midtrigger` (#1105)
 
 
 ### Fixed
