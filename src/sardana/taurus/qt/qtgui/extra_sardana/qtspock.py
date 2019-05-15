@@ -18,13 +18,62 @@ except:
     from IPython.utils.path import get_ipython_dir
 
 from taurus.external.qt import Qt
-from taurus import info
+from taurus import info, error
 
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.manager import QtKernelManager
 
 from sardana import release
 from sardana.spock.ipython_01_00.genutils import get_profile_metadata
+
+
+def get_spock_profile_dir(profile):
+    """Return the path to the profile with the given name."""
+    try:
+        profile_dir = ProfileDir.find_profile_dir_by_name(
+            get_ipython_dir(), profile)
+    except ProfileDirError:
+        return None
+    return profile_dir.location
+
+
+def check_spock_profile(profile):
+    """Check if the profile exists and has the correct value"""
+    profile_dir = get_spock_profile_dir(profile)
+    if profile_dir:
+        profile_version_str, door_name = get_profile_metadata(profile_dir)
+        if profile_version_str == release.version:
+            return True
+    return False
+
+
+class SpockKernelManager(QtKernelManager):
+    """
+    A kernel manager that checks the spock profile before starting a kernel.
+
+    If the check fails, i.e., the profile does not exist or has a different
+    version, an ipython kernel without spock functionality is started instead
+    and the attribute `valid_spock_profile` is set to `False`.
+    """
+    kernel_about_to_launch = Qt.pyqtSignal()
+
+    def _launch_kernel(self, kernel_cmd, **kw):
+        try:
+            profile = kernel_cmd[kernel_cmd.index("--profile") + 1]
+        except ValueError:
+            profile = "spockdoor"
+            kernel_cmd.append(["--profile", profile])
+        if check_spock_profile(profile):
+            self.is_valid_spock_profile = True
+        else:
+            index = kernel_cmd.index("--profile")
+            del kernel_cmd[index]
+            del kernel_cmd[index]
+            self.is_valid_spock_profile = False
+            error("Checking spock profile failed.")
+        info('Starting kernel...')
+        self.kernel_about_to_launch.emit()
+        return super()._launch_kernel(kernel_cmd, **kw)
 
 
 class QtSpockWidget(RichJupyterWidget):
@@ -72,40 +121,39 @@ class QtSpockWidget(RichJupyterWidget):
         for ext in extensions:
             extra_arguments.extend(["--ext", ext])
 
-        if self.check_spock_profile(profile):
-            self.kernel_manager = QtKernelManager(kernel_name=kernel)
-            info('Starting kernel...')
-            self.kernel_manager.start_kernel(extra_arguments=extra_arguments)
+        self.kernel_manager = SpockKernelManager(kernel_name=kernel)
+        self.kernel_manager.kernel_about_to_launch.connect(
+            self._handle_kernel_lauched)
+        self.kernel_manager.start_kernel(extra_arguments=extra_arguments)
 
-            self.kernel_client = self.kernel_manager.client()
-            self.kernel_client.start_channels()
-            self.in_prompt = self.get_value(
-                "get_ipython().config.Spock.door_alias")
-            self.in_prompt += ' [<span class="in-prompt-number">%i</span>]:'
-            self.out_prompt = ('Result '
-                               '[<span class="out-prompt-number">%i</span>]:')
-        else:
+        self.kernel_client = self.kernel_manager.client()
+        self.kernel_client.start_channels()
+
+    def _set_prompts(self):
+        var = "get_ipython().config.Spock.door_alias"
+        self._silent_exec_callback(
+            var, self._set_prompts_callback)
+
+    def _set_prompts_callback(self, msg):
+        in_prefix = 'In'
+        if msg['status'] == 'ok':
+            output_bytes = msg['data']['text/plain']
+            try:
+                in_prefix = ast.literal_eval(output_bytes)
+            except SyntaxError:
+                pass
+
+        if not self.kernel_manager.is_valid_spock_profile:
             self.append_stream(
-                "Spock profile error: please close the application"
-                " and run spock in the terminal.")
+                "\nSpock profile error: please run spock in the terminal and "
+                "restart the kernel.\n"
+                "\nThis is a normal ipython kernel. "
+                "Spock functionality is not available.\n")
 
-    def get_spock_profile_dir(self, profile):
-        """Return the path to the profile with the given name."""
-        try:
-            profile_dir = ProfileDir.find_profile_dir_by_name(
-                get_ipython_dir(), profile, self.config)
-        except ProfileDirError:
-            return None
-        return profile_dir.location
-
-    def check_spock_profile(self, profile):
-        """Check if the profile exists and has the correct value"""
-        profile_dir = self.get_spock_profile_dir(profile)
-        if profile_dir:
-            profile_version_str, door_name = get_profile_metadata(profile_dir)
-            if profile_version_str == release.version:
-                return True
-        return False
+        self.in_prompt = (
+            in_prefix + ' [<span class="in-prompt-number">%i</span>]:')
+        self.out_prompt = (
+            'Result [<span class="out-prompt-number">%i</span>]:')
 
     # Adapted from
     # https://github.com/moble/remote_exec/blob/master/remote_exec.py#L61
@@ -154,6 +202,21 @@ class QtSpockWidget(RichJupyterWidget):
             self.kernel_client.stop_channels()
         if self.kernel_manager and self.kernel_manager.kernel:
             self.kernel_manager.shutdown_kernel()
+
+    def _handle_kernel_lauched(self):
+        if self.kernel_client:
+            self.kernel_client.kernel_info()
+
+    def _handle_kernel_info_reply(self, rep):
+        self._set_prompts()
+        is_starting = self._starting
+        super()._handle_kernel_info_reply(rep)
+        if not is_starting:
+            # The base method did not print the banner and reset the prompt.
+            # As the profile might have changed, do it here.
+            self._append_plain_text("\n\n")
+            self._append_plain_text(self.kernel_banner)
+            self.reset()
 
 
 def main():
