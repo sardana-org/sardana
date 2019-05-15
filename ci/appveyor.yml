@@ -57,6 +57,7 @@ install:
     - C:\\Miniconda-x64\\Scripts\\activate py2qt5
     - python -c "import tango; print tango.__file__"
     - pip install pytango-db
+    - ps: python -c "import gevent; print gevent.__file__"
     - ps: ls C:\Miniconda-x64\\envs\\py2qt5\\Scripts
     - ps: Start-Process -NoNewWindow -FilePath "C:\Miniconda-x64\\envs\\py2qt5\\Scripts\\DataBaseds.exe" -ArgumentList "--db_access=sqlite3 --port=10000 2" -RedirectStandardOutput "$env:TMP\\DataBasedsOutput.txt" -RedirectStandardError "$env:TMP\\DataBasedsError.txt"
     - ps: Start-Sleep -s 10
