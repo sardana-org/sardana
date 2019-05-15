@@ -553,7 +553,12 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             self._dirtyMntGrps.add(self._localConfig['ActiveMntGrp'])
 
         door = self.getModelObj()
-        door.setExperimentConfiguration(conf, mnt_grps=self._dirtyMntGrps)
+        try:
+            door.setExperimentConfiguration(conf, mnt_grps=self._dirtyMntGrps)
+        except Exception as e:
+            Qt.QMessageBox.critical(self, 'Wrong configuration',
+                                    '{}'.format(e))
+            return False
         self._originalConfiguration = copy.deepcopy(conf)
         self._dirtyMntGrps = set()
         self.ui.channelEditor.getQModel().setDataChanged(False)
