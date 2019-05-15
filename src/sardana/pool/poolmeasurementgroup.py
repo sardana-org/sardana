@@ -705,6 +705,8 @@ class MeasurementConfiguration(object):
                 acq_synch = AcqSynch.from_synch_type(is_software,
                                                      synchronization)
                 ctrl_acq_synch[ctrl] = acq_synch
+                ctrl_conf["timer"] = ctrl_data.get("timer")
+                ctrl_conf["monitor"] = ctrl_data.get("monitor")
                 ctrl_item = TimerableControllerConfiguration(ctrl, ctrl_conf)
             else:
                 ctrl_item = ControllerConfiguration(ctrl, ctrl_conf)
