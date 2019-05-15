@@ -1180,6 +1180,29 @@ class PoolMeasurementGroup(PoolGroupElement):
             # All channels were disabled
             raise RuntimeError('The measurement group "{}" has all '
                                'the channels disabled.'.format(self.name))
+
+        if self._acquisition_mode == AcqMode.Timer:
+            role = 'timer'
+        elif self._acquisition_mode == AcqMode.Monitor:
+            role = 'monitor'
+        else:
+            raise RuntimeError('Wrong acquisition mode, it must be Timer '
+                               'or Monitor')
+        err_msg = 'Can not start measurement group {}:\n'.format(self.name)
+        err_flag = False
+        for ctrl in self._config.get_timerable_ctrls(enabled=True):
+            master = getattr(ctrl, role, None)
+            if master is None:
+                raise RuntimeError('The controller {} does not have {} '
+                                   'configured.'.format(ctrl.name, role))
+            if not master.enabled:
+                err_msg += '* Channel "{}" is disabled and it is ' \
+                           'used as "{}", it must be ' \
+                           'active.\n'.format(master.name, role)
+                err_flag = True
+        if err_flag:
+            raise RuntimeError(err_msg)
+
         value = self._get_value()
         self._pending_starts = self.nb_starts
 
