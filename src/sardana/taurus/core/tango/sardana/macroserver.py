@@ -222,14 +222,8 @@ class ExperimentConfiguration(object):
 
     def set(self, conf, mnt_grps=None):
         """Sets the ExperimentConfiguration dictionary."""
-        env = dict(ScanDir=conf.get('ScanDir'),
-                   ScanFile=conf.get('ScanFile'),
-                   DataCompressionRank=conf.get('DataCompressionRank', -1),
-                   ActiveMntGrp=conf.get('ActiveMntGrp'),
-                   PreScanSnapshot=conf.get('PreScanSnapshot'))
         if mnt_grps is None:
             mnt_grps = conf['MntGrpConfigs'].keys()
-        self._door.putEnvironments(env)
 
         codec = CodecFactory().getCodec('json')
         for mnt_grp in mnt_grps:
@@ -259,6 +253,14 @@ class ExperimentConfiguration(object):
                 from taurus.core.util.log import error
                 error(
                     'Could not create/delete/modify Measurement group "%s": %s', mnt_grp, repr(e))
+        # Send the environment changes
+        env = dict(ScanDir=conf.get('ScanDir'),
+                   ScanFile=conf.get('ScanFile'),
+                   DataCompressionRank=conf.get('DataCompressionRank', -1),
+                   ActiveMntGrp=conf.get('ActiveMntGrp'),
+                   PreScanSnapshot=conf.get('PreScanSnapshot'))
+
+        self._door.putEnvironments(env)
 
     def _getPoolOfElement(self, elementname):
         ms = self._door.macro_server
