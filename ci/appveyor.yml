@@ -57,7 +57,7 @@ install:
     - C:\\Miniconda-x64\\Scripts\\activate py2qt5
     - python -c "import tango; print tango.__file__"
     - pip install pytango-db
-    - ps: ls C:\Miniconda-x64\\envs\\py2qt5\\bin
+    - ps: ls C:\Miniconda-x64\\envs
     - ps: Start-Process -NoNewWindow "C:\Miniconda-x64\\envs\\py2qt5\\bin\\DataBaseds --db_access=sqlite3 --port=10000 2"
     - python -c "import tango; print(tango.Database().get_server_list())"
     - ps: ls C:\\Lib\\site-packages\\tango\\databaseds
