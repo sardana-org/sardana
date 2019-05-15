@@ -235,6 +235,10 @@ class ExperimentConfiguration(object):
                     pool.DeleteElement(mnt_grp)
                 else:
                     try:
+                        # TODO: Fix incorrect implementation. It must check if
+                        #  the measurement group is part of the Pools
+                        #  controlled by the MacroServer. Otherwise,
+                        #  it must raise an exception.
                         mnt_grp_dev = Device(mnt_grp)
                     except:  # if the mnt_grp did not already exist, create it now
                         chconfigs = getChannelConfigs(mnt_grp_cfg)
