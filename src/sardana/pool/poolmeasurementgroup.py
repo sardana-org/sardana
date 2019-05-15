@@ -270,9 +270,10 @@ class TimerableControllerConfiguration(ControllerConfiguration):
                 master = channel
                 idx = channel.index
         else:
-            for channel in self._channels_enabled:
+            for channel in self._channels:
                 if channel.full_name == master:
                     master = channel
+
         setattr(self, role, master)
 
     def validate(self):
@@ -283,8 +284,8 @@ class TimerableControllerConfiguration(ControllerConfiguration):
                 and not self.monitor.enabled:
             err_msg = 'The channel {0} used as timer and the channel ' \
                       '{1} used as monitor are disabled. One of them ' \
-                      'must be enabled'.format(self.timer.name,
-                                               self.monitor.name)
+                      'must be enabled.'.format(self.timer.name,
+                                                self.monitor.name)
             raise ValueError(err_msg)
 
 
