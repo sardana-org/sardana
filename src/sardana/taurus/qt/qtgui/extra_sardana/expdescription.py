@@ -410,7 +410,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
     def onDialogButtonClicked(self, button):
         role = self.ui.buttonBox.buttonRole(button)
         if role == Qt.QDialogButtonBox.ApplyRole:
-            self.writeExperimentConfiguration(ask=False)
+            if not self.writeExperimentConfiguration(ask=False):
+                self._reloadConf(force=True)
         elif role == Qt.QDialogButtonBox.ResetRole:
             self._reloadConf()
 
