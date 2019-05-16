@@ -100,7 +100,7 @@ before_test:
                  dev_info1.name = 'MacroServer/demo/1';
                  dev_info1._class = 'MacroServer';
                  dev_info1.server = 'MacroServer/demo1';
-                 db.add_server(dev_info1.server, dev_info1, with_dserver=True)
+                 db.add_server(dev_info1.server, dev_info1, with_dserver=True);
                  dev_info2 = DbDevInfo();
                  dev_info2.name = 'Door/demo/1';
                  dev_info2._class = 'Door';
