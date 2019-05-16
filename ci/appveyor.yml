@@ -55,25 +55,10 @@ install:
     - ps: $env:TANGO_HOST='localhost:10000'
     - ps: $env:PYTHONPATH='C:\\Lib\\site-packages'
     - C:\\Miniconda-x64\\Scripts\\activate py2qt5
-    - python -c "import tango; print tango.__file__"
     - pip install pytango-db
-    - ps: python -c "import gevent; print gevent.__file__"
-    - ps: ls C:\Miniconda-x64\\envs\\py2qt5\\Scripts
-    - ps: Start-Process -NoNewWindow -FilePath "C:\Miniconda-x64\\envs\\py2qt5\\Scripts\\DataBaseds.exe" -ArgumentList "--db_access=sqlite3 --port=10000 2" -RedirectStandardOutput "$env:TMP\\DataBasedsOutput.txt" -RedirectStandardError "$env:TMP\\DataBasedsError.txt"
-    - ps: Start-Sleep -s 10
-    - ps: ls "$env:TMP"
-    - ps: echo "DataBaseds output:"
-    - ps: get-content -Path "$env:TMP\\DataBasedsOutput.txt"
-    - ps: echo "DataBaseds error:"
-    - ps: get-content -Path "$env:TMP\\DataBasedsError.txt"
-    - python -c "import tango; print(tango.Database())"
-
-# before_test:
-#     - docker-switch-linux
-#     - docker run --platform=linux -d --name=sardana-test -h sardana-test reszelaz/sardana-test
-#     - python -c "import tango; print tango.Database().ping()"
-
-build_script:
+    - pip install taurus
+ 
+ build_script:
     # Create build virtualenv
     - "virtualenv --clear %VENV_BUILD_DIR%"
     - "%VENV_BUILD_DIR%\\Scripts\\activate.bat"
@@ -89,10 +74,27 @@ build_script:
     - "%VENV_BUILD_DIR%\\Scripts\\deactivate.bat"
     - "rmdir %VENV_BUILD_DIR% /s /q"
 
+ before_test:
+    - ps: Start-Process -NoNewWindow -FilePath "C:\Miniconda-x64\\envs\\py2qt5\\Scripts\\DataBaseds.exe" -ArgumentList "--db_access=sqlite3 --port=10000 2" -RedirectStandardOutput "$env:TMP\\DataBasedsOutput.txt" -RedirectStandardError "$env:TMP\\DataBasedsError.txt"
+    - ps: Start-Sleep -s 3
+    - ps: ls "$env:TMP"
+    - ps: echo "DataBaseds output:"
+    - ps: get-content -Path "$env:TMP\\DataBasedsOutput.txt"
+    - ps: echo "DataBaseds error:"
+    - ps: get-content -Path "$env:TMP\\DataBasedsError.txt"
+    - python -c "import tango; print(tango.Database())"
+    - python -c 'from tango import DbDevInfo, Database
+                  db = Database()
+                  dev_info1 = DbDevInfo()
+                  dev_info1.name = "Pool/demo/3"
+                  dev_info1._class = "Pool"
+                  dev_info1.server = "Pool/demo3"
+                  db.add_server(dev_info1.server, dev_info1, with_dserver=True)'
+    - ps: Start-Process -NoNewWindow -FilePath "C:\\Python27-x64\\Scripts\\Pool.exe" -ArgumentList "demo1"
+    - ps: Start-Sleep -s 3
 
-#test_script:
-# TODO
-
+test_script:
+    - C:\\Python27-x64\\Scripts\\sardanatestsuite.exe
 
 artifacts:
     # Archive the generated sdist, wheel and msi packages in the ci.appveyor.com build report.
