@@ -94,7 +94,14 @@ class lsdef(_ls):
         for m in self.getMacros(filter):
             if m.name.startswith("_"):
                 continue
-            out.appendRow([m.name, m.module_name, m.get_brief_description()])
+            desc_length = self.getViewOption(ViewOption.DescriptionLength)
+            description = m.get_brief_description(max_chars=desc_length)
+            if len(description) < 61:
+                out.appendRow([m.name, m.module_name, description])
+            else:
+                out.appendRow([m.name, m.module_name, description[0:60]])
+                for i in range(1, len(description)/60 + 1):
+                    out.appendRow(["", "", description[60*i:60*(i+1)]])
 
         for line in out.genOutput():
             self.output(line)
