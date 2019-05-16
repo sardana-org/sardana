@@ -94,9 +94,27 @@ before_test:
     - ps: ls "C:\Miniconda-x64\\envs\\py2qt5\\Scripts"
     - ps: Start-Process -NoNewWindow -FilePath "C:\Miniconda-x64\\envs\\py2qt5\\Scripts\\Pool.exe" -ArgumentList "demo1"
     - ps: Start-Sleep -s 3
+    - python -c "from tango import DbDevInfo, Database;
+                 db = Database();
+                 dev_info1 = DbDevInfo();
+                 dev_info1.name = 'MacroServer/demo/1';
+                 dev_info1._class = 'MacroServer';
+                 dev_info1.server = 'MacroServer/demo1';
+                 db.add_server(dev_info1.server, dev_info1, with_dserver=True)
+                 dev_info2 = DbDevInfo();
+                 dev_info2.name = 'Door/demo/1';
+                 dev_info2._class = 'Door';
+                 dev_info2.server = 'MacroServer/demo1';
+                 db.put_device_property('MacroServer/demo/1', {'PoolNames':'Pool/demo1/1'})"
+    - ps: Start-Process -NoNewWindow -FilePath "C:\Miniconda-x64\\envs\\py2qt5\\Scripts\\MacroServer.exe" -ArgumentList "demo1"
+    - ps: Start-Sleep -s 3
+    - python -c "from tango import DeviceProxy;
+                 door = DeviceProxy('Door/demo1/1');
+                 door.command_inout('RunMacro', ['sar_demo']);"
+    - ps: Start-Sleep -s 3
 
 test_script:
-    - C:\\Python27-x64\\Scripts\\sardanatestsuite.exe
+    - C:\Miniconda-x64\\envs\\py2qt5\\Scripts\\sardanatestsuite.exe
 
 artifacts:
     # Archive the generated sdist, wheel and msi packages in the ci.appveyor.com build report.
