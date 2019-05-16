@@ -50,7 +50,7 @@ install:
     # Create Conda env
     - ps: echo "Creating py2qt5 conda environment"
 #    - ps: $env:PATH += ";C:\Miniconda-x64\\Scripts"
-    - ps: C:\\Miniconda-x64\\Scripts\\conda.exe create -q -y -n py2qt5 python=2.7 pyqt=5 numpy pyqtgraph lxml qt=5 six future ipython cython scipy pillow
+    - ps: C:\\Miniconda-x64\\Scripts\\conda.exe create -q -y -n py2qt5 python=2.7 pyqt=5 numpy pyqtgraph lxml qt=5 six future ipython cython scipy pillow gevent=1.2
     - ps: echo "setting variables"
     - ps: $env:TANGO_HOST='localhost:10000'
     - ps: $env:PYTHONPATH='C:\\Lib\\site-packages'
