@@ -83,13 +83,13 @@ before_test:
     - ps: echo "DataBaseds error:"
     - ps: get-content -Path "$env:TMP\\DataBasedsError.txt"
     - python -c "import tango; print(tango.Database())"
-    - python -c 'from tango import DbDevInfo, Database;
+    - python -c "from tango import DbDevInfo, Database;
                  db = Database();
                  dev_info1 = DbDevInfo();
-                 dev_info1.name = "Pool/demo/3";
-                 dev_info1._class = "Pool";
-                 dev_info1.server = "Pool/demo3";
-                 db.add_server(dev_info1.server, dev_info1, with_dserver=True)'
+                 dev_info1.name = 'Pool/demo/1';
+                 dev_info1._class = 'Pool';
+                 dev_info1.server = 'Pool/demo1';
+                 db.add_server(dev_info1.server, dev_info1, with_dserver=True)"
     - ps: Start-Process -NoNewWindow -FilePath "C:\\Python27-x64\\Scripts\\Pool.exe" -ArgumentList "demo1"
     - ps: Start-Sleep -s 3
 
