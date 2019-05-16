@@ -66,7 +66,7 @@ install:
     - ps: get-content -Path "$env:TMP\\DataBasedsOutput.txt"
     - ps: echo "DataBaseds error:"
     - ps: get-content -Path "$env:TMP\\DataBasedsError.txt"
-    - python -c "import tango; print(tango.Database().get_server_list())"
+    - python -c "import tango; print(tango.Database())"
 
 # before_test:
 #     - docker-switch-linux
