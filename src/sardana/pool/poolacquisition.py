@@ -460,7 +460,7 @@ class PoolAcquisition(PoolAction):
                             nb_starts)
 
         # Call software controllers prepare method
-        nb_starts = repetitions
+        nb_starts = nb_starts * repetitions
         repetitions = 1
         self._prepare_ctrls(ctrls_sw, value, repetitions, latency,
                             nb_starts)
