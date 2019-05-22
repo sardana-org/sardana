@@ -360,16 +360,6 @@ class BasicDummyTwoDController(TwoDController):
             klass = TangoValue
         channel.amplitude = klass(value)
 
-    def isSavingEnabled(self, axis):
-        idx = axis - 1
-        channel = self.channels[idx]
-        return channel.saving_enabled
-
-    def setSavingEnabled(self, axis, value):
-        idx = axis - 1
-        channel = self.channels[idx]
-        channel.saving_enabled = value
-
     def GetCtrlPar(self, par):
         if par == "synchronization":
             return self._synchronization
@@ -538,3 +528,13 @@ class DummyTwoDController(BasicDummyTwoDController, Referable):
             channel.value_ref_pattern = value
         elif parameter == "value_ref_enabled":
             channel.value_ref_enabled = value
+
+    def isSavingEnabled(self, axis):
+        idx = axis - 1
+        channel = self.channels[idx]
+        return channel.saving_enabled
+
+    def setSavingEnabled(self, axis, value):
+        idx = axis - 1
+        channel = self.channels[idx]
+        channel.saving_enabled = value
