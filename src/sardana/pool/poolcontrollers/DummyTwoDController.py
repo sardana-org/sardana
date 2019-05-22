@@ -127,8 +127,8 @@ class TangoValue(BaseValue):
         return self.attr_proxy.read().value
 
 
-class DummyTwoDController(TwoDController, Referable):
-    "This class is the Tango Sardana OneDController controller for tests"
+class BasicDummyTwoDController(TwoDController):
+    """This class represents a basic, dummy Sardana TwoD controller."""
 
     gender = "Simulation"
     model = "Basic"
@@ -156,16 +156,7 @@ class DummyTwoDController(TwoDController, Referable):
             FSet: 'setAmplitude',
             Description: ("Amplitude. Maybe a number or a tango attribute "
                           "(must start with tango://)"),
-            DefaultValue: '1.0'},
-        "SavingEnabled": {
-            Type: bool,
-            FGet: "isSavingEnabled",
-            FSet: "setSavingEnabled",
-            Description: ("Enable/disable saving of images in HDF5 files. "
-                          "Use with care in high demanding (fast) "
-                          "acquisitions. Trying to save at high rate may "
-                          "hang the acquisition process.")
-        }
+            DefaultValue: '1.0'}
     }
 
     def __init__(self, inst, props, *args, **kwargs):
@@ -191,7 +182,7 @@ class DummyTwoDController(TwoDController, Referable):
     def GetAxisAttributes(self, axis):
         # the default max shape for 'value' is (16*1024,).
         # We don't need so much so we set it to BufferSize
-        attrs = super(DummyTwoDController, self).GetAxisAttributes(axis)
+        attrs = super(BasicDummyTwoDController, self).GetAxisAttributes(axis)
         attrs['Value'][MaxDimSize] = self.BufferSize
         return attrs
 
@@ -287,21 +278,6 @@ class DummyTwoDController(TwoDController, Referable):
         img = generate_img(x_size, y_size, amplitude)
         if self._synchronization == AcqSynch.SoftwareTrigger:
             channel.value = img
-            if channel.value_ref_enabled:
-                img_idx = self.start_idx * self.repetitions + channel.acq_idx
-                value_ref_pattern = channel.value_ref_pattern
-                path, dataset_name, msg = generate_ref(value_ref_pattern,
-                                                       img_idx)
-                if msg is not None:
-                    self._log.warning(msg)
-                value_ref = "file://" + path
-                if channel.saving_enabled:
-                    msg = save_img(img, path, dataset_name)
-                    if msg is not None:
-                        self._log.warning(msg)
-                    else:
-                        value_ref = "h5" + value_ref + "::" + dataset_name
-                channel.value_ref = value_ref
             channel.acq_idx += 1
         elif self._synchronization in (AcqSynch.HardwareTrigger,
                                        AcqSynch.HardwareGate,
@@ -320,23 +296,6 @@ class DummyTwoDController(TwoDController, Referable):
             if nb_new_acq == 0:
                 return
             channel.buffer_values.extend([img] * nb_new_acq)
-            if channel.value_ref_enabled:
-                start = self.start_idx * self.repetitions + channel.acq_idx
-                for img_idx in xrange(start, start + nb_new_acq):
-                    value_ref_pattern = channel.value_ref_pattern
-                    path, dataset_name, msg = generate_ref(value_ref_pattern,
-                                                           img_idx)
-                    if msg is not None:
-                        self._log.warning(msg)
-                    value_ref = "file://" + path
-                    if channel.saving_enabled:
-                        msg = save_img(img, path, dataset_name)
-                        if msg is not None:
-                            self._log.warning(msg)
-                        else:
-                            # we succeeded to save in HDF5
-                            value_ref = "h5" + value_ref + "::" + dataset_name
-                    channel.buffer_value_refs.append(value_ref)
             channel.acq_idx += nb_new_acq
 
     def ReadOne(self, axis):
@@ -353,22 +312,6 @@ class DummyTwoDController(TwoDController, Referable):
         elif self._synchronization == AcqSynch.SoftwareTrigger:
             ret = channel.value
         self._log.debug('ReadOne(%d): returning %s' % (axis, repr(ret)))
-        return ret
-
-    def RefOne(self, axis):
-        self._log.debug("RefOne(%s)", axis)
-        channel = self.read_channels[axis]
-        ret = None
-        if self._synchronization in (AcqSynch.HardwareTrigger,
-                                     AcqSynch.HardwareGate,
-                                     AcqSynch.HardwareStart,
-                                     AcqSynch.SoftwareStart,):
-            value_refs = copy.deepcopy(channel.buffer_value_refs)
-            channel.buffer_value_refs.__init__()
-            ret = value_refs
-        elif self._synchronization == AcqSynch.SoftwareTrigger:
-            ret = channel.value_ref
-        self._log.debug('RefOne(%d): returning %s' % (axis, repr(ret)))
         return ret
 
     def _finish(self, elapsed_time, axis=None):
@@ -407,24 +350,6 @@ class DummyTwoDController(TwoDController, Referable):
         if value.startswith("tango://"):
             klass = TangoValue
         channel.amplitude = klass(value)
-
-    def isSavingEnabled(self, axis):
-        idx = axis - 1
-        channel = self.channels[idx]
-        return channel.saving_enabled
-
-    def setSavingEnabled(self, axis, value):
-        idx = axis - 1
-        channel = self.channels[idx]
-        channel.saving_enabled = value
-
-    def SetAxisPar(self, axis, parameter, value):
-        idx = axis - 1
-        channel = self.channels[idx]
-        if parameter == "value_ref_pattern":
-            channel.value_ref_pattern = value
-        elif parameter == "value_ref_enabled":
-            channel.value_ref_enabled = value
 
     def GetCtrlPar(self, par):
         if par == "synchronization":
@@ -499,3 +424,120 @@ class DummyTwoDController(TwoDController, Referable):
             for axis, channel in self.counting_channels.iteritems():
                 channel.is_counting = True
             self.start_time = time.time()
+
+
+class DummyTwoDController(BasicDummyTwoDController, Referable):
+    """This class is the Tango Sardana TwoDController controller for tests"""
+
+    model = "Best"
+
+    axis_attributes = {
+         "SavingEnabled": {
+            Type: bool,
+            FGet: "isSavingEnabled",
+            FSet: "setSavingEnabled",
+            Description: ("Enable/disable saving of images in HDF5 files. "
+                          "Use with care in high demanding (fast) "
+                          "acquisitions. Trying to save at high rate may "
+                          "hang the acquisition process.")
+         }
+    }
+
+    def __init__(self, inst, props, *args, **kwargs):
+        BasicDummyTwoDController.__init__(self, inst, props, *args, **kwargs)
+
+    def _updateChannelValue(self, axis, elapsed_time):
+        channel = self.channels[axis - 1]
+        if channel.acq_idx == self.repetitions:
+            return
+        x_size = self.BufferSize[0]
+        y_size = self.BufferSize[1]
+        amplitude = axis * self.integ_time * channel.amplitude.get()
+        img = generate_img(x_size, y_size, amplitude)
+        if self._synchronization == AcqSynch.SoftwareTrigger:
+            channel.value = img
+            if channel.value_ref_enabled:
+                img_idx = self.start_idx * self.repetitions + channel.acq_idx
+                value_ref_pattern = channel.value_ref_pattern
+                path, dataset_name, msg = generate_ref(value_ref_pattern,
+                                                       img_idx)
+                if msg is not None:
+                    self._log.warning(msg)
+                value_ref = "file://" + path
+                if channel.saving_enabled:
+                    msg = save_img(img, path, dataset_name)
+                    if msg is not None:
+                        self._log.warning(msg)
+                    else:
+                        value_ref = "h5" + value_ref + "::" + dataset_name
+                channel.value_ref = value_ref
+            channel.acq_idx += 1
+        elif self._synchronization in (AcqSynch.HardwareTrigger,
+                                       AcqSynch.HardwareGate,
+                                       AcqSynch.HardwareStart,
+                                       AcqSynch.SoftwareStart):
+            acq_cycle_time = self.acq_cycle_time
+            nb_elapsed_acq, resting = divmod(elapsed_time, acq_cycle_time)
+            nb_elapsed_acq = int(nb_elapsed_acq)
+            # do not wait the last latency_time
+            if (nb_elapsed_acq == self.repetitions - 1
+                    and resting > self.integ_time):
+                nb_elapsed_acq += 1
+            if nb_elapsed_acq > self.repetitions:
+                nb_elapsed_acq = self.repetitions
+            nb_new_acq = nb_elapsed_acq - channel.acq_idx
+            if nb_new_acq == 0:
+                return
+            channel.buffer_values.extend([img] * nb_new_acq)
+            if channel.value_ref_enabled:
+                start = self.start_idx * self.repetitions + channel.acq_idx
+                for img_idx in xrange(start, start + nb_new_acq):
+                    value_ref_pattern = channel.value_ref_pattern
+                    path, dataset_name, msg = generate_ref(value_ref_pattern,
+                                                           img_idx)
+                    if msg is not None:
+                        self._log.warning(msg)
+                    value_ref = "file://" + path
+                    if channel.saving_enabled:
+                        msg = save_img(img, path, dataset_name)
+                        if msg is not None:
+                            self._log.warning(msg)
+                        else:
+                            # we succeeded to save in HDF5
+                            value_ref = "h5" + value_ref + "::" + dataset_name
+                    channel.buffer_value_refs.append(value_ref)
+            channel.acq_idx += nb_new_acq
+
+    def RefOne(self, axis):
+        self._log.debug("RefOne(%s)", axis)
+        channel = self.read_channels[axis]
+        ret = None
+        if self._synchronization in (AcqSynch.HardwareTrigger,
+                                     AcqSynch.HardwareGate,
+                                     AcqSynch.HardwareStart,
+                                     AcqSynch.SoftwareStart,):
+            value_refs = copy.deepcopy(channel.buffer_value_refs)
+            channel.buffer_value_refs.__init__()
+            ret = value_refs
+        elif self._synchronization == AcqSynch.SoftwareTrigger:
+            ret = channel.value_ref
+        self._log.debug('RefOne(%d): returning %s' % (axis, repr(ret)))
+        return ret
+
+    def SetAxisPar(self, axis, parameter, value):
+        idx = axis - 1
+        channel = self.channels[idx]
+        if parameter == "value_ref_pattern":
+            channel.value_ref_pattern = value
+        elif parameter == "value_ref_enabled":
+            channel.value_ref_enabled = value
+
+    def isSavingEnabled(self, axis):
+        idx = axis - 1
+        channel = self.channels[idx]
+        return channel.saving_enabled
+
+    def setSavingEnabled(self, axis, value):
+        idx = axis - 1
+        channel = self.channels[idx]
+        channel.saving_enabled = value
