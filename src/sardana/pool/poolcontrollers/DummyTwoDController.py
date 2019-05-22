@@ -454,6 +454,22 @@ class DummyTwoDController(BasicDummyTwoDController, Referable):
     def __init__(self, inst, props, *args, **kwargs):
         BasicDummyTwoDController.__init__(self, inst, props, *args, **kwargs)
 
+    def PrepareOne(self, axis, value, repetitions, latency, nb_starts):
+        BasicDummyTwoDController.PrepareOne(self, axis, value, repetitions,
+                                            latency, nb_starts)
+        idx = axis - 1
+        channel = self.channels[idx]
+        value_ref_pattern = channel.value_ref_pattern
+        saving_enabled = channel.saving_enabled
+        # just validate if the pattern is correct, index does not matter
+        # that's why 0 is used
+        scheme, path, dataset_name, msg = generate_ref(value_ref_pattern,
+                                                       0)
+        if scheme != "h5file" and saving_enabled:
+            raise Exception("only h5file saving is supported")
+
+
+
     def _updateChannelValue(self, axis, elapsed_time):
         channel = self.channels[axis - 1]
         if channel.acq_idx == self.repetitions:
