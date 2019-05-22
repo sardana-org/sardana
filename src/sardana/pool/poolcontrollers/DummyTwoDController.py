@@ -468,8 +468,6 @@ class DummyTwoDController(BasicDummyTwoDController, Referable):
         if scheme != "h5file" and saving_enabled:
             raise Exception("only h5file saving is supported")
 
-
-
     def _updateChannelValue(self, axis, elapsed_time):
         channel = self.channels[axis - 1]
         if channel.acq_idx == self.repetitions:
