@@ -156,16 +156,7 @@ class BasicDummyTwoDController(TwoDController):
             FSet: 'setAmplitude',
             Description: ("Amplitude. Maybe a number or a tango attribute "
                           "(must start with tango://)"),
-            DefaultValue: '1.0'},
-        "SavingEnabled": {
-            Type: bool,
-            FGet: "isSavingEnabled",
-            FSet: "setSavingEnabled",
-            Description: ("Enable/disable saving of images in HDF5 files. "
-                          "Use with care in high demanding (fast) "
-                          "acquisitions. Trying to save at high rate may "
-                          "hang the acquisition process.")
-        }
+            DefaultValue: '1.0'}
     }
 
     def __init__(self, inst, props, *args, **kwargs):
@@ -439,6 +430,18 @@ class DummyTwoDController(BasicDummyTwoDController, Referable):
     """This class is the Tango Sardana TwoDController controller for tests"""
 
     model = "Best"
+
+    axis_attributes = {
+         "SavingEnabled": {
+            Type: bool,
+            FGet: "isSavingEnabled",
+            FSet: "setSavingEnabled",
+            Description: ("Enable/disable saving of images in HDF5 files. "
+                          "Use with care in high demanding (fast) "
+                          "acquisitions. Trying to save at high rate may "
+                          "hang the acquisition process.")
+         }
+    }
 
     def __init__(self, inst, props, *args, **kwargs):
         BasicDummyTwoDController.__init__(self, inst, props, *args, **kwargs)
