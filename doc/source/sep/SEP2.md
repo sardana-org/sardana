@@ -117,10 +117,9 @@ sardana.
 referencing capability. Channels and controllers without referencing capability
 will not expose this API.
 3. Add referencing configuration API to the measurement group.
-4. Add referencing configuration API to the scan framework.
 5. Implement storing value references in the HDF5 file recorder.
 If the value reference is a dataset in another HDF5 file this means
-creating an external link. Otherwise this means just having a reference in the
+creating a Virtual Data Set (VDS). Otherwise this means just having a reference in the
 string format.
 
 # Out of scope
