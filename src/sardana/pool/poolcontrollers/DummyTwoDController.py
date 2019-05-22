@@ -60,17 +60,25 @@ def generate_ref(pattern, idx):
         uri = pattern
         msg = ("Not able to format value reference template "
                "with index. Trying to use directly the template...")
-    match_res = re.match(r"h5file://(?P<path>\S+)::(?P<dataset>\S+)", uri)
+    match_res = re.match(
+        r"(?P<scheme>h5file)://(?P<path>\S+)::(?P<dataset>\S+)",
+        uri)
     if match_res is None:
-        match_res = re.match(r"h5file://(?P<path>\S+)", uri)
+        match_res = re.match(
+            r"(?P<scheme>(h5file|file))://(?P<path>\S+)",
+            uri)
     if match_res is None:
         raise Exception("invalid value reference template")
+    scheme = match_res.group("scheme")
     path = match_res.group("path")
     try:
         dataset_name = match_res.group("dataset")
     except IndexError:
-        dataset_name = "dataset"
-    return path, dataset_name, msg
+        if scheme == "h5file":
+            dataset_name = "dataset"
+        else:
+            dataset_name = None
+    return scheme, path, dataset_name, msg
 
 
 def save_img(img, path, dataset_name):
@@ -459,17 +467,18 @@ class DummyTwoDController(BasicDummyTwoDController, Referable):
             if channel.value_ref_enabled:
                 img_idx = self.start_idx * self.repetitions + channel.acq_idx
                 value_ref_pattern = channel.value_ref_pattern
-                path, dataset_name, msg = generate_ref(value_ref_pattern,
-                                                       img_idx)
+                scheme, path, dataset_name, msg = generate_ref(
+                    value_ref_pattern, img_idx)
                 if msg is not None:
                     self._log.warning(msg)
-                value_ref = "file://" + path
+                value_ref = scheme + "://" + path
                 if channel.saving_enabled:
                     msg = save_img(img, path, dataset_name)
                     if msg is not None:
                         self._log.warning(msg)
                     else:
-                        value_ref = "h5" + value_ref + "::" + dataset_name
+                        # we succeeded to save in HDF5
+                        value_ref = value_ref + "::" + dataset_name
                 channel.value_ref = value_ref
             channel.acq_idx += 1
         elif self._synchronization in (AcqSynch.HardwareTrigger,
@@ -493,18 +502,18 @@ class DummyTwoDController(BasicDummyTwoDController, Referable):
                 start = self.start_idx * self.repetitions + channel.acq_idx
                 for img_idx in xrange(start, start + nb_new_acq):
                     value_ref_pattern = channel.value_ref_pattern
-                    path, dataset_name, msg = generate_ref(value_ref_pattern,
-                                                           img_idx)
+                    scheme, path, dataset_name, msg = generate_ref(
+                        value_ref_pattern, img_idx)
                     if msg is not None:
                         self._log.warning(msg)
-                    value_ref = "file://" + path
+                    value_ref = scheme + "://" + path
                     if channel.saving_enabled:
                         msg = save_img(img, path, dataset_name)
                         if msg is not None:
                             self._log.warning(msg)
                         else:
                             # we succeeded to save in HDF5
-                            value_ref = "h5" + value_ref + "::" + dataset_name
+                            value_ref = value_ref + "::" + dataset_name
                     channel.buffer_value_refs.append(value_ref)
             channel.acq_idx += nb_new_acq
 
