@@ -142,6 +142,12 @@ class TwoDExpChannel(PoolTimerableDevice):
             if (name in ("timer", "valuereftemplate", "valuerefenabled")
                     and value is None):
                 value = "None"
+            elif name == "datasource" and value is None:
+                full_name = self.get_full_name()
+                # for Taurus 3/4 compatibility
+                if not full_name.startswith("tango://"):
+                    full_name = "tango://{0}".format(full_name)
+                value = "{0}/value".format(full_name)
             elif name == "value":
                 state = self.twod.get_state()
                 if state == State.Moving:

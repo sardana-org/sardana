@@ -607,7 +607,6 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
             self.beginResetModel()
             ctrl_data = self.getPyData(ctrlname=ctrlname)
             ctrl_data[key] = qvalue
-            self._mgconfig[key] = qvalue
             self.endResetModel()
             return True
         # for the rest, we use the regular TaurusBaseModel item-oriented approach
