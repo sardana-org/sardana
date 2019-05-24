@@ -394,7 +394,7 @@ class GScan(Logger):
                     low = None
 
             if any((high, low)) and not any((m.min_value, m.max_value)):
-                self._macro.info("Scan range is not defined for %s and could "
+                self.macro.info("Scan range is not defined for %s and could "
                                  "not be verified against motor limits."
                                  % m.moveable.getName())
 
