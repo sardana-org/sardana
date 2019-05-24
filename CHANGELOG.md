@@ -12,6 +12,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   `move`, `count`, etc. (#992)
 * Emulated hardware triggering between dummy counter/timer and trigger/gate elements
   (#1100)
+* Add macro example demonstrating how to add an extra scan column with motor positions
+  shifted to the middle of the scan interval: `ascanct_midtrigger` (#1105)
 
 
 ### Fixed
@@ -19,12 +21,16 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Hanging scans by avoiding deepcopy of `DeviceProxy` (#1102)
 * Restore motor parameters (vel, acc, dec) before going to start position in dNscact
   macros (#1085)
+* Calculation of nb_starts argument of `PrepareOne` method of timerable controllers
+  when software synchronization is in use (#1110)
 * expconf when empty (unspecified) DataType (#1076)
 * Output block of scan records which do not fit the console width (#924)
 * Fix bug on exception popups in macroexecutor (#1079, #1088)
 * Cyclic references between scan macros and GSF internals (#816)
 * Enable expconf buttons (Reload and Apply) when local configuration was kept after
   receiving external changes (#959, #1093)
+* Avoid external changes pop-up when synchronizer is changed in the expconf by
+  removing global measurement group synchronizer (#1103)
 * Show external changes pop-up in expconf when last measurement group is deleted
   remotelly (#1099)
 * Pop-up message when expconf configuration changed externally (#1094)
