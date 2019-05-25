@@ -48,15 +48,16 @@ tested.
 7. Once all reviews are cleared, update the date of the release in the
    CHANGELOG.md, merge the PR and tag in master.
 8. Check that travis-ci correctly uploaded to PyPI (triggered by a tag push)
+
    Previously:
    ~~Release to PyPI **from a clean checkout** and using [twine](https://github.com/pypa/twine):~~
-   ```
-   cd /tmp
-   git clone https://github.com/sardana-org/sardana.git -b <RELEASE_TAG>
-   cd sardana
-   python setup.py sdist bdist_wheel
-   twine upload dist/*
-   ```
+   >```
+   >cd /tmp
+   >git clone https://github.com/sardana-org/sardana.git -b <RELEASE_TAG>
+   >cd sardana
+   >python setup.py sdist bdist_wheel
+   >twine upload dist/*
+   >```
 9. Merge also the  `release-XXX` branch into develop, and bump the version of
    develop with `bumpversion patch`
 10. Complete GitHub release (upload artifacts, edit text)
