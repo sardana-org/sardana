@@ -14,6 +14,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   (#1100)
 * Add macro example demonstrating how to add an extra scan column with motor positions
   shifted to the middle of the scan interval: `ascanct_midtrigger` (#1105)
+* Auto-deploy to PyPI with Travis (#1113)
 
 
 ### Fixed
