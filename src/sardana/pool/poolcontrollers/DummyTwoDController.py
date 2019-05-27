@@ -439,17 +439,20 @@ class DummyTwoDController(BasicDummyTwoDController, Referable):
 
     model = "Best"
 
-    axis_attributes = {
-         "SavingEnabled": {
-            Type: bool,
-            FGet: "isSavingEnabled",
-            FSet: "setSavingEnabled",
-            Description: ("Enable/disable saving of images in HDF5 files. "
-                          "Use with care in high demanding (fast) "
-                          "acquisitions. Trying to save at high rate may "
-                          "hang the acquisition process.")
-         }
-    }
+    axis_attributes = dict(BasicDummyTwoDController.axis_attributes)
+    axis_attributes.update(
+        {
+             "SavingEnabled": {
+                Type: bool,
+                FGet: "isSavingEnabled",
+                FSet: "setSavingEnabled",
+                Description: ("Enable/disable saving of images in HDF5 files."
+                              " Use with care in high demanding (fast)"
+                              " acquisitions. Trying to save at high rate may"
+                              " hang the acquisition process.")
+             }
+        }
+    )
 
     def __init__(self, inst, props, *args, **kwargs):
         BasicDummyTwoDController.__init__(self, inst, props, *args, **kwargs)
