@@ -85,8 +85,6 @@ class TestMeasurementGroup(SarTestTestCase, TestCase):
 
 
 def _set_value_ref_enabled(conf, channel, value_ref_enabled):
-    # ctrl_full_name = channel.getControllerObj().getFullName()
-    print "getControllerObj"
     ctrl = channel.getControllerObj()
     ctrl_full_name = ctrl.getFullName()
     channel_full_name = channel.getFullName()
