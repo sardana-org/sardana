@@ -282,7 +282,7 @@ class TimerableControllerConfiguration(ControllerConfiguration):
         if self.enabled \
                 and not self.timer.enabled \
                 and not self.monitor.enabled:
-            err_msg = 'The channel {0} used as timer and the channel ' \
+            err_msg = 'channel {0} used as timer and channel ' \
                       '{1} used as monitor are disabled. One of them ' \
                       'must be enabled.'.format(self.timer.name,
                                                 self.monitor.name)
@@ -1178,30 +1178,27 @@ class PoolMeasurementGroup(PoolGroupElement):
         """
         if len(self.get_user_elements()) == 0:
             # All channels were disabled
-            raise RuntimeError('The measurement group "{}" has all '
-                               'the channels disabled.'.format(self.name))
+            raise RuntimeError('all channels in measurement group '
+                               'are disabled')
 
         if self._acquisition_mode == AcqMode.Timer:
             role = 'timer'
         elif self._acquisition_mode == AcqMode.Monitor:
             role = 'monitor'
         else:
-            raise RuntimeError('Wrong acquisition mode, it must be Timer '
+            raise RuntimeError('acquisition mode must be either Timer '
                                'or Monitor')
-        err_msg = 'Can not start measurement group {}:\n'.format(self.name)
-        err_flag = False
+
         for ctrl in self._config.get_timerable_ctrls(enabled=True):
             master = getattr(ctrl, role, None)
             if master is None:
-                raise RuntimeError('The controller {} does not have {} '
-                                   'configured.'.format(ctrl.name, role))
+                msg = ('controller {0} does not have {1} '
+                       'configured.').format(ctrl.name, role)
+                raise RuntimeError(msg)
             if not master.enabled:
-                err_msg += '* Channel "{}" is disabled and it is ' \
-                           'used as "{}", it must be ' \
-                           'active.\n'.format(master.name, role)
-                err_flag = True
-        if err_flag:
-            raise RuntimeError(err_msg)
+                msg = 'channel {0} used as {1} must be enabled'.format(
+                    master.name, role)
+                raise RuntimeError(msg)
 
         value = self._get_value()
         self._pending_starts = self.nb_starts

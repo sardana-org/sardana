@@ -259,8 +259,8 @@ class ExperimentConfiguration(object):
                 desc = df.args[0].desc
                 desc = desc.replace('\r', '')
                 desc = desc.replace('\n', '')
-                msg_error += 'Measurement Group {}:\n* ' \
-                             '{}\n\n'.format(mnt_grp, desc)
+                msg_error += 'Measurement Group {0}:\n'\
+                             '{1}\n\n'.format(mnt_grp, desc)
 
         if len(msg_error) > 0:
             raise RuntimeError(msg_error)

@@ -20,6 +20,7 @@
 ##
 # You should have received a copy of the GNU Lesser General Public License
 # along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -558,7 +559,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             door.setExperimentConfiguration(conf, mnt_grps=self._dirtyMntGrps)
         except Exception as e:
             Qt.QMessageBox.critical(self, 'Wrong configuration',
-                                    '{}'.format(e))
+                                    '{0}'.format(e))
             return False
         self._originalConfiguration = copy.deepcopy(conf)
         self._dirtyMntGrps = set()
