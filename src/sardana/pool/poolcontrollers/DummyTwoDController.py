@@ -308,7 +308,12 @@ class BasicDummyTwoDController(TwoDController):
 
     def ReadOne(self, axis):
         self._log.debug('ReadOne(%d): entering...' % axis)
-        channel = self.read_channels[axis]
+        try:
+            channel = self.read_channels[axis]
+        except KeyError:
+            # TODO: After SEP17 this won't be necessary anymore.
+            msg = "no acquisition done on axis {0} so far".format(axis)
+            raise RuntimeError(msg)
         ret = None
         if self._synchronization in (AcqSynch.HardwareTrigger,
                                      AcqSynch.HardwareGate,
