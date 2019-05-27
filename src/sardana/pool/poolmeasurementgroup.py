@@ -832,17 +832,6 @@ class MeasurementConfiguration(object):
         name = channel.name
         ctype = channel.get_type()
         full_name = channel.full_name
-        # choose channel source
-        if ctype != ElementType.External and channel.is_referable():
-            value_ref_enabled = channel_data.get('value_ref_enabled', False)
-            channel_data['value_ref_enabled'] = value_ref_enabled
-            if value_ref_enabled:
-                attr_name = channel.get_value_ref_attribute().name
-            else:
-                attr_name = channel.get_default_attribute().name
-            source = "{0}/{1}".format(channel.full_name, attr_name)
-        else:
-            source = channel.get_source()
         # choose ndim
         ndim = None
         if ctype == ElementType.CTExpChannel:
@@ -862,12 +851,15 @@ class MeasurementConfiguration(object):
         elif ctype == ElementType.IORegister:
             ndim = 0
 
+        if ctype != ElementType.External and channel.is_referable():
+            value_ref_enabled = channel_data.get('value_ref_enabled', False)
+            channel_data['value_ref_enabled'] = value_ref_enabled
         # Definitively should be initialized by measurement group
         # index MUST be here already (asserting this in the following line)
         channel_data['index'] = channel_data['index']
         channel_data['name'] = channel_data.get('name', name)
         channel_data['full_name'] = channel_data.get('full_name', full_name)
-        channel_data['source'] = source
+        channel_data['source'] = channel.get_source()
         channel_data['enabled'] = channel_data.get('enabled', True)
         channel_data['label'] = channel_data.get('label', channel_data['name'])
         channel_data['ndim'] = ndim

@@ -1448,6 +1448,12 @@ class MGConfiguration(object):
                                                             dev_name)
                 dev_data = tg_dev_chs.get(dev_name)
 
+                channel = Device(dev_name)
+                if (isinstance(channel, ExpChannel)
+                        and channel.isReferable()
+                        and channel_data.get("value_ref_enabled", False)):
+                    attr_name += "Ref"
+
                 if dev_data is None:
                     # Build tango device
                     dev = None
