@@ -802,6 +802,7 @@ class PoolAcquisitionBase(PoolAction):
         self._set_pool_ctrl_dict_loop(ctrls)
         # split controllers to read value and value reference
         self._split_ctrl(ctrls)
+        self.add_finish_hook(self._reset_ctrl_dicts, False)
 
         # channels that are acquired (only enabled)
         self._channels = []
@@ -952,6 +953,11 @@ class PoolAcquisitionBase(PoolAction):
         self._pool_ctrl_dict_value = ctrl_channels_value
         self._pool_ctrl_dict_ref = ctrl_channels_ref
 
+    def _reset_ctrl_dicts(self):
+        self._pool_ctrl_dict_loop = None
+        self._pool_ctrl_dict_value = None
+        self._pool_ctrl_dict_ref = None
+
     def clear_value_buffers(self):
         for channel in self._channels:
             channel.clear_value_buffer()
@@ -1075,6 +1081,14 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
         # single channel
         if self._pool_ctrl_dict_value is not None:
             return self._pool_ctrl_dict_value
+        else:
+            return self._pool_ctrl_dict
+
+    def get_read_value_ref_ctrls(self):
+        # technical debt in order to work both in case of meas group and
+        # single channel
+        if self._pool_ctrl_dict_ref is not None:
+            return self._pool_ctrl_dict_ref
         else:
             return self._pool_ctrl_dict
 
