@@ -1447,7 +1447,8 @@ class MGConfiguration(object):
                     dev_name = "tango://{0}:{1}/{2}".format(host, port,
                                                             dev_name)
                 dev_data = tg_dev_chs.get(dev_name)
-
+                # technical debt: read Value or ValueRef attribute
+                # ideally the source configuration should include this info
                 channel = Device(dev_name)
                 if (isinstance(channel, ExpChannel)
                         and channel.isReferable()
