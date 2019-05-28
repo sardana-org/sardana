@@ -231,16 +231,11 @@ class ExperimentConfiguration(object):
 
     def set(self, conf, mnt_grps=None):
         """Sets the ExperimentConfiguration dictionary."""
-        env = dict(ScanDir=conf.get('ScanDir'),
-                   ScanFile=conf.get('ScanFile'),
-                   DataCompressionRank=conf.get('DataCompressionRank', -1),
-                   ActiveMntGrp=conf.get('ActiveMntGrp'),
-                   PreScanSnapshot=conf.get('PreScanSnapshot'))
         if mnt_grps is None:
             mnt_grps = conf['MntGrpConfigs'].keys()
-        self._door.putEnvironments(env)
 
         codec = CodecFactory().getCodec('json')
+        msg_error = ''
         for mnt_grp in mnt_grps:
             try:
                 mnt_grp_cfg = conf['MntGrpConfigs'][mnt_grp]
@@ -249,6 +244,10 @@ class ExperimentConfiguration(object):
                     pool.DeleteElement(mnt_grp)
                 else:
                     try:
+                        # TODO: Fix incorrect implementation. It must check if
+                        #  the measurement group is part of the Pools
+                        #  controlled by the MacroServer. Otherwise,
+                        #  it must raise an exception.
                         mnt_grp_dev = Device(mnt_grp)
                     except:  # if the mnt_grp did not already exist, create it now
                         chconfigs = getChannelConfigs(mnt_grp_cfg)
@@ -264,10 +263,25 @@ class ExperimentConfiguration(object):
                     # mnt_grp.setConfiguration(mnt_grp_cfg)
                     data = codec.encode(('', mnt_grp_cfg))[1]
                     mnt_grp_dev.write_attribute('configuration', data)
-            except Exception, e:
-                from taurus.core.util.log import error
-                error(
-                    'Could not create/delete/modify Measurement group "%s": %s', mnt_grp, repr(e))
+            except PyTango.DevFailed as df:
+                # Take the description of the first exception.
+                desc = df.args[0].desc
+                desc = desc.replace('\r', '')
+                desc = desc.replace('\n', '')
+                msg_error += 'Measurement Group {0}:\n'\
+                             '{1}\n\n'.format(mnt_grp, desc)
+
+        if len(msg_error) > 0:
+            raise RuntimeError(msg_error)
+
+        # Send the environment changes
+        env = dict(ScanDir=conf.get('ScanDir'),
+                   ScanFile=conf.get('ScanFile'),
+                   DataCompressionRank=conf.get('DataCompressionRank', -1),
+                   ActiveMntGrp=conf.get('ActiveMntGrp'),
+                   PreScanSnapshot=conf.get('PreScanSnapshot'))
+
+        self._door.putEnvironments(env)
 
     def _getPoolOfElement(self, elementname):
         ms = self._door.macro_server
