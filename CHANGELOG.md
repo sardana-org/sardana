@@ -5,7 +5,6 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
-
 ### Added
 
 * Allow to configure timeout on pool element's (Taurus extensions) *go* methods e.g.
@@ -15,7 +14,6 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Add macro example demonstrating how to add an extra scan column with motor positions
   shifted to the middle of the scan interval: `ascanct_midtrigger` (#1105)
 * Auto-deploy to PyPI with Travis (#1113)
-
 
 ### Fixed
 
@@ -35,6 +33,18 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Show external changes pop-up in expconf when last measurement group is deleted
   remotelly (#1099)
 * Pop-up message when expconf configuration changed externally (#1094)
+
+## [2.7.2] 2019-05-28
+
+### Fixed
+
+* Several issues with measurement group configuration and `epxconf` (#1090)
+
+### Deprecated
+
+* Measurement group configuration `timer` and `monitor` - there are no 
+equivalents, these roles are assigned based on the channel's order per each 
+of the synchronization types: trigger, gate and start (#1090)
 
 ## [2.7.1] 2019-03-29
 
@@ -635,7 +645,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.7.1...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.7.2...HEAD
+[2.7.2]: https://github.com/sardana-org/sardana/compare/2.7.1...2.7.2
 [2.7.1]: https://github.com/sardana-org/sardana/compare/2.7.0...2.7.1
 [2.7.0]: https://github.com/sardana-org/sardana/compare/2.6.1...2.7.0
 [2.6.1]: https://github.com/sardana-org/sardana/compare/2.6.0...2.6.1
