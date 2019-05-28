@@ -228,7 +228,8 @@ class send2ctrl(Macro):
         pool = controller.getPoolObj()
         str_data = " ".join(data)
         res = pool.SendToController([name, str_data])
-        self.output(res)
+        if res:
+            self.output(res)
 
 ##########################################################################
 #
