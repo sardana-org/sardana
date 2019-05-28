@@ -747,9 +747,29 @@ class MeasurementConfiguration(object):
 
                 if acq_synch is not None:
                     channel_acq_synch[channel] = acq_synch
+
             if not external and ctrl.is_timerable():
                 ctrl_item.update_timer()
                 ctrl_item.update_monitor()
+
+                msg_error = ''
+                if ctrl_item.timer is None:
+                    timer_name = ctrl_data['timer']
+                    ch_timer = pool.get_element_by_full_name(timer_name)
+                    msg_error += 'The channel {0} is used as timer. ' \
+                                 '\n'.format(ch_timer.name)
+
+                if ctrl_item.monitor is None:
+                    monitor_name = ctrl_data['monitor']
+                    ch_timer = pool.get_element_by_full_name(monitor_name)
+                    msg_error += 'The channel {0} is used as monitor. ' \
+                                 '\n'.format(ch_timer.name)
+
+                if msg_error != '':
+                    msg_error += 'You must change the other channels ' \
+                                 'configurations before to remove it.'
+                    raise RuntimeError(msg_error)
+
                 if ctrl_item.enabled:
                     user_config_ctrl['timer'] = ctrl_item.timer.full_name
                     user_config_ctrl['monitor'] = ctrl_item.monitor.full_name
