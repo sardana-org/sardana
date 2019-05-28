@@ -756,19 +756,15 @@ class MeasurementConfiguration(object):
                 if ctrl_item.timer is None:
                     timer_name = ctrl_data['timer']
                     ch_timer = pool.get_element_by_full_name(timer_name)
-                    msg_error += 'The channel {0} is used as timer. ' \
-                                 '\n'.format(ch_timer.name)
-
+                    msg_error += 'Channel {0} is not present but used as ' \
+                                 'timer. '.format(ch_timer.name)
                 if ctrl_item.monitor is None:
                     monitor_name = ctrl_data['monitor']
-                    ch_timer = pool.get_element_by_full_name(monitor_name)
-                    msg_error += 'The channel {0} is used as monitor. ' \
-                                 '\n'.format(ch_timer.name)
-
-                if msg_error != '':
-                    msg_error += 'You must change the other channels ' \
-                                 'configurations before to remove it.'
-                    raise RuntimeError(msg_error)
+                    ch_monitor = pool.get_element_by_full_name(monitor_name)
+                    msg_error += 'Channel {0} is not present but used as ' \
+                                 'monitor.'.format(ch_monitor.name)
+                if len(msg_error) > 0:
+                    raise ValueError(msg_error)
 
                 if ctrl_item.enabled:
                     user_config_ctrl['timer'] = ctrl_item.timer.full_name
