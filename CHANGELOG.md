@@ -5,7 +5,6 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
-
 ### Added
 
 * SEP2 (#775):
@@ -34,8 +33,10 @@ This file follows the formats and conventions from [keepachangelog.com]
   `move`, `count`, etc. (#992)
 * Emulated hardware triggering between dummy counter/timer and trigger/gate elements
   (#1100)
-* Add macro example demonstrating how to add an extra scan column with motor positions
-  shifted to the middle of the scan interval: `ascanct_midtrigger` (#1105)
+* Macro example demonstrating how to add an extra scan column with motor
+  positions shifted to the middle of the scan interval: `ascanct_midtrigger`
+  (#1105)
+* Auto-deploy to PyPI with Travis (#1113)
 
 ### Changed
 
@@ -56,7 +57,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * expconf when empty (unspecified) DataType (#1076)
 * Output block of scan records which do not fit the console width (#924)
 * Fix bug on exception popups in macroexecutor (#1079, #1088)
-* Cyclic references between scan macros and GSF internals (#816)
+* Cyclic references between scan macros and GSF internals (#816, #1115)
 * Enable expconf buttons (Reload and Apply) when local configuration was kept after
   receiving external changes (#959, #1093)
 * Avoid external changes pop-up when synchronizer is changed in the expconf by
@@ -73,6 +74,18 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Removed
 
 * 
+
+## [2.7.2] 2019-05-28
+
+### Fixed
+
+* Several issues with measurement group configuration and `epxconf` (#1090)
+
+### Deprecated
+
+* Measurement group configuration `timer` and `monitor` - there are no 
+equivalents, these roles are assigned based on the channel's order per each 
+of the synchronization types: trigger, gate and start (#1090)
 
 ## [2.7.1] 2019-03-29
 
@@ -673,7 +686,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.7.1...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.7.2...HEAD
+[2.7.2]: https://github.com/sardana-org/sardana/compare/2.7.1...2.7.2
 [2.7.1]: https://github.com/sardana-org/sardana/compare/2.7.0...2.7.1
 [2.7.0]: https://github.com/sardana-org/sardana/compare/2.6.1...2.7.0
 [2.6.1]: https://github.com/sardana-org/sardana/compare/2.6.0...2.6.1
