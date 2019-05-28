@@ -270,10 +270,14 @@ class TimerableControllerConfiguration(ControllerConfiguration):
                 master = channel
                 idx = channel.index
         else:
+            found = False
             for channel in self._channels:
                 if channel.full_name == master:
                     master = channel
-
+                    found = True
+                    break
+            if not found:
+                master = None
         setattr(self, role, master)
 
     def validate(self):
