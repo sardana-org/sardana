@@ -33,6 +33,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Show external changes pop-up in expconf when last measurement group is deleted
   remotelly (#1099)
 * Pop-up message when expconf configuration changed externally (#1094)
+* Remove circlular references between the macro object and the FIO recorder (#1121)
 
 ## [2.7.2] 2019-05-28
 
