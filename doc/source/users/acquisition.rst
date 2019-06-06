@@ -25,14 +25,13 @@ the :ref:`sardana-acquisition-expchannel`. These could be, for example, multiple
 channel, multiple repetitions or hardware synchronized acquisitions.
 
 .. important::
-
-    Sardana does not allow that the elements involved in one operation are used in
-    another one simultaneously. This rule applies to the data acqusition operations as well.
-    For example, if you try to use a channel or synchronizer element that is
-    participating in another acquisition sardana will raise an error.
-    So elements can not participate concurrently in two
-    :ref:`measurement group acquisitions <sardana-acquisition-measgrp>` neither in
-    :ref:`experimental channel acquisition <sardana-acquisition-expchannel>.
+   Sardana does not allow that the elements involved in one operation are used in
+   another one simultaneously. This rule applies to the data acqusition operations as well.
+   For example, if you try to use a channel or synchronizer element that is
+   participating in another acquisition sardana will raise an error.
+   So elements can not participate concurrently in two
+   :ref:`measurement group acquisitions <sardana-acquisition-measgrp>` neither in
+   :ref:`experimental channel acquisition <sardana-acquisition-expchannel>`.
 
 Other acquisition features:
 
