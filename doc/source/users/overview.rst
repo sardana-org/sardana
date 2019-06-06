@@ -14,8 +14,7 @@ difficult to share. Inspired by the success of the Tango_ collaboration, ALBA_
 decided to start the creation of a generic tool to enlarge the scope of the
 Tango_ project to include a standard client program - or better a standard
 generic user environment. From the beginning our aim has been to involve others
-in this process. At this moment in time the user environment consists of a
-highly configurable standard graphical user interface, a standard command line
+in this process. At this moment in time the user environment consists of a standard command line
 interface understanding SPEC_ commands, and a standard way to compose new
 applications either by programming or with a graphical tool. It further
 consists of a standard macro executer, standard set of macros, a standard range
@@ -111,21 +110,6 @@ system have been created with this toolkit. Creating the applications out of
 standard components has been proven to be extremely powerful. In the
 :ref:`sardana-screenshots-guis` chapter you can see some of the graphical user
 interfaces used.
-
-Configure – don’t program
-=========================
-
-The Sardana system comes with a configuration editor to allow non-experts to add
-and configure components. The editor adapts dynamically to the hardware
-controllers present. New hardware controller can be easily written and
-integrated into the system without restarting it.
-
-.. image:: /_static/snapshot07.png
-  :align: center 
-  :width: 500
-
-This configuration editor is currently being rewritten to be more wizard based
-and provide better guidance for the end user.
 
 How to write your own procedure
 ===============================
