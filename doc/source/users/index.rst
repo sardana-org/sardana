@@ -22,3 +22,4 @@ User's Guide
     Configuration <configuration/index>
     Screenshots <screenshots>
     FAQ <faq>
+    Known Problems <https://github.com/sardana-org/sardana/issues?q=is:issue+is:open+label:doc:knownbug>
