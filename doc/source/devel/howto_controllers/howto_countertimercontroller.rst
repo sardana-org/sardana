@@ -330,23 +330,36 @@ implementation of all other start methods is optional and their default
 implementation does nothing (:meth:`~sardana.pool.controller.Startable.PreStartOne`
 actually returns ``True``).
 
-So, actually, a simplified algorithm for counter acquisition start in sardana is::
+So, actually, the algorithm for counter acquisition start in sardana is::
 
     /FOR/ Each controller(s) implied in the acquisition
-         - Call PreStartAll()
-    /END FOR/
-
-    /FOR/ Each counter(s) implied in the acquisition
-         - ret = PreStartOne(counter to acquire, new position)
-         - /IF/ ret is not true
-            /RAISE/ Cannot start. Counter PreStartOne returns False
-         - /END IF/
-         - Call StartOne(counter to acquire, new position)
+        - Call PreStartAll()
     /END FOR/
 
     /FOR/ Each controller(s) implied in the acquisition
-         - Call StartAll()
+        /FOR/ Each counter(s) implied in the acquisition
+            - ret = PreStartOne(counter to acquire, new position)
+            - /IF/ ret is not true
+                /RAISE/ Cannot start. Counter PreStartOne returns False
+            - /END IF/
+            - Call StartOne(counter to acquire, new position)
+        /END FOR/
     /END FOR/
+
+    /FOR/ Each controller(s) implied in the acquisition
+        - Call StartAll()
+    /END FOR/
+
+The controllers over which we iterate in the above pseudo code are organized
+so the master timer/monitor controller is the last one to be called. Similar order of
+iteration applies to the counters of a given controller, so the timer/monitor
+is the last one to be called.
+
+You can assign the master controller role with the order of the controllers
+in the measurement group. There is one master per each of the following
+synchronization modes: :attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareTrigger`
+and :attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareStart`. This order must be
+set within the measurement group :ref:`sardana-measurementgroup-overview-configuration`.
 
 So, for the example above where we acquire two counters, the complete sequence of
 calls to the controller is:
