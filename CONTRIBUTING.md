@@ -58,11 +58,11 @@ In general, the contributions to Sardana should consider following:
     ```
   - python module should contain license information (see template below)
   - avoid poluting namespace by making private definitions private (``__`` prefix)
-  - or/and implementing ``__all__`` (see template below)
+    or/and implementing ``__all__`` (see template below)
   - whenever a python module can be executed from the command line, it should 
-  - contain a ``main`` function and a call to it in a ``if __name__ == "__main__"``
+    contain a ``main`` function and a call to it in a ``if __name__ == "__main__"``
     like statement (see template below)
-  - document all code using Sphinx_ extension to reStructuredText_
+  - document all code using [Sphinx][] extension to [reStructuredText]{}
 
 - The contributor must be clearly identified. The commit author 
   email should be valid and usable for contacting him/her.
