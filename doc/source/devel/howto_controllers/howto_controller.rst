@@ -14,8 +14,9 @@ controller could connect directly to the hardware via specific libraries or
 connect to any standalone server written for example in Tango_, Taco_ or even EPICS_. Since Sardana is written in python talking directly to the hardware is
 not possible if the hardware libraries do not have a python interface. For
 the rest of the cases both solutions are usually valid and is up to the
-developer to evaluate and decide which is the most convenient one.
-Having an standalone server could be more convenient for debugging or
+developers to evaluate and decide which of botho solutions is the most
+convenient one.
+Having a standalone server could be more convenient for debugging or
 testing purporses or for having access to the hardware without the need
 of running sardana, but it requires more work in the implementation, since
 both standalone server and controller have to be developed. This does not
