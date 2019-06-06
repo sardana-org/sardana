@@ -161,6 +161,17 @@ What is the file format of the configuration files?
 ---------------------------------------------------
 The configuration files for the Taurus_ GUI are defined here **<LINK>**.
 
+How to access EPICS from Sardana?
+---------------------------------
+
+Hardware integrated in EPICS_ can be directly accessed from Sardana via a
+controller. The controller can talk to the EPICS_ server using the
+python EPICS_ interface or the Taurus_ interface to EPICS_.
+The TaurusTimerCounterController_ class is distributed with sardana and
+allows the connection to any EPICS_ attribute giving the EPICS_ address
+as TaurusAttribute.
+
+.. _TaurusTimerCounterController: https://github.com/sardana-org/sardana/blob/develop/src/sardana/pool/poolcontrollers/TaurusController.py
 .. _ALBA: http://www.cells.es/
 .. _ANKA: http://http://ankaweb.fzk.de/
 .. _ELETTRA: http://http://www.elettra.trieste.it/
