@@ -351,7 +351,7 @@ So, actually, the algorithm for counter acquisition start in sardana is::
     /END FOR/
 
 The controllers over which we iterate in the above pseudo code are organized
-so the master/timer controller is the last one to be called. Similar order of
+so the master timer/monitor controller is the last one to be called. Similar order of
 iteration applies to the counters of a given controller, so the timer/monitor
 is the last one to be called.
 
