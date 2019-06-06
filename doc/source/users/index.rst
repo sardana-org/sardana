@@ -12,6 +12,7 @@ User's Guide
     Spock <spock>
     Sardana-Taurus Widgets <taurus/index>
     Scans <scan>
+    Motion <motion>
     Diffractometer <diffractometer>
     Adding real elements <adding_elements>
     Macro Hooks <macro_hooks>
