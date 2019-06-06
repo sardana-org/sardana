@@ -14,6 +14,7 @@ Overview
     Controller <overview_controller>
     Motor <overview_motor>
     Pseudo motor <overview_pseudomotor>
+    MotorGroup <overview_motorgroup>
     IO register <overview_IOR>
     Trigger/gate <overview_triggergate>
     Counter/timer <overview_countertimer>
