@@ -168,7 +168,7 @@ institutes, no assumptions of the hardware used could be made. There exists
 therefore a mechanism to adapt the Sardana system to your own hardware. This
 adaptor also has another very important role to play. This is best explained
 with the motor as example. We consider more or less everything which can be
-changed in the system a motor. The term which should have better been used to
+changed in the system as a motor. The term which should have better been used to
 describe this thing should have been therefore *movable*. A motor can be a
 temperature of a temperature controller which can be changed, a motor from an
 insertion device which needs a highly complicated protocol to be moved, or just
@@ -176,13 +176,9 @@ about anything. Sometimes we also consider calculated value like H,K,L, the
 height of a table, and the gap of a slit to be a motor. All these different
 *motors* can be scanned with the same generic procedures without having to
 worry about on which elements it is working on. You can add one of these pseudo
-motors with the configuration editor. It is easily possible to add new types of
+motors by means of configuration. It is easily possible to add new types of
 pseudo motors. This has only to be done once and the Sardana system already
-provides a large variety of these types.
-
-.. image:: /_static/snapshot09.png
-  :align: center 
-  :width: 500
+provides a large variety of these types. 
 
 Please find in the following an example for adding a completely new type in the
 case of a *slit*.
@@ -192,10 +188,6 @@ methods calc_physical and calc_pseudo which can be used to do the
 transformation between the different coordinate systems. Or to say it in the
 language of Sardana between the pseudo motors gap and offset and the real
 motors left blade and right blade.
-
-.. image:: /_static/snapshot10.png
-  :align: center 
-  :width: 500
 
 Once again the information in the beginning allows the graphical user interface
 to be created automatically once it is loaded into the system.
