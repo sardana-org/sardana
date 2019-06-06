@@ -1472,7 +1472,7 @@ In above example, the asynchronous movement is started using
 :code:`Motion.startMove` method and then it is synchronized using
 :code:`Motion.waitMove`. In between you can perform other operations, the
 :code:`waitMove` call will wait for the motion to finish or return immediately
-if it's already finished. :code:`startMove` will return an identificator, than
+if it's already finished. :code:`startMove` will return an identificator, that
 can be later used to wait for the motion.
 
 The :code:`MeasurementGroup` provides a similar interface for asynchronous
