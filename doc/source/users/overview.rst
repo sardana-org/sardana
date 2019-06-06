@@ -14,7 +14,8 @@ difficult to share. Inspired by the success of the Tango_ collaboration, ALBA_
 decided to start the creation of a generic tool to enlarge the scope of the
 Tango_ project to include a standard client program - or better a standard
 generic user environment. From the beginning our aim has been to involve others
-in this process. At this moment in time the user environment consists of a standard command line
+in this process. At this moment in time the user environment consists of a highly
+configurable standard graphical user interface, a standard command line
 interface understanding SPEC_ commands, and a standard way to compose new
 applications either by programming or with a graphical tool. It further
 consists of a standard macro executer, standard set of macros, a standard range
