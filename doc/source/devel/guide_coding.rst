@@ -22,8 +22,8 @@ ways, such as reporting bugs or proposing new features. In all cases you will
 probably need a github account and you are strongly encouraged to subscribe to the
 `sardana-devel and sardana-users mailing lists <https://sourceforge.net/p/sardana/mailman/>`_.
 
-We also invite you to join the regular project `follow-up meetings <https://github.com/sardana-org/sardana-followup>`. These are announced on the previously mentioned mailing list.
+We also invite you to join the regular project `follow-up meetings <https://github.com/sardana-org/sardana-followup>`_. These are announced on the previously mentioned mailing list.
 
 Detailed instructions on how to contribute to code or documentation can be found in
-`CONTRIBUTING.md<https://github.com/sardana-org/sardana/blob/develop/CONTRIBUTING.md>`.
+`CONTRIBUTING.md <https://github.com/sardana-org/sardana/blob/develop/CONTRIBUTING.md>`_.
 
