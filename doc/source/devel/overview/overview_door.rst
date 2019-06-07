@@ -11,5 +11,7 @@ A single Macro Server can have many active Doors at the same time but
 a Door can only run one macro at a time. Each Door is exposed on the
 sardana server as a Tango_ device.
 
-Exist a possibility to define :ref:`macro environment <macro-environmen>`
+Exist a possibility to define :ref:`macro environment <macro-environment>`
 applied at the door level i.e. not visible on other doors.
+
+.. _Tango: http://www.tango-controls.org/
