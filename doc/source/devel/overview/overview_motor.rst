@@ -35,6 +35,23 @@ The *motor* object is also exposed as a Tango_ device.
 ..        the motor class :term:`API` 
 
 
+Motor states
+------------
+
+Every motor controller can manage states in its own way, however a common and
+recomended practice is as follows:
+
+- :code:`ON` - The motor is stopped and working properly
+- :code:`ALARM` - A limit switch is active
+- :code:`MOVING` - A movement is executed
+- :code:`FAULT` - There is a problem with controller software or communication
+  with the hardware failed
+- :code:`UNKNOWN` - The software controller doesn't provide state information,
+  can also indicate problem with communication
+
+When state is :code:`ALARM`, the status should indicate which limit switch has
+been activated.
+
 
 .. _ALBA: http://www.cells.es/
 .. _ANKA: http://http://ankaweb.fzk.de/

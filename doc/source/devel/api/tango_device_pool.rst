@@ -194,43 +194,50 @@ Sardana core hardware access
 The Sardana Motor management
 ----------------------------
 
+.. code-block:: rst
+  :caption: not relevant and image that is currently in the docs is better
 
-The user motor interface
-^^^^^^^^^^^^^^^^^^^^^^^^
+  The user motor interface
+  ^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. note::
-  Here the API looks similar to the current implementation. This needs to be
-  checked, and C++ code needs to be removed.
+  .. note::
+    Here the API looks similar to the current implementation. This needs to be
+    checked, and C++ code needs to be removed.
 
-The motor interface is a first approach of what could be a complete
-motor interface. It is statically linked with the Pool device server
-and supports several attributes and commands. It is implemented in C++
-and used a set of the so-called "controller" methods. The motor
-interface is always the same whatever the hardware is. This is the
-rule of the "controller" to access the hardware using the
-communication link supported by the motor controller hardware (network
-link, serial line...).
+  The motor interface is a first approach of what could be a complete
+  motor interface. It is statically linked with the Pool device server
+  and supports several attributes and commands. It is implemented in C++
+  and used a set of the so-called "controller" methods. The motor
+  interface is always the same whatever the hardware is. This is the
+  rule of the "controller" to access the hardware using the
+  communication link supported by the motor controller hardware (network
+  link, serial line...).
 
-.. image:: /_static/motor.png
+  .. image:: /_static/motor.png
 
-The controller code has a well-defined interface and can be written
-using Python or C++. In both cases, it will be dynamically loaded into
-the pool device server process. 
+  The controller code has a well-defined interface and can be written
+  using Python or C++. In both cases, it will be dynamically loaded into
+  the pool device server process. 
 
+.. --- end of code block ---
 
-The states
-""""""""""
+.. code-block:: rst
+  :caption: incorporated into Motor overview
 
-The motor interface knows five states which are ON, MOVING, ALARM,
-FAULT and UNKNOWN. A motor device is in MOVING state when it is
-moving! It is in ALARM state when it has reached one of the limit
-switches and is in FAULT if its controller software is not available
-(impossible to load it) or if a fault is reported from the hardware
-controller. The motor is in the UNKNOWN state if an exception occurs
-during the communication between the pool and the hardware controller.
-When the motor is in ALARM state, its status will indicate which limit
-switches is active. 
+  The states
+  """"""""""
 
+  The motor interface knows five states which are ON, MOVING, ALARM,
+  FAULT and UNKNOWN. A motor device is in MOVING state when it is
+  moving! It is in ALARM state when it has reached one of the limit
+  switches and is in FAULT if its controller software is not available
+  (impossible to load it) or if a fault is reported from the hardware
+  controller. The motor is in the UNKNOWN state if an exception occurs
+  during the communication between the pool and the hardware controller.
+  When the motor is in ALARM state, its status will indicate which limit
+  switches is active. 
+
+.. --- end of code block ---
 
 The commands
 """"""""""""
