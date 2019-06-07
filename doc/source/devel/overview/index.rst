@@ -10,6 +10,7 @@ Overview
     
     Global overview <overview>
     Macro Server <overview_macroserver>
+    Door <overview_door>
     Pool <overview_pool>
     Controller <overview_controller>
     Motor <overview_motor>
