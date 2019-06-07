@@ -171,8 +171,8 @@ The TaurusTimerCounterController class is distributed with sardana and
 allows the connection to any EPICS_ attribute giving the EPICS_ address
 as TaurusAttribute.
 
-Which type of controller should be choose for integrating hardware that do not fit with any specific controller type?
----------------------------------------------------------------------------------------------------------------------
+Which type of controller should I choose for integrating hardware that do not fit with any specific controller type?
+--------------------------------------------------------------------------------------------------------------------
 
 Sardana controllers can be used for implementing some features that in
 principle do not fit with any kind of controller. In order to choose
@@ -183,12 +183,12 @@ controllers during an scan.
 The main differences between CT, ZeroD and OneD/TwoD are:
 
 1. The ZeroDController class is neither Startable nor Loadable, so the
-exposure time can not be given to the controller and not action can
+exposure time can not be given to the controller and no action can
 be performed at the start of the scan.
 CounterTimerController/OneDController/TwoDController classes are
 Startable and Loadable.
 
-2. The output value of ZeroD and CT is continuosly read during the scan
+2. The output value of ZeroD and CT is continuously read during the scan
 (functions PreReadAll/PreReadOne/ReadAll/ReadOne of the controllers classes
 of these types are continuously called). OneD/TwoD read the value only at the
 end of the acquisition time. Slow actions (like readout of images or spectra
