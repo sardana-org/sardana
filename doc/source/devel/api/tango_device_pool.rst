@@ -45,6 +45,10 @@ Hardware access
 Core hardware access
 ^^^^^^^^^^^^^^^^^^^^
 
+.. note::
+  Some serial line and static linking references could be removed, but otherwise
+  this looks fine to me.
+
 Most of the times, it is possible to define a list of very common
 devices found in most of the experiments, a list of communication link
 used between the experiment hardware and the control computer(s) and
@@ -116,6 +120,9 @@ have their wizard initialized.
 Extending pool features
 ^^^^^^^^^^^^^^^^^^^^^^^
 
+.. note::
+  This is more than likely outdated. Probably should be removed.
+
 From time to time, it could be useful to extend the list of Tango_
 classes known by the device pool in case a new kind of equipment (not
 using the core hardware access) is added to the experiment. Starting
@@ -148,6 +155,9 @@ To achieve this feature, the pool Tango_ device will have commands to
 Global actions
 --------------
 
+.. note::
+  Most of these are now done by MacroServer?
+
 The following common actions regularly done on a beam line experiment
 will be done by the pool device server: 
 
@@ -172,6 +182,10 @@ The Sardana Motor management
 
 The user motor interface
 ^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. note::
+  Here the API looks similar to the current implementation. This needs to be
+  checked, and C++ code needs to be removed.
 
 The motor interface is a first approach of what could be a complete
 motor interface. It is statically linked with the Pool device server
@@ -377,6 +391,9 @@ characteristics of these extra attributes are :
 The motor properties
 """"""""""""""""""""
 
+.. note::
+  Outdated?
+
 Each motor device has a set of properties. Five of these properties
 are automatically managed by the pool software and must not be changed
 by the user. These properties are named Motor_id, _Acceleration,
@@ -412,6 +429,9 @@ have subscribed to change event on the Limit_Switches attribute.
 Reading the motor position attribute
 """"""""""""""""""""""""""""""""""""
 
+.. note::
+  Outdated?
+
 For each motor, the key attribute is its position. Special care has
 been taken on this attribute management. When the motor is not moving,
 reading the Position attribute will generate calls to the controller
@@ -435,6 +455,9 @@ with this value is sent to clients using events.
 
 The Motor Controller
 ^^^^^^^^^^^^^^^^^^^^
+
+.. note::
+  The C++ part needs to be removed.
 
 XXX: Unknown inset LatexCommand \label{sub:The-Motor-Controller}:
 
@@ -487,6 +510,9 @@ properties. This is detailed in a dedicated sub-chapter.
 Specifying the motor controller features
 """"""""""""""""""""""""""""""""""""""""
 
+.. note::
+  Never seen that in the wild. Probably outdated.
+
 A controller feature is something that motor hardware controller is
 able to do or require on top of what has been qualified as the basic
 rules. Even if these features are common, not all the controllers
@@ -532,6 +558,9 @@ code.
 
 Specifying the motor controller extra attributes
 """"""""""""""""""""""""""""""""""""""""""""""""
+
+.. note::
+  C++ part needs to be removed. Otherwise looks good.
 
 XXX: Unknown inset LatexCommand \label{par:Specifying-the-motor}:
 
@@ -865,6 +894,10 @@ default one is not valid for his usage. This is the rule of the
 graphical panel to store the new value into the Tango_ database. The
 supported data type for controller property are:
 
+.. note::
+  The table and text below needs some further attention. For sure the C++ part
+  is out of date, but I think some names could have also changed.
+
 ==================  ====================================
 Property data type  String to use in property definition
 ==================  ====================================
@@ -934,6 +967,9 @@ elements as the property has.
 The MaxDevice property
 """"""""""""""""""""""
 
+.. note::
+  Guess what, C++ part and example :)
+
 Each controller has to have a property defining the maximum number of
 device it supports. This is a mandatory requirement. Therefore, in
 Python this property is simply defined by setting the value of a
@@ -956,6 +992,9 @@ MaxDevice property in C++ for a controller class called
 
 C++ controller
 """"""""""""""
+
+.. note::
+  Outdated. I think this entire section can be removed.
 
 For C++, the controller code is implemented as a set of classes: A
 base class called **Controller** and a class called **MotorController** which inherits from Controller. Finally, the user has to write its
@@ -1233,6 +1272,9 @@ controller C++ code defining all these elements.
 Python controller
 """""""""""""""""
 
+.. note::
+  This looks more or less OK.
+
 The principle is exactly the same than the one used for C++ controller
 but we don't have pure virtual methods with a compiler checking if
 they are defined at compile time. Therefore, it is the pool software
@@ -1274,6 +1316,9 @@ that this class is a motor controller.
 
 Python controller examples
 """"""""""""""""""""""""""
+
+.. note::
+  The examples should be updated, but are mostly OK.
 
 
 XXX: Unknown layout Subparagraph: A minimum controller code
@@ -1572,6 +1617,9 @@ Line 153-157: The SendToCtrl method
 Defining available controller features
 """"""""""""""""""""""""""""""""""""""
 
+.. note::
+  Not relevant anymore?
+
 Four data types and two read_write modes are available for the
 attribute associated with controller features. The possible data type
 are: 
@@ -1604,6 +1652,9 @@ features are defined as an array of these structures in a file called **MotorFea
 
 Controller access when creating a motor
 """""""""""""""""""""""""""""""""""""""
+
+.. note::
+  Is there still something like SaveConfig?
 
 When you create a motor (a new one or at Pool startup time), the calls
 executed on the controller depend if a command "SaveConfig" has
@@ -1645,6 +1696,10 @@ and the following controller methods will be called:
 
 The pool motor group interface
 ------------------------------
+
+.. note::
+  Outdated. I think that apart of C++, this interface doesn't work like this
+  anymore. Probably the whole motor group part could be removed.
 
 The motor group interface allows the user to move several motor(s) at
 the same time. It supports several attributes and commands. It is
@@ -1795,6 +1850,10 @@ is called the ghost group.
 
 The pool pseudo motor interface
 -------------------------------
+
+.. note::
+  Some information is outdated, but the core principle is probably still the
+  same.
 
 The pseudo motor interface acts like an abstraction layer for a motor
 or a set of motors allowing the user to control the experiment by
@@ -2102,6 +2161,9 @@ a new position is written to the gap pseudo motor:
 
 The Counter/Timer interface
 ---------------------------
+
+.. note::
+  C++ and stuff, but otherwise looks pretty good.
 
 
 The Counter/Timer user interface
@@ -2449,6 +2511,9 @@ XXX: Unknown inset LatexCommand \ref{par:Controller-properties}:
 C++ controller
 """"""""""""""
 
+.. note::
+  Not relevant anymore, can be removed.
+
 For C++, the controller code is implemented as a set of classes: A
 base class called **Controller** and a class called **CoTiController** which inherits from Controller. Finally, the user has to write its
 controller class which inherits from CoTiController. The Controller
@@ -2529,6 +2594,9 @@ XXX: Unknown inset LatexCommand \ref{par:The-user-controller}:
 Python controller
 """""""""""""""""
 
+.. note::
+  Compare with other docs for C/T controller.
+
 The principle is exactly the same than the one used for C++ controller
 but we don't have pure virtual methods with a compiler checking if
 they are defined at compile time. Therefore, it is the pool software
@@ -2571,6 +2639,9 @@ software to realize that this class is a Counter Timer Channel controller.
 The Unix Timer
 --------------
 
+.. note::
+  Doesn't exist anymore?
+
 A timer using the Unix getitimer() and setitimer() system calls is
 provided. It is a Counter/Timer C++ controller following the
 definition of the previous chapter. Therefore, the device created
@@ -2584,6 +2655,9 @@ have only one device (MaxDevice = 1)
 
 The ZeroDExpChannel interface
 -----------------------------
+
+.. note::
+  Update to remove C++ references, the interface looks more or less OK.
 
 The ZeroDExpChannel is used to access any kind of device which returns
 a scalar value and which are not counter or timer. Very often (but not
@@ -2656,6 +2730,9 @@ Stop          void             void
 
 The attributes
 """"""""""""""
+
+.. note::
+  C++ etc., Cumulation is now called Accumulation probably.
 
 The ZeroDExpChannel interface supports several attributes which are
 summarized in the following table:
@@ -2732,6 +2809,9 @@ SimulationMode         Tango::DevBoolean  Scalar       R         No         Ope
 
 The properties
 """"""""""""""
+
+.. note::
+  Outdated?
 
 Each ZeroDExpChannel device has a set of properties. One of these
 properties is automatically managed by the pool software and must not
@@ -2945,6 +3025,9 @@ XXX: Unknown inset LatexCommand \ref{par:Controller-properties}:
 C++ controller
 """"""""""""""
 
+.. note::
+  Can be removed.
+
 For C++, the controller code is implemented as a set of classes: A
 base class called **Controller** and a class called **ZeroDController** which inherits from Controller. Finally, the user has to write its
 controller class which inherits from ZeroDController. The Controller
@@ -2998,6 +3081,9 @@ XXX: Unknown inset LatexCommand \ref{par:The-user-controller}:
 Python controller
 """""""""""""""""
 
+.. note::
+  Compare with the ZeroD docs.
+
 The principle is exactly the same than the one used for C++ controller
 but we don't have pure virtual methods with a compiler checking if
 they are defined at compile time. Therefore, it is the pool software
@@ -3047,6 +3133,9 @@ To be filled in
 The Measurement Group interface
 -------------------------------
 
+.. note::
+  Remove C++ and compare with MeasurementGroup docs.
+
 The measurement group interface allows the user to access several data
 acquisition channels at the same time. It is implemented as a C++
 Tango_ device that is statically linked with the Pool device server. It
@@ -3074,6 +3163,9 @@ channels.
 
 The States
 ^^^^^^^^^^
+
+.. note::
+  STANDBY is not used anymore?
 
 The measurement group interface knows five states which are ON,
 MOVING, ALARM, FAULT. A group is in MOVING state when it is acquiring
@@ -3137,6 +3229,9 @@ RemoveExpChannel  String           void
 
 XXX: Unknown inset LatexCommand \label{Measurement Group: The attributes}:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. note::
+  This probably doesn't work like this anymore.
 
 The attributes
 
@@ -3245,6 +3340,9 @@ start acquiring data and when they stop.
 Reading the measurement group channel values
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. note::
+  Outdated?
+
 For each measurement group there is a set of key dynamic attributes
 representing the value of each channel in the group. They are named
 <channel_name _{\text{i}} >_Value. Special care has been taken on the management of these
@@ -3350,6 +3448,9 @@ configuration at startup to the minimum.
 The ghost measurement group
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. note::
+  Not relevant anymore?
+
 In order to allow pool client software to be entirely event based,
 some kind of polling has to be done on each channel to inform them on
 state change which are not related to data acquisition. To achieve
@@ -3444,6 +3545,9 @@ be available only for the Position attribute of the Motor class.
 User constraint implementation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+.. note::
+  Never seen that. Is this still a thing?
+
 When the user creates a constraint, he has to provide to the pool the
 following information: 
 
@@ -3534,6 +3638,9 @@ Line 21-30: The Evaluate method
 Archiving motor position
 ------------------------
 
+.. note::
+  Outdated?
+
 XXX: Unknown inset LatexCommand \label{sub:Archiving-motor-position}:
 
 It is not possible to archive motor position using the Tango_ memorized
@@ -3584,6 +3691,10 @@ To be filled in
 
 The pool device Tango_ interface
 =================================
+
+.. note::
+  It's not C++ anymore, and the list of commands, attributes, etc. should be
+  reviewed and updated. These changed at some point for sure.
 
 The pool is implemented as a C++ Tango_ device server and therefore
 supports a set of commands/attributes. It has several attributes to
@@ -4273,6 +4384,11 @@ ZeroDNbReadPerEvent           Long                5
 Creating device
 ===============
 
+.. note::
+  All of this is now handled by def<...> macros in MacroServer. Should we remove
+  this part or document the creation of elements using Pool's Tango commands
+  instead?
+
 This chapter gives details on what has to be done to create device
 using the device pool in order to check the work to be done by a
 Sardana configuration tool. 
@@ -4399,6 +4515,10 @@ create a new user constraint:
 
 Some words on internal implementation
 =====================================
+
+.. note::
+  I have a feeling, that the algorithm descriptions here are only partially
+  true. This needs to be checked.
 
 This chapter gives some details on some part of the pool
 implementation in order to clarify reader ideas 
