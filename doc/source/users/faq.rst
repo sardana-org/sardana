@@ -167,11 +167,34 @@ How to access EPICS from Sardana?
 Hardware integrated in EPICS_ can be directly accessed from Sardana via a
 controller. The controller can talk to the EPICS_ server using the
 python EPICS_ interface or the Taurus_ interface to EPICS_.
-The TaurusTimerCounterController_ class is distributed with sardana and
+The TaurusTimerCounterController class is distributed with sardana and
 allows the connection to any EPICS_ attribute giving the EPICS_ address
 as TaurusAttribute.
 
-.. _TaurusTimerCounterController: https://github.com/sardana-org/sardana/blob/develop/src/sardana/pool/poolcontrollers/TaurusController.py
+Which type of controller should I choose for integrating hardware that do not fit with any specific controller type?
+--------------------------------------------------------------------------------------------------------------------
+
+Sardana controllers can be used for implementing some features that in
+principle do not fit with any kind of controller. In order to choose
+a controller class for the implementation, it is important to take into
+account some differences in the behaviour of the different type of
+controllers during an scan.
+
+The main differences between CT, ZeroD and OneD/TwoD are:
+
+1. The ZeroDController class is neither Startable nor Loadable, so the
+exposure time can not be given to the controller and no action can
+be performed at the start of the scan.
+CounterTimerController/OneDController/TwoDController classes are
+Startable and Loadable.
+
+2. The output value of ZeroD and CT is continuously read during the scan
+(functions PreReadAll/PreReadOne/ReadAll/ReadOne of the controllers classes
+of these types are continuously called). OneD/TwoD read the value only at the
+end of the acquisition time. Slow actions (like readout of images or spectra
+for further calculations) in the readout functions of ZeroD and CT can affect
+considerably the scan performance.
+
 .. _ALBA: http://www.cells.es/
 .. _ANKA: http://http://ankaweb.fzk.de/
 .. _ELETTRA: http://http://www.elettra.trieste.it/
