@@ -4,152 +4,167 @@
 Device Pool Tango_ :term:`API`
 ==========================================
 
-.. warning:: Device Pool chapter is out of date. Some parts of it are not valid and may create confusions e.g. "Specifying the motor controller features".
-
-.. todo:: Update this chapter and distribute its contents logically around the documentation.
-
-Introduction
-============
-
-This paper describes what could be the implementation of the Sardana
-device pool. This work is based on Jorg's paper called "Reordered
-SPEC_". It is **not at all** a final version of this device pool. It is rather
-a first approach to define this pool more precisely and to help defining its
-features and the way it could be implemented. 
+.. code-block:: rst
+  :caption: Not relevant, to be removed
 
 
-Overall pool design
-===================
+  .. warning:: Device Pool chapter is out of date. Some parts of it are not valid and may create confusions e.g. "Specifying the motor controller features".
 
-The pool could be seen as a kind of intelligent Tango_ device container
-to control the experiment hardware. In a first approach, it requires
-that the hardware to be controlled is connected to the control
-computer or to external crate(s) connected to the control computer
-using bus coupler. It has two basic features which are: 
+  .. todo:: Update this chapter and distribute its contents logically around the documentation.
 
-1. Hardware access using dynamically created/deleted Tango_ devices
-   according to the experiment needs
+  Introduction
+  ============
 
-2. Management of some very common and well defined action regularly done
-   on a beam line (scanning, motor position archiving....)
+  This paper describes what could be the implementation of the Sardana
+  device pool. This work is based on Jorg's paper called "Reordered
+  SPEC_". It is **not at all** a final version of this device pool. It is rather
+  a first approach to define this pool more precisely and to help defining its
+  features and the way it could be implemented. 
 
-To achieve these two goals and to provide the user with a way to
-control its behavior, it is implemented as a Tango_ class with commands
-and attributes like any other Tango_ class. 
+.. --- end of code block ---
 
+.. code-block:: rst
+  :caption: All this is already included in Pool overview.
 
-Hardware access
----------------
+  Overall pool design
+  ===================
 
+  The pool could be seen as a kind of intelligent Tango_ device container
+  to control the experiment hardware. In a first approach, it requires
+  that the hardware to be controlled is connected to the control
+  computer or to external crate(s) connected to the control computer
+  using bus coupler. It has two basic features which are: 
 
-Core hardware access
-^^^^^^^^^^^^^^^^^^^^
+  1. Hardware access using dynamically created/deleted Tango_ devices
+     according to the experiment needs
 
-.. note::
-  Some serial line and static linking references could be removed, but otherwise
-  this looks fine to me.
+  2. Management of some very common and well defined action regularly done
+     on a beam line (scanning, motor position archiving....)
 
-Most of the times, it is possible to define a list of very common
-devices found in most of the experiments, a list of communication link
-used between the experiment hardware and the control computer(s) and
-some of the most commonly used protocol used on these communication
-links. Devices commonly used to drive an experiment are: 
-
-- Motor
-
-- Group of motor
-
-- Pseudo motor
-
-- Counter/Timer
-
-- Multi Channel Analyzer
-
-- CCD cameras
-
-- And some other that I don't know
-
-Communication link used to drive experiment devices are: 
-
-- Serial line
-
-- GPIB
-
-- Socket
-
-- And some other that I don't know (USB????)
-
-Protocol used on the communication links are: 
-
-- Modbus
-
-- Ans some other that I don't know
-
-Each of the controlled hardware (one motor, one pseudo-motor, one
-serial line device,...) will be driven by independent Tango_ classes.
-The pool device server will embed all these Tango_ classes together
-(statically linked). The pool Tango_ device is the "container
-interface" and allows the user to create/delete classical Tango_
-devices which are instances of these embedded classes. This is
-summarized in the following drawing.
-
-.. image:: /_static/hard.png
-
-Therefore, the three main actions to control a new equipment using the
-pool will be (assuming the equipment is connected to the control
-computer via a serial line): 
-
-1. Create the serial line Tango_ device with one of the Pool device
-   command assigning it a name like "MyNewEquipment".
-
-2. Connect to this newly created Tango_ device using its assigned name
-
-3. Send order or write/read data to/from the new equipment using for
-   instance the WriteRead command of the serial line Tango_ device
-
-When the experiment does not need this new equipment any more, the
-user can delete the serial line Tango_ device with another pool device
-command. Note that most of the time, creating Tango_ device means
-defining some device configuration parameters (Property in Tango_
-language). The Tango_ wizard will be used to retrieve which properties
-have to be defined and will allow the user to set them on the fly.
-This means that all the Tango_ classes embedded within the Pool must
-have their wizard initialized. 
+  To achieve these two goals and to provide the user with a way to
+  control its behavior, it is implemented as a Tango_ class with commands
+  and attributes like any other Tango_ class. 
 
 
-Extending pool features
-^^^^^^^^^^^^^^^^^^^^^^^
+  Hardware access
+  ---------------
 
-.. note::
-  This is more than likely outdated. Probably should be removed.
 
-From time to time, it could be useful to extend the list of Tango_
-classes known by the device pool in case a new kind of equipment (not
-using the core hardware access) is added to the experiment. Starting
-with Tango_ 5.5 (and the associated Pogo), each Tango_ class has a
-method which allow the class to be dynamically loaded into a running
-process. This feature will be used to extend the pool feature. It has
-to be checked that it is possible for Tango_ Python class.
+  Core hardware access
+  ^^^^^^^^^^^^^^^^^^^^
 
-.. image:: /_static/dyn.png
+  .. note::
+    Some serial line and static linking references could be removed, but otherwise
+    this looks fine to me.
 
-To achieve this feature, the pool Tango_ device will have commands to 
+  Most of the times, it is possible to define a list of very common
+  devices found in most of the experiments, a list of communication link
+  used between the experiment hardware and the control computer(s) and
+  some of the most commonly used protocol used on these communication
+  links. Devices commonly used to drive an experiment are: 
 
-- Load a Tango_ class. This command will dynamically add two other
-  commands and one attribute to the pool device Tango_ interface. These
-  commands and the attribute are:
+  - Motor
 
-    - Command: Create a device of the newly loaded class
-    
-    - Command: Delete a device of the newly loaded class
-    
-    - Attribute: Get the list of Tango_ devices instances of the newly
-      created class
-    
-    
-- Unload a Tango_ class
+  - Group of motor
 
-- Reload a Tango_ class
+  - Pseudo motor
+
+  - Counter/Timer
+
+  - Multi Channel Analyzer
+
+  - CCD cameras
+
+  - And some other that I don't know
+
+  Communication link used to drive experiment devices are: 
+
+  - Serial line
+
+  - GPIB
+
+  - Socket
+
+  - And some other that I don't know (USB????)
+
+  Protocol used on the communication links are: 
+
+  - Modbus
+
+  - Ans some other that I don't know
+
+  Each of the controlled hardware (one motor, one pseudo-motor, one
+  serial line device,...) will be driven by independent Tango_ classes.
+  The pool device server will embed all these Tango_ classes together
+  (statically linked). The pool Tango_ device is the "container
+  interface" and allows the user to create/delete classical Tango_
+  devices which are instances of these embedded classes. This is
+  summarized in the following drawing.
+
+.. --- end of code block ---
+
+.. code-block:: rst
+  :caption: Somewhat moved to Pool overview, not sure if more of this is relevant
+
+  .. image:: /_static/hard.png
+
+  Therefore, the three main actions to control a new equipment using the
+  pool will be (assuming the equipment is connected to the control
+  computer via a serial line): 
+
+  1. Create the serial line Tango_ device with one of the Pool device
+     command assigning it a name like "MyNewEquipment".
+
+  2. Connect to this newly created Tango_ device using its assigned name
+
+  3. Send order or write/read data to/from the new equipment using for
+     instance the WriteRead command of the serial line Tango_ device
+
+  When the experiment does not need this new equipment any more, the
+  user can delete the serial line Tango_ device with another pool device
+  command. Note that most of the time, creating Tango_ device means
+  defining some device configuration parameters (Property in Tango_
+  language). The Tango_ wizard will be used to retrieve which properties
+  have to be defined and will allow the user to set them on the fly.
+  This means that all the Tango_ classes embedded within the Pool must
+  have their wizard initialized. 
+
+
+  Extending pool features
+  ^^^^^^^^^^^^^^^^^^^^^^^
+
+  .. note::
+    This is more than likely outdated. Probably should be removed.
+
+  From time to time, it could be useful to extend the list of Tango_
+  classes known by the device pool in case a new kind of equipment (not
+  using the core hardware access) is added to the experiment. Starting
+  with Tango_ 5.5 (and the associated Pogo), each Tango_ class has a
+  method which allow the class to be dynamically loaded into a running
+  process. This feature will be used to extend the pool feature. It has
+  to be checked that it is possible for Tango_ Python class.
+
+  .. image:: /_static/dyn.png
+
+  To achieve this feature, the pool Tango_ device will have commands to 
+
+  - Load a Tango_ class. This command will dynamically add two other
+    commands and one attribute to the pool device Tango_ interface. These
+    commands and the attribute are:
+
+      - Command: Create a device of the newly loaded class
+      
+      - Command: Delete a device of the newly loaded class
+      
+      - Attribute: Get the list of Tango_ devices instances of the newly
+        created class
+      
+      
+  - Unload a Tango_ class
+
+  - Reload a Tango_ class
+
+.. --- end of code block ---
 
 
 Global actions
