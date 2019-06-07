@@ -13,7 +13,7 @@ In this model, there are two long-lived branches:
 For the contributions, we use the [Fork & Pull Model][]:
 
 1. The contributor first [forks][] the official sardana repository
-2. The contributor commits changes to a branch based on the 
+2. The contributor commits change to a branch based on the 
    `develop` branch and pushes it to the forked repository.
 3. The contributor creates a [Pull Request][] (PR) against the `develop` 
    branch of the official sardana repository.
@@ -27,18 +27,18 @@ For the contributions, we use the [Fork & Pull Model][]:
 ## Notes:
   
 - These contribution guidelines are very similar but not identical to 
-  those for the [GithubFlow][] workflow. Basically, most of what the 
+  those for the [GithubFlow][] workflow. Basically, most of the 
   GitHubFlow recommends can be applied for Sardana except that the 
   role of the `master` branch in GithubFlow is done by `develop` in our 
   case. 
   
-- If the contributor wants to explicitly bring the attention of some 
+- If the contributor wants to explicitly draw the attention of some 
   specific person to the review process, [mentions][] can be used
   
 - If a pull request (or a specific commit) fixes an open issue, the pull
-  request (or commit) message may contain a `Fixes #N` tag (N being 
+  request (or commit) message may contain a `Fix #N` tag (N being 
   the number of the issue) which will automatically [close the related 
-  Issue][tag_issue_closing]
+  issue][tag_issue_closing]
 
 # Coding conventions:
 
@@ -52,12 +52,12 @@ In general, the contributions to Sardana should consider following:
   - use ``lowercase`` for module names. If possible prefix module names with the
     word ``sardana`` (like :file:`sardanautil.py`) to avoid import mistakes.
   - use ``CamelCase`` for class names
-  - python module first line should be
+  - "shebang line" should be the first line of a python module 
     ```
     #!/usr/bin/env python
     ```
   - python module should contain license information (see template below)
-  - avoid poluting namespace by making private definitions private (``__`` prefix)
+  - avoid populate namespace by making private definitions private (``__`` prefix)
     or/and implementing ``__all__`` (see template below)
   - whenever a python module can be executed from the command line, it should 
     contain a ``main`` function and a call to it in a ``if __name__ == "__main__"``
@@ -75,8 +75,8 @@ In general, the contributions to Sardana should consider following:
   project (at the time of writing this file, it is the [LGPL][], 
   version 3 *or later*).
 
-The following code can serve as a template for writing new python modules to
-sardana:
+The following code can be used as a template for writing new python modules to
+Sardana:
 
 ```python
     #!/usr/bin/env python
@@ -125,9 +125,9 @@ sardana:
 
 - All standalone documentation should be written in plain text (``.rst``) files
   using [reStructuredText][] for markup and formatting. All such
-  documentation should be placed in directory `doc/source` of the sardana
+  documentation should be placed in directory `doc/source` of the Sardana
   source tree. The documentation in this location will serve as the main source
-  for sardana documentation and all existing documentation should be converted
+  for Sardana documentation and all existing documentation should be converted
   to this format.
 - **Up to which level we will guarantee the documentation to be addressable?** 
    We guarantee up to three levels of the documentation chapters to be addressable.
