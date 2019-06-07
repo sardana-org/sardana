@@ -15,6 +15,25 @@ and :ref:`sardana-acquisition-measgrp`.
 Experimental channel acquisition
 --------------------------------
 
+Counter/Timer and 1D and 2D experimental channels can acquire data on its own, without being included in an measurement group.
+This can be important for testing purposes or for implementation of own measurement procedures.
+The relevant :term:`API` for this feature ist:
+
+- Timer, with three special values:
+  
+  - __default: Default timer for the controller in use, defined in the controller plugin as a class member. If the element belonging to this axis is not defined in the controller, resetting the controller's timer to the default one raises an exception.
+  - __self: the own channel is its timer.
+  - None: disable the single acquisition.
+ 
+  Timer and channel have to belong to the same controller.
+    
+- IntegrationTime
+  
+- Start
+
+The single acquisition of these channels can be also done with the macro
+:class:`~sardana.macroserver.macros.standard.ct`, giving the name of the channel as last argument.
+
 .. _sardana-acquisition-measgrp:
 
 Measurement group acquisition

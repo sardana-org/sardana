@@ -658,7 +658,9 @@ def _value_to_repr(data):
 
 
 class ct(Macro, Hookable):
-    """Count for the specified time on the active measurement group"""
+    """Count for the specified time on the measurement group
+       or experimental channel given as second argument 
+       (if not given the active measurement group is used)"""
 
     hints = {'allowsHooks': ('pre-acq', 'post-acq')}
     param_def = [
