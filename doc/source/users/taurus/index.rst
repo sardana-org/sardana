@@ -16,3 +16,4 @@ Sardana provides several :mod:`taurus`-based widgets for being used in GUIs
     MacroButton <macrobutton>
     Sardana Editor <sardanaeditor>
     Showscan <showscan>
+    PoolMotorTV <poolmotortv>
