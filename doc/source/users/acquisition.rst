@@ -15,6 +15,17 @@ and :ref:`sardana-acquisition-measgrp`.
 Experimental channel acquisition
 --------------------------------
 
+:ref:`Counter/timer <sardana-countertimer-overview>`, :ref:`1D <sardana-1d-overview>` and
+:ref:`2D <sardana-2d-overview>` experimental channels can be directly involved in data acquisition
+without being included in a :ref:`measurement group acquisition <sardana-acquisition-measgrp>`.
+This can be useful for simple use cases like a single image capture, testing purposes or
+for implementation of your own measurement procedures.
+The relevant :term:`API` for this feature is documented in the API of each of the elements,
+for example, :ref:`sardana-countertimer-api`.
+
+The single acquisition of these channels can be also done with the macro
+:class:`~sardana.macroserver.macros.standard.ct`, giving the name of the channel as last argument.
+
 .. _sardana-acquisition-measgrp:
 
 Measurement group acquisition
