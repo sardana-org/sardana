@@ -34,7 +34,7 @@ __docformat__ = 'restructuredtext'
 
 from taurus.console import Alignment
 from taurus.console.list import List
-from sardana.macroserver.macro import *
+from sardana.macroserver.macro import Macro, Type, ParamRepeat, ViewOption
 
 Left, Right, HCenter = Alignment.Left, Alignment.Right, Alignment.HCenter
 
