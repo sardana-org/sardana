@@ -15,6 +15,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   shifted to the middle of the scan interval: `ascanct_midtrigger` (#1105)
 * Auto-deploy to PyPI with Travis (#1113)
 * Print output of `send2ctrl` macro only if it contains something (#1120)
+* Add `DescriptionLength` view option for adjusting the `lsdef` macro description
+  (#1107, #1108)
 
 ### Fixed
 
