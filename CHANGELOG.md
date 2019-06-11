@@ -14,6 +14,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Add macro example demonstrating how to add an extra scan column with motor positions
   shifted to the middle of the scan interval: `ascanct_midtrigger` (#1105)
 * Support to 7 axes geometry in `pa` macro (#1116)
+* Protection to `showscan` when a non HDF5 file is getting opened (#1073)
 * Auto-deploy to PyPI with Travis (#1113)
 * Print output of `send2ctrl` macro only if it contains something (#1120)
 * Add `DescriptionLength` view option for adjusting the `lsdef` macro description
