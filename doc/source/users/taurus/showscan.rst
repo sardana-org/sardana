@@ -18,9 +18,7 @@ data for the given scan number.
 
 .. note::
 	The :class:`~sardana.spock.magic.showscan` application can only read scans
-	saved in the HDF5 format. Moreover, it opens the first file defined in
-	:ref:`scanfile` environment variable, so if you use multiple files, make sure
-	the HDF5 format one is the first one on list.
+	saved in the HDF5 format.
 
 The scan files are saved on the Sardana server machine, however
 :class:`~sardana.spock.magic.showscan` is running on the client one. If it's not

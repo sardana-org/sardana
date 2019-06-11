@@ -7,7 +7,89 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 
+* Allow to configure timeout on pool element's (Taurus extensions) *go* methods e.g.
+  `move`, `count`, etc. (#992)
+* Emulated hardware triggering between dummy counter/timer and trigger/gate elements
+  (#1100)
+* Add macro example demonstrating how to add an extra scan column with motor positions
+  shifted to the middle of the scan interval: `ascanct_midtrigger` (#1105)
+* Support to 7 axes geometry in `pa` macro (#1116)
+* Protection to `showscan` when a non HDF5 file is getting opened (#1073)
+* Auto-deploy to PyPI with Travis (#1113)
+* Print output of `send2ctrl` macro only if it contains something (#1120)
+* Add `DescriptionLength` view option for adjusting the `lsdef` macro description
+  (#1107, #1108)
+
+### Fixed
+
+* Hanging scans by avoiding deepcopy of `DeviceProxy` (#1102)
+* Restore motor parameters (vel, acc, dec) before going to start position in dNscact
+  macros (#1085)
+* Calculation of nb_starts argument of `PrepareOne` method of timerable controllers
+  when software synchronization is in use (#1110)
+* expconf when empty (unspecified) DataType (#1076)
+* Output block of scan records which do not fit the console width (#924)
+* Fix bug on exception popups in macroexecutor (#1079, #1088)
+* Cyclic references between scan macros and GSF internals (#816, #1115)
+* Enable expconf buttons (Reload and Apply) when local configuration was kept after
+  receiving external changes (#959, #1093)
+* Avoid external changes pop-up when synchronizer is changed in the expconf by
+  removing global measurement group synchronizer (#1103)
+* Show external changes pop-up in expconf when last measurement group is deleted
+  remotelly (#1099)
+* Pop-up message when expconf configuration changed externally (#1094)
+* Remove circlular references between the macro object and the FIO recorder (#1121)
+
+## [2.7.2] 2019-05-28
+
+### Fixed
+
+* Several issues with measurement group configuration and `epxconf` (#1090)
+
+### Deprecated
+
+* Measurement group configuration `timer` and `monitor` - there are no 
+equivalents, these roles are assigned based on the channel's order per each 
+of the synchronization types: trigger, gate and start (#1090)
+
+## [2.7.1] 2019-03-29
+
+### Fixed
+
+* Do not read 1D and 2D experimental channels during software acquisition loop
+  reintroduced after fixing it in 2.6.0 (#1086).
+
+## [2.7.0] 2019-03-11
+
+### Added
+
+* Possibility to directly acquire an experimental channel (without the need to define
+  a measurement group) (#185, #997, #1048, #1061)
+  * `IntegrationTime` (Tango) and `integration_time` (core) attributes to all experimental
+    channels
+  * `Timer` (Tango) and `timer` (core) attribute to all timerable experimental channels
+  * `default_timer` class attribute to all timerable controllers (plugins) to let them
+    announce the default timer axis
+* Possibility to pass an experimental channel (now compatible only with timerable channels) 
+  as a parameter of `ct` and `uct` macros in order to acquire directly on the channel (#1049)
+* `Countable` element type that includes measurement group and experimental channels (#1049)
+* `newfile` macro for setting `ScanDir`, `ScanFile` and `ScanID` env variables (#777)
+* Warning message when hooks gets overridden with `Hookable.hooks` property (#1041)
+* Acquisition macro examples (#1047)
+
+### Fixed
+
+* `expconf` warns only about the following environment variables changes: `ScanFile`,
+  `ScanDir`, `ActiveMntGrp`, `PreScanSnapshot` and `DataCompressionRank` (#1040)
+* MeasurementGroup's Moveable attribute when set to "None" in Tango is used as None
+  in the core (#1001)
+* Compatibility of measurement group plotting configurations created with
+  sardana < 2.4.0 and taurus < 4.3.0 (#1017, #1022)
+* General Hook tests (#1062)
+ 
 ## [2.6.1] 2019-02-04
+
+This is a special release for meeting the deadline of debian buster freeze (debian 10).
 
 ### Fixed
 - String parameter editor in macroexecutor and sequencer (#1030, #1031)
@@ -15,6 +97,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   (#962, #1013)
 
 ## [2.6.0] 2019-01-31
+
+This is a special release for meeting the deadline of debian buster freeze (debian 10).
 
 ### Added
 - New acquisition and synchronization concepts (SEP18, #773):
@@ -567,7 +651,10 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.6.1...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.7.2...HEAD
+[2.7.2]: https://github.com/sardana-org/sardana/compare/2.7.1...2.7.2
+[2.7.1]: https://github.com/sardana-org/sardana/compare/2.7.0...2.7.1
+[2.7.0]: https://github.com/sardana-org/sardana/compare/2.6.1...2.7.0
 [2.6.1]: https://github.com/sardana-org/sardana/compare/2.6.0...2.6.1
 [2.6.0]: https://github.com/sardana-org/sardana/compare/2.5.0...2.6.0
 [2.5.0]: https://github.com/sardana-org/sardana/compare/2.4.0...2.5.0

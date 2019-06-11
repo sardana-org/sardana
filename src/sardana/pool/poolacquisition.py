@@ -460,7 +460,7 @@ class PoolAcquisition(PoolAction):
                             nb_starts)
 
         # Call software controllers prepare method
-        nb_starts = repetitions
+        nb_starts = nb_starts * repetitions
         repetitions = 1
         self._prepare_ctrls(ctrls_sw, value, repetitions, latency,
                             nb_starts)
@@ -725,7 +725,7 @@ class PoolAcquisitionBase(PoolAction):
                 try:
                     res = ctrl.PreLoadOne(axis, value, repetitions)
                     msg = ("PreLoadOne(axis, value, repetitions) is "
-                           "deprecated since version Jan19. Use PreLoadOne("
+                           "deprecated since version 2.7.0. Use PreLoadOne("
                            "axis, value, repetitions, latency_time) instead.")
                     self.warning(msg)
                 except TypeError:
@@ -822,7 +822,9 @@ class PoolAcquisitionBase(PoolAction):
         for ctrl in ctrls:
             pool_channels = []
             pool_ctrl = ctrl.element
-            # TODO: filter 1D and 2D for software synchronize acquisition
+            # only CT will be read in the loop, 1D and 2D not
+            if ElementType.CTExpChannel not in ctrl.get_ctrl_types():
+                continue
             for channel in ctrl.get_channels(enabled=True):
                 pool_channels.append(channel.element)
             ctrl_channels[pool_ctrl] = pool_channels

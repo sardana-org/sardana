@@ -33,8 +33,13 @@ __docformat__ = 'restructuredtext'
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.sardanabuffer import SardanaBuffer
 from sardana.pool.poolelement import PoolElement
-from sardana.pool.poolacquisition import PoolCTAcquisition
+from sardana.pool.poolacquisition import PoolAcquisitionSoftware,\
+    get_timerable_items
+from sardana.pool.poolmeasurementgroup import ChannelConfiguration,\
+    ControllerConfiguration
+from sardana.sardanaevent import EventType
 
+from sardana.pool import AcqSynch, AcqMode
 
 class ValueBuffer(SardanaBuffer):
 
@@ -68,7 +73,7 @@ class PoolBaseChannel(PoolElement):
 
     ValueAttributeClass = Value
     ValueBufferClass = ValueBuffer
-    AcquisitionClass = PoolCTAcquisition
+    AcquisitionClass = PoolAcquisitionSoftware
 
     def __init__(self, **kwargs):
         PoolElement.__init__(self, **kwargs)
@@ -79,6 +84,7 @@ class PoolBaseChannel(PoolElement):
         if not self.AcquisitionClass is None:
             acq_name = "%s.Acquisition" % self._name
             self.set_action_cache(self.AcquisitionClass(self, name=acq_name))
+        self._integration_time = 0
 
     def has_pseudo_elements(self):
         """Informs whether this channel forms part of any pseudo element
@@ -278,13 +284,142 @@ class PoolBaseChannel(PoolElement):
         val_attr = self._value_buffer
         val_attr.clear()
 
-    def start_acquisition(self, value=None):
+        # --------------------------------------------------------------------------
+        # integration time
+        # --------------------------------------------------------------------------
+
+    def get_integration_time(self):
+        """Return the integration time for this object.
+
+        :return: the current integration time
+        :rtype: :obj:`float`"""
+        return self._integration_time
+
+    def set_integration_time(self, integration_time, propagate=1):
+        """Set the integration time for this object.
+
+        :param integration_time: integration time in seconds to set
+        :type integration_time: :obj:`float`
+        :param propagate:
+            0 for not propagating, 1 to propagate, 2 propagate with priority
+        :type propagate: :obj:`int`
+        """
+        if integration_time == self._integration_time:
+            # integration time is not changed. Do nothing
+            return
+        self._integration_time = integration_time
+        if not propagate:
+            return
+        self.fire_event(EventType("integration_time", priority=propagate),
+                        integration_time)
+
+    integration_time = property(get_integration_time, set_integration_time,
+                                doc="channel integration time")
+
+    def start_acquisition(self):
+        msg = "{0} does not support independent acquisition".format(
+            self.__class__.__name__)
+        raise NotImplementedError(msg)
+
+
+class PoolTimerableChannel(PoolBaseChannel):
+
+    def __init__(self, **kwargs):
+        PoolBaseChannel.__init__(self, **kwargs)
+        # TODO: part of the configuration could be moved to the base class
+        # so other experimental channels could reuse it
+        self._conf_channel = ChannelConfiguration(self)
+        self._conf_ctrl = ControllerConfiguration(self.controller)
+        self._conf_ctrl.add_channel(self._conf_channel)
+        self._timer = "__default"
+        self._conf_timer = None
+
+    # ------------------------------------------------------------------------
+    # timer
+    # ------------------------------------------------------------------------
+
+    def get_timer(self):
+        """Return the timer for this object.
+
+        :return: the current timer
+        :rtype: :obj:`str`
+        """
+        return self._timer
+
+    def set_timer(self, timer, propagate=1):
+        """Set timer for this object.
+
+        :param timer: new timer to set
+        :type timer: :obj:`str`
+        :param propagate:
+            0 for not propagating, 1 to propagate, 2 propagate with priority
+        :type propagate: :obj:`int`
+        """
+        if timer == self._timer:
+            return
+        if self._conf_timer is not None:
+            timer_elem = self._conf_timer.element
+            if timer_elem is not self:
+                self.acquisition.remove_element(timer_elem)
+                self._conf_ctrl.remove_channel(self._conf_timer)
+        self._timer = timer
+        self._conf_timer = None
+        if not propagate:
+            return
+        self.fire_event(EventType("timer", priority=propagate), timer)
+
+    timer = property(get_timer, set_timer,
+                     doc="timer for the timerable channel")
+
+    def _configure_timer(self):
+        timer = self.timer
+        if timer == "__self":
+            conf_timer = self._conf_channel
+        else:
+            ctrl = self.get_controller()
+            if timer == "__default":
+                axis = ctrl.get_default_timer()
+                if axis is None:
+                    msg = "default_timer not defined in controller"
+                    raise ValueError(msg)
+                timer_elem = ctrl.get_element(axis=axis)
+            else:
+                timer_elem = self.pool.get_element_by_name(timer)
+            if timer_elem is self:
+                conf_timer = self._conf_channel
+            else:
+                self.acquisition.add_element(timer_elem)
+                conf_timer = ChannelConfiguration(timer_elem)
+                self._conf_ctrl.add_channel(conf_timer)
+        self._conf_ctrl.timer = conf_timer
+        self._conf_timer = conf_timer
+
+    def start_acquisition(self):
+        """Start software triggered acquisition"""
         self._aborted = False
         self._stopped = False
-        if value is None:
-            value = self.get_write_value()
-        if value is None:
-            raise Exception(
-                "Invalid integration_time '%s'. Hint set a new value for 'value' first" % value)
-        if not self._simulation_mode:
-            acq = self.acquisition.run(integ_time=value)
+        if self._simulation_mode:
+            return
+        if self.timer is None:
+            msg = "no timer configured - acquisition is not possible"
+            raise RuntimeError(msg)
+
+        if self._conf_timer is None:
+            self._configure_timer()
+        self.controller.set_ctrl_par("synchronization",
+                                     AcqSynch.SoftwareTrigger)
+        self._prepare()
+        ctrls, master = get_timerable_items(
+            [self._conf_ctrl], self._conf_timer, AcqMode.Timer)
+        self.acquisition.run(ctrls, self.integration_time, master, None)
+
+    def _prepare(self):
+        # TODO: think of implementing the preparation in the software
+        # acquisition action, similarly as it is done for the global
+        # acquisition action
+        axis = self._conf_timer.axis
+        repetitions = 1
+        latency = 0
+        nb_starts = 1
+        self.controller.ctrl.PrepareOne(axis, self.integration_time,
+                                        repetitions, latency, nb_starts)

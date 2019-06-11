@@ -65,6 +65,17 @@ class DummyCounterTimerController(CounterTimerController):
     MonitorMode = 2
     CounterMode = 3
 
+    default_timer = 1
+
+    ctrl_attributes = {
+        "Synchronizer": {
+                Type: str,
+                Description: ("Hardware (external) emulated synchronizer. "
+                              "Can be any of dummy trigger/gate elements "
+                              "from the same pool.")
+            },
+    }
+
     def __init__(self, inst, props, *args, **kwargs):
         CounterTimerController.__init__(self, inst, props, *args, **kwargs)
         self._synchronization = AcqSynch.SoftwareTrigger
@@ -78,6 +89,12 @@ class DummyCounterTimerController(CounterTimerController):
         self.monitor_count = None
         self.read_channels = {}
         self.counting_channels = {}
+        # name of synchronizer element
+        self._synchronizer = None
+        # synchronizer element (core)
+        self.__synchronizer_obj = None
+        # flag whether the controller was armed for hardware synchronization
+        self._armed = False
 
     def AddDevice(self, ind):
         idx = ind - 1
@@ -101,7 +118,10 @@ class DummyCounterTimerController(CounterTimerController):
         idx = ind - 1
         sta = State.On
         status = "Stopped"
-        if ind in self.counting_channels:
+        if self._armed:
+            sta = State.Moving
+            status = "Armed"
+        elif ind in self.counting_channels:
             channel = self.channels[idx]
             now = time.time()
             elapsed_time = now - self.start_time
@@ -182,6 +202,11 @@ class DummyCounterTimerController(CounterTimerController):
             else:
                 channel = self.channels[ind - 1]
                 channel.is_counting = False
+        if self._synchronization in (AcqSynch.HardwareStart,
+                                     AcqSynch.HardwareTrigger,
+                                     AcqSynch.HardwareGate):
+            self._disconnect_hardware_synchronization()
+            self._armed = False
 
     def PreReadAll(self):
         self.read_channels = {}
@@ -191,6 +216,8 @@ class DummyCounterTimerController(CounterTimerController):
         self.read_channels[ind] = channel
 
     def ReadAll(self):
+        if self._armed:
+            return  # still armed - no trigger/gate arrived yet
         # if in acquisition then calculate the values to return
         if self.counting_channels:
             now = time.time()
@@ -238,7 +265,13 @@ class DummyCounterTimerController(CounterTimerController):
         self.counting_channels[ind].is_counting = True
 
     def StartAll(self):
-        self.start_time = time.time()
+        if self._synchronization in (AcqSynch.HardwareStart,
+                                     AcqSynch.HardwareTrigger,
+                                     AcqSynch.HardwareGate):
+            self._connect_hardware_synchronization()
+            self._armed = True
+        else:
+            self.start_time = time.time()
 
     def LoadOne(self, ind, value, repetitions, latency_time):
         if value > 0:
@@ -272,3 +305,65 @@ class DummyCounterTimerController(CounterTimerController):
             for channel in self.channels:
                 if channel:
                     channel.mode = value
+
+    def getSynchronizer(self):
+        if self._synchronizer is None:
+            return "None"
+        else:
+            # get synchronizer object to only check it exists
+            self._synchronizer_obj
+            return self._synchronizer
+
+    def setSynchronizer(self, synchronizer):
+        if synchronizer == "None":
+            synchronizer = None
+        self._synchronizer = synchronizer
+        self.__synchronizer_obj = None  # invalidate cache
+
+    @property
+    def _synchronizer_obj(self):
+        """Get synchronizer object with cache mechanism.
+
+        If synchronizer object is not cached ("""
+        if self.__synchronizer_obj is not None:
+            return self.__synchronizer_obj
+        synchronizer = self._synchronizer
+        if synchronizer is None:
+            msg = "Hardware (external) emulated synchronizer is not set"
+            raise ValueError(msg)
+        # getting pool (core) element - hack
+        pool_ctrl = self._getPoolController()
+        pool = pool_ctrl.pool
+        try:
+            synchronizer_obj = pool.get_element_by_name(synchronizer)
+        except Exception:
+            try:
+                synchronizer_obj = pool.get_element_by_full_name(synchronizer)
+            except Exception:
+                msg = "Unknown synchronizer {0}".format(synchronizer)
+                raise ValueError(msg)
+        self.__synchronizer_obj = synchronizer_obj
+        return synchronizer_obj
+
+    def _connect_hardware_synchronization(self):
+        # obtain dummy trigger/gate controller (plugin) instance - hack
+        tg_ctrl = self._synchronizer_obj.controller.ctrl
+        idx = self._synchronizer_obj.axis - 1
+        func_generator = tg_ctrl.tg[idx]
+        func_generator.add_listener(self)
+
+    def _disconnect_hardware_synchronization(self):
+        # obtain dummy trigger/gate controller (plugin) instance - hack
+        tg_ctrl = self._synchronizer_obj.controller.ctrl
+        idx = self._synchronizer_obj.axis - 1
+        func_generator = tg_ctrl.tg[idx]
+        func_generator.remove_listener(self)
+
+    def event_received(self, src, type_, value):
+        """Callback for dummy trigger/gate function generator events
+        e.g. start, active passive
+        """
+        # for the moment only react on first trigger
+        if type_.name.lower() == "active" and value == 0:
+            self._armed = False
+            self.start_time = time.time()

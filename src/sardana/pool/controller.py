@@ -661,6 +661,9 @@ class Loadable(object):
 
     .. note: Do not inherit directly from Loadable."""
 
+    #: axis of the default timer
+    default_timer = None
+
     def PrepareOne(self, axis, value, repetitions, latency, nb_starts):
         """**Controller API**. Override if necessary.
         Called to prepare the master channel axis with the measurement
@@ -899,6 +902,11 @@ class CounterTimerController(Controller, Readable, Startable, Stopable,
     #: A :class:`dict` containing the standard attributes present on each axis
     #: device
     standard_axis_attributes = {
+        'IntegrationTime': {'type': float,
+                            'description': 'Integration time used in '
+                                           'independent acquisition'},
+        'Timer': {'type': str,
+                  'description': 'Timer used in independent acquisition'},
         'Value': {'type': float,
                   'description': 'Value', },
         'Data': {'type': str,
@@ -959,14 +967,13 @@ class CounterTimerController(Controller, Readable, Startable, Stopable,
         pass
 
     def StartAllCT(self):
-        """**Counter/Timer Controller API**. Override is MANDATORY!
-        Called to start an acquisition of a selected axis.
-        Default implementation raises :exc:`NotImplementedError`.
+        """**Counter/Timer Controller API**.
+        Called to start an acquisition of a group of channels.
+        Default implementation does nothing.
 
         .. deprecated:: 1.0
             use :meth:`~CounterTimerController.StartAll` instead"""
-        raise NotImplementedError("StartAll must be defined in the "
-                                  "controller")
+        pass
 
     def PreStartAll(self):
         """**Controller API**. Override if necessary.
@@ -1005,10 +1012,10 @@ class CounterTimerController(Controller, Readable, Startable, Stopable,
         return self.StartOneCT(axis)
 
     def StartAll(self):
-        """**Controller API**. Override is MANDATORY!
+        """**Controller API**.
         Default implementation calls deprecated
-        :meth:`~CounterTimerController.StartAllCT` which, by default, raises
-        :exc:`NotImplementedError`."""
+        :meth:`~CounterTimerController.StartAllCT` which, by default, does
+        nothing."""
         return self.StartAllCT()
 
 
@@ -1031,6 +1038,9 @@ class ZeroDController(Controller, Readable, Stopable):
     #: A :class:`dict` containing the standard attributes present on each axis
     #: device
     standard_axis_attributes = {
+        'IntegrationTime': {'type': float,
+                            'description': 'Integration time used in '
+                                           'independent acquisition'},
         'Value': {'type': float,
                   'description': 'Value', },
         'Data': {'type': str,
@@ -1056,6 +1066,11 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable):
     .. versionadded:: 1.2"""
 
     standard_axis_attributes = {
+        'IntegrationTime': {'type': float,
+                            'description': 'Integration time used in '
+                                           'independent acquisition'},
+        'Timer': {'type': str,
+                  'description': 'Timer used in independent acquisition'},
         'Value': {'type': (float,),
                   'description': 'Value',
                   'maxdimsize': (16 * 1024,)},
@@ -1092,6 +1107,11 @@ class TwoDController(Controller, Readable, Startable, Stopable, Loadable):
     implement your own 2D controller for the device pool."""
 
     standard_axis_attributes = {
+        'IntegrationTime': {'type': float,
+                            'description': 'Integration time used in '
+                                           'independent acquisition'},
+        'Timer': {'type': str,
+                  'description': 'Timer used in independent acquisition'},
         'Value': {'type': ((float,),),
                   'description': 'Value',
                   'maxdimsize': (4 * 1024, 4 * 1024)},
@@ -1400,6 +1420,9 @@ class PseudoCounterController(Controller):
     #: A :class:`dict` containing the standard attributes present on each axis
     #: device
     standard_axis_attributes = {
+        'IntegrationTime': {'type': float,
+                            'description': 'Integration time used in '
+                                           'independent acquisition'},
         'Value': {'type': float,
                   'description': 'Value', },
         'Data': {'type': str,

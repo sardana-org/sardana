@@ -34,6 +34,7 @@ import time
 import itertools
 import re
 import io
+import weakref
 
 import numpy
 
@@ -55,8 +56,7 @@ class FIO_FileRecorder(BaseFileRecorder):
     def __init__(self, filename=None, macro=None, **pars):
         BaseFileRecorder.__init__(self)
         self.base_filename = filename
-        if macro:
-            self.macro = macro
+        self.macro = weakref.ref(macro) if macro else None
         self.db = PyTango.Database()
         if filename:
             self.setFileName(self.base_filename)
@@ -118,6 +118,8 @@ class FIO_FileRecorder(BaseFileRecorder):
         #
         self.mcaAliases = []
         for mca in self.mcaNames:
+            if mca.startswith("tango://"):
+                mca = mca[8:]
             lst = mca.split("/")
             self.mcaAliases.append(self.db.get_alias("/".join(lst[1:])))
 
@@ -134,9 +136,10 @@ class FIO_FileRecorder(BaseFileRecorder):
         #
         self.fd.write("!\n! Parameter\n!\n%p\n")
         self.fd.flush()
-        env = self.macro.getAllEnv()
+        env = self.macro().getAllEnv()
         if env.has_key('FlagFioWriteMotorPositions') and env['FlagFioWriteMotorPositions']:
-            all_motors = sorted(self.macro.findObjs('.*', type_class=Type.Motor))
+            all_motors = sorted(
+                self.macro().findObjs('.*', type_class=Type.Motor))
             for mot in all_motors:
                 pos = mot.getPosition(force=True)
                 if pos is None:

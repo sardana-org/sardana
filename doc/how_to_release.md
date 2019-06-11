@@ -47,16 +47,19 @@ tested.
    (e.g., from appveyor) and post the results in the comments of the PR.
 7. Once all reviews are cleared, update the date of the release in the
    CHANGELOG.md, merge the PR and tag in master.
-8. Merge also the  `release-XXX` branch into develop, and bump the version of
+8. Check that travis-ci correctly uploaded to PyPI (triggered by a tag push)
+
+   Previously:
+   ~~Release to PyPI **from a clean checkout** and using [twine](https://github.com/pypa/twine):~~
+   >```
+   >cd /tmp
+   >git clone https://github.com/sardana-org/sardana.git -b <RELEASE_TAG>
+   >cd sardana
+   >python setup.py sdist bdist_wheel
+   >twine upload dist/*
+   >```
+9. Merge also the  `release-XXX` branch into develop, and bump the version of
    develop with `bumpversion patch`
-9. Release to PyPI **from a clean checkout** and using [twine](https://github.com/pypa/twine):
-   ```
-   cd /tmp
-   git clone https://github.com/sardana-org/sardana.git -b <RELEASE_TAG>
-   cd sardana
-   python setup.py sdist bdist_wheel
-   twine upload dist/*
-   ```
 10. Complete GitHub release (upload artifacts, edit text)
 11. Create news in www.tango-controls.org
     1. On the News page click on Submit a news and fill up the form (if it doesn't work, try opening in new tab):
@@ -66,6 +69,7 @@ tested.
        * Categories: Release
     2. After submitting click on Modify this content text of the area \<\<Content\>\> and provide detailes of the release e.g. changelog.
 12. Notify mailing lists (sardana-users@lists.sourceforge.net, sardana-devel@lists.sourceforge.net, info@tango-controls.org)
+13. Close the milestone for current release, and open a new one (there should be milestones for next 2 releases open).
 
 ## Manual test checklist
 
@@ -112,8 +116,7 @@ Hint: this list can be used as a template to be copy-pasted on a release manual 
   attribute.
 - [ ] Add the `sys/tg_test/1/double_scalar` attribute to the measurement
   group.
-- [ ] Open online plot.
-- [ ] Set JsonRecorder to true. In spock do `senv JsonRecorder True`
+- [ ] Open online plot (This should ask to enable JsonRecorder, set it to true. Otherwise enable it in spock: `senv JsonRecorder True`).
 - [ ] Run step scan
 - [ ] Verify that records appear in spock output.
 - [ ] Verify that records were stored in scan files.

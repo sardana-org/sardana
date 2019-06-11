@@ -23,6 +23,7 @@
 ##
 ##############################################################################
 
+import PyTango
 import taurus
 
 from sardana.tango.pool.test import BasePoolTestCase
@@ -85,10 +86,14 @@ class SarTestTestCase(BasePoolTestCase):
                 ctrl_name = prefix + "_ctrl_%s" % (postfix)
                 try:
                     self.pool.CreateController([sar_type, lib, cls, ctrl_name])
+                    if cls == "DummyCounterTimerController":
+                        ctrl = PyTango.DeviceProxy(ctrl_name)
+                        # use the first trigger/gate element by default
+                        ctrl.write_attribute("Synchronizer", "_test_tg_1_1")
                 except Exception, e:
                     print e
                     msg = 'Impossible to create ctrl: "%s"' % (ctrl_name)
-                    raise Exception('Aborting SartestTesCase: %s' % (msg))
+                    raise Exception('Aborting SartestTestCase: %s' % (msg))
                 self.ctrl_list.append(ctrl_name)
                 # create elements
                 for axis in range(1, nelem + 1):
@@ -100,7 +105,7 @@ class SarTestTestCase(BasePoolTestCase):
                         print e
                         msg = 'Impossible to create element: "%s"' % (
                             elem_name)
-                        raise Exception('Aborting SartestTesCase: %s' % (msg))
+                        raise Exception('Aborting SartestTestCase: %s' % (msg))
                     self.elem_list.append(elem_name)
             # pseudo controllers and elements
             for pseudo in self.pseudo_cls_list:
@@ -115,7 +120,7 @@ class SarTestTestCase(BasePoolTestCase):
                 except Exception, e:
                     print e
                     msg = 'Impossible to create ctrl: "%s"' % (ctrl_name)
-                    raise Exception('Aborting SartestTesCase: %s' % (msg))
+                    raise Exception('Aborting SartestTestCase: %s' % (msg))
                 self.ctrl_list.append(ctrl_name)
                 for role in roles:
                     elem = role.split("=")[1]

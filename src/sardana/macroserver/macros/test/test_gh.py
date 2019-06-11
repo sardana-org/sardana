@@ -36,6 +36,10 @@ from sardana.macroserver.macros.test.test_scanct import mg_config4
 @testRun(macro_name="defgh", macro_params=["lsm mot.*", "pre-acq"],
          wait_timeout=1)
 @testRun(macro_name="udefgh", wait_timeout=1)
+class GeneralHooksMacrosTest(RunMacroTestCase, unittest.TestCase):
+    pass
+
+
 class GeneralHooksTest(MeasSarTestTestCase, BaseMacroServerTestCase,
                        RunMacroTestCase, unittest.TestCase):
 

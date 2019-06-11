@@ -36,6 +36,7 @@ import uuid
 import weakref
 import threading
 import os.path as osp
+import os
 
 from lxml import etree
 
@@ -75,6 +76,14 @@ def recur_map(fun, data, keep_none=False):
             return data
         else:
             return fun(data)
+
+
+def _get_console_width():
+    try:
+        width = int(os.popen('stty size', 'r').read().split()[1])
+    except Exception:
+        width = float('inf')
+    return width
 
 
 class Attr(Logger, EventGenerator):
@@ -222,16 +231,11 @@ class ExperimentConfiguration(object):
 
     def set(self, conf, mnt_grps=None):
         """Sets the ExperimentConfiguration dictionary."""
-        env = dict(ScanDir=conf.get('ScanDir'),
-                   ScanFile=conf.get('ScanFile'),
-                   DataCompressionRank=conf.get('DataCompressionRank', -1),
-                   ActiveMntGrp=conf.get('ActiveMntGrp'),
-                   PreScanSnapshot=conf.get('PreScanSnapshot'))
         if mnt_grps is None:
             mnt_grps = conf['MntGrpConfigs'].keys()
-        self._door.putEnvironments(env)
 
         codec = CodecFactory().getCodec('json')
+        msg_error = ''
         for mnt_grp in mnt_grps:
             try:
                 mnt_grp_cfg = conf['MntGrpConfigs'][mnt_grp]
@@ -240,6 +244,10 @@ class ExperimentConfiguration(object):
                     pool.DeleteElement(mnt_grp)
                 else:
                     try:
+                        # TODO: Fix incorrect implementation. It must check if
+                        #  the measurement group is part of the Pools
+                        #  controlled by the MacroServer. Otherwise,
+                        #  it must raise an exception.
                         mnt_grp_dev = Device(mnt_grp)
                     except:  # if the mnt_grp did not already exist, create it now
                         chconfigs = getChannelConfigs(mnt_grp_cfg)
@@ -255,10 +263,25 @@ class ExperimentConfiguration(object):
                     # mnt_grp.setConfiguration(mnt_grp_cfg)
                     data = codec.encode(('', mnt_grp_cfg))[1]
                     mnt_grp_dev.write_attribute('configuration', data)
-            except Exception, e:
-                from taurus.core.util.log import error
-                error(
-                    'Could not create/delete/modify Measurement group "%s": %s', mnt_grp, repr(e))
+            except PyTango.DevFailed as df:
+                # Take the description of the first exception.
+                desc = df.args[0].desc
+                desc = desc.replace('\r', '')
+                desc = desc.replace('\n', '')
+                msg_error += 'Measurement Group {0}:\n'\
+                             '{1}\n\n'.format(mnt_grp, desc)
+
+        if len(msg_error) > 0:
+            raise RuntimeError(msg_error)
+
+        # Send the environment changes
+        env = dict(ScanDir=conf.get('ScanDir'),
+                   ScanFile=conf.get('ScanFile'),
+                   DataCompressionRank=conf.get('DataCompressionRank', -1),
+                   ActiveMntGrp=conf.get('ActiveMntGrp'),
+                   PreScanSnapshot=conf.get('PreScanSnapshot'))
+
+        self._door.putEnvironments(env)
 
     def _getPoolOfElement(self, elementname):
         ms = self._door.macro_server
@@ -318,6 +341,7 @@ class BaseDoor(MacroServerDevice):
         self._output_stream = kw.get("output", sys.stdout)
         self._writeLock = threading.Lock()
         self._input_handler = self.create_input_handler()
+        self._len_last_data_line = 1
 
         self.call__init__(MacroServerDevice, name, **kw)
 
@@ -555,6 +579,11 @@ class BaseDoor(MacroServerDevice):
         evt_wait.lock()
         try:
             evt_wait.waitEvent(self.Running, equal=False, timeout=timeout)
+            # Clear event set to not confuse the value coming from the
+            # connection with the event of of end of the macro execution
+            # in the next wait event. This was observed on Windows where
+            # the time stamp resolution is not better than 1 ms.
+            evt_wait.clearEventSet()
             ts = time.time()
             result = self.command_inout("RunMacro", [etree.tostring(xml)])
             evt_wait.waitEvent(self.Running, after=ts, timeout=timeout)
@@ -676,6 +705,7 @@ class BaseDoor(MacroServerDevice):
         return data
 
     def logReceived(self, log_name, output):
+        max_chrs = _get_console_width()
         if not output or self._silent or self._ignore_logs:
             return
 
@@ -689,19 +719,23 @@ class BaseDoor(MacroServerDevice):
                     self._in_block = True
                     for i in xrange(self._block_lines):
                         # erase current line, up one line, erase current line
-                        o += '\x1b[2K\x1b[1A\x1b[2K'
+                        nr_lines = int(self._len_last_data_line / max_chrs)
+                        if self._len_last_data_line % max_chrs > 0:
+                            nr_lines += 1
+                        o += '\x1b[2K\x1b[1A\x1b[2K' * nr_lines
                     self._block_lines = 0
                     continue
                 elif line == self.BlockFinish:
                     self._in_block = False
                     continue
                 else:
+                    self._len_last_data_line = len(line)
                     if self._in_block:
                         self._block_lines += 1
                     else:
                         self._block_lines = 0
-            o += "%s\n" % line
 
+            o += "%s\n" % line
         o += self.log_stop[log_name]
         self.write(o)
 

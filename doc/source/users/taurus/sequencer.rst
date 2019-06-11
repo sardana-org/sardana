@@ -17,6 +17,10 @@ Once sequence of macros is in execution phase, `Sequencer` informs user about it
 User has full control over sequence, with action buttons: Start, Stop, Pause, Resume. 
 If desirable, sequences can be permanently stored into a file and later on restored from there. 
 This functionality is provided thanks to action buttons: Save and Open a sequence.
+The sequence file can use the XML format or the "Spock format". The "Spock
+format" is a list of macros, one per line, written exactly the way they would be
+entered into Spock command line. The Sequencer is able to save only the XML
+format file, but it can load both.
 
 .. figure:: /_static/macros/sequencer01.png
   :align: center

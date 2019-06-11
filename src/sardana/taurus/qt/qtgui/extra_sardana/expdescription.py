@@ -20,6 +20,7 @@
 ##
 # You should have received a copy of the GNU Lesser General Public License
 # along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -299,7 +300,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         return w
 
     def _getResumeText(self):
-        msg_resume = '<p> Summary of changes: <ul>'
+        msg_resume = '<p> Summary of differences: <ul>'
         mnt_grps = ''
         envs = ''
         for key in self._diff:
@@ -342,13 +343,12 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         # (would eventually overwrite the external changes when applying).
         # </p>'''
         text = '''
-        <p>The experiment configuration has been modified externally.
+        <p>The experiment configuration has been modified externally.<br>
         You can either:
         <ul>
-        <li><strong>Load </strong>the new configuration from the door
-        (discarding local changes)</li>
-        <li><strong>Keep </strong>your local configuration (would eventually
-        overwrite the external changes when applying)</li>
+        <li><strong>Load </strong>the new external configuration</li>
+        <li><strong>Keep </strong>your local expconf configuration<br>
+        (It can be eventually applied)</li>
         </ul></p>
         '''
         self._expConfChangedDialog.setText(text)
@@ -365,6 +365,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self._expConfChangedDialog = None
         if result == Qt.QMessageBox.Ok:
             self._reloadConf(force=True)
+        elif result == Qt.QMessageBox.Cancel:
+            self.ui.buttonBox.setEnabled(True)
 
     @QtCore.pyqtSlot()
     def _experimentConfigurationChanged(self):
@@ -405,12 +407,13 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             self, 'Choose directory for saving files', self.ui.pathLE.text())
         if ret:
             self.ui.pathLE.setText(ret)
-            self.ui.pathLE.emit.textEdited.emit(ret)
+            self.ui.pathLE.textEdited.emit(ret)
 
     def onDialogButtonClicked(self, button):
         role = self.ui.buttonBox.buttonRole(button)
         if role == Qt.QDialogButtonBox.ApplyRole:
-            self.writeExperimentConfiguration(ask=False)
+            if not self.writeExperimentConfiguration(ask=False):
+                self._reloadConf(force=True)
         elif role == Qt.QDialogButtonBox.ResetRole:
             self._reloadConf()
 
@@ -492,6 +495,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         if activeMntGrpName in self._localConfig['MntGrpConfigs']:
             mgconfig = self._localConfig['MntGrpConfigs'][activeMntGrpName]
             self.ui.channelEditor.getQModel().setDataSource(mgconfig)
+        else:
+            self.ui.channelEditor.getQModel().setDataSource({})
 
         # set the measurement group ComboBox
         self.ui.activeMntGrpCB.clear()
@@ -553,7 +558,12 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             self._dirtyMntGrps.add(self._localConfig['ActiveMntGrp'])
 
         door = self.getModelObj()
-        door.setExperimentConfiguration(conf, mnt_grps=self._dirtyMntGrps)
+        try:
+            door.setExperimentConfiguration(conf, mnt_grps=self._dirtyMntGrps)
+        except Exception as e:
+            Qt.QMessageBox.critical(self, 'Wrong configuration',
+                                    '{0}'.format(e))
+            return False
         self._originalConfiguration = copy.deepcopy(conf)
         self._dirtyMntGrps = set()
         self.ui.channelEditor.getQModel().setDataChanged(False)
