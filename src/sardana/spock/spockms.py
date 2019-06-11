@@ -97,7 +97,7 @@ class GUIViewer(BaseGUIViewer):
                     scan_file = None
                     for fname in scan_files:
                         try:
-                            h5py.File(os.path.join(scan_dir, fname))
+                            h5py.File(os.path.join(scan_dir, fname), "r")
                         except IOError:
                             pass
                         else:
@@ -109,7 +109,7 @@ class GUIViewer(BaseGUIViewer):
                         return
                 else:
                     try:
-                        h5py.File(os.path.join(scan_dir, scan_file))
+                        h5py.File(os.path.join(scan_dir, scan_file), "r")
                     except IOError:
                         print("Cannot plot scan:")
                         print("It only works with HDF5 files.")
