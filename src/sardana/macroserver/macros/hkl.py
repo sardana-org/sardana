@@ -496,7 +496,7 @@ class pa(Macro, _diffrac):
                 self.output("  %d%s Reflection (index %d): " %
                             (nb_ref + 1, sf, ref[0]))
                 #self.output("    Affinement, Relevance : %d %d" % (ref[4], ref[5]))
-                if len(ref) > 10:
+                if len(ref) > 10 and len(self.angle_names) == 6:
                     self.output("    %s %s %s %s %s %s: %s %s %s %s %s %s" %
                                 (self.angle_names[5], self.angle_names[1],
                                  self.angle_names[2], self.angle_names[3],
@@ -507,6 +507,20 @@ class pa(Macro, _diffrac):
                                  _diffrac.fl(self, str(ref[9])),
                                  _diffrac.fl(self, str(ref[10])),
                                  _diffrac.fl(self, str(ref[6]))))
+                elif len(ref) > 10 and len(self.angle_names) == 7:
+                    self.output(
+                        "    %s %s %s %s %s %s %s: %s %s %s %s %s %s %s" %
+                        (self.angle_names[0], self.angle_names[1],
+                         self.angle_names[2], self.angle_names[3],
+                         self.angle_names[4], self.angle_names[5],
+                         self.angle_names[6],
+                         _diffrac.fl(self, str(ref[6])),
+                         _diffrac.fl(self, str(ref[7])),
+                         _diffrac.fl(self, str(ref[8])),
+                         _diffrac.fl(self, str(ref[9])),
+                         _diffrac.fl(self, str(ref[10])),
+                         _diffrac.fl(self, str(ref[11])),
+                         _diffrac.fl(self, str(ref[12]))))
                 else:
                     self.output("    %s %s %s %s: %s %s %s %s" %
                                 (self.angle_names[0], self.angle_names[1],
