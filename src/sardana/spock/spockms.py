@@ -84,9 +84,9 @@ class GUIViewer(BaseGUIViewer):
             subprocess.Popen(args)
             #==================================================================
             return
-
         scan_dir, scan_file = None, None
         if scan_nb is None:
+            import h5py
             for scan in reversed(scan_history_info):
                 scan_dir = scan.get('ScanDir')
                 scan_file = scan.get('ScanFile')
@@ -96,17 +96,23 @@ class GUIViewer(BaseGUIViewer):
                     scan_files = scan_file
                     scan_file = None
                     for fname in scan_files:
-                        if '.h5' == os.path.splitext(fname)[1]:
+                        try:
+                            h5py.File(os.path.join(scan_dir, fname))
+                        except IOError:
+                            pass
+                        else:
                             scan_file = fname
                             break
                     if scan_file is None:
                         print("Cannot plot scan:")
-                        print("It only works with h5 files.")
+                        print("It only works with HDF5 files.")
                         return
                 else:
-                    if '.h5' != os.path.splitext(scan_file)[1]:
+                    try:
+                        h5py.File(os.path.join(scan_dir, scan_file))
+                    except IOError:
                         print("Cannot plot scan:")
-                        print("It only works with h5 files.")
+                        print("It only works with HDF5 files.")
                         return
                 break
             else:
