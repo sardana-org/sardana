@@ -465,6 +465,8 @@ Available *View Options*:
 - **OutputBlock**: Set if the line information during scans is appended to the
   output or updated. |br| Default value ``False`` (lines are appended to the
   displayed output during the scan).
+- **DescriptionLength**: Length (number of characters) of the macro
+  description printed by ``lsdef`` macro. |br| Default value ``60``.
 
   
 Editing macros
