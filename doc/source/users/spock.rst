@@ -383,6 +383,8 @@ of files:
     LAB-01-D01 [2]: senv ScanFile "['scans.h5', 'scans.dat']"
     ScanFile = ['scans.h5', 'scans.dat']
 
+.. _sardana-spock-showscan:
+
 Viewing scan data
 ~~~~~~~~~~~~~~~~~
 
