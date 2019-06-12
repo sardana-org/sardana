@@ -7,6 +7,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 
+* Reintroduce `showscan online` to spock (#1042)
 * Allow to configure timeout on pool element's (Taurus extensions) *go* methods e.g.
   `move`, `count`, etc. (#992)
 * Emulated hardware triggering between dummy counter/timer and trigger/gate elements
@@ -19,6 +20,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Print output of `send2ctrl` macro only if it contains something (#1120)
 * Add `DescriptionLength` view option for adjusting the `lsdef` macro description
   (#1107, #1108)
+* Add `ShowScanOnline` component to Taurus Qt extensions (#1042)
 
 ### Fixed
 
