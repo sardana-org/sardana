@@ -74,7 +74,15 @@ def expconf(self, parameter_s=''):
 def showscan(self, parameter_s=''):
     """Shows a scan in a GUI.
 
-    :param scan_id: scan number [default: None, meaning show last scan]"""
+    Accepts one optional argument:
+
+    * ``online`` - plot scans online
+    * <ScanID> - plot scan of the given ID offline
+    * no argument - plot the last scan offline
+
+    Where *online* means plot the scan as it runs and *offline* means -
+    extract the scan data from the file - works only with HDF5 files.
+    """
     params = parameter_s.split()
     door = get_door()
     online, scan_nb = False, None
