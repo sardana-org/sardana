@@ -105,7 +105,7 @@ class RecorderManager(MacroServerManager):
         """
         _recorder_path = []
         for paths in recorder_path:
-            splited_paths = paths.split(":")
+            splited_paths = paths.split(os.pathsep)
             for path in splited_paths:
                 # filter empty and commented paths
                 if not path.startswith("#"):
@@ -135,7 +135,7 @@ class RecorderManager(MacroServerManager):
     def getRecorderMetaClass(self, recorder_name):
         """ Return the Recorder class for the given class name.
         :param klass_name: Name of the recorder class.
-        :type klass_name: str
+        :type klass_name: :obj:`str`
         :return:  a :obj:`class` class of recorder or None if it does not exist
         :rtype:
             :obj:`class:`~sardana.macroserver.msmetarecorder.RecorderClass`\>
@@ -155,7 +155,7 @@ class RecorderManager(MacroServerManager):
         :param filter: a klass of a valid type of Recorder
         :type filter: obj
         :param filter: a scan file extension
-        :type filter: str
+        :type filter: :obj:`str`
         :return: a :obj:`dict` containing information about recorder classes
         :rtype:
             :obj:`dict`\<:obj:`str`\,
@@ -188,7 +188,7 @@ class RecorderManager(MacroServerManager):
         :param filter: a klass of a valid type of Recorder
         :type filter: obj
         :param filter: a scan file extension
-        :type filter: str
+        :type filter: :obj:`str`
         :return: a :obj:`dict` containing information about recorder classes
         :rtype:
             :obj:`dict`\<:obj:`str`\, :class:`DataRecorder`\>
@@ -203,7 +203,7 @@ class RecorderManager(MacroServerManager):
     def getRecorderClass(self, klass_name):
         """ Return the Recorder class for the given class name.
         :param klass_name: Name of the recorder class.
-        :type klass_name: str
+        :type klass_name: :obj:`str`
         :return:  a :obj:`class` class of recorder or None if it does not exist
         :rtype:
             :obj:`class:`DataRecorder`\>

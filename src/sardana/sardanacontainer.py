@@ -147,7 +147,7 @@ class SardanaContainer(object):
         """Returns a reference to the requested pool object
 
            :param name: pool object name
-           :type name: str
+           :type name: :obj:`str`
 
            :return: the pool object
            :rtype: pool.PoolObject
@@ -163,7 +163,7 @@ class SardanaContainer(object):
         """Returns a reference to the requested pool object
 
            :param name: pool object full name
-           :type name: str
+           :type name: :obj:`str`
 
            :return: the pool object
            :rtype: pool.PoolObject
@@ -221,9 +221,9 @@ class SardanaContainer(object):
         """Rename an object
 
            :param old_name: old object name
-           :type old_name: str
+           :type old_name: :obj:`str`
            :param new_name: new object name
-           :type new_name: str
+           :type new_name: :obj:`str`
         """
         element = self._element_names.pop(old_name, None)
         if element is None:

@@ -34,7 +34,7 @@ from lxml import etree
 import PyTango
 
 from taurus import Device
-from taurus.external.qt import Qt
+from taurus.external.qt import Qt, compat
 from taurus.qt.qtgui.container import TaurusMainWindow, TaurusWidget
 from taurus.qt.qtcore.configuration import BaseConfigurableClass
 from taurus.qt.qtgui.display import TaurusLed
@@ -67,7 +67,7 @@ class HookAction(Qt.QAction):
         if text in self.macroNode().hookPlaces():
             self.setChecked(True)
         self.setToolTip("This macro will be executed as a %s" % text)
-        self.connect(self, Qt.SIGNAL('toggled(bool)'), self.onToggle)
+        self.toggled.connect(self.onToggle)
 
     def macroNode(self):
         return self._macroNode
@@ -83,6 +83,9 @@ class HookAction(Qt.QAction):
 
 
 class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
+
+    macroNameChanged = Qt.pyqtSignal('QString')
+    macroChanged = Qt.pyqtSignal(object)
 
     def __init__(self, parent=None):
         Qt.QTreeView.__init__(self, parent)
@@ -102,34 +105,30 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
 
         self.deleteAction = Qt.QAction(
             getThemeIcon("list-remove"), "Remove macro", self)
-        self.connect(self.deleteAction, Qt.SIGNAL(
-            "triggered()"), self.deleteMacro)
+        self.deleteAction.triggered.connect(self.deleteMacro)
         self.deleteAction.setToolTip(
             "Clicking this button will remove current macro.")
 
         self.moveUpAction = Qt.QAction(getThemeIcon("go-up"), "Move up", self)
-        self.connect(self.moveUpAction, Qt.SIGNAL("triggered()"), self.upMacro)
+        self.moveUpAction.triggered.connect(self.upMacro)
         self.moveUpAction.setToolTip(
             "Clicking this button will move current macro up.")
 
         self.moveDownAction = Qt.QAction(
             getThemeIcon("go-down"), "Move down", self)
-        self.connect(self.moveDownAction, Qt.SIGNAL(
-            "triggered()"), self.downMacro)
+        self.moveDownAction.triggered.connect(self.downMacro)
         self.moveDownAction.setToolTip(
             "Clicking this button will move current macro down.")
 
         self.moveLeftAction = Qt.QAction(
             getThemeIcon("go-previous"), "Move left", self)
-        self.connect(self.moveLeftAction, Qt.SIGNAL(
-            "triggered()"), self.leftMacro)
+        self.moveLeftAction.triggered.connect(self.leftMacro)
         self.moveLeftAction.setToolTip(
             "Clicking this button will move current macro to the left.")
 
         self.moveRightAction = Qt.QAction(
             getThemeIcon("go-next"), "Move right", self)
-        self.connect(self.moveRightAction, Qt.SIGNAL(
-            "triggered()"), self.rightMacro)
+        self.moveRightAction.triggered.connect(self.rightMacro)
         self.moveRightAction.setToolTip(
             "Clicking this button will move current macro to the right.")
 
@@ -181,8 +180,8 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
             self.moveLeftAction.setEnabled(node.isAllowedMoveLeft())
             self.moveRightAction.setEnabled(node.isAllowedMoveRight())
             sourceIndex = self.model().mapToSource(proxyIndex)
-            self.emit(Qt.SIGNAL("macroChanged"), sourceIndex)
-        self.emit(Qt.SIGNAL("macroNameChanged"), macroName)
+            self.macroChanged.emit(sourceIndex)
+        self.macroNameChanged.emit(macroName)
 
     def expanded(self):
         for column in range(self.model().columnCount(Qt.QModelIndex())):
@@ -210,8 +209,9 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
         return self.model().root()
 
     def setRoot(self, root):
+        self.model().beginResetModel()
         self.model().setRoot(root)
-        self.model().reset()
+        self.model().endResetModel()
 
     def addMacro(self, macroNode):
         node, proxyIndex = self.selectedNodeAndIndex()
@@ -296,7 +296,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
             return
         progressIndex = persistentIndex.sibling(persistentIndex.row(), 2)
         index = Qt.QModelIndex(progressIndex)
-        self.model().setData(index, Qt.QVariant(progress))
+        self.model().setData(index, progress)
 
     def setRangeForMacro(self, macroId, range):
         persistentIndex = self._idIndexDict.get(macroId, None)
@@ -323,6 +323,13 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
 
 
 class TaurusSequencerWidget(TaurusWidget):
+
+    macroStarted = Qt.pyqtSignal('QString')
+    plotablesFilterChanged = Qt.pyqtSignal(object)
+    currentMacroChanged = Qt.pyqtSignal(object)
+    macroNameChanged = Qt.pyqtSignal('QString')
+    shortMessageEmitted = Qt.pyqtSignal('QString')
+    sequenceEmpty = Qt.pyqtSignal()
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
@@ -357,8 +364,7 @@ class TaurusSequencerWidget(TaurusWidget):
         actionsLayout.setContentsMargins(0, 0, 0, 0)
         self.newSequenceAction = Qt.QAction(
             getThemeIcon("document-new"), "New", self)
-        self.connect(self.newSequenceAction, Qt.SIGNAL(
-            "triggered()"), self.onNewSequence)
+        self.newSequenceAction.triggered.connect(self.onNewSequence)
         self.newSequenceAction.setToolTip("New sequence")
         self.newSequenceAction.setEnabled(False)
         newSequenceButton = Qt.QToolButton()
@@ -367,8 +373,7 @@ class TaurusSequencerWidget(TaurusWidget):
 
         self.openSequenceAction = Qt.QAction(
             getThemeIcon("document-open"), "Open...", self)
-        self.connect(self.openSequenceAction, Qt.SIGNAL(
-            "triggered()"), self.onOpenSequence)
+        self.openSequenceAction.triggered.connect(self.onOpenSequence)
         self.openSequenceAction.setToolTip("Open sequence...")
         openSequenceButton = Qt.QToolButton()
         openSequenceButton.setDefaultAction(self.openSequenceAction)
@@ -376,8 +381,7 @@ class TaurusSequencerWidget(TaurusWidget):
 
         self.saveSequenceAction = Qt.QAction(
             getThemeIcon("document-save"), "Save...", self)
-        self.connect(self.saveSequenceAction, Qt.SIGNAL(
-            "triggered()"), self.onSaveSequence)
+        self.saveSequenceAction.triggered.connect(self.onSaveSequence)
         self.saveSequenceAction.setToolTip("Save sequence...")
         self.saveSequenceAction.setEnabled(False)
         saveSequenceButton = Qt.QToolButton()
@@ -386,8 +390,7 @@ class TaurusSequencerWidget(TaurusWidget):
 
         self.stopSequenceAction = Qt.QAction(
             getIcon(":/actions/media_playback_stop.svg"), "Stop", self)
-        self.connect(self.stopSequenceAction, Qt.SIGNAL(
-            "triggered()"), self.onStopSequence)
+        self.stopSequenceAction.triggered.connect(self.onStopSequence)
         self.stopSequenceAction.setToolTip("Stop sequence")
         stopSequenceButton = Qt.QToolButton()
         stopSequenceButton.setDefaultAction(self.stopSequenceAction)
@@ -395,8 +398,7 @@ class TaurusSequencerWidget(TaurusWidget):
 
         self.pauseSequenceAction = Qt.QAction(
             getIcon(":/actions/media_playback_pause.svg"), "Pause", self)
-        self.connect(self.pauseSequenceAction, Qt.SIGNAL(
-            "triggered()"), self.onPauseSequence)
+        self.pauseSequenceAction.triggered.connect(self.onPauseSequence)
         self.pauseSequenceAction.setToolTip("Pause sequence")
         pauseSequenceButton = Qt.QToolButton()
         pauseSequenceButton.setDefaultAction(self.pauseSequenceAction)
@@ -404,8 +406,7 @@ class TaurusSequencerWidget(TaurusWidget):
 
         self.playSequenceAction = Qt.QAction(
             getIcon(":/actions/media_playback_start.svg"), "Play", self)
-        self.connect(self.playSequenceAction, Qt.SIGNAL(
-            "triggered()"), self.onPlaySequence)
+        self.playSequenceAction.triggered.connect(self.onPlaySequence)
         self.playSequenceAction.setToolTip("Play sequence")
         playSequenceButton = Qt.QToolButton()
         playSequenceButton.setDefaultAction(self.playSequenceAction)
@@ -418,8 +419,7 @@ class TaurusSequencerWidget(TaurusWidget):
         # sequence tree view indicating clearing of the plot after execution
         self.fullSequencePlotCheckBox = Qt.QCheckBox(
             "Full sequence plot", self)
-        self.connect(self.fullSequencePlotCheckBox, Qt.SIGNAL(
-            "toggled(bool)"), self.setFullSequencePlot)
+        self.fullSequencePlotCheckBox.toggled.connect(self.setFullSequencePlot)
         self.fullSequencePlotCheckBox.setChecked(True)
         actionsLayout.addWidget(self.fullSequencePlotCheckBox)
 
@@ -442,9 +442,7 @@ class TaurusSequencerWidget(TaurusWidget):
 
         self.addMacroAction = Qt.QAction(
             getThemeIcon("list-add"), "Add macro...", self)
-        self.connect(self.addMacroAction,
-                     Qt.SIGNAL("triggered()"),
-                     self.onAdd)
+        self.addMacroAction.triggered.connect(self.onAdd)
         self.addMacroAction.setToolTip(
             "Clicking this button will add selected macro")
         self.addMacroAction.setEnabled(False)
@@ -497,10 +495,9 @@ class TaurusSequencerWidget(TaurusWidget):
         self.stackedWidget.addWidget(self.standardMacroParametersEditor)
         self.customMacroParametersEditor = None
 
-        self.connect(self.macroComboBox, Qt.SIGNAL(
-            "currentIndexChanged(QString)"), self.onMacroComboBoxChanged)
-        self.connect(self.tree, Qt.SIGNAL("macroChanged"),
-                     self.setMacroParametersRootIndex)
+        self.macroComboBox.currentIndexChanged.connect(
+            self.onMacroComboBoxChanged)
+        self.tree.macroChanged.connect(self.setMacroParametersRootIndex)
 
     def contextMenuEvent(self, event):
         menu = Qt.QMenu()
@@ -584,7 +581,7 @@ class TaurusSequencerWidget(TaurusWidget):
         self.tree.clearTree()
         self.newSequenceAction.setEnabled(False)
         self.saveSequenceAction.setEnabled(False)
-        self.emit(Qt.SIGNAL("currentMacroChanged"), None)
+        self.currentMacroChanged.emit(None)
 
     def loadFile(self, fileName):
         if fileName == "":
@@ -628,7 +625,7 @@ class TaurusSequencerWidget(TaurusWidget):
                 file.close()
             self.setSequencesPath(str.join("/", fileName.rsplit("/")[:-1]))
 
-        self.emit(Qt.SIGNAL("currentMacroChanged"), None)
+        self.currentMacroChanged.emit(None)
 
     def onOpenSequence(self):
         if not self._sequenceModel.isEmpty():
@@ -642,11 +639,11 @@ class TaurusSequencerWidget(TaurusWidget):
                 self.tree.clearTree()
 
         sequencesPath = self.sequencesPath()
-        fileName = str(Qt.QFileDialog.getOpenFileName(
+        fileName, _ = compat.getOpenFileName(
             self,
             "Choose a sequence to open...",
             sequencesPath,
-            "*"))
+            "*")
         self.loadFile(fileName)
 
 
@@ -656,18 +653,18 @@ class TaurusSequencerWidget(TaurusWidget):
             sequencesPath = str(Qt.QDir.homePath())
 
         sequencesPath = os.path.join(sequencesPath, "Untitled.xml")
-        fileName = str(Qt.QFileDialog.getSaveFileName(
+        fileName, _ = compat.getSaveFileName(
             self,
             "Choose a sequence file name...",
             sequencesPath,
-            "*.xml"))
+            "*.xml")
         if fileName == "":
             return
         try:
             file = open(fileName, "w")
             file.write(self.tree.toXmlString(pretty=True, withId=False))
             self.setSequencesPath(str.join("/", fileName.rsplit("/")[:-1]))
-        except Exception, e:
+        except Exception as e:
             Qt.QMessageBox.warning(
                 self,
                 "Error while saving macros sequence",
@@ -754,18 +751,17 @@ class TaurusSequencerWidget(TaurusWidget):
             #@todo: Check this signal because it doesn't work,
             # emitExecutionStarted is not set!!!
             if self.emitExecutionStarted():
-                self.emit(Qt.SIGNAL("macroStarted"), "DoorOutput")
+                self.macroStarted.emit("DoorOutput")
             self.tree.setRangeForMacro(id, range)
             self.playSequenceAction.setEnabled(False)
             self.pauseSequenceAction.setEnabled(True)
             self.stopSequenceAction.setEnabled(True)
             if id == self.firstMacroId():
-                self.emit(Qt.SIGNAL("plotablesFilterChanged"), None)
-                self.emit(Qt.SIGNAL("plotablesFilterChanged"),
-                          standardPlotablesFilter)
+                self.plotablesFilterChanged.emit(None)
+                self.plotablesFilterChanged.emit(standardPlotablesFilter)
                 shortMessage = "Sequence started."
             elif not self.isFullSequencePlot():
-                self.emit(Qt.SIGNAL("plotablesFilterChanged"), None)
+                self.plotablesFilterChanged.emit(None)
             shortMessage += " Macro %s started." % macroName
         elif state == "pause":
             self.playSequenceAction.setText("Resume sequence")
@@ -805,7 +801,7 @@ class TaurusSequencerWidget(TaurusWidget):
         elif state == "step":
             shortMessage = "Macro %s at %d %% of progress." % (macroName,
                                                                step)
-        self.emit(Qt.SIGNAL("shortMessageEmitted"), shortMessage)
+        self.shortMessageEmitted.emit(shortMessage)
         self.tree.setProgressForMacro(id, step)
 
     def onDoorChanged(self, doorName):
@@ -863,7 +859,7 @@ class TaurusSequencerWidget(TaurusWidget):
             self.addMacroAction.setEnabled(False)
         else:
             self.addMacroAction.setEnabled(True)
-        self.emit(Qt.SIGNAL("macroNameChanged"), macroName)
+        self.macroNameChanged.emit(macroName)
 
     def onAdd(self):
         macroName = str(self.macroComboBox.currentText())
@@ -881,8 +877,8 @@ class TaurusSequencerWidget(TaurusWidget):
     def emptySequence(self):
         self.tree.clearTree()
         self.disableButtons()
-        self.emit(Qt.SIGNAL("currentMacroChanged"), None)
-        self.emit(Qt.SIGNAL("sequenceEmpty"))
+        self.currentMacroChanged.emit(None)
+        self.sequenceEmpty.emit()
 
     def fromXmlString(self, xmlString):
         newRoot = self.tree.fromXmlString(xmlString)
@@ -899,7 +895,7 @@ class TaurusSequencerWidget(TaurusWidget):
             error_line += 1
             try:
                 macroServerObj.recreateFullMacroParams(macroNode)
-            except Exception, e:
+            except Exception as e:
                 Qt.QMessageBox.warning(self,
                                        "Error while parsing the sequence",
                                        "Sequence line number %d contains "
@@ -912,12 +908,11 @@ class TaurusSequencerWidget(TaurusWidget):
     def setModel(self, model):
         oldModelObj = self.getModelObj()
         if oldModelObj is not None:
-            self.disconnect(oldModelObj, Qt.SIGNAL(
-                "macrosUpdated"), self.macroComboBox.onMacrosUpdated)
+            oldModelObj.macrosUpdated.disconnect(
+                self.macroComboBox.onMacrosUpdated)
         TaurusWidget.setModel(self, model)
         newModelObj = self.getModelObj()
-        self.connect(newModelObj, Qt.SIGNAL("macrosUpdated"),
-                     self.macroComboBox.onMacrosUpdated)
+        newModelObj.macrosUpdated.connect(self.macroComboBox.onMacrosUpdated)
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
@@ -928,6 +923,7 @@ class TaurusSequencerWidget(TaurusWidget):
 
 
 class TaurusSequencer(MacroExecutionWindow):
+    doorChanged = Qt.pyqtSignal('QString')
 
     def __init__(self, parent=None, designMode=False):
         MacroExecutionWindow.__init__(self)
@@ -939,8 +935,8 @@ class TaurusSequencer(MacroExecutionWindow):
         self.taurusSequencerWidget.setUseParentModel(True)
         self.registerConfigDelegate(self.taurusSequencerWidget)
         self.setCentralWidget(self.taurusSequencerWidget)
-        self.connect(self.taurusSequencerWidget, Qt.SIGNAL(
-            'shortMessageEmitted'), self.onShortMessage)
+        self.taurusSequencerWidget.shortMessageEmitted.connect(
+            self.onShortMessage)
         self.statusBar().showMessage("Sequencer ready")
 
     def setCustomMacroEditorPaths(self, customMacroEditorPaths):
@@ -951,21 +947,20 @@ class TaurusSequencer(MacroExecutionWindow):
 
     def loadSettings(self):
         TaurusMainWindow.loadSettings(self)
-        self.emit(Qt.SIGNAL("doorChanged"), self.doorName())
+        self.doorChanged.emit(self.doorName())
 
     def onDoorChanged(self, doorName):
         MacroExecutionWindow.onDoorChanged(self, doorName)
         if self._qDoor:
-            Qt.QObject.disconnect(
-                self._qDoor,
-                Qt.SIGNAL("macroStatusUpdated"),
+            self._qDoor.macroStatusUpdated.disconnect(
                 self.taurusSequencerWidget.onMacroStatusUpdated)
+            self._qDoor = None
+
         if doorName == "":
             return
         self._qDoor = Device(doorName)
-        Qt.QObject.connect(self._qDoor,
-                           Qt.SIGNAL("macroStatusUpdated"),
-                           self.taurusSequencerWidget.onMacroStatusUpdated)
+        self._qDoor.macroStatusUpdated.connect(
+            self.taurusSequencerWidget.onMacroStatusUpdated)
         self.taurusSequencerWidget.onDoorChanged(doorName)
 
     @classmethod
@@ -976,22 +971,21 @@ class TaurusSequencer(MacroExecutionWindow):
 def createSequencerWidget(args):
     sequencer = TaurusSequencerWidget()
     sequencer.setModelInConfig(True)
-    Qt.QObject.connect(sequencer, Qt.SIGNAL(
-        "doorChanged"), sequencer.onDoorChanged)
+    sequencer.doorChanged.connect(sequencer.onDoorChanged)
+
     if len(args) == 2:
         sequencer.setModel(args[0])
-        sequencer.emit(Qt.SIGNAL('doorChanged'), args[1])
+        sequencer.doorChanged.emit(args[1])
     return sequencer
 
 
 def createSequencer(args, options):
     sequencer = TaurusSequencer()
     sequencer.setModelInConfig(True)
-    Qt.QObject.connect(sequencer, Qt.SIGNAL(
-        "doorChanged"), sequencer.onDoorChanged)
+    sequencer.doorChanged.connect(sequencer.onDoorChanged)
     if len(args) == 2:
         sequencer.setModel(args[0])
-        sequencer.emit(Qt.SIGNAL('doorChanged'), args[1])
+        sequencer.doorChanged.emit(args[1])
     sequencer.loadSettings()
     if options.file is not None:
         sequencer.taurusSequencerWidget.loadFile(options.file)

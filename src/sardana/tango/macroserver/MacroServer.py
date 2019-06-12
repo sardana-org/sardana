@@ -345,12 +345,16 @@ class MacroServerClass(SardanaDeviceClass):
         'MacroPath':
             [DevVarStringArray,
              "list of directories to search for macros (path separators "
-             "can be '\n' or ':')",
+             "can be '\n' or character conventionally used by the OS to"
+             "separate search path components, such as ':' for POSIX"
+             "or ';' for Windows)",
              []],
         'RecorderPath':
             [DevVarStringArray,
              "list of directories to search for recorders (path separators "
-             "can be '\n' or ':')",
+             "can be '\n' or character conventionally used by the OS to"
+             "separate search path components, such as ':' for POSIX"
+             "or ';' for Windows)",
              []],
         'PythonPath':
             [DevVarStringArray,
@@ -382,6 +386,32 @@ class MacroServerClass(SardanaDeviceClass):
             [DevString,
              "Log report format [default: '%s']" % DefaultLogReportFormat,
              DefaultLogReportFormat],
+        'LogstashHost':
+            [DevString,
+             "Hostname where Logstash runs. "
+             "This property has been included in Sardana on a provisional "
+             "basis. Backwards incompatible changes (up to and including "
+             "its removal) may occur if deemed necessary by the "
+             "core developers.",
+             None],
+        'LogstashPort':
+            [DevLong,
+             "Port on which Logstash will listen on events [default: 12345]. "
+             "This property has been included in Sardana on a provisional "
+             "basis. Backwards incompatible changes (up to and including "
+             "its removal) may occur if deemed necessary by the "
+             "core developers.",
+             12345],
+        'LogstashCacheDbPath':
+            [DevString,
+             "Path to the Logstash cache database [default: None]. "
+             "It is advised not to use the database cache, as it may "
+             "have negative effects on logging performance. See #895. "
+             "This property has been included in Sardana on a provisional "
+             "basis. Backwards incompatible changes (up to and including "
+             "its removal) may occur if deemed necessary by the "
+             "core developers.",
+             None]
     }
 
     #    Command definitions

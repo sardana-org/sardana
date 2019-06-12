@@ -148,7 +148,7 @@ class ControllerManager(Singleton, Logger):
             problems of type class A != class A)."""
         p = []
         for item in controller_path:
-            p.extend(item.split(":"))
+            p.extend(item.split(os.pathsep))
 
         # filter empty and commented paths
         p = [i for i in p if i and not i.startswith("#")]
@@ -212,16 +212,17 @@ class ControllerManager(Singleton, Logger):
         return f_name
 
     def getOrCreateControllerLib(self, lib_name, controller_name=None):
-        """Gets the exiting controller lib or creates a new controller lib file.
-        If name is not None, a controller template code for the given controller
-        name is appended to the end of the file.
+        """
+        Gets the exiting controller lib or creates a new controller lib file.
+        If name is not None, a controller template code for the given
+        controller name is appended to the end of the file.
 
-        :param str lib_name: module name, python file name, or full file name
-                             (with path)
-        :param str controller_name: an optional controller name. If given a
-                                    controller template code is appended to the
-                                    end of the file [default: None, meaning no
-                                    controller code is added)
+        :param :obj:`str` lib_name: module name, python file name, or full file
+                        name (with path)
+        :param :obj:`str` controller_name: an optional controller name. If
+                        given a controller template code is appended to the
+                        end of the file [default: None, meaning no controller
+                        code is added)
 
         :return: a sequence with three items: full_filename, code, line number
                  line number is 0 if no controller is created or n representing
@@ -263,8 +264,8 @@ class ControllerManager(Singleton, Logger):
         """Creates a new controller library file with the given name and code.
         The new module is imported and becomes imediately available.
 
-        :param str lib_name: name of the new library
-        :param str code: python code of the new library"""
+        :param :obj:`str` lib_name: name of the new library
+        :param :obj:`str` code: python code of the new library"""
         f_name = self._fromNameToFileName(lib_name)
         f = open(f_name, 'w')
         f.write(code)
@@ -338,7 +339,8 @@ class ControllerManager(Singleton, Logger):
                  in case the controller is unknown or :exc:`ImportError` if
                  the reload process is not successfull
 
-        :param str controller_name: controller class name
+        :param controller_name: controller class name
+        :type controller_name: :obj:`str`
         :param seq<str> path: a list of absolute path to search for libraries
                               [default: None, meaning the current ControllerPath
                               will be used]"""
@@ -393,7 +395,8 @@ class ControllerManager(Singleton, Logger):
                  in case the controller is unknown or :exc:`ImportError` if
                  the reload process is not successful
 
-        :param str module_name: controller library name (=python module name)
+        :param module_name: controller library name (=python module name)
+        :type module_name: :obj:`str`
         :param seq<str> path: a list of absolute path to search for libraries
                               [default: None, meaning the current ControllerPath
                               will be used]

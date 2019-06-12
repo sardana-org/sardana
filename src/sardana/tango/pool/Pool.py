@@ -73,9 +73,32 @@ class Pool(PyTango.Device_4Impl, Logger):
         self._pool.add_listener(self.on_pool_changed)
 
     def get_full_name(self):
+        """Compose full name from the TANGO_HOST information and device name.
+
+        In case Sardana is used with Taurus 3 the full name is of format
+        "dbhost:dbport/<domain>/<family>/<member>" where dbhost may be either
+        FQDN or PQDN, depending on the TANGO_HOST configuration.
+
+        In case Sardana is used with Taurus 4 the full name is of format
+        "tango://dbhost:dbport/<domain>/<family>/<member>" where dbhost is
+        always FQDN.
+
+        :return: this device full name
+        :rtype: :obj:`str`
+        """
         db = PyTango.Util.instance().get_database()
         db_name = db.get_db_host() + ":" + db.get_db_port()
-        return db_name + "/" + self.get_name()
+        # try to use Taurus 4 to retrieve FQDN
+        try:
+            from taurus.core.tango.tangovalidator import \
+                TangoAuthorityNameValidator
+            db_name = "//%s" % db_name
+            db_name, _, _ = TangoAuthorityNameValidator().getNames(db_name)
+        # if Taurus3 in use just continue
+        except ImportError:
+            pass
+        full_name = db_name + "/" + self.get_name()
+        return full_name
 
     @property
     def pool(self):
@@ -1151,7 +1174,7 @@ Tango command to delete element.
 
 :param argin:
     {0}
-:type argin: str
+:type argin: :obj:`str`
 :return:
     {1}
 """.format(DELETE_ELEMENT_PAR_IN_DOC, DELETE_ELEMENT_PAR_OUT_DOC)
@@ -1179,10 +1202,10 @@ Tango command to get detailed information about a controller class.
 
 :param argin:
     {0}
-:type argin: str
+:type argin: :obj:`str`
 :return:
     {1}
-:rtype: str
+:rtype: :obj:`str`
 """.format(GET_CONTROLLER_CLASS_INFO_PAR_IN_DOC, GET_CONTROLLER_CLASS_INFO_PAR_OUT_DOC)
 
 RELOAD_CONTROLLER_LIB_PAR_IN_DOC = """\
@@ -1196,7 +1219,7 @@ Tango command to reload the controller library code.
 
 :param argin:
     {0}
-:type argin: str
+:type argin: :obj:`str`
 :return:
     {1}
 """.format(RELOAD_CONTROLLER_LIB_PAR_IN_DOC, RELOAD_CONTROLLER_LIB_PAR_OUT_DOC)
@@ -1213,7 +1236,7 @@ where the class is described).
 
 :param argin:
     {0}
-:type argin: str
+:type argin: :obj:`str`
 :return:
     {1}
 """.format(RELOAD_CONTROLLER_CLASS_PAR_IN_DOC, RELOAD_CONTROLLER_CLASS_PAR_OUT_DOC)
@@ -1301,7 +1324,9 @@ class PoolClass(PyTango.DeviceClass):
         'PoolPath':
             [PyTango.DevVarStringArray,
              "list of directories to search for controllers (path separators "
-             "can be '\n' or ':')",
+             "can be '\n' or character conventionally used by the OS to"
+             "separate search path components, such as ':' for POSIX"
+             "or ';' for Windows)",
              []],
         'PythonPath':
             [PyTango.DevVarStringArray,
@@ -1342,6 +1367,32 @@ class PoolClass(PyTango.DeviceClass):
             [PyTango.DevVarStringArray,
              "List of instruments (internal property)",
              []],
+        'LogstashHost':
+            [PyTango.DevString,
+             "Hostname where Logstash runs. "
+             "This property has been included in Sardana on a provisional "
+             "basis. Backwards incompatible changes (up to and including "
+             "its removal) may occur if deemed necessary by the "
+             "core developers.",
+             None],
+        'LogstashPort':
+            [PyTango.DevLong,
+             "Port on which Logstash will listen on events [default: 12345]. "
+             "This property has been included in Sardana on a provisional "
+             "basis. Backwards incompatible changes (up to and including "
+             "its removal) may occur if deemed necessary by the "
+             "core developers.",
+             12345],
+        'LogstashCacheDbPath':
+            [PyTango.DevString,
+             "Path to the Logstash cache database [default: None]. "
+             "It is advised not to use the database cache, as it may "
+             "have negative effects on logging performance. See #895. "
+             "This property has been included in Sardana on a provisional "
+             "basis. Backwards incompatible changes (up to and including "
+             "its removal) may occur if deemed necessary by the "
+             "core developers.",
+             None]
     }
 
     #    Command definitions

@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from __future__ import absolute_import
 ##############################################################################
 ##
 # This file is part of Sardana
@@ -42,6 +42,7 @@ import PyTango
 from taurus.core.util.user import USER_NAME
 from taurus.core.util.codecs import CodecFactory
 from sardana.spock.parser import ParamParser
+from sardana.macroserver.msparameter import Optional
 
 
 class MacroRunException(Exception):
@@ -486,13 +487,14 @@ class SingleParamNode(ParamNode):
 
     def __init__(self, parent=None, param=None):
         ParamNode.__init__(self, parent, param)
+        self._defValue = None
         if param is None:
             return
         self.setType(str(param.get('type')))
-        self.setDefValue(str(param.get('default_value', '')))
+        self.setDefValue(param.get('default_value', None))
         if self.type() == "User":
-            self.setDefValue(str(USER_NAME))
-        self.setValue(self.defValue())
+            self.setDefValue(USER_NAME)
+        self._value = None
 
     def __len__(self):
         return 0
@@ -509,7 +511,9 @@ class SingleParamNode(ParamNode):
         self._value = value
 
     def defValue(self):
-        return self._defValue
+        if self._defValue is None:
+            return None
+        return str(self._defValue)
 
     def setDefValue(self, defValue):
         if defValue == "None":
@@ -525,8 +529,11 @@ class SingleParamNode(ParamNode):
     def toXml(self):
         value = self.value()
         paramElement = etree.Element("param", name=self.name())
-        if value is not None:
-            paramElement.set("value", value)
+        # set value attribute only if it is different than the default value
+        # the server will assign the default value anyway.
+        if value is not None or str(value).lower() != 'none':
+            if value != self.defValue():
+                paramElement.set("value", value)
         return paramElement
 
     def fromXml(self, xmlElement):
@@ -544,9 +551,14 @@ class SingleParamNode(ParamNode):
 
     def toRun(self):
         val = self.value()
-        if val is None or val == "None" or val == "":
-            alert = "Parameter <b>" + self.name() + "</b> is missing.<br>"
-            return ([val], alert)
+        if val is None or val == "None":
+            if self.defValue() is None:
+                alert = "Parameter <b>" + self.name() + "</b> is missing.<br>"
+                return ([val], alert)
+            elif self._defValue == Optional:
+                val = ''
+            else:
+                val = self.defValue()
         return ([val], "")
 
     def toList(self):
@@ -1313,17 +1325,13 @@ def ParamFactory(paramInfo, parent=None):
 
 
 def createMacroNode(macro_name, params_def, macro_params):
-    """The best effort creation of the macro XML object. It tries to
-    convert flat list of string parameter values to the correct macro XML
-    object.
-
-    Default values allow in ParamRepeat parameters or the last single ones
+    """Create of the macro node object.
 
     :param macro_name: (str) macro name
     :param params_def: (list<dict>) list of param definitions
-    :param macro_params: (sequence[str]) list of parameter values
-
-    :return (lxml.etree._Element) macro XML element
+    :param macro_params: (sequence[str]) list of parameter values, if repeat
+        parameters are used parameter values may be sequences itself.
+    :return (MacroNode) macro node object
 
     .. todo:: This method implements exactly the same logic as :meth:
     `sardana.taurus.core.tango.sardana.macroserver.BaseDoor.
@@ -1331,54 +1339,5 @@ def createMacroNode(macro_name, params_def, macro_params):
     unify them and place in some common location.
     """
     macro_node = MacroNode(name=macro_name, params_def=params_def)
-    # Check if ParamRepeat used in advanced interface
-    new_interface = False
-    for param in macro_params:
-        if isinstance(param, list):
-            new_interface = True
-            break
-
-    if not new_interface:
-        param_nodes = macro_node.params()
-        contain_param_repeat = False
-        len_param_nodes = len(param_nodes)
-        for i, param_node in enumerate(param_nodes):
-            if isinstance(param_node, RepeatParamNode):
-                if contain_param_repeat:
-                    msg = "Only one repeat parameter is allowed"
-                    raise Exception(msg)
-                if i < len_param_nodes - 1:
-                    msg = "Repeat parameter must be the last one"
-                    raise Exception(msg)
-        # If ParamRepeat only one and as last parameter
-        # this ignores raw_parameters which exceeds the param_def
-        for param_node, param_raw in zip(param_nodes, macro_params):
-            if isinstance(param_node, SingleParamNode):
-                param_node.setValue(param_raw)
-            # the rest of the values are interpreted as repeat parameter
-            elif isinstance(param_node, RepeatParamNode):
-                params_info = param_node.paramsInfo()
-                params_info_len = len(params_info)
-                rep = 0
-                mem = 0
-                rest_raw = macro_params[i:]
-                for member_raw in rest_raw:
-                    repeat_node = param_node.child(rep)
-                    # add a new repeat node (this is needed when the raw values
-                    # fill more repeat nodes that the minimum number of
-                    # repetitions e.g. min=0
-                    if repeat_node is None:
-                        repeat_node = param_node.addRepeat()
-                    member_node = repeat_node.child(mem)
-                    if isinstance(member_node, RepeatParamNode):
-                        msg = ("Nested repeat parameters are not allowed")
-                        raise Exception(msg)
-                    member_node.setValue(member_raw)
-                    mem += 1
-                    mem %= params_info_len
-                    if mem == 0:
-                        rep += 1
-                break
-    else:
-        macro_node.fromList(macro_params)
+    macro_node.fromList(macro_params)
     return macro_node

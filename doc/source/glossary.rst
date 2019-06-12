@@ -91,6 +91,10 @@ Glossary
             >>> sum(i*i for i in range(10))       # sum of squares 0, 1, 4, ... 81
             285
 
+    IDE
+        Integrated Development Environment is a software application that provides
+        comprehensive facilities to computer programmers for software development.
+
     interactive
         Python has an interactive interpreter which means you can enter
         statements and expressions at the interpreter prompt, immediately
@@ -420,6 +424,10 @@ Glossary
     
     dial
         See :term:`dial position`
+
+    ROI
+        *Region of interest* are samples within a data set identified for a
+        particular purpose.
         
 .. _plug-in: http://en.wikipedia.org/wiki/Plug-in_(computing)
 .. _CCD: http://en.wikipedia.org/wiki/Charge-coupled_device

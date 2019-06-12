@@ -187,7 +187,7 @@ def from_dtype_str(dtype):
           (:obj:`DataType`, :obj:`DataFormat.Scalar`)
 
     :param dtype: the data type to be transformed
-    :type dtype: str or None or :obj:`DataType`
+    :type dtype: :obj:`str` or None or :obj:`DataType`
     :return: a tuple <str, :obj:`DataFormat`> for the given dtype
     :rtype: tuple<str, :obj:`DataFormat`>"""
     dformat = DataFormat.Scalar
@@ -212,9 +212,9 @@ def from_access_str(access):
     a simplified data access string.
 
     :param dtype: the access to be transformed
-    :type dtype: str
+    :type dtype: :obj:`str`
     :return: a simple string for the given access
-    :rtype: str"""
+    :rtype: :obj:`str`"""
     if isinstance(access, (str, unicode)):
         access = access.lower()
         if access.startswith("pytango."):
@@ -228,7 +228,7 @@ def to_dtype_dformat(data):
     elements (:obj:`DataType`, :obj:`DataFormat`).
 
     :param data: the data information to be transformed
-    :type data: str or seq<str> or seq<seq<str>>
+    :type data: :obj:`str` or seq<str> or seq<seq<str>>
     :return: a tuple <:obj:`DataType`, :obj:`DataFormat`> for the given data
     :rtype: tuple<:obj:`DataType`, :obj:`DataFormat`>
     """
@@ -257,7 +257,7 @@ def to_daccess(daccess):
     :obj:`DataAccess`. If None is given returns :obj:`DataAccess.ReadWrite`
 
     :param dtype: the access to be transformed
-    :type dtype: str
+    :type dtype: :obj:`str`
     :return: a :obj:`DataAccess` for the given access
     :rtype: :obj:`DataAccess`"""
     if daccess is None:
@@ -335,6 +335,11 @@ TYPE_ACQUIRABLE_ELEMENTS = set((ET.Motor, ET.CTExpChannel, ET.ZeroDExpChannel,
                                 ET.ComChannel, ET.IORegister, ET.PseudoMotor,
                                 ET.PseudoCounter))
 
+#: a set containing the possible measure-able elements.
+#: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
+TYPE_COUNTABLE_ELEMENTS = set((ET.CTExpChannel, ET.OneDExpChannel,
+                               ET.TwoDExpChannel, ET.MeasurementGroup))
+
 #: a set containing the possible types of experimental channel elements.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
 TYPE_EXP_CHANNEL_ELEMENTS = set((ET.CTExpChannel, ET.ZeroDExpChannel,
@@ -401,20 +406,25 @@ INTERFACES = {
     "Controller": (set(("PoolElement",)), "A controller"),
     "Moveable": (set(("PoolElement",)), "A moveable element"),
     "Acquirable": (set(("PoolElement",)), "An acquirable element"),
+    "Countable": (set(("PoolElement",)), "A countable element"),
     "Instrument": (set(("PoolElement",)), "An instrument"),
     "Motor": (set(("Moveable", "Acquirable")), "a motor"),
     "PseudoMotor": (set(("Moveable", "Acquirable")), "A pseudo motor"),
     "IORegister": (set(("Acquirable",)), "An IO register"),
     "ExpChannel": (set(("Acquirable",)), "A generic experimental channel"),
-    "CTExpChannel": (set(("ExpChannel",)), "A counter/timer experimental channel"),
+    "CTExpChannel": (set(("ExpChannel", "Countable")),
+                     "A counter/timer experimental channel"),
     "ZeroDExpChannel": (set(("ExpChannel",)), "A 0D experimental channel"),
-    "OneDExpChannel": (set(("ExpChannel",)), "A 1D experimental channel"),
-    "TwoDExpChannel": (set(("ExpChannel",)), "A 2D experimental channel"),
+    "OneDExpChannel": (set(("ExpChannel", "Countable")),
+                       "A 1D experimental channel"),
+    "TwoDExpChannel": (set(("ExpChannel", "Countable")),
+                       "A 2D experimental channel"),
     "TriggerGate": (set(("PoolElement",)), "A trigger/gate"),
     "PseudoCounter": (set(("ExpChannel",)), "A pseudo counter"),
     "ComChannel": (set(("PoolElement",)), "A communication channel"),
     "MotorGroup": (set(("PoolElement",),), "A motor group"),
-    "MeasurementGroup": (set(("PoolElement",),), "A measurement group"),
+    "MeasurementGroup": (set(("PoolElement", "Countable")),
+                         "A measurement group"),
     "ControllerLibrary": (set(("Library", "PoolObject")), "A controller library"),
     "ControllerClass": (set(("Class", "PoolObject")), "A controller class"),
     "Constraint": (set(("PoolObject",)), "A constraint"),

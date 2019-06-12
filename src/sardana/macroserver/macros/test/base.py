@@ -180,9 +180,10 @@ class RunMacroTestCase(BaseMacroTestCase):
         """
         finishStates = [u'finish']
         state = self.macro_executor.getState()
-        # TODO buffer is just for debugging, attach only the last state
-        state_buffer = self.macro_executor.getStateBuffer()
-        msg = msg + '; State history=%s' % state_buffer
+        msg = msg + ';\nState: %s' % state
+        exception_str = self.macro_executor.getExceptionStr()
+        if exception_str is not None:
+            msg = msg + ';\nMacro exception info:\n' + exception_str
         self.assertIn(state, finishStates, msg)
 
     def setUp(self):

@@ -33,6 +33,7 @@ __all__ = ["NXscanH5_FileRecorder"]
 __docformat__ = 'restructuredtext'
 
 import os
+import posixpath
 from datetime import datetime
 import numpy
 import h5py
@@ -245,7 +246,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         Write the pre-scan snapshot in "<entry>/measurement/pre_scan_snapshot".
         Also link to the snapshot datasets from the <entry>/measurement group
         """
-        _meas = self.fd[os.path.join(self.entryname, 'measurement')]
+        _meas = self.fd[posixpath.join(self.entryname, 'measurement')]
         self.preScanSnapShot = env.get('preScanSnapShot', [])
         _snap = _meas.create_group('pre_scan_snapshot')
         _snap.attrs['NX_class'] = 'NXcollection'
@@ -278,7 +279,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
     def _writeRecord(self, record):
         if self.filename is None:
             return
-        _meas = self.fd[os.path.join(self.entryname, 'measurement')]
+        _meas = self.fd[posixpath.join(self.entryname, 'measurement')]
 
         for dd in self.datadesc:
             if dd.name in record.data:
@@ -324,7 +325,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
     def writeRecordList(self, recordlist):
         """Called when in BLOCK writing mode"""
         self._startRecordList(recordlist)
-        _meas = self.fd[os.path.join(self.entryname, 'measurement')]
+        _meas = self.fd[posixpath.join(self.entryname, 'measurement')]
         for dd in self.datadesc:
             shape = ([len(recordlist.records)] + list(dd.shape))
             _ds = _meas.create_dataset(
@@ -440,11 +441,11 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
 
         if prefix is None:
             # if prefix is None, use current entry if path is relative
-            path = os.path.join("/%s:NXentry" % self.entryname, path)
+            path = posixpath.join("/%s:NXentry" % self.entryname, path)
         else:
             # if prefix is given explicitly, assume that path is relative to it
             # even if path is absolute
-            path = os.path.join(prefix, path.lstrip('/'))
+            path = posixpath.join(prefix, path.lstrip('/'))
 
         grp = self.fd['/']
         for name in path[1:].split('/'):

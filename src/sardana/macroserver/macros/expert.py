@@ -25,12 +25,12 @@
 
 from __future__ import print_function
 
-__docformat__ = 'restructuredtext'
-
 __all__ = ["addctrllib", "addmaclib", "commit_ctrllib", "defctrl", "defelem",
            "defm", "defmeas", "edctrlcls", "edctrllib", "prdef",
            "relctrlcls", "relctrllib", "rellib", "relmac", "relmaclib",
            "send2ctrl", "udefctrl", "udefelem", "udefmeas", "sar_info"]
+
+__docformat__ = 'restructuredtext'
 
 import sys
 import traceback
@@ -228,7 +228,8 @@ class send2ctrl(Macro):
         pool = controller.getPoolObj()
         str_data = " ".join(data)
         res = pool.SendToController([name, str_data])
-        self.output(res)
+        if res:
+            self.output(res)
 
 ##########################################################################
 #
@@ -339,6 +340,12 @@ class relctrllib(Macro):
 
 class addctrllib(Macro):
     """Adds the given controller library code to the pool server filesystem.
+
+    .. note:: Currently this macro does not report eventual errors,
+              for example Python syntax errors, in the controller plugin
+              module. So if it silently exits but the controller library is
+              not correctly loaded please check the server logs for more
+              information.
     """
 
     param_def = [["ctrl_library_name", Type.String, None,

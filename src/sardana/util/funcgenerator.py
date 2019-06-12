@@ -26,14 +26,25 @@ import threading
 import math
 import copy
 import numpy
-
+import traceback
 
 from sardana import State
 from sardana.sardanaevent import EventGenerator, EventType
 from sardana.pool.pooldefs import SynchParam, SynchDomain
+from taurus.core.util.log import Logger
 
 
-class FunctionGenerator(EventGenerator):
+def strictly_increasing(l):
+    """Check whether list l has strictly increasing values"""
+    return all(x < y for x, y in zip(l, l[1:]))
+
+
+def strictly_decreasing(l):
+    """Check whether list l has strictly deacreasing values"""
+    return all(x > y for x, y in zip(l, l[1:]))
+
+
+class FunctionGenerator(EventGenerator, Logger):
     """Generator of active and passive events describing a rectangular
     function.
 
@@ -46,11 +57,14 @@ class FunctionGenerator(EventGenerator):
 
     MAX_NAP_TIME = 0.1
 
-    def __init__(self):
+    def __init__(self, name="FunctionGenerator"):
         EventGenerator.__init__(self)
+        Logger.__init__(self, name)
+        self._name = name
         self._initial_domain = None
         self._active_domain = None
         self._position_event = threading.Event()
+        self._position = None
         self._initial_domain_in_use = None
         self._active_domain_in_use = None
         self._active_events = list()
@@ -62,6 +76,12 @@ class FunctionGenerator(EventGenerator):
         self._direction = None
         self._condition = None
         self._id = None
+        self._start_fired = False
+
+    def get_name(self):
+        return self._name
+
+    name = property(get_name)
 
     def set_initial_domain(self, domain):
         self._initial_domain = domain
@@ -135,6 +155,12 @@ class FunctionGenerator(EventGenerator):
 
     def event_received(self, *args, **kwargs):
         _, _, v = args
+        if v.error:
+            exc_info = v.exc_info
+            self.error("Synchronization base attribute in error")
+            msg = "Details: " + "".join(traceback.format_exception(*exc_info))
+            self.debug(msg)
+            return
         self._position = v.value
         self._position_event.set()
 
@@ -143,6 +169,7 @@ class FunctionGenerator(EventGenerator):
         self._stopped = False
         self._started = True
         self._position = None
+        self._start_fired = False
         self._position_event.clear()
         self._id = 0
         self.fire_event(EventType("state"), State.Moving)
@@ -187,6 +214,13 @@ class FunctionGenerator(EventGenerator):
                 break
             time.sleep(nap)
 
+    def fire_start(self):
+        self.fire_event(EventType("start"), self._id)
+        self._start_fired = True
+        if self._id > 0:
+            msg = "start was fired with {0} delay".format(self._id)
+            self.warning(msg)
+
     def wait_active(self):
         candidate = self.active_events[0]
         if self.initial_domain_in_use == SynchDomain.Time:
@@ -220,6 +254,8 @@ class FunctionGenerator(EventGenerator):
             else:
                 break
         self._id += i
+        if not self._start_fired:
+            self.fire_start()
         self.fire_event(EventType("active"), self._id)
         self.active_events = self.active_events[i + 1:]
         self.passive_events = self.passive_events[i:]
@@ -243,6 +279,11 @@ class FunctionGenerator(EventGenerator):
     def fire_passive(self):
         self.fire_event(EventType("passive"), self._id)
         self.set_passive_events(self.passive_events[1:])
+        if len(self.passive_events) == 0:
+            self.fire_end()
+
+    def fire_end(self):
+        self.fire_event(EventType("end"), self._id)
 
     def set_configuration(self, configuration):
         # make a copy since we may inject the initial time
@@ -265,65 +306,68 @@ class FunctionGenerator(EventGenerator):
             initial_param = group.get(Initial)
             if initial_param is None:
                 initial_param = dict()
-            if not initial_param.has_key(Time):
+            if Time not in initial_param:
                 delay_param = group.get(Delay)
-                if delay_param.has_key(Time):
+                if Time in delay_param:
                     initial_param[Time] = delay_param[Time]
                 group[Initial] = initial_param
             # determine active domain in use
             msg = "no initial value in group %d" % i
-            if self.initial_domain is None:
-                if initial_param.has_key(Position):
-                    self.initial_domain_in_use = Position
-                elif initial_param.has_key(Time):
-                    self.initial_domain_in_use = Time
-                else:
-                    raise ValueError(msg)
-            elif initial_param.has_key(self.initial_domain):
+            if self.initial_domain in initial_param:
                 self.initial_domain_in_use = self.initial_domain
+            elif Position in initial_param:
+                self.initial_domain_in_use = Position
+            elif Time in initial_param:
+                self.initial_domain_in_use = Time
             else:
                 raise ValueError(msg)
             # determine passive domain in use
             active_param = group.get(Active)
             msg = "no active value in group %d" % i
             if self.active_domain is None:
-                if active_param.has_key(Time):
+                if Time in active_param:
                     self.active_domain_in_use = Time
-                elif active_param.has_key(Position):
+                elif Position in active_param:
                     self.active_domain_in_use = Position
                 else:
                     raise ValueError(msg)
-            elif active_param.has_key(self.active_domain):
+            elif self.active_domain in active_param:
                 self.active_domain_in_use = self.active_domain
             else:
                 raise ValueError(msg)
             # create short variables for commodity
             initial_domain_in_use = self.initial_domain_in_use
             active_domain_in_use = self.active_domain_in_use
-            total_param = group[Total]
-            repeats = group[Repeats]
+            repeats = group.get(Repeats, 1)
             active = active_param[active_domain_in_use]
             initial_in_initial_domain = initial_param[initial_domain_in_use]
             initial_in_active_domain = initial_param[active_domain_in_use]
-            total_in_initial_domain = total_param[initial_domain_in_use]
-            total_in_active_domain = total_param[active_domain_in_use]
-
             active_event_in_initial_domain = initial_in_initial_domain
             active_event_in_active_domain = initial_in_active_domain
-            for _ in xrange(repeats):
-                passive_event = active_event_in_active_domain + active
+            if repeats > 1:
+                total_param = group[Total]
+                total_in_initial_domain = total_param[initial_domain_in_use]
+                total_in_active_domain = total_param[active_domain_in_use]
+                for _ in xrange(repeats):
+                    passive_event = active_event_in_active_domain + active
+                    active_events.append(active_event_in_initial_domain)
+                    passive_events.append(passive_event)
+                    active_event_in_initial_domain += total_in_initial_domain
+                    active_event_in_active_domain += total_in_active_domain
+            else:
                 active_events.append(active_event_in_initial_domain)
+                passive_event = active_event_in_active_domain + active
                 passive_events.append(passive_event)
-                active_event_in_initial_domain += total_in_initial_domain
-                active_event_in_active_domain += total_in_active_domain
-            self.active_events = active_events
-            self.passive_events = passive_events
-            # determine direction
-            direction = 1
-            if total_in_initial_domain < 0:
-                direction = -1
-            if self.direction is None:
-                self.direction = direction
-            elif self.direction != direction:
+
+        # determine direction
+        if self.direction is None:
+            if strictly_increasing(active_events):
+                self.direction = 1
+            elif strictly_decreasing(active_events):
+                self.direction = -1
+            else:
                 msg = "active values indicate contradictory directions"
                 raise ValueError(msg)
+
+        self.active_events = active_events
+        self.passive_events = passive_events

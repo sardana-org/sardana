@@ -31,12 +31,12 @@ __all__ = ['dummyMeasurementGroupConf01',
            'dummyCounterTimerConf03', 'dummyCounterTimerConf04',
            'dummyTriggerGateConf01', 'dummyTriggerGateConf02',
            'dummyTriggerGateConf03', 'dummyTriggerGateConf04',
-           'softwarePoolTGCtrlConf01']
+           'dummyPoolMotorCtrlConf01', 'dummyMotorConf01', 'dummyMotorConf02']
 
 
 # Pool Measurement Group
 '''Minimum configuration to create a Pool MeasurementGroup'''
-dummyMeasurementGroupConf01 = {'full_name': '',
+dummyMeasurementGroupConf01 = {'full_name': 'mntgrp01',
                                'id': None,
                                'name': '',
                                'pool': None,
@@ -46,7 +46,7 @@ dummyMeasurementGroupConf01 = {'full_name': '',
 # Pool Ctrls
 '''Minimum configuration to create a Pool CounterTimer controller'''
 dummyPoolCTCtrlConf01 = {'class_info': None,
-                         'full_name': '',
+                         'full_name': 'dctctrl01',
                          'id': 1,
                          'klass': 'DummyCounterTimerController',
                          'lib_info': None,
@@ -59,7 +59,7 @@ dummyPoolCTCtrlConf01 = {'class_info': None,
 
 '''Second minimum configuration to create a Pool CounterTimer controller'''
 dummyPoolCTCtrlConf02 = {'class_info': None,
-                         'full_name': '',
+                         'full_name': 'dctctrl02',
                          'id': 2,
                          'klass': 'DummyCounterTimerController',
                          'lib_info': None,
@@ -73,7 +73,7 @@ dummyPoolCTCtrlConf02 = {'class_info': None,
 '''Minimum configuration to create a TangoAttributeCTcontroller'''
 TangoAttributeCTCtrlConf01 = {'class_info': None,
                               'ctrl_info': '',
-                              'full_name': '',
+                              'full_name': 'tctctrl01',
                               'id': 1,
                               'klass': 'TangoAttrCTController',
                               'lib_info': None,
@@ -88,7 +88,7 @@ TangoAttributeCTCtrlConf01 = {'class_info': None,
 '''Second minimum configuration to create a TangoAttributeCTcontroller'''
 TangoAttributeCTCtrlConf02 = {'class_info': None,
                               'ctrl_info': '',
-                              'full_name': '',
+                              'full_name': 'tctctrl02',
                               'id': 2,
                               'klass': 'TangoAttrCTController',
                               'lib_info': None,
@@ -102,7 +102,7 @@ TangoAttributeCTCtrlConf02 = {'class_info': None,
 
 '''Minimum configuration to create a Pool TriggerGate controller'''
 dummyPoolTGCtrlConf01 = {'class_info': None,
-                         'full_name': '',
+                         'full_name': 'dtgctrl01',
                          'id': 1,
                          'klass': 'DummyTriggerGateController',
                          'lib_info': None,
@@ -113,22 +113,9 @@ dummyPoolTGCtrlConf01 = {'class_info': None,
                          'role_ids': '',
                          'type': 'TGChannel'}
 
-'''Minimum configuration to create a Pool Software TriggerGate controller'''
-softwarePoolTGCtrlConf01 = {'class_info': None,
-                            'full_name': '',
-                            'id': 1,
-                            'klass': 'SoftwareTriggerGateController',
-                            'lib_info': None,
-                            'library': 'SoftwareTriggerGateController.py',
-                            'name': '',
-                            'pool': None,
-                            'properties': {},
-                            'role_ids': '',
-                            'type': 'TGChannel'}
-
 '''Minimum configuration to create a Pool TriggerGate controller'''
 dummyPoolTGCtrlConf02 = {'class_info': None,
-                         'full_name': '',
+                         'full_name': 'dtgctrl01',
                          'id': 2,
                          'klass': 'DummyTriggerGateController',
                          'lib_info': None,
@@ -139,12 +126,24 @@ dummyPoolTGCtrlConf02 = {'class_info': None,
                          'role_ids': '',
                          'type': 'TGChannel'}
 
+'''Minimum configuration to create a Pool Motor controller'''
+dummyPoolMotorCtrlConf01 = {'class_info': None,
+                            'full_name': 'dmotctrl01',
+                            'id': 1,
+                            'klass': 'DummyMotorController',
+                            'lib_info': None,
+                            'library': 'DummyMotorController.py',
+                            'name': '',
+                            'pool': None,
+                            'properties': {},
+                            'role_ids': '',
+                            'type': 'Motor'}
 
 # Pool Elements
 '''Minimum configuration to create a Pool CounterTimer'''
 dummyCounterTimerConf01 = {'axis': 1,
                            'ctrl': None,
-                           'full_name': '',
+                           'full_name': 'dct01',
                            'id': 2,
                            'name': '',
                            'pool': None}
@@ -152,7 +151,7 @@ dummyCounterTimerConf01 = {'axis': 1,
 '''Second minimum configuration to create a Pool CounterTimer'''
 dummyCounterTimerConf02 = {'axis': 2,
                            'ctrl': None,
-                           'full_name': '',
+                           'full_name': 'dct02',
                            'id': 3,
                            'name': '',
                            'pool': None}
@@ -160,7 +159,7 @@ dummyCounterTimerConf02 = {'axis': 2,
 '''Third minimum configuration to create a Pool CounterTimer'''
 dummyCounterTimerConf03 = {'axis': 1,
                            'ctrl': None,
-                           'full_name': '',
+                           'full_name': 'dct03',
                            'id': 2,
                            'name': '',
                            'pool': None}
@@ -168,7 +167,7 @@ dummyCounterTimerConf03 = {'axis': 1,
 '''Fourth minimum configuration to create a Pool CounterTimer'''
 dummyCounterTimerConf04 = {'axis': 2,
                            'ctrl': None,
-                           'full_name': '',
+                           'full_name': 'dct04',
                            'id': 3,
                            'name': '',
                            'pool': None}
@@ -176,7 +175,7 @@ dummyCounterTimerConf04 = {'axis': 2,
 '''Minimum configuration to create a Pool TriggerGate'''
 dummyTriggerGateConf01 = {'axis': 1,
                           'ctrl': None,
-                          'full_name': '',
+                          'full_name': 'dtg01',
                           'id': 2,
                           'name': '',
                           'pool': None}
@@ -184,7 +183,7 @@ dummyTriggerGateConf01 = {'axis': 1,
 '''Second minimum configuration to create a Pool TriggerGate'''
 dummyTriggerGateConf02 = {'axis': 2,
                           'ctrl': None,
-                          'full_name': '',
+                          'full_name': 'dtg02',
                           'id': 3,
                           'name': '',
                           'pool': None}
@@ -192,7 +191,7 @@ dummyTriggerGateConf02 = {'axis': 2,
 '''Third minimum configuration to create a Pool TriggerGate'''
 dummyTriggerGateConf03 = {'axis': 3,
                           'ctrl': None,
-                          'full_name': '',
+                          'full_name': 'dtg03',
                           'id': 4,
                           'name': '',
                           'pool': None}
@@ -200,7 +199,23 @@ dummyTriggerGateConf03 = {'axis': 3,
 '''Fourth minimum configuration to create a Pool TriggerGate'''
 dummyTriggerGateConf04 = {'axis': 4,
                           'ctrl': None,
-                          'full_name': '',
+                          'full_name': 'dtg04',
                           'id': 5,
                           'name': '',
                           'pool': None}
+
+'''Minimum configuration to create a Pool Motor'''
+dummyMotorConf01 = {'axis': 1,
+                    'ctrl': None,
+                    'full_name': 'dmot01',
+                    'id': 1,
+                    'name': '',
+                    'pool': None}
+
+'''Minimum configuration to create a Pool Motor'''
+dummyMotorConf02 = {'axis': 2,
+                    'ctrl': None,
+                    'full_name': 'dmot02',
+                    'id': 1,
+                    'name': '',
+                    'pool': None}

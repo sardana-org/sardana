@@ -21,11 +21,11 @@
 ##
 ##############################################################################
 
-"""This is the standard macro module"""
+"""This is the demo macro module"""
 
 from __future__ import print_function
 
-__all__ = ["sar_demo", "sar_demo_hkl", "clear_sar_demo_hkl"]
+__all__ = ["sar_demo", "clear_sar_demo", "sar_demo_hkl", "clear_sar_demo_hkl"]
 
 import PyTango
 
@@ -171,6 +171,11 @@ def sar_demo(self):
     for axis, tg_name in enumerate(tg_names, 1):
         self.print("Creating trigger element", tg_name, "...")
         self.defelem(tg_name, tg_ctrl_name, axis)
+
+    ct_ctrl = self.getController(ct_ctrl_name)
+    ct_ctrl.getAttribute("synchronizer").write(tg_name)
+    self.print("Connecting trigger/gate element", tg_name,
+               "with counter/timer controller", ct_ctrl_name)
 
     self.print("Creating IORegister controller", ior_ctrl_name, "...")
     self.defctrl("DummyIORController", ior_ctrl_name)

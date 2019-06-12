@@ -45,6 +45,7 @@ counting macros
 
 diffractometer related macros
 -----------------------------
+.. _sardana-diffractometer-macros:
 
 .. hlist::
     :columns: 5
@@ -115,6 +116,7 @@ list related macros
     * :class:`~sardana.macroserver.macros.lists.lsa`
     * :class:`~sardana.macroserver.macros.lists.lsmac`
     * :class:`~sardana.macroserver.macros.lists.lsmaclib`
+    * :class:`~sardana.macroserver.macros.env.lsgh`
 
 measurement configuration macros
 --------------------------------
@@ -124,7 +126,17 @@ measurement configuration macros
 
     * :class:`~sardana.macroserver.macros.expert.defmeas`
     * :class:`~sardana.macroserver.macros.expert.udefmeas`
-    
+
+general hooks macros
+--------------------
+
+.. hlist::
+    :columns: 5
+
+    * :class:`~sardana.macroserver.macros.env.lsgh`
+    * :class:`~sardana.macroserver.macros.env.defgh`
+    * :class:`~sardana.macroserver.macros.env.udefgh`
+
 advanced element manipulation macros
 ------------------------------------
 
@@ -190,3 +202,11 @@ scan macros
     * :class:`~sardana.macroserver.macros.scan.d2scanct`
     * :class:`~sardana.macroserver.macros.scan.d3scanct`
     * :class:`~sardana.macroserver.macros.scan.d4scanct`
+
+scan related macros
+-------------------
+
+.. hlist::
+    :columns: 5
+
+    * :class:`~sardana.macroserver.macros.standard.newfile`

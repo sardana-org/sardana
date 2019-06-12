@@ -34,6 +34,26 @@ import time
 from taurus.core.util.containers import CaselessDict
 
 
+def _get_tango_devstate_match(states):
+    """
+    Retrieve PyTango.DevState match
+    :param states:
+    :return:
+    """
+
+    import PyTango
+    state = PyTango.DevState.ON
+    if PyTango.DevState.FAULT in states:
+        state = PyTango.DevState.FAULT
+    elif PyTango.DevState.ALARM in states:
+        state = PyTango.DevState.ALARM
+    elif PyTango.DevState.UNKNOWN in states:
+        state = PyTango.DevState.UNKNOWN
+    elif PyTango.DevState.MOVING in states:
+        state = PyTango.DevState.MOVING
+    return state
+
+
 class Moveable:
     """ An item that can 'move'. In order to move it you need to provide a list
     of values (normally interpreted as motor positions).
@@ -181,16 +201,7 @@ class MotionGroup(BaseMotion):
             res = moveable.move(pos, timeout=timeout)
             states.append(res[0])
             positions.extend(res[1])
-        import PyTango
-        state = PyTango.DevState.ON
-        if PyTango.DevState.FAULT in states:
-            state = PyTango.DevState.FAULT
-        elif PyTango.DevState.ALARM in states:
-            state = PyTango.DevState.ALARM
-        elif PyTango.DevState.UNKNOWN in states:
-            state = PyTango.DevState.UNKNOWN
-        elif PyTango.DevState.MOVING in states:
-            state = PyTango.DevState.MOVING
+        state = _get_tango_devstate_match(states)
         self.__total_motion_time = time.time() - start_time
         return state, positions
 
@@ -243,6 +254,9 @@ class Motion(BaseMotion):
                             allow_repeat=allow_repeat,
                             allow_unknown=allow_unknown, read_only=read_only)
         self.__total_motion_time = 0
+
+    def __str__(self):
+        return self.__class__.__name__ + "(" + str(self.names) + ")"
 
     def init_by_movables(self, elements, moveable_srcs, allow_repeat, allow_unknown):
         # TODO: Optimize this. Dont call init_by_names. It its possible to do it
@@ -343,7 +357,7 @@ class Motion(BaseMotion):
                  for moveable in self.moveable_list]
         return max(times)
 
-    def getTotalLastMotionTime():
+    def getTotalLastMotionTime(self):
         return self.__total_motion_time
 
     def startMove(self, pos_list, timeout=None):
@@ -385,18 +399,9 @@ class Motion(BaseMotion):
             for moveable, id in zip(self.moveable_list, ids):
                 moveable.waitMove(id=id, timeout=timeout)
             states, positions = self.readState(), self.readPosition()
-            import PyTango
-            state = PyTango.DevState.ON
-            if PyTango.DevState.FAULT in states:
-                state = PyTango.DevState.FAULT
-            elif PyTango.DevState.ALARM in states:
-                state = PyTango.DevState.ALARM
-            elif PyTango.DevState.UNKNOWN in states:
-                state = PyTango.DevState.UNKNOWN
-            elif PyTango.DevState.MOVING in states:
-                state = PyTango.DevState.MOVING
+            state = _get_tango_devstate_match(states)
             ret = state, positions
-        self.__total_motion_time = time.time()
+        self.__total_motion_time = time.time() - start_time
         return ret
 
     def iterMove(self, new_pos, timeout=None):
