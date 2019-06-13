@@ -199,8 +199,8 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
         self.expanded()
         return newRoot
 
-    def fromPlainText(self, plainText):
-        newRoot = self.model().fromPlainText(plainText)
+    def fromPlainText(self, plainTextMacros, macroInfos):
+        newRoot = self.model().fromPlainText(plainTextMacros, macroInfos)
         self.expandAll()
         self.expanded()
         return newRoot
@@ -330,6 +330,8 @@ class TaurusSequencerWidget(TaurusWidget):
     macroNameChanged = Qt.pyqtSignal('QString')
     shortMessageEmitted = Qt.pyqtSignal('QString')
     sequenceEmpty = Qt.pyqtSignal()
+
+    comment_characters = ('#',)
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
@@ -888,21 +890,32 @@ class TaurusSequencerWidget(TaurusWidget):
         return newRoot
 
     def fromPlainText(self, plainText):
-        newRoot = self.tree.fromPlainText(plainText)
+        plainTextMacros = []
+        macroInfos = []
         macroServerObj = self.getModelObj()
-        error_line = 0
-        for macroNode in newRoot.allMacros():
-            error_line += 1
-            try:
-                macroServerObj.recreateFullMacroParams(macroNode)
-            except Exception as e:
-                Qt.QMessageBox.warning(self,
-                                       "Error while parsing the sequence",
-                                       "Sequence line number %d contains "
-                                       "the following error:\n %s\n "
-                                       "The sequence will not be loaded"
-                                       % (error_line, e))
-                raise e
+        unknownMacros = []
+        for plainTextMacro in plainText.split('\n'):
+            # stripping the whitespace characters
+            plainTextMacro = plainTextMacro.strip()
+            # ignoring the empty lines
+            if len(plainTextMacro) == 0:
+                continue
+            # ignoring the commented lines
+            if plainTextMacro[0] in self.comment_characters:
+                continue
+            macroName = plainTextMacro.split()[0]
+            macroInfo = macroServerObj.getMacroInfoObj(macroName)
+            if macroInfo is None:
+                unknownMacros.append(macroName)
+            plainTextMacros.append(plainTextMacro)
+            macroInfos.append(macroInfo)
+        if len(unknownMacros) > 0:
+            msg = ("{0} macro(s) are not loaded in the "
+                   "MacroServer".format(", ".join(unknownMacros)))
+            Qt.QMessageBox.warning(self, "Error while parsing the sequence",
+                                   msg)
+            raise ValueError(msg)
+        newRoot = self.tree.fromPlainText(plainTextMacros, macroInfos)
         return newRoot
 
     def setModel(self, model):

@@ -41,7 +41,7 @@ import PyTango
 
 from taurus.core.util.user import USER_NAME
 from taurus.core.util.codecs import CodecFactory
-from sardana.spock.parser import ParamParser
+from sardana.util.parser import ParamParser, ParseError
 from sardana.macroserver.msparameter import Optional
 
 
@@ -832,8 +832,17 @@ class MacroNode(BranchNode):
     """Class to represent macro element."""
     count = 0
 
-    def __init__(self, parent=None, name=None, params_def=None):
+    def __init__(self, parent=None, name=None, params_def=None,
+                 macro_info=None):
+        if (macro_info is not None
+                and (name is not None or params_def is not None)):
+            raise ValueError("construction arguments ambiguous")
         BranchNode.__init__(self, parent)
+        allowed_hooks = []
+        if macro_info is not None:
+            params_def = macro_info.parameters
+            name = macro_info.name
+            allowed_hooks = macro_info.hints.get("allowsHooks", [])
         self.setId(None)
         self.setName(name)
         self.setPause(False)
@@ -842,12 +851,14 @@ class MacroNode(BranchNode):
         self.setParams([])
         self.setHooks([])
         self.setHookPlaces([])
-        self.setAllowedHookPlaces([])
+        self.setAllowedHookPlaces(allowed_hooks)
         # create parameter nodes (it is recursive for repeat parameters
         # containing repeat parameters)
-        if params_def is not None:
+        if params_def is not None and len(params_def) >= 0:
+            self.setHasParams(True)
             for param_info in params_def:
-                self.addParam(ParamFactory(param_info, self))
+                self.addParam(ParamFactory(param_info))
+
 
     def id(self):
         """
@@ -1231,7 +1242,6 @@ class MacroNode(BranchNode):
 
 class SequenceNode(BranchNode):
     """Class to represent sequence element."""
-    comment_characters = ('#',)
 
     def __init__(self, parent=None):
         BranchNode.__init__(self, parent)
@@ -1261,24 +1271,23 @@ class SequenceNode(BranchNode):
             macro.fromXml(childElement)
             self.insertChild(macro)
 
-    def fromPlainText(self, plainText):
-        plainMacros = plainText.split('\n')
-        for plainMacro in plainMacros:
-            # stripping the whitespace characters
-            plainMacro = plainMacro.strip()
-            # ignoring the empty lines
-            if len(plainMacro) == 0:
-                continue
-            # ignoring the commented lines
-            if plainMacro[0] in self.comment_characters:
-                continue
-            # use the official Parameters Parser
-            words = ParamParser().parse(plainMacro)
-            macro_name = words[0]
-            macro_params = words[1:]
-            macro = MacroNode(self, name=macro_name)
-            macro.fromList(macro_params)
+    def fromPlainText(self, plainTextMacros, macroInfos):
+        for plainTextMacro, macroInfo in zip(plainTextMacros, macroInfos):
+            macro = MacroNode(self, macro_info=macroInfo)
             self.insertChild(macro)
+            # ignore the macro name and if there are parameters parse them
+            try:
+                plainTextParams = plainTextMacro.split(" ", 1)[1]
+            except IndexError:
+                continue
+            paramsDef = macroInfo.parameters
+            try:
+                macroParams = ParamParser(paramsDef).parse(plainTextParams)
+            except ParseError as e:
+                msg = "{0} can not be parsed ({1})".format(plainTextMacro,
+                                                           e.message)
+                raise ValueError(msg)
+            macro.fromList(macroParams)
 
 #    def descendantFromId(self, id):
 #        descendant = None
