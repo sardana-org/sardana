@@ -754,7 +754,7 @@ class RepeatNode(BranchNode):
         return "#%d" % self.index()
 
     def addParam(self, param):
-        paramNode = ParamFactory(param, self)
+        paramNode = ParamFactory(param)
         self.insertChild(paramNode)
 
     def toXml(self):
@@ -1301,35 +1301,16 @@ class SequenceNode(BranchNode):
 #        return descendant
 
 
-def ParamFactory(paramInfo, parent=None):
+def ParamFactory(paramInfo):
     """Factory method returning param element, depends of the paramInfo
     argument.
-    :param paramInfo: Can be a list to to create a RepeatParamNode, dict with
-    the paramInfo and a str that creates a SingleParamNode with a value.
-    :return ParamNode element
     """
-    if isinstance(paramInfo, list):
-        param = RepeatParamNode(parent=parent)
-        for pI in paramInfo:
-            repeat_node = param.addRepeat()
-            # If contains another paramRepeats:
-            if isinstance(pI, list):
-                for p in pI:
-                    if len(p) > 0:
-                        repeat_node.insertChild(ParamFactory(p, repeat_node))
-            else:
-                repeat_node.insertChild(ParamFactory(pI, repeat_node))
-
-    elif isinstance(paramInfo, dict):
-        if isinstance(paramInfo.get('type'), list):
-            param = RepeatParamNode(parent=parent, param=paramInfo)
-            if param.min() > 0:
-                param.addRepeat()
-        else:
-            param = SingleParamNode(parent=parent, param=paramInfo)
+    if isinstance(paramInfo.get('type'), list):
+        param = RepeatParamNode(param=paramInfo)
+        if param.min() > 0:
+            param.addRepeat()
     else:
-        param = SingleParamNode(parent=parent)
-        param.setValue(paramInfo)
+        param = SingleParamNode(param=paramInfo)
     return param
 
 
