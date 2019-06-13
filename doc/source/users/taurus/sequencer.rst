@@ -1,26 +1,39 @@
 .. _sequencer_ui:
 
-==========================================
-Sequencer User's Interface
-==========================================
+=========
+Sequencer
+=========
 
 
-.. contents::
+*Sequencer* provides an user-friendly interface to compose and execute
+sequences of macros. Sequence of macros allows execution
+of ordered set of macros with just one trigger. Sequencer also allows
+using the concept of :ref:`hooks<sardana-macros-hooks>` (macros attached
+and executed in defined places of other macros).
 
+The widget is divided into 3 main areas:
 
-`Sequencer` provides an user-friendly interface to compose and execute sequences of macros. Sequence of macros allows execution 
-of ordered set of macros with just one trigger. It also allows using a concept of hooks (macros attached and executed in defined places of other macros).
-It is divided into 3 main areas: `actions bar`, `sequence editor` and `parameters editor`.
-`Sequence editor` allows you modifying sequences in many ways: appending new macros, changing macros locations and removing macros. 
-Graphical `parameters editor` (standard/custom) provides a clear way to set/modify macro execution settings(parameters). 
-Once sequence of macros is in execution phase, `Sequencer` informs user about its state with Door's state led and macros progress bars. 
-User has full control over sequence, with action buttons: Start, Stop, Pause, Resume. 
+* actions bar
+* sequence editor
+* parameters editor
+
+`Sequence editor` allows you modify sequences in many ways: appending new
+macros, changing macros locations and removing macros.
+
+Graphical `parameters editor` (standard/custom) provides a clear way to
+set/modify macro execution settings(parameters).
+
+The `actions bar` provides many features. Once sequence of macros is in
+being executed, `Sequencer` informs you about the progress with Door's state
+led and macros progress bars. User has full control over the sequence, with
+action buttons: Start, Stop, Pause, Resume.
+
 If desirable, sequences can be permanently stored into a file and later on restored from there. 
-This functionality is provided thanks to action buttons: Save and Open a sequence.
-The sequence file can use the XML format or the "Spock format". The "Spock
-format" is a list of macros, one per line, written exactly the way they would be
-entered into Spock command line. The Sequencer is able to save only the XML
-format file, but it can load both.
+This functionality is provided thanks to the Save and Open a sequence action buttons.
+The sequence file can use the XML format or the :ref:`spock syntax<sardana-spock-syntax>`.
+The later one is basically a text file that lists macros, one per line,
+written exactly the way they would be entered into Spock CLI.
+The Sequencer is able to save only the XML format file, but it can load both.
 
 .. figure:: /_static/macros/sequencer01.png
   :align: center
@@ -36,27 +49,13 @@ in window and some extra functionalities are provided.
 You can launch the stand-alone *Sequencer* with the following command::
 
     sequencer [options] [<macro_executor_dev_name> <door_dev_name>]
-	
-Options::
- 
-  --taurus-log-level=LEVEL
-                        taurus log level. Allowed values are (case
-                        insensitive): critical, error, warning/warn, info,
-                        debug, trace
-                        
-  --taurus-polling-period=MILLISEC
-                        taurus global polling period in milliseconds
-                        
-  --taurus-serialization-mode=SERIAL
-                        taurus serialization mode. Allowed values are (case
-                        insensitive): serial, concurrent (default)
-  
-  --tango-host=TANGO_HOST
-                        Tango host name
 
-    
 The model list is optional and is a space-separated list of two device names: macro server and door.
-If not provided at the application startup, device names can be later on selected from Macro Configuration Dialog.   
+If not provided at the application startup, device names can be later on selected from Macro Configuration Dialog.
+
+To get the full list of options type::
+
+    sequencer -h
    
 Extra functionalities:
 
