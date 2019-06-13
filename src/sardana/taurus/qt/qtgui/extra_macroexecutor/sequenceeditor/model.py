@@ -251,10 +251,10 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         self.endResetModel()
         return newRoot
 
-    def fromPlainText(self, text):
+    def fromPlainText(self, text, macroInfos):
         self.beginResetModel()
         newRoot = macro.SequenceNode(None)
-        newRoot.fromPlainText(text)
+        newRoot.fromPlainText(text, macroInfos)
         self.setRoot(newRoot)
         self.endResetModel()
         return newRoot

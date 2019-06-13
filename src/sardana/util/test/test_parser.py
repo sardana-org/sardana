@@ -454,7 +454,7 @@ pt14_params_def = [
                 "description": "List of motors",
                 "max": None,
                 "min": 1,
-                "name": "motor list",
+                "name": "motor_list",
                 "type": [
                     {
                         "default_value": None,
@@ -468,6 +468,43 @@ pt14_params_def = [
             },
             {
                 "default_value": None,
+                "description": "Number",
+                "max": None,
+                "min": 1,
+                "name": "float",
+                "type": "Float"
+            }
+        ]
+    }
+]
+
+pt14d_params_def = [
+    {
+        "default_value": None,
+        "description": "Motor groups",
+        "max": None,
+        "min": 1,
+        "name": "motor_group_list",
+        "type": [
+            {
+                "default_value": None,
+                "description": "List of motors",
+                "max": None,
+                "min": 1,
+                "name": "motor_list",
+                "type": [
+                    {
+                        "default_value": "mot1",
+                        "description": "Motor to move",
+                        "max": None,
+                        "min": 1,
+                        "name": "motor",
+                        "type": "Motor"
+                    }
+                ]
+            },
+            {
+                "default_value": 33,
                 "description": "Number",
                 "max": None,
                 "min": 1,
@@ -795,6 +832,15 @@ extra8_params_def = [
 @insertTest(helper_name="parse", params_def=pt14_params_def,
             params_str="[[[mot1 mot2] 3] [[mot3] 5]]",
             params=[[[["mot1", "mot2"], "3"], [["mot3"], "5"]]])
+@insertTest(helper_name="parse", params_def=pt14d_params_def,
+            params_str="[[[mot1 mot2] 3] [[mot3] []]]",
+            params=[[[["mot1", "mot2"], "3"], [["mot3"], []]]])
+@insertTest(helper_name="parse", params_def=pt14d_params_def,
+            params_str="[[[mot1 []] 3] [[mot3] []]]",
+            params=[[[["mot1", []], "3"], [["mot3"], []]]])
+@insertTest(helper_name="parse", params_def=pt14d_params_def,
+            params_str="[[[[]] 3] [[mot3] []]]",
+            params=[[[[[]], "3"], [["mot3"], []]]])
 # extra tests for complex parameter values
 @insertTest(helper_name="parse", params_def=extra1_params_def,
             params_str="ScanFile ['file.nxs' 'file.dat']",

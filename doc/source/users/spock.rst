@@ -498,6 +498,8 @@ case a macro fails when being executed.
       Valid values are ``output``, ``critical``, ``error``, ``warning``,
       ``info``, ``debug`` and ``result``.
 
+.. _sardana-spock-syntax:
+
 Spock syntax
 ------------
 
