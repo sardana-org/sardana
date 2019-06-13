@@ -1017,7 +1017,8 @@ def main():
                            "The sequences can be stored under xml files")
     parser.add_option("-f", "--file",
                       dest="file", default=None,
-                      help="load an xml macro sequence file")
+                      help="load macro sequence from a file(XML or spock "
+                           "syntax)")
 
     app = TaurusApplication(cmd_line_parser=parser,
                             app_name="sequencer",
