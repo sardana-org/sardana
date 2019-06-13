@@ -35,7 +35,6 @@ import time
 import uuid
 import weakref
 import threading
-import math
 import os.path as osp
 import os
 
@@ -54,7 +53,7 @@ from taurus.core.util.codecs import CodecFactory
 from taurus.core.util.event import EventGenerator, AttributeEventWait
 from taurus.core.tango import TangoDevice
 from .macro import MacroInfo, Macro, MacroNode, ParamFactory, \
-    RepeatParamNode, SingleParamNode, ParamNode, createMacroNode
+    SingleParamNode, ParamNode, createMacroNode
 from .sardana import BaseSardanaElementContainer, BaseSardanaElement
 from .pool import getChannelConfigs
 from itertools import izip_longest
@@ -249,7 +248,7 @@ class ExperimentConfiguration(object):
                         #  controlled by the MacroServer. Otherwise,
                         #  it must raise an exception.
                         mnt_grp_dev = Device(mnt_grp)
-                    except Exception as e:
+                    except Exception:
                         # if the mnt_grp did not already exist, create it now
                         chconfigs = getChannelConfigs(mnt_grp_cfg)
                         chnames, chinfos = zip(*chconfigs)  # unzipping
@@ -1014,6 +1013,7 @@ class BaseMacroServer(MacroServerDevice):
         iname = 'MacroCode'
         return self.getElementsInfo().getElementWithInterface(macro_name,
                                                               iname)
+
     def getMacroStrList(self):
         return self.getElementNamesWithInterface('MacroCode')
 
