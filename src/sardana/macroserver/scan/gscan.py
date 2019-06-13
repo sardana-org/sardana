@@ -803,9 +803,13 @@ class GScan(Logger):
                                         label=label,
                                         source=src)
 
-                # @Fixme: Tango-centric. It should work for any Taurus
-                # Attribute
-                v = PyTango.AttributeProxy(column.source).read().value
+                try:
+                    # Taurus 4
+                    v = taurus.Attribute(column.source).read().rvalue.magnitude
+                except AttributeError:
+                    # Taurus 3
+                    v = taurus.Attribute(column.source).read().rvalue
+
                 column.pre_scan_value = v
                 column.shape = np.shape(v)
                 column.dtype = getattr(v, 'dtype', np.dtype(type(v))).name
