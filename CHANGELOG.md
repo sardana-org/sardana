@@ -8,6 +8,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Added
 
 * Reintroduce `showscan online` to spock (#1042)
+* Full support to *spock syntax* in loading sequences from files (#645, #672)
 * Allow to configure timeout on pool element's (Taurus extensions) *go* methods e.g.
   `move`, `count`, etc. (#992)
 * Emulated hardware triggering between dummy counter/timer and trigger/gate elements
