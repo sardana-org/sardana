@@ -10,12 +10,6 @@ import pickle
 import ast
 
 from IPython.core.profiledir import ProfileDirError, ProfileDir
-try:
-    # IPython 4.x
-    from IPython.paths import get_ipython_dir
-except:
-    # IPython <4.x
-    from IPython.utils.path import get_ipython_dir
 
 from taurus.external.qt import Qt
 from taurus import info, error
