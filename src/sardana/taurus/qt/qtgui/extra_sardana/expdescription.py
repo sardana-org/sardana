@@ -700,11 +700,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
                 DynamicPlotManager
             self.__plotManager = DynamicPlotManager(self)
             self.__plotManager.setModel(self.getModelName())
-            self.experimentConfigurationChanged.connect(
-                self.__plotManager.onExpConfChanged)
         else:
-            self.experimentConfigurationChanged.disconnect(
-                self.__plotManager.onExpConfChanged)
             self.__plotManager.removePanels()
             self.__plotManager.setModel(None)
             self.__plotManager = None

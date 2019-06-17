@@ -995,14 +995,13 @@ class CounterTimerController(Controller, Readable, Startable, Stopable,
         pass
 
     def StartAllCT(self):
-        """**Counter/Timer Controller API**. Override is MANDATORY!
-        Called to start an acquisition of a selected axis.
-        Default implementation raises :exc:`NotImplementedError`.
+        """**Counter/Timer Controller API**.
+        Called to start an acquisition of a group of channels.
+        Default implementation does nothing.
 
         .. deprecated:: 1.0
             use :meth:`~CounterTimerController.StartAll` instead"""
-        raise NotImplementedError("StartAll must be defined in the "
-                                  "controller")
+        pass
 
     def PreStartAll(self):
         """**Controller API**. Override if necessary.
@@ -1041,10 +1040,10 @@ class CounterTimerController(Controller, Readable, Startable, Stopable,
         return self.StartOneCT(axis)
 
     def StartAll(self):
-        """**Controller API**. Override is MANDATORY!
+        """**Controller API**.
         Default implementation calls deprecated
-        :meth:`~CounterTimerController.StartAllCT` which, by default, raises
-        :exc:`NotImplementedError`."""
+        :meth:`~CounterTimerController.StartAllCT` which, by default, does
+        nothing."""
         return self.StartAllCT()
 
 

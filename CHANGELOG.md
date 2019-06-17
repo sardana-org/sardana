@@ -7,7 +7,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 
-* SEP2 (#775):
+* SEP2 - Improve integration of 1D and 2D experimental channels (#775):
   * Possibility to report acquisition results in form of value references (in 
   the URI format) of 1D and 2D experimental channels:
     * `Referable` base class to inherit from when developing a controller 
@@ -29,6 +29,8 @@ This file follows the formats and conventions from [keepachangelog.com]
     using value reporting (`ValueBuffer` Tango attribute to 2DExpChannel and
     `value_buffer` core attribute)
   * `VALUE_BUFFER_CODEC` and `VALUE_REF_BUFFER_CODEC` to sardanacustomsettings.
+* Reintroduce `showscan online` to spock (#1042)
+* Full support to *spock syntax* in loading sequences from files (#645, #672)
 * Allow to configure timeout on pool element's (Taurus extensions) *go* methods e.g.
   `move`, `count`, etc. (#992)
 * Emulated hardware triggering between dummy counter/timer and trigger/gate elements
@@ -36,7 +38,13 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Macro example demonstrating how to add an extra scan column with motor
   positions shifted to the middle of the scan interval: `ascanct_midtrigger`
   (#1105)
+* Support to 7 axes geometry in `pa` macro (#1116)
+* Protection to `showscan` when a non HDF5 file is getting opened (#1073)
 * Auto-deploy to PyPI with Travis (#1113)
+* Print output of `send2ctrl` macro only if it contains something (#1120)
+* Add `DescriptionLength` view option for adjusting the `lsdef` macro description
+  (#1107, #1108)
+* Add `ShowScanOnline` component to Taurus Qt extensions (#1042)
 
 ### Changed
 
@@ -65,6 +73,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Show external changes pop-up in expconf when last measurement group is deleted
   remotelly (#1099)
 * Pop-up message when expconf configuration changed externally (#1094)
+* Remove circlular references between the macro object and the FIO recorder (#1121)
 
 ### Deprecated
 
@@ -73,7 +82,10 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Removed
 
-* 
+* `ValueBuffer` Tango attribute of 0D exp. channels deprecated in version
+2.3.0. `AccumulationBuffer` attribute serves for the same need (SEP2, #775).
+Exceptionally no major version bump is done cause it seems like this attribute
+was not used programmatically in third party plugins/GUIs. 
 
 ## [2.7.2] 2019-05-28
 

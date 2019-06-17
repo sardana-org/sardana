@@ -12,6 +12,8 @@ User's Guide
     Spock <spock>
     Sardana-Taurus Widgets <taurus/index>
     Scans <scan>
+    Motion <motion>
+    Acquisition <acquisition>
     Diffractometer <diffractometer>
     Adding real elements <adding_elements>
     Macro Hooks <macro_hooks>
@@ -22,3 +24,4 @@ User's Guide
     Configuration <configuration/index>
     Screenshots <screenshots>
     FAQ <faq>
+    Known Problems <https://github.com/sardana-org/sardana/issues?q=is:issue+is:open+label:doc:knownbug>
