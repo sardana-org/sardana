@@ -109,10 +109,6 @@ class OneDExpChannel(PoolTimerableDevice):
         name = event_type.name.lower()
         name = name.replace('_', '')  # for integration_time events
         attr_name = name
-        # TODO: remove this condition when Data attribute will be substituted
-        # by ValueBuffer
-        if name == "valuebuffer":
-            attr_name = "data"
 
         try:
             attr = self.get_attribute_by_name(attr_name)
@@ -179,7 +175,7 @@ class OneDExpChannel(PoolTimerableDevice):
     def initialize_dynamic_attributes(self):
         attrs = PoolTimerableDevice.initialize_dynamic_attributes(self)
 
-        non_detect_evts = "data",
+        non_detect_evts = "valuebuffer",
 
         for attr_name in non_detect_evts:
             if attr_name in attrs:

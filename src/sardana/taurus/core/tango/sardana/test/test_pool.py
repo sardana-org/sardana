@@ -30,7 +30,7 @@ import numpy
 from taurus import Device
 from taurus.external.unittest import TestCase
 from taurus.test.base import insertTest
-from sardana.sardanautils import is_number, is_non_str_seq
+from sardana.sardanautils import is_number, is_non_str_seq, is_pure_str
 from sardana.taurus.core.tango.sardana.pool import registerExtensions
 from sardana.tango.pool.test.base_sartest import SarTestTestCase
 
@@ -71,11 +71,73 @@ class TestMeasurementGroup(SarTestTestCase, TestCase):
         self.pool.CreateMeasurementGroup(argin)
         try:
             mg = Device(mg_name)
-            _, values = mg.count(1)
-            for channel, value in values.iteritems():
-                msg = "Value for %s is not numerical" % channel
+            _, values = mg.count(.1)
+            for channel_name, value in values.iteritems():
+                msg = "Value (%s) for %s is not numerical" % \
+                      (value, channel_name)
                 self.assertTrue(is_numerical(value), msg)
         finally:
+            mg.cleanUp()
+            self.pool.DeleteElement(mg_name)
+
+    def tearDown(self):
+        SarTestTestCase.tearDown(self)
+
+
+def _set_value_ref_enabled(conf, channel, value_ref_enabled):
+    ctrl = channel.getControllerObj()
+    ctrl_full_name = ctrl.getFullName()
+    channel_full_name = channel.getFullName()
+    ctrl_conf = conf["controllers"][ctrl_full_name]
+    channel_conf = ctrl_conf["channels"][channel_full_name]
+    channel_conf["value_ref_enabled"] = value_ref_enabled
+
+
+class TestMeasurementGroupValueRef(SarTestTestCase, TestCase):
+
+    def setUp(self):
+        SarTestTestCase.setUp(self)
+        registerExtensions()
+
+    def test_value_ref_enabled(self):
+        mg_name = str(uuid.uuid1())
+        channel_name = "_test_2d_1_1"
+        argin = [mg_name, channel_name]
+        self.pool.CreateMeasurementGroup(argin)
+        try:
+            mg = Device(mg_name)
+            channel = Device(channel_name)
+            conf = mg.getConfiguration().raw_data
+            _set_value_ref_enabled(conf, channel, True)
+            mg.setConfiguration(conf)
+            _, values = mg.count(.1)
+            for channel_name, value in values.iteritems():
+                msg = "ValueRef (%s) for %s is not string" %\
+                      (value, channel_name)
+                self.assertTrue(is_pure_str(value), msg)
+        finally:
+            channel.cleanUp()
+            mg.cleanUp()
+            self.pool.DeleteElement(mg_name)
+
+    def test_value_ref_disabled(self):
+        mg_name = str(uuid.uuid1())
+        channel_name = "_test_2d_1_1"
+        argin = [mg_name, channel_name]
+        self.pool.CreateMeasurementGroup(argin)
+        try:
+            mg = Device(mg_name)
+            channel = Device(channel_name)
+            conf = mg.getConfiguration().raw_data
+            _set_value_ref_enabled(conf, channel, False)
+            mg.setConfiguration(conf)
+            _, values = mg.count(.1)
+            for channel_name, value in values.iteritems():
+                msg = "Value (%s) for %s is not numerical" %\
+                      (value, channel_name)
+                self.assertTrue(is_numerical(value), msg)
+        finally:
+            channel.cleanUp()
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
 

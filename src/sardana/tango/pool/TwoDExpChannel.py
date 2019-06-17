@@ -33,15 +33,15 @@ import sys
 import time
 
 from PyTango import DevFailed, DevVoid, DevString, DevState, AttrQuality, \
-    Except, READ, SCALAR, READ_WRITE
+    Except, READ, SCALAR, READ_WRITE, DevEncoded
 
 from taurus.core.util.log import DebugIt
 
 from sardana import State, DataFormat, SardanaServer
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.pool.controller import TwoDController, MaxDimSize, Type
-from sardana.tango.core.util import to_tango_type_format, exception_str
-
+from sardana.tango.core.util import to_tango_type_format, exception_str,\
+    memorize_write_attribute
 from sardana.tango.pool.PoolDevice import PoolTimerableDevice, \
     PoolTimerableDeviceClass
 
@@ -50,6 +50,8 @@ class TwoDExpChannel(PoolTimerableDevice):
 
     def __init__(self, dclass, name):
         PoolTimerableDevice.__init__(self, dclass, name)
+        self._first_read_cache = False
+        self._first_read_ref_cache = False
 
     def init(self, name):
         PoolTimerableDevice.init(self, name)
@@ -121,6 +123,12 @@ class TwoDExpChannel(PoolTimerableDevice):
             value = self.calculate_tango_state(event_value)
         elif name == "status":
             value = self.calculate_tango_status(event_value)
+        elif name == "valuebuffer":
+            value = self._encode_value_chunk(event_value)
+            self._first_read_cache = True
+        elif name == "valuerefbuffer":
+            value = self._encode_value_ref_chunk(event_value)
+            self._first_read_ref_cache = True
         else:
             if isinstance(event_value, SardanaAttribute):
                 if event_value.error:
@@ -131,7 +139,8 @@ class TwoDExpChannel(PoolTimerableDevice):
             else:
                 value = event_value
 
-            if name == "timer" and value is None:
+            if (name in ("timer", "valuereftemplate", "valuerefenabled")
+                    and value is None):
                 value = "None"
             elif name == "datasource" and value is None:
                 full_name = self.get_full_name()
@@ -173,6 +182,18 @@ class TwoDExpChannel(PoolTimerableDevice):
                 data_info[0][4] = shape[1]
         return std_attrs, dyn_attrs
 
+    def initialize_dynamic_attributes(self):
+        attrs = PoolTimerableDevice.initialize_dynamic_attributes(self)
+
+        # referable channels
+        # TODO: not 100% sure if valuereftemplate and valuerefenabled should
+        # not belong to detect_evts
+        non_detect_evts = ("valuebuffer", "valueref", "valuerefbuffer",
+                           "valuereftemplate", "valuerefenabled")
+        for attr_name in non_detect_evts:
+            if attr_name in attrs:
+                self.set_change_event(attr_name, True, False)
+
     def read_Value(self, attr):
         twod = self.twod
         # TODO: decide if we force the controller developers to store the
@@ -180,6 +201,15 @@ class TwoDExpChannel(PoolTimerableDevice):
         # cache. This is due to the fact that the clients (MS) read the value
         # after the acquisition had finished.
         use_cache = twod.is_in_operation() and not self.Force_HW_Read
+        # For the moment we just check if we recently receive ValueBuffer.
+        # event. In this case, we use cache and clean the flag
+        # so the cached value will be returned only at the first readout
+        # after the acquisition. This is a workaround for the count executed
+        # by the MacroServer e.g. step scans or ct which read the value after
+        # the acquisition.
+        if not use_cache and self._first_read_cache:
+            use_cache = True
+            self._first_read_cache = False
         value = twod.get_value(cache=use_cache, propagate=0)
         if value.error:
             Except.throw_python_exception(*value.exc_info)
@@ -194,6 +224,45 @@ class TwoDExpChannel(PoolTimerableDevice):
         if self.get_state() in [DevState.FAULT, DevState.UNKNOWN]:
             return False
         return True
+
+    def read_ValueRef(self, attr):
+        twod = self.twod
+        value_ref = twod.get_value_ref()
+        if value_ref.error:
+            Except.throw_python_exception(*value_ref.exc_info)
+        use_cache = twod.is_in_operation() and not self.Force_HW_Read
+        state = twod.get_state(cache=use_cache, propagate=0)
+        quality = None
+        if state == State.Moving:
+            quality = AttrQuality.ATTR_CHANGING
+        self.set_attribute(attr, value=value_ref.value, quality=quality,
+                           timestamp=value_ref.timestamp, priority=0)
+
+    def read_ValueRefPattern(self, attr):
+        value_ref_pattern = self.twod.get_value_ref_pattern()
+        if value_ref_pattern is None:
+            value_ref_pattern = "None"
+        attr.set_value(value_ref_pattern)
+
+    @memorize_write_attribute
+    def write_ValueRefPattern(self, attr):
+        value_ref_pattern = attr.get_write_value()
+        if value_ref_pattern == "None":
+            value_ref_pattern = None
+        self.twod.value_ref_pattern = value_ref_pattern
+
+    def read_ValueRefEnabled(self, attr):
+        value_ref_enabled = self.twod.is_value_ref_enabled()
+        if value_ref_enabled is None:
+            raise Exception("value reference enabled flag is unknown")
+        attr.set_value(value_ref_enabled)
+
+    @memorize_write_attribute
+    def write_ValueRefEnabled(self, attr):
+        value_ref_enabled = attr.get_write_value()
+        if value_ref_enabled == "None":
+            value_ref_enabled = None
+        self.twod.value_ref_enabled = value_ref_enabled
 
     def read_DataSource(self, attr):
         data_source = self.twod.get_data_source()
@@ -224,6 +293,7 @@ class TwoDExpChannelClass(PoolTimerableDeviceClass):
     #    Device Properties
     device_property_list = {
     }
+
     device_property_list.update(PoolTimerableDeviceClass.device_property_list)
 
     #    Command definitions
@@ -231,6 +301,7 @@ class TwoDExpChannelClass(PoolTimerableDeviceClass):
         'Start':   [[DevVoid, ""], [DevVoid, ""]],
     }
     cmd_list.update(PoolTimerableDeviceClass.cmd_list)
+
 
     #    Attribute definitions
     attr_list = {
@@ -242,6 +313,8 @@ class TwoDExpChannelClass(PoolTimerableDeviceClass):
         'Value': [[_DFT_VALUE_TYPE, _DFT_VALUE_FORMAT, READ,
                    _DFT_VALUE_MAX_SHAPE[0], _DFT_VALUE_MAX_SHAPE[1]],
                   {'abs_change': '1.0', }],
+        # TODO: here we override type by DevEncoded
+        'ValueRefBuffer': [[DevEncoded, SCALAR, READ]]
     }
     standard_attr_list.update(PoolTimerableDeviceClass.standard_attr_list)
 

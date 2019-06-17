@@ -133,6 +133,7 @@ class BasePoolTestCase(object):
         self.mots = {}
         self.pcs = {}
         self.pms = {}
+        self.exp_channels = {}
         # Create nctctrls CT ctrls
         for ctrl in range(1, self.nctctrls + 1):
             name = '_test_ct_ctrl_%s' % ctrl
@@ -145,6 +146,7 @@ class BasePoolTestCase(object):
             for axis in range(1, self.nctelems + 1):
                 name = '_test_ct_%s_%s' % (ctrl, axis)
                 self.createCTElement(ctrl_obj, name, axis)
+        self.exp_channels.update(self.cts)
         # Create nzerodctrls ZeroD ctrls
         for ctrl in range(1, self.nzerodctrls + 1):
             name = '_test_0d_ctrl_%s' % ctrl
@@ -155,17 +157,20 @@ class BasePoolTestCase(object):
             for axis in range(1, self.nzerodelems + 1):
                 name = '_test_0d_%s_%s' % (ctrl, axis)
                 self.createZeroDElement(ctrl_obj, name, axis)
+        self.exp_channels.update(self.zerods)
         # Create ntwodctrls TwoD ctrls
         for ctrl in range(1, self.ntwodctrls + 1):
             name = '_test_2d_ctrl_%s' % ctrl
             ctrl_obj = self.createController(name,
                                              'DummyTwoDController',
                                              'DummyTwoDController.py')
+            # use the first trigger/gate element by default
+            ctrl_obj.set_ctrl_attr("synchronizer", "_test_tg_1_1")
             # Create ntwodelems TwoD elements for each ctrl
             for axis in range(1, self.ntwodelems + 1):
                 name = '_test_2d_%s_%s' % (ctrl, axis)
                 self.createTwoDElement(ctrl_obj, name, axis)
-
+        self.exp_channels.update(self.twods)
         # Create ntgctrls TG ctrls
         for ctrl in range(1, self.ntgctrls + 1):
             name = '_test_tg_ctrl_%s' % ctrl

@@ -885,10 +885,10 @@ class MeasurementConfiguration(object):
     def _fill_channel_data(self, channel, channel_data):
         """Fill channel default values for the given channel dictionary"""
         name = channel.name
-        full_name = channel.full_name
-        source = channel.get_source()
-        ndim = None
         ctype = channel.get_type()
+        full_name = channel.full_name
+        # choose ndim
+        ndim = None
         if ctype == ElementType.CTExpChannel:
             ndim = 0
         elif ctype == ElementType.PseudoCounter:
@@ -906,12 +906,15 @@ class MeasurementConfiguration(object):
         elif ctype == ElementType.IORegister:
             ndim = 0
 
+        if ctype != ElementType.External and channel.is_referable():
+            value_ref_enabled = channel_data.get('value_ref_enabled', False)
+            channel_data['value_ref_enabled'] = value_ref_enabled
         # Definitively should be initialized by measurement group
         # index MUST be here already (asserting this in the following line)
         channel_data['index'] = channel_data['index']
         channel_data['name'] = channel_data.get('name', name)
         channel_data['full_name'] = channel_data.get('full_name', full_name)
-        channel_data['source'] = channel_data.get('source', source)
+        channel_data['source'] = channel.get_source()
         channel_data['enabled'] = channel_data.get('enabled', True)
         channel_data['label'] = channel_data.get('label', channel_data['name'])
         channel_data['ndim'] = ndim

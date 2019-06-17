@@ -113,10 +113,6 @@ class PseudoCounter(PoolExpChannelDevice):
         timestamp = time.time()
         name = event_type.name.lower()
         attr_name = name
-        # TODO: remove this condition when Data attribute will be substituted
-        # by ValueBuffer
-        if name == "valuebuffer":
-            attr_name = "data"
 
         try:
             attr = self.get_attribute_by_name(attr_name)
@@ -198,7 +194,7 @@ class PseudoCounter(PoolExpChannelDevice):
         attrs = PoolExpChannelDevice.initialize_dynamic_attributes(self)
 
         detect_evts = "value",
-        non_detect_evts = "data",
+        non_detect_evts = "valuebuffer",
 
         for attr_name in detect_evts:
             if attr_name in attrs:

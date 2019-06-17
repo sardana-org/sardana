@@ -257,7 +257,11 @@ class OutputRecorder(DataRecorder):
             elif cell_data is None:
                 cell = "<nodata>"
             elif isinstance(cell_data, (str, unicode)):
-                cell = "<string>"
+                # TODO: for SEP2 needs strings are enabled for visualizing
+                # value refs, previously "<string>" was printed. This may
+                # have side effects e.g. alignment of columns etc.. Check
+                # and fix it.
+                cell = cell_data
             else:
                 cell %= record.data
             cell = string.center(cell.strip(), self._col_sizes[i])

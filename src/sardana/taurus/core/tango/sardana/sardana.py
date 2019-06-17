@@ -52,10 +52,11 @@ PoolElementType = Enumeration("PoolElementType",
                                "Motor", "PseudoCounter", "PseudoMotor", "TriggerGate"))
 
 ChannelView = Enumeration("ChannelView",
-                          ("Channel", "Enabled", "Output", "PlotType", "PlotAxes", "Timer",
-                           "Monitor", "Synchronization", "Conditioning", "Normalization", "NXPath",
-                           "Shape", "DataType",
-                           "Unknown", "Synchronizer"))
+                          ("Channel", "Enabled", "Output", "PlotType",
+                           "PlotAxes", "Timer", "Monitor", "Synchronization",
+                           "ValueRefPattern", "ValueRefEnabled",
+                           "Conditioning", "Normalization", "NXPath",
+                           "Shape", "DataType", "Unknown", "Synchronizer"))
 
 PlotType = Enumeration("PlotType", ("No", "Spectrum", "Image"))
 
