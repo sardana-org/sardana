@@ -1,6 +1,6 @@
 	Title: Improve integration of 1D and 2D experimental channels
 	SEP: 2
-	State: CANDIDATE
+	State: ACCEPTED
 	Date: 2018-12-03
 	Drivers: Zbigniew Reszela zreszela@cells.es
 	URL: http://www.sardana-controls.org/sep/?SEP2.md
@@ -245,6 +245,10 @@ The discussions about the SEP2 itself:
 
 Changes
 -------
+
+2019-06-17
+[reszelaz](https://github.com/reszelaz) Accept after positive votes from:
+DESY, MaxIV, Solaris and Alba. 
 
 2019-05-14
 [reszelaz](https://github.com/reszelaz) Remove "Scan framework API for 
