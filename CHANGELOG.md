@@ -54,6 +54,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   to `{"index": seq<int>, "value": seq<str>}` (SEP2, #775)
 * Default encoding of `ValueBuffer` and `ValueRefBuffer` attributes (SEP2, #775)
   from JSON to pickle
+* Mapping of Integer data type to Tango DevLong64 (#1083)
 
 ### Fixed
 
