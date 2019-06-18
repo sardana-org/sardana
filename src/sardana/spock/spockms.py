@@ -362,6 +362,7 @@ class SpockBaseDoor(BaseDoor):
             self.block_lines = 0
             self.stop()
             self.writeln("Done!")
+            raise KeyboardInterrupt()
         except PyTango.DevFailed, e:
             if is_non_str_seq(e.args) and \
                not isinstance(e.args, (str, unicode)):
