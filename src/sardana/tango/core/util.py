@@ -51,7 +51,7 @@ import itertools
 
 import PyTango
 from PyTango import Util, Database, WAttribute, DbDevInfo, DevFailed, \
-    DevVoid, DevLong, DevBoolean, DevString, DevDouble, \
+    DevVoid, DevLong64, DevBoolean, DevString, DevDouble, \
     DevState, SCALAR, SPECTRUM, IMAGE, FMT_UNKNOWN, \
     READ_WRITE, READ, Attr, SpectrumAttr, ImageAttr, \
     DeviceClass, Except
@@ -384,7 +384,7 @@ def from_tango_state_to_state(state):
 
 #: dictionary dict<:class:`sardana.DataType`, :class:`PyTango.CmdArgType`>
 TTYPE_MAP = {
-    DataType.Integer: DevLong,
+    DataType.Integer: DevLong64,
     DataType.Double: DevDouble,
     DataType.String: DevString,
     DataType.Boolean: DevBoolean,
