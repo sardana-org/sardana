@@ -33,17 +33,17 @@ __all__ = ["PoolDevice", "PoolDeviceClass",
 __docformat__ = 'restructuredtext'
 
 import time
-import numpy as np
 
 from PyTango import Util, DevVoid, DevLong64, DevBoolean, DevString,\
-    DevDouble, DevVarStringArray, DispLevel, DevState, SCALAR, SPECTRUM, \
-    IMAGE, READ_WRITE, READ, AttrData, CmdArgType, DevFailed, seqStr_2_obj, \
-    Except, ErrSeverity
+    DevDouble, DevEncoded, DevVarStringArray, DispLevel, DevState, SCALAR, \
+    SPECTRUM, IMAGE, READ_WRITE, READ, AttrData, CmdArgType, DevFailed,\
+    seqStr_2_obj, Except, ErrSeverity
 
 from taurus.core.util.containers import CaselessDict
 from taurus.core.util.codecs import CodecFactory
 
 from sardana import InvalidId, InvalidAxis, ElementType
+from sardana import sardanacustomsettings
 from sardana.pool.poolmetacontroller import DataInfo
 from sardana.tango.core.SardanaDevice import SardanaDevice, SardanaDeviceClass
 from sardana.tango.core.util import GenericScalarAttr, GenericSpectrumAttr, \
@@ -840,7 +840,10 @@ class PoolExpChannelDevice(PoolElementDevice):
     def __init__(self, dclass, name):
         """Constructor"""
         PoolElementDevice.__init__(self, dclass, name)
-        self._codec = CodecFactory().getCodec('json')
+        codec_name = getattr(sardanacustomsettings, "VALUE_BUFFER_CODEC")
+        self._value_buffer_codec = CodecFactory().getCodec(codec_name)
+        codec_name = getattr(sardanacustomsettings, "VALUE_REF_BUFFER_CODEC")
+        self._value_ref_buffer_codec = CodecFactory().getCodec(codec_name)
 
     def _encode_value_chunk(self, value_chunk):
         """Prepare value chunk to be passed via communication channel.
@@ -850,20 +853,31 @@ class PoolExpChannelDevice(PoolElementDevice):
 
         :return: json string representing value chunk
         :rtype: str"""
-        data = []
         index = []
+        value = []
         for idx, sdn_value in value_chunk.iteritems():
             index.append(idx)
-            value = sdn_value.value
-            # TODO: Improve it in the future
-            # In case of big arrays e.g. 10k points and higher there are more
-            # optimal solutions but they require complex changes on encoding
-            # and decoding side.
-            if isinstance(value, np.ndarray):
-                value = value.tolist()
-            data.append(value)
-        data = dict(data=data, index=index)
-        _, encoded_data = self._codec.encode(('', data))
+            value.append(sdn_value.value)
+        data = dict(index=index, value=value)
+        encoded_data = self._value_buffer_codec.encode(('', data))
+        return encoded_data
+
+    def _encode_value_ref_chunk(self, value_ref_chunk):
+        """Prepare value ref chunk to be passed via communication channel.
+
+        :param value_ref_chunk: value ref chunk
+        :type value_ref_ chunk: seq<SardanaValue>
+
+        :return: json string representing value chunk
+        :rtype: str
+        """
+        index = []
+        value_ref = []
+        for idx, sdn_value in value_ref_chunk.iteritems():
+            index.append(idx)
+            value_ref.append(sdn_value.value)
+        data = dict(index=index, value_ref=value_ref)
+        encoded_data = self._value_ref_buffer_codec.encode(('', data))
         return encoded_data
 
     def initialize_dynamic_attributes(self):
@@ -876,12 +890,22 @@ class PoolExpChannelDevice(PoolElementDevice):
                 self.set_change_event(attr_name, True, False)
         return attrs
 
-    def read_Data(self, attr):
-        desc = "Data attribute is not foreseen for reading. It is used only "\
-               "as the communication channel for the continuous acquisitions."
+    def read_ValueBuffer(self, _):
+        desc = "ValueBuffer attribute is not foreseen for reading. It is " \
+               "used only as the communication channel for the continuous " \
+               "acquisitions."
         Except.throw_exception("UnsupportedFeature",
                                desc,
-                               "PoolExpChannelDevice.read_Data",
+                               "PoolExpChannelDevice.read_ValueBuffer",
+                               ErrSeverity.WARN)
+
+    def read_ValueRefBuffer(self, _):
+        desc = ("ValueRefBuffer attribute is not foreseen for reading. "
+                "It is used only as the communication channel for the "
+                "continuous acquisitions.")
+        Except.throw_exception("UnsupportedFeature",
+                               desc,
+                               "PoolExpChannelDevice.read_ValueRefBuffer",
                                ErrSeverity.WARN)
 
     def read_IntegrationTime(self, attr):
@@ -912,7 +936,7 @@ class PoolExpChannelDeviceClass(PoolElementDeviceClass):
     attr_list.update(PoolElementDeviceClass.attr_list)
 
     standard_attr_list = {
-        'Data': [[DevString, SCALAR, READ]],  # TODO: think about DevEncoded
+        'ValueBuffer': [[DevEncoded, SCALAR, READ]]
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
 

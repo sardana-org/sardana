@@ -383,14 +383,18 @@ of files:
     LAB-01-D01 [2]: senv ScanFile "['scans.h5', 'scans.dat']"
     ScanFile = ['scans.h5', 'scans.dat']
 
+.. _sardana-spock-showscan:
+
 Viewing scan data
 ~~~~~~~~~~~~~~~~~
 
-You can show plots for the current scan (i.e. plotting the scan *online*) by
-using the :ref:`show/hide button from the expconf widget <expconf_ui_showplots>`
+You can show plots for the current scan (i.e. plotting the scan *online*) by:
+
+* launching the :func:`showscan online <sardana.spock.magic.showscan>` command
+* using the :ref:`show/hide button from the expconf widget <expconf_ui_showplots>`
 
 Sardana provides also a scan data viewer for scans which were stored in a `NeXus`_
-file: :ref:`showscan_ui`. It can be launched using :class:`~sardana.spock.magic.showscan`
+file: :ref:`showscan_ui`. It can be launched using :func:`showscan <sardana.spock.magic.showscan>`
 spock command. It accepts scan number as an argument, and will show the last scan
 when invoked without arguments.
 
@@ -465,6 +469,8 @@ Available *View Options*:
 - **OutputBlock**: Set if the line information during scans is appended to the
   output or updated. |br| Default value ``False`` (lines are appended to the
   displayed output during the scan).
+- **DescriptionLength**: Length (number of characters) of the macro
+  description printed by ``lsdef`` macro. |br| Default value ``60``.
 
   
 Editing macros
@@ -491,6 +497,8 @@ case a macro fails when being executed.
       messages. If no argument is specified it reads the ``debug`` stream.
       Valid values are ``output``, ``critical``, ``error``, ``warning``,
       ``info``, ``debug`` and ``result``.
+
+.. _sardana-spock-syntax:
 
 Spock syntax
 ------------

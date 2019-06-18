@@ -161,12 +161,12 @@ class SardanaBuffer(EventGenerator):
         """Extend buffer with a list of objects assigning them consecutive
         indexes.
 
-        :param objs: objects that extend the buffer
-        :type param: list<object>
+        :param values: objects that extend the buffer
+        :type values: list<object>
         :param initial_idx: at which index append the first object,
             the rest of them will be assigned the next consecutive indexes,
             None means assign at the end of the buffer
-        :type idx: int
+        :type initial_idx: int
         """
         if initial_idx is None:
             initial_idx = self._next_idx

@@ -43,9 +43,10 @@ class BasePoolTestCase(object):
     pool_ds_name = getattr(sardanacustomsettings, 'UNITTEST_POOL_DS_NAME')
     pool_name = getattr(sardanacustomsettings, 'UNITTEST_POOL_NAME')
 
-    def setUp(self):
+    def setUp(self, properties=None):
         """Start Pool DS and register extensions.
         """
+        db = PyTango.Database()
         # Discover the Pool launcher script
         poolExec = whichexecutable.whichfile("Pool")
         # register Pool server
@@ -57,9 +58,13 @@ class BasePoolTestCase(object):
         dev_name_parts = self.pool_name.split('/')
         prefix = '/'.join(dev_name_parts[0:2])
         start_from = int(dev_name_parts[2])
-        self.pool_name = get_free_device(
-            PyTango.Database(), prefix, start_from)
+        self.pool_name = get_free_device(db, prefix, start_from)
         self._starter.addNewDevice(self.pool_name, klass='Pool')
+        # Add properties
+        if properties is not None:
+            for key, values in properties.items():
+                db.put_device_property(self.pool_name,
+                                       {key: values})
         # start Pool server
         self._starter.startDs()
         # register extensions so the test methods can use them

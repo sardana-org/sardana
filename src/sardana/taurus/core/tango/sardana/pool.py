@@ -26,6 +26,8 @@
 """The device pool submodule.
 It contains specific part of sardana device pool"""
 
+from __future__ import absolute_import
+
 __all__ = ["InterruptException", "StopException", "AbortException",
            "BaseElement", "ControllerClass", "ControllerLibrary",
            "PoolElement", "Controller", "ComChannel", "ExpChannel",
@@ -66,6 +68,7 @@ from taurus.core.util.event import EventGenerator, AttributeEventWait, \
     AttributeEventIterator
 from taurus.core.tango import TangoDevice, FROM_TANGO_TO_STR_TYPE
 
+from sardana import sardanacustomsettings
 from .sardana import BaseSardanaElementContainer, BaseSardanaElement
 from .motion import Moveable, MoveableSource
 
@@ -674,7 +677,23 @@ class ExpChannel(PoolElement):
         """ExpChannel initialization."""
         self.call__init__(PoolElement, name, **kw)
         self._last_integ_time = None
+        self._last_value_ref_pattern = None
+        self._last_value_ref_enabled = None
+
         self._value_buffer = {}
+        self._value_buffer_cb = None
+        codec_name = getattr(sardanacustomsettings, "VALUE_BUFFER_CODEC")
+        self._value_buffer_codec = CodecFactory().getCodec(codec_name)
+
+        self._value_ref_buffer = {}
+        self._value_ref_buffer_cb = None
+        codec_name = getattr(sardanacustomsettings, "VALUE_REF_BUFFER_CODEC")
+        self._value_ref_buffer_codec = CodecFactory().getCodec(codec_name)
+
+    def isReferable(self):
+        if "valueref" in map(str.lower, self.get_attribute_list()):
+            return True
+        return False
 
     def getIntegrationTime(self):
         return self._getAttrValue('IntegrationTime')
@@ -682,14 +701,14 @@ class ExpChannel(PoolElement):
     def getIntegrationTimeObj(self):
         return self._getAttrEG('IntegrationTime')
 
-    def setIntegrationTime(self, ctime):
-        self.getIntegrationTimeObj().write(ctime)
+    def setIntegrationTime(self, integ_time):
+        self.getIntegrationTimeObj().write(integ_time)
 
-    def putIntegrationTime(self, ctime):
-        if self._last_integ_time == ctime:
+    def putIntegrationTime(self, integ_time):
+        if self._last_integ_time == integ_time:
             return
-        self._last_integ_time = ctime
-        self.getIntegrationTimeObj().write(ctime)
+        self._last_integ_time = integ_time
+        self.getIntegrationTimeObj().write(integ_time)
 
     def getValueObj_(self):
         """Retrurns Value attribute event generator object.
@@ -706,7 +725,7 @@ class ExpChannel(PoolElement):
         return self._getAttrValue('value', force=force)
 
     def getValueBufferObj(self):
-        return self._getAttrEG('data')
+        return self._getAttrEG('valuebuffer')
 
     def getValueBuffer(self):
         return self._value_buffer
@@ -714,26 +733,96 @@ class ExpChannel(PoolElement):
     def valueBufferChanged(self, value_buffer):
         if value_buffer is None:
             return
-        _, value_buffer = self._codec.decode(('json', value_buffer),
-                                             ensure_ascii=True)
+        _, value_buffer = self._value_buffer_codec.decode(value_buffer)
         indexes = value_buffer["index"]
-        values = value_buffer["data"]
+        values = value_buffer["value"]
         for index, value in zip(indexes, values):
             self._value_buffer[index] = value
+
+    def getValueRefObj(self):
+        """Return ValueRef attribute event generator object.
+
+        :return: ValueRef attribute event generator
+        :rtype: TangoAttributeEG
+        """
+        return self._getAttrEG('value')
+
+    def getValueRef(self, force=False):
+        return self._getAttrValue('valueref', force=force)
+
+    def getValueRefBufferObj(self):
+        return self._getAttrEG('valuerefbuffer')
+
+    def getValueRefBuffer(self):
+        return self._value_ref_buffer
+
+    def valueBufferRefChanged(self, value_ref_buffer):
+        if value_ref_buffer is None:
+            return
+        _, value_ref_buffer = self._value_ref_buffercodec.decode(
+            value_ref_buffer)
+        indexes = value_ref_buffer["index"]
+        value_refs = value_ref_buffer["value_ref"]
+        for index, value_ref in zip(indexes, value_refs):
+            self._value_ref_buffer[index] = value_ref
+
+    def getValueRefPattern(self):
+        return self._getAttrValue('ValueRefPattern')
+
+    def getValueRefPatternObj(self):
+        return self._getAttrEG('ValueRefPattern')
+
+    def setValueRefPattern(self, value_ref_pattern):
+        self.getValueRefPatternObj().write(value_ref_pattern)
+
+    def putValueRefPattern(self, value_ref_pattern):
+        if self._last_value_ref_pattern == value_ref_pattern:
+            return
+        self._last_value_ref_pattern = value_ref_pattern
+        self.getValueRefPatternObj().write(value_ref_pattern)
+
+    def isValueRefEnabled(self):
+        return self._getAttrValue('ValueRefEnabled')
+
+    def getValueRefEnabledObj(self):
+        return self._getAttrEG('ValueRefEnabled')
+
+    def setValueRefEnabled(self, value_ref_enabled):
+        self.getValueRefEnabledObj().write(value_ref_enabled)
+
+    def putValueRefEnabled(self, value_ref_enabled):
+        if self._last_value_ref_enabled == value_ref_enabled:
+            return
+        self._last_value_ref_enabled = value_ref_enabled
+        self.getValueRefEnabledObj().write(value_ref_enabled)
 
     def _start(self, *args, **kwargs):
         self.Start()
 
     def go(self, *args, **kwargs):
+        """Count and report count result.
+
+        Configuration measurement, then start and wait until finish.
+
+        .. note::
+            The count (go) method API is partially experimental (value
+            references may be changed to values whenever possible in the
+            future). Backwards incompatible changes may occur if deemed
+            necessary by the core developers.
+
+        :return: state and value (or value reference - experimental)
+        :rtype: :obj:`tuple`
+        """
         start_time = time.time()
         integration_time = args[0]
-        if integration_time is None or integration_time == 0:
-            return self.getStateEG().readValue(), self.getValues()
         self.putIntegrationTime(integration_time)
         PoolElement.go(self)
         state = self.getStateEG().readValue()
-        values = self.getValue()
-        ret = state, values
+        if self.isReferable() and self.isValueRefEnabled():
+            result = self.getValueRef()
+        else:
+            result = self.getValue()
+        ret = state, result
         self._total_go_time = time.time() - start_time
         return ret
 
@@ -1358,6 +1447,13 @@ class MGConfiguration(object):
                     dev_name = "tango://{0}:{1}/{2}".format(host, port,
                                                             dev_name)
                 dev_data = tg_dev_chs.get(dev_name)
+                # technical debt: read Value or ValueRef attribute
+                # ideally the source configuration should include this info
+                channel = Device(dev_name)
+                if (isinstance(channel, ExpChannel)
+                        and channel.isReferable()
+                        and channel_data.get("value_ref_enabled", False)):
+                    attr_name += "Ref"
 
                 if dev_data is None:
                     # Build tango device
@@ -1499,12 +1595,13 @@ class MGConfiguration(object):
         """
         if not only_enabled:
             return self.tango_dev_channels
-        tango_dev_channels = copy.deepcopy(self.tango_dev_channels)
-        for _, dev_data in tango_dev_channels.items():
-            _, attrs = dev_data
+        tango_dev_channels = {}
+        for dev_name, dev_data in self.tango_dev_channels.items():
+            dev_proxy, attrs = dev_data[0], copy.deepcopy(dev_data[1])
             for attr_name, channel_data in attrs.items():
                 if not channel_data["enabled"]:
                     attrs.pop(attr_name)
+            tango_dev_channels[dev_name] = [dev_proxy, attrs]
         return tango_dev_channels
 
     def read(self, parallel=True):
@@ -1582,7 +1679,12 @@ class MeasurementGroup(PoolElement):
         self.__cfg_attr.addListener(self.on_configuration_changed)
 
         self._value_buffer_cb = None
-        self._codec = CodecFactory().getCodec("json")
+        codec_name = getattr(sardanacustomsettings, "VALUE_BUFFER_CODEC")
+        self._value_buffer_codec = CodecFactory().getCodec(codec_name)
+
+        self._value_ref_buffer_cb = None
+        codec_name = getattr(sardanacustomsettings, "VALUE_REF_BUFFER_CODEC")
+        self._value_ref_buffer_codec = CodecFactory().getCodec(codec_name)
 
     def cleanUp(self):
         PoolElement.cleanUp(self)
@@ -1770,12 +1872,11 @@ class MeasurementGroup(PoolElement):
         """
         if value_buffer is None:
             return
-        _, value_buffer = self._codec.decode(('json', value_buffer),
-                                             ensure_ascii=True)
-        values = value_buffer["data"]
+        _, value_buffer = self._value_buffer_codec.decode(value_buffer)
+        values = value_buffer["value"]
         if isinstance(values[0], list):
             np_values = map(numpy.array, values)
-            value_buffer["data"] = np_values
+            value_buffer["value"] = np_values
         self._value_buffer_cb(channel, value_buffer)
 
     def subscribeValueBuffer(self, cb=None):
@@ -1789,7 +1890,10 @@ class MeasurementGroup(PoolElement):
         """
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
+            value_ref_enabled = channel_info.get("value_ref_enabled", False)
             channel = Device(full_name)
+            if channel.isReferable() and value_ref_enabled:
+                continue
             value_buffer_obj = channel.getValueBufferObj()
             if cb is not None:
                 self._value_buffer_cb = cb
@@ -1809,7 +1913,10 @@ class MeasurementGroup(PoolElement):
         """
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
+            value_ref_enabled = channel_info.get("value_ref_enabled", False)
             channel = Device(full_name)
+            if channel.isReferable() and value_ref_enabled:
+                continue
             value_buffer_obj = channel.getValueBufferObj()
             if cb is not None:
                 value_buffer_obj.unsubscribeEvent(self.valueBufferChanged,
@@ -1817,6 +1924,73 @@ class MeasurementGroup(PoolElement):
                 self._value_buffer_cb = None
             else:
                 value_buffer_obj.unsubscribeEvent(channel.valueBufferChanged)
+
+    def valueRefBufferChanged(self, channel, value_ref_buffer):
+        """Receive value ref buffer updates, pre-process them, and call
+        the subscribed callback.
+
+        :param channel: channel that reports value ref buffer update
+        :type channel: ExpChannel
+        :param value_ref_buffer: json encoded value ref buffer update,
+            it contains at least value refs and indexes
+        :type value_ref_buffer: :obj:`str`
+        """
+        if value_ref_buffer is None:
+            return
+        _, value_ref_buffer = self._value_ref_buffer_codec.decode(
+            value_ref_buffer)
+        self._value_ref_buffer_cb(channel, value_ref_buffer)
+
+    def subscribeValueRefBuffer(self, cb=None):
+        """Subscribe to channels' value ref buffer update events. If no
+        callback is passed, the default channel's callback is subscribed which
+        will store the data in the channel's value_buffer attribute.
+
+        :param cb: callback to be subscribed, None means subscribe the default
+            channel's callback
+        :type cb: callable
+        """
+        for channel_info in self.getChannels():
+            full_name = channel_info["full_name"]
+            value_ref_enabled = channel_info.get("value_ref_enabled", False)
+            channel = Device(full_name)
+            if not channel.isReferable():
+                continue
+            if not value_ref_enabled:
+                continue
+            value_ref_buffer_obj = channel.getValueRefBufferObj()
+            if cb is not None:
+                self._value_ref_buffer_cb = cb
+                value_ref_buffer_obj.subscribeEvent(
+                    self.valueRefBufferChanged, channel, False)
+            else:
+                value_ref_buffer_obj.subscribeEvent(
+                    channel.valueRefBufferChanged, with_first_event=False)
+
+    def unsubscribeValueRefBuffer(self, cb=None):
+        """Unsubscribe from channels' value ref buffer events. If no
+        callback is passed, unsubscribe the channel's default callback.
+
+        :param cb: callback to be unsubscribed, None means unsubscribe the
+            default channel's callback
+        :type cb: callable
+        """
+        for channel_info in self.getChannels():
+            full_name = channel_info["full_name"]
+            value_ref_enabled = channel_info.get("value_ref_enabled", False)
+            channel = Device(full_name)
+            if not channel.isReferable():
+                continue
+            if not value_ref_enabled:
+                continue
+            value_ref_buffer_obj = channel.getValueRefBufferObj()
+            if cb is not None:
+                value_ref_buffer_obj.unsubscribeEvent(
+                    self.valueRefBufferChanged, channel)
+                self._value_ref_buffer_cb = None
+            else:
+                value_ref_buffer_obj.unsubscribeEvent(
+                    channel.valueRefBufferChanged)
 
     def enableChannels(self, channels):
         '''Enable acquisition of the indicated channels.
@@ -1870,9 +2044,26 @@ class MeasurementGroup(PoolElement):
         self.command_inout("Prepare")
 
     def count_raw(self, start_time=None):
-        PoolElement.go(self)
+        """Raw count and report count values.
+
+        Simply start and wait until finish, no configuration nor preparation.
+
+        .. note::
+            The count_raw method API is partially experimental (value
+            references may be changed to values whenever possible in the
+            future). Backwards incompatible changes may occur if deemed
+            necessary by the core developers.
+
+        :param start_time: start time of the whole count operation, if not
+          passed a current timestamp will be used
+        :type start_time: :obj:`float`
+        :return: channel names and values (or value references - experimental)
+        :rtype: :obj:`dict` where keys are channel full names and values are
+          channel values (or value references - experimental)
+        """
         if start_time is None:
             start_time = time.time()
+        PoolElement.go(self)
         state = self.getStateEG().readValue()
         if state == Fault:
             msg = "Measurement group ended acquisition with Fault state"
@@ -1883,6 +2074,21 @@ class MeasurementGroup(PoolElement):
         return ret
 
     def go(self, *args, **kwargs):
+        """Count and report count values.
+
+        Configuration and prepare for measurement, then start and wait until
+        finish.
+
+        .. note::
+            The count (go) method API is partially experimental (value
+            references may be changed to values whenever possible in the
+            future). Backwards incompatible changes may occur if deemed
+            necessary by the core developers.
+
+        :return: channel names and values (or value references - experimental)
+        :rtype: :obj:`dict` where keys are channel full names and values are
+          channel values (or value references - experimental)
+        """
         start_time = time.time()
         cfg = self.getConfiguration()
         cfg.prepare()
@@ -2010,6 +2216,11 @@ class Pool(TangoDevice, MoveableSource):
         self._elements = BaseSardanaElementContainer()
         self.__elements_attr = self.getAttribute("Elements")
         self.__elements_attr.addListener(self.on_elements_changed)
+
+    def cleanUp(self):
+        TangoDevice.cleanUp(self)
+        f = self.factory()
+        f.removeExistingAttribute(self.__elements_attr)
 
     def getObject(self, element_info):
         elem_type = element_info.getType()
