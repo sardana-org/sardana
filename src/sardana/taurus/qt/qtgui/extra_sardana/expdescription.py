@@ -547,7 +547,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         mntGrpLabels = []
         for _, mntGrpConf in self._localConfig['MntGrpConfigs'].items():
             # get labels to visualize names with lower and upper case
-            mntGrpLabels.append(mntGrpConf['label'])
+            if mntGrpConf is not None:
+                mntGrpLabels.append(mntGrpConf['label'])
         self.ui.activeMntGrpCB.addItems(sorted(mntGrpLabels))
         idx = self.ui.activeMntGrpCB.findText(activeMntGrpName,
                                               # case insensitive find
