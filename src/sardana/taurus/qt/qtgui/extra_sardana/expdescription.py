@@ -174,6 +174,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
     '''
 
     createExpConfChangedDialog = Qt.pyqtSignal()
+    createPoolDownDialog = Qt.pyqtSignal()
     experimentConfigurationChanged = Qt.pyqtSignal(object)
 
     def __init__(self, parent=None, door=None, plotsButton=True,
@@ -216,7 +217,11 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
         # Pending event variables
         self._expConfChangedDialog = None
+        self._poolDownDialog = None
+        self.previous_pool_down = False
+        self.pool_down = False
 
+        self.createPoolDownDialog.connect(self._createPoolDownDialog)
         self.createExpConfChangedDialog.connect(
             self._createExpConfChangedDialog)
         self.ui.activeMntGrpCB.activated['QString'].connect(
@@ -328,6 +333,19 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         msg_detials += json.dumps(self._diff, sort_keys=True)
         return msg_detials
 
+    def _createPoolDownDialog(self):
+        text = '''<p>The Sardana Pool of elements is down.<br>
+        Measurement groups are not available.<br></p>'''
+        self._poolDownDialog = Qt.QMessageBox()
+        self._poolDownDialog.setIcon(Qt.QMessageBox.Warning)
+        self._poolDownDialog.setWindowTitle('Pool Down')
+        self._poolDownDialog.setTextFormat(QtCore.Qt.RichText)
+        self._poolDownDialog.setText(text)
+        self._poolDownDialog.setStandardButtons(Qt.QMessageBox.Ok)
+        result = self._poolDownDialog.exec_()
+        if result == Qt.QMessageBox.Ok:
+            self._reloadConf(force=True)
+
     def _createExpConfChangedDialog(self):
         msg_details = self._getDetialsText()
         msg_info = self._getResumeText()
@@ -361,6 +379,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         btn_ok.setText('Load')
         btn_cancel = self._expConfChangedDialog.button(Qt.QMessageBox.Cancel)
         btn_cancel.setText('Keep')
+        if self.previous_pool_down:
+            btn_cancel.setEnabled(False)
         result = self._expConfChangedDialog.exec_()
         self._expConfChangedDialog = None
         if result == Qt.QMessageBox.Ok:
@@ -376,7 +396,31 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         except Exception as e:
             raise RuntimeError('Error on processing! {0}'.format(e))
 
-        if len(self._diff) > 0:
+        door = self.getModelObj()
+
+        if door is None:
+            return []
+        new_conf = door.getExperimentConfiguration()
+        meas_confs = new_conf['MntGrpConfigs']
+        conf_meas_none = True
+        self.previous_pool_down = self.pool_down
+
+        if len(meas_confs) > 0:
+            for key, value in meas_confs.items():
+                if value is not None:
+                    conf_meas_none = False
+            if conf_meas_none:
+                self.pool_down = True
+                if self._autoUpdate:
+                    self._reloadConf(force=True)
+                elif self.previous_pool_down != self.pool_down:
+                    if hasattr(self, 'createPoolDownDialog'):
+                        self.createPoolDownDialog.emit()
+        if len(meas_confs) == 0:
+            # When there are not existing measurement groups
+            conf_meas_none = False
+        if len(self._diff) > 0 and not conf_meas_none:
+            self.pool_down = False
             if self._autoUpdate:
                 self._reloadConf(force=True)
             else:
@@ -503,7 +547,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         mntGrpLabels = []
         for _, mntGrpConf in self._localConfig['MntGrpConfigs'].items():
             # get labels to visualize names with lower and upper case
-            mntGrpLabels.append(mntGrpConf['label'])
+            if mntGrpConf is not None:
+                mntGrpLabels.append(mntGrpConf['label'])
         self.ui.activeMntGrpCB.addItems(sorted(mntGrpLabels))
         idx = self.ui.activeMntGrpCB.findText(activeMntGrpName,
                                               # case insensitive find
