@@ -1121,7 +1121,7 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable):
         """**Controller API**. Override is MANDATORY.
         Called to get a parameter value on the given axis.
 
-        ``GetAxisPar`` with 'data_source' parameter is deprecated since Jul19.
+        ``GetAxisPar`` with 'data_source' parameter is deprecated since 2.8.0.
         Inherit from :class:`~Referable` class in order to report value
         references.
 
@@ -1165,7 +1165,7 @@ class TwoDController(Controller, Readable, Startable, Stopable, Loadable):
         """**Controller API**. Override is MANDATORY.
         Called to get a parameter value on the given axis.
 
-        ``GetAxisPar`` with 'data_source' parameter is deprecated since Jul19.
+        ``GetAxisPar`` with 'data_source' parameter is deprecated since 2.8.0.
         Inherit from :class:`~Referable` class in order to report value
         references.
 
