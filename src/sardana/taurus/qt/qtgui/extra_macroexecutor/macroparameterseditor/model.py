@@ -181,7 +181,10 @@ class ParamEditorModel(Qt.QAbstractItemModel):
             if index.column() == 0:
                 return node.name()
             elif index.column() == 1:
-                return str(node.value())
+                value = node.value()
+                if value is None:
+                    value = node.defValue()
+                return str(value)
         return None
 
     def setData(self, index, value, role=Qt.Qt.EditRole):
