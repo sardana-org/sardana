@@ -34,6 +34,7 @@ from taurus.external.qt import Qt
 
 from sardana.taurus.core.tango.sardana import macro
 from sardana.taurus.qt.qtgui.extra_macroexecutor import globals
+from sardana.macroserver.msparameter import Optional
 
 
 class ParamEditorModel(Qt.QAbstractItemModel):
@@ -184,6 +185,9 @@ class ParamEditorModel(Qt.QAbstractItemModel):
                 value = node.value()
                 if value is None:
                     value = node.defValue()
+                    if value == Optional:
+                        # TODO: treat optional parameters
+                        value = None
                 return str(value)
         return None
 
