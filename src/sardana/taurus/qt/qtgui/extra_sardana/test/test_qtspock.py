@@ -63,7 +63,7 @@ def waitForLoop(predicate, timeout):
     return predicate()
 
 
-class QtSpockTestCase(TestCase):
+class QtSpockBaseTestCase(TestCase):
     @classmethod
     def setUpClass(cls):
         # Use setUpClass instead of setUp because starting QtSpock
@@ -71,8 +71,6 @@ class QtSpockTestCase(TestCase):
         cls.test_ipython_dir = tempfile.mkdtemp()
         cls._create_profile()
         os.environ["IPYTHONDIR"] = cls.test_ipython_dir
-        cls.widget = QtSpockWidget()
-        cls.widget.show()
         cls._isDestroyed = False
 
     @classmethod
@@ -94,6 +92,15 @@ class QtSpockTestCase(TestCase):
         cls.widget.close()
         cls.widget = None
         waitForLoop(lambda: cls._isDestroyed, 5000)
+
+
+class QtSpockTestCase(QtSpockBaseTestCase):
+    @classmethod
+    def setUpClass(cls):
+        super(QtSpockTestCase, cls).setUpClass()
+        cls.widget = QtSpockWidget(use_model_from_profile=True)
+        cls.widget.start_kernel()
+        cls.widget.show()
 
 
 class CorrectProfileOutputMixin(object):
@@ -158,7 +165,8 @@ class MissingProfileTestCase(QtSpockTestCase, ProfileErrorOutputMixin):
     def setUpClass(cls):
         cls.test_ipython_dir = tempfile.mkdtemp()
         os.environ["IPYTHONDIR"] = cls.test_ipython_dir
-        cls.widget = QtSpockWidget()
+        cls.widget = QtSpockWidget(use_model_from_profile=True)
+        cls.widget.start_kernel()
         cls.widget.show()
         cls._isDestroyed = False
 
@@ -224,6 +232,93 @@ class ProfileErrorAfterRestartTestCase(
 
         # Restart kernel
         cls.widget.kernel_manager.restart_kernel()
+
+    def test_is_valid_spock_profile(self):
+        self.assertTrue(not self.widget.kernel_manager.is_valid_spock_profile)
+
+
+class QtSpockNoModelTestCase(QtSpockBaseTestCase, ProfileErrorOutputMixin):
+    @classmethod
+    def setUpClass(cls):
+        super(QtSpockNoModelTestCase, cls).setUpClass()
+        cls.widget = QtSpockWidget()
+        cls.widget.start_kernel()
+        cls.widget.show()
+
+    def test_is_valid_spock_profile(self):
+        self.assertTrue(not self.widget.kernel_manager.is_valid_spock_profile)
+
+    def test_profile_error_info(self):
+        def predicate():
+            text = self.widget._control.toPlainText()
+            matches = re.findall(r"^No door selected", text, re.MULTILINE)
+            return len(matches) == 1
+        self.assertTrue(waitFor(predicate, 5000))
+
+
+class QtSpockModelTestCase(QtSpockBaseTestCase, CorrectProfileOutputMixin):
+    @classmethod
+    def setUpClass(cls):
+        super(QtSpockModelTestCase, cls).setUpClass()
+        cls.widget = QtSpockWidget()
+        cls.widget.setModel(UNITTEST_DOOR_NAME)
+        cls.widget.show()
+
+    def test_is_valid_spock_profile(self):
+        self.assertTrue(self.widget.kernel_manager.is_valid_spock_profile)
+
+
+class QtSpockModelAfterRestartTestCase(
+        QtSpockBaseTestCase, CorrectProfileOutputMixin):
+    @classmethod
+    def setUpClass(cls):
+        super(QtSpockModelAfterRestartTestCase, cls).setUpClass()
+        cls.widget = QtSpockWidget()
+        cls.widget.start_kernel()
+        cls.widget.show()
+
+        # Wait until startup finished
+        def predicate():
+            text = cls.widget._control.toPlainText()
+            matches = re.findall(r"\[1\]: $", text, re.MULTILINE)
+            return len(matches) == 1
+        assert waitFor(predicate, 5000)
+
+        cls.widget.setModel(UNITTEST_DOOR_NAME)
+
+    def test_is_valid_spock_profile(self):
+        self.assertTrue(self.widget.kernel_manager.is_valid_spock_profile)
+
+
+class QtSpockNoModelAfterRestartTestCase(QtSpockNoModelTestCase):
+    @classmethod
+    def setUpClass(cls):
+        # Do only call the original base class constructor
+        super(QtSpockNoModelTestCase, cls).setUpClass()
+        cls.widget = QtSpockWidget()
+        cls.widget.setModel(UNITTEST_DOOR_NAME)
+        cls.widget.show()
+
+        # Wait until startup finished
+        def predicate():
+            text = cls.widget._control.toPlainText()
+            matches = re.findall(r"\[1\]: $", text, re.MULTILINE)
+            return len(matches) == 1
+        assert waitFor(predicate, 5000)
+
+        cls.widget.setModel("")
+
+
+class QtSpockModelMissingProfileTestCase(
+        QtSpockTestCase, ProfileErrorOutputMixin):
+    @classmethod
+    def setUpClass(cls):
+        cls.test_ipython_dir = tempfile.mkdtemp()
+        os.environ["IPYTHONDIR"] = cls.test_ipython_dir
+        cls.widget = QtSpockWidget()
+        cls.widget.setModel(UNITTEST_DOOR_NAME)
+        cls.widget.show()
+        cls._isDestroyed = False
 
     def test_is_valid_spock_profile(self):
         self.assertTrue(not self.widget.kernel_manager.is_valid_spock_profile)

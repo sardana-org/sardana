@@ -17,8 +17,11 @@ from taurus import info, error
 from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.manager import QtKernelManager
 
+from taurus.qt.qtgui.base import TaurusBaseWidget
+
 from sardana import release
-from sardana.spock.ipython_01_00.genutils import get_profile_metadata
+from sardana.spock.ipython_01_00.genutils import get_profile_metadata, \
+    get_ipython_dir, from_name_to_tango, get_macroserver_for_door
 
 
 def get_spock_profile_dir(profile):
@@ -55,22 +58,25 @@ class SpockKernelManager(QtKernelManager):
         try:
             profile = kernel_cmd[kernel_cmd.index("--profile") + 1]
         except ValueError:
-            profile = "spockdoor"
-            kernel_cmd.append(["--profile", profile])
-        if check_spock_profile(profile):
-            self.is_valid_spock_profile = True
-        else:
-            index = kernel_cmd.index("--profile")
-            del kernel_cmd[index]
-            del kernel_cmd[index]
             self.is_valid_spock_profile = False
-            error("Checking spock profile failed.")
+        else:
+            if check_spock_profile(profile):
+                self.is_valid_spock_profile = True
+            else:
+                index = kernel_cmd.index("--profile")
+                del kernel_cmd[index]
+                del kernel_cmd[index]
+                for arg in kernel_cmd[:]:
+                    if arg.startswith("--Spock"):
+                        kernel_cmd.remove(arg)
+                self.is_valid_spock_profile = False
+                error("Checking spock profile failed.")
         info('Starting kernel...')
         self.kernel_about_to_launch.emit()
         return super()._launch_kernel(kernel_cmd, **kw)
 
 
-class QtSpockWidget(RichJupyterWidget):
+class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
     """A RichJupyterWidget that starts a kernel with a spock profile.
 
     It is important to call `shutdown_kernel` to gracefully clean up the
@@ -85,6 +91,9 @@ class QtSpockWidget(RichJupyterWidget):
         The name of the spock profile to use. The default is 'spockdoor'.
     kernel : string
         The name of the kernel to use. The default is 'python2'.
+    use_model_from_profile : bool
+        If true, the door name is taken from the spock profile, otherwise it
+        has to be set via setModel.
     **kwargs
         All remaining keywords are passed to the RichJupyterWidget base class
 
@@ -100,28 +109,109 @@ class QtSpockWidget(RichJupyterWidget):
     """
     def __init__(
             self,
+            parent=None,
             profile='spockdoor',
+            use_model_from_profile=False,
             extensions=None,
             kernel='python2',
             **kw):
-        super().__init__(**kw)
+        RichJupyterWidget.__init__(self, parent=parent, **kw)
+        TaurusBaseWidget.__init__(self)
+
+        self._profile = profile
+        self.use_model_from_profile = use_model_from_profile
 
         if extensions is None:
             extensions = []
         extensions.insert(
             0, "sardana.taurus.qt.qtgui.extra_sardana.qtspock_ext")
 
-        extra_arguments = ["--profile", profile]
-        for ext in extensions:
-            extra_arguments.extend(["--ext", ext])
+        self._extensions = extensions
+        self._kernel_name = kernel
+
+        self._macro_server_name = None
+        self._macro_server_alias = None
+        self._door_name = None
+        self._door_alias = None
 
         self.kernel_manager = SpockKernelManager(kernel_name=kernel)
         self.kernel_manager.kernel_about_to_launch.connect(
             self._handle_kernel_lauched)
-        self.kernel_manager.start_kernel(extra_arguments=extra_arguments)
 
-        self.kernel_client = self.kernel_manager.client()
-        self.kernel_client.start_channels()
+    def start_kernel(self):
+        """Start the kernel
+
+        A normal IPython kernel is started if no model is set via `setModel` or
+        `use_model_from_profile`.
+        """
+        if not self.kernel_manager.has_kernel:
+            self.kernel_manager.start_kernel(
+                extra_arguments=self._extra_arguments())
+            self.kernel_client = self.kernel_manager.client()
+            self.kernel_client.start_channels()
+
+    def _extra_arguments(self):
+        extra_arguments = ["--profile", self._profile]
+        for ext in self._extensions:
+            extra_arguments.extend(["--ext", ext])
+
+        if not self.use_model_from_profile:
+            if self._macro_server_name and self._door_name:
+                extra_arguments.append("--Spock.macro_server={}".format(
+                    self._macro_server_name))
+                extra_arguments.append("--Spock.macro_server_alias={}".format(
+                    self._macro_server_alias))
+                extra_arguments.append("--Spock.door_name={}".format(
+                    self._door_name))
+                extra_arguments.append("--Spock.door_alias={}".format(
+                    self._door_alias))
+            else:
+                # Loading the spock profile would use the macro server and door
+                # configured there. Instead, use no extra arguments for an
+                # ipython kernel without Spock functionality
+                extra_arguments = []
+
+        return extra_arguments
+
+    def setModel(self, door):
+        """Set a door as the model
+
+        An empty string or None will start a normal IPython kernel without
+        spock functionality.
+        """
+        self._set_door_name(door)
+        self._set_macro_server_name(door)
+
+        if self.kernel_manager.has_kernel:
+            # RichJupyterWidget.restart_kernel does not support extra arguments
+            self.kernel_manager.restart_kernel(
+                extra_arguments=self._extra_arguments())
+            self._kernel_restarted_message(died=False)
+        else:
+            self.start_kernel()
+
+    def _set_door_name(self, door):
+        if door:
+            full_door_tg_name, door_tg_name, door_tg_alias = (
+                from_name_to_tango(door))
+            door_alias = door_tg_alias or door_tg_name
+            self._door_name = full_door_tg_name
+            self._door_alias = door_alias
+        else:
+            self._door_name = None
+            self._door_alias = None
+
+    def _set_macro_server_name(self, door):
+        if door:
+            macro_server = get_macroserver_for_door(door)
+            full_ms_tg_name, ms_tg_name, ms_tg_alias = (
+                from_name_to_tango(macro_server))
+            ms_alias = ms_tg_alias or ms_tg_name
+            self._macro_server_name = full_ms_tg_name
+            self._macro_server_alias = ms_alias
+        else:
+            self._macro_server_name = None
+            self._macro_server_alias = None
 
     def _set_prompts(self):
         var = "get_ipython().config.Spock.door_alias"
@@ -138,16 +228,24 @@ class QtSpockWidget(RichJupyterWidget):
                 pass
 
         if not self.kernel_manager.is_valid_spock_profile:
-            self.append_stream(
-                "\nSpock profile error: please run spock in the terminal and "
-                "restart the kernel.\n"
-                "\nThis is a normal ipython kernel. "
-                "Spock functionality is not available.\n")
+            self._print_ipython_warning()
 
         self.in_prompt = (
             in_prefix + ' [<span class="in-prompt-number">%i</span>]:')
         self.out_prompt = (
             'Result [<span class="out-prompt-number">%i</span>]:')
+
+    def _print_ipython_warning(self):
+        if self.use_model_from_profile or self._extra_arguments():
+            self.append_stream(
+                "\nSpock profile error: please run spock in the terminal"
+                " and restart the kernel.\n")
+        else:
+            self.append_stream(
+                "\nNo door selected. Please select a valid door.\n")
+        self.append_stream(
+            "\nThis is a normal ipython kernel. "
+            "Spock functionality is not available.\n")
 
     # Adapted from
     # https://github.com/moble/remote_exec/blob/master/remote_exec.py#L61
