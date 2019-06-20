@@ -125,6 +125,8 @@ def createChannelDict(channel, index=None, **kwargs):
         #           'timer': '', #should contain a channel name
         #           'monitor': '', #should contain a channel name
         #           'trigger': '', #should contain a channel name
+        'value_ref_enabled': False,  # bool
+        'value_ref_pattern': '',  # str
         'conditioning': '',  # this is a python expresion to be evaluated for conditioning the data. The data for this channel can be referred as 'x' and data from other channels can be referred by channel name
         'normalization': Normalization.No,  # one of the Normalization enumeration members
         # string indicating the location of the data of this channel within
@@ -232,6 +234,8 @@ def getElementTypeSize(t):
         return Qt.QSize(50, 24)
     elif t == ChannelView.PlotType:
         return Qt.QSize(50, 24)
+    elif t == ChannelView.ValueRefEnabled:
+        return Qt.QSize(50, 24)
     elif t == ChannelView.Synchronizer:
         return Qt.QSize(200, 24)
     return Qt.QSize(50, 24)
@@ -259,13 +263,17 @@ def getElementTypeToolTip(t):
         return "The channel to be used as a monitor for stopping the acquisition"
     elif t == ChannelView.Synchronization:
         return "The channel to be used for triggering the acquisition"
+    elif t == ChannelView.ValueRefEnabled:
+        return "Channel value referencing active or not"
+    elif t == ChannelView.ValueRefPattern:
+        return "Channel value referencing pattern"
     elif t == ChannelView.Conditioning:
         return "An expression to evaluate on the data when displaying it"
     elif t == ChannelView.Normalization:
         return "Normalization mode for the data"
     elif t == ChannelView.NXPath:
         return "Location of the data of this channel within the NeXus tree"
-    if t == ChannelView.Synchronizer:
+    elif t == ChannelView.Synchronizer:
         return "Synchronization element"
     return "Unknown"
 
@@ -305,6 +313,8 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
                          #                         ChannelView.Timer:'timer',
                          #                         ChannelView.Monitor:'monitor',
                          #                         ChannelView.Synchronization:'trigger',
+                         ChannelView.ValueRefEnabled: 'value_ref_enabled',
+                         ChannelView.ValueRefPattern: 'value_ref_pattern',
                          ChannelView.Conditioning: 'conditioning',
                          ChannelView.Normalization: 'normalization',
                          ChannelView.NXPath: 'nexus_path',
@@ -330,11 +340,24 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
         return ret
 
     def setData(self, index, qvalue):
+        ch_name, ch_data = self.itemData()
         taurus_role = index.model().role(index.column())
+        key = self.itemdata_keys_map[taurus_role]
         if taurus_role in (ChannelView.Channel, ChannelView.Conditioning,
-                           ChannelView.NXPath, ChannelView.DataType,
-                           ChannelView.Enabled, ChannelView.Output):
+                           ChannelView.NXPath, ChannelView.Enabled,
+                           ChannelView.Output, ChannelView.ValueRefEnabled,
+                           ChannelView.ValueRefPattern):
             data = qvalue
+        elif taurus_role == ChannelView.DataType:
+            if len(qvalue.strip()) == 0:
+                # empty strings are considered as unspecified data type
+                try:
+                    ch_data.pop(key)
+                except KeyError:
+                    pass  # data_type key may not be there if not specified
+                return
+            else:
+                data = qvalue
         elif taurus_role == ChannelView.PlotType:
             data = PlotType[qvalue]
         elif taurus_role == ChannelView.Normalization:
@@ -353,8 +376,6 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
                 data = ()
         else:
             raise NotImplementedError('Unknown role')
-        ch_name, ch_data = self.itemData()
-        key = self.itemdata_keys_map[taurus_role]
         ch_data[key] = data
 
     def role(self):
@@ -374,12 +395,18 @@ class MntGrpUnitItem(TaurusBaseTreeItem):
 
 
 class BaseMntGrpChannelModel(TaurusBaseModel):
-    ColumnNames = ("Channel", "enabled", "output", "Shape", "Data Type", "Plot Type", "Plot Axes", "Timer",
-                   "Monitor", "Synchronizer", "Synchronization", "Conditioning", "Normalization", "NeXus Path")
-    ColumnRoles = ((ChannelView.Channel, ChannelView.Channel), ChannelView.Enabled,
-                   ChannelView.Output, ChannelView.Shape, ChannelView.DataType, ChannelView.PlotType,
-                   ChannelView.PlotAxes, ChannelView.Timer, ChannelView.Monitor,
-                   ChannelView.Synchronizer, ChannelView.Synchronization, ChannelView.Conditioning,
+    ColumnNames = ("Channel", "enabled", "output", "Shape", "Data Type",
+                   "Plot Type", "Plot Axes", "Timer", "Monitor",
+                   "Synchronizer", "Synchronization", "Ref Enabled",
+                   "Ref Pattern", "Conditioning",
+                   "Normalization", "NeXus Path")
+    ColumnRoles = ((ChannelView.Channel, ChannelView.Channel),
+                   ChannelView.Enabled, ChannelView.Output, ChannelView.Shape,
+                   ChannelView.DataType, ChannelView.PlotType,
+                   ChannelView.PlotAxes, ChannelView.Timer,
+                   ChannelView.Monitor, ChannelView.Synchronizer,
+                   ChannelView.Synchronization, ChannelView.ValueRefEnabled,
+                   ChannelView.ValueRefPattern, ChannelView.Conditioning,
                    ChannelView.Normalization, ChannelView.NXPath)
     DftFont = Qt.QFont()
 
@@ -580,7 +607,6 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
             self.beginResetModel()
             ctrl_data = self.getPyData(ctrlname=ctrlname)
             ctrl_data[key] = qvalue
-            self._mgconfig[key] = qvalue
             self.endResetModel()
             return True
         # for the rest, we use the regular TaurusBaseModel item-oriented approach

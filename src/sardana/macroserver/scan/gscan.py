@@ -36,6 +36,7 @@ import datetime
 import operator
 import time
 import threading
+import weakref
 import numpy as np
 
 import PyTango
@@ -52,6 +53,7 @@ from taurus.core.util.user import USER_NAME
 from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
 from taurus.core.util.enumeration import Enumeration
 from taurus.core.util.threadpool import ThreadPool
+from taurus.core.util.event import CallableRef
 
 from sardana.util.tree import BranchNode, LeafNode, Tree
 from sardana.util.motion import Motor as VMotor
@@ -255,13 +257,15 @@ class GScan(Logger):
 
     def __init__(self, macro, generator=None, moveables=[], env={},
                  constraints=[], extrainfodesc=[]):
-        self._macro = macro
+        self._macro = weakref.ref(macro)
+        if generator is not None:
+            generator = CallableRef(generator)
         self._generator = generator
         self._extrainfodesc = extrainfodesc
 
-        # nasty hack to make sure macro has access to gScan as soon as possible
-        # TODO: CAUTION! this may be causing a circular reference!
-        self._macro._gScan = self
+        # nasty hack to make sure macro has access to gScan as soon as
+        # possible
+        self.macro._gScan = self
         self._rec_manager = macro.getMacroServer().recorder_manager
 
         self._moveables, moveable_names = [], []
@@ -390,7 +394,7 @@ class GScan(Logger):
                     low = None
 
             if any((high, low)) and not any((m.min_value, m.max_value)):
-                self._macro.info("Scan range is not defined for %s and could "
+                self.macro.info("Scan range is not defined for %s and could "
                                  "not be verified against motor limits."
                                  % m.moveable.getName())
 
@@ -424,7 +428,7 @@ class GScan(Logger):
                 try:
                     if 'instrument' in kw:
                         type_class = Type.Instrument
-                        instrument = self._macro.getObj(kw['instrument'],
+                        instrument = self.macro.getObj(kw['instrument'],
                                                         type_class=type_class)
                         if instrument:
                             kw['instrument'] = instrument
@@ -687,7 +691,10 @@ class GScan(Logger):
                     i += 1
                 else:
                     plotAxes.append(a)
-
+            try:
+                value_ref_enabled = ci.value_ref_enabled
+            except AttributeError:
+                value_ref_enabled = False
             # create the ColumnDesc object
             column = ColumnDesc(name=ci.full_name,
                                 label=ci.label,
@@ -700,7 +707,8 @@ class GScan(Logger):
                                 normalization=ci.normalization,
                                 plot_type=ci.plot_type,
                                 plot_axes=plotAxes,
-                                data_units=ci.unit)
+                                data_units=ci.unit,
+                                value_ref_enabled=value_ref_enabled)
             data_desc.append(column)
             counters.append(column.name)
         try:
@@ -761,7 +769,7 @@ class GScan(Logger):
         except Exception:
             env['ScanDir'] = None
         env['estimatedtime'], env['total_scan_intervals'] = self._estimate()
-        env['instrumentlist'] = self._macro.findObjs(
+        env['instrumentlist'] = self.macro.findObjs(
             '.*', type_class=Type.Instrument)
 
         # env.update(self._getExperimentConfiguration) #add all the info from
@@ -905,7 +913,7 @@ class GScan(Logger):
 
     @property
     def macro(self):
-        return self._macro
+        return self._macro()
 
     @property
     def measurement_group(self):
@@ -914,7 +922,7 @@ class GScan(Logger):
     @property
     def generator(self):
         """Generator of steps or waypoints used in this scan."""
-        return self._generator
+        return self._generator()
 
     @property
     def motion(self):
@@ -1440,8 +1448,12 @@ class CScan(GScan):
                 raise ScanException(msg)
 
     def do_restore(self):
-        super(CScan, self).do_restore()
+        # Restore motor backups (vel, acc, ...) first so the macro's
+        # do_restore finds the system as before GSF found it.
+        # This is especially important for dscan macros which must return
+        # to inital position at nominal speed even after user stop.
         self._restore_motors()
+        super(CScan, self).do_restore()
 
     def _setFastMotions(self, motors=None):
         '''make given motors go at their max speed and accel'''
@@ -1956,9 +1968,10 @@ class CAcquisition(object):
         full_name = channel.getFullName()
 
         info = {'label': full_name}
-        idx = np.array(value_buffer['index'])
-        idx += self._index_offset
-        value_buffer['index'] = idx.tolist()
+        if self._index_offset != 0:
+            idx = np.array(value_buffer['index'])
+            idx += self._index_offset
+            value_buffer['index'] = idx.tolist()
         info.update(value_buffer)
         # info is a dictionary with at least keys: label, data,
         # index and its values are of type string for label and
@@ -1966,6 +1979,34 @@ class CAcquisition(object):
         # e.g. dict(label=str, data=seq<float>, index=seq<int>)
         self._countdown_latch.count_up()
         # only one thread is present in the pool so jobs are serialized
+        self._thread_pool.add(self.data.addData,
+                              self._countdown_latch.count_down, info)
+
+    def value_ref_buffer_changed(self, channel, value_ref_buffer):
+        """Delegate processing of value buffer events to a worker thread."""
+        # value_ref_buffer is a dictionary with at least keys:
+        # value_ref, index
+        # and its values are of type sequence
+        # e.g. dict(value_ref=seq<float>, index=seq<int>)
+        if value_ref_buffer is None:
+            return
+
+        full_name = channel.getFullName()
+
+        info = {'label': full_name}
+        if self._index_offset != 0:
+            idx = np.array(value_ref_buffer['index'])
+            idx += self._index_offset
+            value_ref_buffer['index'] = idx.tolist()
+        info.update(value_ref_buffer)
+        # info is a dictionary with at least keys: label, data,
+        # index and its values are of type string for label and
+        # sequence for data, index
+        # e.g. dict(label=str, data=seq<float>, index=seq<int>)
+        self._countdown_latch.count_up()
+        # only one thread is present in the pool so jobs are serialized
+        # TODO: think if the RecordList.addData is the best API for
+        # passing value references
         self._thread_pool.add(self.data.addData,
                               self._countdown_latch.count_down, info)
 
@@ -1984,7 +2025,6 @@ class CAcquisition(object):
         acquisition. Non compatible measurement groups are those with channels
         of the following types:
           - external channels (Tango attributes)
-          - 2D experimental channels
           - pseudo counters that are not based on physical channels
 
         .. todo:: add validation for psuedo counters
@@ -1994,13 +2034,11 @@ class CAcquisition(object):
             full_name = channel_info["full_name"]
             name = channel_info["name"]
             try:
-                channel = taurus.Device(full_name)
+                taurus.Device(full_name)
             except Exception:
                 # external channels are attributes so Device constructor fails
                 non_compatible_channels.append(name)
                 continue
-            if isinstance(channel, TwoDExpChannel):
-                non_compatible_channels.append(name)
         is_compatible = len(non_compatible_channels) == 0
         return is_compatible, non_compatible_channels
 
@@ -2222,6 +2260,9 @@ class CTScan(CScan, CAcquisition):
 
         # add listener of data events
         measurement_group.subscribeValueBuffer(self.value_buffer_changed)
+        # add listener of value ref events
+        measurement_group.subscribeValueRefBuffer(
+            self.value_ref_buffer_changed)
         # initializing mntgrp subscription control variables
         self.__mntGrpSubscribed = True
 
@@ -2524,6 +2565,8 @@ class CTScan(CScan, CAcquisition):
             try:
                 self.measurement_group.unsubscribeValueBuffer(
                     self.value_buffer_changed)
+                self.measurement_group.unsubscribeValueRefBuffer(
+                    self.value_ref_buffer_changed)
                 self.__mntGrpSubscribed = False
             except Exception:
                 msg = "Exception occurred trying to remove data listeners"

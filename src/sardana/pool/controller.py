@@ -29,9 +29,11 @@ __all__ = ["DataAccess", "SardanaValue", "Type", "Access", "Description",
            "DefaultValue", "FGet", "FSet",
            "Memorized", "MemorizedNoInit", "NotMemorized", "MaxDimSize",
            "Controller", "Readable", "Startable", "Stopable", "Loadable",
+           "Referable", "Synchronizer",
            "MotorController", "CounterTimerController", "ZeroDController",
-           "OneDController", "TwoDController",
-           "PseudoMotorController", "IORegisterController"]
+           "OneDController", "TwoDController", "TriggerGateController",
+           "PseudoMotorController", "PseudoCounterController",
+           "IORegisterController"]
 
 __docformat__ = 'restructuredtext'
 
@@ -717,6 +719,31 @@ class Loadable(object):
         raise NotImplementedError("LoadOne must be defined in the controller")
 
 
+class Referable(object):
+    """A Referable interface. A controller for which it's axis can
+    report data references (like a 1D or 2D for example) should implement
+    this interface
+
+    .. note: Inherit from Referable together with either OneDController or
+        TwoDController
+
+    .. note::
+        The Referable class has been included in Sardana on a provisional
+        basis. Backwards incompatible changes (up to and including removal
+        of the class) may occur if deemed necessary by the core developers.
+    """
+
+    def RefOne(self, axis):
+        """**Controller API**. Override is MANDATORY!
+        Default implementation raises :exc:`NotImplementedError`
+
+        :param int axis: axis number
+        :return: the axis value
+        :rtype: object
+        """
+        raise NotImplementedError("RefOne must be defined in the controller")
+
+
 class Synchronizer(object):
     """A Synchronizer interface. A controller for which its axis are 'Able to
     Synchronize' should implement this interface
@@ -909,8 +936,9 @@ class CounterTimerController(Controller, Readable, Startable, Stopable,
                   'description': 'Timer used in independent acquisition'},
         'Value': {'type': float,
                   'description': 'Value', },
-        'Data': {'type': str,
-                 'description': 'Data', },
+        # TODO: in case of Tango ValueBuffer type is overridden by DevEncoded
+        'ValueBuffer': {'type': str,
+                        'description': 'Value buffer', },
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 
@@ -967,14 +995,13 @@ class CounterTimerController(Controller, Readable, Startable, Stopable,
         pass
 
     def StartAllCT(self):
-        """**Counter/Timer Controller API**. Override is MANDATORY!
-        Called to start an acquisition of a selected axis.
-        Default implementation raises :exc:`NotImplementedError`.
+        """**Counter/Timer Controller API**.
+        Called to start an acquisition of a group of channels.
+        Default implementation does nothing.
 
         .. deprecated:: 1.0
             use :meth:`~CounterTimerController.StartAll` instead"""
-        raise NotImplementedError("StartAll must be defined in the "
-                                  "controller")
+        pass
 
     def PreStartAll(self):
         """**Controller API**. Override if necessary.
@@ -1013,10 +1040,10 @@ class CounterTimerController(Controller, Readable, Startable, Stopable,
         return self.StartOneCT(axis)
 
     def StartAll(self):
-        """**Controller API**. Override is MANDATORY!
+        """**Controller API**.
         Default implementation calls deprecated
-        :meth:`~CounterTimerController.StartAllCT` which, by default, raises
-        :exc:`NotImplementedError`."""
+        :meth:`~CounterTimerController.StartAllCT` which, by default, does
+        nothing."""
         return self.StartAllCT()
 
 
@@ -1044,8 +1071,9 @@ class ZeroDController(Controller, Readable, Stopable):
                                            'independent acquisition'},
         'Value': {'type': float,
                   'description': 'Value', },
-        'Data': {'type': str,
-                 'description': 'Data', },
+        # TODO: in case of Tango ValueBuffer type is overridden by DevEncoded
+        'ValueBuffer': {'type': str,
+                        'description': 'Value buffer', },
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 
@@ -1075,8 +1103,9 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable):
         'Value': {'type': (float,),
                   'description': 'Value',
                   'maxdimsize': (16 * 1024,)},
-        'Data': {'type': str,
-                 'description': 'Data', },
+        # TODO: in case of Tango ValueBuffer type is overridden by DevEncoded
+        'ValueBuffer': {'type': str,
+                        'description': 'Value buffer', },
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 
@@ -1091,9 +1120,12 @@ class OneDController(Controller, Readable, Startable, Stopable, Loadable):
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
         Called to get a parameter value on the given axis.
-        If parameter == 'data_source', default implementation returns None,
-        meaning let sardana decide the proper URI for accessing the axis value.
-        Otherwise, default implementation calls deprecated
+
+        ``GetAxisPar`` with 'data_source' parameter is deprecated since Jul19.
+        Inherit from :class:`~Referable` class in order to report value
+        references.
+
+        Default implementation calls deprecated
         :meth:`~Controller.GetPar` which, by default, raises
         :exc:`NotImplementedError`.
 
@@ -1116,6 +1148,9 @@ class TwoDController(Controller, Readable, Startable, Stopable, Loadable):
         'Value': {'type': ((float,),),
                   'description': 'Value',
                   'maxdimsize': (4 * 1024, 4 * 1024)},
+        # TODO: in case of Tango ValueBuffer type is overridden by DevEncoded
+        'ValueBuffer': {'type': str,
+                        'description': 'Value buffer', },
     }
     standard_axis_attributes.update(Controller.standard_axis_attributes)
 
@@ -1129,9 +1164,12 @@ class TwoDController(Controller, Readable, Startable, Stopable, Loadable):
     def GetAxisPar(self, axis, parameter):
         """**Controller API**. Override is MANDATORY.
         Called to get a parameter value on the given axis.
-        If parameter == 'data_source', default implementation returns None,
-        meaning let sardana decide the proper URI for accessing the axis value.
-        Otherwise, default implementation calls deprecated
+
+        ``GetAxisPar`` with 'data_source' parameter is deprecated since Jul19.
+        Inherit from :class:`~Referable` class in order to report value
+        references.
+
+        Default implementation calls deprecated
         :meth:`~Controller.GetPar` which, by default, raises
         :exc:`NotImplementedError`.
 
@@ -1426,8 +1464,9 @@ class PseudoCounterController(Controller):
                                            'independent acquisition'},
         'Value': {'type': float,
                   'description': 'Value', },
-        'Data': {'type': str,
-                 'description': 'Data', },
+        # TODO: in case of Tango ValueBuffer type is overridden by DevEncoded
+        'ValueBuffer': {'type': str,
+                        'description': 'Data', },
     }
 
     #: A :obj:`str` representing the controller gender
