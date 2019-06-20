@@ -18,10 +18,14 @@ from qtconsole.rich_jupyter_widget import RichJupyterWidget
 from qtconsole.manager import QtKernelManager
 
 from taurus.qt.qtgui.base import TaurusBaseWidget
+from taurus.qt.qtgui.container import TaurusMainWindow
+from taurus.qt.qtgui.resource import getThemeIcon
 
 from sardana import release
 from sardana.spock.ipython_01_00.genutils import get_profile_metadata, \
     get_ipython_dir, from_name_to_tango, get_macroserver_for_door
+from sardana.taurus.qt.qtgui.extra_macroexecutor import \
+    TaurusMacroConfigurationDialog
 
 
 def get_spock_profile_dir(profile):
@@ -311,11 +315,46 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
             self.reset()
 
 
+class QtSpock(TaurusMainWindow):
+    """A standalone QtSpock window"""
+    def __init__(self, parent=None, designMode=False):
+        super().__init__(parent, designMode)
+        self.spockWidget = QtSpockWidget(parent=self)
+        self.registerConfigDelegate(self.spockWidget)
+        self.spockWidget.setModelInConfig(True)
+        self.setCentralWidget(self.spockWidget)
+        self.configureAction = self.createConfigureAction()
+        self.taurusMenu.addAction(self.configureAction)
+        self.statusBar().showMessage("MacroExecutor ready")
+        self.loadSettings()
+
+    def createConfigureAction(self):
+        configureAction = Qt.QAction(getThemeIcon(
+            "preferences-system-session"), "Change configuration", self)
+        configureAction.triggered.connect(self.changeConfiguration)
+        configureAction.setToolTip("Configuring MacroServer and Door")
+        configureAction.setShortcut("F10")
+        return configureAction
+
+    def changeConfiguration(self):
+        """This method is used to change macroserver as a model of application.
+           It shows dialog with list of all macroservers on tango host, if the
+           user Cancel dialog it doesn't do anything."""
+        dialog = TaurusMacroConfigurationDialog(
+            self, self.spockWidget._macro_server_name,
+            self.modelName)
+        if dialog.exec_():
+            self.spockWidget.setModel(str(dialog.doorComboBox.currentText()))
+        else:
+            return
+
+
 def main():
-    app = Qt.QApplication(sys.argv)
-    widget = QtSpockWidget()
-    widget.show()
-    app.aboutToQuit.connect(widget.shutdown_kernel)
+    from taurus.qt.qtgui.application import TaurusApplication
+    app = TaurusApplication()
+    window = QtSpock()
+    window.show()
+    app.aboutToQuit.connect(window.spockWidget.shutdown_kernel)
     sys.exit(app.exec_())
 
 
