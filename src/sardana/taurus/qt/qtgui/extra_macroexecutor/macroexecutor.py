@@ -287,17 +287,14 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
                     message = "<b>" + txt + "</b> " + e[0]
                     problems.append(message)
             except IndexError:
-                param_info = macro_params_info[counter-1]
-                # Skip validation in case of optional parameters
-                if param_info['default_value'] == Optional:
-                    self.model().setData(self.currentIndex, None)
-                else:
-                    txt = str(ix.sibling(ix.row(), 0).data())
-                    problems.append("<b>" + txt + "</b> is missing!")
+                txt = str(ix.sibling(ix.row(), 0).data())
+                problems.append("<b>" + txt + "</b> is missing!")
 
-                    data = str(ix.data())
-                    if data != 'None':
-                        self.model().setData(self.currentIndex, 'None')
+                data = str(ix.data())
+                if data != 'None':
+                    self.model().setData(self.currentIndex, 'None')
+                else:
+                    self.model().setData(self.currentIndex, None)
             counter += 1
             ix = self.getIndex()
             self.currentIndex = ix
