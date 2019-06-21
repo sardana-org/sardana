@@ -43,8 +43,10 @@ tested.
    participating institute. The master branch is protected, so the reviews need
    to be cleared (or dismissed with an explanation) before the release can be
    merged.
-6. Perform manual tests (see checklist below). You may use the CI artifacts
-   (e.g., from appveyor) and post the results in the comments of the PR.
+6. Create issues for the manual tests on the different operating systems (Debian, CentOS, Windows,
+   and openSuse) with the check list [below](https://github.com/sardana-org/sardana/blob/develop/doc/how_to_release.md).
+   You may use the CI artifacts (e.g., from appveyor) and post the results in the comments
+   of the corresponding issue.
 7. Once all reviews are cleared, update the date of the release in the
    CHANGELOG.md, merge the PR and tag in master.
 8. Check that travis-ci correctly uploaded to PyPI (triggered by a tag push)
