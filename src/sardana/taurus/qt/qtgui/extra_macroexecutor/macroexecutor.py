@@ -265,17 +265,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
         self.currentIndex = ix
         counter = 1
 
-        # Get the parameters information to check if there are optional
-        # paramters
-        ms_obj = self.getModelObj()
-        macro_obj = ms_obj.getElementInfo(mlist[0])
-        macro_params_info = None
-        if macro_obj is not None:
-            macro_params_info = macro_obj.parameters
-
         while not ix == Qt.QModelIndex():
-            if macro_params_info is None:
-                break
             try:
                 propValue = mlist[counter]
                 try:
