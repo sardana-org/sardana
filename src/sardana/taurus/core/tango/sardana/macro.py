@@ -570,7 +570,7 @@ class SingleParamNode(ParamNode):
         Empty list indicates default value."""
         if isinstance(v, list):
             if len(v) == 0:
-                v = self.defValue()
+                v = str(self.defValue())
             elif not isinstance(self.parent(), RepeatNode):
                 msg = "Only members of repeat parameter allow list values"
                 raise ValueError(msg)
