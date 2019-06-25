@@ -257,6 +257,9 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
             "\nThis is a normal ipython kernel. "
             "Spock functionality is not available.\n")
 
+    def runMacro(self, macro_node):
+        self.execute(macro_node.toSpockCommand())
+
     # Adapted from
     # https://github.com/moble/remote_exec/blob/master/remote_exec.py#L61
     def get_value(self, var, timeout=None):
