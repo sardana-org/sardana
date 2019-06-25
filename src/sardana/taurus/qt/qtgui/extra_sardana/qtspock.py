@@ -183,8 +183,14 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
         An empty string or None will start a normal IPython kernel without
         spock functionality.
         """
+        old_door_name = self._door_name
+        old_macroserver_name = self._macro_server_name
         self._set_door_name(door)
         self._set_macro_server_name(door)
+
+        if (self._door_name == old_door_name
+                and self._macro_server_name == old_macroserver_name):
+            return
 
         if self.kernel_manager.has_kernel:
             # RichJupyterWidget.restart_kernel does not support extra arguments

@@ -7,6 +7,10 @@ import re
 import os
 import tempfile
 import numpy as np
+try:
+    from unittest.mock import patch
+except ImportError:
+    from mock import patch
 
 from taurus.external.unittest import TestCase, main
 from taurus.external import qt
@@ -266,6 +270,12 @@ class QtSpockModelTestCase(QtSpockBaseTestCase, CorrectProfileOutputMixin):
 
     def test_is_valid_spock_profile(self):
         self.assertTrue(self.widget.kernel_manager.is_valid_spock_profile)
+
+    def test_setModel_twice_no_restart(self):
+        with patch.object(
+                self.widget.kernel_manager, "restart_kernel", spec=True) as m:
+            self.widget.setModel(UNITTEST_DOOR_NAME)
+            self.assertTrue(not m.called)
 
 
 class QtSpockModelAfterRestartTestCase(
