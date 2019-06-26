@@ -15,7 +15,8 @@ except ImportError:
 from taurus.external.unittest import TestCase, main
 from taurus.external import qt
 from taurus.external.qt import Qt
-from sardana.spock.ipython_01_00.genutils import _create_config_file
+from sardana.spock.ipython_01_00.genutils import _create_config_file, \
+    from_name_to_tango
 from sardana.sardanacustomsettings import UNITTEST_DOOR_NAME
 from sardana.taurus.qt.qtgui.extra_sardana.qtspock import QtSpockWidget, \
     get_spock_profile_dir
@@ -26,6 +27,11 @@ elif qt.PYQT5:
     from PyQt5.QtTest import QTest
 elif qt.PYSIDE:
     from PySide.QtTest import QTest
+
+
+app = Qt.QApplication.instance()
+if not app:
+    app = Qt.QApplication([])
 
 
 def waitFor(predicate, timeout):
@@ -113,16 +119,19 @@ class CorrectProfileOutputMixin(object):
             text = self.widget._control.toPlainText()
             matches = re.findall(r"^Spock \d\.\d", text, re.MULTILINE)
             return len(matches) == 1
-        self.assertTrue(waitFor(predicate, 5000))
+        self.assertTrue(waitFor(predicate, 10000))
 
     def test_spock_prompt(self):
+        full_name, name, alias = from_name_to_tango(UNITTEST_DOOR_NAME)
+        alias = alias or name
+
         def predicate():
             text = self.widget._control.toPlainText()
             matches = re.findall(
-                r"^{}.*\[(\d)\]".format(UNITTEST_DOOR_NAME),
+                r"^{}.*\[(\d)\]".format(alias),
                 text, re.MULTILINE)
             return len(matches) == 1 and matches[0] == "1"
-        self.assertTrue(waitFor(predicate, 5000))
+        self.assertTrue(waitFor(predicate, 10000))
 
 
 class CorrectProfileTestCase(QtSpockTestCase, CorrectProfileOutputMixin):
@@ -335,7 +344,4 @@ class QtSpockModelMissingProfileTestCase(
 
 
 if __name__ == '__main__':
-    app = Qt.QApplication.instance()
-    if not app:
-        app = Qt.QApplication([])
     main()
