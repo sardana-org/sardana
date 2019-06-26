@@ -33,6 +33,7 @@ __docformat__ = 'restructuredtext'
 import sys
 import time
 import uuid
+import math
 import weakref
 import threading
 import os.path as osp
@@ -83,6 +84,10 @@ def _get_console_width():
     except Exception:
         width = float('inf')
     return width
+
+
+def _get_nb_lines(nb_chrs, max_chrs):
+    return int(math.ceil(float(nb_chrs)/max_chrs))
 
 
 class Attr(Logger, EventGenerator):
@@ -720,11 +725,15 @@ class BaseDoor(MacroServerDevice):
                 if line == self.BlockStart:
                     self._in_block = True
                     for i in xrange(self._block_lines):
-                        # erase current line, up one line, erase current line
-                        nr_lines = int(self._len_last_data_line / max_chrs)
-                        if self._len_last_data_line % max_chrs > 0:
-                            nr_lines += 1
-                        o += '\x1b[2K\x1b[1A\x1b[2K' * nr_lines
+                        if max_chrs == float('inf'):
+                            nb_lines = 1
+                        else:
+                            nb_lines = _get_nb_lines(
+                                self._len_last_data_line,
+                                max_chrs)
+                        # per each line: erase current line,
+                        # go up one line and erase current line
+                        o += '\x1b[2K\x1b[1A\x1b[2K' * nb_lines
                     self._block_lines = 0
                     continue
                 elif line == self.BlockFinish:
