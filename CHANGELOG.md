@@ -66,6 +66,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   macros (#1085)
 * Calculation of nb_starts argument of `PrepareOne` method of timerable controllers
   when software synchronization is in use (#1110)
+* Interactive macros on Windows (#347)
 * expconf when empty (unspecified) DataType (#1076)
 * Output block of scan records which do not fit the console width (#924)
 * Fix bug on exception popups in macroexecutor (#1079, #1088)
