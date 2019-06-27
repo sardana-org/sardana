@@ -183,7 +183,7 @@ class senv(Macro):
          ' - <full door name>.<macro name>.<name> - variable value for a '
          'specific macro running on a specific door'],
         ['value_list', [['value', Type.String, None,
-                          'environment value item'], {'min': 1}],
+                         'environment value item'], {'min': 1}],
          None, 'value(s). one item will eval to a single element. More than '
                'one item will eval to a tuple of elements'],
     ]

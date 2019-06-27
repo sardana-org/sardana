@@ -832,8 +832,8 @@ class settimer(Macro):
                 % timer)
 
 
-@macro([['message',[['message_item', Type.String, None,
-                     'message item to be reported']], None,
+@macro([['message', [['message_item', Type.String, None,
+                      'message item to be reported']], None,
          'message to be reported']])
 def report(self, message):
     """Logs a new record into the message report system (if active)"""
