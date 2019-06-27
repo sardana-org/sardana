@@ -46,8 +46,7 @@ import numpy
 from taurus.core.util import SafeEvaluator
 
 from sardana.macroserver.msexception import UnknownEnv
-from sardana.macroserver.macro import Hookable, Macro, Type, ParamRepeat, \
-    Table, List
+from sardana.macroserver.macro import Hookable, Macro, Type, Table, List
 from sardana.macroserver.scan.gscan import SScan, CTScan, HScan, \
     MoveableDesc, CSScan, TScan
 from sardana.util.motion import MotionPath
@@ -491,9 +490,9 @@ class amultiscan(aNscan, Macro):
 
     param_def = [
         ['motor_start_end_list',
-         ParamRepeat(['motor', Type.Moveable, None, 'Moveable to move'],
-                     ['start', Type.Float, None, 'Starting position'],
-                     ['end', Type.Float, None, 'Final position']),
+         [['motor', Type.Moveable, None, 'Moveable to move'],
+          ['start', Type.Float, None, 'Starting position'],
+          ['end', Type.Float, None, 'Final position']],
          None, 'List of motor, start and end positions'],
         ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
         ['integ_time', Type.Float, None, 'Integration time']
@@ -524,9 +523,9 @@ class dmultiscan(dNscan, Macro):
 
     param_def = [
         ['motor_start_end_list',
-         ParamRepeat(['motor', Type.Moveable, None, 'Moveable to move'],
-                     ['start', Type.Float, None, 'Starting position'],
-                     ['end', Type.Float, None, 'Final position']),
+         [['motor', Type.Moveable, None, 'Moveable to move'],
+          ['start', Type.Float, None, 'Starting position'],
+          ['end', Type.Float, None, 'Final position']],
          None, 'List of motor, start and end positions'],
         ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
         ['integ_time', Type.Float, None, 'Integration time']
@@ -861,8 +860,8 @@ motor2 sqrt(y*x+3)
         ['indepvars', Type.String, None, 'Independent Variables'],
         ['integ_time', Type.String, None, 'Integration time'],
         ['motor_funcs',
-         ParamRepeat(['motor', Type.Moveable, None, 'motor'],
-                     ['func', Type.String, None, 'curve defining path']),
+         [['motor', Type.Moveable, None, 'motor'],
+          ['func', Type.String, None, 'curve defining path']],
          None, 'List of motor and path curves']
     ]
 

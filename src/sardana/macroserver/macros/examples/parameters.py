@@ -23,7 +23,7 @@
 
 """This module contains macros that demonstrate the usage of macro parameters"""
 
-from sardana.macroserver.macro import Macro, Type, ParamRepeat
+from sardana.macroserver.macro import Macro, Type
 
 __all__ = ["pt0", "pt1", "pt2", "pt3", "pt3d", "pt4", "pt5", "pt6", "pt7",
            "pt7d1", "pt7d2", "pt8", "pt9", "pt10", "pt11", "pt12", "pt13",
@@ -261,9 +261,9 @@ class pt9(Macro):
     """
 
     param_def = [
-        ['m_p_pair',
-         ParamRepeat(['motor', Type.Motor, None, 'Motor to move'],
-                     ['pos',  Type.Float, None, 'Position to move to'], min=1, max=2),
+        ['m_p_pair', [['motor', Type.Motor, None, 'Motor to move'],
+                      ['pos',  Type.Float, None, 'Position to move to'],
+                      {'min': 1, 'max': 2}],
          None, 'List of motor/position pairs'],
     ]
 

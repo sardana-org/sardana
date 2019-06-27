@@ -38,7 +38,7 @@ __docformat__ = 'restructuredtext'
 
 import numpy
 
-from sardana.macroserver.macro import Macro, Hookable, Type, ParamRepeat
+from sardana.macroserver.macro import Macro, Hookable, Type
 from sardana.macroserver.scan import *
 
 
@@ -294,8 +294,9 @@ class regscan(Macro):
         ['integ_time', Type.Float,    None, 'Integration time'],
         ['start_pos',  Type.Float,    None, 'Start position'],
         ['step_region',
-         ParamRepeat(['next_pos',  Type.Float,   None, 'next position'],
-                     ['region_nr_intervals',  Type.Float,   None, 'Region number of intervals']),
+         [['next_pos',  Type.Float,   None, 'next position'],
+          ['region_nr_intervals',  Type.Float,   None,
+           'Region number of intervals']],
          None, 'List of tuples: (next_pos, region_nr_intervals']
     ]
 
@@ -355,8 +356,9 @@ class reg2scan(Macro):
         ['integ_time', Type.Float,    None, 'Integration time'],
         ['start_pos',  Type.Float,    None, 'Start position'],
         ['step_region',
-         ParamRepeat(['next_pos',  Type.Float,   None, 'next position'],
-                     ['region_nr_intervals',  Type.Float,   None, 'Region number of intervals']),
+         [['next_pos', Type.Float, None, 'next position'],
+          ['region_nr_intervals', Type.Float, None,
+           'Region number of intervals']],
          None, 'List of tuples: (next_pos, region_nr_intervals']
     ]
 
@@ -420,8 +422,9 @@ class reg3scan(Macro):
         ['integ_time', Type.Float,    None, 'Integration time'],
         ['start_pos',  Type.Float,    None, 'Start position'],
         ['step_region',
-         ParamRepeat(['next_pos',  Type.Float,   None, 'next position'],
-                     ['region_nr_intervals',  Type.Float,   None, 'Region number of intervals']),
+         [['next_pos',  Type.Float,   None, 'next position'],
+          ['region_nr_intervals',  Type.Float,   None,
+           'Region number of intervals']],
          None, 'List of tuples: (next_pos, region_nr_intervals']
     ]
 
