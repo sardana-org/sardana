@@ -340,7 +340,7 @@ class QtSpock(TaurusMainWindow):
         self.setCentralWidget(self.spockWidget)
         self.configureAction = self.createConfigureAction()
         self.taurusMenu.addAction(self.configureAction)
-        self.statusBar().showMessage("MacroExecutor ready")
+        self.statusBar().showMessage("QtSpock ready")
         self.loadSettings()
 
     def createConfigureAction(self):
