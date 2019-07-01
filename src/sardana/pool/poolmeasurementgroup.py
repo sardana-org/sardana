@@ -206,6 +206,16 @@ class ControllerConfiguration(ConfigurationItem):
                 self._channels_disabled = []
             self._channels_disabled.append(channel_item)
 
+    def remove_channel(self, channel_item):
+        """Remove a channel configuration item."""
+        self._channels.remove(channel_item)
+        if channel_item.enabled:
+            self._channels_enabled.remove(channel_item)
+            if len(self._channels_enabled) == 0:
+                self.enabled = False
+        else:
+            self._channels_disabled.remove(channel_item)
+
     def update_state(self):
         """Update internal state based on the aggregated channels."""
         self.enabled = False
@@ -444,7 +454,7 @@ class MeasurementConfiguration(object):
         self._master_monitor_sw_start = None
         self._label = None
         self._description = None
-        self._user_confg = {}
+        self._user_config = {}
         self._channel_acq_synch = {}
         self._ctrl_acq_synch = {}
         self.changed = False
@@ -589,7 +599,7 @@ class MeasurementConfiguration(object):
 
     def get_configuration_for_user(self):
         """Return measurement configuration serializable data structure."""
-        return self._user_confg
+        return self._user_config
 
     def set_configuration_from_user(self, cfg, to_fqdn=True):
         """Load measurement configuration from serializable data structure."""
@@ -729,6 +739,7 @@ class MeasurementConfiguration(object):
                 else:
                     if to_fqdn:
                         ch_name = _to_fqdn(ch_name, logger=self._parent)
+                        ch_data['full_name'] = ch_name
                     channel = pool.get_element_by_full_name(ch_name)
                 ch_data = self._fill_channel_data(channel, ch_data)
                 user_config_channel[ch_name] = ch_data
@@ -857,7 +868,7 @@ class MeasurementConfiguration(object):
         self._master_monitor_sw = master_monitor_sw
         self._master_timer_sw_start = master_timer_sw_start
         self._master_monitor_sw_start = master_monitor_sw_start
-        self._user_confg = user_config
+        self._user_config = user_config
         self._channel_acq_synch = channel_acq_synch
         self._ctrl_acq_synch = ctrl_acq_synch
 
@@ -874,10 +885,10 @@ class MeasurementConfiguration(object):
     def _fill_channel_data(self, channel, channel_data):
         """Fill channel default values for the given channel dictionary"""
         name = channel.name
-        full_name = channel.full_name
-        source = channel.get_source()
-        ndim = None
         ctype = channel.get_type()
+        full_name = channel.full_name
+        # choose ndim
+        ndim = None
         if ctype == ElementType.CTExpChannel:
             ndim = 0
         elif ctype == ElementType.PseudoCounter:
@@ -895,12 +906,15 @@ class MeasurementConfiguration(object):
         elif ctype == ElementType.IORegister:
             ndim = 0
 
+        if ctype != ElementType.External and channel.is_referable():
+            value_ref_enabled = channel_data.get('value_ref_enabled', False)
+            channel_data['value_ref_enabled'] = value_ref_enabled
         # Definitively should be initialized by measurement group
         # index MUST be here already (asserting this in the following line)
         channel_data['index'] = channel_data['index']
         channel_data['name'] = channel_data.get('name', name)
         channel_data['full_name'] = channel_data.get('full_name', full_name)
-        channel_data['source'] = channel_data.get('source', source)
+        channel_data['source'] = channel.get_source()
         channel_data['enabled'] = channel_data.get('enabled', True)
         channel_data['label'] = channel_data.get('label', channel_data['name'])
         channel_data['ndim'] = ndim

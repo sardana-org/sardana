@@ -91,6 +91,10 @@ Glossary
             >>> sum(i*i for i in range(10))       # sum of squares 0, 1, 4, ... 81
             285
 
+    IDE
+        Integrated Development Environment is a software application that provides
+        comprehensive facilities to computer programmers for software development.
+
     interactive
         Python has an interactive interpreter which means you can enter
         statements and expressions at the interpreter prompt, immediately

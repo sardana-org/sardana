@@ -172,6 +172,11 @@ def sar_demo(self):
         self.print("Creating trigger element", tg_name, "...")
         self.defelem(tg_name, tg_ctrl_name, axis)
 
+    ct_ctrl = self.getController(ct_ctrl_name)
+    ct_ctrl.getAttribute("synchronizer").write(tg_name)
+    self.print("Connecting trigger/gate element", tg_name,
+               "with counter/timer controller", ct_ctrl_name)
+
     self.print("Creating IORegister controller", ior_ctrl_name, "...")
     self.defctrl("DummyIORController", ior_ctrl_name)
     for axis, ior_name in enumerate(ior_names, 1):

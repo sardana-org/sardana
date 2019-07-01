@@ -114,7 +114,7 @@ class ParamParser:
     def _expect(self, toktype):
         """Consume next token if it matches toktype or raise SyntaxError"""
         if not self._accept(toktype):
-            raise SyntaxError("Expected " + toktype)
+            raise ParseError("Expected " + toktype)
 
     # Grammar rules follow
 
@@ -169,7 +169,11 @@ class ParamParser:
         :return: parameter value
         :rtype: str
         """
-        if self._accept("QUOTEDPARAM"):
+        if self._accept("LPAREN"):
+            # empty brackets will be interpreted as a default value
+            self._expect("RPAREN")
+            param = []
+        elif self._accept("QUOTEDPARAM"):
             # quoted parameters allows using quotes escaped by \\
             string = self.tok.value
             string = string.replace('\\"', '"')

@@ -276,6 +276,12 @@ class MacroExecutionWindow(TaurusMainWindow):
         self.splashScreen().finish(self)
         self.doorChanged.connect(self.onDoorChanged)
 
+    def contextMenuEvent(self, event):
+        """Reimplemented to show self.taurusMenu in as a context Menu
+        See https://github.com/taurus-org/taurus/pull/906
+        """
+        self.taurusMenu.exec_(event.globalPos())
+
     def doorName(self):
         return self._doorName
 

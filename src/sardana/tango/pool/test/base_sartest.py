@@ -23,12 +23,27 @@
 ##
 ##############################################################################
 
+import PyTango
 import taurus
 
 from sardana.tango.pool.test import BasePoolTestCase
 
 
 __all__ = ['SarTestTestCase']
+
+
+def _cleanup_device(dev_name):
+    factory = taurus.Factory()
+    device = taurus.Device(dev_name)
+    # tango_alias_devs contains any names in which we have referred
+    # to the device, could be alias, short name, etc. pop all of them
+    for k, v in factory.tango_alias_devs.items():
+        if v is device:
+            factory.tango_alias_devs.pop(k)
+    full_name = device.getFullName()
+    if full_name in factory.tango_devs:
+        factory.tango_devs.pop(full_name)
+    device.cleanUp()
 
 
 class SarTestTestCase(BasePoolTestCase):
@@ -73,8 +88,15 @@ class SarTestTestCase(BasePoolTestCase):
          "IoverI0=_test_pc_1_1")
     ]
 
-    def setUp(self):
-        BasePoolTestCase.setUp(self)
+    def setUp(self, pool_properties=None):
+        BasePoolTestCase.setUp(self, pool_properties)
+
+        # due to problems with factory cleanup in Taurus 3
+        # we must skip these tests temporarily, whenever Taurus 3 support will
+        # be dropped, re-enable them
+        if taurus.core.release.version_info[0] < 4:
+            self.skipTest("Taurus 3 has problems with factory cleanup")
+
 
         self.ctrl_list = []
         self.elem_list = []
@@ -85,6 +107,11 @@ class SarTestTestCase(BasePoolTestCase):
                 ctrl_name = prefix + "_ctrl_%s" % (postfix)
                 try:
                     self.pool.CreateController([sar_type, lib, cls, ctrl_name])
+                    if cls in ("DummyCounterTimerController",
+                               "DummyTwoDController"):
+                        ctrl = PyTango.DeviceProxy(ctrl_name)
+                        # use the first trigger/gate element by default
+                        ctrl.write_attribute("Synchronizer", "_test_tg_1_1")
                 except Exception, e:
                     print e
                     msg = 'Impossible to create ctrl: "%s"' % (ctrl_name)
@@ -139,7 +166,7 @@ class SarTestTestCase(BasePoolTestCase):
             # Persisting taurus device may react on API_EventTimeouts, enabled
             # polling, etc.
             if elem_name in f.tango_alias_devs:
-                taurus.Device(elem_name).cleanUp()
+                _cleanup_device(elem_name)
             try:
                 self.pool.DeleteElement(elem_name)
             except:
@@ -151,12 +178,14 @@ class SarTestTestCase(BasePoolTestCase):
             # devices are created and destroyed within the testsuite.
             # Persisting taurus device may react on API_EventTimeouts, enabled
             # polling, etc.
-            if elem_name in f.tango_alias_devs:
-                taurus.Device(elem_name).cleanUp()
+            if ctrl_name in f.tango_alias_devs:
+                _cleanup_device(ctrl_name)
             try:
                 self.pool.DeleteElement(ctrl_name)
             except:
                 dirty_ctrls.append(ctrl_name)
+
+        _cleanup_device(self.pool_name)
 
         BasePoolTestCase.tearDown(self)
 

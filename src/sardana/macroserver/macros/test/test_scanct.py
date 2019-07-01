@@ -165,18 +165,65 @@ class ScanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
         RunStopMacroTestCase.tearDown(self)
 
 
-mg_config1 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger)]]
-mg_config2 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),
-               ('_test_ct_1_2', '_test_tg_1_1', AcqSynchType.Trigger)]
-              ]
-mg_config3 = [[('_test_ct_1_1', 'software', AcqSynchType.Trigger)],
-              [('_test_ct_2_1', '_test_tg_1_1', AcqSynchType.Trigger)]
-              ]
-mg_config4 = [[('_test_ct_1_1', 'software', AcqSynchType.Trigger)],
-              [('_test_ct_2_1', 'software', AcqSynchType.Trigger)]
-              ]
-
-
+mg_config1 = {
+    "_test_ct_ctrl_1": {
+        "synchronizer": "_test_tg_1_1",
+        "synchronization": AcqSynchType.Trigger,
+        "channels": {
+            "_test_ct_1_1": {
+                "index": 0
+            },
+        }
+    },
+}
+mg_config2 = {
+    "_test_ct_ctrl_1": {
+        "synchronizer": "_test_tg_1_1",
+        "synchronization": AcqSynchType.Trigger,
+        "channels": {
+            "_test_ct_1_1": {
+                "index": 0
+            },
+            "_test_ct_1_2": {
+                "index": 1
+            }
+        }
+    },
+}
+mg_config3 = {
+    "_test_ct_ctrl_1": {
+        "synchronizer": "software",
+        "synchronization": AcqSynchType.Trigger,
+        "channels": {
+            "_test_ct_1_1": {
+                "index": 0
+            },
+        }
+    },
+    "_test_ct_ctrl_2": {
+        "synchronizer": "_test_tg_1_1",
+        "synchronization": AcqSynchType.Trigger,
+        "channels": {
+            "_test_ct_2_1": {
+                "index": 1
+            },
+        }
+    }
+}
+mg_config4 = {
+    "_test_ct_ctrl_1": {
+        "synchronizer": "software",
+        "synchronization": AcqSynchType.Trigger,
+        "channels": {
+            "_test_ct_1_1": {
+                "index": 0
+            },
+            "_test_ct_1_2": {
+                "index": 1
+            }
+        }
+    }
+}
 ascanct_params_1 = ['_test_mt_1_1', '0', '10', '100', '0.1']
 
 

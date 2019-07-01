@@ -12,7 +12,7 @@ The basics
 An example of a hypothetical *Springfield* motor controller will be build
 incrementally from scratch to aid in the explanation.
 
-By now you should have read the general controller basics chapter. You should
+By now you should have read :ref:`the general controller basics <sardana-controller-api>` chapter. You should
 now have a MotorController with a proper constructor, add and delete axis methods:
 
 .. code-block:: python

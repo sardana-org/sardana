@@ -34,7 +34,7 @@ __docformat__ = 'restructuredtext'
 
 from taurus.console import Alignment
 from taurus.console.list import List
-from sardana.macroserver.macro import *
+from sardana.macroserver.macro import Macro, Type, ParamRepeat, ViewOption
 
 Left, Right, HCenter = Alignment.Left, Alignment.Right, Alignment.HCenter
 
@@ -94,7 +94,14 @@ class lsdef(_ls):
         for m in self.getMacros(filter):
             if m.name.startswith("_"):
                 continue
-            out.appendRow([m.name, m.module_name, m.get_brief_description()])
+            desc_length = self.getViewOption(ViewOption.DescriptionLength)
+            description = m.get_brief_description(max_chars=desc_length)
+            if len(description) < 61:
+                out.appendRow([m.name, m.module_name, description])
+            else:
+                out.appendRow([m.name, m.module_name, description[0:60]])
+                for i in range(1, len(description)/60 + 1):
+                    out.appendRow(["", "", description[60*i:60*(i+1)]])
 
         for line in out.genOutput():
             self.output(line)
@@ -108,6 +115,8 @@ class _lsobj(_ls):
     width = -1,     -1,           -1,     -1  # ,      -1
     align = Right,  Right,        Right,  Right  # ,   Right
 
+    show_overwritten_msg = False
+
     def objs(self, filter):
         return self.findObjs(filter, type_class=self.type, subtype=self.subtype,
                              reserve=False)
@@ -118,6 +127,13 @@ class _lsobj(_ls):
         for col in cols:
             if col == 'controller':
                 value = self.getController(o.controller).name
+            elif col == 'name':
+                isoverwritten = getattr(o, "isoverwritten", False)
+                value = getattr(o, col)
+                if isoverwritten is True:
+                    value = "[*] " + value
+                    if self.show_overwritten_msg is False:
+                        self.show_overwritten_msg = True
             else:
                 value = getattr(o, col)
                 if value is None:
@@ -148,8 +164,13 @@ class _lsobj(_ls):
                 out.appendRow(self.obj2Row(obj))
             except:
                 pass
+
         for line in out.genOutput():
             self.output(line)
+
+        if (self.show_overwritten_msg is True
+            and hasattr(self, "overwritten_msg")):
+            self.warning(self.overwritten_msg)
 
 
 class lsm(_lsobj):
@@ -260,6 +281,10 @@ class lsmac(_lsobj):
 
     type = Type.MacroCode
     cols = 'Name', ('Location', 'file_path')
+    overwritten_msg = ("\nNote: if [*] is present together with the macro "
+                       + "name means that a macro with the same name \nis "
+                       + "defined in other module with less precedence and "
+                       + "it has been overwritten.")
 
 
 class lsmaclib(_lsobj):

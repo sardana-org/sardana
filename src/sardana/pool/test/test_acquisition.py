@@ -25,9 +25,12 @@
 import time
 import threading
 
+import numpy
+
 from taurus.external.unittest import TestCase
 from taurus.test import insertTest
 
+from sardana.sardanautils import is_number, is_pure_str
 from sardana.pool import AcqSynch, AcqMode
 from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.pool.poolsynchronization import PoolSynchronization
@@ -42,6 +45,9 @@ from sardana.pool.test import createControllerConfiguration, \
 
 class AcquisitionTestCase(BasePoolTestCase):
 
+    CHANNEL_NAME = None  # Override this!
+    SYNCHRONIZATION = None  # Override this!
+
     def setUp(self):
         """Create dummy controllers and elements."""
         BasePoolTestCase.setUp(self)
@@ -49,11 +55,11 @@ class AcquisitionTestCase(BasePoolTestCase):
         self.synchronization = None
         self.data_listener = AttributeListener()
         self.main_element = FakeElement(self.pool)
-        self.tg_1_1 = self.tgs['_test_tg_1_1']
-        self.tg_ctrl_1 = self.tg_1_1.get_controller()
-        self.ct_1_1 = self.cts['_test_ct_1_1']
-        self.ct_ctrl_1 = self.ct_1_1.get_controller()
-        self.channel_names = ['_test_ct_1_1']
+        self.tg = self.tgs['_test_tg_1_1']
+        self.tg_ctrl = self.tg.get_controller()
+        self.channel = self.exp_channels[self.CHANNEL_NAME]
+        self.channel_ctrl = self.channel.get_controller()
+        self.channel_names = [self.CHANNEL_NAME]
 
     def create_action(self, class_, elements):
         action = class_(self.main_element)
@@ -65,30 +71,49 @@ class AcquisitionTestCase(BasePoolTestCase):
         for chn in chn_list:
             chn.add_listener(self.data_listener)
 
+    def _prepare(self, integ_time, repetitions, latency_time, nb_starts):
+        pass
+
+    def prepare(self, integ_time, repetitions, latency_time, nb_starts):
+        self.channel_ctrl.set_ctrl_par("synchronization",
+                                       self.SYNCHRONIZATION)
+        self._prepare(integ_time, repetitions, latency_time, nb_starts)
+        self.channel_ctrl.ctrl.PrepareOne(self.channel.axis, integ_time,
+                                          repetitions, latency_time,
+                                          nb_starts)
+
     def wait_finish(self):
         # waiting for acquisition and synchronization to finish
         while (self.acquisition.is_running()
                or self.synchronization.is_running()):
             time.sleep(.1)
 
-    def do_asserts(self, repetitions, jobs_before):
-        # print acquisition records
+    def do_asserts(self, repetitions, jobs_before, strict=True):
         table = self.data_listener.get_table()
         header = table.dtype.names
-        print header
-        n_rows = table.shape[0]
-        for row in xrange(n_rows):
-            print row, table[row]
         # checking if all channels produced data
         for channel in self.channel_names:
             msg = 'data from channel %s were not acquired' % channel
             self.assertIn(channel, header, msg)
-        # checking if all the data were acquired
+        # checking if data were acquired
         for ch_name in header:
             ch_data_len = len(table[ch_name])
-            msg = 'length of data for channel %s is %d and should be %d' %\
-                (ch_name, ch_data_len, repetitions)
-            self.assertEqual(ch_data_len, repetitions, msg)
+            if strict:
+                msg = ('length of data for channel %s is %d and should be '
+                       '%d' % (ch_name, ch_data_len, repetitions))
+                self.assertEqual(repetitions, ch_data_len, msg)
+            else:
+                msg = ('length of data for channel %s is %d and should <= '
+                       '%d' % (ch_name, ch_data_len, repetitions))
+                self.assertGreaterEqual(repetitions, ch_data_len, msg)
+            for value in table[ch_name]:
+                if (isinstance(value, numpy.ndarray)
+                        or is_number(value)
+                        or is_pure_str(value)):
+                    break
+            else:
+                raise AssertionError('channel %s does not report any '
+                                     'valid data')
         # checking if there are no pending jobs
         jobs_after = get_thread_pool().qsize
         msg = ('there are %d jobs pending to be done after the acquisition ' +
@@ -120,6 +145,8 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
     elements to corresponding sub-actions) and the PoolMeasurementGroup (it
     configures the elements and controllers).
     """
+
+    CHANNEL_NAME = "_test_ct_1_1"
 
     def setUp(self):
         """Create a Controller, TriggerGate and PoolSynchronization objects from
@@ -219,10 +246,9 @@ class DummyAcquisitionTestCase(AcquisitionTestCase, TestCase):
         TestCase.tearDown(self)
 
 
-@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
-            latency_time=0.02)
-class AcquisitionSoftwareStartTestCase(AcquisitionTestCase, TestCase):
-    """Integration test of PoolSynchronization and PoolAcquisitionHardware"""
+class BaseAcquisitionSoftwareTestCase(AcquisitionTestCase):
+    """Base class for integration tests of PoolSynchronization and
+    PoolAcquisitionSoftware"""
 
     def setUp(self):
         """Create test actors (controllers and elements)"""
@@ -233,32 +259,49 @@ class AcquisitionSoftwareStartTestCase(AcquisitionTestCase, TestCase):
         """Callback to execute software start acquisition."""
         _, type_, value = args
         name = type_.name
-        if name != "start":
-            return
-        args = self.acq_args
-        kwargs = self.acq_kwargs
-        get_thread_pool().add(self.acquisition.run, None, *args, **kwargs)
+        if name == "active":
+            if self.acq_busy.is_set():
+                # skipping acquisition cause the previous on is ongoing
+                return
+            else:
+                self.acq_busy.set()
+                acq_args = list(self.acq_args)
+                acq_kwargs = self.acq_kwargs
+                index = value
+                acq_args[3] = index
+                get_thread_pool().add(self.acquisition.run,
+                                      None,
+                                      *acq_args,
+                                      **acq_kwargs)
 
     def acquire(self, integ_time, repetitions, latency_time):
         """Acquire with a dummy C/T synchronized by a hardware start
         trigger from a dummy T/G."""
-        self.ct_ctrl_1.set_ctrl_par("synchronization", AcqSynch.SoftwareStart)
-
-        conf_ct_ctrl_1 = createTimerableControllerConfiguration(self.ct_ctrl_1,
-                                                                [self.ct_1_1])
+        self.prepare(integ_time, repetitions, latency_time, 1)
+        conf_ct_ctrl_1 = createTimerableControllerConfiguration(
+            self.channel_ctrl, [self.channel])
         ctrls = get_timerable_ctrls([conf_ct_ctrl_1], AcqMode.Timer)
         master = ctrls[0].master
         # creating synchronization action
         self.synchronization = self.create_action(PoolSynchronization,
-                                                  [self.tg_1_1])
+                                                  [self.tg])
         self.synchronization.add_listener(self)
         # add_listeners
-        self.add_listeners([self.ct_1_1])
+        self.add_listeners([self.channel])
         # creating acquisition actions
-        self.acquisition = self.create_action(PoolAcquisitionSoftwareStart,
-                                              [self.ct_1_1])
-
-        self.acq_args = (ctrls, integ_time, master, repetitions, 0)
+        self.acquisition = self.create_action(PoolAcquisitionSoftware,
+                                              [self.channel])
+        # Since we deposit the software acquisition action on the PoolThread's
+        # queue we can not rely on the action's state - one may still wait
+        # in the queue (its state has not changed to running yet) and we would
+        # be depositing another one. This way we may be starting multiple
+        # times the same action (with the same elements involved), what results
+        # in "already involved in operation" errors.
+        # Use an external Event flag to mark if we have any software
+        # acquisition action pending.
+        self.acq_busy = threading.Event()
+        self.acquisition.add_finish_hook(self.acq_busy.clear)
+        self.acq_args = (ctrls, integ_time, master, None)
         self.acq_kwargs = {}
 
         total_interval = integ_time + latency_time
@@ -273,16 +316,72 @@ class AcquisitionSoftwareStartTestCase(AcquisitionTestCase, TestCase):
         jobs_before = get_thread_pool().qsize
         self.synchronization.run([], synchronization)
         self.wait_finish()
-        self.do_asserts(repetitions, jobs_before)
+        self.do_asserts(repetitions, jobs_before, strict=False)
 
     def tearDown(self):
         AcquisitionTestCase.tearDown(self)
         TestCase.tearDown(self)
 
 
-@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
-            latency_time=0.02)
-class AcquisitionHardwareStartTestCase(AcquisitionTestCase, TestCase):
+class BaseAcquisitionSoftwareStartTestCase(AcquisitionTestCase):
+    """Base class for integration tests of PoolSynchronization and
+    PoolAcquisitionSoftwareStart"""
+
+    SYNCHRONIZATION = AcqSynch.SoftwareStart
+
+    def setUp(self):
+        """Create test actors (controllers and elements)"""
+        TestCase.setUp(self)
+        AcquisitionTestCase.setUp(self)
+
+    def event_received(self, *args, **kwargs):
+        """Callback to execute software start acquisition."""
+        _, type_, value = args
+        name = type_.name
+        if name == "start":
+            get_thread_pool().add(self.acquisition.run, None,
+                                  *self.acq_args,
+                                  **self.acq_kwargs)
+
+    def acquire(self, integ_time, repetitions, latency_time):
+        """Acquire with a dummy C/T synchronized by a hardware start
+        trigger from a dummy T/G."""
+        self.prepare(integ_time, repetitions, latency_time, 1)
+        conf_ct_ctrl_1 = createTimerableControllerConfiguration(
+            self.channel_ctrl, [self.channel])
+        ctrls = get_timerable_ctrls([conf_ct_ctrl_1], AcqMode.Timer)
+        master = ctrls[0].master
+        # creating synchronization action
+        self.synchronization = self.create_action(PoolSynchronization,
+                                                  [self.tg])
+        self.synchronization.add_listener(self)
+        # add_listeners
+        self.add_listeners([self.channel])
+        # creating acquisition actions
+        self.acquisition = self.create_action(PoolAcquisitionSoftwareStart,
+                                              [self.channel])
+        self.acq_args = (ctrls, integ_time, master, repetitions, latency_time)
+        self.acq_kwargs = {}
+
+        total_interval = integ_time + latency_time
+        group = {
+            SynchParam.Delay: {SynchDomain.Time: 0},
+            SynchParam.Active: {SynchDomain.Time: integ_time},
+            SynchParam.Total: {SynchDomain.Time: total_interval},
+            SynchParam.Repeats: repetitions
+        }
+        synchronization = [group]
+        # get the current number of jobs
+        jobs_before = get_thread_pool().qsize
+        self.synchronization.run([], synchronization)
+        self.wait_finish()
+        self.do_asserts(repetitions, jobs_before, strict=False)
+
+    def tearDown(self):
+        AcquisitionTestCase.tearDown(self)
+
+
+class BaseAcquisitionHardwareTestCase(AcquisitionTestCase):
     """Integration test of PoolSynchronization and PoolAcquisitionHardware"""
 
     def setUp(self):
@@ -293,20 +392,20 @@ class AcquisitionHardwareStartTestCase(AcquisitionTestCase, TestCase):
     def acquire(self, integ_time, repetitions, latency_time):
         """Acquire with a dummy C/T synchronized by a hardware start
         trigger from a dummy T/G."""
-        self.ct_ctrl_1.set_ctrl_par("synchronization", AcqSynch.HardwareStart)
+        self.prepare(integ_time, repetitions, latency_time, 1)
         conf_ct_ctrl_1 = createTimerableControllerConfiguration(
-            self.ct_ctrl_1, [self.ct_1_1])
+            self.channel_ctrl, [self.channel])
         ctrls = get_timerable_ctrls([conf_ct_ctrl_1], AcqMode.Timer)
-        conf_tg_ctrl_1 = createControllerConfiguration(self.tg_ctrl_1,
-                                                       [self.tg_1_1])
+        conf_tg_ctrl_1 = createControllerConfiguration(self.tg_ctrl,
+                                                       [self.tg])
         synch_ctrls = get_acq_ctrls([conf_tg_ctrl_1])
         self.synchronization = self.create_action(PoolSynchronization,
-                                                  [self.tg_1_1])
+                                                  [self.tg])
         # add data listeners
-        self.add_listeners([self.ct_1_1])
+        self.add_listeners([self.channel])
         # creating acquisition actions
         self.acquisition = self.create_action(PoolAcquisitionHardware,
-                                              [self.ct_1_1])
+                                              [self.channel])
         self.acq_args = ([conf_ct_ctrl_1], integ_time, repetitions)
         # prepare synchronization description
         total_interval = integ_time + latency_time
@@ -327,3 +426,301 @@ class AcquisitionHardwareStartTestCase(AcquisitionTestCase, TestCase):
     def tearDown(self):
         AcquisitionTestCase.tearDown(self)
         TestCase.tearDown(self)
+
+
+@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
+            latency_time=0.02)
+class AcquisitionCTSoftwareTriggerTestCase(BaseAcquisitionSoftwareTestCase,
+                                           TestCase):
+    """Integration test of PoolSynchronization and PoolAcquisitionSoftware
+    with dummy CT channel synchronized by software trigger."""
+
+    CHANNEL_NAME = "_test_ct_1_1"
+    SYNCHRONIZATION = AcqSynch.SoftwareTrigger
+
+
+@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
+            latency_time=0.02)
+class Acquisition2DSoftwareTriggerTestCase(BaseAcquisitionSoftwareTestCase,
+                                           TestCase):
+    """Integration test of PoolSynchronization and PoolAcquisitionSoftware
+    with dummy 2D channel synchronized by software trigger."""
+
+    CHANNEL_NAME = "_test_2d_1_1"
+    SYNCHRONIZATION = AcqSynch.SoftwareTrigger
+
+    def setUp(self):
+        """Create test actors (controllers and elements)"""
+        TestCase.setUp(self)
+        AcquisitionTestCase.setUp(self)
+        self.data_listener = AttributeListener(dtype=object,
+                                               attr_name="valuebuffer")
+
+
+@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
+            latency_time=0.1)
+class Acquisition2DSoftwareTriggerRefTestCase(BaseAcquisitionSoftwareTestCase,
+                                              TestCase):
+    """Integration test of PoolSynchronization and PoolAcquisitionHardware
+    with dummy 2D channel synchronized by software trigger and configured to
+    report value reference.
+    """
+    CHANNEL_NAME = "_test_2d_1_1"
+    SYNCHRONIZATION = AcqSynch.SoftwareTrigger
+
+    def setUp(self):
+        """Create test actors (controllers and elements)"""
+        TestCase.setUp(self)
+        AcquisitionTestCase.setUp(self)
+        self.data_listener = AttributeListener(dtype=object,
+                                               attr_name="valuerefbuffer")
+
+    def _prepare(self, integ_time, repetitions, latency_time, nb_starts):
+        self.channel.value_ref_enabled = True
+        axis = self.channel.axis
+        self.channel_ctrl.set_axis_par(axis, "value_ref_enabled", True)
+
+
+@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
+            latency_time=0.1)
+class AcquisitionCTSoftwareStartTestCase(
+        BaseAcquisitionSoftwareStartTestCase, TestCase):
+    """Integration test of PoolSynchronization and PoolAcquisitionHardware
+    with dummy CT channel synchronized by software start.
+    """
+
+    CHANNEL_NAME = "_test_ct_1_1"
+
+    def setUp(self):
+        """Create test actors (controllers and elements)"""
+        TestCase.setUp(self)
+        AcquisitionTestCase.setUp(self)
+        self.data_listener = AttributeListener(dtype=object,
+                                               attr_name="valuebuffer")
+
+
+@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
+            latency_time=0.1)
+class Acquisition2DSoftwareStartTestCase(
+        BaseAcquisitionSoftwareStartTestCase, TestCase):
+    """Integration test of PoolSynchronization and PoolAcquisitionHardware
+    with dummy 2D channel synchronized by software start.
+    """
+
+    CHANNEL_NAME = "_test_2d_1_1"
+
+    def setUp(self):
+        """Create test actors (controllers and elements)"""
+        TestCase.setUp(self)
+        AcquisitionTestCase.setUp(self)
+        self.data_listener = AttributeListener(dtype=object,
+                                               attr_name="valuebuffer")
+
+    def _prepare(self, integ_time, repetitions, latency_time, nb_starts):
+        axis = self.channel.axis
+        self.channel_ctrl.set_axis_par(axis, "value_ref_enabled", False)
+        self.channel.value_ref_enabled = False
+
+
+@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
+            latency_time=0.1)
+class Acquisition2DSoftwareStartRefTestCase(
+        BaseAcquisitionSoftwareStartTestCase, TestCase):
+    """Integration test of PoolSynchronization and PoolAcquisitionHardware
+    with dummy 2D channel synchronized by software start and configured to
+    report value reference.
+    """
+    CHANNEL_NAME = "_test_2d_1_1"
+
+    def setUp(self):
+        """Create test actors (controllers and elements)"""
+        TestCase.setUp(self)
+        AcquisitionTestCase.setUp(self)
+        self.data_listener = AttributeListener(dtype=object,
+                                               attr_name="valuerefbuffer")
+
+    def _prepare(self, integ_time, repetitions, latency_time, nb_starts):
+        self.channel.value_ref_enabled = True
+        axis = self.channel.axis
+        self.channel_ctrl.set_axis_par(axis, "value_ref_enabled", True)
+
+
+@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
+            latency_time=0.02)
+class AcquisitionCTHardwareStartTestCase(BaseAcquisitionHardwareTestCase,
+                                         TestCase):
+    """Integration test of PoolSynchronization and PoolAcquisitionHardware
+    with dummy CT channel synchronized by hardware start.
+    """
+    CHANNEL_NAME = "_test_ct_1_1"
+    SYNCHRONIZATION = AcqSynch.HardwareStart
+
+    def setUp(self):
+        """Create test actors (controllers and elements)"""
+        TestCase.setUp(self)
+        AcquisitionTestCase.setUp(self)
+        self.data_listener = AttributeListener(dtype=object,
+                                               attr_name="valuebuffer")
+
+
+@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
+            latency_time=0.02)
+class Acquisition2DHardwareStartTestCase(BaseAcquisitionHardwareTestCase,
+                                         TestCase):
+    """Integration test of PoolSynchronization and PoolAcquisitionHardware
+    with dummy 2D channel synchronized by hardware start.
+    """
+    CHANNEL_NAME = "_test_2d_1_1"
+    SYNCHRONIZATION = AcqSynch.HardwareStart
+
+    def setUp(self):
+        """Create test actors (controllers and elements)"""
+        TestCase.setUp(self)
+        AcquisitionTestCase.setUp(self)
+        self.data_listener = AttributeListener(dtype=object,
+                                               attr_name="valuebuffer")
+
+
+@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
+            latency_time=0.02)
+class Acquisition2DHardwareStartRefTestCase(
+        BaseAcquisitionHardwareTestCase, TestCase):
+    """Integration test of PoolSynchronization and PoolAcquisitionHardware
+    with dummy 2D channel synchronized by hardware start and configured to
+    report value reference.
+    """
+    CHANNEL_NAME = "_test_2d_1_1"
+    SYNCHRONIZATION = AcqSynch.HardwareStart
+
+    def setUp(self):
+        """Create test actors (controllers and elements)"""
+        TestCase.setUp(self)
+        AcquisitionTestCase.setUp(self)
+        self.channel_ctrl.set_log_level(10)
+        self.data_listener = AttributeListener(dtype=object,
+                                               attr_name="valuerefbuffer")
+
+    def _prepare(self, integ_time, repetitions, latency_time, nb_starts):
+        self.channel.value_ref_enabled = True
+        axis = self.channel.axis
+        self.channel_ctrl.set_axis_par(axis, "value_ref_enabled", True)
+
+
+@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
+            latency_time=0.02)
+class AcquisitionCTHardwareTriggerTestCase(BaseAcquisitionHardwareTestCase,
+                                           TestCase):
+    """Integration test of PoolSynchronization and PoolAcquisitionHardware
+    with dummy CT channel synchronized by hardware trigger."""
+
+    CHANNEL_NAME = "_test_ct_1_1"
+    SYNCHRONIZATION = AcqSynch.HardwareTrigger
+
+    def setUp(self):
+        """Create test actors (controllers and elements)"""
+        TestCase.setUp(self)
+        AcquisitionTestCase.setUp(self)
+        self.data_listener = AttributeListener(dtype=object,
+                                               attr_name="valuebuffer")
+
+
+@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
+            latency_time=0.02)
+class Acquisition2DHardwareTriggerTestCase(BaseAcquisitionHardwareTestCase,
+                                           TestCase):
+    """Integration test of PoolSynchronization and PoolAcquisitionHardware
+    with dummy 2D channel synchronized by hardware trigger."""
+
+    CHANNEL_NAME = "_test_2d_1_1"
+    SYNCHRONIZATION = AcqSynch.HardwareTrigger
+
+    def setUp(self):
+        """Create test actors (controllers and elements)"""
+        TestCase.setUp(self)
+        AcquisitionTestCase.setUp(self)
+        self.data_listener = AttributeListener(dtype=object,
+                                               attr_name="valuebuffer")
+
+
+@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
+            latency_time=0.02)
+class Acquisition2DHardwareTriggerRefTestCase(BaseAcquisitionHardwareTestCase,
+                                              TestCase):
+    """Integration test of PoolSynchronization and PoolAcquisitionHardware
+    with dummy 2D channel synchronized by hardware trigger and configured to
+    report value reference.
+    """
+    CHANNEL_NAME = "_test_2d_1_1"
+    SYNCHRONIZATION = AcqSynch.HardwareTrigger
+
+    def setUp(self):
+        """Create test actors (controllers and elements)"""
+        TestCase.setUp(self)
+        AcquisitionTestCase.setUp(self)
+        self.data_listener = AttributeListener(dtype=object,
+                                               attr_name="valuerefbuffer")
+
+    def _prepare(self, integ_time, repetitions, latency_time, nb_starts):
+        self.channel.value_ref_enabled = True
+        axis = self.channel.axis
+        self.channel_ctrl.set_axis_par(axis, "value_ref_enabled", True)
+
+
+@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
+            latency_time=0.02)
+class AcquisitionCTHardwareGateTestCase(BaseAcquisitionHardwareTestCase,
+                                        TestCase):
+    """Integration test of PoolSynchronization and PoolAcquisitionHardware
+    with dummy CT channel synchronized by hardware gate."""
+
+    CHANNEL_NAME = "_test_ct_1_1"
+    SYNCHRONIZATION = AcqSynch.HardwareGate
+
+    def setUp(self):
+        """Create test actors (controllers and elements)"""
+        TestCase.setUp(self)
+        AcquisitionTestCase.setUp(self)
+        self.data_listener = AttributeListener(dtype=object,
+                                               attr_name="valuebuffer")
+
+
+@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
+            latency_time=0.02)
+class Acquisition2DHardwareGateTestCase(BaseAcquisitionHardwareTestCase,
+                                        TestCase):
+    """Integration test of PoolSynchronization and PoolAcquisitionHardware
+    with dummy 2D channel synchronized by hardware gate."""
+
+    CHANNEL_NAME = "_test_2d_1_1"
+    SYNCHRONIZATION = AcqSynch.HardwareGate
+
+    def setUp(self):
+        """Create test actors (controllers and elements)"""
+        TestCase.setUp(self)
+        AcquisitionTestCase.setUp(self)
+        self.data_listener = AttributeListener(dtype=object,
+                                               attr_name="valuebuffer")
+
+
+@insertTest(helper_name='acquire', integ_time=0.01, repetitions=10,
+            latency_time=0.02)
+class Acquisition2DHardwareGateRefTestCase(BaseAcquisitionHardwareTestCase,
+                                           TestCase):
+    """Integration test of PoolSynchronization and PoolAcquisitionHardware
+    with dummy 2D channel synchronized by hardware gate and configured to
+    report value reference.
+    """
+    CHANNEL_NAME = "_test_2d_1_1"
+    SYNCHRONIZATION = AcqSynch.HardwareGate
+
+    def setUp(self):
+        """Create test actors (controllers and elements)"""
+        TestCase.setUp(self)
+        AcquisitionTestCase.setUp(self)
+        self.data_listener = AttributeListener(dtype=object,
+                                               attr_name="valuerefbuffer")
+
+    def _prepare(self, integ_time, repetitions, latency_time, nb_starts):
+        self.channel.value_ref_enabled = True
+        axis = self.channel.axis
+        self.channel_ctrl.set_axis_par(axis, "value_ref_enabled", True)

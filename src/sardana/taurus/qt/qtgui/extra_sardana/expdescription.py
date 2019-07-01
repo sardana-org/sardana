@@ -300,7 +300,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         return w
 
     def _getResumeText(self):
-        msg_resume = '<p> Summary of changes: <ul>'
+        msg_resume = '<p> Summary of differences: <ul>'
         mnt_grps = ''
         envs = ''
         for key in self._diff:
@@ -343,13 +343,12 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         # (would eventually overwrite the external changes when applying).
         # </p>'''
         text = '''
-        <p>The experiment configuration has been modified externally.
+        <p>The experiment configuration has been modified externally.<br>
         You can either:
         <ul>
-        <li><strong>Load </strong>the new configuration from the door
-        (discarding local changes)</li>
-        <li><strong>Keep </strong>your local configuration (would eventually
-        overwrite the external changes when applying)</li>
+        <li><strong>Load </strong>the new external configuration</li>
+        <li><strong>Keep </strong>your local expconf configuration<br>
+        (It can be eventually applied)</li>
         </ul></p>
         '''
         self._expConfChangedDialog.setText(text)
@@ -366,6 +365,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self._expConfChangedDialog = None
         if result == Qt.QMessageBox.Ok:
             self._reloadConf(force=True)
+        elif result == Qt.QMessageBox.Cancel:
+            self.ui.buttonBox.setEnabled(True)
 
     @QtCore.pyqtSlot()
     def _experimentConfigurationChanged(self):
@@ -494,6 +495,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         if activeMntGrpName in self._localConfig['MntGrpConfigs']:
             mgconfig = self._localConfig['MntGrpConfigs'][activeMntGrpName]
             self.ui.channelEditor.getQModel().setDataSource(mgconfig)
+        else:
+            self.ui.channelEditor.getQModel().setDataSource({})
 
         # set the measurement group ComboBox
         self.ui.activeMntGrpCB.clear()
@@ -697,11 +700,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
                 DynamicPlotManager
             self.__plotManager = DynamicPlotManager(self)
             self.__plotManager.setModel(self.getModelName())
-            self.experimentConfigurationChanged.connect(
-                self.__plotManager.onExpConfChanged)
         else:
-            self.experimentConfigurationChanged.disconnect(
-                self.__plotManager.onExpConfChanged)
             self.__plotManager.removePanels()
             self.__plotManager.setModel(None)
             self.__plotManager = None

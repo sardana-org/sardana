@@ -14,7 +14,7 @@ will be build incrementally from scratch to aid in the explanation. Its purpose
 is to provide an easy feedback about the beam position in the vertical and
 horizontal axes as well as the total intensity of the beam.
 
-By now you should have read the general controller basics chapter. Let's start
+By now you should have read :ref:`the general controller basics <sardana-controller-api>` chapter. Let's start
 from writing a :class:`~sardana.pool.controller.PseudoCounterController`
 subclass with a proper constructor and the roles defined.
 

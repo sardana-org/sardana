@@ -194,6 +194,11 @@ class MacroManager(MacroServerManager):
         # elements are absolute paths
         self._macro_path = []
 
+        # list<str>
+        # overwritten macros (macros with the same name defined in
+        # different modules)
+        self._overwritten_macros = []
+
         # dict<Door, <MacroExecutor>
         # key   - door
         # value - MacroExecutor object for the door
@@ -211,6 +216,7 @@ class MacroManager(MacroServerManager):
         self._macro_path = None
         self._macro_dict = None
         self._modules = None
+        self._overwritten_macros = None
 
         MacroServerManager.cleanUp(self)
 
@@ -529,7 +535,21 @@ class MacroManager(MacroServerManager):
                                           logger=self)
             for _, macro in inspect.getmembers(m, _is_macro):
                 try:
-                    self.addMacro(macro_lib, macro)
+                    isoverwritten = False
+                    macro_name = macro.__name__
+                    if macro_name in self._overwritten_macros:
+                        isoverwritten = True
+                    elif (macro_name in self._macro_dict.keys()
+                            and self._macro_dict[macro_name].lib != macro_lib):
+                        isoverwritten = True
+                        msg = ('Macro "{}" defined in "{}" macro library'
+                               + ' has been overwritten by "{}" macro library')
+                        old_lib_name = self._macro_dict[macro_name].lib.name
+                        self.debug(msg.format(macro_name, old_lib_name,
+                                              macro_lib.name))
+                        self._overwritten_macros.append(macro_name)
+
+                    self.addMacro(macro_lib, macro, isoverwritten)
                     count_correct_macros += 1
                 except Exception as e:
                     count_incorrect_macros += 1
@@ -561,30 +581,30 @@ class MacroManager(MacroServerManager):
                     msg += "\nUse relmaclib to reload the corrected macro(s)\n"
                 raise Exception(msg)
 
-    def addMacro(self, macro_lib, macro):
+    def addMacro(self, macro_lib, macro, isoverwritten=False):
         add = self.addMacroFunction
         if inspect.isclass(macro):
             add = self.addMacroClass
-        return add(macro_lib, macro)
+        return add(macro_lib, macro, isoverwritten)
 
-    def addMacroClass(self, macro_lib, klass):
+    def addMacroClass(self, macro_lib, klass, isoverwritten=False):
         macro_name = klass.__name__
         action = (macro_lib.has_macro(macro_name) and "Updating") or "Adding"
         self.debug("%s macro class %s" % (action, macro_name))
 
         params = dict(macro_server=self.macro_server, lib=macro_lib,
-                      klass=klass)
+                      klass=klass, isoverwritten=isoverwritten)
         macro_class = MacroClass(**params)
         macro_lib.add_macro_class(macro_class)
         self._macro_dict[macro_name] = macro_class
 
-    def addMacroFunction(self, macro_lib, func):
+    def addMacroFunction(self, macro_lib, func, isoverwritten=False):
         macro_name = func.func_name
         action = (macro_lib.has_macro(macro_name) and "Updating") or "Adding"
         self.debug("%s macro function %s" % (action, macro_name))
 
         params = dict(macro_server=self.macro_server, lib=macro_lib,
-                      function=func)
+                      function=func, isoverwritten=isoverwritten)
         macro_function = MacroFunction(**params)
         macro_lib.add_macro_function(macro_function)
         self._macro_dict[macro_name] = macro_function
