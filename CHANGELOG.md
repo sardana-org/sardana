@@ -5,7 +5,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
-## [2.8.0] 2019-06-18
+## [2.8.0] 2019-07-01
 
 ### Added
 
