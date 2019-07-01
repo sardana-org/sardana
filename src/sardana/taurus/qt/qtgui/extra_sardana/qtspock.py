@@ -121,6 +121,7 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
             **kw):
         RichJupyterWidget.__init__(self, parent=parent, **kw)
         TaurusBaseWidget.__init__(self)
+        self.setObjectName(self.__class__.__name__)
         self.setModelInConfig(True)
 
         self._profile = profile
@@ -366,6 +367,8 @@ class QtSpock(TaurusMainWindow):
 def main():
     from taurus.qt.qtgui.application import TaurusApplication
     app = TaurusApplication()
+    app.setOrganizationName("Taurus")
+    app.setApplicationName("QtSpock")
     window = QtSpock()
     window.show()
     app.aboutToQuit.connect(window.spockWidget.shutdown_kernel)
