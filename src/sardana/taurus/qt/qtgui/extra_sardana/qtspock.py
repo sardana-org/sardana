@@ -121,6 +121,7 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
             **kw):
         RichJupyterWidget.__init__(self, parent=parent, **kw)
         TaurusBaseWidget.__init__(self)
+        self.setModelInConfig(True)
 
         self._profile = profile
         self.use_model_from_profile = use_model_from_profile
@@ -200,6 +201,9 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
             self._kernel_restarted_message(died=False)
         else:
             self.start_kernel()
+
+    def getModel(self):
+        return self._door_name
 
     def _set_door_name(self, door):
         if door:
