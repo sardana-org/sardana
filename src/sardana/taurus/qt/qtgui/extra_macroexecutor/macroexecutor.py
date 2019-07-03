@@ -32,7 +32,7 @@ from copy import deepcopy
 
 import PyTango
 
-from taurus.external.qt import Qt
+from taurus.external.qt import Qt, compat
 from taurus import Device
 from taurus.qt.qtgui.container import TaurusWidget, TaurusMainWindow, TaurusBaseContainer
 from taurus.qt.qtgui.display import TaurusLed
@@ -626,7 +626,7 @@ class TaurusMacroExecutorWidget(TaurusWidget):
     doorChanged = Qt.pyqtSignal('QString')
     macroNameChanged = Qt.pyqtSignal('QString')
     macroStarted = Qt.pyqtSignal('QString')
-    plotablesFilterChanged = Qt.pyqtSignal(object)
+    plotablesFilterChanged = Qt.pyqtSignal(compat.PY_OBJECT)
     shortMessageEmitted = Qt.pyqtSignal('QString')
 
     def __init__(self, parent=None, designMode=False):

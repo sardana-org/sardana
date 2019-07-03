@@ -28,7 +28,7 @@ import copy
 import PyTango
 import numpy
 
-from taurus.external.qt import Qt
+from taurus.external.qt import Qt, compat
 
 import taurus
 from taurus.core.util.colors import DEVICE_STATE_PALETTE
@@ -64,7 +64,7 @@ class LimitsListener(Qt.QObject):
     can do whatever with it.
     """
 
-    updateLimits = Qt.pyqtSignal(object)
+    updateLimits = Qt.pyqtSignal(compat.PY_OBJECT)
 
     def __init__(self):
         Qt.QObject.__init__(self)
@@ -812,7 +812,7 @@ class TaurusAttributeListener(Qt.QObject):
     If that is the case it emits a signal with the event's value.
     """
 
-    eventReceivedSignal = Qt.pyqtSignal(object)
+    eventReceivedSignal = Qt.pyqtSignal(compat.PY_OBJECT)
 
     def __init__(self):
         Qt.QObject.__init__(self)

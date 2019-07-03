@@ -34,7 +34,7 @@ from multiprocessing import Process, Pipe
 
 from taurus.core import TaurusManager
 from taurus.core.util.singleton import Singleton
-from taurus.external.qt import Qt
+from taurus.external.qt import Qt, compat
 from taurus.qt.qtgui.dialog import TaurusMessageBox, TaurusInputDialog
 
 from sardana.taurus.core.tango.sardana.macroserver import BaseInputHandler
@@ -71,7 +71,7 @@ class SpockInputHandler(BaseInputHandler):
 
 class MessageHandler(Qt.QObject):
 
-    messageArrived = Qt.pyqtSignal(object)
+    messageArrived = Qt.pyqtSignal(compat.PY_OBJECT)
 
     def __init__(self, conn, parent=None):
         Qt.QObject.__init__(self, parent)

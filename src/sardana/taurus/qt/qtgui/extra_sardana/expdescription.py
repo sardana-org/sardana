@@ -30,7 +30,7 @@ __all__ = ["ExpDescriptionEditor"]
 
 
 import json
-from taurus.external.qt import Qt, QtCore, QtGui
+from taurus.external.qt import Qt, QtCore, QtGui, compat
 import copy
 import taurus
 import taurus.core
@@ -174,7 +174,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
     '''
 
     createExpConfChangedDialog = Qt.pyqtSignal()
-    experimentConfigurationChanged = Qt.pyqtSignal(object)
+    experimentConfigurationChanged = Qt.pyqtSignal(compat.PY_OBJECT)
 
     def __init__(self, parent=None, door=None, plotsButton=True,
                  autoUpdate=False):

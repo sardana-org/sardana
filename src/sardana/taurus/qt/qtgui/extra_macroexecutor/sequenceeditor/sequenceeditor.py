@@ -85,7 +85,7 @@ class HookAction(Qt.QAction):
 class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
 
     macroNameChanged = Qt.pyqtSignal('QString')
-    macroChanged = Qt.pyqtSignal(object)
+    macroChanged = Qt.pyqtSignal(compat.PY_OBJECT)
 
     def __init__(self, parent=None):
         Qt.QTreeView.__init__(self, parent)
@@ -325,8 +325,8 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
 class TaurusSequencerWidget(TaurusWidget):
 
     macroStarted = Qt.pyqtSignal('QString')
-    plotablesFilterChanged = Qt.pyqtSignal(object)
-    currentMacroChanged = Qt.pyqtSignal(object)
+    plotablesFilterChanged = Qt.pyqtSignal(compat.PY_OBJECT)
+    currentMacroChanged = Qt.pyqtSignal(compat.PY_OBJECT)
     macroNameChanged = Qt.pyqtSignal('QString')
     shortMessageEmitted = Qt.pyqtSignal('QString')
     sequenceEmpty = Qt.pyqtSignal()
