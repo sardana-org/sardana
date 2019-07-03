@@ -5,6 +5,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
+## [2.8.0] 2019-07-01
+
 ### Added
 
 * SEP2 - Improve integration of 1D and 2D experimental channels (#775):
@@ -31,6 +33,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   * `VALUE_BUFFER_CODEC` and `VALUE_REF_BUFFER_CODEC` to sardanacustomsettings.
 * Reintroduce `showscan online` to spock (#1042)
 * Full support to *spock syntax* in loading sequences from files (#645, #672)
+* Info in `lsmac` output about macros being overridden (#930, #947)
 * Allow to configure timeout on pool element's (Taurus extensions) *go* methods e.g.
   `move`, `count`, etc. (#992)
 * Emulated hardware triggering between dummy counter/timer and trigger/gate elements
@@ -63,6 +66,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   macros (#1085)
 * Calculation of nb_starts argument of `PrepareOne` method of timerable controllers
   when software synchronization is in use (#1110)
+* Interactive macros on Windows (#347)
 * expconf when empty (unspecified) DataType (#1076)
 * Output block of scan records which do not fit the console width (#924)
 * Fix bug on exception popups in macroexecutor (#1079, #1088)
@@ -701,7 +705,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.7.2...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.0...HEAD
+[2.8.0]: https://github.com/sardana-org/sardana/compare/2.8.0...2.7.2
 [2.7.2]: https://github.com/sardana-org/sardana/compare/2.7.1...2.7.2
 [2.7.1]: https://github.com/sardana-org/sardana/compare/2.7.0...2.7.1
 [2.7.0]: https://github.com/sardana-org/sardana/compare/2.6.1...2.7.0

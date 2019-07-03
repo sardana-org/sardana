@@ -50,7 +50,7 @@ class Pool2DExpChannel(PoolTimerableChannel):
 
     def get_data_source(self, cache=True, propagate=1):
         msg = ("data_source is deprecated since "
-               "version Jul19. Use value_ref instead.")
+               "version 2.8.0. Use value_ref instead.")
         self.warning(msg)
         if not cache or self._data_source is None:
             data_source = self.read_data_source()
