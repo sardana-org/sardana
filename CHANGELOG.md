@@ -5,6 +5,11 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
+### Fixed
+
+* Use `taurus.external.qt.compat.PY_OBJECT` in singal signatures instead of `object`
+  to avoid problems when using `builtins` from `future` (#1082)
+
 ## [2.8.0] 2019-07-01
 
 ### Added
@@ -79,8 +84,6 @@ This file follows the formats and conventions from [keepachangelog.com]
   remotelly (#1099)
 * Pop-up message when expconf configuration changed externally (#1094)
 * Remove circlular references between the macro object and the FIO recorder (#1121)
-* Use `taurus.external.qt.compat.PY_OBJECT` in singal signatures instead of `object`
-  to avoid problems when using `builtins` from `future` (#1082)
 
 ### Deprecated
 
