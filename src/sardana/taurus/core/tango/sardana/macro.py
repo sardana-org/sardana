@@ -511,9 +511,7 @@ class SingleParamNode(ParamNode):
         self._value = value
 
     def defValue(self):
-        if self._defValue is None:
-            return None
-        return str(self._defValue)
+        return self._defValue
 
     def setDefValue(self, defValue):
         if defValue == "None":
@@ -532,7 +530,7 @@ class SingleParamNode(ParamNode):
         # set value attribute only if it is different than the default value
         # the server will assign the default value anyway.
         if value is not None or str(value).lower() != 'none':
-            if value != self.defValue():
+            if value != str(self.defValue()):
                 paramElement.set("value", value)
         return paramElement
 
@@ -572,7 +570,7 @@ class SingleParamNode(ParamNode):
         Empty list indicates default value."""
         if isinstance(v, list):
             if len(v) == 0:
-                v = self.defValue()
+                v = str(self.defValue())
             elif not isinstance(self.parent(), RepeatNode):
                 msg = "Only members of repeat parameter allow list values"
                 raise ValueError(msg)
