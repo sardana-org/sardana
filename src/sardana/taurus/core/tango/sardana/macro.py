@@ -483,7 +483,12 @@ class ParamNode(BaseNode):
 
 
 class SingleParamNode(ParamNode):
-    """Single parameter class."""
+    """Single parameter class.
+    
+    .. todo: All the usages of setValue are converting the
+             values to str before calling the setter.
+             This most probably should not be the case - to be fixed
+    """
 
     def __init__(self, parent=None, param=None):
         ParamNode.__init__(self, parent, param)
