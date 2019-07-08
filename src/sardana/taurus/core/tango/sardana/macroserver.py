@@ -794,7 +794,7 @@ class MacroPath(object):
         self.macro_path = mp = self._ms().get_property("MacroPath")[
             "MacroPath"]
         self.base_macro_path = osp.commonprefix(self.macro_path)
-        self.rel_macro_path = [osp.relpath for p in mp, self.base_macro_path]
+        self.rel_macro_path = [osp.relpath for p in (mp, self.base_macro_path)]
 
 
 class Environment(dict):
