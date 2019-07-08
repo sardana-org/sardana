@@ -302,7 +302,7 @@ class ControllerClass(SardanaClass):
             axis_attrs[k] = DataInfo.toDataInfo(k, v)
 
         self.types = types = self.__build_types()
-        self.type_names = map(ElementType.whatis, types)
+        self.type_names = list(map(ElementType.whatis, types))
 
         if ElementType.PseudoMotor in types:
             self.motor_roles = tuple(klass.motor_roles)

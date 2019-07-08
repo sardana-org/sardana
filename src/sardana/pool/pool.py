@@ -366,7 +366,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         return ret
 
     def get_acquisition_elements_str_info(self):
-        return map(self.str_object, self.get_acquisition_elements_info())
+        return list(map(self.str_object, self.get_acquisition_elements_info()))
 
     def create_controller(self, **kwargs):
         ctrl_type = kwargs['type']

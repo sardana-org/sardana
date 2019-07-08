@@ -491,7 +491,7 @@ class RecordList(dict):
         return True
 
     def addRecords(self, records):
-        map(self.addRecord, records)
+        list(map(self.addRecord, records))
 
     def end(self):
         start = self.currentIndex

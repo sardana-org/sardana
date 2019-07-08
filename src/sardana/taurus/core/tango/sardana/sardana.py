@@ -532,8 +532,8 @@ class Sardana(object):
             pass
         elif dev_class_name == "MacroServer":
             ms_dev_name = dev_name
-            ms_prop_list = map(
-                str.lower, db.get_device_property_list(ms_dev_name, "*"))
+            ms_prop_list = list(map(
+                str.lower, db.get_device_property_list(ms_dev_name, "*")))
             ms_props = db.get_device_property(ms_dev_name, ms_prop_list)
             ms_name = dev_info.server().serverInstance()
             ms_alias = dev_info.alias()
@@ -541,8 +541,8 @@ class Sardana(object):
                              ms_props.get("version"), ms_alias, ms_dev_name)
             self._macroservers.append(ms)
             for pool_dev_name in ms_props.get("poolnames", ()):
-                pool_prop_list = map(
-                    str.lower, db.get_device_property_list(pool_dev_name, "*"))
+                pool_prop_list = list(map(
+                    str.lower, db.get_device_property_list(pool_dev_name, "*")))
                 pool_props = db.get_device_property(
                     pool_dev_name, pool_prop_list)
                 pool_dev_info = cache.devices()[pool_dev_name]

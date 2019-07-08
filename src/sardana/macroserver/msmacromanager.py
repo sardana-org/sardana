@@ -1191,7 +1191,7 @@ class MacroExecutor(Logger):
         if result is None:
             return ()
         if is_non_str_seq(result):
-            result = map(str, result)
+            result = list(map(str, result))
         else:
             result = (str(result),)
         return result
@@ -1203,7 +1203,7 @@ class MacroExecutor(Logger):
         # recursive map to maintain the list objects structure
         params_str_list = recur_map(str, macro_params)
         # plain map to be able to perform join (only strings may be joined)
-        params_str_list = map(str, params_str_list)
+        params_str_list = list(map(str, params_str_list))
         params_str = ', '.join(params_str_list)
         macro_id = macro_id
         # create macro_line - string representation of macro, its parameters

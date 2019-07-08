@@ -96,7 +96,7 @@ class TangoStatusCb(TangoAttrCb):
         attr_value = getattr(event_data, 'attr_value')
         if attr_value is None:
             return
-        v = map(str, attr_value.value)
+        v = list(map(str, attr_value.value))
         if not len(v[1]):
             return
         fmt = v[0]

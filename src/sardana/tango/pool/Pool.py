@@ -383,7 +383,7 @@ class Pool(PyTango.Device_4Impl, Logger):
                 info = dict(id=pm_id, name=pm_name, ctrl_name=name, axis=i + 1,
                             type='PseudoMotor', elements=motor_ids)
                 if pm_name.count(',') > 0:
-                    n, fn = map(str.strip, pm_name.split(',', 1))
+                    n, fn = list(map(str.strip, pm_name.split(',', 1)))
                     info['name'], info['full_name'] = n, fn
                 pseudo_motor_infos[klass_pseudo_role] = info
                 pseudo_motor_ids.append(pm_id)
@@ -423,7 +423,7 @@ class Pool(PyTango.Device_4Impl, Logger):
                 info = dict(id=pc_id, name=pc_name, ctrl_name=name, axis=i + 1,
                             type='PseudoCounter', elements=counter_ids)
                 if pc_name.count(',') > 0:
-                    n, fn = map(str.strip, pc_name.split(',', 1))
+                    n, fn = list(map(str.strip, pc_name.split(',', 1)))
                     info['name'], info['full_name'] = n, fn
                 pseudo_counter_infos[klass_pseudo_role] = info
                 pseudo_counter_ids.append(pc_id)

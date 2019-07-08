@@ -290,7 +290,7 @@ class MacroServer(SardanaDevice):
         """GetMacroCode(<module name> [, <macro name>]) -> full filename, code, line_nb
         """
         ret = self.macro_server.get_or_create_macro_lib(*argin)
-        return map(str, ret)
+        return list(map(str, ret))
 
     def SetMacroCode(self, argin):
         lib_name, code = argin[:2]

@@ -374,9 +374,9 @@ class wm(Macro):
             if show_ctrlaxis:
                 valctrl = str_fmt % (ctrl_name)
                 valaxis = str_fmt % str(axis_nb)
-                upos = map(str, [valctrl, valaxis, ' ', val2, val1, val3])
+                upos = list(map(str, [valctrl, valaxis, ' ', val2, val1, val3]))
             else:
-                upos = map(str, ['', val2, val1, val3])
+                upos = list(map(str, ['', val2, val1, val3]))
             pos_data = upos
             if show_dial:
                 try:
@@ -389,7 +389,7 @@ class wm(Macro):
                 val2 = str_fmt % dPosObj.getMaxValue()
                 val3 = str_fmt % dPosObj.getMinValue()
 
-                dpos = map(str, [val2, val1, val3])
+                dpos = list(map(str, [val2, val1, val3]))
                 pos_data += [''] + dpos
 
             motor_pos.append(pos_data)
@@ -430,8 +430,8 @@ class wum(Macro):
             name = motor.getName()
             motor_names.append([name])
             posObj = motor.getPositionObj()
-            upos = map(str, [posObj.getMaxValue(), motor.getPosition(
-                force=True), posObj.getMinValue()])
+            upos = list(map(str, [posObj.getMaxValue(), motor.getPosition(
+                force=True), posObj.getMinValue()]))
             pos_data = [''] + upos
 
             motor_pos.append(pos_data)

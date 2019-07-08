@@ -163,7 +163,7 @@ class SardanaBaseObject(EventGenerator, EventReceiver, Logger):
             The sequence of interfaces this object implements.
         :rtype:
             sequence<:obj:`str`>"""
-        return map(Interface.get, self.get_interfaces())
+        return list(map(Interface.get, self.get_interfaces()))
 
     def serialize(self, *args, **kwargs):
         kwargs['name'] = self.name

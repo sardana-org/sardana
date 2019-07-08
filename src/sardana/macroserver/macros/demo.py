@@ -209,7 +209,7 @@ def sar_demo(self):
 @macro([["motor", Type.Moveable, None, '']])
 def mym2(self, pm):
     self.output(pm.getMotorNames())
-    elements = map(self.getMoveable, pm.elements)
+    elements = list(map(self.getMoveable, pm.elements))
     self.output(elements)
     self.output(type(pm))
     self.output(type(elements[0]))

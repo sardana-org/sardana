@@ -190,7 +190,7 @@ class OutputRecorder(DataRecorder):
                 label = [label]
             header_rows = max(header_rows, len(label))
             labels.append(label)
-            col_size = max(col_width, max(map(len, label)))
+            col_size = max(col_width, max(list(map(len, label))))
             header_len += col_size
             col_sizes.append(col_size)
 

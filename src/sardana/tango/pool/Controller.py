@@ -109,7 +109,7 @@ class Controller(PoolDevice):
                 'counter_role_ids']
             if len(role_ids) == 0:
                 role_ids = self.Role_ids
-        role_ids = map(int, role_ids)
+        role_ids = list(map(int, role_ids))
 
         return role_ids
 
@@ -151,7 +151,7 @@ class Controller(PoolDevice):
                 op = float
             elif dtype == DataType.Boolean:
                 op = to_bool
-            prop_value = map(op, prop_value)
+            prop_value = list(map(op, prop_value))
             if dformat == DataFormat.Scalar:
                 prop_value = prop_value[0]
             ret[prop_name] = prop_value

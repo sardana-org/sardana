@@ -691,7 +691,7 @@ class ExpChannel(PoolElement):
         self._value_ref_buffer_codec = CodecFactory().getCodec(codec_name)
 
     def isReferable(self):
-        if "valueref" in map(str.lower, self.get_attribute_list()):
+        if "valueref" in list(map(str.lower, self.get_attribute_list())):
             return True
         return False
 
@@ -1193,7 +1193,7 @@ class MotorGroup(PoolElement, Moveable):
         return self.getPoolData()['elements']
 
     def hasMotor(self, name):
-        motor_names = map(str.lower, self.getMotorNames())
+        motor_names = list(map(str.lower, self.getMotorNames()))
         return name.lower() in motor_names
 
     def getPosition(self, force=False):
@@ -1242,7 +1242,7 @@ class MotorGroup(PoolElement, Moveable):
 
     def getIndex(self, name):
         try:
-            motor_names = map(str.lower, self.getMotorNames())
+            motor_names = list(map(str.lower, self.getMotorNames()))
             return motor_names.index(name.lower())
         except:
             return -1
@@ -1875,7 +1875,7 @@ class MeasurementGroup(PoolElement):
         _, value_buffer = self._value_buffer_codec.decode(value_buffer)
         values = value_buffer["value"]
         if isinstance(values[0], list):
-            np_values = map(numpy.array, values)
+            np_values = list(map(numpy.array, values))
             value_buffer["value"] = np_values
         self._value_buffer_cb(channel, value_buffer)
 
@@ -2373,7 +2373,7 @@ class Pool(TangoDevice, MoveableSource):
         return moveable
 
     def __findMotorGroupWithElems(self, names):
-        names_lower = map(str.lower, names)
+        names_lower = list(map(str.lower, names))
         len_names = len(names)
         mgs = self.getElementsOfType('MotorGroup')
         for mg in list(mgs.values()):
@@ -2414,14 +2414,14 @@ class Pool(TangoDevice, MoveableSource):
             time.sleep(nap)
 
     def createMotorGroup(self, mg_name, elements):
-        params = [mg_name, ] + map(str, elements)
+        params = [mg_name, ] + list(map(str, elements))
         self.debug('trying to create motor group for elements: %s', params)
         self.command_inout('CreateMotorGroup', params)
         elements_info = self.getElementsInfo()
         return self._wait_for_element_in_container(elements_info, mg_name)
 
     def createMeasurementGroup(self, mg_name, elements):
-        params = [mg_name, ] + map(str, elements)
+        params = [mg_name, ] + list(map(str, elements))
         self.debug('trying to create measurement group: %s', params)
         self.command_inout('CreateMeasurementGroup', params)
         elements_info = self.getElementsInfo()
@@ -2466,7 +2466,7 @@ class Pool(TangoDevice, MoveableSource):
             raise Exception("Controller class %s not found" % class_name)
         cmd = "CreateController"
         pars = [ctrl_class.types[0], ctrl_class.file_name, class_name, name]
-        pars.extend(map(str, props))
+        pars.extend(list(map(str, props)))
         self.command_inout(cmd, pars)
         elements_info = self.getElementsInfo()
         return self._wait_for_element_in_container(elements_info, name)

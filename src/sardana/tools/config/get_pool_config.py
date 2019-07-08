@@ -133,7 +133,7 @@ def checkPoolElements(pool):
             attrs = element_dev.get_attribute_list()
             for attr, attr_dict in db.get_device_attribute_property(
                 normal_name,
-                map(str, attrs)
+                list(map(str, attrs))
             ).items():
                 if len(attr_dict) > 0:
                     pool_elements_detail[alias]['attr_dicts'][attr] = attr_dict

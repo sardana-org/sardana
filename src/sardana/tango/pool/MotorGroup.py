@@ -77,7 +77,7 @@ class MotorGroup(PoolGroupDevice):
         detect_evts = "position",
         non_detect_evts = "elementlist",
         self.set_change_events(detect_evts, non_detect_evts)
-        self.Elements = map(int, self.Elements)
+        self.Elements = list(map(int, self.Elements))
         motor_group = self.motor_group
         if motor_group is None:
             full_name = self.get_full_name()

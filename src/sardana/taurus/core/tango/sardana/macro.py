@@ -1024,7 +1024,7 @@ class MacroNode(BranchNode):
 
     def toSpockCommand(self):
         values, alerts = self.toRun()
-        values = map(str, values)
+        values = list(map(str, values))
         return "%s %s" % (self.name(), str.join(' ', values))
 
     def value(self):

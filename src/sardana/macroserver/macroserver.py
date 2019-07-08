@@ -740,7 +740,7 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
                 type_name_list = type_class
         obj_set = set()
         param = ['^%s$' % x for x in param]
-        re_objs = map(re.compile, param, len(param) * (re.IGNORECASE,))
+        re_objs = list(map(re.compile, param, len(param) * (re.IGNORECASE,)))
         re_subtype = re.compile(subtype, re.IGNORECASE)
         for type_name in type_name_list:
             type_class_name = type_name

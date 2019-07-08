@@ -219,7 +219,7 @@ class PoolDevice(SardanaDevice):
         dev_class = self.get_device_class()
         multi_attr = self.get_device_attr()
         multi_class_attr = dev_class.get_class_attr()
-        static_attr_names = map(str.lower, list(dev_class.attr_list.keys()))
+        static_attr_names = list(map(str.lower, list(dev_class.attr_list.keys())))
         static_attr_names.extend(('state', 'status'))
 
         new_attrs = CaselessDict(new_std_attrs)

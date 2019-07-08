@@ -545,11 +545,11 @@ def get_taurus_core_version_number():
 
 def check_requirements():
     r = requirements
-    minPyTango, recPyTango = map(translate_version_str2int, r["PyTango"])
-    minIPython, recIPython = map(translate_version_str2int, r["IPython"])
-    minPython, recPython = map(translate_version_str2int, r["Python"])
-    minTaurusCore, recTaurusCore = map(
-        translate_version_str2int, r["taurus.core"])
+    minPyTango, recPyTango = list(map(translate_version_str2int, r["PyTango"]))
+    minIPython, recIPython = list(map(translate_version_str2int, r["IPython"]))
+    minPython, recPython = list(map(translate_version_str2int, r["Python"]))
+    minTaurusCore, recTaurusCore = list(map(
+        translate_version_str2int, r["taurus.core"]))
 
     currPython = get_python_version_number()
     currIPython = get_ipython_version_number()

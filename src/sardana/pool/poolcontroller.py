@@ -71,7 +71,7 @@ class PoolBaseController(PoolBaseElement):
         raise NotImplementedError
 
     def get_ctrl_type_names(self):
-        return map(ElementType.whatis, self.get_ctrl_types())
+        return list(map(ElementType.whatis, self.get_ctrl_types()))
 
     def is_online(self):
         return True

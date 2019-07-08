@@ -2305,7 +2305,7 @@ class Macro(Logger):
         macro"""
         for obj in args:
             # isiterable
-            if not type(obj) in map(type, ([], ())):
+            if not type(obj) in list(map(type, ([], ()))):
                 # if not operator.isSequenceType(obj) or type(obj) in
                 # types.StringTypes:
                 obj = (obj,)
@@ -2362,7 +2362,7 @@ class Macro(Logger):
         if out is None:
             out = ()
         if operator.isSequenceType(out) and not type(out) in types.StringTypes:
-            out = map(str, out)
+            out = list(map(str, out))
         else:
             out = (str(out),)
         return out

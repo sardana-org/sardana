@@ -743,7 +743,7 @@ def prepare_server(args, tango_args):
                     pool_alias = pool[2]
                     if pool_alias is not None:
                         all_pools.append(pool_alias)
-                all_pools = map(str.lower, all_pools)
+                all_pools = list(map(str.lower, all_pools))
                 pools_for_choosing = []
                 for i in pools:
                     pools_for_choosing.append(pools[i][3])
@@ -789,7 +789,7 @@ def prepare_server(args, tango_args):
 
 
 def exists_server_instance(db, server_name, server_instance):
-    known_inst = map(str.lower, db.get_instance_name_list(server_name))
+    known_inst = list(map(str.lower, db.get_instance_name_list(server_name)))
     return server_instance.lower() in known_inst
 
 

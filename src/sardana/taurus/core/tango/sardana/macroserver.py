@@ -513,7 +513,7 @@ class BaseDoor(MacroServerDevice):
 
     def _clearRunMacro(self):
         # Clear the log buffer
-        map(LogAttr.clearLogBuffer, list(self._log_attr.values()))
+        list(map(LogAttr.clearLogBuffer, list(self._log_attr.values())))
         self._running_macros = None
         self._running_macro = None
         self._user_xml = None
@@ -669,7 +669,7 @@ class BaseDoor(MacroServerDevice):
             return
         # make sure we get it as string since PyTango 7.1.4 returns a buffer
         # object and json.loads doesn't support buffer objects (only str)
-        data = map(str, data.value)
+        data = list(map(str, data.value))
 
         size = len(data[1])
         if size == 0:
@@ -690,7 +690,7 @@ class BaseDoor(MacroServerDevice):
 
         # make sure we get it as string since PyTango 7.1.4 returns a buffer
         # object and json.loads doesn't support buffer objects (only str)
-        v = map(str, v.value)
+        v = list(map(str, v.value))
         if not len(v[1]):
             return
         format = v[0]
