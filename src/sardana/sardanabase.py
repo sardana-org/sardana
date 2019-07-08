@@ -27,6 +27,7 @@
 classes for Sardana object"""
 
 from __future__ import absolute_import
+import sys
 
 __all__ = ["SardanaBaseObject", "SardanaObjectID"]
 
@@ -53,8 +54,8 @@ class SardanaBaseObject(EventGenerator, EventReceiver, Logger):
         EventGenerator.__init__(self)
         EventReceiver.__init__(self)
         self._type = kwargs.pop('elem_type')
-        self._name = intern(kwargs.pop('name'))
-        self._full_name = intern(kwargs.pop('full_name'))
+        self._name = sys.intern(kwargs.pop('name'))
+        self._full_name = sys.intern(kwargs.pop('full_name'))
         self._frontend = None
         Logger.__init__(self, self._name)
         self._manager = weakref.ref(kwargs.pop('manager'))
