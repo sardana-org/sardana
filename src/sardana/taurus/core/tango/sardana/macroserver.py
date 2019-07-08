@@ -198,7 +198,7 @@ class ExperimentConfiguration(object):
         scan_file = env.get('ScanFile')
         if scan_file is None:
             scan_file = []
-        elif isinstance(scan_file, (str, unicode)):
+        elif isinstance(scan_file, (str, str)):
             scan_file = [scan_file]
         ret['ScanFile'] = scan_file
         mnt_grps = macro_server.getElementsOfType("MeasurementGroup")
@@ -537,7 +537,7 @@ class BaseDoor(MacroServerDevice):
         self._clearRunMacro()
 
         xml_root = None
-        if isinstance(obj, (str, unicode)):
+        if isinstance(obj, (str, str)):
             if obj.startswith('<') and not parameters:
                 xml_root = etree.fromstring(obj)
             else:

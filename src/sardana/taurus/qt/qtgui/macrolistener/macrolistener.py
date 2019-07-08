@@ -263,7 +263,7 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
                 w.setScanDoor(self.getModelObj().getFullName())
                 # TODO: use a standard key for <idx> and <mov>
                 w.setScansXDataKey(axes[0])
-                pname = u'Trend1D - %s' % ":".join(axes)
+                pname = 'Trend1D - %s' % ":".join(axes)
                 panel = self.createPanel(w, pname, registerconfig=False,
                                          permanent=False)
                 try:  # if the panel is a dockwidget, raise it
@@ -313,7 +313,7 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         newpanels = []
         for axes, plotables in list(trends2d.items()):
             for chname in plotables:
-                pname = u'Trend2D - %s' % chname
+                pname = 'Trend2D - %s' % chname
                 if pname in self._trends2d:
                     self._trends2d[pname].widget().trendItem.clearTrend()
                 else:

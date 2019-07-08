@@ -49,10 +49,10 @@ __DTYPE_MAP = dict(DTYPE_MAP)
 
 __use_unicode = False
 try:
-    unicode
+    str
     __use_unicode = True
-    __str_klasses.append(unicode)
-    __DTYPE_MAP[unicode] = DataType.String
+    __str_klasses.append(str)
+    __DTYPE_MAP[str] = DataType.String
 except:
     pass
 

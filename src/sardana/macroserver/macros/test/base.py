@@ -178,7 +178,7 @@ class RunMacroTestCase(BaseMacroTestCase):
     def assertFinished(self, msg):
         """Asserts that macro has finished.
         """
-        finishStates = [u'finish']
+        finishStates = ['finish']
         state = self.macro_executor.getState()
         msg = msg + ';\nState: %s' % state
         exception_str = self.macro_executor.getExceptionStr()
@@ -266,7 +266,7 @@ class RunStopMacroTestCase(RunMacroTestCase):
     def assertStopped(self, msg):
         """Asserts that macro was stopped
         """
-        stoppedStates = [u'stop']
+        stoppedStates = ['stop']
         state = self.macro_executor.getState()
         # TODO buffer is just for debugging, attach only the last state
         state_buffer = self.macro_executor.getStateBuffer()

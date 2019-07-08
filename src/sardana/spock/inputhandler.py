@@ -120,7 +120,7 @@ class InputHandler(Singleton, BaseInputHandler):
     def input(self, input_data=None):
         # parent process
         data_type = input_data.get('data_type', 'String')
-        if isinstance(data_type, (str, unicode)):
+        if isinstance(data_type, (str, str)):
             ms = genutils.get_macro_server()
             interfaces = ms.getInterfaces()
             if data_type in interfaces:

@@ -302,7 +302,7 @@ class GScan(Logger):
             macro.info("ActiveMntGrp not defined. Using %s", mnt_grp)
             macro.setEnv('ActiveMntGrp', mnt_grp.getName())
         else:
-            if not isinstance(mnt_grp_name, (str, unicode)):
+            if not isinstance(mnt_grp_name, (str, str)):
                 t = type(mnt_grp_name).__name__
                 raise TypeError("ActiveMntGrp MUST be string. It is '%s'" % t)
 
@@ -492,7 +492,7 @@ class GScan(Logger):
                           'ScanDir <abs directory>") to enable it')
             return ()
 
-        if not isinstance(scan_dir, (str, unicode)):
+        if not isinstance(scan_dir, (str, str)):
             scan_dir_t = type(scan_dir).__name__
             raise TypeError("ScanDir MUST be string. It is '%s'" % scan_dir_t)
 
@@ -514,14 +514,14 @@ class GScan(Logger):
         except UnknownEnv:
             pass
 
-        if isinstance(file_names, (str, unicode)):
+        if isinstance(file_names, (str, str)):
             file_names = (file_names,)
         elif not isinstance(file_names, collections.Sequence):
             scan_file_t = type(file_names).__name__
             raise TypeError("ScanFile MUST be string or sequence of strings."
                             " It is '%s'" % scan_file_t)
 
-        if isinstance(scan_recorders, (str, unicode)):
+        if isinstance(scan_recorders, (str, str)):
             scan_recorders = (scan_recorders,)
         elif not isinstance(scan_recorders, collections.Sequence):
             scan_recorders_t = type(scan_recorders).__name__
@@ -971,7 +971,7 @@ class GScan(Logger):
             scan_history = []
 
         scan_file = env['ScanFile']
-        if isinstance(scan_file, (str, unicode)):
+        if isinstance(scan_file, (str, str)):
             scan_file = scan_file,
 
         names = [col.name for col in env['datadesc']]

@@ -89,7 +89,7 @@ def createChannelDict(channel, index=None, **kwargs):
     import PyTango
     import numpy
 
-    if isinstance(channel, (str, unicode)):
+    if isinstance(channel, (str, str)):
         #@fixme: to make things uglier, I lazily assume Tango attribute namin
         dev_name, attr_name = channel.rsplit('/', 1)
         name = attr_name

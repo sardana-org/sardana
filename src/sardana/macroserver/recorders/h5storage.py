@@ -66,7 +66,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
     """
     formats = {'h5': '.h5'}
     # from http://docs.h5py.org/en/latest/strings.html
-    str_dt = h5py.special_dtype(vlen=unicode)  # Variable-length UTF-8 (PY2)
+    str_dt = h5py.special_dtype(vlen=str)  # Variable-length UTF-8 (PY2)
     byte_dt = h5py.special_dtype(vlen=bytes)  # Variable-length UTF-8 (PY2)
     supported_dtypes = ('float32', 'float64', 'int8',
                         'int16', 'int32', 'int64', 'uint8',

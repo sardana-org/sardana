@@ -136,7 +136,7 @@ class BaseMotion(Moveable):
 
         first_elem = elements[0]
 
-        if isinstance(first_elem, (str, unicode)):
+        if isinstance(first_elem, (str, str)):
             self.init_by_names(elements, moveable_srcs, allow_repeat,
                                allow_unknown)
         else:
