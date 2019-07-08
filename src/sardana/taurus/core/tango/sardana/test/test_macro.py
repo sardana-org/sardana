@@ -105,7 +105,7 @@ class MacroNodeTestCase(unittest.TestCase):
         msg = "XML encodings are not equal"
         # TODO: check why macronode_str has an extra whitespace charactger
         # at the end. strips should not be necessary
-        self.assertEquals(expected_str.strip(), macronode_str.strip(), msg)
+        self.assertEqual(expected_str.strip(), macronode_str.strip(), msg)
 
     def verifyXML(self, macro_name, param_def, param_str, expected_xml_rep):
         """
