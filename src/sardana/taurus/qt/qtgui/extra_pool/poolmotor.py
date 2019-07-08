@@ -859,8 +859,7 @@ class PoolMotorTVLabelWidget(TaurusWidget):
 
         # I don't like this approach, there should be something like
         # self.lbl_alias.addAction(...)
-        self.lbl_alias.contextMenuEvent = lambda(
-            event): self.contextMenuEvent(event)
+        self.lbl_alias.contextMenuEvent = lambda event: self.contextMenuEvent(event)
 
         # I' don't like this approach, there should be something like
         # self.lbl_alias.addToolTipCallback(self.calculate_extra_tooltip)
