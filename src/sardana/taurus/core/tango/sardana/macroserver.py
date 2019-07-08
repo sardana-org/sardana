@@ -57,7 +57,7 @@ from .macro import MacroInfo, Macro, MacroNode, ParamFactory, \
     SingleParamNode, ParamNode, createMacroNode
 from .sardana import BaseSardanaElementContainer, BaseSardanaElement
 from .pool import getChannelConfigs
-from itertools import izip_longest
+from itertools import zip_longest
 
 CHANGE_EVT_TYPES = TaurusEventType.Change, TaurusEventType.Periodic
 
