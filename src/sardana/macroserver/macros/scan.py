@@ -993,7 +993,7 @@ class scanhist(Macro):
         try:
             hist = self.getEnv("ScanHistory")
         except UnknownEnv:
-            print "No scan recorded in history"
+            print("No scan recorded in history")
             return
         if scan_number < 0:
             self.show_all(hist)

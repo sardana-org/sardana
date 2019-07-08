@@ -166,7 +166,7 @@ class BaseInputHandler(object):
         return ret
 
     def input_timeout(self, input_data):
-        print "input timeout"
+        print("input timeout")
 
 
 class MacroServerDevice(TangoDevice):
@@ -1240,7 +1240,7 @@ class BaseMacroServer(MacroServerDevice):
     def printTree(self, nodes, tabs=0):
         tabs = tabs + 1
         for node in nodes:
-            print ('\t'*tabs) + str(type(node)) + str(node)
+            print(('\t'*tabs) + str(type(node)) + str(node))
             if isinstance(node, SingleParamNode):
                 pass
             else:

@@ -37,8 +37,8 @@ def checkPoolElements(pool):
         try:
             ctrl_library = pool_ctrl_classes[ctrl_class][0]
         except KeyError:
-            print ("#WARNING: There is no controller class %s for controller %s" %
-                   (ctrl_class, ctrl_name))
+            print(("#WARNING: There is no controller class %s for controller %s" %
+                   (ctrl_class, ctrl_name)))
             continue
         ctrl_type = str(info['main_type'])
         # sardana script is not compatible with the new type CTExpChannel
@@ -139,7 +139,7 @@ def checkPoolElements(pool):
                     pool_elements_detail[alias]['attr_dicts'][attr] = attr_dict
                 else:
                     if attr.lower() in ['position', 'value']:
-                        print '***', specific_element_type, alias, attr,  'NO MEMORIZED ATTRIBUTES OR ATTRIBUTE CONFIGURATIONS ***'
+                        print('***', specific_element_type, alias, attr,  'NO MEMORIZED ATTRIBUTES OR ATTRIBUTE CONFIGURATIONS ***')
 
     # print '\n'
     # print '----------------------------------------------------------------'
@@ -164,8 +164,8 @@ def checkPoolElements(pool):
             try:
                 ctrl = pool_controllers[ctrl_name]
             except KeyError:
-                print ("#WARNING: There is no controller %s for element %s" %
-                       (ctrl_name, alias))
+                print(("#WARNING: There is no controller %s for element %s" %
+                       (ctrl_name, alias)))
                 continue
             ctrl['ctrl_pool_elements'].append(alias)
             if specific_element_type in ['PseudoMotor', 'PseudoCounter']:
@@ -355,46 +355,46 @@ def checkPoolElements(pool):
         row = acq_row_template.format(**mg_details)
         acquisition_sheet += row + '\n'
 
-    print '\n' * 2
-    print '################################ CONTROLLERS ################################\n' * 4
-    print '\n' * 2
-    print controllers_sheet
-    print '\n' * 2
-    print '################################ INSTRUMENTS ################################\n' * 4
-    print '\n' * 2
-    print instruments_sheet
-    print '\n' * 2
-    print '################################    MOTORS   ################################\n' * 4
-    print '\n' * 2
-    print motors_sheet
-    print '\n' * 2
-    print '################################    IOREGS   ################################\n' * 4
-    print '\n' * 2
-    print ioregs_sheet
-    print '\n' * 2
-    print '################################   CHANNELS  ################################\n' * 4
-    print '\n' * 2
-    print channels_sheet
-    print '\n' * 2
-    print '################################ ACQUISITION ################################\n' * 4
-    print '\n' * 2
-    print acquisition_sheet
-    print '\n' * 2
-    print '################################ PARAMETERS  ################################\n' * 4
-    print '\n' * 2
-    print parameters_sheet
+    print('\n' * 2)
+    print('################################ CONTROLLERS ################################\n' * 4)
+    print('\n' * 2)
+    print(controllers_sheet)
+    print('\n' * 2)
+    print('################################ INSTRUMENTS ################################\n' * 4)
+    print('\n' * 2)
+    print(instruments_sheet)
+    print('\n' * 2)
+    print('################################    MOTORS   ################################\n' * 4)
+    print('\n' * 2)
+    print(motors_sheet)
+    print('\n' * 2)
+    print('################################    IOREGS   ################################\n' * 4)
+    print('\n' * 2)
+    print(ioregs_sheet)
+    print('\n' * 2)
+    print('################################   CHANNELS  ################################\n' * 4)
+    print('\n' * 2)
+    print(channels_sheet)
+    print('\n' * 2)
+    print('################################ ACQUISITION ################################\n' * 4)
+    print('\n' * 2)
+    print(acquisition_sheet)
+    print('\n' * 2)
+    print('################################ PARAMETERS  ################################\n' * 4)
+    print('\n' * 2)
+    print(parameters_sheet)
 
 
 if __name__ == '__main__':
     if len(sys.argv) != 2 or sys.argv[1] == '?':
-        print '----------------------------------------'
-        print 'Invalid number of arguments.'
-        print ''
-        print 'Example of usage:'
-        print '    python get_pool_config pool'
-        print ''
-        print '    where pool is the device name of the pool'
-        print '----------------------------------------'
+        print('----------------------------------------')
+        print('Invalid number of arguments.')
+        print('')
+        print('Example of usage:')
+        print('    python get_pool_config pool')
+        print('')
+        print('    where pool is the device name of the pool')
+        print('----------------------------------------')
 
     pool = sys.argv[1]
     checkPoolElements(pool)

@@ -534,11 +534,11 @@ def ask_yes_no(prompt, default=None):
             if not ans:  # response was an empty string
                 ans = default
         except KeyboardInterrupt:
-            print
+            print()
         except EOFError:
             if default in list(answers.keys()):
                 ans = default
-                print
+                print()
             else:
                 raise
 
@@ -706,8 +706,8 @@ def prepare_server(args, tango_args):
 
     nodb = "-nodb" in tango_args
     if nodb and not hasattr(DeviceClass, "device_name_factory"):
-        print "In order to start %s with 'nodb' you need PyTango >= 7.2.3" %\
-              server_name
+        print("In order to start %s with 'nodb' you need PyTango >= 7.2.3" %\
+              server_name)
         sys.exit(1)
 
     if len(tango_args) < 2:
@@ -720,7 +720,7 @@ def prepare_server(args, tango_args):
             out = ''.join([c for c in inst_name if c not in valid_set])
             valid = len(inst_name) > 0 and len(out) == 0
             if not valid:
-                print "We only accept alphanumeric combinations"
+                print("We only accept alphanumeric combinations")
         args.append(inst_name)
         tango_args.append(inst_name)
     else:
@@ -756,7 +756,7 @@ def prepare_server(args, tango_args):
                 else:
                     print("\nAvailable Pools:")
                     for pool in pools_for_choosing:
-                        print pool
+                        print(pool)
                     print("")
                     while True:
                         msg = "Please select the Pool to connect to " \
@@ -771,12 +771,12 @@ def prepare_server(args, tango_args):
                             break
                         # user ended loop with some pools selected
                         elif len(elem) == 0:
-                            print("\nMacroServer %s has been connected to "
-                                  "Pool/s %s\n" % (inst_name, pool_names))
+                            print(("\nMacroServer %s has been connected to "
+                                  "Pool/s %s\n" % (inst_name, pool_names)))
                             break
                         # user entered unknown pool
                         elif elem.lower() not in all_pools:
-                            print "Unknown pool element"
+                            print("Unknown pool element")
                         else:
                             pool_names.append(elem)
                 log_messages += register_sardana(db, server_name, inst_name,
@@ -1248,7 +1248,7 @@ def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None,
     try:
         log_messages.extend(prepare_server(args, tango_args))
     except AbortException as e:
-        print e.message
+        print(e.message)
         return
     except KeyboardInterrupt:
         print("\nInterrupted by keyboard")

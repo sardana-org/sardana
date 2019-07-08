@@ -100,8 +100,8 @@ class UserModuleDeleter(object):
                     log.append(modname)
                     del sys.modules[modname]
         if verbose and log:
-            print "\x1b[4;33m%s\x1b[24m%s\x1b[0m" % ("UMD has deleted",
-                                                     ": " + ", ".join(log))
+            print("\x1b[4;33m%s\x1b[24m%s\x1b[0m" % ("UMD has deleted",
+                                                     ": " + ", ".join(log)))
 
 __umd__ = None
 

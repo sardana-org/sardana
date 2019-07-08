@@ -287,7 +287,7 @@ def main_MacroSelecionDialog(ms, perspective=MacroView.MacroModule):
     w = MacroSelectionDialog(model_name=ms, perspective=perspective)
 
     if w.result() == Qt.QDialog.Accepted:
-        print w.getSelectedMacros()
+        print(w.getSelectedMacros())
     return w
 
 

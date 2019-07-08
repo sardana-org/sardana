@@ -30,12 +30,12 @@ def transform(f):
 
 def main():
     if len(sys.argv) < 2:
-        print __doc__
+        print(__doc__)
         sys.exit(1)
 
     filename = sys.argv[1]
     t = transform(filename)
-    print etree.tostring(t, pretty_print=True)
+    print(etree.tostring(t, pretty_print=True))
 
 if __name__ == "__main__":
     main()

@@ -369,7 +369,7 @@ class Door(SardanaDevice):
     def PauseMacro(self):
         macro = self.getRunningMacro()
         if macro is None:
-            print "Unable to pause Null macro"
+            print("Unable to pause Null macro")
             return
         self.macro_executor.pause()
 

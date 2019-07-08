@@ -54,7 +54,7 @@ class SpockInputHandler(BaseInputHandler):
         prompt = input_data.get('prompt')
         if 'data_type' in input_data:
             if input_data['data_type'] != 'String':
-                print("Accepted input:  %s" % input_data['data_type'])
+                print(("Accepted input:  %s" % input_data['data_type']))
         ret = dict(input=None, cancel=False)
         try:
             if prompt is None:
@@ -66,7 +66,7 @@ class SpockInputHandler(BaseInputHandler):
         return ret
 
     def input_timeout(self, input_data):
-        print "SpockInputHandler input timeout"
+        print("SpockInputHandler input timeout")
 
 
 class MessageHandler(Qt.QObject):
@@ -154,7 +154,7 @@ class InputHandler(Singleton, BaseInputHandler):
         TaurusManager().addJob(self.run_forever, None)
         app.exec_()
         conn.close()
-        print "Quit input handler"
+        print("Quit input handler")
 
     def run_forever(self):
         # child process

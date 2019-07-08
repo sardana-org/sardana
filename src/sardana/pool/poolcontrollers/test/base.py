@@ -298,7 +298,7 @@ class TriggerGateReceiver(object):
             i += 1
         if len(periods) > 0:
             periods_array = numpy.array(periods)
-            print periods_array
+            print(periods_array)
             c2c = numpy.diff(periods_array)
             mean_c2c = c2c.mean()
             std_c2c = c2c.std()

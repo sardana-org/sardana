@@ -422,7 +422,7 @@ if __name__ == '__main__':
             try:
                 pars = door.macro_server.getMacroInfoObj(macro_name).parameters
             except AttributeError as e:
-                print "Macro %s does not exists!" % macro_name
+                print("Macro %s does not exists!" % macro_name)
                 return None
 
             param_names = []

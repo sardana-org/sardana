@@ -113,7 +113,7 @@ class SarTestTestCase(BasePoolTestCase):
                         # use the first trigger/gate element by default
                         ctrl.write_attribute("Synchronizer", "_test_tg_1_1")
                 except Exception as e:
-                    print e
+                    print(e)
                     msg = 'Impossible to create ctrl: "%s"' % (ctrl_name)
                     raise Exception('Aborting SartestTestCase: %s' % (msg))
                 self.ctrl_list.append(ctrl_name)
@@ -124,7 +124,7 @@ class SarTestTestCase(BasePoolTestCase):
                         self.pool.createElement(
                             [sar_type, ctrl_name, str(axis), elem_name])
                     except Exception as e:
-                        print e
+                        print(e)
                         msg = 'Impossible to create element: "%s"' % (
                             elem_name)
                         raise Exception('Aborting SartestTestCase: %s' % (msg))
@@ -140,7 +140,7 @@ class SarTestTestCase(BasePoolTestCase):
                 try:
                     self.pool.CreateController(argin)
                 except Exception as e:
-                    print e
+                    print(e)
                     msg = 'Impossible to create ctrl: "%s"' % (ctrl_name)
                     raise Exception('Aborting SartestTestCase: %s' % (msg))
                 self.ctrl_list.append(ctrl_name)
@@ -151,7 +151,7 @@ class SarTestTestCase(BasePoolTestCase):
         except Exception as e:
             # force tearDown in order to eliminate the Pool
             BasePoolTestCase.tearDown(self)
-            print e
+            print(e)
 
     def tearDown(self):
         """Remove the elements and the controllers

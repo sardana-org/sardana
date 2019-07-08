@@ -136,7 +136,7 @@ class _diffrac:
 
     def check_collinearity(self, h0, k0, l0, h1, k1, l1):
 
-        print h0
+        print(h0)
         cpx = k0 * l1 - l0 * k1
         cpy = l0 * h1 - h0 * l1
         cpz = h0 * k1 - k0 * h1

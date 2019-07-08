@@ -42,8 +42,8 @@ def expconf(self, parameter_s=''):
     try:
         from sardana.taurus.qt.qtgui.extra_sardana import ExpDescriptionEditor
     except:
-        print "Error importing ExpDescriptionEditor " \
-              "(hint: is taurus extra_sardana installed?)"
+        print("Error importing ExpDescriptionEditor " \
+              "(hint: is taurus extra_sardana installed?)")
         return
     try:
         doorname = get_door().name()
@@ -93,8 +93,8 @@ def showscan(self, parameter_s=''):
                     ShowScanOnline
 
             except Exception as e:
-                print "Error importing ShowScanOnline"
-                print e
+                print("Error importing ShowScanOnline")
+                print(e)
                 return
             try:
                 doorname = get_door().name()
@@ -145,17 +145,17 @@ def debug(self, parameter_s=''):
     door = get_door()
     if len(params) == 0:
         s = door.getDebugMode() and 'on' or 'off'
-        print "debug mode is %s" % s
+        print("debug mode is %s" % s)
         return
     elif len(params) == 1:
         s = params[0].lower()
         if s not in ('off', 'on'):
-            print "Usage: debug [on|off]"
+            print("Usage: debug [on|off]")
             return
         door.setDebugMode(s == 'on')
-        print "debug mode is now %s" % s
+        print("debug mode is now %s" % s)
     else:
-        print "Usage: debug [on|off]"
+        print("Usage: debug [on|off]")
 
 
 def www(self, parameter_s=''):
@@ -249,7 +249,7 @@ def edmac(self, parameter_s=''):
     macro_info_obj = ms.getMacroInfoObj(macro_name)
     if not is_new_macro:
         if macro_info_obj is None:
-            print "Macro '%s' could not be found" % macro_name
+            print("Macro '%s' could not be found" % macro_name)
             return
         macro_lib = macro_info_obj.module
 
@@ -259,11 +259,11 @@ def edmac(self, parameter_s=''):
                    ' override the already existing macro in module "%s"'
                    % (macro_name, macro_lib, macro_info_obj.module))
             if not ask_yes_no(msg, 'y'):
-                print "Aborting edition..."
+                print("Aborting edition...")
                 return
 
     macro_info = (macro_lib, macro_name)
-    print 'Opening %s.%s...' % macro_info
+    print('Opening %s.%s...' % macro_info)
 
     try:
         remote_fname, code, line_nb = ms.GetMacroCode(macro_info)
@@ -281,23 +281,23 @@ def edmac(self, parameter_s=''):
     ip.magic(cmd)
 
     if ask_yes_no('Do you want to apply the new code on the server?', 'y'):
-        print 'Storing...',
+        print('Storing...', end=' ')
         try:
             f = file(local_fname)
             try:
                 new_code = f.read()
                 ms.SetMacroCode([remote_fname, new_code])
-                print MSG_DONE
+                print(MSG_DONE)
             except Exception as e:
-                print MSG_FAILED
-                print 'Reason:', str(e)
+                print(MSG_FAILED)
+                print('Reason:', str(e))
             f.close()
         except:
-            print 'Could not open file \'%s\' for safe transfer to the ' \
-                  'server' % local_fname
-            print 'Did you forget to save?'
+            print('Could not open file \'%s\' for safe transfer to the ' \
+                  'server' % local_fname)
+            print('Did you forget to save?')
     else:
-        print "Discarding changes..."
+        print("Discarding changes...")
 
     # if os.path.exists(local_fname):
     #    if ask_yes_no('Delete temporary file \'%s\'?' % local_fname, 'y'):
@@ -317,7 +317,7 @@ def spock_late_startup_hook(self):
     except:
         import traceback
 
-        print "Exception in spock_late_startup_hook:"
+        print("Exception in spock_late_startup_hook:")
         traceback.print_exc()
 
 
@@ -327,7 +327,7 @@ def spock_pre_prompt_hook(self):
     except:
         import traceback
 
-        print "Exception in spock_pre_prompt_hook:"
+        print("Exception in spock_pre_prompt_hook:")
         traceback.print_exc()
 
 # def spock_pre_runcode_hook(self):

@@ -322,4 +322,4 @@ class MacroExecutorFactory(Singleton):
 if __name__ == '__main__':
     from sardana import sardanacustomsettings
     door_name = getattr(sardanacustomsettings, 'UNITTEST_DOOR_NAME')
-    print MacroExecutorFactory().getMacroExecutor(door_name)
+    print(MacroExecutorFactory().getMacroExecutor(door_name))

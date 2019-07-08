@@ -86,7 +86,7 @@ class BaseMacroServerTestCase(object):
             self.door = PyTango.DeviceProxy(self.door_name)
         except Exception as e:
             # force tearDown in order to eliminate the MacroServer
-            print e
+            print(e)
             self.tearDown()
 
     def tearDown(self):
@@ -115,11 +115,11 @@ class BaseMacroServerTestCase(object):
         except Exception as e:
             msg = "Not possible to remove macroserver environment file"
             print(msg)
-            print("Details: %s" % e)
+            print(("Details: %s" % e))
 
 
 if __name__ == '__main__':
     bms = BaseMacroServerTestCase()
     bms.setUp()
-    print bms.door, bms.macroserver
+    print(bms.door, bms.macroserver)
     bms.tearDown()

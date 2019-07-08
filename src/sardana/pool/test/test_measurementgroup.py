@@ -83,10 +83,10 @@ class BaseAcquisition(object):
         # printing acquisition records
         table = self.attr_listener.get_table()
         header = table.dtype.names
-        print header
+        print(header)
         n_rows = table.shape[0]
         for row in xrange(n_rows):
-            print row, table[row]
+            print(row, table[row])
         # checking if any of data was acquired
         self.assertTrue(self.attr_listener.data, 'no data were acquired')
         # checking if all channels produced data
@@ -216,7 +216,7 @@ class BaseAcquisition(object):
         self.assertEqual(numBW, 0, msg)
         # print the acquisition records
         for i, record in enumerate(zip(*list(self.attr_listener.data.values()))):
-            print i, record
+            print(i, record)
 
     def meas_contpos_acquisition(self, config, synchronization, moveable,
                                  second_config=None):

@@ -525,7 +525,7 @@ class umv(Macro):
             try:
                 posObj.unsubscribeEvent(self.positionChanged, motor)
             except Exception as e:
-                print str(e)
+                print(str(e))
                 raise e
 
     def positionChanged(self, motor, position):

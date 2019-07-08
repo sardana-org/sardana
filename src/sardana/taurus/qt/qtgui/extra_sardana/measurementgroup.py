@@ -145,7 +145,7 @@ def createChannelDict(channel, index=None, **kwargs):
         if attrconf.data_format != PyTango.AttrDataFormat.SCALAR:
             value = attrproxy.read().value
     except Exception as e:
-        print str(e)
+        print(str(e))
 
     if value is not None:
         shape = list(numpy.shape(value))

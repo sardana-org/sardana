@@ -119,7 +119,7 @@ def main():
     f = nxs.load(file_name)
     m = f['entry1']['measurement']
     ch1 = m['ch1']
-    print ch1.nxdata
+    print(ch1.nxdata)
 
 if __name__ == "__main__":
     main()

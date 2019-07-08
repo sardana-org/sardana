@@ -365,7 +365,7 @@ def get_device_from_user(expected_class, dft=None):
     try:
         full_name, name, alias = from_name_to_tango(from_user)
     except:
-        print "Warning: the given %s does not exist" % expected_class
+        print("Warning: the given %s does not exist" % expected_class)
         return name
 
     try:
@@ -373,10 +373,10 @@ def get_device_from_user(expected_class, dft=None):
         cl_name = db.get_class_for_device(name)
         class_correct = cl_name == expected_class
         if not class_correct:
-            print "Warning: the given name is not a %s (it is a %s)" % (expected_class, cl_name)
+            print("Warning: the given name is not a %s (it is a %s)" % (expected_class, cl_name))
     except Exception as e:
-        print "Warning: unable to confirm if '%s' is valid" % name
-        print str(e)
+        print("Warning: unable to confirm if '%s' is valid" % name)
+        print(str(e))
     return full_name
 
 
@@ -426,7 +426,7 @@ def get_tango_host_from_user():
         except:
             exp = "Invalid tango host. Must be in format <host>:<port>"
         exp = "Invalid tango host. %s " % exp
-        print exp
+        print(exp)
 
 
 def print_dev_from_class(classname, dft=None):
@@ -446,7 +446,7 @@ def print_dev_from_class(classname, dft=None):
     res = None
     dev_list = list(db.get_device_name(server_wildcard, classname))
     tg_host = "%s:%s" % (db.get_db_host(), db.get_db_port())
-    print "Available", classname, "devices from", tg_host, ":"
+    print("Available", classname, "devices from", tg_host, ":")
 
     list_devices_with_alias = []
     list_devices_with_no_alias = []
@@ -475,7 +475,7 @@ def print_dev_from_class(classname, dft=None):
         out = "%-25s" % out
         if dev_name in exp_dev_list:
             out += " (running)"
-        print out
+        print(out)
 
         if dft:
             if dft.lower() == name.lower():
@@ -817,9 +817,9 @@ def check_for_upgrade(ipy_profile_file, ipythondir, session, profile):
        alpha_in_spock_profile == alpha_in_spock_lib:
         return
     if spocklib_ver < spock_profile_ver:
-        print '%sYour spock profile (%s) is newer than your spock version ' \
-              '(%s)!' % (TermColors.Brown, spock_profile_ver_str, spock_lib_ver_str)
-        print 'Please upgrade spock or delete the current profile %s' % TermColors.Normal
+        print('%sYour spock profile (%s) is newer than your spock version ' \
+              '(%s)!' % (TermColors.Brown, spock_profile_ver_str, spock_lib_ver_str))
+        print('Please upgrade spock or delete the current profile %s' % TermColors.Normal)
         sys.exit(1)
 
     # there was no version track of spock profiles since spock 0.2.0 so change
@@ -829,7 +829,7 @@ def check_for_upgrade(ipy_profile_file, ipythondir, session, profile):
     msg = 'Your current spock door extension profile has been created with spock %s.\n' \
           'Your current spock door extension version is %s, therefore a profile upgrade is needed.\n' \
           % (spock_profile_ver_str, spock_lib_ver_str)
-    print msg
+    print(msg)
     prompt = 'Do you wish to upgrade now (warn: this will shutdown the current spock session) ([y]/n)? '
     r = raw_input(prompt) or 'y'
     if r.lower() == 'y':
@@ -1095,22 +1095,22 @@ def start(user_ns=None):
     try:
         check_requirements()
     except exception.SpockMissingRequirement as requirement:
-        print str(requirement)
+        print(str(requirement))
         sys.exit(-1)
     except exception.SpockMissingRecommended as recommended:
-        print str(recommended)
+        print(str(recommended))
 
     user_ns = user_ns or {}
     try:
         user_ns.update(get_args(sys.argv))
     except exception.SpockException as e:
-        print e.message
-        print 'Starting normal IPython console'
+        print(e.message)
+        print('Starting normal IPython console')
     except KeyboardInterrupt:
-        print "\nUser pressed Ctrl+C. Exiting..."
+        print("\nUser pressed Ctrl+C. Exiting...")
         sys.exit()
     except Exception as e:
-        print 'spock exited with an unmanaged exception: %s' % str(e)
+        print('spock exited with an unmanaged exception: %s' % str(e))
         sys.exit(-2)
 
     return IPython.Shell.start(user_ns=user_ns)

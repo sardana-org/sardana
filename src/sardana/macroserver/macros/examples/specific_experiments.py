@@ -72,7 +72,7 @@ class xas_acq(Macro, Hookable):
         for n, e in self.getElementsWithInterface('Instrument').items():
             inst = e.getObj()
             # ,inst.getElements()
-            print n, e.name, inst.getFullName(), type(e), type(inst), type(inst.getPoolObj())
+            print(n, e.name, inst.getFullName(), type(e), type(inst), type(inst.getPoolObj()))
 
         # maybe I should use the instrument interface to obtain the right
         # counters

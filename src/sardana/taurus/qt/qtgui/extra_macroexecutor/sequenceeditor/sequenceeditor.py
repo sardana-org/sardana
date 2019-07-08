@@ -672,7 +672,7 @@ class TaurusSequencerWidget(TaurusWidget):
                 "Error while saving macros sequence",
                 "There was a problem while writing to the file: %s" %
                 fileName)
-            print e
+            print(e)
         finally:
             if not file is None:
                 file.close()

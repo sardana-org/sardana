@@ -235,7 +235,7 @@ class ShmRecorder(DataRecorder):
             self.sps.create(self.progname, self.shm_id_env, self.maxenv, self.envlen,
                             self.sps.STRING)
 
-        print "Starting new SHM recording"
+        print("Starting new SHM recording")
 
         self.putenv('title', recordlist.getEnvironValue('title'))
 

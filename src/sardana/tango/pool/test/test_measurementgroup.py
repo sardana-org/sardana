@@ -101,7 +101,7 @@ class TangoAttributeListener(AttributeListener):
                 channel_data.extend(pad + value)
                 self.data[obj_fullname] = channel_data
         except Exception as e:
-            print e
+            print(e)
             raise Exception('"data" event callback failed')
 
 
@@ -222,7 +222,7 @@ class MeasSarTestTestCase(SarTestTestCase):
         # Do acquisition
         self.meas.Start()
         while self.meas.State() == PyTango.DevState.MOVING:
-            print "Acquiring..."
+            print("Acquiring...")
             time.sleep(0.1)
         time.sleep(1)
         repetitions = params['synchronization'][0][SynchParam.Repeats]
@@ -238,7 +238,7 @@ class MeasSarTestTestCase(SarTestTestCase):
         # starting timer (0.2 s) which will stop the measurement group
         threading.Timer(0.2, self.stopMeas).start()
         while self.meas.State() == PyTango.DevState.MOVING:
-            print "Acquiring..."
+            print("Acquiring...")
             time.sleep(0.1)
         state = self.meas.State()
         desired_state = PyTango.DevState.ON
@@ -263,8 +263,8 @@ class MeasSarTestTestCase(SarTestTestCase):
             # Delete the meas
             self.pool.DeleteElement(self.mg_name)
         except Exception as e:
-            print('Impossible to delete MeasurementGroup: %s' % (self.mg_name))
-            print e
+            print(('Impossible to delete MeasurementGroup: %s' % (self.mg_name)))
+            print(e)
         SarTestTestCase.tearDown(self)
 
 

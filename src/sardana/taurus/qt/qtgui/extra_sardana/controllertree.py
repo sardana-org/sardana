@@ -315,7 +315,7 @@ def main_ControllerClassSelecionDialog(pool, perspective=PoolControllerView.Cont
         model_name=pool, perspective=perspective)
 
     if w.result() == Qt.QDialog.Accepted:
-        print w.getSelectedMacros()
+        print(w.getSelectedMacros())
     return w
 
 

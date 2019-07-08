@@ -76,11 +76,11 @@ try:
 except:
     try:
         import pexpect23 as pexpect
-        print "[WARNING]: pexpect module not found. Using local pexpect 2.3"
+        print("[WARNING]: pexpect module not found. Using local pexpect 2.3")
     except Exception as e:
-        print e
-        print "The Sardana requires pexpect python module which was not found."
-        print "This module can be found at http://www.noah.org/wiki/Pexpect"
+        print(e)
+        print("The Sardana requires pexpect python module which was not found.")
+        print("This module can be found at http://www.noah.org/wiki/Pexpect")
         sys.exit(2)
 
 
@@ -449,8 +449,8 @@ class TangoServer:
         server_host_ip = socket.gethostbyname_ex(server_host)[2][0]
         pytango_host_ip = socket.gethostbyname_ex(pytango_host)[2][0]
         if (server_host_ip != pytango_host_ip) or (server_port != pytango_port):
-            print '\t!!! WARNING !!! %s TANGO_HOST is not the PyTango default. You may erase the WRONG sardana definition.' % self._complete_name
-            print '\tServer: %s  PyTango: %s' % (server_tango_host, pytango_tango_host)
+            print('\t!!! WARNING !!! %s TANGO_HOST is not the PyTango default. You may erase the WRONG sardana definition.' % self._complete_name)
+            print('\tServer: %s  PyTango: %s' % (server_tango_host, pytango_tango_host))
             ans = raw_input('\tDo you _really_ want to continue? [y|N] ')
             if ans.lower() not in ['y', 'yes']:
                 raise Exception(
@@ -470,7 +470,7 @@ class TangoServer:
             cmd = 'TANGO_HOST=%s jive-save-config %s %s &>/dev/null' % (
                 server_tango_host, self._complete_name, config_file_name)
             os.system(cmd)
-            print 'There is a backup of the deleted server config in: %s' % config_file_name
+            print('There is a backup of the deleted server config in: %s' % config_file_name)
         except:
             pass
         #######################################################################
@@ -691,8 +691,8 @@ class DevicePoolServer(TangoServer):
                     try:
                         dev.write_attribute(name, v)
                     except Exception as ex:
-                        print 'SOME PROBLEMS SETTING ATTRIBUTE VALUE FOR DEVICE', dev_name, 'ATTRIBUTE', tango_attr.name, 'VALUE', str(v)
-                        print 'EXCEPTION:', ex
+                        print('SOME PROBLEMS SETTING ATTRIBUTE VALUE FOR DEVICE', dev_name, 'ATTRIBUTE', tango_attr.name, 'VALUE', str(v))
+                        print('EXCEPTION:', ex)
 
                 c_node = attr.find("Configuration")
                 if not c_node is None:
@@ -748,14 +748,14 @@ class DevicePoolServer(TangoServer):
                                 period = int(p_node.get("period") or 0)
                                 dev.poll_attribute(name, period)
                             except:
-                                print dev_name, tango_attr.name
+                                print(dev_name, tango_attr.name)
 
                     try:
                         dev.set_attribute_config(attr_info)
                     except Exception as e:
-                        print 'COULD NOT SET THE FOLLOWING CONFIG FOR DEVICE', dev_name, 'ATTR', tango_attr.name
-                        print 'ATTRIBUTE INFO:', attr_info
-                        print 'EXCEPTION:', e
+                        print('COULD NOT SET THE FOLLOWING CONFIG FOR DEVICE', dev_name, 'ATTR', tango_attr.name)
+                        print('ATTRIBUTE INFO:', attr_info)
+                        print('EXCEPTION:', e)
 
         intrument_node = node.find("InstrumentRef")
         if not intrument_node is None:
@@ -765,8 +765,8 @@ class DevicePoolServer(TangoServer):
                     value = value.strip()
                     dev.write_attribute('Instrument', value)
                 except Exception as ex:
-                    print 'SOME PROBLEMS SETTING INSTRUMENT VALUE FOR DEVICE', dev_name, 'VALUE', value
-                    print 'EXCEPTION:', ex
+                    print('SOME PROBLEMS SETTING INSTRUMENT VALUE FOR DEVICE', dev_name, 'VALUE', value)
+                    print('EXCEPTION:', ex)
 
     def loadPool(self):
         start_load_time = datetime.datetime.now()
@@ -1136,7 +1136,7 @@ class DevicePoolServer(TangoServer):
                     self.run(step=True)
                 except:
                     self.on("[FAILED]")
-                    print ctrl_class_info
+                    print(ctrl_class_info)
                     raise
             self.on(" (%d ctrls; %d pmotors) [DONE]" % (
                 pm_ctrl_count, pm_count))
@@ -1848,14 +1848,14 @@ if __name__ == "__main__":
         opts, pargs = getopt.getopt(
             sys.argv[1:], 'vl', ['simulation=', 'cleanup='])
     except Exception as e:
-        print "ERROR:", str(e)
-        print
-        print __doc__
+        print("ERROR:", str(e))
+        print()
+        print(__doc__)
         sys.exit(3)
 
     if not len(pargs):
-        print "ERROR: Please provide XML filename"
-        print
+        print("ERROR: Please provide XML filename")
+        print()
         sys.exit(3)
 
     filename = pargs[0]
@@ -1875,32 +1875,32 @@ if __name__ == "__main__":
         elif opt == '-v':
             just_output_and_exit = True
         else:
-            print __doc__
+            print(__doc__)
             sys.exit(3)
 
     try:
         import to_sar
         sar_doc = to_sar.transform(filename)
     except Exception as e:
-        print 'Sorry, but some problems found when trying to convert to SARDANA xml:'
-        print str(e)
+        print('Sorry, but some problems found when trying to convert to SARDANA xml:')
+        print(str(e))
 
     sardana = Sardana(sar_doc, simulation=simulation,
                       log=activate_logging, cleanup=cleanup)
 
     if just_output_and_exit:
         sardana.prepare()
-        print etree.tostring(sardana.getRoot(), pretty_print=True)
+        print(etree.tostring(sardana.getRoot(), pretty_print=True))
         sys.exit(0)
 
     try:
         sardana.setUp()
-        print "Ready!"
+        print("Ready!")
         sardana.run()
     except KeyboardInterrupt as e:
-        print "User pressed Ctrl+C..."
+        print("User pressed Ctrl+C...")
     except Exception as e:
         traceback.print_exc()
 
-    print "Shutting down!"
+    print("Shutting down!")
     sardana.tearDown()

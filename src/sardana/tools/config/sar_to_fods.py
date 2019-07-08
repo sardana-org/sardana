@@ -17,7 +17,7 @@ def transform(f):
 def main():
     filename = sys.argv[1]
     t = transform(filename)
-    print etree.tostring(t, pretty_print=True)
+    print(etree.tostring(t, pretty_print=True))
 
 if __name__ == "__main__":
     main()

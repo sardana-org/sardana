@@ -116,8 +116,8 @@ class GUIViewer(BaseGUIViewer):
                         return
                 break
             else:
-                print "Cannot plot scan:"
-                print "No scan in scan history was saved into a file"
+                print("Cannot plot scan:")
+                print("No scan in scan history was saved into a file")
                 return
         else:
             for scan in reversed(scan_history_info):
@@ -125,15 +125,15 @@ class GUIViewer(BaseGUIViewer):
                     scan_dir = scan.get('ScanDir')
                     scan_file = scan.get('ScanFile')
                     if scan_dir is None or scan_file is None:
-                        print "Cannot plot scan:"
-                        print "Scan %d was not saved into a file" % (scan_nb,)
+                        print("Cannot plot scan:")
+                        print("Scan %d was not saved into a file" % (scan_nb,))
                         return
                     if not isinstance(scan_file, (str, unicode)):
                         scan_file = scan_file[0]
                     break
             else:
-                print "Cannot plot scan:"
-                print "Scan %d not found in scan history" % (scan_nb,)
+                print("Cannot plot scan:")
+                print("Scan %d not found in scan history" % (scan_nb,))
                 return
 
         remote_file = os.path.join(scan_dir, scan_file)
@@ -159,16 +159,16 @@ class GUIViewer(BaseGUIViewer):
                         local_file = os.path.join(local_directory, scan_file)
                         break
         if local_file is None:
-            print "Cannot plot scan:"
-            print "Could not find %s in any of the following locations:" % (scan_file,)
-            print "\n".join(locations)
+            print("Cannot plot scan:")
+            print("Could not find %s in any of the following locations:" % (scan_file,))
+            print("\n".join(locations))
             return
 
         import taurus.qt.qtgui.extra_nexus
         taurus_nexus_widget = taurus.qt.qtgui.extra_nexus.TaurusNeXusBrowser()
         taurus_nexus_widget.setMinimumSize(800, 600)
 
-        print "Trying to open local scan file %s..." % (local_file,)
+        print("Trying to open local scan file %s..." % (local_file,))
         taurus_nexus_widget.openFile(local_file)
         taurus_nexus_widget.show()
         nexus_widget = taurus_nexus_widget.neXusWidget()
@@ -190,8 +190,8 @@ class GUIViewer(BaseGUIViewer):
             title = file_model.getNodeFromIndex(title_index)[0]
             windowTitle += " - " + title
         except Exception as e:
-            print "Cannot plot scan:"
-            print str(e)
+            print("Cannot plot scan:")
+            print(str(e))
 
         taurus_nexus_widget.setWindowTitle(windowTitle)
 
@@ -199,13 +199,13 @@ class GUIViewer(BaseGUIViewer):
         try:
             import sps
         except:
-            print 'sps module not available. No plotting'
+            print('sps module not available. No plotting')
             return
 
         try:
             import pylab
         except:
-            print "pylab not available (try running 'spock -pylab'). No plotting"
+            print("pylab not available (try running 'spock -pylab'). No plotting")
             return
 
         door = genutils.get_door()
@@ -213,8 +213,8 @@ class GUIViewer(BaseGUIViewer):
         try:
             env = dict(door.getEnvironmentObj().read().value)
         except Exception as e:
-            print 'Unable to read environment. No plotting'
-            print str(e)
+            print('Unable to read environment. No plotting')
+            print(str(e))
             return
 
         program = door.getNormalName().replace('/', '').replace('_', '')
@@ -223,26 +223,26 @@ class GUIViewer(BaseGUIViewer):
                 '/', '').replace('_', '').upper() + "0D"
             array_ENV = '%s_ENV' % array
         except:
-            print 'ActiveMntGrp not defined. No plotting'
+            print('ActiveMntGrp not defined. No plotting')
             return
 
         if not program in sps.getspeclist():
-            print '%s not found. No plotting' % program
+            print('%s not found. No plotting' % program)
             return
 
         if not array in sps.getarraylist(program):
-            print '%s not found in %s. No plotting' % (array, program)
+            print('%s not found in %s. No plotting' % (array, program))
             return
 
         if not array_ENV in sps.getarraylist(program):
-            print '%s not found in %s. No plotting' % (array_ENV, program)
+            print('%s not found in %s. No plotting' % (array_ENV, program))
             return
 
         try:
             mem = sps.attach(program, array)
             mem_ENV = sps.attach(program, array_ENV)
         except Exception as e:
-            print 'sps.attach error: %s. No plotting' % str(e)
+            print('sps.attach error: %s. No plotting' % str(e))
             return
 
         # reconstruct the environment
@@ -259,7 +259,7 @@ class GUIViewer(BaseGUIViewer):
         col_nb = len(labels)
 
         if col_nb < 4:
-            print 'No data columns available in sps'
+            print('No data columns available in sps')
             return
 
         rows = int(env['nopts'])
@@ -350,7 +350,7 @@ class SpockBaseDoor(BaseDoor):
     def _runMacro(self, xml, **kwargs):
         # kwargs like 'synch' are ignored in this re-implementation
         if self._spock_state != RUNNING_STATE:
-            print "Unable to run macro: No connection to door '%s'" % self.getSimpleName()
+            print("Unable to run macro: No connection to door '%s'" % self.getSimpleName())
             raise Exception("Unable to run macro: No connection")
         if xml is None:
             xml = self.getRunningXML()
@@ -368,21 +368,21 @@ class SpockBaseDoor(BaseDoor):
                 reason, desc = e.args[0].reason, e.args[0].desc
                 macro_obj = self.getRunningMacro()
                 if reason == 'MissingParam':
-                    print "Missing parameter:", desc
-                    print macro_obj.getInfo().doc
+                    print("Missing parameter:", desc)
+                    print(macro_obj.getInfo().doc)
                 elif reason == 'WrongParam':
-                    print "Wrong parameter:", desc
-                    print macro_obj.getInfo().doc
+                    print("Wrong parameter:", desc)
+                    print(macro_obj.getInfo().doc)
                 elif reason == 'UnkownParamObj':
-                    print "Unknown parameter:", desc
+                    print("Unknown parameter:", desc)
                 elif reason == 'MissingEnv':
-                    print "Missing environment:", desc
+                    print("Missing environment:", desc)
                 elif reason in ('API_CantConnectToDevice', 'API_DeviceNotExported'):
                     self._updateState(self._old_sw_door_state,
                                       TaurusSWDevState.Shutdown, silent=True)
-                    print "Unable to run macro: No connection to door '%s'" % self.getSimpleName()
+                    print("Unable to run macro: No connection to door '%s'" % self.getSimpleName())
                 else:
-                    print "Unable to run macro:", reason, desc
+                    print("Unable to run macro:", reason, desc)
 
     def _getMacroResult(self, macro):
         ret = None
