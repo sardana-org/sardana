@@ -957,7 +957,7 @@ class newfile(Hookable, Macro):
                     ScanDir = self.getEnv('ScanDir')
                 except UnknownEnv:
                     ScanDir = ''
-                if not (isinstance(ScanDir, basestring) and len(ScanDir) > 0):
+                if not (isinstance(ScanDir, str) and len(ScanDir) > 0):
                     msg = ('Data is not stored until ScanDir is correctly '
                            'set! Provide ScanDir with newfile macro: '
                            '`newfile [<ScanDir>/<ScanFile>] <ScanID>` '

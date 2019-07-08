@@ -952,7 +952,7 @@ class LogMacroManager(Logger):
         except AttributeError:
             pass
         else:
-            if isinstance(log_macro_filter, basestring):
+            if isinstance(log_macro_filter, str):
                 try:
                     module_name, filter_name = log_macro_filter.rsplit('.', 1)
                     __import__(module_name)

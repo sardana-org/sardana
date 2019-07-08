@@ -123,7 +123,7 @@ def runfile(filename, args=None, wdir=None):
         else:
             verbose = os.environ.get("UMD_VERBOSE", "").lower() == "true"
             __umd__.run(verbose=verbose)
-    if args is not None and not isinstance(args, basestring):
+    if args is not None and not isinstance(args, str):
         raise TypeError("expected a character buffer object")
     glbs = globals()
     if '__ipythonshell__' in glbs:
