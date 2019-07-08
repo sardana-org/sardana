@@ -627,7 +627,7 @@ class SpockMacroServer(BaseMacroServer):
                 if macro is not None:  # maybe none if macro was aborted
                     return macro.getResult()
 
-        macro_fn.func_name = macro_name
+        macro_fn.__name__ = macro_name
         macro_fn.__doc__ = macro_info.doc + "\nWARNING: do not rely on the" \
                                             " file path below\n"
 

@@ -123,18 +123,18 @@ def is_macro(macro, abs_file=None, logger=None):
             if logger:
                 logger.debug("Could not add macro %s: Needs at least one "
                              "parameter (usually called 'self')",
-                             macro.func_name)
+                             macro.__name__)
             return False
         if keywords is not None:
             if logger:
                 logger.debug("Could not add macro %s: Unsupported keyword "
-                             "parameters '%s'", macro.func_name, keywords)
+                             "parameters '%s'", macro.__name__, keywords)
             return False
         if varargs and len(args) > 1:
             if logger:
                 logger.debug("Could not add macro %s: Unsupported giving "
                              "named parameters '%s' and varargs '%s'",
-                             macro.func_name, args, varargs)
+                             macro.__name__, args, varargs)
             return False
     else:
         return False
@@ -599,7 +599,7 @@ class MacroManager(MacroServerManager):
         self._macro_dict[macro_name] = macro_class
 
     def addMacroFunction(self, macro_lib, func, isoverwritten=False):
-        macro_name = func.func_name
+        macro_name = func.__name__
         action = (macro_lib.has_macro(macro_name) and "Updating") or "Adding"
         self.debug("%s macro function %s" % (action, macro_name))
 

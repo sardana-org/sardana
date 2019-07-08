@@ -2483,7 +2483,7 @@ class MacroFunc(Macro):
     def __init__(self, *args, **kwargs):
         function = kwargs['function']
         self._function = function
-        kwargs['as'] = self._function.func_name
+        kwargs['as'] = self._function.__name__
         if function.param_def is not None:
             self.param_def = function.param_def
         if function.result_def is not None:

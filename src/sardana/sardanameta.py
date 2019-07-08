@@ -524,7 +524,7 @@ class SardanaFunction(SardanaCode):
     def __init__(self, **kwargs):
         function = kwargs.pop('function')
         kwargs['code'] = function
-        kwargs['name'] = kwargs.pop('name', function.func_name)
+        kwargs['name'] = kwargs.pop('name', function.__name__)
         SardanaCode.__init__(self, **kwargs)
 
     @property
