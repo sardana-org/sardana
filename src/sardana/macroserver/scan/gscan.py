@@ -2083,7 +2083,7 @@ def generate_positions(motors, starts, finals, nr_points):
         label = motor.getName()
         dtype_spec.append((label, 'float64'))
     # convert to numpy array for easier handling
-    table = np.array(zip(*moveable_positions), dtype=dtype_spec)
+    table = np.array(list(zip(*moveable_positions)), dtype=dtype_spec)
     n_rows = table.shape[0]
     for i in range(n_rows):
         row = dict()

@@ -196,7 +196,7 @@ class prdef_discr(Macro):
             # Sort by position column
             value_list = sorted(value_list, key=lambda x: x[1])
             # Transpose matrix
-            value_list = list(map(list, zip(*value_list)))
+            value_list = list(map(list, list(zip(*value_list))))
             # Extract sorted row headers
             row_head_str = value_list[0]
             # Extract sorted values

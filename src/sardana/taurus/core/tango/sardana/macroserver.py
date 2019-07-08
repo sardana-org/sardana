@@ -256,7 +256,7 @@ class ExperimentConfiguration(object):
                     except Exception:
                         # if the mnt_grp did not already exist, create it now
                         chconfigs = getChannelConfigs(mnt_grp_cfg)
-                        chnames, chinfos = zip(*chconfigs)  # unzipping
+                        chnames, chinfos = list(zip(*chconfigs))  # unzipping
                         # We assume that all the channels belong to the same
                         # pool!
                         pool = self._getPoolOfElement(chnames[0])

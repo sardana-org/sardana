@@ -73,5 +73,5 @@ class AttributeListener(object):
                 v.extend([None] * (max_len - len(v)))
                 table.append(v)
                 dtype_spec.append((k, self.dtype))
-            a = numpy.array(zip(*table), dtype=dtype_spec)
+            a = numpy.array(list(zip(*table)), dtype=dtype_spec)
             return a

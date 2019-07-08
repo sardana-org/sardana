@@ -915,7 +915,7 @@ def get_dev_from_class_server(db, classname, server):
     def pairwise(iterable):
         "s -> (s0, s1), (s2, s3), (s4, s5), ..."
         a = iter(iterable)
-        return zip(a, a)
+        return list(zip(a, a))
 
     devices = []
     device_class_list = db.get_device_class_list(server)
