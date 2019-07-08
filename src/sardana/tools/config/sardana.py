@@ -1280,7 +1280,7 @@ class Sardana:
 
     def __init__(self, source, simulation="Best", cleanup=True, log=False):
 
-        if type(source) in types.StringTypes:
+        if type(source) in str:
             self._filename = source
             self._xmldoc = None
         else:
