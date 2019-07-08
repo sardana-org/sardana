@@ -1551,7 +1551,7 @@ class loadcrystal(iMacro, _diffrac):
                 self.output("New directory %s not found" % newdir)
                 return
 
-        res = filter(lambda x: x.endswith('.txt'), files)
+        res = [x for x in files if x.endswith('.txt')]
         if len(res) == 0:
             self.output("No crystals available in set directory. Nothing done")
             return
