@@ -104,7 +104,7 @@ class BaseNEXUS_FileRecorder(BaseFileRecorder):
         # obtain preferred nexus file mode for writing from the filename
         # extension (defaults to hdf5)
         extension = os.path.splitext(filename)[1]
-        inv_formats = dict(itertools.izip(
+        inv_formats = dict(zip(
             iter(self.formats.values()), iter(self.formats.keys())))
         self.nxfilemode = inv_formats.get(extension.lower(), 'w5')
         self.currentlist = None
