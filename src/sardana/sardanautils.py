@@ -56,15 +56,6 @@ try:
 except:
     pass
 
-__use_long = False
-try:
-    int
-    __use_long = True
-    __int_klasses.append(int)
-    __DTYPE_MAP[int] = DataType.Integer
-except:
-    pass
-
 __bool_klasses = [bool] + __int_klasses
 
 __str_klasses = tuple(__str_klasses)

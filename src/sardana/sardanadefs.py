@@ -124,7 +124,6 @@ DTYPE_MAP = {
     'int': DataType.Integer,
     'integer': DataType.Integer,
     int: DataType.Integer,
-    int: DataType.Integer,
     'long': DataType.Integer,
     DataType.Integer: DataType.Integer,
     'float': DataType.Double,
@@ -145,7 +144,6 @@ DTYPE_MAP = {
 R_DTYPE_MAP = {
     'int': int,
     'integer': int,
-    int: int,
     int: int,
     'long': int,
     DataType.Integer: int,
