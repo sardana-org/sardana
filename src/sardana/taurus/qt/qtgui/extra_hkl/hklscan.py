@@ -121,7 +121,7 @@ class HKLScan(TaurusWidget):
         angles_names = []
         angles_taurus_label = []
 
-        gap_x = 800 / self.nb_motors
+        gap_x = 800 // self.nb_motors
 
         try:
             angles_names = self.device.motorroles

@@ -522,7 +522,7 @@ class SpockBaseDoor(BaseDoor):
         value = data.value
         size = len(value[1])
         if size > self._RECORD_DATA_THRESOLD:
-            sizekb = size / 1024
+            sizekb = size // 1024
             self.logReceived(self.Info, ['Received long data record (%d Kb)' % sizekb,
                                          'It may take some time to process. Please wait...'])
         return BaseDoor._processRecordData(self, data)

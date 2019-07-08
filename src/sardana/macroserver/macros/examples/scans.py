@@ -304,7 +304,7 @@ class regscan(Macro):
         self.integ_time = integ_time
         self.start_pos = start_pos
         self.regions = regions
-        self.regions_count = len(self.regions) / 2
+        self.regions_count = len(self.regions) // 2
 
         generator = self._generator
         moveables = [motor]
@@ -365,7 +365,7 @@ class reg2scan(Macro):
         self.integ_time = integ_time
         self.start_pos = start_pos
         self.regions = regions
-        self.regions_count = len(self.regions) / 2
+        self.regions_count = len(self.regions) // 2
 
         generator = self._generator
         moveables = [motor1, motor2]
@@ -430,7 +430,7 @@ class reg3scan(Macro):
         self.integ_time = integ_time
         self.start_pos = start_pos
         self.regions = regions
-        self.regions_count = len(self.regions) / 2
+        self.regions_count = len(self.regions) // 2
 
         generator = self._generator
         moveables = [motor1, motor2, motor3]

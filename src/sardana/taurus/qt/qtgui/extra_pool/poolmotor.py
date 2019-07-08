@@ -107,7 +107,7 @@ class PoolMotorClient():
 
     @Qt.pyqtSlot()
     def jogNeg(self):
-        neg_limit = -((self.maxint_in_32_bits / 2) - 1)
+        neg_limit = -((self.maxint_in_32_bits // 2) - 1)
         # THERE IS A BUG IN THE ICEPAP THAT DOES NOT ALLOW MOVE ABSOLUTE FURTHER THAN 32 BIT
         # SO IF THERE ARE STEPS PER UNIT, max_int HAS TO BE REDUCED
         if hasattr(self.motor_dev, 'step_per_unit'):
@@ -122,7 +122,7 @@ class PoolMotorClient():
 
     @Qt.pyqtSlot()
     def jogPos(self):
-        pos_limit = (self.maxint_in_32_bits / 2) - 1
+        pos_limit = (self.maxint_in_32_bits // 2) - 1
         # THERE IS A BUG IN THE ICEPAP THAT DOES NOT ALLOW MOVE ABSOLUTE FURTHER THAN 32 BIT
         # SO IF THERE ARE STEPS PER UNIT, max_int HAS TO BE REDUCED
         if hasattr(self.motor_dev, 'step_per_unit'):
