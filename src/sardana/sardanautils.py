@@ -58,10 +58,10 @@ except:
 
 __use_long = False
 try:
-    long
+    int
     __use_long = True
-    __int_klasses.append(long)
-    __DTYPE_MAP[long] = DataType.Integer
+    __int_klasses.append(int)
+    __DTYPE_MAP[int] = DataType.Integer
 except:
     pass
 

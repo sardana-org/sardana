@@ -124,7 +124,7 @@ DTYPE_MAP = {
     'int': DataType.Integer,
     'integer': DataType.Integer,
     int: DataType.Integer,
-    long: DataType.Integer,
+    int: DataType.Integer,
     'long': DataType.Integer,
     DataType.Integer: DataType.Integer,
     'float': DataType.Double,
@@ -146,7 +146,7 @@ R_DTYPE_MAP = {
     'int': int,
     'integer': int,
     int: int,
-    long: int,
+    int: int,
     'long': int,
     DataType.Integer: int,
     'float': float,
@@ -482,7 +482,7 @@ def __expand_sardana_interface_data(si_map, name, curr_id):
             curr_id = __expand_sardana_interface_data(
                 si_map, interface, curr_id)
         d |= si_map[interface]
-    si_map[name] = long(d | curr_id)
+    si_map[name] = int(d | curr_id)
     return 2 * curr_id
 
 
