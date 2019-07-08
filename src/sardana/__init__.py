@@ -35,7 +35,9 @@ __requirements.check_requirements()
 class Release:
     pass
 
-Release.__dict__.update(__release.__dict__)
+
+for attr, value in __release.__dict__.items():
+    setattr(Release, attr, value)
 Release.__doc__ = __release.__doc__
 
 from .sardanadefs import *
