@@ -302,7 +302,7 @@ class aNscan(Hookable):
             # calculate motion time
             max_step0_time, max_step_time = 0.0, 0.0
             # first motion takes longer, all others should be "equal"
-            step0 = it.next()
+            step0 = next(it)
             for v_motor, start, stop, length in zip(v_motors, curr_pos,
                                                     step0['positions'],
                                                     self.interv_sizes):

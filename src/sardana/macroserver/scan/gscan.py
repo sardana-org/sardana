@@ -861,7 +861,7 @@ class GScan(Logger):
                     v_motors = self.get_virtual_motors()
                     motion_time, acq_time = 0.0, 0.0
                     while point_nb < max_iter:
-                        step = iterator.next()
+                        step = next(iterator)
                         end_pos = step['positions']
                         max_path_duration = 0.0
                         for v_motor, start, stop in zip(v_motors,
@@ -882,7 +882,7 @@ class GScan(Logger):
             else:
                 try:
                     while point_nb < max_iter:
-                        step = iterator.next()
+                        step = next(iterator)
                         point_nb += 1
                 finally:
                     total_time = self.macro.getTimeEstimation()
@@ -1860,7 +1860,7 @@ class CSScan(CScan):
                 macro.checkPoint()
 
                 try:
-                    point_nb, step = period_steps.next()
+                    point_nb, step = next(period_steps)
                 except StopIteration:
                     self._all_waypoints_finished = True
                     break

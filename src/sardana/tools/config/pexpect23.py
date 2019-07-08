@@ -913,7 +913,7 @@ class spawn (object):
 
         return self
 
-    def next(self):    # File-like object.
+    def __next__(self):    # File-like object.
         """This is to support iterators over a file-like object.
         """
 

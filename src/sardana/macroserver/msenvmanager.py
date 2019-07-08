@@ -373,7 +373,7 @@ class EnvironmentManager(MacroServerManager):
         return ret
 
     def _pairwise(self, iterable):
-        itnext = iter(iterable).next
+        itnext = iter(iterable).__next__
         while True:
             yield itnext(), itnext()
 
