@@ -272,7 +272,7 @@ class MacroServer(SardanaDevice):
         try:
             for macro_name in macro_names:
                 self.macro_server.reload_macro(macro_name)
-        except MacroServerException, mse:
+        except MacroServerException as mse:
             Except.throw_exception(mse.type, mse.msg, 'ReloadMacro')
         return ['OK']
 
@@ -282,7 +282,7 @@ class MacroServer(SardanaDevice):
         try:
             for lib_name in lib_names:
                 self.macro_server.reload_macro_lib(lib_name)
-        except MacroServerException, mse:
+        except MacroServerException as mse:
             Except.throw_exception(mse.type, mse.msg, 'ReloadMacroLib')
         return ['OK']
 

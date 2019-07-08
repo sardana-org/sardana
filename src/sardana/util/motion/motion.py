@@ -698,7 +698,7 @@ class Motor(BaseMotor):
                 decel_time = motor.getDeceleration()
                 return Motor(min_vel=min_vel, max_vel=max_vel,
                              accel_time=accel_time, decel_time=decel_time)
-        except Exception, e:
+        except Exception as e:
             print e
         return Motor._fromTangoMotor(motor)
 

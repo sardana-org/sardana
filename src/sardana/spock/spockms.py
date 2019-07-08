@@ -189,7 +189,7 @@ class GUIViewer(BaseGUIViewer):
             file_model = nexus_widget.model()
             title = file_model.getNodeFromIndex(title_index)[0]
             windowTitle += " - " + title
-        except Exception, e:
+        except Exception as e:
             print "Cannot plot scan:"
             print str(e)
 
@@ -212,7 +212,7 @@ class GUIViewer(BaseGUIViewer):
 
         try:
             env = dict(door.getEnvironmentObj().read().value)
-        except Exception, e:
+        except Exception as e:
             print 'Unable to read environment. No plotting'
             print str(e)
             return
@@ -241,7 +241,7 @@ class GUIViewer(BaseGUIViewer):
         try:
             mem = sps.attach(program, array)
             mem_ENV = sps.attach(program, array_ENV)
-        except Exception, e:
+        except Exception as e:
             print 'sps.attach error: %s. No plotting' % str(e)
             return
 
@@ -362,7 +362,7 @@ class SpockBaseDoor(BaseDoor):
             self.block_lines = 0
             self.stop()
             self.writeln("Done!")
-        except PyTango.DevFailed, e:
+        except PyTango.DevFailed as e:
             if is_non_str_seq(e.args) and \
                not isinstance(e.args, (str, unicode)):
                 reason, desc = e.args[0].reason, e.args[0].desc

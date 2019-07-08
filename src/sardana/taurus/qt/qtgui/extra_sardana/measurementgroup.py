@@ -144,7 +144,7 @@ def createChannelDict(channel, index=None, **kwargs):
         # avoid trying to read for scalars. We know that their shape must be ()
         if attrconf.data_format != PyTango.AttrDataFormat.SCALAR:
             value = attrproxy.read().value
-    except Exception, e:
+    except Exception as e:
         print str(e)
 
     if value is not None:

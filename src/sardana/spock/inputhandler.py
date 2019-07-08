@@ -138,7 +138,7 @@ class InputHandler(Singleton, BaseInputHandler):
         # child process
         try:
             return self.run(conn)
-        except Exception, e:
+        except Exception as e:
             msgbox = TaurusMessageBox(*sys.exc_info())
             conn.send((e, False))
             msgbox.exec_()

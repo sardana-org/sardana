@@ -190,7 +190,7 @@ class MotorGroup(PoolGroupDevice):
                 raise Exception("Cannot move: already in motion")
             try:
                 self.motor_group.position = position
-            except PoolException, pe:
+            except PoolException as pe:
                 throw_sardana_exception(pe)
         finally:
             self.in_write_position = False

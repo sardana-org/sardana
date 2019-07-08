@@ -299,7 +299,7 @@ class MacroButton(TaurusWidget):
             sec_xml = self.door.getRunningXML()
             # get the id of the current running macro
             self.macro_id = sec_xml[0].get("id")
-        except Exception, e:
+        except Exception as e:
             self.ui.button.setChecked(False)
             raise e
 

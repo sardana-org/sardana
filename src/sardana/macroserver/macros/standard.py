@@ -524,7 +524,7 @@ class umv(Macro):
             posObj = motor.getPositionObj()
             try:
                 posObj.unsubscribeEvent(self.positionChanged, motor)
-            except Exception, e:
+            except Exception as e:
                 print str(e)
                 raise e
 
@@ -832,7 +832,7 @@ class settimer(Macro):
 
         try:
             mnt_grp.setTimer(timer.getName())
-        except Exception, e:
+        except Exception as e:
             self.output(str(e))
             self.output(
                 "%s is not a valid channel in the active measurement group"

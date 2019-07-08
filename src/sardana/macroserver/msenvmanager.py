@@ -112,7 +112,7 @@ class EnvironmentManager(MacroServerManager):
             try:
                 self.info("Creating environment directory: %s" % dir_name)
                 os.makedirs(dir_name)
-            except OSError, ose:
+            except OSError as ose:
                 self.error("Creating environment: %s" % ose.strerror)
                 self.debug("Details:", exc_info=1)
                 raise ose

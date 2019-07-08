@@ -1074,7 +1074,7 @@ class Motor(PoolElement, Moveable):
             pos = str(position.value)
             if position.quality != AttrQuality.ATTR_VALID:
                 pos += " [" + QUALITY[position.quality] + "]"
-        except DevFailed, df:
+        except DevFailed as df:
             if len(df.args):
                 pos = df.args[0].desc
             else:
@@ -1118,7 +1118,7 @@ class PseudoMotor(PoolElement, Moveable):
             new_pos = new_pos[0]
         try:
             self.write_attribute('position', new_pos)
-        except DevFailed, df:
+        except DevFailed as df:
             for err in df:
                 if err.reason == 'API_AttrNotAllowed':
                     raise RuntimeError('%s is already moving' % self)
@@ -1164,7 +1164,7 @@ class PseudoMotor(PoolElement, Moveable):
             pos = str(position.value)
             if position.quality != AttrQuality.ATTR_VALID:
                 pos += " [" + QUALITY[position.quality] + "]"
-        except DevFailed, df:
+        except DevFailed as df:
             if len(df.args):
                 pos = df.args[0].desc
             else:
@@ -1210,7 +1210,7 @@ class MotorGroup(PoolElement, Moveable):
         new_pos = args[0]
         try:
             self.write_attribute('position', new_pos)
-        except DevFailed, df:
+        except DevFailed as df:
             for err in df:
                 if err.reason == 'API_AttrNotAllowed':
                     raise RuntimeError('%s is already moving' % self)
@@ -1258,7 +1258,7 @@ class MotorGroup(PoolElement, Moveable):
             pos = str(position.value)
             if position.quality != AttrQuality.ATTR_VALID:
                 pos += " [" + QUALITY[position.quality] + "]"
-        except DevFailed, df:
+        except DevFailed as df:
             if len(df.args):
                 pos = df.args[0].desc
             else:
@@ -1301,7 +1301,7 @@ class TangoChannelInfo(BaseChannelInfo):
             data_type = info.data_type
             try:
                 self.data_type = FROM_TANGO_TO_STR_TYPE[data_type]
-            except KeyError, e:
+            except KeyError as e:
                 # For backwards compatibility:
                 # starting from Taurus 4.3.0 DevVoid was added to the dict
                 if data_type == PyTango.DevVoid:

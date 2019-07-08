@@ -68,7 +68,7 @@ class DummyTriggerGateController(TriggerGateController):
                 status = "Moving"
             self._log.debug('StateOne(%d): returning (%s, %s)' %
                             (axis, sta, status))
-        except Exception, e:
+        except Exception as e:
             print e
         return sta, status
 

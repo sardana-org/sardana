@@ -430,7 +430,7 @@ class PoolDevice(SardanaDevice):
             ctrl_status = self.element.get_status(cache=use_cache, propagate=0)
             status = self.calculate_tango_status(ctrl_status)
             return status
-        except Exception, e:
+        except Exception as e:
             msg = "Exception trying to return status: %s" % str(e)
             self.error(msg)
             self.debug("Details:", exc_info=1)

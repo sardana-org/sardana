@@ -475,7 +475,7 @@ with this value is sent to clients using events.
                 raise Exception("Cannot move: already in motion")
             try:
                 self.motor.position = position
-            except PoolException, pe:
+            except PoolException as pe:
                 throw_sardana_exception(pe)
 
             # manually store write dial position in the database

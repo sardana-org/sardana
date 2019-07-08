@@ -762,7 +762,7 @@ class MacroManager(MacroServerManager):
         type_manager = door.type_manager
         try:
             out_par_list = ParamDecoder(type_manager, params_def, raw_params)
-        except WrongParam, out_e:
+        except WrongParam as out_e:
             # only if raw params are passed as a list e.g. using macro API
             # execMacro("mv", mot01, 0.0) and parameters definition allows to
             # decode it from a flat list we give it a try
@@ -772,7 +772,7 @@ class MacroManager(MacroServerManager):
                 try:
                     out_par_list = FlatParamDecoder(type_manager, params_def,
                                                     raw_params)
-                except WrongParam, in_e:
+                except WrongParam as in_e:
                     msg = ("Either of: %s or %s made it impossible to decode"
                            " parameters" % (out_e.message, in_e.message))
                     raise WrongParam, msg
@@ -1602,7 +1602,7 @@ class MacroExecutor(Logger):
                         'args': df.args,
                         'traceback': traceback.format_exc()}
             macro_exp = MacroServerException(exp_pars)
-        except Exception, err:
+        except Exception as err:
             exc_info = sys.exc_info()
             exp_pars = {'type': err.__class__.__name__,
                         'msg': str(err),

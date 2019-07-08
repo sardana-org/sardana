@@ -100,7 +100,7 @@ class TangoAttributeListener(AttributeListener):
                 pad = [None] * (idx[0] - expected_idx)
                 channel_data.extend(pad + value)
                 self.data[obj_fullname] = channel_data
-        except Exception, e:
+        except Exception as e:
             print e
             raise Exception('"data" event callback failed')
 
@@ -262,7 +262,7 @@ class MeasSarTestTestCase(SarTestTestCase):
         try:
             # Delete the meas
             self.pool.DeleteElement(self.mg_name)
-        except Exception, e:
+        except Exception as e:
             print('Impossible to delete MeasurementGroup: %s' % (self.mg_name))
             print e
         SarTestTestCase.tearDown(self)

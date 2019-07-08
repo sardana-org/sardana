@@ -582,9 +582,9 @@ class FlatParamDecoder:
                     par_str = raw_params[str_idx]
                     try:
                         val = par_type.getObj(par_str)
-                    except ValueError, e:
+                    except ValueError as e:
                         raise WrongParamType, e.message
-                    except UnknownParamObj, e:
+                    except UnknownParamObj as e:
                         raise WrongParam, e.message
                     if val is None:
                         msg = 'Could not create %s parameter "%s" for "%s"' % \

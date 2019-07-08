@@ -211,9 +211,9 @@ def get_ipython_version():
         except Exception:
             try:
                 v = IPython.release.version
-            except Exception, e2:
+            except Exception as e2:
                 print e2
-    except Exception, e3:
+    except Exception as e3:
         print e3
     return v
 
@@ -1171,22 +1171,22 @@ def start(user_ns=None):
 
     try:
         check_requirements()
-    except exception.SpockMissingRequirement, requirement:
+    except exception.SpockMissingRequirement as requirement:
         print str(requirement)
         sys.exit(-1)
-    except exception.SpockMissingRecommended, recommended:
+    except exception.SpockMissingRecommended as recommended:
         print str(recommended)
 
     user_ns = user_ns or {}
     try:
         user_ns.update(get_args(sys.argv))
-    except exception.SpockException, e:
+    except exception.SpockException as e:
         print e.message
         print 'Starting normal IPython console'
     except KeyboardInterrupt:
         print "\nUser pressed Ctrl+C. Exiting..."
         sys.exit()
-    except Exception, e:
+    except Exception as e:
         print 'spock exited with an unmanaged exception: %s' % str(e)
         sys.exit(-2)
 
@@ -1289,10 +1289,10 @@ def run():
 
     try:
         check_requirements()
-    except exception.SpockMissingRequirement, requirement:
+    except exception.SpockMissingRequirement as requirement:
         print str(requirement)
         sys.exit(-1)
-    except exception.SpockMissingRecommended, recommended:
+    except exception.SpockMissingRecommended as recommended:
         print str(recommended)
 
     prepare_input_handler()

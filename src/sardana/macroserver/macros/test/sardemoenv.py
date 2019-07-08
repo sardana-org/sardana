@@ -188,7 +188,7 @@ def getElements(elem_type="all", fallback_name="element_not_defined",
         taurus.warning("The door %s is not running. " % (door_name) +
                        "Ignore this message if you are building the documentation.")
         elements = [fallback_name] * fallback_elements_len
-    except Exception, e:
+    except Exception as e:
         import taurus
         taurus.debug(e)
         taurus.warning("It was not possible to retrieve the element. " +

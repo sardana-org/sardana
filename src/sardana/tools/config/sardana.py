@@ -77,7 +77,7 @@ except:
     try:
         import pexpect23 as pexpect
         print "[WARNING]: pexpect module not found. Using local pexpect 2.3"
-    except Exception, e:
+    except Exception as e:
         print e
         print "The Sardana requires pexpect python module which was not found."
         print "This module can be found at http://www.noah.org/wiki/Pexpect"
@@ -148,7 +148,7 @@ class PEProcess(Process):
             idx = self._process.expect([Process.ReadyMsg, Process.AlreadyRunning,
                                         pexpect.EOF, pexpect.TIMEOUT],
                                        timeout=self.getMaxStartupTime())
-        except Exception, e:
+        except Exception as e:
             self.on("[FAILED]")
             raise e
 
@@ -204,7 +204,7 @@ class PEProcess(Process):
                 res = self.terminate()
                 idx = self._process.expect(['Exiting', 'Exited', pexpect.EOF, pexpect.TIMEOUT],
                                            timeout=max_shutdown_time)
-            except Exception, e:
+            except Exception as e:
                 self.on("[FAILED]")
                 raise e
 
@@ -224,7 +224,7 @@ class PEProcess(Process):
             try:
                 idx = self._process.expect(['Exited', pexpect.EOF, pexpect.TIMEOUT],
                                            timeout=5)
-            except Exception, e:
+            except Exception as e:
                 self.on("[FAILED]")
                 raise e
 
@@ -240,7 +240,7 @@ class PEProcess(Process):
             try:
                 idx = self._process.expect([pexpect.EOF, pexpect.TIMEOUT],
                                            timeout=5)
-            except Exception, e:
+            except Exception as e:
                 self.on("[FAILED]")
                 raise e
 
@@ -253,7 +253,7 @@ class PEProcess(Process):
                 self.o(" (shutdown time exceeded). Forcing... ")
                 self.kill()
 
-        except KeyboardInterrupt, ki:
+        except KeyboardInterrupt as ki:
             self.o("(Ctrl-C during stop). Forcing... ")
             self.kill()
 
@@ -315,7 +315,7 @@ class PESimuMotorProcess(PEPythonDeviceServerProcess):
             f, path, desc = imp.find_module('SimuMotor')
             if f:
                 f.close()
-        except exceptions.ImportError, e:
+        except exceptions.ImportError as e:
             msg = "Could not find %s executable.\n" \
                   "Make sure PYTHONPATH points to the directory(ies) where " \
                   "SimuMotorCtrl.py and SimuMotor.py files are installed" % name
@@ -336,7 +336,7 @@ class PESimuCounterTimerProcess(PEPythonDeviceServerProcess):
             f, fname, desc = imp.find_module('SimuCoTiCtrl')
             if f:
                 f.close()
-        except exceptions.ImportError, e:
+        except exceptions.ImportError as e:
             msg = "Could not find %s executable.\n" \
                   "Make sure PYTHONPATH points to the directory(ies) where " \
                   "SimuCoTiCtrl.py file is installed" % name
@@ -357,7 +357,7 @@ class PEPySignalSimulatorProcess(PEPythonDeviceServerProcess):
             f, fname, desc = imp.find_module('PySignalSimulator')
             if f:
                 f.close()
-        except exceptions.ImportError, e:
+        except exceptions.ImportError as e:
             msg = "Could not find %s executable.\n" \
                   "Make sure PYTHONPATH points to the directory where " \
                   "PySignalSimulator.py is installed" % name
@@ -690,7 +690,7 @@ class DevicePoolServer(TangoServer):
                     v = self._item_node_to_value(tango_attr, v_node)
                     try:
                         dev.write_attribute(name, v)
-                    except Exception, ex:
+                    except Exception as ex:
                         print 'SOME PROBLEMS SETTING ATTRIBUTE VALUE FOR DEVICE', dev_name, 'ATTRIBUTE', tango_attr.name, 'VALUE', str(v)
                         print 'EXCEPTION:', ex
 
@@ -752,7 +752,7 @@ class DevicePoolServer(TangoServer):
 
                     try:
                         dev.set_attribute_config(attr_info)
-                    except Exception, e:
+                    except Exception as e:
                         print 'COULD NOT SET THE FOLLOWING CONFIG FOR DEVICE', dev_name, 'ATTR', tango_attr.name
                         print 'ATTRIBUTE INFO:', attr_info
                         print 'EXCEPTION:', e
@@ -764,7 +764,7 @@ class DevicePoolServer(TangoServer):
                 try:
                     value = value.strip()
                     dev.write_attribute('Instrument', value)
-                except Exception, ex:
+                except Exception as ex:
                     print 'SOME PROBLEMS SETTING INSTRUMENT VALUE FOR DEVICE', dev_name, 'VALUE', value
                     print 'EXCEPTION:', ex
 
@@ -956,7 +956,7 @@ class DevicePoolServer(TangoServer):
 
                             self.handle_attributes(aliasName, e)
 
-                        except PyTango.DevFailed, df:
+                        except PyTango.DevFailed as df:
                             self.on("Exception creating %s: %s" %
                                     (aliasName, str(df)))
                         # to flush any output generated by the pool
@@ -1847,7 +1847,7 @@ if __name__ == "__main__":
     try:
         opts, pargs = getopt.getopt(
             sys.argv[1:], 'vl', ['simulation=', 'cleanup='])
-    except Exception, e:
+    except Exception as e:
         print "ERROR:", str(e)
         print
         print __doc__
@@ -1881,7 +1881,7 @@ if __name__ == "__main__":
     try:
         import to_sar
         sar_doc = to_sar.transform(filename)
-    except Exception, e:
+    except Exception as e:
         print 'Sorry, but some problems found when trying to convert to SARDANA xml:'
         print str(e)
 
@@ -1897,9 +1897,9 @@ if __name__ == "__main__":
         sardana.setUp()
         print "Ready!"
         sardana.run()
-    except KeyboardInterrupt, e:
+    except KeyboardInterrupt as e:
         print "User pressed Ctrl+C..."
-    except Exception, e:
+    except Exception as e:
         traceback.print_exc()
 
     print "Shutting down!"

@@ -340,7 +340,7 @@ class Door(SardanaDevice):
             macro_data = self.door.get_macro_data()
             codec = CodecFactory().getCodec('bz2_pickle')
             data = codec.encode(('', macro_data))
-        except MacroServerException, mse:
+        except MacroServerException as mse:
             throw_sardana_exception(mse)
 
         attr.set_value(*data)

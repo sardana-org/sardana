@@ -788,7 +788,7 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
                     nid = self.fd.getdataID()
                     self._createBranch(dd.instrument)
                     self.fd.makelink(nid)
-                except Exception, e:
+                except Exception as e:
                     self.warning(
                         "Could not create link to '%s' in '%s'. Reason: %s", datapath, dd.instrument, repr(e))
 
@@ -802,7 +802,7 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
                     nid = self.fd.getdataID()
                     self._createBranch(dd.instrument)
                     self.fd.makelink(nid)
-                except Exception, e:
+                except Exception as e:
                     self.warning(
                         "Could not create link to '%s' in '%s'. Reason: %s", datapath, dd.instrument, repr(e))
 
@@ -898,7 +898,7 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
         self._createBranch(nxpath)
         try:
             self._writeData(name, value, dtype)
-        except ValueError, e:
+        except ValueError as e:
             msg = "Error writing %s. Reason: %s" % (name, str(e))
             self.warning(msg)
             self.macro.warning(msg)

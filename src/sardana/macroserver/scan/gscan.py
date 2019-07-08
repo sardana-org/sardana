@@ -435,7 +435,7 @@ class GScan(Logger):
                     ret.append(TangoExtraData(**kw))
                 except InterruptException:
                     raise
-                except Exception, colexcept:
+                except Exception as colexcept:
                     colname = kw.get('label', str(i))
                     self.macro.warning("Extra column %s is invalid: %s",
                                        colname, str(colexcept))
@@ -540,7 +540,7 @@ class GScan(Logger):
                 file_recorders.append(file_recorder)
             except InterruptException:
                 raise
-            except AmbiguousRecorderError, e:
+            except AmbiguousRecorderError as e:
                 macro.error('Select recorder that you would like to use '
                             '(i.e. set ScanRecorder environment variable).')
                 raise e
@@ -1443,7 +1443,7 @@ class CScan(GScan):
                                      deceleration=motor_backup["deceleration"])
             try:
                 self.configure_motor(motor, attributes)
-            except ScanException, e:
+            except ScanException as e:
                 msg = "Error when restoring motor's backup (%s)" % e
                 raise ScanException(msg)
 
@@ -1466,7 +1466,7 @@ class CScan(GScan):
                                      deceleration=self.get_min_dec_time(motor))
             try:
                 self.configure_motor(motor, attributes)
-            except ScanException, e:
+            except ScanException as e:
                 msg = "Error when setting fast motion (%s)" % e
                 raise ScanException(msg)
 
@@ -2404,7 +2404,7 @@ class CTScan(CScan, CAcquisition):
                     continue
                 try:
                     self.configure_motor(motor, attributes)
-                except ScanException, e:
+                except ScanException as e:
                     msg = "Error when configuring scan motion (%s)" % e
                     raise ScanException(msg)
 

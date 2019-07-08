@@ -177,7 +177,7 @@ def www(self, parameter_s=''):
             return
         exc = "".join(last_macro.exc_stack)
         door.write(exc)
-    except Exception, e:
+    except Exception as e:
         door.writeln("Unexpected exception occurred executing www:",
                      stream=door.Error)
         door.writeln(str(e), stream=door.Error)
@@ -267,7 +267,7 @@ def edmac(self, parameter_s=''):
 
     try:
         remote_fname, code, line_nb = ms.GetMacroCode(macro_info)
-    except PyTango.DevFailed, e:
+    except PyTango.DevFailed as e:
         PyTango.Except.print_exception(e)
         return
 
@@ -288,7 +288,7 @@ def edmac(self, parameter_s=''):
                 new_code = f.read()
                 ms.SetMacroCode([remote_fname, new_code])
                 print MSG_DONE
-            except Exception, e:
+            except Exception as e:
                 print MSG_FAILED
                 print 'Reason:', str(e)
             f.close()
