@@ -37,9 +37,7 @@ def ViewOptionMeta(name, bases, attrs):
     return type(name, bases, attrs)
 
 
-class ViewOption(object):
-    __metaclass__ = ViewOptionMeta
-
+class ViewOption(object, metaclass=ViewOptionMeta):
     _DEFAULT_VIEW_OPTIONS = {
         'ShowDial': True,
         'ShowCtrlAxis': False,
