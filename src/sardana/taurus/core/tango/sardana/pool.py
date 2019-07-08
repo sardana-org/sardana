@@ -1363,7 +1363,7 @@ def getChannelConfigs(mgconfig, ctrls=None, sort=True):
 class MGConfiguration(object):
     def __init__(self, mg, data):
         self._mg = weakref.ref(mg)
-        if isinstance(data, (str, str)):
+        if isinstance(data, str):
             data = CodecFactory().decode(('json', data), ensure_ascii=True)
         self.raw_data = data
         self.__dict__.update(data)
@@ -2315,7 +2315,7 @@ class Pool(TangoDevice, MoveableSource):
     def getObj(self, name, elem_type=None):
         if elem_type is None:
             return self.getElementInfo(name)
-        elif isinstance(elem_type, (str, str)):
+        elif isinstance(elem_type, str):
             elem_types = elem_type,
         else:
             elem_types = elem_type
@@ -2345,7 +2345,7 @@ class Pool(TangoDevice, MoveableSource):
         Returns a moveable object that handles all the moveable items given in
         names."""
         # if simple motor just return it (if the pool has it)
-        if isinstance(names, (str, str)):
+        if isinstance(names, str):
             names = names,
 
         if len(names) == 1:

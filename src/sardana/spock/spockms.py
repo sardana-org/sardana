@@ -92,7 +92,7 @@ class GUIViewer(BaseGUIViewer):
                 scan_file = scan.get('ScanFile')
                 if scan_dir is None or scan_file is None:
                     continue
-                if not isinstance(scan_file, (str, str)):
+                if not isinstance(scan_file, str):
                     scan_files = scan_file
                     scan_file = None
                     for fname in scan_files:
@@ -128,7 +128,7 @@ class GUIViewer(BaseGUIViewer):
                         print("Cannot plot scan:")
                         print("Scan %d was not saved into a file" % (scan_nb,))
                         return
-                    if not isinstance(scan_file, (str, str)):
+                    if not isinstance(scan_file, str):
                         scan_file = scan_file[0]
                     break
             else:
@@ -148,7 +148,7 @@ class GUIViewer(BaseGUIViewer):
             local_directories = directory_map[scan_dir]
             # local_directories may be either a string or a list of strings
             # the further logic is unified to work on a list, so convert it
-            if isinstance(local_directories, (str, str)):
+            if isinstance(local_directories, str):
                 local_directories = [local_directories]
             locations = local_directories
             if scan_dir not in locations:
@@ -364,7 +364,7 @@ class SpockBaseDoor(BaseDoor):
             self.writeln("Done!")
         except PyTango.DevFailed as e:
             if is_non_str_seq(e.args) and \
-               not isinstance(e.args, (str, str)):
+               not isinstance(e.args, str):
                 reason, desc = e.args[0].reason, e.args[0].desc
                 macro_obj = self.getRunningMacro()
                 if reason == 'MissingParam':

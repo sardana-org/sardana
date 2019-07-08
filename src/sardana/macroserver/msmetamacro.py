@@ -162,7 +162,7 @@ class Parameterizable(object):
             if isinstance(t, ParamRepeat):
                 t = t.obj()
 
-            if isinstance(t, collections.Sequence) and not isinstance(t, (str, str)):
+            if isinstance(t, collections.Sequence) and not isinstance(t, str):
                 if isinstance(t[-1], collections.Mapping):
                     ret_p.update(t[-1])
                     t = self._build_parameter(t[:-1])

@@ -209,7 +209,7 @@ class MSDoor(MSObject):
         input_data = dict(prompt=msg, type='input')
         input_data.update(kwargs)
         data_type = kwargs['data_type']
-        is_seq = not isinstance(data_type, (str, str)) and \
+        is_seq = not isinstance(data_type, str) and \
             isinstance(data_type, collections.Sequence)
         if is_seq:
             handle = self._handle_seq_input
@@ -355,7 +355,7 @@ class MSDoor(MSObject):
         return self._macro_proxy_cache
 
     def run_macro(self, par_str_list, asynch=False):
-        if isinstance(par_str_list, (str, str)):
+        if isinstance(par_str_list, str):
             par_str_list = par_str_list,
 
         if not hasattr(self, "Output"):

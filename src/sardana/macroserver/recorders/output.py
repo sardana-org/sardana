@@ -138,7 +138,7 @@ class OutputRecorder(DataRecorder):
         self._col_sep = col_sep
         self._col_width = col_width
         if isinstance(cols, collections.Sequence) and \
-                not isinstance(cols, (str, str)):
+                not isinstance(cols, str):
             cols = CaselessList(cols)
         elif isinstance(cols, numbers.Number):
             cols = cols
@@ -258,7 +258,7 @@ class OutputRecorder(DataRecorder):
                 cell = str(cell_data.shape)
             elif cell_data is None:
                 cell = "<nodata>"
-            elif isinstance(cell_data, (str, str)):
+            elif isinstance(cell_data, str):
                 # TODO: for SEP2 needs strings are enabled for visualizing
                 # value refs, previously "<string>" was printed. This may
                 # have side effects e.g. alignment of columns etc.. Check

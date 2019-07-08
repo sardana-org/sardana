@@ -146,7 +146,7 @@ class _lsobj(_ls):
         nb = len(objs)
         if nb is 0:
             if self.subtype is Macro.All:
-                if isinstance(self.type, (str, str)):
+                if isinstance(self.type, str):
                     t = self.type.lower()
                 else:
                     t = ", ".join(self.type).lower()

@@ -72,7 +72,7 @@ class AttributeLogHandler(logging.Handler):
 
     def appendBuffer(self, d):
         if isinstance(d, collections.Sequence):
-            if isinstance(d, (str, str)):
+            if isinstance(d, str):
                 self._buff.append(d)
             else:
                 self._buff.extend(d)

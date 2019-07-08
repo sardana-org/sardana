@@ -1390,7 +1390,7 @@ class Macro(Logger):
         """**Macro API**. Sends an line tagged as a block to the output
 
         :param :obj:`str` line: line to be sent"""
-        if isinstance(line, (str, str)):
+        if isinstance(line, str):
             o = line
         elif isinstance(line, collections.Sequence):
             o = "\n".join(line)
@@ -1472,7 +1472,7 @@ class Macro(Logger):
             automatically reserve the object for this macro [default: True]
 
         :return: the object or None if no compatible object is found"""
-        if not isinstance(name, (str, str)):
+        if not isinstance(name, str):
             raise self._buildWrongParamExp("getObj", "name", "string",
                                            str(type(name)))
 
@@ -2056,7 +2056,7 @@ class Macro(Logger):
         Sends a line tagged as a block to the output
 
         :param :obj:`str` line: line to be sent"""
-        if isinstance(line, (str, str)):
+        if isinstance(line, str):
             o = line
         elif isinstance(line, collections.Sequence):
             o = "\n".join(line)

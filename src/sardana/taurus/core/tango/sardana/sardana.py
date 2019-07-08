@@ -111,7 +111,7 @@ class BaseSardanaElement(object):
 
     def getTypes(self):
         elem_types = self.type
-        if isinstance(elem_types, (str, str)):
+        if isinstance(elem_types, str):
             return [elem_types]
         return elem_types
 

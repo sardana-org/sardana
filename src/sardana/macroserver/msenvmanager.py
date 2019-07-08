@@ -347,7 +347,7 @@ class EnvironmentManager(MacroServerManager):
         if keys is None:
             return self.getAllDoorMacroEnv(door_name, macro_name)
 
-        if isinstance(keys, (str, str)):
+        if isinstance(keys, str):
             keys = (keys,)
 
         door_name = door_name.lower()
@@ -384,7 +384,7 @@ class EnvironmentManager(MacroServerManager):
     def _encode(self, d):
         ret = {}
         for k, v in d.items():
-            if isinstance(v, (str, str)):
+            if isinstance(v, str):
                 try:
                     v = eval(v)
                 except:
@@ -455,7 +455,7 @@ class EnvironmentManager(MacroServerManager):
         @return a dict representing the added environment"""
 
         if isinstance(obj, collections.Sequence) and \
-           not isinstance(obj, (str, str)):
+           not isinstance(obj, str):
             obj = self._dictFromSequence(obj)
         elif not isinstance(obj, collections.Mapping):
             raise TypeError("obj parameter must be a sequence or a map")
@@ -481,7 +481,7 @@ class EnvironmentManager(MacroServerManager):
 
         :param key: the key for the environment to be unset
         :return: the sequence of keys which have been removed"""
-        if isinstance(key, (str, str)):
+        if isinstance(key, str):
             key = (key,)
         self._unsetEnv(key)
         return key

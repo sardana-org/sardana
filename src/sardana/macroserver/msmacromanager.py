@@ -723,7 +723,7 @@ class MacroManager(MacroServerManager):
         return self.getMacroFunction(macro_name).function
 
     def getMacroInfo(self, macro_names, format='json'):
-        if isinstance(macro_names, (str, str)):
+        if isinstance(macro_names, str):
             macro_names = [macro_names]
         ret = []
         json_codec = CodecFactory().getCodec(format)
@@ -1260,7 +1260,7 @@ class MacroExecutor(Logger):
 
     def _createMacroObj(self, macro_name_or_meta, pars, init_opts={}):
         macro_meta = macro_name_or_meta
-        if isinstance(macro_meta, (str, str)):
+        if isinstance(macro_meta, str):
             macro_meta = self.macro_manager.getMacro(macro_meta)
 
         macro_opts = {

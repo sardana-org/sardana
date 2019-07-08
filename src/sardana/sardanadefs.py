@@ -192,7 +192,7 @@ def from_dtype_str(dtype):
     dformat = DataFormat.Scalar
     if dtype is None:
         dtype = 'float'
-    elif isinstance(dtype, (str, str)):
+    elif isinstance(dtype, str):
         dtype = dtype.lower()
         if dtype.startswith("pytango."):
             dtype = dtype[len("pytango."):]
@@ -214,7 +214,7 @@ def from_access_str(access):
     :type dtype: :obj:`str`
     :return: a simple string for the given access
     :rtype: :obj:`str`"""
-    if isinstance(access, (str, str)):
+    if isinstance(access, str):
         access = access.lower()
         if access.startswith("pytango."):
             access = access[len("pytango."):]
@@ -233,7 +233,7 @@ def to_dtype_dformat(data):
     """
     import operator
     dtype, dformat = data, DataFormat.Scalar
-    if isinstance(data, (str, str)):
+    if isinstance(data, str):
         dtype, dformat = from_dtype_str(data)
     elif isinstance(data, collections.Sequence):
         dformat = DataFormat.OneD
@@ -261,7 +261,7 @@ def to_daccess(daccess):
     :rtype: :obj:`DataAccess`"""
     if daccess is None:
         daccess = DataAccess.ReadWrite
-    elif isinstance(daccess, (str, str)):
+    elif isinstance(daccess, str):
         daccess = DACCESS_MAP.get(
             from_access_str(daccess), DataAccess.ReadWrite)
     return daccess
@@ -449,7 +449,7 @@ INTERFACES_EXPANDED = {}
 
 def __expand(name):
     direct_expansion, _ = INTERFACES[name]
-    if isinstance(direct_expansion, (str, str)):
+    if isinstance(direct_expansion, str):
         direct_expansion = direct_expansion,
     exp = set(direct_expansion)
     for e in direct_expansion:
