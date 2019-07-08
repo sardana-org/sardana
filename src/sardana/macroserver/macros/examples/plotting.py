@@ -10,7 +10,7 @@ def j0i(x):
     """Integral form of J_0(x)"""
     def integrand(phi):
         return math.cos(x * math.sin(phi))
-    return (1.0 / math.pi) * quad(integrand, 0, math.pi)[0]
+    return (1 / math.pi) * quad(integrand, 0, math.pi)[0]
 
 
 @macro()
@@ -55,10 +55,9 @@ def mandelbrot(self, interactions, density):
 
     fractal = numpy.zeros(z.shape, dtype=numpy.uint8) + 255
 
-    finteractions = float(interactions)
     for n in range(interactions):
         z *= z
         z += c
         mask = (fractal == 255) & (abs(z) > 10)
-        fractal[mask] = 254 * n / finteractions
+        fractal[mask] = 254 * n / interactions
     self.pyplot.imshow(fractal)

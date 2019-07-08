@@ -117,10 +117,10 @@ class Pool(PyTango.Device_4Impl, Logger):
         p = self.pool
         p.set_python_path(self.PythonPath)
         p.set_path(self.PoolPath)
-        p.set_motion_loop_sleep_time(self.MotionLoop_SleepTime / 1000.0)
+        p.set_motion_loop_sleep_time(self.MotionLoop_SleepTime / 1000)
         p.set_motion_loop_states_per_position(
             self.MotionLoop_StatesPerPosition)
-        p.set_acq_loop_sleep_time(self.AcqLoop_SleepTime / 1000.0)
+        p.set_acq_loop_sleep_time(self.AcqLoop_SleepTime / 1000)
         p.set_acq_loop_states_per_value(self.AcqLoop_StatesPerValue)
         p.set_drift_correction(self.DriftCorrection)
         if self.RemoteLog is None:

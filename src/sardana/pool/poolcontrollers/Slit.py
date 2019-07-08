@@ -59,7 +59,7 @@ class Slit(PseudoMotorController):
         self._example = {}
 
     def CalcPhysical(self, index, pseudo_pos, curr_physical_pos):
-        half_gap = pseudo_pos[0] / 2.0
+        half_gap = pseudo_pos[0] / 2
         if index == 1:
             ret = self.sign * (pseudo_pos[1] + half_gap)
         else:
@@ -73,7 +73,7 @@ class Slit(PseudoMotorController):
         if index == 1:
             ret = self.sign * gap
         else:
-            ret = self.sign * (physical_pos[0] - gap / 2.0)
+            ret = self.sign * (physical_pos[0] - gap / 2)
         return ret
 
     def CalcAllPseudo(self, physical_pos, curr_pseudo_pos):
@@ -81,7 +81,7 @@ class Slit(PseudoMotorController):
            pseudo motor system from the positions of the physical motors."""
         gap = physical_pos[1] + physical_pos[0]
         return (self.sign * gap,
-                self.sign * (physical_pos[0] - gap / 2.0))
+                self.sign * (physical_pos[0] - gap / 2))
 
     # def CalcAllPhysical(self, pseudo_pos, curr_physical_pos):
     #    """Calculates the positions of all motors that belong to the pseudo

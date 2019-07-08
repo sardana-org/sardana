@@ -349,7 +349,7 @@ with this value is sent to clients using events.
                     pass
 
         if self.Sleep_bef_last_read > 0:
-            motor.set_instability_time(self.Sleep_bef_last_read / 1000.0)
+            motor.set_instability_time(self.Sleep_bef_last_read / 1000)
         motor.add_listener(self.on_motor_changed)
         self.set_state(DevState.ON)
 

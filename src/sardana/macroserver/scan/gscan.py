@@ -1076,7 +1076,7 @@ class SScan(GScan):
             self.stepUp(i, step, lstep)
             lstep = step
             if scream:
-                yield ((i + 1) / nr_points) * 100.0
+                yield ((i + 1) / nr_points) * 100
 
         if not scream:
             yield 100.0
@@ -1933,7 +1933,7 @@ class CSScan(CScan):
                     self.data.addRecord(data_line)
 
                     if scream:
-                        yield ((point_nb + 1) / nr_points) * 100.0
+                        yield ((point_nb + 1) / nr_points) * 100
                 else:
                     break
                 old_curr_time = curr_time

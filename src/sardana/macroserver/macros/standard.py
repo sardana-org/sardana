@@ -919,7 +919,7 @@ class repeat(Hookable, Macro):
         else:
             for i in range(nr):
                 self.__loop()
-                progress = ((i + 1) / float(nr)) * 100
+                progress = ((i + 1) / nr) * 100
                 yield progress
 
 

@@ -243,8 +243,8 @@ class OutputRecorder(DataRecorder):
         endts = recordlist.getEnvironValue('endts')
         startts = recordlist.getEnvironValue('startts')
         totaltimets = endts - startts
-        deadtime_perc = deadtime * 100.0 / totaltimets
-        motiontime_perc = motiontime * 100.0 / totaltimets
+        deadtime_perc = deadtime * 100 / totaltimets
+        motiontime_perc = motiontime * 100 / totaltimets
         info_string = 'Scan #%s ended at %s, taking %s. ' + \
                       'Dead time %.1f%% (motion dead time %.1f%%)'
         self._stream().info(info_string % (serialno, endtime, totaltime,

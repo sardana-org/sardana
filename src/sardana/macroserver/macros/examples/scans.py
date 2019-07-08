@@ -517,11 +517,11 @@ class a2scan_mod(Macro):
         positions_m2 = numpy.linspace(start2, end2, interv2 + 1)
 
         if interv1 > interv2:
-            positions_m2 = start2 + (float(end2 - start2) / interv2) * (
-                numpy.arange(interv1 + 1) // (float(interv1) / float(interv2)))
+            positions_m2 = start2 + ((end2 - start2) / interv2) * (
+                numpy.arange(interv1 + 1) // (interv1 / interv2))
         elif interv2 > interv1:
-            positions_m1 = start1 + (float(end1 - start1) / interv1) * (
-                numpy.arange(interv2 + 1) // (float(interv2) / float(interv1)))
+            positions_m1 = start1 + ((end1 - start1) / interv1) * (
+                numpy.arange(interv2 + 1) // (interv2 / interv1))
 
         point_id = 0
         for pos1, pos2 in zip(positions_m1, positions_m2):
@@ -663,7 +663,7 @@ class ascanct_midtrigger(Macro):
         first_position = positions[0]
         second_position = positions[1]
         positive_direction = second_position > first_position
-        shift = abs(second_position - first_position) / 2.
+        shift = abs(second_position - first_position) / 2
         if positive_direction:
             mid_positions = positions + shift
         else:
