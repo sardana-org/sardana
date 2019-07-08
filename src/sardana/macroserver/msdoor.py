@@ -82,7 +82,7 @@ class MacroProxyCache(dict):
         self.clear()
         door = self.door
         macros = self.door.get_macros()
-        for macro_name, macro_meta in macros.items():
+        for macro_name, macro_meta in list(macros.items()):
             self[macro_name] = MacroProxy(door, macro_meta)
 
 

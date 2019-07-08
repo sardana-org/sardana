@@ -89,7 +89,7 @@ class FIO_FileRecorder(BaseFileRecorder):
             self.filename = "%s_%s.%s" % (tpl[0], "[ScanId]", tpl[2])
 
     def getFormat(self):
-        return self.formats.keys()[0]
+        return list(self.formats.keys())[0]
 
     def _startRecordList(self, recordlist):
 
@@ -304,7 +304,7 @@ class SPEC_FileRecorder(BaseFileRecorder):
         self.currentlist = None
 
     def getFormat(self):
-        return self.formats.keys()[0]
+        return list(self.formats.keys())[0]
 
     def _startRecordList(self, recordlist):
         '''Prepares and writes the scan header.'''
@@ -560,7 +560,7 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
         try:
             self.fd.makegroup(self.entryname, "NXentry")
         except self.nxs.NeXusError:
-            entrynames = self.fd.getentries().keys()
+            entrynames = list(self.fd.getentries().keys())
 
             #==================================================================
             ##Warn and abort
@@ -687,7 +687,7 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
         self.fd.closegroup()  # we are back at the measurement group
 
         measurement_entries = self.fd.getentries()
-        for label, nid in links.items():
+        for label, nid in list(links.items()):
             if label not in measurement_entries:
                 self.fd.makelink(nid)
 
@@ -832,7 +832,7 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
                 continue  # @todo: implement support for images and other
 
         # write the 1D NXdata group
-        for axes, v in plots1d.items():
+        for axes, v in list(plots1d.items()):
             self.fd.openpath("/%s:NXentry" % (self.entryname))
             groupname = plots1d_names[axes]
             self.fd.makegroup(groupname, 'NXdata')

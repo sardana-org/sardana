@@ -456,13 +456,13 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self._dirtyMntGrps = set()
         # set a list of available channels
         avail_channels = {}
-        for ch_info in door.macro_server.getExpChannelElements().values():
+        for ch_info in list(door.macro_server.getExpChannelElements().values()):
             avail_channels[ch_info.full_name] = ch_info.getData()
         self.ui.channelEditor.getQModel().setAvailableChannels(avail_channels)
         # set a list of available triggers
         avail_triggers = {'software': {"name": "software"}}
         tg_elements = door.macro_server.getElementsOfType('TriggerGate')
-        for tg_info in tg_elements.values():
+        for tg_info in list(tg_elements.values()):
             avail_triggers[tg_info.full_name] = tg_info.getData()
         self.ui.channelEditor.getQModel().setAvailableTriggers(avail_triggers)
         self.experimentConfigurationChanged.emit(copy.deepcopy(conf))
@@ -501,7 +501,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         # set the measurement group ComboBox
         self.ui.activeMntGrpCB.clear()
         mntGrpLabels = []
-        for _, mntGrpConf in self._localConfig['MntGrpConfigs'].items():
+        for _, mntGrpConf in list(self._localConfig['MntGrpConfigs'].items()):
             # get labels to visualize names with lower and upper case
             mntGrpLabels.append(mntGrpConf['label'])
         self.ui.activeMntGrpCB.addItems(sorted(mntGrpLabels))
@@ -544,7 +544,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         conf = self.getLocalConfig()
 
         # make sure that no empty measurement groups are written
-        for mgname, mgconfig in conf.get('MntGrpConfigs', {}).items():
+        for mgname, mgconfig in list(conf.get('MntGrpConfigs', {}).items()):
             if mgconfig is not None and not mgconfig.get('controllers'):
                 mglabel = mgconfig['label']
                 Qt.QMessageBox.information(self, "Empty Measurement group",
@@ -610,7 +610,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         # check that the given name is not an existing pool element
         ms = self.getModelObj().macro_server
         poolElementNames = [
-            v.name for v in ms.getElementsWithInterface("PoolElement").values()]
+            v.name for v in list(ms.getElementsWithInterface("PoolElement").values())]
         while mntGrpName in poolElementNames:
             Qt.QMessageBox.warning(self, "Cannot create Measurement group",
                                    "The name '%s' already is used for another pool element. Please Choose a different one." % mntGrpName,

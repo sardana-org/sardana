@@ -66,10 +66,10 @@ class UtilsForTests():
     def orderPointsData(self, data):
         """A helper method to know if points are ordered based on getData.
         """
-        obtained_nb_points_data = len(data.keys())
+        obtained_nb_points_data = len(list(data.keys()))
         ordered_points_data = 0
         for i in range(obtained_nb_points_data - 1):
-            if int(data.keys()[i + 1]) >= int(data.keys()[i]):
+            if int(list(data.keys())[i + 1]) >= int(list(data.keys())[i]):
                 ordered_points_data = 1
             else:
                 ordered_points_data = 0
@@ -133,11 +133,11 @@ class ScanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
         # Test data from macro (macro_executor.getData())
         data = self.macro_executor.getData()
         order_points_data = self.utils.orderPointsData(data)
-        obtained_nb_points_data = len(data.keys())
+        obtained_nb_points_data = len(list(data.keys()))
 
         msg = ("The ascanct execution did not return any scan point.\n"
                "Checked using macro data.")
-        self.assertTrue(len(data.keys()) > 0, msg)
+        self.assertTrue(len(list(data.keys())) > 0, msg)
 
         msg = ("The ascanct execution did not return the expected number of "
                "points.\nExpected " + str(expected_nb_points) + " points."

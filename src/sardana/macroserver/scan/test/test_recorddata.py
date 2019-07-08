@@ -85,14 +85,14 @@ class ScanDataTestCase(unittest.TestCase):
 
     def prepareScandData(self, data, apply_interpolation=False):
         scan_dir, scan_file = os.path.split(self.file_name)
-        env = createScanDataEnvironment(data.keys(), scan_dir, scan_file)
+        env = createScanDataEnvironment(list(data.keys()), scan_dir, scan_file)
         self.scan_data = ScanData(environment=env,
                                   data_handler=self.data_handler,
                                   apply_interpolation=apply_interpolation)
         self.srcs = []
         self.inputs = {}
         max_len = -1
-        for name, dat in data.items():
+        for name, dat in list(data.items()):
             des = DummyEventSource(name, self.scan_data, dat, [0] * len(dat))
             self.srcs.append(des)
             input_list = []
@@ -106,7 +106,7 @@ class ScanDataTestCase(unittest.TestCase):
             if max_len < len_il:
                 max_len = len_il
         # Pading the list to fill it with float('Nan')
-        for name, dat in self.inputs.items():
+        for name, dat in list(self.inputs.items()):
             diff = max_len - len(dat)
             self.inputs[name] = dat + [float('Nan')] * diff
 
@@ -125,7 +125,7 @@ class ScanDataTestCase(unittest.TestCase):
         # Test the generated nxs file
         f = self.nxs.load(self.file_name)
         m = f['entry1']['measurement']
-        for chn in data.keys():
+        for chn in list(data.keys()):
             chn_data = m[chn].nxdata
             # check the data element by element
             for i in range(len(chn_data)):
@@ -152,7 +152,7 @@ class ScanDataTestCase(unittest.TestCase):
         # Test the generated nxs file
         f = self.nxs.load(self.file_name)
         m = f['entry1']['measurement']
-        for chn in data.keys():
+        for chn in list(data.keys()):
             chn_data = m[chn].nxdata
             # check the interpolations
             for i in range(len(chn_data)):

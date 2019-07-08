@@ -105,7 +105,7 @@ class BaseNEXUS_FileRecorder(BaseFileRecorder):
         # extension (defaults to hdf5)
         extension = os.path.splitext(filename)[1]
         inv_formats = dict(itertools.izip(
-            self.formats.itervalues(), self.formats.iterkeys()))
+            iter(self.formats.values()), iter(self.formats.keys())))
         self.nxfilemode = inv_formats.get(extension.lower(), 'w5')
         self.currentlist = None
 
@@ -223,7 +223,7 @@ class BaseNAPI_FileRecorder(BaseNEXUS_FileRecorder):
         self.fd.opendata(name)
         self.fd.putdata(data)
         if attrs is not None:
-            for k, v in attrs.items():
+            for k, v in list(attrs.items()):
                 self.fd.putattr(k, v)
         nid = self.fd.getdataID()
         self.fd.closedata()
@@ -317,7 +317,7 @@ def FileRecorder(filename, macro, **pars):
         if len_klasses == 0:
             klass = rec_manager.getRecorderClass('SPEC_FileRecorder')
         elif len_klasses == 1:
-            klass = klasses.values()[0]
+            klass = list(klasses.values())[0]
         else:
             raise AmbiguousRecorderError('Choice of recorder for %s '
                                          'extension is ambiguous' % ext)

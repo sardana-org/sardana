@@ -183,7 +183,7 @@ class BaseSardanaElementContainer:
         return elems
 
     def getElementNamesOfType(self, t):
-        return [e.name for e in self.getElementsOfType(t).values()]
+        return [e.name for e in list(self.getElementsOfType(t).values())]
 
     def getElementsWithInterface(self, interface):
         elems = self._interfaces_dict.get(interface, {})
@@ -196,18 +196,18 @@ class BaseSardanaElementContainer:
         return ret
 
     def getElementNamesWithInterface(self, interface):
-        return [e.name for e in self.getElementsWithInterface(interface).values()]
+        return [e.name for e in list(self.getElementsWithInterface(interface).values())]
 
     def hasElementName(self, elem_name):
         return self.getElement(elem_name) is not None
 
     def getElement(self, elem_name):
         elem_name = elem_name.lower()
-        for elems in self._type_elems_dict.values():
+        for elems in list(self._type_elems_dict.values()):
             elem = elems.get(elem_name)  # full_name?
             if elem is not None:
                 return elem
-            for elem in elems.values():
+            for elem in list(elems.values()):
                 if elem.name.lower() == elem_name:
                     return elem
 
@@ -216,14 +216,14 @@ class BaseSardanaElementContainer:
         elems = self._interfaces_dict.get(interface, {})
         if elem_name in elems:
             return elems[elem_name]
-        for elem in elems.values():
+        for elem in list(elems.values()):
             if elem.name.lower() == elem_name:
                 return elem
 
     def getElements(self):
         ret = set()
-        for elems in self._type_elems_dict.values():
-            ret.update(elems.values())
+        for elems in list(self._type_elems_dict.values()):
+            ret.update(list(elems.values()))
         return ret
 
     def getInterfaces(self):
@@ -647,7 +647,7 @@ class DatabaseSardana(object):
     def refresh(self):
         self._sardanas = sardanas = {}
         services = self._db.get_service_list("Sardana/.*")
-        for service, dev in services.items():
+        for service, dev in list(services.items()):
             service_type, service_instance = service.split("/", 1)
             try:
                 sardanas[service_instance] = Sardana(

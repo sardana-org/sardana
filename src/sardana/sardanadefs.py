@@ -495,7 +495,7 @@ def __root_expand_sardana_interface_data():
 
 #: An enumeration describing the all possible sardana interfaces
 Interface = Enumeration("Interface",
-                        __root_expand_sardana_interface_data().items())
+                        list(__root_expand_sardana_interface_data().items()))
 
 
 def __create_sardana_interfaces():

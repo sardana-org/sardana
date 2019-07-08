@@ -140,7 +140,7 @@ class TypeNames:
             pass
 
     def __str__(self):
-        return str(self._type_names.keys())
+        return str(list(self._type_names.keys()))
 
 #    def __getattr__(self, name):
 #        if name not in self._pending_type_names:
@@ -197,7 +197,7 @@ class ParamRepeat(object):
         self._obj.append(self.opts)
 
     def items(self):
-        return self.opts.items()
+        return list(self.opts.items())
 
     def __getattr__(self, name):
         return self.opts[name]
@@ -252,10 +252,10 @@ class ElementParamType(ParamType):
             for elem_info in pool.getElements():
                 if self.accepts(elem_info):
                     objs[elem_info.name] = elem_info
-        for macro_lib_name, macro_lib in macro_server.get_macros().items():
+        for macro_lib_name, macro_lib in list(macro_server.get_macros().items()):
             if self.accepts(macro_lib):
                 objs[macro_lib_name] = macro_lib
-        for macro_name, macro in macro_server.get_macros().items():
+        for macro_name, macro in list(macro_server.get_macros().items()):
             if self.accepts(macro):
                 objs[macro_name] = macro
 
@@ -263,11 +263,11 @@ class ElementParamType(ParamType):
 
     def getObjListStr(self, pool=ParamType.All, cache=False):
         obj_dict = self.getObjDict(pool=pool, cache=cache)
-        return obj_dict.keys()
+        return list(obj_dict.keys())
 
     def getObjList(self, pool=ParamType.All, cache=False):
         obj_dict = self.getObjDict(pool=pool, cache=cache)
-        return obj_dict.values()
+        return list(obj_dict.values())
 
     def serialize(self, *args, **kwargs):
         kwargs = ParamType.serialize(self, *args, **kwargs)
@@ -325,18 +325,18 @@ class ElementParamInterface(ElementParamType):
         else:
             pools = macro_server.get_pool(pool),
         for pool in pools:
-            for elem_info in pool.getElementsWithInterface(self._name).values():
+            for elem_info in list(pool.getElementsWithInterface(self._name).values()):
                 if self.accepts(elem_info):
                     objs[elem_info.name] = elem_info
         return objs
 
     def getObjListStr(self, pool=ParamType.All, cache=False):
         obj_dict = self.getObjDict(pool=pool, cache=cache)
-        return obj_dict.keys()
+        return list(obj_dict.keys())
 
     def getObjList(self, pool=ParamType.All, cache=False):
         obj_dict = self.getObjDict(pool=pool, cache=cache)
-        return obj_dict.values()
+        return list(obj_dict.values())
 
 
 class AttrParamType(ParamType):

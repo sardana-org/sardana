@@ -82,7 +82,7 @@ class _wm(Macro):
             data[name] = []
         # get additional motor information (ctrl name & axis)
         if show_ctrlaxis:
-            for name, motor in motors.iteritems():
+            for name, motor in motors.items():
                 ctrl_name = self.getController(motor.controller).name
                 axis_nb = str(getattr(motor, "axis"))
                 data[name].extend((ctrl_name, axis_nb))
@@ -90,7 +90,7 @@ class _wm(Macro):
         # collect asynchronous replies
         while len(requests) > 0:
             req2delete = []
-            for name, _id in requests.iteritems():
+            for name, _id in requests.items():
                 motor = motors[name]
                 try:
                     attrs = motor.read_attributes_reply(_id)

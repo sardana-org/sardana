@@ -193,26 +193,26 @@ class BasePoolTestCase(object):
                 self.createMotorElement(ctrl_obj, name, axis)
 
         # Check the elements creation
-        cts = len(self.cts.keys())
-        tgs = len(self.tgs.keys())
-        mots = len(self.mots.keys())
+        cts = len(list(self.cts.keys()))
+        tgs = len(list(self.tgs.keys()))
+        mots = len(list(self.mots.keys()))
 
         expected_cts = self.nctelems * self.nctctrls
         msg = 'Something happened during the creation of CT elements.\n' + \
               'Expected %s and there are %s, %s' % \
-              (expected_cts, cts, self.cts.keys())
+              (expected_cts, cts, list(self.cts.keys()))
         if cts != expected_cts:
             raise Exception(msg)
         expected_tgs = self.ntgelems * self.ntgctrls
         msg = 'Something happened during the creation of TG elements.\n' + \
               'Expected %s and there are %s, %s' % \
-              (expected_tgs, tgs, self.tgs.keys())
+              (expected_tgs, tgs, list(self.tgs.keys()))
         if tgs != expected_tgs:
             raise Exception(msg)
         expected_mots = self.nmotelems * self.nmotctrls
         msg = 'Something happened during the creation of MOT elements.\n' + \
               'Expected %s and there are %s, %s' % \
-              (self.nmotelems, mots, self.mots.keys())
+              (self.nmotelems, mots, list(self.mots.keys()))
         if mots != expected_mots:
             raise Exception(msg)
 

@@ -125,7 +125,7 @@ class InputHandler(Singleton, BaseInputHandler):
             interfaces = ms.getInterfaces()
             if data_type in interfaces:
                 input_data['data_type'] = [
-                    elem.name for elem in interfaces[data_type].values()]
+                    elem.name for elem in list(interfaces[data_type].values())]
         self._conn.send(input_data)
         ret = self._conn.recv()
         return ret

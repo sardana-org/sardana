@@ -91,7 +91,7 @@ class SPSRecorder(BaseSharedMemoryRecorder):
         if not self.isInitialized():
             return
         p, a = self.program, self.array_ENV
-        for k, v in d.iteritems():
+        for k, v in d.items():
             self.sps.putenv(p, a, k, str(v))
 
     def _startRecordList(self, recordlist):
@@ -238,7 +238,7 @@ class ShmRecorder(DataRecorder):
 
         self.putenv('title', recordlist.getEnvironValue('title'))
 
-        for env, val in recordlist.getEnviron().items():
+        for env, val in list(recordlist.getEnviron().items()):
             if env != 'title' and env != 'labels':
                 self.putenv(env, val)
 
@@ -286,7 +286,7 @@ class ShmRecorder(DataRecorder):
 
         myj = 0
 
-        for val2 in record.data.values():
+        for val2 in list(record.data.values()):
             valsmca = []
             if type(val2) in [list]:
                 if dim_list[myj] == 1:

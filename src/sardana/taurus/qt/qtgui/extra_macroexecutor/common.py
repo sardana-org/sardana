@@ -109,7 +109,7 @@ class MacroComboBox(Qt.QComboBox, TaurusBaseWidget):
         if ms is None:
             return
         macros = ms.getElementsWithInterface('MacroCode')
-        macroNames = sorted([macro.name for macro in macros.values()])
+        macroNames = sorted([macro.name for macro in list(macros.values())])
         macroNames.insert(0, '')  # adding blank item
         self.addItems(macroNames)
         self.updateStyle()

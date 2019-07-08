@@ -460,7 +460,7 @@ class SardanaEnvironmentModel(TaurusBaseModel):
         env = dev.getEnvironment()
         root = self._rootItem
 
-        for key, value in env.items():
+        for key, value in list(env.items()):
             if not self.accept(key):
                 continue
             env_item = EnvironmentTreeItem(self, (key, value), root)

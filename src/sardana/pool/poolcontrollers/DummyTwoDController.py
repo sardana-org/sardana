@@ -329,7 +329,7 @@ class BasicDummyTwoDController(TwoDController):
 
     def _finish(self, elapsed_time, axis=None):
         if axis is None:
-            for axis, channel in self.counting_channels.items():
+            for axis, channel in list(self.counting_channels.items()):
                 channel.is_counting = False
                 self._updateChannelValue(axis, elapsed_time)
         elif axis in self.counting_channels:
@@ -434,7 +434,7 @@ class BasicDummyTwoDController(TwoDController):
         # for the moment only react on first trigger
         if type_.name.lower() == "active" and value == 0:
             self._armed = False
-            for axis, channel in self.counting_channels.iteritems():
+            for axis, channel in self.counting_channels.items():
                 channel.is_counting = True
             self.start_time = time.time()
 

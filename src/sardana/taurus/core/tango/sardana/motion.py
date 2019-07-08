@@ -271,12 +271,12 @@ class Motion(BaseMotion):
 
         # map<MoveableSource, Moveable>
         ms_moveables = {}
-        for moveable_source, ms_names in ms_elem_names.items():
+        for moveable_source, ms_names in list(ms_elem_names.items()):
             moveable = moveable_source.getMoveable(ms_names)
             ms_moveables[moveable_source] = moveable
 
         # list<Moveable>
-        moveable_list = ms_moveables.values()
+        moveable_list = list(ms_moveables.values())
 
         # list<tuple(int moveable_index, int position_index)>
         pos_to_moveable = len(names) * [None, ]

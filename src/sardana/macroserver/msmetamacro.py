@@ -188,7 +188,7 @@ class Parameterizable(object):
             if repeat:
                 rep = type_class
                 opts = sep = ''
-                for opt, val in rep.items():
+                for opt, val in list(rep.items()):
                     opts += '%s%s=%s' % (sep, opt, val)
                     sep = ', '
                 info.append(opts)
@@ -210,7 +210,7 @@ class Parameterizable(object):
             if repeat:
                 rep = type_class
                 opts = sep = ''
-                for opt, val in rep.items():
+                for opt, val in list(rep.items()):
                     opts += '%s%s=%s' % (sep, opt, val)
                     sep = ', '
                 info.append(opts)

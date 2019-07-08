@@ -585,7 +585,7 @@ class BasicDummyMotorController(MotorController):
     def StartAll(self):
         #raise Exception("Cannot move on StartAll")
         t = time.time()
-        for motion, pos in self.motions.items():
+        for motion, pos in list(self.motions.items()):
             motion.startMotion(motion.getCurrentUserPosition(t), pos, t)
 
     def AbortOne(self, axis):
@@ -657,7 +657,7 @@ class FastDummyMotorController(MotorController):
         self.motions[self.m[idx]] = pos
 
     def StartAll(self):
-        for motion, pos in self.motions.items():
+        for motion, pos in list(self.motions.items()):
             motion.curr_pos = pos
 
     def AbortOne(self, axis):

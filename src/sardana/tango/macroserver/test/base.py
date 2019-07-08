@@ -78,7 +78,7 @@ class BaseMacroServerTestCase(object):
             self._msstarter.addNewDevice(self.door_name, klass='Door')
             # Add properties
             if properties:
-                for key, values in properties.items():
+                for key, values in list(properties.items()):
                     db.put_device_property(self.ms_name,
                                            {key: values})
             # start MS server

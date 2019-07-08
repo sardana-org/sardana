@@ -112,7 +112,7 @@ class Position(SardanaAttribute):
         if not cache:
             dial_position_values = self.obj.motion.read_dial_position(
                 serial=True)
-            for motion_obj, position_value in dial_position_values.items():
+            for motion_obj, position_value in list(dial_position_values.items()):
                 motion_obj.put_dial_position(
                     position_value, propagate=propagate)
 
@@ -292,7 +292,7 @@ class PoolMotorGroup(PoolGroupElement):
         self._aborted = False
         items = self.calculate_motion(new_positions)
         timestamp = time.time()
-        for item, position_info in items.items():
+        for item, position_info in list(items.items()):
             item.set_write_position(position_info[0], timestamp=timestamp,
                                     propagate=0)
         if not self._simulation_mode:

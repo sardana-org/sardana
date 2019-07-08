@@ -380,7 +380,7 @@ class PoolController(PoolBaseController):
             self._ctrl_info = self._lib_info.get_controller(class_name)
         self._init()
 
-        for elem in elem_axis.values():
+        for elem in list(elem_axis.values()):
             self.add_element(elem, propagate=0)
 
         state, status = State.Fault, ""
@@ -567,7 +567,7 @@ class PoolController(PoolBaseController):
             information for each axis and a boolean telling if an error occured
         :rtype: dict<PoolElement, state info>, bool"""
         if axes is None:
-            axes = self._element_axis.keys()
+            axes = list(self._element_axis.keys())
         if ctrl_states is None:
             ctrl_states = {}
 
@@ -660,7 +660,7 @@ class PoolController(PoolBaseController):
         :return: a map containing the controller value information for each axis
         :rtype: dict<PoolElement, SardanaValue>"""
         if axes is None:
-            axes = self._element_axis.keys()
+            axes = list(self._element_axis.keys())
         if ctrl_values is None:
             ctrl_values = {}
 
@@ -744,7 +744,7 @@ class PoolController(PoolBaseController):
         :rtype: dict<PoolElement, SardanaValue>
         """
         if axes is None:
-            axes = self._element_axis.keys()
+            axes = list(self._element_axis.keys())
         if ctrl_values is None:
             ctrl_values = {}
 
@@ -830,7 +830,7 @@ class PoolController(PoolBaseController):
         """
 
         if elements is None:
-            axes = self.get_element_axis().keys()
+            axes = list(self.get_element_axis().keys())
         else:
             axes = [e.axis for e in elements]
         error_axes = self.stop_axes(axes)
@@ -916,7 +916,7 @@ class PoolController(PoolBaseController):
         """
 
         if elements is None:
-            axes = self.get_element_axis().keys()
+            axes = list(self.get_element_axis().keys())
         else:
             axes = [e.axis for e in elements]
         error_axes = self.abort_axes(axes)
@@ -972,13 +972,13 @@ class PoolController(PoolBaseController):
     def raw_move(self, axis_pos):
         ctrl = self.ctrl
         ctrl.PreStartAll()
-        for axis, dial_position in axis_pos.items():
+        for axis, dial_position in list(axis_pos.items()):
             ret = ctrl.PreStartOne(axis, dial_position)
             if not ret:
                 raise Exception("%s.PreStartOne(%d, %f) returns False"
                                 % (self.name, axis, dial_position))
 
-        for axis, dial_position in axis_pos.items():
+        for axis, dial_position in list(axis_pos.items()):
             ctrl.StartOne(axis, dial_position)
 
         ctrl.StartAll()

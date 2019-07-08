@@ -521,7 +521,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
             return None
         type = node.type()
         ms = self.getParentModelObj()
-        items = ms.getElementsWithInterface(type).keys()
+        items = list(ms.getElementsWithInterface(type).keys())
         return items, type
 
     def nextValue(self, current):

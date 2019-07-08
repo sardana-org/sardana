@@ -175,7 +175,7 @@ class Door(SardanaDevice):
             self.macro_executor.abort()
             self.macro_executor.clearRunningMacro()
 
-        for handler, filter, format in self._handler_dict.values():
+        for handler, filter, format in list(self._handler_dict.values()):
             handler.finish()
 
         door = self.door
@@ -400,7 +400,7 @@ class Door(SardanaDevice):
 
     def RunMacro(self, par_str_list):
         # first empty all the buffers
-        for handler, filter, fmt in self._handler_dict.values():
+        for handler, filter, fmt in list(self._handler_dict.values()):
             handler.clearBuffer()
 
         if len(par_str_list) == 0:
@@ -424,7 +424,7 @@ class Door(SardanaDevice):
             macro_env = self.door.get_macro_class_info(macro_name).env
         env = self.door.get_env(macro_env, macro_name=macro_name)
         ret = []
-        for k, v in env.iteritems():
+        for k, v in env.items():
             ret.extend((k, v))
         return ret
 

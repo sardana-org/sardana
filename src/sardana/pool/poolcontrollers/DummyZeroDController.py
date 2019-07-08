@@ -70,7 +70,7 @@ class DummyZeroDController(ZeroDController):
         self.read_channels[ind] = channel
 
     def ReadAll(self):
-        for channel in self.read_channels.values():
+        for channel in list(self.read_channels.values()):
             self._setChannelValue(channel)
 
     def ReadOne(self, ind):

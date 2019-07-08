@@ -809,11 +809,11 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
         dataSource = model.dataSource()
         taurus_role = model.role(index.column())
         if taurus_role == ChannelView.PlotType:
-            editor.addItems(PlotType.keys())
+            editor.addItems(list(PlotType.keys()))
             current = model.data(index)
             editor.setCurrentIndex(editor.findText(current))
         elif taurus_role == ChannelView.Normalization:
-            editor.addItems(Normalization.keys())
+            editor.addItems(list(Normalization.keys()))
             current = model.data(index)
             editor.setCurrentIndex(editor.findText(current))
         elif taurus_role in (ChannelView.Timer, ChannelView.Monitor):
@@ -830,14 +830,14 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
                 current = model.data(index)
                 editor.setCurrentIndex(editor.findText(current))
             else:
-                for ctrl_data in dataSource['controllers'].values():
+                for ctrl_data in list(dataSource['controllers'].values()):
                     if key in ctrl_data:
                         channel = all_channels[ctrl_data[key]]
                         editor.addItem(channel['name'], channel['full_name'])
                 current = dataSource.get(key)  # current global timer/monitor
                 editor.setCurrentIndex(editor.findData(current))
         elif taurus_role == ChannelView.Synchronization:
-            editor.addItems(AcqSynchType.keys())
+            editor.addItems(list(AcqSynchType.keys()))
             current = model.data(index)
             editor.setCurrentIndex(editor.findText(current))
         elif taurus_role == ChannelView.PlotAxes:
@@ -849,7 +849,7 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
         elif taurus_role == ChannelView.Synchronizer:
             # add the triggergates to the editor
             all_triggers = model.getAvailableTriggers()
-            for full_name, tg_data in all_triggers.items():
+            for full_name, tg_data in list(all_triggers.items()):
                 editor.addItem(tg_data['name'], full_name)
                 current = model.data(index)
                 editor.setCurrentIndex(editor.findText(current))
@@ -950,7 +950,7 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
             # get the affected channels
             affected = []
             channels = ctrl_data.get('channels')
-            for _, ch_data in channels.items():
+            for _, ch_data in list(channels.items()):
                 affected.append(ch_data['name'])
 
             if len(affected) > 1:
@@ -1047,7 +1047,7 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
         if channel is None:
             shown = [n for n, d in getChannelConfigs(dataSource)]
             avail_channels = qmodel.getAvailableChannels()
-            clist = [ch_info['name'] for ch_name, ch_info in avail_channels.items()
+            clist = [ch_info['name'] for ch_name, ch_info in list(avail_channels.items())
                      if ch_name not in shown]
             clist = sorted(clist) + ['(Other...)']
             chname, ok = Qt.QInputDialog.getItem(
@@ -1064,7 +1064,7 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
                 qmodel.addChannel(
                     chname=m, ctrlname='__tango__', external=True)
         else:
-            for ch_info in avail_channels.values():
+            for ch_info in list(avail_channels.values()):
                 if ch_info['name'] == chname:
                     qmodel.addChannel(chinfo=ch_info)
 

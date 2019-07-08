@@ -155,7 +155,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             nxentry = self.fd.create_group(self.entryname)
         except ValueError:
             # Warn and abort
-            if self.entryname in self.fd.keys():
+            if self.entryname in list(self.fd.keys()):
                 msg = ('{ename:s} already exists in {fname:s}. '
                        'Aborting macro to prevent data corruption.\n'
                        'This is likely caused by a wrong ScanID\n'
@@ -282,7 +282,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         _snap = _meas.create_group('pre_scan_snapshot')
         _snap.attrs['NX_class'] = 'NXcollection'
 
-        meas_keys = _meas.keys()
+        meas_keys = list(_meas.keys())
 
         for dd in self.preScanSnapShot:
             label = self.sanitizeName(dd.label)
@@ -498,7 +498,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         _meas = nxentry['measurement']
 
         # write the 1D NXdata group
-        for axes, v in plots1d.items():
+        for axes, v in list(plots1d.items()):
             _nxdata = nxentry.create_group(plots1d_names[axes])
             _nxdata.attrs['NX_class'] = 'NXdata'
 

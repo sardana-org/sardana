@@ -68,7 +68,7 @@ class MacroServer(SardanaDevice):
         self._macro_server.clear_log_report()
         # Workaround for bug #494.
         factory = taurus.Factory("tango")
-        for attr in factory.tango_attrs.values():
+        for attr in list(factory.tango_attrs.values()):
             attr.cleanUp()
 
     def init_device(self):
@@ -261,7 +261,7 @@ class MacroServer(SardanaDevice):
         codec = CodecFactory().getCodec('json')
         ret = []
 
-        for _, macro in macro_server.get_macros().items():
+        for _, macro in list(macro_server.get_macros().items()):
             if macro.name in macro_names:
                 ret.append(codec.encode(('', macro.serialize()))[1])
 

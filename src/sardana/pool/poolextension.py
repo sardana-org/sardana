@@ -80,7 +80,7 @@ def translate_ctrl_value(value):
     if isinstance(value, SardanaValue):
         return value
 
-    for _, translator in __CTRL_VALUE_TRANSLATORS.items():
+    for _, translator in list(__CTRL_VALUE_TRANSLATORS.items()):
         try:
             return translator(value)
         except CannotTranslateException:

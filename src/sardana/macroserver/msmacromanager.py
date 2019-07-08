@@ -241,7 +241,7 @@ class MacroManager(MacroServerManager):
         self._macro_path = p
 
         macro_file_names = self._findMacroLibNames()
-        for mod_name, file_name in macro_file_names.iteritems():
+        for mod_name, file_name in macro_file_names.items():
             dir_name = os.path.dirname(file_name)
             path = [dir_name]
             try:
@@ -539,7 +539,7 @@ class MacroManager(MacroServerManager):
                     macro_name = macro.__name__
                     if macro_name in self._overwritten_macros:
                         isoverwritten = True
-                    elif (macro_name in self._macro_dict.keys()
+                    elif (macro_name in list(self._macro_dict.keys())
                             and self._macro_dict[macro_name].lib != macro_lib):
                         isoverwritten = True
                         msg = ('Macro "{}" defined in "{}" macro library'
@@ -563,7 +563,7 @@ class MacroManager(MacroServerManager):
         finally:
             if macro_errors:
                 msg = ""
-                for key, value in macro_errors.iteritems():
+                for key, value in macro_errors.items():
                     msg_part = ("\n" + "Error adding macro(s): " + key + "\n"
                                 + "It presents an error: \n" + str(value))
                     msg += str(msg_part) + "\n"
@@ -617,7 +617,7 @@ class MacroManager(MacroServerManager):
             return self._modules
         expr = re.compile(filter, re.IGNORECASE)
         ret = {}
-        for name, macro_lib in self._modules.iteritems():
+        for name, macro_lib in self._modules.items():
             if expr.match(name) is None:
                 continue
             ret[name] = macro_lib
@@ -638,7 +638,7 @@ class MacroManager(MacroServerManager):
         expr = re.compile(filter, re.IGNORECASE)
 
         ret = {}
-        for name, macro in self._macro_dict.iteritems():
+        for name, macro in self._macro_dict.items():
             if expr.match(name) is None:
                 continue
             ret[name] = macro
@@ -656,7 +656,7 @@ class MacroManager(MacroServerManager):
             :obj:`dict`\<:obj:`str`\, :class:`~sardana.macroserver.msmetamacro.MacroClass`\>"""
         macros = self.getMacros(filter=filter)
         macro_classes = {}
-        for name, macro in macros.items():
+        for name, macro in list(macros.items()):
             if macro.get_type() == ElementType.MacroClass:
                 macro_classes[name] = macro
         return macro_classes
@@ -673,7 +673,7 @@ class MacroManager(MacroServerManager):
             :obj:`dict`\<:obj:`str`\, :class:`~sardana.macroserver.msmetamacro.MacroFunction`\>"""
         macros = self.getMacros(filter=filter)
         macro_classes = {}
-        for name, macro in macros.items():
+        for name, macro in list(macros.items()):
             if macro.get_type() == ElementType.MacroFunction:
                 macro_classes[name] = macro
         return macro_classes
@@ -699,12 +699,12 @@ class MacroManager(MacroServerManager):
     def getMacroLib(self, name):
         if os.path.isabs(name):
             abs_file_name = name
-            for lib in self._modules.values():
+            for lib in list(self._modules.values()):
                 if lib.file_path == abs_file_name:
                     return lib
         elif name.count(os.path.extsep):
             file_name = name
-            for lib in self._modules.values():
+            for lib in list(self._modules.values()):
                 if lib.file_name == file_name:
                     return lib
         module_name = name
@@ -1389,7 +1389,7 @@ class MacroExecutor(Logger):
 
     def __stopObjects(self):
         """Stops all the reserved objects in the executor"""
-        for _, objs in self._reserved_macro_objs.items():
+        for _, objs in list(self._reserved_macro_objs.items()):
             for obj in objs:
                 try:
                     obj.stop()
@@ -1401,7 +1401,7 @@ class MacroExecutor(Logger):
 
     def __abortObjects(self):
         """Aborts all the reserved objects in the executor"""
-        for _, objs in self._reserved_macro_objs.items():
+        for _, objs in list(self._reserved_macro_objs.items()):
             for obj in objs:
                 try:
                     obj.abort()

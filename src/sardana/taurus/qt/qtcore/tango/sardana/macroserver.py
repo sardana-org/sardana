@@ -113,7 +113,7 @@ class QDoor(BaseDoor, Qt.QObject):
         # one or more measurement group was deleted
         mntgrp_changed = len(self._mntgrps_connected) > len(mntgrps)
         new_mntgrps_connected = []
-        for name, mg in mntgrps.items():
+        for name, mg in list(mntgrps.items()):
             if name not in self._mntgrps_connected:
                 mntgrp_changed = True  # this measurement group is new
                 obj = mg.getObj()

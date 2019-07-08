@@ -102,7 +102,7 @@ class PathManager(SardanaIDManager):
         with self._path_lock:
             path_id = self.get_new_id()
 
-            for _, p_info in pif.items():
+            for _, p_info in list(pif.items()):
                 p_info[0] += path_len
 
             pif[path_id] = [0, path]
@@ -293,7 +293,7 @@ class ModuleManager(Singleton, Logger):
 
     def unloadModules(self, module_list=None):
         """Unloads the given module name"""
-        modules = module_list or self._modules.keys()
+        modules = module_list or list(self._modules.keys())
         for module in modules:
             self.unloadModule(module)
 

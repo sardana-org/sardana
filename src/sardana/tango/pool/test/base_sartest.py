@@ -37,7 +37,7 @@ def _cleanup_device(dev_name):
     device = taurus.Device(dev_name)
     # tango_alias_devs contains any names in which we have referred
     # to the device, could be alias, short name, etc. pop all of them
-    for k, v in factory.tango_alias_devs.items():
+    for k, v in list(factory.tango_alias_devs.items()):
         if v is device:
             factory.tango_alias_devs.pop(k)
     full_name = device.getFullName()

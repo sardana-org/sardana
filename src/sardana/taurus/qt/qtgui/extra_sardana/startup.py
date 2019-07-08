@@ -70,7 +70,7 @@ class UserModuleDeleter(object):
         if pathlist is None:
             pathlist = []
         self.pathlist = pathlist
-        self.previous_modules = sys.modules.keys()
+        self.previous_modules = list(sys.modules.keys())
 
     def is_module_blacklisted(self, modname, modpath):
         for path in [sys.prefix] + self.pathlist:
@@ -88,7 +88,7 @@ class UserModuleDeleter(object):
         Do not del C modules
         """
         log = []
-        for modname, module in sys.modules.items():
+        for modname, module in list(sys.modules.items()):
             if modname not in self.previous_modules:
                 modpath = getattr(module, '__file__', None)
                 if modpath is None:

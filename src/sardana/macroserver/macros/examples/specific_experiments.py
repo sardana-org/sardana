@@ -69,7 +69,7 @@ class xas_acq(Macro, Hookable):
 
         # print "!!!!!", type(self.getInstrument('/instrument/monochromator')), self.getEnv('MonochromatorEnergy', macro_name=self.name)
         # ElementWithInterface('Instrument','monochromator')
-        for n, e in self.getElementsWithInterface('Instrument').iteritems():
+        for n, e in self.getElementsWithInterface('Instrument').items():
             inst = e.getObj()
             # ,inst.getElements()
             print n, e.name, inst.getFullName(), type(e), type(inst), type(inst.getPoolObj())

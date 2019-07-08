@@ -336,7 +336,7 @@ class PoolElement(BaseElement, TangoDevice):
         f = self.factory()
 
         attr_map = self._attrEG
-        for attr_name in attr_map.keys():
+        for attr_name in list(attr_map.keys()):
             attrEG = attr_map.pop(attr_name)
             attr = attrEG.getAttribute()
             attrEG = None
@@ -615,7 +615,7 @@ class Controller(PoolElement):
 
     def getElementByAxis(self, axis):
         pool = self.getPoolObj()
-        for _, elem in pool.getElementsOfType(self.getMainType()).items():
+        for _, elem in list(pool.getElementsOfType(self.getMainType()).items()):
             if (elem.controller != self.getFullName() or
                     elem.getAxis() != axis):
                 continue
@@ -623,7 +623,7 @@ class Controller(PoolElement):
 
     def getElementByName(self, name):
         pool = self.getPoolObj()
-        for _, elem in pool.getElementsOfType(self.getMainType()).items():
+        for _, elem in list(pool.getElementsOfType(self.getMainType()).items()):
             if (elem.controller != self.getFullName() or
                     elem.getName() != name):
                 continue
@@ -638,7 +638,7 @@ class Controller(PoolElement):
 
         pool = self.getPoolObj()
         axes = []
-        for _, elem in pool.getElementsOfType(self.getMainType()).items():
+        for _, elem in list(pool.getElementsOfType(self.getMainType()).items()):
             if elem.controller != self.getFullName():
                 continue
             axes.append(elem.getAxis())
@@ -1344,9 +1344,9 @@ def getChannelConfigs(mgconfig, ctrls=None, sort=True):
     chconfigs = []
     if not mgconfig:
         return []
-    for ctrl_name, ctrl_data in mgconfig['controllers'].items():
+    for ctrl_name, ctrl_data in list(mgconfig['controllers'].items()):
         if ctrls is None or ctrl_name in ctrls:
-            for ch_name, ch_data in ctrl_data['channels'].items():
+            for ch_name, ch_data in list(ctrl_data['channels'].items()):
                 ch_data.update({'_controller_name': ctrl_name})
                 chconfigs.append((ch_name, ch_data))
     if sort:
@@ -1372,8 +1372,8 @@ class MGConfiguration(object):
         # of a dict as receveid by the MG configuration attribute
         self.channels = channels = CaselessDict()
 
-        for _, ctrl_data in self.controllers.items():
-            for channel_name, channel_data in ctrl_data['channels'].items():
+        for _, ctrl_data in list(self.controllers.items()):
+            for channel_name, channel_data in list(ctrl_data['channels'].items()):
                 channels[channel_name] = channel_data
 
         #####################
@@ -1387,7 +1387,7 @@ class MGConfiguration(object):
         # ordered by channel index in the MG.
         self.channel_list = len(channels) * [None]
 
-        for channel in channels.values():
+        for channel in list(channels.values()):
             self.channel_list[channel['index']] = channel
 
         # dict<str, list[DeviceProxy, CaselessDict<str, dict>]>
@@ -1431,7 +1431,7 @@ class MGConfiguration(object):
         self.cache = cache = {}
 
         tg_attr_validator = TangoAttributeNameValidator()
-        for channel_name, channel_data in self.channels.items():
+        for channel_name, channel_data in list(self.channels.items()):
             cache[channel_name] = None
             data_source = channel_data['source']
             params = tg_attr_validator.getParams(data_source)
@@ -1495,7 +1495,7 @@ class MGConfiguration(object):
 
         # prepare missing tango devices
         if self.tango_dev_channels_in_error > 0:
-            for dev_name, dev_data in self.tango_dev_channels.items():
+            for dev_name, dev_data in list(self.tango_dev_channels.items()):
                 if dev_data[0] is None:
                     try:
                         dev_data[0] = DeviceProxy(dev_name)
@@ -1505,7 +1505,7 @@ class MGConfiguration(object):
 
         # prepare missing tango attribute configuration
         if self.tango_channels_info_in_error > 0:
-            for _, attr_data in self.tango_channels_info.items():
+            for _, attr_data in list(self.tango_channels_info.items()):
                 dev_name, attr_name, attr_info = attr_data
                 if attr_info.has_info():
                     continue
@@ -1527,7 +1527,7 @@ class MGConfiguration(object):
             return self.tango_channels_info[channel_name]
         except:
             channel_name = channel_name.lower()
-            for d_name, a_name, ch_info in self.tango_channels_info.values():
+            for d_name, a_name, ch_info in list(self.tango_channels_info.values()):
                 if ch_info.name.lower() == channel_name:
                     return d_name, a_name, ch_info
 
@@ -1548,7 +1548,7 @@ class MGConfiguration(object):
         self.prepare()
         ret = CaselessDict(self.tango_channels_info)
         ret.update(self.non_tango_channels)
-        for ch_name, (_, _, ch_info) in ret.items():
+        for ch_name, (_, _, ch_info) in list(ret.items()):
             if only_enabled and not ch_info.enabled:
                 ret.pop(ch_name)
         return ret
@@ -1564,7 +1564,7 @@ class MGConfiguration(object):
         """
         channels_info = self.getChannelsInfo(only_enabled=only_enabled)
         ret = []
-        for _, (_, _, ch_info) in channels_info.items():
+        for _, (_, _, ch_info) in list(channels_info.items()):
             ret.append(ch_info)
         ret = sorted(ret, lambda x, y: cmp(x.index, y.index))
         return ret
@@ -1596,9 +1596,9 @@ class MGConfiguration(object):
         if not only_enabled:
             return self.tango_dev_channels
         tango_dev_channels = {}
-        for dev_name, dev_data in self.tango_dev_channels.items():
+        for dev_name, dev_data in list(self.tango_dev_channels.items()):
             dev_proxy, attrs = dev_data[0], copy.deepcopy(dev_data[1])
-            for attr_name, channel_data in attrs.items():
+            for attr_name, channel_data in list(attrs.items()):
                 if not channel_data["enabled"]:
                     attrs.pop(attr_name)
             tango_dev_channels[dev_name] = [dev_proxy, attrs]
@@ -1616,18 +1616,18 @@ class MGConfiguration(object):
 
         # deposit read requests
         tango_dev_channels = self.getTangoDevChannels(only_enabled=True)
-        for _, dev_data in tango_dev_channels.items():
+        for _, dev_data in list(tango_dev_channels.items()):
             dev, attrs = dev_data
             if dev is None:
                 continue
             try:
                 dev_replies[dev] = dev.read_attributes_asynch(
-                    attrs.keys()), attrs
+                    list(attrs.keys())), attrs
             except:
                 dev_replies[dev] = None, attrs
 
         # gather all replies
-        for dev, reply_data in dev_replies.items():
+        for dev, reply_data in list(dev_replies.items()):
             reply, attrs = reply_data
             try:
                 data = dev.read_attributes_reply(reply, 0)
@@ -1639,7 +1639,7 @@ class MGConfiguration(object):
                         value = data_item.value
                     ret[channel_data['full_name']] = value
             except:
-                for _, channel_data in attrs.items():
+                for _, channel_data in list(attrs.items()):
                     ret[channel_data['full_name']] = None
 
         return ret
@@ -1648,10 +1648,10 @@ class MGConfiguration(object):
         self.prepare()
         ret = CaselessDict(self.cache)
         tango_dev_channels = self.getTangoDevChannels(only_enabled=True)
-        for _, dev_data in tango_dev_channels.items():
+        for _, dev_data in list(tango_dev_channels.items()):
             dev, attrs = dev_data
             try:
-                data = dev.read_attributes(attrs.keys())
+                data = dev.read_attributes(list(attrs.keys()))
                 for data_item in data:
                     channel_data = attrs[data_item.name]
                     if data_item.has_failed:
@@ -1660,7 +1660,7 @@ class MGConfiguration(object):
                         value = data_item.value
                     ret[channel_data['full_name']] = value
             except:
-                for _, channel_data in attrs.items():
+                for _, channel_data in list(attrs.items()):
                     ret[channel_data['full_name']] = None
         return ret
 
@@ -2019,7 +2019,7 @@ class MeasurementGroup(PoolElement):
                 channel['enabled'] = state
                 found[name] = True
         wrong_channels = []
-        for ch, f in found.items():
+        for ch, f in list(found.items()):
             if f is False:
                 wrong_channels.append(ch)
         if len(wrong_channels) > 0:
@@ -2321,7 +2321,7 @@ class Pool(TangoDevice, MoveableSource):
         name = name.lower()
         for e_type in elem_types:
             elems = self.getElementsOfType(e_type)
-            for elem in elems.values():
+            for elem in list(elems.values()):
                 if elem.name.lower() == name:
                     return elem
             elem = elems.get(name)
@@ -2362,7 +2362,7 @@ class Pool(TangoDevice, MoveableSource):
             while True:
                 name = "_mg_ms_{0}_{1}".format(pid, i)
                 exists = False
-                for mg in mgs.values():
+                for mg in list(mgs.values()):
                     if mg.name == name:
                         exists = True
                         break
@@ -2376,7 +2376,7 @@ class Pool(TangoDevice, MoveableSource):
         names_lower = map(str.lower, names)
         len_names = len(names)
         mgs = self.getElementsOfType('MotorGroup')
-        for mg in mgs.values():
+        for mg in list(mgs.values()):
             mg_elems = mg.elements
             if len(mg_elems) != len_names:
                 continue

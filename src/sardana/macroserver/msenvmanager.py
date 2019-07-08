@@ -136,7 +136,7 @@ class EnvironmentManager(MacroServerManager):
     def _fillEnvironmentCaches(self, env):
         # fill the three environment caches
         env_dict = self._global_env
-        for k, v in env.items():
+        for k, v in list(env.items()):
             k_parts = k.split('.', 1)
             key = k_parts[0]
 
@@ -315,7 +315,7 @@ class EnvironmentManager(MacroServerManager):
         m_env = self._macro_env.get(macro_name, {})
 
         # put the doors global environment
-        for k, v in d_env.iteritems():
+        for k, v in d_env.items():
             if k.count('.') == 0:
                 ret[k] = v
 
@@ -323,7 +323,7 @@ class EnvironmentManager(MacroServerManager):
         ret.update(m_env)
 
         # put the door and macro specific environment
-        for k, v in d_env.iteritems():
+        for k, v in d_env.items():
             if k.count('.') > 0:
                 m_name, key = k.split('.', 1)
                 if m_name is macro_name:
@@ -382,7 +382,7 @@ class EnvironmentManager(MacroServerManager):
 
     def _encode(self, d):
         ret = {}
-        for k, v in d.iteritems():
+        for k, v in d.items():
             if isinstance(v, (str, unicode)):
                 try:
                     v = eval(v)
@@ -460,7 +460,7 @@ class EnvironmentManager(MacroServerManager):
             raise TypeError("obj parameter must be a sequence or a map")
 
         obj = self._encode(obj)
-        for k, v in obj.iteritems():
+        for k, v in obj.items():
             self._setOneEnv(k, v)
         return obj
 

@@ -368,7 +368,7 @@ class MacroSequenceProxyModel(Qt.QSortFilterProxyModel):
 
     def createIdIndexDictionary(self):
         d = self.sourceModel().createIdIndexDictionary()
-        for id, sourceIndex in d.iteritems():
+        for id, sourceIndex in d.items():
             proxyIndex = self.mapFromSource(sourceIndex)
             d[id] = Qt.QPersistentModelIndex(proxyIndex)
         return d

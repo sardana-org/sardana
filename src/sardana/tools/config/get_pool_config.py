@@ -80,10 +80,10 @@ def checkPoolElements(pool):
         config = json.loads(config)
         controllers = config['controllers']
         elements = {}
-        for ctrl, c_data in controllers.items():
+        for ctrl, c_data in list(controllers.items()):
             if c_data.has_key('units'):
                 c_data = c_data['units']['0']
-            for _, data in c_data['channels'].items():
+            for _, data in list(c_data['channels'].items()):
                 index = int(data['index'])
                 if ctrl == '__tango__':
                     elements[index] = data['full_name']
@@ -103,7 +103,7 @@ def checkPoolElements(pool):
 
     db = taurus.Database()
     pool_elements_detail = {}
-    for element_type in pool_elements.keys():
+    for element_type in list(pool_elements.keys()):
         elements = pool_elements[element_type]
         for info in elements:
             info_splitted = json.loads(info)
@@ -134,7 +134,7 @@ def checkPoolElements(pool):
             for attr, attr_dict in db.get_device_attribute_property(
                 normal_name,
                 map(str, attrs)
-            ).iteritems():
+            ).items():
                 if len(attr_dict) > 0:
                     pool_elements_detail[alias]['attr_dicts'][attr] = attr_dict
                 else:
@@ -148,7 +148,7 @@ def checkPoolElements(pool):
     # print pool_instruments
 
     # CHECK ELEMENTS WITHOUT INSTRUMENT
-    for element_type in pool_elements.keys():
+    for element_type in list(pool_elements.keys()):
         elements = pool_elements[element_type]
         elements_with_no_instrument = []
         for info in elements:
@@ -244,7 +244,7 @@ def checkPoolElements(pool):
     row = '\t'.join(columns)
     parameters_sheet += row + '\n'
 
-    for ctrl_type, controllers in pool_controllers_by_type.iteritems():
+    for ctrl_type, controllers in pool_controllers_by_type.items():
         if len(controllers) == 0:
             continue
         for ctrl in controllers:
@@ -260,7 +260,7 @@ def checkPoolElements(pool):
                 ctrl_details['properties'] = ''
             else:
                 properties = []
-                for k, v in ctrl_details['properties'].iteritems():
+                for k, v in ctrl_details['properties'].items():
                     properties.append(k + ':' + v)
                 ctrl_details['properties'] = ';'.join(properties)
 
@@ -279,7 +279,7 @@ def checkPoolElements(pool):
                 elem_type = elem_details['type']
                 attr_dicts = elem_details['attr_dicts']
                 attribute_values = []
-                for attr in attr_dicts.keys():
+                for attr in list(attr_dicts.keys()):
                     attr_dict = attr_dicts[attr]
                     if attr_dict.has_key('__value'):
                         # skip memorized values of DialPosition and Position
@@ -317,7 +317,7 @@ def checkPoolElements(pool):
                         'event_period', [''])[0]
                     elem_params['event'] = attr_dict.get('abs_change', [''])[0]
 
-                    for k, v in elem_params.iteritems():
+                    for k, v in elem_params.items():
                         if v != '' and k not in ['pool', 'element', 'parameter']:
                             params_row_template = '{pool}\t{element}\t{parameter}\t{label}\t{format}\t{min_value}\t{min_alarm}\t{min_warning}\t{max_warning}\t{max_alarm}\t{max_value}\t{unit}\t{polling}\t{event}'
                             row = params_row_template.format(**elem_params)
@@ -346,7 +346,7 @@ def checkPoolElements(pool):
         instruments_sheet += row + '\n'
 
     acq_row_template = '{type}\t{pool}\t{name}\tAutomatic\t{channels}'
-    for mg_name, mg_channels in pool_measurement_groups.iteritems():
+    for mg_name, mg_channels in pool_measurement_groups.items():
         mg_details = {}
         mg_details['type'] = 'MeasurementGroup'
         mg_details['pool'] = pool

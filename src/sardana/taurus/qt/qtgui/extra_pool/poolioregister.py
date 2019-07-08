@@ -247,7 +247,7 @@ class PoolIORegisterButtons(TaurusWidget):
 
         # Empty previous buttons
         # self.ui.lo_buttons_write.
-        for button in self.button_value_dict.keys():
+        for button in list(self.button_value_dict.keys()):
             self.button.clicked.disconnect(self.writeValue)
             button.deleteLater()
         self.button_value_dict = {}

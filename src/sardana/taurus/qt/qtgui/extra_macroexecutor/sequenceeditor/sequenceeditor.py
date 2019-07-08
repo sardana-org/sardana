@@ -287,7 +287,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
 
     def prepareMacroProgresses(self):
         self._idIndexDict = self.model().createIdIndexDictionary()
-        for macroId in self._idIndexDict.iterkeys():
+        for macroId in self._idIndexDict.keys():
             self.setProgressForMacro(macroId, 0)
 
     def setProgressForMacro(self, macroId, progress):

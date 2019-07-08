@@ -164,7 +164,7 @@ class ControllerManager(Singleton, Logger):
 
         controller_file_names = self._findControllerLibNames()
 
-        for mod_name, file_name in controller_file_names.iteritems():
+        for mod_name, file_name in controller_file_names.items():
             dir_name = os.path.dirname(file_name)
             path = [dir_name]
             try:
@@ -488,7 +488,7 @@ class ControllerManager(Singleton, Logger):
         ret, expr = [], None
         if filter is not None:
             expr = re.compile(filter, re.IGNORECASE)
-        for name, lib in self._modules.iteritems():
+        for name, lib in self._modules.items():
             if lib.has_errors() or (expr is not None and expr.match(name) is None):
                 continue
             ret.append(lib)
@@ -500,7 +500,7 @@ class ControllerManager(Singleton, Logger):
             return sorted(self._controller_dict.values())
         expr = re.compile(filter, re.IGNORECASE)
 
-        ret = sorted([kls for n, kls in self._controller_dict.iteritems()
+        ret = sorted([kls for n, kls in self._controller_dict.items()
                       if not expr.match(n) is None])
         return ret
 
@@ -519,12 +519,12 @@ class ControllerManager(Singleton, Logger):
     def getControllerLib(self, name):
         if os.path.isabs(name):
             abs_file_name = name
-            for lib in self._modules.values():
+            for lib in list(self._modules.values()):
                 if lib.file_path == abs_file_name:
                     return lib
         elif name.count(os.path.extsep):
             file_name = name
-            for lib in self._modules.values():
+            for lib in list(self._modules.values()):
                 if lib.file_name == file_name:
                     return lib
         module_name = name

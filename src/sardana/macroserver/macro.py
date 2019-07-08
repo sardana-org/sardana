@@ -185,7 +185,7 @@ class Hookable(Logger):
         return self.__class__.hints.get('allowsHooks')
 
     def getHints(self):
-        return self._getHookHintsDict().keys()
+        return list(self._getHookHintsDict().keys())
 
     def getHooks(self, hint=None):
         """This will return a list of hooks that have the given hint. Two reserved

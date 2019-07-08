@@ -225,8 +225,8 @@ def run(command, timeout=-1, withexitstatus=False, events=None, extra_args=None,
         child = spawn(command, timeout=timeout, maxread=2000,
                       logfile=logfile, cwd=cwd, env=env)
     if events is not None:
-        patterns = events.keys()
-        responses = events.values()
+        patterns = list(events.keys())
+        responses = list(events.values())
     else:
         patterns = None  # We assume that EOF or TIMEOUT will save us.
         responses = None

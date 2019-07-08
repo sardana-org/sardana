@@ -204,7 +204,7 @@ class SardanaContainer(object):
         elem_types_dict = self._element_types.get(t)
         if elem_types_dict is None:
             return []
-        return elem_types_dict.values()
+        return list(elem_types_dict.values())
 
     def get_element_names_by_type(self, t):
         """Returns a list of all pool object names of the given type

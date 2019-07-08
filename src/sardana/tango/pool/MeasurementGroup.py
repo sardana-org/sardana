@@ -159,14 +159,14 @@ class MeasurementGroup(PoolGroupDevice):
         enums as keys instead of strings.
         '''
         for group in synchronization:
-            for param, conf in group.iteritems():
+            for param, conf in group.items():
                 group.pop(param)
                 param = SynchParam.fromStr(param)
                 group[param] = conf
                 # skip repeats cause its value is just a long number
                 if param == SynchParam.Repeats:
                     continue
-                for domain, value in conf.iteritems():
+                for domain, value in conf.items():
                     conf.pop(domain)
                     domain = SynchDomain.fromStr(domain)
                     conf[domain] = value
@@ -208,7 +208,7 @@ class MeasurementGroup(PoolGroupDevice):
             acq_mode = AcqMode.lookup[acq_mode_str]
         except KeyError:
             raise Exception("Invalid acquisition mode. Must be one of " +
-                            ", ".join(AcqMode.keys()))
+                            ", ".join(list(AcqMode.keys())))
         self.measurement_group.acquisition_mode = acq_mode
 
     def read_Configuration(self, attr):

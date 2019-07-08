@@ -62,7 +62,7 @@ class BasePoolTestCase(object):
         self._starter.addNewDevice(self.pool_name, klass='Pool')
         # Add properties
         if properties is not None:
-            for key, values in properties.items():
+            for key, values in list(properties.items()):
                 db.put_device_property(self.pool_name,
                                        {key: values})
         # start Pool server
@@ -89,12 +89,12 @@ class ControllerLoadsTestCase(BasePoolTestCase):
     def test_controller_loads(self):
         """Test that the controller library and class can be loaded.
         """
-        libraries = self.pool.getElementsOfType('ControllerLibrary').values()
+        libraries = list(self.pool.getElementsOfType('ControllerLibrary').values())
         libraries_names = [lib.getName() for lib in libraries]
-        classes = self.pool.getElementsOfType('ControllerClass').values()
+        classes = list(self.pool.getElementsOfType('ControllerClass').values())
         classes_names = [cls.getName() for cls in classes]
 
-        for test_lib, test_classes in self.controller_classes.items():
+        for test_lib, test_classes in list(self.controller_classes.items()):
             msg = 'ControllerLibrary %s was not correctly loaded.' % test_lib
             self.assertIn(test_lib, libraries_names, msg)
             msg = 'ControllerClass %s was not correctly loaded.'

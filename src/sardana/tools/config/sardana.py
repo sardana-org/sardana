@@ -1362,17 +1362,17 @@ class Sardana:
             SimuIOLib, SimuIOClass = simType["IORegister"]
 
             simuMotorLibs = [mode["Motor"][0]
-                             for mode in self.SimulationModes.values()]
+                             for mode in list(self.SimulationModes.values())]
             simuCoTiLibs = [mode["CounterTimer"][0]
-                            for mode in self.SimulationModes.values()]
+                            for mode in list(self.SimulationModes.values())]
             simu0DLibs = [mode["ZeroDExpChannel"][0]
-                          for mode in self.SimulationModes.values()]
+                          for mode in list(self.SimulationModes.values())]
             simu1DLibs = [mode["OneDExpChannel"][0]
-                          for mode in self.SimulationModes.values()]
+                          for mode in list(self.SimulationModes.values())]
             simu2DLibs = [mode["TwoDExpChannel"][0]
-                          for mode in self.SimulationModes.values()]
+                          for mode in list(self.SimulationModes.values())]
             simuIOLibs = [mode["IORegister"][0]
-                          for mode in self.SimulationModes.values()]
+                          for mode in list(self.SimulationModes.values())]
 
             for poolserver in poolservers:
                 simuMotorList = []
@@ -1788,19 +1788,19 @@ class Sardana:
             self._macServs[serv.getInstanceName()] = serv
 
     def _getServsShutdownOrder(self):
-        servs = self._macServs.values()
-        servs += self._devicePools.values()
-        servs += self._signalSims.values()
-        servs += self._coTiSims.values()
-        servs += self._motorSims.values()
+        servs = list(self._macServs.values())
+        servs += list(self._devicePools.values())
+        servs += list(self._signalSims.values())
+        servs += list(self._coTiSims.values())
+        servs += list(self._motorSims.values())
         return servs
 
     def _getServsStartupOrder(self):
-        servs = self._motorSims.values()
-        servs += self._coTiSims.values()
-        servs += self._signalSims.values()
-        servs += self._devicePools.values()
-        servs += self._macServs.values()
+        servs = list(self._motorSims.values())
+        servs += list(self._coTiSims.values())
+        servs += list(self._signalSims.values())
+        servs += list(self._devicePools.values())
+        servs += list(self._macServs.values())
         return servs
 
     def cleanUp(self):

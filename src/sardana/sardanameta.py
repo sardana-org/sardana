@@ -180,7 +180,7 @@ class SardanaLibrary(SardanaBaseObject):
 
         :return: a sequence of meta classes that belong to this library
         :rtype: seq<:class:~`sardana.sardanameta.SardanaClass`>"""
-        return self.meta_classes.values()
+        return list(self.meta_classes.values())
 
     def has_meta_class(self, meta_class_name):
         """Returns True if the given meta class name belongs to this library
@@ -218,7 +218,7 @@ class SardanaLibrary(SardanaBaseObject):
 
         :return: a sequence of meta functions that belong to this library
         :rtype: seq<:class:~`sardana.sardanameta.SardanaFunction`>"""
-        return self.meta_functions.values()
+        return list(self.meta_functions.values())
 
     def has_meta_function(self, meta_function_name):
         """Returns True if the given meta function name belongs to this library
@@ -380,8 +380,8 @@ class SardanaLibrary(SardanaBaseObject):
         kwargs['file_name'] = self.file_name
         kwargs['path'] = self.path
         kwargs['description'] = self.description
-        kwargs['elements'] = self.meta_classes.keys() + \
-            self.meta_functions.keys()
+        kwargs['elements'] = list(self.meta_classes.keys()) + \
+            list(self.meta_functions.keys())
         if self.exc_info is None:
             kwargs['exc_summary'] = None
             kwargs['exc_info'] = None

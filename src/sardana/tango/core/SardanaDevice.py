@@ -184,7 +184,7 @@ class SardanaDevice(Device_4Impl, Logger):
         """Internal method. Initialize the device when tango database is not
         being used (example: in demos)"""
         _, _, props = self._get_nodb_device_info()
-        for prop_name, prop_value in props.items():
+        for prop_name, prop_value in list(props.items()):
             setattr(self, prop_name, prop_value)
 
     def delete_device(self):

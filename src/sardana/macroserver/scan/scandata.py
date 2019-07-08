@@ -269,7 +269,7 @@ class RecordEnvironment(dict):
             return 1
 
         for ky in self.needed + self.__needed:
-            if ky not in self.keys():
+            if ky not in list(self.keys()):
                 return 0
         else:
             return 1
@@ -399,7 +399,7 @@ class RecordList(dict):
         if self.currentIndex > 0:
             data = record.data
             prev_data = self.records[self.currentIndex - 1].data
-            for k, v in data.items():
+            for k, v in list(data.items()):
                 if v is None:
                     continue
                 # numpy arrays (1D or 2D) are valid values and does not require
@@ -414,7 +414,7 @@ class RecordList(dict):
     def applyExtrapolation(self, record):
         """Apply extrapolation to the given record"""
         data = record.data
-        for k, v in data.items():
+        for k, v in list(data.items()):
             if v is None:
                 continue
             # numpy arrays (1D or 2D) are valid values and does not require

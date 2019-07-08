@@ -1580,7 +1580,7 @@ class CScan(GScan):
         :param attributes: (OrderedDict) dictionary with attribute names (keys)
             and attribute values (values)
         """
-        for param, value in attributes.items():
+        for param, value in list(attributes.items()):
             try:
                 motor._getAttrEG(param).write(value)
             except Exception:
@@ -2428,7 +2428,7 @@ class CTScan(CScan, CAcquisition):
             theoretical_positions = generate_positions(motors, starts, finals,
                                                        nr_points)
             theoretical_timestamps = generate_timestamps(synch, dt_timestamp)
-            for index, data in theoretical_positions.items():
+            for index, data in list(theoretical_positions.items()):
                 data.update(theoretical_timestamps[index])
                 initial_data[index + self._index_offset] = data
             # TODO: this changes the initial data on-the-fly - seems like not

@@ -56,7 +56,7 @@ class dumpenv(Macro):
     def run(self):
         env = self.getGlobalEnv()
         out = List(['Name', 'Value', 'Type'])
-        for k, v in env.iteritems():
+        for k, v in env.items():
             str_v = reprValue(v)
             type_v = type(v).__name__
             out.appendRow([str(k), str_v, type_v])
@@ -71,7 +71,7 @@ class lsvo(Macro):
     def run(self):
         vo = self.getViewOptions()
         out = List(['View option', 'Value'])
-        for key, value in vo.items():
+        for key, value in list(vo.items()):
             out.appendRow([key, str(value)])
 
         for line in out.genOutput():
@@ -344,10 +344,10 @@ class lsgh(Macro):
             name = hook[0]
             places = hook[1]
             for place in places:
-                if place not in default_dict.keys():
+                if place not in list(default_dict.keys()):
                     default_dict[place] = []
                 default_dict[place].append(name)
-        for pos in default_dict.keys():
+        for pos in list(default_dict.keys()):
             pos_set = 0
             for hook in default_dict[pos]:
                 if pos_set:

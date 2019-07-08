@@ -186,7 +186,7 @@ class MacroBaseModel(TaurusBaseModel):
         root = self._rootItem
         macro_modules = {}
         macro_dict = ms.getMacros()
-        for macro_name, macro in macro_dict.items():
+        for macro_name, macro in list(macro_dict.items()):
             module_name = macro.module
             moduleNode = macro_modules.get(module_name)
             if moduleNode is None:

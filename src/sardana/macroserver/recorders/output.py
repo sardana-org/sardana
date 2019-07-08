@@ -158,7 +158,7 @@ class OutputRecorder(DataRecorder):
 
         for fr in [r for r in dh.recorders if isinstance(r, BaseFileRecorder)]:
             if not hasattr(self._stream, "getAllEnv") or \
-               "ScanRecorder" in self._stream.getAllEnv().keys():
+               "ScanRecorder" in list(self._stream.getAllEnv().keys()):
                 message = "%s from %s" % (
                     fr.getFormat(), fr.__class__.__name__)
             else:

@@ -389,7 +389,7 @@ TTYPE_MAP = {
     DataType.String: DevString,
     DataType.Boolean: DevBoolean,
 }
-R_TTYPE_MAP = dict((v, k) for k, v in TTYPE_MAP.items())
+R_TTYPE_MAP = dict((v, k) for k, v in list(TTYPE_MAP.items()))
 
 #: dictionary dict<:class:`sardana.DataFormat`, :class:`PyTango.AttrFormat`>
 TFORMAT_MAP = {
@@ -397,7 +397,7 @@ TFORMAT_MAP = {
     DataFormat.OneD: SPECTRUM,
     DataFormat.TwoD: IMAGE,
 }
-R_TFORMAT_MAP = dict((v, k) for k, v in TFORMAT_MAP.items())
+R_TFORMAT_MAP = dict((v, k) for k, v in list(TFORMAT_MAP.items()))
 
 #: dictionary dict<:class:`sardana.DataAccess`, :class:`PyTango.AttrWriteType`>
 TACCESS_MAP = {
@@ -405,7 +405,7 @@ TACCESS_MAP = {
     DataAccess.ReadWrite: READ_WRITE,
 }
 
-R_TACCESS_MAP = dict((v, k) for k, v in TACCESS_MAP.items())
+R_TACCESS_MAP = dict((v, k) for k, v in list(TACCESS_MAP.items()))
 
 
 def exception_str(etype=None, value=None, sep='\n'):
@@ -528,7 +528,7 @@ def ask_yes_no(prompt, default=None):
         elif d_l in ('n', 'no'):
             prompt += " (N/y) ?"
 
-    while ans not in answers.keys():
+    while ans not in list(answers.keys()):
         try:
             ans = raw_input(prompt + ' ').lower()
             if not ans:  # response was an empty string
@@ -536,7 +536,7 @@ def ask_yes_no(prompt, default=None):
         except KeyboardInterrupt:
             print
         except EOFError:
-            if default in answers.keys():
+            if default in list(answers.keys()):
                 ans = default
                 print
             else:
@@ -738,8 +738,8 @@ def prepare_server(args, tango_args):
                 # to
                 pool_names = []
                 pools = get_dev_from_class(db, "Pool")
-                all_pools = pools.keys()
-                for pool in pools.values():
+                all_pools = list(pools.keys())
+                for pool in list(pools.values()):
                     pool_alias = pool[2]
                     if pool_alias is not None:
                         all_pools.append(pool_alias)

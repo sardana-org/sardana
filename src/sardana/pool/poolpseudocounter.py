@@ -53,7 +53,7 @@ class ValueBuffer(ValueBuffer_):
             value_buf.add_listener(self.on_change)
 
     def on_change(self, evt_src, evt_type, evt_value):
-        for idx in evt_value.iterkeys():
+        for idx in evt_value.keys():
             physical_values = []
             for value_buf in self.obj.get_physical_value_buffer_iterator():
                 try:
@@ -209,7 +209,7 @@ class Value(SardanaAttribute):
             values = self.obj.acquisition.read_value(serial=True)
             if not len(values):
                 self._local_timestamp = time.time()
-            for acq_obj, value in values.items():
+            for acq_obj, value in list(values.items()):
                 acq_obj.put_value(value, propagate=propagate)
 
 
@@ -233,7 +233,7 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
         kwargs = PoolBaseChannel.serialize(self, *args, **kwargs)
         elements = [elem.name for elem in self.get_user_elements()]
         physical_elements = []
-        for elem_list in self.get_physical_elements().values():
+        for elem_list in list(self.get_physical_elements().values()):
             for elem in elem_list:
                 physical_elements.append(elem.name)
         cl_name = self.__class__.__name__
@@ -274,7 +274,7 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
     def get_siblings(self):
         if self._siblings is None:
             self._siblings = siblings = set()
-            for axis, sibling in self.controller.get_element_axis().items():
+            for axis, sibling in list(self.controller.get_element_axis().items()):
                 if axis == self.axis:
                     continue
                 siblings.add(sibling)
@@ -399,7 +399,7 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
             state_info = {}
             action_cache = self.get_action_cache()
             ctrl_state_infos = action_cache.read_state_info(serial=True)
-            for obj, ctrl_state_info in ctrl_state_infos.items():
+            for obj, ctrl_state_info in list(ctrl_state_infos.items()):
                 state_info = obj._from_ctrl_state_info(ctrl_state_info)
                 obj.put_state_info(state_info)
         for user_element in self.get_user_elements():

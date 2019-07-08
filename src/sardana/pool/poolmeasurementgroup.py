@@ -518,7 +518,7 @@ class MeasurementConfiguration(object):
         """
         timerable_ctrls = []
         if acq_synch is None:
-            for ctrls in self._timerable_ctrls.values():
+            for ctrls in list(self._timerable_ctrls.values()):
                 timerable_ctrls += ctrls
         elif isinstance(acq_synch, list):
             acq_synch_list = acq_synch
@@ -635,7 +635,7 @@ class MeasurementConfiguration(object):
         user_config['label'] = label
         user_config['description'] = description
 
-        for ctrl_name, ctrl_data in cfg['controllers'].items():
+        for ctrl_name, ctrl_data in list(cfg['controllers'].items()):
             # backwards compatibility for measurement groups created before
             # implementing feature-372:
             # https://sourceforge.net/p/sardana/tickets/372/
@@ -729,7 +729,7 @@ class MeasurementConfiguration(object):
             ctrl_enabled = False
             if 'channels' in ctrl_data:
                 user_config_ctrl['channels'] = user_config_channel = {}
-            for ch_name, ch_data in ctrl_data['channels'].items():
+            for ch_name, ch_data in list(ctrl_data['channels'].items()):
                 if external:
                     validator = TangoAttributeNameValidator()
                     full_name = ch_data.get('full_name', ch_name)

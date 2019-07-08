@@ -202,8 +202,8 @@ class ExperimentConfiguration(object):
             scan_file = [scan_file]
         ret['ScanFile'] = scan_file
         mnt_grps = macro_server.getElementsOfType("MeasurementGroup")
-        mnt_grps_names = [mnt_grp.name for mnt_grp in mnt_grps.values()]
-        mnt_grps_full_names = mnt_grps.keys()
+        mnt_grps_names = [mnt_grp.name for mnt_grp in list(mnt_grps.values())]
+        mnt_grps_full_names = list(mnt_grps.keys())
 
         active_mnt_grp = env.get('ActiveMntGrp')
         if active_mnt_grp is None and len(mnt_grps):
@@ -236,7 +236,7 @@ class ExperimentConfiguration(object):
     def set(self, conf, mnt_grps=None):
         """Sets the ExperimentConfiguration dictionary."""
         if mnt_grps is None:
-            mnt_grps = conf['MntGrpConfigs'].keys()
+            mnt_grps = list(conf['MntGrpConfigs'].keys())
 
         codec = CodecFactory().getCodec('json')
         msg_error = ''
@@ -513,7 +513,7 @@ class BaseDoor(MacroServerDevice):
 
     def _clearRunMacro(self):
         # Clear the log buffer
-        map(LogAttr.clearLogBuffer, self._log_attr.values())
+        map(LogAttr.clearLogBuffer, list(self._log_attr.values()))
         self._running_macros = None
         self._running_macro = None
         self._user_xml = None
@@ -816,7 +816,7 @@ class Environment(dict):
             ms.removeEnvironment(key)
 
     def __dir__(self):
-        return [key for key in self.keys() if not key.startswith("_")]
+        return [key for key in list(self.keys()) if not key.startswith("_")]
 
 
 class BaseMacroServer(MacroServerDevice):
@@ -865,13 +865,13 @@ class BaseMacroServer(MacroServerDevice):
 
         env = CodecFactory().decode(evt_value.value)
 
-        for key, value in env.get('new', {}).items():
+        for key, value in list(env.get('new', {}).items()):
             self._addEnvironment(key, value)
             added.add(key)
         for key in env.get('del', []):
             self._removeEnvironment(key)
             removed.add(key)
-        for key, value in env.get('change', {}).items():
+        for key, value in list(env.get('change', {}).items()):
             self._removeEnvironment(key)
             self._addEnvironment(key, value)
             changed.add(key)
@@ -1125,7 +1125,7 @@ class BaseMacroServer(MacroServerDevice):
                     "%s parameter value: %s is above maximum allowed value."
                     % (name, value))
         else:
-            allowedInterfaces = self.getInterfaces().keys()
+            allowedInterfaces = list(self.getInterfaces().keys())
             if type not in allowedInterfaces:
                 raise Exception(
                     "No element with %s interface exist in this sardana "

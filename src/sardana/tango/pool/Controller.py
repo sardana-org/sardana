@@ -127,14 +127,14 @@ class Controller(PoolDevice):
         props = {}
         if prop_infos:
             props.update(db.get_device_property(
-                self.get_name(), prop_infos.keys()))
-        for p in props.keys():
+                self.get_name(), list(prop_infos.keys())))
+        for p in list(props.keys()):
             if len(props[p]) == 0:
                 props[p] = None
 
         ret = {}
         missing_props = []
-        for prop_name, prop_value in props.items():
+        for prop_name, prop_value in list(props.items()):
             if prop_value is None:
                 dv = prop_infos[prop_name].default_value
                 if dv is None:
@@ -235,7 +235,7 @@ class Controller(PoolDevice):
             return PoolDevice.get_dynamic_attributes(self)
         self._dynamic_attributes_cache = dyn_attrs = CaselessDict()
         self._standard_attributes_cache = std_attrs = CaselessDict()
-        for attr_name, attr_data in info.ctrl_attributes.items():
+        for attr_name, attr_data in list(info.ctrl_attributes.items()):
             name, tg_info = to_tango_attr_info(attr_name, attr_data)
             dyn_attrs[attr_name] = attr_name, tg_info, attr_data
         return std_attrs, dyn_attrs

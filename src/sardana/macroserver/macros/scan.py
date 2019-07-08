@@ -877,7 +877,7 @@ motor2 sqrt(y*x+3)
         self.funcstrings = [item[1] for item in args[2]]
 
         globals_lst = [dict(zip(indepvars, values))
-                       for values in zip(*indepvars.values())]
+                       for values in zip(*list(indepvars.values()))]
         self.paths = [[SafeEvaluator(globals).eval(
             func) for globals in globals_lst] for func in self.funcstrings]
 

@@ -72,7 +72,7 @@ class TestMeasurementGroup(SarTestTestCase, TestCase):
         try:
             mg = Device(mg_name)
             _, values = mg.count(.1)
-            for channel_name, value in values.iteritems():
+            for channel_name, value in values.items():
                 msg = "Value (%s) for %s is not numerical" % \
                       (value, channel_name)
                 self.assertTrue(is_numerical(value), msg)
@@ -111,7 +111,7 @@ class TestMeasurementGroupValueRef(SarTestTestCase, TestCase):
             _set_value_ref_enabled(conf, channel, True)
             mg.setConfiguration(conf)
             _, values = mg.count(.1)
-            for channel_name, value in values.iteritems():
+            for channel_name, value in values.items():
                 msg = "ValueRef (%s) for %s is not string" %\
                       (value, channel_name)
                 self.assertTrue(is_pure_str(value), msg)
@@ -132,7 +132,7 @@ class TestMeasurementGroupValueRef(SarTestTestCase, TestCase):
             _set_value_ref_enabled(conf, channel, False)
             mg.setConfiguration(conf)
             _, values = mg.count(.1)
-            for channel_name, value in values.iteritems():
+            for channel_name, value in values.items():
                 msg = "Value (%s) for %s is not numerical" %\
                       (value, channel_name)
                 self.assertTrue(is_numerical(value), msg)

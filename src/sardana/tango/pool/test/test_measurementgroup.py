@@ -121,18 +121,18 @@ class MeasSarTestTestCase(SarTestTestCase):
         self.expchan_names = []
         self.tg_names = []
         ordered_chns = [None] * 10
-        for ctrl_name, ctrl_config in config.items():
+        for ctrl_name, ctrl_config in list(config.items()):
             channels = ctrl_config["channels"]
-            for chn, chn_config in channels.items():
+            for chn, chn_config in list(channels.items()):
                 index = chn_config["index"]
                 ordered_chns[index] = chn
         self.expchan_names = [chn for chn in ordered_chns if chn is not None]
         self.pool.CreateMeasurementGroup([self.mg_name] + self.expchan_names)
 
-        for ctrl_name in config.keys():
+        for ctrl_name in list(config.keys()):
             ctrl_config = config.pop(ctrl_name)
             channels = ctrl_config["channels"]
-            for chn_name in channels.keys():
+            for chn_name in list(channels.keys()):
                 chn_config = channels.pop(chn_name)
                 chn_full_name = _get_full_name(DeviceProxy(chn_name))
                 channels[chn_full_name] = chn_config
@@ -160,7 +160,7 @@ class MeasSarTestTestCase(SarTestTestCase):
             ctrl_test_config = config[ctrl]
             channels = ctrl_config['channels']
             channels_test = ctrl_test_config.pop("channels")
-            for chn, chn_config in channels.items():
+            for chn, chn_config in list(channels.items()):
                 chn_test_config = channels_test[chn]
                 chn_config.update(chn_test_config)
             ctrl_config.update(ctrl_test_config)
@@ -179,8 +179,8 @@ class MeasSarTestTestCase(SarTestTestCase):
     def _add_attribute_listener(self, config):
         self.attr_listener = TangoAttributeListener()
         chn_names = []
-        for ctrl_config in config.values():
-            for chn, chn_config in ctrl_config["channels"].items():
+        for ctrl_config in list(config.values()):
+            for chn, chn_config in list(ctrl_config["channels"].items()):
                 if chn_config.get("value_ref_enabled", False):
                     buffer_attr = "ValueRefBuffer"
                 else:
@@ -257,7 +257,7 @@ class MeasSarTestTestCase(SarTestTestCase):
         self.meas.stop()
 
     def tearDown(self):
-        for channel, event_id in self.event_ids.items():
+        for channel, event_id in list(self.event_ids.items()):
             channel.unsubscribe_event(event_id)
         try:
             # Delete the meas
