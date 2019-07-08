@@ -688,8 +688,8 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
             new_elements.extend(new_lib.get_controllers())
             new_elements.append(new_lib)
         else:
-            new_names = set([ctrl.name for ctrl in new_lib.get_controllers()])
-            old_names = set([ctrl.name for ctrl in old_lib.get_controllers()])
+            new_names = {ctrl.name for ctrl in new_lib.get_controllers()}
+            old_names = {ctrl.name for ctrl in old_lib.get_controllers()}
             changed_names = set.intersection(new_names, old_names)
             deleted_names = old_names.difference(new_names)
             new_names = new_names.difference(old_names)

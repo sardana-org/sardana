@@ -455,8 +455,8 @@ class MacroServer(MSContainer, MSObject, SardanaElementManager, SardanaIDManager
             new_elements.append(new_lib)
         else:
             changed_elements.append(new_lib)
-            new_names = set([macro.name for macro in new_lib.get_macros()])
-            old_names = set([macro.name for macro in old_lib.get_macros()])
+            new_names = {macro.name for macro in new_lib.get_macros()}
+            old_names = {macro.name for macro in old_lib.get_macros()}
             changed_names = set.intersection(new_names, old_names)
             deleted_names = old_names.difference(new_names)
             new_names = new_names.difference(old_names)
