@@ -385,7 +385,7 @@ class ParamDecoder:
         if len(raw_params) > len_params_def:
             msg = ("%r are supernumerary with respect to definition" %
                    raw_params[len_params_def:])
-            raise SupernumeraryParam, msg
+            raise SupernumeraryParam(msg)
         # iterate over definition since missing values may just mean using
         # the default values
         for i, param_def in enumerate(params_def):
@@ -466,7 +466,7 @@ class ParamDecoder:
         if min_rep and len_rep < min_rep:
             msg = 'Found %d repetitions of param %s, min is %d' % \
                   (len_rep, name, min_rep)
-            raise MissingRepeat, msg
+            raise MissingRepeat(msg)
         if max_rep and len_rep > max_rep:
             msg = 'Found %d repetitions of param %s, max is %d' % \
                   (len_rep, name, max_rep)
@@ -498,7 +498,7 @@ class ParamDecoder:
                 # to indicate default value
                 elif isinstance(raw_repeat, list) and len(raw_repeat) > 0:
                     msg = 'Repetitions of just one member must not be lists'
-                    raise WrongParam, msg
+                    raise WrongParam(msg)
                 repeat = self.decodeNormal(raw_repeat, param_type[0])
             param_repeat.append(repeat)
         return param_repeat
@@ -524,7 +524,7 @@ class FlatParamDecoder:
         if not self.isPossible(params_def):
             msg = ("%s parameter definition is not compatible with"
                    " FlatParamDecoder" % params_def)
-            raise AttributeError, msg
+            raise AttributeError(msg)
         self.decode()
 
     @staticmethod
@@ -561,13 +561,13 @@ class FlatParamDecoder:
             if str_idx == str_len:
                 if def_val is None:
                     if not isinstance(type_class, list):
-                        raise MissingParam, "'%s' not specified" % name
+                        raise MissingParam("'%s' not specified" % name)
                     elif isinstance(type_class, list):
                         min_rep = par_def['min']
                         if min_rep > 0:
                             msg = "'%s' demands at least %d values" %\
                                   (name, min_rep)
-                            raise WrongParam, msg
+                            raise WrongParam(msg)
                 if not def_val is None:
                     new_obj = def_val
             else:
@@ -583,13 +583,13 @@ class FlatParamDecoder:
                     try:
                         val = par_type.getObj(par_str)
                     except ValueError as e:
-                        raise WrongParamType, e.message
+                        raise WrongParamType(e.message)
                     except UnknownParamObj as e:
-                        raise WrongParam, e.message
+                        raise WrongParam(e.message)
                     if val is None:
                         msg = 'Could not create %s parameter "%s" for "%s"' % \
                               (par_type.getName(), name, par_str)
-                        raise WrongParam, msg
+                        raise WrongParam(msg)
                     dec_token = 1
                     new_obj = val
                 str_idx += dec_token
@@ -618,7 +618,7 @@ class FlatParamDecoder:
         if rep_nr < min_rep:
             msg = 'Found %d repetitions of param %s, min is %d' % \
                   (rep_nr, name, min_rep)
-            raise MissingRepeat, msg
+            raise MissingRepeat(msg)
         return dec_token, obj_list
 
     def getParamList(self):

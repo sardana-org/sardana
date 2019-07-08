@@ -602,10 +602,10 @@ def check_requirements():
 
     if errMsg:
         errMsg += warnMsg
-        raise exception.SpockMissingRequirement, errMsg
+        raise exception.SpockMissingRequirement(errMsg)
 
     if warnMsg:
-        raise exception.SpockMissingRecommended, warnMsg
+        raise exception.SpockMissingRecommended(warnMsg)
 
     return True
 

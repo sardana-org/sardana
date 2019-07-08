@@ -93,7 +93,7 @@ class ParamRepeat(AbstractParam):
             type_name = from_array.read()
             if type_name != 'ParamRepeat':
                 msg = 'Expecting "ParamRepeat" type, got ' + type_name
-                raise ValueError, msg
+                raise ValueError(msg)
             self.desc = from_array.read()
             opt_str = from_array.read()
             opt_list = opt_str.split(', ')

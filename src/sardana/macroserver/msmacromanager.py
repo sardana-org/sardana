@@ -775,7 +775,7 @@ class MacroManager(MacroServerManager):
                 except WrongParam as in_e:
                     msg = ("Either of: %s or %s made it impossible to decode"
                            " parameters" % (out_e.message, in_e.message))
-                    raise WrongParam, msg
+                    raise WrongParam(msg)
             else:
                 raise out_e
         return macro_meta, raw_params, out_par_list
