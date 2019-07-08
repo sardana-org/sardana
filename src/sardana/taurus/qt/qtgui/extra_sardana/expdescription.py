@@ -147,7 +147,7 @@ def find_diff(first, second):
                 idiff = 'Error on processing'
             if len(idiff) > 0:
                 diff[key] = idiff
-        elif type(value1) == list and key.lower() not in SKIPLIST:
+        elif isinstance(value1, list) and key.lower() not in SKIPLIST:
             ldiff = []
             for v1, v2 in zip(value1, value2):
                 try:

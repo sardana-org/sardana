@@ -877,7 +877,7 @@ class LogMacroFilter(logging.Filter):
     def filter(self, record):
         allow = True
         if record.levelname == "DEBUG":
-            if type(record.msg) != str:
+            if not isinstance(record.msg, str):
                 allow = False
                 return allow
             if record.msg.find("[START]") != -1:
