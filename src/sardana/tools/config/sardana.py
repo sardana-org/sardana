@@ -1554,7 +1554,7 @@ class Sardana:
                             pSimAttributes.set("name", "DynamicAttributes")
                             pSimAttributes.set("type", "DevVarStringArray")
                             simAttrTempl = "zerod%03d=float(100.0+10.0*random())"
-                            for i in xrange(len(zerods)):
+                            for i in range(len(zerods)):
                                 pSimAttributeItem = etree.SubElement(
                                     pSimAttributes, "Item")
                                 pSimAttributeItem.text = simAttrTempl % (i + 1)
@@ -1568,7 +1568,7 @@ class Sardana:
                         attributeNames = etree.SubElement(ctrl, "Property")
                         attributeNames.set("name", "AttributeNames")
                         simAttrTempl = "%s/zerod%%03d" % simu0DCtrlName
-                        for i in xrange(len(zerods)):
+                        for i in range(len(zerods)):
                             attributeNameItem = etree.SubElement(
                                 attributeNames, "Item")
                             attributeNameItem.text = simAttrTempl % (i + 1)
@@ -1611,7 +1611,7 @@ class Sardana:
                             pSimAttributes.set("type", "DevVarStringArray")
 
                             simAttrTempl = "oned%03d=DevVarLongArray([10*sin(0.01*x) for x in xrange(100)])"
-                            for i in xrange(len(oneds)):
+                            for i in range(len(oneds)):
                                 pSimAttributeItem = etree.SubElement(
                                     pSimAttributes, "Item")
                                 pSimAttributeItem.text = simAttrTempl % (i + 1)
@@ -1627,7 +1627,7 @@ class Sardana:
                         attributeNamesV = etree.SubElement(
                             attributeNames, "Item")
                         simAttrTempl = "%s/oned%%03d" % simu1DCtrlName
-                        for i in xrange(len(oneds)):
+                        for i in range(len(oneds)):
                             attributeNameItem = etree.SubElement(
                                 attributeNames, "Item")
                             attributeNameItem.text = simAttrTempl % (i + 1)
@@ -1670,7 +1670,7 @@ class Sardana:
                             pSimAttributes.set("type", "DevVarStringArray")
 
                             simAttrTempl = "ior%03d=int(READ and VAR('ior%03d') or WRITE and VAR('ior%03d',VALUE))"
-                            for i in xrange(len(iors)):
+                            for i in range(len(iors)):
                                 pSimAttributeItem = etree.SubElement(
                                     pSimAttributes, "Item")
                                 pSimAttributeItem.text = simAttrTempl % (
@@ -1685,7 +1685,7 @@ class Sardana:
                         attributeNames = etree.SubElement(ctrl, "Property")
                         attributeNames.set("name", "AttributeNames")
                         simAttrTempl = "%s/ior%%03d" % simuIOCtrlName
-                        for i in xrange(len(iors)):
+                        for i in range(len(iors)):
                             attributeNameItem = etree.SubElement(
                                 attributeNames, "Item")
                             attributeNameItem.text = simAttrTempl % (i + 1)

@@ -270,7 +270,7 @@ class GUIViewer(BaseGUIViewer):
         colors = 'bgrcmyk'
         col_nb = min(col_nb, len(colors) + 3)
         # skip point_nb, motor and timer columns
-        for i in xrange(3, col_nb):
+        for i in range(3, col_nb):
             y = m[i][:rows]
             line, = pylab.plot(x, y, label=labels[i])
             line.linestyle = '-'

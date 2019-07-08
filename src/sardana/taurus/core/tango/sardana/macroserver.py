@@ -724,7 +724,7 @@ class BaseDoor(MacroServerDevice):
             if not self._debug:
                 if line == self.BlockStart:
                     self._in_block = True
-                    for i in xrange(self._block_lines):
+                    for i in range(self._block_lines):
                         if max_chrs == float('inf'):
                             nb_lines = 1
                         else:

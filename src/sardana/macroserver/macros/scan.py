@@ -224,7 +224,7 @@ class aNscan(Hookable):
         step["post-step-hooks"] = self.getHooks('post-step')
 
         step["check_func"] = []
-        for point_no in xrange(self.nr_points):
+        for point_no in range(self.nr_points):
             step["positions"] = self.starts + point_no * self.interv_sizes
             step["point_id"] = point_no
             yield step
@@ -235,7 +235,7 @@ class aNscan(Hookable):
         step["post-move-hooks"] = self.getHooks('post-move')
         step["check_func"] = []
         step["slow_down"] = self.slow_down
-        for point_no in xrange(self.nr_waypoints):
+        for point_no in range(self.nr_waypoints):
             step["positions"] = self.starts + point_no * self.way_lengths
             step["waypoint_id"] = point_no
             yield step
@@ -946,7 +946,7 @@ motor2 sqrt(y*x+3)
         step["post-step-hooks"] = self.getHooks('post-step')
 
         step["check_func"] = []
-        for i in xrange(self.nr_points):
+        for i in range(self.nr_points):
             step["positions"] = self.paths[:, i]
             step["integ_time"] = self.integ_time[i]
             step["point_id"] = i

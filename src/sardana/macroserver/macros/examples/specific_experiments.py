@@ -108,7 +108,7 @@ class xas_acq(Macro, Hookable):
             "post-acq-hooks"] = self.getHooks('post-acq') + self.getHooks('_NOHINT_')
         step["post-step-hooks"] = self.getHooks('post-step')
         step["check_func"] = []
-        for point_no in xrange(self.nr_points):
+        for point_no in range(self.nr_points):
             step["positions"] = self.starts + point_no * self.interv_sizes
             step["point_id"] = point_no
             yield step

@@ -47,7 +47,7 @@ class DummyZeroDController(ZeroDController):
     def __init__(self, inst, props, *args, **kwargs):
         ZeroDController.__init__(self, inst, props, *args, **kwargs)
 
-        self.channels = [Channel(i + 1) for i in xrange(self.MaxDevice)]
+        self.channels = [Channel(i + 1) for i in range(self.MaxDevice)]
         self.read_channels = {}
 
     def AddDevice(self, ind):

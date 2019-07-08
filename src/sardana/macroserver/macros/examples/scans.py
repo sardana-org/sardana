@@ -84,7 +84,7 @@ class ascan_demo(Macro):
         step = {}
         # integ_time is the same for all steps
         step["integ_time"] = self.integ_time
-        for point_no in xrange(self.nr_points):
+        for point_no in range(self.nr_points):
             step["positions"] = self.start + point_no * \
                 self.interv_size  # note that this is a numpy array
             step["point_id"] = point_no
@@ -160,10 +160,10 @@ class ascanr(Macro, Hookable):
         step["check_func"] = []
         extrainfo = {"repetition": 0}  # !!!
         step['extrainfo'] = extrainfo  # !!!
-        for point_no in xrange(self.nr_points):
+        for point_no in range(self.nr_points):
             step["positions"] = self.starts + point_no * self.interv_sizes
             step["point_id"] = point_no
-            for i in xrange(self.repeat):
+            for i in range(self.repeat):
                 extrainfo["repetition"] = i  # !!!
                 yield step
 
@@ -245,18 +245,18 @@ class toothedtriangle(Macro, Hookable):
         step["check_func"] = []
         extrainfo = {"cycle": None, "interval": None, "sample": None, }
         step['extrainfo'] = extrainfo
-        halfcycle1 = range(self.nr_interv + 1)
+        halfcycle1 = list(range(self.nr_interv + 1))
         halfcycle2 = halfcycle1[1:-1]
         halfcycle2.reverse()
         intervallist = halfcycle1 + halfcycle2
         point_no = 0
-        for cycle in xrange(self.nr_cycles):
+        for cycle in range(self.nr_cycles):
             extrainfo["cycle"] = cycle
             for interval in intervallist:
                 extrainfo["interval"] = interval
                 step["positions"] = numpy.array(
                     [self.start_pos + (interval) * self.interv_size], dtype='d')
-                for sample in xrange(self.nr_samples):
+                for sample in range(self.nr_samples):
                     extrainfo["sample"] = sample
                     step["point_id"] = point_no
                     yield step
@@ -265,7 +265,7 @@ class toothedtriangle(Macro, Hookable):
         # last step for closing the loop
         extrainfo["interval"] = 0
         step["positions"] = numpy.array([self.start_pos], dtype='d')
-        for sample in xrange(self.nr_samples):
+        for sample in range(self.nr_samples):
             extrainfo["sample"] = sample
             step["point_id"] = point_no
             yield step
@@ -616,7 +616,7 @@ class ascan_with_addcustomdata(ascan_demo):
         # "/<currententry>/custom_data") if none given
         dh.addCustomData('Hello world1', 'dummyChar1')
         # you can pass arrays (but not all recorders will handle them)
-        dh.addCustomData(range(10), 'dummyArray1')
+        dh.addCustomData(list(range(10)), 'dummyArray1')
         # you can pass a custom nxpath *relative* to the current entry
         dh.addCustomData('Hello world2', 'dummyChar2',
                          nxpath='sample:NXsample')

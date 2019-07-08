@@ -2063,7 +2063,7 @@ def generate_timestamps(synchronization, initial_timestamp=0):
         timestamp += delay
         ret[index] = dict(timestamp=timestamp)
         index += 1
-        for _ in xrange(1, repeats):
+        for _ in range(1, repeats):
             timestamp += total
             ret[index] = dict(timestamp=timestamp)
             index += 1
@@ -2085,7 +2085,7 @@ def generate_positions(motors, starts, finals, nr_points):
     # convert to numpy array for easier handling
     table = np.array(zip(*moveable_positions), dtype=dtype_spec)
     n_rows = table.shape[0]
-    for i in xrange(n_rows):
+    for i in range(n_rows):
         row = dict()
         for label in table.dtype.names:
             row[label] = table[label][i]

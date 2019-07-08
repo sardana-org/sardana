@@ -1603,7 +1603,7 @@ class searcher_string (object):
         self.eof_index = -1
         self.timeout_index = -1
         self._strings = []
-        for n, s in zip(range(len(strings)), strings):
+        for n, s in zip(list(range(len(strings))), strings):
             if s is EOF:
                 self.eof_index = n
                 continue
@@ -1700,7 +1700,7 @@ class searcher_re (object):
         self.eof_index = -1
         self.timeout_index = -1
         self._searches = []
-        for n, s in zip(range(len(patterns)), patterns):
+        for n, s in zip(list(range(len(patterns))), patterns):
             if s is EOF:
                 self.eof_index = n
                 continue

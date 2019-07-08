@@ -85,7 +85,7 @@ class BaseAcquisition(object):
         header = table.dtype.names
         print(header)
         n_rows = table.shape[0]
-        for row in xrange(n_rows):
+        for row in range(n_rows):
             print(row, table[row])
         # checking if any of data was acquired
         self.assertTrue(self.attr_listener.data, 'no data were acquired')

@@ -36,7 +36,7 @@ class DummyEventSource(threading.Thread):
         i = 0
         for v, t in zip(self.values, self.intervals):
             try:
-                idx = range(i, i + len(v))
+                idx = list(range(i, i + len(v)))
                 i += len(v)
                 skip = float('NaN') in v
             except TypeError:  # if v is not a list
