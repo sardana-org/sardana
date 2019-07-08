@@ -161,7 +161,7 @@ if __name__ == "__main__":
     __commands__ = __run_init_commands()
     if __commands__:
         for command in __commands__.split(';'):
-            exec command
+            exec(command)
     else:
         __run_pythonstartup_script()
 
