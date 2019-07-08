@@ -174,8 +174,8 @@ class ParamList(AbstractParam):
         nb = 0
         for par in self.pars:
             local_nb = par.getParamCount()
-            if local_nb == sys.maxint:
-                return sys.maxint
+            if local_nb == sys.maxsize:
+                return sys.maxsize
             nb += local_nb
         return nb
 
