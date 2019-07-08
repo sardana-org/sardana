@@ -44,13 +44,13 @@ from taurus.qt.qtgui.dialog import ProtectTaurusMessageBox
 # consider adding an utility in taurusedirot to create actions
 from spyder.utils.qthelpers import create_action
 
-from macrotree import MacroSelectionDialog
-from elementtree import SardanaElementTreeWidget
+from .macrotree import MacroSelectionDialog
+from .elementtree import SardanaElementTreeWidget
 
 from sardana.taurus.qt.qtcore.tango.sardana.model import SardanaBaseProxyModel, \
     SardanaElementTypeModel, SardanaTypeTreeItem, SardanaRootTreeItem
 
-from sardanabasewizard import SardanaBaseWizard, SardanaBasePage
+from .sardanabasewizard import SardanaBaseWizard, SardanaBasePage
 
 _MACRO_LIB_TEMPLATE = """#!/usr/bin/env python
 {copyright}

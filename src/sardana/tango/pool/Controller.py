@@ -46,7 +46,7 @@ from sardana import State, SardanaServer
 from sardana.sardanaattribute import SardanaAttribute
 from sardana.tango.core.util import to_tango_attr_info
 
-from PoolDevice import PoolDevice, PoolDeviceClass
+from .PoolDevice import PoolDevice, PoolDeviceClass
 
 
 def to_bool(s):

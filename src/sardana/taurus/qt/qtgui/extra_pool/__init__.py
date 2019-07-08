@@ -27,9 +27,9 @@
 __init__.py:
 """
 
-from motor import TaurusMotorH, TaurusMotorH2, TaurusMotorV, TaurusMotorV2
-from poolmotor import PoolMotorSlim, LabelWidgetDragsDeviceAndAttribute
-from poolmotor import PoolMotorTV, PoolMotorTVLabelWidget, PoolMotorTVReadWidget, PoolMotorTVWriteWidget, PoolMotorTVUnitsWidget
-from poolmotor import PoolMotor
-from poolchannel import PoolChannel, PoolChannelTV
-from poolioregister import PoolIORegisterTV, PoolIORegisterReadWidget, PoolIORegisterWriteWidget, PoolIORegister, PoolIORegisterButtons
+from .motor import TaurusMotorH, TaurusMotorH2, TaurusMotorV, TaurusMotorV2
+from .poolmotor import PoolMotorSlim, LabelWidgetDragsDeviceAndAttribute
+from .poolmotor import PoolMotorTV, PoolMotorTVLabelWidget, PoolMotorTVReadWidget, PoolMotorTVWriteWidget, PoolMotorTVUnitsWidget
+from .poolmotor import PoolMotor
+from .poolchannel import PoolChannel, PoolChannelTV
+from .poolioregister import PoolIORegisterTV, PoolIORegisterReadWidget, PoolIORegisterWriteWidget, PoolIORegister, PoolIORegisterButtons

@@ -26,5 +26,5 @@
 """
 __init__.py:
 """
-from macroparameterseditor import ParamEditorManager, StandardMacroParametersEditor
-from model import ParamEditorModel
+from .macroparameterseditor import ParamEditorManager, StandardMacroParametersEditor
+from .model import ParamEditorModel

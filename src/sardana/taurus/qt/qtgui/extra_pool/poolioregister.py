@@ -37,7 +37,7 @@ from taurus.qt.qtgui.input import TaurusValueComboBox
 from taurus.qt.qtgui.panel import TaurusValue
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtgui.util.ui import UILoadable
-from poolmotor import LabelWidgetDragsDeviceAndAttribute
+from .poolmotor import LabelWidgetDragsDeviceAndAttribute
 
 import taurus
 

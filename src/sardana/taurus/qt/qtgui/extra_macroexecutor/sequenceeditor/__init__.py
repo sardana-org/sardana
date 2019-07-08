@@ -27,4 +27,4 @@
 __init__.py:
 """
 
-from sequenceeditor import TaurusSequencer, TaurusSequencerWidget, main
+from .sequenceeditor import TaurusSequencer, TaurusSequencerWidget, main

@@ -26,8 +26,8 @@
 
 """This package provides the sardana library"""
 
-import release as __release
-import requirements as __requirements
+from . import release as __release
+from . import requirements as __requirements
 
 __requirements.check_requirements()
 

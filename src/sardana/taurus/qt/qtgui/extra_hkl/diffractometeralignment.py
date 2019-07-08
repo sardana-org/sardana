@@ -50,7 +50,7 @@ from taurus.qt.qtgui.util.ui import UILoadable
 from sardana.taurus.qt.qtgui.extra_macroexecutor import TaurusMacroConfigurationDialog
 
 
-from selectsignal import SelectSignal
+from .selectsignal import SelectSignal
 
 
 class EngineModesComboBox(Qt.QComboBox, TaurusBaseWidget):

@@ -33,7 +33,7 @@ import taurus
 from taurus.external.qt import Qt
 from taurus.qt.qtgui.panel import TaurusValue, TaurusDevButton
 from taurus.qt.qtgui.container import TaurusWidget
-from poolmotor import LabelWidgetDragsDeviceAndAttribute
+from .poolmotor import LabelWidgetDragsDeviceAndAttribute
 
 
 class _ParentDevButton(TaurusDevButton):

@@ -39,7 +39,7 @@ import taurus.core
 from taurus.qt.qtcore.communication import SharedDataManager
 from taurus.qt.qtgui.input import TaurusValueLineEdit
 
-from displayscanangles import DisplayScanAngles
+from .displayscanangles import DisplayScanAngles
 
 import taurus.core.util.argparse
 import taurus.qt.qtgui.application
