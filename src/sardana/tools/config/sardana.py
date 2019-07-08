@@ -451,7 +451,7 @@ class TangoServer:
         if (server_host_ip != pytango_host_ip) or (server_port != pytango_port):
             print('\t!!! WARNING !!! %s TANGO_HOST is not the PyTango default. You may erase the WRONG sardana definition.' % self._complete_name)
             print('\tServer: %s  PyTango: %s' % (server_tango_host, pytango_tango_host))
-            ans = raw_input('\tDo you _really_ want to continue? [y|N] ')
+            ans = input('\tDo you _really_ want to continue? [y|N] ')
             if ans.lower() not in ['y', 'yes']:
                 raise Exception(
                     'User cancelled the creation of %s server' % self._complete_name)

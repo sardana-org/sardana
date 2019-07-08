@@ -359,7 +359,7 @@ def get_device_from_user(expected_class, dft=None):
     if not dft is None:
         prompt += "[%s]" % dft
     prompt += "? "
-    from_user = raw_input(prompt).strip() or dft
+    from_user = input(prompt).strip() or dft
 
     name = ''
     try:
@@ -406,7 +406,7 @@ def get_tango_host_from_user():
 
     while True:
         prompt = "Please enter a valid tango host (<host>:<port>): "
-        from_user = raw_input(prompt).strip()
+        from_user = input(prompt).strip()
 
         try:
             host, port = from_user.split(':')
@@ -831,7 +831,7 @@ def check_for_upgrade(ipy_profile_file, ipythondir, session, profile):
           % (spock_profile_ver_str, spock_lib_ver_str)
     print(msg)
     prompt = 'Do you wish to upgrade now (warn: this will shutdown the current spock session) ([y]/n)? '
-    r = raw_input(prompt) or 'y'
+    r = input(prompt) or 'y'
     if r.lower() == 'y':
         create_spock_profile(ipythondir, session, profile, door_name)
         sys.exit(0)
@@ -881,7 +881,7 @@ def get_args(argv):
         while not r in ['y', 'n']:
             prompt = 'Profile \'%s\' does not exist. Do you want to create '\
                      'one now ([y]/n)? ' % profile
-            r = raw_input(prompt) or 'y'
+            r = input(prompt) or 'y'
         if r.lower() == 'y':
             create_spock_profile(ipythondir, session, profile)
         else:

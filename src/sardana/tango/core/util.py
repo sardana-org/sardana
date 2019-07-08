@@ -530,7 +530,7 @@ def ask_yes_no(prompt, default=None):
 
     while ans not in list(answers.keys()):
         try:
-            ans = raw_input(prompt + ' ').lower()
+            ans = input(prompt + ' ').lower()
             if not ans:  # response was an empty string
                 ans = default
         except KeyboardInterrupt:
@@ -713,7 +713,7 @@ def prepare_server(args, tango_args):
     if len(tango_args) < 2:
         valid = False
         while not valid:
-            inst_name = raw_input(
+            inst_name = input(
                 "Please indicate %s instance name: " % server_name)
             # should be a instance name validator.
             valid_set = string.letters + string.digits + '_' + '-'
@@ -764,7 +764,7 @@ def prepare_server(args, tango_args):
                         # user may abort it with Ctrl+C - this will not
                         # register anything in the database and the
                         # KeyboardInterrupt will be raised
-                        elem = raw_input(msg).strip()
+                        elem = input(msg).strip()
                         # no pools selected and user ended loop
                         if len(elem) == 0 and len(pool_names) == 0:
                             print(no_pool_msg)
