@@ -34,6 +34,7 @@ import weakref
 import operator
 
 from taurus.core.util.containers import LIFO
+import collections
 
 
 class AttributeLogHandler(logging.Handler):
@@ -70,7 +71,7 @@ class AttributeLogHandler(logging.Handler):
         self._buff.clear()
 
     def appendBuffer(self, d):
-        if operator.isSequenceType(d):
+        if isinstance(d, collections.Sequence):
             if isinstance(d, (str, unicode)):
                 self._buff.append(d)
             else:

@@ -45,6 +45,7 @@ from sardana import State, SardanaServer, ElementType, Interface, \
 from sardana.pool.pool import Pool as POOL
 from sardana.pool.poolmetacontroller import TYPE_MAP_OBJ
 from sardana.tango.core.util import get_tango_version_number
+import collections
 
 
 class Pool(PyTango.Device_4Impl, Logger):
@@ -786,7 +787,7 @@ class Pool(PyTango.Device_4Impl, Logger):
 
     def _format_create_json_arguments(self, argin):
         elems, ret = json.loads(argin[0]), []
-        if operator.isMappingType(elems):
+        if isinstance(elems, collections.Mapping):
             elems = [elems]
         for elem in elems:
             d = {}
@@ -861,7 +862,7 @@ class Pool(PyTango.Device_4Impl, Logger):
                 elems = json.loads(argin[0])
             except:
                 elems = argin
-            if operator.isMappingType(elems):
+            if isinstance(elems, collections.Mapping):
                 elems = [elems]
             for elem in elems:
                 d = {}
@@ -886,7 +887,7 @@ class Pool(PyTango.Device_4Impl, Logger):
                 elems = json.loads(argin[0])
             except:
                 elems = argin
-            if operator.isMappingType(elems):
+            if isinstance(elems, collections.Mapping):
                 elems = [elems]
             for elem in elems:
                 d = {}

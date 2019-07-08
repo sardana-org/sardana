@@ -35,6 +35,7 @@ import operator
 
 from sardana.macroserver.scan.recorder import BaseSharedMemoryRecorder
 from sardana.macroserver.scan.recorder.datarecorder import DataRecorder
+import numbers
 
 
 class SPSRecorder(BaseSharedMemoryRecorder):
@@ -143,9 +144,9 @@ class SPSRecorder(BaseSharedMemoryRecorder):
 
         for colname in self.labels:
             val = record.data.get(colname)
-            if (not val is None) and (operator.isNumberType(val) and (type(val) in [int, float])):
+            if (not val is None) and (isinstance(val, numbers.Number) and (type(val) in [int, float])):
                 vals.append(val)
-            elif (not val is None) and (operator.isNumberType(val)):
+            elif (not val is None) and (isinstance(val, numbers.Number)):
                 valsmca = []
                 for i in range(0, len(val)):
                     valsmca.append(val[i])

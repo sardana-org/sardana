@@ -40,6 +40,8 @@ from taurus.core.util.containers import CaselessList
 
 from sardana.macroserver.scan.recorder.datarecorder import DataRecorder
 from sardana.macroserver.scan.recorder.storage import BaseFileRecorder
+import collections
+import numbers
 
 
 class JsonRecorder(DataRecorder):
@@ -135,10 +137,10 @@ class OutputRecorder(DataRecorder):
         self._number_fmt = number_fmt
         self._col_sep = col_sep
         self._col_width = col_width
-        if operator.isSequenceType(cols) and \
+        if isinstance(cols, collections.Sequence) and \
                 not isinstance(cols, (str, unicode)):
             cols = CaselessList(cols)
-        elif operator.isNumberType(cols):
+        elif isinstance(cols, numbers.Number):
             cols = cols
         else:
             cols = None
@@ -178,9 +180,9 @@ class OutputRecorder(DataRecorder):
             if not getattr(column, 'output', True):
                 continue
             name = column.name
-            if operator.isSequenceType(cols) and name not in cols:
+            if isinstance(cols, collections.Sequence) and name not in cols:
                 continue
-            if operator.isNumberType(cols) and col >= cols:
+            if isinstance(cols, numbers.Number) and col >= cols:
                 break
             col_names.append(name)
             label = column.label.strip()

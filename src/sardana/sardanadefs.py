@@ -26,6 +26,7 @@
 """This module contains the most generic sardana constants and enumerations"""
 
 from __future__ import absolute_import
+import collections
 
 __all__ = ["EpsilonError", "SardanaServer", "ServerRunMode", "State",
            "DataType", "DataFormat", "DataAccess", "DTYPE_MAP", "R_DTYPE_MAP",
@@ -234,14 +235,14 @@ def to_dtype_dformat(data):
     dtype, dformat = data, DataFormat.Scalar
     if isinstance(data, (str, unicode)):
         dtype, dformat = from_dtype_str(data)
-    elif operator.isSequenceType(data):
+    elif isinstance(data, collections.Sequence):
         dformat = DataFormat.OneD
         dtype = data[0]
         if isinstance(dtype, str):
             dtype, dformat2 = from_dtype_str(dtype)
             if dformat2 == DataFormat.OneD:
                 dformat = DataFormat.TwoD
-        elif operator.isSequenceType(dtype):
+        elif isinstance(dtype, collections.Sequence):
             dformat = DataFormat.TwoD
             dtype = dtype[0]
             if isinstance(dtype, str):

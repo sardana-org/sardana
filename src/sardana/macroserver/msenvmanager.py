@@ -38,6 +38,7 @@ from taurus.core.util.containers import CaselessDict
 
 from sardana.macroserver.msmanager import MacroServerManager
 from sardana.macroserver.msexception import UnknownEnv
+import collections
 
 
 class EnvironmentManager(MacroServerManager):
@@ -453,10 +454,10 @@ class EnvironmentManager(MacroServerManager):
 
         @return a dict representing the added environment"""
 
-        if operator.isSequenceType(obj) and \
+        if isinstance(obj, collections.Sequence) and \
            not isinstance(obj, (str, unicode)):
             obj = self._dictFromSequence(obj)
-        elif not operator.isMappingType(obj):
+        elif not isinstance(obj, collections.Mapping):
             raise TypeError("obj parameter must be a sequence or a map")
 
         obj = self._encode(obj)

@@ -27,6 +27,7 @@
 It contains specific part of sardana device pool"""
 
 from __future__ import absolute_import
+import collections
 
 __all__ = ["InterruptException", "StopException", "AbortException",
            "BaseElement", "ControllerClass", "ControllerLibrary",
@@ -982,7 +983,7 @@ class Motor(PoolElement, Moveable):
 
     def _start(self, *args, **kwargs):
         new_pos = args[0]
-        if operator.isSequenceType(new_pos):
+        if isinstance(new_pos, collections.Sequence):
             new_pos = new_pos[0]
         try:
             self.write_attribute('position', new_pos)
@@ -1009,7 +1010,7 @@ class Motor(PoolElement, Moveable):
 
     @reservedOperation
     def iterMove(self, new_pos, timeout=None):
-        if operator.isSequenceType(new_pos):
+        if isinstance(new_pos, collections.Sequence):
             new_pos = new_pos[0]
         state, pos = self.getAttribute("state"), self.getAttribute("position")
 
@@ -1114,7 +1115,7 @@ class PseudoMotor(PoolElement, Moveable):
 
     def _start(self, *args, **kwargs):
         new_pos = args[0]
-        if operator.isSequenceType(new_pos):
+        if isinstance(new_pos, collections.Sequence):
             new_pos = new_pos[0]
         try:
             self.write_attribute('position', new_pos)

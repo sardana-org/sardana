@@ -28,6 +28,8 @@ scan"""
 
 from __future__ import with_statement
 from __future__ import print_function
+import collections
+import numbers
 
 __all__ = ["OverloadPrint", "PauseEvent", "Hookable", "ExecMacroHook",
            "MacroFinder", "Macro", "macro", "iMacro", "imacro",
@@ -1331,7 +1333,7 @@ class Macro(Logger):
             if type(arg0) in types.StringTypes:
                 # dealing with sth like args = ('ascan th 0 100 10 1.0',)
                 macro_name = arg0.split()[0]
-            elif operator.isSequenceType(arg0):
+            elif isinstance(arg0, collections.Sequence):
                 # dealing with sth like args = (['ascan', 'th', '0', '100',
                 # '10', '1.0'],)
                 macro_name = arg0[0]
@@ -1390,7 +1392,7 @@ class Macro(Logger):
         :param :obj:`str` line: line to be sent"""
         if isinstance(line, (str, unicode)):
             o = line
-        elif operator.isSequenceType(line):
+        elif isinstance(line, collections.Sequence):
             o = "\n".join(line)
         else:
             o = str(line)
@@ -2056,7 +2058,7 @@ class Macro(Logger):
         :param :obj:`str` line: line to be sent"""
         if isinstance(line, (str, unicode)):
             o = line
-        elif operator.isSequenceType(line):
+        elif isinstance(line, collections.Sequence):
             o = "\n".join(line)
         else:
             o = str(line)
@@ -2332,14 +2334,14 @@ class Macro(Logger):
         if isinstance(res, types.GeneratorType):
             it = iter(res)
             for i in it:
-                if operator.isMappingType(i):
+                if isinstance(i, collections.Mapping):
                     new_range = i.get('range')
                     if new_range is not None:
                         macro_status['range'] = new_range
                     new_step = i.get('step')
                     if new_step is not None:
                         macro_status['step'] = new_step
-                elif operator.isNumberType(i):
+                elif isinstance(i, numbers.Number):
                     macro_status['step'] = i
                 macro_status['state'] = 'step'
                 yield macro_status
@@ -2361,7 +2363,7 @@ class Macro(Logger):
         """
         if out is None:
             out = ()
-        if operator.isSequenceType(out) and not type(out) in types.StringTypes:
+        if isinstance(out, collections.Sequence) and not type(out) in types.StringTypes:
             out = list(map(str, out))
         else:
             out = (str(out),)

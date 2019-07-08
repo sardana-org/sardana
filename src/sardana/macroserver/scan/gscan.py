@@ -41,6 +41,7 @@ import numpy as np
 
 import PyTango
 import taurus
+import collections
 
 try:
     from collections import OrderedDict
@@ -515,14 +516,14 @@ class GScan(Logger):
 
         if isinstance(file_names, (str, unicode)):
             file_names = (file_names,)
-        elif not operator.isSequenceType(file_names):
+        elif not isinstance(file_names, collections.Sequence):
             scan_file_t = type(file_names).__name__
             raise TypeError("ScanFile MUST be string or sequence of strings."
                             " It is '%s'" % scan_file_t)
 
         if isinstance(scan_recorders, (str, unicode)):
             scan_recorders = (scan_recorders,)
-        elif not operator.isSequenceType(scan_recorders):
+        elif not isinstance(scan_recorders, collections.Sequence):
             scan_recorders_t = type(scan_recorders).__name__
             raise TypeError("ScanRecorder MUST be string or sequence of "
                             "strings. It is '%s'" % scan_recorders_t)
