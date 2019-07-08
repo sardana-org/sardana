@@ -25,7 +25,7 @@
 
 """Generic Sardana Tango device module"""
 
-from __future__ import with_statement
+
 
 __all__ = ["SardanaDevice", "SardanaDeviceClass"]
 

@@ -26,8 +26,8 @@
 """This module is part of the Python Sardana library. It defines the base
 classes for module manager"""
 
-from __future__ import with_statement
-from __future__ import absolute_import
+
+
 
 __all__ = ["ModuleManager"]
 

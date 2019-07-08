@@ -26,7 +26,7 @@
 """This module is part of the Python Sardana library. It defines some
 utility methods"""
 
-from __future__ import absolute_import
+
 
 __all__ = ["is_pure_str", "is_non_str_seq", "is_integer", "is_number",
            "is_bool", "check_type", "assert_type", "str_to_value",

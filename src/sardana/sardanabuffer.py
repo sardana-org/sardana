@@ -26,7 +26,7 @@
 """This module is part Sardana Python library. It defines the base clases
 for Sardana buffers"""
 
-from __future__ import absolute_import
+
 
 __all__ = ["SardanaBuffer", "LateValueException", "EarlyValueException"]
 

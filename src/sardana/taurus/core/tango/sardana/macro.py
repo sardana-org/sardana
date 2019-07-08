@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-from __future__ import absolute_import
+
 ##############################################################################
 ##
 # This file is part of Sardana
@@ -24,7 +24,7 @@ from __future__ import absolute_import
 ##############################################################################
 
 """The macro submodule."""
-from __future__ import absolute_import
+
 __all__ = ["MacroInfo", "Macro", "MacroNode", "ParamFactory",
            "MacroRunException"]
 

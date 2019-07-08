@@ -23,7 +23,7 @@
 
 """Expert macros"""
 
-from __future__ import print_function
+
 
 __all__ = ["addctrllib", "addmaclib", "commit_ctrllib", "defctrl", "defelem",
            "defm", "defmeas", "edctrlcls", "edctrllib", "prdef",

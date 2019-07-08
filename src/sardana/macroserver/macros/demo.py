@@ -23,7 +23,7 @@
 
 """This is the demo macro module"""
 
-from __future__ import print_function
+
 
 __all__ = ["sar_demo", "clear_sar_demo", "sar_demo_hkl", "clear_sar_demo_hkl"]
 

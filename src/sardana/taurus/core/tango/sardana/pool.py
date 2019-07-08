@@ -26,7 +26,7 @@
 """The device pool submodule.
 It contains specific part of sardana device pool"""
 
-from __future__ import absolute_import
+
 import collections
 
 __all__ = ["InterruptException", "StopException", "AbortException",

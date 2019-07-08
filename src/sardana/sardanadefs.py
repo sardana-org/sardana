@@ -25,7 +25,7 @@
 
 """This module contains the most generic sardana constants and enumerations"""
 
-from __future__ import absolute_import
+
 import collections
 
 __all__ = ["EpsilonError", "SardanaServer", "ServerRunMode", "State",

@@ -35,7 +35,7 @@ to be used within a TaurusGui for managing panels for:
           `taurus.qt.qtgui.taurusgui.macrolistener`
 """
 
-from __future__ import print_function
+
 
 from builtins import object
 

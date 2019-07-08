@@ -26,7 +26,7 @@
 """This module is part of the Python Pool libray. It defines the base classes
 for a pool container element"""
 
-from __future__ import absolute_import
+
 
 __all__ = ["SardanaContainer"]
 

@@ -26,7 +26,7 @@
 """This module is part of the Python Sardana library. It defines the base
 classes for Sardana object"""
 
-from __future__ import absolute_import
+
 import sys
 
 __all__ = ["SardanaBaseObject", "SardanaObjectID"]

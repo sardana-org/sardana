@@ -25,8 +25,8 @@
 
 """This module contains the main pool class"""
 
-from __future__ import print_function
-from __future__ import with_statement
+
+
 
 __all__ = ["Pool"]
 

@@ -26,8 +26,8 @@
 """This module contains the class definition for the MacroServer generic
 scan"""
 
-from __future__ import with_statement
-from __future__ import print_function
+
+
 import collections
 import numbers
 

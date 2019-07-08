@@ -25,8 +25,8 @@
 
 """This module contains a definition for ViewOptions"""
 
-from __future__ import with_statement
-from __future__ import print_function
+
+
 
 __all__ = ['ViewOption']
 
