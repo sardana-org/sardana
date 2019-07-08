@@ -43,7 +43,7 @@ import types
 import ctypes
 import weakref
 import operator
-import StringIO
+import io
 import threading
 import traceback
 
@@ -846,7 +846,7 @@ class Macro(Logger):
         """
         fd = kwargs.get('file', sys.stdout)
         if fd in (sys.stdout, sys.stderr):
-            out = StringIO.StringIO()
+            out = io.StringIO()
             kwargs['file'] = out
             end = kwargs.get('end', '\n')
             if end == '\n':

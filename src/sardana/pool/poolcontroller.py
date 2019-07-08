@@ -33,7 +33,7 @@ __docformat__ = 'restructuredtext'
 
 import sys
 import weakref
-import StringIO
+import io
 import traceback
 import functools
 
@@ -84,7 +84,7 @@ class PoolBaseController(PoolBaseElement):
         err = self._ctrl_error
         if err is None:
             return ""
-        sio = StringIO.StringIO()
+        sio = io.StringIO()
         traceback.print_exception(err[0], err[1], err[2], None, sio)
         s = sio.getvalue()
         sio.close()
