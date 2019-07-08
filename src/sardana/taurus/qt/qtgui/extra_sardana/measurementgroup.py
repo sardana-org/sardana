@@ -631,7 +631,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         # update the internal data
         self.beginResetModel()  # we are altering the internal data here, so we need to protect it
         ctrlsdict = self.dataSource()['controllers']
-        if not ctrlsdict.has_key(ctrlname):
+        if ctrlname not in ctrlsdict:
             ctrlsdict[ctrlname] = ctrl = {'channels': {}}
             if not external and chinfo['type'] in ('CTExpChannel', 'OneDExpChannel', 'TwoDExpChannel'):
                 ctrl['timer'] = chname
@@ -641,7 +641,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         else:
             ctrl = ctrlsdict[ctrlname]
         channelsdict = ctrl['channels']
-        if channelsdict.has_key(chname):
+        if chname in channelsdict:
             self.error(
                 'Channel "%s" is already in the measurement group. It will not be added again' % chname)
             return

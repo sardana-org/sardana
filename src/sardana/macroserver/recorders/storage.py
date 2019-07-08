@@ -137,7 +137,7 @@ class FIO_FileRecorder(BaseFileRecorder):
         self.fd.write("!\n! Parameter\n!\n%p\n")
         self.fd.flush()
         env = self.macro().getAllEnv()
-        if env.has_key('FlagFioWriteMotorPositions') and env['FlagFioWriteMotorPositions']:
+        if 'FlagFioWriteMotorPositions' in env and env['FlagFioWriteMotorPositions']:
             all_motors = sorted(
                 self.macro().findObjs('.*', type_class=Type.Motor))
             for mot in all_motors:
@@ -700,7 +700,7 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
         rec_data, rec_nb = record.data, record.recordno
 
         for dd in self.datadesc:
-            if record.data.has_key(dd.name):
+            if dd.name in record.data:
                 data = rec_data[dd.name]
                 fd.opendata(dd.label)
 
@@ -768,7 +768,7 @@ class NXscan_FileRecorder(BaseNAPI_FileRecorder):
                 # if not all the records contain this field, we cannot write it
                 # as a block.. so do it record by record (but only this field!)
                 for record in recordlist.records:
-                    if record.data.has_key(dd.label):
+                    if dd.label in record.data:
                         self.fd.putslab(record.data[dd.label], [
                                         record.recordno] + [0] * len(dd.shape), [1] + list(dd.shape))
                     else:

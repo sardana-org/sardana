@@ -1339,7 +1339,7 @@ class Sardana:
         self.o("Preprocessing input... ")
 
         try:
-            if not self.SimulationModes.has_key(self._simulation):
+            if self._simulation not in self.SimulationModes:
                 return
 
             motSimNb = 0

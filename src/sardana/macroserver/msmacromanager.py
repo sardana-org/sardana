@@ -1268,7 +1268,7 @@ class MacroExecutor(Logger):
             'environment': self.macro_server
         }
         macro_opts.update(init_opts)
-        if not macro_opts.has_key('id'):
+        if 'id' not in macro_opts:
             macro_opts['id'] = str(self.getNewMacroID())
 
         macroObj = self.macro_manager.createMacroObjFromMeta(macro_meta, pars,

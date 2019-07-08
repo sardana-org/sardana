@@ -413,7 +413,7 @@ class ControllerManager(Singleton, Logger):
             path.reverse()
 
         # if there was previous Controller Lib info remove it
-        if self._modules.has_key(module_name):
+        if module_name in self._modules:
             self._modules.pop(module_name)
 
         m, exc_info = None, None

@@ -132,11 +132,11 @@ class SardanaContainer(object):
 
            :throw: KeyError
         """
-        if kwargs.has_key("id"):
+        if "id" in kwargs:
             id = kwargs.pop("id")
             return self.get_element_by_id(id, **kwargs)
 
-        if kwargs.has_key("full_name"):
+        if "full_name" in kwargs:
             full_name = kwargs.pop("full_name")
             return self.get_element_by_full_name(full_name, **kwargs)
 

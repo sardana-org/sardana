@@ -1973,7 +1973,7 @@ class Macro(Logger):
         the environment, sets it to a default value and returns it.
         '''
         view_options = self._getViewOptions()
-        if not view_options.has_key(name):
+        if name not in view_options:
             ViewOption.reset_option(view_options, name)
             self.setEnv('_ViewOptions', view_options)
         return view_options[name]

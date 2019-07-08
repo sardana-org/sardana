@@ -297,7 +297,7 @@ class SpockBaseDoor(BaseDoor):
 
     def __init__(self, name, **kw):
         self._consoleReady = kw.get("consoleReady", False)
-        if not kw.has_key('silent'):
+        if 'silent' not in kw:
             kw['silent'] = False
         self._lines = []
         self._spock_state = None

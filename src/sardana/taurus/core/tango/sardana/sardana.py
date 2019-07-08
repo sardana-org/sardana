@@ -656,7 +656,7 @@ class DatabaseSardana(object):
                 pass
 
     def create_sardana(self, name, device_name):
-        if self._sardanas.has_key(name):
+        if name in self._sardanas:
             raise Exception("Sardana '%s' already exists" % name)
         self._db.register_service("Sardana", name, device_name)
         sardana = Sardana(self, name)

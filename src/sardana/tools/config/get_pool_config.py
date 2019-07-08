@@ -81,7 +81,7 @@ def checkPoolElements(pool):
         controllers = config['controllers']
         elements = {}
         for ctrl, c_data in list(controllers.items()):
-            if c_data.has_key('units'):
+            if 'units' in c_data:
                 c_data = c_data['units']['0']
             for _, data in list(c_data['channels'].items()):
                 index = int(data['index'])
@@ -281,7 +281,7 @@ def checkPoolElements(pool):
                 attribute_values = []
                 for attr in list(attr_dicts.keys()):
                     attr_dict = attr_dicts[attr]
-                    if attr_dict.has_key('__value'):
+                    if '__value' in attr_dict:
                         # skip memorized values of DialPosition and Position
                         # DialPosition because it is read only attribute and the
                         # current version of sardana script would not be able to se it

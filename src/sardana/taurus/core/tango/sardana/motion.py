@@ -338,7 +338,7 @@ class Motion(BaseMotion):
             for moveable_source in moveable_sources:
                 moveable = moveable_source.getMoveable([name])
                 if not moveable is None:
-                    if not ms_elems.has_key(moveable_source):
+                    if moveable_source not in ms_elems:
                         ms_elems[moveable_source] = []
                     moveable_source_moveables = ms_elems.get(moveable_source)
                     present = name in moveable_source_moveables

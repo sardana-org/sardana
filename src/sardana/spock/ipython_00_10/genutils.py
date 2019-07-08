@@ -1034,7 +1034,7 @@ def init_pre_spock(ip, macro_server, door):
     ip.user_ns['DOOR_STATE'] = ""
     ip.user_ns['spock_options'] = so
 
-    if ip.IP.alias_table.has_key('mv'):
+    if 'mv' in ip.IP.alias_table:
         del ip.IP.alias_table['mv']
 
     v = release.version

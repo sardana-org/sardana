@@ -285,9 +285,9 @@ class ModuleManager(Singleton, Logger):
 
     def unloadModule(self, module_name):
         """Unloads the given module name"""
-        if self._modules.has_key(module_name):
+        if module_name in self._modules:
             self.debug("unloading module %s" % module_name)
-            assert(sys.modules.has_key(module_name))
+            assert(module_name in sys.modules)
             self._modules.pop(module_name)
             del sys.modules[module_name]
 

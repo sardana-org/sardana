@@ -118,9 +118,9 @@ class PoolBaseController(PoolBaseElement):
 
     def remove_element(self, elem, propagate=1):
         name, axis, eid = elem.get_name(), elem.get_axis(), elem.get_id()
-        f = self._element_ids.has_key(eid)
+        f = eid in self._element_ids
         if not f:
-            f = self._pending_element_ids.has_key(eid)
+            f = eid in self._pending_element_ids
             if not f:
                 raise Exception("element '%s' is not in controller")
             del self._pending_element_ids[eid]
@@ -162,9 +162,9 @@ class PoolBaseController(PoolBaseElement):
                             elements)
 
     def remove_axis(self, axis, propagate=1):
-        f = self._element_axis.has_key(axis)
+        f = axis in self._element_axis
         if not f:
-            f = self._pending_element_axis.has_key(axis)
+            f = axis in self._pending_element_axis
             if not f:
                 raise Exception("element '%s' is not in controller")
             elem = self._pending_element_axis[axis]

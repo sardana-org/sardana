@@ -814,15 +814,15 @@ class Pool(PyTango.Device_4Impl, Logger):
             raise Exception(msg)
         if len(argin) == 1:
             ret = self._format_create_json_arguments(argin)
-            if not ret.has_key('type'):
+            if 'type' not in ret:
                 raise KeyError("Missing key 'type'")
-            if not ret.has_key('library'):
+            if 'library' not in ret:
                 raise KeyError("Missing key 'library'")
-            if not ret.has_key('klass'):
+            if 'klass' not in ret:
                 raise KeyError("Missing key 'klass'")
-            if not ret.has_key('name'):
+            if 'name' not in ret:
                 raise KeyError("Missing key 'name'")
-            if not ret.has_key('properties'):
+            if 'properties' not in ret:
                 ret['properties'] = CaselessDict()
             return ret
 
