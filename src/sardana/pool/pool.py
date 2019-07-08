@@ -154,7 +154,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         log_file_name = os.path.join(path, 'controller.log.txt')
         try:
             if not os.path.exists(path):
-                os.makedirs(path, 0777)
+                os.makedirs(path, 0o777)
             f_h = logging.handlers.RotatingFileHandler(log_file_name,
                                                        maxBytes=1E7,
                                                        backupCount=5)

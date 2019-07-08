@@ -1108,7 +1108,7 @@ def prepare_logging(options, args, tango_args, start_time=None,
         taurus._handlers = handlers = []
         try:
             if not os.path.exists(path):
-                os.makedirs(path, 0777)
+                os.makedirs(path, 0o777)
 
             from sardana import sardanacustomsettings
             maxBytes = getattr(sardanacustomsettings, 'LOG_FILES_SIZE', 1E7)

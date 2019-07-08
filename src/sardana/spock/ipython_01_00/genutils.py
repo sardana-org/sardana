@@ -392,7 +392,7 @@ def print_dev_from_class(classname, dft=None):
 
     db = get_tango_db()
     pytg_ver = get_pytango_version_number()
-    if pytg_ver >= 030004:
+    if pytg_ver >= 0o30004:
         server_wildcard = '*'
         try:
             exp_dev_list = db.get_device_exported_for_class(classname)
