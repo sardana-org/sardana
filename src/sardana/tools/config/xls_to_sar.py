@@ -21,7 +21,7 @@ def transform(f):
     xslt_filename = os.path.join(directory, "XLS_TO_SAR.xslt")
 
     t = etree.XSLT(etree.parse(xslt_filename))
-    if type(f) in str:
+    if isinstance(f, str):
         doc = etree.parse(f)
     else:
         doc = f

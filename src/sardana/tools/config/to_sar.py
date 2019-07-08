@@ -8,7 +8,7 @@ SAR_NS = 'http://sardana.cells.es/client/framework/config'
 
 
 def transform(f):
-    if type(f) in str:
+    if isinstance(f, str):
         doc = etree.parse(f)
     else:
         doc = f

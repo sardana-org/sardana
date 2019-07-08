@@ -7,7 +7,7 @@ from lxml import etree
 
 def transform(f):
     t = etree.XSLT(etree.parse("SAR_TO_FODS.xslt"))
-    if type(f) in str:
+    if isinstance(f, str):
         doc = etree.parse(f)
     else:
         doc = f

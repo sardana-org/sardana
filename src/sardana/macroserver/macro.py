@@ -1330,7 +1330,7 @@ class Macro(Logger):
         macro_name = None
         arg0 = args[0]
         if len(args) == 1:
-            if type(arg0) in str:
+            if isinstance(arg0, str):
                 # dealing with sth like args = ('ascan th 0 100 10 1.0',)
                 macro_name = arg0.split()[0]
             elif isinstance(arg0, collections.Sequence):

@@ -103,13 +103,13 @@ class MacroInfo(object):
         return not self._isParamAtomic(p)
 
     def _isParamAtomic(self, p):
-        return type(p['type']) in str
+        return isinstance(p['type'], str)
 
     def _buildParameterLine(self, parameters):
         l = []
         for p in parameters:
             t = p['type']
-            if type(t) in str:
+            if isinstance(t, str):
                 # Simple parameter
                 l.append('<%s>' % p['name'])
             else:
@@ -122,7 +122,7 @@ class MacroInfo(object):
         l = []
         for p in parameters:
             t = p['type']
-            if type(t) in str:
+            if isinstance(t, str):
                 # Simple parameter
                 l.append('{name} : ({type}) {description}'.format(**p))
             else:

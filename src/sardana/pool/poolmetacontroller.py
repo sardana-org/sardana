@@ -206,7 +206,7 @@ class DataInfo(object):
         fget = info.get(FGet)
         fset = info.get(FSet)
         if default_value is not None and dtype != DataType.String:
-            if type(default_value) in str:
+            if isinstance(default_value, str):
                 default_value = eval(default_value)
         return DataInfo(name, dtype, dformat=dformat, access=daccess,
                         description=description, default_value=default_value,

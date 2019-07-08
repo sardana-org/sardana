@@ -546,7 +546,7 @@ class ControllerManager(Singleton, Logger):
             raise RuntimeError('Controller name not specified')
         controller_name_or_klass = in_par_list[0]
         controller_class = controller_name_or_klass
-        if type(controller_class) in str:
+        if isinstance(controller_class, str):
             controller_class = self.getControllerClass(controller_class)
         if controller_class is None:
             raise UnknownController("Unknown controller %s" %
