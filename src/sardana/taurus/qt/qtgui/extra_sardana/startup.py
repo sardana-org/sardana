@@ -36,7 +36,7 @@ def __run_pythonstartup_script():
     import os
     filename = os.environ.get('PYTHONSTARTUP')
     if filename and os.path.isfile(filename):
-        execfile(filename)
+        exec(compile(open(filename).read(), filename, 'exec'))
 
 
 def __run_init_commands():
@@ -135,7 +135,7 @@ def runfile(filename, args=None, wdir=None):
             sys.argv.append(arg)
     if wdir is not None:
         os.chdir(wdir)
-    execfile(filename, glbs)
+    exec(compile(open(filename).read(), filename, 'exec'), glbs)
     sys.argv = ['']
     glbs.pop('__file__')
 
