@@ -47,6 +47,7 @@ import os
 import re
 import numpy as np
 
+from sardana.sardanautils import py2_round
 from sardana.macroserver.macro import Macro, iMacro, Type
 from sardana.macroserver.macros.scan import aNscan
 from sardana.macroserver.msexception import UnknownEnv
@@ -1605,7 +1606,7 @@ class latticecal(iMacro, _diffrac):
                     self.output("Old lattice parameter %s = %s" %
                                 (parameter, a0))
                     h0 = self.h_device.position
-                    h1 = round(h0)
+                    h1 = py2_round(h0)  # TODO: check if round would be fine?
                     a1 = h1 / h0 * a0
                     self.output("New lattice parameter %s = %s" %
                                 (parameter, a1))
@@ -1615,7 +1616,7 @@ class latticecal(iMacro, _diffrac):
                     self.output("Old lattice parameter %s = %s" %
                                 (parameter, a0))
                     h0 = self.k_device.position
-                    h1 = round(h0)
+                    h1 = py2_round(h0)  # TODO: check if round would be fine?
                     a1 = h1 / h0 * a0
                     self.output("New lattice parameter %s = %s" %
                                 (parameter, a1))
@@ -1625,7 +1626,7 @@ class latticecal(iMacro, _diffrac):
                     self.output("Old lattice parameter %s = %s" %
                                 (parameter, a0))
                     h0 = self.l_device.position
-                    h1 = round(h0)
+                    h1 = py2_round(h0)  # TODO: check if round would be fine?
                     a1 = h1 / h0 * a0
                     self.output("New lattice parameter %s = %s" %
                                 (parameter, a1))
