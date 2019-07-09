@@ -118,7 +118,7 @@ class BaseAcquisition(object):
         self.remove_attribute_listener()
         synchronization = [{SynchParam.Delay: {SynchDomain.Time: 0},
                             SynchParam.Active: {SynchDomain.Time: 0.1},
-                            SynchParam.Total: {SynchDomain.Time: 0},
+                            SynchParam.Total: {SynchDomain.Time: 0.2},
                             SynchParam.Repeats: 1}]
         self.pmg.synchronization = synchronization
         self.acquire()
