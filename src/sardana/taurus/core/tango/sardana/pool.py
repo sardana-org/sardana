@@ -1564,7 +1564,7 @@ class MGConfiguration(object):
         ret = []
         for _, (_, _, ch_info) in list(channels_info.items()):
             ret.append(ch_info)
-        ret = sorted(ret, lambda x, y: cmp(x.index, y.index))
+        ret = sorted(ret, key=lambda x: x.index)
         return ret
 
     def getCountersInfoList(self):
