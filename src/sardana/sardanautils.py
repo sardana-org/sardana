@@ -31,10 +31,11 @@ utility methods"""
 __all__ = ["is_pure_str", "is_non_str_seq", "is_integer", "is_number",
            "is_bool", "check_type", "assert_type", "str_to_value",
            "is_callable", "translate_version_str2int",
-           "translate_version_str2list"]
+           "translate_version_str2list", "py2_round"]
 
 __docformat__ = 'restructuredtext'
 
+import math
 import numpy
 import numbers
 import collections
@@ -187,3 +188,11 @@ def translate_version_str2list(version_str, depth=2):
                 i = 0
             ver.append(i)
     return ver
+
+
+def py2_round(x, d=0):
+    p = 10 ** d
+    if x > 0:
+        return float(math.floor((x * p) + 0.5)) / p
+    else:
+        return float(math.ceil((x * p) - 0.5)) / p
