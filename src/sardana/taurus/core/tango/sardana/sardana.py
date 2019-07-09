@@ -94,8 +94,8 @@ class BaseSardanaElement(object):
     def __getattr__(self, name):
         return getattr(self.getObj(), name)
 
-    def __cmp__(self, elem):
-        return cmp(self.name, elem.name)
+    def __lt__(self, elem):
+        return self.name < elem.name
 
     def getData(self):
         return self._data
