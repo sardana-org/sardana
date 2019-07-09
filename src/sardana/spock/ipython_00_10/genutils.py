@@ -274,7 +274,7 @@ def get_spock_profiles(ipython_profiles=None):
         if not os.path.isfile(profile_f):
             continue
         try:
-            for i, l in enumerate(file(profile_f)):
+            for i, l in enumerate(open(profile_f)):
                 if i > 10:
                     break
                 if l.find("spock_creation_version") >= 0:

@@ -741,7 +741,7 @@ config.IPKernelApp.pylab = 'inline'
     sys.stdout.write('Storing %s in %s... ' % (config_file_name, location))
     sys.stdout.flush()
 
-    with file(abs_config_file_name, "w") as f:
+    with open(abs_config_file_name, "w") as f:
         f.write(dest_data)
         f.close()
     sys.stdout.write(MSG_DONE + '\n')
@@ -785,7 +785,7 @@ def check_for_upgrade(ipy_profile_dir):
     abs_config_file_name = os.path.join(ipy_profile_dir, config_file_name)
 
     # search for version and door inside the ipy_profile file
-    with file(abs_config_file_name, "r") as ipy_config_file:
+    with open(abs_config_file_name, "r") as ipy_config_file:
         for i, line in enumerate(ipy_config_file):
             if i > 20:
                 break  # give up after 20 lines

@@ -326,7 +326,7 @@ class MacroManager(MacroServerManager):
                 f_name, code = self.createMacroLib(lib_name), ''
             else:
                 f_name = macro_lib.file_path
-                f = file(f_name)
+                f = open(f_name)
                 code = f.read()
                 f.close()
         else:
@@ -341,7 +341,7 @@ class MacroManager(MacroServerManager):
                 else:
                     _, line_nb = macro.code
                     f_name = macro.file_path
-                    f = file(f_name)
+                    f = open(f_name)
                     code = f.read()
                     f.close()
 

@@ -238,7 +238,7 @@ class ControllerManager(Singleton, Logger):
                 f_name, code = self.createControllerLib(lib_name), ''
             else:
                 f_name = controller_lib.get_file_name()
-                f = file(f_name)
+                f = open(f_name)
                 code = f.read()
                 f.close()
         else:
@@ -254,7 +254,7 @@ class ControllerManager(Singleton, Logger):
                 else:
                     _, line_nb = controller.getCode()
                     f_name = controller.getFileName()
-                    f = file(f_name)
+                    f = open(f_name)
                     code = f.read()
                     f.close()
 

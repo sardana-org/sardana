@@ -283,7 +283,7 @@ def edmac(self, parameter_s=''):
     if ask_yes_no('Do you want to apply the new code on the server?', 'y'):
         print('Storing...', end=' ')
         try:
-            f = file(local_fname)
+            f = open(local_fname)
             try:
                 new_code = f.read()
                 ms.SetMacroCode([remote_fname, new_code])
