@@ -148,7 +148,7 @@ def recur_map(fun, data, keep_none=False):
     :param data: <object> the same purpose as in map function
     :param keep_none: <bool> keep None elements without applying fun
     """
-    if hasattr(data, "__iter__"):
+    if hasattr(data, "__iter__") and not isinstance(data, str):
         return [recur_map(fun, elem, keep_none) for elem in data]
     else:
         if keep_none is True and data is None:
