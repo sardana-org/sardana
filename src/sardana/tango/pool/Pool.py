@@ -1129,7 +1129,7 @@ Tango command to create motor group.
     {1}
 """.format(CREATE_MOTOR_GROUP_PAR_IN_DOC, CREATE_MOTOR_GROUP_PAR_OUT_DOC)
 
-Pool.CreateMotorGroup.__func__.__doc__ = CREATE_MOTOR_GROUP_DOC
+Pool.CreateMotorGroup.__doc__ = CREATE_MOTOR_GROUP_DOC
 
 CREATE_MEASUREMENT_GROUP_PAR_IN_DOC = """\
 Must give either:
@@ -1300,18 +1300,18 @@ Sends a string to a controller.
     {1}
 """.format(SEND_TO_CONTROLLER_PAR_IN_DOC, SEND_TO_CONTROLLER_PAR_OUT_DOC)
 
-Pool.CreateController.__func__.__doc__ = CREATE_CONTROLLER_DOC
-Pool.CreateElement.__func__.__doc__ = CREATE_ELEMENT_DOC
-Pool.CreateInstrument.__func__.__doc__ = CREATE_INSTRUMENT_DOC
-Pool.CreateMotorGroup.__func__.__doc__ = CREATE_MOTOR_GROUP_DOC
-Pool.CreateMeasurementGroup.__func__.__doc__ = CREATE_MEASUREMENT_GROUP_DOC
-Pool.DeleteElement.__func__.__doc__ = DELETE_ELEMENT_DOC
-Pool.GetControllerClassInfo.__func__.__doc__ = GET_CONTROLLER_CLASS_INFO_DOC
-Pool.ReloadControllerLib.__func__.__doc__ = RELOAD_CONTROLLER_LIB_INFO_DOC
-Pool.ReloadControllerClass.__func__.__doc__ = RELOAD_CONTROLLER_CLASS_INFO_DOC
-Pool.RenameElement.__func__.__doc__ = RENAME_ELEMENT_CLASS_INFO_DOC
-Pool.Stop.__func__.__doc__ = STOP_DOC
-Pool.Abort.__func__.__doc__ = ABORT_DOC
+Pool.CreateController.__doc__ = CREATE_CONTROLLER_DOC
+Pool.CreateElement.__doc__ = CREATE_ELEMENT_DOC
+Pool.CreateInstrument.__doc__ = CREATE_INSTRUMENT_DOC
+Pool.CreateMotorGroup.__doc__ = CREATE_MOTOR_GROUP_DOC
+Pool.CreateMeasurementGroup.__doc__ = CREATE_MEASUREMENT_GROUP_DOC
+Pool.DeleteElement.__doc__ = DELETE_ELEMENT_DOC
+Pool.GetControllerClassInfo.__doc__ = GET_CONTROLLER_CLASS_INFO_DOC
+Pool.ReloadControllerLib.__doc__ = RELOAD_CONTROLLER_LIB_INFO_DOC
+Pool.ReloadControllerClass.__doc__ = RELOAD_CONTROLLER_CLASS_INFO_DOC
+Pool.RenameElement.__doc__ = RENAME_ELEMENT_CLASS_INFO_DOC
+Pool.Stop.__doc__ = STOP_DOC
+Pool.Abort.__doc__ = ABORT_DOC
 
 
 class PoolClass(PyTango.DeviceClass):
