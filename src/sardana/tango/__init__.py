@@ -38,7 +38,7 @@ def prepare_sardana(util):
 
 
 def main_sardana(args=None, start_time=None, mode=None):
-    from . import core.util
+    from . import core
     # pass server name so the scripts generated with setuptools work on Windows
     return core.util.run(prepare_sardana, args=args, start_time=start_time,
                          mode=mode, name=SERVER_NAME)
