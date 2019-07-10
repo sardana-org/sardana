@@ -327,6 +327,15 @@ class ControllerClass(SardanaClass):
         if init_args.varargs is None or init_args.keywords is None:
             self.api_version = 0
 
+    def __lt__(self, o):
+        main_type = self.types[0]
+        o_main_type = o.types[0]
+        if main_type != o_main_type:
+            return main_type < o_main_type
+        if self.gender != o.gender:
+            return self.gender < o.gender
+        return self.name < o.name
+
     def __build_types(self):
         types = []
         klass = self.klass
