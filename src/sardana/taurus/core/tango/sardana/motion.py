@@ -566,17 +566,17 @@ def test():
         m = Motion(["m1", "m2"], [ms1, ms2, ms3], read_only=True)
         m.startMove([0.5, 20.4])
     except Exception as e:
-        assert(e.message == "Trying to move read only motion")
+        assert(str(e) == "Trying to move read only motion")
 
     try:
         m = Motion(["m1", "m1"], [ms1, ms2, ms3])
     except Exception as e:
-        assert(e.message == "Moveable item m1 appears more than once")
+        assert(str(e) == "Moveable item m1 appears more than once")
 
     try:
         m = Motion(["m1", "m999"], [ms1, ms2, ms3])
     except Exception as e:
-        assert(e.message == "Moveable item m999 not found")
+        assert(str(e) == "Moveable item m999 not found")
 
 if __name__ == "__main__":
     test()

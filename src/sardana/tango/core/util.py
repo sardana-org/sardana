@@ -1248,7 +1248,7 @@ def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None,
     try:
         log_messages.extend(prepare_server(args, tango_args))
     except AbortException as e:
-        print(e.message)
+        print(e)
         return
     except KeyboardInterrupt:
         print("\nInterrupted by keyboard")

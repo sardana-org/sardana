@@ -1181,7 +1181,7 @@ def start(user_ns=None):
     try:
         user_ns.update(get_args(sys.argv))
     except exception.SpockException as e:
-        print(e.message)
+        print(e)
         print('Starting normal IPython console')
     except KeyboardInterrupt:
         print("\nUser pressed Ctrl+C. Exiting...")

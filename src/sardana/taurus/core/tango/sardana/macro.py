@@ -1287,8 +1287,8 @@ class SequenceNode(BranchNode):
             try:
                 macroParams = ParamParser(paramsDef).parse(plainTextParams)
             except ParseError as e:
-                msg = "{0} can not be parsed ({1})".format(plainTextMacro,
-                                                           e.message)
+                msg = "{0} can not be parsed ({1})".format(plainTextMacro, e)
+                # TODO: think of using `raise from` syntax
                 raise ValueError(msg)
             macro.fromList(macroParams)
 
