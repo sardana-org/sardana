@@ -506,6 +506,9 @@ class ParamDecoder:
     def getParamList(self):
         return self.params
 
+    def __iter__(self):
+        return iter(self.params)
+
     def __getattr__(self, name):
         return getattr(self.params, name)
 
@@ -623,6 +626,9 @@ class FlatParamDecoder:
 
     def getParamList(self):
         return self.params
+
+    def __iter__(self):
+        return iter(self.params)
 
     def __getattr__(self, name):
         return getattr(self.params, name)
