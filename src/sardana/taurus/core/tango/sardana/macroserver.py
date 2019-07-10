@@ -667,9 +667,7 @@ class BaseDoor(MacroServerDevice):
     def _processRecordData(self, data):
         if data is None or data.value is None:
             return
-        # make sure we get it as string since PyTango 7.1.4 returns a buffer
-        # object and json.loads doesn't support buffer objects (only str)
-        data = list(map(str, data.value))
+        data = data.value
 
         size = len(data[1])
         if size == 0:
@@ -688,17 +686,12 @@ class BaseDoor(MacroServerDevice):
         if t not in CHANGE_EVT_TYPES:
             return
 
-        # make sure we get it as string since PyTango 7.1.4 returns a buffer
-        # object and json.loads doesn't support buffer objects (only str)
-        v = list(map(str, v.value))
+        v = v.value
         if not len(v[1]):
             return
         format = v[0]
         codec = CodecFactory().getCodec(format)
 
-        # make sure we get it as string since PyTango 7.1.4 returns a buffer
-        # object and json.loads doesn't support buffer objects (only str)
-        v[1] = str(v[1])
         fmt, data = codec.decode(v)
         for macro_status in data:
             id = macro_status.get('id')

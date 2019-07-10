@@ -90,21 +90,16 @@ class TangoStatusCb(TangoAttrCb):
         if event_data.err:
             self._state_buffer = event_data.errors
             self._tango_macro_executor._done_event.set()
-        # make sure we get it as string since PyTango 7.1.4 returns a buffer
-        # object and json.loads doesn't support buffer objects (only str)
 
         attr_value = getattr(event_data, 'attr_value')
         if attr_value is None:
             return
-        v = list(map(str, attr_value.value))
+        v = attr_value.value
         if not len(v[1]):
             return
         fmt = v[0]
         codec = CodecFactory().getCodec(fmt)
 
-        # make sure we get it as string since PyTango 7.1.4 returns a buffer
-        # object and json.loads doesn't support buffer objects (only str)
-        v[1] = str(v[1])
         fmt, data = codec.decode(v)
         for macro_status in data:
             state = macro_status['state']
