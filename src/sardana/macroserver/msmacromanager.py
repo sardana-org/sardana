@@ -1597,8 +1597,8 @@ class MacroExecutor(Logger):
                 mse.traceback = traceback.format_exc()
         except DevFailed as df:
             exc_info = sys.exc_info()
-            exp_pars = {'type': df[0].reason,
-                        'msg': df[0].desc,
+            exp_pars = {'type': df.args[0].reason,
+                        'msg': df.args[0].desc,
                         'args': df.args,
                         'traceback': traceback.format_exc()}
             macro_exp = MacroServerException(exp_pars)

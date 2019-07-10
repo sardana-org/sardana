@@ -120,7 +120,8 @@ class ReadTangoAttributes(object):
                     proxy = PyTango.DeviceProxy(dev_name)
                 except PyTango.DevFailed as df:
                     if len(df):
-                        self._pending[axis] = df[0].reason + ": " + df[0].desc
+                        self._pending[axis] = df.args[0].reason + ": " + \
+                                              df.args[0].desc
                     else:
                         self._pending[
                             axis] = "Unknwon PyTango Error: " + str(df)

@@ -1020,7 +1020,7 @@ class Motor(PoolElement, Moveable):
             try:
                 self.getPositionObj().write(new_pos)
             except DevFailed as err_traceback:
-                for err in err_traceback:
+                for err in err_traceback.args:
                     if err.reason == 'API_AttrNotAllowed':
                         raise RuntimeError('%s is already moving' % self)
                     else:
@@ -1117,7 +1117,7 @@ class PseudoMotor(PoolElement, Moveable):
         try:
             self.write_attribute('position', new_pos)
         except DevFailed as df:
-            for err in df:
+            for err in df.args:
                 if err.reason == 'API_AttrNotAllowed':
                     raise RuntimeError('%s is already moving' % self)
                 else:
@@ -1209,7 +1209,7 @@ class MotorGroup(PoolElement, Moveable):
         try:
             self.write_attribute('position', new_pos)
         except DevFailed as df:
-            for err in df:
+            for err in df.args:
                 if err.reason == 'API_AttrNotAllowed':
                     raise RuntimeError('%s is already moving' % self)
                 else:
@@ -2032,7 +2032,7 @@ class MeasurementGroup(PoolElement):
         except DevFailed as e:
             # TODO: Workaround for CORBA timeout on measurement group start
             # remove it whenever sardana-org/sardana#93 gets implemented
-            if e[-1].reason == "API_DeviceTimedOut":
+            if e.args[-1].reason == "API_DeviceTimedOut":
                 self.error("start timed out, trying to stop")
                 self.stop()
                 self.debug("stopped")
@@ -2161,7 +2161,7 @@ class IORegister(PoolElement):
             self.getValueObj().write(new_value)
             self.final_val = new_value
         except DevFailed as err_traceback:
-            for err in err_traceback:
+            for err in err_traceback.args:
                 if err.reason == 'API_AttrNotAllowed':
                     raise RuntimeError('%s is already chaging' % self)
                 else:
@@ -2237,7 +2237,7 @@ class Pool(TangoDevice, MoveableSource):
         if evt_type == TaurusEventType.Error:
             msg = evt_value
             if isinstance(msg, DevFailed):
-                d = msg[0]
+                d = msg.args[0]
                 # skip configuration errors
                 if d.reason == "API_BadConfigurationProperty":
                     return
