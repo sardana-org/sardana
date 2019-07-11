@@ -8,7 +8,7 @@ services:
   - docker
 
 python:
-  - "3.6"
+  - "3.5"
 
 env:
   global:
@@ -17,17 +17,16 @@ env:
 
   matrix:
   - TEST="flake8"
-  - TEST="testsuite" DOCKER_IMG=reszelaz/sardana-test
-  - TEST="testsuite" DOCKER_IMG=reszelaz/sardana-test:taurus-support-3.x
-  - TEST="doc" DOCKER_IMG=reszelaz/sardana-test
+  - TEST="testsuite" DOCKER_IMG=reszelaz/sardana-test:py3
+  - TEST="doc" DOCKER_IMG=reszelaz/sardana-test:py3
 
 
 before_install:
   # install flake8 to perform python code style check in the script part
   # install it using pip in order to get the newest version
   - if [ $TEST == "flake8" ]; then sudo apt-get update -qq ; fi
-  - if [ $TEST == "flake8" ]; then sudo apt-get install -qq python-pip; fi
-  - if [ $TEST == "flake8" ]; then sudo pip install flake8; fi
+  - if [ $TEST == "flake8" ]; then sudo apt-get install -qq python3-pip; fi
+  - if [ $TEST == "flake8" ]; then sudo pip3 install flake8; fi
 
 install:
   # run reszelaz/sardana-test docker container (Debian8 with sardana-deps)
@@ -38,7 +37,7 @@ install:
   - if [ $TEST == "testsuite" ]; then sleep 10; fi
 
   # install sardana in order to create the launcher scripts for servers
-  - if [ $TEST == "testsuite" ]; then docker exec sardana-test bash -c "cd /sardana && python setup.py install"; fi
+  - if [ $TEST == "testsuite" ]; then docker exec sardana-test bash -c "cd /sardana && python3 setup.py install"; fi
 
   # start Pool and MacroServer necessary for macro tests
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test supervisorctl start Pool; fi
