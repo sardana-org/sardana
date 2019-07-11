@@ -244,6 +244,9 @@ class MacroClass(SardanaClass, Parameterizable):
         SardanaClass.__init__(self, **kwargs)
         Parameterizable.__init__(self)
 
+    def __lt__(self, o):
+        return self.name < o.name
+
     def serialize(self, *args, **kwargs):
         kwargs = SardanaClass.serialize(self, *args, **kwargs)
         kwargs = Parameterizable.serialize(self, *args, **kwargs)
@@ -270,6 +273,9 @@ class MacroFunction(SardanaFunction, Parameterizable):
         kwargs['elem_type'] = ElementType.MacroFunction
         SardanaFunction.__init__(self, **kwargs)
         Parameterizable.__init__(self)
+
+    def __lt__(self, o):
+        return self.name < o.name
 
     def serialize(self, *args, **kwargs):
         kwargs = SardanaFunction.serialize(self, *args, **kwargs)
