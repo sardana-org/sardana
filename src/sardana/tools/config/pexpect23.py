@@ -68,7 +68,6 @@ try:
     import sys
     import time
     import select
-    import string
     import re
     import struct
     import resource
@@ -1778,7 +1777,7 @@ def which(filename):
     # Oddly enough this was the one line that made Pexpect
     # incompatible with Python 1.5.2.
     #pathlist = p.split (os.pathsep)
-    pathlist = string.split(p, os.pathsep)
+    pathlist = str.split(p, os.pathsep)
 
     for path in pathlist:
         f = os.path.join(path, filename)

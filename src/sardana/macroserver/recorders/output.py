@@ -32,7 +32,6 @@ __docformat__ = 'restructuredtext'
 import numpy
 import datetime
 import operator
-import string
 import weakref
 
 from taurus.core.util.codecs import CodecFactory
@@ -208,7 +207,7 @@ class OutputRecorder(DataRecorder):
             for row in range(empty_row_nb):
                 header[row].append(col_size * " ")
             for i, l in enumerate(label):
-                header[i + empty_row_nb].append(string.center(l, col_size))
+                header[i + empty_row_nb].append(l.center(col_size))
         head = []
         for header_row in header:
             head.append(col_sep.join(header_row))
@@ -266,7 +265,8 @@ class OutputRecorder(DataRecorder):
                 cell = cell_data
             else:
                 cell %= record.data
-            cell = string.center(cell.strip(), self._col_sizes[i])
+            cell = cell.strip()
+            cell = cell.center(self._col_sizes[i])
             cells.append(cell)
         scan_line = self._col_sep.join(cells)
 

@@ -34,7 +34,6 @@ __docformat__ = 'restructuredtext'
 
 import os
 import inspect
-import string
 import weakref
 import linecache
 import traceback
@@ -81,7 +80,7 @@ def getsource(object):
     or code object.  The source code is returned as a single string.  An
     IOError is raised if the source code cannot be retrieved."""
     lines, lnum = getsourcelines(object)
-    return string.join(lines, '')
+    return str.join('', lines)
 
 # End patch around inspect issue http://bugs.python.org/issue993580
 # ----------------------------------------------------------------------------

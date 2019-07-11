@@ -716,7 +716,7 @@ def prepare_server(args, tango_args):
             inst_name = input(
                 "Please indicate %s instance name: " % server_name)
             # should be a instance name validator.
-            valid_set = string.letters + string.digits + '_' + '-'
+            valid_set = string.ascii_letters + string.digits + '_' + '-'
             out = ''.join([c for c in inst_name if c not in valid_set])
             valid = len(inst_name) > 0 and len(out) == 0
             if not valid:
