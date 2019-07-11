@@ -271,8 +271,7 @@ class RecorderManager(MacroServerManager):
         mod_manager = ModuleManager()
         m, exc_info = None, None
         try:
-            m = mod_manager.reloadModule(
-                module_name, path, reload=reload)
+            m = mod_manager.reloadModule(module_name, path)
         except:
             exc_info = sys.exc_info()
 
