@@ -734,7 +734,6 @@ class BaseDoor(MacroServerDevice):
     def write(self, msg, stream=None):
         if self.isSilent():
             return
-        msg = msg.encode('utf-8')
         self._output_stream = sys.stdout
         out = self._output_stream
         if stream is not None:
