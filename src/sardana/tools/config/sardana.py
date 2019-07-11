@@ -783,8 +783,7 @@ class DevicePoolServer(TangoServer):
             pool_dp = PyTango.DeviceProxy(pool_dev_name)
 
             factory = CodecFactory()
-            elements = factory.decode(
-                pool_dp.elements, ensure_ascii='True')['new']
+            elements = factory.decode(pool_dp.elements)
 
             ctrl_classes_info = {}
             for elem in elements:

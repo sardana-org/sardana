@@ -214,8 +214,7 @@ class ExperimentConfiguration(object):
         for mnt_grp, reply in zip(mnt_grps_names, replies):
             try:
                 mnt_grp_configs[mnt_grp] = \
-                    codec.decode(('json', reply.get_data().value),
-                                 ensure_ascii=True)[1]
+                    codec.decode(('json', reply.get_data().value))[1]
             except Exception as e:
                 from taurus.core.util.log import warning
                 warning('Cannot load Measurement group "%s": %s',
@@ -923,7 +922,7 @@ class BaseMacroServer(MacroServerDevice):
         if evt_type not in CHANGE_EVT_TYPES:
             return ret
         try:
-            elems = CodecFactory().decode(evt_value.value, ensure_ascii=True)
+            elems = CodecFactory().decode(evt_value.value)
         except:
             self.error("Could not decode element info format=%s len=%s",
                        evt_value.value[0], len(evt_value.value[1]))

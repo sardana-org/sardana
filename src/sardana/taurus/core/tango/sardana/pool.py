@@ -1361,7 +1361,7 @@ class MGConfiguration(object):
     def __init__(self, mg, data):
         self._mg = weakref.ref(mg)
         if isinstance(data, str):
-            data = CodecFactory().decode(('json', data), ensure_ascii=True)
+            data = CodecFactory().decode(('json', data))
         self.raw_data = data
         self.__dict__.update(data)
 
@@ -2252,7 +2252,7 @@ class Pool(TangoDevice, MoveableSource):
         elif evt_type not in CHANGE_EVT_TYPES:
             return
         try:
-            elems = CodecFactory().decode(evt_value.value, ensure_ascii=True)
+            elems = CodecFactory().decode(evt_value.value)
         except:
             self.error("Could not decode element info")
             self.info("value: '%s'", evt_value.value)

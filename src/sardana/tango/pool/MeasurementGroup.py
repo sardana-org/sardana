@@ -219,7 +219,7 @@ class MeasurementGroup(PoolGroupDevice):
 
     def write_Configuration(self, attr):
         data = attr.get_write_value()
-        cfg = CodecFactory().decode(('json', data), ensure_ascii=True)
+        cfg = CodecFactory().decode(('json', data))
         self.measurement_group.set_configuration_from_user(cfg)
 
     def read_NbStarts(self, attr):
@@ -251,8 +251,7 @@ class MeasurementGroup(PoolGroupDevice):
 
     def write_Synchronization(self, attr):
         data = attr.get_write_value()
-        synchronization = CodecFactory().decode(('json', data),
-                                                ensure_ascii=True)
+        synchronization = CodecFactory().decode(('json', data))
         # translate dictionary keys
         synchronization = self._synchronization_str2enum(synchronization)
         self.measurement_group.synchronization = synchronization
