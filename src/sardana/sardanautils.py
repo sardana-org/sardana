@@ -31,7 +31,7 @@ utility methods"""
 __all__ = ["is_pure_str", "is_non_str_seq", "is_integer", "is_number",
            "is_bool", "check_type", "assert_type", "str_to_value",
            "is_callable", "translate_version_str2int",
-           "translate_version_str2list", "py2_round"]
+           "translate_version_str2list", "py2_round", "recur_map"]
 
 __docformat__ = 'restructuredtext'
 
@@ -196,3 +196,19 @@ def py2_round(x, d=0):
         return float(math.floor((x * p) + 0.5)) / p
     else:
         return float(math.ceil((x * p) - 0.5)) / p
+
+
+def recur_map(fun, data, keep_none=False):
+    """Recursive map. Similar to map, but maintains the list objects structure
+
+    :param fun: <callable> the same purpose as in map function
+    :param data: <object> the same purpose as in map function
+    :param keep_none: <bool> keep None elements without applying fun
+    """
+    if hasattr(data, "__iter__") and not isinstance(data, str):
+        return [recur_map(fun, elem, keep_none) for elem in data]
+    else:
+        if keep_none is True and data is None:
+            return data
+        else:
+            return fun(data)
