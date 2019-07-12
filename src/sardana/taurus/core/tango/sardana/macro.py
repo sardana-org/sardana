@@ -1310,7 +1310,8 @@ def ParamFactory(paramInfo):
     """
     if isinstance(paramInfo.get('type'), list):
         param = RepeatParamNode(param=paramInfo)
-        if param.min() > 0:
+        param_min = param.min()
+        if param_min is not None and param_min > 0:
             param.addRepeat()
     else:
         param = SingleParamNode(param=paramInfo)
