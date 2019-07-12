@@ -38,6 +38,7 @@ from taurus.qt.qtgui.base import TaurusBaseWidget
 from taurus.qt.qtgui import resource
 
 from sardana.taurus.qt.qtcore.tango.sardana.model import SardanaBaseProxyModel, SardanaTypeTreeItem
+from sardana.sardanadefs import ElementType, TYPE_ACQUIRABLE_ELEMENTS
 from taurus.qt.qtgui.util.ui import UILoadable
 
 # Using a plain model and filtering and checking 'Acquirable' in item.itemData().interfaces is more elegant, but things don't get properly sorted...
@@ -87,7 +88,6 @@ class SardanaAcquirableProxyModel(SardanaBaseProxyModel):
     #                     'TwoDExpChannel', 'ComChannel', 'IORegister', 'PseudoMotor',
     #                     'PseudoCounter']
 
-    from sardana.sardanadefs import ElementType, TYPE_ACQUIRABLE_ELEMENTS
     ALLOWED_TYPES = [ElementType[t] for t in TYPE_ACQUIRABLE_ELEMENTS]
 
     def filterAcceptsRow(self, sourceRow, sourceParent):
