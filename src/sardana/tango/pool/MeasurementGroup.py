@@ -161,14 +161,14 @@ class MeasurementGroup(PoolGroupDevice):
         for group in synchronization:
             for param, conf in group.items():
                 group.pop(param)
-                param = SynchParam.fromStr(param)
+                param = SynchParam(int(param))
                 group[param] = conf
                 # skip repeats cause its value is just a long number
                 if param == SynchParam.Repeats:
                     continue
                 for domain, value in conf.items():
                     conf.pop(domain)
-                    domain = SynchDomain.fromStr(domain)
+                    domain = SynchDomain(int(domain))
                     conf[domain] = value
         return synchronization
 
