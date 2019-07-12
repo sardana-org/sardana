@@ -46,6 +46,6 @@ class MacroTest(BaseMacroServerTestCase, RunMacroTestCase, unittest.TestCase):
         RunMacroTestCase.setUp(self)
 
     def tearDown(self):
-        BaseMacroServerTestCase.tearDown(self)
         RunMacroTestCase.tearDown(self)
+        BaseMacroServerTestCase.tearDown(self)
         unittest.TestCase.tearDown(self)

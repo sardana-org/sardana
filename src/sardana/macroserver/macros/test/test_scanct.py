@@ -160,9 +160,9 @@ class ScanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
             self.assertEqual(state, desired_state, msg)
 
     def tearDown(self):
+        RunStopMacroTestCase.tearDown(self)
         BaseMacroServerTestCase.tearDown(self)
         MeasSarTestTestCase.tearDown(self)
-        RunStopMacroTestCase.tearDown(self)
 
 
 mg_config1 = {
