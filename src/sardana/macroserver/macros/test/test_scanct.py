@@ -249,7 +249,7 @@ class AscanctTest(ScanctTest, unittest.TestCase):
         unittest.TestCase.setUp(self)
         ScanctTest.setUp(self)
 
-    def macro_runs(self, meas_config, macro_params, wait_timeout=float("inf")):
+    def macro_runs(self, meas_config, macro_params, wait_timeout=None):
         motors = [macro_params[0]]
         ScanctTest.configure_motors(self, motors)
         ScanctTest.configure_mntgrp(self, meas_config)
@@ -263,7 +263,7 @@ class AscanctTest(ScanctTest, unittest.TestCase):
         ScanctTest.check_using_output(self, expected_nb_points)
         ScanctTest.check_using_data(self, expected_nb_points)
 
-    def macro_stops(self, meas_config, macro_params, wait_timeout=float("inf"),
+    def macro_stops(self, meas_config, macro_params, wait_timeout=None,
                     stop_delay=0.1):
         motors = [macro_params[0]]
         ScanctTest.configure_motors(self, motors)
@@ -303,7 +303,7 @@ class A2scanctTest(ScanctTest, unittest.TestCase):
         unittest.TestCase.setUp(self)
         ScanctTest.setUp(self)
 
-    def macro_runs(self, meas_config, macro_params, wait_timeout=float("inf")):
+    def macro_runs(self, meas_config, macro_params, wait_timeout=None):
         motors = [macro_params[self.MOT1], macro_params[self.MOT2]]
         ScanctTest.configure_motors(self, motors)
         ScanctTest.configure_mntgrp(self, meas_config)
@@ -317,7 +317,7 @@ class A2scanctTest(ScanctTest, unittest.TestCase):
         ScanctTest.check_using_output(self, expected_nb_points)
         ScanctTest.check_using_data(self, expected_nb_points)
 
-    def macro_stops(self, meas_config, macro_params, wait_timeout=float("inf"),
+    def macro_stops(self, meas_config, macro_params, wait_timeout=None,
                     stop_delay=0.1):
         motors = [macro_params[self.MOT1], macro_params[self.MOT2]]
         ScanctTest.configure_motors(self, motors)
@@ -359,7 +359,7 @@ class MeshctTest(ScanctTest, unittest.TestCase):
         unittest.TestCase.setUp(self)
         ScanctTest.setUp(self)
 
-    def macro_runs(self, meas_config, macro_params, wait_timeout=float("inf")):
+    def macro_runs(self, meas_config, macro_params, wait_timeout=None):
         motors = [macro_params[self.MOT1], macro_params[self.MOT2]]
         ScanctTest.configure_motors(self, motors)
         ScanctTest.configure_mntgrp(self, meas_config)
@@ -373,7 +373,7 @@ class MeshctTest(ScanctTest, unittest.TestCase):
         ScanctTest.check_using_output(self, expected_nb_points)
         ScanctTest.check_using_data(self, expected_nb_points)
 
-    def macro_stops(self, meas_config, macro_params, wait_timeout=float("inf"),
+    def macro_stops(self, meas_config, macro_params, wait_timeout=None,
                     stop_delay=0.1):
         motors = [macro_params[self.MOT1], macro_params[self.MOT2]]
         ScanctTest.configure_motors(self, motors)
