@@ -1699,6 +1699,9 @@ class MeasurementGroup(PoolElement):
     def setConfiguration(self, configuration):
         codec = CodecFactory().getCodec('json')
         f, data = codec.encode(('', configuration))
+        # workaround until it is clarified if the JSONCodec correctly encodes
+        # to utf-8 (taurus-org/taurus#945)
+        data = data.decode("utf-8")
         self.write_attribute('configuration', data)
 
     def _setConfiguration(self, data):
@@ -1828,6 +1831,9 @@ class MeasurementGroup(PoolElement):
     def setSynchronization(self, synchronization):
         codec = CodecFactory().getCodec('json')
         _, data = codec.encode(('', synchronization))
+        # workaround until it is clarified if the JSONCodec correctly encodes
+        # to utf-8 (taurus-org/taurus#945)
+        data = data.decode("utf-8")
         self.getSynchronizationObj().write(data)
         self._last_integ_time = None
 
