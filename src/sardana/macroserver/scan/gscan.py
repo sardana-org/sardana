@@ -1004,10 +1004,13 @@ class GScan(Logger):
             endstatus = ScanEndStatus.Normal
         except StopException:
             endstatus = ScanEndStatus.Stop
+            raise
         except AbortException:
             endstatus = ScanEndStatus.Abort
+            raise
         except Exception:
             endstatus = ScanEndStatus.Exception
+            raise
         finally:
             self._env["endstatus"] = endstatus
             self.end()
@@ -1016,8 +1019,6 @@ class GScan(Logger):
                 if hasattr(macro, 'getHooks'):
                     for hook in macro.getHooks('post-scan'):
                         hook()
-            else:
-                raise
 
     def scan_loop(self):
         raise NotImplementedError('Scan method cannot be called by '
