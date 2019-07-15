@@ -151,8 +151,9 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
         if not self.kernel_manager.has_kernel:
             self.kernel_manager.start_kernel(
                 extra_arguments=self._extra_arguments())
-            self.kernel_client = self.kernel_manager.client()
-            self.kernel_client.start_channels()
+            kernel_client = self.kernel_manager.client()
+            kernel_client.start_channels()
+            self.kernel_client = kernel_client
 
     def _extra_arguments(self):
         extra_arguments = ["--profile", self._profile]
