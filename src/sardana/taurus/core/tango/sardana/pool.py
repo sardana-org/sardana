@@ -1677,10 +1677,12 @@ class MeasurementGroup(PoolElement):
         self.__cfg_attr.addListener(self.on_configuration_changed)
 
         self._value_buffer_cb = None
+        self._value_buffer_channels = None
         codec_name = getattr(sardanacustomsettings, "VALUE_BUFFER_CODEC")
         self._value_buffer_codec = CodecFactory().getCodec(codec_name)
 
         self._value_ref_buffer_cb = None
+        self._value_ref_buffer_channels = None
         codec_name = getattr(sardanacustomsettings, "VALUE_REF_BUFFER_CODEC")
         self._value_ref_buffer_codec = CodecFactory().getCodec(codec_name)
 
@@ -1892,6 +1894,7 @@ class MeasurementGroup(PoolElement):
             channel's callback
         :type cb: callable
         """
+        self._value_buffer_channels = []
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
             value_ref_enabled = channel_info.get("value_ref_enabled", False)
@@ -1906,6 +1909,7 @@ class MeasurementGroup(PoolElement):
             else:
                 value_buffer_obj.subscribeEvent(channel.valueBufferChanged,
                                                 with_first_event=False)
+            self._value_buffer_channels.append(channel)
 
     def unsubscribeValueBuffer(self, cb=None):
         """Unsubscribe from channels' value buffer events. If no callback is
@@ -1928,6 +1932,7 @@ class MeasurementGroup(PoolElement):
                 self._value_buffer_cb = None
             else:
                 value_buffer_obj.unsubscribeEvent(channel.valueBufferChanged)
+        self._value_buffer_channels = None
 
     def valueRefBufferChanged(self, channel, value_ref_buffer):
         """Receive value ref buffer updates, pre-process them, and call
@@ -1954,6 +1959,7 @@ class MeasurementGroup(PoolElement):
             channel's callback
         :type cb: callable
         """
+        self._value_ref_buffer_channels = []
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
             value_ref_enabled = channel_info.get("value_ref_enabled", False)
@@ -1970,6 +1976,7 @@ class MeasurementGroup(PoolElement):
             else:
                 value_ref_buffer_obj.subscribeEvent(
                     channel.valueRefBufferChanged, with_first_event=False)
+            self._value_ref_buffer_channels.append(channel)
 
     def unsubscribeValueRefBuffer(self, cb=None):
         """Unsubscribe from channels' value ref buffer events. If no
@@ -1995,6 +2002,7 @@ class MeasurementGroup(PoolElement):
             else:
                 value_ref_buffer_obj.unsubscribeEvent(
                     channel.valueRefBufferChanged)
+        self._value_ref_buffer_channels = None
 
     def enableChannels(self, channels):
         '''Enable acquisition of the indicated channels.
