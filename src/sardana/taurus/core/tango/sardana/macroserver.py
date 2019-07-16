@@ -566,7 +566,9 @@ class BaseDoor(MacroServerDevice):
 
     def _runMacro(self, xml, synch=False):
         if not synch:
-            return self.command_inout("RunMacro", [etree.tostring(xml)])
+            return self.command_inout("RunMacro",
+                                      [etree.tostring(xml,
+                                                      encoding='unicode')])
         timeout = self.InteractiveTimeout
         evt_wait = self._getEventWait()
         evt_wait.connect(self.getAttribute("state"))
@@ -579,7 +581,9 @@ class BaseDoor(MacroServerDevice):
             # the time stamp resolution is not better than 1 ms.
             evt_wait.clearEventSet()
             ts = time.time()
-            result = self.command_inout("RunMacro", [etree.tostring(xml)])
+            result = self.command_inout("RunMacro",
+                                        [etree.tostring(xml,
+                                                        encoding='unicode')])
             evt_wait.waitEvent(self.Running, after=ts, timeout=timeout)
             if synch:
                 evt_wait.waitEvent(self.Running, equal=False, after=ts,

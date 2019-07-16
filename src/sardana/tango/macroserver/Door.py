@@ -407,7 +407,8 @@ class Door(SardanaDevice):
             return []
 
         xml_seq = self.door.run_macro(par_str_list, asynch=True)
-        return [etree.tostring(xml_seq, pretty_print=False)]
+        return [etree.tostring(xml_seq, encoding='unicode',
+                               pretty_print=False)]
 
     def is_RunMacro_allowed(self):
         return self.get_state() in [Macro.Finished, Macro.Abort,

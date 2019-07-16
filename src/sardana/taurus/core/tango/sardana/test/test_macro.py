@@ -100,8 +100,9 @@ class MacroNodeTestCase(unittest.TestCase):
         :param macronode_xml: macronode lxml.etree
         :param expected_xml:  expected lxml.etree
         '''
-        expected_str = etree.tostring(expected_xml)
-        macronode_str = etree.tostring(macronode_xml, pretty_print=True)
+        expected_str = etree.tostring(expected_xml, encoding='unicode')
+        macronode_str = etree.tostring(macronode_xml, encoding='unicode',
+                                       pretty_print=True)
         msg = "XML encodings are not equal"
         # TODO: check why macronode_str has an extra whitespace charactger
         # at the end. strips should not be necessary

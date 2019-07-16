@@ -239,7 +239,8 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
     def toXmlString(self, pretty=False, withId=True):
         xmlSequence = self.root().toXml(withId=withId)
         xmlTree = etree.ElementTree(xmlSequence)
-        xmlString = etree.tostring(xmlTree, pretty_print=pretty)
+        xmlString = etree.tostring(xmlTree, encoding='unicode',
+                                   pretty_print=pretty)
         return xmlString
 
     def fromXmlString(self, xmlString):
