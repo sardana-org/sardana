@@ -1,4 +1,4 @@
-    Title: Plugins (controllers, macros, etc.) register
+    Title: Plugins (controllers, macros, etc.) catalogue
     SEP: 16
     State: DRAFT
     Reason:
@@ -59,24 +59,96 @@ Design
 * Sardana organization will no more manage the plugins repositories.
   These will be managed directly by their developers.
 * Sardana organization will advice on how to organize the plugin projects.
-* Sardana organization will maintain a register of the third party plugins.
+* Sardana organization will maintain a catalogue of the third party plugins.
 
-### Register
+### Old third-party repositories
+
+The old third-party repositories([controllers](https://sourceforge.net/p/sardana/controllers.git/ci/master/tree/)
+and [macros](https://sourceforge.net/p/sardana/macros.git/ci/master/tree/))
+will stay opened until we move the actively maintained plugins. This process
+may continue after this SEP gets ACCEPTED.
+
+### Advices on how to organize plugins projects
+
+This SEP leaves to the plugin developer the decision on how to organize the 
+project. However based on years of experience of developing Sardana plugins
+we have observed some common patterns and questions that emerge to the 
+developer on how to organize the project. The Community will maintain a 
+document with a set of advices, analysis of possible scenarios and lessons 
+learnt on how to organize plugins projects but won't give neither clear
+answers nor rules. This document is out of the scope of this SEP is
+we anticipate it to evolve in the future and be very dynamic.
+
+### Catalogue
 
 A new repository, called sardana-plugins, will be added to the sardana-org
 GitHub organization. This repository will not contain any of the plugins
-itself but will serve as a register of all the plugins. The only role of this
-register will be to list all the plugins together with the information
+itself but will serve as a catalogue of all the plugins. The only role of this
+catalogue will be to list all the plugins together with the information
 on where to find more information about them e.g. links to the project pages
 or artifacts. Github searches over this repository will be useful when looking
 for a plugin.
 
-**Option 1**
+The catalogue will group plugins in categories. The categories may change in
+ the future and new categories may be added. Also plugins may change between
+ categories in order to facilitate the users the process of finding them.
+
+Initially the following categories will be created:
+
+* Hardware - lists plugins for specific hardware like, motor controllers,
+  counting cards, etc. Example: IcePAP, Pmac, NI6602.
+* Instrument - lists plugins for a specific instrument like, tables,
+  monochromators, attenuators. Example: three-legged table, DCM.
+* System - lists plugins for the complete systems e.g. beamlines, laboratories.
+* Software/Interfaces - lists plugins for interacting with other control 
+systems, frameworks  e.g. Lima, Tango, Taurus.
+* Other - lists plugins that does not meet any other criteria.
+
+See Appendix 1 for alternative options that were evaluated.
+
+The sardana-plugins repository will be managed exactly the same 
+as the sardana repository (administrators, push permissions, etc.). In order
+to add a new plugin to the catalogue, one would need to open a PR with the 
+necessary changes in the catalogue. Anyone interested in receiving updates
+on new plugins in the catalogue will just need to subscribe to this GitHub 
+repository.
+
+Implementation
+--------------
+
+### Old third-party repositories
+
+* Whenever a plugin module is moved away from the old repository it is 
+necessary to delete this module from the old location.
+* A README file gets added to the old repository with information about this
+SEP and location of the plugins catalogue.
+
+### Advices on how to organize plugins projects
+
+Currently the advices on how to organize plugins projects are written in
+this [wiki page](https://github.com/sardana-org/sardana/wiki/How-to-organize-your-plugin-project).
+This location may change in the future without affecting this SEP
+
+### Catalogue
+
+1. Implement sardana-plugins catalogue using the markdown format with one file
+   per category. The plugin projects are listed alphabetically within the 
+   category. This format and organization of files may change in the future 
+   not affecting this SEP.
+2. Start accepting PR to the sardana-plugins catalogue whenever this SEP gets
+   into the CANDIDATE state.
+
+Appendix 1
+----------
+**Alternative Option 1**
+
+(This option was discarded when discussing the SEP but is kept here for 
+reference)
 
 This is a conservative option. It simply reflects the organization of
 the current repositories and adds two more categories: Recorders and GUIs.
 
-Register will be divided in the following categories:
+Catalogue will be divided in the following categories:
 * Motor controllers
 * Pseudomotor controllers
 * Counter/timer controllers
@@ -90,49 +162,25 @@ Register will be divided in the following categories:
 * Recorders
 * GUIs
 
-**Option 2**
+**Alternative Option 2**
 
-This option is more revolutionary. Register will be divided into the following
-categories:
-* Hardware - lists plugins for specific hardware like, motor controllers,
-  counting cards, etc. Example: IcePAP, Pmac, NI6602.
-* Instrument - lists plugins for a specific instrument like, tables,
-  monochromators, attenuators. Example: three-legged table, DCM.
-* System - lists plugins for the complete systems e.g. beamlines, laboratories.
-* Software - lists plugins for interacting with other control systems,
-  frameworks  e.g. Lima, Tango, Taurus.
-* Other - lists plugins that does not meet any other criteria.
+(This option was discarded when discussing the SEP but is kept here for 
+reference)
 
-**Option 3**
+Mix of selected categories and alternative option 1. The catalogue 
+will have all the categories from the alternative option 1
+and the System category from the selected categories. The extra System 
+category is because maintaining an up-to-date catalogue of plugins from a 
+system like a beamline is not realistic.
 
-Mix of options 1 and 2. The register will have all the categories from option 1
-and the System category from option 2. This is because maintaining an
-up-to-date register of plugins from a system like a beamline is not realistic.
 
-This sardana-plugins repository will be managed exactly the same as the sardana
-repository (administrators, push permissions, etc.). In order to add a new
-plugin to the register, one would need to open a PR.
 
-Implementation
---------------
+Changes
+-------
 
-1. Implement sardana-plugins register: use the markdown format with one file
-   per category.
-2. Start accepting PR to the sardana-plugins register whenever this SEP gets
-   into the CANDIDATE state.
-3. Remove write permissions to the current third-party repositories
-   in SourceForge with the Jul18 release.
+- 2017-04-03 [reszelaz](https://github.com/reszelaz) Create SEP16 draft
+- 2019-07-16 [reszelaz](https://github.com/reszelaz) Rename register to 
+catalogue
+- 2019-07-16 [reszelaz](https://github.com/reszelaz) Move to CANDIDATE after
+meeting the DESY, MAXIV and SOLARIS.
 
-Advices on how to manage plugins projects
----------------------------------------------------
-
-(Since I anticipate this section to evolve over time it will not be part of
-this SEP but will be added to the documentation)
-
-1. Description of the plugins e.g. the purpose, dependencies, installation
-   instructions must be documented e.g. README file, project’s wiki pages
-   or documentation.
-2. Related controllers, macros, recorders and GUIs should coexist in the same
-   repository e.g. IcePAP controller (motor and trigger/gate) and IcePAP
-   macros. In this case a top level directories in the repository
-   e.g. controllers and macros could be useful to group them.
