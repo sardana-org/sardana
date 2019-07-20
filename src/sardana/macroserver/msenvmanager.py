@@ -118,8 +118,7 @@ class EnvironmentManager(MacroServerManager):
                 self.debug("Details:", exc_info=1)
                 raise ose
         try:
-            self._env = shelve.open(f_name, flag='c', protocol=0,
-                                    writeback=False)
+            self._env = shelve.open(f_name, flag='c', writeback=False)
         except:
             self.error("Failed to create/access environment in %s", f_name)
             self.debug("Details:", exc_info=1)
