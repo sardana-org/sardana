@@ -35,9 +35,9 @@ import sys
 
 __requires__ = {
     #     module        minimum
-    "Python": (2, 6, 0),
-    "PyTango": (7, 2, 3),
-    "taurus.core": (3, 10),
+    "Python": (3, 5, 0),
+    "PyTango": (9, 2, 5),
+    "taurus.core": (4, 5),
 }
 
 
