@@ -60,7 +60,7 @@ requires = [
 install_requires = [
     'PyTango>=9.2.5',
     'itango>=0.1.6',
-    'taurus>=4.5,'
+    'taurus>=4.5',
     'lxml>=2.3'
 ]
 
