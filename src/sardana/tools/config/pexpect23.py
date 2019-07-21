@@ -846,7 +846,7 @@ class spawn (object):
         if self.child_fd in r:
             try:
                 s = os.read(self.child_fd, size)
-            except OSError as e:  # Linux does this
+            except OSError:  # Linux does this
                 self.flag_eof = True
                 raise EOF(
                     'End Of File (EOF) in read_nonblocking(). '
@@ -1083,7 +1083,7 @@ class spawn (object):
                 else:
                     return False
             return False
-        except OSError as e:
+        except OSError:
             # I think there are kernel timing issues that sometimes cause
             # this to happen. I think isalive() reports True, but the
             # process is dead to the kernel.

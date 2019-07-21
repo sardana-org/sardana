@@ -1539,9 +1539,10 @@ class MGConfiguration(object):
     def getChannelInfo(self, channel_name):
         try:
             return self.tango_channels_info[channel_name]
-        except:
+        except Exception:
             channel_name = channel_name.lower()
-            for d_name, a_name, ch_info in list(self.tango_channels_info.values()):
+            for d_name, a_name, ch_info in \
+                    list(self.tango_channels_info.values()):
                 if ch_info.name.lower() == channel_name:
                     return d_name, a_name, ch_info
 
@@ -1673,7 +1674,7 @@ class MGConfiguration(object):
                     else:
                         value = data_item.value
                     ret[channel_data['full_name']] = value
-            except:
+            except Exception:
                 for _, channel_data in list(attrs.items()):
                     ret[channel_data['full_name']] = None
         return ret

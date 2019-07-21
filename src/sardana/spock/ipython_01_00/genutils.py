@@ -866,7 +866,7 @@ def check_for_upgrade(ipy_profile_dir):
           'spock %s.\n'
           'Your current spock door extension version is %s, therefore a '
           'profile upgrade is needed.\n'
-           % (spock_profile_ver_str, spock_lib_ver_str))
+          % (spock_profile_ver_str, spock_lib_ver_str))
     prompt = ('Do you wish to upgrade now (warn: this will shutdown the '
               'current spock session) ([y]/n)? ')
     r = input(prompt) or 'y'
