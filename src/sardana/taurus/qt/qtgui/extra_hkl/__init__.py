@@ -27,6 +27,6 @@
 __init__.py:
 """
 
-from .hklscan import HKLScan
-from .ubmatrix import UBMatrixBase
-from .diffractometeralignment import DiffractometerAlignment
+from .hklscan import HKLScan  # noqa
+from .ubmatrix import UBMatrixBase  # noqa
+from .diffractometeralignment import DiffractometerAlignment  # noqa

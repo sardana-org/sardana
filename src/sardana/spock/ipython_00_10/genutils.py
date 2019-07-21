@@ -373,7 +373,8 @@ def get_device_from_user(expected_class, dft=None):
         cl_name = db.get_class_for_device(name)
         class_correct = cl_name == expected_class
         if not class_correct:
-            print("Warning: the given name is not a %s (it is a %s)" % (expected_class, cl_name))
+            print("Warning: the given name is not a %s (it is a %s)" %
+                  (expected_class, cl_name))
     except Exception as e:
         print("Warning: unable to confirm if '%s' is valid" % name)
         print(str(e))
@@ -817,20 +818,24 @@ def check_for_upgrade(ipy_profile_file, ipythondir, session, profile):
        alpha_in_spock_profile == alpha_in_spock_lib:
         return
     if spocklib_ver < spock_profile_ver:
-        print('%sYour spock profile (%s) is newer than your spock version ' \
-              '(%s)!' % (TermColors.Brown, spock_profile_ver_str, spock_lib_ver_str))
-        print('Please upgrade spock or delete the current profile %s' % TermColors.Normal)
+        print('%sYour spock profile (%s) is newer than your spock version '
+              '(%s)!' % (TermColors.Brown, spock_profile_ver_str,
+                         spock_lib_ver_str))
+        print('Please upgrade spock or delete the current profile %s' %
+              TermColors.Normal)
         sys.exit(1)
 
     # there was no version track of spock profiles since spock 0.2.0 so change
     # the message
     if spock_profile_ver_str == '0.0.0':
         spock_profile_ver_str = '<= 0.2.0'
-    msg = 'Your current spock door extension profile has been created with spock %s.\n' \
-          'Your current spock door extension version is %s, therefore a profile upgrade is needed.\n' \
-          % (spock_profile_ver_str, spock_lib_ver_str)
-    print(msg)
-    prompt = 'Do you wish to upgrade now (warn: this will shutdown the current spock session) ([y]/n)? '
+    print('Your current spock door extension profile has been created with '
+          'spock %s.\n'
+          'Your current spock door extension version is %s, therefore a '
+          'profile upgrade is needed.\n'
+          % (spock_profile_ver_str, spock_lib_ver_str))
+    prompt = ('Do you wish to upgrade now (warn: this will shutdown the '
+              'current spock session) ([y]/n)? ')
     r = input(prompt) or 'y'
     if r.lower() == 'y':
         create_spock_profile(ipythondir, session, profile, door_name)

@@ -1047,7 +1047,8 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
         if channel is None:
             shown = [n for n, d in getChannelConfigs(dataSource)]
             avail_channels = qmodel.getAvailableChannels()
-            clist = [ch_info['name'] for ch_name, ch_info in list(avail_channels.items())
+            clist = [ch_info['name'] for ch_name, ch_info
+                     in list(avail_channels.items())
                      if ch_name not in shown]
             clist = sorted(clist) + ['(Other...)']
             chname, ok = Qt.QInputDialog.getItem(

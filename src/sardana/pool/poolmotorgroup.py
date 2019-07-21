@@ -112,7 +112,8 @@ class Position(SardanaAttribute):
         if not cache:
             dial_position_values = self.obj.motion.read_dial_position(
                 serial=True)
-            for motion_obj, position_value in list(dial_position_values.items()):
+            for motion_obj, position_value in \
+                    list(dial_position_values.items()):
                 motion_obj.put_dial_position(
                     position_value, propagate=propagate)
 

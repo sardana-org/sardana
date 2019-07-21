@@ -79,7 +79,8 @@ except:
         print("[WARNING]: pexpect module not found. Using local pexpect 2.3")
     except Exception as e:
         print(e)
-        print("The Sardana requires pexpect python module which was not found.")
+        print("The Sardana requires pexpect python module which was"
+              "not found.")
         print("This module can be found at http://www.noah.org/wiki/Pexpect")
         sys.exit(2)
 
@@ -94,7 +95,8 @@ class Process:
     MaxStartupTime = 30
     MaxShutdownTime = 30
 
-    def __init__(self, executable, args, name="Process", instance=None, logfile=None, env=None):
+    def __init__(self, executable, args, name="Process", instance=None,
+                 logfile=None, env=None):
         self._start_time = -1
         self._stop_time = -1
         self._process = None
@@ -202,7 +204,8 @@ class PEProcess(Process):
 
             try:
                 res = self.terminate()
-                idx = self._process.expect(['Exiting', 'Exited', pexpect.EOF, pexpect.TIMEOUT],
+                idx = self._process.expect(['Exiting', 'Exited',
+                                            pexpect.EOF, pexpect.TIMEOUT],
                                            timeout=max_shutdown_time)
             except Exception as e:
                 self.on("[FAILED]")
@@ -222,7 +225,8 @@ class PEProcess(Process):
                 return
 
             try:
-                idx = self._process.expect(['Exited', pexpect.EOF, pexpect.TIMEOUT],
+                idx = self._process.expect(['Exited', pexpect.EOF,
+                                            pexpect.TIMEOUT],
                                            timeout=5)
             except Exception as e:
                 self.on("[FAILED]")
@@ -253,7 +257,7 @@ class PEProcess(Process):
                 self.o(" (shutdown time exceeded). Forcing... ")
                 self.kill()
 
-        except KeyboardInterrupt as ki:
+        except KeyboardInterrupt:
             self.o("(Ctrl-C during stop). Forcing... ")
             self.kill()
 
@@ -315,7 +319,7 @@ class PESimuMotorProcess(PEPythonDeviceServerProcess):
             f, path, desc = imp.find_module('SimuMotor')
             if f:
                 f.close()
-        except exceptions.ImportError as e:
+        except exceptions.ImportError:
             msg = "Could not find %s executable.\n" \
                   "Make sure PYTHONPATH points to the directory(ies) where " \
                   "SimuMotorCtrl.py and SimuMotor.py files are installed" % name
@@ -336,7 +340,7 @@ class PESimuCounterTimerProcess(PEPythonDeviceServerProcess):
             f, fname, desc = imp.find_module('SimuCoTiCtrl')
             if f:
                 f.close()
-        except exceptions.ImportError as e:
+        except exceptions.ImportError:
             msg = "Could not find %s executable.\n" \
                   "Make sure PYTHONPATH points to the directory(ies) where " \
                   "SimuCoTiCtrl.py file is installed" % name
@@ -357,7 +361,7 @@ class PEPySignalSimulatorProcess(PEPythonDeviceServerProcess):
             f, fname, desc = imp.find_module('PySignalSimulator')
             if f:
                 f.close()
-        except exceptions.ImportError as e:
+        except exceptions.ImportError:
             msg = "Could not find %s executable.\n" \
                   "Make sure PYTHONPATH points to the directory where " \
                   "PySignalSimulator.py is installed" % name
@@ -448,30 +452,37 @@ class TangoServer:
         import socket
         server_host_ip = socket.gethostbyname_ex(server_host)[2][0]
         pytango_host_ip = socket.gethostbyname_ex(pytango_host)[2][0]
-        if (server_host_ip != pytango_host_ip) or (server_port != pytango_port):
-            print('\t!!! WARNING !!! %s TANGO_HOST is not the PyTango default. You may erase the WRONG sardana definition.' % self._complete_name)
-            print('\tServer: %s  PyTango: %s' % (server_tango_host, pytango_tango_host))
+        if (server_host_ip != pytango_host_ip) \
+                or (server_port != pytango_port):
+            print('\t!!! WARNING !!! %s TANGO_HOST is not the PyTango '
+                  'default. You may erase the WRONG sardana definition.' %
+                  self._complete_name)
+            print('\tServer: %s  PyTango: %s' %
+                  (server_tango_host, pytango_tango_host))
             ans = input('\tDo you _really_ want to continue? [y|N] ')
             if ans.lower() not in ['y', 'yes']:
                 raise Exception(
-                    'User cancelled the creation of %s server' % self._complete_name)
-        #######################################################################
+                    'User cancelled the creation of %s server' %
+                    self._complete_name)
+        ######################################################################
 
-        #######################################################################
-        # Before erasing the content in the database, we will also  create a backup
-        # of all the tango devices's properties and memorized attributes "a-la jive".
-        # There's an script called jive-save-config that given the parameters
-        # <server_name> and <file_name> it saves the config into the specified file the
-        # same way you can right-click an instance within jive and select the
-        # option 'Save server data'.
+        ######################################################################
+        # Before erasing the content in the database, we will also  create a
+        # backup of all the tango devices's properties and memorized
+        # attributes "a-la jive". There's an script called jive-save-config
+        # that given the parameters <server_name> and <file_name> it saves
+        # the config into the specified file the same way you can
+        # right-click an instance within jive and select the option 'Save
+        # server data'.
         try:
             config_file_name = self._klass_name + '-' + self._inst_name + \
                 '-' + time.strftime('%Y%m%d_%H%M%S') + '.jive'
             cmd = 'TANGO_HOST=%s jive-save-config %s %s &>/dev/null' % (
                 server_tango_host, self._complete_name, config_file_name)
             os.system(cmd)
-            print('There is a backup of the deleted server config in: %s' % config_file_name)
-        except:
+            print('There is a backup of the deleted server config in: %s' %
+                  config_file_name)
+        except Exception:
             pass
         #######################################################################
 
@@ -691,7 +702,9 @@ class DevicePoolServer(TangoServer):
                     try:
                         dev.write_attribute(name, v)
                     except Exception as ex:
-                        print('SOME PROBLEMS SETTING ATTRIBUTE VALUE FOR DEVICE', dev_name, 'ATTRIBUTE', tango_attr.name, 'VALUE', str(v))
+                        print('SOME PROBLEMS SETTING ATTRIBUTE VALUE FOR '
+                              'DEVICE', dev_name, 'ATTRIBUTE',
+                              tango_attr.name, 'VALUE', str(v))
                         print('EXCEPTION:', ex)
 
                 c_node = attr.find("Configuration")
@@ -739,7 +752,7 @@ class DevicePoolServer(TangoServer):
                                 attr_info.events.ch_event.rel_change = rel
 
                     p_node = attr.find("Polling")
-                    if not p_node is None:
+                    if p_node is not None:
                         polled = p_node.get("polled") or 'False'
                         polled = not (polled.lower() in (
                             'false', 'no', 'n', '0'))
@@ -753,7 +766,8 @@ class DevicePoolServer(TangoServer):
                     try:
                         dev.set_attribute_config(attr_info)
                     except Exception as e:
-                        print('COULD NOT SET THE FOLLOWING CONFIG FOR DEVICE', dev_name, 'ATTR', tango_attr.name)
+                        print('COULD NOT SET THE FOLLOWING CONFIG FOR DEVICE',
+                              dev_name, 'ATTR', tango_attr.name)
                         print('ATTRIBUTE INFO:', attr_info)
                         print('EXCEPTION:', e)
 
@@ -765,7 +779,8 @@ class DevicePoolServer(TangoServer):
                     value = value.strip()
                     dev.write_attribute('Instrument', value)
                 except Exception as ex:
-                    print('SOME PROBLEMS SETTING INSTRUMENT VALUE FOR DEVICE', dev_name, 'VALUE', value)
+                    print('SOME PROBLEMS SETTING INSTRUMENT VALUE FOR DEVICE',
+                          dev_name, 'VALUE', value)
                     print('EXCEPTION:', ex)
 
     def loadPool(self):
@@ -1552,11 +1567,13 @@ class Sardana:
                                 simu0DCtrl, "Property")
                             pSimAttributes.set("name", "DynamicAttributes")
                             pSimAttributes.set("type", "DevVarStringArray")
-                            simAttrTempl = "zerod%03d=float(100.0+10.0*random())"
+                            simAttrTempl = \
+                                "zerod%03d=float(100.0+10.0*random())"
                             for i in range(len(zerods)):
                                 pSimAttributeItem = etree.SubElement(
                                     pSimAttributes, "Item")
-                                pSimAttributeItem.text = simAttrTempl % (i + 1)
+                                pSimAttributeItem.text = \
+                                    simAttrTempl % (i + 1)
 
                     # change the pool XML nodes to refer to simulator lib
                     # instead of real lib
@@ -1601,19 +1618,22 @@ class Sardana:
                             sarName, pySigSimNb)
                         simu1DCtrl.set("deviceName", simu1DCtrlName)
 
-                        onedds = ctrl.findall("OneDExpChannel")
+                        oneds = ctrl.findall("OneDExpChannel")
 
-                        if len(onedds) > 0:
+                        if len(oneds) > 0:
                             pSimAttributes = etree.SubElement(
                                 simu1DCtrl, "Property")
                             pSimAttributes.set("name", "DynamicAttributes")
                             pSimAttributes.set("type", "DevVarStringArray")
 
-                            simAttrTempl = "oned%03d=DevVarLongArray([10*sin(0.01*x) for x in xrange(100)])"
+                            simAttrTempl = \
+                                ("oned%03d=DevVarLongArray([10*sin(0.01*x) "
+                                 "for x in xrange(100)])")
                             for i in range(len(oneds)):
                                 pSimAttributeItem = etree.SubElement(
                                     pSimAttributes, "Item")
-                                pSimAttributeItem.text = simAttrTempl % (i + 1)
+                                pSimAttributeItem.text =\
+                                    simAttrTempl % (i + 1)
 
                     # change the pool XML nodes to refer to simulator lib
                     # instead of real lib
@@ -1881,7 +1901,8 @@ if __name__ == "__main__":
         import to_sar
         sar_doc = to_sar.transform(filename)
     except Exception as e:
-        print('Sorry, but some problems found when trying to convert to SARDANA xml:')
+        print('Sorry, but some problems found when trying to convert to '
+              'SARDANA xml:')
         print(str(e))
 
     sardana = Sardana(sar_doc, simulation=simulation,
@@ -1896,9 +1917,9 @@ if __name__ == "__main__":
         sardana.setUp()
         print("Ready!")
         sardana.run()
-    except KeyboardInterrupt as e:
+    except KeyboardInterrupt:
         print("User pressed Ctrl+C...")
-    except Exception as e:
+    except Exception:
         traceback.print_exc()
 
     print("Shutting down!")

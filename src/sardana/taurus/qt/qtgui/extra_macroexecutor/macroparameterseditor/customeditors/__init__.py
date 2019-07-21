@@ -23,4 +23,4 @@
 ##
 ##############################################################################
 
-from .senv import SenvEditor
+from .senv import SenvEditor  # noqa

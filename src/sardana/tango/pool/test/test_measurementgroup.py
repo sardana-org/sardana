@@ -263,7 +263,8 @@ class MeasSarTestTestCase(SarTestTestCase):
             # Delete the meas
             self.pool.DeleteElement(self.mg_name)
         except Exception as e:
-            print(('Impossible to delete MeasurementGroup: %s' % (self.mg_name)))
+            print('Impossible to delete MeasurementGroup: %s' %
+                  self.mg_name)
             print(e)
         SarTestTestCase.tearDown(self)
 

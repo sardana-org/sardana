@@ -622,7 +622,8 @@ class Pool(PyTango.Device_4Impl, Logger):
         # them to the newly created element
         ctrl_class_info = ctrl.get_ctrl_info()
         attrs = []
-        for attr_name, attr_info in list(ctrl_class_info.getAxisAttributes().items()):
+        for attr_name, attr_info in \
+                list(ctrl_class_info.getAxisAttributes().items()):
             default_value = attr_info.default_value
             if default_value is None:
                 continue

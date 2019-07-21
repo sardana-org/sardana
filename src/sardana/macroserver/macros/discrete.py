@@ -65,7 +65,9 @@ class DiscretePseudoMotorConfiguration(dict):
             else:
                 point['set'] = float(setpos)
             # If point exists, we use current min, max values
-            if label in list(self.keys()) and math.isinf(dmin) and math.isinf(dmax):
+            if (label in list(self.keys())
+                    and math.isinf(dmin)
+                    and math.isinf(dmax)):
                 p = self[label]
                 min_pos = point['set'] + p['set'] - p['min']
                 max_pos = point['set'] + p['set'] - p['max']

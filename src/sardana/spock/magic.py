@@ -42,7 +42,7 @@ def expconf(self, parameter_s=''):
     try:
         from sardana.taurus.qt.qtgui.extra_sardana import ExpDescriptionEditor
     except:
-        print("Error importing ExpDescriptionEditor " \
+        print("Error importing ExpDescriptionEditor "
               "(hint: is taurus extra_sardana installed?)")
         return
     try:
@@ -293,7 +293,7 @@ def edmac(self, parameter_s=''):
                 print('Reason:', str(e))
             f.close()
         except:
-            print('Could not open file \'%s\' for safe transfer to the ' \
+            print('Could not open file \'%s\' for safe transfer to the '
                   'server' % local_fname)
             print('Did you forget to save?')
     else:

@@ -317,7 +317,8 @@ class PoolBaseGroup(PoolContainer):
             own_elements.add(element)
             physical_elements_set.add(element)
         else:
-            for ctrl, elements in list(element.get_physical_elements().items()):
+            elem_physical_elements = element.get_physical_elements()
+            for ctrl, elements in list(elem_physical_elements.items()):
                 own_elements = physical_elements.get(ctrl)
                 if own_elements is None:
                     physical_elements[ctrl] = own_elements = set()

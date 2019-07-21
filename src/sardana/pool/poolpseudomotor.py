@@ -227,7 +227,8 @@ class Position(SardanaAttribute):
                 serial=True)
             if not len(dial_position_values):
                 self._local_timestamp = time.time()
-            for motion_obj, position_value in list(dial_position_values.items()):
+            for motion_obj, position_value in \
+                    list(dial_position_values.items()):
                 motion_obj.put_dial_position(
                     position_value, propagate=propagate)
 
@@ -293,7 +294,8 @@ class PoolPseudoMotor(PoolBaseGroup, PoolElement):
     def get_siblings(self):
         if self._siblings is None:
             self._siblings = siblings = set()
-            for axis, sibling in list(self.controller.get_element_axis().items()):
+            for axis, sibling in \
+                    list(self.controller.get_element_axis().items()):
                 if axis == self.axis:
                     continue
                 siblings.add(sibling)

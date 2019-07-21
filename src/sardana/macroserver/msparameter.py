@@ -252,7 +252,8 @@ class ElementParamType(ParamType):
             for elem_info in pool.getElements():
                 if self.accepts(elem_info):
                     objs[elem_info.name] = elem_info
-        for macro_lib_name, macro_lib in list(macro_server.get_macros().items()):
+        macros = macro_server.get_macros()
+        for macro_lib_name, macro_lib in list(macros.items()):
             if self.accepts(macro_lib):
                 objs[macro_lib_name] = macro_lib
         for macro_name, macro in list(macro_server.get_macros().items()):
@@ -325,7 +326,8 @@ class ElementParamInterface(ElementParamType):
         else:
             pools = macro_server.get_pool(pool),
         for pool in pools:
-            for elem_info in list(pool.getElementsWithInterface(self._name).values()):
+            elements = pool.getElementsWithInterface(self._name)
+            for elem_info in list(elements.values()):
                 if self.accepts(elem_info):
                     objs[elem_info.name] = elem_info
         return objs

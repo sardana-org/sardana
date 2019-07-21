@@ -309,9 +309,9 @@ ET = ElementType
 #: a set containning all "controllable" element types.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
 TYPE_ELEMENTS = {ET.Motor, ET.CTExpChannel, ET.ZeroDExpChannel,
-                     ET.OneDExpChannel, ET.TwoDExpChannel, ET.TriggerGate,
-                     ET.ComChannel, ET.IORegister, ET.PseudoMotor,
-                     ET.PseudoCounter, ET.Constraint}
+                 ET.OneDExpChannel, ET.TwoDExpChannel, ET.TriggerGate,
+                 ET.ComChannel, ET.IORegister, ET.PseudoMotor,
+                 ET.PseudoCounter, ET.Constraint}
 
 #: a set containing all group element types.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
@@ -324,30 +324,31 @@ TYPE_MOVEABLE_ELEMENTS = {ET.Motor, ET.PseudoMotor, ET.MotorGroup}
 #: a set containing the possible types of physical elements.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
 TYPE_PHYSICAL_ELEMENTS = {ET.Motor, ET.CTExpChannel, ET.ZeroDExpChannel,
-                              ET.OneDExpChannel, ET.TwoDExpChannel, ET.TriggerGate,
-                              ET.ComChannel, ET.IORegister}
+                          ET.OneDExpChannel, ET.TwoDExpChannel, ET.TriggerGate,
+                          ET.ComChannel, ET.IORegister}
 
 #: a set containing the possible types of acquirable elements.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
 TYPE_ACQUIRABLE_ELEMENTS = {ET.Motor, ET.CTExpChannel, ET.ZeroDExpChannel,
-                                ET.OneDExpChannel, ET.TwoDExpChannel,
-                                ET.ComChannel, ET.IORegister, ET.PseudoMotor,
-                                ET.PseudoCounter}
+                            ET.OneDExpChannel, ET.TwoDExpChannel,
+                            ET.ComChannel, ET.IORegister, ET.PseudoMotor,
+                            ET.PseudoCounter}
 
 #: a set containing the possible measure-able elements.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
 TYPE_COUNTABLE_ELEMENTS = {ET.CTExpChannel, ET.OneDExpChannel,
-                               ET.TwoDExpChannel, ET.MeasurementGroup}
+                           ET.TwoDExpChannel, ET.MeasurementGroup}
 
 #: a set containing the possible types of experimental channel elements.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
 TYPE_EXP_CHANNEL_ELEMENTS = {ET.CTExpChannel, ET.ZeroDExpChannel,
-                                 ET.OneDExpChannel, ET.TwoDExpChannel, ET.PseudoCounter}
+                             ET.OneDExpChannel, ET.TwoDExpChannel,
+                             ET.PseudoCounter}
 
 #: a set containing the possible timer-able elements.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
 TYPE_TIMERABLE_ELEMENTS = {ET.CTExpChannel, ET.OneDExpChannel,
-                               ET.TwoDExpChannel}
+                           ET.TwoDExpChannel}
 
 #: a set containing the possible types of pseudo elements.
 #: Constant values belong to :class:`~sardana.sardanadefs.ElementType`
@@ -430,13 +431,16 @@ INTERFACES = {
     "External": ({"Object"}, "An external object"),
 
     "MacroServerObject": ({"Object"}, "A generic macro server object"),
-    "MacroServerElement": ({"Element", "MacroServerObject"}, "A generic macro server element"),
+    "MacroServerElement": ({"Element", "MacroServerObject"},
+                           "A generic macro server element"),
     "MacroServer": ({"MacroServerElement"}, "A MacroServer"),
     "Door": ({"MacroServerElement"}, "A macro server door"),
-    "MacroLibrary": ({"Library", "MacroServerObject"}, "A macro server library"),
+    "MacroLibrary": ({"Library", "MacroServerObject"},
+                     "A macro server library"),
     "MacroCode": ({"MacroServerObject"}, "A macro server macro code"),
     "MacroClass": ({"Class", "MacroCode"}, "A macro server macro class"),
-    "MacroFunction": ({"Function", "MacroCode"}, "A macro server macro function"),
+    "MacroFunction": ({"Function", "MacroCode"},
+                      "A macro server macro function"),
     "Macro": ({"MacroClass", "MacroFunction"}, "A macro server macro"),
 
     "ParameterType": ({"Meta"}, "A generic macro server parameter type"),

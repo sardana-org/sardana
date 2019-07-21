@@ -274,7 +274,8 @@ class PoolPseudoCounter(PoolBaseGroup, PoolBaseChannel):
     def get_siblings(self):
         if self._siblings is None:
             self._siblings = siblings = set()
-            for axis, sibling in list(self.controller.get_element_axis().items()):
+            for axis, sibling in \
+                    list(self.controller.get_element_axis().items()):
                 if axis == self.axis:
                     continue
                 siblings.add(sibling)

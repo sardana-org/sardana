@@ -378,7 +378,8 @@ def main():
     if len(args) > 1:
         w.onDoorChanged(args[1])
     else:
-        print("WARNING: Not door name supplied. Connection to MacroServer/Door not automatically done")
+        print("WARNING: Not door name supplied. Connection to "
+              "MacroServer/Door not automatically done")
     w.show()
 
     sys.exit(app.exec_())

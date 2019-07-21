@@ -23,7 +23,7 @@
 ##
 ##############################################################################
 
-from .macroexecutor import BaseMacroExecutor, MacroExecutorFactory
-from .base import (macroTest, BaseMacroTestCase, RunMacroTestCase,
-                  RunStopMacroTestCase, testRun, testFail, testStop)
-from .sardemoenv import *
+from .macroexecutor import BaseMacroExecutor, MacroExecutorFactory  # noqa
+from .base import (macroTest, BaseMacroTestCase, RunMacroTestCase,  # noqa
+                  RunStopMacroTestCase, testRun, testFail, testStop)  # noqa
+from .sardemoenv import *  # noqa

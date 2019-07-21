@@ -23,5 +23,5 @@
 ##
 ##############################################################################
 
-from .macroexecutor import TangoMacroExecutor
-from .base import *
+from .macroexecutor import TangoMacroExecutor  # noqa
+from .base import *  # noqa

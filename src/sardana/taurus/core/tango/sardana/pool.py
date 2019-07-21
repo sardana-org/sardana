@@ -622,7 +622,8 @@ class Controller(PoolElement):
 
     def getElementByAxis(self, axis):
         pool = self.getPoolObj()
-        for _, elem in list(pool.getElementsOfType(self.getMainType()).items()):
+        for _, elem in \
+                list(pool.getElementsOfType(self.getMainType()).items()):
             if (elem.controller != self.getFullName() or
                     elem.getAxis() != axis):
                 continue
@@ -630,7 +631,8 @@ class Controller(PoolElement):
 
     def getElementByName(self, name):
         pool = self.getPoolObj()
-        for _, elem in list(pool.getElementsOfType(self.getMainType()).items()):
+        for _, elem in \
+                list(pool.getElementsOfType(self.getMainType()).items()):
             if (elem.controller != self.getFullName() or
                     elem.getName() != name):
                 continue
@@ -645,7 +647,8 @@ class Controller(PoolElement):
 
         pool = self.getPoolObj()
         axes = []
-        for _, elem in list(pool.getElementsOfType(self.getMainType()).items()):
+        for _, elem in \
+                list(pool.getElementsOfType(self.getMainType()).items()):
             if elem.controller != self.getFullName():
                 continue
             axes.append(elem.getAxis())
@@ -1380,13 +1383,14 @@ class MGConfiguration(object):
         self.channels = channels = CaselessDict()
 
         for _, ctrl_data in list(self.controllers.items()):
-            for channel_name, channel_data in list(ctrl_data['channels'].items()):
+            for channel_name, channel_data in \
+                    list(ctrl_data['channels'].items()):
                 channels[channel_name] = channel_data
 
         #####################
         # @todo: the for-loops above could be replaced by something like:
-        # self.channels = channels = CaselessDict(getChannelConfigs(data,
-        #                                                          sort=False))
+        # self.channels = channels = \
+        #      CaselessDict(getChannelConfigs(data, sort=False))
         #####################
 
         # seq<dict> each element is the channel data in form of a dict as
@@ -1633,7 +1637,7 @@ class MGConfiguration(object):
             try:
                 dev_replies[dev] = dev.read_attributes_asynch(
                     list(attrs.keys())), attrs
-            except:
+            except Exception:
                 dev_replies[dev] = None, attrs
 
         # gather all replies
@@ -1648,7 +1652,7 @@ class MGConfiguration(object):
                     else:
                         value = data_item.value
                     ret[channel_data['full_name']] = value
-            except:
+            except Exception:
                 for _, channel_data in list(attrs.items()):
                     ret[channel_data['full_name']] = None
 

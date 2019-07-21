@@ -4,7 +4,7 @@
 
 # Usage: python upgrade_env.py <ms_dev_name|ms_dev_alias>
 
-# From: https://stackoverflow.com/questions/27493733/use-python-2-shelf-in-python-3
+# From: https://stackoverflow.com/questions/27493733/use-python-2-shelf-in-python-3  # noqa
 # Thanks to Eric Myers
 
 import os
@@ -62,7 +62,7 @@ def upgrade_env(ms_name):
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print "python upgrade_env.py <ms_dev_name|ms_dev_alias>"
+        print "python upgrade_env.py <ms_dev_name|ms_dev_alias>"  # noqa
         sys.exit(1)
     ms_name = sys.argv[1]
     upgrade_env(ms_name)

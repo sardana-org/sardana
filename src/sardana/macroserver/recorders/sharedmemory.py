@@ -144,9 +144,11 @@ class SPSRecorder(BaseSharedMemoryRecorder):
 
         for colname in self.labels:
             val = record.data.get(colname)
-            if (not val is None) and (isinstance(val, numbers.Number) and (type(val) in [int, float])):
+            if ((val is not None)
+                    and (isinstance(val, numbers.Number)
+                         and (type(val) in [int, float]))):
                 vals.append(val)
-            elif (not val is None) and (isinstance(val, numbers.Number)):
+            elif (val is not None) and (isinstance(val, numbers.Number)):
                 valsmca = []
                 for i in range(0, len(val)):
                     valsmca.append(val[i])
@@ -272,7 +274,7 @@ class ShmRecorder(DataRecorder):
         for colname in self.labels:
             dim_list.append(0)
             val = record.data.get(colname)
-            if (not val is None) and (type(val) in [int, float]):
+            if (val is not None) and (type(val) in [int, float]):
                 vals.append(val)
 
         myj = 0

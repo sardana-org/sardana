@@ -196,7 +196,8 @@ class BaseSardanaElementContainer:
         return ret
 
     def getElementNamesWithInterface(self, interface):
-        return [e.name for e in list(self.getElementsWithInterface(interface).values())]
+        return [e.name for e in
+                list(self.getElementsWithInterface(interface).values())]
 
     def hasElementName(self, elem_name):
         return self.getElement(elem_name) is not None
@@ -537,19 +538,22 @@ class Sardana(object):
             ms_props = db.get_device_property(ms_dev_name, ms_prop_list)
             ms_name = dev_info.server().serverInstance()
             ms_alias = dev_info.alias()
-            ms = MacroServer(self, ms_name, ms_props.get("macropath"), ms_props.get("poolnames"),
+            ms = MacroServer(self, ms_name, ms_props.get("macropath"),
+                             ms_props.get("poolnames"),
                              ms_props.get("version"), ms_alias, ms_dev_name)
             self._macroservers.append(ms)
             for pool_dev_name in ms_props.get("poolnames", ()):
-                pool_prop_list = list(map(
-                    str.lower, db.get_device_property_list(pool_dev_name, "*")))
+                pool_prop_list = \
+                    list(map(str.lower,
+                             db.get_device_property_list(pool_dev_name, "*")))
                 pool_props = db.get_device_property(
                     pool_dev_name, pool_prop_list)
                 pool_dev_info = cache.devices()[pool_dev_name]
                 pool_name = pool_dev_info.server().serverInstance()
                 pool_alias = pool_dev_info.alias()
-                pool = Pool(self, pool_name, pool_props.get(
-                    "poolpath"), pool_props.get("version"), pool_alias, pool_dev_name)
+                pool = Pool(self, pool_name, pool_props.get("poolpath"),
+                            pool_props.get("version"), pool_alias,
+                            pool_dev_name)
                 self._pools.append(pool)
 
     def get_name(self):
@@ -652,7 +656,7 @@ class DatabaseSardana(object):
             try:
                 sardanas[service_instance] = Sardana(
                     self, service_instance, dev)
-            except:
+            except Exception:
                 pass
 
     def create_sardana(self, name, device_name):

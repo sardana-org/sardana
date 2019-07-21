@@ -706,7 +706,7 @@ def prepare_server(args, tango_args):
 
     nodb = "-nodb" in tango_args
     if nodb and not hasattr(DeviceClass, "device_name_factory"):
-        print("In order to start %s with 'nodb' you need PyTango >= 7.2.3" %\
+        print("In order to start %s with 'nodb' you need PyTango >= 7.2.3" %
               server_name)
         sys.exit(1)
 

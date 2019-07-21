@@ -859,7 +859,8 @@ class PoolMotorTVLabelWidget(TaurusWidget):
 
         # I don't like this approach, there should be something like
         # self.lbl_alias.addAction(...)
-        self.lbl_alias.contextMenuEvent = lambda event: self.contextMenuEvent(event)
+        self.lbl_alias.contextMenuEvent = \
+            lambda event: self.contextMenuEvent(event)
 
         # I' don't like this approach, there should be something like
         # self.lbl_alias.addToolTipCallback(self.calculate_extra_tooltip)
@@ -872,11 +873,13 @@ class PoolMotorTVLabelWidget(TaurusWidget):
         self.lbl_alias.mouseMoveEvent = self.mouseMoveEvent
 
     def setExpertView(self, expertView):
-        btn_poweron_visible = expertView and self.taurusValueBuddy().hasPowerOn()
+        btn_poweron_visible = expertView \
+                              and self.taurusValueBuddy().hasPowerOn()
         self.btn_poweron.setVisible(btn_poweron_visible)
 
     @Qt.pyqtSlot()
-    @ProtectTaurusMessageBox(msg='An error occurred trying to write PowerOn Attribute.')
+    @ProtectTaurusMessageBox(
+        msg='An error occurred trying to write PowerOn Attribute.')
     def setPowerOn(self):
         motor_dev = self.taurusValueBuddy().motor_dev
         if motor_dev is not None:

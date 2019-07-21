@@ -137,7 +137,8 @@ class FIO_FileRecorder(BaseFileRecorder):
         self.fd.write("!\n! Parameter\n!\n%p\n")
         self.fd.flush()
         env = self.macro().getAllEnv()
-        if 'FlagFioWriteMotorPositions' in env and env['FlagFioWriteMotorPositions']:
+        if ('FlagFioWriteMotorPositions' in env
+                and env['FlagFioWriteMotorPositions']):
             all_motors = sorted(
                 self.macro().findObjs('.*', type_class=Type.Motor))
             for mot in all_motors:

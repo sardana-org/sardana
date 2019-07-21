@@ -215,7 +215,8 @@ class BaseAcquisition(object):
         msg = "The number of busy workers is not zero; numBW = %s" % (numBW)
         self.assertEqual(numBW, 0, msg)
         # print the acquisition records
-        for i, record in enumerate(zip(*list(self.attr_listener.data.values()))):
+        for i, record in \
+                enumerate(zip(*list(self.attr_listener.data.values()))):
             print(i, record)
 
     def meas_contpos_acquisition(self, config, synchronization, moveable,

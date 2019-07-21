@@ -251,10 +251,10 @@ def run(command, timeout=-1, withexitstatus=False, events=None, extra_args=None,
                 raise TypeError(
                     'The callback must be a string or function type.')
             event_count = event_count + 1
-        except TIMEOUT as e:
+        except TIMEOUT:
             child_result_list.append(child.before)
             break
-        except EOF as e:
+        except EOF:
             child_result_list.append(child.before)
             break
     child_result = ''.join(child_result_list)
@@ -594,7 +594,8 @@ class spawn (object):
 
         parent_fd, child_fd = os.openpty()
         if parent_fd < 0 or child_fd < 0:
-            raise ExceptionPexpect("Error! Could not open pty with os.openpty().")
+            raise ExceptionPexpect(
+                "Error! Could not open pty with os.openpty().")
 
         pid = os.fork()
         if pid < 0:
@@ -635,7 +636,8 @@ class spawn (object):
             fd = os.open("/dev/tty", os.O_RDWR | os.O_NOCTTY)
             if fd >= 0:
                 os.close(fd)
-                raise ExceptionPexpect("Error! We are not disconnected from a controlling tty.")
+                raise ExceptionPexpect(
+                    "Error! We are not disconnected from a controlling tty.")
         except:
             # Good! We are disconnected from a controlling tty.
             pass
@@ -643,14 +645,16 @@ class spawn (object):
         # Verify we can open child pty.
         fd = os.open(child_name, os.O_RDWR)
         if fd < 0:
-            raise ExceptionPexpect("Error! Could not open child pty, " + child_name)
+            raise ExceptionPexpect(
+                "Error! Could not open child pty, " + child_name)
         else:
             os.close(fd)
 
         # Verify we now have a controlling tty.
         fd = os.open("/dev/tty", os.O_WRONLY)
         if fd < 0:
-            raise ExceptionPexpect("Error! Could not open controlling tty, /dev/tty")
+            raise ExceptionPexpect(
+                "Error! Could not open controlling tty, /dev/tty")
         else:
             os.close(fd)
 
@@ -828,12 +832,14 @@ class spawn (object):
 
         if not r:
             if not self.isalive():
-                # Some platforms, such as Irix, will claim that their processes are alive;
+                # Some platforms, such as Irix, will claim that their
+                # processes are alive;
                 # then timeout on the select; and then finally admit that they
                 # are not alive.
                 self.flag_eof = True
                 raise EOF(
-                    'End of File (EOF) in read_nonblocking(). Very pokey platform.')
+                    'End of File (EOF) in read_nonblocking(). '
+                    'Very pokey platform.')
             else:
                 raise TIMEOUT('Timeout exceeded in read_nonblocking().')
 
@@ -843,11 +849,13 @@ class spawn (object):
             except OSError as e:  # Linux does this
                 self.flag_eof = True
                 raise EOF(
-                    'End Of File (EOF) in read_nonblocking(). Exception style platform.')
+                    'End Of File (EOF) in read_nonblocking(). '
+                    'Exception style platform.')
             if s == '':  # BSD style
                 self.flag_eof = True
                 raise EOF(
-                    'End Of File (EOF) in read_nonblocking(). Empty string style platform.')
+                    'End Of File (EOF) in read_nonblocking(). '
+                    'Empty string style platform.')
 
             if self.logfile is not None:
                 self.logfile.write(s)
@@ -1124,9 +1132,10 @@ class spawn (object):
             return False
 
         if self.flag_eof:
-            # This is for Linux, which requires the blocking form of waitpid to get
-            # status of a defunct process. This is super-lame. The flag_eof would have
-            # been set in read_nonblocking(), so this should be safe.
+            # This is for Linux, which requires the blocking form of waitpid
+            # to get status of a defunct process. This is super-lame. The
+            # flag_eof would have been set in read_nonblocking(), so this
+            # should be safe.
             waitpid_options = 0
         else:
             waitpid_options = os.WNOHANG

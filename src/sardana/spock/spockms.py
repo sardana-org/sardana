@@ -160,7 +160,8 @@ class GUIViewer(BaseGUIViewer):
                         break
         if local_file is None:
             print("Cannot plot scan:")
-            print("Could not find %s in any of the following locations:" % (scan_file,))
+            print("Could not find %s in any of the following locations:" %
+                  (scan_file,))
             print("\n".join(locations))
             return
 
@@ -198,14 +199,15 @@ class GUIViewer(BaseGUIViewer):
     def plot(self):
         try:
             import sps
-        except:
+        except Exception:
             print('sps module not available. No plotting')
             return
 
         try:
             import pylab
-        except:
-            print("pylab not available (try running 'spock -pylab'). No plotting")
+        except Exception:
+            print("pylab not available (try running 'spock -pylab'). "
+                  "No plotting")
             return
 
         door = genutils.get_door()
@@ -350,7 +352,8 @@ class SpockBaseDoor(BaseDoor):
     def _runMacro(self, xml, **kwargs):
         # kwargs like 'synch' are ignored in this re-implementation
         if self._spock_state != RUNNING_STATE:
-            print("Unable to run macro: No connection to door '%s'" % self.getSimpleName())
+            print("Unable to run macro: No connection to door '%s'" %
+                  self.getSimpleName())
             raise Exception("Unable to run macro: No connection")
         if xml is None:
             xml = self.getRunningXML()
@@ -377,10 +380,12 @@ class SpockBaseDoor(BaseDoor):
                     print("Unknown parameter:", desc)
                 elif reason == 'MissingEnv':
                     print("Missing environment:", desc)
-                elif reason in ('API_CantConnectToDevice', 'API_DeviceNotExported'):
+                elif reason in ('API_CantConnectToDevice',
+                                'API_DeviceNotExported'):
                     self._updateState(self._old_sw_door_state,
                                       TaurusSWDevState.Shutdown, silent=True)
-                    print("Unable to run macro: No connection to door '%s'" % self.getSimpleName())
+                    print("Unable to run macro: No connection to door '%s'" %
+                          self.getSimpleName())
                 else:
                     print("Unable to run macro:", reason, desc)
 

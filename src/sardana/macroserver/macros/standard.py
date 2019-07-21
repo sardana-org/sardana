@@ -374,7 +374,8 @@ class wm(Macro):
             if show_ctrlaxis:
                 valctrl = str_fmt % (ctrl_name)
                 valaxis = str_fmt % str(axis_nb)
-                upos = list(map(str, [valctrl, valaxis, ' ', val2, val1, val3]))
+                upos = list(map(str, [valctrl, valaxis, ' ', val2, val1,
+                                      val3]))
             else:
                 upos = list(map(str, ['', val2, val1, val3]))
             pos_data = upos

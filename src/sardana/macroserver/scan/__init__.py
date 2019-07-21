@@ -27,5 +27,5 @@
 
 __docformat__ = 'restructuredtext'
 
-from .scandata import *
-from .gscan import *
+from .scandata import *  # noqa
+from .gscan import *  # noqa
