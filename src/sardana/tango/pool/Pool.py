@@ -250,7 +250,7 @@ class Pool(PyTango.Device_4Impl, Logger):
         if cache and value is not None:
             return value
         value = dict(new=self.pool.get_elements_info())
-        value = CodecFactory().encode('json', ('', value))
+        value = CodecFactory().encode('utf8_json', ('', value))
         self.ElementsCache = value
         return value
 
@@ -764,7 +764,7 @@ class Pool(PyTango.Device_4Impl, Logger):
                 key = 'change'
             json_elem = elem.serialize(pool=self.pool.full_name)
             value[key] = json_elem,
-            value = CodecFactory().getCodec('json').encode(('', value))
+            value = CodecFactory().getCodec('utf8_json').encode(('', value))
             self.push_change_event('Elements', *value)
         elif evt_name == "elementschanged":
             # force the element list cache to be rebuild next time someone reads
@@ -783,7 +783,7 @@ class Pool(PyTango.Device_4Impl, Logger):
                 deleted_values.append(json_elem)
             value = {"new": new_values, "change": changed_values,
                      "del": deleted_values}
-            value = CodecFactory().getCodec('json').encode(('', value))
+            value = CodecFactory().getCodec('utf8_json').encode(('', value))
             self.push_change_event('Elements', *value)
 
     def _format_create_json_arguments(self, argin):

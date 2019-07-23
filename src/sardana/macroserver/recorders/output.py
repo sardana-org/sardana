@@ -34,7 +34,6 @@ import datetime
 import operator
 import weakref
 
-from taurus.core.util.codecs import CodecFactory
 from taurus.core.util.containers import CaselessList
 
 from sardana.macroserver.scan.recorder.datarecorder import DataRecorder
@@ -48,7 +47,6 @@ class JsonRecorder(DataRecorder):
     def __init__(self, stream, cols=None, **pars):
         DataRecorder.__init__(self, **pars)
         self._stream = weakref.ref(stream)
-        self._codec = CodecFactory().getCodec('json')
 
     def _startRecordList(self, recordlist):
         macro_id = recordlist.getEnvironValue('macro_id')
@@ -103,9 +101,7 @@ class JsonRecorder(DataRecorder):
     def _sendPacket(self, **kwargs):
         '''creates a JSON packet using the keyword arguments passed
         and then sends it'''
-        #data = self._codec.encode(('', kwargs))
-        # self._stream().sendRecordData(*data)
-        self._stream()._sendRecordData(kwargs, codec='json')
+        self._stream()._sendRecordData(kwargs, codec='utf8_json')
 
     def _addCustomData(self, value, name, **kwargs):
         '''

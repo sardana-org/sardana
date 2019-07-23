@@ -169,7 +169,7 @@ class MacroServer(SardanaDevice):
                 key = 'del'
             json_elem = elem.serialize(pool=self.pool.full_name)
             value[key] = json_elem,
-            value = CodecFactory().getCodec('json').encode(('', value))
+            value = CodecFactory().getCodec('utf8_json').encode(('', value))
             self.set_attribute(elems_attr, value=value)
             #self.push_change_event('Elements', *value)
         elif evt_name == "elementschanged":
@@ -190,7 +190,7 @@ class MacroServer(SardanaDevice):
                 deleted_values.append(json_elem)
             value = {"new": new_values, "change": changed_values,
                      "del": deleted_values}
-            value = CodecFactory().getCodec('json').encode(('', value))
+            value = CodecFactory().getCodec('utf8_json').encode(('', value))
             self.set_attribute(elems_attr, value=value)
             #self.push_change_event('Elements', *value)
         elif evt_name == "environmentchanged":
@@ -229,7 +229,7 @@ class MacroServer(SardanaDevice):
             return value
         elements = self.macro_server.get_elements_info()
         value = dict(new=elements)
-        value = CodecFactory().getCodec('json').encode(('', value))
+        value = CodecFactory().getCodec('utf8_json').encode(('', value))
         self.ElementsCache = value
         return value
 

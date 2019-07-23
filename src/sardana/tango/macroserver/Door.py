@@ -281,7 +281,7 @@ class Door(SardanaDevice):
                 event_value = event_value.value
 
             if attr.get_data_type() == ArgType.DevEncoded:
-                codec = CodecFactory().getCodec('json')
+                codec = CodecFactory().getCodec('utf8_json')
                 event_value = codec.encode(('', event_value))
         self.set_attribute(attr, value=event_value, timestamp=timestamp)
 
