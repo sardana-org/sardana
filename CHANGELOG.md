@@ -11,6 +11,13 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Use `taurus.external.qt.compat.PY_OBJECT` in singal signatures instead of `object`
   to avoid problems when using `builtins` from `future` (#1082)
 
+## [2.8.1] 2019-07-22
+
+### Fixed
+
+* Remove uncompleted optimization when applying measurement group
+  configuration (#1171, #1174)
+
 ## [2.8.0] 2019-07-01
 
 ### Added
@@ -709,7 +716,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.0...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.1...HEAD
+[2.8.1]: https://github.com/sardana-org/sardana/compare/2.8.1...2.8.0
 [2.8.0]: https://github.com/sardana-org/sardana/compare/2.8.0...2.7.2
 [2.7.2]: https://github.com/sardana-org/sardana/compare/2.7.1...2.7.2
 [2.7.1]: https://github.com/sardana-org/sardana/compare/2.7.0...2.7.1
