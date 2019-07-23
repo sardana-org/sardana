@@ -438,34 +438,39 @@ class PoolAcquisition(PoolAction):
         synch_kwargs.update(kwargs)
         self._synch_args = ActionArgs(synch_args, synch_kwargs)
 
-        # Load the configuration to the timerable controllers if it changed:
-        if config.changed:
-            ctrls = ctrls_hw + ctrls_sw_start + ctrls_sw
+        # Load the configuration to the timerable controllers
+        # TODO: apply the configuration only if necessary
+        # Checking only the "changed" flag is not enough, one needs to check
+        # if the controllers were not used with different measurement groups
+        # configurations meanwhile (see: sardana-org/sardana#1171) in this
+        # case the configuration must be applied even if it was not changed
+        # if config.changed:
+        ctrls = ctrls_hw + ctrls_sw_start + ctrls_sw
 
-            for ctrl in ctrls:
-                pool_ctrl = ctrl.element
-                if not pool_ctrl.is_online():
-                    raise RuntimeError('The controller {0} is '
-                                       'offline'.format(pool_ctrl.name))
-                pool_ctrl.set_ctrl_par('acquisition_mode', acq_mode)
-                pool_ctrl.operator = self.main_element
-                pool_ctrl.set_ctrl_par('timer', ctrl.timer.axis)
-                pool_ctrl.set_ctrl_par('monitor', ctrl.monitor.axis)
-                synch = config.get_acq_synch_by_controller(pool_ctrl)
-                pool_ctrl.set_ctrl_par('synchronization', synch)
+        for ctrl in ctrls:
+            pool_ctrl = ctrl.element
+            if not pool_ctrl.is_online():
+                raise RuntimeError('The controller {0} is '
+                                   'offline'.format(pool_ctrl.name))
+            pool_ctrl.set_ctrl_par('acquisition_mode', acq_mode)
+            pool_ctrl.operator = self.main_element
+            pool_ctrl.set_ctrl_par('timer', ctrl.timer.axis)
+            pool_ctrl.set_ctrl_par('monitor', ctrl.monitor.axis)
+            synch = config.get_acq_synch_by_controller(pool_ctrl)
+            pool_ctrl.set_ctrl_par('synchronization', synch)
 
-                if ctrl.is_referable():
-                    for channel in ctrl.get_channels():
-                        value_ref_enabled = channel.value_ref_enabled
+            if ctrl.is_referable():
+                for channel in ctrl.get_channels():
+                    value_ref_enabled = channel.value_ref_enabled
+                    pool_ctrl.set_axis_par(channel.axis,
+                                           "value_ref_enabled",
+                                           value_ref_enabled)
+                    if value_ref_enabled:
                         pool_ctrl.set_axis_par(channel.axis,
-                                               "value_ref_enabled",
-                                               value_ref_enabled)
-                        if value_ref_enabled:
-                            pool_ctrl.set_axis_par(channel.axis,
-                                                   "value_ref_pattern",
-                                                   channel.value_ref_pattern)
+                                               "value_ref_pattern",
+                                               channel.value_ref_pattern)
 
-            config.changed = False
+        config.changed = False
 
         # Call hardware and software start controllers prepare method
         ctrls = ctrls_hw + ctrls_sw_start
