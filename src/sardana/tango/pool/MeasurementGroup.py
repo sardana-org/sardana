@@ -157,16 +157,27 @@ class MeasurementGroup(PoolGroupDevice):
     def _synchronization_str2enum(self, synchronization_str):
         """Translates synchronization data structure so it uses
         SynchParam and SynchDomain enums as keys instead of strings.
+
+        .. todo:: At some point remove the backwards compatibility
+          for memorized values created with Python 2. In Python 2 IntEnum was
+          serialized to "<class>.<attr>" e.g. "SynchDomain.Time" and we were
+          using a class method `fromStr` to interpret the enumeration objects.
         """
         synchronization = []
         for group_str in synchronization_str:
             group = {}
             for param_str, conf_str in group_str.items():
-                param = SynchParam(int(param_str))
+                try:
+                    param = SynchParam(int(param_str))
+                except ValueError:
+                    param = SynchParam.fromStr(param_str)
                 if isinstance(conf_str, dict):
                     conf = {}
                     for domain_str, value in conf_str.items():
-                        domain = SynchDomain(int(domain_str))
+                        try:
+                            domain = SynchDomain(int(domain_str))
+                        except ValueError:
+                            domain = SynchDomain.fromStr(domain_str)
                         conf[domain] = value
                 else:
                     conf = conf_str
@@ -335,6 +346,7 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
         'Moveable': [[DevString, SCALAR, READ_WRITE],
                      {'Memorized': "true",
                       'Display level': DispLevel.EXPERT}],
+        # TODO: Does it have sense to memorize Synchronization?
         'Synchronization': [[DevString, SCALAR, READ_WRITE],
                             {'Memorized': "true",
                              'Display level': DispLevel.EXPERT}],
