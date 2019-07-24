@@ -1,18 +1,27 @@
 # This serves to upgrade MacroServer environment from Python 2 to Python 3:
 
-# IMPORTANT: IT HAS TO BE USED WITH PYTHON 2!!!
+# IMPORTANT:
+# 1. IT HAS TO BE USED WITH PYTHON 2.7!!!
+# 2. CONDA python 2 package is missing the standard dbm package so this
+#    script will fail inside a conda python 2 environment
+# 3. a new env file with an additional .db extension will be created. You
+#    should **NOT** change the macroserver EnvironmentDb property. The dbm
+#    will figure out automatically the file extension
+# 4. a backup will of the original environment will be available with th
+#    extension .py2
 
 # Usage: python upgrade_env.py <ms_dev_name|ms_dev_alias>
 
-# From: https://stackoverflow.com/questions/27493733/use-python-2-shelf-in-python-3  # noqa
-# Thanks to Eric Myers
+import sys
+assert sys.version_info[:2] == (2, 7), "Must run with python 2.7"
 
 import os
-import sys
 import shelve
-import dumbdbm
+import dbm
+import contextlib
 
 import PyTango
+
 
 
 DefaultEnvBaseDir = "/tmp/tango"
@@ -31,12 +40,25 @@ def get_ms_properties(ms_name, ms_ds_name):
         ms_properties = dft_ms_properties % {
             "ds_exec_name": "MacroServer",
             "ds_inst_name": ds_inst_name}
+    else:
+        ms_properties = ms_properties[0]
     ms_properties = os.path.normpath(ms_properties)
     return ms_properties
 
 
-def dumbdbm_shelve(filename, flag="c"):
-    return shelve.Shelf(dumbdbm.open(filename, flag))
+def dbm_shelve(filename, flag="c"):
+    # NOTE: dbm appends '.db' to the end of the filename
+    return shelve.Shelf(dbm.open(filename, flag))
+
+
+def migrate_file(filename):
+    assert not filename.endswith('.db'), \
+        "Cannot migrate '.db' (It would be overwritten)"
+    with contextlib.closing(shelve.open(filename)) as src_db:
+        data = dict(src_db)
+    with contextlib.closing(dbm_shelve(filename)) as dst_db:
+        dst_db.update(data)
+    os.rename(filename, filename + '.py2')
 
 
 def upgrade_env(ms_name):
@@ -45,24 +67,12 @@ def upgrade_env(ms_name):
     ms_ds_name = ms_info.ds_full_name
 
     env_filename = get_ms_properties(ms_name, ms_ds_name)
-    env_filename_py2 = env_filename + ".py2"
-
-    os.rename(env_filename, env_filename_py2)
-
-    out_shelf = dumbdbm_shelve(env_filename)
-    in_shelf = shelve.open(env_filename_py2)
-
-    key_list = in_shelf.keys()
-    for key in key_list:
-        out_shelf[key] = in_shelf[key]
-
-    out_shelf.close()
-    in_shelf.close()
+    migrate_file(env_filename)
 
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print "python upgrade_env.py <ms_dev_name|ms_dev_alias>"  # noqa
+        print("python upgrade_env.py <ms_dev_name|ms_dev_alias>")  # noqa
         sys.exit(1)
     ms_name = sys.argv[1]
     upgrade_env(ms_name)
