@@ -88,6 +88,9 @@ def showscan(self, parameter_s=''):
     online, scan_nb = False, None
     if len(params) > 0:
         if params[0].lower() == 'online':
+            print("'showscan online' does not work (requires migration to "
+                  "taurus_pyqtgraph)")
+            return
             try:
                 from sardana.taurus.qt.qtgui.extra_sardana import \
                     ShowScanOnline
