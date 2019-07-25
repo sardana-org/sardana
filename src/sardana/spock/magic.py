@@ -64,7 +64,7 @@ def expconf(self, parameter_s=''):
     import subprocess
     import sys
     fname = sys.modules[ExpDescriptionEditor.__module__].__file__
-    args = ['python', fname, doorname]
+    args = ['python3', fname, doorname]
     if parameter_s == '--auto-update':
         args.insert(2, parameter_s)
     subprocess.Popen(args)
@@ -115,7 +115,7 @@ def showscan(self, parameter_s=''):
             import subprocess
             import sys
             fname = sys.modules[ShowScanOnline.__module__].__file__
-            args = ['python', fname, doorname]
+            args = ['python3', fname, doorname]
             subprocess.Popen(args)
 
         # show the scan plot, ignoring the plot configuration
