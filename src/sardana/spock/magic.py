@@ -276,7 +276,7 @@ def edmac(self, parameter_s=''):
 
     fd, local_fname = tempfile.mkstemp(prefix='spock_%s_' % pars[0],
                                        suffix='.py', text=True)
-    os.write(fd, code)
+    os.write(fd, code.encode('utf8'))
     os.close(fd)
 
     cmd = 'edit -x -n %s %s' % (line_nb, local_fname)
