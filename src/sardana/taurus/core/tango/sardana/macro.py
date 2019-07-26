@@ -270,13 +270,13 @@ class MacroInfo(object):
             raise Exception('Macro %s does not return any result' % self.name)
         result_info = self.getResult()
         rtype = result_info['type']
+        # TODO: formalize and document way of passing files with macro result
         if rtype == 'File':
             fd, filename = tempfile.mkstemp(prefix='spock_', text=True)
-            os.write(fd, result[1])
-            os.close(fd)
-            # put the local filename in the result
-            result.insert(0, filename)
-            return result
+            with os.fdopen(fd, 'w') as fp:
+                result = result[0]
+                fp.write(result)
+            return filename, result
         res = []
         for idx, item in enumerate(result):
             result_info = self.getResult(idx)
