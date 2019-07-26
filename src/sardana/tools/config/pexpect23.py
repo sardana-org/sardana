@@ -1143,7 +1143,7 @@ class spawn (object):
         try:
             pid, status = os.waitpid(self.pid, waitpid_options)
         except OSError as e:  # No child processes
-            if e[0] == errno.ECHILD:
+            if e.args[0] == errno.ECHILD:
                 raise ExceptionPexpect(
                     'isalive() encountered condition where "terminated" is 0, but there was no child process. Did someone else call waitpid() on our process?')
             else:
@@ -1157,7 +1157,7 @@ class spawn (object):
                 # os.WNOHANG) # Solaris!
                 pid, status = os.waitpid(self.pid, waitpid_options)
             except OSError as e:  # This should never happen...
-                if e[0] == errno.ECHILD:
+                if e.args[0] == errno.ECHILD:
                     raise ExceptionPexpect(
                         'isalive() encountered condition that should never happen. There was no child process. Did someone else call waitpid() on our process?')
                 else:
@@ -1555,7 +1555,7 @@ class spawn (object):
             try:
                 return select.select(iwtd, owtd, ewtd, timeout)
             except select.error as e:
-                if e[0] == errno.EINTR:
+                if e.args[0] == errno.EINTR:
                     # if we loop back we have to subtract the amount of time we
                     # already waited.
                     if timeout is not None:
