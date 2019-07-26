@@ -164,6 +164,7 @@ class Parameterizable(object):
                 t = t.obj()
 
             if isinstance(t, collections.Sequence) and not isinstance(t, str):
+                ret_p = {'min': 1, 'max': None}
                 if isinstance(t[-1], collections.Mapping):
                     ret_p.update(t[-1])
                     t = self._build_parameter(t[:-1])
