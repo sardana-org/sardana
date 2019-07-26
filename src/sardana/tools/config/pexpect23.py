@@ -1529,6 +1529,7 @@ class spawn (object):
                 if self.logfile is not None:
                     self.logfile.write(data)
                     self.logfile.flush()
+                # TODO: This could be broken!!! Decide what to do...
                 os.write(self.STDOUT_FILENO, data)
             if self.STDIN_FILENO in r:
                 data = self.__interact_read(self.STDIN_FILENO)
