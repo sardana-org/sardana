@@ -157,9 +157,10 @@ class Parameterizable(object):
         param_def = param_def or ()
         for p in param_def:
             t = p[1]
-            ret_p = {'min': 1, 'max': None}
+            ret_p = {'min': None, 'max': None}
             # take care of old ParamRepeat
             if isinstance(t, ParamRepeat):
+                ret_p = {'min': 1, 'max': None}
                 t = t.obj()
 
             if isinstance(t, collections.Sequence) and not isinstance(t, str):
