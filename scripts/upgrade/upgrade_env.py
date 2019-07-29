@@ -1,20 +1,18 @@
-# This serves to upgrade MacroServer environment from Python 2 to Python 3:
+""" This serves to upgrade MacroServer environment from Python 2 to Python 3:
 
-# IMPORTANT:
-# 1. IT HAS TO BE USED WITH PYTHON 2.7!!!
-# 2. CONDA python 2 package is missing the standard dbm package so this
-#    script will fail inside a conda python 2 environment
-# 3. a new env file with an additional .db extension will be created. You
-#    should **NOT** change the macroserver EnvironmentDb property. The dbm
-#    will figure out automatically the file extension
-# 4. a backup will of the original environment will be available with th
-#    extension .py2
+IMPORTANT:
+1. IT HAS TO BE USED WITH PYTHON 2.7!!!
+2. CONDA python 2 package is missing the standard dbm package so this
+   script will fail inside a conda python 2 environment
+3. a new env file with an additional .db extension will be created. You
+   should **NOT** change the macroserver EnvironmentDb property. The dbm
+   will figure out automatically the file extension
+4. a backup will of the original environment will be available with th
+   extension .py2
 
-# Usage: python upgrade_env.py <ms_dev_name|ms_dev_alias>
-
+Usage: python upgrade_env.py <ms_dev_name|ms_dev_alias>
+"""
 import sys
-assert sys.version_info[:2] == (2, 7), "Must run with python 2.7"
-
 import os
 import shelve
 import dbm
@@ -22,7 +20,7 @@ import contextlib
 
 import PyTango
 
-
+assert sys.version_info[:2] == (2, 7), "Must run with python 2.7"
 
 DefaultEnvBaseDir = "/tmp/tango"
 DefaultEnvRelDir = "%(ds_exec_name)s/%(ds_inst_name)s/macroserver.properties"
