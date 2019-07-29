@@ -467,7 +467,9 @@ if __name__ == '__main__':
                 _argEditors.append(self.argEdit)
 
             for e, v in zip(_argEditors, d_values):
-                e.setText(v)
+                if v is None:
+                    continue
+                e.setText(str(v))
 
             # Create bottom layout
             self.mb = MacroButton()
