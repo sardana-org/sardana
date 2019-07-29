@@ -997,7 +997,7 @@ class Motor(PoolElement, Moveable):
         try:
             self.write_attribute('position', new_pos)
         except DevFailed as df:
-            for err in df:
+            for err in df.args:
                 if err.reason == 'API_AttrNotAllowed':
                     raise RuntimeError('%s is already moving' % self)
                 else:
