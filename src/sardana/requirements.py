@@ -37,7 +37,7 @@ __requires__ = {
     #     module        minimum
     "Python": (3, 5, 0),
     "PyTango": (9, 2, 5),
-    "taurus.core": (4, 5),
+    "taurus.core": (4, 5, 5),
 }
 
 
