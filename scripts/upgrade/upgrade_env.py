@@ -7,7 +7,7 @@ IMPORTANT:
 3. a new env file with an additional .db extension will be created. You
    should **NOT** change the macroserver EnvironmentDb property. The dbm
    will figure out automatically the file extension
-4. a backup will of the original environment will be available with th
+4. a backup will of the original environment will be available with the
    extension .py2
 
 Usage: python upgrade_env.py <ms_dev_name|ms_dev_alias>
@@ -15,7 +15,6 @@ Usage: python upgrade_env.py <ms_dev_name|ms_dev_alias>
 import sys
 import os
 import shelve
-import dbm
 import contextlib
 
 import PyTango
@@ -44,33 +43,42 @@ def get_ms_properties(ms_name, ms_ds_name):
     return ms_properties
 
 
-def dbm_shelve(filename, flag="c"):
+def dbm_shelve(filename, backend, flag="c"):
     # NOTE: dbm appends '.db' to the end of the filename
-    return shelve.Shelf(dbm.open(filename, flag))
+    if backend == "gnu":
+        import gdbm
+        backend_dict = gdbm.open(filename, flag)
+    elif backend == "dumb":
+        import dumbdbm
+        backend_dict = dumbdbm.open(filename, flag)
+    return shelve.Shelf(backend_dict)
 
 
-def migrate_file(filename):
+def migrate_file(filename, backend):
     assert not filename.endswith('.db'), \
         "Cannot migrate '.db' (It would be overwritten)"
-    with contextlib.closing(shelve.open(filename)) as src_db:
-        data = dict(src_db)
-    with contextlib.closing(dbm_shelve(filename)) as dst_db:
-        dst_db.update(data)
     os.rename(filename, filename + '.py2')
+    with contextlib.closing(shelve.open(filename + '.py2')) as src_db:
+        data = dict(src_db)
+    with contextlib.closing(dbm_shelve(filename, backend)) as dst_db:
+        dst_db.update(data)
 
 
-def upgrade_env(ms_name):
+def upgrade_env(ms_name, backend):
     db = PyTango.Database()
     ms_info = db.get_device_info(ms_name)
     ms_ds_name = ms_info.ds_full_name
 
     env_filename = get_ms_properties(ms_name, ms_ds_name)
-    migrate_file(env_filename)
+    migrate_file(env_filename, backend)
 
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("python upgrade_env.py <ms_dev_name|ms_dev_alias>")  # noqa
+    if len(sys.argv) != 3:
+        print("python upgrade_env.py <ms_dev_name> <gnu|dumb>")  # noqa
         sys.exit(1)
     ms_name = sys.argv[1]
-    upgrade_env(ms_name)
+    backend = sys.argv[2]
+    if backend not in ("gnu", "dumb"):
+        raise ValueError("{0} backend is not supported")
+    upgrade_env(ms_name, backend)
