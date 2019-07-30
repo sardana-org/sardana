@@ -38,7 +38,32 @@ from taurus.core.util.containers import CaselessDict
 
 from sardana.macroserver.msmanager import MacroServerManager
 from sardana.macroserver.msexception import UnknownEnv
+from sardana import sardanacustomsettings
 import collections
+
+
+def _dbm_gnu(filename):
+    import dbm.gnu
+    return dbm.gnu.open(filename, "c")
+
+
+def _dbm_dumb(filename):
+    import dbm.dumb
+    return dbm.dumb.open(filename, "c")
+
+
+def _dbm_shelve(filename, backend):
+    if backend is None:
+        try:
+            return _dbm_gnu(filename)
+        except ImportError:
+            return _dbm_dumb(filename)
+    elif backend == "gnu":
+        return _dbm_gnu(filename)
+    elif backend == "dumb":
+        return _dbm_dumb(filename)
+    else:
+        raise ValueError("'{}' is not a supported backend".format(backend))
 
 
 class EnvironmentManager(MacroServerManager):
@@ -117,12 +142,22 @@ class EnvironmentManager(MacroServerManager):
                 self.error("Creating environment: %s" % ose.strerror)
                 self.debug("Details:", exc_info=1)
                 raise ose
-        try:
-            self._env = shelve.open(f_name, flag='c', writeback=False)
-        except:
-            self.error("Failed to create/access environment in %s", f_name)
-            self.debug("Details:", exc_info=1)
-            raise
+        if os.path.exists(f_name) or os.path.exists(f_name + ".dat"):
+            try:
+                self._env = shelve.open(f_name, flag='w', writeback=False)
+            except Exception:
+                self.error("Failed to access environment in %s", f_name)
+                self.debug("Details:", exc_info=1)
+                raise
+        else:
+            backend = getattr(sardanacustomsettings, "MS_ENV_SHELVE_BACKEND",
+                              None)
+            try:
+                self._env = shelve.Shelf(_dbm_shelve(f_name, backend))
+            except Exception:
+                self.error("Failed to create environment in %s", f_name)
+                self.debug("Details:", exc_info=1)
+                raise
 
         self.info("Environment is being stored in %s", f_name)
 
