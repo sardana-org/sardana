@@ -19,10 +19,17 @@ import contextlib
 
 import PyTango
 
-assert sys.version_info[:2] == (2, 7), "Must run with python 2.7"
+assert sys.version_info[:2] in ((2, 6), (2, 7)),\
+    "Must run with python 2.6 or 2.7"
 
 DefaultEnvBaseDir = "/tmp/tango"
 DefaultEnvRelDir = "%(ds_exec_name)s/%(ds_inst_name)s/macroserver.properties"
+
+
+def get_ds_full_name(dev_name):
+    db = PyTango.Database()
+    db_dev = PyTango.DeviceProxy(db.dev_name())
+    return db_dev.DbGetDeviceInfo(dev_name)[1][3]
 
 
 def get_ms_properties(ms_name, ms_ds_name):
@@ -66,9 +73,11 @@ def migrate_file(filename, backend):
 
 def upgrade_env(ms_name, backend):
     db = PyTango.Database()
-    ms_info = db.get_device_info(ms_name)
-    ms_ds_name = ms_info.ds_full_name
-
+    try:
+        ms_info = db.get_device_info(ms_name)
+        ms_ds_name = ms_info.ds_full_name
+    except AttributeError:
+        ms_ds_name = get_ds_full_name(ms_name)
     env_filename = get_ms_properties(ms_name, ms_ds_name)
     migrate_file(env_filename, backend)
 
