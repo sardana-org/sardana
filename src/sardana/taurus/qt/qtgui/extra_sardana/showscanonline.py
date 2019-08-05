@@ -27,7 +27,6 @@
 
 __all__ = ["ShowScanOnline"]
 
-from taurus.external.qt import Qt
 from taurus.qt.qtgui.taurusgui import TaurusGui
 from sardana.taurus.qt.qtgui.macrolistener import (DynamicPlotManager,
                                                    assertPlotAvailability)

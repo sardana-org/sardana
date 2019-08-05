@@ -239,7 +239,7 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         data = data_desc['data']
         # dict< axis: list<channels> >
         trends1d = collections.defaultdict(list)
-        column_map = {col['name']:col for col in data['column_desc']}
+        column_map = {col['name']: col for col in data['column_desc']}
 
         # build a map of axis and corresponding channels
         for column in data['column_desc']:
@@ -258,8 +258,8 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
                     for axis in axes:
                         trends1d[axis].append(column)
                 else:
-                    self.warning('Cannot create spectrum plot for %d dims channel %r',
-                                 ndim, ch_name)
+                    self.warning('Cannot create spectrum plot for %d dims '
+                                 'channel %r', ndim, ch_name)
             elif ptype == PlotType.Image:
                 self.warning('Unsupported image plot for %s', ch_name)
 
@@ -270,7 +270,8 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
                 x_axis = column_map[axis]
                 w = ScanPlot(x_axis)
                 title = 'Trend1D - ' + x_axis['label']
-                self.createPanel(w, title, registerconfig=False, permanent=False)
+                self.createPanel(w, title, registerconfig=False,
+                                 permanent=False)
                 self._trends1d[axis] = title
 
         # remove widgets from previous scans which are not used in current scan
@@ -299,7 +300,8 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         progress = '{progress}'
         self.message_template = ' | '.join((serialno, title, started,
                                             progress, saving))
-        self.newShortMessage.emit(self.message_template.format(progress='Preparing...'))
+        self.newShortMessage.emit(
+            self.message_template.format(progress='Preparing...'))
 
     def newPoint(self, point):
         data = point['data']
