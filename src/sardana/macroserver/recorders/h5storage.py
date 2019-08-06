@@ -66,8 +66,8 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
     """
     formats = {'h5': '.h5'}
     # from http://docs.h5py.org/en/latest/strings.html
-    str_dt = h5py.special_dtype(vlen=str)  # Variable-length UTF-8 (PY2)
-    byte_dt = h5py.special_dtype(vlen=bytes)  # Variable-length UTF-8 (PY2)
+    str_dt = h5py.special_dtype(vlen=str)  # Variable-length UTF-8
+    byte_dt = h5py.special_dtype(vlen=bytes)  # Variable-length UTF-8
     supported_dtypes = ('float32', 'float64', 'int8',
                         'int16', 'int32', 'int64', 'uint8',
                         'uint16', 'uint32',
@@ -182,6 +182,8 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             if dd.dtype == 'bool':
                 dd.dtype = 'int8'
                 self.debug('%r will be stored with type=%r', dd.name, dd.dtype)
+            elif dd.dtype == 'str':
+                dd.dtype = NXscanH5_FileRecorder.str_dt
             if dd.value_ref_enabled:
                 # substitute original data (image or spectrum) type and shape
                 # since we will receive references instead
@@ -293,6 +295,9 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                 pre_scan_value = numpy.int8(dd.pre_scan_value)
                 self.debug('Pre-scan snapshot of %s will be stored as type %s',
                            dd.name, dtype)
+            elif dd.dtype == 'str':
+                dd.dtype = NXscanH5_FileRecorder.str_dt
+
             if dtype in self.supported_dtypes:
                 _ds = _snap.create_dataset(
                     label,
