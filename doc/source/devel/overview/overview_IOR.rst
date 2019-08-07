@@ -11,6 +11,10 @@ register a value. This value type may be one of: :class:`int`,
 :class:`float`, :class:`bool` but the hardware usually expects a fixed type
 for a given register.
 
+In contrary to the writing of the :ref:`motor's <sardana-motor-overview>`
+position attribute the writing of the IOR's value attribute is an instant
+operation.
+
 The IOR has a very wide range of applications it can serve to control the
 :term:`PLC` registers, a discrete motor, etc.
 
