@@ -15,8 +15,8 @@ In contrary to the writing of the :ref:`motor's <sardana-motor-overview>`
 position attribute the writing of the IOR's value attribute is an instant
 operation.
 
-The IOR has a very wide range of applications it can serve to control the
-:term:`PLC` registers, a discrete motor, etc.
+The IOR has a very wide range of applications, for example it can serve to
+control the :term:`PLC` registers.
 
 .. seealso::
 
