@@ -252,4 +252,4 @@ class ParamEditorModel(Qt.QAbstractItemModel):
         """
 
         xmlElement = self.root().toXml()
-        return etree.tostring(xmlElement)
+        return etree.tostring(xmlElement, encoding='unicode')

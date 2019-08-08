@@ -53,29 +53,18 @@ from taurus.core.util.containers import CaselessDict
 from taurus.core.util.codecs import CodecFactory
 from taurus.core.util.event import EventGenerator, AttributeEventWait
 from taurus.core.tango import TangoDevice
+
+from sardana.sardanautils import recur_map
 from .macro import MacroInfo, Macro, MacroNode, ParamFactory, \
     SingleParamNode, ParamNode, createMacroNode
 from .sardana import BaseSardanaElementContainer, BaseSardanaElement
 from .pool import getChannelConfigs
-from itertools import izip_longest
+from itertools import zip_longest
 
 CHANGE_EVT_TYPES = TaurusEventType.Change, TaurusEventType.Periodic
 
 
-def recur_map(fun, data, keep_none=False):
-    """Recursive map. Similar to map, but maintains the list objects structure
 
-    :param fun: <callable> the same purpose as in map function
-    :param data: <object> the same purpose as in map function
-    :param keep_none: <bool> keep None elements without applying fun
-    """
-    if hasattr(data, "__iter__"):
-        return [recur_map(fun, elem, keep_none) for elem in data]
-    else:
-        if keep_none is True and data is None:
-            return data
-        else:
-            return fun(data)
 
 
 def _get_console_width():
@@ -166,7 +155,7 @@ class BaseInputHandler(object):
         return ret
 
     def input_timeout(self, input_data):
-        print "input timeout"
+        print("input timeout")
 
 
 class MacroServerDevice(TangoDevice):
@@ -198,12 +187,12 @@ class ExperimentConfiguration(object):
         scan_file = env.get('ScanFile')
         if scan_file is None:
             scan_file = []
-        elif isinstance(scan_file, (str, unicode)):
+        elif isinstance(scan_file, str):
             scan_file = [scan_file]
         ret['ScanFile'] = scan_file
         mnt_grps = macro_server.getElementsOfType("MeasurementGroup")
-        mnt_grps_names = [mnt_grp.name for mnt_grp in mnt_grps.values()]
-        mnt_grps_full_names = mnt_grps.keys()
+        mnt_grps_names = [mnt_grp.name for mnt_grp in list(mnt_grps.values())]
+        mnt_grps_full_names = list(mnt_grps.keys())
 
         active_mnt_grp = env.get('ActiveMntGrp')
         if active_mnt_grp is None and len(mnt_grps):
@@ -225,9 +214,8 @@ class ExperimentConfiguration(object):
         for mnt_grp, reply in zip(mnt_grps_names, replies):
             try:
                 mnt_grp_configs[mnt_grp] = \
-                    codec.decode(('json', reply.get_data().value),
-                                 ensure_ascii=True)[1]
-            except Exception, e:
+                    codec.decode(('json', reply.get_data().value))[1]
+            except Exception as e:
                 from taurus.core.util.log import warning
                 warning('Cannot load Measurement group "%s": %s',
                         repr(mnt_grp), repr(e))
@@ -236,7 +224,7 @@ class ExperimentConfiguration(object):
     def set(self, conf, mnt_grps=None):
         """Sets the ExperimentConfiguration dictionary."""
         if mnt_grps is None:
-            mnt_grps = conf['MntGrpConfigs'].keys()
+            mnt_grps = list(conf['MntGrpConfigs'].keys())
 
         codec = CodecFactory().getCodec('json')
         msg_error = ''
@@ -256,7 +244,7 @@ class ExperimentConfiguration(object):
                     except Exception:
                         # if the mnt_grp did not already exist, create it now
                         chconfigs = getChannelConfigs(mnt_grp_cfg)
-                        chnames, chinfos = zip(*chconfigs)  # unzipping
+                        chnames, chinfos = list(zip(*chconfigs))  # unzipping
                         # We assume that all the channels belong to the same
                         # pool!
                         pool = self._getPoolOfElement(chnames[0])
@@ -513,7 +501,7 @@ class BaseDoor(MacroServerDevice):
 
     def _clearRunMacro(self):
         # Clear the log buffer
-        map(LogAttr.clearLogBuffer, self._log_attr.values())
+        list(map(LogAttr.clearLogBuffer, list(self._log_attr.values())))
         self._running_macros = None
         self._running_macro = None
         self._user_xml = None
@@ -537,7 +525,7 @@ class BaseDoor(MacroServerDevice):
         self._clearRunMacro()
 
         xml_root = None
-        if isinstance(obj, (str, unicode)):
+        if isinstance(obj, str):
             if obj.startswith('<') and not parameters:
                 xml_root = etree.fromstring(obj)
             else:
@@ -578,7 +566,9 @@ class BaseDoor(MacroServerDevice):
 
     def _runMacro(self, xml, synch=False):
         if not synch:
-            return self.command_inout("RunMacro", [etree.tostring(xml)])
+            return self.command_inout("RunMacro",
+                                      [etree.tostring(xml,
+                                                      encoding='unicode')])
         timeout = self.InteractiveTimeout
         evt_wait = self._getEventWait()
         evt_wait.connect(self.getAttribute("state"))
@@ -591,7 +581,9 @@ class BaseDoor(MacroServerDevice):
             # the time stamp resolution is not better than 1 ms.
             evt_wait.clearEventSet()
             ts = time.time()
-            result = self.command_inout("RunMacro", [etree.tostring(xml)])
+            result = self.command_inout("RunMacro",
+                                        [etree.tostring(xml,
+                                                        encoding='unicode')])
             evt_wait.waitEvent(self.Running, after=ts, timeout=timeout)
             if synch:
                 evt_wait.waitEvent(self.Running, equal=False, after=ts,
@@ -667,9 +659,7 @@ class BaseDoor(MacroServerDevice):
     def _processRecordData(self, data):
         if data is None or data.value is None:
             return
-        # make sure we get it as string since PyTango 7.1.4 returns a buffer
-        # object and json.loads doesn't support buffer objects (only str)
-        data = map(str, data.value)
+        data = data.value
 
         size = len(data[1])
         if size == 0:
@@ -688,17 +678,12 @@ class BaseDoor(MacroServerDevice):
         if t not in CHANGE_EVT_TYPES:
             return
 
-        # make sure we get it as string since PyTango 7.1.4 returns a buffer
-        # object and json.loads doesn't support buffer objects (only str)
-        v = map(str, v.value)
+        v = v.value
         if not len(v[1]):
             return
         format = v[0]
         codec = CodecFactory().getCodec(format)
 
-        # make sure we get it as string since PyTango 7.1.4 returns a buffer
-        # object and json.loads doesn't support buffer objects (only str)
-        v[1] = str(v[1])
         fmt, data = codec.decode(v)
         for macro_status in data:
             id = macro_status.get('id')
@@ -724,7 +709,7 @@ class BaseDoor(MacroServerDevice):
             if not self._debug:
                 if line == self.BlockStart:
                     self._in_block = True
-                    for i in xrange(self._block_lines):
+                    for i in range(self._block_lines):
                         if max_chrs == float('inf'):
                             nb_lines = 1
                         else:
@@ -753,7 +738,6 @@ class BaseDoor(MacroServerDevice):
     def write(self, msg, stream=None):
         if self.isSilent():
             return
-        msg = msg.encode('utf-8')
         self._output_stream = sys.stdout
         out = self._output_stream
         if stream is not None:
@@ -794,7 +778,7 @@ class MacroPath(object):
         self.macro_path = mp = self._ms().get_property("MacroPath")[
             "MacroPath"]
         self.base_macro_path = osp.commonprefix(self.macro_path)
-        self.rel_macro_path = [osp.relpath for p in mp, self.base_macro_path]
+        self.rel_macro_path = [osp.relpath for p in (mp, self.base_macro_path)]
 
 
 class Environment(dict):
@@ -816,7 +800,7 @@ class Environment(dict):
             ms.removeEnvironment(key)
 
     def __dir__(self):
-        return [key for key in self.keys() if not key.startswith("_")]
+        return [key for key in list(self.keys()) if not key.startswith("_")]
 
 
 class BaseMacroServer(MacroServerDevice):
@@ -865,13 +849,13 @@ class BaseMacroServer(MacroServerDevice):
 
         env = CodecFactory().decode(evt_value.value)
 
-        for key, value in env.get('new', {}).items():
+        for key, value in list(env.get('new', {}).items()):
             self._addEnvironment(key, value)
             added.add(key)
         for key in env.get('del', []):
             self._removeEnvironment(key)
             removed.add(key)
-        for key, value in env.get('change', {}).items():
+        for key, value in list(env.get('change', {}).items()):
             self._removeEnvironment(key)
             self._addEnvironment(key, value)
             changed.add(key)
@@ -941,7 +925,7 @@ class BaseMacroServer(MacroServerDevice):
         if evt_type not in CHANGE_EVT_TYPES:
             return ret
         try:
-            elems = CodecFactory().decode(evt_value.value, ensure_ascii=True)
+            elems = CodecFactory().decode(evt_value.value)
         except:
             self.error("Could not decode element info format=%s len=%s",
                        evt_value.value[0], len(evt_value.value[1]))
@@ -1125,7 +1109,7 @@ class BaseMacroServer(MacroServerDevice):
                     "%s parameter value: %s is above maximum allowed value."
                     % (name, value))
         else:
-            allowedInterfaces = self.getInterfaces().keys()
+            allowedInterfaces = list(self.getInterfaces().keys())
             if type not in allowedInterfaces:
                 raise Exception(
                     "No element with %s interface exist in this sardana "
@@ -1226,7 +1210,7 @@ class BaseMacroServer(MacroServerDevice):
         if isinstance(paramType, list):
             for repeatNode in paramNode.children():
                 children = repeatNode.children()
-                for child, paramT in izip_longest(children, paramType):
+                for child, paramT in zip_longest(children, paramType):
                     if child is None:
                         node = ParamFactory(paramT, repeatNode)
                         repeatNode.insertChild(node)
@@ -1240,7 +1224,7 @@ class BaseMacroServer(MacroServerDevice):
     def printTree(self, nodes, tabs=0):
         tabs = tabs + 1
         for node in nodes:
-            print ('\t'*tabs) + str(type(node)) + str(node)
+            print(('\t'*tabs) + str(type(node)) + str(node))
             if isinstance(node, SingleParamNode):
                 pass
             else:

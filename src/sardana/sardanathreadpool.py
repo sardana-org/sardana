@@ -25,8 +25,8 @@
 
 """This module contains the function to access sardana thread pool"""
 
-from __future__ import with_statement
-from __future__ import absolute_import
+
+
 
 __all__ = ["get_thread_pool"]
 

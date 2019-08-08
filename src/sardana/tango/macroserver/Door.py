@@ -175,7 +175,7 @@ class Door(SardanaDevice):
             self.macro_executor.abort()
             self.macro_executor.clearRunningMacro()
 
-        for handler, filter, format in self._handler_dict.values():
+        for handler, filter, format in list(self._handler_dict.values()):
             handler.finish()
 
         door = self.door
@@ -281,7 +281,7 @@ class Door(SardanaDevice):
                 event_value = event_value.value
 
             if attr.get_data_type() == ArgType.DevEncoded:
-                codec = CodecFactory().getCodec('json')
+                codec = CodecFactory().getCodec('utf8_json')
                 event_value = codec.encode(('', event_value))
         self.set_attribute(attr, value=event_value, timestamp=timestamp)
 
@@ -340,7 +340,7 @@ class Door(SardanaDevice):
             macro_data = self.door.get_macro_data()
             codec = CodecFactory().getCodec('bz2_pickle')
             data = codec.encode(('', macro_data))
-        except MacroServerException, mse:
+        except MacroServerException as mse:
             throw_sardana_exception(mse)
 
         attr.set_value(*data)
@@ -369,7 +369,7 @@ class Door(SardanaDevice):
     def PauseMacro(self):
         macro = self.getRunningMacro()
         if macro is None:
-            print "Unable to pause Null macro"
+            print("Unable to pause Null macro")
             return
         self.macro_executor.pause()
 
@@ -400,14 +400,15 @@ class Door(SardanaDevice):
 
     def RunMacro(self, par_str_list):
         # first empty all the buffers
-        for handler, filter, fmt in self._handler_dict.values():
+        for handler, filter, fmt in list(self._handler_dict.values()):
             handler.clearBuffer()
 
         if len(par_str_list) == 0:
             return []
 
         xml_seq = self.door.run_macro(par_str_list, asynch=True)
-        return [etree.tostring(xml_seq, pretty_print=False)]
+        return [etree.tostring(xml_seq, encoding='unicode',
+                               pretty_print=False)]
 
     def is_RunMacro_allowed(self):
         return self.get_state() in [Macro.Finished, Macro.Abort,
@@ -424,7 +425,7 @@ class Door(SardanaDevice):
             macro_env = self.door.get_macro_class_info(macro_name).env
         env = self.door.get_env(macro_env, macro_name=macro_name)
         ret = []
-        for k, v in env.iteritems():
+        for k, v in env.items():
             ret.extend((k, v))
         return ret
 

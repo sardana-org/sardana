@@ -23,7 +23,7 @@
 
 """This is the demo macro module"""
 
-from __future__ import print_function
+
 
 __all__ = ["sar_demo", "clear_sar_demo", "sar_demo_hkl", "clear_sar_demo_hkl"]
 
@@ -209,7 +209,7 @@ def sar_demo(self):
 @macro([["motor", Type.Moveable, None, '']])
 def mym2(self, pm):
     self.output(pm.getMotorNames())
-    elements = map(self.getMoveable, pm.elements)
+    elements = list(map(self.getMoveable, pm.elements))
     self.output(elements)
     self.output(type(pm))
     self.output(type(elements[0]))

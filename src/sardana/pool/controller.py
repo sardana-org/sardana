@@ -308,7 +308,7 @@ class Controller(object):
         self._args = args
         self._kwargs = kwargs
         self._api_version = self._findAPIVersion()
-        for prop_name, prop_value in props.items():
+        for prop_name, prop_value in list(props.items()):
             setattr(self, prop_name, prop_value)
 
     def _findAPIVersion(self):
@@ -1427,9 +1427,9 @@ class PseudoMotorController(PseudoController):
         dict_ids = self._getPoolController().get_element_ids()
         dict_axis = self._getPoolController().get_element_axis()
         pseudo_motor_ids = []
-        for akey, aname in dict_axis.items():
+        for akey, aname in list(dict_axis.items()):
             pseudo_motor_ids.append(
-                dict_ids.keys()[dict_ids.values().index(aname)])
+                list(dict_ids.keys())[list(dict_ids.values()).index(aname)])
         return self._getElem(index_or_role, self.pseudo_motor_roles,
                              self.__pseudo_motor_role_elements,
                              pseudo_motor_ids)

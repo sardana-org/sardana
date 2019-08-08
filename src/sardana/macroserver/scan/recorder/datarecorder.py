@@ -150,7 +150,7 @@ class DataRecorder(Logger):
     def addCustomData(self, value, name, **kwargs):
         try:
             self._addCustomData(value, name, **kwargs)
-        except Exception, e:
+        except Exception as e:
             raise RuntimeError('%s can not process custom data: %s' %
                                (self.__class__.__name__, e))
 

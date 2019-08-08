@@ -251,7 +251,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
                     if self.disableEditMode:
                         self.updateMacroEditor(mlist[0])
                         raise Exception(e)
-                    message = e[0]
+                    message = e.args[0]
                     #raise Exception(e)
                     problems.append(message)
 
@@ -274,7 +274,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
                 except Exception as e:
                     self.model().setData(self.currentIndex, 'None')
                     txt = str(ix.sibling(ix.row(), 0).data())
-                    message = "<b>" + txt + "</b> " + e[0]
+                    message = "<b>" + txt + "</b> " + e.args[0]
                     problems.append(message)
             except IndexError:
                 txt = str(ix.sibling(ix.row(), 0).data())
@@ -521,7 +521,7 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
             return None
         type = node.type()
         ms = self.getParentModelObj()
-        items = ms.getElementsWithInterface(type).keys()
+        items = list(ms.getElementsWithInterface(type).keys())
         return items, type
 
     def nextValue(self, current):

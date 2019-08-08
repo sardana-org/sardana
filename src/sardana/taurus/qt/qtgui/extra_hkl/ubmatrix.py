@@ -30,8 +30,8 @@ import sys
 import sardana
 from taurus.external.qt import Qt
 from taurus.qt.qtgui.container import TaurusWidget
-from reflectionslist import ReflectionsList
-from reflectionseditor import ReflectionsEditor
+from .reflectionslist import ReflectionsList
+from .reflectionseditor import ReflectionsEditor
 from taurus.qt.qtgui.base import TaurusBaseWidget
 
 from taurus.external.qt import QtCore, QtGui

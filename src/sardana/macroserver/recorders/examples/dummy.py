@@ -47,7 +47,7 @@ class DumbRecorder(BaseFileRecorder):
         self.fd.write("Starting new recording\n")
         self.fd.write("# Title :     %s\n" % recordlist.getEnvironValue('title'))
         env = recordlist.getEnviron()
-        for envky in env.keys():
+        for envky in list(env.keys()):
             if envky != 'title' and envky != 'labels':
                 self.fd.write("# %8s :    %s \n" % (envky, str(env[envky])))
         self.fd.write("# Started:    %s\n" % env['starttime'])

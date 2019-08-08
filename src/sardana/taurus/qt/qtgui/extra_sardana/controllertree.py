@@ -170,11 +170,11 @@ class ControllerBaseModel(TaurusBaseModel):
             mime_data_item = tree_item.mimeData(index)
             if mime_data_item is None:
                 continue
-            data.append(mime_data_item)
-        ret.setData(TAURUS_MODEL_LIST_MIME_TYPE, "\r\n".join(data))
-        ret.setText(", ".join(data))
+            data.append(bytes(mime_data_item, encoding='utf8'))
+        ret.setData(TAURUS_MODEL_LIST_MIME_TYPE, b"\r\n".join(data))
+        ret.setText(", ".join(map(str, data)))
         if len(data) == 1:
-            ret.setData(TAURUS_MODEL_MIME_TYPE, str(data[0]))
+            ret.setData(TAURUS_MODEL_MIME_TYPE, data[0])
         return ret
 
     def pyData(self, index, role):
@@ -315,7 +315,7 @@ def main_ControllerClassSelecionDialog(pool, perspective=PoolControllerView.Cont
         model_name=pool, perspective=perspective)
 
     if w.result() == Qt.QDialog.Accepted:
-        print w.getSelectedMacros()
+        print(w.getSelectedMacros())
     return w
 
 

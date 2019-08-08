@@ -389,7 +389,7 @@ TTYPE_MAP = {
     DataType.String: DevString,
     DataType.Boolean: DevBoolean,
 }
-R_TTYPE_MAP = dict((v, k) for k, v in TTYPE_MAP.items())
+R_TTYPE_MAP = dict((v, k) for k, v in list(TTYPE_MAP.items()))
 
 #: dictionary dict<:class:`sardana.DataFormat`, :class:`PyTango.AttrFormat`>
 TFORMAT_MAP = {
@@ -397,7 +397,7 @@ TFORMAT_MAP = {
     DataFormat.OneD: SPECTRUM,
     DataFormat.TwoD: IMAGE,
 }
-R_TFORMAT_MAP = dict((v, k) for k, v in TFORMAT_MAP.items())
+R_TFORMAT_MAP = dict((v, k) for k, v in list(TFORMAT_MAP.items()))
 
 #: dictionary dict<:class:`sardana.DataAccess`, :class:`PyTango.AttrWriteType`>
 TACCESS_MAP = {
@@ -405,7 +405,7 @@ TACCESS_MAP = {
     DataAccess.ReadWrite: READ_WRITE,
 }
 
-R_TACCESS_MAP = dict((v, k) for k, v in TACCESS_MAP.items())
+R_TACCESS_MAP = dict((v, k) for k, v in list(TACCESS_MAP.items()))
 
 
 def exception_str(etype=None, value=None, sep='\n'):
@@ -528,17 +528,17 @@ def ask_yes_no(prompt, default=None):
         elif d_l in ('n', 'no'):
             prompt += " (N/y) ?"
 
-    while ans not in answers.keys():
+    while ans not in list(answers.keys()):
         try:
-            ans = raw_input(prompt + ' ').lower()
+            ans = input(prompt + ' ').lower()
             if not ans:  # response was an empty string
                 ans = default
         except KeyboardInterrupt:
-            print
+            print()
         except EOFError:
-            if default in answers.keys():
+            if default in list(answers.keys()):
                 ans = default
-                print
+                print()
             else:
                 raise
 
@@ -706,21 +706,21 @@ def prepare_server(args, tango_args):
 
     nodb = "-nodb" in tango_args
     if nodb and not hasattr(DeviceClass, "device_name_factory"):
-        print "In order to start %s with 'nodb' you need PyTango >= 7.2.3" %\
-              server_name
+        print("In order to start %s with 'nodb' you need PyTango >= 7.2.3" %
+              server_name)
         sys.exit(1)
 
     if len(tango_args) < 2:
         valid = False
         while not valid:
-            inst_name = raw_input(
+            inst_name = input(
                 "Please indicate %s instance name: " % server_name)
             # should be a instance name validator.
-            valid_set = string.letters + string.digits + '_' + '-'
+            valid_set = string.ascii_letters + string.digits + '_' + '-'
             out = ''.join([c for c in inst_name if c not in valid_set])
             valid = len(inst_name) > 0 and len(out) == 0
             if not valid:
-                print "We only accept alphanumeric combinations"
+                print("We only accept alphanumeric combinations")
         args.append(inst_name)
         tango_args.append(inst_name)
     else:
@@ -738,12 +738,12 @@ def prepare_server(args, tango_args):
                 # to
                 pool_names = []
                 pools = get_dev_from_class(db, "Pool")
-                all_pools = pools.keys()
-                for pool in pools.values():
+                all_pools = list(pools.keys())
+                for pool in list(pools.values()):
                     pool_alias = pool[2]
                     if pool_alias is not None:
                         all_pools.append(pool_alias)
-                all_pools = map(str.lower, all_pools)
+                all_pools = list(map(str.lower, all_pools))
                 pools_for_choosing = []
                 for i in pools:
                     pools_for_choosing.append(pools[i][3])
@@ -756,7 +756,7 @@ def prepare_server(args, tango_args):
                 else:
                     print("\nAvailable Pools:")
                     for pool in pools_for_choosing:
-                        print pool
+                        print(pool)
                     print("")
                     while True:
                         msg = "Please select the Pool to connect to " \
@@ -764,19 +764,19 @@ def prepare_server(args, tango_args):
                         # user may abort it with Ctrl+C - this will not
                         # register anything in the database and the
                         # KeyboardInterrupt will be raised
-                        elem = raw_input(msg).strip()
+                        elem = input(msg).strip()
                         # no pools selected and user ended loop
                         if len(elem) == 0 and len(pool_names) == 0:
                             print(no_pool_msg)
                             break
                         # user ended loop with some pools selected
                         elif len(elem) == 0:
-                            print("\nMacroServer %s has been connected to "
-                                  "Pool/s %s\n" % (inst_name, pool_names))
+                            print(("\nMacroServer %s has been connected to "
+                                  "Pool/s %s\n" % (inst_name, pool_names)))
                             break
                         # user entered unknown pool
                         elif elem.lower() not in all_pools:
-                            print "Unknown pool element"
+                            print("Unknown pool element")
                         else:
                             pool_names.append(elem)
                 log_messages += register_sardana(db, server_name, inst_name,
@@ -789,7 +789,7 @@ def prepare_server(args, tango_args):
 
 
 def exists_server_instance(db, server_name, server_instance):
-    known_inst = map(str.lower, db.get_instance_name_list(server_name))
+    known_inst = list(map(str.lower, db.get_instance_name_list(server_name)))
     return server_instance.lower() in known_inst
 
 
@@ -915,7 +915,7 @@ def get_dev_from_class_server(db, classname, server):
     def pairwise(iterable):
         "s -> (s0, s1), (s2, s3), (s4, s5), ..."
         a = iter(iterable)
-        return itertools.izip(a, a)
+        return list(zip(a, a))
 
     devices = []
     device_class_list = db.get_device_class_list(server)
@@ -1108,7 +1108,7 @@ def prepare_logging(options, args, tango_args, start_time=None,
         taurus._handlers = handlers = []
         try:
             if not os.path.exists(path):
-                os.makedirs(path, 0777)
+                os.makedirs(path, 0o777)
 
             from sardana import sardanacustomsettings
             maxBytes = getattr(sardanacustomsettings, 'LOG_FILES_SIZE', 1E7)
@@ -1247,8 +1247,8 @@ def run(prepare_func, args=None, tango_util=None, start_time=None, mode=None,
 
     try:
         log_messages.extend(prepare_server(args, tango_args))
-    except AbortException, e:
-        print e.message
+    except AbortException as e:
+        print(e)
         return
     except KeyboardInterrupt:
         print("\nInterrupted by keyboard")

@@ -78,7 +78,7 @@ class PseudoMotor(PoolElementDevice):
     def init_device(self):
         PoolElementDevice.init_device(self)
 
-        self.Elements = map(int, self.Elements)
+        self.Elements = list(map(int, self.Elements))
         pseudo_motor = self.pseudo_motor
         if self.pseudo_motor is None:
             full_name = self.get_full_name()

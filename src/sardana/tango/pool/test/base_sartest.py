@@ -37,7 +37,7 @@ def _cleanup_device(dev_name):
     device = taurus.Device(dev_name)
     # tango_alias_devs contains any names in which we have referred
     # to the device, could be alias, short name, etc. pop all of them
-    for k, v in factory.tango_alias_devs.items():
+    for k, v in list(factory.tango_alias_devs.items()):
         if v is device:
             factory.tango_alias_devs.pop(k)
     full_name = device.getFullName()
@@ -112,8 +112,8 @@ class SarTestTestCase(BasePoolTestCase):
                         ctrl = PyTango.DeviceProxy(ctrl_name)
                         # use the first trigger/gate element by default
                         ctrl.write_attribute("Synchronizer", "_test_tg_1_1")
-                except Exception, e:
-                    print e
+                except Exception as e:
+                    print(e)
                     msg = 'Impossible to create ctrl: "%s"' % (ctrl_name)
                     raise Exception('Aborting SartestTestCase: %s' % (msg))
                 self.ctrl_list.append(ctrl_name)
@@ -123,8 +123,8 @@ class SarTestTestCase(BasePoolTestCase):
                     try:
                         self.pool.createElement(
                             [sar_type, ctrl_name, str(axis), elem_name])
-                    except Exception, e:
-                        print e
+                    except Exception as e:
+                        print(e)
                         msg = 'Impossible to create element: "%s"' % (
                             elem_name)
                         raise Exception('Aborting SartestTestCase: %s' % (msg))
@@ -139,8 +139,8 @@ class SarTestTestCase(BasePoolTestCase):
                 argin.extend(roles)
                 try:
                     self.pool.CreateController(argin)
-                except Exception, e:
-                    print e
+                except Exception as e:
+                    print(e)
                     msg = 'Impossible to create ctrl: "%s"' % (ctrl_name)
                     raise Exception('Aborting SartestTestCase: %s' % (msg))
                 self.ctrl_list.append(ctrl_name)
@@ -148,10 +148,10 @@ class SarTestTestCase(BasePoolTestCase):
                     elem = role.split("=")[1]
                     if elem not in self.elem_list:
                         self.elem_list.append(elem)
-        except Exception, e:
+        except Exception as e:
             # force tearDown in order to eliminate the Pool
             BasePoolTestCase.tearDown(self)
-            print e
+            print(e)
 
     def tearDown(self):
         """Remove the elements and the controllers

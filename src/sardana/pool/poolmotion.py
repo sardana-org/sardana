@@ -184,7 +184,7 @@ class PoolMotion(PoolAction):
         if read_state:
             states = {}
             self.read_state_info(ret=states)
-            for moveable, state_info in states.items():
+            for moveable, state_info in list(states.items()):
                 state_info = moveable._from_ctrl_state_info(state_info)
                 moveable._set_state_info(state_info)
 
@@ -262,7 +262,7 @@ class PoolMotion(PoolAction):
                        pool.motion_loop_states_per_position)
 
         self._motion_info = motion_info = {}
-        for moveable, motion_data in items.items():
+        for moveable, motion_data in list(items.items()):
             it = moveable.instability_time
             motion_info[moveable] = PoolMotionItem(moveable, *motion_data,
                                                    instability_time=it)
@@ -336,7 +336,7 @@ class PoolMotion(PoolAction):
             state_error_occured = self._state_error_occured(states)
             timestamp = time.time()
             in_motion = False
-            for moveable, state_info in states.items():
+            for moveable, state_info in list(states.items()):
                 motion_item = motion_info[moveable]
                 state_info = moveable._from_ctrl_state_info(state_info)
 
@@ -420,7 +420,7 @@ class PoolMotion(PoolAction):
                             self.error("Loop final read position error 2. "
                                        "Cannot send final position event!!!")
 
-                    for moveable, position_info in positions.items():
+                    for moveable, position_info in list(positions.items()):
                         moveable.put_dial_position(position_info, propagate=2)
 
                     # send state
@@ -438,7 +438,7 @@ class PoolMotion(PoolAction):
             if not i % nb_states_per_pos:
                 self.read_dial_position(ret=positions)
                 # send position
-                for moveable, position_value in positions.items():
+                for moveable, position_value in list(positions.items()):
                     if position_value.error:
                         self.error("Loop read position error for %s" %
                                    moveable.name)
@@ -447,14 +447,14 @@ class PoolMotion(PoolAction):
             time.sleep(nap)
 
     def _state_error_occured(self, d):
-        for _, (state_info, exc_info) in d.items():
+        for _, (state_info, exc_info) in list(d.items()):
             state = state_info[0]
             if exc_info is not None or state not in _NON_ERROR_STATES:
                 return True
         return False
 
     def _position_error_occured(self, positions):
-        for _, value in positions.items():
+        for _, value in list(positions.items()):
             if value.error:
                 return True
 
@@ -487,7 +487,7 @@ class PoolMotion(PoolAction):
         # send positions
         positions = {}
         self.read_dial_position(ret=positions)
-        for moveable, position_info in positions.items():
+        for moveable, position_info in list(positions.items()):
             moveable.put_dial_position(position_info, propagate=2)
 
         motion_info = self._motion_info

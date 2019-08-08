@@ -209,7 +209,7 @@ class FunctionGenerator(EventGenerator, Logger):
             nap = 0
         else:
             nap = period / necessary_naps
-        for _ in xrange(necessary_naps):
+        for _ in range(necessary_naps):
             if self.is_stopped():
                 break
             time.sleep(nap)
@@ -348,7 +348,7 @@ class FunctionGenerator(EventGenerator, Logger):
                 total_param = group[Total]
                 total_in_initial_domain = total_param[initial_domain_in_use]
                 total_in_active_domain = total_param[active_domain_in_use]
-                for _ in xrange(repeats):
+                for _ in range(repeats):
                     passive_event = active_event_in_active_domain + active
                     active_events.append(active_event_in_initial_domain)
                     passive_events.append(passive_event)

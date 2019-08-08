@@ -66,8 +66,8 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
     """
     formats = {'h5': '.h5'}
     # from http://docs.h5py.org/en/latest/strings.html
-    str_dt = h5py.special_dtype(vlen=unicode)  # Variable-length UTF-8 (PY2)
-    byte_dt = h5py.special_dtype(vlen=bytes)  # Variable-length UTF-8 (PY2)
+    str_dt = h5py.special_dtype(vlen=str)  # Variable-length UTF-8
+    byte_dt = h5py.special_dtype(vlen=bytes)  # Variable-length UTF-8
     supported_dtypes = ('float32', 'float64', 'int8',
                         'int16', 'int32', 'int64', 'uint8',
                         'uint16', 'uint32',
@@ -155,7 +155,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             nxentry = self.fd.create_group(self.entryname)
         except ValueError:
             # Warn and abort
-            if self.entryname in self.fd.keys():
+            if self.entryname in list(self.fd.keys()):
                 msg = ('{ename:s} already exists in {fname:s}. '
                        'Aborting macro to prevent data corruption.\n'
                        'This is likely caused by a wrong ScanID\n'
@@ -182,6 +182,8 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
             if dd.dtype == 'bool':
                 dd.dtype = 'int8'
                 self.debug('%r will be stored with type=%r', dd.name, dd.dtype)
+            elif dd.dtype == 'str':
+                dd.dtype = NXscanH5_FileRecorder.str_dt
             if dd.value_ref_enabled:
                 # substitute original data (image or spectrum) type and shape
                 # since we will receive references instead
@@ -282,7 +284,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         _snap = _meas.create_group('pre_scan_snapshot')
         _snap.attrs['NX_class'] = 'NXcollection'
 
-        meas_keys = _meas.keys()
+        meas_keys = list(_meas.keys())
 
         for dd in self.preScanSnapShot:
             label = self.sanitizeName(dd.label)
@@ -293,6 +295,9 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
                 pre_scan_value = numpy.int8(dd.pre_scan_value)
                 self.debug('Pre-scan snapshot of %s will be stored as type %s',
                            dd.name, dtype)
+            elif dd.dtype == 'str':
+                dd.dtype = NXscanH5_FileRecorder.str_dt
+
             if dtype in self.supported_dtypes:
                 _ds = _snap.create_dataset(
                     label,
@@ -498,7 +503,7 @@ class NXscanH5_FileRecorder(BaseFileRecorder):
         _meas = nxentry['measurement']
 
         # write the 1D NXdata group
-        for axes, v in plots1d.items():
+        for axes, v in list(plots1d.items()):
             _nxdata = nxentry.create_group(plots1d_names[axes])
             _nxdata.attrs['NX_class'] = 'NXdata'
 

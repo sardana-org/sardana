@@ -287,7 +287,7 @@ class MacroSequenceTree(Qt.QTreeView, BaseConfigurableClass):
 
     def prepareMacroProgresses(self):
         self._idIndexDict = self.model().createIdIndexDictionary()
-        for macroId in self._idIndexDict.iterkeys():
+        for macroId in self._idIndexDict.keys():
             self.setProgressForMacro(macroId, 0)
 
     def setProgressForMacro(self, macroId, progress):
@@ -672,7 +672,7 @@ class TaurusSequencerWidget(TaurusWidget):
                 "Error while saving macros sequence",
                 "There was a problem while writing to the file: %s" %
                 fileName)
-            print e
+            print(e)
         finally:
             if not file is None:
                 file.close()

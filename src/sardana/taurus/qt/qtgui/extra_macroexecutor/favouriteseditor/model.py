@@ -92,7 +92,8 @@ class MacrosListModel(Qt.QAbstractListModel):
         for macroNode in self.list:
             listElement.append(macroNode.toXml(withId=False))
         xmlTree = etree.ElementTree(listElement)
-        xmlString = etree.tostring(xmlTree, pretty_print=pretty)
+        xmlString = etree.tostring(xmlTree, encoding='unicode',
+                                   pretty_print=pretty)
         return xmlString
 
     def fromXmlString(self, xmlString):

@@ -224,7 +224,7 @@ class aNscan(Hookable):
         step["post-step-hooks"] = self.getHooks('post-step')
 
         step["check_func"] = []
-        for point_no in xrange(self.nr_points):
+        for point_no in range(self.nr_points):
             step["positions"] = self.starts + point_no * self.interv_sizes
             step["point_id"] = point_no
             yield step
@@ -235,7 +235,7 @@ class aNscan(Hookable):
         step["post-move-hooks"] = self.getHooks('post-move')
         step["check_func"] = []
         step["slow_down"] = self.slow_down
-        for point_no in xrange(self.nr_waypoints):
+        for point_no in range(self.nr_waypoints):
             step["positions"] = self.starts + point_no * self.way_lengths
             step["waypoint_id"] = point_no
             yield step
@@ -302,7 +302,7 @@ class aNscan(Hookable):
             # calculate motion time
             max_step0_time, max_step_time = 0.0, 0.0
             # first motion takes longer, all others should be "equal"
-            step0 = it.next()
+            step0 = next(it)
             for v_motor, start, stop, length in zip(v_motors, curr_pos,
                                                     step0['positions'],
                                                     self.interv_sizes):
@@ -876,8 +876,8 @@ motor2 sqrt(y*x+3)
         self.motors = [item[0] for item in args[2]]
         self.funcstrings = [item[1] for item in args[2]]
 
-        globals_lst = [dict(zip(indepvars, values))
-                       for values in zip(*indepvars.values())]
+        globals_lst = [dict(list(zip(indepvars, values)))
+                       for values in zip(*list(indepvars.values()))]
         self.paths = [[SafeEvaluator(globals).eval(
             func) for globals in globals_lst] for func in self.funcstrings]
 
@@ -946,7 +946,7 @@ motor2 sqrt(y*x+3)
         step["post-step-hooks"] = self.getHooks('post-step')
 
         step["check_func"] = []
-        for i in xrange(self.nr_points):
+        for i in range(self.nr_points):
             step["positions"] = self.paths[:, i]
             step["integ_time"] = self.integ_time[i]
             step["point_id"] = i
@@ -993,7 +993,7 @@ class scanhist(Macro):
         try:
             hist = self.getEnv("ScanHistory")
         except UnknownEnv:
-            print "No scan recorded in history"
+            print("No scan recorded in history")
             return
         if scan_number < 0:
             self.show_all(hist)

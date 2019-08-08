@@ -27,9 +27,9 @@
 
 __all__ = ["ShowScanOnline"]
 
-from sardana.taurus.qt.qtgui.macrolistener import \
-    DynamicPlotManager
 from taurus.qt.qtgui.taurusgui import TaurusGui
+from sardana.taurus.qt.qtgui.macrolistener import (DynamicPlotManager,
+                                                   assertPlotAvailability)
 
 
 class ShowScanOnline(DynamicPlotManager):
@@ -95,6 +95,8 @@ def main():
     app = TaurusApplication(app_name='Showscan Online', org_domain="Sardana",
                             org_name="Tango communinity",
                             cmd_line_parser=parser)
+
+    assertPlotAvailability()
 
     gui = TaurusGuiLite()
     args = app.get_command_line_args()

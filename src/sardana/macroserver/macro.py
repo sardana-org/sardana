@@ -26,8 +26,9 @@
 """This module contains the class definition for the MacroServer generic
 scan"""
 
-from __future__ import with_statement
-from __future__ import print_function
+
+import collections
+import numbers
 
 __all__ = ["OverloadPrint", "PauseEvent", "Hookable", "ExecMacroHook",
            "MacroFinder", "Macro", "macro", "iMacro", "imacro",
@@ -43,7 +44,7 @@ import types
 import ctypes
 import weakref
 import operator
-import StringIO
+import io
 import threading
 import traceback
 
@@ -185,7 +186,7 @@ class Hookable(Logger):
         return self.__class__.hints.get('allowsHooks')
 
     def getHints(self):
-        return self._getHookHintsDict().keys()
+        return list(self._getHookHintsDict().keys())
 
     def getHooks(self, hint=None):
         """This will return a list of hooks that have the given hint. Two reserved
@@ -846,7 +847,7 @@ class Macro(Logger):
         """
         fd = kwargs.get('file', sys.stdout)
         if fd in (sys.stdout, sys.stderr):
-            out = StringIO.StringIO()
+            out = io.StringIO()
             kwargs['file'] = out
             end = kwargs.get('end', '\n')
             if end == '\n':
@@ -1328,10 +1329,10 @@ class Macro(Logger):
         macro_name = None
         arg0 = args[0]
         if len(args) == 1:
-            if type(arg0) in types.StringTypes:
+            if isinstance(arg0, str):
                 # dealing with sth like args = ('ascan th 0 100 10 1.0',)
                 macro_name = arg0.split()[0]
-            elif operator.isSequenceType(arg0):
+            elif isinstance(arg0, collections.Sequence):
                 # dealing with sth like args = (['ascan', 'th', '0', '100',
                 # '10', '1.0'],)
                 macro_name = arg0[0]
@@ -1388,9 +1389,9 @@ class Macro(Logger):
         """**Macro API**. Sends an line tagged as a block to the output
 
         :param :obj:`str` line: line to be sent"""
-        if isinstance(line, (str, unicode)):
+        if isinstance(line, str):
             o = line
-        elif operator.isSequenceType(line):
+        elif isinstance(line, collections.Sequence):
             o = "\n".join(line)
         else:
             o = str(line)
@@ -1470,7 +1471,7 @@ class Macro(Logger):
             automatically reserve the object for this macro [default: True]
 
         :return: the object or None if no compatible object is found"""
-        if not isinstance(name, (str, unicode)):
+        if not isinstance(name, str):
             raise self._buildWrongParamExp("getObj", "name", "string",
                                            str(type(name)))
 
@@ -1973,7 +1974,7 @@ class Macro(Logger):
         the environment, sets it to a default value and returns it.
         '''
         view_options = self._getViewOptions()
-        if not view_options.has_key(name):
+        if name not in view_options:
             ViewOption.reset_option(view_options, name)
             self.setEnv('_ViewOptions', view_options)
         return view_options[name]
@@ -2054,9 +2055,9 @@ class Macro(Logger):
         Sends a line tagged as a block to the output
 
         :param :obj:`str` line: line to be sent"""
-        if isinstance(line, (str, unicode)):
+        if isinstance(line, str):
             o = line
-        elif operator.isSequenceType(line):
+        elif isinstance(line, collections.Sequence):
             o = "\n".join(line)
         else:
             o = str(line)
@@ -2305,7 +2306,7 @@ class Macro(Logger):
         macro"""
         for obj in args:
             # isiterable
-            if not type(obj) in map(type, ([], ())):
+            if not type(obj) in list(map(type, ([], ()))):
                 # if not operator.isSequenceType(obj) or type(obj) in
                 # types.StringTypes:
                 obj = (obj,)
@@ -2332,14 +2333,14 @@ class Macro(Logger):
         if isinstance(res, types.GeneratorType):
             it = iter(res)
             for i in it:
-                if operator.isMappingType(i):
+                if isinstance(i, collections.Mapping):
                     new_range = i.get('range')
                     if new_range is not None:
                         macro_status['range'] = new_range
                     new_step = i.get('step')
                     if new_step is not None:
                         macro_status['step'] = new_step
-                elif operator.isNumberType(i):
+                elif isinstance(i, numbers.Number):
                     macro_status['step'] = i
                 macro_status['state'] = 'step'
                 yield macro_status
@@ -2361,8 +2362,8 @@ class Macro(Logger):
         """
         if out is None:
             out = ()
-        if operator.isSequenceType(out) and not type(out) in types.StringTypes:
-            out = map(str, out)
+        if isinstance(out, collections.Sequence) and not type(out) in str:
+            out = list(map(str, out))
         else:
             out = (str(out),)
         return out
@@ -2483,7 +2484,7 @@ class MacroFunc(Macro):
     def __init__(self, *args, **kwargs):
         function = kwargs['function']
         self._function = function
-        kwargs['as'] = self._function.func_name
+        kwargs['as'] = self._function.__name__
         if function.param_def is not None:
             self.param_def = function.param_def
         if function.result_def is not None:

@@ -41,6 +41,7 @@ import numpy as np
 
 import PyTango
 import taurus
+import collections
 
 try:
     from collections import OrderedDict
@@ -301,7 +302,7 @@ class GScan(Logger):
             macro.info("ActiveMntGrp not defined. Using %s", mnt_grp)
             macro.setEnv('ActiveMntGrp', mnt_grp.getName())
         else:
-            if not isinstance(mnt_grp_name, (str, unicode)):
+            if not isinstance(mnt_grp_name, str):
                 t = type(mnt_grp_name).__name__
                 raise TypeError("ActiveMntGrp MUST be string. It is '%s'" % t)
 
@@ -435,7 +436,7 @@ class GScan(Logger):
                     ret.append(TangoExtraData(**kw))
                 except InterruptException:
                     raise
-                except Exception, colexcept:
+                except Exception as colexcept:
                     colname = kw.get('label', str(i))
                     self.macro.warning("Extra column %s is invalid: %s",
                                        colname, str(colexcept))
@@ -491,7 +492,7 @@ class GScan(Logger):
                           'ScanDir <abs directory>") to enable it')
             return ()
 
-        if not isinstance(scan_dir, (str, unicode)):
+        if not isinstance(scan_dir, str):
             scan_dir_t = type(scan_dir).__name__
             raise TypeError("ScanDir MUST be string. It is '%s'" % scan_dir_t)
 
@@ -513,16 +514,16 @@ class GScan(Logger):
         except UnknownEnv:
             pass
 
-        if isinstance(file_names, (str, unicode)):
+        if isinstance(file_names, str):
             file_names = (file_names,)
-        elif not operator.isSequenceType(file_names):
+        elif not isinstance(file_names, collections.Sequence):
             scan_file_t = type(file_names).__name__
             raise TypeError("ScanFile MUST be string or sequence of strings."
                             " It is '%s'" % scan_file_t)
 
-        if isinstance(scan_recorders, (str, unicode)):
+        if isinstance(scan_recorders, str):
             scan_recorders = (scan_recorders,)
-        elif not operator.isSequenceType(scan_recorders):
+        elif not isinstance(scan_recorders, collections.Sequence):
             scan_recorders_t = type(scan_recorders).__name__
             raise TypeError("ScanRecorder MUST be string or sequence of "
                             "strings. It is '%s'" % scan_recorders_t)
@@ -540,7 +541,7 @@ class GScan(Logger):
                 file_recorders.append(file_recorder)
             except InterruptException:
                 raise
-            except AmbiguousRecorderError, e:
+            except AmbiguousRecorderError as e:
                 macro.error('Select recorder that you would like to use '
                             '(i.e. set ScanRecorder environment variable).')
                 raise e
@@ -665,7 +666,10 @@ class GScan(Logger):
         for ci in channels_info:
             full_name = ci.full_name
             try:
-                channel = taurus.Device(full_name)
+                # Use DeviceProxy instead of taurus to avoid crashes in Py3
+                # See: tango-controls/pytango#292
+                # channel = taurus.Device(full_name)
+                channel = PyTango.DeviceProxy(full_name)
                 instrument = channel.instrument
             except Exception:
                 # full_name of external channels is the name of the attribute
@@ -861,7 +865,7 @@ class GScan(Logger):
                     v_motors = self.get_virtual_motors()
                     motion_time, acq_time = 0.0, 0.0
                     while point_nb < max_iter:
-                        step = iterator.next()
+                        step = next(iterator)
                         end_pos = step['positions']
                         max_path_duration = 0.0
                         for v_motor, start, stop in zip(v_motors,
@@ -882,7 +886,7 @@ class GScan(Logger):
             else:
                 try:
                     while point_nb < max_iter:
-                        step = iterator.next()
+                        step = next(iterator)
                         point_nb += 1
                 finally:
                     total_time = self.macro.getTimeEstimation()
@@ -970,7 +974,7 @@ class GScan(Logger):
             scan_history = []
 
         scan_file = env['ScanFile']
-        if isinstance(scan_file, (str, unicode)):
+        if isinstance(scan_file, str):
             scan_file = scan_file,
 
         names = [col.name for col in env['datadesc']]
@@ -1003,10 +1007,13 @@ class GScan(Logger):
             endstatus = ScanEndStatus.Normal
         except StopException:
             endstatus = ScanEndStatus.Stop
+            raise
         except AbortException:
             endstatus = ScanEndStatus.Abort
+            raise
         except Exception:
             endstatus = ScanEndStatus.Exception
+            raise
         finally:
             self._env["endstatus"] = endstatus
             self.end()
@@ -1015,8 +1022,6 @@ class GScan(Logger):
                 if hasattr(macro, 'getHooks'):
                     for hook in macro.getHooks('post-scan'):
                         hook()
-            else:
-                raise
 
     def scan_loop(self):
         raise NotImplementedError('Scan method cannot be called by '
@@ -1075,7 +1080,7 @@ class SScan(GScan):
             self.stepUp(i, step, lstep)
             lstep = step
             if scream:
-                yield ((i + 1) / nr_points) * 100.0
+                yield ((i + 1) / nr_points) * 100
 
         if not scream:
             yield 100.0
@@ -1443,7 +1448,7 @@ class CScan(GScan):
                                      deceleration=motor_backup["deceleration"])
             try:
                 self.configure_motor(motor, attributes)
-            except ScanException, e:
+            except ScanException as e:
                 msg = "Error when restoring motor's backup (%s)" % e
                 raise ScanException(msg)
 
@@ -1466,7 +1471,7 @@ class CScan(GScan):
                                      deceleration=self.get_min_dec_time(motor))
             try:
                 self.configure_motor(motor, attributes)
-            except ScanException, e:
+            except ScanException as e:
                 msg = "Error when setting fast motion (%s)" % e
                 raise ScanException(msg)
 
@@ -1580,7 +1585,7 @@ class CScan(GScan):
         :param attributes: (OrderedDict) dictionary with attribute names (keys)
             and attribute values (values)
         """
-        for param, value in attributes.items():
+        for param, value in list(attributes.items()):
             try:
                 motor._getAttrEG(param).write(value)
             except Exception:
@@ -1860,7 +1865,7 @@ class CSScan(CScan):
                 macro.checkPoint()
 
                 try:
-                    point_nb, step = period_steps.next()
+                    point_nb, step = next(period_steps)
                 except StopIteration:
                     self._all_waypoints_finished = True
                     break
@@ -1932,7 +1937,7 @@ class CSScan(CScan):
                     self.data.addRecord(data_line)
 
                     if scream:
-                        yield ((point_nb + 1) / nr_points) * 100.0
+                        yield ((point_nb + 1) / nr_points) * 100
                 else:
                     break
                 old_curr_time = curr_time
@@ -2034,7 +2039,10 @@ class CAcquisition(object):
             full_name = channel_info["full_name"]
             name = channel_info["name"]
             try:
-                taurus.Device(full_name)
+                # Use DeviceProxy instead of taurus to avoid crashes in Py3
+                # See: tango-controls/pytango#292
+                # taurus.Device(full_name)
+                PyTango.DeviceProxy(full_name)
             except Exception:
                 # external channels are attributes so Device constructor fails
                 non_compatible_channels.append(name)
@@ -2062,7 +2070,7 @@ def generate_timestamps(synchronization, initial_timestamp=0):
         timestamp += delay
         ret[index] = dict(timestamp=timestamp)
         index += 1
-        for _ in xrange(1, repeats):
+        for _ in range(1, repeats):
             timestamp += total
             ret[index] = dict(timestamp=timestamp)
             index += 1
@@ -2082,9 +2090,9 @@ def generate_positions(motors, starts, finals, nr_points):
         label = motor.getName()
         dtype_spec.append((label, 'float64'))
     # convert to numpy array for easier handling
-    table = np.array(zip(*moveable_positions), dtype=dtype_spec)
+    table = np.array(list(zip(*moveable_positions)), dtype=dtype_spec)
     n_rows = table.shape[0]
-    for i in xrange(n_rows):
+    for i in range(n_rows):
         row = dict()
         for label in table.dtype.names:
             row[label] = table[label][i]
@@ -2404,7 +2412,7 @@ class CTScan(CScan, CAcquisition):
                     continue
                 try:
                     self.configure_motor(motor, attributes)
-                except ScanException, e:
+                except ScanException as e:
                     msg = "Error when configuring scan motion (%s)" % e
                     raise ScanException(msg)
 
@@ -2428,7 +2436,7 @@ class CTScan(CScan, CAcquisition):
             theoretical_positions = generate_positions(motors, starts, finals,
                                                        nr_points)
             theoretical_timestamps = generate_timestamps(synch, dt_timestamp)
-            for index, data in theoretical_positions.items():
+            for index, data in list(theoretical_positions.items()):
                 data.update(theoretical_timestamps[index])
                 initial_data[index + self._index_offset] = data
             # TODO: this changes the initial data on-the-fly - seems like not

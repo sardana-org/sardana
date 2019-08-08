@@ -76,7 +76,7 @@ class PoolMonitor(Logger, threading.Thread):
                 types = set(pool_ctrl.get_ctrl_types())
                 if types.isdisjoint(TYPE_PSEUDO_ELEMENTS):
                     ctrl_ids.append(pool_ctrl.id)
-                    elem_ids.extend(pool_ctrl.get_element_ids().keys())
+                    elem_ids.extend(list(pool_ctrl.get_element_ids().keys()))
             elem_ids.sort()
             self._elem_ids = elem_ids
             self._ctrl_ids = ctrl_ids
@@ -106,7 +106,7 @@ class PoolMonitor(Logger, threading.Thread):
                 else:
                     blocked_ctrls.add(ctrl)
 
-            for ctrl, ctrl_elems in ctrl_items.items():
+            for ctrl, ctrl_elems in list(ctrl_items.items()):
                 ret = ctrl.lock(blocking=False)
                 if ret:
                     ctrls.append(ctrl)
@@ -123,7 +123,7 @@ class PoolMonitor(Logger, threading.Thread):
                 elem.unlock()
 
     def _update_state_info_serial(self, pool_ctrls):
-        for pool_ctrl, elems in pool_ctrls.items():
+        for pool_ctrl, elems in list(pool_ctrls.items()):
             self._update_ctrl_state_info(pool_ctrl, elems)
 
     def _update_ctrl_state_info(self, pool_ctrl, elems):
@@ -131,7 +131,7 @@ class PoolMonitor(Logger, threading.Thread):
         state_infos, exc_info = pool_ctrl.raw_read_axis_states(axes)
         if len(exc_info):
             self.info("STATE ERROR %s", exc_info)
-        for elem, state_info in state_infos.items():
+        for elem, state_info in list(state_infos.items()):
             state_info = elem._from_ctrl_state_info(state_info)
             elem.set_state_info(state_info)
 

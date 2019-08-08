@@ -32,7 +32,7 @@ from taurus.external.qt import Qt, compat
 from taurus.qt.qtgui.resource import getIcon
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtcore.configuration import BaseConfigurableClass
-from model import MacrosListModel
+from .model import MacrosListModel
 
 
 class FavouritesMacrosEditor(TaurusWidget):

@@ -26,7 +26,8 @@
 """The device pool submodule.
 It contains specific part of sardana device pool"""
 
-from __future__ import absolute_import
+
+import collections
 
 __all__ = ["InterruptException", "StopException", "AbortException",
            "BaseElement", "ControllerClass", "ControllerLibrary",
@@ -91,6 +92,15 @@ QUALITY = {
 }
 
 
+def _is_referable(channel):
+    # Equivalent to ExpChannel.isReferable.
+    # Use DeviceProxy instead of taurus to avoid crashes in Py3
+    # See: tango-controls/pytango#292
+    if isinstance(channel, str):
+        channel = DeviceProxy(channel)
+    return "valueref" in list(map(str.lower, channel.get_attribute_list()))
+
+
 class InterruptException(Exception):
     pass
 
@@ -129,9 +139,8 @@ class BaseElement(object):
             return CodecFactory.encode(('json'), self.serialize())
         return self._str_tuple[:n]
 
-    def __cmp__(self, o):
-        return cmp(self.getPoolData()['full_name'],
-                   o.getPoolData()['full_name'])
+    def __lt__(self, o):
+        return self.getPoolData()['full_name'] < o.getPoolData()['full_name']
 
     def getName(self):
         return self.getPoolData()['name']
@@ -182,14 +191,12 @@ class ControllerClass(BaseElement):
     def getOrganization(self):
         return self.organization
 
-    def __cmp__(self, o):
-        t = cmp(self.getType(), o.getType())
-        if t != 0:
-            return t
-        t = cmp(self.getGender(), o.getGender())
-        if t != 0:
-            return t
-        return cmp(self.getClassName(), o.getClassName())
+    def __lt__(self, o):
+        if self.getType() != o.getType():
+            return self.getType() < o.getType()
+        if self.getGender() != o.getGender():
+            return self.getGender() < o.getGender()
+        return self.getClassName() < o.getClassName()
 
 
 class ControllerLibrary(BaseElement):
@@ -336,7 +343,7 @@ class PoolElement(BaseElement, TangoDevice):
         f = self.factory()
 
         attr_map = self._attrEG
-        for attr_name in attr_map.keys():
+        for attr_name in list(attr_map.keys()):
             attrEG = attr_map.pop(attr_name)
             attr = attrEG.getAttribute()
             attrEG = None
@@ -484,7 +491,7 @@ class PoolElement(BaseElement, TangoDevice):
         # Due to taurus-org/taurus #573 we need to divide the timeout
         # in two intervals
         if timeout is not None:
-            timeout = timeout / 2.
+            timeout = timeout / 2
         if id is not None:
             id = id[0]
         evt_wait = self._getEventWait()
@@ -615,7 +622,8 @@ class Controller(PoolElement):
 
     def getElementByAxis(self, axis):
         pool = self.getPoolObj()
-        for _, elem in pool.getElementsOfType(self.getMainType()).items():
+        for _, elem in \
+                list(pool.getElementsOfType(self.getMainType()).items()):
             if (elem.controller != self.getFullName() or
                     elem.getAxis() != axis):
                 continue
@@ -623,7 +631,8 @@ class Controller(PoolElement):
 
     def getElementByName(self, name):
         pool = self.getPoolObj()
-        for _, elem in pool.getElementsOfType(self.getMainType()).items():
+        for _, elem in \
+                list(pool.getElementsOfType(self.getMainType()).items()):
             if (elem.controller != self.getFullName() or
                     elem.getName() != name):
                 continue
@@ -638,7 +647,8 @@ class Controller(PoolElement):
 
         pool = self.getPoolObj()
         axes = []
-        for _, elem in pool.getElementsOfType(self.getMainType()).items():
+        for _, elem in \
+                list(pool.getElementsOfType(self.getMainType()).items()):
             if elem.controller != self.getFullName():
                 continue
             axes.append(elem.getAxis())
@@ -661,8 +671,8 @@ class Controller(PoolElement):
             return None
         return max(used_axes)
 
-    def __cmp__(self, o):
-        return cmp(self.getName(), o.getName())
+    def __lt__(self, o):
+        return self.getName() < o.getName()
 
 
 class ComChannel(PoolElement):
@@ -691,7 +701,7 @@ class ExpChannel(PoolElement):
         self._value_ref_buffer_codec = CodecFactory().getCodec(codec_name)
 
     def isReferable(self):
-        if "valueref" in map(str.lower, self.get_attribute_list()):
+        if "valueref" in list(map(str.lower, self.get_attribute_list())):
             return True
         return False
 
@@ -982,12 +992,12 @@ class Motor(PoolElement, Moveable):
 
     def _start(self, *args, **kwargs):
         new_pos = args[0]
-        if operator.isSequenceType(new_pos):
+        if isinstance(new_pos, collections.Sequence):
             new_pos = new_pos[0]
         try:
             self.write_attribute('position', new_pos)
         except DevFailed as df:
-            for err in df:
+            for err in df.args:
                 if err.reason == 'API_AttrNotAllowed':
                     raise RuntimeError('%s is already moving' % self)
                 else:
@@ -1009,7 +1019,7 @@ class Motor(PoolElement, Moveable):
 
     @reservedOperation
     def iterMove(self, new_pos, timeout=None):
-        if operator.isSequenceType(new_pos):
+        if isinstance(new_pos, collections.Sequence):
             new_pos = new_pos[0]
         state, pos = self.getAttribute("state"), self.getAttribute("position")
 
@@ -1022,7 +1032,7 @@ class Motor(PoolElement, Moveable):
             try:
                 self.getPositionObj().write(new_pos)
             except DevFailed as err_traceback:
-                for err in err_traceback:
+                for err in err_traceback.args:
                     if err.reason == 'API_AttrNotAllowed':
                         raise RuntimeError('%s is already moving' % self)
                     else:
@@ -1074,7 +1084,7 @@ class Motor(PoolElement, Moveable):
             pos = str(position.value)
             if position.quality != AttrQuality.ATTR_VALID:
                 pos += " [" + QUALITY[position.quality] + "]"
-        except DevFailed, df:
+        except DevFailed as df:
             if len(df.args):
                 pos = df.args[0].desc
             else:
@@ -1114,12 +1124,12 @@ class PseudoMotor(PoolElement, Moveable):
 
     def _start(self, *args, **kwargs):
         new_pos = args[0]
-        if operator.isSequenceType(new_pos):
+        if isinstance(new_pos, collections.Sequence):
             new_pos = new_pos[0]
         try:
             self.write_attribute('position', new_pos)
-        except DevFailed, df:
-            for err in df:
+        except DevFailed as df:
+            for err in df.args:
                 if err.reason == 'API_AttrNotAllowed':
                     raise RuntimeError('%s is already moving' % self)
                 else:
@@ -1164,7 +1174,7 @@ class PseudoMotor(PoolElement, Moveable):
             pos = str(position.value)
             if position.quality != AttrQuality.ATTR_VALID:
                 pos += " [" + QUALITY[position.quality] + "]"
-        except DevFailed, df:
+        except DevFailed as df:
             if len(df.args):
                 pos = df.args[0].desc
             else:
@@ -1193,7 +1203,7 @@ class MotorGroup(PoolElement, Moveable):
         return self.getPoolData()['elements']
 
     def hasMotor(self, name):
-        motor_names = map(str.lower, self.getMotorNames())
+        motor_names = list(map(str.lower, self.getMotorNames()))
         return name.lower() in motor_names
 
     def getPosition(self, force=False):
@@ -1210,8 +1220,8 @@ class MotorGroup(PoolElement, Moveable):
         new_pos = args[0]
         try:
             self.write_attribute('position', new_pos)
-        except DevFailed, df:
-            for err in df:
+        except DevFailed as df:
+            for err in df.args:
                 if err.reason == 'API_AttrNotAllowed':
                     raise RuntimeError('%s is already moving' % self)
                 else:
@@ -1242,7 +1252,7 @@ class MotorGroup(PoolElement, Moveable):
 
     def getIndex(self, name):
         try:
-            motor_names = map(str.lower, self.getMotorNames())
+            motor_names = list(map(str.lower, self.getMotorNames()))
             return motor_names.index(name.lower())
         except:
             return -1
@@ -1258,7 +1268,7 @@ class MotorGroup(PoolElement, Moveable):
             pos = str(position.value)
             if position.quality != AttrQuality.ATTR_VALID:
                 pos += " [" + QUALITY[position.quality] + "]"
-        except DevFailed, df:
+        except DevFailed as df:
             if len(df.args):
                 pos = df.args[0].desc
             else:
@@ -1301,7 +1311,7 @@ class TangoChannelInfo(BaseChannelInfo):
             data_type = info.data_type
             try:
                 self.data_type = FROM_TANGO_TO_STR_TYPE[data_type]
-            except KeyError, e:
+            except KeyError as e:
                 # For backwards compatibility:
                 # starting from Taurus 4.3.0 DevVoid was added to the dict
                 if data_type == PyTango.DevVoid:
@@ -1344,9 +1354,9 @@ def getChannelConfigs(mgconfig, ctrls=None, sort=True):
     chconfigs = []
     if not mgconfig:
         return []
-    for ctrl_name, ctrl_data in mgconfig['controllers'].items():
+    for ctrl_name, ctrl_data in list(mgconfig['controllers'].items()):
         if ctrls is None or ctrl_name in ctrls:
-            for ch_name, ch_data in ctrl_data['channels'].items():
+            for ch_name, ch_data in list(ctrl_data['channels'].items()):
                 ch_data.update({'_controller_name': ctrl_name})
                 chconfigs.append((ch_name, ch_data))
     if sort:
@@ -1362,8 +1372,8 @@ def getChannelConfigs(mgconfig, ctrls=None, sort=True):
 class MGConfiguration(object):
     def __init__(self, mg, data):
         self._mg = weakref.ref(mg)
-        if isinstance(data, (str, unicode)):
-            data = CodecFactory().decode(('json', data), ensure_ascii=True)
+        if isinstance(data, str):
+            data = CodecFactory().decode(('json', data))
         self.raw_data = data
         self.__dict__.update(data)
 
@@ -1372,14 +1382,15 @@ class MGConfiguration(object):
         # of a dict as receveid by the MG configuration attribute
         self.channels = channels = CaselessDict()
 
-        for _, ctrl_data in self.controllers.items():
-            for channel_name, channel_data in ctrl_data['channels'].items():
+        for _, ctrl_data in list(self.controllers.items()):
+            for channel_name, channel_data in \
+                    list(ctrl_data['channels'].items()):
                 channels[channel_name] = channel_data
 
         #####################
         # @todo: the for-loops above could be replaced by something like:
-        # self.channels = channels = CaselessDict(getChannelConfigs(data,
-        #                                                          sort=False))
+        # self.channels = channels = \
+        #      CaselessDict(getChannelConfigs(data, sort=False))
         #####################
 
         # seq<dict> each element is the channel data in form of a dict as
@@ -1387,7 +1398,7 @@ class MGConfiguration(object):
         # ordered by channel index in the MG.
         self.channel_list = len(channels) * [None]
 
-        for channel in channels.values():
+        for channel in list(channels.values()):
             self.channel_list[channel['index']] = channel
 
         # dict<str, list[DeviceProxy, CaselessDict<str, dict>]>
@@ -1431,7 +1442,7 @@ class MGConfiguration(object):
         self.cache = cache = {}
 
         tg_attr_validator = TangoAttributeNameValidator()
-        for channel_name, channel_data in self.channels.items():
+        for channel_name, channel_data in list(self.channels.items()):
             cache[channel_name] = None
             data_source = channel_data['source']
             params = tg_attr_validator.getParams(data_source)
@@ -1449,12 +1460,15 @@ class MGConfiguration(object):
                 dev_data = tg_dev_chs.get(dev_name)
                 # technical debt: read Value or ValueRef attribute
                 # ideally the source configuration should include this info
-                channel = Device(dev_name)
-                if (isinstance(channel, ExpChannel)
-                        and channel.isReferable()
+                # Use DeviceProxy instead of taurus to avoid crashes in Py3
+                # See: tango-controls/pytango#292
+                # channel = Device(dev_name)
+                # if (isinstance(channel, ExpChannel)
+                #         and channel.isReferable()
+                #         and channel_data.get("value_ref_enabled", False)):
+                if (_is_referable(dev_name)
                         and channel_data.get("value_ref_enabled", False)):
                     attr_name += "Ref"
-
                 if dev_data is None:
                     # Build tango device
                     dev = None
@@ -1495,7 +1509,7 @@ class MGConfiguration(object):
 
         # prepare missing tango devices
         if self.tango_dev_channels_in_error > 0:
-            for dev_name, dev_data in self.tango_dev_channels.items():
+            for dev_name, dev_data in list(self.tango_dev_channels.items()):
                 if dev_data[0] is None:
                     try:
                         dev_data[0] = DeviceProxy(dev_name)
@@ -1505,7 +1519,7 @@ class MGConfiguration(object):
 
         # prepare missing tango attribute configuration
         if self.tango_channels_info_in_error > 0:
-            for _, attr_data in self.tango_channels_info.items():
+            for _, attr_data in list(self.tango_channels_info.items()):
                 dev_name, attr_name, attr_info = attr_data
                 if attr_info.has_info():
                     continue
@@ -1525,9 +1539,10 @@ class MGConfiguration(object):
     def getChannelInfo(self, channel_name):
         try:
             return self.tango_channels_info[channel_name]
-        except:
+        except Exception:
             channel_name = channel_name.lower()
-            for d_name, a_name, ch_info in self.tango_channels_info.values():
+            for d_name, a_name, ch_info in \
+                    list(self.tango_channels_info.values()):
                 if ch_info.name.lower() == channel_name:
                     return d_name, a_name, ch_info
 
@@ -1548,7 +1563,7 @@ class MGConfiguration(object):
         self.prepare()
         ret = CaselessDict(self.tango_channels_info)
         ret.update(self.non_tango_channels)
-        for ch_name, (_, _, ch_info) in ret.items():
+        for ch_name, (_, _, ch_info) in list(ret.items()):
             if only_enabled and not ch_info.enabled:
                 ret.pop(ch_name)
         return ret
@@ -1564,9 +1579,9 @@ class MGConfiguration(object):
         """
         channels_info = self.getChannelsInfo(only_enabled=only_enabled)
         ret = []
-        for _, (_, _, ch_info) in channels_info.items():
+        for _, (_, _, ch_info) in list(channels_info.items()):
             ret.append(ch_info)
-        ret = sorted(ret, lambda x, y: cmp(x.index, y.index))
+        ret = sorted(ret, key=lambda x: x.index)
         return ret
 
     def getCountersInfoList(self):
@@ -1596,9 +1611,9 @@ class MGConfiguration(object):
         if not only_enabled:
             return self.tango_dev_channels
         tango_dev_channels = {}
-        for dev_name, dev_data in self.tango_dev_channels.items():
+        for dev_name, dev_data in list(self.tango_dev_channels.items()):
             dev_proxy, attrs = dev_data[0], copy.deepcopy(dev_data[1])
-            for attr_name, channel_data in attrs.items():
+            for attr_name, channel_data in list(attrs.items()):
                 if not channel_data["enabled"]:
                     attrs.pop(attr_name)
             tango_dev_channels[dev_name] = [dev_proxy, attrs]
@@ -1616,18 +1631,18 @@ class MGConfiguration(object):
 
         # deposit read requests
         tango_dev_channels = self.getTangoDevChannels(only_enabled=True)
-        for _, dev_data in tango_dev_channels.items():
+        for _, dev_data in list(tango_dev_channels.items()):
             dev, attrs = dev_data
             if dev is None:
                 continue
             try:
                 dev_replies[dev] = dev.read_attributes_asynch(
-                    attrs.keys()), attrs
-            except:
+                    list(attrs.keys())), attrs
+            except Exception:
                 dev_replies[dev] = None, attrs
 
         # gather all replies
-        for dev, reply_data in dev_replies.items():
+        for dev, reply_data in list(dev_replies.items()):
             reply, attrs = reply_data
             try:
                 data = dev.read_attributes_reply(reply, 0)
@@ -1638,8 +1653,8 @@ class MGConfiguration(object):
                     else:
                         value = data_item.value
                     ret[channel_data['full_name']] = value
-            except:
-                for _, channel_data in attrs.items():
+            except Exception:
+                for _, channel_data in list(attrs.items()):
                     ret[channel_data['full_name']] = None
 
         return ret
@@ -1648,10 +1663,10 @@ class MGConfiguration(object):
         self.prepare()
         ret = CaselessDict(self.cache)
         tango_dev_channels = self.getTangoDevChannels(only_enabled=True)
-        for _, dev_data in tango_dev_channels.items():
+        for _, dev_data in list(tango_dev_channels.items()):
             dev, attrs = dev_data
             try:
-                data = dev.read_attributes(attrs.keys())
+                data = dev.read_attributes(list(attrs.keys()))
                 for data_item in data:
                     channel_data = attrs[data_item.name]
                     if data_item.has_failed:
@@ -1659,8 +1674,8 @@ class MGConfiguration(object):
                     else:
                         value = data_item.value
                     ret[channel_data['full_name']] = value
-            except:
-                for _, channel_data in attrs.items():
+            except Exception:
+                for _, channel_data in list(attrs.items()):
                     ret[channel_data['full_name']] = None
         return ret
 
@@ -1679,10 +1694,12 @@ class MeasurementGroup(PoolElement):
         self.__cfg_attr.addListener(self.on_configuration_changed)
 
         self._value_buffer_cb = None
+        self._value_buffer_channels = None
         codec_name = getattr(sardanacustomsettings, "VALUE_BUFFER_CODEC")
         self._value_buffer_codec = CodecFactory().getCodec(codec_name)
 
         self._value_ref_buffer_cb = None
+        self._value_ref_buffer_channels = None
         codec_name = getattr(sardanacustomsettings, "VALUE_REF_BUFFER_CODEC")
         self._value_ref_buffer_codec = CodecFactory().getCodec(codec_name)
 
@@ -1875,7 +1892,7 @@ class MeasurementGroup(PoolElement):
         _, value_buffer = self._value_buffer_codec.decode(value_buffer)
         values = value_buffer["value"]
         if isinstance(values[0], list):
-            np_values = map(numpy.array, values)
+            np_values = list(map(numpy.array, values))
             value_buffer["value"] = np_values
         self._value_buffer_cb(channel, value_buffer)
 
@@ -1888,12 +1905,15 @@ class MeasurementGroup(PoolElement):
             channel's callback
         :type cb: callable
         """
+        self._value_buffer_channels = []
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
             value_ref_enabled = channel_info.get("value_ref_enabled", False)
-            channel = Device(full_name)
-            if channel.isReferable() and value_ref_enabled:
+            # Use DeviceProxy instead of taurus to avoid crashes in Py3
+            # See: tango-controls/pytango#292
+            if _is_referable(full_name) and value_ref_enabled:
                 continue
+            channel = Device(full_name)
             value_buffer_obj = channel.getValueBufferObj()
             if cb is not None:
                 self._value_buffer_cb = cb
@@ -1902,6 +1922,7 @@ class MeasurementGroup(PoolElement):
             else:
                 value_buffer_obj.subscribeEvent(channel.valueBufferChanged,
                                                 with_first_event=False)
+            self._value_buffer_channels.append(channel)
 
     def unsubscribeValueBuffer(self, cb=None):
         """Unsubscribe from channels' value buffer events. If no callback is
@@ -1914,9 +1935,11 @@ class MeasurementGroup(PoolElement):
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
             value_ref_enabled = channel_info.get("value_ref_enabled", False)
-            channel = Device(full_name)
-            if channel.isReferable() and value_ref_enabled:
+            # Use DeviceProxy instead of taurus to avoid crashes in Py3
+            # See: tango-controls/pytango#292
+            if _is_referable(full_name) and value_ref_enabled:
                 continue
+            channel = Device(full_name)
             value_buffer_obj = channel.getValueBufferObj()
             if cb is not None:
                 value_buffer_obj.unsubscribeEvent(self.valueBufferChanged,
@@ -1924,6 +1947,7 @@ class MeasurementGroup(PoolElement):
                 self._value_buffer_cb = None
             else:
                 value_buffer_obj.unsubscribeEvent(channel.valueBufferChanged)
+        self._value_buffer_channels = None
 
     def valueRefBufferChanged(self, channel, value_ref_buffer):
         """Receive value ref buffer updates, pre-process them, and call
@@ -1950,14 +1974,17 @@ class MeasurementGroup(PoolElement):
             channel's callback
         :type cb: callable
         """
+        self._value_ref_buffer_channels = []
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
             value_ref_enabled = channel_info.get("value_ref_enabled", False)
-            channel = Device(full_name)
-            if not channel.isReferable():
+            # Use DeviceProxy instead of taurus to avoid crashes in Py3
+            # See: tango-controls/pytango#292
+            if not _is_referable(full_name):
                 continue
             if not value_ref_enabled:
                 continue
+            channel = Device(full_name)
             value_ref_buffer_obj = channel.getValueRefBufferObj()
             if cb is not None:
                 self._value_ref_buffer_cb = cb
@@ -1966,6 +1993,7 @@ class MeasurementGroup(PoolElement):
             else:
                 value_ref_buffer_obj.subscribeEvent(
                     channel.valueRefBufferChanged, with_first_event=False)
+            self._value_ref_buffer_channels.append(channel)
 
     def unsubscribeValueRefBuffer(self, cb=None):
         """Unsubscribe from channels' value ref buffer events. If no
@@ -1978,11 +2006,13 @@ class MeasurementGroup(PoolElement):
         for channel_info in self.getChannels():
             full_name = channel_info["full_name"]
             value_ref_enabled = channel_info.get("value_ref_enabled", False)
-            channel = Device(full_name)
-            if not channel.isReferable():
+            # Use DeviceProxy instead of taurus to avoid crashes in Py3
+            # See: tango-controls/pytango#292
+            if not _is_referable(full_name):
                 continue
             if not value_ref_enabled:
                 continue
+            channel = Device(full_name)
             value_ref_buffer_obj = channel.getValueRefBufferObj()
             if cb is not None:
                 value_ref_buffer_obj.unsubscribeEvent(
@@ -1991,6 +2021,7 @@ class MeasurementGroup(PoolElement):
             else:
                 value_ref_buffer_obj.unsubscribeEvent(
                     channel.valueRefBufferChanged)
+        self._value_ref_buffer_channels = None
 
     def enableChannels(self, channels):
         '''Enable acquisition of the indicated channels.
@@ -2019,7 +2050,7 @@ class MeasurementGroup(PoolElement):
                 channel['enabled'] = state
                 found[name] = True
         wrong_channels = []
-        for ch, f in found.items():
+        for ch, f in list(found.items()):
             if f is False:
                 wrong_channels.append(ch)
         if len(wrong_channels) > 0:
@@ -2034,7 +2065,7 @@ class MeasurementGroup(PoolElement):
         except DevFailed as e:
             # TODO: Workaround for CORBA timeout on measurement group start
             # remove it whenever sardana-org/sardana#93 gets implemented
-            if e[-1].reason == "API_DeviceTimedOut":
+            if e.args[-1].reason == "API_DeviceTimedOut":
                 self.error("start timed out, trying to stop")
                 self.stop()
                 self.debug("stopped")
@@ -2163,7 +2194,7 @@ class IORegister(PoolElement):
             self.getValueObj().write(new_value)
             self.final_val = new_value
         except DevFailed as err_traceback:
-            for err in err_traceback:
+            for err in err_traceback.args:
                 if err.reason == 'API_AttrNotAllowed':
                     raise RuntimeError('%s is already chaging' % self)
                 else:
@@ -2239,7 +2270,7 @@ class Pool(TangoDevice, MoveableSource):
         if evt_type == TaurusEventType.Error:
             msg = evt_value
             if isinstance(msg, DevFailed):
-                d = msg[0]
+                d = msg.args[0]
                 # skip configuration errors
                 if d.reason == "API_BadConfigurationProperty":
                     return
@@ -2254,7 +2285,7 @@ class Pool(TangoDevice, MoveableSource):
         elif evt_type not in CHANGE_EVT_TYPES:
             return
         try:
-            elems = CodecFactory().decode(evt_value.value, ensure_ascii=True)
+            elems = CodecFactory().decode(evt_value.value)
         except:
             self.error("Could not decode element info")
             self.info("value: '%s'", evt_value.value)
@@ -2314,14 +2345,14 @@ class Pool(TangoDevice, MoveableSource):
     def getObj(self, name, elem_type=None):
         if elem_type is None:
             return self.getElementInfo(name)
-        elif isinstance(elem_type, (str, unicode)):
+        elif isinstance(elem_type, str):
             elem_types = elem_type,
         else:
             elem_types = elem_type
         name = name.lower()
         for e_type in elem_types:
             elems = self.getElementsOfType(e_type)
-            for elem in elems.values():
+            for elem in list(elems.values()):
                 if elem.name.lower() == name:
                     return elem
             elem = elems.get(name)
@@ -2344,7 +2375,7 @@ class Pool(TangoDevice, MoveableSource):
         Returns a moveable object that handles all the moveable items given in
         names."""
         # if simple motor just return it (if the pool has it)
-        if isinstance(names, (str, unicode)):
+        if isinstance(names, str):
             names = names,
 
         if len(names) == 1:
@@ -2362,7 +2393,7 @@ class Pool(TangoDevice, MoveableSource):
             while True:
                 name = "_mg_ms_{0}_{1}".format(pid, i)
                 exists = False
-                for mg in mgs.values():
+                for mg in list(mgs.values()):
                     if mg.name == name:
                         exists = True
                         break
@@ -2373,10 +2404,10 @@ class Pool(TangoDevice, MoveableSource):
         return moveable
 
     def __findMotorGroupWithElems(self, names):
-        names_lower = map(str.lower, names)
+        names_lower = list(map(str.lower, names))
         len_names = len(names)
         mgs = self.getElementsOfType('MotorGroup')
-        for mg in mgs.values():
+        for mg in list(mgs.values()):
             mg_elems = mg.elements
             if len(mg_elems) != len_names:
                 continue
@@ -2396,7 +2427,7 @@ class Pool(TangoDevice, MoveableSource):
         cond = True
         nap = 0.01
         if timeout:
-            nap = timeout / 10.
+            nap = timeout / 10
         while cond:
             elem = container.getElement(elem_name)
             if contains:
@@ -2414,14 +2445,14 @@ class Pool(TangoDevice, MoveableSource):
             time.sleep(nap)
 
     def createMotorGroup(self, mg_name, elements):
-        params = [mg_name, ] + map(str, elements)
+        params = [mg_name, ] + list(map(str, elements))
         self.debug('trying to create motor group for elements: %s', params)
         self.command_inout('CreateMotorGroup', params)
         elements_info = self.getElementsInfo()
         return self._wait_for_element_in_container(elements_info, mg_name)
 
     def createMeasurementGroup(self, mg_name, elements):
-        params = [mg_name, ] + map(str, elements)
+        params = [mg_name, ] + list(map(str, elements))
         self.debug('trying to create measurement group: %s', params)
         self.command_inout('CreateMeasurementGroup', params)
         elements_info = self.getElementsInfo()
@@ -2466,7 +2497,7 @@ class Pool(TangoDevice, MoveableSource):
             raise Exception("Controller class %s not found" % class_name)
         cmd = "CreateController"
         pars = [ctrl_class.types[0], ctrl_class.file_name, class_name, name]
-        pars.extend(map(str, props))
+        pars.extend(list(map(str, props)))
         self.command_inout(cmd, pars)
         elements_info = self.getElementsInfo()
         return self._wait_for_element_in_container(elements_info, name)

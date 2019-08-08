@@ -25,7 +25,7 @@
 
 """ """
 
-from __future__ import absolute_import
+
 
 __docformat__ = 'restructuredtext'
 
@@ -35,9 +35,9 @@ import sys
 
 __requires__ = {
     #     module        minimum
-    "Python": (2, 6, 0),
-    "PyTango": (7, 2, 3),
-    "taurus.core": (3, 10),
+    "Python": (3, 5, 0),
+    "PyTango": (9, 2, 5),
+    "taurus.core": (4, 5, 5),
 }
 
 
@@ -58,7 +58,8 @@ def check_requirements(exec_name=None):
     pyver_str = ".".join(map(str, pyver))
 
     if pyver < pyver_:
-        print "Sardana requires python %s. Installed version is %s" % (pyver_str_, pyver_str)
+        print("Sardana requires python %s. Installed version is %s" %
+              (pyver_str_, pyver_str))
         sys.exit(-1)
 
     pytangover = None
@@ -71,11 +72,13 @@ def check_requirements(exec_name=None):
         pytangover = tuple(map(int, PyTango.__version__.split('.', 3)))
 
     if pytangover is None:
-        print "%s requires PyTango %s. No version installed" % (exec_name, pytangover_str_,)
+        print("%s requires PyTango %s. No version installed" %
+              (exec_name, pytangover_str_,))
         sys.exit(-1)
     if pytangover < pytangover_:
         pytangover_str = ".".join(map(str, pytangover))
-        print "%s requires PyTango %s. Installed version is %s" % (exec_name, pytangover_str_, pytangover_str)
+        print("%s requires PyTango %s. Installed version is %s" %
+              (exec_name, pytangover_str_, pytangover_str))
         sys.exit(-1)
 
     # TODO: add itango as runtime dependency of spock
@@ -92,15 +95,17 @@ def check_requirements(exec_name=None):
         taurusver = tuple(map(int, taurus.Release.version.split('.', 3)))
 
     if taurusver is None:
-        print "%s requires taurus %s. No version installed" % (exec_name, taurusver_str_,)
+        print("%s requires taurus %s. No version installed" %
+              (exec_name, taurusver_str_,))
         sys.exit(-1)
     if taurusver < taurusver_:
         taurusver_str = ".".join(map(str, taurusver))
-        print "%s requires taurus %s. Installed version is %s" % (exec_name, taurusver_str_, taurusver_str)
+        print("%s requires taurus %s. Installed version is %s" %
+              (exec_name, taurusver_str_, taurusver_str))
         sys.exit(-1)
 
     try:
         from lxml import etree
     except:
-        print "Could not find any suitable XML library"
+        print("Could not find any suitable XML library")
         sys.exit(-1)

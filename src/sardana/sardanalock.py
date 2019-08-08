@@ -26,7 +26,7 @@
 """This module is part of the Python Sardana libray. It defines a *slow* lock
 class that provides additional debugging information"""
 
-from __future__ import absolute_import
+
 
 __all__ = ["SardanaLock"]
 

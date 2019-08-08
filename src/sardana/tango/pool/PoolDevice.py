@@ -194,7 +194,7 @@ class PoolDevice(SardanaDevice):
             read = self.__class__._read_DynamicAttribute
             write = self.__class__._write_DynamicAttribute
             is_allowed = self.__class__._is_DynamicAttribute_allowed
-            for attr_name, data_info in std_attrs.items():
+            for attr_name, data_info in list(std_attrs.items()):
                 attr_name, data_info, attr_info = data_info
                 attr = self.add_standard_attribute(attr_name, data_info,
                                                    attr_info, read,
@@ -205,7 +205,7 @@ class PoolDevice(SardanaDevice):
             read = self.__class__._read_DynamicAttribute
             write = self.__class__._write_DynamicAttribute
             is_allowed = self.__class__._is_DynamicAttribute_allowed
-            for attr_name, data_info in dyn_attrs.items():
+            for attr_name, data_info in list(dyn_attrs.items()):
                 attr_name, data_info, attr_info = data_info
                 attr = self.add_dynamic_attribute(attr_name, data_info,
                                                   attr_info, read,
@@ -219,7 +219,8 @@ class PoolDevice(SardanaDevice):
         dev_class = self.get_device_class()
         multi_attr = self.get_device_attr()
         multi_class_attr = dev_class.get_class_attr()
-        static_attr_names = map(str.lower, dev_class.attr_list.keys())
+        static_attr_names = \
+            list(map(str.lower, list(dev_class.attr_list.keys())))
         static_attr_names.extend(('state', 'status'))
 
         new_attrs = CaselessDict(new_std_attrs)
@@ -430,7 +431,7 @@ class PoolDevice(SardanaDevice):
             ctrl_status = self.element.get_status(cache=use_cache, propagate=0)
             status = self.calculate_tango_status(ctrl_status)
             return status
-        except Exception, e:
+        except Exception as e:
             msg = "Exception trying to return status: %s" % str(e)
             self.error(msg)
             self.debug("Details:", exc_info=1)
@@ -670,7 +671,7 @@ class PoolElementDevice(PoolDevice):
 
         std_attrs_lower = [attr.lower()
                            for attr in dev_class.standard_attr_list]
-        for attr_name, attr_info in axis_attrs.items():
+        for attr_name, attr_info in list(axis_attrs.items()):
             attr_name_lower = attr_name.lower()
             if attr_name_lower in std_attrs_lower:
                 data_info = DataInfo.toDataInfo(attr_name, attr_info)
@@ -855,7 +856,7 @@ class PoolExpChannelDevice(PoolElementDevice):
         :rtype: str"""
         index = []
         value = []
-        for idx, sdn_value in value_chunk.iteritems():
+        for idx, sdn_value in value_chunk.items():
             index.append(idx)
             value.append(sdn_value.value)
         data = dict(index=index, value=value)
@@ -873,7 +874,7 @@ class PoolExpChannelDevice(PoolElementDevice):
         """
         index = []
         value_ref = []
-        for idx, sdn_value in value_ref_chunk.iteritems():
+        for idx, sdn_value in value_ref_chunk.items():
             index.append(idx)
             value_ref.append(sdn_value.value)
         data = dict(index=index, value_ref=value_ref)
