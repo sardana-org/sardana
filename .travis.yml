@@ -17,8 +17,8 @@ env:
 
   matrix:
   - TEST="flake8"
-  - TEST="testsuite" DOCKER_IMG=reszelaz/sardana-test:py3
-  - TEST="doc" DOCKER_IMG=reszelaz/sardana-test:py3
+  - TEST="testsuite" DOCKER_IMG=reszelaz/sardana-test
+  - TEST="doc" DOCKER_IMG=reszelaz/sardana-test
 
 
 before_install:
