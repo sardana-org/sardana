@@ -1,6 +1,6 @@
     Title: Plugins (controllers, macros, etc.) catalogue
     SEP: 16
-    State: DRAFT
+    State: CANDIDATE
     Reason:
      SEP15 migrated the Sardana repository from SourceForge to GitHub.
      The third-party repositories are still at SourceForge and a decision
