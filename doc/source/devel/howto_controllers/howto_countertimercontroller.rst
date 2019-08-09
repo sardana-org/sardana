@@ -6,13 +6,19 @@
 How to write a counter/timer controller
 =======================================
 
+.. important::
+    Counter/timer controller :term:`API` was extended in SEP18_ but this is
+    still not documented in this chapter. Please check the said SEP for more
+    information about the additional :term:`API` or eventual changes.
+
+
 The basics
 ----------
 
 An example of a hypothetical *Springfield* counter/timer controller will be build
 incrementally from scratch to aid in the explanation.
 
-By now you should have read the general controller basics chapter. You should
+By now you should have read :ref:`the general controller basics <sardana-controller-api>` chapter. You should
 be able to create a CounterTimerController with:
 
 - a proper constructor,
@@ -23,9 +29,11 @@ be able to create a CounterTimerController with:
 .. code-block:: python
 
     import springfieldlib
-
+		
     from sardana.pool.controller import CounterTimerController
 
+    from sardana import State
+		
     class SpringfieldCounterTimerController(CounterTimerController):
 
         def __init__(self, inst, props, *args, **kwargs):
@@ -223,6 +231,9 @@ this configuration (axis number) via the controller parameter ``timer``
 and ``monitor``. The currently used acquisition mode is set via the controller
 parameter ``acquisition_mode``.
 
+Controller may announce its default timer axis with the
+:obj:`~sardana.pool.controller.Loadable.default_timer` class attribute.
+
 .. _sardana-countertimercontroller-howto-advanced:
 
 Advanced topics
@@ -319,23 +330,36 @@ implementation of all other start methods is optional and their default
 implementation does nothing (:meth:`~sardana.pool.controller.Startable.PreStartOne`
 actually returns ``True``).
 
-So, actually, a simplified algorithm for counter acquisition start in sardana is::
+So, actually, the algorithm for counter acquisition start in sardana is::
 
     /FOR/ Each controller(s) implied in the acquisition
-         - Call PreStartAll()
-    /END FOR/
-
-    /FOR/ Each counter(s) implied in the acquisition
-         - ret = PreStartOne(counter to acquire, new position)
-         - /IF/ ret is not true
-            /RAISE/ Cannot start. Counter PreStartOne returns False
-         - /END IF/
-         - Call StartOne(counter to acquire, new position)
+        - Call PreStartAll()
     /END FOR/
 
     /FOR/ Each controller(s) implied in the acquisition
-         - Call StartAll()
+        /FOR/ Each counter(s) implied in the acquisition
+            - ret = PreStartOne(counter to acquire, new position)
+            - /IF/ ret is not true
+                /RAISE/ Cannot start. Counter PreStartOne returns False
+            - /END IF/
+            - Call StartOne(counter to acquire, new position)
+        /END FOR/
     /END FOR/
+
+    /FOR/ Each controller(s) implied in the acquisition
+        - Call StartAll()
+    /END FOR/
+
+The controllers over which we iterate in the above pseudo code are organized
+so the master timer/monitor controller is the last one to be called. Similar order of
+iteration applies to the counters of a given controller, so the timer/monitor
+is the last one to be called.
+
+You can assign the master controller role with the order of the controllers
+in the measurement group. There is one master per each of the following
+synchronization modes: :attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareTrigger`
+and :attr:`~sardana.pool.pooldefs.AcqSynch.SoftwareStart`. This order must be
+set within the measurement group :ref:`sardana-measurementgroup-overview-configuration`.
 
 So, for the example above where we acquire two counters, the complete sequence of
 calls to the controller is:
@@ -510,3 +534,4 @@ and that there are no gaps in between them.
 .. _numpy: http://numpy.scipy.org/
 .. _SPEC: http://www.certif.com/
 .. _EPICS: http://www.aps.anl.gov/epics/
+.. _SEP18: http://www.sardana-controls.org/sep/?SEP18.md

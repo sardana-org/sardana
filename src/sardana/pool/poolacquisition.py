@@ -23,24 +23,28 @@
 ##
 ##############################################################################
 
-"""This module is part of the Python Pool libray. It defines the class for an
+"""This module is part of the Python Pool library. It defines the class for an
 acquisition"""
 
-__all__ = ["AcquisitionState", "AcquisitionMap", "PoolCTAcquisition",
-           "Pool0DAcquisition", "Channel", "PoolIORAcquisition"]
+__all__ = ["get_acq_ctrls", "AcquisitionState", "AcquisitionMap",
+           "PoolCTAcquisition", "Pool0DAcquisition", "PoolIORAcquisition",
+           "PoolAcquisitionHardware", "PoolAcquisitionSoftware",
+           "PoolAcquisitionSoftwareStart"]
 
 __docformat__ = 'restructuredtext'
 
 import time
+import weakref
 import datetime
+import traceback
 
 from taurus.core.util.log import DebugIt
 from taurus.core.util.enumeration import Enumeration
 
 from sardana import SardanaValue, State, ElementType, TYPE_TIMERABLE_ELEMENTS
 from sardana.sardanathreadpool import get_thread_pool
-from sardana.pool import SynchParam, SynchDomain, AcqSynch
-from sardana.pool.poolaction import ActionContext, PoolActionItem, PoolAction
+from sardana.pool import AcqSynch, AcqMode
+from sardana.pool.poolaction import ActionContext, PoolAction
 from sardana.pool.poolsynchronization import PoolSynchronization
 
 #: enumeration representing possible motion states
@@ -62,194 +66,260 @@ AcquisitionMap = {
 }
 
 
-def split_MGConfigurations(mg_cfg_in):
-    """Split MeasurementGroup configuration with channels
-    triggered by SW Trigger and channels triggered by HW trigger
-
-    TODO: (technical debt) All the MeasurementGroup configuration
-    logic should be encapsulate in a dedicated class instead of
-    using a basic data structures like dict or lists...
-    """
-    ctrls_in = mg_cfg_in['controllers']
-    mg_sw_cfg_out = {}
-    mg_0d_cfg_out = {}
-    mg_hw_cfg_out = {}
-    mg_sw_cfg_out['controllers'] = ctrls_sw_out = {}
-    mg_0d_cfg_out['controllers'] = ctrls_0d_out = {}
-    mg_hw_cfg_out['controllers'] = ctrls_hw_out = {}
-    for ctrl, ctrl_info in ctrls_in.items():
-        external = isinstance(ctrl, str) and ctrl.startswith('__')
-        # skipping external controllers e.g. Tango attributes
-        if external:
-            continue
-        # splitting ZeroD based on the type
-        if ctrl.get_ctrl_types()[0] == ElementType.ZeroDExpChannel:
-            ctrls_0d_out[ctrl] = ctrl_info
-        # ignoring PseudoCounter
-        elif ctrl.get_ctrl_types()[0] == ElementType.PseudoCounter:
-            pass
-        # splitting rest of the channels based on the assigned trigger
-        else:
-            synchronizer = ctrl_info.get('synchronizer')
-            if synchronizer is None or synchronizer == 'software':
-                ctrls_sw_out[ctrl] = ctrl_info
-            else:
-                ctrls_hw_out[ctrl] = ctrl_info
-
-    def find_master(ctrls, role):
-        master_idx = float("+inf")
-        master = None
-        for ctrl_info in ctrls.values():
-            element = ctrl_info[role]
-            element_idx = ctrl_info["channels"][element]["index"]
-            element_enabled = ctrl_info["channels"][element]["enabled"]
-            # Find master only if is enabled
-            if element_idx < master_idx and element_enabled:
-                master = element
-                master_idx = element_idx
-        return master
-
-    if len(ctrls_sw_out):
-        mg_sw_cfg_out["timer"] = find_master(ctrls_sw_out, "timer")
-        mg_sw_cfg_out["monitor"] = find_master(ctrls_sw_out, "monitor")
-    if len(ctrls_hw_out):
-        mg_hw_cfg_out["timer"] = find_master(ctrls_hw_out, "timer")
-        mg_hw_cfg_out["monitor"] = find_master(ctrls_hw_out, "monitor")
-    return (mg_hw_cfg_out, mg_sw_cfg_out, mg_0d_cfg_out)
-
-
-def getTGConfiguration(MGcfg):
-    '''Build TG configuration from complete MG configuration.
-
-    TODO: (technical debt) All the MeasurementGroup configuration
-    logic should be encapsulate in a dedicated class instead of
-    using a basic data structures like dict or lists...
-
-    :param MGcfg: configuration dictionary of the whole Measurement Group.
-    :type MGcfg: dict<>
-    :return: a configuration dictionary of TG elements organized by controller
-    :rtype: dict<>
-    '''
-
-    # Create list with not repeated elements
-    _tg_element_list = []
-
-    for ctrl in MGcfg["controllers"]:
-        tg_element = MGcfg["controllers"][ctrl].get('synchronizer', None)
-        if (tg_element is not None and
-                tg_element != "software" and
-                tg_element not in _tg_element_list):
-            _tg_element_list.append(tg_element)
-
-    # Intermediate dictionary to organize each ctrl with its elements.
-    ctrl_tgelem_dict = {}
-    for tgelem in _tg_element_list:
-        tg_ctrl = tgelem.get_controller()
-        if tg_ctrl not in ctrl_tgelem_dict.keys():
-            ctrl_tgelem_dict[tg_ctrl] = [tgelem]
-        else:
-            ctrl_tgelem_dict[tg_ctrl].append(tgelem)
-
-    # Build TG configuration dictionary.
-    TGcfg = {}
-    TGcfg['controllers'] = {}
-
-    for ctrl in ctrl_tgelem_dict:
-        TGcfg['controllers'][ctrl] = ctrls = {}
-        ctrls['channels'] = {}
-        for tg_elem in ctrl_tgelem_dict[ctrl]:
-            ch = ctrls['channels'][tg_elem] = {}
-            ch['full_name'] = tg_elem.full_name
-    # TODO: temporary returning tg_elements
-    return TGcfg, _tg_element_list
-
-
-def extract_integ_time(synchronization):
-    """Extract integration time(s) from synchronization dict. If there is only
-    one group in the synchronization than returns float with the integration
-    time. Otherwise a list of floats with different integration times.
-
-    TODO: (technical debt) All the MeasurementGroup synchronization
-    logic should be encapsulate in a dedicated class instead of
-    using a basic data structures like dict or lists...
-
-    :param synchronization: group(s) where each group is described by
-        SynchParam(s)
-    :type synchronization: list(dict)
-    :return list(float) or float
-    """
-    if len(synchronization) == 1:
-        integ_time = synchronization[0][SynchParam.Active][SynchDomain.Time]
-    else:
-        integ_time = []
-        for group in synchronization:
-            active_time = group[SynchParam.Active][SynchDomain.Time]
-            repeats = group[SynchParam.Repeats]
-            integ_time += [active_time] * repeats
-    return integ_time
-
-
-def extract_repetitions(synchronization):
-    """Extract repetitions from synchronization dict.
-
-    TODO: (technical debt) All the MeasurementGroup synchronization
-    logic should be encapsulate in a dedicated class instead of
-    using a basic data structures like dict or lists...
-
-    :param synchronization: group(s) where each group is described by
-        SynchParam(s)
-    :type synchronization: list(dict)
-    :return: number of repetitions
-    :rtype: int
-    """
-    repetitions = 0
-    for group in synchronization:
-        repetitions += group[SynchParam.Repeats]
-    return repetitions
-
-
 def is_value_error(value):
     if isinstance(value, SardanaValue) and value.error:
         return True
     return False
 
 
+def get_acq_ctrls(ctrls):
+    """Converts configuration controllers into acquisition controllers.
+
+    Takes care about converting their internals as well.
+
+    :param ctrls: sequence of configuration controllers objects
+    :type ctrls: sardana.pool.poolmeasurementgroup.ControllerConfiguration
+    :return: sequence of acquisition controllers
+    :rtype: :class:`~sardana.pool.poolacquisition.AcqController`
+
+    .. note::
+        The get_acq_ctrls function has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the class) may occur if
+        deemed necessary by the core developers.
+    """
+    action_ctrls = []
+    for ctrl in ctrls:
+        action_ctrl = AcqController(ctrl)
+        action_ctrls.append(action_ctrl)
+    return action_ctrls
+
+
+def get_timerable_ctrls(ctrls, acq_mode):
+    """Converts timerable configuration controllers into acquisition
+    controllers.
+
+    Take care about converting their internals as well.
+    Take care about assigning master according to acq_mode.
+
+    :param ctrls: sequence of configuration controllers objects
+    :type ctrls: sardana.pool.poolmeasurementgroup.ControllerConfiguration
+    :param acq_mode: acquisition mode (timer/monitor)
+    :type acq_mode: :class:`sardana.pool.AcqMode`
+    :return: sequence of acquisition controllers
+    :rtype: :class:`~sardana.pool.poolacquisition.AcqController`
+
+    .. note::
+        The get_timerable_ctrls function has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the class) may occur if
+        deemed necessary by the core developers.
+    """
+    action_ctrls = []
+    for ctrl in ctrls:
+        attrs = {}
+        if acq_mode is not None:
+            master = None
+            if acq_mode is AcqMode.Timer:
+                master = ctrl.timer
+            elif acq_mode is AcqMode.Monitor:
+                master = ctrl.monitor
+            attrs = {'master': master}
+        action_ctrl = AcqController(ctrl, attrs)
+        action_ctrls.append(action_ctrl)
+    return action_ctrls
+
+
+def get_timerable_items(ctrls, master, acq_mode=AcqMode.Timer):
+    """Converts timerable configuration items into acquisition items.
+
+    The timerable items are controllers and master. Convert these into
+    the corresponding acquisition items.
+
+    Take care about converting their internals as well.
+    Take care about assigning master according to acq_mode.
+
+    :param ctrls: sequence of configuration controllers objects
+    :type ctrls: :obj:list<:class:`~sardana.pool.poolmeasurementgroup.ControllerConfiguration`>  # noqa
+    :param master: master configuration object
+    :type master: :class:`~sardana.pool.poolmeasurementgroup.ChannelConfiguration`  # noqa
+    :param acq_mode: acquisition mode (timer/monitor)
+    :type acq_mode: :class:`sardana.pool.AcqMode`
+    :return: sequence of acquisition controllers
+    :rtype: :class:`~sardana.pool.poolacquisition.AcqController`
+
+    .. note::
+        The get_timerable_ctrls function has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the class) may occur if
+        deemed necessary by the core developers.
+    """
+    ctrls = get_timerable_ctrls(ctrls, acq_mode)
+    # Search master AcqConfigurationItem obj
+    for ctrl in ctrls:
+        for channel in ctrl.get_channels():
+            if channel.configuration == master:
+                master = channel
+                break
+    return ctrls, master
+
+
+class ActionArgs(object):
+
+    def __init__(self, args, kwargs=None):
+        self.args = args
+        if kwargs is None:
+            kwargs = {}
+        self.kwargs = kwargs
+
+
+class AcqConfigurationItem(object):
+    """Wrapper for configuration item that will be used in an action.
+
+    .. note::
+        The AcqConfigurationItem function has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the class) may occur if
+        deemed necessary by the core developers.
+    """
+
+    def __init__(self, configuration, attrs=None):
+        """Constructs action item from a configuration item.
+
+        Eventually it can be enriched with attrs.
+
+        :param configuration: item configuration object
+        :type configuration:
+            :class:`sardana.pool.poolmeasurementgroup.ConfigurationItem`
+        :param attrs: extra attributes to be inserted
+        :type attrs: dict
+        """
+        self._configuration = weakref.ref(configuration)
+        self.enabled = True
+
+        if attrs is not None:
+            self.__dict__.update(attrs)
+
+    def __getattr__(self, item):
+        return getattr(self.configuration, item)
+
+    def get_configuration(self):
+        """Returns the element associated with this item"""
+        return self._configuration()
+
+    def set_configuration(self, configuration):
+        """Sets the element for this item"""
+        self._configuration = weakref.ref(configuration)
+
+    configuration = property(get_configuration)
+
+
+class AcqController(AcqConfigurationItem):
+    """Wrapper for controller configuration that will be used in an action.
+
+    .. note::
+        The AcqController function has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the class) may occur if
+        deemed necessary by the core developers.
+    """
+
+    def __init__(self, configuration, attrs=None):
+        """Constructs action controller from a configuration controller.
+
+        Eventually it can be enriched with attrs.
+
+        :param configuration: controller configuration object
+        :type configuration:
+            :class:`sardana.pool.poolmeasurementgroup.ControllerConfiguration`
+        :param attrs: extra attributes to be inserted
+        :type attrs: dict
+        """
+        master = None
+        if attrs is not None:
+            master = attrs.get('master')
+        self._channels = []
+        self._channels_enabled = []
+        self._channels_disabled = []
+        ch_attrs = {'controller': self}
+        for conf_channel in configuration.get_channels():
+            action_channel = AcqConfigurationItem(conf_channel, ch_attrs)
+            self._channels.append(action_channel)
+            if conf_channel in configuration.get_channels(enabled=True):
+                self._channels_enabled.append(action_channel)
+            if conf_channel in configuration.get_channels(enabled=False):
+                self._channels_disabled.append(action_channel)
+            if master is None:
+                continue
+            if master == conf_channel:
+                attrs['master'] = action_channel
+                master = None
+        AcqConfigurationItem.__init__(self, configuration, attrs)
+
+    def get_channels(self, enabled=None):
+        if enabled is None:
+            return list(self._channels)
+        elif enabled:
+            return list(self._channels_enabled)
+        else:
+            return list(self._channels_disabled)
+
+
 class PoolAcquisition(PoolAction):
+    """Acquisition action which is internally composed for sub-actions.
+
+    Handle acquisition of experimental channels of the following types:
+    * timerable (C/T, 1D and 2D) synchronized by software or hardware
+    trigger/gate/start
+    * 0D
+
+    Synchronized by T/G elements or sofware synchronizer.
+    """
 
     def __init__(self, main_element, name="Acquisition"):
         PoolAction.__init__(self, main_element, name)
         zerodname = name + ".0DAcquisition"
         hwname = name + ".HardwareAcquisition"
         swname = name + ".SoftwareAcquisition"
+        sw_start_name = name + ".SoftwareStartAcquisition"
         synchname = name + ".Synchronization"
 
-        self._sw_acq_config = None
-        self._0d_config = None
-        self._0d_acq = Pool0DAcquisition(main_element, name=zerodname)
+        self._sw_acq_args = None
+        self._sw_start_acq_args = None
+        self._0d_acq_args = None
+        self._hw_acq_args = None
+        self._synch_args = None
         self._sw_acq = PoolAcquisitionSoftware(main_element, name=swname)
+        self._sw_start_acq = PoolAcquisitionSoftwareStart(
+            main_element, name=sw_start_name)
+        self._0d_acq = Pool0DAcquisition(main_element, name=zerodname)
         self._hw_acq = PoolAcquisitionHardware(main_element, name=hwname)
         self._synch = PoolSynchronization(main_element, name=synchname)
 
-    def set_sw_config(self, config):
-        self._sw_acq_config = config
-
-    def set_0d_config(self, config):
-        self._0d_config = config
-
     def event_received(self, *args, **kwargs):
+        """Callback executed on event of software synchronizer.
+
+        Reacts on start, active, passive or end type of events
+        """
         timestamp = time.time()
-        _, type_, value = args
+        _, type_, index = args
         name = type_.name
         if name == "state":
             return
         t_fmt = '%Y-%m-%d %H:%M:%S.%f'
         t_str = datetime.datetime.fromtimestamp(timestamp).strftime(t_fmt)
-        msg = '%s event with id: %d received at: %s' % (name, value, t_str)
+        msg = '%s event with id: %d received at: %s' % (name, index, t_str)
         self.debug(msg)
-        if name == "active":
+        if name == "start":
+            if self._sw_start_acq_args is not None:
+                self.debug('Executing software start acquisition.')
+                get_thread_pool().add(self._sw_start_acq.run, None,
+                                      *self._sw_start_acq_args.args,
+                                      **self._sw_start_acq_args.kwargs)
+        elif name == "active":
             # this code is not thread safe, but for the moment we assume that
             # only one EventGenerator will work at the same time
-            if self._sw_acq_config:
+            if self._sw_acq_args is not None:
                 if self._sw_acq._is_started() or self._sw_acq.is_running():
                     msg = ('Skipping trigger: software acquisition is still'
                            ' in progress.')
@@ -257,13 +327,12 @@ class PoolAcquisition(PoolAction):
                     return
                 else:
                     self.debug('Executing software acquisition.')
-                    args = ()
-                    kwargs = self._sw_acq_config
-                    kwargs['synch'] = True
-                    kwargs['idx'] = value
+                    self._sw_acq_args.kwargs.update({'index': index})
                     self._sw_acq._started = True
-                    get_thread_pool().add(self._sw_acq.run, *args, **kwargs)
-            if self._0d_config:
+                    get_thread_pool().add(self._sw_acq.run, None,
+                                          *self._sw_acq_args.args,
+                                          **self._sw_acq_args.kwargs)
+            if self._0d_acq_args is not None:
                 if self._0d_acq._is_started() or self._0d_acq.is_running():
                     msg = ('Skipping trigger: ZeroD acquisition is still in'
                            ' progress.')
@@ -271,27 +340,170 @@ class PoolAcquisition(PoolAction):
                     return
                 else:
                     self.debug('Executing ZeroD acquisition.')
-                    args = ()
-                    kwargs = self._0d_config
-                    kwargs['synch'] = True
-                    kwargs['idx'] = value
+                    self._0d_acq_args.kwargs.update({'index': index})
                     self._0d_acq._started = True
                     self._0d_acq._stopped = False
                     self._0d_acq._aborted = False
-                    get_thread_pool().add(self._0d_acq.run, *args, **kwargs)
+                    get_thread_pool().add(self._0d_acq.run, None,
+                                          *self._0d_acq_args.args,
+                                          **self._0d_acq_args.kwargs)
         elif name == "passive":
-            if self._0d_config and (self._0d_acq._is_started() or
-                                    self._0d_acq.is_running()):
+            # TODO: _0d_acq_args comparison may not be necessary
+            if (self._0d_acq_args is not None
+                    and (self._0d_acq._is_started()
+                         or self._0d_acq.is_running())):
                 self.debug('Stopping ZeroD acquisition.')
                 self._0d_acq.stop_action()
 
+    def prepare(self, config, acq_mode, value, synchronization=None,
+                moveable=None, sw_synch_initial_domain=None,
+                nb_starts=1, **kwargs):
+        """Prepare measurement process.
+
+        Organize sub-action arguments and loads configuration parameters to
+        the hardware controllers.
+        """
+        self._sw_acq_args = None
+        self._sw_start_acq_args = None
+        self._0d_acq_args = None
+        self._hw_acq_args = None
+        self._synch_args = None
+        ctrls_hw = []
+        ctrls_sw = []
+        ctrls_sw_start = []
+
+        repetitions = synchronization.repetitions
+        latency = synchronization.passive_time
+        # Prepare controllers synchronized by hardware
+        acq_sync_hw = [AcqSynch.HardwareTrigger, AcqSynch.HardwareStart,
+                       AcqSynch.HardwareGate]
+        ctrls = config.get_timerable_ctrls(acq_synch=acq_sync_hw, enabled=True)
+        if len(ctrls) > 0:
+            ctrls_hw = get_timerable_ctrls(ctrls, acq_mode)
+            hw_args = (ctrls_hw, value, repetitions, latency)
+            hw_kwargs = {}
+            hw_kwargs.update(kwargs)
+            self._hw_acq_args = ActionArgs(hw_args, hw_kwargs)
+
+        # Prepare controllers synchronized by software Trigger and Gate
+        acq_sync_sw = [AcqSynch.SoftwareGate, AcqSynch.SoftwareTrigger]
+        ctrls = config.get_timerable_ctrls(acq_synch=acq_sync_sw, enabled=True)
+        if len(ctrls) > 0:
+            if acq_mode is AcqMode.Timer:
+                master = config.get_master_timer_software()
+            elif acq_mode is AcqMode.Monitor:
+                master = config.get_master_monitor_software()
+
+            ctrls_sw, master_sw = get_timerable_items(ctrls, master, acq_mode)
+
+            sw_args = (ctrls_sw, value, master_sw)
+            sw_kwargs = {'synch': True}
+            sw_kwargs.update(kwargs)
+            self._sw_acq_args = ActionArgs(sw_args, sw_kwargs)
+
+        # Prepare controllers synchronized by software Start
+        ctrls = config.get_timerable_ctrls(acq_synch=AcqSynch.SoftwareStart,
+                                           enabled=True)
+        if len(ctrls) > 0:
+            if acq_mode is AcqMode.Timer:
+                master = config.get_master_timer_software_start()
+            elif acq_mode is AcqMode.Monitor:
+                master = config.get_master_monitor_software_start()
+
+            ctrls_sw_start, master_sw_start = get_timerable_items(ctrls,
+                                                                  master,
+                                                                  acq_mode)
+            sw_start_args = (ctrls_sw_start, value, master_sw_start,
+                             repetitions, latency)
+            sw_start_kwargs = {'synch': True}
+            sw_start_kwargs.update(kwargs)
+            self._sw_start_acq_args = ActionArgs(sw_start_args,
+                                                 sw_start_kwargs)
+
+        # Prepare 0D controllers
+        ctrls = config.get_zerod_ctrls(enabled=True)
+        if len(ctrls) > 0:
+            ctrls_acq_0d = get_acq_ctrls(ctrls)
+            zerod_args = (ctrls_acq_0d,)
+            zerod_kwargs = {'synch': True}
+            zerod_kwargs.update(kwargs)
+            self._0d_acq_args = ActionArgs(zerod_args, zerod_kwargs)
+
+        # Prepare synchronizer controllers
+        ctrls = config.get_synch_ctrls(enabled=True)
+        ctrls_synch = get_acq_ctrls(ctrls)
+        synch_args = (ctrls_synch, synchronization)
+        synch_kwargs = {'moveable': moveable,
+                        'sw_synch_initial_domain': sw_synch_initial_domain}
+        synch_kwargs.update(kwargs)
+        self._synch_args = ActionArgs(synch_args, synch_kwargs)
+
+        # Load the configuration to the timerable controllers
+        # TODO: apply the configuration only if necessary
+        # Checking only the "changed" flag is not enough, one needs to check
+        # if the controllers were not used with different measurement groups
+        # configurations meanwhile (see: sardana-org/sardana#1171) in this
+        # case the configuration must be applied even if it was not changed
+        # if config.changed:
+        ctrls = ctrls_hw + ctrls_sw_start + ctrls_sw
+
+        for ctrl in ctrls:
+            pool_ctrl = ctrl.element
+            if not pool_ctrl.is_online():
+                raise RuntimeError('The controller {0} is '
+                                   'offline'.format(pool_ctrl.name))
+            pool_ctrl.set_ctrl_par('acquisition_mode', acq_mode)
+            pool_ctrl.operator = self.main_element
+            pool_ctrl.set_ctrl_par('timer', ctrl.timer.axis)
+            pool_ctrl.set_ctrl_par('monitor', ctrl.monitor.axis)
+            synch = config.get_acq_synch_by_controller(pool_ctrl)
+            pool_ctrl.set_ctrl_par('synchronization', synch)
+
+            if ctrl.is_referable():
+                for channel in ctrl.get_channels():
+                    value_ref_enabled = channel.value_ref_enabled
+                    pool_ctrl.set_axis_par(channel.axis,
+                                           "value_ref_enabled",
+                                           value_ref_enabled)
+                    if value_ref_enabled:
+                        pool_ctrl.set_axis_par(channel.axis,
+                                               "value_ref_pattern",
+                                               channel.value_ref_pattern)
+
+        config.changed = False
+
+        # Call hardware and software start controllers prepare method
+        ctrls = ctrls_hw + ctrls_sw_start
+        self._prepare_ctrls(ctrls, value, repetitions, latency,
+                            nb_starts)
+
+        # Call software controllers prepare method
+        nb_starts = nb_starts * repetitions
+        repetitions = 1
+        self._prepare_ctrls(ctrls_sw, value, repetitions, latency,
+                            nb_starts)
+
+    @staticmethod
+    def _prepare_ctrls(ctrls, value, repetitions, latency, nb_starts):
+        for ctrl in ctrls:
+            axis = ctrl.master.axis
+            pool_ctrl = ctrl.element
+            pool_ctrl.ctrl.PrepareOne(axis, value, repetitions, latency,
+                                      nb_starts)
+
     def is_running(self):
-        return self._0d_acq.is_running() or\
-            self._sw_acq.is_running() or\
-            self._hw_acq.is_running() or\
-            self._synch.is_running()
+        """Checks if acquisition is running.
+
+        Acquisition is runnin if any of its sub-actions is running.
+        """
+        return self._sw_start_acq.is_running()\
+            or self._0d_acq.is_running()\
+            or self._sw_acq.is_running()\
+            or self._hw_acq.is_running()\
+            or self._synch.is_running()
 
     def run(self, *args, **kwargs):
+        """Runs acquisition according to previous preparation."""
         for elem in self.get_elements():
             elem.put_state(None)
             # TODO: temporarily clear value buffers at the beginning of the
@@ -302,58 +514,49 @@ class PoolAcquisition(PoolAction):
                 elem.clear_value_buffer()
             except AttributeError:
                 continue
+            try:
+                elem.clear_value_ref_buffer()
+            except AttributeError:
+                continue
             # clean also the pseudo counters, even the ones that do not
             # participate directly in the acquisition
             for pseudo_elem in elem.get_pseudo_elements():
                 pseudo_elem.clear_value_buffer()
-        config = kwargs['config']
-        synchronization = kwargs["synchronization"]
-        integ_time = extract_integ_time(synchronization)
-        repetitions = extract_repetitions(synchronization)
-        # TODO: this code splits the global mg configuration into
-        # experimental channels triggered by hw and experimental channels
-        # triggered by sw. Refactor it!!!!
-        (hw_acq_cfg, sw_acq_cfg, zerod_acq_cfg) = split_MGConfigurations(
-            config)
-        synch_cfg, _ = getTGConfiguration(config)
-        # starting continuous acquisition only if there are any controllers
-        if len(hw_acq_cfg['controllers']):
-            cont_acq_kwargs = dict(kwargs)
-            cont_acq_kwargs['config'] = hw_acq_cfg
-            cont_acq_kwargs['integ_time'] = integ_time
-            cont_acq_kwargs['repetitions'] = repetitions
-            self._hw_acq.run(*args, **cont_acq_kwargs)
-        if len(sw_acq_cfg['controllers']) or len(zerod_acq_cfg['controllers']):
+
+        if self._hw_acq_args is not None:
+            self._hw_acq.run(*self._hw_acq_args.args,
+                             **self._hw_acq_args.kwargs)
+
+        if self._sw_acq_args is not None\
+                or self._sw_start_acq_args is not None\
+                or self._0d_acq_args is not None:
             self._synch.add_listener(self)
-            if len(sw_acq_cfg['controllers']):
-                sw_acq_kwargs = dict(kwargs)
-                sw_acq_kwargs['config'] = sw_acq_cfg
-                sw_acq_kwargs['integ_time'] = integ_time
-                sw_acq_kwargs['repetitions'] = 1
-                self.set_sw_config(sw_acq_kwargs)
-            if len(zerod_acq_cfg['controllers']):
-                zerod_acq_kwargs = dict(kwargs)
-                zerod_acq_kwargs['config'] = zerod_acq_cfg
-                self.set_0d_config(zerod_acq_kwargs)
-        synch_kwargs = dict(kwargs)
-        synch_kwargs['config'] = synch_cfg
-        self._synch.run(*args, **synch_kwargs)
+
+        if self._synch_args is not None:
+            self._synch.run(*self._synch_args.args,
+                            **self._synch_args.kwargs)
 
     def _get_action_for_element(self, element):
         elem_type = element.get_type()
         if elem_type in TYPE_TIMERABLE_ELEMENTS:
-            main_element = self.main_element
-            channel_to_acq_synch = main_element._channel_to_acq_synch
-            acq_synch = channel_to_acq_synch.get(element)
+            config = self.main_element.configuration
+            try:
+                acq_synch = config.get_acq_synch_by_channel(element)
+            # when configuration was not yet set and one sets the
+            # measurement group's integration time (this may happen on Tango
+            # device initialization when memorized attributes are set we
+            # fallback to software acquisition
+            except KeyError:
+                acq_synch = AcqSynch.SoftwareTrigger
             if acq_synch in (AcqSynch.SoftwareTrigger,
                              AcqSynch.SoftwareGate):
                 return self._sw_acq
+            elif acq_synch == AcqSynch.SoftwareStart:
+                return self._sw_start_acq
             elif acq_synch in (AcqSynch.HardwareTrigger,
-                               AcqSynch.HardwareGate):
+                               AcqSynch.HardwareGate,
+                               AcqSynch.HardwareStart):
                 return self._hw_acq
-            else:
-                # by default software synchronization is in use
-                return self._sw_acq
         elif elem_type == ElementType.ZeroDExpChannel:
             return self._0d_acq
         elif elem_type == ElementType.TriggerGate:
@@ -393,8 +596,9 @@ class PoolAcquisition(PoolAction):
         :type copy_of: bool
         :return: a sequence of all elements involved in this action.
         :rtype: seq<sardana.pool.poolelement.PoolElement>"""
-        return (self._hw_acq.get_elements() + self._sw_acq.get_elements() +
-                self._0d_acq.get_elements() + self._synch.get_elements())
+        return (self._hw_acq.get_elements() + self._sw_acq.get_elements()
+                + self._sw_start_acq.get_elements()
+                + self._0d_acq.get_elements() + self._synch.get_elements())
 
     def get_pool_controller_list(self):
         """Returns a list of all controller elements involved in this action.
@@ -412,6 +616,7 @@ class PoolAcquisition(PoolAction):
         ret = {}
         ret.update(self._hw_acq.get_pool_controllers())
         ret.update(self._sw_acq.get_pool_controllers())
+        ret.update(self._sw_start_acq.get_pool_controllers())
         ret.update(self._0d_acq.get_pool_controllers())
         return ret
 
@@ -434,17 +639,6 @@ class PoolAcquisition(PoolAction):
         return ret
 
 
-class Channel(PoolActionItem):
-
-    def __init__(self, acquirable, info=None):
-        PoolActionItem.__init__(self, acquirable)
-        if info:
-            self.__dict__.update(info)
-
-    def __getattr__(self, name):
-        return getattr(self.element, name)
-
-
 class PoolAcquisitionBase(PoolAction):
     """Base class for acquisitions with a generic start_action method.
 
@@ -457,7 +651,14 @@ class PoolAcquisitionBase(PoolAction):
 
     def __init__(self, main_element, name):
         PoolAction.__init__(self, main_element, name)
-        self._channels = None
+        self._channels = []
+        self._index = None
+        self._nb_states_per_value = None
+        self._acq_sleep_time = None
+        self._pool_ctrl_dict_loop = None
+        self._pool_ctrl_dict_ref = None
+        self._pool_ctrl_dict_value = None
+
         # TODO: for the moment we can not clear value buffers at the end of
         # the acquisition. This is because of the pseudo counters that are
         # based on channels synchronized by hardware and software.
@@ -467,6 +668,78 @@ class PoolAcquisitionBase(PoolAction):
         # Whenever there will be solution for that, after refactoring of the
         # acquisition actions, uncomment this line
         # self.add_finish_hook(self.clear_value_buffers, True)
+
+    def get_read_value_ref_ctrls(self):
+        return self._pool_ctrl_dict_ref
+
+    def read_value_ref(self, ret=None, serial=False):
+        """Reads value ref information of all elements involved in this action
+
+        :param ret: output map parameter that should be filled with value
+                    information. If None is given (default), a new map is
+                    created an returned
+        :type ret: dict
+        :param serial: If False (default) perform controller HW value requests
+                       in parallel. If True, access is serialized.
+        :type serial: bool
+        :return: a map containing value information per element
+        :rtype: dict<:class:~`sardana.pool.poolelement.PoolElement`,
+                     (value object, Exception or None)>"""
+        with ActionContext(self):
+            return self.raw_read_value_ref(ret=ret, serial=serial)
+
+    def raw_read_value_ref(self, ret=None, serial=False):
+        """**Unsafe**. Reads value ref information of all referable elements
+        involved in this acquisition
+
+        :param ret: output map parameter that should be filled with value
+                    information. If None is given (default), a new map is
+                    created an returned
+        :type ret: dict
+        :param serial: If False (default) perform controller HW value requests
+                       in parallel. If True, access is serialized.
+        :type serial: bool
+        :return: a map containing value information per element
+        :rtype: dict<:class:~`sardana.pool.poolelement.PoolElement,
+                :class:`sardana.sardanavalue.SardanaValue`>
+        """
+        if ret is None:
+            ret = {}
+
+        read = self._raw_read_value_ref_concurrent
+        if serial:
+            read = self._raw_read_value_ref_serial
+
+        value_info = self._value_info
+
+        with value_info:
+            value_info.init(len(self.get_read_value_ref_ctrls()))
+            read(ret)
+            value_info.wait()
+        return ret
+
+    def _raw_read_value_ref_serial(self, ret):
+        """Internal method. Read value ref in a serial mode"""
+        for pool_ctrl in self.get_read_value_ref_ctrls():
+            self._raw_read_ctrl_value_ref(ret, pool_ctrl)
+        return ret
+
+    def _raw_read_value_ref_concurrent(self, ret):
+        """Internal method. Read value ref in a concurrent mode"""
+        th_pool = get_thread_pool()
+        for pool_ctrl in self.get_read_value_ref_ctrls():
+            th_pool.add(self._raw_read_ctrl_value_ref, None, ret, pool_ctrl)
+        return ret
+
+    def _raw_read_ctrl_value_ref(self, ret, pool_ctrl):
+        """Internal method. Read controller value ref information and store
+        it in ret parameter"""
+        try:
+            axes = [elem.axis for elem in self._pool_ctrl_dict_ref[pool_ctrl]]
+            value_infos = pool_ctrl.raw_read_axis_value_refs(axes)
+            ret.update(value_infos)
+        finally:
+            self._value_info.finish_one()
 
     def in_acquisition(self, states):
         """Determines if we are in acquisition or if the acquisition has ended
@@ -484,192 +757,211 @@ class PoolAcquisitionBase(PoolAction):
                 return True
 
     @DebugIt()
-    def start_action(self, *args, **kwargs):
-        """Prepares everything for acquisition and starts it.
-        :param acq_sleep_time: sleep time between state queries
-        :param nb_states_per_value: how many state queries between readouts
-        :param integ_time: integration time(s)
-        :type integ_time: float or seq<float>
+    def start_action(self, ctrls, value, master, repetitions, latency,
+                     index, acq_sleep_time, nb_states_per_value,
+                     **kwargs):
+        """
+        Prepares everything for acquisition and starts it
+        :param ctrls: List of enabled pool acquisition controllers
+        :type ctrls: list
+        :param value: integration time/monitor counts
+        :type value: float/int or seq<float/int>
         :param repetitions: repetitions
         :type repetitions: int
-        :param config: configuration dictionary (with information about
-            involved controllers and channels)
+        :param latency:
+        :type latency: float
+        :param master: master channel is the last one to start
+        :type master: Channel
+        :param index:
+        :type index: int
+        :param acq_sleep_time: sleep time between state queries
+        :type acq_sleep_time: float
+        :param nb_states_per_value: how many state queries between readouts
+        :type nb_states_per_value: int
+        :param args:
+        :param kwargs:
+        :return:
         """
-        pool = self.pool
 
+        pool = self.pool
         self._aborted = False
         self._stopped = False
 
-        self._acq_sleep_time = kwargs.pop("acq_sleep_time",
-                                          pool.acq_loop_sleep_time)
-        self._nb_states_per_value = kwargs.pop("nb_states_per_value",
-                                               pool.acq_loop_states_per_value)
+        self._index = index
 
-        self._integ_time = integ_time = kwargs.get("integ_time")
-        self._mon_count = mon_count = kwargs.get("monitor_count")
-        self._repetitions = repetitions = kwargs.get("repetitions")
-        if integ_time is None and mon_count is None:
-            raise Exception("must give integration time or monitor counts")
-        if integ_time is not None and mon_count is not None:
-            msg = ("must give either integration time or monitor counts "
-                   "(not both)")
-            raise Exception(msg)
+        self._acq_sleep_time = acq_sleep_time
+        if self._acq_sleep_time is None:
+            self._acq_sleep_time = pool.acq_loop_sleep_time
 
-        _ = kwargs.get("items", self.get_elements())
-        cfg = kwargs['config']
-        # determine which is the controller which holds the master channel
-
-        if integ_time is not None:
-            master_key = 'timer'
-            master_value = integ_time
-        if mon_count is not None:
-            master_key = 'monitor'
-            master_value = -mon_count
-        master = cfg[master_key]
-        if master is None:
-            self.main_element.set_state(State.Fault, propagate=2)
-            msg = "master {0} is unknown (probably disabled)".format(
-                master_key)
-            raise RuntimeError(msg)
-        master_ctrl = master.controller
-
-        pool_ctrls_dict = dict(cfg['controllers'])
-        pool_ctrls_dict.pop('__tango__', None)
-
-        # controllers to be started (only enabled) in the right order
-        pool_ctrls = []
-        # controllers that will be read at the end of the action
-        self._pool_ctrl_dict_loop = _pool_ctrl_dict_loop = {}
-        # channels that are acquired (only enabled)
-        self._channels = channels = {}
-
-        # select only suitable e.g. enabled, timerable controllers & channels
-        for ctrl, pool_ctrl_data in pool_ctrls_dict.items():
-            # skip not timerable controllers e.g. 0D
-            if not ctrl.is_timerable():
-                continue
-            ctrl_enabled = False
-            elements = pool_ctrl_data['channels']
-            for element, element_info in elements.items():
-                # skip disabled elements
-                if not element_info['enabled']:
-                    continue
-                # Add only the enabled channels
-                channel = Channel(element, info=element_info)
-                channels[element] = channel
-                ctrl_enabled = True
-            # check if the ctrl has enabled channels
-            if ctrl_enabled:
-                # enabled controller can no be offline
-                if not ctrl.is_online():
-                    self.main_element.set_state(State.Fault, propagate=2)
-                    msg = "controller {0} is offline".format(ctrl.name)
-                    raise RuntimeError(msg)
-                pool_ctrls.append(ctrl)
-                # only CT will be read in the loop, 1D and 2D not
-                if ElementType.CTExpChannel in ctrl.get_ctrl_types():
-                    _pool_ctrl_dict_loop[ctrl] = pool_ctrl_data
-
-        # timer/monitor channels can not be disabled
-        for pool_ctrl in pool_ctrls:
-            ctrl = pool_ctrl.ctrl
-            pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-            timer_monitor = pool_ctrl_data[master_key]
-            if timer_monitor not in channels:
-                self.main_element.set_state(State.Fault, propagate=2)
-                msg = "timer/monitor ({0}) of {1} controller is "\
-                      "disabled)".format(timer_monitor.name, pool_ctrl.name)
-                raise RuntimeError(msg)
+        self._nb_states_per_value = nb_states_per_value
+        if self._nb_states_per_value is None:
+            self._nb_states_per_value = pool.acq_loop_states_per_value
 
         # make sure the controller which has the master channel is the last to
         # be called
-        pool_ctrls.remove(master_ctrl)
-        pool_ctrls.append(master_ctrl)
+        if master is not None:
+            ctrls.remove(master.controller)
+            ctrls.append(master.controller)
+
+        # controllers that will be read during the action
+        self._set_pool_ctrl_dict_loop(ctrls)
+        # split controllers to read value and value reference
+        self._split_ctrl(ctrls)
+        self.add_finish_hook(self._reset_ctrl_dicts, False)
+
+        # channels that are acquired (only enabled)
+        self._channels = []
+
+        def load(channel, value, repetitions, latency=0):
+            axis = channel.axis
+            pool_ctrl = channel.controller
+            ctrl = pool_ctrl.ctrl
+            ctrl.PreLoadAll()
+            try:
+                res = ctrl.PreLoadOne(axis, value, repetitions,
+                                      latency)
+            except TypeError:
+                try:
+                    res = ctrl.PreLoadOne(axis, value, repetitions)
+                    msg = ("PreLoadOne(axis, value, repetitions) is "
+                           "deprecated since version 2.7.0. Use PreLoadOne("
+                           "axis, value, repetitions, latency_time) instead.")
+                    self.warning(msg)
+                except TypeError:
+                    res = ctrl.PreLoadOne(axis, value)
+                    msg = ("PreLoadOne(axis, value) is deprecated since "
+                           "version 2.3.0. Use PreLoadOne(axis, value, "
+                           "repetitions, latency_time) instead.")
+                    self.warning(msg)
+            if not res:
+                msg = ("%s.PreLoadOne(%d) returned False" %
+                       (pool_ctrl.name, axis))
+                raise Exception(msg)
+            try:
+                ctrl.LoadOne(axis, value, repetitions, latency)
+            except TypeError:
+                try:
+                    ctrl.LoadOne(axis, value, repetitions)
+                    msg = ("LoadOne(axis, value, repetitions) is deprecated "
+                           "since version Jan18. Use LoadOne(axis, value, "
+                           "repetitions, latency_time) instead.")
+                    self.warning(msg)
+                except TypeError:
+                    ctrl.LoadOne(axis, value)
+                    msg = ("LoadOne(axis, value) is deprecated since "
+                           "version 2.3.0. Use LoadOne(axis, value, "
+                           "repetitions) instead.")
+                    self.warning(msg)
+            ctrl.LoadAll()
 
         with ActionContext(self):
             # PreLoadAll, PreLoadOne, LoadOne and LoadAll
-            for pool_ctrl in pool_ctrls:
-                try:
-                    ctrl = pool_ctrl.ctrl
-                    pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-                    ctrl.PreLoadAll()
-                    master = pool_ctrl_data[master_key]
-                    axis = master.axis
-                    try:
-                        res = ctrl.PreLoadOne(axis, master_value, repetitions)
-                    except TypeError:
-                        msg = ("PreLoadOne(axis, value) is deprecated since "
-                               "version 2.3.0. Use PreLoadOne(axis, value, "
-                               "repetitions) instead.")
-                        self.warning(msg)
-                        res = ctrl.PreLoadOne(axis, master_value)
-                    if not res:
-                        msg = ("%s.PreLoadOne(%d) returned False" %
-                               (pool_ctrl.name, axis))
-                        raise Exception(msg)
-                    try:
-                        ctrl.LoadOne(axis, master_value, repetitions)
-                    except TypeError:
-                        msg = ("LoadOne(axis, value) is deprecated since "
-                               "version 2.3.0. Use LoadOne(axis, value, "
-                               "repetitions) instead.")
-                        self.warning(msg)
-                        ctrl.LoadOne(axis, master_value)
-                    ctrl.LoadAll()
-                except Exception, e:
-                    self.debug(e, exc_info=True)
-                    master.set_state(State.Fault, propagate=2)
-                    msg = ("Load sequence of %s failed" % pool_ctrl.name)
-                    raise Exception(msg)
+            for ctrl in ctrls:
+                # TODO find solution for master now sardana only use timer
+                load(ctrl.timer, value, repetitions, latency)
+
+            # TODO: remove when the action allows to use tango attributes
+            try:
+                ctrls.pop('__tango__')
+            except Exception:
+                pass
 
             # PreStartAll on all enabled controllers
-            for pool_ctrl in pool_ctrls:
+            for ctrl in ctrls:
+                pool_ctrl = ctrl.element
                 pool_ctrl.ctrl.PreStartAll()
 
             # PreStartOne & StartOne on all enabled elements
-            for pool_ctrl in pool_ctrls:
-                ctrl = pool_ctrl.ctrl
-                pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-                elements = pool_ctrl_data['channels'].keys()
-                timer_monitor = pool_ctrl_data[master_key]
-                # make sure that the timer/monitor is started as the last one
-                elements.remove(timer_monitor)
-                elements.append(timer_monitor)
-                for element in elements:
-                    try:
-                        channel = channels[element]
-                    except KeyError:
-                        continue
-                    axis = element.axis
-                    ret = ctrl.PreStartOne(axis, master_value)
+            for ctrl in ctrls:
+                channels = ctrl.get_channels(enabled=True)
+
+                # make sure that the master timer/monitor is started as the
+                # last one
+                channels.remove(ctrl.master)
+                channels.append(ctrl.master)
+                for channel in channels:
+                    axis = channel.axis
+                    pool_ctrl = ctrl.element
+                    ret = pool_ctrl.ctrl.PreStartOne(axis, value)
                     if not ret:
                         msg = ("%s.PreStartOne(%d) returns False" %
-                               (pool_ctrl.name, axis))
+                               (ctrl.name, axis))
                         raise Exception(msg)
                     try:
-                        ctrl.StartOne(axis, master_value)
-                    except Exception, e:
+                        pool_ctrl = ctrl.element
+                        pool_ctrl.ctrl.StartOne(axis, value)
+                    except Exception as e:
                         self.debug(e, exc_info=True)
-                        element.set_state(State.Fault, propagate=2)
+                        channel.set_state(State.Fault, propagate=2)
                         msg = ("%s.StartOne(%d) failed" %
-                               (pool_ctrl.name, axis))
+                               (ctrl.name, axis))
                         raise Exception(msg)
 
+                    self._channels.append(channel)
+
             # set the state of all elements to  and inform their listeners
-            for channel in channels:
+            for channel in self._channels:
                 channel.set_state(State.Moving, propagate=2)
 
             # StartAll on all enabled controllers
-            for pool_ctrl in pool_ctrls:
+            for ctrl in ctrls:
                 try:
+                    pool_ctrl = ctrl.element
                     pool_ctrl.ctrl.StartAll()
-                except Exception, e:
+                except Exception as e:
+                    channels = ctrl.get_channels(enabled=True)
                     self.debug(e, exc_info=True)
-                    elements = pool_ctrl_data['channels'].keys()
-                    for element in elements:
-                        element.set_state(State.Fault, propagate=2)
-                    msg = ("%s.StartAll() failed" % pool_ctrl.name)
+                    for channel in channels:
+                        channel.set_state(State.Fault, propagate=2)
+                    msg = ("%s.StartAll() failed" % ctrl.name)
                     raise Exception(msg)
+
+    def _set_pool_ctrl_dict_loop(self, ctrls):
+        ctrl_channels = {}
+        for ctrl in ctrls:
+            pool_channels = []
+            pool_ctrl = ctrl.element
+            # only CT will be read in the loop, 1D and 2D not
+            if ElementType.CTExpChannel not in ctrl.get_ctrl_types():
+                continue
+            for channel in ctrl.get_channels(enabled=True):
+                pool_channels.append(channel.element)
+            ctrl_channels[pool_ctrl] = pool_channels
+        self._pool_ctrl_dict_loop = ctrl_channels
+
+    def _split_ctrl(self, ctrls):
+        ctrl_channels_value = {}
+        ctrl_channels_ref = {}
+        for ctrl in ctrls:
+            if not ctrl.is_referable():
+                pool_channels_value = []
+                pool_ctrl = ctrl.element
+                for channel in ctrl.get_channels(enabled=True):
+                    pool_channels_value.append(channel.element)
+                ctrl_channels_value[pool_ctrl] = pool_channels_value
+            else:
+                pool_channels_value = []
+                pool_channels_ref = []
+                pool_ctrl = ctrl.element
+                for channel in ctrl.get_channels(enabled=True):
+                    if channel.value_ref_enabled:
+                        pool_channels_ref.append(channel.element)
+                        if channel.has_pseudo_elements():
+                            pool_channels_value.append(channel.element)
+                    else:
+                        pool_channels_value.append(channel.element)
+                if len(pool_channels_value) > 0:
+                    ctrl_channels_value[pool_ctrl] = pool_channels_value
+                if len(pool_channels_ref) > 0:
+                    ctrl_channels_ref[pool_ctrl] = pool_channels_ref
+
+        self._pool_ctrl_dict_value = ctrl_channels_value
+        self._pool_ctrl_dict_ref = ctrl_channels_ref
+
+    def _reset_ctrl_dicts(self):
+        self._pool_ctrl_dict_loop = None
+        self._pool_ctrl_dict_value = None
+        self._pool_ctrl_dict_ref = None
 
     def clear_value_buffers(self):
         for channel in self._channels:
@@ -684,19 +976,33 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
         on a provisional basis. Backwards incompatible changes
         (up to and including removal of the module) may occur if
         deemed necessary by the core developers.
+
+    .. todo:: Try to move the action loop logic to base class it is
+    basically the same as in PoolAcquisitionSoftwareStart.
     """
 
     def __init__(self, main_element, name="AcquisitionHardware"):
         PoolAcquisitionBase.__init__(self, main_element, name)
 
+    def start_action(self, ctrls, value, repetitions, latency,
+                     acq_sleep_time=None, nb_states_per_value=None,
+                     **kwargs):
+        PoolAcquisitionBase.start_action(self, ctrls, value, None,
+                                         repetitions, latency, None,
+                                         acq_sleep_time, nb_states_per_value,
+                                         **kwargs)
+
+    def get_read_value_ctrls(self):
+        return self._pool_ctrl_dict_value
+
     @DebugIt()
     def action_loop(self):
         i = 0
 
-        states, values = {}, {}
-        for element in self._channels:
+        states, values, value_refs = {}, {}, {}
+        for channel in self._channels:
+            element = channel.element
             states[element] = None
-            values[element] = None
 
         nap = self._acq_sleep_time
         nb_states_per_value = self._nb_states_per_value
@@ -708,11 +1014,14 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
 
             # read value every n times
             if not i % nb_states_per_value:
-                self.read_value_loop(ret=values)
-                for acquirable, value in values.items():
+                self.read_value(ret=values)
+                for acquirable, value in list(values.items()):
                     if is_value_error(value):
                         self.error("Loop read value error for %s" %
                                    acquirable.name)
+                        msg = "Details: " + "".join(
+                            traceback.format_exception(*value.exc_info))
+                        self.debug(msg)
                         acquirable.put_value(value)
                     else:
                         acquirable.extend_value_buffer(value)
@@ -722,9 +1031,10 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
 
         with ActionContext(self):
             self.raw_read_state_info(ret=states)
-            self.raw_read_value_loop(ret=values)
+            self.raw_read_value(ret=values)
+            self.raw_read_value_ref(ret=value_refs)
 
-        for acquirable, state_info in states.items():
+        for acquirable, state_info in list(states.items()):
             # first update the element state so that value calculation
             # that is done after takes the updated state into account
             acquirable.set_state_info(state_info, propagate=0)
@@ -733,9 +1043,21 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
                 if is_value_error(value):
                     self.error("Loop final read value error for: %s" %
                                acquirable.name)
+                    msg = "Details: " + "".join(
+                        traceback.format_exception(*value.exc_info))
+                    self.debug(msg)
                     acquirable.put_value(value)
                 else:
                     acquirable.extend_value_buffer(value, propagate=2)
+            if acquirable in value_refs:
+                value_ref = value_refs[acquirable]
+                if is_value_error(value_ref):
+                    self.error("Loop final read value ref error for: %s" %
+                               acquirable.name)
+                    msg = "Details: " + "".join(
+                        traceback.format_exception(*value_ref.exc_info))
+                    self.debug(msg)
+                acquirable.extend_value_ref_buffer(value_ref, propagate=2)
             with acquirable:
                 acquirable.clear_operation()
                 state_info = acquirable._from_ctrl_state_info(state_info)
@@ -759,30 +1081,37 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
             slaves = ()
         self._slaves = slaves
 
-    @DebugIt()
-    def start_action(self, *args, **kwargs):
-        """Prepares everything for acquisition and starts it.
-        :param acq_sleep_time: sleep time between state queries
-        :param nb_states_per_value: how many state queries between readouts
-        :param integ_time: integration time(s)
-        :type integ_time: float or seq<float>
-        :param repetitions: repetitions
-        :type repetitions: int
-        :param config: configuration dictionary (with information about
-            involved controllers and channels)
-        :param index: trigger index that will be assigned to the acquired value
-        :type index: int
-        """
+    def get_read_value_ctrls(self):
+        # technical debt in order to work both in case of meas group and
+        # single channel
+        if self._pool_ctrl_dict_value is not None:
+            return self._pool_ctrl_dict_value
+        else:
+            return self._pool_ctrl_dict
 
-        PoolAcquisitionBase.start_action(self, *args, **kwargs)
-        self.index = kwargs.get("idx")
+    def get_read_value_ref_ctrls(self):
+        # technical debt in order to work both in case of meas group and
+        # single channel
+        if self._pool_ctrl_dict_ref is not None:
+            return self._pool_ctrl_dict_ref
+        else:
+            return self._pool_ctrl_dict
+
+    def get_read_value_loop_ctrls(self):
+        return self._pool_ctrl_dict_loop
+
+    def start_action(self, ctrls, value, master, index, acq_sleep_time=None,
+                     nb_states_per_value=None, **kwargs):
+        PoolAcquisitionBase.start_action(self, ctrls, value, master, 1, 0,
+                                         index, acq_sleep_time,
+                                         nb_states_per_value, **kwargs)
 
     @DebugIt()
     def action_loop(self):
-        states, values = {}, {}
-        for element in self._channels:
+        states, values, value_refs = {}, {}, {}
+        for channel in self._channels:
+            element = channel.element
             states[element] = None
-            values[element] = None
 
         nap = self._acq_sleep_time
         nb_states_per_value = self._nb_states_per_value
@@ -796,7 +1125,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
             # read value every n times
             if not i % nb_states_per_value:
                 self.read_value_loop(ret=values)
-                for acquirable, value in values.items():
+                for acquirable, value in list(values.items()):
                     acquirable.put_value(value)
 
             time.sleep(nap)
@@ -812,9 +1141,10 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
 
         with ActionContext(self):
             self.raw_read_state_info(ret=states)
-            self.raw_read_value_loop(ret=values)
+            self.raw_read_value(ret=values)
+            self.raw_read_value_ref(ret=value_refs)
 
-        for acquirable, state_info in states.items():
+        for acquirable, state_info in list(states.items()):
             # first update the element state so that value calculation
             # that is done after takes the updated state into account
             acquirable.set_state_info(state_info, propagate=0)
@@ -823,7 +1153,129 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
                 if is_value_error(value):
                     self.error("Loop final read value error for: %s" %
                                acquirable.name)
-                acquirable.append_value_buffer(value, self.index)
+                    msg = "Details: " + "".join(
+                        traceback.format_exception(*value.exc_info))
+                    self.debug(msg)
+                acquirable.append_value_buffer(value, self._index)
+            if acquirable in value_refs:
+                value_ref = value_refs[acquirable]
+                if is_value_error(value_ref):
+                    self.error("Loop final read value ref error for: %s" %
+                               acquirable.name)
+                    msg = "Details: " + "".join(
+                        traceback.format_exception(*value_ref.exc_info))
+                    self.debug(msg)
+                acquirable.append_value_ref_buffer(value_ref, self._index)
+            with acquirable:
+                acquirable.clear_operation()
+                state_info = acquirable._from_ctrl_state_info(state_info)
+                acquirable.set_state_info(state_info, propagate=2)
+
+
+class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
+    """Acquisition action for controllers synchronized by software start
+
+    .. note::
+        The PoolAcquisitionSoftwareStart class has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the module) may occur if
+        deemed necessary by the core developers.
+
+    .. todo:: Try to move the action loop logic to base class it is
+    basically the same as in PoolAcquisitionHardware.
+    """
+
+    def __init__(self, main_element, name="AcquisitionSoftwareStart"):
+        PoolAcquisitionBase.__init__(self, main_element, name)
+
+    def get_read_value_ctrls(self):
+        # technical debt in order to work both in case of meas group and
+        # single channel
+        return self._pool_ctrl_dict_value
+
+    def start_action(self, ctrls, value, master, repetitions, latency,
+                     acq_sleep_time=None, nb_states_per_value=None,
+                     **kwargs):
+        PoolAcquisitionBase.start_action(self, ctrls, value, master,
+                                         repetitions, latency, None,
+                                         acq_sleep_time, nb_states_per_value,
+                                         **kwargs)
+
+    @DebugIt()
+    def action_loop(self):
+        i = 0
+
+        states, values, value_refs = {}, {}, {}
+        for channel in self._channels:
+            element = channel.element
+            states[element] = None
+
+        nap = self._acq_sleep_time
+        nb_states_per_value = self._nb_states_per_value
+
+        while True:
+            self.read_state_info(ret=states)
+            if not self.in_acquisition(states):
+                break
+
+            # read value every n times
+            if not i % nb_states_per_value:
+                self.read_value(ret=values)
+                for acquirable, value in list(values.items()):
+                    if is_value_error(value):
+                        self.error("Loop read value error for %s" %
+                                   acquirable.name)
+                        msg = "Details: " + "".join(
+                            traceback.format_exception(*value.exc_info))
+                        self.debug(msg)
+                        acquirable.put_value(value)
+                    else:
+                        acquirable.extend_value_buffer(value)
+                self.read_value_ref(ret=value_refs)
+                for acquirable, value_ref in list(value_refs.items()):
+                    if is_value_error(value_ref):
+                        self.error("Loop read value ref error for %s" %
+                                   acquirable.name)
+                        msg = "Details: " + "".join(
+                            traceback.format_exception(*value.exc_info))
+                        self.debug(msg)
+                        acquirable.put_value_ref(value)
+                    else:
+                        acquirable.extend_value_ref_buffer(value_ref)
+            time.sleep(nap)
+            i += 1
+
+        with ActionContext(self):
+            self.raw_read_state_info(ret=states)
+            self.raw_read_value(ret=values)
+            self.raw_read_value_ref(ret=value_refs)
+
+        for acquirable, state_info in list(states.items()):
+            # first update the element state so that value calculation
+            # that is done after takes the updated state into account
+            acquirable.set_state_info(state_info, propagate=0)
+            if acquirable in values:
+                value = values[acquirable]
+                if is_value_error(value):
+                    self.error("Loop final read value error for: %s" %
+                               acquirable.name)
+                    msg = "Details: " + "".join(
+                        traceback.format_exception(*value.exc_info))
+                    self.debug(msg)
+                    acquirable.put_value(value)
+                else:
+                    acquirable.extend_value_buffer(value, propagate=2)
+            if acquirable in value_refs:
+                value_ref = value_refs[acquirable]
+                if is_value_error(value_ref):
+                    self.error("Loop final read value ref error for: %s" %
+                               acquirable.name)
+                    msg = "Details: " + "".join(
+                        traceback.format_exception(*value_ref.exc_info))
+                    self.debug(msg)
+                    acquirable.put_value_ref(value_ref)
+                else:
+                    acquirable.extend_value_ref_buffer(value_ref, propagate=2)
             with acquirable:
                 acquirable.clear_operation()
                 state_info = acquirable._from_ctrl_state_info(state_info)
@@ -831,6 +1283,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
 
 
 class PoolCTAcquisition(PoolAcquisitionBase):
+    """..todo:: remove it, still used by pseudo counter"""
 
     def __init__(self, main_element, name="CTAcquisition", slaves=None):
         self._channels = None
@@ -874,7 +1327,7 @@ class PoolCTAcquisition(PoolAcquisitionBase):
         # read values to send a first event when starting to acquire
         with ActionContext(self):
             self.raw_read_value_loop(ret=values)
-            for acquirable, value in values.items():
+            for acquirable, value in list(values.items()):
                 acquirable.put_value(value, propagate=2)
 
         while True:
@@ -885,7 +1338,7 @@ class PoolCTAcquisition(PoolAcquisitionBase):
             # read value every n times
             if not i % nb_states_per_value:
                 self.read_value_loop(ret=values)
-                for acquirable, value in values.items():
+                for acquirable, value in list(values.items()):
                     acquirable.put_value(value)
 
             time.sleep(nap)
@@ -903,7 +1356,7 @@ class PoolCTAcquisition(PoolAcquisitionBase):
             self.raw_read_state_info(ret=states)
             self.raw_read_value_loop(ret=values)
 
-        for acquirable, state_info in states.items():
+        for acquirable, state_info in list(states.items()):
             # first update the element state so that value calculation
             # that is done after takes the updated state into account
             acquirable.set_state_info(state_info, propagate=0)
@@ -920,58 +1373,42 @@ class Pool0DAcquisition(PoolAction):
 
     def __init__(self, main_element, name="0DAcquisition"):
         self._channels = None
+        self._index = None
         PoolAction.__init__(self, main_element, name)
 
-    def start_action(self, *args, **kwargs):
+    def start_action(self, conf_ctrls, index, acq_sleep_time=None,
+                     nb_states_per_value=None, **kwargs):
         """Prepares everything for acquisition and starts it.
 
            :param: config"""
 
         pool = self.pool
-
-        self._index = kwargs.get("idx")
-
-        # prepare data structures
         # TODO: rollback this change when a proper synchronization between
         # acquisition actions will be develop.
         # Now the meta acquisition action is resettung them to 0.
-#         self._aborted = False
-#         self._stopped = False
+        # self._aborted = False
+        # self._stopped = False
 
-        self._acq_sleep_time = kwargs.pop("acq_sleep_time",
-                                          pool.acq_loop_sleep_time)
-        self._nb_states_per_value = \
-            kwargs.pop("nb_states_per_value",
-                       pool.acq_loop_states_per_value)
+        self._index = index
+        self._acq_sleep_time = acq_sleep_time
+        if self._acq_sleep_time is None:
+            self._acq_sleep_time = pool.acq_loop_sleep_time
 
-        items = kwargs.get("items")
-        if items is None:
-            items = self.get_elements()
-        cfg = kwargs['config']
+        self._nb_states_per_value = nb_states_per_value
+        if self._nb_states_per_value is None:
+            self._nb_states_per_value = pool.acq_loop_states_per_value
 
-        pool_ctrls_dict = dict(cfg['controllers'])
-        pool_ctrls_dict.pop('__tango__', None)
-        pool_ctrls = []
-        for ctrl in pool_ctrls_dict:
-            if ElementType.ZeroDExpChannel in ctrl.get_ctrl_types():
-                pool_ctrls.append(ctrl)
-
-        # Determine which channels are active
-        self._channels = channels = {}
-        for pool_ctrl in pool_ctrls:
-            ctrl = pool_ctrl.ctrl
-            pool_ctrl_data = pool_ctrls_dict[pool_ctrl]
-            elements = pool_ctrl_data['channels']
-
-            for element, element_info in elements.items():
-                channel = Channel(element, info=element_info)
-                channels[element] = channel
+        # channels that are acquired (only enabled)
+        self._channels = []
 
         with ActionContext(self):
             # set the state of all elements to  and inform their listeners
-            for channel in channels:
-                channel.clear_buffer()
-                channel.set_state(State.Moving, propagate=2)
+
+            for conf_ctrl in conf_ctrls:
+                for conf_channel in conf_ctrl.get_channels(enabled=True):
+                    conf_channel.clear_buffer()
+                    conf_channel.set_state(State.Moving, propagate=2)
+                    self._channels.append(conf_channel)
 
     def in_acquisition(self, states):
         """Determines if we are in acquisition or if the acquisition has ended
@@ -990,14 +1427,15 @@ class Pool0DAcquisition(PoolAction):
 
     def action_loop(self):
         states, values = {}, {}
-        for element in self._channels:
+        for conf_channel in self._channels:
+            element = conf_channel.element
             states[element] = None
             values[element] = None
 
         nap = self._acq_sleep_time
         while True:
             self.read_value(ret=values)
-            for acquirable, value in values.items():
+            for acquirable, value in list(values.items()):
                 acquirable.put_current_value(value, propagate=0)
             if self._stopped or self._aborted:
                 break
@@ -1010,7 +1448,7 @@ class Pool0DAcquisition(PoolAction):
         with ActionContext(self):
             self.raw_read_state_info(ret=states)
 
-        for acquirable, state_info in states.items():
+        for acquirable, state_info in list(states.items()):
             # first update the element state so that value calculation
             # that is done after takes the updated state into account
             state_info = acquirable._from_ctrl_state_info(state_info)
@@ -1052,7 +1490,7 @@ class PoolIORAcquisition(PoolAction):
 
         # read values to send a first event when starting to acquire
         self.read_value(ret=values)
-        for acquirable, value in values.items():
+        for acquirable, value in list(values.items()):
             acquirable.put_value(value, propagate=2)
 
         while True:
@@ -1064,7 +1502,7 @@ class PoolIORAcquisition(PoolAction):
             # read value every n times
             if not i % 5:
                 self.read_value(ret=values)
-                for acquirable, value in values.items():
+                for acquirable, value in list(values.items()):
                     acquirable.put_value(value)
 
             i += 1
@@ -1074,7 +1512,7 @@ class PoolIORAcquisition(PoolAction):
 
         # first update the element state so that value calculation
         # that is done after takes the updated state into account
-        for acquirable, state_info in states.items():
+        for acquirable, state_info in list(states.items()):
             acquirable.set_state_info(state_info, propagate=0)
 
         # Do NOT send events before we exit the OperationContext, otherwise
@@ -1085,11 +1523,11 @@ class PoolIORAcquisition(PoolAction):
         def finish_hook(*args, **kwargs):
             # read values and propagate the change to all listeners
             self.read_value(ret=values)
-            for acquirable, value in values.items():
+            for acquirable, value in list(values.items()):
                 acquirable.put_value(value, propagate=2)
 
             # finally set the state and propagate to all listeners
-            for acquirable, state_info in states.items():
+            for acquirable, state_info in list(states.items()):
                 acquirable.set_state_info(state_info, propagate=2)
 
         self.set_finish_hook(finish_hook)

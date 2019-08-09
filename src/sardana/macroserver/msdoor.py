@@ -82,7 +82,7 @@ class MacroProxyCache(dict):
         self.clear()
         door = self.door
         macros = self.door.get_macros()
-        for macro_name, macro_meta in macros.items():
+        for macro_name, macro_meta in list(macros.items()):
             self[macro_name] = MacroProxy(door, macro_meta)
 
 
@@ -209,7 +209,7 @@ class MSDoor(MSObject):
         input_data = dict(prompt=msg, type='input')
         input_data.update(kwargs)
         data_type = kwargs['data_type']
-        is_seq = not isinstance(data_type, (str, unicode)) and \
+        is_seq = not isinstance(data_type, str) and \
             isinstance(data_type, collections.Sequence)
         if is_seq:
             handle = self._handle_seq_input
@@ -334,11 +334,11 @@ class MSDoor(MSObject):
 
         :param key:
             environment variable name [default: None, meaning all environment]
-        :type key: str
+        :type key: :obj:`str`
         :param macro_name:
             local context for a given macro [default: None, meaning no macro
             context is used]
-        :type macro_name: str
+        :type macro_name: :obj:`str`
 
         :raises: UnknownEnv"""
         return self.macro_server.environment_manager.getAllDoorEnv(self.name)
@@ -355,7 +355,7 @@ class MSDoor(MSObject):
         return self._macro_proxy_cache
 
     def run_macro(self, par_str_list, asynch=False):
-        if isinstance(par_str_list, (str, unicode)):
+        if isinstance(par_str_list, str):
             par_str_list = par_str_list,
 
         if not hasattr(self, "Output"):

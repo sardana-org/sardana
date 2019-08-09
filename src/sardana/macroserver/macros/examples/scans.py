@@ -36,10 +36,9 @@ __all__ = ["ascan_demo", "ascanr", "toothedtriangle",
 
 __docformat__ = 'restructuredtext'
 
-import os
 import numpy
 
-from sardana.macroserver.macro import *
+from sardana.macroserver.macro import Macro, Hookable, Type, ParamRepeat
 from sardana.macroserver.scan import *
 
 
@@ -85,7 +84,7 @@ class ascan_demo(Macro):
         step = {}
         # integ_time is the same for all steps
         step["integ_time"] = self.integ_time
-        for point_no in xrange(self.nr_points):
+        for point_no in range(self.nr_points):
             step["positions"] = self.start + point_no * \
                 self.interv_size  # note that this is a numpy array
             step["point_id"] = point_no
@@ -161,10 +160,10 @@ class ascanr(Macro, Hookable):
         step["check_func"] = []
         extrainfo = {"repetition": 0}  # !!!
         step['extrainfo'] = extrainfo  # !!!
-        for point_no in xrange(self.nr_points):
+        for point_no in range(self.nr_points):
             step["positions"] = self.starts + point_no * self.interv_sizes
             step["point_id"] = point_no
-            for i in xrange(self.repeat):
+            for i in range(self.repeat):
                 extrainfo["repetition"] = i  # !!!
                 yield step
 
@@ -246,18 +245,18 @@ class toothedtriangle(Macro, Hookable):
         step["check_func"] = []
         extrainfo = {"cycle": None, "interval": None, "sample": None, }
         step['extrainfo'] = extrainfo
-        halfcycle1 = range(self.nr_interv + 1)
+        halfcycle1 = list(range(self.nr_interv + 1))
         halfcycle2 = halfcycle1[1:-1]
         halfcycle2.reverse()
         intervallist = halfcycle1 + halfcycle2
         point_no = 0
-        for cycle in xrange(self.nr_cycles):
+        for cycle in range(self.nr_cycles):
             extrainfo["cycle"] = cycle
             for interval in intervallist:
                 extrainfo["interval"] = interval
                 step["positions"] = numpy.array(
                     [self.start_pos + (interval) * self.interv_size], dtype='d')
-                for sample in xrange(self.nr_samples):
+                for sample in range(self.nr_samples):
                     extrainfo["sample"] = sample
                     step["point_id"] = point_no
                     yield step
@@ -266,7 +265,7 @@ class toothedtriangle(Macro, Hookable):
         # last step for closing the loop
         extrainfo["interval"] = 0
         step["positions"] = numpy.array([self.start_pos], dtype='d')
-        for sample in xrange(self.nr_samples):
+        for sample in range(self.nr_samples):
             extrainfo["sample"] = sample
             step["point_id"] = point_no
             yield step
@@ -305,7 +304,7 @@ class regscan(Macro):
         self.integ_time = integ_time
         self.start_pos = start_pos
         self.regions = regions
-        self.regions_count = len(self.regions) / 2
+        self.regions_count = len(self.regions) // 2
 
         generator = self._generator
         moveables = [motor]
@@ -366,7 +365,7 @@ class reg2scan(Macro):
         self.integ_time = integ_time
         self.start_pos = start_pos
         self.regions = regions
-        self.regions_count = len(self.regions) / 2
+        self.regions_count = len(self.regions) // 2
 
         generator = self._generator
         moveables = [motor1, motor2]
@@ -431,7 +430,7 @@ class reg3scan(Macro):
         self.integ_time = integ_time
         self.start_pos = start_pos
         self.regions = regions
-        self.regions_count = len(self.regions) / 2
+        self.regions_count = len(self.regions) // 2
 
         generator = self._generator
         moveables = [motor1, motor2, motor3]
@@ -518,11 +517,11 @@ class a2scan_mod(Macro):
         positions_m2 = numpy.linspace(start2, end2, interv2 + 1)
 
         if interv1 > interv2:
-            positions_m2 = start2 + (float(end2 - start2) / interv2) * (
-                numpy.arange(interv1 + 1) // (float(interv1) / float(interv2)))
+            positions_m2 = start2 + ((end2 - start2) / interv2) * (
+                numpy.arange(interv1 + 1) // (interv1 / interv2))
         elif interv2 > interv1:
-            positions_m1 = start1 + (float(end1 - start1) / interv1) * (
-                numpy.arange(interv2 + 1) // (float(interv2) / float(interv1)))
+            positions_m1 = start1 + ((end1 - start1) / interv1) * (
+                numpy.arange(interv2 + 1) // (interv2 / interv1))
 
         point_id = 0
         for pos1, pos2 in zip(positions_m1, positions_m2):
@@ -617,7 +616,7 @@ class ascan_with_addcustomdata(ascan_demo):
         # "/<currententry>/custom_data") if none given
         dh.addCustomData('Hello world1', 'dummyChar1')
         # you can pass arrays (but not all recorders will handle them)
-        dh.addCustomData(range(10), 'dummyArray1')
+        dh.addCustomData(list(range(10)), 'dummyArray1')
         # you can pass a custom nxpath *relative* to the current entry
         dh.addCustomData('Hello world2', 'dummyChar2',
                          nxpath='sample:NXsample')
@@ -633,3 +632,43 @@ class ascan_with_addcustomdata(ascan_demo):
         # as a bonus, plot the fit
         self.pyplot.plot(x, y, 'ro')
         self.pyplot.plot(x, fitted_y, 'b-')
+
+
+class ascanct_midtrigger(Macro):
+    """This macro demonstrates how to add an extra scan column with
+    the shifted positions of the motor corresponding to the middle of the
+    space interval. Be aware that the space interval does not
+    necessarily correspond to the middle of the acquisition interval
+    (remember about the latency time).
+
+    This macro does not export all the ascanct features e.g. hooks.
+    """
+
+    param_def = [['motor', Type.Moveable, None, 'Moveable name'],
+                 ['start_pos', Type.Float, None, 'Scan start position'],
+                 ['final_pos', Type.Float, None, 'Scan final position'],
+                 ['nr_interv', Type.Integer, None, 'Number of scan intervals'],
+                 ['integ_time', Type.Float, None, 'Integration time'],
+                 ['latency_time', Type.Float, 0, 'Latency time']]
+
+    def run(self, *args, **kwargs):
+        motor = args[0]
+        scan_macro = self.execMacro("ascanct", *args, **kwargs)
+        # we get the datahandler
+        # TODO: use public api to GScan object whenever
+        # https://github.com/sardana-org/sardana/issues/784 gets solved
+        dh = scan_macro._gScan.data_handler
+        # calculate position corresponding to the middle space interval
+        positions = [r.data[motor.getName()] for r in scan_macro.data.records]
+        first_position = positions[0]
+        second_position = positions[1]
+        positive_direction = second_position > first_position
+        shift = abs(second_position - first_position) / 2
+        if positive_direction:
+            mid_positions = positions + shift
+        else:
+            mid_positions = positions - shift
+        # add custom data column to the measurement HDF5 group with the
+        # <motor_name>_mid name
+        dh.addCustomData(mid_positions, motor.getName() + '_mid',
+                         nxpath='measurement:NXcollection')

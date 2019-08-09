@@ -184,7 +184,7 @@ class get_data(Macro):
 
         data = dscan.data
         len_data = len(data)
-        for point_nb in xrange(len_data):
+        for point_nb in range(len_data):
             position = data[point_nb].data[mot.getName()]
             positions.append(position)
 

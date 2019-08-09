@@ -149,7 +149,7 @@ class RecorderManagerTest(unittest.TestCase):
         self._updateRecorderManager(recorder_path)
         klasses = self.manager.getRecorderMetaClasses(filter=BaseFileRecorder,
                                                       extension='.spec')
-        klass = klasses.values()[0]
+        klass = list(klasses.values())[0]
         # retrieve path to the recorder library
         path = os.sep.join(klass.lib.full_name.split(os.sep)[:-1])
         msg = 'Ordered path precedence is not maintained by RecorderManager'

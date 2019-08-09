@@ -30,8 +30,8 @@ import sys
 import sardana
 from taurus.external.qt import Qt
 from taurus.qt.qtgui.container import TaurusWidget
-from reflectionslist import ReflectionsList
-from reflectionseditor import ReflectionsEditor
+from .reflectionslist import ReflectionsList
+from .reflectionseditor import ReflectionsEditor
 from taurus.qt.qtgui.base import TaurusBaseWidget
 
 from taurus.external.qt import QtCore, QtGui
@@ -74,19 +74,15 @@ class UBMatrixBase(TaurusWidget):
 
         self.loadUi(filename="ubmatrix.ui")
 
-        self.connect(self._ui.UpdateButton, Qt.SIGNAL(
-            "clicked()"), self.update_values)
-        self.connect(self._ui.ComputeUButton,
-                     Qt.SIGNAL("clicked()"), self.compute_ub)
-        self.connect(self._ui.ReflectionsListButton, Qt.SIGNAL(
-            "clicked()"), self.reflections_list_window)
-        self.connect(self._ui.EditReflectionsButton, Qt.SIGNAL(
-            "clicked()"), self.edit_reflections_window)
-        self.connect(self._ui.AffineButton,
-                     Qt.SIGNAL("clicked()"), self.affine)
-        self.connect(self._ui.AddCrystalButton, Qt.SIGNAL(
-            "clicked()"), self.add_select_crystal)
-#        self.connect(self._ui.alattice_value, Qt.SIGNAL("textEdited()"), self.on_alattice_value_textEdited)
+        self._ui.UpdateButton.clicked.connect(self.update_values)
+        self._ui.ComputeUButton.clicked.connect(self.compute_ub)
+        self._ui.ReflectionsListButton.clicked.connect(
+            self.reflections_list_window)
+        self._ui.EditReflectionsButton.clicked.connect(
+            self.edit_reflections_window)
+        self._ui.AffineButton.clicked.connect(self.affine)
+        self._ui.AddCrystalButton.clicked.connect(self.add_select_crystal)
+#        self._ui.alattice_value.textEdited.connect(self.on_alattice_value_textEdited)
 #       Funciona con puro QEditValue pero no con TaurusQEdit ...
 
     @classmethod
@@ -157,8 +153,8 @@ class UBMatrixBase(TaurusWidget):
 
         self.enginescombobox.loadItems(self.device.enginelist)
 
-        self.connect(self.enginescombobox, Qt.SIGNAL(
-            "currentIndexChanged(QString)"), self.onEngineChanged)
+        self.enginescombobox.currentIndexChanged['QString'].connect(
+            self.onEngineChanged)
 
         enginemodemodel = model + '/enginemode'
         self._ui.taurusLabelEngineMode.setModel(enginemodemodel)
@@ -169,8 +165,8 @@ class UBMatrixBase(TaurusWidget):
 
         self.enginemodescombobox.loadItems(self.device.enginemodelist)
 
-        self.connect(self.enginemodescombobox, Qt.SIGNAL(
-            "currentIndexChanged(QString)"), self.onModeChanged)
+        self.enginemodescombobox.currentIndexChanged['QString'].connect(
+            self.onModeChanged)
 
         # Set model to crystal
 
@@ -183,15 +179,18 @@ class UBMatrixBase(TaurusWidget):
 
         self.crystalscombobox.loadItems(self.device.crystallist)
 
-        self.connect(self.crystalscombobox, Qt.SIGNAL(
-            "currentIndexChanged(QString)"), self.onCrystalChanged)
+        self.crystalscombobox.currentIndexChanged['QString'].connect(
+            self.onCrystalChanged)
 
+    Qt.pyqtSlot('QString')
     def onEngineChanged(self, enginename):
         self.device.write_attribute("engine", str(enginename))
 
+    Qt.pyqtSlot('QString')
     def onModeChanged(self, modename):
         self.device.write_attribute("enginemode", str(modename))
 
+    Qt.pyqtSlot('QString')
     def onCrystalChanged(self, crystalname):
         if str(crystalname) != "":
             self.device.write_attribute("crystal", str(crystalname))
@@ -298,13 +297,13 @@ class UBMatrixBase(TaurusWidget):
                 # 4circles diffractometer
                     if len(ref) == 10:
                         self.rl_label1_7.setText(QtGui.QApplication.translate(
-                            "Form", self.angle_names[0], None, QtGui.QApplication.UnicodeUTF8))
+                            "Form", self.angle_names[0], None))
                         self.rl_label1_8.setText(QtGui.QApplication.translate(
-                            "Form", self.angle_names[1], None, QtGui.QApplication.UnicodeUTF8))
+                            "Form", self.angle_names[1], None))
                         self.rl_label1_9.setText(QtGui.QApplication.translate(
-                            "Form", self.angle_names[2], None, QtGui.QApplication.UnicodeUTF8))
+                            "Form", self.angle_names[2], None))
                         self.rl_label1_10.setText(QtGui.QApplication.translate(
-                            "Form", self.angle_names[3], None, QtGui.QApplication.UnicodeUTF8))
+                            "Form", self.angle_names[3], None))
                 # 6 circles diffractometer
                     elif len(ref) == 12:
                         self.rl_label1_11 = QtGui.QLabel(w)
@@ -316,17 +315,17 @@ class UBMatrixBase(TaurusWidget):
                             QtCore.QRect(xangle6 + 20, 70, 41, 20))
                         self.rl_label1_12.setObjectName("rl_label1_12")
                         self.rl_label1_7.setText(QtGui.QApplication.translate(
-                            "Form", self.angle_names[0], None, QtGui.QApplication.UnicodeUTF8))
+                            "Form", self.angle_names[0], None))
                         self.rl_label1_8.setText(QtGui.QApplication.translate(
-                            "Form", self.angle_names[1], None, QtGui.QApplication.UnicodeUTF8))
+                            "Form", self.angle_names[1], None))
                         self.rl_label1_9.setText(QtGui.QApplication.translate(
-                            "Form", self.angle_names[2], None, QtGui.QApplication.UnicodeUTF8))
+                            "Form", self.angle_names[2], None))
                         self.rl_label1_10.setText(QtGui.QApplication.translate(
-                            "Form", self.angle_names[3], None, QtGui.QApplication.UnicodeUTF8))
+                            "Form", self.angle_names[3], None))
                         self.rl_label1_11.setText(QtGui.QApplication.translate(
-                            "Form", self.angle_names[4], None, QtGui.QApplication.UnicodeUTF8))
+                            "Form", self.angle_names[4], None))
                         self.rl_label1_12.setText(QtGui.QApplication.translate(
-                            "Form", self.angle_names[5], None, QtGui.QApplication.UnicodeUTF8))
+                            "Form", self.angle_names[5], None))
 
                 self.taurusValueIndex.append(TaurusValueLineEdit(w))
                 self.taurusValueIndex[nb_ref].setGeometry(
@@ -441,7 +440,7 @@ class UBMatrixBase(TaurusWidget):
             self.rl_label_nor.setFont(font)
             self.rl_label_nor.setObjectName("rl_label_nor")
             self.rl_label_nor.setText(QtGui.QApplication.translate(
-                "Form", "NO REFLECTIONS", None, QtGui.QApplication.UnicodeUTF8))
+                "Form", "NO REFLECTIONS", None))
 
         w.show()
         w.show()

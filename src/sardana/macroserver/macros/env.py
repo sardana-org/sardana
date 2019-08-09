@@ -56,7 +56,7 @@ class dumpenv(Macro):
     def run(self):
         env = self.getGlobalEnv()
         out = List(['Name', 'Value', 'Type'])
-        for k, v in env.iteritems():
+        for k, v in env.items():
             str_v = reprValue(v)
             type_v = type(v).__name__
             out.appendRow([str(k), str_v, type_v])
@@ -71,7 +71,7 @@ class lsvo(Macro):
     def run(self):
         vo = self.getViewOptions()
         out = List(['View option', 'Value'])
-        for key, value in vo.items():
+        for key, value in list(vo.items()):
             out.appendRow([key, str(value)])
 
         for line in out.genOutput():
@@ -79,7 +79,20 @@ class lsvo(Macro):
 
 
 class setvo(Macro):
-    """Sets the given view option to the given value"""
+    """Sets the given view option to the given value.
+
+    Available view options:
+
+    - **ShowDial**: used by macro wm, pwm and wa. Default value ``False``
+    - **ShowCtrlAxis**: used by macro wm, pwm and wa. Default value ``False``
+    - **PosFormat**: used by macro wm, pwm and wa. Default value ``-1``
+    - **OutputBlock**: used by scan macros. Default value ``False``
+    - **DescriptionLength**: used by lsdef. Default value ``60``
+
+
+    """
+
+
 
     param_def = [['name', Type.String, None, 'View option name'],
                  ['value', Type.String, None, 'View option value']]
@@ -93,7 +106,17 @@ class setvo(Macro):
 
 
 class usetvo(Macro):
-    """Resets the value of the given view option"""
+    """Resets the value of the given view option.
+
+    Available view options:
+
+    - **ShowDial**: used by macro wm, pwm and wa. Default value ``False``
+    - **ShowCtrlAxis**: used by macro wm, pwm and wa. Default value ``False``
+    - **PosFormat**: used by macro wm, pwm and wa. Default value ``-1``
+    - **OutputBlock**: used by scan macros. Default value ``False``
+    - **DescriptionLength**: used by lsdef. Default value ``60``
+
+    """
 
     param_def = [['name', Type.String, None, 'View option name']]
 
@@ -321,11 +344,10 @@ class lsgh(Macro):
             name = hook[0]
             places = hook[1]
             for place in places:
-                if place not in default_dict.keys():
+                if place not in list(default_dict.keys()):
                     default_dict[place] = []
-                if name not in default_dict[place]:
-                    default_dict[place].append(name)
-        for pos in default_dict.keys():
+                default_dict[place].append(name)
+        for pos in list(default_dict.keys()):
             pos_set = 0
             for hook in default_dict[pos]:
                 if pos_set:
@@ -338,13 +360,13 @@ class lsgh(Macro):
 
 
 class defgh(Macro):
-    """Define general hook.
-    Ex.
-        defgh "mv [[mot02 9]]" pre-scan
-        defgh "ct 0.1" pre-scan
-        defgh lsm pre-scan
-        defgh "mv mot03 10" pre-scan
-        defgh "Print 'Hello world'" pre-scan
+    """Define general hook:
+
+    >>> defgh "mv [[mot02 9]]" pre-scan
+    >>> defgh "ct 0.1" pre-scan
+    >>> defgh lsm pre-scan
+    >>> defgh "mv mot03 10" pre-scan
+    >>> defgh "Print 'Hello world'" pre-scan
 
     .. note::
         The `defgh` macro has been included in Sardana

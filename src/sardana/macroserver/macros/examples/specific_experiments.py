@@ -69,10 +69,11 @@ class xas_acq(Macro, Hookable):
 
         # print "!!!!!", type(self.getInstrument('/instrument/monochromator')), self.getEnv('MonochromatorEnergy', macro_name=self.name)
         # ElementWithInterface('Instrument','monochromator')
-        for n, e in self.getElementsWithInterface('Instrument').iteritems():
+        for n, e in self.getElementsWithInterface('Instrument').items():
             inst = e.getObj()
             # ,inst.getElements()
-            print n, e.name, inst.getFullName(), type(e), type(inst), type(inst.getPoolObj())
+            print(n, e.name, inst.getFullName(), type(e), type(inst),
+                  type(inst.getPoolObj()))
 
         # maybe I should use the instrument interface to obtain the right
         # counters
@@ -108,7 +109,7 @@ class xas_acq(Macro, Hookable):
             "post-acq-hooks"] = self.getHooks('post-acq') + self.getHooks('_NOHINT_')
         step["post-step-hooks"] = self.getHooks('post-step')
         step["check_func"] = []
-        for point_no in xrange(self.nr_points):
+        for point_no in range(self.nr_points):
             step["positions"] = self.starts + point_no * self.interv_sizes
             step["point_id"] = point_no
             yield step

@@ -175,6 +175,8 @@ class SardanaElementTreeItem(SardanaBaseTreeItem):
 
 class SardanaBaseElementModel(TaurusBaseModel):
 
+    elementsChanged = Qt.pyqtSignal()
+
     ColumnNames = ["Elements", "Controller/Module/Parent"]
     ColumnRoles = ('Root', 'type', 'name', 'name'), "parent"
 
@@ -185,11 +187,9 @@ class SardanaBaseElementModel(TaurusBaseModel):
     def setDataSource(self, data_source):
         old_ds = self.dataSource()
         if old_ds is not None:
-            Qt.QObject.disconnect(old_ds, Qt.SIGNAL('elementsChanged'),
-                                  self.on_elements_changed)
+            old_ds.elementsChanged.disconnect(self.on_elements_changed)
         if data_source is not None:
-            Qt.QObject.connect(data_source, Qt.SIGNAL('elementsChanged'),
-                               self.on_elements_changed)
+            data_source.elementsChanged.connect(self.on_elements_changed)
         TaurusBaseModel.setDataSource(self, data_source)
 
     def on_elements_changed(self):
@@ -231,11 +231,11 @@ class SardanaBaseElementModel(TaurusBaseModel):
             mime_data_item = tree_item.mimeData(index)
             if mime_data_item is None:
                 continue
-            data.append(mime_data_item)
-        ret.setData(TAURUS_MODEL_LIST_MIME_TYPE, "\r\n".join(data))
-        ret.setText(", ".join(data))
+            data.append(bytes(mime_data_item, encoding='utf8'))
+        ret.setData(TAURUS_MODEL_LIST_MIME_TYPE, b"\r\n".join(data))
+        ret.setText(", ".join(map(str, data)))
         if len(data) == 1:
-            ret.setData(TAURUS_MODEL_MIME_TYPE, str(data[0]))
+            ret.setData(TAURUS_MODEL_MIME_TYPE, data[0])
         return ret
 
     def accept(self, element):
@@ -379,6 +379,8 @@ class EnvironmentTreeItem(TaurusBaseTreeItem):
 
 class SardanaEnvironmentModel(TaurusBaseModel):
 
+    environmentChanged = Qt.pyqtSignal()
+
     ColumnNames = ["Environment", "Value", "Data Type"]
     ColumnRoles = ('Root', 'key'), 'value', 'datatype'
 
@@ -389,11 +391,9 @@ class SardanaEnvironmentModel(TaurusBaseModel):
     def setDataSource(self, data_source):
         old_ds = self.dataSource()
         if old_ds is not None:
-            Qt.QObject.disconnect(old_ds, Qt.SIGNAL('environmentChanged'),
-                                  self.on_environment_changed)
+            old_ds.environmentChanged.disconnect(self.on_environment_changed)
         if data_source is not None:
-            Qt.QObject.connect(data_source, Qt.SIGNAL('environmentChanged'),
-                               self.on_environment_changed)
+            data_source.environmentChanged.connect(self.on_environment_changed)
         TaurusBaseModel.setDataSource(self, data_source)
 
     def on_environment_changed(self):
@@ -442,11 +442,11 @@ class SardanaEnvironmentModel(TaurusBaseModel):
             mime_data_item = tree_item.mimeData(index)
             if mime_data_item is None:
                 continue
-            data.append(mime_data_item)
-        ret.setData(TAURUS_MODEL_LIST_MIME_TYPE, "\r\n".join(data))
-        ret.setText(", ".join(data))
+            data.append(bytes(mime_data_item, encoding='utf8'))
+        ret.setData(TAURUS_MODEL_LIST_MIME_TYPE, b"\r\n".join(data))
+        ret.setText(", ".join(map(str, data)))
         if len(data) == 1:
-            ret.setData(TAURUS_MODEL_MIME_TYPE, str(data[0]))
+            ret.setData(TAURUS_MODEL_MIME_TYPE, data[0])
         return ret
 
     def accept(self, environment):
@@ -460,7 +460,7 @@ class SardanaEnvironmentModel(TaurusBaseModel):
         env = dev.getEnvironment()
         root = self._rootItem
 
-        for key, value in env.items():
+        for key, value in list(env.items()):
             if not self.accept(key):
                 continue
             env_item = EnvironmentTreeItem(self, (key, value), root)

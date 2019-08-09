@@ -18,10 +18,24 @@ The other attributes are:
 data source
     Unique identifier for the 2D data (value attribute)
 
+timer
+    name of the timer channel (proceeding from the same controller) to be used
+    when the channel is acquired independently
+
+    special values:
+
+    * __default - controller's default timer
+    * __self - the same channel acts like a timer
+    * None - independent acquisition is disabled
+
+integration time
+    integration time (in seconds) to be used when the channel is acquired
+    independently
+
 The available operations are:
 
-start acquisition(integration time)
-    starts to acquire the 2D with the given integration time
+start acquisition
+    starts to acquire the 2Ds
 
     :meth:`~PoolCounterTimer.start_acquisition`
 

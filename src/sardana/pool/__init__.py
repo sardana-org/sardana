@@ -25,7 +25,8 @@
 
 """This is the main device pool module"""
 
-__all__ = ["ControllerAPI", "AcqTriggerType", "AcqMode", "PoolUtil"]
+__all__ = ["ControllerAPI", "AcqTriggerType", "AcqSynch", "AcqSynchType",
+           "AcqMode", "PoolUtil"]
 
 __docformat__ = 'restructuredtext'
 

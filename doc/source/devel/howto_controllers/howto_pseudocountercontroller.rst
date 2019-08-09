@@ -14,7 +14,7 @@ will be build incrementally from scratch to aid in the explanation. Its purpose
 is to provide an easy feedback about the beam position in the vertical and
 horizontal axes as well as the total intensity of the beam.
 
-By now you should have read the general controller basics chapter. Let's start
+By now you should have read :ref:`the general controller basics <sardana-controller-api>` chapter. Let's start
 from writing a :class:`~sardana.pool.controller.PseudoCounterController`
 subclass with a proper constructor and the roles defined.
 
@@ -36,6 +36,13 @@ tuples contains names of the counter and pseudo counter roles respectively.
 These names are used when creating the controller instance and their order is
 important when writing the controller itself. Each controller will define its
 own roles.
+
+.. note::
+
+    It is possible to omit the
+    :obj:`~sardana.pool.controller.PseudoCounterController.pseudo_counter_roles`
+    definition if the controller provides only one axis. The controller class
+    name will be assumed as the pseudo counter role.
 
 The constructor does nothing apart of calling the parent class constructor but
 could be used to implement any necessary initialization.
@@ -65,6 +72,31 @@ positive. If the beam passes closer to the bottom sensor the value will be more
 negative. The value close to the zero indicates the beam centered in the middle.
 Similarly behaves the horizontal pseudo counter. The total pseudo counter is
 the mean value of all the four sensors and indicates the beam intensity.
+
+Changing default interface
+--------------------------
+
+Pseudo counters instantiated from your controller will have a default
+interface, which among others, comprises the *value* attribute. This attribute
+is feed with the result of the
+:meth:`~sardana.pool.controller.PseudoCounterController.calc` method and by
+default it expects values of ``float`` type and scalar shape. You can easily
+:ref:`change the default interface <sardana-controller-howto-change-default-interface>`.
+This way you could program a pseudo counter to obtain an image :term:`ROI`
+of a :ref:`2D experimental channel <sardana-2d-overview>`.
+
+Here is an example of how to change *value* attribute's shape to an image
+and specify its maximum dimension of 1024 x 1024 pixels:
+
+.. code-block:: python
+
+        def GetAxisAttributes(self, axis):
+        axis_attrs = PseudoCounterController.GetAxisAttributes(self, axis)
+        axis_attrs = dict(axis_attrs)
+        axis_attrs['Value'][Type] = ((float, ), )
+        axis_attrs['Value'][MaxDimSize] = (1024, 1024)
+        return axis_attrs
+
 
 Including external variables in the calculation
 -----------------------------------------------

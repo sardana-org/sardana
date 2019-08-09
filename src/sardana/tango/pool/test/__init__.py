@@ -23,9 +23,9 @@
 ##
 ##############################################################################
 
-from base import (BasePoolTestCase, ControllerLoadsTestCase,
-                  ControllerCreationTestCase, ElementCreationTestCase)
-from base_sartest import SarTestTestCase
-from .test_measurementgroup import *
-from .test_Motor import *
-from .test_persistence import *
+from .base import (BasePoolTestCase, ControllerLoadsTestCase,  # noqa
+                   ControllerCreationTestCase, ElementCreationTestCase)  # noqa
+from .base_sartest import SarTestTestCase  # noqa
+from .test_measurementgroup import *  # noqa
+from .test_Motor import *  # noqa
+from .test_persistence import *  # noqa

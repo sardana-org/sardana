@@ -9,8 +9,19 @@ How to write an I/O register controller
 The basics
 ----------
 
-.. todo:: document IORegister controller howto
-        
+By now you should have read
+:ref:`the general controller basics <sardana-controller-api>` chapter.
+You should
+be able to create a IORegisterController:
+
+- a proper constructor
+- add and delete axis methods
+- get axis state
+
+The minimal IORegisterController has to contain a method ``ReadOne`` for
+getting output values. An additional method, ``WriteOne``, for setting values
+is optional.
+
 .. _ALBA: http://www.cells.es/
 .. _ANKA: http://http://ankaweb.fzk.de/
 .. _ELETTRA: http://http://www.elettra.trieste.it/

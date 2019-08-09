@@ -33,7 +33,7 @@ import taurus
 from taurus.external.qt import Qt
 from taurus.qt.qtgui.panel import TaurusValue, TaurusDevButton
 from taurus.qt.qtgui.container import TaurusWidget
-from poolmotor import LabelWidgetDragsDeviceAndAttribute
+from .poolmotor import LabelWidgetDragsDeviceAndAttribute
 
 
 class _ParentDevButton(TaurusDevButton):
@@ -115,8 +115,7 @@ class PoolChannel(TaurusWidget):
         self._devButton.setText('')
         self.layout().addWidget(self._devButton)
 
-        self.connect(self, Qt.SIGNAL(
-            'modelChanged(const QString &)'), self._updateTaurusValue)
+        self.modelChanged.connect(self._updateTaurusValue)
 
     def _updateTaurusValue(self):
         m = self.getModelName()

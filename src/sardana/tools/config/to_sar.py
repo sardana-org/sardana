@@ -8,7 +8,7 @@ SAR_NS = 'http://sardana.cells.es/client/framework/config'
 
 
 def transform(f):
-    if type(f) in types.StringTypes:
+    if isinstance(f, str):
         doc = etree.parse(f)
     else:
         doc = f
@@ -31,7 +31,7 @@ def transform(f):
 def main():
     filename = sys.argv[1]
     t = transform(filename)
-    print etree.tostring(t, pretty_print=True)
+    print(etree.tostring(t, pretty_print=True))
 
 if __name__ == "__main__":
     main()

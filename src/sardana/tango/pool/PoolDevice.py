@@ -33,17 +33,17 @@ __all__ = ["PoolDevice", "PoolDeviceClass",
 __docformat__ = 'restructuredtext'
 
 import time
-import numpy as np
 
-from PyTango import Util, DevVoid, DevLong64, DevBoolean, DevString, \
-    DevVarStringArray, DispLevel, DevState, SCALAR, SPECTRUM, \
-    IMAGE, READ_WRITE, READ, AttrData, CmdArgType, DevFailed, seqStr_2_obj, \
-    Except, ErrSeverity
+from PyTango import Util, DevVoid, DevLong64, DevBoolean, DevString,\
+    DevDouble, DevEncoded, DevVarStringArray, DispLevel, DevState, SCALAR, \
+    SPECTRUM, IMAGE, READ_WRITE, READ, AttrData, CmdArgType, DevFailed,\
+    seqStr_2_obj, Except, ErrSeverity
 
 from taurus.core.util.containers import CaselessDict
 from taurus.core.util.codecs import CodecFactory
 
 from sardana import InvalidId, InvalidAxis, ElementType
+from sardana import sardanacustomsettings
 from sardana.pool.poolmetacontroller import DataInfo
 from sardana.tango.core.SardanaDevice import SardanaDevice, SardanaDeviceClass
 from sardana.tango.core.util import GenericScalarAttr, GenericSpectrumAttr, \
@@ -70,7 +70,7 @@ class PoolDevice(SardanaDevice):
         """initialize the device once in the object lifetime. Override when
         necessary but **always** call the method from your super class
 
-        :param str name: device name"""
+        :param :obj:`str` name: device name"""
         SardanaDevice.init(self, name)
         util = Util.instance()
         self._pool_device = util.get_device_list_by_class("Pool")[0]
@@ -194,7 +194,7 @@ class PoolDevice(SardanaDevice):
             read = self.__class__._read_DynamicAttribute
             write = self.__class__._write_DynamicAttribute
             is_allowed = self.__class__._is_DynamicAttribute_allowed
-            for attr_name, data_info in std_attrs.items():
+            for attr_name, data_info in list(std_attrs.items()):
                 attr_name, data_info, attr_info = data_info
                 attr = self.add_standard_attribute(attr_name, data_info,
                                                    attr_info, read,
@@ -205,7 +205,7 @@ class PoolDevice(SardanaDevice):
             read = self.__class__._read_DynamicAttribute
             write = self.__class__._write_DynamicAttribute
             is_allowed = self.__class__._is_DynamicAttribute_allowed
-            for attr_name, data_info in dyn_attrs.items():
+            for attr_name, data_info in list(dyn_attrs.items()):
                 attr_name, data_info, attr_info = data_info
                 attr = self.add_dynamic_attribute(attr_name, data_info,
                                                   attr_info, read,
@@ -219,7 +219,8 @@ class PoolDevice(SardanaDevice):
         dev_class = self.get_device_class()
         multi_attr = self.get_device_attr()
         multi_class_attr = dev_class.get_class_attr()
-        static_attr_names = map(str.lower, dev_class.attr_list.keys())
+        static_attr_names = \
+            list(map(str.lower, list(dev_class.attr_list.keys())))
         static_attr_names.extend(('state', 'status'))
 
         new_attrs = CaselessDict(new_std_attrs)
@@ -284,7 +285,7 @@ class PoolDevice(SardanaDevice):
                               write, is_allowed):
         """Adds a single dynamic attribute
 
-        :param str attr_name: the attribute name
+        :param :obj:`str` attr_name: the attribute name
         :param data_info: tango attribute information
         :type data_info: seq< :class:`~PyTango.CmdArgType`, :class:`~PyTango.AttrDataFormat`, :class:`~PyTango.AttrWriteType` >
         :param attr_info: attribute information
@@ -321,7 +322,7 @@ class PoolDevice(SardanaDevice):
                                write, is_allowed):
         """Adds a single standard dynamic attribute
 
-        :param str attr_name: the attribute name
+        :param :obj:`str` attr_name: the attribute name
         :param data_info: tango attribute information
         :type data_info: seq< :class:`~PyTango.CmdArgType`, :class:`~PyTango.AttrDataFormat`, :class:`~PyTango.AttrWriteType` >
         :param attr_info: attribute information
@@ -417,18 +418,20 @@ class PoolDevice(SardanaDevice):
             return DevState.FAULT
 
     def dev_status(self):
-        """Calculates and returns the device status. Called by Tango on a read
+        """
+        Calculates and returns the device status. Called by Tango on a read
         status request.
 
         :return: the device status
-        :rtype: str"""
+        :rtype: :obj:`str`
+        """
         element = self.element
         try:
             use_cache = element.is_in_operation() and not self.Force_HW_Read
             ctrl_status = self.element.get_status(cache=use_cache, propagate=0)
             status = self.calculate_tango_status(ctrl_status)
             return status
-        except Exception, e:
+        except Exception as e:
             msg = "Exception trying to return status: %s" % str(e)
             self.error(msg)
             self.debug("Details:", exc_info=1)
@@ -645,7 +648,14 @@ class PoolElementDevice(PoolDevice):
         """
 
         if hasattr(self, "_dynamic_attributes_cache"):
-            return self._standard_attributes_cache, self._dynamic_attributes_cache
+            return self._standard_attributes_cache, \
+                   self._dynamic_attributes_cache
+        std_attrs, dyn_attrs = self._get_dynamic_attributes()
+        self._standard_attributes_cache = std_attrs
+        self._dynamic_attributes_cache = dyn_attrs
+        return std_attrs, dyn_attrs
+
+    def _get_dynamic_attributes(self):
         ctrl = self.ctrl
         if ctrl is None:
             self.warning("no controller: dynamic attributes NOT created")
@@ -654,14 +664,14 @@ class PoolElementDevice(PoolDevice):
             self.warning("controller offline: dynamic attributes NOT created")
             return PoolDevice.get_dynamic_attributes(self)
 
-        self._dynamic_attributes_cache = dyn_attrs = CaselessDict()
-        self._standard_attributes_cache = std_attrs = CaselessDict()
+        dyn_attrs = CaselessDict()
+        std_attrs = CaselessDict()
         dev_class = self.get_device_class()
         axis_attrs = ctrl.get_axis_attributes(self.element.axis)
 
         std_attrs_lower = [attr.lower()
                            for attr in dev_class.standard_attr_list]
-        for attr_name, attr_info in axis_attrs.items():
+        for attr_name, attr_info in list(axis_attrs.items()):
             attr_name_lower = attr_name.lower()
             if attr_name_lower in std_attrs_lower:
                 data_info = DataInfo.toDataInfo(attr_name, attr_info)
@@ -754,7 +764,7 @@ class PoolElementDeviceClass(PoolDeviceClass):
     def get_standard_attr_info(self, attr):
         """Returns information about the standard attribute
 
-        :param str attr: attribute name
+        :param :obj:`str` attr: attribute name
         :return: a sequence of tango data_type, data format"""
         return self.standard_attr_list[attr]
 
@@ -831,7 +841,10 @@ class PoolExpChannelDevice(PoolElementDevice):
     def __init__(self, dclass, name):
         """Constructor"""
         PoolElementDevice.__init__(self, dclass, name)
-        self._codec = CodecFactory().getCodec('json')
+        codec_name = getattr(sardanacustomsettings, "VALUE_BUFFER_CODEC")
+        self._value_buffer_codec = CodecFactory().getCodec(codec_name)
+        codec_name = getattr(sardanacustomsettings, "VALUE_REF_BUFFER_CODEC")
+        self._value_ref_buffer_codec = CodecFactory().getCodec(codec_name)
 
     def _encode_value_chunk(self, value_chunk):
         """Prepare value chunk to be passed via communication channel.
@@ -841,34 +854,145 @@ class PoolExpChannelDevice(PoolElementDevice):
 
         :return: json string representing value chunk
         :rtype: str"""
-        data = []
         index = []
-        for idx, sdn_value in value_chunk.iteritems():
+        value = []
+        for idx, sdn_value in value_chunk.items():
             index.append(idx)
-            value = sdn_value.value
-            # TODO: Improve it in the future
-            # In case of big arrays e.g. 10k points and higher there are more
-            # optimal solutions but they require complex changes on encoding
-            # and decoding side.
-            if isinstance(value, np.ndarray):
-                value = value.tolist()
-            data.append(value)
-        data = dict(data=data, index=index)
-        _, encoded_data = self._codec.encode(('', data))
+            value.append(sdn_value.value)
+        data = dict(index=index, value=value)
+        encoded_data = self._value_buffer_codec.encode(('', data))
         return encoded_data
 
-    def read_Data(self, attr):
-        desc = "Data attribute is not foreseen for reading. It is used only "\
-               "as the communication channel for the continuous acquisitions."
+    def _encode_value_ref_chunk(self, value_ref_chunk):
+        """Prepare value ref chunk to be passed via communication channel.
+
+        :param value_ref_chunk: value ref chunk
+        :type value_ref_ chunk: seq<SardanaValue>
+
+        :return: json string representing value chunk
+        :rtype: str
+        """
+        index = []
+        value_ref = []
+        for idx, sdn_value in value_ref_chunk.items():
+            index.append(idx)
+            value_ref.append(sdn_value.value)
+        data = dict(index=index, value_ref=value_ref)
+        encoded_data = self._value_ref_buffer_codec.encode(('', data))
+        return encoded_data
+
+    def initialize_dynamic_attributes(self):
+        attrs = PoolElementDevice.initialize_dynamic_attributes(self)
+
+        non_detect_evts = "integrationtime",
+
+        for attr_name in non_detect_evts:
+            if attr_name in attrs:
+                self.set_change_event(attr_name, True, False)
+        return attrs
+
+    def read_ValueBuffer(self, _):
+        desc = "ValueBuffer attribute is not foreseen for reading. It is " \
+               "used only as the communication channel for the continuous " \
+               "acquisitions."
         Except.throw_exception("UnsupportedFeature",
                                desc,
-                               "PoolExpChannelDevice.read_Data",
+                               "PoolExpChannelDevice.read_ValueBuffer",
                                ErrSeverity.WARN)
+
+    def read_ValueRefBuffer(self, _):
+        desc = ("ValueRefBuffer attribute is not foreseen for reading. "
+                "It is used only as the communication channel for the "
+                "continuous acquisitions.")
+        Except.throw_exception("UnsupportedFeature",
+                               desc,
+                               "PoolExpChannelDevice.read_ValueRefBuffer",
+                               ErrSeverity.WARN)
+
+    def read_IntegrationTime(self, attr):
+        """Reads the integration time.
+
+        :param attr: tango attribute
+        :type attr: :class:`~PyTango.Attribute`"""
+        attr.set_value(self.element.integration_time)
+
+    def write_IntegrationTime(self, attr):
+        """Sets the integration time.
+
+        :param attr: tango attribute
+        :type attr: :class:`~PyTango.Attribute`"""
+        self.element.integration_time = attr.get_write_value()
 
 
 class PoolExpChannelDeviceClass(PoolElementDeviceClass):
 
+    #:
+    #: Sardana device attribute definition
+    #:
+    #: .. seealso:: :ref:`server`
+    #:
+    attr_list = {
+        'IntegrationTime': [[DevDouble, SCALAR, READ_WRITE]]
+    }
+    attr_list.update(PoolElementDeviceClass.attr_list)
+
     standard_attr_list = {
-        'Data': [[DevString, SCALAR, READ]]  # TODO: think about DevEncoded
+        'ValueBuffer': [[DevEncoded, SCALAR, READ]]
     }
     standard_attr_list.update(PoolElementDeviceClass.standard_attr_list)
+
+
+class PoolTimerableDevice(PoolExpChannelDevice):
+
+    def __init__(self, dclass, name):
+        """Constructor"""
+        PoolExpChannelDevice.__init__(self, dclass, name)
+
+    def initialize_dynamic_attributes(self):
+        attrs = PoolExpChannelDevice.initialize_dynamic_attributes(self)
+
+        detect_evts = "timer",
+
+        for attr_name in detect_evts:
+            if attr_name in attrs:
+                self.set_change_event(attr_name, True, True)
+        return attrs
+
+    def read_Timer(self, attr):
+        """Reads the timer for this channel.
+
+        :param attr: tango attribute
+        :type attr: :class:`~PyTango.Attribute`"""
+        timer = self.element.timer
+        if timer is None:
+            timer = 'None'
+        attr.set_value(timer)
+
+    def write_Timer(self, attr):
+        """Sets the timer for this channel.
+
+        :param attr: tango attribute
+        :type attr: :class:`~PyTango.Attribute`"""
+        timer = attr.get_write_value()
+        if timer == 'None':
+            timer = None
+        self.element.timer = timer
+
+
+class PoolTimerableDeviceClass(PoolExpChannelDeviceClass):
+
+    #:
+    #: Sardana device attribute definition
+    #:
+    #: .. seealso:: :ref:`server`
+    #:
+
+    #    Attribute definitions
+    attr_list = {
+        'Timer': [[DevString, SCALAR, READ_WRITE],
+                  {'Memorized': "true", }]
+    }
+    attr_list.update(PoolExpChannelDeviceClass.attr_list)
+
+    standard_attr_list = {}
+    standard_attr_list.update(PoolExpChannelDeviceClass.standard_attr_list)

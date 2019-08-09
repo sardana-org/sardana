@@ -23,13 +23,14 @@
 
 """This is the standard macro module"""
 
-__all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "set_lim", "set_lm",
-           "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm", "tw",
-           "logmacro"]
+__all__ = ["ct", "mstate", "mv", "mvr", "pwa", "pwm", "repeat", "set_lim",
+           "set_lm", "set_pos", "settimer", "uct", "umv", "umvr", "wa", "wm",
+           "tw", "logmacro", "newfile"]
 
 __docformat__ = 'restructuredtext'
 
 import datetime
+import os
 
 import numpy as np
 from taurus import Device
@@ -38,9 +39,11 @@ import PyTango
 from PyTango import DevState
 
 from sardana.macroserver.macro import Macro, macro, Type, ParamRepeat, \
-    ViewOption, iMacro
-from sardana.macroserver.msexception import StopException
+    ViewOption, iMacro, Hookable
+from sardana.macroserver.msexception import StopException, UnknownEnv
 from sardana.macroserver.scan.scandata import Record
+from sardana.macroserver.macro import Optional
+
 ##########################################################################
 #
 # Motion related macros
@@ -79,7 +82,7 @@ class _wm(Macro):
             data[name] = []
         # get additional motor information (ctrl name & axis)
         if show_ctrlaxis:
-            for name, motor in motors.iteritems():
+            for name, motor in motors.items():
                 ctrl_name = self.getController(motor.controller).name
                 axis_nb = str(getattr(motor, "axis"))
                 data[name].extend((ctrl_name, axis_nb))
@@ -87,7 +90,7 @@ class _wm(Macro):
         # collect asynchronous replies
         while len(requests) > 0:
             req2delete = []
-            for name, _id in requests.iteritems():
+            for name, _id in requests.items():
                 motor = motors[name]
                 try:
                     attrs = motor.read_attributes_reply(_id)
@@ -156,6 +159,7 @@ class _wum(Macro):
         motor_names = []
         motor_pos = []
         motor_list = sorted(motor_list)
+        pos_format = self.getViewOption(ViewOption.PosFormat)
         for motor in motor_list:
             name = motor.getName()
             motor_names.append([name])
@@ -166,6 +170,8 @@ class _wum(Macro):
             motor_width = max(motor_width, len(name))
 
         fmt = '%c*.%df' % ('%', motor_width - 5)
+        if pos_format > -1:
+            fmt = '%c*.%df' % ('%', int(pos_format))
 
         table = Table(motor_pos, elem_fmt=[fmt],
                       col_head_str=motor_names, col_head_width=motor_width,
@@ -368,9 +374,10 @@ class wm(Macro):
             if show_ctrlaxis:
                 valctrl = str_fmt % (ctrl_name)
                 valaxis = str_fmt % str(axis_nb)
-                upos = map(str, [valctrl, valaxis, ' ', val2, val1, val3])
+                upos = list(map(str, [valctrl, valaxis, ' ', val2, val1,
+                                      val3]))
             else:
-                upos = map(str, ['', val2, val1, val3])
+                upos = list(map(str, ['', val2, val1, val3]))
             pos_data = upos
             if show_dial:
                 try:
@@ -383,7 +390,7 @@ class wm(Macro):
                 val2 = str_fmt % dPosObj.getMaxValue()
                 val3 = str_fmt % dPosObj.getMinValue()
 
-                dpos = map(str, [val2, val1, val3])
+                dpos = list(map(str, [val2, val1, val3]))
                 pos_data += [''] + dpos
 
             motor_pos.append(pos_data)
@@ -424,8 +431,8 @@ class wum(Macro):
             name = motor.getName()
             motor_names.append([name])
             posObj = motor.getPositionObj()
-            upos = map(str, [posObj.getMaxValue(), motor.getPosition(
-                force=True), posObj.getMinValue()])
+            upos = list(map(str, [posObj.getMaxValue(), motor.getPosition(
+                force=True), posObj.getMinValue()]))
             pos_data = [''] + upos
 
             motor_pos.append(pos_data)
@@ -518,8 +525,8 @@ class umv(Macro):
             posObj = motor.getPositionObj()
             try:
                 posObj.unsubscribeEvent(self.positionChanged, motor)
-            except Exception, e:
-                print str(e)
+            except Exception as e:
+                print(str(e))
                 raise e
 
     def positionChanged(self, motor, position):
@@ -642,41 +649,75 @@ class tw(iMacro):
 ##########################################################################
 
 
-class ct(Macro):
-    """Count for the specified time on the active measurement group"""
+def _value_to_repr(data):
+    if data is None:
+        return "<nodata>"
+    elif np.rank(data) > 0:
+        return list(np.shape(data))
+    else:
+        return data
 
-    env = ('ActiveMntGrp',)
 
+class ct(Macro, Hookable):
+    """Count for the specified time on the measurement group
+       or experimental channel given as second argument
+       (if not given the active measurement group is used)"""
+
+    hints = {'allowsHooks': ('pre-acq', 'post-acq')}
     param_def = [
-        ['integ_time', Type.Float, 1.0, 'Integration time']
+        ['integ_time', Type.Float, 1.0, 'Integration time'],
+        ['countable_elem', Type.Countable, Optional,
+         'Countable element e.g. MeasurementGroup or ExpChannel']
     ]
 
-    def prepare(self, integ_time, **opts):
-        mnt_grp_name = self.getEnv('ActiveMntGrp')
-        self.mnt_grp = self.getObj(
-            mnt_grp_name, type_class=Type.MeasurementGroup)
+    def prepare(self, integ_time, countable_elem, **opts):
+        if countable_elem is None:
+            try:
+                self.countable_elem_name = self.getEnv('ActiveMntGrp')
+            except UnknownEnv:
+                return
+            self.countable_elem = self.getObj(
+                self.countable_elem_name, type_class=Type.MeasurementGroup)
+        else:
+            self.countable_elem_name = countable_elem.name
+            self.countable_elem = countable_elem
 
-    def run(self, integ_time):
-        if self.mnt_grp is None:
-            self.error('ActiveMntGrp is not defined or has invalid value')
+    def run(self, integ_time, countable_elem):
+        if self.countable_elem is None:
+            msg = ('Unknown countable {0} element. Use macro parameter or'
+                   'ActiveMntGrp environment variable'.format(
+                                                    self.countable_elem_name))
+            self.error(msg)
             return
-
+        # integration time has to be accessible from with in the hooks
+        # so declare it also instance attribute
+        self.integ_time = integ_time
         self.debug("Counting for %s sec", integ_time)
         self.outputDate()
         self.output('')
         self.flushOutput()
 
-        state, data = self.mnt_grp.count(integ_time)
+        for preAcqHook in self.getHooks('pre-acq'):
+            preAcqHook()
+
+        state, data = self.countable_elem.count(integ_time)
+
+        for postAcqHook in self.getHooks('post-acq'):
+            postAcqHook()
+
         names, counts = [], []
-        for ch_info in self.mnt_grp.getChannelsEnabledInfo():
-            names.append('  %s' % ch_info.label)
-            ch_data = data.get(ch_info.full_name)
-            if ch_data is None:
-                counts.append("<nodata>")
-            elif ch_info.shape > [1]:
-                counts.append(list(ch_data.shape))
-            else:
-                counts.append(ch_data)
+        if self.countable_elem.type == Type.MeasurementGroup:
+            meas_grp = self.countable_elem
+            for ch_info in meas_grp.getChannelsEnabledInfo():
+                names.append('  %s' % ch_info.label)
+                ch_data = data.get(ch_info.full_name)
+                counts.append(_value_to_repr(ch_data))
+        else:
+            channel = self.countable_elem
+            names.append("  %s" % channel.name)
+            counts.append(_value_to_repr(data))
+            # to be compatible with measurement group count
+            data = {channel.full_name: data}
         self.setData(Record(data))
         table = Table([counts], row_head_str=names, row_head_fmt='%*s',
                       col_sep='  =  ')
@@ -687,44 +728,63 @@ class ct(Macro):
 class uct(Macro):
     """Count on the active measurement group and update"""
 
-    env = ('ActiveMntGrp',)
-
     param_def = [
-        ['integ_time', Type.Float, 1.0, 'Integration time']
+        ['integ_time', Type.Float, 1.0, 'Integration time'],
+        ['countable_elem', Type.Countable, Optional,
+         'Countable element e.g. MeasurementGroup or ExpChannel']
     ]
 
-    def prepare(self, integ_time, **opts):
+    def prepare(self, integ_time, countable_elem, **opts):
 
         self.print_value = False
 
-        mnt_grp_name = self.getEnv('ActiveMntGrp')
-        self.mnt_grp = self.getObj(
-            mnt_grp_name, type_class=Type.MeasurementGroup)
+        if countable_elem is None:
+            try:
+                self.countable_elem_name = self.getEnv('ActiveMntGrp')
+            except UnknownEnv:
+                return
+            self.countable_elem = self.getObj(self.countable_elem_name)
+        else:
+            self.countable_elem_name = countable_elem.name
+            self.countable_elem = countable_elem
 
-        if self.mnt_grp is None:
+        if self.countable_elem is None:
             return
 
-        names = self.mnt_grp.getChannelLabels()
-        self.names = [[n] for n in names]
         self.channels = []
         self.values = []
-        for channel_info in self.mnt_grp.getChannels():
-            full_name = channel_info["full_name"]
-            channel = Device(full_name)
+        if self.countable_elem.type == Type.MeasurementGroup:
+            names = self.countable_elem.getChannelLabels()
+            self.names = [[n] for n in names]
+            for channel_info in self.countable_elem.getChannels():
+                full_name = channel_info["full_name"]
+                channel = Device(full_name)
+                self.channels.append(channel)
+                value = channel.getValue(force=True)
+                self.values.append([value])
+                valueObj = channel.getValueObj_()
+                valueObj.subscribeEvent(self.counterChanged, channel)
+        else:
+            channel = self.countable_elem
+            self.names = [[channel.getName()]]
+            channel = Device(channel.full_name)
             self.channels.append(channel)
             value = channel.getValue(force=True)
             self.values.append([value])
             valueObj = channel.getValueObj_()
             valueObj.subscribeEvent(self.counterChanged, channel)
 
-    def run(self, integ_time):
-        if self.mnt_grp is None:
-            self.error('ActiveMntGrp is not defined or has invalid value')
+    def run(self, integ_time, countable_elem):
+        if self.countable_elem is None:
+            msg = ('Unknown countable {0} element. Use macro parameter or'
+                   'ActiveMntGrp environment variable'.format(
+                                                    self.countable_elem_name))
+            self.error(msg)
             return
 
         self.print_value = True
         try:
-            _, data = self.mnt_grp.count(integ_time)
+            _, data = self.countable_elem.count(integ_time)
             self.setData(Record(data))
         finally:
             self.finish()
@@ -773,7 +833,7 @@ class settimer(Macro):
 
         try:
             mnt_grp.setTimer(timer.getName())
-        except Exception, e:
+        except Exception as e:
             self.output(str(e))
             self.output(
                 "%s is not a valid channel in the active measurement group"
@@ -812,3 +872,150 @@ class logmacro(Macro):
             self.setEnv('LogMacro', True)
         else:
             self.setEnv('LogMacro', False)
+
+
+class repeat(Hookable, Macro):
+    """This macro executes as many repetitions of a set of macros as
+    specified by nr parameter. The macros to be repeated can be
+    given as parameters or as body hooks.
+    If both are given first will be executed the ones given as
+    parameters and then the ones given as body hooks.
+    If nr has negative value, repetitions will be executed until you
+    stop repeat macro.
+
+    .. note::
+        The repeat macro has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including removal of the macro) may occur if
+        deemed necessary by the core developers."""
+
+    hints = {'allowsHooks': ('body',)}
+
+    param_def = [
+        ['nr', Type.Integer, None, 'Nr of iterations'],
+        ['macro_name_params', [
+                ['token', Type.String,
+                 None, 'Macro name and parameters (if any)'],
+                {'min': 0}
+            ],
+            None, "List with macro name and parameters (if any)"]
+    ]
+
+    def prepare(self, nr, macro_name_params):
+        self.bodyHooks = self.getHooks("body")
+        self.macro_name_params = macro_name_params
+
+    def __loop(self):
+        self.checkPoint()
+        if len(self.macro_name_params) > 0:
+            for macro_cmd in self.macro_name_params:
+                self.execMacro(macro_cmd)
+        for bodyHook in self.bodyHooks:
+            bodyHook()
+
+    def run(self, nr, macro_name_params):
+        if nr < 0:
+            while True:
+                self.__loop()
+        else:
+            for i in range(nr):
+                self.__loop()
+                progress = ((i + 1) / nr) * 100
+                yield progress
+
+
+class newfile(Hookable, Macro):
+    """ Sets the ScanDir and ScanFile as well as ScanID in the environment.
+
+    If ScanFilePath is only a file name, the ScanDir must be set externally
+    via `senv ScanDir <PathToScanFile>` or using the %expconf. Otherwise,
+    the path in ScanFilePath must be absolute and existing on the
+    MacroServer host.
+
+    The ScanID should be set to the value before the upcoming scan number.
+    Default value is 0.
+    """
+
+    hints = {'allowsHooks': ('post-newfile')}
+
+    param_def = [
+        ['ScanFilePath_list',
+         [['ScanFilePath', Type.String, None, '(ScanDir/)ScanFile']],
+         None, 'List of (ScanDir/)ScanFile'],
+        ['ScanID', Type.Integer, 0, 'Scan ID'],
+    ]
+
+    def run(self, ScanFilePath_list, ScanID):
+        path_list = []
+        fileName_list = []
+        # traverse the repeat parameters for the ScanFilePath_list
+        for i, ScanFilePath in enumerate(ScanFilePath_list):
+            path = os.path.dirname(ScanFilePath)
+            fileName = os.path.basename(ScanFilePath)
+            if not path and i == 0:
+                # first entry and no given ScanDir: check if ScanDir exists
+                try:
+                    ScanDir = self.getEnv('ScanDir')
+                except UnknownEnv:
+                    ScanDir = ''
+                if not (isinstance(ScanDir, str) and len(ScanDir) > 0):
+                    msg = ('Data is not stored until ScanDir is correctly '
+                           'set! Provide ScanDir with newfile macro: '
+                           '`newfile [<ScanDir>/<ScanFile>] <ScanID>` '
+                           'or `senv ScanDir <ScanDir>` or with %expconf')
+                    self.error(msg)
+                    return
+                else:
+                    path = ScanDir
+            elif not path and i > 0:
+                # not first entry and no given path: use path of last iteration
+                path = path_list[i-1]
+            elif not os.path.isabs(path):
+                # relative path
+                self.error('Only absolute path are allowed!')
+                return
+            else:
+                # absolute path
+                path = os.path.normpath(path)
+
+            if i > 0 and (path not in path_list):
+                # check if paths are equal
+                self.error('Multiple paths to the data files are not allowed')
+                return
+            elif not os.path.exists(path):
+                # check if folder exists
+                self.error('Path %s does not exists on the host of the '
+                           'MacroServer and has to be created in '
+                           'advance.' % path)
+                return
+            else:
+                self.debug('Path %s appended.' % path)
+                path_list.append(path)
+
+            if not fileName:
+                self.error('No filename is given.')
+                return
+            elif fileName in fileName_list:
+                self.error('Duplicate filename %s is not allowed.' % fileName)
+                return
+            else:
+                self.debug('Filename is %s.' % fileName)
+                fileName_list.append(fileName)
+
+        if ScanID < 1:
+            ScanID = 0
+
+        self.setEnv('ScanFile', fileName_list)
+        self.setEnv('ScanDir', path_list[0])
+        self.setEnv('ScanID', ScanID)
+
+        self.output('ScanDir is\t: %s', path_list[0])
+        for i, ScanFile in enumerate(fileName_list):
+            if i == 0:
+                self.output('ScanFile set to\t: %s', ScanFile)
+            else:
+                self.output('\t\t  %s', ScanFile)
+        self.output('Next scan is\t: #%d', ScanID+1)
+
+        for postNewfileHook in self.getHooks('post-newfile'):
+            postNewfileHook()

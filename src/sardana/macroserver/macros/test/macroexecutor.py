@@ -65,7 +65,7 @@ class BaseMacroExecutor(object):
             self._common.__init__()
 
     def run(self, macro_name, macro_params=None, sync=True,
-            timeout=float("inf")):
+            timeout=None):
         """Execute macro.
 
         :param macro_name: (string) name of macro to be executed
@@ -75,7 +75,8 @@ class BaseMacroExecutor(object):
         :param sync: (bool) whether synchronous or asynchronous call
                      (default is sync=True)
         :param timeout: (float) timeout (in s) that will be passed to the wait
-                        method, in case of synchronous execution
+                        method, in case of synchronous execution; None means
+                        wait infinitely
 
             In asyncrhonous execution method :meth:`~wait` has to be explicitly
             called.
@@ -101,14 +102,15 @@ class BaseMacroExecutor(object):
         raise NotImplementedError('Method _run not implemented in class %s' %
                                   self.__class__.__name__)
 
-    def wait(self, timeout=float("inf")):
+    def wait(self, timeout=None):
         """
         Wait until macro is done. Use it in asynchronous executions.
 
-        :param timeout: (float) waiting timeout (in s)
+        :param timeout: (float) waiting timeout (in s); None means wait
+            infinitely
         """
-        if timeout <= 0:
-            timeout = float("inf")
+        if timeout is not None and timeout <= 0:
+            timeout = None
 
         self._wait(timeout)
         # TODO: workaround: this sleep is necessary to perform multiple tests.
@@ -322,4 +324,4 @@ class MacroExecutorFactory(Singleton):
 if __name__ == '__main__':
     from sardana import sardanacustomsettings
     door_name = getattr(sardanacustomsettings, 'UNITTEST_DOOR_NAME')
-    print MacroExecutorFactory().getMacroExecutor(door_name)
+    print(MacroExecutorFactory().getMacroExecutor(door_name))

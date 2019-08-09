@@ -32,25 +32,19 @@ from taurus.test import insertTest
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.pool import AcqSynchType, AcqMode
 from sardana.pool.pooldefs import SynchDomain, SynchParam
-from sardana.pool.test import (BasePoolTestCase, createPoolMeasurementGroup,
-                               dummyMeasurementGroupConf01,
-                               createMGUserConfiguration)
-# TODO Import AttributeListener from the right location.
-from sardana.pool.test.test_acquisition import AttributeListener
+from sardana.pool.test import BasePoolTestCase, createPoolMeasurementGroup,\
+    dummyMeasurementGroupConf01, createMGUserConfiguration, AttributeListener
 
 
 class BaseAcquisition(object):
 
     def setUp(self, pool):
-        """
-        """
         self.pool = pool
         self.pmg = None
         self.attr_listener = None
 
     def prepare_meas(self, config):
-        """ Prepare the measurement group and returns the channel names
-        """
+        """ Prepare measurement group and returns the channel names"""
         pool = self.pool
         # creating mg user configuration and obtaining channel ids
         mg_conf, channel_ids, channel_names = \
@@ -66,13 +60,13 @@ class BaseAcquisition(object):
 
     def prepare_attribute_listener(self):
         self.attr_listener = AttributeListener()
-        # Add listeners
+        # Add data listener
         attributes = self.pmg.get_user_elements()
         for attr in attributes:
             attr.add_listener(self.attr_listener)
 
     def remove_attribute_listener(self):
-        # Remove listeners
+        # Remove data listener
         attributes = self.pmg.get_user_elements()
         for attr in attributes:
             attr.remove_listener(self.attr_listener)
@@ -82,18 +76,17 @@ class BaseAcquisition(object):
         """
         self.pmg.start_acquisition()
         acq = self.pmg.acquisition
-        # waiting for acquisition
         while acq.is_running():
-            time.sleep(1)
+            time.sleep(.1)
 
     def acq_asserts(self, channel_names, repetitions):
         # printing acquisition records
         table = self.attr_listener.get_table()
         header = table.dtype.names
-        print header
+        print(header)
         n_rows = table.shape[0]
-        for row in xrange(n_rows):
-            print row, table[row]
+        for row in range(n_rows):
+            print(row, table[row])
         # checking if any of data was acquired
         self.assertTrue(self.attr_listener.data, 'no data were acquired')
         # checking if all channels produced data
@@ -125,7 +118,7 @@ class BaseAcquisition(object):
         self.remove_attribute_listener()
         synchronization = [{SynchParam.Delay: {SynchDomain.Time: 0},
                             SynchParam.Active: {SynchDomain.Time: 0.1},
-                            SynchParam.Total: {SynchDomain.Time: 0},
+                            SynchParam.Total: {SynchDomain.Time: 0.2},
                             SynchParam.Repeats: 1}]
         self.pmg.synchronization = synchronization
         self.acquire()
@@ -191,7 +184,7 @@ class BaseAcquisition(object):
                '(before: %d)') % (jobs_after, jobs_before)
         self.assertEqual(jobs_before, jobs_after, msg)
 
-    def stopAcquisition(self):
+    def stop_acquisition(self):
         """Method used to abort a running acquisition"""
         self.pmg.stop()
 
@@ -210,7 +203,7 @@ class BaseAcquisition(object):
         acq = self.pmg.acquisition
 
         # starting timer (0.05 s) which will stop the acquisiton
-        threading.Timer(0.2, self.stopAcquisition).start()
+        threading.Timer(0.2, self.stop_acquisition).start()
         # waiting for acquisition and tggeneration to be stoped by thread
         while acq.is_running():
             time.sleep(0.05)
@@ -222,8 +215,9 @@ class BaseAcquisition(object):
         msg = "The number of busy workers is not zero; numBW = %s" % (numBW)
         self.assertEqual(numBW, 0, msg)
         # print the acquisition records
-        for i, record in enumerate(zip(*self.attr_listener.data.values())):
-            print i, record
+        for i, record in \
+                enumerate(zip(*list(self.attr_listener.data.values()))):
+            print(i, record)
 
     def meas_contpos_acquisition(self, config, synchronization, moveable,
                                  second_config=None):
@@ -343,7 +337,24 @@ config_13 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger), ],
              [('_test_ct_2_1', 'software', AcqSynchType.Trigger), ],
              [('_test_0d_1_1', 'software', AcqSynchType.Gate), ]]
 
+doc_14 = 'Acquisition using 2 controllers, with 2 channels in each '\
+         + 'controller, using software and hardware start synchronization'
 
+config_14 = [[('_test_ct_1_1', 'software', AcqSynchType.Start),
+              ('_test_ct_1_2', 'software', AcqSynchType.Start)],
+             [('_test_ct_2_1', '_test_tg_1_1', AcqSynchType.Start),
+              ('_test_ct_2_2', '_test_tg_1_1', AcqSynchType.Start)]]
+
+doc_15 = 'Acquisition using with 1 2D channel using software synchronization'
+
+config_15 = [[('_test_2d_1_1', 'software', AcqSynchType.Trigger)]]
+
+
+# TODO: listener is not ready to handle 2D
+# @insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_15,
+#             config=config_15, synchronization=synchronization1)
+@insertTest(helper_name='meas_cont_acquisition', test_method_doc=doc_14,
+            config=config_14, synchronization=synchronization1)
 @insertTest(helper_name='meas_contpos_acquisition', test_method_doc=doc_12,
             config=config_12, synchronization=synchronization4,
             moveable="_test_mot_1_1")

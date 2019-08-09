@@ -126,11 +126,11 @@ class MacroBaseModel(TaurusBaseModel):
 
     def setDataSource(self, ms):
         if self._data_src is not None:
-            Qt.QObject.disconnect(self._data_src, Qt.SIGNAL(
-                'macrosUpdated'), self.macrosUpdated)
+            self._data_src.macrosUpdated.disconnect(
+                self.macrosUpdated)
         if ms is not None:
-            Qt.QObject.connect(ms, Qt.SIGNAL(
-                'macrosUpdated'), self.macrosUpdated)
+            ms.macrosUpdated.connect(
+                self.macrosUpdated)
         TaurusBaseModel.setDataSource(self, ms)
 
     def macrosUpdated(self):
@@ -172,11 +172,11 @@ class MacroBaseModel(TaurusBaseModel):
             mime_data_item = tree_item.mimeData(index)
             if mime_data_item is None:
                 continue
-            data.append(mime_data_item)
-        ret.setData(TAURUS_MODEL_LIST_MIME_TYPE, "\r\n".join(data))
-        ret.setText(", ".join(data))
+            data.append(bytes(mime_data_item, encoding='utf8'))
+        ret.setData(TAURUS_MODEL_LIST_MIME_TYPE, b"\r\n".join(data))
+        ret.setText(", ".join(map(str, data)))
         if len(data) == 1:
-            ret.setData(TAURUS_MODEL_MIME_TYPE, str(data[0]))
+            ret.setData(TAURUS_MODEL_MIME_TYPE, data[0])
         return ret
 
     def setupModelData(self, data):
@@ -186,7 +186,7 @@ class MacroBaseModel(TaurusBaseModel):
         root = self._rootItem
         macro_modules = {}
         macro_dict = ms.getMacros()
-        for macro_name, macro in macro_dict.items():
+        for macro_name, macro in list(macro_dict.items()):
             module_name = macro.module
             moduleNode = macro_modules.get(module_name)
             if moduleNode is None:
@@ -273,8 +273,8 @@ class MacroSelectionDialog(Qt.QDialog):
         self._buttonBox.setStandardButtons(bts)
         layout.addWidget(self._panel)
         layout.addWidget(self._buttonBox)
-        self.connect(self._buttonBox, Qt.SIGNAL("accepted()"), self.accept)
-        self.connect(self._buttonBox, Qt.SIGNAL("rejected()"), self.reject)
+        self._buttonBox.accepted.connect(self.accept)
+        self._buttonBox.rejected.connect(self.reject)
 
     def selectedItems(self):
         return self._panel.selectedItems()
@@ -287,7 +287,7 @@ def main_MacroSelecionDialog(ms, perspective=MacroView.MacroModule):
     w = MacroSelectionDialog(model_name=ms, perspective=perspective)
 
     if w.result() == Qt.QDialog.Accepted:
-        print w.getSelectedMacros()
+        print(w.getSelectedMacros())
     return w
 
 

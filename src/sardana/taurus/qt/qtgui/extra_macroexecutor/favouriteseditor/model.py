@@ -45,9 +45,9 @@ class MacrosListModel(Qt.QAbstractListModel):
     def data(self, index, role):
         if index.isValid() and role == Qt.Qt.DisplayRole:
             macroNode = self.list[index.row()]
-            return Qt.QVariant(self.list[index.row()].toSpockCommand())
+            return self.list[index.row()].toSpockCommand()
         else:
-            return Qt.QVariant()
+            return None
 
     def index(self, row, column=0, parent=Qt.QModelIndex()):
         if self.rowCount():
@@ -92,13 +92,15 @@ class MacrosListModel(Qt.QAbstractListModel):
         for macroNode in self.list:
             listElement.append(macroNode.toXml(withId=False))
         xmlTree = etree.ElementTree(listElement)
-        xmlString = etree.tostring(xmlTree, pretty_print=pretty)
+        xmlString = etree.tostring(xmlTree, encoding='unicode',
+                                   pretty_print=pretty)
         return xmlString
 
     def fromXmlString(self, xmlString):
+        self.beginResetModel()
         listElement = etree.fromstring(xmlString)
         for childElement in listElement.iterchildren("macro"):
             macroNode = macro.MacroNode()
             macroNode.fromXml(childElement)
             self.list.append(macroNode)
-        self.reset()
+        self.endResetModel()
