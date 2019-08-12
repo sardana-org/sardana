@@ -1,10 +1,5 @@
 """A RichJupyterWidget that loads a spock profile.
 """
-from __future__ import (absolute_import, division, print_function,
-                        unicode_literals)
-from builtins import (bytes, str, open, super, range,  # noqa
-                      zip, round, input, int, pow, object)
-
 import sys
 import pickle
 import ast
@@ -94,7 +89,7 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
     profile : string
         The name of the spock profile to use. The default is 'spockdoor'.
     kernel : string
-        The name of the kernel to use. The default is 'python2'.
+        The name of the kernel to use. The default is 'python3'.
     use_model_from_profile : bool
         If true, the door name is taken from the spock profile, otherwise it
         has to be set via setModel.
@@ -117,7 +112,7 @@ class QtSpockWidget(RichJupyterWidget, TaurusBaseWidget):
             profile='spockdoor',
             use_model_from_profile=False,
             extensions=None,
-            kernel='python2',
+            kernel='python3',
             **kw):
         RichJupyterWidget.__init__(self, parent=parent, **kw)
         TaurusBaseWidget.__init__(self)
