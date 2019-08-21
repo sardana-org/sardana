@@ -11,6 +11,14 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Use `taurus.external.qt.compat.PY_OBJECT` in singal signatures instead of `object`
   to avoid problems when using `builtins` from `future` (#1082)
 
+### Changed
+
+* requirements are no longer checked when importing sardana (#1185)
+
+### Removed
+
+* `sardana.requirements` (#1185)
+
 ## [2.8.1] 2019-07-22
 
 ### Fixed
