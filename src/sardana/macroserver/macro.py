@@ -287,7 +287,7 @@ class Hookable(Logger):
         if hasattr(self, '_hookHintsDict'):
             del self._hookHintsDict
         # create _hookHintsDict
-        self._getHookHintsDict()['_ALL_'] = zip(*self._hooks)[0]
+        self._getHookHintsDict()['_ALL_'] = list(zip(*self._hooks))[0]
         nohints = self._hookHintsDict['_NOHINTS_']
         for hook, hints in self._hooks:
             if len(hints) == 0:
