@@ -1618,8 +1618,8 @@ class MacroExecutor(Logger):
             if isinstance(macro_exp, MacroServerException):
                 if macro_obj.parent_macro is None:
                     door.debug(macro_exp.traceback)
-                    door.error("An error occurred while running %s:\n%s" %
-                               (macro_obj.description, macro_exp.msg))
+                    door.error("An error occurred while running %s:\n%r" %
+                               (macro_obj.description, macro_exp))
             self._popMacro()
             raise macro_exp
         self.debug("[ END ] runMacro %s" % desc)
