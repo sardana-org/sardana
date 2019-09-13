@@ -7,7 +7,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Fixed
 
-* Fix default macro parameter values in macroexecutor (#1153)
+* Default macro parameter values in macroexecutor (#1153)
+* Setting of environment variables in Python 3.7 (#1195)
 * Use `taurus.external.qt.compat.PY_OBJECT` in singal signatures instead of `object`
   to avoid problems when using `builtins` from `future` (#1082)
 
