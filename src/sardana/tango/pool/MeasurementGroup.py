@@ -74,9 +74,13 @@ class MeasurementGroup(PoolGroupDevice):
         PoolGroupDevice.init_device(self)
         # state and status are already set by the super class
         detect_evts = "latencytime", "moveable", "synchronization", \
-                      "softwaresynchronizerinitialdomain", "nbstarts"
+                      "softwaresynchronizerinitialdomain"
+        # TODO: nbstarts could be moved to detect events with
+        # abs_change criteria of 1, but be careful with
+        # tango-controls/pytango#302
         non_detect_evts = "configuration", "integrationtime", "monitorcount", \
-                          "acquisitionmode", "elementlist"
+                          "acquisitionmode", "elementlist", "latencytime", \
+                          "nbstarts"
         self.set_change_events(detect_evts, non_detect_evts)
 
         self.Elements = list(self.Elements)

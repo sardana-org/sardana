@@ -19,6 +19,13 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 * `sardana.requirements` (#1185)
 
+## [2.8.2] 2019-09-13
+
+### Fixed
+
+* Hangs of MacroServer when PyTango `AttributeProxy` and `DeviceProxy` objects
+  were garbage collected (#1080, #1190, #1193)
+
 ## [2.8.1] 2019-07-22
 
 ### Fixed
@@ -724,7 +731,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.1...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.2...HEAD
+[2.8.1]: https://github.com/sardana-org/sardana/compare/2.8.2...2.8.1
 [2.8.1]: https://github.com/sardana-org/sardana/compare/2.8.1...2.8.0
 [2.8.0]: https://github.com/sardana-org/sardana/compare/2.8.0...2.7.2
 [2.7.2]: https://github.com/sardana-org/sardana/compare/2.7.1...2.7.2
