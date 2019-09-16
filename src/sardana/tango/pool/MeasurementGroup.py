@@ -73,7 +73,7 @@ class MeasurementGroup(PoolGroupDevice):
     def init_device(self):
         PoolGroupDevice.init_device(self)
         # state and status are already set by the super class
-        detect_evts = "latencytime", "moveable", "synchronization", \
+        detect_evts = "moveable", "synchronization", \
                       "softwaresynchronizerinitialdomain"
         # TODO: nbstarts could be moved to detect events with
         # abs_change criteria of 1, but be careful with

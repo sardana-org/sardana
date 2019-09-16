@@ -3,6 +3,14 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This file follows the formats and conventions from [keepachangelog.com]
 
+## [Unreleased]
+
+## [2.8.3] 2019-09-16
+
+### Fixed
+
+* Removing latencytime from detect_evt (as propossed in #1190)
+
 ## [2.8.2] 2019-09-13
 
 ### Fixed
@@ -715,8 +723,9 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.2...HEAD
-[2.8.1]: https://github.com/sardana-org/sardana/compare/2.8.2...2.8.1
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.3...HEAD
+[2.8.3]: https://github.com/sardana-org/sardana/compare/2.8.3...2.8.2
+[2.8.2]: https://github.com/sardana-org/sardana/compare/2.8.2...2.8.1
 [2.8.1]: https://github.com/sardana-org/sardana/compare/2.8.1...2.8.0
 [2.8.0]: https://github.com/sardana-org/sardana/compare/2.8.0...2.7.2
 [2.7.2]: https://github.com/sardana-org/sardana/compare/2.7.1...2.7.2
