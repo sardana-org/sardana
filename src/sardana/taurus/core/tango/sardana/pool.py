@@ -2505,6 +2505,11 @@ class Pool(TangoDevice, MoveableSource):
     def deleteController(self, name):
         return self.deleteElement(name)
 
+    def createInstrument(self, full_name, class_name):
+        self.command_inout("CreateInstrument", [full_name, class_name])
+        elements_info = self.getElementsInfo()
+        return self._wait_for_element_in_container(elements_info, full_name)
+
 
 def registerExtensions():
     factory = Factory()
