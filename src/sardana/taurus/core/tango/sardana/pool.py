@@ -454,6 +454,9 @@ class PoolElement(BaseElement, TangoDevice):
         # instr_name = instr_name[:instr_name.index('(')]
         return instr_name
 
+    def setInstrumentName(self, instr_name):
+        self.getInstrumentObj().write(instr_name)
+
     def getInstrument(self):
         instr_name = self.getInstrumentName()
         if not instr_name:
