@@ -5,6 +5,10 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
+### Added
+
+* Instruments creation and configuration in sar_demo (#1198)
+
 ### Fixed
 
 * Default macro parameter values in macroexecutor (#1153)
