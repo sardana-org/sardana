@@ -18,6 +18,10 @@ You can test the installation by running::
 
        python3 -c "import sardana; print(sardana.Release.version)"
 
+If you want macro server environment based on redis you also need::
+
+       pip3 install sardana[redis]
+
 
 Installing from PyPI manually [2]_ (platform-independent)
 ---------------------------------------------------------
