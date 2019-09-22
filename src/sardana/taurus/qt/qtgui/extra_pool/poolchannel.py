@@ -57,8 +57,6 @@ class PoolChannelTVLabelWidget(TaurusWidget):
           and add it to the "change-channel" list and select
     """
 
-    layoutAlignment = Qt.Qt.AlignTop
-
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
         self.setLayout(Qt.QGridLayout())
@@ -68,10 +66,6 @@ class PoolChannelTVLabelWidget(TaurusWidget):
         self.lbl_alias = DefaultLabelWidget(parent, designMode)
         self.lbl_alias.setBgRole("none")
         self.layout().addWidget(self.lbl_alias)
-
-        # Align everything on top
-        self.layout().addItem(Qt.QSpacerItem(
-            1, 1, Qt.QSizePolicy.Minimum, Qt.QSizePolicy.Expanding))
 
         # I don't like this approach, there should be something like
         # self.lbl_alias.addAction(...)
@@ -156,8 +150,6 @@ class PoolChannelTVReadWidget(TaurusWidget):
     """
     """
 
-    layoutAlignment = Qt.Qt.AlignTop
-
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
 
@@ -165,14 +157,10 @@ class PoolChannelTVReadWidget(TaurusWidget):
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(0)
 
-        limits_layout = Qt.QHBoxLayout()
-        limits_layout.setContentsMargins(0, 0, 0, 0)
-        limits_layout.setSpacing(0)
-
         self.lbl_read = TaurusLabel()
         self.lbl_read.setBgRole("quality")
         self.lbl_read.setSizePolicy(Qt.QSizePolicy(
-            Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Fixed))
+            Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Preferred))
         self.layout().addWidget(self.lbl_read, 0, 0)
 
         # WITH A COMPACT VIEW, BETTER TO BE ABLE TO STOP!
@@ -186,10 +174,6 @@ class PoolChannelTVReadWidget(TaurusWidget):
 
         # WITH COMPACT VIEW, WE NEED TO FORWARD DOUBLE CLICK EVENT
         self.lbl_read.installEventFilter(self)
-
-        # Align everything on top
-        self.layout().addItem(Qt.QSpacerItem(
-            1, 1, Qt.QSizePolicy.Minimum, Qt.QSizePolicy.Expanding), 2, 0, 1, 2)
 
     def eventFilter(self, obj, event):
         if event.type() == Qt.QEvent.MouseButtonDblClick:
@@ -253,8 +237,6 @@ class _IntegrationTimeStartWidget(TaurusValueLineEdit):
 
 class PoolChannelTVWriteWidget(TaurusWidget):
 
-    layoutAlignment = Qt.Qt.AlignTop
-
     applied = Qt.pyqtSignal()
 
     def __init__(self, parent=None, designMode=False):
@@ -266,10 +248,6 @@ class PoolChannelTVWriteWidget(TaurusWidget):
 
         self.le_write_absolute = _IntegrationTimeStartWidget()
         self.layout().addWidget(self.le_write_absolute, 0, 0)
-
-        # Align everything on top
-        self.layout().addItem(Qt.QSpacerItem(
-            1, 1, Qt.QSizePolicy.Minimum, Qt.QSizePolicy.Expanding), 2, 0, 1, 3)
 
         # list of widgets used for edition
         editingWidgets = (self.le_write_absolute,)
