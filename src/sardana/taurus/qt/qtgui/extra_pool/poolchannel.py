@@ -383,18 +383,23 @@ class PoolChannel(TaurusWidget):
         self._devButton.setModel(m)
 
 
-# if __name__ == '__main__':
-#    import sys
-#    app = Qt.QApplication(sys.argv)
-#
-#    form = PoolChannel()
-#
-#    #model = 'tango://controls02:10000/expchan/bl97_simucotictrl_1/1'
-#    model = 'ct_cp1_1'
-#    if len(sys.argv)>1:
-#        model = sys.argv[1]
-#    form.setModel(model)
-#
-#
-#    form.show()
-#    sys.exit(app.exec_())
+if __name__ == '__main__':
+    import sys
+    argv = sys.argv
+    if len(argv) > 0:
+        models = argv[1:]
+    app = Qt.QApplication(sys.argv)
+
+    form_tv = TaurusForm()
+    form_tv.setModifiableByUser(True)
+    tv_widget_class = 'sardana.taurus.qt.qtgui.extra_pool.PoolChannelTV'
+    tv_class_map = {'CTExpChannel': (tv_widget_class, (), {})}
+    form_tv.setCustomWidgetMap(tv_class_map)
+    form_tv.setModel(models)
+
+    w = Qt.QWidget()
+    w.setLayout(Qt.QVBoxLayout())
+    w.layout().addWidget(form_tv)
+
+    w.show()
+    sys.exit(app.exec_())
