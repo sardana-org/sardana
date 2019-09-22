@@ -35,6 +35,9 @@ from taurus.qt.qtcore.mimetypes import (TAURUS_DEV_MIME_TYPE,
                                         TAURUS_ATTR_MIME_TYPE)
 from taurus.qt.qtgui.panel import (TaurusValue, TaurusDevButton,
                                    DefaultLabelWidget, TaurusAttrForm)
+from taurus.qt.qtgui.display import TaurusLabel
+from taurus.qt.qtgui.dialog import ProtectTaurusMessageBox
+from taurus.qt.qtgui.compact import TaurusReadWriteSwitcher
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtgui.resource import getIcon
 from .poolmotor import LabelWidgetDragsDeviceAndAttribute
@@ -90,8 +93,6 @@ class PoolChannelTVLabelWidget(TaurusWidget):
         self.lbl_alias.taurusValueBuddy = self.taurusValueBuddy
         self.lbl_alias.setModel(model)
         TaurusWidget.setModel(self, model + "/Status")
-        self.taurusValueBuddy().expertViewChanged.connect(
-            self.setExpertView)
 
     def calculateExtendedTooltip(self, cache=False):
         default_label_widget_tooltip = DefaultLabelWidget.getFormatedToolTip(
@@ -148,6 +149,85 @@ class PoolChannelTVLabelWidget(TaurusWidget):
         drag.exec_(Qt.Qt.CopyAction, Qt.Qt.CopyAction)
 
 
+class PoolChannelTVReadWidget(TaurusWidget):
+    """
+    """
+
+    layoutAlignment = Qt.Qt.AlignTop
+
+    def __init__(self, parent=None, designMode=False):
+        TaurusWidget.__init__(self, parent, designMode)
+
+        self.setLayout(Qt.QGridLayout())
+        self.layout().setContentsMargins(0, 0, 0, 0)
+        self.layout().setSpacing(0)
+
+        limits_layout = Qt.QHBoxLayout()
+        limits_layout.setContentsMargins(0, 0, 0, 0)
+        limits_layout.setSpacing(0)
+
+        self.lbl_read = TaurusLabel()
+        self.lbl_read.setBgRole("quality")
+        self.lbl_read.setSizePolicy(Qt.QSizePolicy(
+            Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Fixed))
+        self.layout().addWidget(self.lbl_read, 0, 0)
+
+        # WITH A COMPACT VIEW, BETTER TO BE ABLE TO STOP!
+        self.btn_stop = Qt.QPushButton()
+        self.btn_stop.setToolTip("Stops the channel")
+        self.prepare_button(self.btn_stop)
+        self.btn_stop.setIcon(getIcon(":/actions/media_playback_stop.svg"))
+        self.layout().addWidget(self.btn_stop, 0, 1)
+
+        self.btn_stop.clicked.connect(self.abort)
+
+        # WITH COMPACT VIEW, WE NEED TO FORWARD DOUBLE CLICK EVENT
+        self.lbl_read.installEventFilter(self)
+
+        # Align everything on top
+        self.layout().addItem(Qt.QSpacerItem(
+            1, 1, Qt.QSizePolicy.Minimum, Qt.QSizePolicy.Expanding), 2, 0, 1, 2)
+
+    def eventFilter(self, obj, event):
+        if event.type() == Qt.QEvent.MouseButtonDblClick:
+            if isinstance(self.parent(), TaurusReadWriteSwitcher):
+                self.parent().enterEdit()
+                return True
+        try:
+            if obj is self.lbl_read:
+                return self.lbl_read.eventFilter(obj, event)
+        except AttributeError:
+            # self.lbl_read may not exist now
+            pass
+        return True
+
+    @Qt.pyqtSlot()
+    @ProtectTaurusMessageBox(
+        msg="An error occurred trying to abort the acquisition.")
+    def abort(self):
+        channel_dev = self.taurusValueBuddy().channel_dev
+        if channel_dev is not None:
+            channel_dev.abort()
+
+    def prepare_button(self, btn):
+        btn_policy = Qt.QSizePolicy(Qt.QSizePolicy.Fixed,
+                                    Qt.QSizePolicy.Fixed)
+        btn_policy.setHorizontalStretch(0)
+        btn_policy.setVerticalStretch(0)
+        btn.setSizePolicy(btn_policy)
+        btn.setMinimumSize(25, 25)
+        btn.setMaximumSize(25, 25)
+        btn.setText("")
+
+    def setModel(self, model):
+        if model in (None, ""):
+            TaurusWidget.setModel(self, model)
+            self.lbl_read.setModel(model)
+            return
+        TaurusWidget.setModel(self, model + "/Value")
+        self.lbl_read.setModel(model + "/Value")
+
+
 class PoolChannelTV(TaurusValue):
     ''' A widget that displays and controls a pool channel device.
     It differs from :class:`PoolChannel` in that it behaves as a TaurusValue
@@ -157,6 +237,7 @@ class PoolChannelTV(TaurusValue):
     def __init__(self, parent=None, designMode=False):
         TaurusValue.__init__(self, parent=parent, designMode=designMode)
         self.setLabelWidgetClass(PoolChannelTVLabelWidget)
+        self.setReadWidgetClass(PoolChannelTVReadWidget)
         self.channel_dev = None
         # self.setLabelConfig('<dev_alias>')
 
