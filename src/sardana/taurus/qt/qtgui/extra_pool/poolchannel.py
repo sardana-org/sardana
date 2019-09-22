@@ -34,13 +34,16 @@ from taurus.external.qt import Qt
 from taurus.qt.qtcore.mimetypes import (TAURUS_DEV_MIME_TYPE,
                                         TAURUS_ATTR_MIME_TYPE)
 from taurus.qt.qtgui.panel import (TaurusValue, TaurusDevButton,
-                                   DefaultLabelWidget, TaurusAttrForm)
+                                   DefaultLabelWidget, TaurusAttrForm,
+                                   TaurusForm)
+from taurus.qt.qtgui.input import TaurusValueLineEdit
 from taurus.qt.qtgui.display import TaurusLabel
 from taurus.qt.qtgui.dialog import ProtectTaurusMessageBox
 from taurus.qt.qtgui.compact import TaurusReadWriteSwitcher
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtgui.resource import getIcon
-from .poolmotor import LabelWidgetDragsDeviceAndAttribute
+from sardana.taurus.qt.qtgui.extra_pool.poolmotor import \
+    LabelWidgetDragsDeviceAndAttribute
 
 
 class PoolChannelTVLabelWidget(TaurusWidget):
@@ -228,6 +231,81 @@ class PoolChannelTVReadWidget(TaurusWidget):
         self.lbl_read.setModel(model + "/Value")
 
 
+class _IntegrationTimeStartWidget(TaurusValueLineEdit):
+    """Line edit widget for starting acquisition with the integration time"""
+
+    def writeValue(self, forceApply=False):
+        """Writes the value to the attribute, either by applying pending
+        operations or (if the ForcedApply flag is True), it writes directly
+        when no operations are pending
+
+        It emits the applied signal if apply is not aborted.
+
+        :param forceApply: (bool) If True, it behaves as in forceApply mode
+                           (even if the forceApply mode is disabled by
+                           :meth:`setForceApply`)
+        """
+        TaurusValueLineEdit.writeValue(self, forceApply=forceApply)
+        channel_dev = self.getModelObj().getParentObj()
+        if channel_dev is not None:
+            channel_dev.Start()
+
+
+class PoolChannelTVWriteWidget(TaurusWidget):
+
+    layoutAlignment = Qt.Qt.AlignTop
+
+    applied = Qt.pyqtSignal()
+
+    def __init__(self, parent=None, designMode=False):
+        TaurusWidget.__init__(self, parent, designMode)
+
+        self.setLayout(Qt.QGridLayout())
+        self.layout().setContentsMargins(0, 0, 0, 0)
+        self.layout().setSpacing(0)
+
+        self.le_write_absolute = _IntegrationTimeStartWidget()
+        self.layout().addWidget(self.le_write_absolute, 0, 0)
+
+        # Align everything on top
+        self.layout().addItem(Qt.QSpacerItem(
+            1, 1, Qt.QSizePolicy.Minimum, Qt.QSizePolicy.Expanding), 2, 0, 1, 3)
+
+        # list of widgets used for edition
+        editingWidgets = (self.le_write_absolute,)
+
+        for w in editingWidgets:
+            w.installEventFilter(self)
+
+    def eventFilter(self, obj, event):
+        """reimplemented to intercept events from the subwidgets"""
+        # emit editingFinished when focus out to a non-editing widget
+        if event.type() == Qt.QEvent.FocusOut:
+            focused = Qt.qApp.focusWidget()
+            focusInChild = focused in self.findChildren(focused.__class__)
+            if not focusInChild:
+                self.emitEditingFinished()
+        return False
+
+    def setModel(self, model):
+        if model in (None, ""):
+            TaurusWidget.setModel(self, model)
+            self.le_write_absolute.setModel(model)
+            return
+        TaurusWidget.setModel(self, model + "/IntegrationTime")
+        self.le_write_absolute.setModel(model + "/IntegrationTime")
+
+    def keyPressEvent(self, key_event):
+        if key_event.key() == Qt.Qt.Key_Escape:
+            self.abort()
+            key_event.accept()
+        TaurusWidget.keyPressEvent(self, key_event)
+
+    @Qt.pyqtSlot()
+    def emitEditingFinished(self):
+        self.applied.emit()
+
+
 class PoolChannelTV(TaurusValue):
     ''' A widget that displays and controls a pool channel device.
     It differs from :class:`PoolChannel` in that it behaves as a TaurusValue
@@ -238,6 +316,7 @@ class PoolChannelTV(TaurusValue):
         TaurusValue.__init__(self, parent=parent, designMode=designMode)
         self.setLabelWidgetClass(PoolChannelTVLabelWidget)
         self.setReadWidgetClass(PoolChannelTVReadWidget)
+        self.setWriteWidgetClass(PoolChannelTVWriteWidget)
         self.channel_dev = None
         # self.setLabelConfig('<dev_alias>')
 
