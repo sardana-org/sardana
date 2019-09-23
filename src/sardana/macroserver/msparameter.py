@@ -436,9 +436,9 @@ class ParamDecoder:
                     param = param_type.getObj(str(value))
 
             except ValueError as e:
-                raise WrongParamType from e
+                raise WrongParamType(str(e)) from e
             except UnknownParamObj as e:
-                raise WrongParam from e
+                raise WrongParam(str(e)) from e
             if param is None and not optional_param:
                 msg = 'Could not create %s parameter "%s" for "%s"' % \
                       (param_type.getName(), name, raw_param)
@@ -588,9 +588,9 @@ class FlatParamDecoder:
                     try:
                         val = par_type.getObj(par_str)
                     except ValueError as e:
-                        raise WrongParamType from e
+                        raise WrongParamType(str(e)) from e
                     except UnknownParamObj as e:
-                        raise WrongParam from e
+                        raise WrongParam(str(e)) from e
                     if val is None:
                         msg = 'Could not create %s parameter "%s" for "%s"' % \
                               (par_type.getName(), name, par_str)
