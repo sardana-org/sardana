@@ -32,6 +32,6 @@ from .poolmotor import PoolMotorSlim, LabelWidgetDragsDeviceAndAttribute  # noqa
 from .poolmotor import (PoolMotorTV, PoolMotorTVLabelWidget,  # noqa
     PoolMotorTVReadWidget, PoolMotorTVWriteWidget, PoolMotorTVUnitsWidget,  # noqa
     PoolMotor)  # noqa
-from .poolchannel import PoolChannel, PoolChannelTV  # noqa
+from .poolchannel import PoolChannel, PoolChannelTV, _PoolChannelTV  # noqa
 from .poolioregister import (PoolIORegisterTV, PoolIORegisterReadWidget,  # noqa
     PoolIORegisterWriteWidget, PoolIORegister, PoolIORegisterButtons)  # noqa

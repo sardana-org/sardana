@@ -27,7 +27,7 @@
 channelWidgets.py:
 """
 
-__all__ = ["PoolChannel", "PoolChannelTV"]
+__all__ = ["PoolChannel", "PoolChannelTV", "_PoolChannelTV"]
 
 import weakref
 
@@ -375,6 +375,61 @@ class PoolChannelTV(TaurusValue):
         taurus_attr_form.setWindowTitle(
             '%s Tango Attributes' % self.getModelObj().getSimpleName())
         taurus_attr_form.show()
+
+
+class _ParentDevButton(TaurusDevButton):
+    '''A TaurusDevButton that receives an attribute name but sets
+    the corresponding device as model. **For internal use only** '''
+
+    def __init__(self, **kwargs):
+        TaurusDevButton.__init__(self, **kwargs)
+        self.setText('')
+        self.setSizePolicy(Qt.QSizePolicy.Preferred, Qt.QSizePolicy.Maximum)
+
+    def setModel(self, model):
+        try:
+            attr = taurus.Attribute(model)
+        except:
+            return
+        dev = attr.getParentObj()
+        devname = dev.getFullName()
+        TaurusDevButton.setModel(self, devname)
+
+
+class _PoolChannelTV(TaurusValue):
+    ''' A widget that displays and controls a pool channel device.
+    It differs from :class:`PoolChannel` in that it behaves as a TaurusValue
+    (i.e., it allows its subwidgets to be aligned in columns in a TaurusForm)`
+    '''
+
+    def __init__(self, parent=None, designMode=False):
+        TaurusValue.__init__(self, parent=parent, designMode=designMode)
+        self.setLabelWidgetClass(LabelWidgetDragsDeviceAndAttribute)
+        self.setLabelConfig('<dev_alias>')
+
+    def getDefaultExtraWidgetClass(self):
+        return _ParentDevButton
+
+    def setModel(self, model):
+        if model is not None:
+            # @todo: change this (it assumes tango naming!)
+            model = "%s/value" % model
+        TaurusValue.setModel(self, model)
+
+    def showEvent(self, event):
+        TaurusValue.showEvent(self, event)
+        try:
+            self.getModelObj().getParentObj().getAttribute('Value').enablePolling(force=True)
+        except:
+            pass
+
+    def hideEvent(self, event):
+        TaurusValue.hideEvent(self, event)
+        try:
+            self.getModelObj().getParentObj().getAttribute('Value').disablePolling()
+        except:
+            pass
+
 
 
 class PoolChannel(TaurusWidget):
