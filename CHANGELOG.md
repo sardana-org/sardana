@@ -7,6 +7,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 
+* Support to Python >= 3.5 (#1089, #1173, 1201)
 * Instruments creation and configuration in sar_demo (#1198)
 
 ### Fixed
@@ -22,6 +23,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Removed
 
+* Support to Python < 3.5 (#1089, #1173, 1201)
 * `sardana.requirements` (#1185)
 
 ## [2.8.3] 2019-09-16
