@@ -44,7 +44,6 @@ from taurus.qt.qtgui.panel import (TaurusValue, TaurusDevButton,
                                    TaurusImageButton, TaurusValuesTableButton,
                                    )
 from taurus.qt.qtgui.input import TaurusValueLineEdit
-from taurus.qt.qtgui.display import TaurusLabel
 from taurus.qt.qtgui.dialog import ProtectTaurusMessageBox
 from taurus.qt.qtgui.compact import TaurusReadWriteSwitcher
 from taurus.qt.qtgui.container import TaurusWidget
@@ -264,7 +263,6 @@ class PoolChannelTV(TaurusValue):
         self.setUnitsWidgetClass(PoolChannelTVUnitsWidget)
         self.setExtraWidgetClass(PoolChannelTVExtraWidget)
         self.channel_dev = None
-        # self.setLabelConfig('<dev_alias>')
 
     def getDefaultReadWidgetClass(self, returnAll=False):
         '''
@@ -336,7 +334,6 @@ class PoolChannelTV(TaurusValue):
             msg = 'Error creating read widget:\n' + str(e)
             self._readWidget.setToolTip(msg)
             self.debug(msg)
-            # self.traceback(30) #warning level=30
 
         # take care of the layout
         self.addReadWidgetToLayout()
