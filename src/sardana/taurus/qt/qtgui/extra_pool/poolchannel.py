@@ -358,20 +358,6 @@ class PoolChannelTV(TaurusValue):
         self.readWidget().setModel(model + "/Value")
         self.channel_dev = taurus.Device(model)
 
-    def showEvent(self, event):
-        TaurusValue.showEvent(self, event)
-        try:
-            self.getModelObj().getParentObj().getAttribute('Value').enablePolling(force=True)
-        except:
-            pass
-
-    def hideEvent(self, event):
-        TaurusValue.hideEvent(self, event)
-        try:
-            self.getModelObj().getParentObj().getAttribute('Value').disablePolling()
-        except:
-            pass
-
     def showTangoAttributes(self):
         model = self.getModel()
         taurus_attr_form = TaurusAttrForm()
