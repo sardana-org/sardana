@@ -308,7 +308,7 @@ class PoolChannelTV(TaurusValue):
                 try:
                     # unused import but useful to determine if
                     # TaurusImageButton should be added
-                    from taurus.qt.qtgui.extra_guiqwt import TaurusImageDialog
+                    from taurus.qt.qtgui.extra_guiqwt import TaurusImageDialog  # noqa
                     result = [TaurusImageButton,
                               TaurusValuesTableButton, DefaultReadWidgetLabel]
                 except ImportError:
