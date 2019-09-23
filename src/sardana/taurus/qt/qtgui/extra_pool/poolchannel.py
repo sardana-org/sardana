@@ -215,6 +215,33 @@ class PoolChannelTVReadWidget(TaurusWidget):
         self.lbl_read.setModel(model + "/Value")
 
 
+class PoolChannelTVExtraWidget(TaurusWidget):
+    """
+    """
+
+    def __init__(self, parent=None, designMode=False):
+        TaurusWidget.__init__(self, parent, designMode)
+
+        self.setLayout(Qt.QVBoxLayout())
+        self.layout().setContentsMargins(0, 0, 0, 0)
+        self.layout().setSpacing(0)
+
+        # WITH A COMPACT VIEW, BETTER TO BE ABLE TO STOP!
+        self.btn_stop = Qt.QPushButton()
+        self.btn_stop.setToolTip("Stops the channel")
+        self.btn_stop.setIcon(getIcon(":/actions/media_playback_stop.svg"))
+        self.layout().addWidget(self.btn_stop)
+        self.btn_stop.clicked.connect(self.abort)
+
+    @Qt.pyqtSlot()
+    @ProtectTaurusMessageBox(
+        msg="An error occurred trying to abort the acquisition.")
+    def abort(self):
+        channel_dev = self.taurusValueBuddy().channel_dev
+        if channel_dev is not None:
+            channel_dev.abort()
+
+
 class _IntegrationTimeStartWidget(TaurusValueLineEdit):
     """Line edit widget for starting acquisition with the integration time"""
 
@@ -295,6 +322,7 @@ class PoolChannelTV(TaurusValue):
         self.setLabelWidgetClass(PoolChannelTVLabelWidget)
         self.setReadWidgetClass(PoolChannelTVReadWidget)
         self.setWriteWidgetClass(PoolChannelTVWriteWidget)
+        self.setExtraWidgetClass(PoolChannelTVExtraWidget)
         self.channel_dev = None
         # self.setLabelConfig('<dev_alias>')
 
