@@ -389,7 +389,7 @@ class PoolChannel(TaurusWidget):
         self._devButton.setModel(m)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
     argv = sys.argv
     if len(argv) > 0:
@@ -398,8 +398,10 @@ if __name__ == '__main__':
 
     form_tv = TaurusForm()
     form_tv.setModifiableByUser(True)
-    tv_widget_class = 'sardana.taurus.qt.qtgui.extra_pool.PoolChannelTV'
-    tv_class_map = {'CTExpChannel': (tv_widget_class, (), {})}
+    tv_widget_class = "sardana.taurus.qt.qtgui.extra_pool.PoolChannelTV"
+    tv_class_map = {"CTExpChannel": (tv_widget_class, (), {}),
+                    "OneDExpChannel": (tv_widget_class, (), {}),
+                    "TwoDExpChannel": (tv_widget_class, (), {})}
     form_tv.setCustomWidgetMap(tv_class_map)
     form_tv.setModel(models)
 
