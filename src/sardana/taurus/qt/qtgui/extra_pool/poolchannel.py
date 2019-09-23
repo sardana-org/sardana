@@ -251,10 +251,16 @@ class PoolChannelTVUnitsWidget(DefaultUnitsWidget):
 
 
 class PoolChannelTV(TaurusValue):
-    ''' A widget that displays and controls a pool channel device.
+    """A widget that displays and controls a pool channel device.
     It differs from :class:`PoolChannel` in that it behaves as a TaurusValue
     (i.e., it allows its subwidgets to be aligned in columns in a TaurusForm)`
-    '''
+
+    .. todo:: Ideally overriding of `getDefaultReadWidgetClass` and
+      `updateReadWidget` should not be necessary. Creation of a dedicated wiget
+      for displaying value should be delegated to a custom read widget.
+    .. todo:: draw state-based coloured frame around spectrum and image
+       buttons, when state is MOVING - blue, when ON - green, etc.
+    """
 
     def __init__(self, parent=None, designMode=False):
         TaurusValue.__init__(self, parent=parent, designMode=designMode)
@@ -265,19 +271,22 @@ class PoolChannelTV(TaurusValue):
         self.channel_dev = None
 
     def getDefaultReadWidgetClass(self, returnAll=False):
-        '''
+        """
         Returns the default class (or classes) to use as read widget for the
         current model.
+
+        Override TaurusValue.getDefaultReadWidgetClass. Simply do the same
+        but based on the Value attribute while our model obj is a device.
 
         :param returnAll: (bool) if True, the return value is a list of valid
                           classes instead of just one class
 
         :return: (class or list<class>) the default class  to use for the read
-                 widget (or, if returnAll==True, a list of classes that can show
-                 the attribute ). If a list is returned, it will be loosely
-                 ordered by preference, being the first element always the
-                 default one.
-        '''
+                 widget (or, if returnAll==True, a list of classes that can
+                 show the attribute ). If a list is returned, it will be
+                 loosely ordered by preference, being the first element
+                 always the default one.
+        """
         modelobj = self.getModelObj()
         if modelobj is None:
             if returnAll:
@@ -319,7 +328,7 @@ class PoolChannelTV(TaurusValue):
     def updateReadWidget(self):
         """Update read widget by recreating it from scratch.
 
-        Overrides TaurusValue.updateReadWidget. Simply do the same, just
+        Override TaurusValue.updateReadWidget. Simply do the same, just
         don't call setModel on the read widget at the end. Model of the read
         widget is set by our setModel when the read widget is already
         recreated.
