@@ -251,6 +251,18 @@ class PoolChannelTVWriteWidget(TaurusWidget):
         self.applied.emit()
 
 
+class PoolChannelTVUnitsWidget(DefaultUnitsWidget):
+
+    def __init__(self, parent=None, designMode=False):
+        DefaultUnitsWidget.__init__(self, parent, designMode)
+
+    def setModel(self, model):
+        if model in (None, ""):
+            DefaultUnitsWidget.setModel(self, model)
+            return
+        DefaultUnitsWidget.setModel(self, model + "/Value")
+
+
 class PoolChannelTV(TaurusValue):
     ''' A widget that displays and controls a pool channel device.
     It differs from :class:`PoolChannel` in that it behaves as a TaurusValue
@@ -261,6 +273,7 @@ class PoolChannelTV(TaurusValue):
         TaurusValue.__init__(self, parent=parent, designMode=designMode)
         self.setLabelWidgetClass(PoolChannelTVLabelWidget)
         self.setWriteWidgetClass(PoolChannelTVWriteWidget)
+        self.setUnitsWidgetClass(PoolChannelTVUnitsWidget)
         self.setExtraWidgetClass(PoolChannelTVExtraWidget)
         self.channel_dev = None
         # self.setLabelConfig('<dev_alias>')
