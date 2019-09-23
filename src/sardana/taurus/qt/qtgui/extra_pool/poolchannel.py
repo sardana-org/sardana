@@ -29,13 +29,19 @@ channelWidgets.py:
 
 __all__ = ["PoolChannel", "PoolChannelTV"]
 
+import weakref
+
 import taurus
+from taurus.core import DataType, DataFormat
 from taurus.external.qt import Qt
 from taurus.qt.qtcore.mimetypes import (TAURUS_DEV_MIME_TYPE,
                                         TAURUS_ATTR_MIME_TYPE)
 from taurus.qt.qtgui.panel import (TaurusValue, TaurusDevButton,
-                                   DefaultLabelWidget, TaurusAttrForm,
-                                   TaurusForm)
+                                   DefaultLabelWidget, DefaultUnitsWidget,
+                                   TaurusAttrForm, TaurusForm,
+                                   DefaultReadWidgetLabel, TaurusPlotButton,
+                                   TaurusImageButton, TaurusValuesTableButton,
+                                   )
 from taurus.qt.qtgui.input import TaurusValueLineEdit
 from taurus.qt.qtgui.display import TaurusLabel
 from taurus.qt.qtgui.dialog import ProtectTaurusMessageBox
@@ -146,82 +152,12 @@ class PoolChannelTVLabelWidget(TaurusWidget):
         drag.exec_(Qt.Qt.CopyAction, Qt.Qt.CopyAction)
 
 
-class PoolChannelTVReadWidget(TaurusWidget):
-    """
-    """
-
-    def __init__(self, parent=None, designMode=False):
-        TaurusWidget.__init__(self, parent, designMode)
-
-        self.setLayout(Qt.QGridLayout())
-        self.layout().setContentsMargins(0, 0, 0, 0)
-        self.layout().setSpacing(0)
-
-        self.lbl_read = TaurusLabel()
-        self.lbl_read.setBgRole("quality")
-        self.lbl_read.setSizePolicy(Qt.QSizePolicy(
-            Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Preferred))
-        self.layout().addWidget(self.lbl_read, 0, 0)
-
-        # WITH A COMPACT VIEW, BETTER TO BE ABLE TO STOP!
-        self.btn_stop = Qt.QPushButton()
-        self.btn_stop.setToolTip("Stops the channel")
-        self.prepare_button(self.btn_stop)
-        self.btn_stop.setIcon(getIcon(":/actions/media_playback_stop.svg"))
-        self.layout().addWidget(self.btn_stop, 0, 1)
-
-        self.btn_stop.clicked.connect(self.abort)
-
-        # WITH COMPACT VIEW, WE NEED TO FORWARD DOUBLE CLICK EVENT
-        self.lbl_read.installEventFilter(self)
-
-    def eventFilter(self, obj, event):
-        if event.type() == Qt.QEvent.MouseButtonDblClick:
-            if isinstance(self.parent(), TaurusReadWriteSwitcher):
-                self.parent().enterEdit()
-                return True
-        try:
-            if obj is self.lbl_read:
-                return self.lbl_read.eventFilter(obj, event)
-        except AttributeError:
-            # self.lbl_read may not exist now
-            pass
-        return True
-
-    @Qt.pyqtSlot()
-    @ProtectTaurusMessageBox(
-        msg="An error occurred trying to abort the acquisition.")
-    def abort(self):
-        channel_dev = self.taurusValueBuddy().channel_dev
-        if channel_dev is not None:
-            channel_dev.abort()
-
-    def prepare_button(self, btn):
-        btn_policy = Qt.QSizePolicy(Qt.QSizePolicy.Fixed,
-                                    Qt.QSizePolicy.Fixed)
-        btn_policy.setHorizontalStretch(0)
-        btn_policy.setVerticalStretch(0)
-        btn.setSizePolicy(btn_policy)
-        btn.setMinimumSize(25, 25)
-        btn.setMaximumSize(25, 25)
-        btn.setText("")
-
-    def setModel(self, model):
-        if model in (None, ""):
-            TaurusWidget.setModel(self, model)
-            self.lbl_read.setModel(model)
-            return
-        TaurusWidget.setModel(self, model + "/Value")
-        self.lbl_read.setModel(model + "/Value")
-
-
 class PoolChannelTVExtraWidget(TaurusWidget):
     """
     """
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
-
         self.setLayout(Qt.QVBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(0)
@@ -230,6 +166,10 @@ class PoolChannelTVExtraWidget(TaurusWidget):
         self.btn_stop = Qt.QPushButton()
         self.btn_stop.setToolTip("Stops the channel")
         self.btn_stop.setIcon(getIcon(":/actions/media_playback_stop.svg"))
+        btn_policy = Qt.QSizePolicy(Qt.QSizePolicy.Fixed,
+                                    Qt.QSizePolicy.Preferred)
+        btn_policy.setHorizontalStretch(0)
+        self.btn_stop.setSizePolicy(btn_policy)
         self.layout().addWidget(self.btn_stop)
         self.btn_stop.clicked.connect(self.abort)
 
@@ -320,16 +260,104 @@ class PoolChannelTV(TaurusValue):
     def __init__(self, parent=None, designMode=False):
         TaurusValue.__init__(self, parent=parent, designMode=designMode)
         self.setLabelWidgetClass(PoolChannelTVLabelWidget)
-        self.setReadWidgetClass(PoolChannelTVReadWidget)
         self.setWriteWidgetClass(PoolChannelTVWriteWidget)
         self.setExtraWidgetClass(PoolChannelTVExtraWidget)
         self.channel_dev = None
         # self.setLabelConfig('<dev_alias>')
 
+    def getDefaultReadWidgetClass(self, returnAll=False):
+        '''
+        Returns the default class (or classes) to use as read widget for the
+        current model.
+
+        :param returnAll: (bool) if True, the return value is a list of valid
+                          classes instead of just one class
+
+        :return: (class or list<class>) the default class  to use for the read
+                 widget (or, if returnAll==True, a list of classes that can show
+                 the attribute ). If a list is returned, it will be loosely
+                 ordered by preference, being the first element always the
+                 default one.
+        '''
+        modelobj = self.getModelObj()
+        if modelobj is None:
+            if returnAll:
+                return [DefaultReadWidgetLabel]
+            else:
+                return DefaultReadWidgetLabel
+
+        valueobj = modelobj.getAttribute("Value")
+        if valueobj.data_format == DataFormat._0D:
+            result = [DefaultReadWidgetLabel]
+        elif valueobj.data_format == DataFormat._1D:
+            if valueobj.type in (DataType.Float, DataType.Integer):
+                result = [TaurusPlotButton,
+                          TaurusValuesTableButton, DefaultReadWidgetLabel]
+            else:
+                result = [TaurusValuesTableButton, DefaultReadWidgetLabel]
+        elif valueobj.data_format == DataFormat._2D:
+            if valueobj.type in (DataType.Float, DataType.Integer):
+                try:
+                    # unused import but useful to determine if
+                    # TaurusImageButton should be added
+                    from taurus.qt.qtgui.extra_guiqwt import TaurusImageDialog
+                    result = [TaurusImageButton,
+                              TaurusValuesTableButton, DefaultReadWidgetLabel]
+                except ImportError:
+                    result = [TaurusValuesTableButton,
+                              DefaultReadWidgetLabel]
+            else:
+                result = [TaurusValuesTableButton, DefaultReadWidgetLabel]
+        else:
+            self.warning('Unsupported attribute type %s' % valueobj.type)
+            result = None
+
+        if returnAll:
+            return result
+        else:
+            return result[0]
+
+    def updateReadWidget(self):
+        """Update read widget by recreating it from scratch.
+
+        Overrides TaurusValue.updateReadWidget. Simply do the same, just
+        don't call setModel on the read widget at the end. Model of the read
+        widget is set by our setModel when the read widget is already
+        recreated.
+        """
+        # get the class for the widget and replace it if necessary
+        try:
+            klass = self.readWidgetClassFactory(self.readWidgetClassID)
+            self._readWidget = self._newSubwidget(self._readWidget, klass)
+        except Exception as e:
+            self._destroyWidget(self._readWidget)
+            self._readWidget = Qt.QLabel('[Error]')
+            msg = 'Error creating read widget:\n' + str(e)
+            self._readWidget.setToolTip(msg)
+            self.debug(msg)
+            # self.traceback(30) #warning level=30
+
+        # take care of the layout
+        self.addReadWidgetToLayout()
+
+        if self._readWidget is not None:
+            # give the new widget a reference to its buddy TaurusValue object
+            self._readWidget.taurusValueBuddy = weakref.ref(self)
+            if isinstance(self._readWidget, TaurusReadWriteSwitcher):
+                self._readWidget.readWidget.taurusValueBuddy = weakref.ref(
+                    self)
+                self._readWidget.writeWidget.taurusValueBuddy = weakref.ref(
+                    self)
+
+            # tweak the new widget
+            if self.minimumHeight() is not None:
+                self._readWidget.setMinimumHeight(self.minimumHeight())
+
     def setModel(self, model):
         TaurusValue.setModel(self, model)
         if model == "" or model is None:
             return
+        self.readWidget().setModel(model + "/Value")
         self.channel_dev = taurus.Device(model)
 
     def showEvent(self, event):
