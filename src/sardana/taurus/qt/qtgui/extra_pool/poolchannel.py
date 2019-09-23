@@ -31,6 +31,7 @@ __all__ = ["PoolChannel", "PoolChannelTV"]
 
 import weakref
 
+import tango
 import taurus
 from taurus.core import DataType, DataFormat
 from taurus.external.qt import Qt
@@ -49,7 +50,7 @@ from taurus.qt.qtgui.compact import TaurusReadWriteSwitcher
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtgui.resource import getIcon
 from sardana.taurus.qt.qtgui.extra_pool.poolmotor import \
-    LabelWidgetDragsDeviceAndAttribute
+    LabelWidgetDragsDeviceAndAttribute, TaurusAttributeListener
 
 
 class PoolChannelTVLabelWidget(TaurusWidget):
@@ -152,26 +153,82 @@ class PoolChannelTVLabelWidget(TaurusWidget):
         drag.exec_(Qt.Qt.CopyAction, Qt.Qt.CopyAction)
 
 
+class _IntegTimeTaurusValueLineEdit(TaurusValueLineEdit):
+
+    def sizeHint(self):
+        size = Qt.QSize()
+        size.setWidth(55)
+        return size
+
+
 class PoolChannelTVExtraWidget(TaurusWidget):
     """
     """
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
-        self.setLayout(Qt.QVBoxLayout())
+        self.setLayout(Qt.QHBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(0)
 
-        # WITH A COMPACT VIEW, BETTER TO BE ABLE TO STOP!
-        self.btn_stop = Qt.QPushButton()
-        self.btn_stop.setToolTip("Stops the channel")
-        self.btn_stop.setIcon(getIcon(":/actions/media_playback_stop.svg"))
+        self.le_integ_time = _IntegTimeTaurusValueLineEdit()
+        le_policy = Qt.QSizePolicy(Qt.QSizePolicy.Preferred,
+                                   Qt.QSizePolicy.Preferred)
+        self.le_integ_time.setSizePolicy(le_policy)
+        self.layout().addWidget(self.le_integ_time)
+
+        # TODO: state listener should be part of *ExpChannel device Taurus
+        #       Qt extension, it is necessary to change button's action,
+        #       icon, etc.
+        self.state_listener = TaurusAttributeListener()
+        self.state_listener.eventReceivedSignal.connect(self.updateState)
+        self.btn_start_stop_clicked_slot = None
+        self.btn_start_stop = Qt.QPushButton()
         btn_policy = Qt.QSizePolicy(Qt.QSizePolicy.Fixed,
                                     Qt.QSizePolicy.Preferred)
         btn_policy.setHorizontalStretch(0)
-        self.btn_stop.setSizePolicy(btn_policy)
-        self.layout().addWidget(self.btn_stop)
-        self.btn_stop.clicked.connect(self.abort)
+        self.btn_start_stop.setSizePolicy(btn_policy)
+        self.layout().addWidget(self.btn_start_stop)
+
+    def updateState(self, state):
+        btn_start_stop = self.btn_start_stop
+        if self.btn_start_stop_clicked_slot is not None:
+            btn_start_stop.clicked.disconnect(
+                self.btn_start_stop_clicked_slot)
+        if state == tango.DevState.MOVING:
+            btn_start_stop.setToolTip("Stop the channel")
+            btn_start_stop.setIcon(
+                getIcon(":/actions/media_playback_stop.svg"))
+            self.btn_start_stop_clicked_slot = self.abort
+        else:
+            btn_start_stop.setToolTip("Start the channel")
+            btn_start_stop.setIcon(
+                getIcon(":/actions/media_playback_start.svg"))
+            self.btn_start_stop_clicked_slot = self.start
+        btn_start_stop.clicked.connect(self.btn_start_stop_clicked_slot)
+
+    def setModel(self, model):
+        # first disconnect old model state listener
+        model_obj = self.getModelObj()
+        if model_obj is not None:
+            model_obj.getAttribute("State").removeListener(
+                self.state_listener)
+        TaurusWidget.setModel(self, model)
+        if model in (None, ""):
+            self.le_integ_time.setModel(model)
+            return
+        self.le_integ_time.setModel(model + "/IntegrationTime")
+        # connect new model state listener
+        self.getModelObj().getAttribute("State").addListener(
+            self.state_listener)
+
+    @Qt.pyqtSlot()
+    @ProtectTaurusMessageBox(
+        msg="An error occurred trying to start the acquisition.")
+    def start(self):
+        channel_dev = self.taurusValueBuddy().channel_dev
+        if channel_dev is not None:
+            channel_dev.Start()
 
     @Qt.pyqtSlot()
     @ProtectTaurusMessageBox(
@@ -180,75 +237,6 @@ class PoolChannelTVExtraWidget(TaurusWidget):
         channel_dev = self.taurusValueBuddy().channel_dev
         if channel_dev is not None:
             channel_dev.abort()
-
-
-class _IntegrationTimeStartWidget(TaurusValueLineEdit):
-    """Line edit widget for starting acquisition with the integration time"""
-
-    def writeValue(self, forceApply=False):
-        """Writes the value to the attribute, either by applying pending
-        operations or (if the ForcedApply flag is True), it writes directly
-        when no operations are pending
-
-        It emits the applied signal if apply is not aborted.
-
-        :param forceApply: (bool) If True, it behaves as in forceApply mode
-                           (even if the forceApply mode is disabled by
-                           :meth:`setForceApply`)
-        """
-        TaurusValueLineEdit.writeValue(self, forceApply=forceApply)
-        channel_dev = self.getModelObj().getParentObj()
-        if channel_dev is not None:
-            channel_dev.Start()
-
-
-class PoolChannelTVWriteWidget(TaurusWidget):
-
-    applied = Qt.pyqtSignal()
-
-    def __init__(self, parent=None, designMode=False):
-        TaurusWidget.__init__(self, parent, designMode)
-
-        self.setLayout(Qt.QGridLayout())
-        self.layout().setContentsMargins(0, 0, 0, 0)
-        self.layout().setSpacing(0)
-
-        self.le_write_absolute = _IntegrationTimeStartWidget()
-        self.layout().addWidget(self.le_write_absolute, 0, 0)
-
-        # list of widgets used for edition
-        editingWidgets = (self.le_write_absolute,)
-
-        for w in editingWidgets:
-            w.installEventFilter(self)
-
-    def eventFilter(self, obj, event):
-        """reimplemented to intercept events from the subwidgets"""
-        # emit editingFinished when focus out to a non-editing widget
-        if event.type() == Qt.QEvent.FocusOut:
-            focused = Qt.qApp.focusWidget()
-            focusInChild = focused in self.findChildren(focused.__class__)
-            if not focusInChild:
-                self.emitEditingFinished()
-        return False
-
-    def setModel(self, model):
-        if model in (None, ""):
-            TaurusWidget.setModel(self, model)
-            self.le_write_absolute.setModel(model)
-            return
-        TaurusWidget.setModel(self, model + "/IntegrationTime")
-        self.le_write_absolute.setModel(model + "/IntegrationTime")
-
-    def keyPressEvent(self, key_event):
-        if key_event.key() == Qt.Qt.Key_Escape:
-            self.abort()
-            key_event.accept()
-        TaurusWidget.keyPressEvent(self, key_event)
-
-    @Qt.pyqtSlot()
-    def emitEditingFinished(self):
-        self.applied.emit()
 
 
 class PoolChannelTVUnitsWidget(DefaultUnitsWidget):
@@ -272,7 +260,7 @@ class PoolChannelTV(TaurusValue):
     def __init__(self, parent=None, designMode=False):
         TaurusValue.__init__(self, parent=parent, designMode=designMode)
         self.setLabelWidgetClass(PoolChannelTVLabelWidget)
-        self.setWriteWidgetClass(PoolChannelTVWriteWidget)
+        self.setWriteWidgetClass(None)
         self.setUnitsWidgetClass(PoolChannelTVUnitsWidget)
         self.setExtraWidgetClass(PoolChannelTVExtraWidget)
         self.channel_dev = None
