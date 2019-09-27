@@ -8,6 +8,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Added
 
 * Support to Python >= 3.5 (#1089, #1173, 1201)
+* Pre-scan snapshot macros: `lssnap`, `defsnap` and `udefsnap` (#1199)
 * Instruments creation and configuration in sar_demo (#1198)
 
 ### Fixed
