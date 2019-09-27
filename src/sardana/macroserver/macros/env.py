@@ -456,8 +456,8 @@ class lssnap(Macro):
             self.print("{} ({})".format(label, full_name))
 
 
-class addsnap(Macro):
-    """Add item(s) to snapshot group. Accepts:
+class defsnap(Macro):
+    """Define snapshot group item(s). Accepts:
     - Pool moveables: motor, pseudo motor
     - Pool experimental channels: counter/timer, 0D, 1D, 2D, pseudo counter
     - Taurus attributes
