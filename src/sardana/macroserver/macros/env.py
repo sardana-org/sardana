@@ -451,7 +451,11 @@ class lssnap(Macro):
     """
 
     def run(self):
-        snapshot_items = self.getEnv("PreScanSnapshot")
+        try:
+            snapshot_items = self.getEnv("PreScanSnapshot")
+        except UnknownEnv:
+            self.output("No pre-scan snapshot")
+            return
         for full_name, label in snapshot_items:
             self.print("{} ({})".format(label, full_name))
 
@@ -484,8 +488,10 @@ class defsnap(Macro):
                 return item.fullname, item.label
             else:
                 return item.full_name, item.name
-
-        snap_items = self.getEnv("PreScanSnapshot")
+        try:
+            snap_items = self.getEnv("PreScanSnapshot")
+        except UnknownEnv:
+            snap_items = []
         snap_full_names = [item[0] for item in snap_items]
         new_snap_items = []
         for name in snap_names:
