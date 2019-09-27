@@ -34,7 +34,6 @@ from taurus.core.taurusdevice import TaurusDevice
 from taurus.external.qt import Qt
 from taurus.qt.qtcore.model import TaurusBaseTreeItem, TaurusBaseModel
 from taurus.qt.qtgui.model import EditorToolBar
-from taurus.qt.qtgui.resource import getIcon, getThemeIcon
 from taurus.qt.qtgui.table import TaurusBaseTableWidget
 from taurus.qt.qtgui.panel import TaurusModelChooser
 from taurus.core.taurusbasetypes import TaurusElementType
@@ -202,27 +201,27 @@ def createChannelDict(channel, index=None, **kwargs):
 
 def getElementTypeIcon(t):
     if t == ChannelView.Channel:
-        return getIcon(":/actions/system-shutdown.svg")
+        return Qt.QIcon("actions:system-shutdown.svg")
     elif t == ChannelView.Enabled:
-        return getIcon(":/status/true.svg")
+        return Qt.QIcon("status:true.svg")
     elif t == ChannelView.Output:
-        return getThemeIcon("utilities-terminal")
+        return Qt.QIcon.fromTheme("utilities-terminal")
     elif t == ChannelView.PlotType:
-        return getIcon(":/apps/utilities-system-monitor.svg")
+        return Qt.QIcon("apps:utilities-system-monitor.svg")
     elif t == ChannelView.PlotAxes:
-        return getIcon(":/apps/utilities-system-monitor.svg")
+        return Qt.QIcon("apps:utilities-system-monitor.svg")
     elif t == ChannelView.Timer:
-        return getIcon(":/status/flag-green-clock.svg")
+        return Qt.QIcon("status:flag-green-clock.svg")
     elif t == ChannelView.Monitor:
-        return getIcon(":/status/flag-green.svg")
+        return Qt.QIcon("status:flag-green.svg")
     elif t == ChannelView.Synchronization:
-        return getIcon(":/actions/system-shutdown.svg")
+        return Qt.QIcon("actions:system-shutdown.svg")
     elif t == ChannelView.NXPath:
-        return getThemeIcon("document-save-as")
+        return Qt.QIcon.fromTheme("document-save-as")
     elif t == ChannelView.Synchronizer:
-        return getIcon(":/actions/system-shutdown.svg")
+        return Qt.QIcon("actions:system-shutdown.svg")
 
-    return getIcon(":/tango.png")
+    return Qt.QIcon(":tango.png")
 
 
 def getElementTypeSize(t):
@@ -387,7 +386,7 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
     def icon(self, index):
         taurus_role = index.model().role(index.column())
         if taurus_role == ChannelView.Channel:
-            return getIcon(":/actions/system-shutdown.svg")
+            return Qt.QIcon("actions:system-shutdown.svg")
 
 
 class MntGrpUnitItem(TaurusBaseTreeItem):
@@ -974,7 +973,7 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
     KnownPerspectives = {
         "Channel": {
             "label": "Channels",
-            "icon": ":/actions/system-shutdown.svg",
+            "icon": "actions:system-shutdown.svg",
             "tooltip": "View by channel",
             "model": [BaseMntGrpChannelModel, ],
         },

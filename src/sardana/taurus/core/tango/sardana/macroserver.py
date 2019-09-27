@@ -48,11 +48,13 @@ from taurus.core.taurusmanager import TaurusManager
 from taurus.core.taurusbasetypes import TaurusEventType, TaurusSWDevState, \
     TaurusSerializationMode
 
+from taurus.core import TaurusDevState
 from taurus.core.util.log import Logger
 from taurus.core.util.containers import CaselessDict
 from taurus.core.util.codecs import CodecFactory
 from taurus.core.util.event import EventGenerator, AttributeEventWait
 from taurus.core.tango import TangoDevice
+
 
 from sardana.sardanautils import recur_map
 from .macro import MacroInfo, Macro, MacroNode, ParamFactory, \
@@ -96,7 +98,7 @@ class Attr(Logger, EventGenerator):
             self.fireEvent(None)
         elif type != TaurusEventType.Config:
             if evt_value:
-                self.fireEvent(evt_value.value)
+                self.fireEvent(evt_value.rvalue)
             else:
                 self.fireEvent(None)
 
@@ -122,14 +124,14 @@ class LogAttr(Attr):
 
     def eventReceived(self, src, type, evt_value):
         if type == TaurusEventType.Change:
-            if evt_value is None or evt_value.value is None:
+            if evt_value is None or evt_value.rvalue is None:
                 self.fireEvent(None)
             else:
-                self._log_buffer.extend(evt_value.value)
+                self._log_buffer.extend(evt_value.rvalue)
                 while len(self._log_buffer) > self._max_buff_size:
                     self._log_buffer.pop(0)
                 if evt_value:
-                    self.fireEvent(evt_value.value)
+                    self.fireEvent(evt_value.rvalue)
 
 
 class BaseInputHandler(object):
@@ -340,14 +342,9 @@ class BaseDoor(MacroServerDevice):
         self.call__init__(MacroServerDevice, name, **kw)
 
         self._old_door_state = PyTango.DevState.UNKNOWN
-        try:
-            self._old_sw_door_state = TaurusSWDevState.Uninitialized
-        except RuntimeError:
-            # TODO: For Taurus 4 compatibility
-            from taurus.core import TaurusDevState
-            self._old_sw_door_state = TaurusDevState.Undefined
+        self._old_sw_door_state = TaurusDevState.Undefined
 
-        self.getStateObj().addListener(self.stateChanged)
+        self.stateObj.addListener(self.stateChanged)
 
         for log_name in self.log_streams:
             tg_attr = self.getAttribute(log_name)
@@ -600,14 +597,11 @@ class BaseDoor(MacroServerDevice):
         # In this case provide the same behavior as Taurus3 - assign None to
         # the old state
         try:
-            self._old_door_state = self.getState()
+            self._old_door_state = self.stateObj.rvalue
         except PyTango.DevFailed:
             self._old_door_state = None
-        try:
-            self._old_sw_door_state = self.getSWState()
-        except:
-            # TODO: For Taurus 4 compatibility
-            self._old_sw_door_state = self.state
+
+        self._old_sw_door_state = self.state
 
     def resultReceived(self, log_name, result):
         """Method invoked by the arrival of a change event on the Result
@@ -847,7 +841,7 @@ class BaseMacroServer(MacroServerDevice):
         if evt_type not in CHANGE_EVT_TYPES:
             return ret
 
-        env = CodecFactory().decode(evt_value.value)
+        env = CodecFactory().decode(evt_value.rvalue)
 
         for key, value in list(env.get('new', {}).items()):
             self._addEnvironment(key, value)
@@ -925,10 +919,10 @@ class BaseMacroServer(MacroServerDevice):
         if evt_type not in CHANGE_EVT_TYPES:
             return ret
         try:
-            elems = CodecFactory().decode(evt_value.value)
+            elems = CodecFactory().decode(evt_value.rvalue)
         except:
             self.error("Could not decode element info format=%s len=%s",
-                       evt_value.value[0], len(evt_value.value[1]))
+                       evt_value.rvalue[0], len(evt_value.rvalue[1]))
             return ret
 
         for element_data in elems.get('new', ()):
