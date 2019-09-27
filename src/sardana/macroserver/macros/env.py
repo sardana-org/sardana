@@ -513,3 +513,52 @@ class defsnap(Macro):
                 raise ValueError(msg)
             new_snap_items.append((new_full_name, new_label))
         self.setEnv("PreScanSnapshot", snap_items + new_snap_items)
+
+
+class udefsnap(Macro):
+    """Undefine snapshot group item(s). Without arguments undefine all.
+
+    .. note::
+        The `udefsnap` macro has been included in Sardana
+        on a provisional basis. Backwards incompatible changes
+        (up to and including its removal) may occur if
+        deemed necessary by the core developers.
+    """
+
+    param_def = [
+        ["snap_names", [[
+            "name", Type.String, None, "Name of an item to be removed "
+                                       "from the pre-scan snapshot group",
+            ], {"min": 0}],
+         None,
+         "Items to be remove from the pre-scan snapshot group"],
+    ]
+
+    def run(self, snap_names):
+        if len(snap_names) == 0:
+            self.unsetEnv("PreScanSnapshot")
+            return
+        try:
+            snap_items = self.getEnv("PreScanSnapshot")
+        except UnknownEnv:
+            raise RuntimeError("no pre-scan snapshot defined")
+        snap_full_names = {}
+        for i, item in enumerate(snap_items):
+            snap_full_names[item[0]] = i
+        for name in snap_names:
+            obj = self.getObj(name)
+            if obj is None:
+                try:
+                    obj = taurus.Attribute(name)
+                except taurus.TaurusException:
+                    raise ValueError("item is neither Pool element not "
+                                     "Taurus attribute")
+            elif obj.type == "MotorGroup":
+                raise ValueError("MotorGroup item type is not accepted")
+            rm_full_name = obj.fullname
+            if rm_full_name not in snap_full_names.keys():
+                msg = "{} not in pre-scan snapshot".format(name)
+                raise ValueError(msg)
+            i = snap_full_names[rm_full_name]
+            snap_items.pop(i)
+        self.setEnv("PreScanSnapshot", snap_items)
