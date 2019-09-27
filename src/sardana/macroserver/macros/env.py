@@ -456,8 +456,11 @@ class lssnap(Macro):
         except UnknownEnv:
             self.output("No pre-scan snapshot")
             return
+        out = List(['Snap item', 'Snap item full name'])
         for full_name, label in snapshot_items:
-            self.print("{} ({})".format(label, full_name))
+            out.appendRow([label, full_name])
+        for line in out.genOutput():
+            self.output(line)
 
 
 class defsnap(Macro):
