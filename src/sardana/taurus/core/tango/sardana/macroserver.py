@@ -651,9 +651,9 @@ class BaseDoor(MacroServerDevice):
         return self._processRecordData(v)
 
     def _processRecordData(self, data):
-        if data is None or data.value is None:
+        if data is None or data.rvalue is None:
             return
-        data = data.value
+        data = data.rvalue
 
         size = len(data[1])
         if size == 0:

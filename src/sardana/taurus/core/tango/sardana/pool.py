@@ -2279,10 +2279,10 @@ class Pool(TangoDevice, MoveableSource):
         elif evt_type not in CHANGE_EVT_TYPES:
             return
         try:
-            elems = CodecFactory().decode(evt_value.value)
+            elems = CodecFactory().decode(evt_value.rvalue)
         except:
             self.error("Could not decode element info")
-            self.info("value: '%s'", evt_value.value)
+            self.info("value: '%s'", evt_value.rvalue)
             self.debug("Details:", exc_info=1)
             return
         elements = self.getElementsInfo()
