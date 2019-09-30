@@ -35,12 +35,8 @@ __docformat__ = 'restructuredtext'
 import threading
 import weakref
 
-try:
-    from taurus.core.taurusvalidator import AttributeNameValidator as\
-        TangoAttributeNameValidator
-except ImportError:
-    # TODO: For Taurus 4 compatibility
-    from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
+
+from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 
 from sardana import State, ElementType, TYPE_EXP_CHANNEL_ELEMENTS
 from sardana.sardanaevent import EventType

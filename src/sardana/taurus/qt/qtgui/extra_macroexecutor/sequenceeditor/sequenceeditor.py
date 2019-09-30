@@ -513,11 +513,7 @@ class TaurusSequencerWidget(TaurusWidget):
         about the macro status does not reach the sequencer widget."""
 
         door = Device(self.doorName())
-        try:
-            doorState = door.state()
-        except TypeError:
-            # TODO: For Taurus 4 adaptation
-            doorState = door.getState()
+        doorState = door.getState()
         if doorState == PyTango.DevState.RUNNING:
             self.playSequenceAction.setEnabled(False)
             self.pauseSequenceAction.setEnabled(True)
@@ -679,11 +675,7 @@ class TaurusSequencerWidget(TaurusWidget):
 
     def onPlaySequence(self):
         door = Device(self.doorName())
-        try:
-            doorState = door.state()
-        except TypeError:
-            # TODO: For Taurus 4 adaptation
-            doorState = door.getState()
+        doorState = door.getState()
         if (doorState == PyTango.DevState.ON or
                 doorState == PyTango.DevState.ALARM):
             first, last, ids = self.tree.prepareMacroIds()
@@ -704,11 +696,7 @@ class TaurusSequencerWidget(TaurusWidget):
 
     def onStopSequence(self):
         door = Device(self.doorName())
-        try:
-            doorState = door.state()
-        except TypeError:
-            # TODO: For Taurus 4 adaptation
-            doorState = door.getState()
+        doorState = door.getState()
         if doorState in (PyTango.DevState.RUNNING, PyTango.DevState.STANDBY):
             door.command_inout("StopMacro")
         else:
@@ -721,11 +709,7 @@ class TaurusSequencerWidget(TaurusWidget):
 
     def onPauseSequence(self):
         door = Device(self.doorName())
-        try:
-            doorState = door.state()
-        except TypeError:
-            # TODO: For Taurus 4 adaptation
-            doorState = door.getState()
+        doorState = door.getState()
         if doorState == PyTango.DevState.RUNNING:
             door.command_inout("PauseMacro")
         else:

@@ -53,12 +53,9 @@ else:
     from sardana.taurus.core.tango.sardana.macroserver import BaseDoor, BaseMacroServer
     BaseGUIViewer = object
 
-try:
-    RUNNING_STATE = TaurusSWDevState.Running
-except RuntimeError:
-    # TODO: For Taurus 4 compatibility
-    from taurus.core import TaurusDevState
-    RUNNING_STATE = TaurusDevState.Ready
+
+from taurus.core import TaurusDevState
+RUNNING_STATE = TaurusDevState.Ready
 
 
 class GUIViewer(BaseGUIViewer):

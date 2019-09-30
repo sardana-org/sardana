@@ -2482,11 +2482,7 @@ class CTScan(CScan, CAcquisition):
                 timeout = 15
                 measurement_group.waitFinish(timeout=timeout, id=mg_id)
             finally:
-                # TODO: For Taurus 4 / Taurus 3 compatibility
-                if hasattr(measurement_group, "stateObj"):
-                    state = measurement_group.stateObj.read().rvalue
-                else:
-                    state = measurement_group.state()
+                state = measurement_group.stateObj.read().rvalue
                 if state == PyTango.DevState.MOVING:
                     measurement_group.Stop()
                     if end_move:

@@ -743,11 +743,7 @@ class TaurusMacroExecutorWidget(TaurusWidget):
 
     def checkDoorState(self):
         door = Device(self.doorName())
-        try:
-            doorState = door.state()
-        except TypeError:
-            # TODO: For Taurus 4 adaptation
-            doorState = door.getState()
+        doorState = door.getState()
         if doorState == PyTango.DevState.RUNNING:
             self.playMacroAction.setEnabled(False)
             self.pauseMacroAction.setEnabled(True)
