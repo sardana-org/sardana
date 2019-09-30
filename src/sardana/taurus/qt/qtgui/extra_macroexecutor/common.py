@@ -31,7 +31,6 @@ from taurus.core.taurusbasetypes import TaurusEventType
 from taurus.qt.qtgui.base import TaurusBaseWidget
 from taurus.qt.qtgui.input import TaurusAttrListComboBox
 from taurus.qt.qtgui.container import TaurusMainWindow
-from taurus.qt.qtgui.resource import getThemeIcon, getIcon
 
 
 def str2bool(text):
@@ -130,13 +129,13 @@ class TaurusMacroConfigurationDialog(Qt.QDialog):
         Qt.QDialog.__init__(self, parent)
         self.initMacroServer = initMacroServer
         self.initDoor = initDoor
-        configureAction = Qt.QAction(getThemeIcon(
+        configureAction = Qt.QAction(Qt.QIcon.fromTheme(
             "folder-open"), "Change custom macro editors paths", self)
         configureAction.triggered.connect(self.onReloadMacroServers)
         configureAction.setToolTip("Change custom macro editors paths")
         configureAction.setShortcut("F11")
         self.refreshMacroServersAction = Qt.QAction(
-            getThemeIcon("view-refresh"), "Reload macroservers", self)
+            Qt.QIcon.fromTheme("view-refresh"), "Reload macroservers", self)
         self.refreshMacroServersAction.triggered.connect(
             self.onReloadMacroServers)
         self.refreshMacroServersAction.setToolTip(
@@ -188,8 +187,8 @@ class TaurusMacroConfigurationDialog(Qt.QDialog):
 
     def __retriveMacroServersFromDB(self):
         ms_stateIcons = []
-        db = taurus.Database()
-        macroServerList = db.getValueObj().get_device_name('*', 'MacroServer')
+        db = taurus.Authority()
+        macroServerList = db.getTangoDB().get_device_name('*', 'MacroServer')
         for macroServer in macroServerList:
             #state = Device(macroServer).getState()
             state = None
@@ -200,11 +199,11 @@ class TaurusMacroConfigurationDialog(Qt.QDialog):
                 pass
             icon = None
             if state == PyTango.DevState.ON:
-                icon = getIcon(":/leds/images24/ledgreen.png")
+                icon = Qt.QIcon("leds_images24:ledgreen.png")
             elif state == PyTango.DevState.FAULT:
-                icon = getIcon(":/leds/images24/ledred.png")
+                icon = Qt.QIcon("leds_images24:ledred.png")
             elif state is None:
-                icon = getIcon(":/leds/images24/ledredoff.png")
+                icon = Qt.QIcon("leds_images24:ledredoff.png")
             ms_stateIcons.append((macroServer, icon))
         return ms_stateIcons
 
@@ -263,7 +262,7 @@ class MacroExecutionWindow(TaurusMainWindow):
         self.registerConfigProperty(
             "customMacroEditorPaths", "setCustomMacroEditorPaths", "customMacroEditorPaths")
         self._qDoor = None
-        self.setWindowIcon(getIcon(":/apps/preferences-system-session.svg"))
+        self.setWindowIcon(Qt.QIcon("apps:preferences-system-session.svg"))
         toolBar = self.basicTaurusToolbar()
         toolBar.setIconSize(Qt.QSize(24, 24))
         self.configureAction = self.createConfigureAction()
@@ -315,7 +314,7 @@ class MacroExecutionWindow(TaurusMainWindow):
         self.setWindowTitle(Qt.QApplication.applicationName() + ": " + model)
 
     def createConfigureAction(self):
-        configureAction = Qt.QAction(getThemeIcon(
+        configureAction = Qt.QAction(Qt.QIcon.fromTheme(
             "preferences-system-session"), "Change configuration", self)
         configureAction.triggered.connect(self.changeConfiguration)
         configureAction.setToolTip("Configuring MacroServer and Door")
@@ -323,7 +322,7 @@ class MacroExecutionWindow(TaurusMainWindow):
         return configureAction
 
     def createCustomMacroEditorPathsAction(self):
-        configureAction = Qt.QAction(getThemeIcon(
+        configureAction = Qt.QAction(Qt.QIcon.fromTheme(
             "folder-open"), "Change custom macro editors paths", self)
         configureAction.triggered.connect(self.onCustomMacroEditorPaths)
         configureAction.setToolTip("Change custom macro editors paths")
