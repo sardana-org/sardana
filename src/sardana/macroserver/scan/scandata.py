@@ -203,11 +203,11 @@ class Record(object):
         params = v.getParams(proxy.getFullName())
         name = '{0}:{1}/{2}'.format(params['host'].split('.')[0],
                                     params['port'],
-                                    params['devicename'])
+                                    params['devname'])
 
-        attr_name = params.get('attributename', None)
+        attr_name = params.get('_shortattrname', None)
         if attr_name is not None:
-            name = '{0}/{1}'.format(name, params['attributename'])
+            name = '{0}/{1}'.format(name, attr_name)
 
         return name
 

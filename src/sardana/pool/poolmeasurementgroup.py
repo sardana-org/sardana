@@ -729,7 +729,7 @@ class MeasurementConfiguration(object):
                 if external:
                     validator = TangoAttributeNameValidator()
                     full_name = ch_data.get('full_name', ch_name)
-                    params = validator.getParams(full_name)
+                    params = validator.getUriGroups(full_name)
                     params['pool'] = pool
                     channel = PoolExternalObject(**params)
                 else:

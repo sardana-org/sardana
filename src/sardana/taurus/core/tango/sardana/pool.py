@@ -1445,8 +1445,8 @@ class MGConfiguration(object):
                 n_tg_chs[channel_name] = channel_data
             else:
                 # Handle tango channel
-                dev_name = params['devicename'].lower()
-                attr_name = params['attributename'].lower()
+                dev_name = params['devname'].lower()
+                attr_name = params['_shortattrname'].lower()
                 host, port = params.get('host'), params.get('port')
                 if host is not None and port is not None:
                     dev_name = "tango://{0}:{1}/{2}".format(host, port,

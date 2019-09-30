@@ -520,7 +520,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
                 self.pool.get_element(id=elem_id)
             else:
                 tg_attr_validator = TangoAttributeNameValidator()
-                params = tg_attr_validator.getParams(elem_id)
+                params = tg_attr_validator.getUriGroups(elem_id)
                 if params is None:
                     raise Exception("Invalid channel name %s" % elem_id)
 
