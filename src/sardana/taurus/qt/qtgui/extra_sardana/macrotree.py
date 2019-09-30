@@ -37,9 +37,6 @@ from taurus.qt.qtcore.mimetypes import TAURUS_MODEL_MIME_TYPE, \
 from taurus.qt.qtcore.model import TaurusBaseTreeItem, TaurusBaseModel, \
     TaurusBaseProxyModel
 from taurus.qt.qtgui.tree import TaurusBaseTreeWidget
-from taurus.qt.qtgui.resource import getIcon
-
-from sardana.taurus.core.tango.sardana.macro import MacroInfo
 
 
 MacroView = Enumeration("MacroView", ("MacroModule", "Macro", "Unknown"))
@@ -47,10 +44,10 @@ MacroView = Enumeration("MacroView", ("MacroModule", "Macro", "Unknown"))
 
 def getElementTypeIcon(t):
     if t == MacroView.MacroModule:
-        return getIcon(":/python-file.png")
+        return Qt.QIcon(":python-file.png")
     elif t == MacroView.Macro:
-        return getIcon(":/python.png")
-    return getIcon(":/tango.png")
+        return Qt.QIcon(":python.png")
+    return Qt.QIcon(":tango.png")
 
 
 def getElementTypeSize(t):
@@ -96,7 +93,7 @@ class MacroModuleTreeItem(MacroTreeBaseItem):
         return "The macro module '%s'" % self.display()
 
     def icon(self, index):
-        return getIcon(":/python-file.png")
+        return Qt.QIcon(":python-file.png")
 
 
 class MacroTreeItem(MacroTreeBaseItem):
@@ -115,7 +112,7 @@ class MacroTreeItem(MacroTreeBaseItem):
         return self._itemData.doc
 
     def icon(self, index):
-        return getIcon(":/python.png")
+        return Qt.QIcon(":python.png")
 
 
 class MacroBaseModel(TaurusBaseModel):
@@ -236,7 +233,7 @@ class MacroTreeWidget(TaurusBaseTreeWidget):
 
     KnownPerspectives = {MacroView.MacroModule: {
         "label": "By module",
-        "icon": ":/python-file.png",
+        "icon": ":python-file.png",
         "tooltip": "View by macro module",
         "model": [MacroModuleModelProxy, MacroModuleModel],
     },
