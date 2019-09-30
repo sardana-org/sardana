@@ -99,7 +99,7 @@ def main():
                           app_name="Taurus command line demo", app_version="1.0",
                           org_domain="Taurus", org_name="Tango community")
 
-    w =TaurusCommandLineWidget()
+    w = TaurusCommandLineWidget()
     w.show()
 
     if owns_app:

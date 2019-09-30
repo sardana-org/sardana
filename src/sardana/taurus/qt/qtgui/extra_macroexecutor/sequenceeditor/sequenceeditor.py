@@ -503,8 +503,8 @@ class TaurusSequencerWidget(TaurusWidget):
 
     def contextMenuEvent(self, event):
         menu = Qt.QMenu()
-        action = menu.addAction(Qt.QIcon.fromTheme(
-            "view-refresh"), "Check door state", self.checkDoorState)
+        menu.addAction(Qt.QIcon.fromTheme("view-refresh"), "Check door state",
+                       self.checkDoorState)
         menu.exec_(event.globalPos())
 
     def checkDoorState(self):
