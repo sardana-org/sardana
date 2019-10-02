@@ -625,8 +625,9 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         self.setLayout(Qt.QVBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
 
-        self.addToFavouritesAction = Qt.QAction(getThemeIcon(
-            "software-update-available"), "Add to favourites", self)
+        self.addToFavouritesAction = Qt.QAction(
+            getIcon(":/status/software-update-available.svg"),
+            "Add to favourites", self)
         self.addToFavouritesAction.triggered.connect(self.onAddToFavourites)
         self.addToFavouritesAction.setToolTip("Add to favourites")
         self.stopMacroAction = Qt.QAction(
