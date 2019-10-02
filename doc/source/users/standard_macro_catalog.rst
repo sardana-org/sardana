@@ -117,6 +117,7 @@ list related macros
     * :class:`~sardana.macroserver.macros.lists.lsmac`
     * :class:`~sardana.macroserver.macros.lists.lsmaclib`
     * :class:`~sardana.macroserver.macros.env.lsgh`
+    * :class:`~sardana.macroserver.macros.env.lssnap`
 
 measurement configuration macros
 --------------------------------
@@ -126,6 +127,9 @@ measurement configuration macros
 
     * :class:`~sardana.macroserver.macros.expert.defmeas`
     * :class:`~sardana.macroserver.macros.expert.udefmeas`
+    * :class:`~sardana.macroserver.macros.expert.defsnap`
+    * :class:`~sardana.macroserver.macros.expert.udefsnap`
+    * :class:`~sardana.macroserver.macros.expert.lssnap`
 
 general hooks macros
 --------------------
