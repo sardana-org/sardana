@@ -148,7 +148,7 @@ class InputHandler(Singleton, BaseInputHandler):
         self._conn = conn
         app = Qt.QApplication.instance()
         if app is None:
-            app = Qt.QApplication([])
+            app = Qt.QApplication(['spock'])
         app.setQuitOnLastWindowClosed(False)
         self._msg_handler = MessageHandler(conn)
         TaurusManager().addJob(self.run_forever, None)
