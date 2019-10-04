@@ -35,12 +35,8 @@ __docformat__ = 'restructuredtext'
 import threading
 import weakref
 
-try:
-    from taurus.core.taurusvalidator import AttributeNameValidator as\
-        TangoAttributeNameValidator
-except ImportError:
-    # TODO: For Taurus 4 compatibility
-    from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
+
+from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 
 from sardana import State, ElementType, TYPE_EXP_CHANNEL_ELEMENTS
 from sardana.sardanaevent import EventType
@@ -733,7 +729,7 @@ class MeasurementConfiguration(object):
                 if external:
                     validator = TangoAttributeNameValidator()
                     full_name = ch_data.get('full_name', ch_name)
-                    params = validator.getParams(full_name)
+                    params = validator.getUriGroups(full_name)
                     params['pool'] = pool
                     channel = PoolExternalObject(**params)
                 else:

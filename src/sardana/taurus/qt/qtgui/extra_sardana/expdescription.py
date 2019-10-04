@@ -35,7 +35,6 @@ import copy
 import taurus
 import taurus.core
 from taurus.qt.qtgui.base import TaurusBaseWidget
-from taurus.qt.qtgui import resource
 
 from sardana.taurus.qt.qtcore.tango.sardana.model import SardanaBaseProxyModel, SardanaTypeTreeItem
 from sardana.sardanadefs import ElementType, TYPE_ACQUIRABLE_ELEMENTS
@@ -253,7 +252,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             tooltip = "Show/Hide plots is not ready for %s" % API
         # --------------------------------------------------------------------
 
-        icon = resource.getIcon(":/actions/view.svg")
+        icon = Qt.QIcon("actions:view.svg")
         measGrpTab = self.ui.tabWidget.widget(0)
         self.togglePlotsAction = Qt.QAction(icon, "Show/Hide plots", self)
         if tooltip is not None:
@@ -432,7 +431,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         if door is None:
             return
         # @todo: get the tghost from the door model instead
-        tghost = taurus.Database().getNormalName()
+        tghost = taurus.Authority().getNormalName()
         msname = door.macro_server.getFullName()
         self.ui.taurusModelTree.setModel(tghost)
         self.ui.sardanaElementTree.setModel(msname)

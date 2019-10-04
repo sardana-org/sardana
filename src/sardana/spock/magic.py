@@ -45,11 +45,7 @@ def expconf(self, parameter_s=''):
         print("Error importing ExpDescriptionEditor "
               "(hint: is taurus extra_sardana installed?)")
         return
-    try:
-        doorname = get_door().name()
-    except TypeError:
-        # TODO: For Taurus 4 adaptation
-        doorname = get_door().fullname
+    doorname = get_door().fullname
     # =======================================================================
     # ugly hack to avoid ipython/qt thread problems #e.g. see
     # https://sourceforge.net/p/sardana/tickets/10/
@@ -96,11 +92,8 @@ def showscan(self, parameter_s=''):
                 print("Error importing ShowScanOnline")
                 print(e)
                 return
-            try:
-                doorname = get_door().name()
-            except TypeError:
-                # TODO: For Taurus 4 adaptation
-                doorname = get_door().fullname
+
+            doorname = get_door().fullname
             # ===============================================================
             # ugly hack to avoid ipython/qt thread problems #e.g. see
             # https://sourceforge.net/p/sardana/tickets/10/

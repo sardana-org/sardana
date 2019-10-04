@@ -56,12 +56,7 @@ from PyTango import DevState, AttrDataFormat, AttrQuality, DevFailed, \
 from taurus import Factory, Device, Attribute
 from taurus.core.taurusbasetypes import TaurusEventType
 
-try:
-    from taurus.core.taurusvalidator import AttributeNameValidator as \
-        TangoAttributeNameValidator
-except ImportError:
-    # TODO: For Taurus 4 compatibility
-    from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
+from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 from taurus.core.util.log import Logger
 from taurus.core.util.codecs import CodecFactory
 from taurus.core.util.containers import CaselessDict
@@ -554,13 +549,9 @@ class PoolElement(BaseElement, TangoDevice):
         indent = "\n" + tab + 10 * ' '
         msg = [self.getName() + ":"]
         try:
-            # TODO: For Taurus 4 / Taurus 3 compatibility
-            if hasattr(self, "stateObj"):
-                state_value = self.stateObj.read().rvalue
-                # state_value is DevState enumeration (IntEnum)
-                state = state_value.name.capitalize()
-            else:
-                state = str(self.state()).capitalize()
+            state_value = self.stateObj.read().rvalue
+            # state_value is DevState enumeration (IntEnum)
+            state = state_value.name.capitalize()
         except DevFailed as df:
             if len(df.args):
                 state = df.args[0].desc
@@ -1454,8 +1445,8 @@ class MGConfiguration(object):
                 n_tg_chs[channel_name] = channel_data
             else:
                 # Handle tango channel
-                dev_name = params['devicename'].lower()
-                attr_name = params['attributename'].lower()
+                dev_name = params['devname'].lower()
+                attr_name = params['_shortattrname'].lower()
                 host, port = params.get('host'), params.get('port')
                 if host is not None and port is not None:
                     dev_name = "tango://{0}:{1}/{2}".format(host, port,
@@ -2288,10 +2279,10 @@ class Pool(TangoDevice, MoveableSource):
         elif evt_type not in CHANGE_EVT_TYPES:
             return
         try:
-            elems = CodecFactory().decode(evt_value.value)
+            elems = CodecFactory().decode(evt_value.rvalue)
         except:
             self.error("Could not decode element info")
-            self.info("value: '%s'", evt_value.value)
+            self.info("value: '%s'", evt_value.rvalue)
             self.debug("Details:", exc_info=1)
             return
         elements = self.getElementsInfo()

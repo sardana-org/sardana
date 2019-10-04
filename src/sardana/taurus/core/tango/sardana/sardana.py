@@ -285,9 +285,8 @@ class ControllerClassInfo(object):
 
     def get_icon(self):
         # fake data ###############
-        import taurus.qt.qtgui.resource
-
-        return taurus.qt.qtgui.resource.getIcon(":/designer/extra_motor.png")
+        from taurus.external.qt import Qt
+        return Qt.QIcon("designer:extra_motor.png")
 
     def get_organization(self):
         # fake data ###############

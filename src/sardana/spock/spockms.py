@@ -33,7 +33,7 @@ import os
 import ctypes
 import PyTango
 
-from taurus.core import TaurusEventType, TaurusSWDevState
+from taurus.core import TaurusEventType, TaurusSWDevState, TaurusDevState
 
 from sardana.sardanautils import is_pure_str, is_non_str_seq
 from sardana.spock import genutils
@@ -53,12 +53,8 @@ else:
     from sardana.taurus.core.tango.sardana.macroserver import BaseDoor, BaseMacroServer
     BaseGUIViewer = object
 
-try:
-    RUNNING_STATE = TaurusSWDevState.Running
-except RuntimeError:
-    # TODO: For Taurus 4 compatibility
-    from taurus.core import TaurusDevState
-    RUNNING_STATE = TaurusDevState.Ready
+
+RUNNING_STATE = TaurusDevState.Ready
 
 
 class GUIViewer(BaseGUIViewer):
