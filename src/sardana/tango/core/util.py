@@ -726,7 +726,7 @@ def prepare_server(args, tango_args):
     else:
         inst_name = tango_args[1].lower()
 
-    if "-nodb" in tango_args:
+    if nodb:
         return log_messages
 
     db = Database()
