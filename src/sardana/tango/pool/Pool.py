@@ -48,12 +48,12 @@ from sardana.tango.core.util import get_tango_version_number
 import collections
 
 
-class Pool(PyTango.Device_4Impl, Logger):
+class Pool(PyTango.LatestDeviceImpl, Logger):
 
     ElementsCache = None
 
     def __init__(self, cl, name):
-        PyTango.Device_4Impl.__init__(self, cl, name)
+        PyTango.LatestDeviceImpl.__init__(self, cl, name)
         Logger.__init__(self, name)
         self.init(name)
         self.init_device()
@@ -1576,7 +1576,7 @@ class PoolClass(PyTango.DeviceClass):
     def _get_class_properties(self):
         return dict(ProjectTitle="Sardana", Description="Device Pool management class",
                     doc_url="http://sardana-controls.org/",
-                    InheritedFrom="Device_4Impl")
+                    InheritedFrom="Device_5Impl")
 
     def write_class_property(self):
         util = PyTango.Util.instance()
