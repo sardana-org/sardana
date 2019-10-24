@@ -881,7 +881,7 @@ motor2 sqrt(y*x+3)
         self.paths = [[SafeEvaluator(globals).eval(
             func) for globals in globals_lst] for func in self.funcstrings]
 
-        self.integ_time = numpy.array(eval(args[1]), dtype='d')
+        self._integ_time = numpy.array(eval(args[1]), dtype='d')
 
         self.opts = opts
         if len(self.motors) == len(self.paths) > 0:
@@ -906,14 +906,14 @@ motor2 sqrt(y*x+3)
                                      (self.funcstrings[0], fs, npoints,
                                       len(p)))
             raise  # the problem wasn't a shape mismatch
-        self.nr_points = npoints
+        self._nr_points = npoints
 
-        if self.integ_time.size == 1:
-            self.integ_time = self.integ_time * \
-                numpy.ones(self.nr_points)  # extend integ_time
-        elif self.integ_time.size != self.nr_points:
+        if self._integ_time.size == 1:
+            self._integ_time = self._integ_time * \
+                numpy.ones(self._nr_points)  # extend integ_time
+        elif self._integ_time.size != self._nr_points:
             raise ValueError('time_integ must either be a scalar or '
-                             'length=npoints (%i)' % self.nr_points)
+                             'length=npoints (%i)' % self._nr_points)
 
         self.name = opts.get('name', 'fscan')
 
@@ -946,9 +946,9 @@ motor2 sqrt(y*x+3)
         step["post-step-hooks"] = self.getHooks('post-step')
 
         step["check_func"] = []
-        for i in xrange(self.nr_points):
+        for i in range(self._nr_points):
             step["positions"] = self.paths[:, i]
-            step["integ_time"] = self.integ_time[i]
+            step["integ_time"] = self._integ_time[i]
             step["point_id"] = i
             yield step
 
