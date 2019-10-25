@@ -3,7 +3,16 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This file follows the formats and conventions from [keepachangelog.com]
 
-## [Unreleased]
+## [2.8.4] 2019-11-06
+
+### Fixed
+
+* fscan macro that was broken 2.6.0 (#1218, #1220)
+
+### Deprecated
+
+* `nr_points` attribute of scan macros e.g., aNscan family of scans, `fscan` etc.
+  (#1218, #1220)
 
 ## [2.8.3] 2019-09-16
 
