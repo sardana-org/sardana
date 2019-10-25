@@ -196,6 +196,26 @@ the most basic features of a continuous scan:: ::
    :class:`~sardana.macroserver.macros.scan.meshc`
 
 
+Deterministic scans
+-------------------
+
+By *deterministic scans* we call these scans which know *a priori* the number
+of points and the integration time. In some cases the experimental channel
+controllers may take profit of this information and prepare for the whole
+scan measurement up-front instead of preparing before each scan point.
+When writing this type of scan macros it is enough to set two attributes:
+``nb_points`` and ``integ_time`` in your macro.
+When these attributes are present in your macro, the *generic scan framework*
+will take care of preparing the experimental channels for the whole scan
+measurement upfront.
+
+    .. warning:: Since ``nb_points`` and ``integ_time`` attributes identify
+      deterministic scan macros as deterministic and you must not use these
+      attribute names for any other needs.
+
+    .. seealso:: More information about deterministic scans and measurement
+      preparation can be found in SEP18_.
+
 
 Hooks support in scans
 ----------------------
@@ -249,6 +269,6 @@ Finally, the documentation and code of :mod:`~sardana.macroserver.scan.GScan`,
 :class:`~sardana.macroserver.scan.SScan` and
 :class:`~sardana.macroserver.scan.CScan` may be helpful.
 
-
+.. _SEP18: http://www.sardana-controls.org/sep/?SEP18.md
 
 
