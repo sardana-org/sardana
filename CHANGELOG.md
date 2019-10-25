@@ -14,10 +14,16 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Fixed
 
 * Default macro parameter values in macroexecutor (#1153)
+* fscan macro that was broken 2.6.0 (#1218, #1220)
 * Setting of environment variables in Python 3.7 (#1195)
 * Use `taurus.external.qt.compat.PY_OBJECT` in singal signatures instead of `object`
   to avoid problems when using `builtins` from `future` (#1082)
 * Remove Taurus deprecated code what reduces deprecation warnings (#1206)
+
+### Deprecated
+
+* `nr_points` attribute of scan macros e.g., aNscan family of scans, `fscan` etc.
+  (#1218, #1220)
 
 ### Changed
 
