@@ -120,3 +120,11 @@ class xas_acq(Macro, Hookable):
     @property
     def data(self):
         return self._gScan.data  # the GScan provides scan data
+
+    def _get_nr_points(self):
+        msg = ("nr_points is deprecated since version Jan20. "
+               "Use nb_points instead.")
+        self.warning(msg)
+        return self.nb_points
+
+    nr_points = property(_get_nr_points)

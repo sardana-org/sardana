@@ -335,6 +335,13 @@ class aNscan(Hookable):
         missing_records = nb_of_points - nb_of_records
         scan.data.initRecords(missing_records)
 
+    def _get_nr_points(self):
+        msg = ("nr_points is deprecated since version Jan20. "
+               "Use nb_points instead.")
+        self.warning(msg)
+        return self.nb_points
+
+    nr_points = property(_get_nr_points)
 
 class dNscan(aNscan):
     """
@@ -955,6 +962,15 @@ motor2 sqrt(y*x+3)
     def run(self, *args):
         for step in self._gScan.step_scan():
             yield step
+
+    def _get_nr_points(self):
+        msg = ("nr_points is deprecated since version Jan20. "
+               "Use nb_points instead.")
+        self.warning(msg)
+        return self.nb_points
+
+    nr_points = property(_get_nr_points)
+
 
 
 class ascanh(aNscan, Macro):
@@ -1809,6 +1825,14 @@ class meshct(Macro, Hookable):
         missing_records = nb_of_points - nb_of_records
         scan.data.initRecords(missing_records)
 
+    def _get_nr_points(self):
+        msg = ("nr_points is deprecated since version Jan20. "
+               "Use nb_points instead.")
+        self.warning(msg)
+        return self.nb_points
+
+    nr_points = property(_get_nr_points)
+
 
 class timescan(Macro, Hookable):
     """Do a time scan over the specified time intervals. The scan starts
@@ -1849,3 +1873,11 @@ class timescan(Macro, Hookable):
 
     def getIntervalEstimation(self):
         return self.nr_interv
+
+    def _get_nr_points(self):
+        msg = ("nr_points is deprecated since version Jan20. "
+               "Use nb_points instead.")
+        self.warning(msg)
+        return self.nb_points
+
+    nr_points = property(_get_nr_points)
