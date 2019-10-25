@@ -51,10 +51,8 @@ script:
   # run the full testsuite
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test sardanatestsuite; fi
   # build docs
-  - if [ $TEST == "doc" ]; then
-      docker exec -t sardana-test /bin/bash -c "cd /sardana ; sphinx-build -W doc/source/ build/sphinx/html" ;
-      docker exec sardana-test /bin/bash -c "touch /sardana/build/sphinx/html/.nojekyll" ;
-    fi
+  - if [ $TEST == "doc" ]; then docker exec -t sardana-test /bin/bash -c "cd /sardana ; sphinx-build -W doc/source/ build/sphinx/html" ; fi
+  - if [ $TEST == "doc" ]; then docker exec -t sardana-test /bin/bash -c "touch /sardana/build/sphinx/html/.nojekyll" ; fi
 
 #  # deploy sphinx docs to sardana-doc repo if we are on upstream
 #  - if [[ $TEST == "doc" && $TRAVIS_REPO_SLUG == "sardana-org/sardana" ]]; then
