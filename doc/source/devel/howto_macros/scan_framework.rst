@@ -66,18 +66,18 @@ The ``ascan_demo`` macro illustrates the most basic features of a step scan::
           ['motor',      Type.Moveable, None, 'Motor to move'],
           ['start_pos',  Type.Float,    None, 'Scan start position'],
           ['final_pos',  Type.Float,    None, 'Scan final position'],
-          ['nr_interv',  Type.Integer,  None, 'Number of scan intervals'],
+          ['nb_interv',  Type.Integer,  None, 'Number of scan intervals'],
           ['integ_time', Type.Float,    None, 'Integration time']
        ]
       
-       def prepare(self, motor, start_pos, final_pos, nr_interv, integ_time, **opts):
+       def prepare(self, motor, start_pos, final_pos, nb_interv, integ_time, **opts):
            #parse the user parameters
            self.start = numpy.array([start_pos], dtype='d')
            self.final = numpy.array([final_pos], dtype='d')
            self.integ_time = integ_time
       
-           self.nr_points = nr_interv+1
-           self.interv_size = ( self.final - self.start) / nr_interv
+           self.nb_points = nb_interv+1
+           self.interv_size = ( self.final - self.start) / nb_interv
            self.name='ascan_demo'
            env = opts.get('env',{}) #the "env" dictionary may be passed as an option
            
@@ -88,7 +88,7 @@ The ``ascan_demo`` macro illustrates the most basic features of a step scan::
        def _generator(self):
            step = {}
            step["integ_time"] =  self.integ_time #integ_time is the same for all steps
-           for point_no in xrange(self.nr_points):
+           for point_no in xrange(self.nb_points):
                step["positions"] = self.start + point_no * self.interv_size #note that this is a numpy array
                step["point_id"] = point_no
                yield step
