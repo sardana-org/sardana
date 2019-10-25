@@ -255,8 +255,8 @@ class aNscan(Hookable):
         step["post-acq-hooks"] = self.getHooks('post-acq') + self.getHooks(
             '_NOHINTS_')
         step["check_func"] = []
-        step["active_time"] = self.nb_points * (self.integ_time +
-                                                self.latency_time)
+        step["active_time"] = self.nb_points * (self.integ_time
+                                                + self.latency_time)
         step["positions"] = []
         step["start_positions"] = []
         starts = self.starts
@@ -1784,8 +1784,8 @@ class meshct(Macro, Hookable):
             'post-move') + [self._fill_missing_records]
         step["post-move-hooks"] = post_move_hooks
         step["check_func"] = []
-        step["active_time"] = self.nb_points * (self.integ_time +
-                                                self.latency_time)
+        step["active_time"] = self.nb_points * (self.integ_time
+                                                + self.latency_time)
 
         points1, _ = self.nr_intervs + 1
         for i, waypoint in enumerate(self.waypoints):
