@@ -70,7 +70,7 @@ class ascan_demo(Macro):
         self.final = numpy.array([final_pos], dtype='d')
         self.integ_time = integ_time
 
-        self.nr_points = nr_interv + 1
+        self.nb_points = nr_interv + 1
         self.interv_size = (self.final - self.start) / nr_interv
         self.name = 'ascan_demo'
         # the "env" dictionary may be passed as an option
@@ -84,7 +84,7 @@ class ascan_demo(Macro):
         step = {}
         # integ_time is the same for all steps
         step["integ_time"] = self.integ_time
-        for point_no in xrange(self.nr_points):
+        for point_no in range(self.nb_points):
             step["positions"] = self.start + point_no * \
                 self.interv_size  # note that this is a numpy array
             step["point_id"] = point_no
@@ -137,7 +137,7 @@ class ascanr(Macro, Hookable):
         self.repeat = repeat
         self.opts = opts
 
-        self.nr_points = nr_interv + 1
+        self.nb_points = nr_interv + 1
         self.interv_sizes = (self.finals - self.starts) / nr_interv
         self.name = 'ascanr'
 
@@ -160,7 +160,7 @@ class ascanr(Macro, Hookable):
         step["check_func"] = []
         extrainfo = {"repetition": 0}  # !!!
         step['extrainfo'] = extrainfo  # !!!
-        for point_no in xrange(self.nr_points):
+        for point_no in range(self.nb_points):
             step["positions"] = self.starts + point_no * self.interv_sizes
             step["point_id"] = point_no
             for i in xrange(self.repeat):
@@ -211,8 +211,8 @@ class toothedtriangle(Macro, Hookable):
         self.nr_cycles = nr_cycles
         self.nr_samples = nr_samples
         self.opts = opts
-        cycle_nr_points = self.nr_interv + 1 + (self.nr_interv + 1) - 2
-        self.nr_points = cycle_nr_points * nr_samples * nr_cycles + nr_samples
+        cycle_nb_points = self.nr_interv + 1 + (self.nr_interv + 1) - 2
+        self.nb_points = cycle_nb_points * nr_samples * nr_cycles + nr_samples
 
         self.interv_size = (self.final_pos - self.start_pos) / nr_interv
         self.name = 'toothedtriangle'
