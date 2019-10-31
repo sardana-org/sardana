@@ -18,7 +18,6 @@ scientific installations.
    devel/index
    sep/index.rst
    Glossary <glossary>
-   other_versions
    
 
 * :ref:`genindex`
