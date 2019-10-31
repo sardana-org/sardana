@@ -54,24 +54,6 @@ script:
   - if [ $TEST == "doc" ]; then docker exec -t sardana-test /bin/bash -c "cd /sardana ; sphinx-build -W doc/source/ build/sphinx/html" ; fi
   - if [ $TEST == "doc" ]; then docker exec -t sardana-test /bin/bash -c "touch /sardana/build/sphinx/html/.nojekyll" ; fi
 
-#  # deploy sphinx docs to sardana-doc repo if we are on upstream
-#  - if [[ $TEST == "doc" && $TRAVIS_REPO_SLUG == "sardana-org/sardana" ]]; then
-#      pip install doctr ;
-#      docker exec sardana-test /bin/bash -c "touch /sardana/build/sphinx/html/.nojekyll" ;
-#      if [[ $TRAVIS_BRANCH == "develop" ]]; then
-#        doctr deploy . ;
-#      else
-#        doctr deploy "v-$TRAVIS_BRANCH"  ;
-#      fi;
-#    fi
-#
-#doctr:
-#  key-path : ci/github_deploy_key.enc
-#  deploy-repo : sardana-org/sardana-doc
-#  require-master: false
-#  sync: true
-#  built-docs: build/sphinx/html/
-
 deploy:
   # deploy to pypi when a version tag is pushed to the official repo
   - provider: pypi
