@@ -3,9 +3,9 @@
 
 .. _sardana-macros-scanframework:
 
-===============
-Scan Frameworkk
-===============
+==============
+Scan Framework
+==============
 
 In general terms, we call *scan* to a macro that moves one or more motors and
 acquires data along the path of the motor(s). See the
