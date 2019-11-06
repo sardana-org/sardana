@@ -66,9 +66,9 @@ deploy:
       condition: "$TEST == testsuite && $DOCKER_IMG == reszelaz/sardana-test && $TRAVIS_TAG =~ ^[0-9]+.[0-9]+.[0-9]+$"
   - provider: pages
     local_dir: build/sphinx/html
-    repo: reszelaz/sardana-doc
+    repo: sardana-org/sardana-doc
     skip_cleanup: true
     github_token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
     keep_history: true
     on:
-      branch: deploy-ghpages
+      branch: develop
