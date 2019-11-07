@@ -8,7 +8,8 @@ most recent development version.
 
 You can still generate the docs for other versions of Sardana. In order to do that
 you first need to clone the `Sardana repository <https://github.com/sardana-org/sardana>`_,
-checkout the necessary version and simply build the docs.
+checkout the necessary version and build the docs with `sphinx-build <sardana_dir>/doc/source/` 
+(this may require you to install some dependencies apart from the sardana ones, such as sphinx).
 
 In continuation you can find an example of how to do it for version ``2.8.3``:
 
