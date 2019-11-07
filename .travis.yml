@@ -72,3 +72,4 @@ deploy:
     keep_history: true
     on:
       branch: develop
+      condition: "$TEST == doc"
