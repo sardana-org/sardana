@@ -504,6 +504,7 @@ class SardanaDeviceClass(DeviceClass):
     }
 
     def __init__(self, name):
+        self._dev_list = []
         DeviceClass.__init__(self, name)
         self.set_type(name)
 
@@ -529,13 +530,26 @@ class SardanaDeviceClass(DeviceClass):
 
         :param dev_list: list of devices
         :type dev_list: :class:`PyTango.DeviceImpl`"""
+        self._dev_list = dev_list
         for dev in dev_list:
             try:
                 dev.initialize_dynamic_attributes()
             except:
                 dev.warning("Failed to initialize dynamic attributes")
                 dev.debug("Details:", exc_info=1)
+        t = threading.Thread(target=self.handle_defaults)
+        t.start()
 
+    def handle_defaults(self):
+        for dev in self._dev_list:
+            try:
+                if hasattr(dev, "write_default_values"):
+                    dev.write_default_values()
+            except:
+                dev.warning("Failed to write missing default value")
+                dev.debug("Details:", exc_info=1)
+
+       
     def device_name_factory(self, dev_name_list):
         """Builds list of device names to use when no Database is being used
 

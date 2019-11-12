@@ -37,7 +37,7 @@ import time
 from PyTango import Util, DevVoid, DevLong64, DevBoolean, DevString,\
     DevDouble, DevEncoded, DevVarStringArray, DispLevel, DevState, SCALAR, \
     SPECTRUM, IMAGE, READ_WRITE, READ, AttrData, CmdArgType, DevFailed,\
-    seqStr_2_obj, Except, ErrSeverity
+    seqStr_2_obj, Except, ErrSeverity, AttributeProxy
 
 from taurus.core.util.containers import CaselessDict
 from taurus.core.util.codecs import CodecFactory
@@ -75,6 +75,7 @@ class PoolDevice(SardanaDevice):
         util = Util.instance()
         self._pool_device = util.get_device_list_by_class("Pool")[0]
         self._element = None
+        self._missing_default_values = {}
 
     @property
     def pool_device(self):
@@ -181,6 +182,27 @@ class PoolDevice(SardanaDevice):
         """
         return CaselessDict(), CaselessDict()
 
+
+    def check_default_value(self, attr_name, attr_info):
+        default_value = attr_info.default_value
+        db = self.get_database()
+        dev_name = self.get_name()
+        attr_props = CaselessDict(db.get_device_attribute_property(dev_name, attr_name))
+        stored_value = attr_props[attr_name.lower()].get("__value", None)
+        if stored_value is None and default_value is not None:
+            self.warning("Missing default value, Device: %s Attribute: %s", dev_name, attr_name)
+            self._missing_default_values[attr_name] = default_value
+
+
+    def write_default_values(self):
+        dev_name = self.get_name()
+        for attr_name, value in self._missing_default_values.iteritems():
+            self.warning("Write default value, Device: %s Attribute: %s, value: %s", dev_name, attr_name, value)
+            attr_proxy = AttributeProxy(dev_name + '/' + attr_name)
+            attr_proxy.write(value)
+
+
+
     def initialize_dynamic_attributes(self):
         """Initializes this device dynamic attributes"""
         self._attributes = attrs = CaselessDict()
@@ -196,10 +218,12 @@ class PoolDevice(SardanaDevice):
             is_allowed = self.__class__._is_DynamicAttribute_allowed
             for attr_name, data_info in std_attrs.items():
                 attr_name, data_info, attr_info = data_info
+                self.check_default_value(attr_name, attr_info)
                 attr = self.add_standard_attribute(attr_name, data_info,
                                                    attr_info, read,
                                                    write, is_allowed)
                 attrs[attr.get_name()] = None
+
 
         if dyn_attrs is not None:
             read = self.__class__._read_DynamicAttribute
@@ -207,10 +231,12 @@ class PoolDevice(SardanaDevice):
             is_allowed = self.__class__._is_DynamicAttribute_allowed
             for attr_name, data_info in dyn_attrs.items():
                 attr_name, data_info, attr_info = data_info
+                self.check_default_value(attr_name, attr_info)
                 attr = self.add_dynamic_attribute(attr_name, data_info,
                                                   attr_info, read,
                                                   write, is_allowed)
                 attrs[attr.get_name()] = None
+                
         return attrs
 
     def remove_unwanted_dynamic_attributes(self, new_std_attrs, new_dyn_attrs):
