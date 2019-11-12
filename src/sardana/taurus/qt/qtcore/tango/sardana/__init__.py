@@ -29,11 +29,12 @@ Objects obtained with :func:`taurus.Device` expose standard interfaces
 e.g., allow to interact with their attributes, check their state, etc.
 This module defines classes for enriched interaction with Sardana devices
 (also for other elements not exported as devices), e.g. synchronous move
-of a sardana motor with :meth:`~sardana.taurus.core.tango.sardana.pool.Motor.move`
+of a sardana motor with
+:meth:`~sardana.taurus.core.tango.sardana.pool.Motor.move`
 method instead of writing motor's position attribute and then waiting for its
-state change. The difference between these classes with respect to the ones from
-the :mod:`sardana.taurus.core.tango.sardana` module is the Qt friendly interface
-e.g. the Sardana events are translated to Qt signals.
+state change. The difference between these classes with respect to the ones
+from the :mod:`sardana.taurus.core.tango.sardana` module is the Qt friendly
+interface e.g. the Sardana events are translated to Qt signals.
 
 To obtain these enriched objects with :func:`taurus.Device` you need to first
 register the extension classes with

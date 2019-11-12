@@ -29,7 +29,8 @@ Objects obtained with :func:`taurus.Device` expose standard interfaces
 e.g., allow to interact with their attributes, check their state, etc.
 This module defines classes for enriched interaction with Sardana devices
 (also for other elements not exported as devices), e.g. synchronous move
-of a sardana motor with :meth:`~sardana.taurus.core.tango.sardana.pool.Motor.move`
+of a sardana motor with
+:meth:`~sardana.taurus.core.tango.sardana.pool.Motor.move`
 method instead of writing motor's position attribute and then waiting for its
 state change.
 
