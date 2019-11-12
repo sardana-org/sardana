@@ -227,9 +227,9 @@ class DataInfo(object):
         return kwargs
 
     def __repr__(self):
-        return "{0}(name={1}, type={2}, format={3}, access={4})".format(
+        return "{0}(name={1}, type={2}, format={3}, access={4}, default_value={5})".format(
             self.__class__.__name__, self.name, DataType[self.dtype],
-            DataFormat[self.dformat], DataAccess[self.access])
+            DataFormat[self.dformat], DataAccess[self.access], self.default_value)
 
 # class PropertyInfo(DataInfo):
 

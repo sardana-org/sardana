@@ -234,15 +234,11 @@ class Controller(PoolDevice):
                 "Controller %s doesn't have any information", self.ctrl)
             return PoolDevice.get_dynamic_attributes(self)
         # print stuff
-        print self.ctrl
-        print info
         self._dynamic_attributes_cache = dyn_attrs = CaselessDict()
         self._standard_attributes_cache = std_attrs = CaselessDict()
         for attr_name, attr_data in list(info.ctrl_attributes.items()):
             name, tg_info = to_tango_attr_info(attr_name, attr_data)
             dyn_attrs[attr_name] = attr_name, tg_info, attr_data
-        print std_attrs
-        print dyn_attrs
         return std_attrs, dyn_attrs
 
     def read_DynamicAttribute(self, attr):
