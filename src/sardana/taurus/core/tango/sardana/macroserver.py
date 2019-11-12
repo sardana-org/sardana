@@ -1139,9 +1139,9 @@ class BaseMacroServer(MacroServerDevice):
         in XML file.
 
         :param macroNode: (MacroNode) macro node obj populated from XML
-        information
+          information
 
-        See Also: getMacroNodeObj
+        See also: getMacroNodeObj
         """
         macroName = macroNode.name()
         macroInfoObj = self.getMacroInfoObj(macroName)
