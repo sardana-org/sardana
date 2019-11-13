@@ -1,7 +1,7 @@
 .. currentmodule:: sardana.taurus.qt.qtcore
 
 :mod:`~sardana.taurus.qt.qtcore`
-============================
+================================
 
 .. automodule:: sardana.taurus.qt.qtcore
 

@@ -1,7 +1,7 @@
 .. currentmodule:: sardana.taurus.qt.qtcore.tango
 
 :mod:`~sardana.taurus.qt.qtcore.tango`
-=================================
+======================================
 
 .. automodule:: sardana.taurus.qt.qtcore.tango
 
