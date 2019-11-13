@@ -43,7 +43,8 @@ the :obj:`~sardana.taurus.qt.qtcore.tango.sardana.registerExtensions` function.
 The registration needs to be done before the first access to the given
 :func:`taurus.Device`.
 
-.. note:: If you are using :class:`~taurus.qt.qtgui.application.TaurusApplication`
+.. note:: If you are using
+  :class:`~taurus.qt.qtgui.application.TaurusApplication`
   then the registration is done behind the scene at the moment of
   :class:`~taurus.qt.qtgui.application.TaurusApplication` construction.
 """
