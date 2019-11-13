@@ -7,6 +7,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Fixed
 
+* fix compatibility with python 2.6
 * fscan macro that was broken 2.6.0 (#1218, #1220)
 
 ### Deprecated
