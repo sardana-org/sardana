@@ -543,7 +543,8 @@ class MacroManager(MacroServerManager):
                             and self._macro_dict[macro_name].lib != macro_lib):
                         isoverwritten = True
                         msg = ('Macro "{0}" defined in "{1}" macro library'
-                               + ' has been overwritten by "{2}" macro library')
+                               + ' has been overwritten by "{2}" macro library'
+                               )
                         old_lib_name = self._macro_dict[macro_name].lib.name
                         self.debug(msg.format(macro_name, old_lib_name,
                                               macro_lib.name))
