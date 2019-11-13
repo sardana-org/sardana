@@ -54,14 +54,13 @@ How to call procedures?
 The central idea of the Sardana SCADA_ system is to execute procedures centrally.
 The execution can be started from either:
 
-    * *spock* offers a command line interface with commands very similar to SPEC_.
-      It is documented :ref:`here <sardana-spock>`.
-    * Procedures can also be executed with from a :term:`GUI`. Taurus provides
-      `generic widgets for macro execution <http://www.tango-
-      controls.org/static/taurus/latest/doc/html/users/ui/macros/>`__.
+    * :ref:`sardana-spock` offers a command line interface with commands very similar to SPEC_.
+    * Procedures can also be executed with a :term:`GUI`. Taurus provides
+      :ref:`generic widgets for macro execution <sardana-taurus>`.
     * Procedures can also be executed in specific :term:`GUI` s and specific Taurus_
       widgets. The :term:`API` to execute macros from python code is documented
-      here **<LINK>**.
+      in :mod:`sardana.taurus.core.tango.sardana` and from PyQt code is documented
+      in :mod:`sardana.taurus.qt.qtcore.tango.sardana`.
 
 How to write procedures?
 ------------------------
