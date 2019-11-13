@@ -3,11 +3,11 @@ All notable changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/).
 This file follows the formats and conventions from [keepachangelog.com]
 
-## [2.8.4] 2019-11-06
+## [2.8.4] 2019-11-13
 
 ### Fixed
 
-* fix compatibility with python 2.6
+* fix compatibility with python 2.6 when overwritting macros 
 * fscan macro that was broken 2.6.0 (#1218, #1220)
 
 ### Deprecated
