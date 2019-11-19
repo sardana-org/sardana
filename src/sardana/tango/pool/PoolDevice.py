@@ -196,7 +196,7 @@ class PoolDevice(SardanaDevice):
 
     def write_default_values(self):
         dev_name = self.get_name()
-        for attr_name, value in self._missing_default_values.iteritems():
+        for attr_name, value in self._missing_default_values.items():
             self.warning("Write default value, Device: %s Attribute: %s, value: %s", dev_name, attr_name, value)
             attr_proxy = AttributeProxy(dev_name + '/' + attr_name)
             attr_proxy.write(value)
@@ -224,7 +224,6 @@ class PoolDevice(SardanaDevice):
                                                    write, is_allowed)
                 attrs[attr.get_name()] = None
 
-
         if dyn_attrs is not None:
             read = self.__class__._read_DynamicAttribute
             write = self.__class__._write_DynamicAttribute
@@ -236,7 +235,6 @@ class PoolDevice(SardanaDevice):
                                                   attr_info, read,
                                                   write, is_allowed)
                 attrs[attr.get_name()] = None
-                
         return attrs
 
     def remove_unwanted_dynamic_attributes(self, new_std_attrs, new_dyn_attrs):

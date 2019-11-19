@@ -233,7 +233,6 @@ class Controller(PoolDevice):
             self.warning(
                 "Controller %s doesn't have any information", self.ctrl)
             return PoolDevice.get_dynamic_attributes(self)
-        # print stuff
         self._dynamic_attributes_cache = dyn_attrs = CaselessDict()
         self._standard_attributes_cache = std_attrs = CaselessDict()
         for attr_name, attr_data in list(info.ctrl_attributes.items()):
