@@ -719,8 +719,28 @@ class MacroManager(MacroServerManager):
     def _createMacroNode(self, macro_name, macro_params_raw):
         macro = self.getMacro(macro_name)
         params_def = macro.get_parameter()
+
+        def quote_string(string):
+            # if string contains double quotes, use single quotes, otherwise
+            # use double quotes
+            if re.search('"', string):
+                return "'{}'".format(string)
+            else:
+                return '"{}"'.format(string)
+
+        # param parser relies on whitespace separation of parameter values
+        # quote string parameter values when necessary
+        macro_params_quoted = []
+        for param_def, param_raw in zip(params_def, macro_params_raw):
+            if (not param_def["type"] == "String"  # not string parameter
+                    or not re.match(".*\s+.*", param_raw)  # no white spaces
+                    or re.match("^'.*\s+.*'$", param_raw)  # already quoted
+                    or re.match('^".*\s+.*"$', param_raw)):  # already quoted
+                macro_params_quoted.append(param_raw)
+            else:
+                macro_params_quoted.append(quote_string(param_raw))
         # merge params to a single, space separated, string (spock like)
-        macro_params_str = " ".join(macro_params_raw)
+        macro_params_str = " ".join(macro_params_quoted)
         param_parser = ParamParser(params_def)
         # parse string with macro params to the correct list representation
         macro_params = param_parser.parse(macro_params_str)
