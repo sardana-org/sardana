@@ -1137,8 +1137,8 @@ class MacroExecutor(Logger):
             macro_params = par_str_list[1:]
 
             def quote_string(string):
-                # if string contains double quotes, use single quotes, otherwise
-                # use double quotes
+                # if string contains double quotes, use single quotes,
+                # otherwise use double quotes
                 if re.search('"', string):
                     return "'{}'".format(string)
                 else:
