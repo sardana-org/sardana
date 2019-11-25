@@ -1148,9 +1148,9 @@ class MacroExecutor(Logger):
             # quote string parameter values containing whitespaces
             macro_params_quoted = []
             for param in macro_params:
-                if (not re.match(".*\s+.*", param)  # no white spaces
-                        or re.match("^'.*\s+.*'$", param)  # already quoted
-                        or re.match('^".*\s+.*"$', param)):  # already quoted
+                if (not re.match(r".*\s+.*", param)  # no white spaces
+                        or re.match(r"^'.*\s+.*'$", param)  # already quoted
+                        or re.match(r'^".*\s+.*"$', param)):  # already quoted
                     macro_params_quoted.append(param)
                 else:
                     macro_params_quoted.append(quote_string(param))
