@@ -57,7 +57,9 @@ Afterward, spock :term:`CLI` will start normally:
 
     Spock's sardana extension 1.0 loaded with profile: spockdoor (linked to door 'LAB-01-D01')
 
-    LAB-01-D01 [1]: 
+    LAB-01-D01 [1]:
+.. note::
+    If you want to connect to another gate you need to create a new spock profile.
 
 Starting spock with a custom profile
 ------------------------------------
