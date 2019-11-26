@@ -403,8 +403,8 @@ class macro(object):
         fn.macro_data = {}
         fn.param_def = self.param_def
         fn.result_def = self.result_def
-        fn.hints = self.env
-        fn.env = self.hints
+        fn.hints = self.hints
+        fn.env = self.env
         fn.interactive = self.interactive
         return fn
 
