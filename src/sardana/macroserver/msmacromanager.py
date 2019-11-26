@@ -719,7 +719,6 @@ class MacroManager(MacroServerManager):
     def _createMacroNode(self, macro_name, macro_params_raw):
         macro = self.getMacro(macro_name)
         params_def = macro.get_parameter()
-        # merge params to a single, space separated, string (spock like)
         macro_params_str = " ".join(macro_params_raw)
         param_parser = ParamParser(params_def)
         # parse string with macro params to the correct list representation
@@ -1136,7 +1135,26 @@ class MacroExecutor(Logger):
             xml_root = xml_seq = etree.Element('sequence')
             macro_name = par_str_list[0]
             macro_params = par_str_list[1:]
-            macro_node = self._createMacroNode(macro_name, macro_params)
+
+            def quote_string(string):
+                # if string contains double quotes, use single quotes,
+                # otherwise use double quotes
+                if re.search('"', string):
+                    return "'{}'".format(string)
+                else:
+                    return '"{}"'.format(string)
+
+            # param parser relies on whitespace separation of parameter values
+            # quote string parameter values containing whitespaces
+            macro_params_quoted = []
+            for param in macro_params:
+                if (not re.match(r".*\s+.*", param)  # no white spaces
+                        or re.match(r"^'.*\s+.*'$", param)  # already quoted
+                        or re.match(r'^".*\s+.*"$', param)):  # already quoted
+                    macro_params_quoted.append(param)
+                else:
+                    macro_params_quoted.append(quote_string(param))
+            macro_node = self._createMacroNode(macro_name, macro_params_quoted)
             xml_macro = macro_node.toXml()
             xml_seq.append(xml_macro)
         else:
