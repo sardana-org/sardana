@@ -545,11 +545,10 @@ class SardanaDeviceClass(DeviceClass):
             try:
                 if hasattr(dev, "write_default_values"):
                     dev.write_default_values()
-            except:
+            except Exception:
                 dev.warning("Failed to write missing default value")
                 dev.debug("Details:", exc_info=1)
 
-       
     def device_name_factory(self, dev_name_list):
         """Builds list of device names to use when no Database is being used
 

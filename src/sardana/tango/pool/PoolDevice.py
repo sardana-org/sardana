@@ -182,26 +182,28 @@ class PoolDevice(SardanaDevice):
         """
         return CaselessDict(), CaselessDict()
 
-
     def check_default_value(self, attr_name, attr_info):
         default_value = attr_info.default_value
         db = self.get_database()
         dev_name = self.get_name()
-        attr_props = CaselessDict(db.get_device_attribute_property(dev_name, attr_name))
+        attr_props = CaselessDict(
+            db.get_device_attribute_property(dev_name, attr_name))
         stored_value = attr_props[attr_name.lower()].get("__value", None)
         if stored_value is None and default_value is not None:
-            self.warning("Missing default value, Device: %s Attribute: %s", dev_name, attr_name)
+            self.warning("Missing default value, Device: %s Attribute: %s",
+                         dev_name, attr_name)
             self._missing_default_values[attr_name] = default_value
-
 
     def write_default_values(self):
         dev_name = self.get_name()
         for attr_name, value in self._missing_default_values.items():
-            self.warning("Write default value, Device: %s Attribute: %s, value: %s", dev_name, attr_name, value)
+            self.warning("Write default value, "
+                         "Device: %s Attribute: %s, value: %s",
+                         dev_name,
+                         attr_name,
+                         value)
             attr_proxy = AttributeProxy(dev_name + '/' + attr_name)
             attr_proxy.write(value)
-
-
 
     def initialize_dynamic_attributes(self):
         """Initializes this device dynamic attributes"""
