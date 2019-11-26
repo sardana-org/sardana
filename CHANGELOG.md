@@ -17,6 +17,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 * Default macro parameter values in macroexecutor (#1153)
 * fscan macro that was broken 2.6.0 (#1218, #1220)
+* Executing RunMacro Door's command with string parameters containing spaces (#1240)
 * Setting of environment variables in Python 3.7 (#1195)
 * Use `taurus.external.qt.compat.PY_OBJECT` in singal signatures instead of `object`
   to avoid problems when using `builtins` from `future` (#1082)
