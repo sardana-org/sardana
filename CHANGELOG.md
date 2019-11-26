@@ -22,6 +22,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Use `taurus.external.qt.compat.PY_OBJECT` in singal signatures instead of `object`
   to avoid problems when using `builtins` from `future` (#1082)
 * Remove Taurus deprecated code what reduces deprecation warnings (#1206)
+* Use of env and hints in `macro` function decorator (#1239)
 
 ### Deprecated
 
