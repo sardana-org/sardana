@@ -145,7 +145,20 @@ class MeasSarTestTestCase(SarTestTestCase):
             config[ctrl_full_name] = ctrl_config
 
         try:
-            self.meas = PyTango.DeviceProxy(self.mg_name)
+            for _ in range(10):
+                time.sleep(1)
+                try:
+                    self.meas = PyTango.DeviceProxy(self.mg_name)
+                    state = self.meas.read_attribute('state').value
+                except Exception:
+                    self.meas = None
+                    state = None
+                if state in (PyTango.DevState.RUNNING,
+                             PyTango.DevState.ON,
+                             PyTango.DevState.STANDBY):
+                    break
+            if self.meas is None:
+                raise Exception("Could not connect to measurement group")
         except:
             raise Exception('Could not create the MeasurementGroup: %s' %
                             (self.mg_name))
