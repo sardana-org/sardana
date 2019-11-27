@@ -86,6 +86,7 @@ class BaseMacroServerTestCase(object):
             self._msstarter.startDs()
             self.door = PyTango.DeviceProxy(self.door_name)
             for _ in range(5):
+                time.sleep(1)
                 try:
                     state = self.door.read_attribute('state').value
                 except Exception:
@@ -94,7 +95,6 @@ class BaseMacroServerTestCase(object):
                              PyTango.DevState.ON,
                              PyTango.DevState.STANDBY):
                     break
-                time.sleep(1)
         except Exception as e:
             # force tearDown in order to eliminate the MacroServer
             print(e)

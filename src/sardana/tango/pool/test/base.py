@@ -35,7 +35,7 @@ from sardana import sardanacustomsettings
 from sardana.tango.core.util import (get_free_server, get_free_device,
                                      get_free_alias)
 from taurus.core.util import whichexecutable
-
+import time
 
 class BasePoolTestCase(object):
     """Abstract class for pool DS testing.
@@ -69,6 +69,16 @@ class BasePoolTestCase(object):
         self._starter.startDs()
         # register extensions so the test methods can use them
         self.pool = PyTango.DeviceProxy(self.pool_name)
+        for _ in range(5):
+            time.sleep(1)
+            try:
+                state = self.pool.read_attribute('state').value
+            except Exception:
+                state = None
+            if state in (PyTango.DevState.RUNNING,
+                         PyTango.DevState.ON,
+                         PyTango.DevState.STANDBY):
+                break
 
     def tearDown(self):
         """Remove the Pool instance.
