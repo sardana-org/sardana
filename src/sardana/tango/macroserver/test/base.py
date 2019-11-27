@@ -84,17 +84,20 @@ class BaseMacroServerTestCase(object):
                                            {key: values})
             # start MS server
             self._msstarter.startDs()
-            self.door = PyTango.DeviceProxy(self.door_name)
-            for _ in range(5):
+            for _ in range(10):
                 time.sleep(1)
                 try:
+                    self.door = PyTango.DeviceProxy(self.door_name)
                     state = self.door.read_attribute('state').value
                 except Exception:
+                    self.door = None
                     state = None
                 if state in (PyTango.DevState.RUNNING,
                              PyTango.DevState.ON,
                              PyTango.DevState.STANDBY):
                     break
+            if self.door is None:
+                raise Exception("Could not connect to door")
         except Exception as e:
             # force tearDown in order to eliminate the MacroServer
             print(e)

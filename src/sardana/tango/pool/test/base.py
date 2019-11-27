@@ -68,17 +68,20 @@ class BasePoolTestCase(object):
         # start Pool server
         self._starter.startDs()
         # register extensions so the test methods can use them
-        self.pool = PyTango.DeviceProxy(self.pool_name)
-        for _ in range(5):
+        for _ in range(10):
             time.sleep(1)
             try:
+                self.pool = PyTango.DeviceProxy(self.pool_name)
                 state = self.pool.read_attribute('state').value
             except Exception:
+                self.pool = None
                 state = None
             if state in (PyTango.DevState.RUNNING,
                          PyTango.DevState.ON,
                          PyTango.DevState.STANDBY):
                 break
+        if self.pool is None:
+            raise Exception("Could not connect to pool")
 
     def tearDown(self):
         """Remove the Pool instance.
