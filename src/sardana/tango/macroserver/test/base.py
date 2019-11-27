@@ -28,6 +28,7 @@
 __all__ = ['BaseMacroServerTestCase']
 
 import os
+import time
 
 import PyTango
 from taurus.core.util import whichexecutable
@@ -84,6 +85,16 @@ class BaseMacroServerTestCase(object):
             # start MS server
             self._msstarter.startDs()
             self.door = PyTango.DeviceProxy(self.door_name)
+            for _ in range(5):
+                try:
+                    state = self.door.read_attribute('state').value
+                except Exception:
+                    state = None
+                if state in (PyTango.DevState.RUNNING,
+                             PyTango.DevState.ON,
+                             PyTango.DevState.STANDBY):
+                    break
+                time.sleep(1)
         except Exception as e:
             # force tearDown in order to eliminate the MacroServer
             print(e)
