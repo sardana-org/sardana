@@ -30,14 +30,18 @@ __all__ = ['BaseInputHandler', 'BaseDoor', 'BaseMacroServer',
 
 __docformat__ = 'restructuredtext'
 
+import os
 import sys
 import time
 import uuid
 import math
+import fcntl
+import struct
+import termios
 import weakref
 import threading
 import os.path as osp
-import os
+
 
 from lxml import etree
 
@@ -78,12 +82,14 @@ def recur_map(fun, data, keep_none=False):
             return fun(data)
 
 
-def _get_console_width():
+def _get_terminal_size(fd=sys.__stdout__.fileno()):
+    """Return terminal size as tuple (lines, columns)"""
     try:
-        width = int(os.popen('stty size', 'r').read().split()[1])
+        res = fcntl.ioctl(fd, termios.TIOCGWINSZ, b"\x00" * 4)
+        return struct.unpack("hh", res)
     except Exception:
-        width = float('inf')
-    return width
+        return 2*(float('inf'),)
+
 
 
 def _get_nb_lines(nb_chrs, max_chrs):
@@ -712,7 +718,7 @@ class BaseDoor(MacroServerDevice):
         return data
 
     def logReceived(self, log_name, output):
-        max_chrs = _get_console_width()
+        max_chrs = _get_terminal_size()[1]
         if not output or self._silent or self._ignore_logs:
             return
 
