@@ -729,9 +729,9 @@ class PoolMotorSlim(TaurusWidget, PoolMotorClient):
                 self.updateLimits)
             limits_visible = False
             if self.has_limits:
-                limits_attribute = self.motor_dev.getAttribute(
+                self._limits_switches = self.motor_dev.getAttribute(
                     'Limit_switches')
-                limits_attribute.addListener(self.limits_listener)
+                self._limits_switches.addListener(self.limits_listener)
                 # self.updateLimits(limits_attribute.read().rvalue)
                 limits_visible = True
             self.ui.btnMin.setVisible(limits_visible)
@@ -1484,8 +1484,9 @@ class PoolMotorTV(TaurusValue):
             if self.hasHwLimits():
                 self.limits_listener.eventReceivedSignal.connect(
                     self.updateLimits)
-                self.motor_dev.getAttribute(
-                    'Limit_Switches').addListener(self.limits_listener)
+                self._limit_switches = self.motor_dev.getAttribute(
+                    'Limit_Switches')
+                self._limit_switches.addListener(self.limits_listener)
 
             # CONFIGURE AN EVENT RECEIVER IN ORDER TO PROVIDE POWERON <-
             # True/False EXPERT OPERATION
@@ -1493,23 +1494,23 @@ class PoolMotorTV(TaurusValue):
             if self.hasPowerOn():
                 self.poweron_listener.eventReceivedSignal.connect(
                     self.updatePowerOn)
-                self.motor_dev.getAttribute(
-                    'PowerOn').addListener(self.poweron_listener)
+                self._poweron = self.motor_dev.getAttribute('PowerOn')
+                self._poweron.addListener(self.poweron_listener)
 
             # CONFIGURE AN EVENT RECEIVER IN ORDER TO UPDATED STATUS TOOLTIP
             self.status_listener = TaurusAttributeListener()
             self.status_listener.eventReceivedSignal.connect(
                 self.updateStatus)
-            self.motor_dev.getAttribute(
-                'Status').addListener(self.status_listener)
+            self._status = self.motor_dev.getAttribute('Status')
+            self._status.addListener(self.status_listener)
 
             # CONFIGURE AN EVENT RECEIVER IN ORDER TO ACTIVATE LIMIT BUTTONS ON
             # SOFTWARE LIMITS
             self.position_listener = TaurusAttributeListener()
             self.position_listener.eventReceivedSignal.connect(
                 self.updatePosition)
-            self.motor_dev.getAttribute(
-                'Position').addListener(self.position_listener)
+            self._position = self.motor_dev.getAttribute('Position')
+            self._position.addListener(self.position_listener)
             self.motor_dev.getAttribute('Position').enablePolling(force=True)
 
             self.setExpertView(self._expertView)
