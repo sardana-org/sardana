@@ -73,10 +73,14 @@ class MeasurementGroup(PoolGroupDevice):
     def init_device(self):
         PoolGroupDevice.init_device(self)
         # state and status are already set by the super class
-        detect_evts = "latencytime", "moveable", "synchronization", \
-                      "softwaresynchronizerinitialdomain", "nbstarts"
+        detect_evts = "moveable", "synchronization", \
+                      "softwaresynchronizerinitialdomain"
+        # TODO: nbstarts could be moved to detect events with
+        # abs_change criteria of 1, but be careful with
+        # tango-controls/pytango#302
         non_detect_evts = "configuration", "integrationtime", "monitorcount", \
-                          "acquisitionmode", "elementlist"
+                          "acquisitionmode", "elementlist", "latencytime", \
+                          "nbstarts"
         self.set_change_events(detect_evts, non_detect_evts)
 
         self.Elements = list(self.Elements)
@@ -154,22 +158,35 @@ class MeasurementGroup(PoolGroupDevice):
                            quality=quality, priority=priority, error=error,
                            synch=False)
 
-    def _synchronization_str2enum(self, synchronization):
-        '''Translates synchronization data structure so it uses SynchDomain
-        enums as keys instead of strings.
-        '''
-        for group in synchronization:
-            for param, conf in group.iteritems():
-                group.pop(param)
-                param = SynchParam.fromStr(param)
+    def _synchronization_str2enum(self, synchronization_str):
+        """Translates synchronization data structure so it uses
+        SynchParam and SynchDomain enums as keys instead of strings.
+
+        .. todo:: At some point remove the backwards compatibility
+          for memorized values created with Python 2. In Python 2 IntEnum was
+          serialized to "<class>.<attr>" e.g. "SynchDomain.Time" and we were
+          using a class method `fromStr` to interpret the enumeration objects.
+        """
+        synchronization = []
+        for group_str in synchronization_str:
+            group = {}
+            for param_str, conf_str in group_str.items():
+                try:
+                    param = SynchParam(int(param_str))
+                except ValueError:
+                    param = SynchParam.fromStr(param_str)
+                if isinstance(conf_str, dict):
+                    conf = {}
+                    for domain_str, value in conf_str.items():
+                        try:
+                            domain = SynchDomain(int(domain_str))
+                        except ValueError:
+                            domain = SynchDomain.fromStr(domain_str)
+                        conf[domain] = value
+                else:
+                    conf = conf_str
                 group[param] = conf
-                # skip repeats cause its value is just a long number
-                if param == SynchParam.Repeats:
-                    continue
-                for domain, value in conf.iteritems():
-                    conf.pop(domain)
-                    domain = SynchDomain.fromStr(domain)
-                    conf[domain] = value
+            synchronization.append(group)
         return synchronization
 
     def always_executed_hook(self):
@@ -208,7 +225,7 @@ class MeasurementGroup(PoolGroupDevice):
             acq_mode = AcqMode.lookup[acq_mode_str]
         except KeyError:
             raise Exception("Invalid acquisition mode. Must be one of " +
-                            ", ".join(AcqMode.keys()))
+                            ", ".join(list(AcqMode.keys())))
         self.measurement_group.acquisition_mode = acq_mode
 
     def read_Configuration(self, attr):
@@ -219,7 +236,7 @@ class MeasurementGroup(PoolGroupDevice):
 
     def write_Configuration(self, attr):
         data = attr.get_write_value()
-        cfg = CodecFactory().decode(('json', data), ensure_ascii=True)
+        cfg = CodecFactory().decode(('json', data))
         self.measurement_group.set_configuration_from_user(cfg)
 
     def read_NbStarts(self, attr):
@@ -251,8 +268,7 @@ class MeasurementGroup(PoolGroupDevice):
 
     def write_Synchronization(self, attr):
         data = attr.get_write_value()
-        synchronization = CodecFactory().decode(('json', data),
-                                                ensure_ascii=True)
+        synchronization = CodecFactory().decode(('json', data))
         # translate dictionary keys
         synchronization = self._synchronization_str2enum(synchronization)
         self.measurement_group.synchronization = synchronization
@@ -334,6 +350,7 @@ class MeasurementGroupClass(PoolGroupDeviceClass):
         'Moveable': [[DevString, SCALAR, READ_WRITE],
                      {'Memorized': "true",
                       'Display level': DispLevel.EXPERT}],
+        # TODO: Does it have sense to memorize Synchronization?
         'Synchronization': [[DevString, SCALAR, READ_WRITE],
                             {'Memorized': "true",
                              'Display level': DispLevel.EXPERT}],

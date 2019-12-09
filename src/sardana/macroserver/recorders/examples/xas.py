@@ -190,7 +190,7 @@ class NXxas_FileRecorder(BaseNEXUS_FileRecorder):
         rec_data, rec_nb = record.data, record.recordno
 
         for dd in self.datadesc:
-            if record.data.has_key(dd.name):
+            if dd.name in record.data:
                 data = rec_data[dd.name]
                 field = self.ddfieldsDict[dd.label]
 

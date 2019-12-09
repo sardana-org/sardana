@@ -36,6 +36,7 @@ import operator
 from sardana import InvalidId, ElementType
 from sardana.sardanameta import SardanaLibrary, SardanaClass, SardanaFunction
 from sardana.macroserver.msparameter import Type, ParamRepeat
+import collections
 
 MACRO_TEMPLATE = """class @macro_name@(Macro):
     \"\"\"@macro_name@ description.\"\"\"
@@ -156,13 +157,15 @@ class Parameterizable(object):
         param_def = param_def or ()
         for p in param_def:
             t = p[1]
-            ret_p = {'min': 1, 'max': None}
+            ret_p = {'min': None, 'max': None}
             # take care of old ParamRepeat
             if isinstance(t, ParamRepeat):
+                ret_p = {'min': 1, 'max': None}
                 t = t.obj()
 
-            if operator.isSequenceType(t) and not isinstance(t, (str, unicode)):
-                if operator.isMappingType(t[-1]):
+            if isinstance(t, collections.Sequence) and not isinstance(t, str):
+                ret_p = {'min': 1, 'max': None}
+                if isinstance(t[-1], collections.Mapping):
                     ret_p.update(t[-1])
                     t = self._build_parameter(t[:-1])
                 else:
@@ -188,7 +191,7 @@ class Parameterizable(object):
             if repeat:
                 rep = type_class
                 opts = sep = ''
-                for opt, val in rep.items():
+                for opt, val in list(rep.items()):
                     opts += '%s%s=%s' % (sep, opt, val)
                     sep = ', '
                 info.append(opts)
@@ -210,7 +213,7 @@ class Parameterizable(object):
             if repeat:
                 rep = type_class
                 opts = sep = ''
-                for opt, val in rep.items():
+                for opt, val in list(rep.items()):
                     opts += '%s%s=%s' % (sep, opt, val)
                     sep = ', '
                 info.append(opts)
@@ -243,6 +246,9 @@ class MacroClass(SardanaClass, Parameterizable):
         SardanaClass.__init__(self, **kwargs)
         Parameterizable.__init__(self)
 
+    def __lt__(self, o):
+        return self.name < o.name
+
     def serialize(self, *args, **kwargs):
         kwargs = SardanaClass.serialize(self, *args, **kwargs)
         kwargs = Parameterizable.serialize(self, *args, **kwargs)
@@ -269,6 +275,9 @@ class MacroFunction(SardanaFunction, Parameterizable):
         kwargs['elem_type'] = ElementType.MacroFunction
         SardanaFunction.__init__(self, **kwargs)
         Parameterizable.__init__(self)
+
+    def __lt__(self, o):
+        return self.name < o.name
 
     def serialize(self, *args, **kwargs):
         kwargs = SardanaFunction.serialize(self, *args, **kwargs)

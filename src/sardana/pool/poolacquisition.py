@@ -438,34 +438,39 @@ class PoolAcquisition(PoolAction):
         synch_kwargs.update(kwargs)
         self._synch_args = ActionArgs(synch_args, synch_kwargs)
 
-        # Load the configuration to the timerable controllers if it changed:
-        if config.changed:
-            ctrls = ctrls_hw + ctrls_sw_start + ctrls_sw
+        # Load the configuration to the timerable controllers
+        # TODO: apply the configuration only if necessary
+        # Checking only the "changed" flag is not enough, one needs to check
+        # if the controllers were not used with different measurement groups
+        # configurations meanwhile (see: sardana-org/sardana#1171) in this
+        # case the configuration must be applied even if it was not changed
+        # if config.changed:
+        ctrls = ctrls_hw + ctrls_sw_start + ctrls_sw
 
-            for ctrl in ctrls:
-                pool_ctrl = ctrl.element
-                if not pool_ctrl.is_online():
-                    raise RuntimeError('The controller {0} is '
-                                       'offline'.format(pool_ctrl.name))
-                pool_ctrl.set_ctrl_par('acquisition_mode', acq_mode)
-                pool_ctrl.operator = self.main_element
-                pool_ctrl.set_ctrl_par('timer', ctrl.timer.axis)
-                pool_ctrl.set_ctrl_par('monitor', ctrl.monitor.axis)
-                synch = config.get_acq_synch_by_controller(pool_ctrl)
-                pool_ctrl.set_ctrl_par('synchronization', synch)
+        for ctrl in ctrls:
+            pool_ctrl = ctrl.element
+            if not pool_ctrl.is_online():
+                raise RuntimeError('The controller {0} is '
+                                   'offline'.format(pool_ctrl.name))
+            pool_ctrl.set_ctrl_par('acquisition_mode', acq_mode)
+            pool_ctrl.operator = self.main_element
+            pool_ctrl.set_ctrl_par('timer', ctrl.timer.axis)
+            pool_ctrl.set_ctrl_par('monitor', ctrl.monitor.axis)
+            synch = config.get_acq_synch_by_controller(pool_ctrl)
+            pool_ctrl.set_ctrl_par('synchronization', synch)
 
-                if ctrl.is_referable():
-                    for channel in ctrl.get_channels():
-                        value_ref_enabled = channel.value_ref_enabled
+            if ctrl.is_referable():
+                for channel in ctrl.get_channels():
+                    value_ref_enabled = channel.value_ref_enabled
+                    pool_ctrl.set_axis_par(channel.axis,
+                                           "value_ref_enabled",
+                                           value_ref_enabled)
+                    if value_ref_enabled:
                         pool_ctrl.set_axis_par(channel.axis,
-                                               "value_ref_enabled",
-                                               value_ref_enabled)
-                        if value_ref_enabled:
-                            pool_ctrl.set_axis_par(channel.axis,
-                                                   "value_ref_pattern",
-                                                   channel.value_ref_pattern)
+                                               "value_ref_pattern",
+                                               channel.value_ref_pattern)
 
-            config.changed = False
+        config.changed = False
 
         # Call hardware and software start controllers prepare method
         ctrls = ctrls_hw + ctrls_sw_start
@@ -1010,7 +1015,7 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
             # read value every n times
             if not i % nb_states_per_value:
                 self.read_value(ret=values)
-                for acquirable, value in values.items():
+                for acquirable, value in list(values.items()):
                     if is_value_error(value):
                         self.error("Loop read value error for %s" %
                                    acquirable.name)
@@ -1029,7 +1034,7 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
             self.raw_read_value(ret=values)
             self.raw_read_value_ref(ret=value_refs)
 
-        for acquirable, state_info in states.items():
+        for acquirable, state_info in list(states.items()):
             # first update the element state so that value calculation
             # that is done after takes the updated state into account
             acquirable.set_state_info(state_info, propagate=0)
@@ -1120,7 +1125,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
             # read value every n times
             if not i % nb_states_per_value:
                 self.read_value_loop(ret=values)
-                for acquirable, value in values.items():
+                for acquirable, value in list(values.items()):
                     acquirable.put_value(value)
 
             time.sleep(nap)
@@ -1139,7 +1144,7 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
             self.raw_read_value(ret=values)
             self.raw_read_value_ref(ret=value_refs)
 
-        for acquirable, state_info in states.items():
+        for acquirable, state_info in list(states.items()):
             # first update the element state so that value calculation
             # that is done after takes the updated state into account
             acquirable.set_state_info(state_info, propagate=0)
@@ -1216,7 +1221,7 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
             # read value every n times
             if not i % nb_states_per_value:
                 self.read_value(ret=values)
-                for acquirable, value in values.items():
+                for acquirable, value in list(values.items()):
                     if is_value_error(value):
                         self.error("Loop read value error for %s" %
                                    acquirable.name)
@@ -1227,7 +1232,7 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
                     else:
                         acquirable.extend_value_buffer(value)
                 self.read_value_ref(ret=value_refs)
-                for acquirable, value_ref in value_refs.items():
+                for acquirable, value_ref in list(value_refs.items()):
                     if is_value_error(value_ref):
                         self.error("Loop read value ref error for %s" %
                                    acquirable.name)
@@ -1245,7 +1250,7 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
             self.raw_read_value(ret=values)
             self.raw_read_value_ref(ret=value_refs)
 
-        for acquirable, state_info in states.items():
+        for acquirable, state_info in list(states.items()):
             # first update the element state so that value calculation
             # that is done after takes the updated state into account
             acquirable.set_state_info(state_info, propagate=0)
@@ -1322,7 +1327,7 @@ class PoolCTAcquisition(PoolAcquisitionBase):
         # read values to send a first event when starting to acquire
         with ActionContext(self):
             self.raw_read_value_loop(ret=values)
-            for acquirable, value in values.items():
+            for acquirable, value in list(values.items()):
                 acquirable.put_value(value, propagate=2)
 
         while True:
@@ -1333,7 +1338,7 @@ class PoolCTAcquisition(PoolAcquisitionBase):
             # read value every n times
             if not i % nb_states_per_value:
                 self.read_value_loop(ret=values)
-                for acquirable, value in values.items():
+                for acquirable, value in list(values.items()):
                     acquirable.put_value(value)
 
             time.sleep(nap)
@@ -1351,7 +1356,7 @@ class PoolCTAcquisition(PoolAcquisitionBase):
             self.raw_read_state_info(ret=states)
             self.raw_read_value_loop(ret=values)
 
-        for acquirable, state_info in states.items():
+        for acquirable, state_info in list(states.items()):
             # first update the element state so that value calculation
             # that is done after takes the updated state into account
             acquirable.set_state_info(state_info, propagate=0)
@@ -1430,7 +1435,7 @@ class Pool0DAcquisition(PoolAction):
         nap = self._acq_sleep_time
         while True:
             self.read_value(ret=values)
-            for acquirable, value in values.items():
+            for acquirable, value in list(values.items()):
                 acquirable.put_current_value(value, propagate=0)
             if self._stopped or self._aborted:
                 break
@@ -1443,7 +1448,7 @@ class Pool0DAcquisition(PoolAction):
         with ActionContext(self):
             self.raw_read_state_info(ret=states)
 
-        for acquirable, state_info in states.items():
+        for acquirable, state_info in list(states.items()):
             # first update the element state so that value calculation
             # that is done after takes the updated state into account
             state_info = acquirable._from_ctrl_state_info(state_info)
@@ -1485,7 +1490,7 @@ class PoolIORAcquisition(PoolAction):
 
         # read values to send a first event when starting to acquire
         self.read_value(ret=values)
-        for acquirable, value in values.items():
+        for acquirable, value in list(values.items()):
             acquirable.put_value(value, propagate=2)
 
         while True:
@@ -1497,7 +1502,7 @@ class PoolIORAcquisition(PoolAction):
             # read value every n times
             if not i % 5:
                 self.read_value(ret=values)
-                for acquirable, value in values.items():
+                for acquirable, value in list(values.items()):
                     acquirable.put_value(value)
 
             i += 1
@@ -1507,7 +1512,7 @@ class PoolIORAcquisition(PoolAction):
 
         # first update the element state so that value calculation
         # that is done after takes the updated state into account
-        for acquirable, state_info in states.items():
+        for acquirable, state_info in list(states.items()):
             acquirable.set_state_info(state_info, propagate=0)
 
         # Do NOT send events before we exit the OperationContext, otherwise
@@ -1518,11 +1523,11 @@ class PoolIORAcquisition(PoolAction):
         def finish_hook(*args, **kwargs):
             # read values and propagate the change to all listeners
             self.read_value(ret=values)
-            for acquirable, value in values.items():
+            for acquirable, value in list(values.items()):
                 acquirable.put_value(value, propagate=2)
 
             # finally set the state and propagate to all listeners
-            for acquirable, state_info in states.items():
+            for acquirable, state_info in list(states.items()):
                 acquirable.set_state_info(state_info, propagate=2)
 
         self.set_finish_hook(finish_hook)

@@ -34,7 +34,6 @@ from taurus.core.taurusdevice import TaurusDevice
 from taurus.external.qt import Qt
 from taurus.qt.qtcore.model import TaurusBaseTreeItem, TaurusBaseModel
 from taurus.qt.qtgui.model import EditorToolBar
-from taurus.qt.qtgui.resource import getIcon, getThemeIcon
 from taurus.qt.qtgui.table import TaurusBaseTableWidget
 from taurus.qt.qtgui.panel import TaurusModelChooser
 from taurus.core.taurusbasetypes import TaurusElementType
@@ -89,7 +88,7 @@ def createChannelDict(channel, index=None, **kwargs):
     import PyTango
     import numpy
 
-    if isinstance(channel, (str, unicode)):
+    if isinstance(channel, str):
         #@fixme: to make things uglier, I lazily assume Tango attribute namin
         dev_name, attr_name = channel.rsplit('/', 1)
         name = attr_name
@@ -144,8 +143,8 @@ def createChannelDict(channel, index=None, **kwargs):
         # avoid trying to read for scalars. We know that their shape must be ()
         if attrconf.data_format != PyTango.AttrDataFormat.SCALAR:
             value = attrproxy.read().value
-    except Exception, e:
-        print str(e)
+    except Exception as e:
+        print(str(e))
 
     if value is not None:
         shape = list(numpy.shape(value))
@@ -202,27 +201,27 @@ def createChannelDict(channel, index=None, **kwargs):
 
 def getElementTypeIcon(t):
     if t == ChannelView.Channel:
-        return getIcon(":/actions/system-shutdown.svg")
+        return Qt.QIcon("actions:system-shutdown.svg")
     elif t == ChannelView.Enabled:
-        return getIcon(":/status/true.svg")
+        return Qt.QIcon("status:true.svg")
     elif t == ChannelView.Output:
-        return getThemeIcon("utilities-terminal")
+        return Qt.QIcon.fromTheme("utilities-terminal")
     elif t == ChannelView.PlotType:
-        return getIcon(":/apps/utilities-system-monitor.svg")
+        return Qt.QIcon("apps:utilities-system-monitor.svg")
     elif t == ChannelView.PlotAxes:
-        return getIcon(":/apps/utilities-system-monitor.svg")
+        return Qt.QIcon("apps:utilities-system-monitor.svg")
     elif t == ChannelView.Timer:
-        return getIcon(":/status/flag-green-clock.svg")
+        return Qt.QIcon("status:flag-green-clock.svg")
     elif t == ChannelView.Monitor:
-        return getIcon(":/status/flag-green.svg")
+        return Qt.QIcon("status:flag-green.svg")
     elif t == ChannelView.Synchronization:
-        return getIcon(":/actions/system-shutdown.svg")
+        return Qt.QIcon("actions:system-shutdown.svg")
     elif t == ChannelView.NXPath:
-        return getThemeIcon("document-save-as")
+        return Qt.QIcon.fromTheme("document-save-as")
     elif t == ChannelView.Synchronizer:
-        return getIcon(":/actions/system-shutdown.svg")
+        return Qt.QIcon("actions:system-shutdown.svg")
 
-    return getIcon(":/tango.png")
+    return Qt.QIcon(":tango.png")
 
 
 def getElementTypeSize(t):
@@ -387,7 +386,7 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
     def icon(self, index):
         taurus_role = index.model().role(index.column())
         if taurus_role == ChannelView.Channel:
-            return getIcon(":/actions/system-shutdown.svg")
+            return Qt.QIcon("actions:system-shutdown.svg")
 
 
 class MntGrpUnitItem(TaurusBaseTreeItem):
@@ -631,7 +630,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         # update the internal data
         self.beginResetModel()  # we are altering the internal data here, so we need to protect it
         ctrlsdict = self.dataSource()['controllers']
-        if not ctrlsdict.has_key(ctrlname):
+        if ctrlname not in ctrlsdict:
             ctrlsdict[ctrlname] = ctrl = {'channels': {}}
             if not external and chinfo['type'] in ('CTExpChannel', 'OneDExpChannel', 'TwoDExpChannel'):
                 ctrl['timer'] = chname
@@ -641,7 +640,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         else:
             ctrl = ctrlsdict[ctrlname]
         channelsdict = ctrl['channels']
-        if channelsdict.has_key(chname):
+        if chname in channelsdict:
             self.error(
                 'Channel "%s" is already in the measurement group. It will not be added again' % chname)
             return
@@ -809,11 +808,11 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
         dataSource = model.dataSource()
         taurus_role = model.role(index.column())
         if taurus_role == ChannelView.PlotType:
-            editor.addItems(PlotType.keys())
+            editor.addItems(list(PlotType.keys()))
             current = model.data(index)
             editor.setCurrentIndex(editor.findText(current))
         elif taurus_role == ChannelView.Normalization:
-            editor.addItems(Normalization.keys())
+            editor.addItems(list(Normalization.keys()))
             current = model.data(index)
             editor.setCurrentIndex(editor.findText(current))
         elif taurus_role in (ChannelView.Timer, ChannelView.Monitor):
@@ -830,14 +829,14 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
                 current = model.data(index)
                 editor.setCurrentIndex(editor.findText(current))
             else:
-                for ctrl_data in dataSource['controllers'].values():
+                for ctrl_data in list(dataSource['controllers'].values()):
                     if key in ctrl_data:
                         channel = all_channels[ctrl_data[key]]
                         editor.addItem(channel['name'], channel['full_name'])
                 current = dataSource.get(key)  # current global timer/monitor
                 editor.setCurrentIndex(editor.findData(current))
         elif taurus_role == ChannelView.Synchronization:
-            editor.addItems(AcqSynchType.keys())
+            editor.addItems(list(AcqSynchType.keys()))
             current = model.data(index)
             editor.setCurrentIndex(editor.findText(current))
         elif taurus_role == ChannelView.PlotAxes:
@@ -849,7 +848,7 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
         elif taurus_role == ChannelView.Synchronizer:
             # add the triggergates to the editor
             all_triggers = model.getAvailableTriggers()
-            for full_name, tg_data in all_triggers.items():
+            for full_name, tg_data in list(all_triggers.items()):
                 editor.addItem(tg_data['name'], full_name)
                 current = model.data(index)
                 editor.setCurrentIndex(editor.findText(current))
@@ -950,7 +949,7 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
             # get the affected channels
             affected = []
             channels = ctrl_data.get('channels')
-            for _, ch_data in channels.items():
+            for _, ch_data in list(channels.items()):
                 affected.append(ch_data['name'])
 
             if len(affected) > 1:
@@ -974,7 +973,7 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
     KnownPerspectives = {
         "Channel": {
             "label": "Channels",
-            "icon": ":/actions/system-shutdown.svg",
+            "icon": "actions:system-shutdown.svg",
             "tooltip": "View by channel",
             "model": [BaseMntGrpChannelModel, ],
         },
@@ -1047,7 +1046,8 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
         if channel is None:
             shown = [n for n, d in getChannelConfigs(dataSource)]
             avail_channels = qmodel.getAvailableChannels()
-            clist = [ch_info['name'] for ch_name, ch_info in avail_channels.items()
+            clist = [ch_info['name'] for ch_name, ch_info
+                     in list(avail_channels.items())
                      if ch_name not in shown]
             clist = sorted(clist) + ['(Other...)']
             chname, ok = Qt.QInputDialog.getItem(
@@ -1064,7 +1064,7 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
                 qmodel.addChannel(
                     chname=m, ctrlname='__tango__', external=True)
         else:
-            for ch_info in avail_channels.values():
+            for ch_info in list(avail_channels.values()):
                 if ch_info['name'] == chname:
                     qmodel.addChannel(chinfo=ch_info)
 

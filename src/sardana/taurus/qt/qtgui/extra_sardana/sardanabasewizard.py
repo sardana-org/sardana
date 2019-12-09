@@ -64,7 +64,7 @@ class SardanaBaseWizard(Qt.QWizard):
             if isinstance(p, SardanaBasePage):
                 try:
                     return p[name]()
-                except Exception, e:
+                except Exception:
                     pass
         return self._item_funcs[name]()
         return None

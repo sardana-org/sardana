@@ -25,8 +25,8 @@
 
 """This module contains the main pool class"""
 
-from __future__ import print_function
-from __future__ import with_statement
+
+
 
 __all__ = ["Pool"]
 
@@ -35,12 +35,7 @@ __docformat__ = 'restructuredtext'
 import os.path
 import logging.handlers
 
-try:
-    from taurus.core.taurusvalidator import AttributeNameValidator as\
-        TangoAttributeNameValidator
-except ImportError:
-    # TODO: For Taurus 4 compatibility
-    from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
+from taurus.core.tango.tangovalidator import TangoAttributeNameValidator
 from taurus.core.util.containers import CaselessDict
 
 from sardana import InvalidId, ElementType, TYPE_ACQUIRABLE_ELEMENTS, \
@@ -154,7 +149,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         log_file_name = os.path.join(path, 'controller.log.txt')
         try:
             if not os.path.exists(path):
-                os.makedirs(path, 0777)
+                os.makedirs(path, 0o777)
             f_h = logging.handlers.RotatingFileHandler(log_file_name,
                                                        maxBytes=1E7,
                                                        backupCount=5)
@@ -326,7 +321,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
 
     def get_elements_str_info(self, obj_type=None):
         if obj_type is None:
-            objs = self.get_element_id_map().values()
+            objs = list(self.get_element_id_map().values())
             objs.extend(self.get_controller_classes())
             objs.extend(self.get_controller_libs())
         elif obj_type == ElementType.ControllerClass:
@@ -340,7 +335,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
 
     def get_elements_info(self, obj_type=None):
         if obj_type is None:
-            objs = self.get_element_id_map().values()
+            objs = list(self.get_element_id_map().values())
             objs.extend(self.get_controller_classes())
             objs.extend(self.get_controller_libs())
             objs.append(self)
@@ -355,18 +350,18 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
 
     def get_acquisition_elements_info(self):
         ret = []
-        for _, element in self.get_element_name_map().items():
+        for _, element in list(self.get_element_name_map().items()):
             if element.get_type() not in TYPE_ACQUIRABLE_ELEMENTS:
                 continue
             acq_channel = element.get_default_acquisition_channel()
             full_name = "{0}/{1}".format(element.full_name, acq_channel)
             info = dict(name=element.name, full_name=full_name, origin='local')
             ret.append(info)
-        ret.extend(self._extra_acquisition_element_names.values())
+        ret.extend(list(self._extra_acquisition_element_names.values()))
         return ret
 
     def get_acquisition_elements_str_info(self):
-        return map(self.str_object, self.get_acquisition_elements_info())
+        return list(map(self.str_object, self.get_acquisition_elements_info()))
 
     def create_controller(self, **kwargs):
         ctrl_type = kwargs['type']
@@ -410,7 +405,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
             ctrl_prop_info = {}
         else:
             ctrl_prop_info = ctrl_class_info.ctrl_properties
-        for k, v in kwargs['properties'].items():
+        for k, v in list(kwargs['properties'].items()):
             info = ctrl_prop_info.get(k)
             if info is None:
                 props[k] = v
@@ -525,7 +520,7 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
                 self.pool.get_element(id=elem_id)
             else:
                 tg_attr_validator = TangoAttributeNameValidator()
-                params = tg_attr_validator.getParams(elem_id)
+                params = tg_attr_validator.getUriGroups(elem_id)
                 if params is None:
                     raise Exception("Invalid channel name %s" % elem_id)
 
@@ -688,8 +683,8 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
             new_elements.extend(new_lib.get_controllers())
             new_elements.append(new_lib)
         else:
-            new_names = set([ctrl.name for ctrl in new_lib.get_controllers()])
-            old_names = set([ctrl.name for ctrl in old_lib.get_controllers()])
+            new_names = {ctrl.name for ctrl in new_lib.get_controllers()}
+            old_names = {ctrl.name for ctrl in old_lib.get_controllers()}
             changed_names = set.intersection(new_names, old_names)
             deleted_names = old_names.difference(new_names)
             new_names = new_names.difference(old_names)
@@ -755,6 +750,6 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         for elem_type in TYPE_MOVEABLE_ELEMENTS:
             moveable_elems_map.update(elem_type_map[elem_type])
         graph = Graph()
-        for moveable in moveable_elems_map.values():
+        for moveable in list(moveable_elems_map.values()):
             self._build_element_dependencies(moveable, graph)
         return graph

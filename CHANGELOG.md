@@ -7,6 +7,63 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 
+* Support to Python >= 3.5 (#1089, #1173, 1201)
+* Pre-scan snapshot macros: `lssnap`, `defsnap` and `udefsnap` (#1199)
+* Instruments creation and configuration in sar_demo (#1198)
+* Documentation to Taurus Extensions of Sardana Devices: MacroServer part
+  and the whole Sardana part of the Qt Taurus Extensions (#1228, #1233)
+
+### Fixed
+
+* Default macro parameter values in macroexecutor (#1153)
+* fscan macro that was broken 2.6.0 (#1218, #1220)
+* Executing RunMacro Door's command with string parameters containing spaces (#1240)
+* Setting of environment variables in Python 3.7 (#1195)
+* Use `taurus.external.qt.compat.PY_OBJECT` in singal signatures instead of `object`
+  to avoid problems when using `builtins` from `future` (#1082)
+* Remove Taurus deprecated code what reduces deprecation warnings (#1206)
+* Use of env and hints in `macro` function decorator (#1239)
+* PMTV widget not updating the following attributes: limit switches, state
+  and status (#1244)
+
+### Deprecated
+
+* `nr_points` attribute of scan macros e.g., aNscan family of scans, `fscan` etc.
+  (#1218, #1220)
+
+### Changed
+
+* requirements are no longer checked when importing sardana (#1185)
+
+### Removed
+
+* Support to Python < 3.5 (#1089, #1173, 1201)
+* `sardana.requirements` (#1185)
+
+## [2.8.3] 2019-09-16
+
+### Fixed
+
+* Removing latencytime from detect_evt (as propossed in #1190)
+
+## [2.8.2] 2019-09-13
+
+### Fixed
+
+* Hangs of MacroServer when PyTango `AttributeProxy` and `DeviceProxy` objects
+  were garbage collected (#1080, #1190, #1193)
+
+## [2.8.1] 2019-07-22
+
+### Fixed
+
+* Remove uncompleted optimization when applying measurement group
+  configuration (#1171, #1174)
+
+## [2.8.0] 2019-07-01
+
+### Added
+
 * SEP2 - Improve integration of 1D and 2D experimental channels (#775):
   * Possibility to report acquisition results in form of value references (in 
   the URI format) of 1D and 2D experimental channels:
@@ -31,6 +88,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   * `VALUE_BUFFER_CODEC` and `VALUE_REF_BUFFER_CODEC` to sardanacustomsettings.
 * Reintroduce `showscan online` to spock (#1042)
 * Full support to *spock syntax* in loading sequences from files (#645, #672)
+* Info in `lsmac` output about macros being overridden (#930, #947)
 * Allow to configure timeout on pool element's (Taurus extensions) *go* methods e.g.
   `move`, `count`, etc. (#992)
 * Emulated hardware triggering between dummy counter/timer and trigger/gate elements
@@ -63,6 +121,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   macros (#1085)
 * Calculation of nb_starts argument of `PrepareOne` method of timerable controllers
   when software synchronization is in use (#1110)
+* Interactive macros on Windows (#347)
 * expconf when empty (unspecified) DataType (#1076)
 * Output block of scan records which do not fit the console width (#924)
 * Fix bug on exception popups in macroexecutor (#1079, #1088)
@@ -699,7 +758,11 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.7.2...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.3...HEAD
+[2.8.3]: https://github.com/sardana-org/sardana/compare/2.8.3...2.8.2
+[2.8.2]: https://github.com/sardana-org/sardana/compare/2.8.2...2.8.1
+[2.8.1]: https://github.com/sardana-org/sardana/compare/2.8.1...2.8.0
+[2.8.0]: https://github.com/sardana-org/sardana/compare/2.8.0...2.7.2
 [2.7.2]: https://github.com/sardana-org/sardana/compare/2.7.1...2.7.2
 [2.7.1]: https://github.com/sardana-org/sardana/compare/2.7.0...2.7.1
 [2.7.0]: https://github.com/sardana-org/sardana/compare/2.6.1...2.7.0

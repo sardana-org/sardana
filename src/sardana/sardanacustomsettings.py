@@ -76,3 +76,13 @@ VALUE_BUFFER_CODEC = "pickle"
 #: Type of encoding for ValueRefBuffer Tango attribute of experimental
 #: channels
 VALUE_REF_BUFFER_CODEC = "pickle"
+
+#: Database backend for MacroServer environment implemented using shelve.
+#: Available options:
+#:
+#: - None (default) - first try "gnu" and if not available fallback to "dumb"
+#: - "gnu" - better performance than dumb, but requires installation of
+#:   additional package e.g. python3-gdbm on Debian. At the time of writing of
+#:   this documentation it is not available for conda.
+#: - "dumb" - worst performance but directly available with Python 3.
+MS_ENV_SHELVE_BACKEND = None

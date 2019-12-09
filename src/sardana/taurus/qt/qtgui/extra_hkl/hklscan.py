@@ -39,7 +39,7 @@ import taurus.core
 from taurus.qt.qtcore.communication import SharedDataManager
 from taurus.qt.qtgui.input import TaurusValueLineEdit
 
-from displayscanangles import DisplayScanAngles
+from .displayscanangles import DisplayScanAngles
 
 import taurus.core.util.argparse
 import taurus.qt.qtgui.application
@@ -121,7 +121,7 @@ class HKLScan(TaurusWidget):
         angles_names = []
         angles_taurus_label = []
 
-        gap_x = 800 / self.nb_motors
+        gap_x = 800 // self.nb_motors
 
         try:
             angles_names = self.device.motorroles
@@ -378,7 +378,8 @@ def main():
     if len(args) > 1:
         w.onDoorChanged(args[1])
     else:
-        print "WARNING: Not door name supplied. Connection to MacroServer/Door not automatically done"
+        print("WARNING: Not door name supplied. Connection to "
+              "MacroServer/Door not automatically done")
     w.show()
 
     sys.exit(app.exec_())

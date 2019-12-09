@@ -115,6 +115,8 @@ class _lsobj(_ls):
     width = -1,     -1,           -1,     -1  # ,      -1
     align = Right,  Right,        Right,  Right  # ,   Right
 
+    show_overwritten_msg = False
+
     def objs(self, filter):
         return self.findObjs(filter, type_class=self.type, subtype=self.subtype,
                              reserve=False)
@@ -125,6 +127,13 @@ class _lsobj(_ls):
         for col in cols:
             if col == 'controller':
                 value = self.getController(o.controller).name
+            elif col == 'name':
+                isoverwritten = getattr(o, "isoverwritten", False)
+                value = getattr(o, col)
+                if isoverwritten is True:
+                    value = "[*] " + value
+                    if self.show_overwritten_msg is False:
+                        self.show_overwritten_msg = True
             else:
                 value = getattr(o, col)
                 if value is None:
@@ -137,7 +146,7 @@ class _lsobj(_ls):
         nb = len(objs)
         if nb is 0:
             if self.subtype is Macro.All:
-                if isinstance(self.type, (str, unicode)):
+                if isinstance(self.type, str):
                     t = self.type.lower()
                 else:
                     t = ", ".join(self.type).lower()
@@ -155,8 +164,13 @@ class _lsobj(_ls):
                 out.appendRow(self.obj2Row(obj))
             except:
                 pass
+
         for line in out.genOutput():
             self.output(line)
+
+        if (self.show_overwritten_msg is True
+            and hasattr(self, "overwritten_msg")):
+            self.warning(self.overwritten_msg)
 
 
 class lsm(_lsobj):
@@ -267,6 +281,10 @@ class lsmac(_lsobj):
 
     type = Type.MacroCode
     cols = 'Name', ('Location', 'file_path')
+    overwritten_msg = ("\nNote: if [*] is present together with the macro "
+                       + "name means that a macro with the same name \nis "
+                       + "defined in other module with less precedence and "
+                       + "it has been overwritten.")
 
 
 class lsmaclib(_lsobj):

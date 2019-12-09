@@ -51,7 +51,7 @@ class DiscretePseudoMotorConfiguration(dict):
         return data
 
     def has_calibration(self):
-        return all(['set' in self[x].keys() for x in self.keys()])
+        return all(['set' in list(self[x].keys()) for x in list(self.keys())])
 
     def add_point(self, label, pos, setpos, dmin, dmax):
         point = dict()
@@ -65,7 +65,9 @@ class DiscretePseudoMotorConfiguration(dict):
             else:
                 point['set'] = float(setpos)
             # If point exists, we use current min, max values
-            if label in self.keys() and math.isinf(dmin) and math.isinf(dmax):
+            if (label in list(self.keys())
+                    and math.isinf(dmin)
+                    and math.isinf(dmax)):
                 p = self[label]
                 min_pos = point['set'] + p['set'] - p['min']
                 max_pos = point['set'] + p['set'] - p['max']
@@ -185,7 +187,7 @@ class prdef_discr(Macro):
         row_head_str = []
         value_list = []
 
-        for k, v in conf.items():
+        for k, v in list(conf.items()):
             row_head_str.append(k)
             _row_values = [k]
             for i in col_head_str:
@@ -196,7 +198,7 @@ class prdef_discr(Macro):
             # Sort by position column
             value_list = sorted(value_list, key=lambda x: x[1])
             # Transpose matrix
-            value_list = map(list, zip(*value_list))
+            value_list = list(map(list, list(zip(*value_list))))
             # Extract sorted row headers
             row_head_str = value_list[0]
             # Extract sorted values

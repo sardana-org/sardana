@@ -472,23 +472,32 @@ class Motion(BaseMotion):
         self.power = power
 
     def info(self):
-        print "Small movement =", self.small_motion
-        print "length =", self.dsplmnt
-        print "position where maximum velocity will be reached =", self.curr_max_vel_pos
-        print "necessary displacement to reach maximum velocity =", self.curr_dsplmnt_reach_max_vel
-        print "necessary displacement to stop from maximum velocity =", self.curr_dsplmnt_reach_min_vel
-        print "maximum velocity possible =", self.curr_max_vel
-        print "time at top velocity =", self.curr_at_max_vel_time
-        print "displacement at top velocity =", self.curr_at_max_vel_dsplmnt
-        print "time to reach maximum velocity =", self.curr_max_vel_time
-        print "time to reach minimum velocity =", self.curr_min_vel_time
-        print "time the motion will take =", self.duration
-        print "instant when maximum velocity should be reached =", self.curr_max_vel_instant
-        print "instant when should start decelerating =", self.curr_min_vel_instant
-        print "instant the motion will end", self.final_instant
-        print ""
-        print "For long movements (where top vel is possible), necessary displacement to reach maximum velocity =", self.dsplmnt_reach_max_vel
-        print "For long movements (where top vel is possible), necessary displacement to stop from maximum velocity =", self.dsplmnt_reach_min_vel
+        print("Small movement =", self.small_motion)
+        print("length =", self.dsplmnt)
+        print("position where maximum velocity will be reached =",
+              self.curr_max_vel_pos)
+        print("necessary displacement to reach maximum velocity =",
+              self.curr_dsplmnt_reach_max_vel)
+        print("necessary displacement to stop from maximum velocity =",
+              self.curr_dsplmnt_reach_min_vel)
+        print("maximum velocity possible =", self.curr_max_vel)
+        print("time at top velocity =", self.curr_at_max_vel_time)
+        print("displacement at top velocity =", self.curr_at_max_vel_dsplmnt)
+        print("time to reach maximum velocity =", self.curr_max_vel_time)
+        print("time to reach minimum velocity =", self.curr_min_vel_time)
+        print("time the motion will take =", self.duration)
+        print("instant when maximum velocity should be reached =",
+              self.curr_max_vel_instant)
+        print("instant when should start decelerating =",
+              self.curr_min_vel_instant)
+        print("instant the motion will end", self.final_instant)
+        print("")
+        print("For long movements (where top vel is possible), "
+              "necessary displacement to reach maximum velocity =",
+              self.dsplmnt_reach_max_vel)
+        print("For long movements (where top vel is possible), "
+              "necessary displacement to stop from maximum velocity =",
+              self.dsplmnt_reach_min_vel)
 
 
 class BasicDummyMotorController(MotorController):
@@ -585,7 +594,7 @@ class BasicDummyMotorController(MotorController):
     def StartAll(self):
         #raise Exception("Cannot move on StartAll")
         t = time.time()
-        for motion, pos in self.motions.items():
+        for motion, pos in list(self.motions.items()):
             motion.startMotion(motion.getCurrentUserPosition(t), pos, t)
 
     def AbortOne(self, axis):
@@ -657,7 +666,7 @@ class FastDummyMotorController(MotorController):
         self.motions[self.m[idx]] = pos
 
     def StartAll(self):
-        for motion, pos in self.motions.items():
+        for motion, pos in list(self.motions.items()):
             motion.curr_pos = pos
 
     def AbortOne(self, axis):

@@ -82,7 +82,7 @@ class _wm(Macro):
             data[name] = []
         # get additional motor information (ctrl name & axis)
         if show_ctrlaxis:
-            for name, motor in motors.iteritems():
+            for name, motor in motors.items():
                 ctrl_name = self.getController(motor.controller).name
                 axis_nb = str(getattr(motor, "axis"))
                 data[name].extend((ctrl_name, axis_nb))
@@ -90,7 +90,7 @@ class _wm(Macro):
         # collect asynchronous replies
         while len(requests) > 0:
             req2delete = []
-            for name, _id in requests.iteritems():
+            for name, _id in requests.items():
                 motor = motors[name]
                 try:
                     attrs = motor.read_attributes_reply(_id)
@@ -374,9 +374,10 @@ class wm(Macro):
             if show_ctrlaxis:
                 valctrl = str_fmt % (ctrl_name)
                 valaxis = str_fmt % str(axis_nb)
-                upos = map(str, [valctrl, valaxis, ' ', val2, val1, val3])
+                upos = list(map(str, [valctrl, valaxis, ' ', val2, val1,
+                                      val3]))
             else:
-                upos = map(str, ['', val2, val1, val3])
+                upos = list(map(str, ['', val2, val1, val3]))
             pos_data = upos
             if show_dial:
                 try:
@@ -389,7 +390,7 @@ class wm(Macro):
                 val2 = str_fmt % dPosObj.getMaxValue()
                 val3 = str_fmt % dPosObj.getMinValue()
 
-                dpos = map(str, [val2, val1, val3])
+                dpos = list(map(str, [val2, val1, val3]))
                 pos_data += [''] + dpos
 
             motor_pos.append(pos_data)
@@ -430,8 +431,8 @@ class wum(Macro):
             name = motor.getName()
             motor_names.append([name])
             posObj = motor.getPositionObj()
-            upos = map(str, [posObj.getMaxValue(), motor.getPosition(
-                force=True), posObj.getMinValue()])
+            upos = list(map(str, [posObj.getMaxValue(), motor.getPosition(
+                force=True), posObj.getMinValue()]))
             pos_data = [''] + upos
 
             motor_pos.append(pos_data)
@@ -524,8 +525,8 @@ class umv(Macro):
             posObj = motor.getPositionObj()
             try:
                 posObj.unsubscribeEvent(self.positionChanged, motor)
-            except Exception, e:
-                print str(e)
+            except Exception as e:
+                print(str(e))
                 raise e
 
     def positionChanged(self, motor, position):
@@ -832,7 +833,7 @@ class settimer(Macro):
 
         try:
             mnt_grp.setTimer(timer.getName())
-        except Exception, e:
+        except Exception as e:
             self.output(str(e))
             self.output(
                 "%s is not a valid channel in the active measurement group"
@@ -919,7 +920,7 @@ class repeat(Hookable, Macro):
         else:
             for i in range(nr):
                 self.__loop()
-                progress = ((i + 1) / float(nr)) * 100
+                progress = ((i + 1) / nr) * 100
                 yield progress
 
 
@@ -957,7 +958,7 @@ class newfile(Hookable, Macro):
                     ScanDir = self.getEnv('ScanDir')
                 except UnknownEnv:
                     ScanDir = ''
-                if not (isinstance(ScanDir, basestring) and len(ScanDir) > 0):
+                if not (isinstance(ScanDir, str) and len(ScanDir) > 0):
                     msg = ('Data is not stored until ScanDir is correctly '
                            'set! Provide ScanDir with newfile macro: '
                            '`newfile [<ScanDir>/<ScanFile>] <ScanID>` '

@@ -37,7 +37,7 @@ import PyTango
 
 import taurus
 from taurus.core import TaurusEventType, TaurusDevice
-from taurus.external.qt import Qt
+from taurus.external.qt import Qt, compat
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtgui.base import TaurusBaseWidget
 from taurus.qt.qtgui.button import TaurusCommandButton
@@ -53,7 +53,7 @@ class DoorStateListener(Qt.QObject):
 
     __pyqtSignals__ = ["doorStateChanged"]
 
-    doorStateChanged = Qt.pyqtSignal(object)
+    doorStateChanged = Qt.pyqtSignal(compat.PY_OBJECT)
 
     def eventReceived(self, evt_src, evt_type, evt_value):
         if evt_type not in (TaurusEventType.Change, TaurusEventType.Periodic):
@@ -74,8 +74,8 @@ class MacroButton(TaurusWidget):
 
     __pyqtSignals__ = ['statusUpdated', 'resultUpdated']
 
-    statusUpdated = Qt.pyqtSignal(object)
-    resultUpdated = Qt.pyqtSignal(object)
+    statusUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
+    resultUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
 
     def __init__(self, parent=None, designMode=False):
         TaurusWidget.__init__(self, parent, designMode)
@@ -299,7 +299,7 @@ class MacroButton(TaurusWidget):
             sec_xml = self.door.getRunningXML()
             # get the id of the current running macro
             self.macro_id = sec_xml[0].get("id")
-        except Exception, e:
+        except Exception as e:
             self.ui.button.setChecked(False)
             raise e
 
@@ -422,7 +422,7 @@ if __name__ == '__main__':
             try:
                 pars = door.macro_server.getMacroInfoObj(macro_name).parameters
             except AttributeError as e:
-                print "Macro %s does not exists!" % macro_name
+                print("Macro %s does not exists!" % macro_name)
                 return None
 
             param_names = []
@@ -467,7 +467,9 @@ if __name__ == '__main__':
                 _argEditors.append(self.argEdit)
 
             for e, v in zip(_argEditors, d_values):
-                e.setText(v)
+                if v is None:
+                    continue
+                e.setText(str(v))
 
             # Create bottom layout
             self.mb = MacroButton()

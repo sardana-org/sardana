@@ -247,12 +247,12 @@ Glossary
         people unfamiliar with Python sometimes use a numerical counter instead::
 
             for i in range(len(food)):
-                print food[i]
+                print(food[i])
 
         As opposed to the cleaner, Pythonic method::
 
             for piece in food:
-                print piece
+                print(piece)
              
     sequence
         An :term:`iterable` which supports efficient element access using integer

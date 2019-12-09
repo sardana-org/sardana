@@ -47,7 +47,7 @@ In general, the contributions to Sardana should consider following:
 - The code must comply with the sardana coding conventions:
   - We try to follow the standard Python style conventions as
     described in [Style Guide for Python Code](http://www.python.org/peps/pep-0008.html)
-  - Code **must** be python 2.6 compatible
+  - Code **must** be python 3.5 compatible (python 2 is not supported)
   - Use 4 spaces for indentation
   - use ``lowercase`` for module names. If possible prefix module names with the
     word ``sardana`` (like :file:`sardanautil.py`) to avoid import mistakes.
@@ -79,7 +79,6 @@ The following code can be used as a template for writing new python modules to
 Sardana:
 
 ```python
-    #!/usr/bin/env python
     # -*- coding: utf-8 -*-
 
     ##############################################################################

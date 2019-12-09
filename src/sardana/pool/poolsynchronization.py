@@ -261,7 +261,7 @@ class PoolSynchronization(PoolAction):
             time.sleep(nap)
 
         # Set element states after ending the triggering
-        for element, state_info in states.items():
+        for element, state_info in list(states.items()):
             with element:
                 element.clear_operation()
                 state_info = element._from_ctrl_state_info(state_info)

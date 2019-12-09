@@ -67,7 +67,7 @@ class SpockConsoleLexer(Lexer):
       LAB-01 [2]: a
       Result [2]: 'foo'
 
-      LAB-01 [3]: print a
+      LAB-01 [3]: print(a)
       foo
 
       LAB-01 [4]: 1 / 0

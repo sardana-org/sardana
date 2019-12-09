@@ -90,7 +90,7 @@ class BaseControllerTestCase(object):
     def start_action(self, configuration):
         """ This method set the axis parameters and pre start the axis.
         """
-        for key, value in configuration.items():
+        for key, value in list(configuration.items()):
             self.axisPar(key, value)
         self.ctrl.SynchOne(configuration)
 
@@ -240,7 +240,7 @@ class TriggerGateReceiver(object):
         self.passive_events = {}
 
     def getCount(self):
-        count = len(self.passive_events.keys())
+        count = len(list(self.passive_events.keys()))
         return count
 
     count = property(getCount)
@@ -298,7 +298,7 @@ class TriggerGateReceiver(object):
             i += 1
         if len(periods) > 0:
             periods_array = numpy.array(periods)
-            print periods_array
+            print(periods_array)
             c2c = numpy.diff(periods_array)
             mean_c2c = c2c.mean()
             std_c2c = c2c.std()

@@ -29,16 +29,12 @@ __all__ = ["ControllerClassTreeWidget", "ControllerClassSelectionDialog"]
 
 __docformat__ = 'restructuredtext'
 
-import sys
-import os
-
 import taurus.core
 from taurus.core.util.enumeration import Enumeration
 from taurus.external.qt import Qt
 from taurus.qt.qtcore.mimetypes import TAURUS_MODEL_MIME_TYPE, TAURUS_MODEL_LIST_MIME_TYPE
 from taurus.qt.qtcore.model import TaurusBaseTreeItem, TaurusBaseModel, TaurusBaseProxyModel
 from taurus.qt.qtgui.tree import TaurusBaseTreeWidget
-from taurus.qt.qtgui.resource import getThemeIcon, getIcon
 
 PoolControllerView = Enumeration(
     "PoolControllerView", ("ControllerModule", "ControllerClass", "Unknown"))
@@ -46,10 +42,10 @@ PoolControllerView = Enumeration(
 
 def getElementTypeIcon(t):
     if t == PoolControllerView.ControllerModule:
-        return getIcon(":/python-file.png")
+        return Qt.QIcon(":python-file.png")
     elif t == PoolControllerView.ControllerClass:
-        return getIcon(":/python.png")
-    return getIcon(":/tango.png")
+        return Qt.QIcon(":python.png")
+    return Qt.QIcon(":tango.png")
 
 
 def getElementTypeSize(t):
@@ -94,7 +90,7 @@ class ControllerModuleTreeItem(ControllerBaseTreeItem):
         return "The controller module '%s'" % self.display()
 
     def icon(self):
-        return getIcon(":/python-file.png")
+        return Qt.QIcon(":python-file.png")
 
 
 class ControllerTreeItem(ControllerBaseTreeItem):
@@ -113,7 +109,7 @@ class ControllerTreeItem(ControllerBaseTreeItem):
         return self._itemData.doc
 
     def icon(self):
-        return getIcon(":/python.png")
+        return Qt.QIcon(":python.png")
 
 
 class ControllerBaseModel(TaurusBaseModel):
@@ -170,11 +166,11 @@ class ControllerBaseModel(TaurusBaseModel):
             mime_data_item = tree_item.mimeData(index)
             if mime_data_item is None:
                 continue
-            data.append(mime_data_item)
-        ret.setData(TAURUS_MODEL_LIST_MIME_TYPE, "\r\n".join(data))
-        ret.setText(", ".join(data))
+            data.append(bytes(mime_data_item, encoding='utf8'))
+        ret.setData(TAURUS_MODEL_LIST_MIME_TYPE, b"\r\n".join(data))
+        ret.setText(", ".join(map(str, data)))
         if len(data) == 1:
-            ret.setData(TAURUS_MODEL_MIME_TYPE, str(data[0]))
+            ret.setData(TAURUS_MODEL_MIME_TYPE, data[0])
         return ret
 
     def pyData(self, index, role):
@@ -259,13 +255,13 @@ class ControllerClassTreeWidget(TaurusBaseTreeWidget):
 
     KnownPerspectives = {PoolControllerView.ControllerModule: {
         "label": "By module",
-        "icon": ":/python-file.png",
+        "icon": ":python-file.png",
         "tooltip": "View by controller module",
         "model": [ControllerModuleModelProxy, ControllerModuleModel],
     },
         PoolControllerView.ControllerClass: {
         "label": "By controller",
-        "icon": ":/python.png",
+        "icon": ":python.png",
         "tooltip": "View by controller class",
         "model": [PlainControllerModelProxy, PlainControllerModel],
     }
@@ -315,7 +311,7 @@ def main_ControllerClassSelecionDialog(pool, perspective=PoolControllerView.Cont
         model_name=pool, perspective=perspective)
 
     if w.result() == Qt.QDialog.Accepted:
-        print w.getSelectedMacros()
+        print(w.getSelectedMacros())
     return w
 
 

@@ -50,7 +50,7 @@ from taurus.qt.qtgui.util.ui import UILoadable
 from sardana.taurus.qt.qtgui.extra_macroexecutor import TaurusMacroConfigurationDialog
 
 
-from selectsignal import SelectSignal
+from .selectsignal import SelectSignal
 
 
 class EngineModesComboBox(Qt.QComboBox, TaurusBaseWidget):
@@ -146,7 +146,7 @@ class DiffractometerAlignment(TaurusWidget):
         angles_taurus_label = []
         angles_taurus_input = []
 
-        gap_x = 650 / self.nb_motors
+        gap_x = 650 // self.nb_motors
 
         try:
             self.angles_names = self.device.motorroles
@@ -216,7 +216,7 @@ class DiffractometerAlignment(TaurusWidget):
         tomax_functions = [self.tomax_scan1, self.tomax_scan2, self.tomax_scan3,
                            self.tomax_scan4, self.tomax_scan5, self.tomax_scan6]
 
-        gap_x = 650 / self.nb_motors
+        gap_x = 650 // self.nb_motors
 
         for i in range(0, self.nb_motors):
             scan_buttons.append(QtGui.QPushButton(self))
