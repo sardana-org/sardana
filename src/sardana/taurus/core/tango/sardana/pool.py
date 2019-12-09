@@ -1393,18 +1393,21 @@ class MGConfiguration(object):
 
         # dict<str, dict>
         # where key is the channel name and value is the channel data in form
-        # of a dict as receveid by the MG configuration attribute
+        # of a dict as received by the MG configuration attribute
         self.channels = channels = CaselessDict()
         self.channels_names = channels_names = CaselessDict()
         self.channels_labels = channels_labels = CaselessDict()
         self.controllers_names = controllers_names = CaselessDict()
+        self.controllers_channels = controllers_channels = CaselessDict()
 
         # TODO private controllers attr
         for ctrl_name, ctrl_data in list(self.controllers.items()):
             try:
                 if ctrl_name != '__tango__':
                     proxy = DeviceProxy(ctrl_name)
-                    controllers_names[proxy.alias()] = ctrl_data
+                    ctrl_name = proxy.alias()
+                    controllers_names[ctrl_name] = ctrl_data
+                    controllers_channels[ctrl_name] = []
             except Exception:
                 pass
             for channel_name, channel_data in \
@@ -1414,6 +1417,8 @@ class MGConfiguration(object):
                 channels_names[name] = channel_data
                 name = channel_data['label']
                 channels_labels[name] = channel_data
+                if ctrl_name != '__tango__':
+                    controllers_channels[ctrl_name].append(channel_name)
 
         #####################
         # @todo: the for-loops above could be replaced by something like:
@@ -1422,7 +1427,7 @@ class MGConfiguration(object):
         #####################
 
         # seq<dict> each element is the channel data in form of a dict as
-        # receveid by the MG configuration attribute. This seq is just a cache
+        # received by the MG configuration attribute. This seq is just a cache
         # ordered by channel index in the MG.
         self.channel_list = len(channels) * [None]
 
@@ -1560,6 +1565,14 @@ class MGConfiguration(object):
                     self.tango_channels_info_in_error -= 1
                 except:
                     pass
+
+    def getChannelsForElement(self, element):
+        channels = []
+        if element in self.controllers_channels:
+            channels += self.controllers_channels[element]
+        else:
+            channels += [element]
+        return channels
 
     def getChannels(self):
         return self.channel_list
@@ -1748,7 +1761,7 @@ class MGConfiguration(object):
             proxy = self._get_proxy(ctrl_name)
             alias = proxy.alias()
             if alias not in self.controllers_names:
-                raise KeyError('Controller "{}" is not on the '
+                raise KeyError('Controller "{0}" is not on the '
                                'MntGrp "{1}"'.format(alias, self.label))
             return self._get_ctrl_data(alias)
 
