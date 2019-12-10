@@ -1897,6 +1897,32 @@ class MGConfiguration(object):
         """
         self._set_channels_key('value_ref_enabled', state, channels, apply_cfg)
 
+    def getValueRefPatternChannels(self, channels=None, use_fullname=False):
+        """get acquisition Enabled channels.
+
+        :param channels: (seq<str>) a list of channels names to get the
+        Enabled info
+        :param use_fullname: (bool) returns a full name instead sardana
+        element name
+
+        :return a OrderedDict where the key are the channels and value the
+        Enabled state
+        """
+
+        return self._get_channels_key('value_ref_pattern', channels,
+                                      use_fullname)
+
+    def setValueRefPatternChannels(self, pattern, channels=None,
+                                   apply_cfg=True):
+        """Enable acquisition of the indicated channels.
+
+        :param pattern: <str> The state of the channels to be set.
+        :param channels: (seq<str>) a sequence of strings indicating
+                         channel names
+        """
+        self._set_channels_key('value_ref_pattern', pattern, channels,
+                               apply_cfg)
+
     def getEnabledChannels(self, channels=None, use_fullname=False):
         """get acquisition Enabled channels.
 
@@ -2655,6 +2681,61 @@ class MeasurementGroup(PoolElement):
         channels = self._get_channels_for_elements(elements)
         config = self.getConfiguration()
         return config.getValueRefEnabledChannels(channels,
+                                                 use_fullname=ret_full_name)
+
+    def setValueRefPattern(self, value_ref_pattern, *elements, apply=True):
+        """Set the output configuration for the given elements.
+
+        Channels and controllers are accepted as elements. Setting the value
+        reference pattern on the controller means setting it to all channels
+        of this controller present in this measurement group.
+
+        Configuration by default is directly applied on the server.
+        Since setting the configuration means passing to the server all the
+        configuration paramters of the measurement group at once this
+        behavior can be changed with the *apply* argument and we can keep
+        the configuration changes only locally. This is useful when we want
+        to change more then one parameter, in this case only the setting of
+        the last parameter should use `apply=True`.
+
+        :param value_ref_pattern: `/path/file{index:03d}.txt'
+        :type value_ref_pattern: str
+        :param elements: sequence of element names or full names, no elements
+            means set to all
+        :type elements: list(str)
+        :param apply: `True` - apply on the server, `False` - do not apply yet
+            on the server and keep locally (default: `True`)
+        :type apply: bool
+        """
+
+        channels = self._get_channels_for_elements(elements)
+        config = self.getConfiguration()
+        config.setValueRefPatternChannels(value_ref_pattern, channels,
+                                          apply_cfg=apply)
+
+    def getValueRefPattern(self, *elements, ret_full_name=False):
+        """Get the value reference enabled configuration of the given elements.
+
+        Channels and controllers are accepted as elements. Getting the value
+        from the controller means getting it from all channels of this
+        controller present in this measurement group.
+
+        :param elements: sequence of element names or full names, no elements
+            means get from all
+        :type elements: list(str)
+        :param ret_full_name: whether keys in the returned dictionary are
+            full names or names (default: `False` means return names)
+        :type ret_full_name: bool
+        :return: ordered dictionary where keys are **channel** names (or full
+            names if `ret_full_name=True`) and values are their output
+            configurations. Note that even if the *elements* contained
+            controllers, the returned configuration will always contain
+            only channels.
+        :rtype: dict(str, str)
+        """
+        channels = self._get_channels_for_elements(elements)
+        config = self.getConfiguration()
+        return config.getValueRefPatternChannels(channels,
                                                  use_fullname=ret_full_name)
 
     # NbStarts Methods
