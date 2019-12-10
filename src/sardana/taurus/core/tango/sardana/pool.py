@@ -2416,6 +2416,60 @@ class MeasurementGroup(PoolElement):
         channels = self._get_channels_for_elements(elements)
         config = self.getConfiguration()
         return config.getOutputChannels(channels, use_fullname=ret_full_name)
+
+    def setEnabled(self, enabled, *elements, apply=True):
+        """Set the enabled configuration for the given elements.
+
+        Channels and controllers are accepted as elements. Setting the enabled
+        on the controller means setting it to all channels of this controller
+        present in this measurement group.
+
+        Configuration by default is directly applied on the server.
+        Since setting the configuration means passing to the server all the
+        configuration paramters of the measurement group at once this
+        behavior can be changed with the *apply* argument and we can keep
+        the configuration changes only locally. This is useful when we want
+        to change more then one parameter, in this case only the setting of
+        the last parameter should use `apply=True`.
+
+        :param enabled: `True` - output enabled, `False` - output disabled
+        :type enabled: bool
+        :param elements: sequence of element names or full names, no elements
+            means set to all
+        :type elements: list(str)
+        :param apply: `True` - apply on the server, `False` - do not apply yet
+            on the server and keep locally (default: `True`)
+        :type apply: bool
+        """
+
+        channels = self._get_channels_for_elements(elements)
+        config = self.getConfiguration()
+        config.setEnabledChannels(enabled, channels, apply_cfg=apply)
+
+    def getEnabled(self, *elements, ret_full_name=False):
+        """Get the output configuration of the given elements.
+
+        Channels and controllers are accepted as elements. Getting the enabled
+        from the controller means getting it from all channels of this
+        controller present in this measurement group.
+
+        :param elements: sequence of element names or full names, no elements
+            means get from all
+        :type elements: list(str)
+        :param ret_full_name: whether keys in the returned dictionary are
+            full names or names (default: `False` means return names)
+        :type ret_full_name: bool
+        :return: ordered dictionary where keys are **channel** names (or full
+            names if `ret_full_name=True`) and values are their output
+            configurations. Note that even if the *elements* contained
+            controllers, the returned configuration will always contain
+            only channels.
+        :rtype: dict(str, bool)
+        """
+        channels = self._get_channels_for_elements(elements)
+        config = self.getConfiguration()
+        return config.getEnabledChannels(channels, use_fullname=ret_full_name)
+
     # NbStarts Methods
     def getNbStartsObj(self):
         return self._getAttrEG('NbStarts')
