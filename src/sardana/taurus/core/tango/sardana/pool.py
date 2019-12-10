@@ -1932,7 +1932,7 @@ class MGConfiguration(object):
         :return  a OrderedDict where keys are channel names and
         value the plot axes info
         """
-
+        # TODO: Change to return enum value SEP12
         return self._get_channels_key('plot_type', channels, use_fullname)
 
     def setPlotTypeChannels(self,  ptype, channels=None, apply_cfg=True):
@@ -2469,6 +2469,61 @@ class MeasurementGroup(PoolElement):
         channels = self._get_channels_for_elements(elements)
         config = self.getConfiguration()
         return config.getEnabledChannels(channels, use_fullname=ret_full_name)
+
+    def setPlotType(self, plot_type, *elements, apply=True):
+        """Set the enabled configuration for the given elements.
+
+        Channels and controllers are accepted as elements. Setting the plot
+        type on the controller means setting it to all channels of this
+        controller present in this measurement group.
+
+        Configuration by default is directly applied on the server.
+        Since setting the configuration means passing to the server all the
+        configuration paramters of the measurement group at once this
+        behavior can be changed with the *apply* argument and we can keep
+        the configuration changes only locally. This is useful when we want
+        to change more then one parameter, in this case only the setting of
+        the last parameter should use `apply=True`.
+
+        :param plot_type: `True` - output enabled, `False` - output disabled
+        :type plot_type: str
+        :param elements: sequence of element names or full names, no elements
+            means set to all
+        :type elements: list(str)
+        :param apply: `True` - apply on the server, `False` - do not apply yet
+            on the server and keep locally (default: `True`)
+        :type apply: bool
+        """
+
+        channels = self._get_channels_for_elements(elements)
+        config = self.getConfiguration()
+        config.setPlotTypeChannels(plot_type, channels, apply_cfg=apply)
+
+    def getPlotType(self, *elements, ret_full_name=False):
+        """Get the output configuration of the given elements.
+
+        Channels and controllers are accepted as elements. Getting the plot
+        type from the controller means getting it from all channels of this
+        controller present in this measurement group.
+
+        :param elements: sequence of element names or full names, no elements
+            means get from all
+        :type elements: list(str)
+        :param ret_full_name: whether keys in the returned dictionary are
+            full names or names (default: `False` means return names)
+        :type ret_full_name: bool
+        :return: ordered dictionary where keys are **channel** names (or full
+            names if `ret_full_name=True`) and values are their output
+            configurations. Note that even if the *elements* contained
+            controllers, the returned configuration will always contain
+            only channels.
+        :rtype: dict(str, int)
+        """
+        channels = self._get_channels_for_elements(elements)
+        config = self.getConfiguration()
+        # TODO Change the documentation when getPlotTypeChannels return enum
+        #  value
+        return config.getPlotTypeChannels(channels, use_fullname=ret_full_name)
 
     # NbStarts Methods
     def getNbStartsObj(self):
