@@ -2432,7 +2432,7 @@ class MeasurementGroup(PoolElement):
         to change more then one parameter, in this case only the setting of
         the last parameter should use `apply=True`.
 
-        :param enabled: `True` - output enabled, `False` - output disabled
+        :param enabled: `True` - element enabled, `False` - element disabled
         :type enabled: bool
         :param elements: sequence of element names or full names, no elements
             means set to all
@@ -2485,8 +2485,8 @@ class MeasurementGroup(PoolElement):
         to change more then one parameter, in this case only the setting of
         the last parameter should use `apply=True`.
 
-        :param plot_type: `True` - output enabled, `False` - output disabled
-        :type plot_type: str
+        :param plot_type: 'No'/0 , 'Spectrum'/1, 'Image'/2
+        :type plot_type: str or int
         :param elements: sequence of element names or full names, no elements
             means set to all
         :type elements: list(str)
