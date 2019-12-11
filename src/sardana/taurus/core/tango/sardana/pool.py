@@ -1566,7 +1566,7 @@ class MGConfiguration(object):
                 except:
                     pass
 
-    def getChannelsForElement(self, element):
+    def _getChannelsForElement(self, element):
         channels = []
         if element in self.controllers_channels:
             channels += self.controllers_channels[element]
@@ -1873,7 +1873,7 @@ class MGConfiguration(object):
             if (time.time() - t1) >= timeout:
                 raise RuntimeError('Timeout on applying configuration')
 
-    def getValueRefEnabledChannels(self, channels=None, use_fullname=False):
+    def _getValueRefEnabledChannels(self, channels=None, use_fullname=False):
         """get acquisition Enabled channels.
 
         :param channels: (seq<str>) a list of channels names to get the
@@ -1888,7 +1888,7 @@ class MGConfiguration(object):
         return self._get_channels_key('value_ref_enabled', channels,
                                       use_fullname)
 
-    def setValueRefEnabledChannels(self, state, channels=None, apply_cfg=True):
+    def _setValueRefEnabledChannels(self, state, channels=None, apply_cfg=True):
         """Enable acquisition of the indicated channels.
 
         :param state: <bool> The state of the channels to be set.
@@ -1897,7 +1897,7 @@ class MGConfiguration(object):
         """
         self._set_channels_key('value_ref_enabled', state, channels, apply_cfg)
 
-    def getValueRefPatternChannels(self, channels=None, use_fullname=False):
+    def _getValueRefPatternChannels(self, channels=None, use_fullname=False):
         """get acquisition Enabled channels.
 
         :param channels: (seq<str>) a list of channels names to get the
@@ -1912,8 +1912,8 @@ class MGConfiguration(object):
         return self._get_channels_key('value_ref_pattern', channels,
                                       use_fullname)
 
-    def setValueRefPatternChannels(self, pattern, channels=None,
-                                   apply_cfg=True):
+    def _setValueRefPatternChannels(self, pattern, channels=None,
+                                    apply_cfg=True):
         """Enable acquisition of the indicated channels.
 
         :param pattern: <str> The state of the channels to be set.
@@ -1923,7 +1923,7 @@ class MGConfiguration(object):
         self._set_channels_key('value_ref_pattern', pattern, channels,
                                apply_cfg)
 
-    def getEnabledChannels(self, channels=None, use_fullname=False):
+    def _getEnabledChannels(self, channels=None, use_fullname=False):
         """get acquisition Enabled channels.
 
         :param channels: (seq<str>) a list of channels names to get the
@@ -1937,7 +1937,7 @@ class MGConfiguration(object):
 
         return self._get_channels_key('enabled', channels, use_fullname)
 
-    def setEnabledChannels(self, state, channels=None, apply_cfg=True):
+    def _setEnabledChannels(self, state, channels=None, apply_cfg=True):
         """Enable acquisition of the indicated channels.
 
         :param state: <bool> The state of the channels to be set.
@@ -1946,7 +1946,7 @@ class MGConfiguration(object):
         """
         self._set_channels_key('enabled', state, channels, apply_cfg)
 
-    def getOutputChannels(self, channels=None, use_fullname=False):
+    def _getOutputChannels(self, channels=None, use_fullname=False):
         """get the output State of the channels.
 
         :param channels: (list<str>) a string indicating the channel name,
@@ -1960,7 +1960,7 @@ class MGConfiguration(object):
 
         return self._get_channels_key('output', channels, use_fullname)
 
-    def setOutputChannels(self, state, channels=None, apply_cfg=True):
+    def _setOutputChannels(self, state, channels=None, apply_cfg=True):
         """Set the Output state of the indicated channels.
 
         :param state: (bool) Indicate the state of the output.
@@ -1970,7 +1970,7 @@ class MGConfiguration(object):
 
         self._set_channels_key('output', state, channels, apply_cfg)
 
-    def getPlotTypeChannels(self, channels=None, use_fullname=False):
+    def _getPlotTypeChannels(self, channels=None, use_fullname=False):
         """get the Plot Type for the channel indicated. In case of empty
         channel value it will return  all the Plot Type Info
 
@@ -1985,7 +1985,7 @@ class MGConfiguration(object):
         # TODO: Change to return enum value SEP12
         return self._get_channels_key('plot_type', channels, use_fullname)
 
-    def setPlotTypeChannels(self,  ptype, channels=None, apply_cfg=True):
+    def _setPlotTypeChannels(self, ptype, channels=None, apply_cfg=True):
         """Set the Plot Type for the indicated channels.
 
         :param ptype: <str> string indicating the type name
@@ -2011,7 +2011,7 @@ class MGConfiguration(object):
             raise ValueError()
         self._set_channels_key('plot_type', ptype, channels, apply_cfg)
 
-    def getPlotAxesChannels(self, channels=None, use_fullname=False):
+    def _getPlotAxesChannels(self, channels=None, use_fullname=False):
         """get the PlotAxes for the channel indicated. In case of empty channel
         value it will return  all the PlotAxes Info
 
@@ -2026,7 +2026,7 @@ class MGConfiguration(object):
 
         return self._get_channels_key('plot_axes', channels, use_fullname)
 
-    def setPlotAxesChannels(self,  axes, channels_names=None, apply_cfg=True):
+    def _setPlotAxesChannels(self, axes, channels_names=None, apply_cfg=True):
         """Set the PlotAxes for the indicated channels.
 
         :param axes: <seq(str)> string indicating the axis name
@@ -2060,7 +2060,7 @@ class MGConfiguration(object):
             self._set_channels_key('plot_axes',  axes, [channel_name],
                                    apply_cfg)
 
-    def getCtrlsTimer(self, ctrls=None, use_fullname=False):
+    def _getCtrlsTimer(self, ctrls=None, use_fullname=False):
         """get the acquisition Timer.
 
         :param ctrls: <list(str)> list of Controllers names to get the timer
@@ -2074,7 +2074,7 @@ class MGConfiguration(object):
 
         return self._get_ctrls_key('timer', ctrls, use_fullname)
 
-    def setCtrlsTimer(self, timers, apply_cfg=True):
+    def _setCtrlsTimer(self, timers, apply_cfg=True):
         """Set the acquisition Timer to the controllers compatibles,
         it finds the controller comptible with this timer and set it
         .
@@ -2089,7 +2089,7 @@ class MGConfiguration(object):
                 self._raw_data['timer'] = timer
             self._set_ctrls_key('timer', timer, [ctrl], apply_cfg)
 
-    def getCtrlsMonitor(self, ctrls=None, use_fullname=False):
+    def _getCtrlsMonitor(self, ctrls=None, use_fullname=False):
         """get the Monitor for the channel indicated. In case of empty channel
         value it will return  all the Monitor Info
 
@@ -2103,7 +2103,7 @@ class MGConfiguration(object):
 
         return self._get_ctrls_key('monitor', ctrls, use_fullname)
 
-    def setCtrlsMonitor(self, monitors, apply_cfg=True):
+    def _setCtrlsMonitor(self, monitors, apply_cfg=True):
         """Set the Monitor for to the controllers compatibles,
         it finds the controller comptible with this timer and set it
 
@@ -2121,7 +2121,7 @@ class MGConfiguration(object):
                 self._raw_data['monitor'] = monitor
             self._set_ctrls_key('monitor', monitor, [ctrl], apply_cfg)
 
-    def getCtrlsSynchronization(self, ctrls=None, use_fullname=False):
+    def _getCtrlsSynchronization(self, ctrls=None, use_fullname=False):
         """get the Synchronization for the channel indicated. In case of empty
         ctrl value it will return  all the Synchronization Info
 
@@ -2136,8 +2136,8 @@ class MGConfiguration(object):
 
         return self._get_ctrls_key('synchronization', ctrls, use_fullname)
 
-    def setCtrlsSynchronization(self, synchronization, ctrls=None,
-                                apply_cfg=True):
+    def _setCtrlsSynchronization(self, synchronization, ctrls=None,
+                                 apply_cfg=True):
         """Set the Synchronization to the indicated controllers.
 
         :param synchronization: <str> string indicating the synchronization
@@ -2165,7 +2165,7 @@ class MGConfiguration(object):
         self._set_ctrls_key('synchronization', synchronization, ctrls,
                             apply_cfg)
 
-    def getCtrlsSynchronizer(self, ctrls=None, use_fullname=False):
+    def _getCtrlsSynchronizer(self, ctrls=None, use_fullname=False):
         """get the synchronizer for the channel indicated. In case of empty
         channel value it will return  all the Synchronizers Info
 
@@ -2179,7 +2179,7 @@ class MGConfiguration(object):
 
         return self._get_ctrls_key('synchronizer', ctrls, use_fullname)
 
-    def setCtrlsSynchronizer(self, synchronizer, ctrls=None, apply_cfg=True):
+    def _setCtrlsSynchronizer(self, synchronizer, ctrls=None, apply_cfg=True):
         """Set the synchronizer for the indicated controollers. In case of
         empty ctrls value it will be applied to all the controllers
 
@@ -2270,7 +2270,7 @@ class MGConfiguration(object):
         :param channels: (seq<str>) a sequence of strings indicating
                          channel names
         """
-        self.setEnabledChannels(True, channels, apply_cfg)
+        self._setEnabledChannels(True, channels, apply_cfg)
 
     def disableChannels(self, channels, apply_cfg=True):
         """
@@ -2279,7 +2279,7 @@ class MGConfiguration(object):
         :param channels: (seq<str>) a sequence of strings indicating
                          channel names
         """
-        self.setEnabledChannels(False, channels, apply_cfg)
+        self._setEnabledChannels(False, channels, apply_cfg)
 
     def __repr__(self):
         return json.dumps(self._raw_data, indent=4, sort_keys=True)
@@ -2411,7 +2411,7 @@ class MeasurementGroup(PoolElement):
         if elements:
             channels = []
             for element in elements:
-                channels += config.getChannelsForElement(element)
+                channels += config._getChannelsForElement(element)
         return channels
 
     def setOutput(self, output, *elements, apply=True):
@@ -2441,7 +2441,7 @@ class MeasurementGroup(PoolElement):
 
         channels = self._get_channels_for_elements(elements)
         config = self.getConfiguration()
-        config.setOutputChannels(output, channels, apply_cfg=apply)
+        config._setOutputChannels(output, channels, apply_cfg=apply)
 
     def getOutput(self, *elements, ret_full_name=False):
         """Get the output configuration of the given elements.
@@ -2465,7 +2465,7 @@ class MeasurementGroup(PoolElement):
         """
         channels = self._get_channels_for_elements(elements)
         config = self.getConfiguration()
-        return config.getOutputChannels(channels, use_fullname=ret_full_name)
+        return config._getOutputChannels(channels, use_fullname=ret_full_name)
 
     def setEnabled(self, enabled, *elements, apply=True):
         """Set the enabled configuration for the given elements.
@@ -2494,7 +2494,7 @@ class MeasurementGroup(PoolElement):
 
         channels = self._get_channels_for_elements(elements)
         config = self.getConfiguration()
-        config.setEnabledChannels(enabled, channels, apply_cfg=apply)
+        config._setEnabledChannels(enabled, channels, apply_cfg=apply)
 
     def getEnabled(self, *elements, ret_full_name=False):
         """Get the output configuration of the given elements.
@@ -2518,7 +2518,7 @@ class MeasurementGroup(PoolElement):
         """
         channels = self._get_channels_for_elements(elements)
         config = self.getConfiguration()
-        return config.getEnabledChannels(channels, use_fullname=ret_full_name)
+        return config._getEnabledChannels(channels, use_fullname=ret_full_name)
 
     def setPlotType(self, plot_type, *elements, apply=True):
         """Set the enabled configuration for the given elements.
@@ -2547,7 +2547,7 @@ class MeasurementGroup(PoolElement):
 
         channels = self._get_channels_for_elements(elements)
         config = self.getConfiguration()
-        config.setPlotTypeChannels(plot_type, channels, apply_cfg=apply)
+        config._setPlotTypeChannels(plot_type, channels, apply_cfg=apply)
 
     def getPlotType(self, *elements, ret_full_name=False):
         """Get the output configuration of the given elements.
@@ -2571,9 +2571,10 @@ class MeasurementGroup(PoolElement):
         """
         channels = self._get_channels_for_elements(elements)
         config = self.getConfiguration()
-        # TODO Change the documentation when getPlotTypeChannels return enum
+        # TODO Change the documentation when _getPlotTypeChannels return enum
         #  value
-        return config.getPlotTypeChannels(channels, use_fullname=ret_full_name)
+        return config._getPlotTypeChannels(channels,
+                                           use_fullname=ret_full_name)
 
     def setPlotAxes(self, plot_axes, *elements, apply=True):
         """Set the enabled configuration for the given elements.
@@ -2602,7 +2603,7 @@ class MeasurementGroup(PoolElement):
 
         channels = self._get_channels_for_elements(elements)
         config = self.getConfiguration()
-        config.setPlotAxesChannels(plot_axes, channels, apply_cfg=apply)
+        config._setPlotAxesChannels(plot_axes, channels, apply_cfg=apply)
 
     def getPlotAxes(self, *elements, ret_full_name=False):
         """Get the output configuration of the given elements.
@@ -2626,7 +2627,8 @@ class MeasurementGroup(PoolElement):
         """
         channels = self._get_channels_for_elements(elements)
         config = self.getConfiguration()
-        return config.getPlotAxesChannels(channels, use_fullname=ret_full_name)
+        return config._getPlotAxesChannels(channels,
+                                           use_fullname=ret_full_name)
 
     def setValueRefEnabled(self, value_ref_enabled, *elements, apply=True):
         """Set the output configuration for the given elements.
@@ -2655,8 +2657,8 @@ class MeasurementGroup(PoolElement):
 
         channels = self._get_channels_for_elements(elements)
         config = self.getConfiguration()
-        config.setValueRefEnabledChannels(value_ref_enabled, channels,
-                                          apply_cfg=apply)
+        config._setValueRefEnabledChannels(value_ref_enabled, channels,
+                                           apply_cfg=apply)
 
     def getValueRefEnabled(self, *elements, ret_full_name=False):
         """Get the value reference enabled configuration of the given elements.
@@ -2680,8 +2682,8 @@ class MeasurementGroup(PoolElement):
         """
         channels = self._get_channels_for_elements(elements)
         config = self.getConfiguration()
-        return config.getValueRefEnabledChannels(channels,
-                                                 use_fullname=ret_full_name)
+        return config._getValueRefEnabledChannels(channels,
+                                                  use_fullname=ret_full_name)
 
     def setValueRefPattern(self, value_ref_pattern, *elements, apply=True):
         """Set the output configuration for the given elements.
@@ -2710,8 +2712,8 @@ class MeasurementGroup(PoolElement):
 
         channels = self._get_channels_for_elements(elements)
         config = self.getConfiguration()
-        config.setValueRefPatternChannels(value_ref_pattern, channels,
-                                          apply_cfg=apply)
+        config._setValueRefPatternChannels(value_ref_pattern, channels,
+                                           apply_cfg=apply)
 
     def getValueRefPattern(self, *elements, ret_full_name=False):
         """Get the value reference enabled configuration of the given elements.
@@ -2735,8 +2737,8 @@ class MeasurementGroup(PoolElement):
         """
         channels = self._get_channels_for_elements(elements)
         config = self.getConfiguration()
-        return config.getValueRefPatternChannels(channels,
-                                                 use_fullname=ret_full_name)
+        return config._getValueRefPatternChannels(channels,
+                                                  use_fullname=ret_full_name)
 
     # NbStarts Methods
     def getNbStartsObj(self):
