@@ -1291,7 +1291,8 @@ class PoolMotorTVWriteWidget(TaurusWidget):
         motor_dev = self.taurusValueBuddy().motor_dev
         if motor_dev is not None:
             increment = direction * float(self.cb_step.currentText())
-            position = float(motor_dev.getAttribute('Position').read().rvalue.magnitude)
+            position = float(
+                motor_dev.getAttribute('Position').read().rvalue.magnitude)
             target_position = position + increment
             motor_dev.getAttribute('Position').write(target_position)
 
