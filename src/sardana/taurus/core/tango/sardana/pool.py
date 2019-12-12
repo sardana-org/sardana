@@ -1911,7 +1911,8 @@ class MGConfiguration(object):
         return self._get_channels_key('value_ref_enabled', channels,
                                       use_fullname)
 
-    def _setValueRefEnabledChannels(self, state, channels=None, apply_cfg=True):
+    def _setValueRefEnabledChannels(self, state, channels=None,
+                                    apply_cfg=True):
         """Enable acquisition of the indicated channels.
 
         :param state: <bool> The state of the channels to be set.
@@ -2964,7 +2965,6 @@ class MeasurementGroup(PoolElement):
             return ctrls_sync
         else:
             return self._get_value_per_channel(config, ctrls_sync)
-
 
     # NbStarts Methods
     def getNbStartsObj(self):
