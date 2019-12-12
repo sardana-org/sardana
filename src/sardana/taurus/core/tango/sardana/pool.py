@@ -1415,10 +1415,13 @@ class MGConfiguration(object):
                 channels[channel_name] = channel_data
                 name = channel_data['name']
                 channels_names[name] = channel_data
-                name = channel_data['label']
+                label = channel_data['label']
                 channels_labels[name] = channel_data
                 if ctrl_name != '__tango__':
-                    controllers_channels[ctrl_name].append(channel_name)
+                    ch_data = {'fullname': channel_name,
+                               'label': label,
+                               'name': name}
+                    controllers_channels[ctrl_name].append(ch_data)
 
         #####################
         # @todo: the for-loops above could be replaced by something like:
@@ -1565,14 +1568,6 @@ class MGConfiguration(object):
                     self.tango_channels_info_in_error -= 1
                 except:
                     pass
-
-    def _getChannelsForElement(self, element):
-        channels = []
-        if element in self.controllers_channels:
-            channels += self.controllers_channels[element]
-        else:
-            channels += [element]
-        return channels
 
     def getChannels(self):
         return self.channel_list
@@ -1841,7 +1836,7 @@ class MGConfiguration(object):
             result[label] = value
         return result
 
-    def _get_ctrl_from_channels(self, channels_names, unique=False):
+    def _get_ctrl_for_channel(self, channels_names, unique=False):
         result = collections.OrderedDict({})
 
         if channels_names is None:
@@ -1856,6 +1851,34 @@ class MGConfiguration(object):
             result[channel['full_name']] = ctrl
 
         return result
+
+    def _get_ctrl_channels(self, ctrl, use_fullname=False):
+        channels = []
+        channels_datas = self.controllers_channels[ctrl]
+        for channel_data in channels_datas:
+            if use_fullname:
+                name = channel_data['fullname']
+            else:
+                name = channel_data['label']
+            channels.append(name)
+        return channels
+
+    def _get_channels_for_element(self, element, use_fullname=False):
+        channels = []
+        if element in self.controllers_channels:
+            channels += self._get_ctrl_channels(element, use_fullname)
+        else:
+            channels += [element]
+        return channels
+
+    def _get_ctrl_for_element(self, element):
+        if element in self.controllers_channels:
+            ctrl = element
+        else:
+            # TODO: find more elegant way
+            channel_ctrl = self._get_ctrl_for_channel([element])
+            ctrl = list(channel_ctrl.values())[0]
+        return ctrl
 
     def applyConfiguration(self, timeout=3):
         if not self._local_changes:
@@ -2080,7 +2103,7 @@ class MGConfiguration(object):
         .
         :param timer_name: <str> strings indicating the timer name
         """
-        result = self._get_ctrl_from_channels(timers, unique=True)
+        result = self._get_ctrl_for_channel(timers, unique=True)
         meas_ctrl = self.channels[self.timer]['_controller_name']
 
         for timer, ctrl in result.items():
@@ -2112,7 +2135,7 @@ class MGConfiguration(object):
         :param monitor: <str> string indicating the monitor name
         """
 
-        result = self._get_ctrl_from_channels(monitors, unique=True)
+        result = self._get_ctrl_for_channel(monitors, unique=True)
         meas_ctrl = self.channels[self.monitor]['_controller_name']
 
         for monitor, ctrl in result.items():
@@ -2224,7 +2247,7 @@ class MGConfiguration(object):
 
         :param timer: <str> timer name
         """
-        result = self._get_ctrl_from_channels([timer], unique=True)
+        result = self._get_ctrl_for_channel([timer], unique=True)
 
         for timer, ctrl in result.items():
             self._local_changes = True
@@ -2406,13 +2429,25 @@ class MeasurementGroup(PoolElement):
         self._last_integ_time = None
 
     def _get_channels_for_elements(self, elements):
+        if not elements:
+            return None
         config = self.getConfiguration()
-        channels = None
-        if elements:
-            channels = []
-            for element in elements:
-                channels += config._getChannelsForElement(element)
+        channels = []
+        for element in elements:
+            channels += config._get_channels_for_element(element)
         return channels
+
+    def _get_ctrl_for_elements(self, elements):
+        if not elements:
+            return None
+        ctrls = []
+        config = self.getConfiguration()
+        for element in elements:
+            ctrl = config._get_ctrl_for_element(element)
+            if ctrl in ctrls:
+                continue
+            ctrls.append(ctrl)
+        return ctrls
 
     def setOutput(self, output, *elements, apply=True):
         """Set the output configuration for the given elements.
