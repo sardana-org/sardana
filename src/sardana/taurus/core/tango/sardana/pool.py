@@ -2215,11 +2215,10 @@ class MGConfiguration(object):
         else:
             # TODO: Improve how to check if the element is a trigger_gate
             sync = Device(synchronizer)
-            if 'triggergate' not in sync.name():
+            if 'triggergate' not in sync.fullname:
                 raise ValueError('The "{0}" is not a '
                                  'triggergate'.format(synchronizer))
-            synchronizer = sync.getFullName()
-
+            synchronizer = sync.fullname
         self._set_ctrls_key('synchronizer', synchronizer, ctrls, apply_cfg)
 
     def getTimerName(self):
@@ -2902,6 +2901,71 @@ class MeasurementGroup(PoolElement):
             return ctrls_monitor
         else:
             return self._get_value_per_channel(config, ctrls_monitor)
+
+    def setSynchronizer(self, synchronizer, *elements, apply=True):
+        """Set the synchronizer configuration for the given channels or
+        controller. NOTE: The current configuration does not allow to set
+        the different value per channel of the same controller, it allows to
+        set per controller.
+
+        Configuration by default is directly applied on the server.
+        Since setting the configuration means passing to the server all the
+        configuration  paramters of the measurement group at once this
+        behavior can be  changed with the *apply* argument and we can keep
+        the configuration changes only locally. This is useful when we want
+        to change more then one parameter, in this case only the setting of
+        the last parameter should use `apply=True`.
+
+        :param synchronizer: triger/gate element name or software
+        :type synchronizer: str
+        :param elements: sequence of channels names or full names, no elements
+            means set to all
+        :type elements: list(str)
+        :param apply: `True` - apply on the server, `False` - do not apply yet
+            on the server and keep locally (default: `True`)
+        :type apply: bool
+        """
+        config = self.getConfiguration()
+        # TODO: Implement solution to set the timer per channel when it is
+        #  allowed.
+        ctrls = self._get_ctrl_for_elements(elements)
+        config._setCtrlsSynchronizer(synchronizer, ctrls, apply_cfg=apply)
+
+    def getSynchronizer(self, *elements, ret_full_name=False,
+                        ret_by_ctrl=False):
+        """Get the synchronizer configuration of the given elements.
+
+        Channels and controllers are accepted as elements. Getting the output
+        from the controller means getting it from all channels of this
+        controller present in this measurement group, unless
+        `ret_by_ctrl=True`.
+
+        :param elements: sequence of element names or full names, no elements
+            means get from all
+        :type elements: list(str)
+        :param ret_full_name: whether keys in the returned dictionary are
+            full names or names (default: `False` means return names)
+        :type ret_full_name: bool
+        :param ret_by_ctrl: whether keys in the returned dictionary are
+            controllers or channels (default: `False` means return channels)
+        :type ret_by_ctrl: bool
+        :return: ordered dictionary where keys are **channel** names (or full
+            names if `ret_full_name=True`) and values are their synchronization
+            configurations
+        :rtype: dict(str, str)
+        """
+        # TODO: Implement solution to set the timer per channel when it is
+        #  allowed.
+        ctrls = self._get_ctrl_for_elements(elements)
+        config = self.getConfiguration()
+        ctrls_sync = config._getCtrlsSynchronizer(ctrls,
+                                                  use_fullname=ret_full_name)
+        if ret_by_ctrl:
+            return ctrls_sync
+        else:
+            return self._get_value_per_channel(config, ctrls_sync)
+
+
     # NbStarts Methods
     def getNbStartsObj(self):
         return self._getAttrEG('NbStarts')
