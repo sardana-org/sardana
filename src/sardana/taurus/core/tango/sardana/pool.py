@@ -2775,6 +2775,72 @@ class MeasurementGroup(PoolElement):
         return config._getValueRefPatternChannels(channels,
                                                   use_fullname=ret_full_name)
 
+    def _get_value_per_channel(self, config, ctrls_values):
+        channels_values = collections.OrderedDict({})
+        for ctrl, value in ctrls_values.items():
+            for channel in config._get_ctrl_channels(ctrl):
+                channels_values[channel] = value
+        return channels_values
+
+    def setTimer(self, timer, *elements, apply=True):
+        """Set the timer configuration for the given channels of the same
+        controller. NOTE: The current configuration does not allow to set
+        the different value per channel of the same controller, it allows to
+        set per controller.
+
+        Configuration by default is directly applied on the server.
+        Since setting the configuration means passing to the server all the
+        configuration  paramters of the measurement group at once this
+        behavior can be  changed with the *apply* argument and we can keep
+        the configuration changes only locally. This is useful when we want
+        to change more then one parameter, in this case only the setting of
+        the last parameter should use `apply=True`.
+
+        :param timer: channel use as timer
+        :type timer: str
+        :param elements: sequence of channels names or full names, no elements
+            means set to all
+        :type elements: list(str)
+        :param apply: `True` - apply on the server, `False` - do not apply yet
+            on the server and keep locally (default: `True`)
+        :type apply: bool
+        """
+        config = self.getConfiguration()
+        # TODO: Implement solution to set the timer per channel when it is
+        #  allowed.
+        config._setCtrlsTimer([timer], apply_cfg=apply)
+
+    def getTimer(self, *elements, ret_full_name=False, ret_by_ctrl=False):
+        """Get the timer configuration of the given elements.
+
+        Channels and controllers are accepted as elements. Getting the output
+        from the controller means getting it from all channels of this
+        controller present in this measurement group, unless
+        `ret_by_ctrl=True`.
+
+        :param elements: sequence of element names or full names, no elements
+            means get from all
+        :type elements: list(str)
+        :param ret_full_name: whether keys in the returned dictionary are
+            full names or names (default: `False` means return names)
+        :type ret_full_name: bool
+        :param ret_by_ctrl: whether keys in the returned dictionary are
+            controllers or channels (default: `False` means return channels)
+        :type ret_by_ctrl: bool
+        :return: ordered dictionary where keys are **channel** names (or full
+            names if `ret_full_name=True`) and values are their synchronization
+            configurations
+        :rtype: dict(str, str)
+        """
+        # TODO: Implement solution to set the timer per channel when it is
+        #  allowed.
+        ctrls = self._get_ctrl_for_elements(elements)
+        config = self.getConfiguration()
+        ctrls_timers = config._getCtrlsTimer(ctrls, use_fullname=ret_full_name)
+        if ret_by_ctrl:
+            return ctrls_timers
+        else:
+            return self._get_value_per_channel(config, ctrls_timers)
     # NbStarts Methods
     def getNbStartsObj(self):
         return self._getAttrEG('NbStarts')
