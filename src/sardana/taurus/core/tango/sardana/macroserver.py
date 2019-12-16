@@ -480,6 +480,22 @@ class BaseDoor(MacroServerDevice):
             evt_wait.unlock()
             evt_wait.disconnect()
 
+    def release(self, synch=True):
+        if not synch:
+            self.command_inout("ReleaseMacro")
+            return
+
+        evt_wait = AttributeEventWait(self.getAttribute("state"))
+        evt_wait.lock()
+        try:
+            time_stamp = time.time()
+            self.command_inout("ReleaseMacro")
+            return evt_wait.waitEvent(self.Running, equal=False, after=time_stamp,
+                                      timeout=self.InteractiveTimeout)
+        finally:
+            evt_wait.unlock()
+            evt_wait.disconnect()
+
     def stop(self, synch=True):
         if not synch:
             self.command_inout("StopMacro")
