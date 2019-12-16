@@ -21,7 +21,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Setting of environment variables in Python 3.7 (#1195)
 * Use `taurus.external.qt.compat.PY_OBJECT` in singal signatures instead of `object`
   to avoid problems when using `builtins` from `future` (#1082)
-* Remove Taurus deprecated code what reduces deprecation warnings (#1206)
+* Remove Taurus deprecated code what reduces deprecation warnings (#1206, #1252)
 * Use of env and hints in `macro` function decorator (#1239)
 * PMTV widget not updating the following attributes: limit switches, state
   and status (#1244)
