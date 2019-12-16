@@ -374,8 +374,8 @@ class Door(SardanaDevice):
         self.macro_executor.release()
 
     def is_ReleaseMacro_allowed(self):
-        is_release_allowed = (self.get_state() == Macro.Running or
-                              self.get_state() == Macro.Pause)
+        is_release_allowed = (self.get_state() == Macro.Running
+                              or self.get_state() == Macro.Pause)
         return is_release_allowed
 
 
