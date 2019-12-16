@@ -808,7 +808,7 @@ class TaurusAttributeListener(Qt.QObject):
     def eventReceived(self, evt_src, evt_type, evt_value):
         if evt_type not in [TaurusEventType.Change, TaurusEventType.Periodic]:
             return
-        value = evt_value.rvalue
+        value = evt_value.rvalue.magnitude
         self.eventReceivedSignal.emit(value)
 
 
@@ -904,7 +904,7 @@ class PoolMotorTVLabelWidget(TaurusWidget):
         status_info = ''
         motor_dev = self.taurusValueBuddy().motor_dev
         if motor_dev is not None:
-            status = motor_dev.getAttribute('Status').read().rvalue
+            status = motor_dev.getAttribute('Status').read().rvalue.magnitude
             # MAKE IT LOOK LIKE THE STANDARD TABLE FOR TAURUS TOOLTIPS
             status_lines = status.split('\n')
             status_info = '<TABLE width="500" border="0" cellpadding="1" cellspacing="0"><TR><TD WIDTH="80" ALIGN="RIGHT" VALIGN="MIDDLE"><B>Status:</B></TD><TD>' + \
@@ -1291,7 +1291,8 @@ class PoolMotorTVWriteWidget(TaurusWidget):
         motor_dev = self.taurusValueBuddy().motor_dev
         if motor_dev is not None:
             increment = direction * float(self.cb_step.currentText())
-            position = float(motor_dev.getAttribute('Position').read().rvalue)
+            position = float(
+                motor_dev.getAttribute('Position').read().rvalue.magnitude)
             target_position = position + increment
             motor_dev.getAttribute('Position').write(target_position)
 
@@ -1357,7 +1358,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
             self.le_write_absolute.setModel(model)
             return
         TaurusWidget.setModel(self, model + '/Position')
-        self.le_write_absolute.setModel(model + '/Position')
+        self.le_write_absolute.setModel(model + '/Position#wvalue.magnitude')
 
         # Handle User/Expert View
         self.setExpertView(self.taurusValueBuddy()._expertView)
@@ -1543,7 +1544,7 @@ class PoolMotorTV(TaurusValue):
         if self.motor_dev is not None:
             position_attribute = self.motor_dev.getAttribute('Position')
             if position is None:
-                position = position_attribute.read().rvalue
+                position = position_attribute.read().rvalue.magnitude
             max_value_str = position_attribute.max_value
             min_value_str = position_attribute.min_value
             try:
@@ -1625,7 +1626,7 @@ class PoolMotorTV(TaurusValue):
             limit_switches = [False, False, False]
             if self.hasHwLimits():
                 limit_switches = self.motor_dev.getAttribute(
-                    'Limit_switches').read().rvalue
+                    'Limit_switches').read().rvalue.magnitude
                 # print "update limits", limit_switches
             self.updateLimits(limit_switches, position=position)
 
