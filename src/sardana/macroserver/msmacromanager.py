@@ -71,6 +71,7 @@ from sardana.macroserver.msexception import UnknownMacroLibrary, \
     LibraryError, UnknownMacro, MissingEnv, AbortException, StopException, \
     MacroServerException, UnknownEnv
 from sardana.util.parser import ParamParser
+from sardana.util.thread import raise_in_thread
 
 # These classes are imported from the "client" part of sardana, if finally
 # both the client and the server side needs them, place them in some
@@ -1075,7 +1076,9 @@ class MacroExecutor(Logger):
         self._macro_stack = []
         self._xml_stack = []
         self._macro_pointer = None
+        self._abort_thread = None
         self._aborted = False
+        self._stop_thread = None
         self._stopped = False
         self._paused = False
         self._last_macro_status = None
@@ -1392,7 +1395,11 @@ class MacroExecutor(Logger):
     def __stopObjects(self):
         """Stops all the reserved objects in the executor"""
         for _, objs in list(self._reserved_macro_objs.items()):
+            if self._aborted:
+                break
             for obj in objs:
+                if self._aborted:
+                    break  # someone aborted, no sense to stop anymore
                 try:
                     obj.stop()
                 except AttributeError:
@@ -1419,29 +1426,43 @@ class MacroExecutor(Logger):
     def _waitStopDone(self, timeout=None):
         self._stop_done.wait(timeout)
 
+    def _isStopDone(self):
+        return self._stop_done.is_set()
+
     def _setAbortDone(self, _):
         self._abort_done.set()
 
     def _waitAbortDone(self, timeout=None):
         self._abort_done.wait(timeout)
 
+    def _isAbortDone(self):
+        return self._abort_done.is_set()
+
     def abort(self):
+        """**Internal method**. Aborts the macro abruptly."""
+        # carefull: Inside this method never call a method that has the
+        # mAPI decorator
+        self._aborted = True
+        if not self._isStopDone():
+            Logger.debug(self, "Break stopping...")
+            raise_in_thread(AbortException, self._stop_thread)
         self.macro_server.add_job(self._abort, self._setAbortDone)
 
     def stop(self):
+        self._stopped = True
         self.macro_server.add_job(self._stop, self._setStopDone)
 
     def _abort(self):
+        self._abort_thread = threading.current_thread()
         m = self.getRunningMacro()
         if m is not None:
-            self._aborted = True
             m.abort()
         self.__abortObjects()
 
     def _stop(self):
+        self._stop_thread = threading.current_thread()
         m = self.getRunningMacro()
         if m is not None:
-            self._stopped = True
             m.stop()
             if m.isPaused():
                 m.resume(cb=self._macroResumed)
@@ -1616,14 +1637,14 @@ class MacroExecutor(Logger):
 
         # make sure the macro's on_abort is called and that a proper macro
         # status is sent
-        if self._stopped:
-            self._waitStopDone()
-            macro_obj._stopOnError()
-            self.sendMacroStatusStop()
-        elif self._aborted:
+        if self._aborted:
             self._waitAbortDone()
             macro_obj._abortOnError()
             self.sendMacroStatusAbort()
+        elif self._stopped:
+            self._waitStopDone()
+            macro_obj._stopOnError()
+            self.sendMacroStatusStop()
 
         # From this point on don't call any method of macro_obj which is part
         # of the mAPI (methods decorated with @mAPI) to avoid throwing an
