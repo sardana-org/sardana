@@ -1081,6 +1081,7 @@ class MacroExecutor(Logger):
         self._stop_thread = None
         self._stopped = False
         self._paused = False
+        self._released = False
         self._last_macro_status = None
         # threading events for synchronization of stopping/abortting of
         # reserved objects
@@ -1447,6 +1448,15 @@ class MacroExecutor(Logger):
             Logger.debug(self, "Break stopping...")
             raise_in_thread(AbortException, self._stop_thread)
         self.macro_server.add_job(self._abort, self._setAbortDone)
+
+    def release(self):
+        """**Internal method**. Release the macro."""
+        # carefull: Inside this method never call a method that has the
+        # mAPI decorator
+        self._released = True
+        if not self._isAbortDone():
+            Logger.debug(self, "Break aborting...")
+            raise_in_thread(AbortException, self._abort_thread)
 
     def stop(self):
         self._stopped = True
