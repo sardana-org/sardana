@@ -486,17 +486,23 @@ class PoolElement(BaseElement, TangoDevice):
         :param id: id of the opertation returned by start
         :type id: tuple(float)
         """
-        # Due to taurus-org/taurus #573 we need to divide the timeout
-        # in two intervals
-        if timeout is not None:
+        if timeout is None:
+            # 0.1 s of timeout with infinite retries facilitates aborting
+            # by raising exceptions from a different threads
+            timeout = 0.1
+            retries = -1
+        else:
+            # Due to taurus-org/taurus #573 we need to divide the timeout
+            # in two intervals
             timeout = timeout / 2
+            retries = 1
         if id is not None:
             id = id[0]
         evt_wait = self._getEventWait()
         evt_wait.lock()
         try:
             evt_wait.waitEvent(DevState.MOVING, after=id, equal=False,
-                               timeout=timeout, retries=1)
+                               timeout=timeout, retries=retries)
         finally:
             self.__go_end_time = time.time()
             self.__go_time = self.__go_end_time - self.__go_start_time
