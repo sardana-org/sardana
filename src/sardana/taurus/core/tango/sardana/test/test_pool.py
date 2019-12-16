@@ -84,15 +84,6 @@ class TestMeasurementGroup(SarTestTestCase, TestCase):
         SarTestTestCase.tearDown(self)
 
 
-def _set_value_ref_enabled(conf, channel, value_ref_enabled):
-    ctrl = channel.getControllerObj()
-    ctrl_full_name = ctrl.getFullName()
-    channel_full_name = channel.getFullName()
-    ctrl_conf = conf["controllers"][ctrl_full_name]
-    channel_conf = ctrl_conf["channels"][channel_full_name]
-    channel_conf["value_ref_enabled"] = value_ref_enabled
-
-
 class TestMeasurementGroupValueRef(SarTestTestCase, TestCase):
 
     def setUp(self):
@@ -107,9 +98,7 @@ class TestMeasurementGroupValueRef(SarTestTestCase, TestCase):
         try:
             mg = Device(mg_name)
             channel = Device(channel_name)
-            conf = mg.getConfiguration().raw_data
-            _set_value_ref_enabled(conf, channel, True)
-            mg.setConfiguration(conf)
+            mg.setValueRefEnabled(True, [channel_name])
             _, values = mg.count(.1)
             for channel_name, value in values.items():
                 msg = "ValueRef (%s) for %s is not string" %\
@@ -128,9 +117,7 @@ class TestMeasurementGroupValueRef(SarTestTestCase, TestCase):
         try:
             mg = Device(mg_name)
             channel = Device(channel_name)
-            conf = mg.getConfiguration().raw_data
-            _set_value_ref_enabled(conf, channel, False)
-            mg.setConfiguration(conf)
+            mg.setValueRefEnabled(False, [channel_name])
             _, values = mg.count(.1)
             for channel_name, value in values.items():
                 msg = "Value (%s) for %s is not numerical" %\
