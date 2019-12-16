@@ -2735,7 +2735,7 @@ class MeasurementGroup(PoolElement):
         to change more then one parameter, in this case only the setting of
         the last parameter should use `apply=True`.
 
-        :param value_ref_pattern: `/path/file{index:03d}.txt'
+        :param value_ref_pattern: `/path/file{index:03d}.txt`
         :type value_ref_pattern: str
         :param elements: sequence of element names or full names, no elements
             means set to all
