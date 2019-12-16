@@ -808,7 +808,11 @@ class TaurusAttributeListener(Qt.QObject):
     def eventReceived(self, evt_src, evt_type, evt_value):
         if evt_type not in [TaurusEventType.Change, TaurusEventType.Periodic]:
             return
-        value = evt_value.rvalue.magnitude
+        try:
+            value = evt_value.rvalue.magnitude
+        except AttributeError:
+            # spectrum/images or str attribute values are not Quantities
+            value = evt_value.rvalue
         self.eventReceivedSignal.emit(value)
 
 
@@ -904,7 +908,7 @@ class PoolMotorTVLabelWidget(TaurusWidget):
         status_info = ''
         motor_dev = self.taurusValueBuddy().motor_dev
         if motor_dev is not None:
-            status = motor_dev.getAttribute('Status').read().rvalue.magnitude
+            status = motor_dev.getAttribute('Status').read().rvalue
             # MAKE IT LOOK LIKE THE STANDARD TABLE FOR TAURUS TOOLTIPS
             status_lines = status.split('\n')
             status_info = '<TABLE width="500" border="0" cellpadding="1" cellspacing="0"><TR><TD WIDTH="80" ALIGN="RIGHT" VALIGN="MIDDLE"><B>Status:</B></TD><TD>' + \
@@ -1626,7 +1630,7 @@ class PoolMotorTV(TaurusValue):
             limit_switches = [False, False, False]
             if self.hasHwLimits():
                 limit_switches = self.motor_dev.getAttribute(
-                    'Limit_switches').read().rvalue.magnitude
+                    'Limit_switches').read().rvalue
                 # print "update limits", limit_switches
             self.updateLimits(limit_switches, position=position)
 
