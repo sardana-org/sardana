@@ -357,10 +357,20 @@ class SpockBaseDoor(BaseDoor):
         try:
             return BaseDoor._runMacro(self, xml, **kwargs)
         except KeyboardInterrupt:
-            self.write('\nCtrl-C received: Stopping... ')
-            self.block_lines = 0
-            self.stop()
-            self.writeln("Done!")
+            try:
+                self.write('\nCtrl-C received: Stopping... ')
+                self.block_lines = 0
+                self.stop()
+                self.writeln("Stopping done!")
+            except KeyboardInterrupt:
+                try:
+                    self.write('\n2nd Ctrl-C received: Aborting... ')
+                    self.block_lines = 0
+                    self.abort()
+                    self.writeln("Aborting done!")
+                except KeyboardInterrupt:
+                    self.write('\n3rd Ctrl-C received: Releasing...')
+                    self.release()
         except PyTango.DevFailed as e:
             if is_non_str_seq(e.args) and \
                not isinstance(e.args, str):
