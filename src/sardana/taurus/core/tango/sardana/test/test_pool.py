@@ -98,7 +98,7 @@ class TestMeasurementGroupValueRef(SarTestTestCase, TestCase):
         try:
             mg = Device(mg_name)
             channel = Device(channel_name)
-            mg.setValueRefEnabled(True, [channel_name])
+            mg.setValueRefEnabled(True, channel_name)
             _, values = mg.count(.1)
             for channel_name, value in values.items():
                 msg = "ValueRef (%s) for %s is not string" %\
@@ -117,7 +117,7 @@ class TestMeasurementGroupValueRef(SarTestTestCase, TestCase):
         try:
             mg = Device(mg_name)
             channel = Device(channel_name)
-            mg.setValueRefEnabled(False, [channel_name])
+            mg.setValueRefEnabled(False, channel_name)
             _, values = mg.count(.1)
             for channel_name, value in values.items():
                 msg = "Value (%s) for %s is not numerical" %\
