@@ -391,7 +391,6 @@ Viewing scan data
 You can show plots for the current scan (i.e. plotting the scan *online*) by:
 
 * launching the :func:`showscan online <sardana.spock.magic.showscan>` command
-* using the :ref:`show/hide button from the expconf widget <expconf_ui_showplots>`
 
 Sardana provides also a scan data viewer for scans which were stored in a `NeXus`_
 file: :ref:`showscan_ui`. It can be launched using :func:`showscan <sardana.spock.magic.showscan>`

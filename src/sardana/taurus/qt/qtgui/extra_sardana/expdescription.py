@@ -175,8 +175,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
     createExpConfChangedDialog = Qt.pyqtSignal()
     experimentConfigurationChanged = Qt.pyqtSignal(compat.PY_OBJECT)
 
-    def __init__(self, parent=None, door=None, plotsButton=True,
-                 autoUpdate=False):
+    def __init__(self, parent=None, door=None, autoUpdate=False):
         Qt.QWidget.__init__(self, parent)
         TaurusBaseWidget.__init__(self, 'ExpDescriptionEditor')
         self.loadUi()
@@ -238,32 +237,6 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         preScanList.dataChangedSignal.connect(self.onPreScanSnapshotChanged)
         self.ui.choosePathBT.clicked.connect(
             self.onChooseScanDirButtonClicked)
-
-        self.__plotManager = None
-        tooltip = None
-
-        # TODO: Disable show scan button since scan plot have to be
-        # adapted to support QT5
-        # --------------------------------------------------------------------
-        from taurus.external.qt import PYQT4, API
-        if not PYQT4:
-            self.debug('Show plots is only supported with PyQt4 for now')
-            plotsButton = False
-            tooltip = "Show/Hide plots is not ready for %s" % API
-        # --------------------------------------------------------------------
-
-        icon = Qt.QIcon("actions:view.svg")
-        measGrpTab = self.ui.tabWidget.widget(0)
-        self.togglePlotsAction = Qt.QAction(icon, "Show/Hide plots", self)
-        if tooltip is not None:
-            self.togglePlotsAction.setToolTip(tooltip)
-        self.togglePlotsAction.setCheckable(True)
-        self.togglePlotsAction.setChecked(False)
-        self.togglePlotsAction.setEnabled(plotsButton)
-        measGrpTab.addAction(self.togglePlotsAction)
-        measGrpTab.setContextMenuPolicy(Qt.Qt.ActionsContextMenu)
-        self.togglePlotsAction.toggled.connect(self.onPlotsButtonToggled)
-        self.ui.plotsButton.setDefaultAction(self.togglePlotsAction)
 
         if door is not None:
             self.setModel(door)
@@ -699,17 +672,6 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             preScanList.append((full_name, display))
         self._localConfig['PreScanSnapshot'] = preScanList
         self._setDirty(True)
-
-    def onPlotsButtonToggled(self, checked):
-        if checked:
-            from sardana.taurus.qt.qtgui.macrolistener import \
-                DynamicPlotManager
-            self.__plotManager = DynamicPlotManager(self)
-            self.__plotManager.setModel(self.getModelName())
-        else:
-            self.__plotManager.removePanels()
-            self.__plotManager.setModel(None)
-            self.__plotManager = None
 
 
 def demo(model=None, autoUpdate=False):
