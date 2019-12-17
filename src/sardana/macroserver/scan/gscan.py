@@ -313,7 +313,7 @@ class GScan(Logger):
             raise ScanSetupError("ActiveMntGrp has invalid value: '%s'"
                                  % mnt_grp_name)
 
-        self._master = mnt_grp.getTimer()
+        self._master = mnt_grp.getConfiguration().getTimer()
 
         if self._master is None:
             raise ScanSetupError('%s has no timer defined' % mnt_grp.getName())
