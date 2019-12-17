@@ -2736,7 +2736,7 @@ class MeasurementGroup(PoolElement):
         the last parameter should use `apply=True`.
 
         :param value_ref_pattern: `/path/file{index:03d}.txt`
-        :type value_ref_pattern: str
+        :type value_ref_pattern: :py:obj:`str`
         :param elements: sequence of element names or full names, no elements
             means set to all
         :type elements: list(str)
@@ -2797,7 +2797,7 @@ class MeasurementGroup(PoolElement):
         the last parameter should use `apply=True`.
 
         :param timer: channel use as timer
-        :type timer: str
+        :type timer: :py:obj:`str`
         :param elements: sequence of channels names or full names, no elements
             means set to all
         :type elements: list(str)
@@ -2857,7 +2857,7 @@ class MeasurementGroup(PoolElement):
         the last parameter should use `apply=True`.
 
         :param monitor: channel use as monitor
-        :type monitor: str
+        :type monitor: :py:obj:`str`
         :param elements: sequence of channels names or full names, no elements
             means set to all
         :type elements: list(str)
@@ -2918,7 +2918,7 @@ class MeasurementGroup(PoolElement):
         the last parameter should use `apply=True`.
 
         :param synchronizer: triger/gate element name or software
-        :type synchronizer: str
+        :type synchronizer: :py:obj:`str`
         :param elements: sequence of channels names or full names, no elements
             means set to all
         :type elements: list(str)
