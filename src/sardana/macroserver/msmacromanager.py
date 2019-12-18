@@ -1395,12 +1395,14 @@ class MacroExecutor(Logger):
 
     def __stopObjects(self):
         """Stops all the reserved objects in the executor"""
-        for _, objs in list(self._reserved_macro_objs.items()):
+        for macro, objs in list(self._reserved_macro_objs.items()):
             if self._aborted:
                 break
             for obj in objs:
                 if self._aborted:
                     break  # someone aborted, no sense to stop anymore
+                self.output(
+                    "Stopping {} reserved by {}".format(obj, macro._name))
                 try:
                     obj.stop()
                 except AttributeError:
@@ -1411,8 +1413,10 @@ class MacroExecutor(Logger):
 
     def __abortObjects(self):
         """Aborts all the reserved objects in the executor"""
-        for _, objs in list(self._reserved_macro_objs.items()):
+        for macro, objs in list(self._reserved_macro_objs.items()):
             for obj in objs:
+                self.output(
+                    "Aborting {} reserved by {}".format(obj, macro._name))
                 try:
                     obj.abort()
                 except AttributeError:
@@ -1464,6 +1468,8 @@ class MacroExecutor(Logger):
 
     def _abort(self):
         self._abort_thread = threading.current_thread()
+        if self._stopped:
+            self._waitStopDone()
         m = self.getRunningMacro()
         if m is not None:
             m.abort()
@@ -1649,10 +1655,12 @@ class MacroExecutor(Logger):
         # status is sent
         if self._aborted:
             self._waitAbortDone()
+            self.output("Executing {}.on_abort method...".format(name))
             macro_obj._abortOnError()
             self.sendMacroStatusAbort()
         elif self._stopped:
             self._waitStopDone()
+            self.output("Executing {}.on_stop method...".format(name))
             macro_obj._stopOnError()
             self.sendMacroStatusStop()
 
