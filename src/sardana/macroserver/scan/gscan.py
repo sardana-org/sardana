@@ -488,8 +488,9 @@ class GScan(Logger):
             raise
         except Exception:
             macro.warning('ScanDir is not defined. This operation will not be '
-                          'stored persistently. Use Use "expconf" (or "senv '
-                          'ScanDir <abs directory>") to enable it')
+                          'stored persistently. Use "expconf" or "newfile" '
+                          'to configure data storage (or eventually "senv '
+                          'ScanDir <abs directory>")')
             return ()
 
         if not isinstance(scan_dir, str):
@@ -501,9 +502,10 @@ class GScan(Logger):
         except InterruptException:
             raise
         except Exception:
-            macro.warning('ScanFile is not defined. This operation will not '
-                          'be stored persistently. Use "expconf" (or "senv '
-                          'ScanFile <scan file(s)>") to enable it')
+            macro.warning('ScanFile is not defined. This operation will not be '
+                          'stored persistently. Use "expconf" or "newfile" '
+                          'to configure data storage (or eventually "senv '
+                          'ScanFile <scan file(s)>")')
             return ()
 
         scan_recorders = []
