@@ -37,7 +37,7 @@ from sardana import EpsilonError, State, ElementType
 from sardana.sardanaattribute import SardanaAttribute, ScalarNumberAttribute, \
     SardanaSoftwareAttribute
 from sardana.sardanaevent import EventType
-from sardana.sardanautils import assert_type, is_number
+from sardana.sardanautils import assert_type, is_number, py2_round
 from sardana.pool.poolelement import PoolElement
 from sardana.pool.poolmotion import PoolMotion, MotionState
 
@@ -167,7 +167,8 @@ class Position(SardanaAttribute):
 
         # compute a rounding value if necessary
         if ctrl.wants_rounding():
-            nb_step = round(new_dial * step_per_unit)
+            # TODO: check if round would be fine
+            nb_step = py2_round(new_dial * step_per_unit)
             new_dial = nb_step / step_per_unit
 
         backlash_position = new_dial
@@ -751,7 +752,8 @@ class PoolMotor(PoolElement):
 
         # compute a rounding value if necessary
         if ctrl.wants_rounding():
-            nb_step = round(new_dial * step_per_unit)
+            # TODO: check if round would be fine
+            nb_step = py2_round(new_dial * step_per_unit)
             new_dial = nb_step / step_per_unit
 
         backlash_position = new_dial

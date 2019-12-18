@@ -83,10 +83,10 @@ class BaseAcquisition(object):
         # printing acquisition records
         table = self.attr_listener.get_table()
         header = table.dtype.names
-        print header
+        print(header)
         n_rows = table.shape[0]
-        for row in xrange(n_rows):
-            print row, table[row]
+        for row in range(n_rows):
+            print(row, table[row])
         # checking if any of data was acquired
         self.assertTrue(self.attr_listener.data, 'no data were acquired')
         # checking if all channels produced data
@@ -118,7 +118,7 @@ class BaseAcquisition(object):
         self.remove_attribute_listener()
         synchronization = [{SynchParam.Delay: {SynchDomain.Time: 0},
                             SynchParam.Active: {SynchDomain.Time: 0.1},
-                            SynchParam.Total: {SynchDomain.Time: 0},
+                            SynchParam.Total: {SynchDomain.Time: 0.2},
                             SynchParam.Repeats: 1}]
         self.pmg.synchronization = synchronization
         self.acquire()
@@ -215,8 +215,9 @@ class BaseAcquisition(object):
         msg = "The number of busy workers is not zero; numBW = %s" % (numBW)
         self.assertEqual(numBW, 0, msg)
         # print the acquisition records
-        for i, record in enumerate(zip(*self.attr_listener.data.values())):
-            print i, record
+        for i, record in \
+                enumerate(zip(*list(self.attr_listener.data.values()))):
+            print(i, record)
 
     def meas_contpos_acquisition(self, config, synchronization, moveable,
                                  second_config=None):

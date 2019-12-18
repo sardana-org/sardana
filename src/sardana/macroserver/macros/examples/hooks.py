@@ -44,7 +44,7 @@ class loop(Macro, Hookable):
 
     def run(self, start, stop, step):
         self.info("Starting loop")
-        for i in xrange(start, stop, step):
+        for i in range(start, stop, step):
             self.output("At step %d" % i)
             self.flushOutput()
             for hook, hints in self.hooks:

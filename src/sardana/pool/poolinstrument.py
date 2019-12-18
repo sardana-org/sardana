@@ -71,7 +71,7 @@ class PoolInstrument(PoolObject):
         del self._child_instruments[instrument.id]
 
     def get_instruments(self):
-        return self._child_instruments.values()
+        return list(self._child_instruments.values())
 
     def set_parent_instrument(self, instrument):
         if instrument:
@@ -93,7 +93,7 @@ class PoolInstrument(PoolObject):
         del self._elements[element.id]
 
     def get_elements(self):
-        return [e() for e in self._elements.values()]
+        return [e() for e in list(self._elements.values())]
 
     def has_instruments(self):
         return len(self._child_instruments) > 0

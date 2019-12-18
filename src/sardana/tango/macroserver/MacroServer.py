@@ -68,7 +68,7 @@ class MacroServer(SardanaDevice):
         self._macro_server.clear_log_report()
         # Workaround for bug #494.
         factory = taurus.Factory("tango")
-        for attr in factory.tango_attrs.values():
+        for attr in list(factory.tango_attrs.values()):
             attr.cleanUp()
 
     def init_device(self):
@@ -169,7 +169,7 @@ class MacroServer(SardanaDevice):
                 key = 'del'
             json_elem = elem.serialize(pool=self.pool.full_name)
             value[key] = json_elem,
-            value = CodecFactory().getCodec('json').encode(('', value))
+            value = CodecFactory().getCodec('utf8_json').encode(('', value))
             self.set_attribute(elems_attr, value=value)
             #self.push_change_event('Elements', *value)
         elif evt_name == "elementschanged":
@@ -190,7 +190,7 @@ class MacroServer(SardanaDevice):
                 deleted_values.append(json_elem)
             value = {"new": new_values, "change": changed_values,
                      "del": deleted_values}
-            value = CodecFactory().getCodec('json').encode(('', value))
+            value = CodecFactory().getCodec('utf8_json').encode(('', value))
             self.set_attribute(elems_attr, value=value)
             #self.push_change_event('Elements', *value)
         elif evt_name == "environmentchanged":
@@ -229,7 +229,7 @@ class MacroServer(SardanaDevice):
             return value
         elements = self.macro_server.get_elements_info()
         value = dict(new=elements)
-        value = CodecFactory().getCodec('json').encode(('', value))
+        value = CodecFactory().getCodec('utf8_json').encode(('', value))
         self.ElementsCache = value
         return value
 
@@ -261,7 +261,7 @@ class MacroServer(SardanaDevice):
         codec = CodecFactory().getCodec('json')
         ret = []
 
-        for _, macro in macro_server.get_macros().items():
+        for _, macro in list(macro_server.get_macros().items()):
             if macro.name in macro_names:
                 ret.append(codec.encode(('', macro.serialize()))[1])
 
@@ -272,7 +272,7 @@ class MacroServer(SardanaDevice):
         try:
             for macro_name in macro_names:
                 self.macro_server.reload_macro(macro_name)
-        except MacroServerException, mse:
+        except MacroServerException as mse:
             Except.throw_exception(mse.type, mse.msg, 'ReloadMacro')
         return ['OK']
 
@@ -282,7 +282,7 @@ class MacroServer(SardanaDevice):
         try:
             for lib_name in lib_names:
                 self.macro_server.reload_macro_lib(lib_name)
-        except MacroServerException, mse:
+        except MacroServerException as mse:
             Except.throw_exception(mse.type, mse.msg, 'ReloadMacroLib')
         return ['OK']
 
@@ -290,7 +290,7 @@ class MacroServer(SardanaDevice):
         """GetMacroCode(<module name> [, <macro name>]) -> full filename, code, line_nb
         """
         ret = self.macro_server.get_or_create_macro_lib(*argin)
-        return map(str, ret)
+        return list(map(str, ret))
 
     def SetMacroCode(self, argin):
         lib_name, code = argin[:2]

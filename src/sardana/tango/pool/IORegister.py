@@ -202,10 +202,10 @@ class IORegister(PoolElementDevice):
         non_detect_evts = ()
 
         for attr_name in detect_evts:
-            if attrs.has_key(attr_name):
+            if attr_name in attrs:
                 self.set_change_event(attr_name, True, True)
         for attr_name in non_detect_evts:
-            if attrs.has_key(attr_name):
+            if attr_name in attrs:
                 self.set_change_event(attr_name, True, False)
         return
 

@@ -67,7 +67,7 @@ def createPoolController(pool, conf):
         ctrl_properties = ctrl_class_info.ctrl_properties
     else:
         ctrl_properties = {}
-    for prop_info in ctrl_properties.values():
+    for prop_info in list(ctrl_properties.values()):
         prop_name = prop_info.name
         prop_value = properties.get(prop_name)
         if prop_value is None:
@@ -94,7 +94,9 @@ def createPoolCounterTimer(pool, poolcontroller, conf):
     kwargs = copy.deepcopy(conf)
     kwargs['pool'] = pool
     kwargs['ctrl'] = poolcontroller
-    return PoolCounterTimer(**kwargs)
+    ct = PoolCounterTimer(**kwargs)
+    poolcontroller.add_element(ct)
+    return ct
 
 
 def createPoolZeroDExpChannel(pool, poolcontroller, conf):

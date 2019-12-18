@@ -47,6 +47,7 @@ import os
 import re
 import numpy as np
 
+from sardana.sardanautils import py2_round
 from sardana.macroserver.macro import Macro, iMacro, Type
 from sardana.macroserver.macros.scan import aNscan
 from sardana.macroserver.msexception import UnknownEnv
@@ -136,7 +137,7 @@ class _diffrac:
 
     def check_collinearity(self, h0, k0, l0, h1, k1, l1):
 
-        print h0
+        print(h0)
         cpx = k0 * l1 - l0 * k1
         cpy = l0 * h1 - h0 * l1
         cpz = h0 * k1 - k0 * h1
@@ -496,7 +497,7 @@ class pa(Macro, _diffrac):
                 self.output("  %d%s Reflection (index %d): " %
                             (nb_ref + 1, sf, ref[0]))
                 #self.output("    Affinement, Relevance : %d %d" % (ref[4], ref[5]))
-                if len(ref) > 10:
+                if len(ref) > 10 and len(self.angle_names) == 6:
                     self.output("    %s %s %s %s %s %s: %s %s %s %s %s %s" %
                                 (self.angle_names[5], self.angle_names[1],
                                  self.angle_names[2], self.angle_names[3],
@@ -507,6 +508,20 @@ class pa(Macro, _diffrac):
                                  _diffrac.fl(self, str(ref[9])),
                                  _diffrac.fl(self, str(ref[10])),
                                  _diffrac.fl(self, str(ref[6]))))
+                elif len(ref) > 10 and len(self.angle_names) == 7:
+                    self.output(
+                        "    %s %s %s %s %s %s %s: %s %s %s %s %s %s %s" %
+                        (self.angle_names[0], self.angle_names[1],
+                         self.angle_names[2], self.angle_names[3],
+                         self.angle_names[4], self.angle_names[5],
+                         self.angle_names[6],
+                         _diffrac.fl(self, str(ref[6])),
+                         _diffrac.fl(self, str(ref[7])),
+                         _diffrac.fl(self, str(ref[8])),
+                         _diffrac.fl(self, str(ref[9])),
+                         _diffrac.fl(self, str(ref[10])),
+                         _diffrac.fl(self, str(ref[11])),
+                         _diffrac.fl(self, str(ref[12]))))
                 else:
                     self.output("    %s %s %s %s: %s %s %s %s" %
                                 (self.angle_names[0], self.angle_names[1],
@@ -657,19 +672,19 @@ class wh(Macro, _diffrac):
                         (str_pos1, str_pos2, str_pos3, str_pos4))
         elif self.nb_motors == 7:
             str_pos1 = "%7.5f" % self.getDevice(
-                self.angle_device_names[self.angles_names[0]]).Position
+                self.angle_device_names[self.angle_names[0]]).Position
             str_pos2 = "%7.5f" % self.getDevice(
-                self.angle_device_names[self.angles_names[1]]).Position
+                self.angle_device_names[self.angle_names[1]]).Position
             str_pos3 = "%7.5f" % self.getDevice(
-                self.angle_device_names[self.angles_names[2]]).Position
+                self.angle_device_names[self.angle_names[2]]).Position
             str_pos4 = "%7.5f" % self.getDevice(
-                self.angle_device_names[self.angles_names[3]]).Position
+                self.angle_device_names[self.angle_names[3]]).Position
             str_pos5 = "%7.5f" % self.getDevice(
-                self.angle_device_names[self.angles_names[4]]).Position
+                self.angle_device_names[self.angle_names[4]]).Position
             str_pos6 = "%7.5f" % self.getDevice(
-                self.angle_device_names[self.angles_names[5]]).Position
+                self.angle_device_names[self.angle_names[5]]).Position
             str_pos7 = "%7.5f" % self.getDevice(
-                self.angle_device_names[self.angles_names[6]]).Position
+                self.angle_device_names[self.angle_names[6]]).Position
             self.output("%10s %11s %12s %11s %11s %11s %11s" %
                         (self.angle_names[0],
                          self.angle_names[1],
@@ -1537,7 +1552,7 @@ class loadcrystal(iMacro, _diffrac):
                 self.output("New directory %s not found" % newdir)
                 return
 
-        res = filter(lambda x: x.endswith('.txt'), files)
+        res = [x for x in files if x.endswith('.txt')]
         if len(res) == 0:
             self.output("No crystals available in set directory. Nothing done")
             return
@@ -1591,7 +1606,7 @@ class latticecal(iMacro, _diffrac):
                     self.output("Old lattice parameter %s = %s" %
                                 (parameter, a0))
                     h0 = self.h_device.position
-                    h1 = round(h0)
+                    h1 = py2_round(h0)  # TODO: check if round would be fine?
                     a1 = h1 / h0 * a0
                     self.output("New lattice parameter %s = %s" %
                                 (parameter, a1))
@@ -1601,7 +1616,7 @@ class latticecal(iMacro, _diffrac):
                     self.output("Old lattice parameter %s = %s" %
                                 (parameter, a0))
                     h0 = self.k_device.position
-                    h1 = round(h0)
+                    h1 = py2_round(h0)  # TODO: check if round would be fine?
                     a1 = h1 / h0 * a0
                     self.output("New lattice parameter %s = %s" %
                                 (parameter, a1))
@@ -1611,7 +1626,7 @@ class latticecal(iMacro, _diffrac):
                     self.output("Old lattice parameter %s = %s" %
                                 (parameter, a0))
                     h0 = self.l_device.position
-                    h1 = round(h0)
+                    h1 = py2_round(h0)  # TODO: check if round would be fine?
                     a1 = h1 / h0 * a0
                     self.output("New lattice parameter %s = %s" %
                                 (parameter, a1))
@@ -1647,11 +1662,7 @@ class _blockprintmove(Macro, _diffrac):
         while(moving):
             moving = 0
             for angle in self.angle_names:
-                # TODO: For Taurus 4 / Taurus 3 compatibility
-                if hasattr(mot_dev, "stateObj"):
-                    angle_state = tmp_dev[angle].stateObj.read().rvalue
-                else:
-                    angle_state = tmp_dev[angle].state()
+                angle_state = tmp_dev[angle].stateObj.read().rvalue
                 if angle_state == 6:
                     moving = 1
             if flagprint == 1:

@@ -34,7 +34,6 @@ from taurus.core.taurusdevice import TaurusDevice
 from taurus.external.qt import Qt
 from taurus.qt.qtcore.model import TaurusBaseTreeItem, TaurusBaseModel
 from taurus.qt.qtgui.model import EditorToolBar
-from taurus.qt.qtgui.resource import getIcon, getThemeIcon
 from taurus.qt.qtgui.table import TaurusBaseTableWidget
 from taurus.qt.qtgui.panel import TaurusModelChooser
 from taurus.core.taurusbasetypes import TaurusElementType
@@ -89,7 +88,7 @@ def createChannelDict(channel, index=None, **kwargs):
     import PyTango
     import numpy
 
-    if isinstance(channel, (str, unicode)):
+    if isinstance(channel, str):
         #@fixme: to make things uglier, I lazily assume Tango attribute namin
         dev_name, attr_name = channel.rsplit('/', 1)
         name = attr_name
@@ -125,6 +124,8 @@ def createChannelDict(channel, index=None, **kwargs):
         #           'timer': '', #should contain a channel name
         #           'monitor': '', #should contain a channel name
         #           'trigger': '', #should contain a channel name
+        'value_ref_enabled': False,  # bool
+        'value_ref_pattern': '',  # str
         'conditioning': '',  # this is a python expresion to be evaluated for conditioning the data. The data for this channel can be referred as 'x' and data from other channels can be referred by channel name
         'normalization': Normalization.No,  # one of the Normalization enumeration members
         # string indicating the location of the data of this channel within
@@ -142,8 +143,8 @@ def createChannelDict(channel, index=None, **kwargs):
         # avoid trying to read for scalars. We know that their shape must be ()
         if attrconf.data_format != PyTango.AttrDataFormat.SCALAR:
             value = attrproxy.read().value
-    except Exception, e:
-        print str(e)
+    except Exception as e:
+        print(str(e))
 
     if value is not None:
         shape = list(numpy.shape(value))
@@ -200,27 +201,27 @@ def createChannelDict(channel, index=None, **kwargs):
 
 def getElementTypeIcon(t):
     if t == ChannelView.Channel:
-        return getIcon(":/actions/system-shutdown.svg")
+        return Qt.QIcon("actions:system-shutdown.svg")
     elif t == ChannelView.Enabled:
-        return getIcon(":/status/true.svg")
+        return Qt.QIcon("status:true.svg")
     elif t == ChannelView.Output:
-        return getThemeIcon("utilities-terminal")
+        return Qt.QIcon.fromTheme("utilities-terminal")
     elif t == ChannelView.PlotType:
-        return getIcon(":/apps/utilities-system-monitor.svg")
+        return Qt.QIcon("apps:utilities-system-monitor.svg")
     elif t == ChannelView.PlotAxes:
-        return getIcon(":/apps/utilities-system-monitor.svg")
+        return Qt.QIcon("apps:utilities-system-monitor.svg")
     elif t == ChannelView.Timer:
-        return getIcon(":/status/flag-green-clock.svg")
+        return Qt.QIcon("status:flag-green-clock.svg")
     elif t == ChannelView.Monitor:
-        return getIcon(":/status/flag-green.svg")
+        return Qt.QIcon("status:flag-green.svg")
     elif t == ChannelView.Synchronization:
-        return getIcon(":/actions/system-shutdown.svg")
+        return Qt.QIcon("actions:system-shutdown.svg")
     elif t == ChannelView.NXPath:
-        return getThemeIcon("document-save-as")
+        return Qt.QIcon.fromTheme("document-save-as")
     elif t == ChannelView.Synchronizer:
-        return getIcon(":/actions/system-shutdown.svg")
+        return Qt.QIcon("actions:system-shutdown.svg")
 
-    return getIcon(":/tango.png")
+    return Qt.QIcon(":tango.png")
 
 
 def getElementTypeSize(t):
@@ -231,6 +232,8 @@ def getElementTypeSize(t):
     elif t == ChannelView.Output:
         return Qt.QSize(50, 24)
     elif t == ChannelView.PlotType:
+        return Qt.QSize(50, 24)
+    elif t == ChannelView.ValueRefEnabled:
         return Qt.QSize(50, 24)
     elif t == ChannelView.Synchronizer:
         return Qt.QSize(200, 24)
@@ -259,13 +262,17 @@ def getElementTypeToolTip(t):
         return "The channel to be used as a monitor for stopping the acquisition"
     elif t == ChannelView.Synchronization:
         return "The channel to be used for triggering the acquisition"
+    elif t == ChannelView.ValueRefEnabled:
+        return "Channel value referencing active or not"
+    elif t == ChannelView.ValueRefPattern:
+        return "Channel value referencing pattern"
     elif t == ChannelView.Conditioning:
         return "An expression to evaluate on the data when displaying it"
     elif t == ChannelView.Normalization:
         return "Normalization mode for the data"
     elif t == ChannelView.NXPath:
         return "Location of the data of this channel within the NeXus tree"
-    if t == ChannelView.Synchronizer:
+    elif t == ChannelView.Synchronizer:
         return "Synchronization element"
     return "Unknown"
 
@@ -305,6 +312,8 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
                          #                         ChannelView.Timer:'timer',
                          #                         ChannelView.Monitor:'monitor',
                          #                         ChannelView.Synchronization:'trigger',
+                         ChannelView.ValueRefEnabled: 'value_ref_enabled',
+                         ChannelView.ValueRefPattern: 'value_ref_pattern',
                          ChannelView.Conditioning: 'conditioning',
                          ChannelView.Normalization: 'normalization',
                          ChannelView.NXPath: 'nexus_path',
@@ -330,11 +339,24 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
         return ret
 
     def setData(self, index, qvalue):
+        ch_name, ch_data = self.itemData()
         taurus_role = index.model().role(index.column())
+        key = self.itemdata_keys_map[taurus_role]
         if taurus_role in (ChannelView.Channel, ChannelView.Conditioning,
-                           ChannelView.NXPath, ChannelView.DataType,
-                           ChannelView.Enabled, ChannelView.Output):
+                           ChannelView.NXPath, ChannelView.Enabled,
+                           ChannelView.Output, ChannelView.ValueRefEnabled,
+                           ChannelView.ValueRefPattern):
             data = qvalue
+        elif taurus_role == ChannelView.DataType:
+            if len(qvalue.strip()) == 0:
+                # empty strings are considered as unspecified data type
+                try:
+                    ch_data.pop(key)
+                except KeyError:
+                    pass  # data_type key may not be there if not specified
+                return
+            else:
+                data = qvalue
         elif taurus_role == ChannelView.PlotType:
             data = PlotType[qvalue]
         elif taurus_role == ChannelView.Normalization:
@@ -353,8 +375,6 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
                 data = ()
         else:
             raise NotImplementedError('Unknown role')
-        ch_name, ch_data = self.itemData()
-        key = self.itemdata_keys_map[taurus_role]
         ch_data[key] = data
 
     def role(self):
@@ -366,7 +386,7 @@ class MntGrpChannelItem(BaseMntGrpChannelItem):
     def icon(self, index):
         taurus_role = index.model().role(index.column())
         if taurus_role == ChannelView.Channel:
-            return getIcon(":/actions/system-shutdown.svg")
+            return Qt.QIcon("actions:system-shutdown.svg")
 
 
 class MntGrpUnitItem(TaurusBaseTreeItem):
@@ -374,12 +394,18 @@ class MntGrpUnitItem(TaurusBaseTreeItem):
 
 
 class BaseMntGrpChannelModel(TaurusBaseModel):
-    ColumnNames = ("Channel", "enabled", "output", "Shape", "Data Type", "Plot Type", "Plot Axes", "Timer",
-                   "Monitor", "Synchronizer", "Synchronization", "Conditioning", "Normalization", "NeXus Path")
-    ColumnRoles = ((ChannelView.Channel, ChannelView.Channel), ChannelView.Enabled,
-                   ChannelView.Output, ChannelView.Shape, ChannelView.DataType, ChannelView.PlotType,
-                   ChannelView.PlotAxes, ChannelView.Timer, ChannelView.Monitor,
-                   ChannelView.Synchronizer, ChannelView.Synchronization, ChannelView.Conditioning,
+    ColumnNames = ("Channel", "enabled", "output", "Shape", "Data Type",
+                   "Plot Type", "Plot Axes", "Timer", "Monitor",
+                   "Synchronizer", "Synchronization", "Ref Enabled",
+                   "Ref Pattern", "Conditioning",
+                   "Normalization", "NeXus Path")
+    ColumnRoles = ((ChannelView.Channel, ChannelView.Channel),
+                   ChannelView.Enabled, ChannelView.Output, ChannelView.Shape,
+                   ChannelView.DataType, ChannelView.PlotType,
+                   ChannelView.PlotAxes, ChannelView.Timer,
+                   ChannelView.Monitor, ChannelView.Synchronizer,
+                   ChannelView.Synchronization, ChannelView.ValueRefEnabled,
+                   ChannelView.ValueRefPattern, ChannelView.Conditioning,
                    ChannelView.Normalization, ChannelView.NXPath)
     DftFont = Qt.QFont()
 
@@ -580,7 +606,6 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
             self.beginResetModel()
             ctrl_data = self.getPyData(ctrlname=ctrlname)
             ctrl_data[key] = qvalue
-            self._mgconfig[key] = qvalue
             self.endResetModel()
             return True
         # for the rest, we use the regular TaurusBaseModel item-oriented approach
@@ -605,7 +630,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         # update the internal data
         self.beginResetModel()  # we are altering the internal data here, so we need to protect it
         ctrlsdict = self.dataSource()['controllers']
-        if not ctrlsdict.has_key(ctrlname):
+        if ctrlname not in ctrlsdict:
             ctrlsdict[ctrlname] = ctrl = {'channels': {}}
             if not external and chinfo['type'] in ('CTExpChannel', 'OneDExpChannel', 'TwoDExpChannel'):
                 ctrl['timer'] = chname
@@ -615,7 +640,7 @@ class BaseMntGrpChannelModel(TaurusBaseModel):
         else:
             ctrl = ctrlsdict[ctrlname]
         channelsdict = ctrl['channels']
-        if channelsdict.has_key(chname):
+        if chname in channelsdict:
             self.error(
                 'Channel "%s" is already in the measurement group. It will not be added again' % chname)
             return
@@ -783,11 +808,11 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
         dataSource = model.dataSource()
         taurus_role = model.role(index.column())
         if taurus_role == ChannelView.PlotType:
-            editor.addItems(PlotType.keys())
+            editor.addItems(list(PlotType.keys()))
             current = model.data(index)
             editor.setCurrentIndex(editor.findText(current))
         elif taurus_role == ChannelView.Normalization:
-            editor.addItems(Normalization.keys())
+            editor.addItems(list(Normalization.keys()))
             current = model.data(index)
             editor.setCurrentIndex(editor.findText(current))
         elif taurus_role in (ChannelView.Timer, ChannelView.Monitor):
@@ -804,14 +829,14 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
                 current = model.data(index)
                 editor.setCurrentIndex(editor.findText(current))
             else:
-                for ctrl_data in dataSource['controllers'].values():
+                for ctrl_data in list(dataSource['controllers'].values()):
                     if key in ctrl_data:
                         channel = all_channels[ctrl_data[key]]
                         editor.addItem(channel['name'], channel['full_name'])
                 current = dataSource.get(key)  # current global timer/monitor
                 editor.setCurrentIndex(editor.findData(current))
         elif taurus_role == ChannelView.Synchronization:
-            editor.addItems(AcqSynchType.keys())
+            editor.addItems(list(AcqSynchType.keys()))
             current = model.data(index)
             editor.setCurrentIndex(editor.findText(current))
         elif taurus_role == ChannelView.PlotAxes:
@@ -823,7 +848,7 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
         elif taurus_role == ChannelView.Synchronizer:
             # add the triggergates to the editor
             all_triggers = model.getAvailableTriggers()
-            for full_name, tg_data in all_triggers.items():
+            for full_name, tg_data in list(all_triggers.items()):
                 editor.addItem(tg_data['name'], full_name)
                 current = model.data(index)
                 editor.setCurrentIndex(editor.findText(current))
@@ -924,7 +949,7 @@ class ChannelDelegate(Qt.QStyledItemDelegate):
             # get the affected channels
             affected = []
             channels = ctrl_data.get('channels')
-            for _, ch_data in channels.items():
+            for _, ch_data in list(channels.items()):
                 affected.append(ch_data['name'])
 
             if len(affected) > 1:
@@ -948,7 +973,7 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
     KnownPerspectives = {
         "Channel": {
             "label": "Channels",
-            "icon": ":/actions/system-shutdown.svg",
+            "icon": "actions:system-shutdown.svg",
             "tooltip": "View by channel",
             "model": [BaseMntGrpChannelModel, ],
         },
@@ -1021,7 +1046,8 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
         if channel is None:
             shown = [n for n, d in getChannelConfigs(dataSource)]
             avail_channels = qmodel.getAvailableChannels()
-            clist = [ch_info['name'] for ch_name, ch_info in avail_channels.items()
+            clist = [ch_info['name'] for ch_name, ch_info
+                     in list(avail_channels.items())
                      if ch_name not in shown]
             clist = sorted(clist) + ['(Other...)']
             chname, ok = Qt.QInputDialog.getItem(
@@ -1038,7 +1064,7 @@ class MntGrpChannelEditor(TaurusBaseTableWidget):
                 qmodel.addChannel(
                     chname=m, ctrlname='__tango__', external=True)
         else:
-            for ch_info in avail_channels.values():
+            for ch_info in list(avail_channels.values()):
                 if ch_info['name'] == chname:
                     qmodel.addChannel(chinfo=ch_info)
 

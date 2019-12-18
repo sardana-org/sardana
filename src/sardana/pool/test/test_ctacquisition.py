@@ -50,7 +50,6 @@ class PoolMeasurementGroupTestCase(unittest.TestCase):
         pc = createPoolController(pool, dummyPoolCTCtrlConf01)
         pct = createPoolCounterTimer(pool, pc, dummyCounterTimerConf01)
 
-        pc.add_element(pct)
         pool.add_element(pc)
         pool.add_element(pct)
 

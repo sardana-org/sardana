@@ -239,7 +239,8 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
     def toXmlString(self, pretty=False, withId=True):
         xmlSequence = self.root().toXml(withId=withId)
         xmlTree = etree.ElementTree(xmlSequence)
-        xmlString = etree.tostring(xmlTree, pretty_print=pretty)
+        xmlString = etree.tostring(xmlTree, encoding='unicode',
+                                   pretty_print=pretty)
         return xmlString
 
     def fromXmlString(self, xmlString):
@@ -251,10 +252,10 @@ class MacroSequenceTreeModel(Qt.QAbstractItemModel):
         self.endResetModel()
         return newRoot
 
-    def fromPlainText(self, text):
+    def fromPlainText(self, text, macroInfos):
         self.beginResetModel()
         newRoot = macro.SequenceNode(None)
-        newRoot.fromPlainText(text)
+        newRoot.fromPlainText(text, macroInfos)
         self.setRoot(newRoot)
         self.endResetModel()
         return newRoot
@@ -368,7 +369,7 @@ class MacroSequenceProxyModel(Qt.QSortFilterProxyModel):
 
     def createIdIndexDictionary(self):
         d = self.sourceModel().createIdIndexDictionary()
-        for id, sourceIndex in d.iteritems():
+        for id, sourceIndex in d.items():
             proxyIndex = self.mapFromSource(sourceIndex)
             d[id] = Qt.QPersistentModelIndex(proxyIndex)
         return d

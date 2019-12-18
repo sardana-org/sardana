@@ -14,6 +14,7 @@
     PoolDevice <pool/PoolDevice>
     Controller <pool/Controller>
     Motor <pool/Motor>
+    MotorGroup <pool/MotorGroup>
     I/O register <pool/IORegister>
     Counter/Timer <pool/CTExpChannel>
     0D experiment channel <pool/ZeroDExpChannel>

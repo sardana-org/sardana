@@ -101,10 +101,6 @@ class ZeroDExpChannel(PoolExpChannelDevice):
 
         name = event_type.name.lower()
         attr_name = name
-        # TODO: remove this condition when Data attribute will be substituted
-        # by ValueBuffer
-        if name == "valuebuffer":
-            attr_name = "data"
         attr = self.get_device_attr().get_attr_by_name(attr_name)
 
         if name == "state":
@@ -165,7 +161,7 @@ class ZeroDExpChannel(PoolExpChannelDevice):
         attrs = PoolExpChannelDevice.initialize_dynamic_attributes(self)
 
         detect_evts = "value",
-        non_detect_evts = "data",
+        non_detect_evts = "valuebuffer",
 
         for attr_name in detect_evts:
             if attr_name in attrs:
@@ -200,12 +196,6 @@ class ZeroDExpChannel(PoolExpChannelDevice):
     def Start(self):
         self.zerod.start_acquisition()
 
-    def read_ValueBuffer(self, attr):
-        msg = ("ValueBuffer attribute is deprecated since version 2.3.0. "
-               "Use AccumulationBuffer attribute instead.")
-        self.warning(msg)
-        attr.set_value(self.zerod.get_accumulation_buffer())
-
     def read_AccumulationBuffer(self, attr):
         attr.set_value(self.zerod.get_accumulation_buffer())
 
@@ -224,7 +214,6 @@ class ZeroDExpChannel(PoolExpChannelDevice):
     is_Value_allowed = _is_allowed
     is_CurrentValue_allowed = _is_allowed
     is_AccumulationType_allowed = _is_allowed
-    is_ValueBuffer_allowed = _is_allowed
     is_AccumulationBuffer_allowed = _is_allowed
     is_TimeBuffer_allowed = _is_allowed
 
@@ -253,7 +242,6 @@ class ZeroDExpChannelClass(PoolExpChannelDeviceClass):
 
     #    Attribute definitions
     attr_list = {
-        'ValueBuffer': [[DevDouble, SPECTRUM, READ, 16 * 1024]],  # deprecated
         'AccumulationBuffer': [[DevDouble, SPECTRUM, READ, 16 * 1024]],
         'TimeBuffer': [[DevDouble, SPECTRUM, READ, 16 * 1024]],
         'AccumulationType': [[DevString, SCALAR, READ_WRITE],
@@ -266,7 +254,6 @@ class ZeroDExpChannelClass(PoolExpChannelDeviceClass):
     standard_attr_list = {
         'Value': [[_DFT_VALUE_TYPE, SCALAR, READ, ],
                   {'abs_change': '1.0', }],
-        'Data': [[DevString, SCALAR, READ]]  # TODO: think about DevEncoded
     }
     standard_attr_list.update(PoolExpChannelDeviceClass.standard_attr_list)
 

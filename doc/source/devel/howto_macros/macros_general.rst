@@ -212,7 +212,7 @@ the macro function version of *Hello, World!*::
     
 .. note::
     If you already know a little about Python_ your are probably wondering why
-    not use ``print "Hello, World!"``?
+    not use ``print("Hello, World!")``?
 
     Remember that your macro will be executed by a Sardana server which may be
     running in a different computer than the computer you are working on.
@@ -225,9 +225,6 @@ the macro function version of *Hello, World!*::
     function (it is a bit more powerful than 
     :meth:`~sardana.macroserver.macro.Macro.output`\, and has a slightly
     different syntax) ::
-
-        # mandatory first line in your code if you use Python < 3.0
-        from __future__ import print_function
         
         from sardana.macroserver.macro import macro
         
@@ -582,7 +579,7 @@ messages with different levels:
     * :meth:`~Macro.output`
     
 As you've seen, the special :meth:`~Macro.output` function has the same effect
-as a print statement (with slightly different arguments).
+as a print function (with slightly different arguments).
 
 Log messages may have several destinations depending on how your sardana server
 is configured. At least, one destination of each log message is the client(s)
@@ -739,7 +736,7 @@ using :meth:`~Macro.data`:
         # and the result of the Macro.prepare method
         my_scan, _ = ret 
         self.runMacro(my_scan)
-        print len(my_scan.data)
+        self.print(len(my_scan.data))
 
 A set of macro call examples can be found
 :ref:`here <sardana-devel-macro-call-examples>`.
@@ -769,7 +766,7 @@ macro. So, without further delay, here is the *Hello, World!* example::
         """Hello, World! macro"""
         
         def run(self):
-            print "Hello, World!"
+            self.print("Hello, World!")
 
 .. _sardana-macro-add-parameters:
 
@@ -818,7 +815,7 @@ prepare HelloWorld to run only after year 1989:
                 raise Exception("HelloWorld can only run after year 1989")
     
         def run(self):
-            print "Hello, World!"
+            self.print("Hello, World!")
 
 .. _sardana-macro-handling-macro-stop-and-abort:
 
@@ -1433,17 +1430,115 @@ You may notice that this way, the range can be changed dynamically. A progress
 bar in a :term:`GUI` is programmed to adjust not only the current progress
 value but also the ranges so it is safe to change them if necessary.
 
+Simultaneous actions
+--------------------
 
+There is a facility for parallel execution of operations within a macro. For the
+motion and acquisition you can use the asynchronous methods from the
+:code:`Motion` and :code:`MeasurementGroup` objects. For simultaneous execution
+of any other tasks you can use the job manager.
 
+When using this feature, you should keep a few things in mind:
+
+- The job execution may not start immediately, as this depends on a worker
+  process availability (this is generally true also for the execution of the macro
+  itself)
+- Exceptions raised in a job will not be catched, and therefore will not stop
+  any reserved element; ideally you should implement your own exception handling
+  inside a job
+- You should pay careful attention to synchronization between the jobs and the
+  macro
+
+**Asynchronous motion and acquisition**
+
+You can move the motor asynchronously by using the :code:`Motion` object:
+
+.. code-block:: python
+    :emphasize-lines: 5, 7
+
+    @macro([["mot", Type.Moveable, None, "moveable"],
+            ["pos", Type.Float, None, "position"]])
+    def move_async(self, mot, pos):
+        motion = self.getMotion([mot])
+        _id = motion.startMove([pos])
+        self.info("The motion is now started.")
+        motion.waitMove(id=_id)
+        self.info("The motion has finished.")
+
+In above example, the asynchronous movement is started using
+:code:`Motion.startMove` method and then it is synchronized using
+:code:`Motion.waitMove`. In between you can perform other operations, the
+:code:`waitMove` call will wait for the motion to finish or return immediately
+if it's already finished. :code:`startMove` will return an identificator, that
+can be later used to wait for the motion.
+
+The :code:`MeasurementGroup` provides a similar interface for asynchronous
+acquisition:
+
+.. code-block:: python
+    :emphasize-lines: 7, 9
+
+    @macro([["mg", Type.MeasurementGroup, None, "measurement group"],
+            ["it", Type.Float, None, "integration time"]])
+    def acq_async(self, mg, it):
+        mg.putIntegrationTime(it)
+        mg.setNbStarts(1)
+        mg.prepare()
+        id_ = mg.startCount()
+        self.info("The acquisition is now started.")
+        mg.waitCount(id=_id)
+        self.info("The acquisition has finished.")
+
+After the measurement group is configured for acquisition, you can start
+asynchronous acquisition by using :code:`MeasurementGroup.startCount` method. To
+synchronize the acquisition use :code:`MeasurementGroup.waitCount`. The usage is
+analogous to asynchronous motion.
+
+Take a look at the example macro libraries for some more examples.
+
+**Arbitrary asynchronous operations**
+
+There are two methods for asynchronous execution of arbitrary code. First one is
+to use the MacroServer's job manager:
+
+.. code-block:: python
+    :emphasize-lines: 6, 9, 10, 12
+
+    from threading import Event
+
+    class async_attached(Macro):
+        def _job(self):
+            self.info("Doing something...")
+            self._event.set()
+
+        def run(self):
+            self._event = Event()
+            self.getManager().add_job(self._job)
+            self.info("The job is now running.")
+            self._event.wait(60)
+            self.output("The job has finished (or timeout occured).")
+
+In the :code:`run` method, first we create the :code:`Event` object which will
+be used for the synchronization. Then we get the manager object and add a job to
+it. The job begins to run when added. When the job finishes, it sets the
+:code:`Event` to notify the macro. The macro waits for the event to become set.
+
+.. caution::
+    If you do not wait for the job to finish, you are running in the
+    "detached mode". This is not recommended, as it requires more elaborated
+    synchronization methods. Use at your own risk!
+
+The second method is to use standard Python threading_ library.
 
 
 .. rubric:: Footnotes
 
 .. [#f1] To find the absolute path for sardana's source code type on the
-         command line ``python -c "import sys, sardana; sys.stdout.write(str(sardana.__path__))"``
+         command line ``python3 -c "import sys, sardana; sys.stdout.write
+         (str(sardana.__path__))"``
 
 .. [#f2] To check which version of Python_ you are using type on the command
-         line ``python -c "import sys; sys.stdout.write(sys.version)"``
+         line ``python3 -c "import sys; sys.stdout.write(sys.version)"``
 
 .. |input_integer| image:: ../../_static/macro_input_integer.png
     :align: middle
@@ -1489,3 +1584,4 @@ value but also the ranges so it is safe to change them if necessary.
 .. _numpy: http://numpy.scipy.org/
 .. _SPEC: http://www.certif.com/
 .. _EPICS: http://www.aps.anl.gov/epics/
+.. _threading: https://docs.python.org/2/library/threading.html

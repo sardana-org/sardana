@@ -270,14 +270,14 @@ class DiscretePseudoMotorController(PseudoMotorController):
             labels = []
             positions = []
             calibration = []
-            for k, v in mapping.items():
+            for k, v in list(mapping.items()):
                 labels.append(k)
                 pos = int(v['pos'])
                 if pos in positions:
                     msg = 'position {0} is already used'.format(pos)
                     raise ValueError(msg)
                 positions.append(pos)
-                if all([x in v.keys() for x in ['min', 'set', 'max']]):
+                if all([x in list(v.keys()) for x in ['min', 'set', 'max']]):
                     calibration.append([v['min'], v['set'], v['max']])
             self._labels_cfg = labels
             self._positions_cfg = positions

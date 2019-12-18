@@ -23,7 +23,7 @@
 
 """Expert macros"""
 
-from __future__ import print_function
+
 
 __all__ = ["addctrllib", "addmaclib", "commit_ctrllib", "defctrl", "defelem",
            "defm", "defmeas", "edctrlcls", "edctrllib", "prdef",
@@ -228,7 +228,8 @@ class send2ctrl(Macro):
         pool = controller.getPoolObj()
         str_data = " ".join(data)
         res = pool.SendToController([name, str_data])
-        self.output(res)
+        if res:
+            self.output(res)
 
 ##########################################################################
 #
@@ -516,7 +517,7 @@ class sar_info(Macro):
     def dump_properties(self, obj):
         data = obj.serialize()
 
-        table = Table([data.values()], row_head_str=data.keys(),
+        table = Table([list(data.values())], row_head_str=list(data.keys()),
                       row_head_fmt='%*s', col_sep='  =  ')
         self.output("Properties:")
         self.output("-----------")

@@ -30,9 +30,10 @@ __all__ = ["QDoor", "QMacroServer",
 
 import copy
 from taurus.core.taurusbasetypes import TaurusEventType
-from taurus.external.qt import Qt
+from taurus.external.qt import Qt, compat
 
-from sardana.taurus.core.tango.sardana.macroserver import BaseMacroServer, BaseDoor
+from sardana.taurus.core.tango.sardana.macroserver import BaseMacroServer, \
+    BaseDoor
 
 CHANGE_EVTS = TaurusEventType.Change, TaurusEventType.Periodic
 
@@ -43,17 +44,20 @@ class QDoor(BaseDoor, Qt.QObject):
                        "recordDataUpdated", "macroStatusUpdated"]
     __pyqtSignals__ += ["%sUpdated" % l.lower() for l in BaseDoor.log_streams]
 
+    EXP_DESC_ENV_VARS = ['ActiveMntGrp', 'ScanDir', 'ScanFile',
+                         'DataCompressionRank', 'PreScanSnapshot']
+
     # sometimes we emit None hence the type is object
     # (but most of the data are passed with type list)
-    resultUpdated = Qt.pyqtSignal(object)
-    recordDataUpdated = Qt.pyqtSignal(object)
-    macroStatusUpdated = Qt.pyqtSignal(object)
-    errorUpdated = Qt.pyqtSignal(object)
-    warningUpdated = Qt.pyqtSignal(object)
-    infoUpdated = Qt.pyqtSignal(object)
-    outputUpdated = Qt.pyqtSignal(object)
-    debugUpdated = Qt.pyqtSignal(object)
-    experimentConfigurationChanged = Qt.pyqtSignal(object)
+    resultUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
+    recordDataUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
+    macroStatusUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
+    errorUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
+    warningUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
+    infoUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
+    outputUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
+    debugUpdated = Qt.pyqtSignal(compat.PY_OBJECT)
+    experimentConfigurationChanged = Qt.pyqtSignal(compat.PY_OBJECT)
     elementsChanged = Qt.pyqtSignal()
     environmentChanged = Qt.pyqtSignal()
 
@@ -99,7 +103,7 @@ class QDoor(BaseDoor, Qt.QObject):
         if not self._use_experiment_configuration and \
                 not self._connections_prepared:
             self.macro_server.environmentChanged.connect(
-                self._onExperimentConfigurationChanged)
+                self._onEnvironmentChanged)
             self.macro_server.elementsChanged.connect(self._elementsChanged)
             self._elementsChanged()
             self._connections_prepared = True
@@ -108,18 +112,43 @@ class QDoor(BaseDoor, Qt.QObject):
         mntgrps = self.macro_server.getElementsOfType("MeasurementGroup")
         # one or more measurement group was deleted
         mntgrp_changed = len(self._mntgrps_connected) > len(mntgrps)
-        new_mntgrp_connected = []
-        for name, mg in mntgrps.items():
+        new_mntgrps_connected = []
+        for name, mg in list(mntgrps.items()):
             if name not in self._mntgrps_connected:
                 mntgrp_changed = True  # this measurement group is new
                 obj = mg.getObj()
                 obj.configurationChanged.connect(
                     self._onExperimentConfigurationChanged)
-            new_mntgrp_connected.append(name)
-        self._mntgrp_connected = new_mntgrp_connected
+            new_mntgrps_connected.append(name)
+        self._mntgrps_connected = new_mntgrps_connected
 
         if mntgrp_changed:
             self._onExperimentConfigurationChanged()
+
+    def _onEnvironmentChanged(self, env_changes):
+        """
+        Filter environment changes that affect to the experiment
+        configuration.
+
+        :param env_changes: tuple with three elements in the following order:
+
+        * added (environment variables added)
+        * removed (environment variables removed)
+        * changed (environment variables changed)
+
+        :type env_changes: :obj:`tuple`
+        """
+        env_exp_changed = False
+        # Filter only the Environment added/removed/changes related with
+        # the experiment, not for all.
+        for envs in env_changes:
+            val = envs.intersection(self.EXP_DESC_ENV_VARS)
+            if len(val) > 0:
+                env_exp_changed = True
+                break
+        if not env_exp_changed:
+            return
+        self._onExperimentConfigurationChanged()
 
     def _onExperimentConfigurationChanged(self, *args):
         conf = copy.deepcopy(BaseDoor.getExperimentConfiguration(self))
@@ -143,7 +172,7 @@ class QMacroServer(BaseMacroServer, Qt.QObject):
     elementsUpdated = Qt.pyqtSignal()
     elementsChanged = Qt.pyqtSignal()
     macrosUpdated = Qt.pyqtSignal()
-    environmentChanged = Qt.pyqtSignal(object)
+    environmentChanged = Qt.pyqtSignal(compat.PY_OBJECT)
 
     def __init__(self, name, qt_parent=None, **kw):
         self.call__init__wo_kw(Qt.QObject, qt_parent)
@@ -212,13 +241,14 @@ class MacroServerMessageErrorHandler(TaurusMessageErrorHandler):
         msg = "<html><body><pre>%s</pre></body></html>" % err_value
         msgbox.setDetailedHtml(msg)
 
-        html_orig = """<html><head><style type="text/css">{style}</style></head><body>"""
+        html_orig = """<html><head><style type="text/css">{style}
+            </style></head><body>"""
         exc_info = "".join(err_traceback)
         style = ""
         try:
             import pygments.formatters
             import pygments.lexers
-        except:
+        except Exception:
             pygments = None
         if pygments is not None:
             formatter = pygments.formatters.HtmlFormatter()
@@ -229,13 +259,16 @@ class MacroServerMessageErrorHandler(TaurusMessageErrorHandler):
         else:
             formatter = pygments.formatters.HtmlFormatter()
             html += pygments.highlight(exc_info,
-                                       pygments.lexers.PythonTracebackLexer(), formatter)
+                                       pygments.lexers.PythonTracebackLexer(
+
+                                       ), formatter)
         html += "</body></html>"
         msgbox.setOriginHtml(html)
 
 
 def registerExtensions():
-    """Registers the macroserver extensions in the :class:`taurus.core.tango.TangoFactory`"""
+    """Registers the macroserver extensions in the
+    :class:taurus.core.tango.TangoFactory`"""
     import taurus
     factory = taurus.Factory()
     factory.registerDeviceClass('MacroServer', QMacroServer)
@@ -245,8 +278,8 @@ def registerExtensions():
     # handlers, maybe in TangoFactory & TaurusManager
     import sardana.taurus.core.tango.sardana.macro
     import taurus.qt.qtgui.panel
-    MacroRunException = sardana.taurus.core.tango.sardana.macro.MacroRunException
+    MacroRunExcep = sardana.taurus.core.tango.sardana.macro.MacroRunException
     TaurusMessagePanel = taurus.qt.qtgui.panel.TaurusMessagePanel
 
-    TaurusMessagePanel.registerErrorHandler(
-        MacroRunException, MacroServerMessageErrorHandler)
+    TaurusMessagePanel.registerErrorHandler(MacroRunExcep,
+                                            MacroServerMessageErrorHandler)

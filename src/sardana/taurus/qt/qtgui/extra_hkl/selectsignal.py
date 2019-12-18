@@ -90,7 +90,7 @@ class SelectSignal(TaurusWidget):
         if self.doorName != doorname:
             self.doorName = doorname
             self.door_device = taurus.Device(self.doorName)
-            print "Create door_device with name " + str(self.doorName)
+            print("Create door_device with name " + str(self.doorName))
 
         if self.doorName is not None:
             signals = []

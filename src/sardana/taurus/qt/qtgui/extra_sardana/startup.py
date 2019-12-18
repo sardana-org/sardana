@@ -36,7 +36,7 @@ def __run_pythonstartup_script():
     import os
     filename = os.environ.get('PYTHONSTARTUP')
     if filename and os.path.isfile(filename):
-        execfile(filename)
+        exec(compile(open(filename).read(), filename, 'exec'))
 
 
 def __run_init_commands():
@@ -70,7 +70,7 @@ class UserModuleDeleter(object):
         if pathlist is None:
             pathlist = []
         self.pathlist = pathlist
-        self.previous_modules = sys.modules.keys()
+        self.previous_modules = list(sys.modules.keys())
 
     def is_module_blacklisted(self, modname, modpath):
         for path in [sys.prefix] + self.pathlist:
@@ -88,7 +88,7 @@ class UserModuleDeleter(object):
         Do not del C modules
         """
         log = []
-        for modname, module in sys.modules.items():
+        for modname, module in list(sys.modules.items()):
             if modname not in self.previous_modules:
                 modpath = getattr(module, '__file__', None)
                 if modpath is None:
@@ -100,8 +100,8 @@ class UserModuleDeleter(object):
                     log.append(modname)
                     del sys.modules[modname]
         if verbose and log:
-            print "\x1b[4;33m%s\x1b[24m%s\x1b[0m" % ("UMD has deleted",
-                                                     ": " + ", ".join(log))
+            print("\x1b[4;33m%s\x1b[24m%s\x1b[0m" % ("UMD has deleted",
+                                                     ": " + ", ".join(log)))
 
 __umd__ = None
 
@@ -123,7 +123,7 @@ def runfile(filename, args=None, wdir=None):
         else:
             verbose = os.environ.get("UMD_VERBOSE", "").lower() == "true"
             __umd__.run(verbose=verbose)
-    if args is not None and not isinstance(args, basestring):
+    if args is not None and not isinstance(args, str):
         raise TypeError("expected a character buffer object")
     glbs = globals()
     if '__ipythonshell__' in glbs:
@@ -135,7 +135,7 @@ def runfile(filename, args=None, wdir=None):
             sys.argv.append(arg)
     if wdir is not None:
         os.chdir(wdir)
-    execfile(filename, glbs)
+    exec(compile(open(filename).read(), filename, 'exec'), glbs)
     sys.argv = ['']
     glbs.pop('__file__')
 
@@ -161,7 +161,7 @@ if __name__ == "__main__":
     __commands__ = __run_init_commands()
     if __commands__:
         for command in __commands__.split(';'):
-            exec command
+            exec(command)
     else:
         __run_pythonstartup_script()
 

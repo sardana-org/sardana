@@ -27,12 +27,10 @@
 macroparameterseditor.py:
 """
 import sys
-import inspect
 import glob
 
 from taurus.external.qt import Qt
 from taurus.core.util.singleton import Singleton
-from taurus.qt.qtgui.resource import getThemeIcon
 
 from sardana.taurus.core.tango.sardana import macro
 from sardana.taurus.qt.qtgui.extra_macroexecutor.macroparameterseditor.delegate import ParamEditorDelegate
@@ -116,30 +114,31 @@ class MacroParametersTree(Qt.QTreeView):
 #        self.setTabKeyNavigation(True)
         self.setEditTriggers(Qt.QAbstractItemView.AllEditTriggers)
 
-        self.addAction = Qt.QAction(getThemeIcon(
+        self.addAction = Qt.QAction(Qt.QIcon.fromTheme(
             "list-add"), "Add new repetition", self)
         self.addAction.triggered.connect(self.onAddRepeat)
         self.addAction.setToolTip(
             "Clicking this button will add new repetition to current parameter.")
 
-        self.deleteAction = Qt.QAction(getThemeIcon(
+        self.deleteAction = Qt.QAction(Qt.QIcon.fromTheme(
             "list-remove"), "Remove repetition", self)
         self.deleteAction.triggered.connect(self.onDelRepeat)
         self.deleteAction.setToolTip(
             "Clicking this button will remove current repetition.")
 
-        self.moveUpAction = Qt.QAction(getThemeIcon("go-up"), "Move up", self)
+        self.moveUpAction = Qt.QAction(Qt.QIcon.fromTheme("go-up"), "Move up",
+                                       self)
         self.moveUpAction.triggered.connect(self.onUpRepeat)
         self.moveUpAction.setToolTip(
             "Clicking this button will move current repetition up.")
 
         self.moveDownAction = Qt.QAction(
-            getThemeIcon("go-down"), "Move down", self)
+            Qt.QIcon.fromTheme("go-down"), "Move down", self)
         self.moveDownAction.triggered.connect(self.onDownRepeat)
         self.moveDownAction.setToolTip(
             "Clicking this button will move current repetition down.")
 
-        self.duplicateAction = Qt.QAction(getThemeIcon("edit-copy"),
+        self.duplicateAction = Qt.QAction(Qt.QIcon.fromTheme("edit-copy"),
                                           "Duplicate", self)
         self.duplicateAction.triggered.connect(self.onDuplicateRepeat)
         msg = "Clicking this button will duplicate the given node."

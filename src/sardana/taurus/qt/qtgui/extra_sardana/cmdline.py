@@ -29,7 +29,6 @@ to sardana"""
 __docformat__ = 'restructuredtext'
 
 from taurus.external.qt import Qt
-from taurus.qt.qtgui.resource import getIcon, getThemeIcon
 
 
 class CommandLineHistory(list):
@@ -63,14 +62,13 @@ class TaurusCommandLineWidget(Qt.QWidget):
         self._cmdLine.setEditable(True)
 
         self._applyButton = Qt.QToolButton()
-        self._applyButton.setIcon(
-            getIcon(":/actions/media_playback_start.svg"))
+        self._applyButton.setIcon(Qt.QIcon("actions:media_playback_start.svg"))
 
         self._stopButton = Qt.QToolButton()
-        self._stopButton.setIcon(getIcon(":/actions/media_playback_stop.svg"))
+        self._stopButton.setIcon(Qt.QIcon("actions:media_playback_stop.svg"))
 
         self._clearButton = Qt.QToolButton()
-        self._clearButton.setIcon(getThemeIcon("edit-clear"))
+        self._clearButton.setIcon(Qt.QIcon.fromTheme("edit-clear"))
 
         l.addWidget(self._detailsButton, 0)
         l.addWidget(self._cmdLine, 1)

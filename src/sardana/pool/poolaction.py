@@ -397,7 +397,7 @@ class PoolAction(Logger):
         """Finishes the action execution. If a finish hook is defined it safely
         executes it. Otherwise nothing happens"""
         hooks = self._finish_hooks
-        for hook, permanent in hooks.items():
+        for hook, permanent in list(hooks.items()):
             try:
                 hook()
             except:
@@ -410,19 +410,19 @@ class PoolAction(Logger):
     def stop_action(self, *args, **kwargs):
         """Stop procedure for this action."""
         self._stopped = True
-        for pool_ctrl, elements in self._pool_ctrl_dict.items():
+        for pool_ctrl, elements in list(self._pool_ctrl_dict.items()):
             pool_ctrl.stop_elements(elements)
 
     def abort_action(self, *args, **kwargs):
         """Aborts procedure for this action"""
         self._aborted = True
-        for pool_ctrl, elements in self._pool_ctrl_dict.items():
+        for pool_ctrl, elements in list(self._pool_ctrl_dict.items()):
             pool_ctrl.abort_elements(elements)
 
     def emergency_break(self):
         """Tries to execute a stop. If it fails try an abort"""
         self._stopped = True
-        for pool_ctrl, elements in self._pool_ctrl_dict.items():
+        for pool_ctrl, elements in list(self._pool_ctrl_dict.items()):
             pool_ctrl.emergency_break(elements)
 
     def was_stopped(self):
@@ -540,7 +540,7 @@ class PoolAction(Logger):
             state_infos, error = pool_ctrl.raw_read_axis_states(axes)
             if error:
                 pool_ctrl.warning("Read state error")
-                for elem, (state_info, exc_info) in state_infos.items():
+                for elem, (state_info, exc_info) in list(state_infos.items()):
                     if exc_info is not None:
                         pool_ctrl.debug("Axis %s error details:", elem.axis,
                                         exc_info=exc_info)

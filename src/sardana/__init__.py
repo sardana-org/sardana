@@ -26,16 +26,15 @@
 
 """This package provides the sardana library"""
 
-import release as __release
-import requirements as __requirements
-
-__requirements.check_requirements()
+from . import release as __release
 
 
 class Release:
     pass
 
-Release.__dict__.update(__release.__dict__)
+
+for attr, value in __release.__dict__.items():
+    setattr(Release, attr, value)
 Release.__doc__ = __release.__doc__
 
 from .sardanadefs import *

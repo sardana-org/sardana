@@ -20,6 +20,7 @@
 ##
 # You should have received a copy of the GNU Lesser General Public License
 # along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
+# along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
 
@@ -29,14 +30,14 @@ __all__ = ["ExpDescriptionEditor"]
 
 
 import json
-from taurus.external.qt import Qt, QtCore, QtGui
+from taurus.external.qt import Qt, QtCore, QtGui, compat
 import copy
 import taurus
 import taurus.core
 from taurus.qt.qtgui.base import TaurusBaseWidget
-from taurus.qt.qtgui import resource
 
 from sardana.taurus.qt.qtcore.tango.sardana.model import SardanaBaseProxyModel, SardanaTypeTreeItem
+from sardana.sardanadefs import ElementType, TYPE_ACQUIRABLE_ELEMENTS
 from taurus.qt.qtgui.util.ui import UILoadable
 
 # Using a plain model and filtering and checking 'Acquirable' in item.itemData().interfaces is more elegant, but things don't get properly sorted...
@@ -86,7 +87,6 @@ class SardanaAcquirableProxyModel(SardanaBaseProxyModel):
     #                     'TwoDExpChannel', 'ComChannel', 'IORegister', 'PseudoMotor',
     #                     'PseudoCounter']
 
-    from sardana.sardanadefs import ElementType, TYPE_ACQUIRABLE_ELEMENTS
     ALLOWED_TYPES = [ElementType[t] for t in TYPE_ACQUIRABLE_ELEMENTS]
 
     def filterAcceptsRow(self, sourceRow, sourceParent):
@@ -146,7 +146,7 @@ def find_diff(first, second):
                 idiff = 'Error on processing'
             if len(idiff) > 0:
                 diff[key] = idiff
-        elif type(value1) == list and key.lower() not in SKIPLIST:
+        elif isinstance(value1, list) and key.lower() not in SKIPLIST:
             ldiff = []
             for v1, v2 in zip(value1, value2):
                 try:
@@ -173,7 +173,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
     '''
 
     createExpConfChangedDialog = Qt.pyqtSignal()
-    experimentConfigurationChanged = Qt.pyqtSignal(object)
+    experimentConfigurationChanged = Qt.pyqtSignal(compat.PY_OBJECT)
 
     def __init__(self, parent=None, door=None, plotsButton=True,
                  autoUpdate=False):
@@ -252,7 +252,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             tooltip = "Show/Hide plots is not ready for %s" % API
         # --------------------------------------------------------------------
 
-        icon = resource.getIcon(":/actions/view.svg")
+        icon = Qt.QIcon("actions:view.svg")
         measGrpTab = self.ui.tabWidget.widget(0)
         self.togglePlotsAction = Qt.QAction(icon, "Show/Hide plots", self)
         if tooltip is not None:
@@ -299,7 +299,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         return w
 
     def _getResumeText(self):
-        msg_resume = '<p> Summary of changes: <ul>'
+        msg_resume = '<p> Summary of differences: <ul>'
         mnt_grps = ''
         envs = ''
         for key in self._diff:
@@ -342,13 +342,12 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         # (would eventually overwrite the external changes when applying).
         # </p>'''
         text = '''
-        <p>The experiment configuration has been modified externally.
+        <p>The experiment configuration has been modified externally.<br>
         You can either:
         <ul>
-        <li><strong>Load </strong>the new configuration from the door
-        (discarding local changes)</li>
-        <li><strong>Keep </strong>your local configuration (would eventually
-        overwrite the external changes when applying)</li>
+        <li><strong>Load </strong>the new external configuration</li>
+        <li><strong>Keep </strong>your local expconf configuration<br>
+        (It can be eventually applied)</li>
         </ul></p>
         '''
         self._expConfChangedDialog.setText(text)
@@ -365,6 +364,8 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self._expConfChangedDialog = None
         if result == Qt.QMessageBox.Ok:
             self._reloadConf(force=True)
+        elif result == Qt.QMessageBox.Cancel:
+            self.ui.buttonBox.setEnabled(True)
 
     @QtCore.pyqtSlot()
     def _experimentConfigurationChanged(self):
@@ -405,12 +406,13 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             self, 'Choose directory for saving files', self.ui.pathLE.text())
         if ret:
             self.ui.pathLE.setText(ret)
-            self.ui.pathLE.emit.textEdited.emit(ret)
+            self.ui.pathLE.textEdited.emit(ret)
 
     def onDialogButtonClicked(self, button):
         role = self.ui.buttonBox.buttonRole(button)
         if role == Qt.QDialogButtonBox.ApplyRole:
-            self.writeExperimentConfiguration(ask=False)
+            if not self.writeExperimentConfiguration(ask=False):
+                self._reloadConf(force=True)
         elif role == Qt.QDialogButtonBox.ResetRole:
             self._reloadConf()
 
@@ -429,7 +431,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         if door is None:
             return
         # @todo: get the tghost from the door model instead
-        tghost = taurus.Database().getNormalName()
+        tghost = taurus.Authority().getNormalName()
         msname = door.macro_server.getFullName()
         self.ui.taurusModelTree.setModel(tghost)
         self.ui.sardanaElementTree.setModel(msname)
@@ -453,13 +455,14 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         self._dirtyMntGrps = set()
         # set a list of available channels
         avail_channels = {}
-        for ch_info in door.macro_server.getExpChannelElements().values():
+        for ch_info in \
+                list(door.macro_server.getExpChannelElements().values()):
             avail_channels[ch_info.full_name] = ch_info.getData()
         self.ui.channelEditor.getQModel().setAvailableChannels(avail_channels)
         # set a list of available triggers
         avail_triggers = {'software': {"name": "software"}}
         tg_elements = door.macro_server.getElementsOfType('TriggerGate')
-        for tg_info in tg_elements.values():
+        for tg_info in list(tg_elements.values()):
             avail_triggers[tg_info.full_name] = tg_info.getData()
         self.ui.channelEditor.getQModel().setAvailableTriggers(avail_triggers)
         self.experimentConfigurationChanged.emit(copy.deepcopy(conf))
@@ -492,11 +495,13 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         if activeMntGrpName in self._localConfig['MntGrpConfigs']:
             mgconfig = self._localConfig['MntGrpConfigs'][activeMntGrpName]
             self.ui.channelEditor.getQModel().setDataSource(mgconfig)
+        else:
+            self.ui.channelEditor.getQModel().setDataSource({})
 
         # set the measurement group ComboBox
         self.ui.activeMntGrpCB.clear()
         mntGrpLabels = []
-        for _, mntGrpConf in self._localConfig['MntGrpConfigs'].items():
+        for _, mntGrpConf in list(self._localConfig['MntGrpConfigs'].items()):
             # get labels to visualize names with lower and upper case
             mntGrpLabels.append(mntGrpConf['label'])
         self.ui.activeMntGrpCB.addItems(sorted(mntGrpLabels))
@@ -539,7 +544,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         conf = self.getLocalConfig()
 
         # make sure that no empty measurement groups are written
-        for mgname, mgconfig in conf.get('MntGrpConfigs', {}).items():
+        for mgname, mgconfig in list(conf.get('MntGrpConfigs', {}).items()):
             if mgconfig is not None and not mgconfig.get('controllers'):
                 mglabel = mgconfig['label']
                 Qt.QMessageBox.information(self, "Empty Measurement group",
@@ -553,7 +558,12 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             self._dirtyMntGrps.add(self._localConfig['ActiveMntGrp'])
 
         door = self.getModelObj()
-        door.setExperimentConfiguration(conf, mnt_grps=self._dirtyMntGrps)
+        try:
+            door.setExperimentConfiguration(conf, mnt_grps=self._dirtyMntGrps)
+        except Exception as e:
+            Qt.QMessageBox.critical(self, 'Wrong configuration',
+                                    '{0}'.format(e))
+            return False
         self._originalConfiguration = copy.deepcopy(conf)
         self._dirtyMntGrps = set()
         self.ui.channelEditor.getQModel().setDataChanged(False)
@@ -600,13 +610,17 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
         # check that the given name is not an existing pool element
         ms = self.getModelObj().macro_server
         poolElementNames = [
-            v.name for v in ms.getElementsWithInterface("PoolElement").values()]
+            v.name for v in
+            list(ms.getElementsWithInterface("PoolElement").values())]
         while mntGrpName in poolElementNames:
+            msg = ("The name '%s' already is used for another pool element. "
+                   "Please Choose a different one." % mntGrpName)
             Qt.QMessageBox.warning(self, "Cannot create Measurement group",
-                                   "The name '%s' already is used for another pool element. Please Choose a different one." % mntGrpName,
-                                   Qt.QMessageBox.Ok)
-            mntGrpName, ok = Qt.QInputDialog.getText(self, "New Measurement Group",
-                                                     "Enter a name for the new measurement Group",
+                                   msg, Qt.QMessageBox.Ok)
+            msg = "Enter a name for the new measurement Group"
+            mntGrpName, ok = Qt.QInputDialog.getText(self,
+                                                     "New Measurement Group",
+                                                     msg,
                                                      Qt.QLineEdit.Normal,
                                                      mntGrpName)
             if not ok:
@@ -614,9 +628,11 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
             mntGrpName = str(mntGrpName)
 
         # check that the measurement group is not already in the localConfig
+        msg = ('A measurement group named "%s" already exists. A new one '
+               'will not be created' % mntGrpName)
         if mntGrpName in self._localConfig['MntGrpConfigs']:
             Qt.QMessageBox.warning(self, "%s already exists" % mntGrpName,
-                                   'A measurement group named "%s" already exists. A new one will not be created' % mntGrpName)
+                                   msg)
             return
 
         # add an empty configuration dictionary to the local config
@@ -690,11 +706,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
                 DynamicPlotManager
             self.__plotManager = DynamicPlotManager(self)
             self.__plotManager.setModel(self.getModelName())
-            self.experimentConfigurationChanged.connect(
-                self.__plotManager.onExpConfChanged)
         else:
-            self.experimentConfigurationChanged.disconnect(
-                self.__plotManager.onExpConfChanged)
             self.__plotManager.removePanels()
             self.__plotManager.setModel(None)
             self.__plotManager = None

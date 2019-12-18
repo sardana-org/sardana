@@ -31,7 +31,7 @@ __all__ = ["ControllerAPI", "AcqTriggerType", "AcqMode", "SynchDomain",
 __docformat__ = 'restructuredtext'
 
 from operator import __getitem__
-from taurus.external.enum import IntEnum
+from enum import IntEnum
 from taurus.core.util.enumeration import Enumeration
 from sardana.taurus.core.tango.sardana import AcqTriggerType, AcqMode
 
@@ -138,18 +138,35 @@ class AcqSynch(IntEnum):
     to get more details about the synchronization type e.g. trigger, gate or
     start.
     """
-    #: Internal (software) trigger
     SoftwareTrigger = 0
-    #: External (hardware) trigger
+    """Internal (software) trigger
+    
+    .. image:: /_static/acqsynch_softtrig.png
+    """
     HardwareTrigger = 1
-    #: Internal (software) gate
+    """External (hardware) trigger
+    
+    .. image:: /_static/acqsynch_hardtrig.png
+    """
     SoftwareGate = 2
-    #: External (hardware) gate
+    """Internal (software) gate - not implemented
+    """
     HardwareGate = 3
-    #: Internal (software) start (triggers just the first acquisition)
+    """External (hardware) gate
+    
+    .. image:: /_static/acqsynch_hardgate.png
+    """
     SoftwareStart = 4
-    #: External (hardware) start (triggers just the first acquisition)
+    """
+    Internal (software) start (triggers just the first acquisition)
+    
+    .. image:: /_static/acqsynch_softstart.png
+    """
     HardwareStart = 5
+    """External (hardware) start (triggers just the first acquisition)
+    
+    .. image:: /_static/acqsynch_hardstart.png
+    """
 
     @classmethod
     def from_synch_type(self, software, synch_type):

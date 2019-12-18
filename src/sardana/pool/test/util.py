@@ -31,8 +31,10 @@ import threading
 
 class AttributeListener(object):
 
-    def __init__(self):
+    def __init__(self, dtype=object, attr_name="valuebuffer"):
         self.data = {}
+        self.dtype = dtype
+        self.attr_name = attr_name
         self.data_lock = threading.RLock()
 
     def event_received(self, *args, **kwargs):
@@ -41,7 +43,7 @@ class AttributeListener(object):
         # v - type: sardana.sardanaattribute.SardanaAttribute e.g.
         #           sardana.pool.poolbasechannel.Value
         s, t, v = args
-        if t.name.lower() != "valuebuffer":
+        if t.name.lower() != self.attr_name:
             return
         # obtaining sardana element e.g. exp. channel (the attribute owner)
         obj_name = s.name
@@ -49,8 +51,8 @@ class AttributeListener(object):
         # of buffered attributes) or from the value in case of normal
         # attributes
         chunk = v
-        idx = chunk.keys()
-        value = [sardana_value.value for sardana_value in chunk.values()]
+        idx = list(chunk.keys())
+        value = [sardana_value.value for sardana_value in list(chunk.values())]
         # filling the measurement records
         with self.data_lock:
             channel_data = self.data.get(obj_name, [])
@@ -63,13 +65,13 @@ class AttributeListener(object):
         '''Construct a table-like array with padded  channel data as columns.
         Return the '''
         with self.data_lock:
-            max_len = max([len(d) for d in self.data.values()])
+            max_len = max([len(d) for d in list(self.data.values())])
             dtype_spec = []
             table = []
             for k in sorted(self.data.keys()):
                 v = self.data[k]
                 v.extend([None] * (max_len - len(v)))
                 table.append(v)
-                dtype_spec.append((k, 'float64'))
-            a = numpy.array(zip(*table), dtype=dtype_spec)
+                dtype_spec.append((k, self.dtype))
+            a = numpy.array(list(zip(*table)), dtype=dtype_spec)
             return a

@@ -66,10 +66,10 @@ class UtilsForTests():
     def orderPointsData(self, data):
         """A helper method to know if points are ordered based on getData.
         """
-        obtained_nb_points_data = len(data.keys())
+        obtained_nb_points_data = len(list(data.keys()))
         ordered_points_data = 0
         for i in range(obtained_nb_points_data - 1):
-            if int(data.keys()[i + 1]) >= int(data.keys()[i]):
+            if int(list(data.keys())[i + 1]) >= int(list(data.keys())[i]):
                 ordered_points_data = 1
             else:
                 ordered_points_data = 0
@@ -133,11 +133,11 @@ class ScanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
         # Test data from macro (macro_executor.getData())
         data = self.macro_executor.getData()
         order_points_data = self.utils.orderPointsData(data)
-        obtained_nb_points_data = len(data.keys())
+        obtained_nb_points_data = len(list(data.keys()))
 
         msg = ("The ascanct execution did not return any scan point.\n"
                "Checked using macro data.")
-        self.assertTrue(len(data.keys()) > 0, msg)
+        self.assertTrue(len(list(data.keys())) > 0, msg)
 
         msg = ("The ascanct execution did not return the expected number of "
                "points.\nExpected " + str(expected_nb_points) + " points."
@@ -160,23 +160,70 @@ class ScanctTest(MeasSarTestTestCase, BaseMacroServerTestCase,
             self.assertEqual(state, desired_state, msg)
 
     def tearDown(self):
+        RunStopMacroTestCase.tearDown(self)
         BaseMacroServerTestCase.tearDown(self)
         MeasSarTestTestCase.tearDown(self)
-        RunStopMacroTestCase.tearDown(self)
 
 
-mg_config1 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger)]]
-mg_config2 = [[('_test_ct_1_1', '_test_tg_1_1', AcqSynchType.Trigger),
-               ('_test_ct_1_2', '_test_tg_1_1', AcqSynchType.Trigger)]
-              ]
-mg_config3 = [[('_test_ct_1_1', 'software', AcqSynchType.Trigger)],
-              [('_test_ct_2_1', '_test_tg_1_1', AcqSynchType.Trigger)]
-              ]
-mg_config4 = [[('_test_ct_1_1', 'software', AcqSynchType.Trigger)],
-              [('_test_ct_2_1', 'software', AcqSynchType.Trigger)]
-              ]
-
-
+mg_config1 = {
+    "_test_ct_ctrl_1": {
+        "synchronizer": "_test_tg_1_1",
+        "synchronization": AcqSynchType.Trigger,
+        "channels": {
+            "_test_ct_1_1": {
+                "index": 0
+            },
+        }
+    },
+}
+mg_config2 = {
+    "_test_ct_ctrl_1": {
+        "synchronizer": "_test_tg_1_1",
+        "synchronization": AcqSynchType.Trigger,
+        "channels": {
+            "_test_ct_1_1": {
+                "index": 0
+            },
+            "_test_ct_1_2": {
+                "index": 1
+            }
+        }
+    },
+}
+mg_config3 = {
+    "_test_ct_ctrl_1": {
+        "synchronizer": "software",
+        "synchronization": AcqSynchType.Trigger,
+        "channels": {
+            "_test_ct_1_1": {
+                "index": 0
+            },
+        }
+    },
+    "_test_ct_ctrl_2": {
+        "synchronizer": "_test_tg_1_1",
+        "synchronization": AcqSynchType.Trigger,
+        "channels": {
+            "_test_ct_2_1": {
+                "index": 1
+            },
+        }
+    }
+}
+mg_config4 = {
+    "_test_ct_ctrl_1": {
+        "synchronizer": "software",
+        "synchronization": AcqSynchType.Trigger,
+        "channels": {
+            "_test_ct_1_1": {
+                "index": 0
+            },
+            "_test_ct_1_2": {
+                "index": 1
+            }
+        }
+    }
+}
 ascanct_params_1 = ['_test_mt_1_1', '0', '10', '100', '0.1']
 
 
@@ -202,7 +249,7 @@ class AscanctTest(ScanctTest, unittest.TestCase):
         unittest.TestCase.setUp(self)
         ScanctTest.setUp(self)
 
-    def macro_runs(self, meas_config, macro_params, wait_timeout=float("inf")):
+    def macro_runs(self, meas_config, macro_params, wait_timeout=None):
         motors = [macro_params[0]]
         ScanctTest.configure_motors(self, motors)
         ScanctTest.configure_mntgrp(self, meas_config)
@@ -216,7 +263,7 @@ class AscanctTest(ScanctTest, unittest.TestCase):
         ScanctTest.check_using_output(self, expected_nb_points)
         ScanctTest.check_using_data(self, expected_nb_points)
 
-    def macro_stops(self, meas_config, macro_params, wait_timeout=float("inf"),
+    def macro_stops(self, meas_config, macro_params, wait_timeout=None,
                     stop_delay=0.1):
         motors = [macro_params[0]]
         ScanctTest.configure_motors(self, motors)
@@ -256,7 +303,7 @@ class A2scanctTest(ScanctTest, unittest.TestCase):
         unittest.TestCase.setUp(self)
         ScanctTest.setUp(self)
 
-    def macro_runs(self, meas_config, macro_params, wait_timeout=float("inf")):
+    def macro_runs(self, meas_config, macro_params, wait_timeout=None):
         motors = [macro_params[self.MOT1], macro_params[self.MOT2]]
         ScanctTest.configure_motors(self, motors)
         ScanctTest.configure_mntgrp(self, meas_config)
@@ -270,7 +317,7 @@ class A2scanctTest(ScanctTest, unittest.TestCase):
         ScanctTest.check_using_output(self, expected_nb_points)
         ScanctTest.check_using_data(self, expected_nb_points)
 
-    def macro_stops(self, meas_config, macro_params, wait_timeout=float("inf"),
+    def macro_stops(self, meas_config, macro_params, wait_timeout=None,
                     stop_delay=0.1):
         motors = [macro_params[self.MOT1], macro_params[self.MOT2]]
         ScanctTest.configure_motors(self, motors)
@@ -312,7 +359,7 @@ class MeshctTest(ScanctTest, unittest.TestCase):
         unittest.TestCase.setUp(self)
         ScanctTest.setUp(self)
 
-    def macro_runs(self, meas_config, macro_params, wait_timeout=float("inf")):
+    def macro_runs(self, meas_config, macro_params, wait_timeout=None):
         motors = [macro_params[self.MOT1], macro_params[self.MOT2]]
         ScanctTest.configure_motors(self, motors)
         ScanctTest.configure_mntgrp(self, meas_config)
@@ -326,7 +373,7 @@ class MeshctTest(ScanctTest, unittest.TestCase):
         ScanctTest.check_using_output(self, expected_nb_points)
         ScanctTest.check_using_data(self, expected_nb_points)
 
-    def macro_stops(self, meas_config, macro_params, wait_timeout=float("inf"),
+    def macro_stops(self, meas_config, macro_params, wait_timeout=None,
                     stop_delay=0.1):
         motors = [macro_params[self.MOT1], macro_params[self.MOT2]]
         ScanctTest.configure_motors(self, motors)

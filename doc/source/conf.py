@@ -99,9 +99,9 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'sardana'
-copyright = u'2012, ALBA - CELLS, Creative Commons Attribution-Share Alike 3.0'
-copyright = u"""Except where otherwise noted, content on this site is
+project = 'sardana'
+copyright = '2012, ALBA - CELLS, Creative Commons Attribution-Share Alike 3.0'
+copyright = """Except where otherwise noted, content on this site is
 licensed under a Creative Commons Attribution 3.0 License"""
 
 # Ideally we would like to put the following html code for copyright...
@@ -243,8 +243,8 @@ latex_font_size = '10pt'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-    ('index', 'sardana.tex', u'Sardana Documentation',
-     u'Sardana team', 'manual'),
+    ('index', 'sardana.tex', 'Sardana Documentation',
+     'Sardana team', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

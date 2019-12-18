@@ -352,7 +352,7 @@ class DiffracBasis(PseudoMotorController):
 
         self.detector = Hkl.Detector.factory_new(Hkl.DetectorType(0))
 
-        for key, factory in Hkl.factories().iteritems():
+        for key, factory in Hkl.factories().items():
             if key == self.DiffractometerType:
                 self.geometry = factory.create_new_geometry()
                 self.engines = factory.create_new_engine_list()
@@ -491,8 +491,8 @@ class DiffracBasis(PseudoMotorController):
         self.getWavelength()
 
         solutions = self._solutions(values, curr_physical_pos)
-        if self.selected_trajectory > len(solutions.items()):
-            self.selected_trajectory = len(solutions.items()) - 1
+        if self.selected_trajectory > len(list(solutions.items())):
+            self.selected_trajectory = len(list(solutions.items())) - 1
         for i, item in enumerate(solutions.items()):
             if i == self.selected_trajectory:
                 angles = item.geometry_get().axis_values_get(USER)
@@ -586,7 +586,7 @@ class DiffracBasis(PseudoMotorController):
         # something special with the hkl one ???   neverthless I would
         # be possible to create a self.engines instead of recomputing
         # it all the time.
-        for key, factory in Hkl.factories().iteritems():
+        for key, factory in Hkl.factories().items():
             if key == self.DiffractometerType:
                 new_engines = factory.create_new_engine_list()
         new_engines.init(self.geometry, self.detector, self.sample)
@@ -788,7 +788,7 @@ class DiffracBasis(PseudoMotorController):
         curr_physical_pos = self.geometry.axis_values_get(USER)
         solutions = self._solutions(values, curr_physical_pos)
         self.trajectorylist = [item.geometry_get().axis_values_get(USER)
-                               for item in solutions.items()]
+                               for item in list(solutions.items())]
         self.lastpseudos = tuple(values)
 
     def getTrajectoryList(self):
