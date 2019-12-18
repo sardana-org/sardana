@@ -1410,6 +1410,8 @@ class MacroExecutor(Logger):
                 except:
                     self.warning("Unable to stop %s" % obj)
                     self.debug("Details:", exc_info=1)
+                self.output("{} stopped".format(obj))
+                objs.remove(obj)
 
     def __abortObjects(self):
         """Aborts all the reserved objects in the executor"""
@@ -1424,6 +1426,8 @@ class MacroExecutor(Logger):
                 except:
                     self.warning("Unable to abort %s" % obj)
                     self.debug("Details:", exc_info=1)
+                self.output("{} aborted".format(obj))
+                objs.remove(obj)
 
     def _setStopDone(self, _):
         self._stop_done.set()
