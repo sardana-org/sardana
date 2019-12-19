@@ -5,3 +5,4 @@
 /src/sardana.egg-info
 *.pyc
 .idea/
+/src/sardana/taurus/qt/qtgui/extra_pool/poolmotor.py
