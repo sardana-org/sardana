@@ -38,7 +38,9 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Removed
 
-* Support to Python < 3.5 (#1089, #1173, 1201)
+* Support to Python < 3.5 (#1089, #1173, #1201)
+* "Show/hide plots" button in `expconf` (#960, #1255, #1257)
+* `plotsButton` argument in `ExpDescriptionEditor` constructor (#960, #1255, #1257)
 * `sardana.requirements` (#1185)
 
 ## [2.8.3] 2019-09-16
