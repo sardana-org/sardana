@@ -105,11 +105,11 @@ a given channel or its controller:
 View current scan plot(s)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Plots need to be configured previously as explained
-:ref:`in the channel configuration <expconf_ui_measurementgroup_channel>`
-once the values of plot type and plot axes are set, and storage path is defined.
-Running a scan will spawn a tab on taurusgui with the plot. The number of plots that will spawn is
-defined :ref:`in the channel configuration <expconf_ui_measurementgroup_channel>`
+Plots need to be configured previously as explained in the
+:ref:`channel configuration <expconf_ui_measurementgroup_channel>`
+plot type and plot axes.
+Running a scan will spawn a panel on taurusgui with the plot. The number of panels that will spawn is
+defined in the :ref:`channel configuration <expconf_ui_measurementgroup_channel>`
 
 If the configuration hasn't been changed, a new scan will overwrite the previous plots.
 
