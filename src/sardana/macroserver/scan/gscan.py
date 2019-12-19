@@ -502,8 +502,8 @@ class GScan(Logger):
         except InterruptException:
             raise
         except Exception:
-            macro.warning('ScanFile is not defined. This operation will not be '
-                          'stored persistently. Use "expconf" or "newfile" '
+            macro.warning('ScanFile is not defined. This operation will not '
+                          'be stored persistently. Use "expconf" or "newfile" '
                           'to configure data storage (or eventually "senv '
                           'ScanFile <scan file(s)>")')
             return ()
