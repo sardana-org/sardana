@@ -84,6 +84,7 @@ def showscan(self, parameter_s=''):
     online, scan_nb = False, None
     if len(params) > 0:
         if params[0].lower() == 'online':
+            online = True
             try:
                 from sardana.taurus.qt.qtgui.extra_sardana import \
                     ShowScanOnline
@@ -116,6 +117,7 @@ def showscan(self, parameter_s=''):
             online = True
         else:
             scan_nb = int(params[0])
+
     door.show_scan(scan_nb, online=online)
 
 
