@@ -482,7 +482,7 @@ class MacroBroker(DynamicPlotManager):
                           'doorNameChanged')
 
         # Create ExpDescriptionEditor dialog
-        self.__expDescriptionEditor = ExpDescriptionEditor(plotsButton=False)
+        self.__expDescriptionEditor = ExpDescriptionEditor()
         SDM.connectReader("doorName", self.__expDescriptionEditor.setModel)
         mainwindow.createPanel(self.__expDescriptionEditor,
                                'Experiment Config',
