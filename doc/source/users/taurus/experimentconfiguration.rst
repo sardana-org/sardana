@@ -107,13 +107,14 @@ View current scan plot(s)
 
 Plots need to be configured previously as explained in the
 :ref:`channel configuration <expconf_ui_measurementgroup_channel>`
-plot type and plot axes.
-Running a scan will spawn a panel on taurusgui with the plot. The number of panels that will spawn is
-defined in the :ref:`channel configuration <expconf_ui_measurementgroup_channel>`
+(plot type and plot axes).
+Running a scan will spawn a panel on taurusgui with the plot. The number of
+panels that will spawn is defined in the
+:ref:`channel configuration <expconf_ui_measurementgroup_channel>`.
 
 If the configuration hasn't been changed, a new scan will overwrite the previous plots.
 
-Plots can also be seen with spock's command ``showscan online``
+Plots can also be seen with spock's command ``showscan online``.
 
 .. _expconf_ui_snapshot_group:
 
