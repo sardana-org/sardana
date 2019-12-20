@@ -390,6 +390,9 @@ class SpockBaseDoor(BaseDoor):
             print("Unable to run macro: No connection to door '%s'" %
                   self.getSimpleName())
             raise Exception("Unable to run macro: No connection")
+        if self.stateObj.read().rvalue == PyTango.DevState.RUNNING:
+            print("Another macro is running. Wait until it finishes...")
+            raise Exception("Unable to run macro: door in RUNNING state")
         if xml is None:
             xml = self.getRunningXML()
         kwargs['synch'] = True
