@@ -37,11 +37,7 @@ import copy
 import types
 import inspect
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    # For Python < 2.7
-    from ordereddict import OrderedDict
+from collections import OrderedDict
 
 from taurus.core import ManagerState
 from taurus.core.util.log import Logger

@@ -35,11 +35,7 @@ import sys
 import copy
 import inspect
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    # For Python < 2.7
-    from ordereddict import OrderedDict
+from collections import OrderedDict
 
 from sardana import sardanacustomsettings
 from sardana.sardanaexception import format_exception_only_str

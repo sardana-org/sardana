@@ -46,11 +46,7 @@ import time
 
 from PyTango import DevFailed
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    # For Python < 2.7
-    from ordereddict import OrderedDict
+from collections import OrderedDict
 
 from taurus.core.util.log import Logger
 from taurus.core.util.codecs import CodecFactory
