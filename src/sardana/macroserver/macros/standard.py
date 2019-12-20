@@ -689,6 +689,8 @@ class ct(Macro, Hookable):
                                                     self.countable_elem_name))
             self.error(msg)
             return
+        # due to sardana-org/sardana#928 we need to explicitly reserve obj
+        self.addObj(self.countable_elem)
         # integration time has to be accessible from with in the hooks
         # so declare it also instance attribute
         self.integ_time = integ_time
@@ -781,7 +783,8 @@ class uct(Macro):
                                                     self.countable_elem_name))
             self.error(msg)
             return
-
+        # due to sardana-org/sardana#928 we need to explicitly reserve obj
+        self.addObj(self.countable_elem)
         self.print_value = True
         try:
             _, data = self.countable_elem.count(integ_time)
