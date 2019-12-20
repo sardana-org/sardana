@@ -69,7 +69,7 @@ from sardana.macroserver.macro import Macro, MacroFunc, ExecMacroHook, \
     Hookable
 from sardana.macroserver.msexception import UnknownMacroLibrary, \
     LibraryError, UnknownMacro, MissingEnv, AbortException, StopException, \
-    MacroServerException, UnknownEnv
+    ReleaseException, MacroServerException, UnknownEnv
 from sardana.util.parser import ParamParser
 from sardana.util.thread import raise_in_thread
 
@@ -1464,7 +1464,7 @@ class MacroExecutor(Logger):
         self._aborted = True
         if not self._isStopDone():
             Logger.debug(self, "Break stopping...")
-            raise_in_thread(AbortException, self._stop_thread)
+            raise_in_thread(ReleaseException, self._stop_thread)
         self.macro_server.add_job(self._abort, self._setAbortDone)
 
     def release(self):
@@ -1474,7 +1474,7 @@ class MacroExecutor(Logger):
         self._released = True
         if not self._isAbortDone():
             Logger.debug(self, "Break aborting...")
-            raise_in_thread(AbortException, self._abort_thread)
+            raise_in_thread(ReleaseException, self._abort_thread)
 
     def stop(self):
         self._stopped = True
@@ -1483,6 +1483,8 @@ class MacroExecutor(Logger):
     def _abort(self):
         self._abort_thread = threading.current_thread()
         if self._stopped:
+            # stopping did not finish on its own - we are aborting it
+            # but need to wait anyway so its thread finishes
             self._waitStopDone()
         m = self.getRunningMacro()
         if m is not None:

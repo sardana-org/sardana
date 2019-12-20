@@ -30,6 +30,7 @@ It contains specific part of sardana device pool"""
 import collections
 
 __all__ = ["InterruptException", "StopException", "AbortException",
+           "ReleaseException",
            "BaseElement", "ControllerClass", "ControllerLibrary",
            "PoolElement", "Controller", "ComChannel", "ExpChannel",
            "CTExpChannel", "ZeroDExpChannel", "OneDExpChannel",
@@ -105,6 +106,10 @@ class StopException(InterruptException):
 
 
 class AbortException(InterruptException):
+    pass
+
+
+class ReleaseException(InterruptException):
     pass
 
 

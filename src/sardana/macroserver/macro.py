@@ -60,7 +60,8 @@ from sardana.util.thread import _asyncexc
 from sardana.macroserver.msparameter import Type, ParamType, ParamRepeat, \
     Optional
 from sardana.macroserver.msexception import StopException, AbortException, \
-    MacroWrongParameterType, UnknownEnv, UnknownMacro, LibraryError
+    ReleaseException, MacroWrongParameterType, UnknownEnv, UnknownMacro, \
+    LibraryError
 from sardana.macroserver.msoptions import ViewOption
 
 from sardana.taurus.core.tango.sardana.pool import PoolElement
@@ -2379,6 +2380,8 @@ class Macro(Logger):
         protecting it against exceptions"""
         try:
             self.on_abort()
+        except ReleaseException:
+            pass
         except Exception:
             Logger.error(self, "Error in on_abort(): %s",
                          traceback.format_exc())
