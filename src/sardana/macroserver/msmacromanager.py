@@ -1069,6 +1069,11 @@ class MacroExecutor(Logger):
         # key Macro - macro object
         # value - sequence of reserverd objects by the macro
         self._reserved_macro_objs = {}
+        # dict<Macro, seq<PoolElement>>
+        # key Macro - macro object
+        # value - sequence of reserverd objects by the macro
+        #   which were already successfully stopped
+        self._stopped_macro_objs = {}
 
         # reset the stacks
 #        self._macro_stack = None
@@ -1397,7 +1402,8 @@ class MacroExecutor(Logger):
         """Stops all the reserved objects in the executor"""
         for macro, objs in list(self._reserved_macro_objs.items()):
             if self._aborted:
-                break
+                break  # someone aborted, no sense to stop anymore
+            self._stopped_macro_objs[macro] = stopped_macro_objs = []
             for obj in objs:
                 if self._aborted:
                     break  # someone aborted, no sense to stop anymore
@@ -1410,13 +1416,17 @@ class MacroExecutor(Logger):
                 except:
                     self.warning("Unable to stop %s" % obj)
                     self.debug("Details:", exc_info=1)
-                self.output("{} stopped".format(obj))
-                objs.remove(obj)
+                else:
+                    self.output("{} stopped".format(obj))
+                    stopped_macro_objs.append(obj)
 
     def __abortObjects(self):
         """Aborts all the reserved objects in the executor"""
         for macro, objs in list(self._reserved_macro_objs.items()):
+            stopped_macro_objs = self._stopped_macro_objs[macro]
             for obj in objs:
+                if obj in stopped_macro_objs:
+                    continue
                 self.output(
                     "Aborting {} reserved by {}".format(obj, macro._name))
                 try:
@@ -1426,8 +1436,8 @@ class MacroExecutor(Logger):
                 except:
                     self.warning("Unable to abort %s" % obj)
                     self.debug("Details:", exc_info=1)
-                self.output("{} aborted".format(obj))
-                objs.remove(obj)
+                else:
+                    self.output("{} aborted".format(obj))
 
     def _setStopDone(self, _):
         self._stop_done.set()
@@ -1652,8 +1662,6 @@ class MacroExecutor(Logger):
                         'args': err.args,
                         'traceback': traceback.format_exc()}
             macro_exp = MacroServerException(exp_pars)
-        finally:
-            self.returnObjs(self._macro_pointer)
 
         # make sure the macro's on_abort is called and that a proper macro
         # status is sent
@@ -1667,6 +1675,8 @@ class MacroExecutor(Logger):
             self.output("Executing {}.on_stop method...".format(name))
             macro_obj._stopOnError()
             self.sendMacroStatusStop()
+
+        self.returnObjs(self._macro_pointer)
 
         # From this point on don't call any method of macro_obj which is part
         # of the mAPI (methods decorated with @mAPI) to avoid throwing an
@@ -1801,6 +1811,8 @@ class MacroExecutor(Logger):
         """Free the macro reserved objects"""
         if macro_obj is None:
             return
+        # remove stopped objects to not keep reference to them
+        self._stopped_macro_obj.pop(macro_obj)
         objs = self._reserved_macro_objs.get(macro_obj)
         if objs is None:
             return
