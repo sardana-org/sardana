@@ -369,8 +369,17 @@ class SpockBaseDoor(BaseDoor):
                     self.abort()
                     self.writeln("Aborting done!")
                 except KeyboardInterrupt:
-                    self.write('3rd Ctrl-C received: Releasing...\n')
-                    self.release()
+                    try:
+                        self.write('3rd Ctrl-C received: Releasing...\n')
+                        self.block_lines = 0
+                        self.release()
+                        self.writeln("Releasing done!")
+                    except KeyboardInterrupt:
+                        self.write('4th Ctrl-C received: Releasing...\n')
+                        self.release()
+                        self.block_lines = 0
+                        self.release()
+                        self.writeln("Releasing done!")
         except PyTango.DevFailed as e:
             if is_non_str_seq(e.args) and \
                not isinstance(e.args, str):

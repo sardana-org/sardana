@@ -1468,13 +1468,23 @@ class MacroExecutor(Logger):
         self.macro_server.add_job(self._abort, self._setAbortDone)
 
     def release(self):
-        """**Internal method**. Release the macro."""
+        """**Internal method**. Release the macro from hang situations
+
+        Hanged situations:
+        * hanged process of aborting reserved objects
+        * hanged macro on_abort method.
+        """
         # carefull: Inside this method never call a method that has the
         # mAPI decorator
         self._released = True
-        if not self._isAbortDone():
+        if self._isAbortDone():
+            m = self.getRunningMacro()
+            Logger.debug(self, "Break {}.on_abort...".format(m._name))
+            raise_in_thread(ReleaseException, m._macro_thread)
+        else:
             Logger.debug(self, "Break aborting...")
             raise_in_thread(ReleaseException, self._abort_thread)
+
 
     def stop(self):
         self._stopped = True
