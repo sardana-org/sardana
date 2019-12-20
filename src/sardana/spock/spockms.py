@@ -345,6 +345,45 @@ class SpockBaseDoor(BaseDoor):
     def runMacro(self, obj, parameters=[], synch=False):
         return BaseDoor.runMacro(self, obj, parameters=parameters, synch=synch)
 
+    def _handle_second_release(self):
+        try:
+            self.write('4th Ctrl-C received: Releasing...\n')
+            self.release()
+            self.block_lines = 0
+            self.release()
+            self.writeln("Releasing done!")
+        except KeyboardInterrupt:
+            self.write('5th Ctrl-C received: Giving up...\n')
+            self.write('(The macro is probably still executing the on_abort '
+                       'method. Either wait or restart the server.)\n')
+
+    def _handle_first_release(self):
+        try:
+            self.write('3rd Ctrl-C received: Releasing...\n')
+            self.block_lines = 0
+            self.release()
+            self.writeln("Releasing done!")
+        except KeyboardInterrupt:
+            self._handle_second_release()
+
+    def _handle_abort(self):
+        try:
+            self.write('2nd Ctrl-C received: Aborting...\n')
+            self.block_lines = 0
+            self.abort()
+            self.writeln("Aborting done!")
+        except KeyboardInterrupt:
+            self._handle_first_release()
+
+    def _handle_stop(self):
+        try:
+            self.write('\nCtrl-C received: Stopping...\n')
+            self.block_lines = 0
+            self.stop()
+            self.writeln("Stopping done!")
+        except KeyboardInterrupt:
+            self._handle_abort()
+
     def _runMacro(self, xml, **kwargs):
         # kwargs like 'synch' are ignored in this re-implementation
         if self._spock_state != RUNNING_STATE:
@@ -357,29 +396,7 @@ class SpockBaseDoor(BaseDoor):
         try:
             return BaseDoor._runMacro(self, xml, **kwargs)
         except KeyboardInterrupt:
-            try:
-                self.write('\nCtrl-C received: Stopping...\n')
-                self.block_lines = 0
-                self.stop()
-                self.writeln("Stopping done!")
-            except KeyboardInterrupt:
-                try:
-                    self.write('2nd Ctrl-C received: Aborting...\n')
-                    self.block_lines = 0
-                    self.abort()
-                    self.writeln("Aborting done!")
-                except KeyboardInterrupt:
-                    try:
-                        self.write('3rd Ctrl-C received: Releasing...\n')
-                        self.block_lines = 0
-                        self.release()
-                        self.writeln("Releasing done!")
-                    except KeyboardInterrupt:
-                        self.write('4th Ctrl-C received: Releasing...\n')
-                        self.release()
-                        self.block_lines = 0
-                        self.release()
-                        self.writeln("Releasing done!")
+            self._handle_stop()
         except PyTango.DevFailed as e:
             if is_non_str_seq(e.args) and \
                not isinstance(e.args, str):
