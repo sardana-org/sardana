@@ -4,7 +4,8 @@
 """
 
 import os
-from taurus.external import unittest
+# from taurus.external import unittest #TODO aalonso
+import unittest
 import poolunittest
 import HTMLTestRunner
 import time

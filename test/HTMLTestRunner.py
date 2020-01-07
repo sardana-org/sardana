@@ -87,10 +87,12 @@ Changes in 0.7.1
 # TODO: simplify javascript using ,ore than 1 class in the class attribute?
 
 import datetime
-import StringIO
+#TODO aalonso import StringIO
+import io
 import sys
 import time
-from taurus.external import unittest
+#TODO aalonso from taurus.external import unittest
+import unittest
 from xml.sax import saxutils
 
 
@@ -477,7 +479,7 @@ class _TestResult(TestResult):
     def startTest(self, test):
         TestResult.startTest(self, test)
         # just one buffer for both stdout and stderr
-        self.outputBuffer = StringIO.StringIO()
+        self.outputBuffer = io.StringIO()
         stdout_redirector.fp = self.outputBuffer
         stderr_redirector.fp = self.outputBuffer
         self.stdout0 = sys.stdout
@@ -567,8 +569,8 @@ class HTMLTestRunner(Template_mixin):
         test(result)
         self.stopTime = datetime.datetime.now()
         self.generateReport(test, result)
-        print >>sys.stderr, '\nTime Elapsed: %s' % (
-            self.stopTime - self.startTime)
+        print('\nTime Elapsed: %s' % (
+            self.stopTime - self.startTime), file=sys.stderr)
         return result
 
     def sortResult(self, result_list):
@@ -743,6 +745,7 @@ class HTMLTestRunner(Template_mixin):
 # build our own launcher to support more specific command line
 # parameters like test title, CSS, etc.
 class TestProgram(unittest.TestProgram):
+
     """
     A variation of the unittest.TestProgram. Please refer to the base
     class for command line parameters.

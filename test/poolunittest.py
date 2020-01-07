@@ -1,22 +1,24 @@
 """ An extension to the original PyUnit providing specific Device Pool test
     utilities """
 
-from taurus.external import unittest
+# from taurus.external import unittest #TODO aalonso
+import logging
+import unittest
 import PyTango
 import sys
 import os
-import user
+# TODO aalonso import user
 import subprocess
 import time
 import signal
-import exceptions
+# TODO aalonso import exceptions
 import imp
 
 try:
     import pexpect
 except:
-    print "The Pool Unit test requires pexpect python module which was not found."
-    print "This module can be found at http://www.noah.org/wiki/Pexpect"
+    print("The Pool Unit test requires pexpect python module which was not found.")
+    print("This module can be found at http://www.noah.org/wiki/Pexpect")
     sys.exit(-1)
 
 
@@ -84,7 +86,7 @@ class PoolTestCase(unittest.TestCase):
             if len(c_list.value) != 0:
                 self.assert_(False, "The %s attribute is not empty !! It contains: %s" % (
                     att_name, c_list.value))
-        except PyTango.DevFailed, e:
+        except PyTango.DevFailed as e:
             except_value = sys.exc_info()[1]
             self.assertEqual(
                 except_value[0]["reason"], "API_EmptyDeviceAttribute")
@@ -103,7 +105,7 @@ class PoolTestCase(unittest.TestCase):
             c_list = dev.read_attribute(att_name)
             self.assert_(
                 False, "The %s attribute is not in fault!!" % (att_name))
-        except PyTango.DevFailed, e:
+        except PyTango.DevFailed as e:
             except_value = sys.exc_info()[1]
             if pr:
                 self._printException(except_value)
@@ -122,7 +124,7 @@ class PoolTestCase(unittest.TestCase):
             dev.write_attribute(att_val)
             self.assert_(False, "The %s attribute is not in fault!!" %
                          (att_val.name))
-        except PyTango.DevFailed, e:
+        except PyTango.DevFailed as e:
             except_value = sys.exc_info()[1]
             if pr:
                 self._printException(except_value)
@@ -141,7 +143,7 @@ class PoolTestCase(unittest.TestCase):
             dev.command_inout(cmd_name, arg_list)
             self.assert_(
                 False, "The %s command succeed with wrong arguments!!" % (cmd_name))
-        except PyTango.DevFailed, e:
+        except PyTango.DevFailed as e:
             except_value = sys.exc_info()[1]
             if pr:
                 self._printException(except_value)
@@ -159,14 +161,14 @@ class PoolTestCase(unittest.TestCase):
         dev.write_attribute(val)
 
     def _printException(self, except_value):
-        print "\nERROR desc"
-        print "origin =", except_value[0]["origin"]
-        print "desc =", except_value[0]["desc"]
-        print "origin =", except_value[0]['origin']
+        print("\nERROR desc")
+        print("origin =", except_value[0]["origin"])
+        print("desc =", except_value[0]["desc"])
+        print("origin =", except_value[0]['origin'])
 
-    #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+    # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
     # Default setup. Overwrite this methods in each test scenario when necessary
-    #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+    # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
     def getPoolPath(self):
         """getPoolPath() -> list<string>
         """
@@ -202,12 +204,12 @@ class PoolTestCase(unittest.TestCase):
             ret.append({"properties": {"Average": ['1.0'],
                                        "Sigma": ['250.0'],
                                        "MotorName": [mot_name]},
-                        },)
+                        }, )
         return ret
 
-    #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+    # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
     # Generic methods
-    #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+    # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
     def deleteFromDB(self, server_name, server_instance):
         server_name = server_name.lower()
@@ -226,9 +228,9 @@ class PoolTestCase(unittest.TestCase):
 
             self.tango_db.delete_server(server)
 
-    #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+    # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
     # Test requirements. Overwrite as necessary
-    #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+    # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
     def needsPool(self):
         return True
@@ -239,9 +241,9 @@ class PoolTestCase(unittest.TestCase):
     def needsCounterTimerSimulator(self):
         return False
 
-    #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+    # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
     # Pre and Post test methods
-    #-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+    # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
 
     def setUp(self):
         """Default setUp."""
@@ -299,8 +301,15 @@ class PoolTestCase(unittest.TestCase):
             f.close()
             f, path, desc = imp.find_module('SimuMotor')
             f.close()
-        except exceptions.ImportError, e:
-            self.assert_(False, e.message)
+        # except exceptions.ImportError as e:
+        #     self.assert_(False, e.message)
+        # TODO aalonso
+        except ImportError as e:
+            self.assertTrue(False, e)
+        logging.log_exception(e)
+        # Include the name and path attributes in output.
+        logging.log(f'error.name: {e.name}')
+        logging.log(f'error.path: {e.path}')
 
         # Cleanup the database
         self.deleteMotorSimulatorFromDB()
@@ -365,8 +374,15 @@ class PoolTestCase(unittest.TestCase):
             f.close()
             f, path, desc = imp.find_module('SimuCounter')
             f.close()
-        except exceptions.ImportError, e:
-            self.assert_(False, e.message)
+        # except exceptions.ImportError as e:
+        #     self.assert_(False, e.message)
+        # TODO aalonso
+        except ImportError as e:
+            self.assert_(False, e)
+        logging.log_exception(e)
+        # Include the name and path attributes in output.
+        logging.log(f'error.name: {e.name}')
+        logging.log(f'error.path: {e.path}')
 
         self.ctsim_exec = self.ctsim_exec
 
@@ -429,8 +445,10 @@ class PoolTestCase(unittest.TestCase):
                 self.pool_exec = path
                 break
 
-        self.failIf(self.pool_exec is None,
-                    "Could not find Pool executable. Make sure it is in the PATH")
+        # self.failIf(self.pool_exec is None,
+        #             "Could not find Pool executable. Make sure it is in the PATH") #TODO aalonso
+        self.assertFalse(self.pool_exec is None,
+                         "Could not find Pool executable. Make sure it is in the PATH")
 
         self.pool_bin_dir = os.path.dirname(self.pool_exec)
 
@@ -529,11 +547,11 @@ class PoolTestCase(unittest.TestCase):
         if idx == 0:
             return
         elif idx == 1:
-            self.assert_(False, PoolTestCase.PoolAlreadyRunning)
+            self.assertTrue(False, PoolTestCase.PoolAlreadyRunning)
         elif idx == 2:
-            self.assert_(False, "Device Pool terminated unexpectedly")
+            self.assertTrue(False, "Device Pool terminated unexpectedly")
         elif idx == 3:
-            self.assert_(False, "Device Pool startup time exceeded")
+            self.assertTrue(False, "Device Pool startup time exceeded")
 
     def stopPool(self):
         """Stops the Device Pool"""
@@ -686,7 +704,14 @@ class PoolTestCase(unittest.TestCase):
                                                   self.pool_ds_instance],
                                                  stdout=subprocess.PIPE,
                                                  stderr=subprocess.STDOUT)
-        except exceptions.OSError, e:
+        # except exceptions.OSError as e:
+        #     if e.strerror == PoolTestCase.PoolExecNotFound:
+        #         self.assert_(
+        #             False, "Could not find Pool executable. Make sure it is in the PATH")
+        #     else:
+        #         raise
+        # TODO aalonso
+        except OSError as e:
             if e.strerror == PoolTestCase.PoolExecNotFound:
                 self.assert_(
                     False, "Could not find Pool executable. Make sure it is in the PATH")
