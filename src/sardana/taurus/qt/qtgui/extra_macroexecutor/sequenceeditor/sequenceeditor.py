@@ -45,7 +45,7 @@ from sardana.taurus.qt.qtgui.extra_macroexecutor.common import \
     MacroExecutionWindow, MacroComboBox, standardPlotablesFilter
 from sardana.taurus.qt.qtgui.extra_macroexecutor.macroparameterseditor \
     import ParamEditorManager, StandardMacroParametersEditor
-from sardana.taurus.qt.qtgui.extra_macroexecutor.\
+from sardana.taurus.qt.qtgui.extra_macroexecutor. \
     macroparameterseditor.delegate import ParamEditorDelegate
 from sardana.taurus.core.tango.sardana.macro import MacroRunException, \
     MacroNode
@@ -986,19 +986,21 @@ def createSequencer(args, options):
 
 
 def main():
-    from taurus.core.util import argparse
+    import argparse
     from taurus.qt.qtgui.application import TaurusApplication
 
-    parser = argparse.get_taurus_parser()
-    parser.set_usage("%prog [options]")
-    parser.set_description("Sardana macro sequencer.\n"
-                           "It allows the creation of sequences of "
-                           "macros, executed one after the other.\n"
-                           "The sequences can be stored under xml files")
-    parser.add_option("-f", "--file",
-                      dest="file", default=None,
-                      help="load macro sequence from a file(XML or spock "
-                           "syntax)")
+    parser = argparse.ArgumentParser(usage="%prog [options]",
+                                     description="Sardana macro sequencer.\n"
+                                                 "It allows the creation of sequences of "
+                                                 "macros, executed one after the other.\n"
+                                                 "The sequences can be stored under xml files")
+    parser.add_argument("-f", "--file", dest="file", default=None, help="load macro sequence from a file(XML or spock "
+                                                                        "syntax)")
+    # TODO aalonso
+    # parser.add_option("-f", "--file",
+    #                   dest="file", default=None,
+    #                   help="load macro sequence from a file(XML or spock "
+    #                        "syntax)")
 
     app = TaurusApplication(cmd_line_parser=parser,
                             app_name="sequencer",

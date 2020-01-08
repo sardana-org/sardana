@@ -29,7 +29,7 @@ import time
 import threading
 import numpy
 
-from taurus.external import unittest
+import unittest
 
 from sardana import State
 from sardana.pool.poolcontrollers.DummyMotorController import Motion

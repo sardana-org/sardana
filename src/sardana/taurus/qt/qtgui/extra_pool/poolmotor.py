@@ -159,7 +159,7 @@ class PoolMotorConfigurationForm(TaurusAttrForm):
     def getMotorControllerType(self):
         modelObj = self.getModelObj()
         modelNormalName = modelObj.getNormalName()
-        poolDsId = modelObj.getHWObj().info().server_id
+        poolDsId = modelObj.getDeviceProxy().info().server_id
         db = taurus.Database()
         pool_devices = tuple(db.get_device_class_list(poolDsId).value_string)
         pool_dev_name = pool_devices[pool_devices.index('Pool') - 1]
@@ -1685,10 +1685,11 @@ def main():
 
     import sys
     import taurus.qt.qtgui.application
-    import taurus.core.util.argparse
+    import argparse
     from taurus.qt.qtgui.panel import TaurusForm
+    import taurus.core.util.argparse
     parser = taurus.core.util.argparse.get_taurus_parser()
-    parser.usage = "%prog [options] [<motor1> [<motor2>] ...]"
+    parser = argparse.ArgumentParser(usage="%prog [options] [<motor1> [<motor2>] ...]")
 
     app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser)
     args = app.get_command_line_args()

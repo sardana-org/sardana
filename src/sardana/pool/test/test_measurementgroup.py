@@ -26,7 +26,7 @@ import time
 import threading
 import copy
 
-from taurus.external import unittest
+import unittest
 from taurus.test import insertTest
 
 from sardana.sardanathreadpool import get_thread_pool

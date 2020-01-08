@@ -564,9 +564,8 @@ def main():
     owns_app = app is None
 
     if owns_app:
-        import taurus.core.util.argparse
-        parser = taurus.core.util.argparse.get_taurus_parser()
-        parser.usage = "%prog [options] <macro server name>"
+        import argparse
+        parser = argparse.ArgumentParser(usage="%prog [options] <macro server name>")
         app = Application(sys.argv, cmd_line_parser=parser,
                           app_name="Macro editor demo", app_version="1.0",
                           org_domain="Sardana", org_name="Tango community")

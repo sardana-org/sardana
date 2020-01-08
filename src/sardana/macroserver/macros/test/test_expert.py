@@ -25,7 +25,7 @@
 
 """Tests for expert macros"""
 
-from taurus.external import unittest
+import unittest
 from sardana.macroserver.macros.test import RunMacroTestCase, testRun, getCTs,\
     getControllers
 

@@ -24,7 +24,7 @@
 ##############################################################################
 
 import time
-from taurus.external import unittest
+import unittest
 from sardana.pool.poolmeasurementgroup import PoolMeasurementGroup
 from sardana.pool.test import (FakePool, createPoolController,
                                createPoolMeasurementGroup,

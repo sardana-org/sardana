@@ -29,7 +29,7 @@ __all__ = ['BasePoolTestCase', 'ControllerLoadsTestCase',
            'ControllerCreationTestCase', 'ElementCreationTestCase']
 
 import PyTango
-from taurus.external import unittest
+import unittest
 from taurus.core.tango.starter import ProcessStarter
 from sardana import sardanacustomsettings
 from sardana.tango.core.util import (get_free_server, get_free_device,

@@ -301,7 +301,7 @@ class PoolElement(BaseElement, TangoDevice):
         self.getStateEG()
 
     def _find_pool_obj(self):
-        pool = get_pool_for_device(self.getParentObj(), self.getHWObj())
+        pool = get_pool_for_device(self.getParentObj(), self.getDeviceProxy())
         return pool
 
     def _find_pool_data(self):
@@ -1439,7 +1439,7 @@ class MGConfiguration(object):
         for channel_name, channel_data in list(self.channels.items()):
             cache[channel_name] = None
             data_source = channel_data['source']
-            params = tg_attr_validator.getParams(data_source)
+            params = tg_attr_validator.getUriGroups(data_source)
             if params is None:
                 # Handle NON tango channel
                 n_tg_chs[channel_name] = channel_data

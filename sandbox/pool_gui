@@ -4,7 +4,7 @@ import sys
 import datetime
 
 import taurus
-from taurus.core.util.argparse import get_taurus_parser
+from argparse import ArgumentParser
 from taurus.core.util import CodecFactory
 from taurus.qt import Qt
 from taurus.qt.qtgui.application import TaurusApplication
@@ -277,8 +277,7 @@ def gui(model):
 
 
 def main():
-    parser = get_taurus_parser()
-    parser.usage = "%prog [options] <pool device name>"
+    parser = ArgumentParser(usage="%prog [options] <pool device name>")
 
     app = TaurusApplication(cmd_line_parser=parser)
     app.setTaurusStyle("nebula")

@@ -40,7 +40,7 @@ from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtgui.input import TaurusValueLineEdit
 import taurus.core
 
-import taurus.core.util.argparse
+import argparse
 import taurus.qt.qtgui.application
 from taurus.qt.qtgui.util.ui import UILoadable
 
@@ -464,10 +464,8 @@ class UBMatrixBase(TaurusWidget):
 
 def main():
 
-    parser = taurus.core.util.argparse.get_taurus_parser()
-    parser.usage = "%prog  <model>"
-    parser.set_description(
-        "a taurus application for setting diffractometer parameters: ubmatrix, lattice, reflections, ...")
+    parser = argparse.ArgumentParser(description="a taurus application for setting diffractometer parameters: ubmatrix,"
+                                                 + " lattice, reflections, ...", usage="%prog  <model>")
 
     app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser,
                                                         app_version=sardana.Release.version)

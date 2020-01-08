@@ -652,7 +652,7 @@ class tw(iMacro):
 def _value_to_repr(data):
     if data is None:
         return "<nodata>"
-    elif np.rank(data) > 0:
+    elif np.ndim(data) > 0:
         return list(np.shape(data))
     else:
         return data

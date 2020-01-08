@@ -31,7 +31,7 @@ __docformat__ = "restructuredtext"
 import threading
 
 from taurus.test import insertTest
-from taurus.external import unittest
+import unittest
 
 from sardana.pool.poolsynchronization import PoolSynchronization
 from sardana.pool.poolacquisition import get_acq_ctrls

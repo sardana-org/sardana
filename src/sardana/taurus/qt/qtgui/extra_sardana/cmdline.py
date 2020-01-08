@@ -93,8 +93,8 @@ def main():
     owns_app = app is None
 
     if owns_app:
-        import taurus.core.util.argparse
-        parser = taurus.core.util.argparse.get_taurus_parser()
+        import argparse
+        parser = argparse.ArgumentParser()
         app = Application(sys.argv, cmd_line_parser=parser,
                           app_name="Taurus command line demo", app_version="1.0",
                           org_domain="Taurus", org_name="Tango community")
