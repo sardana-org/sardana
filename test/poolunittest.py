@@ -1,17 +1,14 @@
 """ An extension to the original PyUnit providing specific Device Pool test
     utilities """
 
-# from taurus.external import unittest #TODO aalonso
 import logging
 import unittest
 import PyTango
 import sys
 import os
-# TODO aalonso import user
 import subprocess
 import time
 import signal
-# TODO aalonso import exceptions
 import imp
 
 try:
@@ -301,9 +298,6 @@ class PoolTestCase(unittest.TestCase):
             f.close()
             f, path, desc = imp.find_module('SimuMotor')
             f.close()
-        # except exceptions.ImportError as e:
-        #     self.assert_(False, e.message)
-        # TODO aalonso
         except ImportError as e:
             self.assertTrue(False, e)
         logging.log_exception(e)
@@ -374,9 +368,6 @@ class PoolTestCase(unittest.TestCase):
             f.close()
             f, path, desc = imp.find_module('SimuCounter')
             f.close()
-        # except exceptions.ImportError as e:
-        #     self.assert_(False, e.message)
-        # TODO aalonso
         except ImportError as e:
             self.assert_(False, e)
         logging.log_exception(e)
@@ -445,8 +436,6 @@ class PoolTestCase(unittest.TestCase):
                 self.pool_exec = path
                 break
 
-        # self.failIf(self.pool_exec is None,
-        #             "Could not find Pool executable. Make sure it is in the PATH") #TODO aalonso
         self.assertFalse(self.pool_exec is None,
                          "Could not find Pool executable. Make sure it is in the PATH")
 
@@ -704,13 +693,6 @@ class PoolTestCase(unittest.TestCase):
                                                   self.pool_ds_instance],
                                                  stdout=subprocess.PIPE,
                                                  stderr=subprocess.STDOUT)
-        # except exceptions.OSError as e:
-        #     if e.strerror == PoolTestCase.PoolExecNotFound:
-        #         self.assert_(
-        #             False, "Could not find Pool executable. Make sure it is in the PATH")
-        #     else:
-        #         raise
-        # TODO aalonso
         except OSError as e:
             if e.strerror == PoolTestCase.PoolExecNotFound:
                 self.assert_(

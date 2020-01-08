@@ -87,11 +87,9 @@ Changes in 0.7.1
 # TODO: simplify javascript using ,ore than 1 class in the class attribute?
 
 import datetime
-#TODO aalonso import StringIO
 import io
 import sys
 import time
-#TODO aalonso from taurus.external import unittest
 import unittest
 from xml.sax import saxutils
 
