@@ -716,8 +716,14 @@ class MeasurementConfiguration(object):
                 acq_synch = AcqSynch.from_synch_type(is_software,
                                                      synchronization)
                 ctrl_acq_synch[ctrl] = acq_synch
-                ctrl_conf["timer"] = ctrl_data.get("timer")
-                ctrl_conf["monitor"] = ctrl_data.get("monitor")
+                timer = ctrl_data.get("timer")
+                if timer is not None and to_fqdn:
+                    timer = _to_fqdn(timer, self._parent)
+                ctrl_conf["timer"] = timer
+                monitor = ctrl_data.get("monitor")
+                if monitor is not None and to_fqdn:
+                    monitor = _to_fqdn(monitor, self._parent)
+                ctrl_conf["monitor"] = monitor
                 ctrl_item = TimerableControllerConfiguration(ctrl, ctrl_conf)
             else:
                 ctrl_item = ControllerConfiguration(ctrl, ctrl_conf)
@@ -762,11 +768,17 @@ class MeasurementConfiguration(object):
                 msg_error = ''
                 if ctrl_item.timer is None:
                     timer_name = ctrl_data['timer']
+                    if to_fqdn:
+                        timer_name = _to_fqdn(timer_name,
+                                              logger=self._parent)
                     ch_timer = pool.get_element_by_full_name(timer_name)
                     msg_error += 'Channel {0} is not present but used as ' \
                                  'timer. '.format(ch_timer.name)
                 if ctrl_item.monitor is None:
                     monitor_name = ctrl_data['monitor']
+                    if to_fqdn:
+                        monitor_name = _to_fqdn(monitor_name,
+                                                logger=self._parent)
                     ch_monitor = pool.get_element_by_full_name(monitor_name)
                     msg_error += 'Channel {0} is not present but used as ' \
                                  'monitor.'.format(ch_monitor.name)
