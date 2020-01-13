@@ -14,6 +14,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   and the whole Sardana part of the Qt Taurus Extensions (#1228, #1233)
 * Advertise newfile macro in case no ScanDir or ScanFile is set (#1254, #1258)
 * Improve scans to detect if a ScanFile od ScanDir are set but empty (#1262)
+* Possibility to view debug messages in `DoorOutput` widget - enable/disable
+  using context menu option (#1242)
 
 ### Fixed
 
@@ -36,6 +38,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 * `nr_points` attribute of scan macros e.g., aNscan family of scans, `fscan` etc.
   (#1218, #1220)
+* `DoorDebug` widget - use `DoorOutput` with enabled debugging (#1242)
 
 ### Changed
 
