@@ -28,6 +28,7 @@
 
 __all__ = ["ExpDescriptionEditor"]
 
+
 import json
 from taurus.external.qt import Qt, QtCore, QtGui, compat
 import copy
@@ -41,7 +42,7 @@ from taurus.qt.qtgui.util.ui import UILoadable
 
 
 # Using a plain model and filtering and checking 'Acquirable' in item.itemData().interfaces is more elegant, but things don't get properly sorted...
-# from taurus.qt.qtcore.tango.sardana.model import SardanaElementPlainModel
+#from taurus.qt.qtcore.tango.sardana.model import SardanaElementPlainModel
 
 
 def _to_fqdn(name, logger=None):
@@ -186,7 +187,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
         newperspectivesDict = copy.deepcopy(
             self.ui.sardanaElementTree.KnownPerspectives)
-        # newperspectivesDict[self.ui.sardanaElementTree.DftPerspective]['model'] = [SardanaAcquirableProxyModel, SardanaElementPlainModel]
+        #newperspectivesDict[self.ui.sardanaElementTree.DftPerspective]['model'] = [SardanaAcquirableProxyModel, SardanaElementPlainModel]
         newperspectivesDict[self.ui.sardanaElementTree.DftPerspective][
             'model'][0] = SardanaAcquirableProxyModel
         # assign a copy because if just a key of this class memberwas modified,
@@ -713,7 +714,7 @@ class ExpDescriptionEditor(Qt.QWidget, TaurusBaseWidget):
 
 def demo(model=None, autoUpdate=False):
     """Experiment configuration"""
-    # w = main_ChannelEditor()
+    #w = main_ChannelEditor()
     w = ExpDescriptionEditor(autoUpdate=autoUpdate)
     if model is None:
         from sardana.taurus.qt.qtgui.extra_macroexecutor import \

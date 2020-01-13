@@ -275,7 +275,7 @@ class DiffractometerAlignment(TaurusWidget):
         macro_command.append(str(self.selectsignal._ui.SignallineEdit.text()))
 
         self.door_device.RunMacro(macro_command)
-        while (self.door_device.State()) == PyTango.DevState.RUNNING:
+        while(self.door_device.State()) == PyTango.DevState.RUNNING:
             time.sleep(0.01)
         # TODO: the string parsing should be eliminated and the sardana
         # generic "goto_peak" feature should be used instead - when available

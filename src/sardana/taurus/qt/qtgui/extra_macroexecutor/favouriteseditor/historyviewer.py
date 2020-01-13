@@ -93,8 +93,6 @@ class HistoryMacrosViewer(TaurusWidget):
         return self.list.toXmlString()
 
     def fromXmlString(self, xmlString):
-        # pass
-        #TODO aalonso
         self.list.fromXmlString(xmlString)
         historyList = self.list.model().list
         macroServerObj = self.getModelObj()

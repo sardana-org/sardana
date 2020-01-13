@@ -85,8 +85,6 @@ class FavouritesMacrosEditor(TaurusWidget):
         return self.list.toXmlString()
 
     def fromXmlString(self, xmlString):
-        # pass
-        #TODO aalonso
         self.list.fromXmlString(xmlString)
         favouritesList = self.list.model().list
         macroServerObj = self.getModelObj()

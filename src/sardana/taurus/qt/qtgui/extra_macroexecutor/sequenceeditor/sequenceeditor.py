@@ -45,7 +45,7 @@ from sardana.taurus.qt.qtgui.extra_macroexecutor.common import \
     MacroExecutionWindow, MacroComboBox, standardPlotablesFilter
 from sardana.taurus.qt.qtgui.extra_macroexecutor.macroparameterseditor \
     import ParamEditorManager, StandardMacroParametersEditor
-from sardana.taurus.qt.qtgui.extra_macroexecutor. \
+from sardana.taurus.qt.qtgui.extra_macroexecutor.\
     macroparameterseditor.delegate import ParamEditorDelegate
 from sardana.taurus.core.tango.sardana.macro import MacroRunException, \
     MacroNode
