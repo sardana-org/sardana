@@ -27,6 +27,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Use of env and hints in `macro` function decorator (#1239)
 * PMTV widget not updating the following attributes: limit switches, state
   and status (#1244)
+* `showscan online` shows only the online trend and not erroneously online and offline
+  (#1260)
 * Reintroduce backwards compatibility for measurement groups' configurations (URIs)
   created with Taurus 3 (#1266)
 
@@ -44,6 +46,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Support to Python < 3.5 (#1089, #1173, #1201, #1263)
 * "Show/hide plots" button in `expconf` (#960, #1255, #1257)
 * `plotsButton` argument in `ExpDescriptionEditor` constructor (#960, #1255, #1257)
+* `showscan online_raw` magic command in spock (#1260)
+* `online` kwarg in `SpockBaseDoor` constructor (#1260)
 * `sardana.requirements` (#1185)
 
 ## [2.8.3] 2019-09-16
