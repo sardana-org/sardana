@@ -13,6 +13,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Documentation to Taurus Extensions of Sardana Devices: MacroServer part
   and the whole Sardana part of the Qt Taurus Extensions (#1228, #1233)
 * Advertise newfile macro in case no ScanDir or ScanFile is set (#1254, #1258)
+* Improve scans to detect if a ScanFile od ScanDir are set but empty (#1262)
 
 ### Fixed
 
