@@ -743,7 +743,6 @@ class HTMLTestRunner(Template_mixin):
 # build our own launcher to support more specific command line
 # parameters like test title, CSS, etc.
 class TestProgram(unittest.TestProgram):
-
     """
     A variation of the unittest.TestProgram. Please refer to the base
     class for command line parameters.

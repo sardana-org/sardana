@@ -40,8 +40,7 @@ from sardana.taurus.qt.qtcore.tango.sardana.model import SardanaBaseProxyModel, 
 from sardana.sardanadefs import ElementType, TYPE_ACQUIRABLE_ELEMENTS
 from taurus.qt.qtgui.util.ui import UILoadable
 
-
-# Using a plain model and filtering and checking 'Acquirable' in item.itemData().interfaces is more elegant, but things don't get properly sorted...
+#Using a plain model and filtering and checking 'Acquirable' in item.itemData().interfaces is more elegant, but things don't get properly sorted...
 #from taurus.qt.qtcore.tango.sardana.model import SardanaElementPlainModel
 
 

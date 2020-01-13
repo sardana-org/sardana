@@ -201,7 +201,7 @@ class PoolTestCase(unittest.TestCase):
             ret.append({"properties": {"Average": ['1.0'],
                                        "Sigma": ['250.0'],
                                        "MotorName": [mot_name]},
-                        }, )
+                        },)
         return ret
 
     # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
@@ -436,8 +436,7 @@ class PoolTestCase(unittest.TestCase):
                 self.pool_exec = path
                 break
 
-        self.assertFalse(self.pool_exec is None,
-                         "Could not find Pool executable. Make sure it is in the PATH")
+        self.assertFalse(self.pool_exec is None, "Could not find Pool executable. Make sure it is in the PATH")
 
         self.pool_bin_dir = os.path.dirname(self.pool_exec)
 
