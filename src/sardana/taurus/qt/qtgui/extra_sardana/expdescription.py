@@ -741,11 +741,6 @@ def main():
                             action='store_true',
                             help='Set auto update of experiment configuration')
 
-        # TODO aalonso
-        # parser.add_option('--auto-update', dest='auto_update',
-        #                   action='store_true',
-        #                   help='Set auto update of experiment configuration')
-
         app = Application(app_name="Exp. Description demo", app_version="1.0",
                           org_domain="Sardana", org_name="Tango community",
                           cmd_line_parser=parser)

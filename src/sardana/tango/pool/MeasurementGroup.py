@@ -298,6 +298,7 @@ class MeasurementGroup(PoolGroupDevice):
             self.wait_for_operation()
         except:
             raise Exception("Cannot acquire: already involved in an operation")
+        self.measurement_group.prepare()
         self.measurement_group.start_acquisition()
 
     def Stop(self):
@@ -308,6 +309,7 @@ class MeasurementGroup(PoolGroupDevice):
             self.wait_for_operation()
         except:
             raise Exception("Cannot acquire: already involved in an operation")
+        self.measurement_group.prepare(n)
         self.measurement_group.start_acquisition(multiple=n)
 
 

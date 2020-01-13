@@ -309,7 +309,7 @@ class set_user_pos(Macro):
         name = motor.getName()
         old_pos = motor.getPosition(force=True)
         offset_attr = motor.getAttribute('Offset')
-        old_offset = offset_attr.read().value
+        old_offset = offset_attr.read().rvalue
         new_offset = pos - (old_pos - old_offset)
         offset_attr.write(new_offset)
         msg = "%s reset from %.4f (offset %.4f) to %.4f (offset %.4f)" % (
@@ -368,8 +368,8 @@ class wm(Macro):
             except:
                 val1 = str_fmt % motor.getPosition(force=True)
 
-            val2 = str_fmt % posObj.getMaxValue()
-            val3 = str_fmt % posObj.getMinValue()
+            val2 = str_fmt % posObj.getMaxRange()
+            val3 = str_fmt % posObj.getMinRange()
 
             if show_ctrlaxis:
                 valctrl = str_fmt % (ctrl_name)
@@ -387,8 +387,8 @@ class wm(Macro):
                     val1 = str_fmt % motor.getDialPosition(force=True)
 
                 dPosObj = motor.getDialPositionObj()
-                val2 = str_fmt % dPosObj.getMaxValue()
-                val3 = str_fmt % dPosObj.getMinValue()
+                val2 = str_fmt % dPosObj.getMaxRange()
+                val3 = str_fmt % dPosObj.getMinRange()
 
                 dpos = list(map(str, [val2, val1, val3]))
                 pos_data += [''] + dpos
@@ -431,8 +431,8 @@ class wum(Macro):
             name = motor.getName()
             motor_names.append([name])
             posObj = motor.getPositionObj()
-            upos = list(map(str, [posObj.getMaxValue(), motor.getPosition(
-                force=True), posObj.getMinValue()]))
+            upos = list(map(str, [posObj.getMaxRange(), motor.getPosition(
+                force=True), posObj.getMinRange()]))
             pos_data = [''] + upos
 
             motor_pos.append(pos_data)
@@ -491,7 +491,7 @@ class mstate(Macro):
     param_def = [['motor', Type.Moveable, None, 'Motor to check state']]
 
     def run(self, motor):
-        self.info("Motor %s" % str(motor.getState()))
+        self.info("Motor %s" % str(motor.stateObj.read()))
 
 
 class umv(Macro):

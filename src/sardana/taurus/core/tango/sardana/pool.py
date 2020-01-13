@@ -226,12 +226,12 @@ class TangoAttributeEG(Logger, EventGenerator):
         if evt_value is None:
             v = None
         else:
-            v = evt_value.value
+            v = evt_value.rvalue
         EventGenerator.fireEvent(self, v)
 
     def read(self, force=False):
         try:
-            self.last_val = self._attr.read(cache=not force).value
+            self.last_val = self._attr.read(cache=not force).rvalue
         except:
             self.error("Read error")
             self.debug("Details:", exc_info=1)
@@ -549,7 +549,7 @@ class PoolElement(BaseElement, TangoDevice):
         indent = "\n" + tab + 10 * ' '
         msg = [self.getName() + ":"]
         try:
-            state_value = self.stateObj.read().rvalue
+            state_value = self.stateObj.read().value
             # state_value is DevState enumeration (IntEnum)
             state = state_value.name.capitalize()
         except DevFailed as df:
@@ -1727,7 +1727,7 @@ class MeasurementGroup(PoolElement):
         if evt_type not in CHANGE_EVT_TYPES:
             return
         self.info("Configuration changed")
-        self._setConfiguration(evt_value.value)
+        self._setConfiguration(evt_value.rvalue)
 
     def getTimerName(self):
         return self.getTimer()['name']

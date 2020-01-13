@@ -214,6 +214,7 @@ class CTExpChannel(PoolTimerableDevice):
         return True
 
     def Start(self):
+        self.ct.prepare()
         self.ct.start_acquisition()
 
 

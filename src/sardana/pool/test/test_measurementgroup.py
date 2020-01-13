@@ -55,7 +55,7 @@ class BaseAcquisition(object):
         conf["user_elements"] = channel_ids
         self.pmg = createPoolMeasurementGroup(pool, conf)
         pool.add_element(self.pmg)
-        self.pmg.set_configuration_from_user(mg_conf, to_fqdn=False)
+        self.pmg.set_configuration_from_user(mg_conf, to_fqdn=True)
         return channel_names
 
     def prepare_attribute_listener(self):
@@ -74,6 +74,7 @@ class BaseAcquisition(object):
     def acquire(self):
         """ Run acquisition
         """
+        self.pmg.prepare()
         self.pmg.start_acquisition()
         acq = self.pmg.acquisition
         while acq.is_running():
@@ -150,7 +151,7 @@ class BaseAcquisition(object):
             pool, config)
 
         # setting mg configuration - this cleans the action cache!
-        self.pmg.set_configuration_from_user(mg_conf, to_fqdn=False)
+        self.pmg.set_configuration_from_user(mg_conf, to_fqdn=True)
         repetitions = 0
         for group in synchronization:
             repetitions += group[SynchParam.Repeats]
@@ -198,6 +199,7 @@ class BaseAcquisition(object):
         self.pmg.set_moveable(moveable, to_fqdn=False)
         self.prepare_attribute_listener()
 
+        self.pmg.prepare()
         self.pmg.start_acquisition()
         # retrieving the acquisition since it was cleaned when applying mg conf
         acq = self.pmg.acquisition
@@ -237,6 +239,7 @@ class BaseAcquisition(object):
         for group in synchronization:
             repetitions += group[SynchParam.Repeats]
         self.prepare_attribute_listener()
+        self.pmg.prepare()
         self.pmg.start_acquisition()
         mot.set_position(position)
         acq = self.pmg.acquisition
