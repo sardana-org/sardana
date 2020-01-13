@@ -111,14 +111,9 @@ def showscan(self, parameter_s=''):
             args = ['python3', fname, doorname, '--taurus-log-level=error']
             subprocess.Popen(args)
             return
-
-        # show the scan plot, ignoring the plot configuration
-        elif params[0].lower() == 'online_raw':
-            online = True
         else:
             scan_nb = int(params[0])
-
-    door.show_scan(scan_nb, online=online)
+            door.show_scan(scan_nb)
 
 
 def spsplot(self, parameter_s=''):
