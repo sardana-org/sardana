@@ -32,6 +32,7 @@ __docformat__ = 'restructuredtext'
 
 import os
 import shelve
+from itertools import zip_longest
 import operator
 
 from taurus.core.util.containers import CaselessDict
@@ -407,13 +408,13 @@ class EnvironmentManager(MacroServerManager):
 
         return ret
 
-    def _pairwise(self, iterable):
-        itnext = iter(iterable).__next__
-        while True:
-            yield itnext(), itnext()
+    def _grouper(self, iterable):
+        # https://docs.python.org/3/library/itertools.html#itertools-recipes
+        args = [iter(iterable)] * 2
+        return zip_longest(*args)
 
     def _dictFromSequence(self, seq):
-        return dict(self._pairwise(seq))
+        return dict(self._grouper(seq))
 
     def _encode(self, d):
         ret = {}

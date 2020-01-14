@@ -303,11 +303,7 @@ class MacroExecutorFactory(Singleton):
         # For the moment I implement it by calling an internal member of
         # TaurusManager
         from taurus.core import TaurusManager
-        try:
-            scheme = TaurusManager()._get_scheme(door_name)
-        except AttributeError:
-            # TODO: For Taurus 4 compatibility
-            scheme = TaurusManager().getScheme(door_name)
+        scheme = TaurusManager().getScheme(door_name)
         #======================================================================
 
         if scheme == 'tango':

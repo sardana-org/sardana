@@ -37,7 +37,6 @@ from taurus import Device
 from taurus.qt.qtgui.container import TaurusWidget, TaurusMainWindow, TaurusBaseContainer
 from taurus.qt.qtgui.display import TaurusLed
 from taurus.qt.qtgui.dialog import TaurusMessageBox
-from taurus.qt.qtgui.resource import getIcon, getThemeIcon
 
 import sardana
 from sardana.taurus.core.tango.sardana import macro
@@ -625,20 +624,21 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         self.setLayout(Qt.QVBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
 
-        self.addToFavouritesAction = Qt.QAction(getThemeIcon(
-            "software-update-available"), "Add to favourites", self)
+        self.addToFavouritesAction = Qt.QAction(
+            Qt.QIcon("status:software-update-available.svg"),
+            "Add to favourites", self)
         self.addToFavouritesAction.triggered.connect(self.onAddToFavourites)
         self.addToFavouritesAction.setToolTip("Add to favourites")
         self.stopMacroAction = Qt.QAction(
-            getIcon(":/actions/media_playback_stop.svg"), "Stop macro", self)
+            Qt.QIcon("actions:media_playback_stop.svg"), "Stop macro", self)
         self.stopMacroAction.triggered.connect(self.onStopMacro)
         self.stopMacroAction.setToolTip("Stop macro")
         self.pauseMacroAction = Qt.QAction(
-            getIcon(":/actions/media_playback_pause.svg"), "Pause macro", self)
+            Qt.QIcon("actions:media_playback_pause.svg"), "Pause macro", self)
         self.pauseMacroAction.triggered.connect(self.onPauseMacro)
         self.pauseMacroAction.setToolTip("Pause macro")
         self.playMacroAction = Qt.QAction(
-            getIcon(":/actions/media_playback_start.svg"), "Start macro", self)
+            Qt.QIcon("actions:media_playback_start.svg"), "Start macro", self)
         self.playMacroAction.triggered.connect(self.onPlayMacro)
         self.playMacroAction.setToolTip("Start macro")
         actionsLayout = Qt.QHBoxLayout()
@@ -738,17 +738,13 @@ class TaurusMacroExecutorWidget(TaurusWidget):
 
     def contextMenuEvent(self, event):
         menu = Qt.QMenu()
-        action = menu.addAction(getThemeIcon(
-            "view-refresh"), "Check door state", self.checkDoorState)
+        menu.addAction(Qt.QIcon.fromTheme("view-refresh"), "Check door state",
+                       self.checkDoorState)
         menu.exec_(event.globalPos())
 
     def checkDoorState(self):
         door = Device(self.doorName())
-        try:
-            doorState = door.state()
-        except TypeError:
-            # TODO: For Taurus 4 adaptation
-            doorState = door.getState()
+        doorState = door.getState()
         if doorState == PyTango.DevState.RUNNING:
             self.playMacroAction.setEnabled(False)
             self.pauseMacroAction.setEnabled(True)
@@ -879,11 +875,7 @@ class TaurusMacroExecutorWidget(TaurusWidget):
             return
         self.doorStateLed.setModel(self.doorName() + "/State")
         door = Device(doorName)
-        try:
-            doorState = door.state()
-        except TypeError:
-            # TODO: For Taurus 4 adaptation
-            doorState = door.getState()
+        doorState = door.stateObj.rvalue
         if doorState == PyTango.DevState.ON:
             self.playMacroAction.setText("Start macro")
             self.playMacroAction.setToolTip("Start macro")
@@ -893,11 +885,7 @@ class TaurusMacroExecutorWidget(TaurusWidget):
 
     def onPlayMacro(self):
         door = Device(self.doorName())
-        try:
-            doorState = door.state()
-        except TypeError:
-            # TODO: For Taurus 4 adaptation
-            doorState = door.getState()
+        doorState = door.getState()
         if doorState == PyTango.DevState.ON or doorState == PyTango.DevState.ALARM:
             self.setFocus()
             paramEditorModel = self.paramEditorModel()
@@ -921,11 +909,7 @@ class TaurusMacroExecutorWidget(TaurusWidget):
 
     def onStopMacro(self):
         door = Device(self.doorName())
-        try:
-            doorState = door.state()
-        except TypeError:
-            # TODO: For Taurus 4 adaptation
-            doorState = door.getState()
+        doorState = door.getState()
 
         if doorState in (PyTango.DevState.RUNNING, PyTango.DevState.STANDBY):
             door.command_inout("StopMacro")
@@ -935,11 +919,7 @@ class TaurusMacroExecutorWidget(TaurusWidget):
 
     def onPauseMacro(self):
         door = Device(self.doorName())
-        try:
-            doorState = door.state()
-        except TypeError:
-            # TODO: For Taurus 4 adaptation
-            doorState = door.getState()
+        doorState = door.getState()
 
         if doorState == PyTango.DevState.RUNNING:
             door.command_inout("PauseMacro")

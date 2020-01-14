@@ -85,6 +85,11 @@ def clear_sar_demo(self):
     for ctrl in SAR_DEMO.get("controllers", ()):
         self.udefctrl(ctrl)
 
+    self.print("Removing instruments...")
+    pool = self.getPools()[0]
+    for instrument in SAR_DEMO.get("instruments", ()):
+        pool.DeleteElement(instrument)
+
     self.unsetEnv(_ENV)
 
     self.print("DONE!")
@@ -192,14 +197,29 @@ def sar_demo(self):
         self.print("Setting %s as ActiveMntGrp" % mg_name)
         self.setEnv("ActiveMntGrp", mg_name)
 
+    self.print("Creating instruments: /slit, /mirror and /monitor ...")
+    pool.createInstrument('/slit', 'NXcollimator')
+    pool.createInstrument('/mirror', 'NXmirror')
+    pool.createInstrument('/monitor', 'NXmonitor')
+
+    self.print("Assigning elements to instruments...")
+    self.getMotor(motor_names[0]).setInstrumentName('/slit')
+    self.getMotor(motor_names[1]).setInstrumentName('/slit')
+    self.getPseudoMotor(gap).setInstrumentName('/slit')
+    self.getPseudoMotor(offset).setInstrumentName('/slit')
+    self.getMotor(motor_names[2]).setInstrumentName('/mirror')
+    self.getMotor(motor_names[3]).setInstrumentName('/mirror')
+    self.getCounterTimer(ct_names[0]).setInstrumentName('/monitor')
+
     controllers = pm_ctrl_name, mot_ctrl_name, ct_ctrl_name, \
         zerod_ctrl_name, oned_ctrl_name, twod_ctrl_name, \
         tg_ctrl_name, ior_ctrl_name
     elements = [gap, offset] + motor_names + ct_names + \
         zerod_names + oned_names + twod_names + tg_names + \
         ior_names
+    instruments = ["/slit", "/mirror", "/monitor"]
     d = dict(controllers=controllers, elements=elements,
-             measurement_groups=[mg_name])
+             measurement_groups=[mg_name], instruments=instruments)
 
     self.setEnv(_ENV, d)
 

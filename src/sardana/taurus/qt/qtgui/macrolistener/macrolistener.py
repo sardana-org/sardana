@@ -482,7 +482,7 @@ class MacroBroker(DynamicPlotManager):
                           'doorNameChanged')
 
         # Create ExpDescriptionEditor dialog
-        self.__expDescriptionEditor = ExpDescriptionEditor(plotsButton=False)
+        self.__expDescriptionEditor = ExpDescriptionEditor()
         SDM.connectReader("doorName", self.__expDescriptionEditor.setModel)
         mainwindow.createPanel(self.__expDescriptionEditor,
                                'Experiment Config',
@@ -552,14 +552,9 @@ class MacroBroker(DynamicPlotManager):
                           self.__doorOutput.onDoorWarningChanged)
         SDM.connectReader("doorErrorChanged",
                           self.__doorOutput.onDoorErrorChanged)
-        mainwindow.createPanel(self.__doorOutput, 'DoorOutput',
-                               registerconfig=False, permanent=True)
-
-        # puts doorDebug
-        self.__doorDebug = DoorDebug()
         SDM.connectReader("doorDebugChanged",
-                          self.__doorDebug.onDoorDebugChanged)
-        mainwindow.createPanel(self.__doorDebug, 'DoorDebug',
+                          self.__doorOutput.onDoorDebugChanged)
+        mainwindow.createPanel(self.__doorOutput, 'DoorOutput',
                                registerconfig=False, permanent=True)
 
         # puts doorResult

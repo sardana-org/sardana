@@ -212,7 +212,7 @@ the macro function version of *Hello, World!*::
     
 .. note::
     If you already know a little about Python_ your are probably wondering why
-    not use ``print "Hello, World!"``?
+    not use ``print("Hello, World!")``?
 
     Remember that your macro will be executed by a Sardana server which may be
     running in a different computer than the computer you are working on.
@@ -225,9 +225,6 @@ the macro function version of *Hello, World!*::
     function (it is a bit more powerful than 
     :meth:`~sardana.macroserver.macro.Macro.output`\, and has a slightly
     different syntax) ::
-
-        # mandatory first line in your code if you use Python < 3.0
-        from __future__ import print_function
         
         from sardana.macroserver.macro import macro
         
@@ -582,7 +579,7 @@ messages with different levels:
     * :meth:`~Macro.output`
     
 As you've seen, the special :meth:`~Macro.output` function has the same effect
-as a print statement (with slightly different arguments).
+as a print function (with slightly different arguments).
 
 Log messages may have several destinations depending on how your sardana server
 is configured. At least, one destination of each log message is the client(s)
@@ -739,7 +736,7 @@ using :meth:`~Macro.data`:
         # and the result of the Macro.prepare method
         my_scan, _ = ret 
         self.runMacro(my_scan)
-        print len(my_scan.data)
+        self.print(len(my_scan.data))
 
 A set of macro call examples can be found
 :ref:`here <sardana-devel-macro-call-examples>`.
@@ -769,7 +766,7 @@ macro. So, without further delay, here is the *Hello, World!* example::
         """Hello, World! macro"""
         
         def run(self):
-            print "Hello, World!"
+            self.print("Hello, World!")
 
 .. _sardana-macro-add-parameters:
 
@@ -818,7 +815,7 @@ prepare HelloWorld to run only after year 1989:
                 raise Exception("HelloWorld can only run after year 1989")
     
         def run(self):
-            print "Hello, World!"
+            self.print("Hello, World!")
 
 .. _sardana-macro-handling-macro-stop-and-abort:
 
@@ -1537,10 +1534,11 @@ The second method is to use standard Python threading_ library.
 .. rubric:: Footnotes
 
 .. [#f1] To find the absolute path for sardana's source code type on the
-         command line ``python -c "import sys, sardana; sys.stdout.write(str(sardana.__path__))"``
+         command line ``python3 -c "import sys, sardana; sys.stdout.write
+         (str(sardana.__path__))"``
 
 .. [#f2] To check which version of Python_ you are using type on the command
-         line ``python -c "import sys; sys.stdout.write(sys.version)"``
+         line ``python3 -c "import sys; sys.stdout.write(sys.version)"``
 
 .. |input_integer| image:: ../../_static/macro_input_integer.png
     :align: middle

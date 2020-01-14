@@ -11,3 +11,4 @@
     :maxdepth: 1
     
     core <taurus/core>
+    qt <taurus/qt>

@@ -287,7 +287,7 @@ class Hookable(Logger):
         if hasattr(self, '_hookHintsDict'):
             del self._hookHintsDict
         # create _hookHintsDict
-        self._getHookHintsDict()['_ALL_'] = zip(*self._hooks)[0]
+        self._getHookHintsDict()['_ALL_'] = list(zip(*self._hooks))[0]
         nohints = self._hookHintsDict['_NOHINTS_']
         for hook, hints in self._hooks:
             if len(hints) == 0:
@@ -403,8 +403,8 @@ class macro(object):
         fn.macro_data = {}
         fn.param_def = self.param_def
         fn.result_def = self.result_def
-        fn.hints = self.env
-        fn.env = self.hints
+        fn.hints = self.hints
+        fn.env = self.env
         fn.interactive = self.interactive
         return fn
 

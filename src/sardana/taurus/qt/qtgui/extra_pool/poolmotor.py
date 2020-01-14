@@ -23,37 +23,25 @@
 ##
 ##############################################################################
 
-import sys
-import copy
 import PyTango
-import numpy
 
 from taurus.external.qt import Qt, compat
 
 import taurus
 from taurus.core.util.colors import DEVICE_STATE_PALETTE
 from taurus.core.taurusbasetypes import TaurusEventType
-try:
-    from taurus.core.taurusvalidator import DeviceNameValidator as \
-        TangoDeviceNameValidator
-except ImportError:
-    # TODO: For Taurus 4 adaptation
-    from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
+from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
 import taurus.qt.qtcore.mimetypes
-from taurus.qt.qtgui.base import TaurusBaseWritableWidget
 from taurus.qt.qtgui.compact import TaurusReadWriteSwitcher
 from taurus.qt.qtgui.dialog import ProtectTaurusMessageBox
-from taurus.qt.qtgui.base import TaurusBaseWidget
 from taurus.qt.qtgui.container import TaurusWidget
 from taurus.qt.qtgui.container import TaurusFrame
 from taurus.qt.qtgui.display import TaurusLabel
 from taurus.qt.qtgui.input import TaurusValueLineEdit
-from taurus.qt.qtgui.input import TaurusValueSpinBox
 from taurus.qt.qtgui.panel import DefaultLabelWidget
 from taurus.qt.qtgui.panel import DefaultUnitsWidget
 from taurus.qt.qtgui.panel import TaurusValue, TaurusAttrForm
 from taurus.qt.qtcore.mimetypes import TAURUS_DEV_MIME_TYPE, TAURUS_ATTR_MIME_TYPE
-from taurus.qt.qtgui.resource import getIcon
 from taurus.qt.qtgui.util.ui import UILoadable
 
 
@@ -429,33 +417,33 @@ class PoolMotorSlim(TaurusWidget, PoolMotorClient):
 
     def __setTaurusIcons(self):
         self.ui.btnMin.setText('')
-        self.ui.btnMin.setIcon(getIcon(':/actions/list-remove.svg'))
+        self.ui.btnMin.setIcon(Qt.QIcon("actions:list-remove.svg"))
         self.ui.btnMax.setText('')
-        self.ui.btnMax.setIcon(getIcon(':/actions/list-add.svg'))
+        self.ui.btnMax.setIcon(Qt.QIcon("actions:list-add.svg"))
 
         self.ui.btnGoToNeg.setText('')
         self.ui.btnGoToNeg.setIcon(
-            getIcon(':/actions/media_skip_backward.svg'))
+            Qt.QIcon("actions:media_skip_backward.svg"))
         self.ui.btnGoToNegPress.setText('')
         self.ui.btnGoToNegPress.setIcon(
-            getIcon(':/actions/media_seek_backward.svg'))
+            Qt.QIcon("actions:media_seek_backward.svg"))
         self.ui.btnGoToNegInc.setText('')
         self.ui.btnGoToNegInc.setIcon(
-            getIcon(':/actions/media_playback_backward.svg'))
+            Qt.QIcon("actions:media_playback_backward.svg"))
         self.ui.btnGoToPos.setText('')
-        self.ui.btnGoToPos.setIcon(getIcon(':/actions/media_skip_forward.svg'))
+        self.ui.btnGoToPos.setIcon(Qt.QIcon("actions:media_skip_forward.svg"))
         self.ui.btnGoToPosPress.setText('')
         self.ui.btnGoToPosPress.setIcon(
-            getIcon(':/actions/media_seek_forward.svg'))
+            Qt.QIcon("actions:media_seek_forward.svg"))
         self.ui.btnGoToPosInc.setText('')
         self.ui.btnGoToPosInc.setIcon(
-            getIcon(':/actions/media_playback_start.svg'))
+            Qt.QIcon("actions:media_playback_start.svg"))
         self.ui.btnStop.setText('')
-        self.ui.btnStop.setIcon(getIcon(':/actions/media_playback_stop.svg'))
+        self.ui.btnStop.setIcon(Qt.QIcon("actions:media_playback_stop.svg"))
         self.ui.btnHome.setText('')
-        self.ui.btnHome.setIcon(getIcon(':/actions/go-home.svg'))
+        self.ui.btnHome.setIcon(Qt.QIcon("actions:go-home.svg"))
         self.ui.btnCfg.setText('')
-        self.ui.btnCfg.setIcon(getIcon(':/categories/preferences-system.svg'))
+        self.ui.btnCfg.setIcon(Qt.QIcon("categories:preferences-system.svg"))
         #######################################################################
 
     #@Qt.pyqtSlot(list)
@@ -741,10 +729,10 @@ class PoolMotorSlim(TaurusWidget, PoolMotorClient):
                 self.updateLimits)
             limits_visible = False
             if self.has_limits:
-                limits_attribute = self.motor_dev.getAttribute(
+                self._limits_switches = self.motor_dev.getAttribute(
                     'Limit_switches')
-                limits_attribute.addListener(self.limits_listener)
-                # self.updateLimits(limits_attribute.read().value)
+                self._limits_switches.addListener(self.limits_listener)
+                # self.updateLimits(limits_attribute.read().rvalue)
                 limits_visible = True
             self.ui.btnMin.setVisible(limits_visible)
             self.ui.btnMax.setVisible(limits_visible)
@@ -820,7 +808,11 @@ class TaurusAttributeListener(Qt.QObject):
     def eventReceived(self, evt_src, evt_type, evt_value):
         if evt_type not in [TaurusEventType.Change, TaurusEventType.Periodic]:
             return
-        value = evt_value.value
+        try:
+            value = evt_value.rvalue.magnitude
+        except AttributeError:
+            # spectrum/images or str attribute values are not Quantities
+            value = evt_value.rvalue
         self.eventReceivedSignal.emit(value)
 
 
@@ -916,7 +908,7 @@ class PoolMotorTVLabelWidget(TaurusWidget):
         status_info = ''
         motor_dev = self.taurusValueBuddy().motor_dev
         if motor_dev is not None:
-            status = motor_dev.getAttribute('Status').read().value
+            status = motor_dev.getAttribute('Status').read().rvalue
             # MAKE IT LOOK LIKE THE STANDARD TABLE FOR TAURUS TOOLTIPS
             status_lines = status.split('\n')
             status_info = '<TABLE width="500" border="0" cellpadding="1" cellspacing="0"><TR><TD WIDTH="80" ALIGN="RIGHT" VALIGN="MIDDLE"><B>Status:</B></TD><TD>' + \
@@ -939,7 +931,7 @@ class PoolMotorTVLabelWidget(TaurusWidget):
 
         action_tango_attributes = Qt.QAction(self)
         action_tango_attributes.setIcon(
-            getIcon(':/categories/preferences-system.svg'))
+            Qt.QIcon("categories:preferences-system.svg"))
         action_tango_attributes.setText('Tango Attributes')
         menu.addAction(action_tango_attributes)
         action_tango_attributes.triggered.connect(
@@ -995,14 +987,14 @@ class PoolMotorTVReadWidget(TaurusWidget):
         self.btn_lim_neg.setToolTip('Negative Limit')
         # self.btn_lim_neg.setEnabled(False)
         self.prepare_button(self.btn_lim_neg)
-        self.btn_lim_neg.setIcon(getIcon(':/actions/list-remove.svg'))
+        self.btn_lim_neg.setIcon(Qt.QIcon("actions:list-remove.svg"))
         limits_layout.addWidget(self.btn_lim_neg)
 
         self.btn_lim_pos = Qt.QPushButton()
         self.btn_lim_pos.setToolTip('Positive Limit')
         # self.btn_lim_pos.setEnabled(False)
         self.prepare_button(self.btn_lim_pos)
-        self.btn_lim_pos.setIcon(getIcon(':/actions/list-add.svg'))
+        self.btn_lim_pos.setIcon(Qt.QIcon("actions:list-add.svg"))
         limits_layout.addWidget(self.btn_lim_pos)
 
         self.layout().addLayout(limits_layout, 0, 0)
@@ -1017,7 +1009,7 @@ class PoolMotorTVReadWidget(TaurusWidget):
         self.btn_stop = Qt.QPushButton()
         self.btn_stop.setToolTip('Stops the motor')
         self.prepare_button(self.btn_stop)
-        self.btn_stop.setIcon(getIcon(':/actions/media_playback_stop.svg'))
+        self.btn_stop.setIcon(Qt.QIcon("actions:media_playback_stop.svg"))
         self.layout().addWidget(self.btn_stop, 0, 2)
 
         self.btn_stop.clicked.connect(self.abort)
@@ -1158,13 +1150,13 @@ class PoolMotorTVWriteWidget(TaurusWidget):
         self.btn_step_down.setToolTip('Decrements motor position')
         self.prepare_button(self.btn_step_down)
         self.btn_step_down.setIcon(
-            getIcon(':/actions/media_playback_backward.svg'))
+            Qt.QIcon("actions:media_playback_backward.svg"))
         self.qw_write_relative.layout().addWidget(self.btn_step_down)
 
         self.btn_step_up = Qt.QPushButton()
         self.btn_step_up.setToolTip('Increments motor position')
         self.prepare_button(self.btn_step_up)
-        self.btn_step_up.setIcon(getIcon(':/actions/media_playback_start.svg'))
+        self.btn_step_up.setIcon(Qt.QIcon("actions:media_playback_start.svg"))
         self.qw_write_relative.layout().addWidget(self.btn_step_up)
 
         self.layout().addWidget(self.qw_write_relative, 0, 0)
@@ -1194,7 +1186,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
         self.btn_to_neg.setToolTip(
             'Moves the motor towards the Negative Software Limit')
         self.prepare_button(self.btn_to_neg)
-        self.btn_to_neg.setIcon(getIcon(':/actions/media_skip_backward.svg'))
+        self.btn_to_neg.setIcon(Qt.QIcon("actions:media_skip_backward.svg"))
         btns_layout.addWidget(self.btn_to_neg)
 
         self.btn_to_neg_press = Qt.QPushButton()
@@ -1202,7 +1194,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
             'Moves the motor (while pressed) towards the Negative Software Limit')
         self.prepare_button(self.btn_to_neg_press)
         self.btn_to_neg_press.setIcon(
-            getIcon(':/actions/media_seek_backward.svg'))
+            Qt.QIcon("actions:media_seek_backward.svg"))
         btns_layout.addWidget(self.btn_to_neg_press)
 
         self.btn_to_pos_press = Qt.QPushButton()
@@ -1210,14 +1202,14 @@ class PoolMotorTVWriteWidget(TaurusWidget):
         self.btn_to_pos_press.setToolTip(
             'Moves the motor (while pressed) towards the Positive Software Limit')
         self.btn_to_pos_press.setIcon(
-            getIcon(':/actions/media_seek_forward.svg'))
+            Qt.QIcon("actions:media_seek_forward.svg"))
         btns_layout.addWidget(self.btn_to_pos_press)
 
         self.btn_to_pos = Qt.QPushButton()
         self.btn_to_pos.setToolTip(
             'Moves the motor towards the Positive Software Limit')
         self.prepare_button(self.btn_to_pos)
-        self.btn_to_pos.setIcon(getIcon(':/actions/media_skip_forward.svg'))
+        self.btn_to_pos.setIcon(Qt.QIcon("actions:media_skip_forward.svg"))
         btns_layout.addWidget(self.btn_to_pos)
 
         btns_layout.addItem(Qt.QSpacerItem(
@@ -1303,7 +1295,8 @@ class PoolMotorTVWriteWidget(TaurusWidget):
         motor_dev = self.taurusValueBuddy().motor_dev
         if motor_dev is not None:
             increment = direction * float(self.cb_step.currentText())
-            position = float(motor_dev.getAttribute('Position').read().value)
+            position = float(
+                motor_dev.getAttribute('Position').read().rvalue.magnitude)
             target_position = position + increment
             motor_dev.getAttribute('Position').write(target_position)
 
@@ -1369,7 +1362,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
             self.le_write_absolute.setModel(model)
             return
         TaurusWidget.setModel(self, model + '/Position')
-        self.le_write_absolute.setModel(model + '/Position')
+        self.le_write_absolute.setModel(model + '/Position#wvalue.magnitude')
 
         # Handle User/Expert View
         self.setExpertView(self.taurusValueBuddy()._expertView)
@@ -1496,8 +1489,9 @@ class PoolMotorTV(TaurusValue):
             if self.hasHwLimits():
                 self.limits_listener.eventReceivedSignal.connect(
                     self.updateLimits)
-                self.motor_dev.getAttribute(
-                    'Limit_Switches').addListener(self.limits_listener)
+                self._limit_switches = self.motor_dev.getAttribute(
+                    'Limit_Switches')
+                self._limit_switches.addListener(self.limits_listener)
 
             # CONFIGURE AN EVENT RECEIVER IN ORDER TO PROVIDE POWERON <-
             # True/False EXPERT OPERATION
@@ -1505,23 +1499,23 @@ class PoolMotorTV(TaurusValue):
             if self.hasPowerOn():
                 self.poweron_listener.eventReceivedSignal.connect(
                     self.updatePowerOn)
-                self.motor_dev.getAttribute(
-                    'PowerOn').addListener(self.poweron_listener)
+                self._poweron = self.motor_dev.getAttribute('PowerOn')
+                self._poweron.addListener(self.poweron_listener)
 
             # CONFIGURE AN EVENT RECEIVER IN ORDER TO UPDATED STATUS TOOLTIP
             self.status_listener = TaurusAttributeListener()
             self.status_listener.eventReceivedSignal.connect(
                 self.updateStatus)
-            self.motor_dev.getAttribute(
-                'Status').addListener(self.status_listener)
+            self._status = self.motor_dev.getAttribute('Status')
+            self._status.addListener(self.status_listener)
 
             # CONFIGURE AN EVENT RECEIVER IN ORDER TO ACTIVATE LIMIT BUTTONS ON
             # SOFTWARE LIMITS
             self.position_listener = TaurusAttributeListener()
             self.position_listener.eventReceivedSignal.connect(
                 self.updatePosition)
-            self.motor_dev.getAttribute(
-                'Position').addListener(self.position_listener)
+            self._position = self.motor_dev.getAttribute('Position')
+            self._position.addListener(self.position_listener)
             self.motor_dev.getAttribute('Position').enablePolling(force=True)
 
             self.setExpertView(self._expertView)
@@ -1554,7 +1548,7 @@ class PoolMotorTV(TaurusValue):
         if self.motor_dev is not None:
             position_attribute = self.motor_dev.getAttribute('Position')
             if position is None:
-                position = position_attribute.read().value
+                position = position_attribute.read().rvalue.magnitude
             max_value_str = position_attribute.max_value
             min_value_str = position_attribute.min_value
             try:
@@ -1636,7 +1630,7 @@ class PoolMotorTV(TaurusValue):
             limit_switches = [False, False, False]
             if self.hasHwLimits():
                 limit_switches = self.motor_dev.getAttribute(
-                    'Limit_switches').read().value
+                    'Limit_switches').read().rvalue
                 # print "update limits", limit_switches
             self.updateLimits(limit_switches, position=position)
 

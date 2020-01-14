@@ -5,11 +5,76 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ## [Unreleased]
 
+### Added
+
+* Support to Python >= 3.5 (#1089, #1173, 1201)
+* Pre-scan snapshot macros: `lssnap`, `defsnap` and `udefsnap` (#1199)
+* Instruments creation and configuration in sar_demo (#1198)
+* Documentation to Taurus Extensions of Sardana Devices: MacroServer part
+  and the whole Sardana part of the Qt Taurus Extensions (#1228, #1233)
+* Advertise newfile macro in case no ScanDir or ScanFile is set (#1254, #1258)
+* Improve scans to detect if a ScanFile od ScanDir are set but empty (#1262)
+* Possibility to view debug messages in `DoorOutput` widget - enable/disable
+  using context menu option (#1242)
+
 ### Fixed
 
-* Fix default macro parameter values in macroexecutor (#1153)
+* Default macro parameter values in macroexecutor (#1153)
+* Executing RunMacro Door's command with string parameters containing spaces (#1240)
+* Setting of environment variables in Python 3.7 (#1195)
 * Use `taurus.external.qt.compat.PY_OBJECT` in singal signatures instead of `object`
   to avoid problems when using `builtins` from `future` (#1082)
+* Remove Taurus deprecated code what reduces deprecation warnings (#1206, #1252)
+* Use of env and hints in `macro` function decorator (#1239)
+* PMTV widget not updating the following attributes: limit switches, state
+  and status (#1244)
+* OutputBlock view option when macros produce outputs at high rate (#1245)
+* `showscan online` shows only the online trend and not erroneously online and offline
+  (#1260)
+* Reintroduce backwards compatibility for measurement groups' configurations (URIs)
+  created with Taurus 3 (#1266)
+
+### Deprecated
+
+* `DoorDebug` widget - use `DoorOutput` with enabled debugging (#1242)
+
+### Changed
+
+* requirements are no longer checked when importing sardana (#1185)
+
+### Removed
+
+* Support to Python < 3.5 (#1089, #1173, #1201, #1263)
+* "Show/hide plots" button in `expconf` (#960, #1255, #1257)
+* `plotsButton` argument in `ExpDescriptionEditor` constructor (#960, #1255, #1257)
+* `showscan online_raw` magic command in spock (#1260)
+* `online` kwarg in `SpockBaseDoor` constructor (#1260)
+* `sardana.requirements` (#1185)
+
+## [2.8.4] 2019-11-13
+
+### Fixed
+
+* fix compatibility with python 2.6 when overwritting macros 
+* fscan macro that was broken 2.6.0 (#1218, #1220)
+
+### Deprecated
+
+* `nr_points` attribute of scan macros e.g., aNscan family of scans, `fscan` etc.
+  (#1218, #1220)
+
+## [2.8.3] 2019-09-16
+
+### Fixed
+
+* Removing latencytime from detect_evt (as propossed in #1190)
+
+## [2.8.2] 2019-09-13
+
+### Fixed
+
+* Hangs of MacroServer when PyTango `AttributeProxy` and `DeviceProxy` objects
+  were garbage collected (#1080, #1190, #1193)
 
 ## [2.8.1] 2019-07-22
 
@@ -716,7 +781,10 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.1...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.4...HEAD
+[2.8.4]: https://github.com/sardana-org/sardana/compare/2.8.4...2.8.3
+[2.8.3]: https://github.com/sardana-org/sardana/compare/2.8.3...2.8.2
+[2.8.2]: https://github.com/sardana-org/sardana/compare/2.8.2...2.8.1
 [2.8.1]: https://github.com/sardana-org/sardana/compare/2.8.1...2.8.0
 [2.8.0]: https://github.com/sardana-org/sardana/compare/2.8.0...2.7.2
 [2.7.2]: https://github.com/sardana-org/sardana/compare/2.7.1...2.7.2

@@ -17,8 +17,8 @@ env:
 
   matrix:
   - TEST="flake8"
-  - TEST="testsuite" DOCKER_IMG=reszelaz/sardana-test:py3
-  - TEST="doc" DOCKER_IMG=reszelaz/sardana-test:py3
+  - TEST="testsuite" DOCKER_IMG=reszelaz/sardana-test
+  - TEST="doc" DOCKER_IMG=reszelaz/sardana-test
 
 
 before_install:
@@ -51,27 +51,8 @@ script:
   # run the full testsuite
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test sardanatestsuite; fi
   # build docs
-  - if [ $TEST == "doc" ]; then
-      docker exec -t sardana-test /bin/bash -c "cd /sardana ; sphinx-build -W doc/source/ build/sphinx/html" ;
-    fi
-
-  # deploy sphinx docs to sardana-doc repo if we are on upstream
-  - if [[ $TEST == "doc" && $TRAVIS_REPO_SLUG == "sardana-org/sardana" ]]; then
-      pip install doctr ;
-      docker exec sardana-test /bin/bash -c "touch /sardana/build/sphinx/html/.nojekyll" ;
-      if [[ $TRAVIS_BRANCH == "develop" ]]; then
-        doctr deploy . ;
-      else
-        doctr deploy "v-$TRAVIS_BRANCH"  ;
-      fi;
-    fi
-
-doctr:
-  key-path : ci/github_deploy_key.enc
-  deploy-repo : sardana-org/sardana-doc
-  require-master: false
-  sync: true
-  built-docs: build/sphinx/html/
+  - if [ $TEST == "doc" ]; then docker exec -t sardana-test /bin/bash -c "cd /sardana ; sphinx-build -W doc/source/ build/sphinx/html" ; fi
+  - if [ $TEST == "doc" ]; then docker exec -t sardana-test /bin/bash -c "touch /sardana/build/sphinx/html/.nojekyll" ; fi
 
 deploy:
   # deploy to pypi when a version tag is pushed to the official repo
@@ -83,3 +64,13 @@ deploy:
       repo: sardana-org/sardana
       tags: true
       condition: "$TEST == testsuite && $DOCKER_IMG == reszelaz/sardana-test && $TRAVIS_TAG =~ ^[0-9]+.[0-9]+.[0-9]+$"
+  - provider: pages
+    local_dir: build/sphinx/html
+    repo: sardana-org/sardana-doc
+    skip_cleanup: true
+    github_token: $GITHUB_TOKEN  # Set in the settings page of your repository, as a secure variable
+    keep_history: true
+    fqdn: sardana-controls.org  # Set custom domain
+    on:
+      branch: develop
+      condition: "$TEST == doc"

@@ -43,11 +43,7 @@ import PyTango
 import taurus
 import collections
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    # For Python < 2.7
-    from ordereddict import OrderedDict
+from collections import OrderedDict
 
 from taurus.core.util.log import Logger
 from taurus.core.util.user import USER_NAME
@@ -484,12 +480,16 @@ class GScan(Logger):
         macro = self.macro
         try:
             scan_dir = macro.getEnv('ScanDir')
+            if scan_dir == '' or None:
+                macro.warning('ScanDir value is empty')
+                raise Exception('ScanDir value is empty')
         except InterruptException:
             raise
         except Exception:
             macro.warning('ScanDir is not defined. This operation will not be '
-                          'stored persistently. Use Use "expconf" (or "senv '
-                          'ScanDir <abs directory>") to enable it')
+                          'stored persistently. Use "expconf" or "newfile" '
+                          'to configure data storage (or eventually "senv '
+                          'ScanDir <abs directory>")')
             return ()
 
         if not isinstance(scan_dir, str):
@@ -498,12 +498,16 @@ class GScan(Logger):
 
         try:
             file_names = macro.getEnv('ScanFile')
+            if file_names == [''] or None:
+                macro.warning('ScanFile value is empty')
+                raise Exception('ScanFile value is empty')
         except InterruptException:
             raise
         except Exception:
             macro.warning('ScanFile is not defined. This operation will not '
-                          'be stored persistently. Use "expconf" (or "senv '
-                          'ScanFile <scan file(s)>") to enable it')
+                          'be stored persistently. Use "expconf" or "newfile" '
+                          'to configure data storage (or eventually "senv '
+                          'ScanFile <scan file(s)>")')
             return ()
 
         scan_recorders = []
@@ -1059,12 +1063,12 @@ class SScan(GScan):
         scream = False
 
         self._deterministic_scan = False
-        if hasattr(macro, "nr_points"):
-            nr_points = float(macro.nr_points)
+        if hasattr(macro, "nb_points"):
+            nb_points = float(macro.nb_points)
             if hasattr(macro, "integ_time"):
                 integ_time = macro.integ_time
                 self.measurement_group.putIntegrationTime(integ_time)
-                self.measurement_group.setNbStarts(nr_points)
+                self.measurement_group.setNbStarts(nb_points)
                 self.measurement_group.prepare()
                 self._deterministic_scan = True
             scream = True
@@ -1080,7 +1084,7 @@ class SScan(GScan):
             self.stepUp(i, step, lstep)
             lstep = step
             if scream:
-                yield ((i + 1) / nr_points) * 100
+                yield ((i + 1) / nb_points) * 100
 
         if not scream:
             yield 100.0
@@ -1822,8 +1826,8 @@ class CSScan(CScan):
         sum_delay = 0
         sum_integ_time = 0
 
-        if hasattr(macro, "nr_points"):
-            nr_points = float(macro.nr_points)
+        if hasattr(macro, "nb_points"):
+            nb_points = float(macro.nb_points)
             scream = True
         else:
             yield 0.0
@@ -1937,7 +1941,7 @@ class CSScan(CScan):
                     self.data.addRecord(data_line)
 
                     if scream:
-                        yield ((point_nb + 1) / nr_points) * 100
+                        yield ((point_nb + 1) / nb_points) * 100
                 else:
                     break
                 old_curr_time = curr_time
@@ -2077,13 +2081,13 @@ def generate_timestamps(synchronization, initial_timestamp=0):
     return ret
 
 
-def generate_positions(motors, starts, finals, nr_points):
+def generate_positions(motors, starts, finals, nb_points):
     ret = dict()
     # generate theoretical positions
     moveable_positions = []
     for start, final in zip(starts, finals):
         moveable_positions.append(
-            np.linspace(start, final, nr_points))
+            np.linspace(start, final, nb_points))
     # prepare table header from moveables names
     dtype_spec = []
     for motor in motors:
@@ -2334,7 +2338,7 @@ class CTScan(CScan, CAcquisition):
                 raise ScanException(msg)
 
             # Set the index offset used in CAcquisition class.
-            self._index_offset = i * self.macro.nr_points
+            self._index_offset = i * self.macro.nb_points
 
             startTimestamp = time.time()
 
@@ -2350,7 +2354,7 @@ class CTScan(CScan, CAcquisition):
             moveable = moveables[MASTER].full_name
             self.measurement_group.setMoveable(moveable)
             path = motion_paths[MASTER]
-            repeats = self.macro.nr_points
+            repeats = self.macro.nb_points
             active_time = self.macro.integ_time
             active_position = path.max_vel * active_time
             if not path.positive_displacement:
@@ -2432,9 +2436,9 @@ class CTScan(CScan, CAcquisition):
             motors = self.macro.motors
             starts = self.macro.starts
             finals = self.macro.finals
-            nr_points = self.macro.nr_points
+            nb_points = self.macro.nb_points
             theoretical_positions = generate_positions(motors, starts, finals,
-                                                       nr_points)
+                                                       nb_points)
             theoretical_timestamps = generate_timestamps(synch, dt_timestamp)
             for index, data in list(theoretical_positions.items()):
                 data.update(theoretical_timestamps[index])
@@ -2482,11 +2486,7 @@ class CTScan(CScan, CAcquisition):
                 timeout = 15
                 measurement_group.waitFinish(timeout=timeout, id=mg_id)
             finally:
-                # TODO: For Taurus 4 / Taurus 3 compatibility
-                if hasattr(measurement_group, "stateObj"):
-                    state = measurement_group.stateObj.read().rvalue
-                else:
-                    state = measurement_group.state()
+                state = measurement_group.stateObj.read().rvalue
                 if state == PyTango.DevState.MOVING:
                     measurement_group.Stop()
                     if end_move:
@@ -2543,8 +2543,8 @@ class CTScan(CScan, CAcquisition):
         sum_delay = 0
         sum_integ_time = 0
 
-        if hasattr(macro, "nr_points"):
-            # nr_points = float(macro.nr_points)
+        if hasattr(macro, "nb_points"):
+            # nb_points = float(macro.nb_points)
             scream = True
         else:
             yield 0.0
@@ -2699,7 +2699,7 @@ class TScan(GScan, CAcquisition):
     information in either of the following two ways:
       - synchronization attribute that follows the synchronization format of
       the measurement group
-      - integ_time, nr_points and latency_time (optional) attributes
+      - integ_time, nb_points and latency_time (optional) attributes
     """
     def __init__(self, macro, generator=None,
                  moveables=[], env={}, constraints=[], extrainfodesc=[]):
@@ -2732,7 +2732,7 @@ class TScan(GScan, CAcquisition):
         else:
             try:
                 active_time = getattr(self.macro, "integ_time")
-                repeats = getattr(self.macro, "nr_points")
+                repeats = getattr(self.macro, "nb_points")
             except AttributeError:
                 msg = "Macro object is missing synchronization attributes"
                 raise ScanSetupError(msg)
@@ -2784,9 +2784,9 @@ class TScan(GScan, CAcquisition):
 
     def _fill_missing_records(self):
         # fill record list with dummy records for the final padding
-        nr_points = self.macro.nr_points
+        nb_points = self.macro.nb_points
         records = len(self.data.records)
-        missing_records = nr_points - records
+        missing_records = nb_points - records
         self.data.initRecords(missing_records)
 
     def _estimate(self):
