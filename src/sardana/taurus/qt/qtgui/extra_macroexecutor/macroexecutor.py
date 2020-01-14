@@ -806,25 +806,35 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         macroName = str(macroName)
         if macroName == "":
             macroName, macroNode = None, None
-#            macroNode = macro.MacroNode(name="")
+#           macroNode = macro.MacroNode(name="")
             self.playMacroAction.setEnabled(False)
             self.addToFavouritesAction.setEnabled(False)
         else:
-            if self._isHistoryMacro:
-                macroNode = self.historyBuffer()
-                self.setHistoryBuffer(None)
-                self.favouritesMacrosEditor.list.clearSelection()
-            else:
-                macroNode = self.favouritesBuffer()
-                self.setFavouritesBuffer(None)
-                self.historyMacrosViewer.list.clearSelection()
-            self._isHistoryMacro = False
+            try:
+                self.checkDoorState()
 
-            if macroNode is None:
-                macroNode = self.getModelObj().getMacroNodeObj(macroName)
+                if self._isHistoryMacro:
+                    macroNode = self.historyBuffer()
+                    self.setHistoryBuffer(None)
+                    self.favouritesMacrosEditor.list.clearSelection()
+                else:
+                    macroNode = self.favouritesBuffer()
+                    self.setFavouritesBuffer(None)
+                    self.historyMacrosViewer.list.clearSelection()
+                self._isHistoryMacro = False
 
-            self.playMacroAction.setEnabled(True)
-            self.addToFavouritesAction.setEnabled(True)
+                if macroNode is None:
+                    macroNode = self.getModelObj().getMacroNodeObj(macroName)
+
+                self.playMacroAction.setEnabled(True)
+                self.addToFavouritesAction.setEnabled(True)
+
+            except:
+                macroName, macroNode = None, None
+                #           macroNode = macro.MacroNode(name="")
+                self.playMacroAction.setEnabled(False)
+                self.addToFavouritesAction.setEnabled(False)
+                self.warning("Door isn't on")
 
         self.paramEditorModel().setRoot(macroNode)
         self.spockCommand.setModel(self.paramEditorModel())
