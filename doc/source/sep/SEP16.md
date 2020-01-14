@@ -1,6 +1,6 @@
     Title: Plugins (controllers, macros, etc.) catalogue
     SEP: 16
-    State: CANDIDATE
+    State: ACCEPTED
     Reason:
      SEP15 migrated the Sardana repository from SourceForge to GitHub.
      The third-party repositories are still at SourceForge and a decision
@@ -182,5 +182,7 @@ Changes
 - 2019-07-16 [reszelaz](https://github.com/reszelaz) Rename register to 
 catalogue
 - 2019-07-16 [reszelaz](https://github.com/reszelaz) Move to CANDIDATE after
-meeting the DESY, MAXIV and SOLARIS.
+meeting with DESY, MAXIV and SOLARIS
+- 2019-11-28 [reszelaz](https://github.com/reszelaz) Move to ACCEPTED after
+meeting with DESY, MAXIV and SOLARIS
 
