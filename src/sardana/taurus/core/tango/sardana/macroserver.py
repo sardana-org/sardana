@@ -66,12 +66,15 @@ from itertools import zip_longest
 CHANGE_EVT_TYPES = TaurusEventType.Change, TaurusEventType.Periodic
 
 
-def _get_console_width():
+def get_terminal_size(fileno=None):
     try:
-        width = int(os.popen('stty size', 'r').read().split()[1])
+        if fileno is None:
+            fileno = sys.stdout.fileno()
+        if not os.isatty(fileno):
+            return None
+        return os.get_terminal_size(fileno)
     except Exception:
-        width = float('inf')
-    return width
+        return None
 
 
 def _get_nb_lines(nb_chrs, max_chrs):
@@ -688,7 +691,8 @@ class BaseDoor(MacroServerDevice):
         return data
 
     def logReceived(self, log_name, output):
-        max_chrs = _get_console_width()
+        term_size = os.get_terminal_size()
+        max_chrs = term_size.columns if term_size else None
         if not output or self._silent or self._ignore_logs:
             return
 
@@ -701,7 +705,7 @@ class BaseDoor(MacroServerDevice):
                 if line == self.BlockStart:
                     self._in_block = True
                     for i in range(self._block_lines):
-                        if max_chrs == float('inf'):
+                        if max_chrs is None:
                             nb_lines = 1
                         else:
                             nb_lines = _get_nb_lines(
