@@ -20,7 +20,6 @@ This file follows the formats and conventions from [keepachangelog.com]
 ### Fixed
 
 * Default macro parameter values in macroexecutor (#1153)
-* fscan macro that was broken 2.6.0 (#1218, #1220)
 * Executing RunMacro Door's command with string parameters containing spaces (#1240)
 * Setting of environment variables in Python 3.7 (#1195)
 * Use `taurus.external.qt.compat.PY_OBJECT` in singal signatures instead of `object`
@@ -37,8 +36,6 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Deprecated
 
-* `nr_points` attribute of scan macros e.g., aNscan family of scans, `fscan` etc.
-  (#1218, #1220)
 * `DoorDebug` widget - use `DoorOutput` with enabled debugging (#1242)
 
 ### Changed
@@ -53,6 +50,18 @@ This file follows the formats and conventions from [keepachangelog.com]
 * `showscan online_raw` magic command in spock (#1260)
 * `online` kwarg in `SpockBaseDoor` constructor (#1260)
 * `sardana.requirements` (#1185)
+
+## [2.8.4] 2019-11-13
+
+### Fixed
+
+* fix compatibility with python 2.6 when overwritting macros 
+* fscan macro that was broken 2.6.0 (#1218, #1220)
+
+### Deprecated
+
+* `nr_points` attribute of scan macros e.g., aNscan family of scans, `fscan` etc.
+  (#1218, #1220)
 
 ## [2.8.3] 2019-09-16
 
@@ -772,7 +781,8 @@ Main improvements since sardana 1.5.0 (aka Jan15):
 
 
 [keepachangelog.com]: http://keepachangelog.com
-[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.3...HEAD
+[Unreleased]: https://github.com/sardana-org/sardana/compare/2.8.4...HEAD
+[2.8.4]: https://github.com/sardana-org/sardana/compare/2.8.4...2.8.3
 [2.8.3]: https://github.com/sardana-org/sardana/compare/2.8.3...2.8.2
 [2.8.2]: https://github.com/sardana-org/sardana/compare/2.8.2...2.8.1
 [2.8.1]: https://github.com/sardana-org/sardana/compare/2.8.1...2.8.0
