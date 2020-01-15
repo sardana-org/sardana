@@ -834,7 +834,7 @@ class TaurusMacroExecutorWidget(TaurusWidget):
                 #           macroNode = macro.MacroNode(name="")
                 self.playMacroAction.setEnabled(False)
                 self.addToFavouritesAction.setEnabled(False)
-                self.warning("Door isn't on")
+                self.warning("Door isn't active")
 
         self.paramEditorModel().setRoot(macroNode)
         self.spockCommand.setModel(self.paramEditorModel())
