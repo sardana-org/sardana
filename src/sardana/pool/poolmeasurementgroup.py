@@ -852,8 +852,11 @@ class MeasurementConfiguration(object):
         elif master_timer_sw_start is not None:
             user_config['timer'] = master_timer_sw_start.full_name
         else:  # Measurement Group with all channel synchronized by hardware
-            if 'timer' in cfg:
-                user_config['timer'] = cfg['timer']
+            mnt_grp_timer = cfg.get('timer')
+            if mnt_grp_timer:
+                if to_fqdn:
+                    mnt_grp_timer = _to_fqdn(mnt_grp_timer, self._parent)
+                user_config['timer'] = mnt_grp_timer
             else:
                 # for backwards compatibility use a random monitor
                 user_config['timer'] = user_config_ctrl['timer']
@@ -863,8 +866,11 @@ class MeasurementConfiguration(object):
         elif master_monitor_sw_start is not None:
             user_config['monitor'] = master_monitor_sw_start.full_name
         else:  # Measurement Group with all channel synchronized by hardware
-            if 'monitor' in cfg:
-                user_config['monitor'] = cfg['monitor']
+            mnt_grp_monitor = cfg.get('monitor')
+            if mnt_grp_monitor:
+                if to_fqdn:
+                    mnt_grp_monitor = _to_fqdn(mnt_grp_monitor, self._parent)
+                user_config['monitor'] = mnt_grp_monitor
             else:
                 # for backwards compatibility use a random monitor
                 user_config['monitor'] = user_config_ctrl['monitor']
