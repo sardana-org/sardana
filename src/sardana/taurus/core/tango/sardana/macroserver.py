@@ -66,9 +66,6 @@ from itertools import zip_longest
 CHANGE_EVT_TYPES = TaurusEventType.Change, TaurusEventType.Periodic
 
 
-
-
-
 def _get_console_width():
     try:
         width = int(os.popen('stty size', 'r').read().split()[1])
