@@ -1530,6 +1530,17 @@ it. The job begins to run when added. When the job finishes, it sets the
 
 The second method is to use standard Python threading_ library.
 
+Adding your macros to Sardana
+-----------------------------
+
+To add your macros to Sardana, you need to configure the macro plugin discovery
+path (MacroPath property)::
+
+  _MACRO_SERVER.put_property({"MacroPath":["<Your macro dir path>"]})
+
+.. note::
+  You can add more than one path, but be careful! The path order is important.
+  Macros in the higher position paths will take precedence over the lower position paths.
 
 .. rubric:: Footnotes
 
