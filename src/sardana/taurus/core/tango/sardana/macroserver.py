@@ -66,6 +66,14 @@ from itertools import zip_longest
 CHANGE_EVT_TYPES = TaurusEventType.Change, TaurusEventType.Periodic
 
 
+def _get_console_width():
+    try:
+        width = int(os.popen('stty size', 'r').read().split()[1])
+    except Exception:
+        width = float('inf')
+    return width
+
+
 def _get_nb_lines(nb_chrs, max_chrs):
     return int(math.ceil(float(nb_chrs)/max_chrs))
 
@@ -680,7 +688,7 @@ class BaseDoor(MacroServerDevice):
         return data
 
     def logReceived(self, log_name, output):
-        max_chrs = os.get_terminal_size().columns
+        max_chrs = _get_console_width()
         if not output or self._silent or self._ignore_logs:
             return
 
