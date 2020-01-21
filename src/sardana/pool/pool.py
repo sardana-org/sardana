@@ -576,6 +576,8 @@ class Pool(PoolContainer, PoolObject, SardanaElementManager, SardanaIDManager):
         self.remove_element(elem)
 
         self.fire_event(EventType("ElementDeleted"), elem)
+        if hasattr(elem, "get_controller"):
+            elem.set_deleted(True)
 
     def create_instrument(self, full_name, klass_name, id=None):
         is_root = full_name.count('/') == 1
