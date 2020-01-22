@@ -2235,15 +2235,14 @@ class Macro(Logger):
         """**Unofficial Macro API**."""
         return self._pause_event.isPaused()
 
-    @classmethod
-    def hasResult(cls):
+    def hasResult(self):
         """**Unofficial Macro API**. Returns True if the macro should return
         a result or False otherwise
 
         :return: True if the macro should return a result or False otherwise
         :rtype: bool
         """
-        return len(cls.result_def) > 0
+        return len(self.result_def) > 0
 
     def getResult(self):
         """**Unofficial Macro API**. Returns the macro result object (if any)
