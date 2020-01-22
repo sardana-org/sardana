@@ -1632,8 +1632,11 @@ class MacroExecutor(Logger):
             if isinstance(macro_exp, MacroServerException):
                 if macro_obj.parent_macro is None:
                     door.debug(macro_exp.traceback)
-                    door.error("An error occurred while running %s:\n%s" %
-                               (macro_obj.description, macro_exp.msg))
+                    msg = ("An error occurred while running {}:\n"
+                           "{!r}").format(macro_obj.getName(), macro_exp)
+                    door.error(msg)
+                    msg = "Hint: in Spock execute `www`to get more details"
+                    door.info(msg)
             self._popMacro()
             raise macro_exp
         self.debug("[ END ] runMacro %s" % desc)
