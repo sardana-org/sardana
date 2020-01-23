@@ -16,6 +16,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Improve scans to detect if a ScanFile od ScanDir are set but empty (#1262)
 * Possibility to view debug messages in `DoorOutput` widget - enable/disable
   using context menu option (#1242)
+* Improve documentation (#1241) 
 * Better macro exception message and hint to use `www` (#1191)
 
 ### Fixed
@@ -34,6 +35,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   (#1260)
 * Reintroduce backwards compatibility for measurement groups' configurations (URIs)
   created with Taurus 3 (#1266)
+* Measurement groups renaming (#951)
 
 ### Deprecated
 
