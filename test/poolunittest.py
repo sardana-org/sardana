@@ -14,7 +14,8 @@ import imp
 try:
     import pexpect
 except:
-    print("The Pool Unit test requires pexpect python module which was not found.")
+    print("The Pool Unit test requires pexpect python module "
+          "which was not found.")
     print("This module can be found at http://www.noah.org/wiki/Pexpect")
     sys.exit(-1)
 
@@ -139,7 +140,8 @@ class PoolTestCase(unittest.TestCase):
         try:
             dev.command_inout(cmd_name, arg_list)
             self.assert_(
-                False, "The %s command succeed with wrong arguments!!" % (cmd_name))
+                False, "The %s command succeed "
+                       "with wrong arguments!!" % cmd_name)
         except PyTango.DevFailed as e:
             except_value = sys.exc_info()[1]
             if pr:
@@ -163,9 +165,10 @@ class PoolTestCase(unittest.TestCase):
         print("desc =", except_value[0]["desc"])
         print("origin =", except_value[0]['origin'])
 
-    # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
-    # Default setup. Overwrite this methods in each test scenario when necessary
-    # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-
+    # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~
+    # Default setup. Overwrite this methods in each
+    # test scenario when necessary
+    # -~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~-~
     def getPoolPath(self):
         """getPoolPath() -> list<string>
         """
@@ -196,7 +199,7 @@ class PoolTestCase(unittest.TestCase):
 
     def getCounterTimerSimulators(self):
         ret = []
-        for i in xrange(10):
+        for i in range(10):
             mot_name = "%s/simmot/test%03d" % (self.username, i + 1)
             ret.append({"properties": {"Average": ['1.0'],
                                        "Sigma": ['250.0'],
@@ -300,10 +303,10 @@ class PoolTestCase(unittest.TestCase):
             f.close()
         except ImportError as e:
             self.assertTrue(False, e)
-        logging.log_exception(e)
+            logging.log_exception(e)
         # Include the name and path attributes in output.
-        logging.log(f'error.name: {e.name}')
-        logging.log(f'error.path: {e.path}')
+        logging.log('error.name: {e.name}')
+        logging.log('error.path: {e.path}')
 
         # Cleanup the database
         self.deleteMotorSimulatorFromDB()
@@ -370,10 +373,10 @@ class PoolTestCase(unittest.TestCase):
             f.close()
         except ImportError as e:
             self.assert_(False, e)
-        logging.log_exception(e)
+            logging.log_exception(e)
         # Include the name and path attributes in output.
-        logging.log(f'error.name: {e.name}')
-        logging.log(f'error.path: {e.path}')
+        logging.log('error.name: {e.name}')
+        logging.log('error.path: {e.path}')
 
         self.ctsim_exec = self.ctsim_exec
 
@@ -436,7 +439,9 @@ class PoolTestCase(unittest.TestCase):
                 self.pool_exec = path
                 break
 
-        self.assertFalse(self.pool_exec is None, "Could not find Pool executable. Make sure it is in the PATH")
+        self.assertFalse(self.pool_exec is None,
+                         "Could not find Pool executable. "
+                         "Make sure it is in the PATH")
 
         self.pool_bin_dir = os.path.dirname(self.pool_exec)
 

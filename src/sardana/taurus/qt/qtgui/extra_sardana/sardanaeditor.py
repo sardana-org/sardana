@@ -565,7 +565,9 @@ def main():
 
     if owns_app:
         import argparse
-        parser = argparse.ArgumentParser(usage="%prog [options] <macro server name>")
+        parser = argparse.ArgumentParser(
+            usage="%prog [options] <macro server name>")
+
         app = Application(sys.argv, cmd_line_parser=parser,
                           app_name="Macro editor demo", app_version="1.0",
                           org_domain="Sardana", org_name="Tango community")

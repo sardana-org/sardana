@@ -376,7 +376,8 @@ if __name__ == '__main__':
         registerExtensions
     registerExtensions()
 
-    parser = ArgumentParser(usage="python macrobutton.py [door_name] [macro_name]",
+    parser = ArgumentParser(usage="python macrobutton.py "
+                                  "[door_name] [macro_name]",
                             description="Macro button for macro execution")
 
     app = TaurusApplication(app_name="macrobutton",

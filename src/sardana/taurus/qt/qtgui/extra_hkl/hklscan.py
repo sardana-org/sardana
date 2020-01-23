@@ -23,8 +23,6 @@
 ##
 ##############################################################################
 
-__docformat__ = 'restructuredtext'
-
 import sys
 
 import sardana
@@ -49,6 +47,8 @@ from PyTango import *
 from sardana.taurus.qt.qtgui.extra_macroexecutor import TaurusMacroExecutorWidget, TaurusSequencerWidget, \
     TaurusMacroConfigurationDialog, \
     TaurusMacroDescriptionViewer, DoorOutput, DoorDebug, DoorResult
+
+__docformat__ = 'restructuredtext'
 
 
 class EngineModesComboBox(Qt.QComboBox, TaurusBaseWidget):
@@ -357,11 +357,12 @@ class HKLScan(TaurusWidget):
 
 def main():
 
-    parser = argparse.ArgumentParser(description="a taurus application for performing hkl scans",
+    parser = argparse.ArgumentParser(description="a taurus application "
+                                                 "for performing hkl scans",
                                      usage="%prog  <model> [door_name]")
 
-    app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser,
-                                                        app_version=sardana.Release.version)
+    app = taurus.qt.qtgui.application.TaurusApplication(
+        cmd_line_parser=parser, app_version=sardana.Release.version)
     app.setApplicationName("hklscan")
     args = app.get_command_line_args()
     if len(args) < 1:

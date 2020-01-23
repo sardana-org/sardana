@@ -25,9 +25,6 @@
 
 """Base classes for the controller tests"""
 
-__all__ = ['BasePoolTestCase', 'ControllerLoadsTestCase',
-           'ControllerCreationTestCase', 'ElementCreationTestCase']
-
 import PyTango
 import unittest
 from taurus.core.tango.starter import ProcessStarter
@@ -35,6 +32,9 @@ from sardana import sardanacustomsettings
 from sardana.tango.core.util import (get_free_server, get_free_device,
                                      get_free_alias)
 from taurus.core.util import whichexecutable
+
+__all__ = ['BasePoolTestCase', 'ControllerLoadsTestCase',
+           'ControllerCreationTestCase', 'ElementCreationTestCase']
 
 
 class BasePoolTestCase(object):

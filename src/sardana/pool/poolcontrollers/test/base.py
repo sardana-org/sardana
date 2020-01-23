@@ -22,8 +22,6 @@
 # along with Sardana.  If not, see <http://www.gnu.org/licenses/>.
 ##
 ##############################################################################
-__all__ = ['BaseControllerTestCase', 'TriggerGateControllerTestCase',
-           'PositionGenerator', 'TriggerGateReceiver']
 
 import time
 import threading
@@ -37,6 +35,8 @@ from sardana.pool.pooldefs import SynchParam
 from sardana.sardanaattribute import SardanaAttribute
 from taurus.core.util.log import Logger
 
+__all__ = ['BaseControllerTestCase', 'TriggerGateControllerTestCase',
+           'PositionGenerator', 'TriggerGateReceiver']
 
 class BaseControllerTestCase(object):
     """ Base test case for unit testing arbitrary controllers.

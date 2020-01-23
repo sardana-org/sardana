@@ -991,11 +991,14 @@ def main():
 
     parser = argparse.ArgumentParser(usage="%prog [options]",
                                      description="Sardana macro sequencer.\n"
-                                                 "It allows the creation of sequences of "
-                                                 "macros, executed one after the other.\n"
-                                                 "The sequences can be stored under xml files")
-    parser.add_argument("-f", "--file", dest="file", default=None, help="load macro sequence from a file(XML or spock "
-                                                                        "syntax)")
+                                                 "It allows the creation of "
+                                                 "sequences of macros, "
+                                                 "executed one after the "
+                                                 "other.\n The sequences can "
+                                                 "be stored under xml files")
+    parser.add_argument("-f", "--file", dest="file", default=None,
+                        help="load macro sequence from a "
+                             "file(XML or spock syntax)")
 
     app = TaurusApplication(cmd_line_parser=parser,
                             app_name="sequencer",

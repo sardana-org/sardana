@@ -23,9 +23,6 @@
 ##
 ##############################################################################
 
-
-__docformat__ = 'restructuredtext'
-
 import sys
 import time
 from taurus.external.qt import Qt
@@ -49,6 +46,8 @@ from taurus.qt.qtgui.util.ui import UILoadable
 from sardana.taurus.qt.qtgui.extra_macroexecutor import TaurusMacroConfigurationDialog
 
 from .selectsignal import SelectSignal
+
+__docformat__ = 'restructuredtext'
 
 
 class EngineModesComboBox(Qt.QComboBox, TaurusBaseWidget):
@@ -275,7 +274,7 @@ class DiffractometerAlignment(TaurusWidget):
         macro_command.append(str(self.selectsignal._ui.SignallineEdit.text()))
 
         self.door_device.RunMacro(macro_command)
-        while(self.door_device.State()) == PyTango.DevState.RUNNING:
+        while (self.door_device.State()) == PyTango.DevState.RUNNING:
             time.sleep(0.01)
         # TODO: the string parsing should be eliminated and the sardana
         # generic "goto_peak" feature should be used instead - when available
@@ -351,12 +350,14 @@ class DiffractometerAlignment(TaurusWidget):
 
 
 def main():
-    parser = argparse.ArgumentParser(usage="%prog <model> [door_name]", description="a taurus application for "
-                                    "diffractometer alignment: h, k, l movements and scans, go to maximum, ...")
+    parser = argparse.ArgumentParser(usage="%prog <model> [door_name]",
+                                     description="a taurus application for "
+                                                 "diffractometer alignment: "
+                                                 "h, k, l movements and "
+                                                 "scans, go to maximum, ...")
 
-
-    app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser,
-                                                        app_version=sardana.Release.version)
+    app = taurus.qt.qtgui.application.TaurusApplication(
+        cmd_line_parser=parser, app_version=sardana.Release.version)
     app.setApplicationName("diffractometeralignment")
     args = app.get_command_line_args()
     if len(args) < 1:
