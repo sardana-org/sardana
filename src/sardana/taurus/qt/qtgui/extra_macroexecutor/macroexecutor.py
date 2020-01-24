@@ -681,7 +681,7 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         self._favouritesBuffer = None
         self.favouritesMacrosEditor = FavouritesMacrosEditor(self)
         self.registerConfigDelegate(self.favouritesMacrosEditor)
-        self.favouritesMacrosEditor.setUseParentModel(True)
+        self.favouritesMacrosEditor.setUseParentModel(True) # TODO aalonso
         self.favouritesMacrosEditor.setFocusPolicy(Qt.Qt.NoFocus)
 
         self._historyBuffer = None
@@ -1021,10 +1021,10 @@ class TaurusMacroExecutor(MacroExecutionWindow):
         self.taurusMacroExecutorWidget = TaurusMacroExecutorWidget(self)
         self.registerConfigDelegate(self.taurusMacroExecutorWidget)
 
-        # self.taurusMacroExecutorWidget.setUseParentModel(True)
-        self.taurusMacroExecutorWidget.setModelInConfig(True)
-        self.taurusMacroExecutorWidget.doorChanged.connect(
-            self.taurusMacroExecutorWidget.onDoorChanged)
+        self.taurusMacroExecutorWidget.setUseParentModel(True)
+        # self.taurusMacroExecutorWidget.setModelInConfig(True)
+        # self.taurusMacroExecutorWidget.doorChanged.connect(
+        #     self.taurusMacroExecutorWidget.onDoorChanged)
 
         self.setCentralWidget(self.taurusMacroExecutorWidget)
         self.taurusMacroExecutorWidget.shortMessageEmitted.connect(
@@ -1057,10 +1057,8 @@ class TaurusMacroExecutor(MacroExecutionWindow):
         """Reimplemented from :meth:`TaurusWidget.setModel`"""
         TaurusWidget.setModel(self, model)
         self.setWindowTitle(Qt.QApplication.applicationName() + ": " + model)
-        # model_obj = self.getModelObj()
-        # if model_obj is not None:
-        #     print(model_obj)
-        self.taurusMacroExecutorWidget.setModel(model)
+        self.taurusMacroExecutorWidget.getModelObj().macrosUpdated.connect(
+            self.taurusMacroExecutorWidget.macroComboBox.onMacrosUpdated)  # TODO aalonso
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
