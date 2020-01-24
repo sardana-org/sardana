@@ -34,7 +34,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * `showscan online` shows only the online trend and not erroneously online and offline
   (#1260)
 * Reintroduce backwards compatibility for measurement groups' configurations (URIs)
-  created with Taurus 3 (#1266)
+  created with Taurus 3 (#1266, #1271)
 * Measurement groups renaming (#951)
 
 ### Deprecated
