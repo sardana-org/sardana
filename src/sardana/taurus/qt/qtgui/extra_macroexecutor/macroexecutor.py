@@ -1053,6 +1053,15 @@ class TaurusMacroExecutor(MacroExecutionWindow):
             self.taurusMacroExecutorWidget.onMacroStatusUpdated)
         self.taurusMacroExecutorWidget.onDoorChanged(doorName)
 
+    def setModel(self, model):
+        """Reimplemented from :meth:`TaurusWidget.setModel`"""
+        TaurusWidget.setModel(self, model)
+        self.setWindowTitle(Qt.QApplication.applicationName() + ": " + model)
+        # model_obj = self.getModelObj()
+        # if model_obj is not None:
+        #     print(model_obj)
+        self.taurusMacroExecutorWidget.setModel(model)
+
     @classmethod
     def getQtDesignerPluginInfo(cls):
         return None
@@ -1075,8 +1084,8 @@ def createMacroExecutor(args):
     if len(args) == 2:
         macroExecutor.setModel(args[0])
         macroExecutor.doorChanged.emit(args[1])
-        macroExecutor.taurusMacroExecutorWidget.setModel(args[0])
-        macroExecutor.taurusMacroExecutorWidget.doorChanged.emit(args[1])
+        # macroExecutor.taurusMacroExecutorWidget.setModel(args[0])
+        # macroExecutor.taurusMacroExecutorWidget.doorChanged.emit(args[1])
     macroExecutor.loadSettings()
     return macroExecutor
 
