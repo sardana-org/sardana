@@ -1020,7 +1020,12 @@ class TaurusMacroExecutor(MacroExecutionWindow):
     def initComponents(self):
         self.taurusMacroExecutorWidget = TaurusMacroExecutorWidget(self)
         self.registerConfigDelegate(self.taurusMacroExecutorWidget)
-        self.taurusMacroExecutorWidget.setUseParentModel(True)
+
+        # self.taurusMacroExecutorWidget.setUseParentModel(True)
+        self.taurusMacroExecutorWidget.setModelInConfig(True)
+        self.taurusMacroExecutorWidget.doorChanged.connect(
+            self.taurusMacroExecutorWidget.onDoorChanged)
+
         self.setCentralWidget(self.taurusMacroExecutorWidget)
         self.taurusMacroExecutorWidget.shortMessageEmitted.connect(
             self.onShortMessage)
@@ -1070,6 +1075,8 @@ def createMacroExecutor(args):
     if len(args) == 2:
         macroExecutor.setModel(args[0])
         macroExecutor.doorChanged.emit(args[1])
+        macroExecutor.taurusMacroExecutorWidget.setModel(args[0])
+        macroExecutor.taurusMacroExecutorWidget.doorChanged.emit(args[1])
     macroExecutor.loadSettings()
     return macroExecutor
 
