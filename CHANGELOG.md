@@ -27,6 +27,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Use `taurus.external.qt.compat.PY_OBJECT` in singal signatures instead of `object`
   to avoid problems when using `builtins` from `future` (#1082)
 * Remove Taurus deprecated code what reduces deprecation warnings (#1206, #1252)
+* Macro functions which define results now really report the result (#1238)
 * Use of env and hints in `macro` function decorator (#1239)
 * PMTV widget not updating the following attributes: limit switches, state
   and status (#1244)
@@ -35,7 +36,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   (#1260)
 * Reintroduce backwards compatibility for measurement groups' configurations (URIs)
   created with Taurus 3 (#1266, #1271)
-* Measurement groups renaming (#951)
+* Measurement groups renaming with `renameelem` macro(#951)
 
 ### Deprecated
 
