@@ -2149,8 +2149,10 @@ class MeasurementGroup(PoolElement):
         cfg.prepare()
         self.setSynchronization(synchronization)
         self.subscribeValueBuffer(value_buffer_cb)
-        self.count_raw(start_time)
-        self.unsubscribeValueBuffer(value_buffer_cb)
+        try:
+            self.count_raw(start_time)
+        finally:
+            self.unsubscribeValueBuffer(value_buffer_cb)
         state = self.getStateEG().readValue()
         if state == Fault:
             msg = "Measurement group ended acquisition with Fault state"
