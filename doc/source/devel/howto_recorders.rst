@@ -48,7 +48,34 @@ the environment variables.
 Writing a custom recorder
 -------------------------
 
-.. todo:: document how to write custom recorders
+This chapter (still under development) provides the necessary information to
+write recorders in Sardana.
+
+Before writing a new recorder you should check the `Sardana plugins
+catalogue <https://github.com/sardana-org/sardana-plugins>`_.
+There's a chance that somebody already wrote one that fits to your needs.
+
+If finally you decide to write a new one below you can find some useful
+information:
+
+* Your recorder class would need to inherit from ``BaseFileRecorder`` and
+  implement minimum the following methods:
+
+  * ``_startRecordList``
+  * ``_writeRecord``
+  * ``_endRecordList``
+
+  You can find some examples in ``sardana.macroserver.recorders`` module.
+* Recorder classes are used to instantiate recorder objects in a scan.
+  Every time a scan starts, in its preparation phase, a new recorder object
+  gets created. Reversely, at the end of the scan the recerder object gets
+  destroyed. If you need to keep a long lived objects in your recorder
+  you may consider using the :term:`singleton pattern`
+
+
+
+
+
 
 Configuration
 -------------
