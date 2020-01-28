@@ -48,8 +48,9 @@ the environment variables.
 Writing a custom recorder
 -------------------------
 
-This chapter (still under development) provides the necessary information to
-write recorders in Sardana.
+.. todo:: finish chapter based on user's input
+
+This chapter provides the necessary information to write recorders in Sardana.
 
 Before writing a new recorder you should check the `Sardana plugins
 catalogue <https://github.com/sardana-org/sardana-plugins>`_.
@@ -82,8 +83,8 @@ Configuration
 
 Custom recorders may be added to the Sardana system by placing the recorder
 library module in a directory which is specified by the MacroServer
-*RecorderPath* property. RecorderPath property may contain an ordered, 
-colon-separated list of directories.
+:ref:`RecorderPath <sardana-configuration-macroserver>` property.
+
 In case of overriding recorders by name or by file extension (in case of the
 file recorders), recorders located in the first paths are of higher priority
 than the ones from the last paths.
@@ -108,12 +109,10 @@ Three types of overriding may occur:
    same directory, the system will assign a list of recorders to a given
    extension. Then the application is in charge of deciding which one to use.
 
-As previously mentioned recorders are selectable by either the recorder name or
-the extension. During the MacroServer startup the extension to recorder map is
+As previously mentioned recorders are selectable by either the extension
+(using the :ref:`ScanFile <scanfile>` environment variable) or the recorder name
+(using the :ref:`ScanRecorder <scanrecorder>` environment variable).
+
+During the MacroServer startup the extension to recorder map is
 generated while loading the recorder libraries. This dynamically created map
-may be overridden by the custom map defined in the *sardanacustomsettings*
-module (SCAN_RECORDER_MAP variable with a dictionary where key is the scan file
-extension e.g. ".h5" and value is the recorder name e.g. "MyCustomRecorder",
-where both keys and values are of type string). The SCAN_RECORDER_MAP will make
-an union with the dynamically created map taking precedence in case the
-extensions repeats in both of them.
+may be overridden by editing the :data:`~sardana.sardanacustomsettings.SCAN_RECORDER_MAP`.
