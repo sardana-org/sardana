@@ -51,9 +51,14 @@ SPOCK_INPUT_HANDLER = "CLI"
 
 #: Use this map in order to avoid ambiguity with scan recorders (file) if
 #: extension is intended to be the recorder selector.
-#: dict<str, str>
-#: key   - scan file extension e.g. ".h5"
-#: value - recorder name
+#: Set it to a dict<str, str> where:
+#:
+#: - key   - scan file extension e.g. ".h5"
+#: - value - recorder name
+#:
+#: The SCAN_RECORDER_MAP will make an union with the dynamically (created map
+#: at the MacroServer startup) taking precedence in case the extensions repeats
+#: in both of them.
 SCAN_RECORDER_MAP = None
 
 #: Filter for macro logging: name of the class to be used as filter
