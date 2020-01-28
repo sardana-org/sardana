@@ -18,6 +18,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   using context menu option (#1242)
 * Improve documentation (#1241) 
 * Better macro exception message and hint to use `www` (#1191)
+* Add basic information to "how to write custom recorder" to
+  the documentation (#1275)
 
 ### Fixed
 
