@@ -28,6 +28,7 @@ sequenceeditor.py:
 """
 
 import sys
+import pickle
 from copy import deepcopy
 
 import PyTango
@@ -136,12 +137,16 @@ class SpockCommandWidget(Qt.QLineEdit, TaurusBaseContainer):
             self.setCommand()
 
     def setModel(self, model):
-        enable = bool(model)
-        self.disableEditMode = not enable
-        self.setEnabled(enable)
-        self._model = model
-        self._model.dataChanged.connect(self.onDataChanged)
-        self._model.modelReset.connect(self.setCommand)
+        if isinstance(model, Qt.QAbstractItemModel):
+            enable = bool(model)
+            self.disableEditMode = not enable
+            self.setEnabled(enable)
+            self._model = model
+            self._model.dataChanged.connect(self.onDataChanged)
+            self._model.modelReset.connect(self.setCommand)
+        else:
+            TaurusBaseContainer.setModel(self, model)
+
 
     def model(self):
         return self._model
@@ -712,7 +717,6 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         self.spockCommand = SpockCommandWidget("Spock", self)
         self.spockCommand.setSizePolicy(
             Qt.QSizePolicy.Expanding, Qt.QSizePolicy.Minimum)
-        self.spockCommand.setModelInConfig(True)
         spockCommandLayout = Qt.QHBoxLayout()
         spockCommandLayout.setContentsMargins(0, 0, 0, 0)
         # spockCommandLayout.addWidget(spockCommandLabel)
@@ -1004,9 +1008,9 @@ class TaurusMacroExecutorWidget(TaurusWidget):
         newModelObj.macrosUpdated.connect(
             self.macroComboBox.onMacrosUpdated)
         self.macroComboBox.setModel(model)
-        self.favouritesMacrosEditor.setModelCheck(model)
-        self.historyMacrosViewer.setModelCheck(model)
-        self.spockCommand.setModelCheck(model)
+        self.favouritesMacrosEditor.setModel(model)
+        self.historyMacrosViewer.setModel(model)
+        self.spockCommand.setModel(model)
 
     @classmethod
     def getQtDesignerPluginInfo(cls):
@@ -1079,10 +1083,14 @@ def createMacroExecutor(args):
     macroExecutor = TaurusMacroExecutor()
     macroExecutor.setModelInConfig(True)
     macroExecutor.doorChanged.connect(macroExecutor.onDoorChanged)
+    settings = macroExecutor.getQSettings()
+    taurus_config_raw = settings.value("TaurusConfig")
+    taurus_config = pickle.loads(taurus_config_raw.data())
+    oldmodel = taurus_config['__itemConfigurations__']['model']
     if len(args) == 2:
         macroExecutor.setModel(args[0])
         macroExecutor.doorChanged.emit(args[1])
-    else:
+    if args[0] == oldmodel:
         macroExecutor.loadSettings()
     return macroExecutor
 
