@@ -54,12 +54,13 @@ This chapter provides the necessary information to write recorders in Sardana.
 
 Before writing a new recorder you should check the `Sardana plugins
 catalogue <https://github.com/sardana-org/sardana-plugins>`_.
-There's a chance that somebody already wrote one that fits to your needs.
+There's a chance that somebody already wrote one that fits your needs.
 
-If finally you decide to write a new one below you can find some useful
+If finally you decide to write a new one, below you can find some useful
 information:
 
-* Your recorder class would need to inherit from ``BaseFileRecorder`` and
+* Your recorder class would need to inherit from ``DataRecorder``
+  (or ``BaseFileRecorder`` if you write data to a file) and
   implement minimum the following methods:
 
   * ``_startRecordList``
@@ -69,14 +70,9 @@ information:
   You can find some examples in ``sardana.macroserver.recorders`` module.
 * Recorder classes are used to instantiate recorder objects in a scan.
   Every time a scan starts, in its preparation phase, a new recorder object
-  gets created. Reversely, at the end of the scan the recerder object gets
+  gets created. Reversely, at the end of the scan the recorder object gets
   destroyed. If you need to keep a long lived objects in your recorder
   you may consider using the :term:`singleton pattern`
-
-
-
-
-
 
 Configuration
 -------------
