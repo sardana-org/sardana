@@ -61,14 +61,14 @@ __all__ = ['MacroBroker', 'DynamicPlotManager', 'assertPlotAvailability']
 __docformat__ = 'restructuredtext'
 
 COLORS = [Qt.QColor(Qt.Qt.red),
-          Qt.QColor(Qt.Qt.blue),
           Qt.QColor(Qt.Qt.green),
           Qt.QColor(Qt.Qt.magenta),
+          Qt.QColor(Qt.Qt.blue),
           Qt.QColor(Qt.Qt.cyan),
           Qt.QColor(Qt.Qt.yellow),
           Qt.QColor(Qt.Qt.white)]
 
-SYMBOLS = ['o', 't', 't1', 't2', 't3', 's', 'p']
+SYMBOLS = ['x', 'o', 't', 't1', 't2', 't3', 's', 'p']
 
 CURVE_STYLES = [(color, symbol) for symbol in SYMBOLS for color in COLORS]
 
