@@ -152,25 +152,14 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
     Single = 'single' # each curve has its own plot
     XAxis = 'x-axis'  # group curves with same X-Axis
 
-    Grid = 'grid' # layout in a square grid of plots
-    Panel = 'panel' # layout in a panel per plot
-
     def __init__(self, parent=None):
         Qt.QObject.__init__(self, parent)
         TaurusBaseComponent.__init__(self, self.__class__.__name__)
 
         self.__panels = {}
         self.__plots = []
-        self._layout_mode = self.Grid
         self._group_mode = self.XAxis
         Qt.qApp.SDM.connectWriter("shortMessage", self, 'newShortMessage')
-
-    def setLayoutMode(self, layout):
-        assert layout in (self.Grid, self.Panel)
-        self._layout_mode = layout
-
-    def layoutMode(self):
-        return self._layout_mode
 
     def setGroupMode(self, group):
         assert group in (self.Single, self.XAxis)
@@ -279,26 +268,16 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
 
         nb_points = data.get('total_scan_intervals', 2**16 - 1) + 1
         panels = []
-        if self._group_mode == 'single':
-            if self._layout_mode == 'panel':
-                for curve in curves:
-                    plot = dict(x_axis=dict(name=curve['x_axis'],
-                                            label=curve['x_axis_label']),
-                                curves=[curve])
-                    plot_widget = MultiPlotWidget([plot], nb_points=nb_points)
-                    panels.append((curve['label'], plot_widget))
-            elif self._layout_mode == 'grid':
-                plots = []
-                for curve in curves:
-                    plot = dict(x_axis=dict(name=curve['x_axis'],
-                                            label=curve['x_axis_label']),
-                                curves=[curve])
-                    plots.append(plot)
-                plot_widget = MultiPlotWidget(plots, nb_points=nb_points)
-                panels.append(('Plot scan', plot_widget))
-            else:
-                raise NotImplementedError
-        elif self._group_mode == 'x-axis':
+        if self._group_mode == self.Single:
+            plots = []
+            for curve in curves:
+                plot = dict(x_axis=dict(name=curve['x_axis'],
+                                        label=curve['x_axis_label']),
+                            curves=[curve])
+                plots.append(plot)
+            plot_widget = MultiPlotWidget(plots, nb_points=nb_points)
+            panels.append(('Plot scan', plot_widget))
+        elif self._group_mode == self.XAxis:
             plot_map = {}
             for curve in curves:
                 x_axis = curve['x_axis']
@@ -309,17 +288,9 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
                                 curves=[])
                     plot_map[x_axis] = plot
                 plot['curves'].append(curve)
-            if self._layout_mode == 'panel':
-                for plot in plot_map.values():
-                    plot_widget = MultiPlotWidget([plot], nb_points=nb_points)
-                    panel_name = ', '.join(curve['label'] for curve in plot['curves'])
-                    panels.append((panel_name, plot_widget))
-            elif self._layout_mode == 'grid':
-                plots = tuple(plot_map.values())
-                plot_widget = MultiPlotWidget(plots, nb_points=nb_points)
-                panels.append(('Plot scan', plot_widget))
-            else:
-                raise NotImplementedError
+            plots = tuple(plot_map.values())
+            plot_widget = MultiPlotWidget(plots, nb_points=nb_points)
+            panels.append(('Plot scan', plot_widget))
         else:
             raise NotImplementedError
 
