@@ -88,16 +88,23 @@ def empty_data(nb_points):
 
 class MultiPlotWidget(Qt.QWidget):
 
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        layout = Qt.QVBoxLayout(self)
+        self.win = pyqtgraph.GraphicsLayoutWidget(title='Widget')
+        layout.addWidget(self.win)
+        self._plots = {}
+        self._timer = None
+        self._event_nb = 0
+        self._last_event_nb = 0
+
     # plots: a list of plots
     # each plot is:
     #   dict: { x_axis: { name: axis-name, label: axis-label
     #           curves: [{ name: curve_name, label: curve_label }] }
 
-    def __init__(self, plots, nb_points=None, parent=None):
-        super().__init__(parent)
-        layout = Qt.QVBoxLayout(self)
-        self.win = pyqtgraph.GraphicsLayoutWidget(title='Widget')
-        layout.addWidget(self.win)
+    def prepare(self, plots, nb_points=None):
+        self.win.clear()
         plot_widgets = {}
         nb_points = 2**16 if nb_points is None else nb_points
         plots_per_row = int(len(plots)**0.5)
@@ -106,31 +113,68 @@ class MultiPlotWidget(Qt.QWidget):
             x_axis, curves = plot['x_axis'], plot['curves']
             if idx % plots_per_row == 0:
                 self.win.nextRow()
-            plot_widget = self.win.addPlot(labels=dict(bottom=x_axis['label']))
+            nb_curves = len(curves)
+            labels = dict(bottom=x_axis['label'])
+            if nb_curves == 1:
+                labels['left'] = curves[0]['label']
+            plot_widget = self.win.addPlot(labels=labels)
             plot_widget.showGrid(x=True, y=True)
-            plot_widget.addLegend()
+            if nb_curves > 1:
+                plot_widget.addLegend()
             plot_widget.x_axis = dict(x_axis, data=empty_data(nb_points))
             styles = LoopList(CURVE_STYLES)
             for curve in curves:
                 pen, symbol = styles.current()
                 styles.next()
                 style = dict(pen=pen, symbol=symbol,
-                             symbolSize=5, symbolBrush=pen)
+                             symbolSize=5, symbolPen=pen, symbolBrush=pen)
                 curve_item = plot_widget.plot(name=curve['label'], **style)
                 curve_item.curve_data = empty_data(nb_points)
                 plot_curves[curve['name']] = curve_item
             plot_widgets[plot_widget] = plot_curves
-        self.plots = plot_widgets
+        self._plots = plot_widgets
+        self._event_nb = 0
+        self._last_event_nb = 0
+        self._start_update()
 
     def onNewPoint(self, data):
-        for plot_widget, curves in self.plots.items():
+        # update internal data and mark the new event
+        for plot_widget, curves in self._plots.items():
             x_axis = plot_widget.x_axis
             x_data = x_axis['data']
             x_data.append(data[x_axis['name']])
             for curve_name, curve_item in curves.items():
                 y_data = curve_item.curve_data
                 y_data.append(data[curve_name])
+        self._event_nb += 1
+
+    def onEnd(self, data):
+        self.do_update()
+        self._end_update()
+
+    def do_update(self):
+        if self._event_nb == self._last_event_nb:
+            return
+        self._last_event_nb = self._event_nb
+        for plot_widget, curves in self._plots.items():
+            x_axis = plot_widget.x_axis
+            x_data = x_axis['data']
+            for curve_name, curve_item in curves.items():
+                y_data = curve_item.curve_data
                 curve_item.setData(x_data.contents(), y_data.contents())
+
+    def _start_update(self):
+        self._end_update()
+        timer = Qt.QTimer()
+        timer.timeout.connect(self.do_update)
+        # refresh curves at a fix rate of ~5Hz
+        timer.start(200)
+        self._timer = timer
+
+    def _end_update(self):
+        if self._timer:
+            self._timer.stop()
+        self._timer = None
 
 
 class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
@@ -156,10 +200,11 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         Qt.QObject.__init__(self, parent)
         TaurusBaseComponent.__init__(self, self.__class__.__name__)
 
-        self.__panels = {}
-        self.__plots = []
         self._group_mode = self.XAxis
         Qt.qApp.SDM.connectWriter("shortMessage", self, 'newShortMessage')
+
+        self._plot = MultiPlotWidget()
+        self.createPanel(self._plot, 'Scan plot', registerconfig=False, permanent=False)
 
     def setGroupMode(self, group):
         assert group in (self.Single, self.XAxis)
@@ -240,11 +285,12 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         Prepare UI for a new scan. Rebuilds plots as necessary to adapt to the
         new scan channels and moveables
         """
-        self.removeAllPanels()
         data = data_desc['data']
-        curves = []
         col_map = {column['name']: column for column in data['column_desc']}
 
+        # Build list of curves. Each curve has the same column info from the
+        # event and additionally the x-axis it should be plot against
+        curves = []
         for column in data['column_desc']:
             ptype = column.get('plot_type', PlotType.No)
             if ptype == PlotType.No:
@@ -266,8 +312,6 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
                     self.warning('Cannot create spectrum plot for %d dims '
                                  'channel %r', ndim, ch_name)
 
-        nb_points = data.get('total_scan_intervals', 2**16 - 1) + 1
-        panels = []
         if self._group_mode == self.Single:
             plots = []
             for curve in curves:
@@ -275,8 +319,6 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
                                         label=curve['x_axis_label']),
                             curves=[curve])
                 plots.append(plot)
-            plot_widget = MultiPlotWidget(plots, nb_points=nb_points)
-            panels.append(('Plot scan', plot_widget))
         elif self._group_mode == self.XAxis:
             plot_map = {}
             for curve in curves:
@@ -289,14 +331,11 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
                     plot_map[x_axis] = plot
                 plot['curves'].append(curve)
             plots = tuple(plot_map.values())
-            plot_widget = MultiPlotWidget(plots, nb_points=nb_points)
-            panels.append(('Plot scan', plot_widget))
         else:
             raise NotImplementedError
 
-        for name, panel in panels:
-            self.createPanel(panel, name, registerconfig=False, permanent=False)
-        self.__plots = panels
+        nb_points = data.get('total_scan_intervals', 2**16 - 1) + 1
+        self._plot.prepare(plots, nb_points=nb_points)
 
         # build status message
         serialno = 'Scan #{}'.format(data.get('serialno', '?'))
@@ -317,14 +356,14 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
 
     def newPoint(self, point):
         data = point['data']
-        for _, plot in self.__plots:
-            plot.onNewPoint(data)
+        self._plot.onNewPoint(data)
         point_nb = 'Point #{}'.format(data['point_nb'])
         msg = self.message_template.format(progress=point_nb)
         self.newShortMessage.emit(msg)
 
     def end(self, end_data):
         data = end_data['data']
+        self._plot.onEnd(data)
         progress = 'Ended {}'.format(data['endtime'])
         msg = self.message_template.format(progress=progress)
         self.newShortMessage.emit(msg)
@@ -361,11 +400,6 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
             widget.setModel(None)
         widget.setParent(None)
         widget.close()
-
-    def removeAllPanels(self):
-        '''removes all panels.'''
-        for name, _ in self.__plots:
-            self.removePanel(name)
 
 
 class MacroBroker(DynamicPlotManager):
