@@ -94,7 +94,7 @@ def main(group, door):
     from taurus.qt.qtgui.application import TaurusApplication
 
     app = TaurusApplication(app_name='Showscan Online', org_domain="Sardana",
-                            org_name="Tango communinity", parser=None)
+                            org_name="Tango communinity", cmd_line_parser=None)
 
     assertPlotAvailability()
 
