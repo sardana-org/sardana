@@ -983,9 +983,9 @@ example::
         self.pyplot.title(r'Verify $J_0(x)=\frac{1}{\pi}\int_0^{\pi}\cos(x \sin\phi)\,d\phi$')
         self.pyplot.xlabel('$x$')
         self.pyplot.legend()
-	self.pyplot.draw()
+        self.pyplot.draw()
 
-The last call to `pyplot.draw()` is important to ensure the client updates
+The last call to ``pyplot.draw()`` is important to ensure the client updates
 the figure properly.
 
 Running this macro from spock will result in something like:
@@ -1053,8 +1053,8 @@ points!
 
 Clients like spock receive the requests to plot in a separate thread.
 Matplotlib has a long history of issues concerning plot updates using different
-threads. To mitigate these effects please be sure to call `self.pyplot.draw()`
-on your macro every time you needto be sure the matplotlib figure is up to date.
+threads. To mitigate these effects please be sure to call ``self.pyplot.draw()``
+on your macro every time you need to be sure the matplotlib figure is up to date.
 
 .. _sardana-macro-input:
 
