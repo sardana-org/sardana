@@ -39,6 +39,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Reintroduce backwards compatibility for measurement groups' configurations (URIs)
   created with Taurus 3 (#1266, #1271)
 * Measurement groups renaming with `renameelem` macro(#951)
+* Macro plotting in new versions of ipython and matplotlib require extra call to
+  pyplot.draw() to make sure that the plot is refreshed (#1280)
 
 ### Deprecated
 
