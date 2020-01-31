@@ -28,7 +28,7 @@ sequenceeditor.py:
 """
 import os
 import sys
-
+import pickle
 from lxml import etree
 
 import PyTango
@@ -976,10 +976,15 @@ def createSequencer(args, options):
     sequencer = TaurusSequencer()
     sequencer.setModelInConfig(True)
     sequencer.doorChanged.connect(sequencer.onDoorChanged)
+    settings = sequencer.getQSettings()
+    taurus_config_raw = settings.value("TaurusConfig")
+    taurus_config = pickle.loads(taurus_config_raw.data())
+    oldmodel = taurus_config['__itemConfigurations__']['model']
     if len(args) == 2:
         sequencer.setModel(args[0])
         sequencer.doorChanged.emit(args[1])
-    sequencer.loadSettings()
+    if args[0] == oldmodel:
+        sequencer.loadSettings()
     if options.file is not None:
         sequencer.taurusSequencerWidget.loadFile(options.file)
     return sequencer
