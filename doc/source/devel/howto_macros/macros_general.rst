@@ -983,6 +983,10 @@ example::
         self.pyplot.title(r'Verify $J_0(x)=\frac{1}{\pi}\int_0^{\pi}\cos(x \sin\phi)\,d\phi$')
         self.pyplot.xlabel('$x$')
         self.pyplot.legend()
+        self.pyplot.draw()
+
+The last call to ``pyplot.draw()`` is important to ensure the client updates
+the figure properly.
 
 Running this macro from spock will result in something like:
 
@@ -1014,6 +1018,7 @@ Just for fun, the following macro computes a fractal and plots it as an image::
             mask = (fractal == 255) & (abs(z) > 10)
             fractal[mask] = 254 * n / finteractions
         self.pyplot.imshow(fractal)
+        self.pyplot.draw()
 
 And the resulting image (interactions=20, density=512):
 
@@ -1045,6 +1050,11 @@ This means that the following code which works in a normal IPython_ console will
 Also consider that each time you plot the complete data to be plotted is sent
 from the server to the client... so please avoid plotting arrays of 10,000,000
 points!
+
+Clients like spock receive the requests to plot in a separate thread.
+Matplotlib has a long history of issues concerning plot updates using different
+threads. To mitigate these effects please be sure to call ``self.pyplot.draw()``
+on your macro every time you need to be sure the matplotlib figure is up to date.
 
 .. _sardana-macro-input:
 
