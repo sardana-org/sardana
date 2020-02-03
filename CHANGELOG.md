@@ -41,6 +41,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Measurement groups renaming with `renameelem` macro(#951)
 * Macro plotting in new versions of ipython and matplotlib require extra call to
   pyplot.draw() to make sure that the plot is refreshed (#1280)
+* Remove TangoAttribute controllers from Sardana (#181, #1279)
 
 ### Deprecated
 
