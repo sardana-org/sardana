@@ -227,11 +227,16 @@ class TangoAttributeEG(Logger, EventGenerator):
             v = None
         else:
             v = evt_value.rvalue
+            if hasattr(v, "magnitude"):
+                v = v.magnitude
         EventGenerator.fireEvent(self, v)
 
     def read(self, force=False):
         try:
-            self.last_val = self._attr.read(cache=not force).rvalue
+            last_val = self._attr.read(cache=not force).rvalue
+            if hasattr(last_val, "magnitude"):
+                last_val = last_val.magnitude
+            self.last_val = last_val
         except:
             self.error("Read error")
             self.debug("Details:", exc_info=1)
@@ -549,7 +554,7 @@ class PoolElement(BaseElement, TangoDevice):
         indent = "\n" + tab + 10 * ' '
         msg = [self.getName() + ":"]
         try:
-            state_value = self.stateObj.read().value
+            state_value = self.stateObj.read().rvalue
             # state_value is DevState enumeration (IntEnum)
             state = state_value.name.capitalize()
         except DevFailed as df:
