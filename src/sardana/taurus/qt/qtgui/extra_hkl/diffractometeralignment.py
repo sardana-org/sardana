@@ -23,6 +23,8 @@
 ##
 ##############################################################################
 
+__docformat__ = 'restructuredtext'
+
 import sys
 import time
 from taurus.external.qt import Qt
@@ -46,8 +48,6 @@ from taurus.qt.qtgui.util.ui import UILoadable
 from sardana.taurus.qt.qtgui.extra_macroexecutor import TaurusMacroConfigurationDialog
 
 from .selectsignal import SelectSignal
-
-__docformat__ = 'restructuredtext'
 
 
 class EngineModesComboBox(Qt.QComboBox, TaurusBaseWidget):

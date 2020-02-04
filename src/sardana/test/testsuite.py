@@ -32,12 +32,12 @@ Usage::
 
 """
 
+__docformat__ = 'restructuredtext'
+
 import os
 import re
 import unittest
 import sardana
-
-__docformat__ = 'restructuredtext'
 
 
 def _filter_suite(suite, exclude_pattern, ret=None):
