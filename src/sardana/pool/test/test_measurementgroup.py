@@ -55,7 +55,7 @@ class BaseAcquisition(object):
         conf["user_elements"] = channel_ids
         self.pmg = createPoolMeasurementGroup(pool, conf)
         pool.add_element(self.pmg)
-        self.pmg.set_configuration_from_user(mg_conf, to_fqdn=True)
+        self.pmg.set_configuration_from_user(mg_conf, to_fqdn=False)
         return channel_names
 
     def prepare_attribute_listener(self):
@@ -151,7 +151,7 @@ class BaseAcquisition(object):
             pool, config)
 
         # setting mg configuration - this cleans the action cache!
-        self.pmg.set_configuration_from_user(mg_conf, to_fqdn=True)
+        self.pmg.set_configuration_from_user(mg_conf, to_fqdn=False)
         repetitions = 0
         for group in synchronization:
             repetitions += group[SynchParam.Repeats]
