@@ -234,7 +234,6 @@ class IORegister(PoolElementDevice):
         return True
 
     def Start(self):
-        self.ior.prepare()
         self.ior.start_acquisition()
 
 

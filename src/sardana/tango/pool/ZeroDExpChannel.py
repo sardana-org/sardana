@@ -194,7 +194,6 @@ class ZeroDExpChannel(PoolExpChannelDevice):
                            priority=0, timestamp=value.timestamp)
 
     def Start(self):
-        self.zerod.prepare()
         self.zerod.start_acquisition()
 
     def read_AccumulationBuffer(self, attr):

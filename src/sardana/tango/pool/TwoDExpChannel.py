@@ -275,7 +275,6 @@ class TwoDExpChannel(PoolTimerableDevice):
         attr.set_value(data_source)
 
     def Start(self):
-        self.twod.prepare()
         self.twod.start_acquisition()
 
 

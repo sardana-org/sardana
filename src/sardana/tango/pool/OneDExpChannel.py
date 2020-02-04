@@ -223,7 +223,6 @@ class OneDExpChannel(PoolTimerableDevice):
         attr.set_value(data_source)
 
     def Start(self):
-        self.oned.prepare()
         self.oned.start_acquisition()
 
 
