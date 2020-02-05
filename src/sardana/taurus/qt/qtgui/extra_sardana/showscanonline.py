@@ -89,8 +89,16 @@ class TaurusGuiLite(TaurusGui):
 @click.option('--group', default='x-axis',
               type=click.Choice(['single', 'x-axis']),
               help='group curves')
+@click.option('--taurus-log-level',
+              type=click.Choice(['critical', 'error', 'warning', 'info',
+                                 'debug', 'trace'], case_sensitive=False),
+              default='error', show_default=True,
+              help='Show only logs with priority LEVEL or above')
 @click.argument('door')
-def main(group, door):
+def main(group, taurus_log_level, door):
+    import taurus
+    taurus.setLogLevel(getattr(taurus, taurus_log_level.capitalize()))
+
     from taurus.qt.qtgui.application import TaurusApplication
 
     app = TaurusApplication(app_name='Showscan Online', org_domain="Sardana",
