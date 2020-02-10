@@ -1166,7 +1166,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
             self.cbAbsoluteRelativeChanged)
         self.cbAbsoluteRelative.addItems(['Abs', 'Rel'])
         self.layout().addWidget(self.cbAbsoluteRelative, 0, 1)
-
+        self.registerConfigProperty(self.cbAbsoluteRelative.currentIndex, self.cbAbsoluteRelative.setCurrentIndex, 'AbsRelindex')
         # WITH THE COMPACCT VIEW FEATURE, BETTER TO HAVE IT IN THE READ WIDGET
         # WOULD BE BETTER AS AN 'EXTRA WIDGET' (SOME DAY...)
         #self.btn_stop = Qt.QPushButton()
@@ -1421,6 +1421,7 @@ class PoolMotorTV(TaurusValue):
         self.setUnitsWidgetClass(PoolMotorTVUnitsWidget)
         self.motor_dev = None
         self._expertView = False
+        self.registerConfigProperty(self.getExpertView, self.setExpertView, '_expertView')
         self.limits_listener = None
         self.poweron_listener = None
         self.status_listener = None
@@ -1430,6 +1431,9 @@ class PoolMotorTV(TaurusValue):
     def setExpertView(self, expertView):
         self._expertView = expertView
         self.expertViewChanged.emit(expertView)
+
+    def getExpertView(self):
+        return self._expertView
 
     def minimumHeight(self):
         return None  # @todo: UGLY HACK to avoid subwidgets being forced to minimumheight=20
