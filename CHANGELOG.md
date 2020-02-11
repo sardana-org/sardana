@@ -42,6 +42,7 @@ This file follows the formats and conventions from [keepachangelog.com]
 * Macro plotting in new versions of ipython and matplotlib require extra call to
   pyplot.draw() to make sure that the plot is refreshed (#1280)
 * Remove TangoAttribute controllers from Sardana (#181, #1279)
+* Remove deprecation warning revealed when running test suite (#1267)
 
 ### Deprecated
 
