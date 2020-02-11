@@ -39,7 +39,7 @@ from taurus.qt.qtgui.input import TaurusValueLineEdit
 
 from .displayscanangles import DisplayScanAngles
 
-import argparse
+import taurus.core.util.argparse
 import taurus.qt.qtgui.application
 from taurus.qt.qtgui.util.ui import UILoadable
 
@@ -357,9 +357,9 @@ class HKLScan(TaurusWidget):
 
 def main():
 
-    parser = argparse.ArgumentParser(description="a taurus application "
-                                                 "for performing hkl scans",
-                                     usage="%prog  <model> [door_name]")
+    parser = taurus.core.util.argparse.get_taurus_parser()
+    parser.usage = "%prog  <model> [door_name]"
+    parser.set_description("a taurus application for performing hkl scans")
 
     app = taurus.qt.qtgui.application.TaurusApplication(
         cmd_line_parser=parser, app_version=sardana.Release.version)

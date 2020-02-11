@@ -1685,12 +1685,10 @@ def main():
 
     import sys
     import taurus.qt.qtgui.application
-    import argparse
-    from taurus.qt.qtgui.panel import TaurusForm
     import taurus.core.util.argparse
+    from taurus.qt.qtgui.panel import TaurusForm
     parser = taurus.core.util.argparse.get_taurus_parser()
-    parser = argparse.ArgumentParser(
-        usage="%prog [options] [<motor1> [<motor2>] ...]")
+    parser.usage = "%prog [options] [<motor1> [<motor2>] ...]"
 
     app = taurus.qt.qtgui.application.TaurusApplication(cmd_line_parser=parser)
     args = app.get_command_line_args()

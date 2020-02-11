@@ -88,9 +88,10 @@ def main():
     from taurus.qt.qtgui.application import TaurusApplication
     import sys
 
-    from argparse import ArgumentParser
+    from taurus.core.util.argparse import get_taurus_parser
 
-    parser = ArgumentParser(usage="python showscanonline.py [door_name]")
+    parser = get_taurus_parser()
+    parser.set_usage("python showscanonline.py [door_name]")
     app = TaurusApplication(app_name='Showscan Online', org_domain="Sardana",
                             org_name="Tango communinity",
                             cmd_line_parser=parser)

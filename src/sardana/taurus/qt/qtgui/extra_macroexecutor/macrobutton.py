@@ -371,14 +371,14 @@ class MacroButtonAbortDoor(Qt.QPushButton, TaurusBaseWidget):
 if __name__ == '__main__':
     import sys
     from taurus.qt.qtgui.application import TaurusApplication
-    from argparse import ArgumentParser
+    from taurus.core.util.argparse import get_taurus_parser
     from sardana.taurus.qt.qtcore.tango.sardana.macroserver import \
         registerExtensions
     registerExtensions()
 
-    parser = ArgumentParser(usage="python macrobutton.py "
-                                  "[door_name] [macro_name]",
-                            description="Macro button for macro execution")
+    parser = get_taurus_parser()
+    parser.set_usage("python macrobutton.py [door_name] [macro_name]")
+    parser.set_description("Macro button for macro execution")
 
     app = TaurusApplication(app_name="macrobutton",
                             app_version=taurus.Release.version)

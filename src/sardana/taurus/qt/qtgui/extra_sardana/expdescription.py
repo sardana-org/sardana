@@ -738,11 +738,12 @@ def main():
     app = Application.instance()
     owns_app = app is None
     if owns_app:
-        import argparse
-        parser = argparse.ArgumentParser(usage="%prog [options] <door name>")
-        parser.add_argument('--auto-update', dest='auto_update',
-                            action='store_true',
-                            help='Set auto update of experiment configuration')
+        import taurus.core.util.argparse
+        parser = taurus.core.util.argparse.get_taurus_parser()
+        parser.usage = "%prog [options] <door name>"
+        parser.add_option('--auto-update', dest='auto_update',
+                          action='store_true',
+                          help='Set auto update of experiment configuration')
 
         app = Application(app_name="Exp. Description demo", app_version="1.0",
                           org_domain="Sardana", org_name="Tango community",
