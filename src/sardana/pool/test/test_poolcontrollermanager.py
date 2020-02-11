@@ -23,7 +23,7 @@
 ##
 ##############################################################################
 
-from taurus.external import unittest
+import unittest
 from sardana.pool.poolcontrollermanager import ControllerManager
 
 

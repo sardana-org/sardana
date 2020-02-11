@@ -26,7 +26,7 @@ import time
 import threading
 import copy
 
-from taurus.external import unittest
+import unittest
 from taurus.test import insertTest
 
 from sardana.sardanathreadpool import get_thread_pool
@@ -74,6 +74,7 @@ class BaseAcquisition(object):
     def acquire(self):
         """ Run acquisition
         """
+        self.pmg.prepare()
         self.pmg.start_acquisition()
         acq = self.pmg.acquisition
         while acq.is_running():
@@ -198,6 +199,7 @@ class BaseAcquisition(object):
         self.pmg.set_moveable(moveable, to_fqdn=False)
         self.prepare_attribute_listener()
 
+        self.pmg.prepare()
         self.pmg.start_acquisition()
         # retrieving the acquisition since it was cleaned when applying mg conf
         acq = self.pmg.acquisition
@@ -237,6 +239,7 @@ class BaseAcquisition(object):
         for group in synchronization:
             repetitions += group[SynchParam.Repeats]
         self.prepare_attribute_listener()
+        self.pmg.prepare()
         self.pmg.start_acquisition()
         mot.set_position(position)
         acq = self.pmg.acquisition

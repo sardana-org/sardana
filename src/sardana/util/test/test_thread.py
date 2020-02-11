@@ -26,7 +26,7 @@ import random
 
 from sardana.sardanathreadpool import get_thread_pool
 from sardana.util.thread import CountLatch
-from taurus.external.unittest import TestCase
+from unittest import TestCase
 
 
 def job(i, duration):

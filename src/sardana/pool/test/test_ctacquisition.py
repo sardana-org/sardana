@@ -24,7 +24,7 @@
 ##############################################################################
 
 import time
-from taurus.external import unittest
+import unittest
 from sardana.pool.poolmeasurementgroup import PoolMeasurementGroup
 from sardana.pool.test import (FakePool, createPoolController,
                                createPoolMeasurementGroup,
@@ -73,6 +73,7 @@ class PoolMeasurementGroupTestCase(unittest.TestCase):
         msg = 'Pool Measurement Group does not acquire'
         integ_time = .1
         self.pmg.integration_time = integ_time
+        self.pmg.prepare()
         self.pmg.start_acquisition()
 
         acq = self.pmg.acquisition

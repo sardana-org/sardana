@@ -32,7 +32,7 @@ import threading
 # TODO: decide what to use: taurus or PyTango
 import PyTango
 from PyTango import DeviceProxy
-from taurus.external import unittest
+import unittest
 from taurus.test import insertTest
 from taurus.core.util import CodecFactory
 

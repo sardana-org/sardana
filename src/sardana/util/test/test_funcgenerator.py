@@ -27,7 +27,7 @@ import timeit
 import numpy
 from threading import Event, Timer
 
-from taurus.external.unittest import TestCase
+from unittest import TestCase
 from taurus.core.util import ThreadPool
 
 from sardana.pool.pooldefs import SynchDomain, SynchParam

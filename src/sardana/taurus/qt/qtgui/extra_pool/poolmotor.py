@@ -159,7 +159,7 @@ class PoolMotorConfigurationForm(TaurusAttrForm):
     def getMotorControllerType(self):
         modelObj = self.getModelObj()
         modelNormalName = modelObj.getNormalName()
-        poolDsId = modelObj.getHWObj().info().server_id
+        poolDsId = modelObj.getDeviceProxy().info().server_id
         db = taurus.Database()
         pool_devices = tuple(db.get_device_class_list(poolDsId).value_string)
         pool_dev_name = pool_devices[pool_devices.index('Pool') - 1]

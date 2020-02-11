@@ -26,12 +26,10 @@
 """This module contains tests for trigger gate generation using a
 given controller"""
 
-__docformat__ = "restructuredtext"
-
 import threading
 
 from taurus.test import insertTest
-from taurus.external import unittest
+import unittest
 
 from sardana.pool.poolsynchronization import PoolSynchronization
 from sardana.pool.poolacquisition import get_acq_ctrls
@@ -40,6 +38,8 @@ from sardana.pool.pooldefs import SynchDomain, SynchParam
 from sardana.pool.test import FakePool, createCtrlConf, createElemConf, \
     createPoolController, createPoolTriggerGate, \
     createControllerConfiguration
+
+__docformat__ = "restructuredtext"
 
 
 class SynchronizationTestCase(object):
