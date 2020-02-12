@@ -1099,7 +1099,9 @@ class PoolMotorTVReadWidget(TaurusWidget):
             return
         TaurusWidget.setModel(self, model + '/Position')
         self.lbl_read.setModel(model + '/Position')
-        self.lbl_enc_read.setModel(model + '/Encoder')
+        if self.taurusValueBuddy().motor_dev is not None and \
+                self.taurusValueBuddy().hasEncoder():
+            self.lbl_enc_read.setModel(model + '/Encoder')
         # Handle User/Expert view
         self.setExpertView(self.taurusValueBuddy()._expertView)
         self.taurusValueBuddy().expertViewChanged.connect(
@@ -1363,9 +1365,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
             return
         TaurusWidget.setModel(self, model + '/Position')
         self.le_write_absolute.setModel(model + '/Position#wvalue.magnitude')
-        if self.taurusValueBuddy().motor_dev is not None and \
-                self.taurusValueBuddy().hasEncoder():
-            self.lbl_enc_read.setModel(model + '/Encoder')
+
         # Handle User/Expert View
         self.setExpertView(self.taurusValueBuddy()._expertView)
         self.taurusValueBuddy().expertViewChanged.connect(
