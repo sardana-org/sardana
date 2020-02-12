@@ -1363,7 +1363,9 @@ class PoolMotorTVWriteWidget(TaurusWidget):
             return
         TaurusWidget.setModel(self, model + '/Position')
         self.le_write_absolute.setModel(model + '/Position#wvalue.magnitude')
-
+        if self.taurusValueBuddy().motor_dev is not None and \
+                self.taurusValueBuddy().hasEncoder():
+            self.lbl_enc_read.setModel(model + '/Encoder')
         # Handle User/Expert View
         self.setExpertView(self.taurusValueBuddy()._expertView)
         self.taurusValueBuddy().expertViewChanged.connect(
