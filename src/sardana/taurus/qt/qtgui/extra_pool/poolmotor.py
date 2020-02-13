@@ -1090,7 +1090,8 @@ class PoolMotorTVReadWidget(TaurusWidget):
 
             # Align everything on top
             self.layout().addItem(Qt.QSpacerItem(
-                1, 1, Qt.QSizePolicy.Minimum, Qt.QSizePolicy.Expanding), 2, 0, 1, 2)
+                1, 1, Qt.QSizePolicy.Minimum,
+                Qt.QSizePolicy.Expanding), 2, 0, 1, 2)
 
             self.lbl_enc.setVisible(False)
             self.lbl_enc_read.setVisible(False)
