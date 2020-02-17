@@ -983,19 +983,13 @@ class PoolMotorTVReadWidget(TaurusWidget):
         limits_layout.setContentsMargins(0, 0, 0, 0)
         limits_layout.setSpacing(0)
 
-        self.btn_lim_neg = Qt.QPushButton()
-        self.btn_lim_neg.setToolTip('Negative Limit')
-        # self.btn_lim_neg.setEnabled(False)
-        self.prepare_button(self.btn_lim_neg)
-        self.btn_lim_neg.setIcon(Qt.QIcon("actions:list-remove.svg"))
-        limits_layout.addWidget(self.btn_lim_neg)
+        self.lim_neg = Qt.QLabel()
+        limits_layout.addWidget(self.lim_neg)
+        self.config_limit(self.lim_neg, "negative", "Disabled")
 
-        self.btn_lim_pos = Qt.QPushButton()
-        self.btn_lim_pos.setToolTip('Positive Limit')
-        # self.btn_lim_pos.setEnabled(False)
-        self.prepare_button(self.btn_lim_pos)
-        self.btn_lim_pos.setIcon(Qt.QIcon("actions:list-add.svg"))
-        limits_layout.addWidget(self.btn_lim_pos)
+        self.lim_pos = Qt.QLabel()
+        limits_layout.addWidget(self.lim_pos)
+        self.config_limit(self.lim_pos, "positive", "Disabled")
 
         self.layout().addLayout(limits_layout, 0, 0)
 
@@ -1067,9 +1061,12 @@ class PoolMotorTVReadWidget(TaurusWidget):
         self.lbl_enc.setVisible(False)
         self.lbl_enc_read.setVisible(False)
         if self.taurusValueBuddy().motor_dev is not None:
-            hw_limits = self.taurusValueBuddy().hasHwLimits()
-            self.btn_lim_neg.setEnabled(hw_limits)
-            self.btn_lim_pos.setEnabled(hw_limits)
+            if self.taurusValueBuddy().hasHwLimits():
+                self.config_limit(self.lim_neg, "negative", "Enabled")
+                self.config_limit(self.lim_pos, "positive", "Enabled")
+            else:
+                self.config_limit(self.lim_neg, "negative", "Disabled")
+                self.config_limit(self.lim_pos, "positive", "Disabled")
 
         if expertView and self.taurusValueBuddy().motor_dev is not None:
             encoder = self.taurusValueBuddy().hasEncoder()
@@ -1084,6 +1081,54 @@ class PoolMotorTVReadWidget(TaurusWidget):
         btn.setMinimumSize(25, 25)
         btn.setMaximumSize(25, 25)
         btn.setText('')
+
+    def prepare_limit(self, btn):
+        btn_policy = Qt.QSizePolicy(Qt.QSizePolicy.Fixed, Qt.QSizePolicy.Fixed)
+        btn_policy.setHorizontalStretch(0)
+        btn_policy.setVerticalStretch(0)
+        btn.setSizePolicy(btn_policy)
+        btn.setText('')
+
+    def config_limit(self, limit, polarity, state):
+        """
+        :param limit: Qt.Label
+        :param polarity: {negative, positive}
+        :param state: {Disabled, Enabled, SwActive, HwActive}
+        """
+        self.prepare_limit(limit)
+
+        if polarity == "negative":
+            tooltip = 'Negative Limit'
+            icon = Qt.QIcon("designer:minus.png")
+        elif polarity == "positive":
+            tooltip = 'Positive Limit'
+            icon = Qt.QIcon("designer:plus.png")
+        else:
+            raise ValueError("Wrong polarity {}".format(polarity))
+        limit.setStyleSheet('')
+        if state == "Disabled":
+            pixmap = Qt.QPixmap(icon.pixmap(Qt.QSize(32, 32),
+                                            Qt.QIcon.Disabled))
+        else:
+            pixmap = Qt.QPixmap(icon.pixmap(Qt.QSize(32, 32),
+                                            Qt.QIcon.Active))
+            if state == "SwActive":
+                colour = DEVICE_STATE_PALETTE.qtStyleSheet(
+                    PyTango.DevState.ALARM)
+                limit.setStyleSheet(colour)
+                tooltip = tooltip + " - Software limit reached"
+            elif state == "HwActive":
+                colour = DEVICE_STATE_PALETTE.qtStyleSheet(
+                    PyTango.DevState.ALARM)
+                limit.setStyleSheet(colour)
+                tooltip = tooltip + " - Hardware limit reached"
+            elif state == "Enabled":
+                pass
+            else:
+                raise ValueError("Wrong state {}".format(state))
+
+        limit.setToolTip(tooltip)
+        limit.setPixmap(pixmap)
 
     def setModel(self, model):
         if hasattr(self, 'taurusValueBuddy'):
@@ -1553,25 +1598,41 @@ class PoolMotorTV(TaurusValue):
             min_value_str = position_attribute.min_value
             try:
                 max_value = float(max_value_str)
-                limits[POS] = limits[POS] or (position >= max_value)
+                if position >= max_value:
+                    limits[POS] = True
+                    pos_lim_status = "HwActive"
+                else:
+                    pos_lim_status = "SwActive"
             except:
-                pass
+                pos_lim_status = "SwActive"
             try:
                 min_value = float(min_value_str)
-                limits[NEG] = limits[NEG] or (position <= min_value)
+                if position <= min_value:
+                    limits[NEG] = True
+                    neg_lim_status = "HwActive"
+                else:
+                    neg_lim_status = "SwActive"
             except:
-                pass
+                neg_lim_status = "SwActive"
 
         pos_lim = limits[POS]
-
         pos_btnstylesheet = ''
         enabled = True
         if pos_lim:
             pos_btnstylesheet = 'QPushButton{%s}' % DEVICE_STATE_PALETTE.qtStyleSheet(
                 PyTango.DevState.ALARM)
             enabled = False
-        self.readWidget(followCompact=True).btn_lim_pos.setStyleSheet(
-            pos_btnstylesheet)
+            self.readWidget(followCompact=True).config_limit(
+                self.readWidget(followCompact=True).lim_pos,
+                "positive", pos_lim_status)
+        elif self.hasHwLimits():
+            self.readWidget(followCompact=True).config_limit(
+                self.readWidget(followCompact=True).lim_pos,
+                "positive", "Enabled")
+        else:
+            self.readWidget(followCompact=True).config_limit(
+                self.readWidget(followCompact=True).lim_pos,
+                "positive", "Disabled")
 
         self.writeWidget(followCompact=True).btn_step_up.setEnabled(enabled)
         self.writeWidget(followCompact=True).btn_step_up.setStyleSheet(
@@ -1589,8 +1650,17 @@ class PoolMotorTV(TaurusValue):
             neg_btnstylesheet = 'QPushButton{%s}' % DEVICE_STATE_PALETTE.qtStyleSheet(
                 PyTango.DevState.ALARM)
             enabled = False
-        self.readWidget(followCompact=True).btn_lim_neg.setStyleSheet(
-            neg_btnstylesheet)
+            self.readWidget(followCompact=True).config_limit(
+                self.readWidget(followCompact=True).lim_neg,
+                "negative", neg_lim_status)
+        elif self.hasHwLimits():
+            self.readWidget(followCompact=True).config_limit(
+                self.readWidget(followCompact=True).lim_neg,
+                "negative", "Enabled")
+        else:
+            self.readWidget(followCompact=True).config_limit(
+                self.readWidget(followCompact=True).lim_neg,
+                "negative", "Disabled")
 
         self.writeWidget(followCompact=True).btn_step_down.setEnabled(enabled)
         self.writeWidget(followCompact=True).btn_step_down.setStyleSheet(
