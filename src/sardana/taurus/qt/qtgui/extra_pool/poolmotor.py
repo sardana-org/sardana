@@ -1168,7 +1168,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
         self.layout().addWidget(self.cbAbsoluteRelative, 0, 1)
         self.registerConfigProperty(
             self.cbAbsoluteRelative.currentIndex,
-            self.cbAbsoluteRelative.setCurrentIndex, 'AbsRelindex')
+            self.cbAbsoluteRelative.setCurrentIndex, 'AbsRelIndex')
         # WITH THE COMPACCT VIEW FEATURE, BETTER TO HAVE IT IN THE READ WIDGET
         # WOULD BE BETTER AS AN 'EXTRA WIDGET' (SOME DAY...)
         #self.btn_stop = Qt.QPushButton()
@@ -1424,7 +1424,7 @@ class PoolMotorTV(TaurusValue):
         self.motor_dev = None
         self._expertView = False
         self.registerConfigProperty(
-            self.getExpertView, self.setExpertView, '_expertView')
+            self.getExpertView, self.setExpertView, 'ExpertView')
         self.limits_listener = None
         self.poweron_listener = None
         self.status_listener = None
