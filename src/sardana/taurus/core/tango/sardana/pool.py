@@ -2153,6 +2153,7 @@ class MeasurementGroup(PoolElement):
         cfg = self.getConfiguration()
         cfg.prepare()
         self.setSynchronization(synchronization)
+        self.prepare()
         self.subscribeValueBuffer(value_buffer_cb)
         try:
             self.count_raw(start_time)

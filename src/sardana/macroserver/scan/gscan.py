@@ -2770,7 +2770,6 @@ class TScan(GScan, CAcquisition):
 
         yield 0
         measurement_group.setNbStarts(1)
-        measurement_group.prepare()
         measurement_group.count_continuous(synchronization,
                                            self.value_buffer_changed)
         self.debug("Waiting for value buffer events to be processed")
