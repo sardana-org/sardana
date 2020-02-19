@@ -67,19 +67,6 @@ class GUIViewer(BaseGUIViewer):
         self.plot()
 
     def show_scan(self, scan_nb=None, scan_history_info=None, directory_map=None):
-        if scan_nb is None and scan_history_info is None:
-            #==================================================================
-            # Hack to avoid ipython-qt issues. See similar workaround in expconf magic command
-            # @todo: do this in a better way
-            #import taurus.qt.qtgui.plot
-            #w = taurus.qt.qtgui.plot.TaurusTrend()
-            #w.model = "scan://" + self._door.getNormalName()
-            # w.show()
-            import subprocess
-            args = ['taurustrend', 'scan://%s' % self._door.getNormalName()]
-            subprocess.Popen(args)
-            #==================================================================
-            return
         scan_dir, scan_file = None, None
         if scan_nb is None:
             import h5py
@@ -421,10 +408,7 @@ class SpockBaseDoor(BaseDoor):
     def plot(self):
         self._plotter.run()
 
-    def show_scan(self, scan_nb=None, online=False):
-        if online:
-            self._plotter.show_scan()
-            return
+    def show_scan(self, scan_nb=None):
         env = self.getEnvironment()
         scan_history_info = env.get("ScanHistory")
         directory_map = env.get("DirectoryMap")
@@ -590,7 +574,7 @@ class SpockMacroServer(BaseMacroServer):
             # TODO: when it becomes possible to do:
             # some taurus.Device.<attr name> = <value>
             # replace device_proxy with element
-            device_proxy = element.getObj().getHWObj()
+            device_proxy = element.getObj().getDeviceProxy()
             genutils.expose_variable(element.name, device_proxy)
         return element
 

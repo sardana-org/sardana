@@ -159,7 +159,7 @@ class PoolMotorConfigurationForm(TaurusAttrForm):
     def getMotorControllerType(self):
         modelObj = self.getModelObj()
         modelNormalName = modelObj.getNormalName()
-        poolDsId = modelObj.getHWObj().info().server_id
+        poolDsId = modelObj.getDeviceProxy().info().server_id
         db = taurus.Database()
         pool_devices = tuple(db.get_device_class_list(poolDsId).value_string)
         pool_dev_name = pool_devices[pool_devices.index('Pool') - 1]
@@ -729,9 +729,9 @@ class PoolMotorSlim(TaurusWidget, PoolMotorClient):
                 self.updateLimits)
             limits_visible = False
             if self.has_limits:
-                limits_attribute = self.motor_dev.getAttribute(
+                self._limits_switches = self.motor_dev.getAttribute(
                     'Limit_switches')
-                limits_attribute.addListener(self.limits_listener)
+                self._limits_switches.addListener(self.limits_listener)
                 # self.updateLimits(limits_attribute.read().rvalue)
                 limits_visible = True
             self.ui.btnMin.setVisible(limits_visible)
@@ -808,7 +808,11 @@ class TaurusAttributeListener(Qt.QObject):
     def eventReceived(self, evt_src, evt_type, evt_value):
         if evt_type not in [TaurusEventType.Change, TaurusEventType.Periodic]:
             return
-        value = evt_value.rvalue
+        try:
+            value = evt_value.rvalue.magnitude
+        except AttributeError:
+            # spectrum/images or str attribute values are not Quantities
+            value = evt_value.rvalue
         self.eventReceivedSignal.emit(value)
 
 
@@ -1162,7 +1166,9 @@ class PoolMotorTVWriteWidget(TaurusWidget):
             self.cbAbsoluteRelativeChanged)
         self.cbAbsoluteRelative.addItems(['Abs', 'Rel'])
         self.layout().addWidget(self.cbAbsoluteRelative, 0, 1)
-
+        self.registerConfigProperty(
+            self.cbAbsoluteRelative.currentIndex,
+            self.cbAbsoluteRelative.setCurrentIndex, 'AbsRelIndex')
         # WITH THE COMPACCT VIEW FEATURE, BETTER TO HAVE IT IN THE READ WIDGET
         # WOULD BE BETTER AS AN 'EXTRA WIDGET' (SOME DAY...)
         #self.btn_stop = Qt.QPushButton()
@@ -1291,7 +1297,8 @@ class PoolMotorTVWriteWidget(TaurusWidget):
         motor_dev = self.taurusValueBuddy().motor_dev
         if motor_dev is not None:
             increment = direction * float(self.cb_step.currentText())
-            position = float(motor_dev.getAttribute('Position').read().rvalue)
+            position = float(
+                motor_dev.getAttribute('Position').read().rvalue.magnitude)
             target_position = position + increment
             motor_dev.getAttribute('Position').write(target_position)
 
@@ -1357,7 +1364,7 @@ class PoolMotorTVWriteWidget(TaurusWidget):
             self.le_write_absolute.setModel(model)
             return
         TaurusWidget.setModel(self, model + '/Position')
-        self.le_write_absolute.setModel(model + '/Position')
+        self.le_write_absolute.setModel(model + '/Position#wvalue.magnitude')
 
         # Handle User/Expert View
         self.setExpertView(self.taurusValueBuddy()._expertView)
@@ -1416,6 +1423,8 @@ class PoolMotorTV(TaurusValue):
         self.setUnitsWidgetClass(PoolMotorTVUnitsWidget)
         self.motor_dev = None
         self._expertView = False
+        self.registerConfigProperty(
+            self.getExpertView, self.setExpertView, 'ExpertView')
         self.limits_listener = None
         self.poweron_listener = None
         self.status_listener = None
@@ -1425,6 +1434,9 @@ class PoolMotorTV(TaurusValue):
     def setExpertView(self, expertView):
         self._expertView = expertView
         self.expertViewChanged.emit(expertView)
+
+    def getExpertView(self):
+        return self._expertView
 
     def minimumHeight(self):
         return None  # @todo: UGLY HACK to avoid subwidgets being forced to minimumheight=20
@@ -1484,8 +1496,9 @@ class PoolMotorTV(TaurusValue):
             if self.hasHwLimits():
                 self.limits_listener.eventReceivedSignal.connect(
                     self.updateLimits)
-                self.motor_dev.getAttribute(
-                    'Limit_Switches').addListener(self.limits_listener)
+                self._limit_switches = self.motor_dev.getAttribute(
+                    'Limit_Switches')
+                self._limit_switches.addListener(self.limits_listener)
 
             # CONFIGURE AN EVENT RECEIVER IN ORDER TO PROVIDE POWERON <-
             # True/False EXPERT OPERATION
@@ -1493,23 +1506,23 @@ class PoolMotorTV(TaurusValue):
             if self.hasPowerOn():
                 self.poweron_listener.eventReceivedSignal.connect(
                     self.updatePowerOn)
-                self.motor_dev.getAttribute(
-                    'PowerOn').addListener(self.poweron_listener)
+                self._poweron = self.motor_dev.getAttribute('PowerOn')
+                self._poweron.addListener(self.poweron_listener)
 
             # CONFIGURE AN EVENT RECEIVER IN ORDER TO UPDATED STATUS TOOLTIP
             self.status_listener = TaurusAttributeListener()
             self.status_listener.eventReceivedSignal.connect(
                 self.updateStatus)
-            self.motor_dev.getAttribute(
-                'Status').addListener(self.status_listener)
+            self._status = self.motor_dev.getAttribute('Status')
+            self._status.addListener(self.status_listener)
 
             # CONFIGURE AN EVENT RECEIVER IN ORDER TO ACTIVATE LIMIT BUTTONS ON
             # SOFTWARE LIMITS
             self.position_listener = TaurusAttributeListener()
             self.position_listener.eventReceivedSignal.connect(
                 self.updatePosition)
-            self.motor_dev.getAttribute(
-                'Position').addListener(self.position_listener)
+            self._position = self.motor_dev.getAttribute('Position')
+            self._position.addListener(self.position_listener)
             self.motor_dev.getAttribute('Position').enablePolling(force=True)
 
             self.setExpertView(self._expertView)
@@ -1542,7 +1555,7 @@ class PoolMotorTV(TaurusValue):
         if self.motor_dev is not None:
             position_attribute = self.motor_dev.getAttribute('Position')
             if position is None:
-                position = position_attribute.read().rvalue
+                position = position_attribute.read().rvalue.magnitude
             max_value_str = position_attribute.max_value
             min_value_str = position_attribute.min_value
             try:

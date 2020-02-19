@@ -43,11 +43,7 @@ import PyTango
 import taurus
 import collections
 
-try:
-    from collections import OrderedDict
-except ImportError:
-    # For Python < 2.7
-    from ordereddict import OrderedDict
+from collections import OrderedDict
 
 from taurus.core.util.log import Logger
 from taurus.core.util.user import USER_NAME
@@ -484,12 +480,16 @@ class GScan(Logger):
         macro = self.macro
         try:
             scan_dir = macro.getEnv('ScanDir')
+            if scan_dir == '' or None:
+                macro.warning('ScanDir value is empty')
+                raise Exception('ScanDir value is empty')
         except InterruptException:
             raise
         except Exception:
             macro.warning('ScanDir is not defined. This operation will not be '
-                          'stored persistently. Use Use "expconf" (or "senv '
-                          'ScanDir <abs directory>") to enable it')
+                          'stored persistently. Use "expconf" or "newfile" '
+                          'to configure data storage (or eventually "senv '
+                          'ScanDir <abs directory>")')
             return ()
 
         if not isinstance(scan_dir, str):
@@ -498,12 +498,16 @@ class GScan(Logger):
 
         try:
             file_names = macro.getEnv('ScanFile')
+            if file_names == [''] or None:
+                macro.warning('ScanFile value is empty')
+                raise Exception('ScanFile value is empty')
         except InterruptException:
             raise
         except Exception:
             macro.warning('ScanFile is not defined. This operation will not '
-                          'be stored persistently. Use "expconf" (or "senv '
-                          'ScanFile <scan file(s)>") to enable it')
+                          'be stored persistently. Use "expconf" or "newfile" '
+                          'to configure data storage (or eventually "senv '
+                          'ScanFile <scan file(s)>")')
             return ()
 
         scan_recorders = []
@@ -2765,6 +2769,7 @@ class TScan(GScan, CAcquisition):
                 hook()
 
         yield 0
+        measurement_group.setNbStarts(1)
         measurement_group.count_continuous(synchronization,
                                            self.value_buffer_changed)
         self.debug("Waiting for value buffer events to be processed")
