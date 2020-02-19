@@ -49,6 +49,7 @@ script:
   # run flake8 check on all python files in the project
   - if [ $TEST == "flake8" ]; then ci/flake8_diff.sh; fi
   # run the full testsuite
+  - if [ $TEST == "testsuite" ]; then docker exec sardana-test cat /tmp/tango-root/MacroServer/demo1/log.txt; fi
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test sardanatestsuite; fi
   - if [ $TEST == "testsuite" ]; then docker exec sardana-test cat /tmp/tango-root/MacroServer/demo1/log.txt; fi
   # build docs
