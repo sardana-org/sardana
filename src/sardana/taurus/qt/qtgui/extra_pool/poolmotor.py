@@ -1281,6 +1281,8 @@ class PoolMotorTVWriteWidget(TaurusWidget):
     def cbAbsoluteRelativeChanged(self, abs_rel_option):
         abs_visible = abs_rel_option == 'Abs'
         rel_visible = abs_rel_option == 'Rel'
+        if rel_visible:
+            self.resetPendingOperations()
         self.le_write_absolute.setVisible(abs_visible)
         self.qw_write_relative.setVisible(rel_visible)
 
@@ -1380,6 +1382,8 @@ class PoolMotorTVWriteWidget(TaurusWidget):
     @Qt.pyqtSlot()
     def emitEditingFinished(self):
         self.applied.emit()
+        if self.cbAbsoluteRelative.currentIndex() == 1:
+            self.resetPendingOperations()
 
 
 ##################################################
