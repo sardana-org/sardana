@@ -691,7 +691,7 @@ class BaseDoor(MacroServerDevice):
         return data
 
     def logReceived(self, log_name, output):
-        term_size = os.get_terminal_size()
+        term_size = get_terminal_size()
         max_chrs = term_size.columns if term_size else None
         if not output or self._silent or self._ignore_logs:
             return
