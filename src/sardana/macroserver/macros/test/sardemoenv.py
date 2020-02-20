@@ -84,6 +84,10 @@ class SarDemoEnv(Singleton):
             err = 'sar_demo has not been executed (or door %s not ready)' % \
                   door_name
             raise RuntimeError(err)
+        except Exception as e:
+            import taurus
+            taurus.warning("Exception in SarDemoEnv (getEnvironment): {}".format(repr(e)))
+            raise e
         self.ready = True
 
     def getElements(self, elem_type='all'):
@@ -197,7 +201,7 @@ def getElements(elem_type="all", fallback_name="element_not_defined",
         elements = [fallback_name] * fallback_elements_len
     except Exception as e:
         import taurus
-        taurus.debug(e)
+        taurus.warning("getElements exception: {}". format(repr(e)))
         taurus.warning("It was not possible to retrieve the element. " +
                        "Ignore this message if you are building the documentation.")
         elements = [fallback_name] * fallback_elements_len
