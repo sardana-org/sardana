@@ -58,7 +58,7 @@ class SarDemoEnv(Singleton):
         except Exception as e:
             import taurus
             taurus.warning("Exception in SarDemoEnv (DeviceProxy)")
-            taurus.warning(repr(e))
+            taurus.warning("Exception: {}".format(repr(e)))
             raise RuntimeError("Door %s is not running" % door_name)
 
         registerExtensions()
@@ -80,7 +80,7 @@ class SarDemoEnv(Singleton):
         except KeyError as e:
             import taurus
             taurus.warning("Exception in SarDemoEnv (getEnvironment)")
-            taurus.warning(repr(e))
+            taurus.warning("Exception: {}".format(repr(e)))
             err = 'sar_demo has not been executed (or door %s not ready)' % \
                   door_name
             raise RuntimeError(err)
@@ -186,13 +186,14 @@ def getElements(elem_type="all", fallback_name="element_not_defined",
         fallback_name = elem_type + "_not_defined"
     try:
         elements = SarDemoEnv().getElements(elem_type)
-    except RuntimeError:
+    except RuntimeError as e:
         import taurus
         from sardana import sardanacustomsettings
         door_name = getattr(sardanacustomsettings, 'UNITTEST_DOOR_NAME',
                             'UNDEFINED')
         taurus.warning("The door %s is not running. " % (door_name) +
                        "Ignore this message if you are building the documentation.")
+        taurus.warning("Exception: {}".format(repr(e)))
         elements = [fallback_name] * fallback_elements_len
     except Exception as e:
         import taurus
