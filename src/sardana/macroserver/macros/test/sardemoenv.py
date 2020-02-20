@@ -55,7 +55,8 @@ class SarDemoEnv(Singleton):
             d = PyTango.DeviceProxy(door_name)
             # when building docs, in RTD environment, PyTango is a mock
             assert is_number(d.ping())
-        except:
+        except Exception as e:
+            print(e)
             raise RuntimeError("Door %s is not running" % door_name)
 
         registerExtensions()
@@ -74,7 +75,8 @@ class SarDemoEnv(Singleton):
         try:
             self.env = self.ms.getEnvironment()['_SAR_DEMO']['elements'] + \
                 list(self.ms.getEnvironment()['_SAR_DEMO']['controllers'])
-        except KeyError:
+        except KeyError as e:
+            print(e)
             err = 'sar_demo has not been executed (or door %s not ready)' % \
                   door_name
             raise RuntimeError(err)
