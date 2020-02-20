@@ -56,7 +56,9 @@ class SarDemoEnv(Singleton):
             # when building docs, in RTD environment, PyTango is a mock
             assert is_number(d.ping())
         except Exception as e:
-            print(e)
+            import taurus
+            taurus.warning("Exception in SarDemoEnv (DeviceProxy)")
+            taurus.warning(repr(e))
             raise RuntimeError("Door %s is not running" % door_name)
 
         registerExtensions()
@@ -76,7 +78,9 @@ class SarDemoEnv(Singleton):
             self.env = self.ms.getEnvironment()['_SAR_DEMO']['elements'] + \
                 list(self.ms.getEnvironment()['_SAR_DEMO']['controllers'])
         except KeyError as e:
-            print(e)
+            import taurus
+            taurus.warning("Exception in SarDemoEnv (getEnvironment)")
+            taurus.warning(repr(e))
             err = 'sar_demo has not been executed (or door %s not ready)' % \
                   door_name
             raise RuntimeError(err)
