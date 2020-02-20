@@ -200,8 +200,9 @@ def getElements(elem_type="all", fallback_name="element_not_defined",
         taurus.warning("Exception: {}".format(repr(e)))
         elements = [fallback_name] * fallback_elements_len
     except Exception as e:
-        import taurus
+        import taurus, logging
         taurus.warning("getElements exception: {}". format(repr(e)))
+        taurus.warning(logging.traceback.format_exc())
         import traceback
         taurus.warning('\n'.join(traceback.format_stack()))
         taurus.warning("It was not possible to retrieve the element. " +
