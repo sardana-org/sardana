@@ -52,6 +52,7 @@ from taurus.core.util.enumeration import Enumeration
 from taurus.core.util.threadpool import ThreadPool
 from taurus.core.util.event import CallableRef
 
+from sardana.sardanathreadpool import OmniWorker
 from sardana.util.tree import BranchNode, LeafNode, Tree
 from sardana.util.motion import Motor as VMotor
 from sardana.util.motion import MotionPath
@@ -1962,7 +1963,7 @@ class CAcquisition(object):
 
     def __init__(self):
         self._thread_pool = ThreadPool(name="ValueBufferTH", Psize=1,
-                                       Qsize=100000)
+                                       Qsize=100000, worker_cls=OmniWorker)
         self._countdown_latch = CountLatch()
         self._index_offset = 0
 

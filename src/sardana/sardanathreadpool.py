@@ -34,10 +34,19 @@ __docformat__ = 'restructuredtext'
 
 import threading
 
-from taurus.core.util.threadpool import ThreadPool
+from taurus.core.util.threadpool import ThreadPool, Worker
+
 
 __thread_pool_lock = threading.Lock()
 __thread_pool = None
+
+
+class OmniWorker(Worker):
+
+    def run(self):
+        import tango
+        with tango.EnsureOmniThread():
+            Worker.run(self)
 
 
 def get_thread_pool():
@@ -50,5 +59,6 @@ def get_thread_pool():
     global __thread_pool_lock
     with __thread_pool_lock:
         if __thread_pool is None:
-            __thread_pool = ThreadPool(name="SardanaTP", Psize=10)
+            __thread_pool = ThreadPool(name="SardanaTP", Psize=10,
+                                       worker_cls=OmniWorker)
         return __thread_pool
