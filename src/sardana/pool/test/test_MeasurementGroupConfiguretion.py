@@ -29,7 +29,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
     def _assertMultipleResults(self, result, channels, expected_values):
         expected_channels = list(channels)
         print(result)
-        for (channel, value), expected_value in zip(result.items(), expected_values):
+        for (channel, value), expected_value in zip(result.items(),
+                                                    expected_values):
             msg = "unexpected key: {}".format(channel)
             self.assertIn(channel, expected_channels, msg)
             expected_channels.remove(channel)
@@ -37,7 +38,7 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
         msg = "{} are missing".format(expected_channels)
         self.assertEqual(len(expected_channels), 0, msg)
 
-    def test_enabled(self, elements = ["_test_ct_1_1", "_test_ct_1_2"]):
+    def test_enabled(self, elements=["_test_ct_1_1", "_test_ct_1_2"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -93,7 +94,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
 
-    def test_PlotType(self, elements=["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3"]):
+    def test_PlotType(self, elements=["_test_ct_1_1", "_test_ct_1_2",
+                                      "_test_ct_1_3"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -116,7 +118,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
 
-    def test_PlotAxes(self, elements=["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3"]):
+    def test_PlotAxes(self, elements=["_test_ct_1_1", "_test_ct_1_2",
+                                      "_test_ct_1_3"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -154,7 +157,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
 
-    def test_Timer(self, elements=["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3"]):
+    def test_Timer(self, elements=["_test_ct_1_1", "_test_ct_1_2",
+                                   "_test_ct_1_3"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -165,13 +169,15 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             mg.setTimer('_test_ct_1_3')
             self.assertNotEqual(mg.getTimer(), previous)
             self._assertResult(mg.getTimer(), elements, '_test_ct_1_3')
-            self._assertResult(mg.getTimer(ret_by_ctrl=True), ['_test_ct_ctrl_1'], '_test_ct_1_3')
+            self._assertResult(mg.getTimer(ret_by_ctrl=True),
+                               ['_test_ct_ctrl_1'], '_test_ct_1_3')
 
         finally:
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
 
-    def test_Monitor(self, elements=["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3"]):
+    def test_Monitor(self, elements=["_test_ct_1_1", "_test_ct_1_2",
+                                     "_test_ct_1_3"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -182,13 +188,15 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             mg.setMonitor("_test_ct_1_2")
             self.assertNotEqual(mg.getMonitor(), previous)
             self._assertResult(mg.getMonitor(), elements, '_test_ct_1_2')
-            self._assertResult(mg.getMonitor(ret_by_ctrl=True), ['_test_ct_ctrl_1'], '_test_ct_1_2')
+            self._assertResult(mg.getMonitor(ret_by_ctrl=True),
+                               ['_test_ct_ctrl_1'], '_test_ct_1_2')
 
         finally:
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
 
-    def test_Synchronizer(self, elements=["_test_ct_1_1", "_test_ct_1_2", "_test_ct_1_3"]):
+    def test_Synchronizer(self, elements=["_test_ct_1_1", "_test_ct_1_2",
+                                          "_test_ct_1_3"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -212,7 +220,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
 
-    def test_ValueRefEnabled(self, elements=["_test_2d_1_1", "_test_2d_1_2", "_test_ct_1_1", "_test_ct_1_2"]):
+    def test_ValueRefEnabled(self, elements=["_test_2d_1_1", "_test_2d_1_2",
+                                             "_test_ct_1_1", "_test_ct_1_2"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -235,7 +244,8 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
 
-    def test_ValueRefPattern(self, elements=["_test_2d_1_1", "_test_2d_1_2", "_test_ct_1_3"]):
+    def test_ValueRefPattern(self, elements=["_test_2d_1_1", "_test_2d_1_2",
+                                             "_test_ct_1_3"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -252,4 +262,3 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
         finally:
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
-
