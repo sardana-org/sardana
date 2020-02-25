@@ -656,6 +656,7 @@ class ascan_with_addcustomdata(ascan_demo):
         # as a bonus, plot the fit
         self.pyplot.plot(x, y, 'ro')
         self.pyplot.plot(x, fitted_y, 'b-')
+        self.pyplot.draw()
 
 
 class ascanct_midtrigger(Macro):

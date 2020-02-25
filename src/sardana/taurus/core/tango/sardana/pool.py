@@ -228,12 +228,17 @@ class TangoAttributeEG(Logger, EventGenerator):
         if evt_value is None:
             v = None
         else:
-            v = evt_value.value
+            v = evt_value.rvalue
+            if hasattr(v, "magnitude"):
+                v = v.magnitude
         EventGenerator.fireEvent(self, v)
 
     def read(self, force=False):
         try:
-            self.last_val = self._attr.read(cache=not force).value
+            last_val = self._attr.read(cache=not force).rvalue
+            if hasattr(last_val, "magnitude"):
+                last_val = last_val.magnitude
+            self.last_val = last_val
         except:
             self.error("Read error")
             self.debug("Details:", exc_info=1)
@@ -303,7 +308,7 @@ class PoolElement(BaseElement, TangoDevice):
         self.getStateEG()
 
     def _find_pool_obj(self):
-        pool = get_pool_for_device(self.getParentObj(), self.getHWObj())
+        pool = get_pool_for_device(self.getParentObj(), self.getDeviceProxy())
         return pool
 
     def _find_pool_data(self):
@@ -1481,7 +1486,7 @@ class MGConfiguration(object):
         for channel_name, channel_data in list(self.channels.items()):
             cache[channel_name] = None
             data_source = channel_data['source']
-            params = tg_attr_validator.getParams(data_source)
+            params = tg_attr_validator.getUriGroups(data_source)
             if params is None:
                 # Handle NON tango channel
                 n_tg_chs[channel_name] = channel_data
@@ -2376,7 +2381,7 @@ class MeasurementGroup(PoolElement):
         if evt_type not in CHANGE_EVT_TYPES:
             return
         self.info("Configuration changed")
-        self._setConfiguration(evt_value.value)
+        self._setConfiguration(evt_value.rvalue)
         self._flg_event = False
 
     # TODO, should be removed
@@ -3234,9 +3239,12 @@ class MeasurementGroup(PoolElement):
         cfg = self.getConfiguration()
         cfg.prepare()
         self.setSynchronization(synchronization)
+        self.prepare()
         self.subscribeValueBuffer(value_buffer_cb)
-        self.count_raw(start_time)
-        self.unsubscribeValueBuffer(value_buffer_cb)
+        try:
+            self.count_raw(start_time)
+        finally:
+            self.unsubscribeValueBuffer(value_buffer_cb)
         state = self.getStateEG().readValue()
         if state == Fault:
             msg = "Measurement group ended acquisition with Fault state"

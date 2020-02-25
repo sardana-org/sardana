@@ -23,8 +23,14 @@ plugin class into the Sardana. To check if it is already loaded use the
 :class:`~sardana.macroserver.macros.lists.lsctrl` macro. If it is not, you will
 need to configure the :ref:`controller plugin discovery path <sardana-configuration-pool>`
 (``PoolPath`` property) and either restart the Sardana server or call the
-:class:`~sardana.macroserver.macros.expert.addctrllib` macro. After that
-check again with the list macro if the controller class is present and if
+:class:`~sardana.macroserver.macros.expert.addctrllib` macro::
+
+  Pool_<ServerName>_<ServerNumber>.put_property({"PoolPath":["<Your controller dir path>"]})
+
+  Example:
+  Pool_demo1_1.put_property({"PoolPath":["/home/vagrant/controllers"]})
+
+After that check again with the list macro if the controller class is present and if
 yes let's continue...
 
 To create a controller instance you can use
@@ -40,6 +46,9 @@ For our IcePAP controller we will use two properties: ``Host`` and ``Port`` of
 our IcePAP system::
 
   defctrl IcepapController ipap01 Host 10.0.0.30 Port 5000
+
+.. note::
+  In order to use the controller you must define also a motor and use the created controller as a parameter
 
 .. hint::
   You can use the :class:`~sardana.macroserver.macros.expert.sar_info` macro to
