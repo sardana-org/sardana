@@ -1,4 +1,3 @@
-from sardana.taurus.core.tango.sardana import *
 import uuid
 from taurus import Device
 from taurus.external.unittest import TestCase
