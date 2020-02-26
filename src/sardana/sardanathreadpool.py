@@ -44,8 +44,14 @@ __thread_pool = None
 class OmniWorker(Worker):
 
     def run(self):
+        # There is no release of PyTango yet to bump the requirement
+        # so protect the older versions of PyTango.
         import tango
-        with tango.EnsureOmniThread():
+        try:
+            EnsureOmniThread = getattr(tango, "EnsureOmniThread")
+            with EnsureOmniThread():
+                Worker.run(self)
+        except AttributeError:
             Worker.run(self)
 
 
