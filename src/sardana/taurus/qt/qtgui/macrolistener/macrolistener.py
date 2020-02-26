@@ -216,7 +216,7 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         """
 
         # Filter events sent by itself
-        if arg == self.old_arg:
+        if arg is self.old_arg:
             return
 
         self.old_arg = arg
