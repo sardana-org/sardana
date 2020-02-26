@@ -292,6 +292,7 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         # event and additionally the x-axis it should be plot against
         curves = []
         for column in data['column_desc']:
+            ch_name = column['name']
             ptype = column.get('plot_type', PlotType.No)
             if ptype == PlotType.No:
                 continue
