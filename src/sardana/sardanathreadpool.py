@@ -44,15 +44,20 @@ __thread_pool = None
 class OmniWorker(Worker):
 
     def run(self):
-        # There is no release of PyTango yet to bump the requirement
-        # so protect the older versions of PyTango.
-        import tango
         try:
-            EnsureOmniThread = getattr(tango, "EnsureOmniThread")
-            with EnsureOmniThread():
-                Worker.run(self)
-        except AttributeError:
+            import tango
+        except ImportError:
             Worker.run(self)
+        # Tango is not thread safe when using threading.Thread. One must
+        # use omni threads instead. This was confirmed for parallel
+        # event subscriptions in PyTango#307. Use EnsureOmniThread introduced
+        # in PyTango#327 whenever available.
+        else:
+             if hasattr(tango, "EnsureOmniThread"):
+                 with tango.EnsureOmniThread():
+                     Worker.run(self)
+             else:
+                Worker.run(self)
 
 
 def get_thread_pool():
