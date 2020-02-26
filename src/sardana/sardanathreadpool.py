@@ -53,10 +53,10 @@ class OmniWorker(Worker):
         # event subscriptions in PyTango#307. Use EnsureOmniThread introduced
         # in PyTango#327 whenever available.
         else:
-             if hasattr(tango, "EnsureOmniThread"):
-                 with tango.EnsureOmniThread():
-                     Worker.run(self)
-             else:
+            if hasattr(tango, "EnsureOmniThread"):
+                with tango.EnsureOmniThread():
+                    Worker.run(self)
+            else:
                 Worker.run(self)
 
 
