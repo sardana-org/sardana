@@ -923,6 +923,13 @@ class MeasurementConfiguration(object):
         if ctype != ElementType.External and channel.is_referable():
             value_ref_enabled = channel_data.get('value_ref_enabled', False)
             channel_data['value_ref_enabled'] = value_ref_enabled
+            value_ref_pattern = channel_data.get('value_ref_pattern', '')
+            channel_data['value_ref_pattern'] = value_ref_pattern
+        elif 'value_ref_enabled' in channel_data or 'value_ref_pattern' in \
+                channel_data:
+            msg = 'The channel {} is not referable. You can not set the ' \
+                  'enable and/or the pattern parameters.'.format(name)
+            raise ValueError(msg)
         # Definitively should be initialized by measurement group
         # index MUST be here already (asserting this in the following line)
         channel_data['index'] = channel_data['index']
