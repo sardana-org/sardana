@@ -193,8 +193,8 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
 
     newShortMessage = Qt.pyqtSignal('QString')
 
-    Single = 'single' # each curve has its own plot
-    XAxis = 'x-axis'  # group curves with same X-Axis
+    Single = 'single'  # each curve has its own plot
+    XAxis = 'x-axis'   # group curves with same X-Axis
 
     def __init__(self, parent=None):
         Qt.QObject.__init__(self, parent)
@@ -204,7 +204,8 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         Qt.qApp.SDM.connectWriter("shortMessage", self, 'newShortMessage')
 
         self._plot = MultiPlotWidget()
-        self.createPanel(self._plot, 'Scan plot', registerconfig=False, permanent=False)
+        self.createPanel(
+            self._plot, 'Scan plot', registerconfig=False, permanent=False)
 
     def setGroupMode(self, group):
         assert group in (self.Single, self.XAxis)
