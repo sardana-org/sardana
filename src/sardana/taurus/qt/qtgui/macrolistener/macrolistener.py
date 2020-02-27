@@ -91,7 +91,7 @@ class MultiPlotWidget(Qt.QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         layout = Qt.QVBoxLayout(self)
-        self.win = pyqtgraph.GraphicsLayoutWidget(title='Widget')
+        self.win = pyqtgraph.GraphicsLayoutWidget()
         layout.addWidget(self.win)
         self._plots = {}
         self._timer = None
