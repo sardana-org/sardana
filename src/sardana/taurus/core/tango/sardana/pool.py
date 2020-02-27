@@ -1783,6 +1783,10 @@ class MGConfiguration(object):
             self.applyConfiguration()
 
     def _get_channels_key(self, key, channels_names=None, use_fullname=False):
+        """
+        Helper method to return the value for one channel configuration key,
+        if the key does not exist the value will be None.
+        """
         result = collections.OrderedDict({})
 
         if channels_names is None:
@@ -1790,19 +1794,22 @@ class MGConfiguration(object):
 
         for channel_name in channels_names:
             channel = self._get_channel_data(channel_name)
-
-            value = channel[key]
             if use_fullname:
                 label = channel
             else:
                 label = channel['label']
-                if key == 'plot_axes':
-                    res = []
-                    for v in value:
-                        if v not in ['<mov>', '<idx>']:
-                            v = self.channels[v]['label']
-                        res.append(v)
-                    value = res
+            try:
+                value = channel[key]
+            except KeyError:
+                result[label] = None
+                continue
+            if key == 'plot_axes':
+                res = []
+                for v in value:
+                    if v not in ['<mov>', '<idx>']:
+                        v = self.channels[v]['label']
+                    res.append(v)
+                value = res
             result[label] = value
         return result
 
@@ -1820,6 +1827,10 @@ class MGConfiguration(object):
             self.applyConfiguration()
 
     def _get_ctrls_key(self, key, ctrls_names=None, use_fullname=False):
+        """
+        Helper method to return the value for one controller configuration key,
+        if the key does not exist the value will be None.
+        """
         result = collections.OrderedDict({})
         if ctrls_names is None:
             ctrls_names = self.controllers.keys()
@@ -1828,16 +1839,25 @@ class MGConfiguration(object):
             if ctrl_name == '__tango__':
                 continue
             ctrl = self._get_ctrl_data(ctrl_name)
-            label = ctrl_name
-            value = ctrl[key]
+
+            if use_fullname:
+                label = ctrl_name
+            else:
+                label = DeviceProxy(ctrl_name).alias()
+
+            try:
+                value = ctrl[key]
+            except KeyError:
+                result[label] = None
+                continue
+
             if key == 'synchronization':
                 value = AcqSynchType.get(value)
-            if not use_fullname:
-                label = DeviceProxy(ctrl_name).alias()
-                if key in ['timer', 'monitor']:
-                    value = self.channels[value]['label']
-                elif key == 'synchronizer' and value != 'software':
-                    value = DeviceProxy(value).alias()
+            elif key in ['timer', 'monitor']:
+                value = self.channels[value]['label']
+            elif key == 'synchronizer' and value != 'software':
+                value = DeviceProxy(value).alias()
+
             result[label] = value
         return result
 
