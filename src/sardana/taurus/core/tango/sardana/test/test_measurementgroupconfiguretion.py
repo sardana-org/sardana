@@ -221,7 +221,7 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             self.pool.DeleteElement(mg_name)
 
     def test_ValueRefEnabled(self, elements=["_test_2d_1_1", "_test_2d_1_2",
-                                             "_test_ct_1_1", "_test_ct_1_2"]):
+                                             ]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -229,23 +229,36 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             mg = Device(mg_name)
             enabled = mg.getValueRefEnabled(*elements)
             self._assertResult(enabled, elements, False)
-            mg.setValueRefEnabled(False, *elements)
-            enabled = mg.getValueRefEnabled(*elements)
-            self._assertResult(enabled, elements, False)
-            enabled = mg.getValueRefEnabled("_test_2d_ctrl_1")
-            self._assertResult(enabled, elements[:2], False)
-            enabled = mg.getValueRefEnabled("_test_ct_ctrl_1")
-            self._assertResult(enabled, elements[-2:], False)
             mg.setValueRefEnabled(True, *elements)
             enabled = mg.getValueRefEnabled(*elements)
             self._assertResult(enabled, elements, True)
-
+            mg.setValueRefEnabled(False, elements[0])
+            result = mg.getValueRefEnabled(*elements)
+            expected = [True] * len(elements)
+            expected[0] = False
+            self._assertMultipleResults(result, elements, expected)
+            mg.setValueRefEnabled(True, *elements)
+            enabled = mg.getValueRefEnabled(*elements)
+            self._assertResult(enabled, elements, True)
         finally:
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
 
-    def test_ValueRefPattern(self, elements=["_test_2d_1_1", "_test_2d_1_2",
-                                             "_test_ct_1_3"]):
+    def test_ValueRefEnabledCounters(self, elements=["_test_ct_1_3"]):
+        mg_name = str(uuid.uuid1())
+        argin = [mg_name] + elements
+        self.pool.CreateMeasurementGroup(argin)
+        try:
+            mg = Device(mg_name)
+            result = mg.getValueRefEnabled(*elements)
+            self._assertResult(result, elements, None)
+            with self.assertRaises(Exception):
+                 mg.setValueRefEnabled(True, *elements)
+        finally:
+            mg.cleanUp()
+            self.pool.DeleteElement(mg_name)
+
+    def test_ValueRefPattern(self, elements=["_test_2d_1_1", "_test_2d_1_2"]):
         mg_name = str(uuid.uuid1())
         argin = [mg_name] + elements
         self.pool.CreateMeasurementGroup(argin)
@@ -258,6 +271,21 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             self._assertResult(pattern, elements, '/tmp/test_foo.txt')
             pattern = mg.getValueRefEnabled("_test_2d_ctrl_1")
             self._assertResult(pattern, elements, '/tmp/test_foo.txt')
+
+        finally:
+            mg.cleanUp()
+            self.pool.DeleteElement(mg_name)
+
+    def test_ValueRefPatternCounter(self, elements=["_test_ct_1_3"]):
+        mg_name = str(uuid.uuid1())
+        argin = [mg_name] + elements
+        self.pool.CreateMeasurementGroup(argin)
+        try:
+            mg = Device(mg_name)
+            pattern = mg.getValueRefEnabled(*elements)
+            self._assertResult(pattern, elements, None)
+            with self.assertRaises(Exception):
+                mg.setValueRefEnabled('/tmp/test_foo.txt', *elements)
 
         finally:
             mg.cleanUp()
