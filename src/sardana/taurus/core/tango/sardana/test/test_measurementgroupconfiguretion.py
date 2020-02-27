@@ -253,7 +253,7 @@ class TestMeasurementGroupConfiguration(SarTestTestCase, TestCase):
             result = mg.getValueRefEnabled(*elements)
             self._assertResult(result, elements, None)
             with self.assertRaises(Exception):
-                 mg.setValueRefEnabled(True, *elements)
+                mg.setValueRefEnabled(True, *elements)
         finally:
             mg.cleanUp()
             self.pool.DeleteElement(mg_name)
