@@ -52,7 +52,8 @@ This file follows the formats and conventions from [keepachangelog.com]
   pyplot.draw() to make sure that the plot is refreshed (#1280)
 * Remove TangoAttribute controllers from Sardana (#181, #1279)
 * Remove deprecation warning revealed when running test suite (#1267)
-* Remove event filtering in `DynamicPlotManagerFix` (showscan online) (#1299)
+* Remove event filtering in `DynamicPlotManager` (showscan online) (#1299)
+* Avoid unnecessary creations of DeviceProxies in `ascanct` (#1281)
 
 ### Deprecated
 
