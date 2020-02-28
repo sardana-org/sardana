@@ -51,6 +51,7 @@ from taurus.core.tango import FROM_TANGO_TO_STR_TYPE
 from taurus.core.util.enumeration import Enumeration
 from taurus.core.util.threadpool import ThreadPool
 from taurus.core.util.event import CallableRef
+from taurus.core.tango.tangovalidator import TangoDeviceNameValidator
 
 from sardana.util.tree import BranchNode, LeafNode, Tree
 from sardana.util.motion import Motor as VMotor
@@ -2039,18 +2040,12 @@ class CAcquisition(object):
         .. todo:: add validation for psuedo counters
         """
         non_compatible_channels = []
+        validator = TangoDeviceNameValidator()
         for channel_info in measurement_group.getChannels():
             full_name = channel_info["full_name"]
             name = channel_info["name"]
-            try:
-                # Use DeviceProxy instead of taurus to avoid crashes in Py3
-                # See: tango-controls/pytango#292
-                # taurus.Device(full_name)
-                PyTango.DeviceProxy(full_name)
-            except Exception:
-                # external channels are attributes so Device constructor fails
+            if not validator.isValid(full_name):
                 non_compatible_channels.append(name)
-                continue
         is_compatible = len(non_compatible_channels) == 0
         return is_compatible, non_compatible_channels
 
