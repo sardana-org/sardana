@@ -184,7 +184,6 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         self._checkJsonRecorder()
 
         self.door.recordDataUpdated.connect(self.onRecordDataUpdated)
-        self.old_arg = None
         self.message_template = 'Ready!'
 
     def _checkJsonRecorder(self):
@@ -214,13 +213,6 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         :param arg: RecordData Tuple
         :return:
         """
-
-        # Filter events sent by itself
-        if arg is self.old_arg:
-            return
-
-        self.old_arg = arg
-
         data = arg[1]
         if 'type' in data:
             event_type = data['type']
