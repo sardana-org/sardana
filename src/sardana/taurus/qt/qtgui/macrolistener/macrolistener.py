@@ -61,14 +61,14 @@ __all__ = ['MacroBroker', 'DynamicPlotManager', 'assertPlotAvailability']
 __docformat__ = 'restructuredtext'
 
 COLORS = [Qt.QColor(Qt.Qt.red),
-          Qt.QColor(Qt.Qt.blue),
           Qt.QColor(Qt.Qt.green),
           Qt.QColor(Qt.Qt.magenta),
+          Qt.QColor(Qt.Qt.blue),
           Qt.QColor(Qt.Qt.cyan),
           Qt.QColor(Qt.Qt.yellow),
           Qt.QColor(Qt.Qt.white)]
 
-SYMBOLS = ['o', 't', 't1', 't2', 't3', 's', 'p']
+SYMBOLS = ['x', 'o', 't', 't1', 't2', 't3', 's', 'p']
 
 CURVE_STYLES = [(color, symbol) for symbol in SYMBOLS for color in COLORS]
 
@@ -82,60 +82,99 @@ def assertPlotAvailability(exit_on_error=True):
             exit(1)
 
 
-class ScanPlot(Qt.QWidget):
+def empty_data(nb_points):
+    return ArrayBuffer(numpy.full(nb_points, numpy.nan))
 
-    def __init__(self, x_axis, parent=None):
+
+class MultiPlotWidget(Qt.QWidget):
+
+    def __init__(self, parent=None):
         super().__init__(parent)
         layout = Qt.QVBoxLayout(self)
-#        layout.setContentsMargins(0, 0, 0, 0)
-        self.plot_widget = self._buildPlotWidget(x_axis)
-        layout.addWidget(self.plot_widget)
-        self.x_axis = dict(x_axis, data=[])
-        self.channels = []
+        self.win = pyqtgraph.GraphicsLayoutWidget()
+        layout.addWidget(self.win)
+        self._plots = {}
+        self._timer = None
+        self._event_nb = 0
+        self._last_event_nb = 0
 
-    def _buildPlotWidget(self, x_axis):
-        available = pyqtgraph is not None
-        if available:
-            widget = pyqtgraph.PlotWidget(labels=dict(bottom=x_axis['label']))
-            widget.showGrid(x=True, y=True)
-            widget.scan_legend = widget.addLegend()
-        else:
-            widget = Qt.QLabel(NO_PLOT_MESSAGE)
-        widget.plot_available = available
-        return widget
+    # plots: a list of plots
+    # each plot is:
+    #   dict: { x_axis: { name: axis-name, label: axis-label
+    #           curves: [{ name: curve_name, label: curve_label }] }
 
-    def prepare(self, channels, nb_points=None):
-        widget = self.plot_widget
-        if not widget.plot_available:
-            return
-        widget.clear()
-        # legend is not properly updated when we clear the plot
-        widget.scan_legend.scene().removeItem(widget.scan_legend)
-        widget.scan_legend = widget.addLegend()
-
+    def prepare(self, plots, nb_points=None):
+        self.win.clear()
+        plot_widgets = {}
         nb_points = 2**16 if nb_points is None else nb_points
-        self.x_axis['data'] = ArrayBuffer(numpy.full(nb_points, numpy.nan))
-        self.channels = []
-        styles = LoopList(CURVE_STYLES)
-        for channel in channels:
-            # don't use symbol: slows down plotting
-            pen, _ = styles.next()
-            item = widget.plot(name=channel['label'], pen=pen)
-            channel = dict(channel, plot_item=item,
-                           data=ArrayBuffer(numpy.full(nb_points, numpy.nan)))
-            self.channels.append(channel)
+        plots_per_row = int(len(plots)**0.5)
+        for idx, plot in enumerate(plots):
+            plot_curves = {}
+            x_axis, curves = plot['x_axis'], plot['curves']
+            if idx % plots_per_row == 0:
+                self.win.nextRow()
+            nb_curves = len(curves)
+            labels = dict(bottom=x_axis['label'])
+            if nb_curves == 1:
+                labels['left'] = curves[0]['label']
+            plot_widget = self.win.addPlot(labels=labels)
+            plot_widget.showGrid(x=True, y=True)
+            if nb_curves > 1:
+                plot_widget.addLegend()
+            plot_widget.x_axis = dict(x_axis, data=empty_data(nb_points))
+            styles = LoopList(CURVE_STYLES)
+            for curve in curves:
+                pen, symbol = styles.current()
+                styles.next()
+                style = dict(pen=pen, symbol=symbol,
+                             symbolSize=5, symbolPen=pen, symbolBrush=pen)
+                curve_item = plot_widget.plot(name=curve['label'], **style)
+                curve_item.curve_data = empty_data(nb_points)
+                plot_curves[curve['name']] = curve_item
+            plot_widgets[plot_widget] = plot_curves
+        self._plots = plot_widgets
+        self._event_nb = 0
+        self._last_event_nb = 0
+        self._start_update()
 
     def onNewPoint(self, data):
-        if not self.plot_widget.plot_available:
+        # update internal data and mark the new event
+        for plot_widget, curves in self._plots.items():
+            x_axis = plot_widget.x_axis
+            x_data = x_axis['data']
+            x_data.append(data[x_axis['name']])
+            for curve_name, curve_item in curves.items():
+                y_data = curve_item.curve_data
+                y_data.append(data[curve_name])
+        self._event_nb += 1
+
+    def onEnd(self, data):
+        self.do_update()
+        self._end_update()
+
+    def do_update(self):
+        if self._event_nb == self._last_event_nb:
             return
-        x_data = self.x_axis['data']
-        x_data.append(data[self.x_axis['name']])
-        for channel in self.channels:
-            name = channel['name']
-            y_data = channel['data']
-            plot_item = channel['plot_item']
-            y_data.append(data[name])
-            plot_item.setData(x_data.contents(), y_data.contents())
+        self._last_event_nb = self._event_nb
+        for plot_widget, curves in self._plots.items():
+            x_axis = plot_widget.x_axis
+            x_data = x_axis['data']
+            for curve_name, curve_item in curves.items():
+                y_data = curve_item.curve_data
+                curve_item.setData(x_data.contents(), y_data.contents())
+
+    def _start_update(self):
+        self._end_update()
+        timer = Qt.QTimer()
+        timer.timeout.connect(self.do_update)
+        # refresh curves at a fix rate of ~5Hz
+        timer.start(200)
+        self._timer = timer
+
+    def _end_update(self):
+        if self._timer:
+            self._timer.stop()
+        self._timer = None
 
 
 class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
@@ -154,15 +193,26 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
 
     newShortMessage = Qt.pyqtSignal('QString')
 
+    Single = 'single'  # each curve has its own plot
+    XAxis = 'x-axis'   # group curves with same X-Axis
+
     def __init__(self, parent=None):
         Qt.QObject.__init__(self, parent)
         TaurusBaseComponent.__init__(self, self.__class__.__name__)
 
-        self.__panels = {}
-
-        self._trends1d = {}
-        self._trends2d = {}
+        self._group_mode = self.XAxis
         Qt.qApp.SDM.connectWriter("shortMessage", self, 'newShortMessage')
+
+        self._plot = MultiPlotWidget()
+        self.createPanel(
+            self._plot, 'Scan plot', registerconfig=False, permanent=False)
+
+    def setGroupMode(self, group):
+        assert group in (self.Single, self.XAxis)
+        self._group_mode = group
+
+    def groupMode(self):
+        return self._group_mode
 
     def setModel(self, doorname):
         '''reimplemented from :meth:`TaurusBaseComponent`
@@ -229,54 +279,57 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
         new scan channels and moveables
         """
         data = data_desc['data']
-        # dict< axis: list<channels> >
-        trends1d = collections.defaultdict(list)
-        column_map = {col['name']: col for col in data['column_desc']}
+        col_map = {column['name']: column for column in data['column_desc']}
 
-        # build a map of axis and corresponding channels
+        # Build list of curves. Each curve has the same column info from the
+        # event and additionally the x-axis it should be plot against
+        curves = []
         for column in data['column_desc']:
+            ch_name = column['name']
             ptype = column.get('plot_type', PlotType.No)
             if ptype == PlotType.No:
                 continue
-            ch_name = column['name']
-            axes = []
-            for axis in column.get('plot_axes', ()):
-                if axis == '<idx>':
-                    axis = 'point_nb'
-                axes.append(axis)
+            elif ptype == PlotType.Image:
+                self.warning('Unsupported image plot for %s', ch_name)
+                continue
+            x_axes = ['point_nb' if axis == '<idx>' else axis
+                      for axis in column.get('plot_axes', ())]
+            ndim = column.get('ndim', 0) or 0
             if ptype == PlotType.Spectrum:
-                ndim = column.get('ndim', 0) or 0
                 if ndim == 0:  # this is a trend
-                    for axis in axes:
-                        trends1d[axis].append(column)
+                    for x_axis in x_axes:
+                        x_label = col_map[x_axis]['label']
+                        curve = dict(column, x_axis=x_axis,
+                                     x_axis_label=x_label)
+                        curves.append(curve)
                 else:
                     self.warning('Cannot create spectrum plot for %d dims '
                                  'channel %r', ndim, ch_name)
-            elif ptype == PlotType.Image:
-                self.warning('Unsupported image plot for %s', ch_name)
 
-        # build list of widgets: one plot for each axis. Widgets are recycled
-        # from the previous scans if possible to avoid rearranging the GUI
-        for axis in trends1d:
-            if axis not in self._trends1d:
-                x_axis = column_map[axis]
-                w = ScanPlot(x_axis)
-                title = 'Trend1D - ' + x_axis['label']
-                self.createPanel(w, title, registerconfig=False,
-                                 permanent=False)
-                self._trends1d[axis] = title
+        if self._group_mode == self.Single:
+            plots = []
+            for curve in curves:
+                plot = dict(x_axis=dict(name=curve['x_axis'],
+                                        label=curve['x_axis_label']),
+                            curves=[curve])
+                plots.append(plot)
+        elif self._group_mode == self.XAxis:
+            plot_map = {}
+            for curve in curves:
+                x_axis = curve['x_axis']
+                plot = plot_map.get(x_axis)
+                if plot is None:
+                    plot = dict(x_axis=dict(name=curve['x_axis'],
+                                            label=curve['x_axis_label']),
+                                curves=[])
+                    plot_map[x_axis] = plot
+                plot['curves'].append(curve)
+            plots = tuple(plot_map.values())
+        else:
+            raise NotImplementedError
 
-        # remove widgets from previous scans which are not used in current scan
-        for axis in tuple(self._trends1d):
-            if axis not in trends1d:
-                self.removePanel(self._trends1d[axis])
-                del self._trends1d[axis]
-
-        # prepare each plot widget with list of channels
-        nb_points = data.get('total_scan_intervals', 2**16) + 1
-        for axis, panel_name in self._trends1d.items():
-            widget = self.getPanelWidget(panel_name)
-            widget.prepare(trends1d[axis], nb_points)
+        nb_points = data.get('total_scan_intervals', 2**16 - 1) + 1
+        self._plot.prepare(plots, nb_points=nb_points)
 
         # build status message
         serialno = 'Scan #{}'.format(data.get('serialno', '?'))
@@ -297,15 +350,14 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
 
     def newPoint(self, point):
         data = point['data']
-        for _, panel_name in self._trends1d.items():
-            widget = self.getPanelWidget(panel_name)
-            widget.onNewPoint(data)
+        self._plot.onNewPoint(data)
         point_nb = 'Point #{}'.format(data['point_nb'])
         msg = self.message_template.format(progress=point_nb)
         self.newShortMessage.emit(msg)
 
     def end(self, end_data):
         data = end_data['data']
+        self._plot.onEnd(data)
         progress = 'Ended {}'.format(data['endtime'])
         msg = self.message_template.format(progress=progress)
         self.newShortMessage.emit(msg)
@@ -342,19 +394,6 @@ class DynamicPlotManager(Qt.QObject, TaurusBaseComponent):
             widget.setModel(None)
         widget.setParent(None)
         widget.close()
-
-    def removePanels(self, names=None):
-        '''removes panels.
-
-        :param names: (seq<str>) names of the panels to be removed. If None is
-                      given (default), all the panels are removed.
-        '''
-        if names is None:
-            names = (list(self._trends1d.values())
-                     + list(self._trends2d.values()))
-            # TODO: do the same for other temporary panels
-        for pname in names:
-            self.removePanel(pname)
 
 
 class MacroBroker(DynamicPlotManager):
