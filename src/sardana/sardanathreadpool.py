@@ -70,6 +70,11 @@ def get_thread_pool():
     global __thread_pool_lock
     with __thread_pool_lock:
         if __thread_pool is None:
-            __thread_pool = ThreadPool(name="SardanaTP", Psize=10,
-                                       worker_cls=OmniWorker)
+            # protect older versions of Taurus (without the worker_cls argument)
+            # remove it whenever we bump Taurus dependency
+            try:
+                __thread_pool = ThreadPool(name="SardanaTP", Psize=10,
+                                           worker_cls=OmniWorker)
+            except TypeError:
+                __thread_pool = ThreadPool(name="SardanaTP", Psize=10)
         return __thread_pool

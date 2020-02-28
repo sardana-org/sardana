@@ -1962,8 +1962,17 @@ class CSScan(CScan):
 class CAcquisition(object):
 
     def __init__(self):
-        self._thread_pool = ThreadPool(name="ValueBufferTH", Psize=1,
-                                       Qsize=100000, worker_cls=OmniWorker)
+        # protect older versions of Taurus (without the worker_cls argument)
+        # remove it whenever we bump Taurus dependency
+        try:
+            self._thread_pool = ThreadPool(name="ValueBufferTH",
+                                           Psize=1,
+                                           Qsize=100000,
+                                           worker_cls=OmniWorker)
+        except TypeError:
+            self._thread_pool = ThreadPool(name="ValueBufferTH",
+                                           Psize=1,
+                                           Qsize=100000)
         self._countdown_latch = CountLatch()
         self._index_offset = 0
 
