@@ -7,7 +7,13 @@ This file follows the formats and conventions from [keepachangelog.com]
 
 ### Added
 
-* Support to Python >= 3.5 (#1089, #1173, 1201)
+* Support to Python >= 3.5 (#1089, #1173, #1201)
+* Showscan online based on pyqtgraph (#1285)
+  * multiple plots in the same MultiPlot widget (as opposed to different panels before)
+  * option to group curves by x-axis or individual plot per curve
+  * new showscan console script
+  * support fast scans: update curves at a fix rate (5Hz)
+  * better curve colors and symbols
 * Pre-scan snapshot macros: `lssnap`, `defsnap` and `udefsnap` (#1199)
 * Instruments creation and configuration in sar_demo (#1198)
 * Documentation to Taurus Extensions of Sardana Devices: MacroServer part
