@@ -37,6 +37,7 @@ import time
 import weakref
 import datetime
 import traceback
+import functools
 
 from taurus.core.util.log import DebugIt
 from taurus.core.util.enumeration import Enumeration
@@ -807,114 +808,117 @@ class PoolAcquisitionBase(PoolAction):
         self._set_pool_ctrl_dict_loop(ctrls)
         # split controllers to read value and value reference
         self._split_ctrl(ctrls)
-        self.add_finish_hook(self._reset_ctrl_dicts, False)
+        try:
+            # channels that are acquired (only enabled)
+            self._channels = []
 
-        # channels that are acquired (only enabled)
-        self._channels = []
-
-        def load(channel, value, repetitions, latency=0):
-            axis = channel.axis
-            pool_ctrl = channel.controller
-            ctrl = pool_ctrl.ctrl
-            ctrl.PreLoadAll()
-            try:
-                res = ctrl.PreLoadOne(axis, value, repetitions,
-                                      latency)
-            except TypeError:
+            def load(channel, value, repetitions, latency=0):
+                axis = channel.axis
+                pool_ctrl = channel.controller
+                ctrl = pool_ctrl.ctrl
+                ctrl.PreLoadAll()
                 try:
-                    res = ctrl.PreLoadOne(axis, value, repetitions)
-                    msg = ("PreLoadOne(axis, value, repetitions) is "
-                           "deprecated since version 2.7.0. Use PreLoadOne("
-                           "axis, value, repetitions, latency_time) instead.")
-                    self.warning(msg)
+                    res = ctrl.PreLoadOne(axis, value, repetitions,
+                                          latency)
                 except TypeError:
-                    res = ctrl.PreLoadOne(axis, value)
-                    msg = ("PreLoadOne(axis, value) is deprecated since "
-                           "version 2.3.0. Use PreLoadOne(axis, value, "
-                           "repetitions, latency_time) instead.")
-                    self.warning(msg)
-            if not res:
-                msg = ("%s.PreLoadOne(%d) returned False" %
-                       (pool_ctrl.name, axis))
-                raise Exception(msg)
-            try:
-                ctrl.LoadOne(axis, value, repetitions, latency)
-            except TypeError:
+                    try:
+                        res = ctrl.PreLoadOne(axis, value, repetitions)
+                        msg = ("PreLoadOne(axis, value, repetitions) is "
+                               "deprecated since version 2.7.0."
+                               "Use PreLoadOne(axis, value, repetitions, "
+                               "latency_time) instead.")
+                        self.warning(msg)
+                    except TypeError:
+                        res = ctrl.PreLoadOne(axis, value)
+                        msg = ("PreLoadOne(axis, value) is deprecated since "
+                               "version 2.3.0. Use PreLoadOne(axis, value, "
+                               "repetitions, latency_time) instead.")
+                        self.warning(msg)
+                if not res:
+                    msg = ("%s.PreLoadOne(%d) returned False" %
+                           (pool_ctrl.name, axis))
+                    raise Exception(msg)
                 try:
-                    ctrl.LoadOne(axis, value, repetitions)
-                    msg = ("LoadOne(axis, value, repetitions) is deprecated "
-                           "since version Jan18. Use LoadOne(axis, value, "
-                           "repetitions, latency_time) instead.")
-                    self.warning(msg)
+                    ctrl.LoadOne(axis, value, repetitions, latency)
                 except TypeError:
-                    ctrl.LoadOne(axis, value)
-                    msg = ("LoadOne(axis, value) is deprecated since "
-                           "version 2.3.0. Use LoadOne(axis, value, "
-                           "repetitions) instead.")
-                    self.warning(msg)
-            ctrl.LoadAll()
+                    try:
+                        ctrl.LoadOne(axis, value, repetitions)
+                        msg = ("LoadOne(axis, value, repetitions) is"
+                               "deprecated since version Jan18."
+                               "Use LoadOne(axis, value, repetitions, "
+                               "latency_time) instead.")
+                        self.warning(msg)
+                    except TypeError:
+                        ctrl.LoadOne(axis, value)
+                        msg = ("LoadOne(axis, value) is deprecated since "
+                               "version 2.3.0. Use LoadOne(axis, value, "
+                               "repetitions) instead.")
+                        self.warning(msg)
+                ctrl.LoadAll()
 
-        with ActionContext(self):
-            # PreLoadAll, PreLoadOne, LoadOne and LoadAll
-            for ctrl in ctrls:
-                # TODO find solution for master now sardana only use timer
-                load(ctrl.timer, value, repetitions, latency)
+            with ActionContext(self):
+                # PreLoadAll, PreLoadOne, LoadOne and LoadAll
+                for ctrl in ctrls:
+                    # TODO find solution for master now sardana only use timer
+                    load(ctrl.timer, value, repetitions, latency)
 
-            # TODO: remove when the action allows to use tango attributes
-            try:
-                ctrls.pop('__tango__')
-            except Exception:
-                pass
+                # TODO: remove when the action allows to use tango attributes
+                try:
+                    ctrls.pop('__tango__')
+                except Exception:
+                    pass
 
-            # PreStartAll on all enabled controllers
-            for ctrl in ctrls:
-                pool_ctrl = ctrl.element
-                pool_ctrl.ctrl.PreStartAll()
-
-            # PreStartOne & StartOne on all enabled elements
-            for ctrl in ctrls:
-                channels = ctrl.get_channels(enabled=True)
-
-                # make sure that the master timer/monitor is started as the
-                # last one
-                channels.remove(ctrl.master)
-                channels.append(ctrl.master)
-                for channel in channels:
-                    axis = channel.axis
+                # PreStartAll on all enabled controllers
+                for ctrl in ctrls:
                     pool_ctrl = ctrl.element
-                    ret = pool_ctrl.ctrl.PreStartOne(axis, value)
-                    if not ret:
-                        msg = ("%s.PreStartOne(%d) returns False" %
-                               (ctrl.name, axis))
-                        raise Exception(msg)
+                    pool_ctrl.ctrl.PreStartAll()
+
+                # PreStartOne & StartOne on all enabled elements
+                for ctrl in ctrls:
+                    channels = ctrl.get_channels(enabled=True)
+
+                    # make sure that the master timer/monitor is started as
+                    # the last one
+                    channels.remove(ctrl.master)
+                    channels.append(ctrl.master)
+                    for channel in channels:
+                        axis = channel.axis
+                        pool_ctrl = ctrl.element
+                        ret = pool_ctrl.ctrl.PreStartOne(axis, value)
+                        if not ret:
+                            msg = ("%s.PreStartOne(%d) returns False" %
+                                   (ctrl.name, axis))
+                            raise Exception(msg)
+                        try:
+                            pool_ctrl = ctrl.element
+                            pool_ctrl.ctrl.StartOne(axis, value)
+                        except Exception as e:
+                            self.debug(e, exc_info=True)
+                            channel.set_state(State.Fault, propagate=2)
+                            msg = ("%s.StartOne(%d) failed" %
+                                   (ctrl.name, axis))
+                            raise Exception(msg)
+
+                        self._channels.append(channel)
+
+                # set the state of all elements to  and inform their listeners
+                for channel in self._channels:
+                    channel.set_state(State.Moving, propagate=2)
+
+                # StartAll on all enabled controllers
+                for ctrl in ctrls:
                     try:
                         pool_ctrl = ctrl.element
-                        pool_ctrl.ctrl.StartOne(axis, value)
+                        pool_ctrl.ctrl.StartAll()
                     except Exception as e:
+                        channels = ctrl.get_channels(enabled=True)
                         self.debug(e, exc_info=True)
-                        channel.set_state(State.Fault, propagate=2)
-                        msg = ("%s.StartOne(%d) failed" %
-                               (ctrl.name, axis))
+                        for channel in channels:
+                            channel.set_state(State.Fault, propagate=2)
+                        msg = ("%s.StartAll() failed" % ctrl.name)
                         raise Exception(msg)
-
-                    self._channels.append(channel)
-
-            # set the state of all elements to  and inform their listeners
-            for channel in self._channels:
-                channel.set_state(State.Moving, propagate=2)
-
-            # StartAll on all enabled controllers
-            for ctrl in ctrls:
-                try:
-                    pool_ctrl = ctrl.element
-                    pool_ctrl.ctrl.StartAll()
-                except Exception as e:
-                    channels = ctrl.get_channels(enabled=True)
-                    self.debug(e, exc_info=True)
-                    for channel in channels:
-                        channel.set_state(State.Fault, propagate=2)
-                    msg = ("%s.StartAll() failed" % ctrl.name)
-                    raise Exception(msg)
+        finally:
+            self._reset_ctrl_dicts()
 
     def _set_pool_ctrl_dict_loop(self, ctrls):
         ctrl_channels = {}
@@ -997,71 +1001,74 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
 
     @DebugIt()
     def action_loop(self):
-        i = 0
+        try:
+            i = 0
 
-        states, values, value_refs = {}, {}, {}
-        for channel in self._channels:
-            element = channel.element
-            states[element] = None
+            states, values, value_refs = {}, {}, {}
+            for channel in self._channels:
+                element = channel.element
+                states[element] = None
 
-        nap = self._acq_sleep_time
-        nb_states_per_value = self._nb_states_per_value
+            nap = self._acq_sleep_time
+            nb_states_per_value = self._nb_states_per_value
 
-        while True:
-            self.read_state_info(ret=states)
-            if not self.in_acquisition(states):
-                break
+            while True:
+                self.read_state_info(ret=states)
+                if not self.in_acquisition(states):
+                    break
 
-            # read value every n times
-            if not i % nb_states_per_value:
-                self.read_value(ret=values)
-                for acquirable, value in list(values.items()):
+                # read value every n times
+                if not i % nb_states_per_value:
+                    self.read_value(ret=values)
+                    for acquirable, value in list(values.items()):
+                        if is_value_error(value):
+                            self.error("Loop read value error for %s" %
+                                       acquirable.name)
+                            msg = "Details: " + "".join(
+                                traceback.format_exception(*value.exc_info))
+                            self.debug(msg)
+                            acquirable.put_value(value)
+                        else:
+                            acquirable.extend_value_buffer(value)
+
+                time.sleep(nap)
+                i += 1
+
+            with ActionContext(self):
+                self.raw_read_state_info(ret=states)
+                self.raw_read_value(ret=values)
+                self.raw_read_value_ref(ret=value_refs)
+
+            for acquirable, state_info in list(states.items()):
+                # first update the element state so that value calculation
+                # that is done after takes the updated state into account
+                acquirable.set_state_info(state_info, propagate=0)
+                if acquirable in values:
+                    value = values[acquirable]
                     if is_value_error(value):
-                        self.error("Loop read value error for %s" %
+                        self.error("Loop final read value error for: %s" %
                                    acquirable.name)
                         msg = "Details: " + "".join(
                             traceback.format_exception(*value.exc_info))
                         self.debug(msg)
                         acquirable.put_value(value)
                     else:
-                        acquirable.extend_value_buffer(value)
-
-            time.sleep(nap)
-            i += 1
-
-        with ActionContext(self):
-            self.raw_read_state_info(ret=states)
-            self.raw_read_value(ret=values)
-            self.raw_read_value_ref(ret=value_refs)
-
-        for acquirable, state_info in list(states.items()):
-            # first update the element state so that value calculation
-            # that is done after takes the updated state into account
-            acquirable.set_state_info(state_info, propagate=0)
-            if acquirable in values:
-                value = values[acquirable]
-                if is_value_error(value):
-                    self.error("Loop final read value error for: %s" %
-                               acquirable.name)
-                    msg = "Details: " + "".join(
-                        traceback.format_exception(*value.exc_info))
-                    self.debug(msg)
-                    acquirable.put_value(value)
-                else:
-                    acquirable.extend_value_buffer(value, propagate=2)
-            if acquirable in value_refs:
-                value_ref = value_refs[acquirable]
-                if is_value_error(value_ref):
-                    self.error("Loop final read value ref error for: %s" %
-                               acquirable.name)
-                    msg = "Details: " + "".join(
-                        traceback.format_exception(*value_ref.exc_info))
-                    self.debug(msg)
-                acquirable.extend_value_ref_buffer(value_ref, propagate=2)
-            with acquirable:
-                acquirable.clear_operation()
-                state_info = acquirable._from_ctrl_state_info(state_info)
-                acquirable.set_state_info(state_info, propagate=2)
+                        acquirable.extend_value_buffer(value, propagate=2)
+                if acquirable in value_refs:
+                    value_ref = value_refs[acquirable]
+                    if is_value_error(value_ref):
+                        self.error("Loop final read value ref error for: %s" %
+                                   acquirable.name)
+                        msg = "Details: " + "".join(
+                            traceback.format_exception(*value_ref.exc_info))
+                        self.debug(msg)
+                    acquirable.extend_value_ref_buffer(value_ref, propagate=2)
+                with acquirable:
+                    acquirable.clear_operation()
+                    state_info = acquirable._from_ctrl_state_info(state_info)
+                    acquirable.set_state_info(state_info, propagate=2)
+        finally:
+            self._reset_ctrl_dicts()
 
 
 class PoolAcquisitionSoftware(PoolAcquisitionBase):
@@ -1108,68 +1115,71 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
 
     @DebugIt()
     def action_loop(self):
-        states, values, value_refs = {}, {}, {}
-        for channel in self._channels:
-            element = channel.element
-            states[element] = None
+        try:
+            states, values, value_refs = {}, {}, {}
+            for channel in self._channels:
+                element = channel.element
+                states[element] = None
 
-        nap = self._acq_sleep_time
-        nb_states_per_value = self._nb_states_per_value
+            nap = self._acq_sleep_time
+            nb_states_per_value = self._nb_states_per_value
 
-        i = 0
-        while True:
-            self.read_state_info(ret=states)
-            if not self.in_acquisition(states):
-                break
+            i = 0
+            while True:
+                self.read_state_info(ret=states)
+                if not self.in_acquisition(states):
+                    break
 
-            # read value every n times
-            if not i % nb_states_per_value:
-                self.read_value_loop(ret=values)
-                for acquirable, value in list(values.items()):
-                    acquirable.put_value(value)
+                # read value every n times
+                if not i % nb_states_per_value:
+                    self.read_value_loop(ret=values)
+                    for acquirable, value in list(values.items()):
+                        acquirable.put_value(value)
 
-            time.sleep(nap)
-            i += 1
+                time.sleep(nap)
+                i += 1
 
-        for slave in self._slaves:
-            try:
-                slave.stop_action()
-            except Exception:
-                self.warning("Unable to stop slave acquisition %s",
-                             slave.getLogName())
-                self.debug("Details", exc_info=1)
+            for slave in self._slaves:
+                try:
+                    slave.stop_action()
+                except Exception:
+                    self.warning("Unable to stop slave acquisition %s",
+                                 slave.getLogName())
+                    self.debug("Details", exc_info=1)
 
-        with ActionContext(self):
-            self.raw_read_state_info(ret=states)
-            self.raw_read_value(ret=values)
-            self.raw_read_value_ref(ret=value_refs)
+            with ActionContext(self):
+                self.raw_read_state_info(ret=states)
+                self.raw_read_value(ret=values)
+                self.raw_read_value_ref(ret=value_refs)
 
-        for acquirable, state_info in list(states.items()):
-            # first update the element state so that value calculation
-            # that is done after takes the updated state into account
-            acquirable.set_state_info(state_info, propagate=0)
-            if acquirable in values:
-                value = values[acquirable]
-                if is_value_error(value):
-                    self.error("Loop final read value error for: %s" %
-                               acquirable.name)
-                    msg = "Details: " + "".join(
-                        traceback.format_exception(*value.exc_info))
-                    self.debug(msg)
-                acquirable.append_value_buffer(value, self._index)
-            if acquirable in value_refs:
-                value_ref = value_refs[acquirable]
-                if is_value_error(value_ref):
-                    self.error("Loop final read value ref error for: %s" %
-                               acquirable.name)
-                    msg = "Details: " + "".join(
-                        traceback.format_exception(*value_ref.exc_info))
-                    self.debug(msg)
-                acquirable.append_value_ref_buffer(value_ref, self._index)
-            with acquirable:
-                acquirable.clear_operation()
-                state_info = acquirable._from_ctrl_state_info(state_info)
-                acquirable.set_state_info(state_info, propagate=2)
+            for acquirable, state_info in list(states.items()):
+                # first update the element state so that value calculation
+                # that is done after takes the updated state into account
+                acquirable.set_state_info(state_info, propagate=0)
+                if acquirable in values:
+                    value = values[acquirable]
+                    if is_value_error(value):
+                        self.error("Loop final read value error for: %s" %
+                                   acquirable.name)
+                        msg = "Details: " + "".join(
+                            traceback.format_exception(*value.exc_info))
+                        self.debug(msg)
+                    acquirable.append_value_buffer(value, self._index)
+                if acquirable in value_refs:
+                    value_ref = value_refs[acquirable]
+                    if is_value_error(value_ref):
+                        self.error("Loop final read value ref error for: %s" %
+                                   acquirable.name)
+                        msg = "Details: " + "".join(
+                            traceback.format_exception(*value_ref.exc_info))
+                        self.debug(msg)
+                    acquirable.append_value_ref_buffer(value_ref, self._index)
+                with acquirable:
+                    acquirable.clear_operation()
+                    state_info = acquirable._from_ctrl_state_info(state_info)
+                    acquirable.set_state_info(state_info, propagate=2)
+        finally:
+            self._reset_ctrl_dicts()
 
 
 class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
@@ -1203,83 +1213,86 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
 
     @DebugIt()
     def action_loop(self):
-        i = 0
+        try:
+            i = 0
 
-        states, values, value_refs = {}, {}, {}
-        for channel in self._channels:
-            element = channel.element
-            states[element] = None
+            states, values, value_refs = {}, {}, {}
+            for channel in self._channels:
+                element = channel.element
+                states[element] = None
 
-        nap = self._acq_sleep_time
-        nb_states_per_value = self._nb_states_per_value
+            nap = self._acq_sleep_time
+            nb_states_per_value = self._nb_states_per_value
 
-        while True:
-            self.read_state_info(ret=states)
-            if not self.in_acquisition(states):
-                break
+            while True:
+                self.read_state_info(ret=states)
+                if not self.in_acquisition(states):
+                    break
 
-            # read value every n times
-            if not i % nb_states_per_value:
-                self.read_value(ret=values)
-                for acquirable, value in list(values.items()):
+                # read value every n times
+                if not i % nb_states_per_value:
+                    self.read_value(ret=values)
+                    for acquirable, value in list(values.items()):
+                        if is_value_error(value):
+                            self.error("Loop read value error for %s" %
+                                       acquirable.name)
+                            msg = "Details: " + "".join(
+                                traceback.format_exception(*value.exc_info))
+                            self.debug(msg)
+                            acquirable.put_value(value)
+                        else:
+                            acquirable.extend_value_buffer(value)
+                    self.read_value_ref(ret=value_refs)
+                    for acquirable, value_ref in list(value_refs.items()):
+                        if is_value_error(value_ref):
+                            self.error("Loop read value ref error for %s" %
+                                       acquirable.name)
+                            msg = "Details: " + "".join(
+                                traceback.format_exception(*value.exc_info))
+                            self.debug(msg)
+                            acquirable.put_value_ref(value)
+                        else:
+                            acquirable.extend_value_ref_buffer(value_ref)
+                time.sleep(nap)
+                i += 1
+
+            with ActionContext(self):
+                self.raw_read_state_info(ret=states)
+                self.raw_read_value(ret=values)
+                self.raw_read_value_ref(ret=value_refs)
+
+            for acquirable, state_info in list(states.items()):
+                # first update the element state so that value calculation
+                # that is done after takes the updated state into account
+                acquirable.set_state_info(state_info, propagate=0)
+                if acquirable in values:
+                    value = values[acquirable]
                     if is_value_error(value):
-                        self.error("Loop read value error for %s" %
+                        self.error("Loop final read value error for: %s" %
                                    acquirable.name)
                         msg = "Details: " + "".join(
                             traceback.format_exception(*value.exc_info))
                         self.debug(msg)
                         acquirable.put_value(value)
                     else:
-                        acquirable.extend_value_buffer(value)
-                self.read_value_ref(ret=value_refs)
-                for acquirable, value_ref in list(value_refs.items()):
+                        acquirable.extend_value_buffer(value, propagate=2)
+                if acquirable in value_refs:
+                    value_ref = value_refs[acquirable]
                     if is_value_error(value_ref):
-                        self.error("Loop read value ref error for %s" %
+                        self.error("Loop final read value ref error for: %s" %
                                    acquirable.name)
                         msg = "Details: " + "".join(
-                            traceback.format_exception(*value.exc_info))
+                            traceback.format_exception(*value_ref.exc_info))
                         self.debug(msg)
-                        acquirable.put_value_ref(value)
+                        acquirable.put_value_ref(value_ref)
                     else:
-                        acquirable.extend_value_ref_buffer(value_ref)
-            time.sleep(nap)
-            i += 1
-
-        with ActionContext(self):
-            self.raw_read_state_info(ret=states)
-            self.raw_read_value(ret=values)
-            self.raw_read_value_ref(ret=value_refs)
-
-        for acquirable, state_info in list(states.items()):
-            # first update the element state so that value calculation
-            # that is done after takes the updated state into account
-            acquirable.set_state_info(state_info, propagate=0)
-            if acquirable in values:
-                value = values[acquirable]
-                if is_value_error(value):
-                    self.error("Loop final read value error for: %s" %
-                               acquirable.name)
-                    msg = "Details: " + "".join(
-                        traceback.format_exception(*value.exc_info))
-                    self.debug(msg)
-                    acquirable.put_value(value)
-                else:
-                    acquirable.extend_value_buffer(value, propagate=2)
-            if acquirable in value_refs:
-                value_ref = value_refs[acquirable]
-                if is_value_error(value_ref):
-                    self.error("Loop final read value ref error for: %s" %
-                               acquirable.name)
-                    msg = "Details: " + "".join(
-                        traceback.format_exception(*value_ref.exc_info))
-                    self.debug(msg)
-                    acquirable.put_value_ref(value_ref)
-                else:
-                    acquirable.extend_value_ref_buffer(value_ref, propagate=2)
-            with acquirable:
-                acquirable.clear_operation()
-                state_info = acquirable._from_ctrl_state_info(state_info)
-                acquirable.set_state_info(state_info, propagate=2)
+                        acquirable.extend_value_ref_buffer(value_ref, propagate=2)
+                with acquirable:
+                    acquirable.clear_operation()
+                    state_info = acquirable._from_ctrl_state_info(state_info)
+                    acquirable.set_state_info(state_info, propagate=2)
+        finally:
+            self._reset_ctrl_dicts()
 
 
 class PoolCTAcquisition(PoolAcquisitionBase):
@@ -1314,60 +1327,62 @@ class PoolCTAcquisition(PoolAcquisitionBase):
 
     @DebugIt()
     def action_loop(self):
-        i = 0
+        try:
+            i = 0
 
-        states, values = {}, {}
-        for element in self._channels:
-            states[element] = None
-            # values[element] = None
+            states, values = {}, {}
+            for element in self._channels:
+                states[element] = None
+                # values[element] = None
 
-        nap = self._acq_sleep_time
-        nb_states_per_value = self._nb_states_per_value
+            nap = self._acq_sleep_time
+            nb_states_per_value = self._nb_states_per_value
 
-        # read values to send a first event when starting to acquire
-        with ActionContext(self):
-            self.raw_read_value_loop(ret=values)
-            for acquirable, value in list(values.items()):
-                acquirable.put_value(value, propagate=2)
-
-        while True:
-            self.read_state_info(ret=states)
-            if not self.in_acquisition(states):
-                break
-
-            # read value every n times
-            if not i % nb_states_per_value:
-                self.read_value_loop(ret=values)
+            # read values to send a first event when starting to acquire
+            with ActionContext(self):
+                self.raw_read_value_loop(ret=values)
                 for acquirable, value in list(values.items()):
-                    acquirable.put_value(value)
+                    acquirable.put_value(value, propagate=2)
 
-            time.sleep(nap)
-            i += 1
+            while True:
+                self.read_state_info(ret=states)
+                if not self.in_acquisition(states):
+                    break
 
-        for slave in self._slaves:
-            try:
-                slave.stop_action()
-            except Exception:
-                self.warning("Unable to stop slave acquisition %s",
-                             slave.getLogName())
-                self.debug("Details", exc_info=1)
+                # read value every n times
+                if not i % nb_states_per_value:
+                    self.read_value_loop(ret=values)
+                    for acquirable, value in list(values.items()):
+                        acquirable.put_value(value)
 
-        with ActionContext(self):
-            self.raw_read_state_info(ret=states)
-            self.raw_read_value_loop(ret=values)
+                time.sleep(nap)
+                i += 1
 
-        for acquirable, state_info in list(states.items()):
-            # first update the element state so that value calculation
-            # that is done after takes the updated state into account
-            acquirable.set_state_info(state_info, propagate=0)
-            if acquirable in values:
-                value = values[acquirable]
-                acquirable.put_value(value, propagate=2)
-            with acquirable:
-                acquirable.clear_operation()
-                state_info = acquirable._from_ctrl_state_info(state_info)
-                acquirable.set_state_info(state_info, propagate=2)
+            for slave in self._slaves:
+                try:
+                    slave.stop_action()
+                except Exception:
+                    self.warning("Unable to stop slave acquisition %s",
+                                 slave.getLogName())
+                    self.debug("Details", exc_info=1)
 
+            with ActionContext(self):
+                self.raw_read_state_info(ret=states)
+                self.raw_read_value_loop(ret=values)
+
+            for acquirable, state_info in list(states.items()):
+                # first update the element state so that value calculation
+                # that is done after takes the updated state into account
+                acquirable.set_state_info(state_info, propagate=0)
+                if acquirable in values:
+                    value = values[acquirable]
+                    acquirable.put_value(value, propagate=2)
+                with acquirable:
+                    acquirable.clear_operation()
+                    state_info = acquirable._from_ctrl_state_info(state_info)
+                    acquirable.set_state_info(state_info, propagate=2)
+        finally:
+            self._reset_ctrl_dicts()
 
 class Pool0DAcquisition(PoolAction):
 
@@ -1453,9 +1468,11 @@ class Pool0DAcquisition(PoolAction):
             # that is done after takes the updated state into account
             state_info = acquirable._from_ctrl_state_info(state_info)
             acquirable.set_state_info(state_info, propagate=0)
-            with acquirable:
-                acquirable.clear_operation()
-                acquirable.set_state_info(state_info, propagate=2)
+            set_state_info = functools.partial(acquirable.set_state_info,
+                                               state_info,
+                                               propagate=2,
+                                               safe=True)
+            self.add_finish_hook(set_state_info, False)
 
     def stop_action(self, *args, **kwargs):
         """Stop procedure for this action."""
