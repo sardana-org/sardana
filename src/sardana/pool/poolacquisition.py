@@ -1063,10 +1063,12 @@ class PoolAcquisitionHardware(PoolAcquisitionBase):
                             traceback.format_exception(*value_ref.exc_info))
                         self.debug(msg)
                     acquirable.extend_value_ref_buffer(value_ref, propagate=2)
-                with acquirable:
-                    acquirable.clear_operation()
-                    state_info = acquirable._from_ctrl_state_info(state_info)
-                    acquirable.set_state_info(state_info, propagate=2)
+                state_info = acquirable._from_ctrl_state_info(state_info)
+                set_state_info = functools.partial(acquirable.set_state_info,
+                                                   state_info,
+                                                   propagate=2,
+                                                   safe=True)
+                self.add_finish_hook(set_state_info, False)
         finally:
             self._reset_ctrl_dicts()
 
@@ -1174,10 +1176,12 @@ class PoolAcquisitionSoftware(PoolAcquisitionBase):
                             traceback.format_exception(*value_ref.exc_info))
                         self.debug(msg)
                     acquirable.append_value_ref_buffer(value_ref, self._index)
-                with acquirable:
-                    acquirable.clear_operation()
-                    state_info = acquirable._from_ctrl_state_info(state_info)
-                    acquirable.set_state_info(state_info, propagate=2)
+                state_info = acquirable._from_ctrl_state_info(state_info)
+                set_state_info = functools.partial(acquirable.set_state_info,
+                                                   state_info,
+                                                   propagate=2,
+                                                   safe=True)
+                self.add_finish_hook(set_state_info, False)
         finally:
             self._reset_ctrl_dicts()
 
@@ -1287,10 +1291,12 @@ class PoolAcquisitionSoftwareStart(PoolAcquisitionBase):
                         acquirable.put_value_ref(value_ref)
                     else:
                         acquirable.extend_value_ref_buffer(value_ref, propagate=2)
-                with acquirable:
-                    acquirable.clear_operation()
-                    state_info = acquirable._from_ctrl_state_info(state_info)
-                    acquirable.set_state_info(state_info, propagate=2)
+                state_info = acquirable._from_ctrl_state_info(state_info)
+                set_state_info = functools.partial(acquirable.set_state_info,
+                                                   state_info,
+                                                   propagate=2,
+                                                   safe=True)
+                self.add_finish_hook(set_state_info, False)
         finally:
             self._reset_ctrl_dicts()
 
@@ -1377,10 +1383,12 @@ class PoolCTAcquisition(PoolAcquisitionBase):
                 if acquirable in values:
                     value = values[acquirable]
                     acquirable.put_value(value, propagate=2)
-                with acquirable:
-                    acquirable.clear_operation()
-                    state_info = acquirable._from_ctrl_state_info(state_info)
-                    acquirable.set_state_info(state_info, propagate=2)
+                state_info = acquirable._from_ctrl_state_info(state_info)
+                set_state_info = functools.partial(acquirable.set_state_info,
+                                                   state_info,
+                                                   propagate=2,
+                                                   safe=True)
+                self.add_finish_hook(set_state_info, False)
         finally:
             self._reset_ctrl_dicts()
 
