@@ -1801,7 +1801,7 @@ class MGConfiguration(object):
         result = collections.OrderedDict({})
 
         if channels_names is None:
-            channels_names = list(self.channel_list_name)
+            channels_names = self.channel_list_name
 
         for channel_name in channels_names:
             channel = self._get_channel_data(channel_name)
@@ -1844,7 +1844,7 @@ class MGConfiguration(object):
         """
         result = collections.OrderedDict({})
         if ctrls_names is None:
-            ctrls_names = list(self.controller_list_name)
+            ctrls_names = self.controller_list_name
 
         for ctrl_name in ctrls_names:
             if ctrl_name == '__tango__':
@@ -1876,11 +1876,14 @@ class MGConfiguration(object):
         result = collections.OrderedDict({})
 
         if channels_names is None:
-            channels_names = self.channels.keys()
+            channels_names = self.channel_list_name
 
         for channel_name in channels_names:
             channel = self._get_channel_data(channel_name)
-            ctrl = channel['_controller_name']
+            try:
+                ctrl = channel['_controller_name']
+            except KeyError:
+                ctrl = '__tango__'
             if unique and ctrl in result.values():
                 raise KeyError('There are more than one channel of the same '
                                'controller')
