@@ -15,7 +15,6 @@ This file follows the formats and conventions from [keepachangelog.com]
   * support fast scans: update curves at a fix rate (5Hz)
   * better curve colors and symbols
 * Pre-scan snapshot macros: `lssnap`, `defsnap` and `udefsnap` (#1199)
-* Use `Device_5Impl` instead of `Device_4Impl` (#1214)
 * Instruments creation and configuration in sar_demo (#1198)
 * Documentation to Taurus Extensions of Sardana Devices: MacroServer part
   and the whole Sardana part of the Qt Taurus Extensions (#1228, #1233)
