@@ -44,6 +44,8 @@ This file follows the formats and conventions from [keepachangelog.com]
 * OutputBlock view option when macros produce outputs at high rate (#1245)
 * `showscan online` shows only the online trend and not erroneously online and offline
   (#1260)
+* Fix fast operations (motion & acq) by propertly clearing operation context and
+  resetting of acq ctrls dicts (#1300)
 * Use more efficient way to get terminal size for better printing spock output (#1245, #1268)
 * Reintroduce backwards compatibility for measurement groups' configurations (URIs)
   created with Taurus 3 (#1266, #1271)
