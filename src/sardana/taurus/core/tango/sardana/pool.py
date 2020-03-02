@@ -1806,7 +1806,7 @@ class MGConfiguration(object):
         for channel_name in channels_names:
             channel = self._get_channel_data(channel_name)
             if use_fullname:
-                label = channel
+                label = channel['full_name']
             else:
                 label = channel['label']
             try:
