@@ -15,6 +15,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   * support fast scans: update curves at a fix rate (5Hz)
   * better curve colors and symbols
 * Pre-scan snapshot macros: `lssnap`, `defsnap` and `udefsnap` (#1199)
+* Use `Device_5Impl` instead of `Device_4Impl` (#1214)
 * Instruments creation and configuration in sar_demo (#1198)
 * Documentation to Taurus Extensions of Sardana Devices: MacroServer part
   and the whole Sardana part of the Qt Taurus Extensions (#1228, #1233)
@@ -49,7 +50,7 @@ This file follows the formats and conventions from [keepachangelog.com]
   created with Taurus 3 (#1266, #1271)
 * Measurement groups renaming with `renameelem` macro(#951)
 * Macro plotting in new versions of ipython and matplotlib require extra call to
-  pyplot.draw() to make sure that the plot is refreshed (#1280)
+  `pyplot.draw()` to make sure that the plot is refreshed (#1280)
 * Remove TangoAttribute controllers from Sardana (#181, #1279)
 * Remove deprecation warning revealed when running test suite (#1267)
 * Remove event filtering in `DynamicPlotManager` (showscan online) (#1299)
