@@ -1756,7 +1756,7 @@ class MGConfiguration(object):
                 # The attribute proxy does not have alias.
                 alias = proxy.name()
             names = list(self.channels_names.keys()) + \
-                        list(self.channels_labels.keys())
+                list(self.channels_labels.keys())
             if alias not in names:
                 raise KeyError('Channel "{0}" is not on the '
                                'MntGrp "{1}"'.format(alias, self.label))
