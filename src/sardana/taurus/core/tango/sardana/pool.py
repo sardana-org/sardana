@@ -1448,10 +1448,10 @@ class MGConfiguration(object):
             self.channel_list[idx] = channel_data
             self.channel_list_name[idx] = channel
 
-        for channel_name in self.channel_list_name.values():
+        for channel_name in self.channel_list_name:
             ctrl = self._get_ctrl_for_element(channel_name)
             if ctrl not in self.controller_list_name:
-                self.channel_list_name.append(ctrl)
+                self.controller_list_name.append(ctrl)
         # dict<str, list[DeviceProxy, CaselessDict<str, dict>]>
         # where key is a device name and value is a list with two elements:
         #  - A device proxy or None if there was an error building it
