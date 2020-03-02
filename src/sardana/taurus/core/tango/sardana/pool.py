@@ -1434,14 +1434,24 @@ class MGConfiguration(object):
         #      CaselessDict(getChannelConfigs(data, sort=False))
         #####################
 
-        # seq<dict> each element is the channel data in form of a dict as
-        # received by the MG configuration attribute. This seq is just a cache
-        # ordered by channel index in the MG.
+        # Create ordered list by channel index in the MG as cache
+        #    channel_list: seq<dict> each element is the channel data in form
+        #    of a dict as received by the MG configuration attribute.
+        #    channel_list_name: seq<str>
+        #    controller_list_names: seg<str>
         self.channel_list = len(channels) * [None]
+        self.channel_list_name = len(channels) * [None]
+        self.controller_list_name = []
 
-        for channel in list(channels.values()):
-            self.channel_list[channel['index']] = channel
+        for channel, channel_data in channels.items():
+            idx = channel_data['index']
+            self.channel_list[idx] = channel_data
+            self.channel_list_name[idx] = channel
 
+        for channel_name in self.channel_list_name.values():
+            ctrl = self._get_ctrl_for_element(channel_name)
+            if ctrl not in self.controller_list_name:
+                self.channel_list_name.append(ctrl)
         # dict<str, list[DeviceProxy, CaselessDict<str, dict>]>
         # where key is a device name and value is a list with two elements:
         #  - A device proxy or None if there was an error building it
@@ -1790,7 +1800,7 @@ class MGConfiguration(object):
         result = collections.OrderedDict({})
 
         if channels_names is None:
-            channels_names = self.channels.keys()
+            channels_names = list(self.channel_list_name)
 
         for channel_name in channels_names:
             channel = self._get_channel_data(channel_name)
@@ -1833,7 +1843,7 @@ class MGConfiguration(object):
         """
         result = collections.OrderedDict({})
         if ctrls_names is None:
-            ctrls_names = self.controllers.keys()
+            ctrls_names = list(self.controller_list_name)
 
         for ctrl_name in ctrls_names:
             if ctrl_name == '__tango__':
